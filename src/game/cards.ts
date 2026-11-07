@@ -15,6 +15,7 @@ import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { finalPrice, pay, type Price } from './production';
+import { supportPower } from './upgrades';
 import type { CardGain, TickReport, TierUp } from './report';
 import {
   cloneState,
@@ -380,16 +381,28 @@ export function cardEffectModifiers(
   return out;
 }
 
+/** A support modifier made `power` times as strong: flat and percent values scale, a mult scales its part above 1. */
+function boostSupport(m: Modifier, power: Decimal): Modifier {
+  if (m.kind === 'flat' || m.kind === 'percent') return { ...m, value: m.value.mul(power) };
+  if (m.kind === 'mult') return { ...m, value: m.value.sub(1).mul(power).add(1) };
+  return m;
+}
+
 /** Every modifier from the cards in the three loadouts. Read by `collectModifiers`. */
 export function cardModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
   for (const job of JOBS) {
     const loadout = state.cards.loadouts[job];
+    // Upgrades make a job's support effects stronger (DESIGN.md 11.14).
+    const power = supportPower(state, content, job);
     const add = (id: string | null, role: CardRole): void => {
       if (id === null) return;
       const owned = state.cards.owned[id];
       if (!owned || content.cardById.get(id)?.job !== job) return;
-      out.push(...cardEffectModifiers(content, id, role, owned));
+      const mods = cardEffectModifiers(content, id, role, owned);
+      out.push(
+        ...(role === 'support' && !power.eq(1) ? mods.map((m) => boostSupport(m, power)) : mods),
+      );
     };
     add(loadout.main, 'main');
     for (const id of loadout.supports) add(id, 'support');

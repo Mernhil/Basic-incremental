@@ -41,7 +41,25 @@ export const MIGRATIONS: MigrationTable = {
   }),
   12: v12ToV13,
   13: v13ToV14,
+  14: v14ToV15,
 };
+
+/**
+ * v14 -> v15: tree levels and the upgrade shelf (DESIGN.md 2, 11.14). Trees get a level line like
+ * the mines; every existing tree starts at level 0 and the plots are kept. No upgrade is owned,
+ * and the lifetime Money earned starts at the Money held (the best known lower bound).
+ */
+function v14ToV15(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const resources = isRecord(state['resources']) ? state['resources'] : {};
+  const money = resources['money'];
+  const held = typeof money === 'string' && isDecimalString(money) ? money : '0';
+  return {
+    ...state,
+    production: { ...production, treeLevels: {} },
+    upgrades: { owned: [], moneyEarned: held },
+  };
+}
 
 /** The Money curves of save format 14 (a snapshot of the prices of DESIGN.md 11.13): base and growth. */
 const V14_MONEY_CURVES = {

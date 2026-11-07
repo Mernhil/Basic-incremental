@@ -55,6 +55,11 @@ import {
   loadoutCostCap,
   loadoutMaxHealth,
   mineLevel,
+  upgradeShelf,
+  buyUpgrade,
+  treeLevel,
+  treeLevelCost,
+  buyTreeLevel,
   mineLevelCost,
   nextMilestone,
   productionPerSecond,
@@ -381,6 +386,38 @@ function economyCandidates(
       prices: [price],
       gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
       buy: (s, c, m) => okState(buyMineLevel(s, c, mine.id, m)),
+    });
+  }
+  for (const tree of content.trees) {
+    if (!isProducerUnlocked(state, content, 'logging', tree.id)) continue;
+    const price = treeLevelCost(state, content, tree.id, modifiers);
+    if (!price) continue;
+    const level = treeLevel(state, tree.id);
+    const now = num(producerRate(tree, 'logging', modifiers, level));
+    const next = num(producerRate(tree, 'logging', modifiers, level + 1));
+    const share =
+      totalProduction > 0
+        ? weightedProduction(state, content, modifiers, [tree.resource]) / totalProduction
+        : 1;
+    out.push({
+      id: `tree:${tree.id}`,
+      kind: 'economy',
+      prices: [price],
+      gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
+      buy: (s, c, m) => okState(buyTreeLevel(s, c, tree.id, m)),
+    });
+  }
+  // The upgrade shelf: one-time multipliers; the gain is the relative rise of what they touch.
+  for (const item of upgradeShelf(state, content, modifiers)) {
+    if (item.status !== 'available') continue;
+    const p = item.preview;
+    const rise = p && num(p.before) > 0 ? (num(p.after) - num(p.before)) / num(p.before) : 0.05;
+    out.push({
+      id: `upgrade:${item.id}`,
+      kind: 'economy',
+      prices: [item.cost],
+      gain: (p?.kind === 'damage' ? 1 : PRODUCTION_VALUE) * rise * 0.5,
+      buy: (s, c) => okState(buyUpgrade(s, c, item.id)),
     });
   }
   for (const job of ['logging', 'mining'] as const) {

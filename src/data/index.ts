@@ -23,6 +23,8 @@ import type {
   Resource,
   Tree,
   Trial,
+  Upgrade,
+  UpgradesConfig,
   WearRules,
 } from './schemas';
 import resourcesJson from './content/resources.json';
@@ -45,6 +47,7 @@ import cosmeticRulesJson from './content/cosmeticRules.json';
 import achievementsJson from './content/achievements.json';
 import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
+import upgradesJson from './content/upgrades.json';
 
 export * from './schemas';
 
@@ -82,9 +85,12 @@ export interface Content {
   account: AccountConfig;
   /** Card enhancements (DESIGN.md 10b). */
   enhancements: EnhancementsConfig;
+  /** The upgrade shelf: one-time Money multipliers that appear at a threshold (DESIGN.md 11.14). */
+  upgrades: UpgradesConfig;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
+  upgradeById: ReadonlyMap<string, Upgrade>;
   treeById: ReadonlyMap<string, Tree>;
   mineById: ReadonlyMap<string, Mine>;
   cardById: ReadonlyMap<string, Card>;
@@ -149,6 +155,7 @@ export function validateContent(raw: RawContent): Content {
     achievements: achievementsFile,
     account,
     enhancements,
+    upgrades,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -164,6 +171,7 @@ export function validateContent(raw: RawContent): Content {
     issues,
   );
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
+  checkUpgrades({ resources, trees, mines, dungeons, combat, upgrades }, issues);
   checkCosmeticSources(
     { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop, account },
     issues,
@@ -190,6 +198,7 @@ export function validateContent(raw: RawContent): Content {
       prestige,
       account,
       enhancements,
+      upgrades,
     },
     issues,
   );
@@ -222,9 +231,11 @@ export function validateContent(raw: RawContent): Content {
     shardShop,
     account,
     enhancements,
+    upgrades,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
+    upgradeById: new Map(upgrades.upgrades.map((u) => [u.id, u])),
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
@@ -253,7 +264,14 @@ function checkProduction(
       checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
     ),
   );
-  // Mine levels are bought with Money (DESIGN.md 2, 11.13).
+  // Tree levels and mine levels are bought with Money (DESIGN.md 2, 11.13).
+  c.trees.forEach((tree, i) =>
+    checkCost(
+      `trees.json › [${i}] › level › cost › resource`,
+      tree.level.cost.resource,
+      'currency',
+    ),
+  );
   c.mines.forEach((mine, i) =>
     checkCost(
       `mines.json › [${i}] › level › cost › resource`,
@@ -347,6 +365,67 @@ function checkSets(cosmetics: Cosmetic[], sets: CosmeticSet[], issues: string[])
   });
 }
 
+/** Upgrade shelf rules (DESIGN.md 11.14): unlock conditions and the cost name things that exist,
+ *  and a permanent upgrade is unlocked by progress that an ascension keeps. */
+function checkUpgrades(
+  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'dungeons' | 'combat' | 'upgrades'>,
+  issues: string[],
+): void {
+  const resources = new Map(c.resources.map((r) => [r.id, r]));
+  const seen = new Set<string>();
+  const currency = resources.get(c.upgrades.currency);
+  if (currency?.kind !== 'currency') {
+    issues.push(`upgrades.json › currency: "${c.upgrades.currency}" must be a currency resource`);
+  }
+  c.upgrades.upgrades.forEach((u, i) => {
+    const where = `upgrades.json › upgrades › [${i}]`;
+    if (seen.has(u.id)) issues.push(`${where} › id: duplicate "${u.id}"`);
+    seen.add(u.id);
+    if (u.cost.resource !== c.upgrades.currency) {
+      issues.push(`${where} › cost › resource: must be "${c.upgrades.currency}"`);
+    }
+    const k = u.unlock;
+    const missing = (what: string, ok: boolean, value: string): void => {
+      if (!ok) issues.push(`${where} › unlock: unknown ${what} "${value}"`);
+    };
+    if (k.kind === 'treeLevel')
+      missing(
+        'tree',
+        c.trees.some((t) => t.id === k.tree),
+        k.tree,
+      );
+    if (k.kind === 'mineLevel')
+      missing(
+        'mine',
+        c.mines.some((m) => m.id === k.mine),
+        k.mine,
+      );
+    if (k.kind === 'damageLevel') {
+      missing(
+        'damage line',
+        c.combat.damageUpgrades.some((d) => d.id === k.line),
+        k.line,
+      );
+    }
+    if (k.kind === 'bossKills') {
+      missing(
+        'dungeon',
+        c.dungeons.some((d) => d.id === k.dungeon),
+        k.dungeon,
+      );
+    }
+    if (k.kind === 'gemMastery') {
+      const gem = resources.get(k.gem);
+      missing('gem', gem?.kind === 'tree_gem' || gem?.kind === 'mine_gem', k.gem);
+    }
+    if (u.permanent && (k.kind === 'treeLevel' || k.kind === 'mineLevel')) {
+      issues.push(
+        `${where} › permanent: tree and mine levels reset, so their upgrades cannot be permanent`,
+      );
+    }
+  });
+}
+
 /** Modifier scopes must name things that exist, so a typo never silently disables a buff. */
 function checkModifiers(
   c: Pick<
@@ -364,6 +443,7 @@ function checkModifiers(
     | 'prestige'
     | 'account'
     | 'enhancements'
+    | 'upgrades'
   >,
   issues: string[],
 ): void {
@@ -394,6 +474,9 @@ function checkModifiers(
   for (const job of JOBS) {
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
   }
+  c.upgrades.upgrades.forEach((x, i) =>
+    check(`upgrades.json › upgrades › [${i}] › effects`, x.effects),
+  );
   c.prestige.shop.forEach((x, i) => check(`prestige.json › shop › [${i}] › perLevel`, x.perLevel));
   c.account.tree.forEach((x, i) => check(`account.json › tree › [${i}] › perRank`, x.perRank));
   for (const [card, options] of Object.entries(c.enhancements.cards)) {
@@ -899,5 +982,6 @@ export function loadContent(): Content {
     achievements: achievementsJson,
     account: accountJson,
     enhancements: enhancementsJson,
+    upgrades: upgradesJson,
   });
 }

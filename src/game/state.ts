@@ -45,6 +45,20 @@ export interface GameState {
   shardShop: Record<string, number>;
   /** Account XP, level, account tree and respecs. */
   account: AccountState;
+  /** The upgrade shelf (DESIGN.md 11.14): owned upgrades and the lifetime Money earned. */
+  upgrades: UpgradeState;
+}
+
+/** The upgrade shelf's state. */
+export interface UpgradeState {
+  /** Ids of the upgrades bought. Non-permanent ones are dropped by an ascension. */
+  owned: string[];
+  /** Money earned from dungeons (wage and purses) over every run; kept through prestige. */
+  moneyEarned: Decimal;
+}
+
+export function initialUpgrades(): UpgradeState {
+  return { owned: [], moneyEarned: new Decimal(0) };
 }
 
 /** Ascension progress. Kept through prestige (the run start moves forward on each ascension). */
@@ -125,8 +139,10 @@ export interface ProductionState {
   mining: JobProductionState;
   /** Tree kinds bought with wood (start kinds are always unlocked). Kept through prestige. */
   unlockedTrees: string[];
-  /** Mine id -> level bought with ore. Reset on prestige. */
+  /** Mine id -> level bought with Money. Reset on prestige. */
   mineLevels: Record<string, number>;
+  /** Tree id -> level bought with Money (DESIGN.md 2, 11.14). Reset on prestige. */
+  treeLevels: Record<string, number>;
 }
 
 export interface CombatState {
@@ -185,7 +201,13 @@ export function initialProduction(content: Content): ProductionState {
       plots: Array<string | null>(config.startPlots).fill(config.startProducer),
     };
   };
-  return { logging: job('logging'), mining: job('mining'), unlockedTrees: [], mineLevels: {} };
+  return {
+    logging: job('logging'),
+    mining: job('mining'),
+    unlockedTrees: [],
+    mineLevels: {},
+    treeLevels: {},
+  };
 }
 
 /** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md 11.13). */
@@ -213,6 +235,7 @@ export function createInitialState(content: Content): GameState {
     achievements: {},
     shardShop: {},
     account: initialAccount(),
+    upgrades: initialUpgrades(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -243,6 +266,7 @@ export function cloneState(state: GameState): GameState {
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
+    upgrades: { owned: [...state.upgrades.owned], moneyEarned: state.upgrades.moneyEarned },
     account: { ...state.account, skills: { ...state.account.skills } },
     prestige: {
       runStart: { ...state.prestige.runStart },
@@ -265,6 +289,7 @@ export function cloneProduction(p: ProductionState): ProductionState {
     mining: { expansions: p.mining.expansions, plots: [...p.mining.plots] },
     unlockedTrees: [...p.unlockedTrees],
     mineLevels: { ...p.mineLevels },
+    treeLevels: { ...p.treeLevels },
   };
 }
 

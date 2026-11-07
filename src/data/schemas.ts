@@ -78,14 +78,6 @@ const producerFields = {
   baseRate: positiveDecimal,
 };
 
-export const treeSchema = z.strictObject({
-  ...producerFields,
-  /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
-  unlockCost: z.array(costSchema),
-  /** Tree colours, themed to its gem: canopy and bark, light to dark. */
-  art: z.strictObject({ leaf: tones, bark: tones }),
-});
-
 /**
  * Level milestones (DESIGN.md 11.12): every `every` levels the line's output is multiplied by
  * `multiplier` (x2 every 25 levels to start). Per line, so milestones can differ later.
@@ -96,18 +88,34 @@ export const milestoneSchema = z.strictObject({
 });
 export type Milestones = z.output<typeof milestoneSchema>;
 
+/**
+ * Levels of a tree kind or mine type, bought with Money and reset on prestige. Each level adds
+ * `ratePercent`% output and every `milestones.every` levels multiplies it (DESIGN.md 2, 11.12).
+ */
+export const producerLevelSchema = z.strictObject({
+  cost: costCurveSchema,
+  /** Percent output per level, read through `production.levelBonus`. */
+  ratePercent: decimal.refine((d) => d.gte(0), { message: 'must not be negative' }),
+  /** Output multiplier every N levels. */
+  milestones: milestoneSchema,
+});
+
+export const treeSchema = z.strictObject({
+  ...producerFields,
+  /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
+  unlockCost: z.array(costSchema),
+  /** Tree levels (DESIGN.md 2, 11.14), bought with Money and reset on prestige. */
+  level: producerLevelSchema,
+  /** Tree colours, themed to its gem: canopy and bark, light to dark. */
+  art: z.strictObject({ leaf: tones, bark: tones }),
+});
+
 export const mineSchema = z.strictObject({
   ...producerFields,
   /** Dungeon whose clear unlocks this mine type; null = available from the start. */
   unlockedByDungeon: id.nullable(),
-  /** Mine levels, bought with ore and reset on prestige. Each level adds `ratePercent`% output. */
-  level: z.strictObject({
-    cost: costCurveSchema,
-    /** Percent output per level for this mine type, read through `production.levelBonus`. */
-    ratePercent: decimal.refine((d) => d.gte(0), { message: 'must not be negative' }),
-    /** Output multiplier every N levels. */
-    milestones: milestoneSchema,
-  }),
+  /** Mine levels, bought with Money and reset on prestige. */
+  level: producerLevelSchema,
 });
 
 /** Plot (logging) / slot (mining) capacity for one production job. */
@@ -212,6 +220,9 @@ export const STATS = [
   'drops.moneyMultiplier',
   /** Starlight an ascension grants, before rounding down (DESIGN.md 3). */
   'prestige.gain',
+  /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
+   *  their modifiers (DESIGN.md 11.14). Only read from upgrades. Scope: job. */
+  'card.supportPower',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -591,19 +602,12 @@ export const progressionSchema = z.strictObject({
     perTier: z.array(masteryBonusSchema),
   }),
   /**
-   * E4: what grows each job's tiles. `mineLevel`: the mine type's level milestones (11.12);
-   * `expansions`: one stage every `every` plots / slots bought (trees have no levels). Both reset
-   * on prestige.
+   * E4: what grows each job's tiles: `level`, the tree kind's or mine type's level milestones
+   * (11.12). Both reset on prestige with the levels.
    */
   tileStages: z.strictObject({
-    logging: z.discriminatedUnion('source', [
-      z.strictObject({ source: z.literal('expansions'), every: z.number().int().min(1) }),
-      z.strictObject({ source: z.literal('mineLevel') }),
-    ]),
-    mining: z.discriminatedUnion('source', [
-      z.strictObject({ source: z.literal('expansions'), every: z.number().int().min(1) }),
-      z.strictObject({ source: z.literal('mineLevel') }),
-    ]),
+    logging: z.strictObject({ source: z.literal('level') }),
+    mining: z.strictObject({ source: z.literal('level') }),
   }),
   /** E6: unique evolutions. Cards name theirs in cards.json; shown from rank `from` on. */
   evolutions: z.strictObject({
@@ -1163,6 +1167,48 @@ export const cosmeticSetSchema = z.strictObject({
   modifiers: z.array(modifierSchema).default([]),
 });
 
+/**
+ * The upgrade shelf (DESIGN.md 11.14): one-time multipliers bought with Money that appear when
+ * their unlock condition is met. `permanent` ones are kept through an ascension, the rest are
+ * bought again each run. Effects are ordinary modifiers (source `upgrade`).
+ */
+export const UPGRADE_UNLOCK_KINDS = [
+  'treeLevel',
+  'mineLevel',
+  'damageLevel',
+  'gemMastery',
+  'bossKills',
+  'lifetimeMoney',
+] as const;
+export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('treeLevel'), tree: id, level: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('mineLevel'), mine: id, level: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('damageLevel'), line: id, level: z.number().int().min(1) }),
+  z.strictObject({
+    kind: z.literal('gemMastery'),
+    gem: id,
+    tier: z.number().int().min(1).max(MASTERY_TIERS),
+  }),
+  z.strictObject({ kind: z.literal('bossKills'), dungeon: id, kills: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('lifetimeMoney'), amount: positiveDecimal }),
+]);
+export const upgradeSchema = z.strictObject({
+  id,
+  name,
+  /** The effect as shown to the player, e.g. "Oak output x2". */
+  description: z.string().min(1),
+  unlock: upgradeUnlockSchema,
+  cost: costSchema,
+  /** Kept through an ascension (its unlock must be lasting progress). */
+  permanent: z.boolean(),
+  effects: z.array(modifierSchema).min(1),
+});
+export const upgradesFileSchema = z.strictObject({
+  /** The resource every upgrade is paid in (Money). */
+  currency: id,
+  upgrades: z.array(upgradeSchema),
+});
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1184,8 +1230,12 @@ export const contentSchemas = {
   achievements: achievementsFileSchema,
   account: accountSchema,
   enhancements: enhancementsSchema,
+  upgrades: upgradesFileSchema,
 } as const;
 
+export type Upgrade = z.output<typeof upgradeSchema>;
+export type UpgradeUnlock = z.output<typeof upgradeUnlockSchema>;
+export type UpgradesConfig = z.output<typeof upgradesFileSchema>;
 export type Resource = z.output<typeof resourceSchema>;
 export type GemArt = z.output<typeof gemArtSchema>;
 export type Tree = z.output<typeof treeSchema>;

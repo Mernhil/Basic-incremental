@@ -203,6 +203,7 @@ describe('save format v3: production', () => {
       mining: { expansions: 1, plots: ['copper_quarry', 'iron_deeps'] },
       unlockedTrees: ['ironbark'],
       mineLevels: { copper_quarry: 4, iron_deeps: 1 },
+      treeLevels: { oak: 6 },
     };
     state.clearedDungeons = ['mossy_cellar'];
     const loaded = readSave(createSaveText(state, NOW), content);

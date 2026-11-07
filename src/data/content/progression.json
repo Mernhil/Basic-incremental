@@ -46,11 +46,10 @@
   },
   "tileStages": {
     "logging": {
-      "source": "expansions",
-      "every": 5
+      "source": "level"
     },
     "mining": {
-      "source": "mineLevel"
+      "source": "level"
     }
   },
   "evolutions": {

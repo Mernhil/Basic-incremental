@@ -7,8 +7,8 @@ import { cloneState, initialProduction, type GameState } from './state';
 /**
  * Production (DESIGN.md 2): logging plots and mining slots. Capacity is limited and bought
  * with the job's tier-1 resource; the player freely chooses what runs in each plot/slot.
- * Tree kinds are unlocked with wood, mine types by clearing dungeons, and each mine type has
- * levels bought with its own ore. Every number goes through the modifier pipeline.
+ * Tree kinds are unlocked with gems, mine types by clearing dungeons, and each tree kind and
+ * mine type has levels bought with Money (DESIGN.md 2, 11.14). Every number goes through the modifier pipeline.
  *
  * Every function is pure: state changes return a new state. Functions that need modifiers take
  * them as an optional last argument (pass `collectModifiers(state, content)` once when calling
@@ -250,6 +250,43 @@ export function mineLevel(state: GameState, mineId: string): number {
   return state.production.mineLevels[mineId] ?? 0;
 }
 
+/** A tree kind's level (0 = never bought). Reset on prestige. */
+export function treeLevel(state: GameState, treeId: string): number {
+  return state.production.treeLevels[treeId] ?? 0;
+}
+
+/** The level of a tree or mine in a job (what `producerRate` takes). */
+export function producerLevel(state: GameState, job: ProductionJob, id: string): number {
+  return job === 'logging' ? treeLevel(state, id) : mineLevel(state, id);
+}
+
+/** A tree kind's level milestones ("Lv 25: x2"), or null for an unknown tree. */
+export function treeLevelMilestone(
+  state: GameState,
+  content: Content,
+  treeId: string,
+): MilestoneInfo | null {
+  const tree = content.treeById.get(treeId);
+  return tree ? milestoneInfo(tree.level.milestones, treeLevel(state, treeId)) : null;
+}
+
+/** Price of the next level of a tree kind, in Money. */
+export function treeLevelCost(
+  state: GameState,
+  content: Content,
+  treeId: string,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): Price | null {
+  const tree = content.treeById.get(treeId);
+  if (!tree) return null;
+  return curvePrice(
+    tree.level.cost,
+    treeLevel(state, treeId),
+    modifiers,
+    producerContext(tree, 'logging'),
+  );
+}
+
 /** A mine type's level milestones ("Lv 25: x2"), or null for an unknown mine. */
 export function mineLevelMilestone(
   state: GameState,
@@ -322,7 +359,23 @@ export function unlockTree(
   return { ok: true, state: next };
 }
 
-/** Buys the next level of an unlocked mine type with its ore. */
+/** Buys the next level of an unlocked tree kind with Money. */
+export function buyTreeLevel(
+  state: GameState,
+  content: Content,
+  treeId: string,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): ProductionResult {
+  const price = treeLevelCost(state, content, treeId, modifiers);
+  if (!price) return fail('unknown');
+  if (!isProducerUnlocked(state, content, 'logging', treeId)) return fail('locked');
+  if (!canAfford(state, [price])) return fail('unaffordable');
+  const next = pay(state, [price]);
+  next.production.treeLevels[treeId] = treeLevel(state, treeId) + 1;
+  return { ok: true, state: next };
+}
+
+/** Buys the next level of an unlocked mine type with Money. */
 export function buyMineLevel(
   state: GameState,
   content: Content,
@@ -342,7 +395,7 @@ export function buyMineLevel(
 
 /**
  * Output per second of one plot/slot running this producer, after modifiers. For mines,
- * `level` adds `production.levelBonus` percent per level (from the mine's `ratePercent`)
+ * `level` adds `production.levelBonus` percent per level (from the producer's `ratePercent`)
  * and every level milestone multiplies it (DESIGN.md 11.12), before the `production.rate`
  * modifiers apply.
  */
@@ -354,7 +407,7 @@ export function producerRate(
 ): Decimal {
   const ctx = producerContext(producer, job);
   let base = producer.baseRate;
-  if (level > 0 && 'level' in producer) {
+  if (level > 0) {
     const percent = statValue('production.levelBonus', producer.level.ratePercent, modifiers, ctx);
     base = base
       .mul(Decimal.max(percent.mul(level).div(100).add(1), 0))
@@ -375,7 +428,7 @@ export function jobProductionPerSecond(
   for (const producer of producersOf(content, job)) {
     const count = counts[producer.id] ?? 0;
     if (count === 0) continue;
-    const level = job === 'mining' ? mineLevel(state, producer.id) : 0;
+    const level = producerLevel(state, job, producer.id);
     const gained = producerRate(producer, job, modifiers, level).mul(count);
     out[producer.resource] = (out[producer.resource] ?? new Decimal(0)).add(gained);
   }

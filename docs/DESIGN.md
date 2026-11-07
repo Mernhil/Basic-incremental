@@ -25,7 +25,7 @@ Two production jobs, **mining** and **logging**. Each produces its own resources
 
 - Starts with **one tree plot**.
 - Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different gem.
-- Plot expansions are paid in **Money** (11.13). Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
+- Plot expansions are paid in **Money** (11.13). **Tree levels** work like mine levels: each tree kind has a level bought with Money on an exponential curve, each level adds 10% to that tree's output and every 25 levels doubles it (11.12, 11.14); tree levels reset on prestige with the plots. Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
 
 ### Mining
 
@@ -44,6 +44,10 @@ Two production jobs, **mining** and **logging**. Each produces its own resources
 | Summon and Glamour Crystals (dungeon drops) | Summons in the Card Portal and the Wardrobe Gate (6)                   |
 
 The resource model is the three loops of 11.13. Numbers will be tuned.
+
+### Upgrade shelf
+
+- Beside the level lines there is a **shelf of one-time upgrades** bought with Money (11.14): a multiplier for one tree or mine, a damage line, a dungeon's Money or crystals, a job's support cards or a burst gauge. Each appears when a threshold is reached. Per-run ones reset with the run; `permanent` ones stay.
 
 ## 3. Prestige
 
@@ -359,9 +363,10 @@ Decided with the user for the beta.
 
 Decided with the user for the beta.
 
-- **Mine levels** and the **three damage lines** give **×2** to that line's output **every 25 levels**. Milestones are data-driven per line so they can differ later.
+- **Tree levels**, **mine levels** and the **three damage lines** give **×2** to that line's output **every 25 levels**. Milestones are data-driven per line so they can differ later.
 - The next milestone is marked on the upgrade ("Lv 25: ×2"); reaching one plays a small celebration and a toast.
 - Damage lines persist through prestige, so their milestones do too; mine levels reset, and their milestones with them.
+- **Tree levels** have the same milestones (x2 every 25 levels).
 - Milestones also drive the visual growth of tiles and edges (section 16).
 
 ### 11.13 The three loops: Money, materials and crystals
@@ -376,6 +381,19 @@ Decided with the user for the economy redesign (PR 1 of 4; the later PRs add tre
 - **Cores and Sigils** (Moss 80%, Cinder 50%, Frost 70% for 2 per drop; Frost Sigils 1-3 per Frostspire kill) are the dungeon materials for card upgrades, so each dungeon keeps a reason to be farmed beside Money and crystals.
 - **Saves.** Format 14 renames the sigils (Moss to Summon, Ember to Glamour; the Frost Sigil keeps its id), the skill, the Starlight shop item and the shard shop bundles, keeps every level and expansion, and **pays back as Money what they would cost** at the new prices (plus the starting Money), so nothing feels lost. Gems are kept as materials.
 
+### 11.14 Tree levels and the upgrade shelf
+
+Decided for the economy redesign (PR 2 of 4). Numbers live in data.
+
+- **Tree levels.** Every tree kind has a level line in `trees.json` (`level`), the same model as the mines: cost `base × growth^n` in **Money**, +10% output per level (`production.levelBonus`), x2 every 25 levels. Prices: Oak 20 × 1.3, Ironbark 250 × 1.32, Moonwillow 3,000 × 1.34. A tree must be unlocked to be levelled. Levels reset on ascension. All level lines (tree levels, mine levels, damage lines) buy x1 / x10 / x100 / Max through `bulk.ts` with before/after previews (`previews.ts`).
+- **Upgrade shelf (`upgrades.json`, schema `upgradesFileSchema`).** 36 one-time upgrades paid in Money. Each has an `unlock` (kinds: `treeLevel`, `mineLevel`, `damageLevel`, `gemMastery` tier, `bossKills`, `lifetimeMoney`), a Money `cost`, a `permanent` flag and `effects` (ordinary modifiers, so the target stat, kind and scope are the "condition"). A shelf item is `hidden` until the unlock is met, then `available` (glows when affordable) and, once bought, `owned`. Effects enter the modifier pipeline with source kind `upgrade`; tooltips list them under the upgrade's name.
+- **Card support effects.** "Logging cards +25% support effect" is the stat `card.supportPower` (scope job, base 1): it scales the flat, percent and mult-above-1 values of that job's support cards (the main effect is untouched). Only upgrades feed it.
+- **Permanence (decided).** Money resets on ascension, so upgrades that multiply per-run production (trees, mines, logging/mining pacts and burst gauges, the production ledgers) reset with the run and are bought again; their unlock thresholds (tree and mine levels) reset too. Upgrades that touch lasting progress are `permanent`: the damage line ones, Battle Cry, the dungeon Money and crystal ones, the Vanguard Pact, Quick Hands and Finishing Blow. The data check refuses a permanent upgrade unlocked by a tree or mine level.
+- **Lifetime Money earned** (`upgrades.moneyEarned`) counts the wage and purses of every run and is kept through an ascension. Old saves start it at the Money held.
+- **Numbers** (first pass, to be tuned by playtest). Trees and mines: x2 at level 10 (1.2k-300k Money by tier), x3 at level 35 (400k-300M), all-trees +50% at 100k lifetime Money (50k), all-mines +50% at 200k (100k), level-bonus +50% at level 25 (25k-30k). Damage lines: x2 at line level 25 (5k / 100k / 1.5M), x3 at 75 (1M / 30M / 1G). Fighting: Battle Cry +25% damage (10 Root Warden kills, 50k), Tax Collector Mossy Cellar Money x3 (20 kills, 150k), Cinder Tithe Ember Crypt Money x2 (6M), Frost Tithe Frostspire Money x2 (60M), Crystal Lure crystals x1.5 (50 Mossy kills, 250k), Gleaming Hoard x1.5 (10M). Pacts: +25% support effect per job (40k / 40k / 100k). Bursts: Quick Hands +25% fighting fill (80k), Harvest Rhythm +25% logging and mining fill (20k), Finishing Blow x1.5 signature (4M). Ledgers: Merchant +25% all production (10M lifetime, cost 2M), Golden x1.5 (1G lifetime, cost 100M).
+- **Saves.** Format 15 adds `production.treeLevels` (empty) and `upgrades` (none owned; lifetime Money starts at the Money held). The sim buys tree levels and the shelf by gain per Money.
+- **Sanity sim (8 h, 2 seeds, not a tuning run).** With tree levels and the shelf in the sim everything runs; it now reaches Gold ★6 at 3.7 h, Dungeon 3 at 5.2 h and the first Prismatic at 6.1 h, faster than the 11.7 targets, and no ascension within 8 h. Pacing is deliberately left for the user's playtest and the later PRs (11.13, 12.27).
+
 ## 12. Defaults for underspecified points
 
 Points the decisions above leave open. These defaults apply until changed.
@@ -388,7 +406,7 @@ Points the decisions above leave open. These defaults apply until changed.
 6. **Crits in the simulation.** The game deals crits at their **expected value** (every hit and signature attack does 1 + chance × (crit damage − 1) times its damage), so online, offline and any split of time give the same totals. The stage rolls individual crits only for show (the number and its look).
 7. **Buy Max.** Max buys as many levels as the player can afford (at least one); when none is affordable it shows the next level. Its fill bar shows progress toward one more level than it can buy now. A ×N buy buys exactly N levels or nothing.
 8. **Plot and slot previews.** A plot or slot preview assumes the new one runs the best unlocked producer of that job (the highest tier) and shows that gem per second before and after.
-9. **Tree tile stages (E4).** Trees have no levels, so a tree tile grows **one stage every 5 plots bought** (logging expansions; `tileStages` in `progression.json`), up to the top stage. All tree tiles share the stage; it resets on prestige with the plots. Mine tiles follow their mine level milestones.
+9. **Tree tile stages (E4).** Tree tiles grow with the tree's own **level milestones**, one stage per 25 levels like mine tiles (`tileStages` in `progression.json` is `level` for both jobs; DESIGN 11.14). Buying plots no longer grows tiles or fires a tile tier-up; buying tree levels that cross a milestone fires a `tree_milestone` tier-up. Levels and stages reset on prestige.
 10. **When mastery tiers apply.** Lifetime totals and kills grow continuously, but a new mastery tier (gem or medal) takes effect on the next whole second of play, like card levels, so online, offline and any split of time give the same totals. A save migrated from before mastery gets its tiers from its totals when loaded, without tier-up moments.
 11. **What counts as harvested (E2).** Every gem gained from plots / slots, harvest bursts included, online and offline. Gems from other sources (none yet) would not count.
 12. **Medal bonuses.** "+10% crystal drops" multiplies the Summon and Glamour Crystals of each kill by 1.1 per tier (Money is not affected); a fraction rounds up with that chance, so the average is exact. "+10% core drops" is +10% per tier on the Core drop chance. The **Glimmer Trial medal** (from its best score at 25 / 50 / 75 / 100%) gives +5% damage in the trial and +10% to its rewards per tier, mirroring the boss medals.
@@ -404,7 +422,7 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Ascension:** once the gain reaches the minimum, it ascends when the run's Starlight per second has fallen to 90% of its peak.
     - "Beta content mostly exhausted" counts as every other 11.7 milestone reached, every card owned and a Prismatic ★6 card. "First ★6" is the first Gold ★6.
 16. **Portal pulls.** Pulls in a batch are rolled in order. Hard pity is checked first on every pull; the 10-pull guarantee applies to the **last** pull of a 10-pull when none of the first nine (and no pity pull) reached it, and then picks from the pool's items at or above the guarantee rarity by weight. A pity or guarantee pick keeps the pool weights among the eligible items. The reveal's upgrade flash happens on 25% of results above the pool's lowest rarity (`reveal.upgradeFlashChance`): the orb starts one rarity lower. The boss card drop and its `drops.cardChance` stat are removed with the Card Portal.
-17. **Ascension details.** Starlight = floor(((Σ gems harvested this run × tier weight 1 / 10 / 100) / 2e5) ^ 0.4), through `prestige.gain`; an ascension needs at least 10 (all in `prestige.json`, tuned so the sim's first ascension lands near 8 h). Starlight is a resource of kind `prestige`, kept by an ascension together with the crystals (kind `crystal`; 11.13). Besides DESIGN 3 and 16, an ascension also resets the burst gauges, the boss being fought (back to full HP), the loadout's health and a running Glimmer Trial attempt; it keeps boss kills, trial best scores, the rare-drop pity counters, card levels and loadouts, rare items and the active dungeon. The Starlight shop holds permanent levels (logging and mining output, damage, card health, crystals, slower price growth, offline cap), each level adding its bonus once more (source `prestige`). Prestige cosmetics: Gilded Plate at the first ascension, Aurora Veil at the second, Gilded Filigree at the third; a duplicate becomes a copy. The balance sim ascends when allowed and the gain at least matches all Starlight earned so far.
+17. **Ascension details.** Starlight = floor(((Σ gems harvested this run × tier weight 1 / 10 / 100) / 2e5) ^ 0.4), through `prestige.gain`; an ascension needs at least 10 (all in `prestige.json`, tuned so the sim's first ascension lands near 8 h). Starlight is a resource of kind `prestige`, kept by an ascension together with the crystals (kind `crystal`; 11.13). Besides DESIGN 3 and 16, an ascension also resets the burst gauges, the boss being fought (back to full HP), the loadout's health and a running Glimmer Trial attempt; it keeps boss kills, trial best scores, the rare-drop pity counters, card levels and loadouts, rare items and the active dungeon. The Starlight shop holds permanent levels (logging and mining output, damage, card health, crystals, slower price growth, offline cap), each level adding its bonus once more (source `prestige`). Prestige cosmetics: Gilded Plate at the first ascension, Aurora Veil at the second, Gilded Filigree at the third; a duplicate becomes a copy. An ascension also drops the **per-run upgrades** of the shelf (they must be bought again) and keeps the **permanent** ones and the lifetime Money earned (11.14). The balance sim ascends when allowed and the gain at least matches all Starlight earned so far.
 18. **Wardrobe details.**
     - **Levels.** A non-starter item's max level comes from its rarity (11.1, `cosmeticRules.json`); levels above its drawn ones show the top drawn level until the art arrives. The ladder for each max level is in data: 2 = shape, ambient; 3 = shape, accent, ambient; 4 = shape, accent, gems, ambient; 5 = shape, accent, gems, glow, ambient; 6 = shape, shape, accent, gems, glow, ambient.
     - **Upgrade cost.** Each level costs one duplicate plus the step's material × a rarity factor (common 1 … void 8). Shape 200 and accent 400 Glimmer Dust; gems 400, glow 800 and ambient 2000 Facet Shards, set so the sim's first max-level item lands before 20 h.
@@ -603,7 +621,7 @@ The five metals (stone, bronze, silver, gold, prismatic), gem coins, item intric
   - Each tier gives **+5% damage** against that boss and **+10%** to that dungeon's crystal and Core drops (source `mastery`, condition = dungeon).
   - The medal shows on the floor rail and next to the boss on the stage. The Glimmer Trial's medal tiers come from its **best score** instead.
 - **E4 Growing tiles.**
-  - Tree and mine tiles grow visually with their level, **one visible step per 25-level milestone**.
+  - Tree and mine tiles grow visually with their level, **one visible step per 25-level milestone** (trees have their own level line since 11.14).
   - Trees: sapling → young tree → full canopy → grand tree with more hanging gems → gem-crowned tree with a subtle ambient sparkle.
   - Mines: surface rock → open quarry → deeper shaft with more gems → glowing veins → crystal-lined cavern with a subtle ambient glint.
   - The tile's ground uses the metal ladder for its stage as a **rising plinth**: the hexagon sits on a metal plinth that gets taller every stage.

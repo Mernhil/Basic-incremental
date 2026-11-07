@@ -20,6 +20,7 @@ import account from '../src/data/content/account.json';
 import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
+import upgrades from '../src/data/content/upgrades.json';
 
 type PortalRaw = {
   cost: { resource: string };
@@ -49,6 +50,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     achievements,
     cosmeticRules,
     prestige,
+    upgrades,
     ...overrides,
   });
 }
@@ -529,5 +531,18 @@ describe('crit and milestone data (DESIGN.md 11.11, 11.12)', () => {
     const issues = issuesFor(raw({ combat: { ...combat, damageUpgrades: lines } }));
     expect(issues.some((i) => i.includes('milestones › every'))).toBe(true);
     expect(issues.some((i) => i.includes('milestones › multiplier'))).toBe(true);
+  });
+
+  it('rejects upgrades that name unknown things or are permanent but unlocked by a reset level', () => {
+    const input = raw();
+    const list = (input as unknown as { upgrades: { upgrades: Record<string, unknown>[] } })
+      .upgrades.upgrades;
+    list[0]!['unlock'] = { kind: 'treeLevel', tree: 'redwood', level: 3 };
+    list[1]!['permanent'] = true; // deep_roots is unlocked by an Oak level
+    list[2]!['cost'] = { resource: 'oak_gem', amount: '5' };
+    const found = issuesFor(input).join(' | ');
+    expect(found).toMatch(/unknown tree "redwood"/);
+    expect(found).toMatch(/cannot be permanent/);
+    expect(found).toMatch(/cost › resource: must be "money"/);
   });
 });

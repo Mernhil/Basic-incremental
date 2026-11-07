@@ -9,7 +9,7 @@ import {
   computeStat,
   isProducerUnlocked,
   jobProductionPerSecond,
-  mineLevel,
+  producerLevel,
   plotCapacity,
   plots,
   producerRate,
@@ -184,7 +184,7 @@ export function createProductionPage(
       const art = h('span', 'pp-tile__art');
       art.innerHTML = tileArt(job, p, tileStage(state, content, job, p.id));
       art.style.setProperty('--d', `${((index * 0.37) % 3).toFixed(2)}s`);
-      const level = job === 'mining' ? mineLevel(state, p.id) : 0;
+      const level = producerLevel(state, job, p.id);
       btn.append(
         art,
         h('span', 'pp-tile__name', p.name),
@@ -233,7 +233,7 @@ export function createProductionPage(
       item.type = 'button';
       item.setAttribute('role', 'menuitemradio');
       item.setAttribute('aria-checked', String(p.id === current));
-      const level = job === 'mining' ? mineLevel(state, p.id) : 0;
+      const level = producerLevel(state, job, p.id);
       item.append(
         h('span', '', p.name),
         h(
