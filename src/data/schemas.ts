@@ -14,11 +14,28 @@ const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
 export const RESOURCE_KINDS = ['tree_gem', 'mine_gem', 'material', 'portal'] as const;
+
+/** A colour as #rrggbb. */
+const hexColor = z.string().regex(/^#[0-9a-f]{6}$/, 'colours are #rrggbb in lowercase');
+/** Four tones, light to dark (DESIGN.md 13, cel and facet shading). */
+const tones = z.tuple([hexColor, hexColor, hexColor, hexColor]);
+
+export const GEM_SHAPES = ['round', 'pentagon', 'star', 'square', 'hexagon', 'drop'] as const;
+export const GEM_PATTERNS = ['grain', 'rings', 'swirl', 'veins'] as const;
+/** How a production gem is drawn: its outline says which one, its carving where it comes from. */
+export const gemArtSchema = z.strictObject({
+  shape: z.enum(GEM_SHAPES),
+  pattern: z.enum(GEM_PATTERNS),
+  colors: tones,
+});
+
 export const resourceSchema = z.strictObject({
   id,
   name,
   kind: z.enum(RESOURCE_KINDS),
   tier,
+  /** Art for tree and mine gems (required for those kinds, not allowed for others). */
+  gem: gemArtSchema.optional(),
 });
 
 const costSchema = z.strictObject({ resource: id, amount: positiveDecimal });
@@ -46,8 +63,10 @@ const producerFields = {
 
 export const treeSchema = z.strictObject({
   ...producerFields,
-  /** Wood paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
+  /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
   unlockCost: z.array(costSchema),
+  /** Tree colours, themed to its gem: canopy and bark, light to dark. */
+  art: z.strictObject({ leaf: tones, bark: tones }),
 });
 
 export const mineSchema = z.strictObject({
@@ -643,6 +662,7 @@ export const contentSchemas = {
 } as const;
 
 export type Resource = z.output<typeof resourceSchema>;
+export type GemArt = z.output<typeof gemArtSchema>;
 export type Tree = z.output<typeof treeSchema>;
 export type Mine = z.output<typeof mineSchema>;
 export type CostCurve = z.output<typeof costCurveSchema>;

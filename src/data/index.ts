@@ -426,6 +426,13 @@ function checkReferences(
   duplicates('cosmetics', c.cosmetics);
   duplicates('portals', c.portals);
 
+  // Tree and mine gems are drawn from their gem art (DESIGN.md 13); other resources have none.
+  c.resources.forEach((r, i) => {
+    const isGem = r.kind === 'tree_gem' || r.kind === 'mine_gem';
+    if (isGem && !r.gem) issues.push(`resources.json › [${i}] › gem: a ${r.kind} needs gem art`);
+    if (!isGem && r.gem) issues.push(`resources.json › [${i}] › gem: only gems have gem art`);
+  });
+
   const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cardIds = new Set(c.cards.map((x) => x.id));
   const cosmeticIds = new Set(c.cosmetics.map((x) => x.id));

@@ -5,7 +5,11 @@
     "tier": 1,
     "resource": "oak_gem",
     "baseRate": "1",
-    "unlockCost": []
+    "unlockCost": [],
+    "art": {
+      "leaf": ["#8af06a", "#4fc246", "#2e8e36", "#1c6026"],
+      "bark": ["#c48a56", "#9a6236", "#6e4020", "#4a2812"]
+    }
   },
   {
     "id": "ironbark",
@@ -13,7 +17,11 @@
     "tier": 2,
     "resource": "ironbark_gem",
     "baseRate": "0.5",
-    "unlockCost": [{ "resource": "oak_gem", "amount": "500" }]
+    "unlockCost": [{ "resource": "oak_gem", "amount": "500" }],
+    "art": {
+      "leaf": ["#ffc070", "#e88a32", "#b0601e", "#7a3e12"],
+      "bark": ["#a8968c", "#7a6a62", "#54463f", "#342a26"]
+    }
   },
   {
     "id": "moonwillow",
@@ -21,6 +29,10 @@
     "tier": 3,
     "resource": "moonwillow_gem",
     "baseRate": "0.25",
-    "unlockCost": [{ "resource": "ironbark_gem", "amount": "2000" }]
+    "unlockCost": [{ "resource": "ironbark_gem", "amount": "2000" }],
+    "art": {
+      "leaf": ["#eeeaff", "#bdb6f2", "#8a84d4", "#5c56a8"],
+      "bark": ["#f4f4fc", "#c8cae0", "#9496b8", "#64668a"]
+    }
   }
 ]

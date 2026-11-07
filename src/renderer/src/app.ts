@@ -47,6 +47,8 @@ import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
 import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
+import { gemCoin, svg } from './art/gems';
+import { installArtDefs } from './art/defs';
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -146,10 +148,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     material: 'material',
     portal: 'portal',
   } as const;
+  installArtDefs();
   const currencies: Currency[] = content.resources.map((r) => ({
     id: r.id,
     name: r.name,
     icon: KIND_ICON[r.kind],
+    ...(r.gem ? { art: svg(gemCoin(r.gem, r.tier)) } : {}),
     tip: () => `${r.name}: ${formatDecimal(loop.state.resources[r.id] ?? new Decimal(0))}`,
   }));
   const shell = createShell({

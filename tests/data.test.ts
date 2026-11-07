@@ -78,6 +78,41 @@ describe('bundled content', () => {
   });
 });
 
+describe('gem art (DESIGN.md 13)', () => {
+  it('gives every tree and mine gem a shape, carving and four colours, and every tree its colours', () => {
+    const content = loadContent();
+    const gems = content.resources.filter((r) => r.kind === 'tree_gem' || r.kind === 'mine_gem');
+    expect(gems.map((g) => g.gem?.shape)).toEqual([
+      'round',
+      'pentagon',
+      'star',
+      'square',
+      'hexagon',
+      'drop',
+    ]);
+    for (const t of content.trees) expect(t.art.leaf).toHaveLength(4);
+  });
+
+  it('requires gem art on gems and refuses it on other resources', () => {
+    const bad = raw();
+    const list = bad.resources as Record<string, unknown>[];
+    delete list[0]!['gem'];
+    list[6]!['gem'] = list[1]!['gem'];
+    const issues = issuesFor(bad);
+    expect(issues).toContain('resources.json › [0] › gem: a tree_gem needs gem art');
+    expect(issues).toContain('resources.json › [6] › gem: only gems have gem art');
+  });
+
+  it('rejects colours that are not #rrggbb', () => {
+    const bad = raw();
+    const gem = (bad.resources as { gem: { colors: string[] } }[])[0]!.gem;
+    gem.colors[0] = 'orange';
+    expect(issuesFor(bad)).toEqual([
+      'resources.json › [0] › gem › colors › [0]: colours are #rrggbb in lowercase',
+    ]);
+  });
+});
+
 describe('content validation errors', () => {
   it('names the file, index and field for schema problems', () => {
     const bad = raw();

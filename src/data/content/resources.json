@@ -1,10 +1,70 @@
 [
-  { "id": "oak_gem", "name": "Oak Gem", "kind": "tree_gem", "tier": 1 },
-  { "id": "ironbark_gem", "name": "Ironbark Gem", "kind": "tree_gem", "tier": 2 },
-  { "id": "moonwillow_gem", "name": "Moonwillow Gem", "kind": "tree_gem", "tier": 3 },
-  { "id": "copper_gem", "name": "Copper Gem", "kind": "mine_gem", "tier": 1 },
-  { "id": "iron_gem", "name": "Iron Gem", "kind": "mine_gem", "tier": 2 },
-  { "id": "grotto_gem", "name": "Grotto Gem", "kind": "mine_gem", "tier": 3 },
+  {
+    "id": "oak_gem",
+    "name": "Oak Gem",
+    "kind": "tree_gem",
+    "tier": 1,
+    "gem": {
+      "shape": "round",
+      "pattern": "grain",
+      "colors": ["#f4c88e", "#cf8e50", "#9a5e2e", "#5e3416"]
+    }
+  },
+  {
+    "id": "ironbark_gem",
+    "name": "Ironbark Gem",
+    "kind": "tree_gem",
+    "tier": 2,
+    "gem": {
+      "shape": "pentagon",
+      "pattern": "rings",
+      "colors": ["#c8b0a0", "#8e7262", "#5e4638", "#34241a"]
+    }
+  },
+  {
+    "id": "moonwillow_gem",
+    "name": "Moonwillow Gem",
+    "kind": "tree_gem",
+    "tier": 3,
+    "gem": {
+      "shape": "star",
+      "pattern": "swirl",
+      "colors": ["#f6f4ff", "#cdc8f2", "#9690d0", "#5a5498"]
+    }
+  },
+  {
+    "id": "copper_gem",
+    "name": "Copper Gem",
+    "kind": "mine_gem",
+    "tier": 1,
+    "gem": {
+      "shape": "square",
+      "pattern": "veins",
+      "colors": ["#ffc78e", "#f08a3c", "#b8581a", "#743210"]
+    }
+  },
+  {
+    "id": "iron_gem",
+    "name": "Iron Gem",
+    "kind": "mine_gem",
+    "tier": 2,
+    "gem": {
+      "shape": "hexagon",
+      "pattern": "veins",
+      "colors": ["#eef2f8", "#aab4c2", "#727c8c", "#464e5a"]
+    }
+  },
+  {
+    "id": "grotto_gem",
+    "name": "Grotto Gem",
+    "kind": "mine_gem",
+    "tier": 3,
+    "gem": {
+      "shape": "drop",
+      "pattern": "veins",
+      "colors": ["#eafaff", "#9adcf2", "#58acd2", "#2a7298"]
+    }
+  },
   { "id": "moss_sigil", "name": "Moss Sigil", "kind": "portal", "tier": 1 },
   { "id": "ember_sigil", "name": "Ember Sigil", "kind": "portal", "tier": 2 },
   { "id": "frost_sigil", "name": "Frost Sigil", "kind": "portal", "tier": 3 },

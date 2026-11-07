@@ -48,6 +48,8 @@ export interface Currency {
   id: string;
   name: string;
   icon: IconName;
+  /** Full-colour SVG markup (a gem coin). Replaces the line icon when set. */
+  art?: string;
   tip: TipContent;
 }
 
@@ -101,11 +103,12 @@ export function createShell(opts: {
     const item = h('li', 'shell-currency');
     item.tabIndex = 0;
     const value = h('span', 'shell-currency__value bi-num', '0');
-    item.append(
-      icon(c.icon, 'shell-icon shell-currency__icon'),
-      value,
-      h('span', 'shell-currency__name', c.name),
-    );
+    let glyph: Element = icon(c.icon, 'shell-icon shell-currency__icon');
+    if (c.art) {
+      glyph = h('span', 'shell-currency__art');
+      glyph.innerHTML = c.art;
+    }
+    item.append(glyph, value, h('span', 'shell-currency__name', c.name));
     attachTooltip(item, c.tip);
     item.hidden = true; // shown once the player has some
     currencyValues.set(c.id, value);
