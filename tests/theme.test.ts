@@ -285,7 +285,7 @@ describe('token inheritance', () => {
     const plate = equip(content, emptyLoadout(), 'border', { id: 'gilded_plate', level: 1 });
     const card = resolveCard(content, plate, cardAt(r('gold', 1)));
     expect(card.vars['--bi-plate-bg']).toBe('#d9b35a'); // set by the item
-    expect(card.vars['--bi-panel-ink-muted']).toBe('#b4c0d4'); // inherited from Gilt Hairline
+    expect(card.vars['--bi-panel-ink-muted']).toBe('#b4c0d4'); // inherited from Knight Plate
     expect(card.recipes).toContain('inner-gilt');
   });
 

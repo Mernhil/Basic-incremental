@@ -7,6 +7,7 @@
  */
 export const RECIPES = [
   // border
+  'knight-plate',
   'filigree-1',
   'filigree-2',
   'filigree-3',
