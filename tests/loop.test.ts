@@ -50,7 +50,9 @@ describe('GameLoop', () => {
     expect(loop.state.resources['oak_gem']!.eq(11)).toBe(true);
   });
 
-  it('clamps a huge gap to the maximum step', () => {
+  // Simulates a full 8 hours in 1 s steps (card levels settle on whole seconds), so it is heavy:
+  // ~2 s locally, several times that on CI runners. Give it room instead of the 5 s default.
+  it('clamps a huge gap to the maximum step', { timeout: 20_000 }, () => {
     const loop = new GameLoop(freshState(), content, constantRng(0.5), 0);
     loop.step(MAX_STEP_MS * 5);
     expect(loop.state.stats.playTimeMs).toBe(MAX_STEP_MS);
