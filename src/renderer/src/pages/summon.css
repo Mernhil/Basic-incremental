@@ -1,0 +1,145 @@
+/* Summon page, shelf of portals (DESIGN.md 6, A6 E): portal cards side by side. */
+
+.sm-shelf {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 380px));
+  gap: 18px;
+}
+.sm-portal {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 8px;
+  min-height: 440px;
+  padding: 28px 22px 22px;
+  border-radius: var(--bi-frame-radius, 14px);
+  color: var(--bi-chrome-ink);
+  background:
+    radial-gradient(
+      60% 40% at 50% 26%,
+      color-mix(in srgb, #8a6cff 30%, transparent),
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bi-chrome-bg) 82%, #3a2a7a),
+      var(--bi-chrome-bg)
+    );
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+  text-align: center;
+}
+.sm-portal__ring {
+  width: 168px;
+  height: 168px;
+  margin-bottom: 10px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #7a5cff, #3ec6ff, #b67bff, #ff6fc8, #7a5cff);
+  mask: radial-gradient(closest-side, transparent 58%, #000 61%, #000 98%, transparent);
+  box-shadow: 0 0 40px rgba(140, 110, 255, 0.45);
+  animation: sm-spin 9s linear infinite;
+}
+.sm-portal--locked .sm-portal__ring {
+  background: conic-gradient(from 0deg, #7a5a3a, #c08a4a, #5a3e28, #c08a4a, #7a5a3a);
+  filter: grayscale(0.5) brightness(0.7);
+  animation: none;
+}
+.sm-portal--locked {
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-portal__name {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--bi-chrome-ink);
+}
+.sm-portal--locked .sm-portal__name {
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-portal__rates {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--bi-chrome-bg);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+  color: var(--bi-chrome-ink);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: help;
+}
+.sm-portal__pity {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+}
+.sm-portal__track {
+  width: 80%;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.45);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+}
+.sm-portal__track i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, #ffc23a, #ff8a1f);
+}
+.sm-portal__note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-portal__buttons {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin-top: 10px;
+}
+.sm-pull {
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 10px;
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  color: var(--bi-frame-ink-muted);
+  background: var(--bi-frame-title-bg);
+  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+}
+.sm-pull.is-affordable {
+  color: var(--bi-chrome-bg);
+  background: var(--bi-chrome-accent);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--bi-chrome-accent) 45%, transparent);
+}
+.sm-pull:disabled {
+  cursor: default;
+}
+.sm-pull:focus-visible,
+.sm-portal__rates:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.sm-rates ul {
+  margin: 6px 0;
+  padding: 0;
+  list-style: none;
+}
+.sm-rates p {
+  margin: 0;
+}
+@keyframes sm-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sm-portal__ring {
+    animation: none;
+  }
+}

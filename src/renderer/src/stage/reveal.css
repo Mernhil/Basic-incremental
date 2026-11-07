@@ -1,0 +1,256 @@
+/* Summon reveal (DESIGN.md 6, A6 E). Orb colours are the rarity hues of the reveal; the card
+   faces carry their own rarity and theme tokens. */
+
+.rv {
+  --rv-common: #c9ced6;
+  --rv-rare: #5aa8ff;
+  --rv-epic: #b67bff;
+  --rv-legendary: #ffc23a;
+  --rv-mythic: #ff4fb8;
+  --rv-exotic: #ff8a1f;
+  --rv-void: #8a5cff;
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bi-chrome-bg) 86%, transparent);
+  animation: rv-fade 0.2s ease-out both;
+}
+.rv.is-leaving {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.rv__dialog {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: 24px;
+  max-width: 94vw;
+}
+.rv__swirl {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  width: 360px;
+  height: 360px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #7a5cff, #3ec6ff, #b67bff, #ff6fc8, #7a5cff);
+  mask: radial-gradient(closest-side, transparent 52%, #000 56%, #000 70%, transparent 74%);
+  filter: blur(2px);
+  opacity: 0.9;
+  animation:
+    rv-spin 1.2s linear infinite,
+    rv-swirl-in 0.7s ease-out both;
+  pointer-events: none;
+}
+.rv.is-ready .rv__swirl {
+  opacity: 0.18;
+  transition: opacity 0.5s;
+}
+.rv__row {
+  position: relative;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  max-width: calc(5 * 132px + 4 * 14px);
+  cursor: pointer;
+}
+.rv:not(.is-ready) .rv__row {
+  visibility: hidden;
+}
+
+/* a pull: back (with its orb) and front, flipping inside the frame */
+.rv-slot {
+  --k: 0.75; /* 1 CSS px per card art px */
+  --orb: var(--rv-common);
+  position: relative;
+  width: calc(176px * var(--k));
+  height: calc(248px * var(--k));
+  perspective: 900px;
+  animation: rv-deal 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation-delay: calc(var(--i) * 0.06s + 0.7s);
+}
+.rv__dialog:not(.rv__dialog--ten) .rv-slot {
+  --k: 1.5; /* 2 CSS px per card art px */
+}
+.rv-slot[data-orb='rare'] {
+  --orb: var(--rv-rare);
+}
+.rv-slot[data-orb='epic'] {
+  --orb: var(--rv-epic);
+}
+.rv-slot[data-orb='legendary'] {
+  --orb: var(--rv-legendary);
+}
+.rv-slot[data-orb='mythic'] {
+  --orb: var(--rv-mythic);
+}
+.rv-slot[data-orb='exotic'] {
+  --orb: var(--rv-exotic);
+}
+.rv-slot[data-orb='void'] {
+  --orb: var(--rv-void);
+}
+.rv-slot__inner {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+.rv-slot.is-open .rv-slot__inner {
+  transform: rotateY(180deg);
+}
+.rv-slot__back,
+.rv-slot__front {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  border-radius: calc(12px * var(--k));
+}
+.rv-slot__back {
+  display: grid;
+  place-items: center;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 6px, transparent 6px 12px),
+    linear-gradient(160deg, var(--bi-chrome-active-bg), var(--bi-chrome-bg));
+  box-shadow:
+    inset 0 0 0 2px var(--bi-chrome-accent),
+    0 0 18px color-mix(in srgb, var(--orb) 55%, transparent);
+  transition: box-shadow 0.3s;
+}
+.rv-orb {
+  width: 38%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    #fff,
+    var(--orb) 45%,
+    color-mix(in srgb, var(--orb) 50%, #000)
+  );
+  box-shadow: 0 0 24px var(--orb);
+  animation: rv-orb-drop 0.5s cubic-bezier(0.3, 0.8, 0.4, 1.3) both;
+  animation-delay: calc(var(--i) * 0.06s + 0.85s);
+}
+.rv-slot.is-upgrading .rv-orb {
+  animation: rv-upgrade 0.45s ease-out;
+}
+.rv-slot__front {
+  transform: rotateY(180deg);
+}
+.rv-slot__front > .bi-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+}
+.rv-slot.is-open .rv-slot__front {
+  box-shadow: 0 0 26px color-mix(in srgb, var(--orb) 60%, transparent);
+}
+.rv-slot__plain {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--bi-frame-bg);
+  color: var(--bi-frame-ink);
+  font-weight: 700;
+  text-align: center;
+}
+.rv-slot__tags {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -12px;
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.3s 0.4s;
+}
+.rv-slot.is-open .rv-slot__tags {
+  opacity: 1;
+}
+.rv-slot__tags span {
+  padding: 1px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  background: var(--orb);
+  color: #1a1020;
+}
+.rv__status {
+  min-height: 1.4em;
+  margin: 8px 0 0;
+  color: var(--bi-chrome-ink);
+  font-weight: 700;
+  text-align: center;
+}
+.rv__hint {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--bi-chrome-ink-muted);
+}
+.rv__actions {
+  display: flex;
+  gap: 10px;
+}
+
+@keyframes rv-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes rv-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+@keyframes rv-swirl-in {
+  from {
+    scale: 0.2;
+    opacity: 0;
+  }
+}
+@keyframes rv-deal {
+  from {
+    opacity: 0;
+    translate: 0 -40px;
+    scale: 0.7;
+  }
+}
+@keyframes rv-orb-drop {
+  from {
+    translate: 0 -80px;
+    scale: 0.4;
+    opacity: 0;
+  }
+}
+@keyframes rv-upgrade {
+  0% {
+    filter: brightness(3);
+    scale: 1.6;
+  }
+  100% {
+    filter: none;
+    scale: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rv__swirl,
+  .rv-slot,
+  .rv-orb {
+    animation: none;
+  }
+  .rv-slot__inner {
+    transition: none;
+  }
+}

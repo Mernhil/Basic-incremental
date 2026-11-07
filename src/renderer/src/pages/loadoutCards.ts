@@ -66,6 +66,18 @@ export function loadoutProps(
   };
 }
 
+/** A card face for a reveal or showcase: the card at its rank now, labelled with its job. */
+export function cardFaceProps(
+  content: Content,
+  state: GameState,
+  cardId: string,
+): CardProps | null {
+  const props = loadoutProps(content, state, cardId, 'main', []);
+  const card = content.cardById.get(cardId);
+  if (!props || !card) return null;
+  return { ...props, label: card.job.charAt(0).toUpperCase() + card.job.slice(1) };
+}
+
 /** Key that changes whenever the fighting loadout or one of its cards' rank / level does. */
 export function loadoutKey(state: GameState): string {
   const { main, supports } = state.cards.loadouts.fighting;
