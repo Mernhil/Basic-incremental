@@ -327,13 +327,21 @@ export function pixelNumberMarkup(style: string, text: string, scale = 2): strin
 
 export type StickerChapter = 'gathering' | 'battle' | 'cards' | 'wardrobe' | 'journey';
 export const STICKER_VIEWBOX = '0 0 74 74';
-const STICKERS = COSMETIC_META.stickers as unknown as { achievements: readonly string[] };
+const STICKERS = COSMETIC_META.stickers as unknown as {
+  achievements: readonly string[];
+  numerals: Readonly<Record<string, string>>;
+  art: number;
+  window: readonly [number, number];
+  plate: readonly [number, number, number, number];
+};
 
 /**
- * An achievement sticker as SVG markup on a 74 x 74 viewBox: the style's die-cut base in the
- * chapter colour and the achievement's ~50 px picture on it. Locked stickers use the style's grey
- * base and a grey print of the picture. Pass anything that is not an achievement id (for example
- * the chapter) for a blank sticker.
+ * An achievement sticker as SVG markup on a 74 x 74 viewBox: a mini card (DESIGN.md 13) whose
+ * frame is the style's step on the card-tier ladder and whose band is the chapter colour, with the
+ * achievement's cel-shaded picture in its window and, for tiered achievements, the numeral on its
+ * nameplate (otherwise three chapter pips). Locked stickers are the style's face-down card back
+ * with a padlock. Pass anything that is not an achievement id (for example the chapter) for an
+ * empty card.
  */
 export function stickerArt(
   styleId: SkinStyle | string,
@@ -342,8 +350,15 @@ export function stickerArt(
   unlocked: boolean,
 ): string {
   const base = spriteImage(`cos-sticker-${styleId}-${unlocked ? chapter : 'locked'}`, 0, 0, 74, 74);
-  if (!STICKERS.achievements.includes(achievementId)) return base;
-  return base + spriteImage(`cos-ach-${achievementId}${unlocked ? '' : '-grey'}`, 11, 11, 52, 52);
+  if (!unlocked || !STICKERS.achievements.includes(achievementId)) return base;
+  const [wx, wy] = STICKERS.window;
+  let out = base + spriteImage(`cos-ach-${achievementId}`, wx, wy, STICKERS.art, STICKERS.art);
+  const numeral = STICKERS.numerals[achievementId];
+  if (numeral) {
+    const [px, py, pw, ph] = STICKERS.plate;
+    out += spriteImage(`cos-sticker-${styleId}-plate-${numeral}`, px, py, pw, ph);
+  }
+  return out;
 }
 
 /** The card-shard icon (32 x 32, viewBox '0 0 32 32'). */
