@@ -173,11 +173,15 @@ function checkProduction(
   // Logging is paid for with wood, mining with ore (DESIGN.md 2).
   c.trees.forEach((tree, i) =>
     tree.unlockCost.forEach((cost, j) =>
-      checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'wood'),
+      checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
     ),
   );
   c.mines.forEach((mine, i) =>
-    checkCost(`mines.json › [${i}] › level › cost › resource`, mine.level.cost.resource, 'ore'),
+    checkCost(
+      `mines.json › [${i}] › level › cost › resource`,
+      mine.level.cost.resource,
+      'mine_gem',
+    ),
   );
 
   // Producer ids are shared by modifier scopes and plot contents, so they must be unique.
@@ -191,13 +195,13 @@ function checkProduction(
   const jobs = [
     {
       job: 'logging',
-      kind: 'wood',
+      kind: 'tree_gem',
       starters: c.trees.filter((t) => t.unlockCost.length === 0),
       all: c.trees,
     },
     {
       job: 'mining',
-      kind: 'ore',
+      kind: 'mine_gem',
       starters: c.mines.filter((m) => m.unlockedByDungeon === null),
       all: c.mines,
     },
@@ -396,7 +400,7 @@ function checkCombat(
     const where = `combat.json › damageUpgrades › [${i}]`;
     if (seen.has(u.id)) issues.push(`${where} › id: duplicate id "${u.id}"`);
     seen.add(u.id);
-    checkResource(`${where} › cost › resource`, u.cost.resource, 'ore');
+    checkResource(`${where} › cost › resource`, u.cost.resource, 'mine_gem');
   });
 }
 
@@ -443,8 +447,8 @@ function checkReferences(
       }
     });
   };
-  checkProducer('trees', 'wood', c.trees);
-  checkProducer('mines', 'ore', c.mines);
+  checkProducer('trees', 'tree_gem', c.trees);
+  checkProducer('mines', 'mine_gem', c.mines);
 
   c.mines.forEach((mine, i) => {
     if (mine.unlockedByDungeon && !dungeonIds.has(mine.unlockedByDungeon)) {

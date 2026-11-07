@@ -15,7 +15,7 @@ describe('GameLoop', () => {
     const fast = run(16, 30_000);
     const single = run(30_000, 30_000);
     for (const loop of [slow, fast]) {
-      expect(approxEq(loop.state.resources['oak_wood']!, 40)).toBe(true); // 30 s + one 10 s burst
+      expect(approxEq(loop.state.resources['oak_gem']!, 40)).toBe(true); // 30 s + one 10 s burst
       expect(approxEq(loop.state.bossHp!, single.state.bossHp!)).toBe(true);
       expect(loop.state.stats.playTimeMs).toBe(30_000);
     }
@@ -27,7 +27,7 @@ describe('GameLoop', () => {
     expect(feller.level).toBeGreaterThan(3); // the main growth changed the rate along the way
     for (const frameMs of [16, 250, 1000, 7000]) {
       const loop = run(frameMs, 60_000, freshState);
-      for (const id of ['oak_wood', 'copper_ore']) {
+      for (const id of ['oak_gem', 'copper_gem']) {
         expect(approxEq(loop.state.resources[id]!, single.state.resources[id]!)).toBe(true);
       }
       expect(approxEq(loop.state.bossHp!, single.state.bossHp!)).toBe(true);
@@ -44,10 +44,10 @@ describe('GameLoop', () => {
     loop.step(20_000);
     const before = loop.state;
     loop.step(5_000);
-    expect(loop.state.resources['oak_wood']!.eq(before.resources['oak_wood']!)).toBe(true);
+    expect(loop.state.resources['oak_gem']!.eq(before.resources['oak_gem']!)).toBe(true);
     // Time resumes from the latest seen clock value, not the earlier one.
     loop.step(21_000);
-    expect(loop.state.resources['oak_wood']!.eq(11)).toBe(true);
+    expect(loop.state.resources['oak_gem']!.eq(11)).toBe(true);
   });
 
   it('clamps a huge gap to the maximum step', () => {

@@ -105,7 +105,7 @@ describe('levels (DESIGN.md 11.2, 11.9)', () => {
   it('gives production cards XP per unit harvested, only in their loadout', () => {
     let state = own(bareState(), 'grove_keeper');
     state.cards.loadouts.logging.main = 'apprentice_feller';
-    state = advance(state, content, 5000, rng).state; // 5 Oak Wood, no level-up yet
+    state = advance(state, content, 5000, rng).state; // 5 Oak Gem, no level-up yet
     const perUnit = productionXpPerUnit(content, 'logging');
     expect(state.cards.owned['apprentice_feller']!.xp.eq(perUnit.mul(5))).toBe(true);
     expect(state.cards.owned['grove_keeper']!.xp.eq(0)).toBe(true); // owned, not in a loadout
@@ -179,7 +179,7 @@ describe('levels (DESIGN.md 11.2, 11.9)', () => {
       expect(other.level).toBe(card.level);
       expect(approxEq(other.xp, card.xp)).toBe(true);
     }
-    for (const id of ['oak_wood', 'copper_ore', 'moss_sigil']) {
+    for (const id of ['oak_gem', 'copper_gem', 'moss_sigil']) {
       expect(approxEq(offline.state.resources[id]!, live.resources[id]!)).toBe(true);
     }
     expect(offline.summary!.bossKills).toBe(live.stats.bossKills);
@@ -424,15 +424,15 @@ describe('star-up and tier-up (DESIGN.md 11.9)', () => {
     expect(fighting.requirements.map((r) => [r.kind, r.resource ?? null])).toEqual([
       ['level', null],
       ['resource', 'moss_core'],
-      ['resource', 'iron_ore'],
+      ['resource', 'iron_gem'],
     ]);
     const logging = tierUpCheck(state, content, 'apprentice_feller')!;
     expect(logging.requirements.map((r) => r.resource ?? null)).toEqual([
       null,
       'moss_core',
-      'ironwood',
+      'ironbark_gem',
     ]);
-    state = give(give(state, 'moss_core', 10), 'ironwood', 2000);
+    state = give(give(state, 'moss_core', 10), 'ironbark_gem', 2000);
     state = ok(tierUp(state, content, 'apprentice_feller'));
     expect(state.cards.owned['apprentice_feller']).toMatchObject({
       tier: 'silver',
@@ -443,13 +443,13 @@ describe('star-up and tier-up (DESIGN.md 11.9)', () => {
     expect(tierUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
   });
 
-  it('uses Cinder Cores + Moonwood / Crystal Ore, then Frost Cores + Frost Sigils', () => {
+  it('uses Cinder Cores + Moonwillow Gem / Grotto Gem, then Frost Cores + Frost Sigils', () => {
     const state = freshState();
     own(state, 'cave_digger', { tier: 'silver', stars: 6, level: 60 });
     own(state, 'ember_squire', { tier: 'gold', stars: 6, level: 80 });
     const resources = (id: string) =>
       tierUpCheck(state, content, id)!.requirements.flatMap((r) => r.resource ?? []);
-    expect(resources('cave_digger')).toEqual(['cinder_core', 'crystal_ore']);
+    expect(resources('cave_digger')).toEqual(['cinder_core', 'grotto_gem']);
     expect(resources('ember_squire')).toEqual(['frost_core', 'frost_sigil']);
   });
 });
@@ -588,7 +588,7 @@ describe('saving cards (save format v5)', () => {
 
   it('migrates a v4 save: the three Commons, each leading its job', () => {
     const v4 = {
-      resources: { oak_wood: '12' },
+      resources: { oak_gem: '12' },
       cosmetics: {
         loadout: {
           slots: {},

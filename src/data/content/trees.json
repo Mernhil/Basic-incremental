@@ -3,7 +3,7 @@
     "id": "oak",
     "name": "Oak",
     "tier": 1,
-    "resource": "oak_wood",
+    "resource": "oak_gem",
     "baseRate": "1",
     "unlockCost": []
   },
@@ -11,16 +11,16 @@
     "id": "ironbark",
     "name": "Ironbark",
     "tier": 2,
-    "resource": "ironwood",
+    "resource": "ironbark_gem",
     "baseRate": "0.5",
-    "unlockCost": [{ "resource": "oak_wood", "amount": "500" }]
+    "unlockCost": [{ "resource": "oak_gem", "amount": "500" }]
   },
   {
     "id": "moonwillow",
     "name": "Moonwillow",
     "tier": 3,
-    "resource": "moonwood",
+    "resource": "moonwillow_gem",
     "baseRate": "0.25",
-    "unlockCost": [{ "resource": "ironwood", "amount": "2000" }]
+    "unlockCost": [{ "resource": "ironbark_gem", "amount": "2000" }]
   }
 ]

@@ -65,29 +65,29 @@
     "bronze": {
       "logging": [
         { "resource": "moss_core", "amount": "10" },
-        { "resource": "ironwood", "amount": "2000" }
+        { "resource": "ironbark_gem", "amount": "2000" }
       ],
       "mining": [
         { "resource": "moss_core", "amount": "10" },
-        { "resource": "iron_ore", "amount": "1000" }
+        { "resource": "iron_gem", "amount": "1000" }
       ],
       "fighting": [
         { "resource": "moss_core", "amount": "10" },
-        { "resource": "iron_ore", "amount": "1000" }
+        { "resource": "iron_gem", "amount": "1000" }
       ]
     },
     "silver": {
       "logging": [
         { "resource": "cinder_core", "amount": "20" },
-        { "resource": "moonwood", "amount": "5000" }
+        { "resource": "moonwillow_gem", "amount": "5000" }
       ],
       "mining": [
         { "resource": "cinder_core", "amount": "20" },
-        { "resource": "crystal_ore", "amount": "2000" }
+        { "resource": "grotto_gem", "amount": "2000" }
       ],
       "fighting": [
         { "resource": "cinder_core", "amount": "20" },
-        { "resource": "crystal_ore", "amount": "2000" }
+        { "resource": "grotto_gem", "amount": "2000" }
       ]
     },
     "gold": {

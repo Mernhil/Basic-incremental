@@ -22,7 +22,7 @@ function busyState() {
   state = {
     ...state,
     prestigeCount: 3,
-    resources: { ...state.resources, oak_wood: new Decimal('1.5e500') },
+    resources: { ...state.resources, oak_gem: new Decimal('1.5e500') },
   };
   state.combat.trialBest = { glimmer_trial: 0.5 };
   state.combat.trialAttempt = { elapsedSeconds: 12.5, dealt: new Decimal('3e400') };
@@ -49,7 +49,7 @@ describe('save round-trip', () => {
     const loaded = readSave(createSaveText(state, NOW), content);
     expect(loaded.savedAt).toBe(NOW);
     expect(serializeState(loaded.state)).toEqual(serializeState(state));
-    expect(loaded.state.resources['oak_wood']!.eq(new Decimal('1.5e500'))).toBe(true);
+    expect(loaded.state.resources['oak_gem']!.eq(new Decimal('1.5e500'))).toBe(true);
     expect(loaded.state.combat.trialAttempt.dealt.eq(new Decimal('3e400'))).toBe(true);
     expect(loaded.state.combat.damageLevels).toEqual({ copper_edge: 4999 });
     expect(loaded.state.combat.kills).toEqual({ mossy_cellar: 2 });
@@ -64,9 +64,9 @@ describe('save round-trip', () => {
 
   it('fills in resources that were added to the content after the save', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    delete json.state.resources['copper_ore'];
+    delete json.state.resources['copper_gem'];
     const loaded = readSave(JSON.stringify(json), content);
-    expect(loaded.state.resources['copper_ore']!.eq(0)).toBe(true);
+    expect(loaded.state.resources['copper_gem']!.eq(0)).toBe(true);
   });
 
   it('falls back to a valid dungeon if the saved one no longer exists', () => {
@@ -245,7 +245,7 @@ describe('save format v3: production', () => {
       },
     };
     const { state } = readSave(JSON.stringify(v2), content);
-    expect(state.resources['oak_wood']!.eq(1234.5)).toBe(true);
+    expect(state.resources['oak_gem']!.eq(1234.5)).toBe(true);
     expect(state.resources['moss_sigil']!.eq(7)).toBe(true);
     expect(state.activeDungeonId).toBe('mossy_cellar');
     expect(state.pity).toEqual({ root_warden: 12 });

@@ -121,3 +121,41 @@ describe('v2 -> v3 (production)', () => {
     expect(input).toEqual({ resources: { example_wood: '1' }, producers: { example_tree: 1 } });
   });
 });
+
+describe('v5 -> v6 (woods and ores become gems)', () => {
+  const step = MIGRATIONS[5]!;
+
+  it('renames every wood and ore to its gem and keeps the amounts', () => {
+    const out = step({
+      resources: {
+        oak_wood: '12',
+        ironwood: '3',
+        moonwood: '1',
+        copper_ore: '40',
+        iron_ore: '5',
+        crystal_ore: '2',
+        moss_sigil: '7',
+      },
+      cards: { owned: { moonwood_dryad: { level: 1 } } },
+    });
+    expect(out).toEqual({
+      resources: {
+        oak_gem: '12',
+        ironbark_gem: '3',
+        moonwillow_gem: '1',
+        copper_gem: '40',
+        iron_gem: '5',
+        grotto_gem: '2',
+        moss_sigil: '7',
+      },
+      cards: { owned: { moonwood_dryad: { level: 1 } } },
+    });
+  });
+
+  it('leaves a save without resources alone and does not mutate its input', () => {
+    expect(step({ other: 1 })).toEqual({ other: 1 });
+    const input = { resources: { oak_wood: '1' } };
+    step(input);
+    expect(input).toEqual({ resources: { oak_wood: '1' } });
+  });
+});

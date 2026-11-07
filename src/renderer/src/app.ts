@@ -140,7 +140,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   applyGlobalTheme(content, loop.state.cosmetics.loadout);
 
   // ---- layout ----
-  const KIND_ICON = { wood: 'wood', ore: 'ore', material: 'material', portal: 'portal' } as const;
+  const KIND_ICON = {
+    tree_gem: 'wood',
+    mine_gem: 'ore',
+    material: 'material',
+    portal: 'portal',
+  } as const;
   const currencies: Currency[] = content.resources.map((r) => ({
     id: r.id,
     name: r.name,

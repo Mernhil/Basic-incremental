@@ -9,11 +9,11 @@ const decimal = z
 
 const positiveDecimal = decimal.refine((d) => d.gt(0), { message: 'must be greater than 0' });
 
-const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, e.g. "oak_wood"');
+const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, e.g. "oak_gem"');
 const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
-export const RESOURCE_KINDS = ['wood', 'ore', 'material', 'portal'] as const;
+export const RESOURCE_KINDS = ['tree_gem', 'mine_gem', 'material', 'portal'] as const;
 export const resourceSchema = z.strictObject({
   id,
   name,
