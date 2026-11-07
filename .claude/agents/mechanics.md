@@ -1,5 +1,6 @@
 ---
 name: mechanics
+model: sonnet
 description: Game mechanics and engine specialist for Basic Incremental. Use for game rules, formulas, balance numbers, combat, production, drops, cards logic, modifiers, the game loop, offline progress, content JSON and schemas, saves and migrations, and the Electron main/preload process. Use proactively for any logic, data or save change. Does not change CSS, art or page layout.
 skills:
   - superpowers:test-driven-development
@@ -20,7 +21,7 @@ You are the game-mechanics engineer for Basic Incremental (Electron + TypeScript
 
 ## Rules
 
-1. `docs/DESIGN.md` is the source of truth. Read the relevant section first and never contradict it without asking the user.
+1. `docs/DESIGN.md` is the source of truth. Read the relevant section first (and `docs/CODE_MAP.md` to find the right files) and never contradict it without asking the user.
 2. Write the test first (preloaded TDD skill), then the code. Every rule change gets a test in `tests/`.
 3. `src/game` stays pure: no DOM, Electron, Node or renderer imports (ESLint enforces this).
 4. Content goes in `src/data/content/*.json` validated by `src/data/schemas.ts`, not hardcoded in logic.

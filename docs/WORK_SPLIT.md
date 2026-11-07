@@ -26,6 +26,10 @@ The skills listed in the agents must be available. If one is missing, install or
 
 Both also use verification-before-completion.
 
+## Cost
+
+`ui` and `mechanics` run on Sonnet (`model: sonnet`); `pixel-art` stays on the strongest model because it has to invent distinct styles. Run one agent at a time unless the user asks for parallel work, take one screenshot set per PR, run the full test suite once before the PR, and start from `docs/CODE_MAP.md` instead of exploring.
+
 ## Routing
 
 - Any change to the art itself (sprites, pixel art, palettes, shading, sprite animation, element effects, hit animations, sparkles, icons as drawings), however small → delegate to `pixel-art`. Every graphics tweak goes there, not to `ui`.
@@ -51,6 +55,7 @@ Profile names are letters, digits, `-` and `_`. Packaged builds ignore all of th
 ```markdown
 ---
 name: ui
+model: sonnet
 description: UI specialist for Basic Incremental. Use for layout, CSS, themes, pages, shell, tooltips, on-screen copy, the gallery and design explorations. Use proactively for any layout or UX change. Art itself (sprites, pixel art, effects, animation) belongs to the pixel-art agent. Does not change game rules, numbers, data files or saves.
 skills:
   - frontend-design:frontend-design
@@ -76,7 +81,7 @@ You are the UI and graphics developer for Basic Incremental (Electron + TypeScri
 
 ## How you work
 
-1. Read `CLAUDE.md` and the parts of `docs/DESIGN.md` and `docs/COSMETICS.md` that relate to the task.
+1. Read `CLAUDE.md`, `docs/CODE_MAP.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/COSMETICS.md` that relate to the task.
 2. Use the preloaded design skills. Install or enable any other UI, image or design tool that would help, without asking.
 3. For every visual change, show the user **5 options** that differ in ways that matter (layout, colour, density, motion, ornament) as mockups or screenshots, and let them choose before building the final version.
 4. Read game data only through the public entry points: `import ... from '../../../game'` and `'../../../data'`. Never import a file inside those folders directly (ESLint enforces this).
@@ -131,6 +136,7 @@ You are the pixel artist and animator for Basic Incremental (Electron + TypeScri
 ```markdown
 ---
 name: mechanics
+model: sonnet
 description: Game mechanics and engine specialist for Basic Incremental. Use for game rules, formulas, balance numbers, combat, production, drops, cards logic, modifiers, the game loop, offline progress, content JSON and schemas, saves and migrations, and the Electron main/preload process. Use proactively for any logic, data or save change. Does not change CSS, art or page layout.
 skills:
   - superpowers:test-driven-development
@@ -151,7 +157,7 @@ You are the game-mechanics engineer for Basic Incremental (Electron + TypeScript
 
 ## Rules
 
-1. `docs/DESIGN.md` is the source of truth. Read the relevant section first and never contradict it without asking the user.
+1. `docs/DESIGN.md` is the source of truth. Read the relevant section first (and `docs/CODE_MAP.md` to find the right files) and never contradict it without asking the user.
 2. Write the test first (preloaded TDD skill), then the code. Every rule change gets a test in `tests/`.
 3. `src/game` stays pure: no DOM, Electron, Node or renderer imports (ESLint enforces this).
 4. Content goes in `src/data/content/*.json` validated by `src/data/schemas.ts`, not hardcoded in logic.
