@@ -19,6 +19,8 @@ import {
 } from '../../../game';
 import { applyGlobalTheme, assertVisualsImplemented } from '../theme/apply';
 import { createCard, type CardView } from '../ui/card';
+import { itemArt } from '../art/items';
+import { installArtDefs } from '../art/defs';
 import { playHit, showTick } from '../theme/effects';
 import { defaultRng, resolveGlobal } from '../../../game';
 import './gallery.css';
@@ -51,6 +53,7 @@ interface Shown {
 export function renderGallery(root: HTMLElement = document.body): void {
   const content = loadContent();
   assertVisualsImplemented(content);
+  installArtDefs();
 
   let loadout: CosmeticLoadout = emptyLoadout();
   let rarity: Rarity = 'epic';
@@ -178,6 +181,50 @@ export function renderGallery(root: HTMLElement = document.body): void {
     );
   }
 
+  // every beta card's signature item at its own rarity, then the Ember Blade at every rarity
+  const items = el('section', 'gallery__section');
+  items.append(el('h2', 'gallery__h2', 'Signature items (each card at its own rarity)'));
+  const itemRow = el('div', 'gallery__row');
+  for (const card of content.cards) {
+    const view = createCard({
+      ...cardProps(
+        content,
+        loadout,
+        card.id,
+        { tier: 'bronze', stars: 1 },
+        card.name,
+        'blade',
+        card.rarity,
+      ),
+      item: itemArt(card.item.kind, card.rarity),
+      label: cap(card.rarity),
+    });
+    const fig = el('figure', 'gallery__fig');
+    fig.append(view.el, el('figcaption', '', card.item.name));
+    itemRow.append(fig);
+  }
+  items.append(itemRow, el('h2', 'gallery__h2', 'Ember Blade at every rarity'));
+  const ladder = el('div', 'gallery__row');
+  for (const r of RARITIES) {
+    const view = createCard({
+      ...cardProps(
+        content,
+        loadout,
+        'ember_squire',
+        { tier: 'bronze', stars: 1 },
+        cap(r),
+        'blade',
+        r,
+      ),
+      item: itemArt('sword', r),
+    });
+    const fig = el('figure', 'gallery__fig');
+    fig.append(view.el, el('figcaption', '', cap(r)));
+    ladder.append(fig);
+  }
+  items.append(ladder);
+  page.append(items);
+
   // star 5 -> 6 transition demo
   const demoRank: Rank = { tier: 'gold', stars: 5 };
   const button = el('button', 'gallery__button', 'Raise to star 6') as HTMLButtonElement;
@@ -252,6 +299,7 @@ function cardProps(
     label: 'Fighting',
     job: 'fighting',
     emblem,
+    item: itemArt(emblem === 'gem' ? 'shield' : 'sword', rarity),
     rank,
     stats: [
       { label: 'Power', value: '12.4K' },

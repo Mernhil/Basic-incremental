@@ -38,6 +38,8 @@ export interface CardEntry {
   job: Job;
   rarity: Rarity;
   emblem: string;
+  /** Signature item markup (art/items.ts). */
+  item: string;
   owned: boolean;
   /** Owned cards only; unowned cards show their starting rank greyed out. */
   rank: Rank;

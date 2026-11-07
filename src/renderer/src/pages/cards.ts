@@ -108,6 +108,7 @@ export function createCardsPage(
       label: JOB_NAMES[e.job],
       job: e.job,
       emblem: e.emblem,
+      item: e.item,
       rank: e.rank,
       stats: e.owned
         ? e.stats

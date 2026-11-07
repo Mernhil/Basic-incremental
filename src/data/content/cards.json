@@ -4,15 +4,33 @@
     "name": "Ember Squire",
     "job": "fighting",
     "rarity": "common",
+    "element": "fire",
+    "item": {
+      "kind": "sword",
+      "name": "Ember Blade"
+    },
     "main": {
       "description": "Steady hits every 1 s",
       "modifiers": [
-        { "stat": "burst.interval", "kind": "set", "value": "1", "scope": { "job": "fighting" } }
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
       ]
     },
     "support": {
       "description": "+5% damage",
-      "modifiers": [{ "stat": "combat.damage", "kind": "percent", "value": "5" }]
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
     }
   },
   {
@@ -20,11 +38,27 @@
     "name": "Shield Warden",
     "job": "fighting",
     "rarity": "rare",
+    "element": "light",
+    "item": {
+      "kind": "shield",
+      "name": "Bulwark"
+    },
     "main": {
       "description": "Steady hits every 1 s, +10% damage",
       "modifiers": [
-        { "stat": "burst.interval", "kind": "set", "value": "1", "scope": { "job": "fighting" } },
-        { "stat": "combat.damage", "kind": "percent", "value": "10" }
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
       ]
     },
     "support": {
@@ -34,7 +68,9 @@
           "stat": "burst.fill",
           "kind": "flat",
           "value": "1",
-          "scope": { "job": "fighting" },
+          "scope": {
+            "job": "fighting"
+          },
           "scale": "none"
         }
       ]
@@ -45,16 +81,41 @@
     "name": "Storm Duelist",
     "job": "fighting",
     "rarity": "epic",
+    "element": "storm",
+    "item": {
+      "kind": "twin_blades",
+      "name": "Twin Storm Blades"
+    },
     "main": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
-        { "stat": "burst.interval", "kind": "set", "value": "0.5", "scope": { "job": "fighting" } },
-        { "stat": "burst.fill", "kind": "mult", "value": "2", "scope": { "job": "fighting" } }
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
       ]
     },
     "support": {
       "description": "+12% damage",
-      "modifiers": [{ "stat": "combat.damage", "kind": "percent", "value": "12" }]
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
     }
   },
   {
@@ -62,18 +123,45 @@
     "name": "Dawnblade Regent",
     "job": "fighting",
     "rarity": "legendary",
+    "element": "fire",
+    "item": {
+      "kind": "greatsword",
+      "name": "Dawnblade"
+    },
     "main": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
-        { "stat": "burst.interval", "kind": "set", "value": "2", "scope": { "job": "fighting" } },
-        { "stat": "burst.power", "kind": "set", "value": "15", "scope": { "job": "fighting" } }
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
       ]
     },
     "support": {
       "description": "+15% damage, +10% rare drop chance",
       "modifiers": [
-        { "stat": "combat.damage", "kind": "percent", "value": "15" },
-        { "stat": "drops.rareChance", "kind": "percent", "value": "10" }
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
       ]
     }
   },
@@ -82,7 +170,14 @@
     "name": "Apprentice Feller",
     "job": "logging",
     "rarity": "common",
-    "main": { "description": "Steady output" },
+    "element": "nature",
+    "item": {
+      "kind": "hatchet",
+      "name": "Hatchet"
+    },
+    "main": {
+      "description": "Steady output"
+    },
     "support": {
       "description": "+5% logging",
       "modifiers": [
@@ -90,7 +185,9 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "5",
-          "scope": { "job": "logging" }
+          "scope": {
+            "job": "logging"
+          }
         }
       ]
     }
@@ -100,6 +197,11 @@
     "name": "Grove Keeper",
     "job": "logging",
     "rarity": "rare",
+    "element": "nature",
+    "item": {
+      "kind": "staff",
+      "name": "Sapling Staff"
+    },
     "main": {
       "description": "+10% logging",
       "modifiers": [
@@ -107,7 +209,9 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "10",
-          "scope": { "job": "logging" }
+          "scope": {
+            "job": "logging"
+          }
         }
       ]
     },
@@ -118,7 +222,9 @@
           "stat": "burst.fill",
           "kind": "flat",
           "value": "1",
-          "scope": { "job": "logging" },
+          "scope": {
+            "job": "logging"
+          },
           "scale": "none"
         }
       ]
@@ -129,10 +235,22 @@
     "name": "Elder Treant",
     "job": "logging",
     "rarity": "epic",
+    "element": "nature",
+    "item": {
+      "kind": "maul",
+      "name": "Heartwood Maul"
+    },
     "main": {
       "description": "Harvest bursts give 15 s of output instead of 10 s",
       "modifiers": [
-        { "stat": "burst.power", "kind": "set", "value": "15", "scope": { "job": "logging" } }
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "logging"
+          }
+        }
       ]
     },
     "support": {
@@ -142,7 +260,9 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "12",
-          "scope": { "job": "logging" }
+          "scope": {
+            "job": "logging"
+          }
         }
       ]
     }
@@ -152,6 +272,11 @@
     "name": "Moonwood Dryad",
     "job": "logging",
     "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "bow",
+      "name": "Moon Bow"
+    },
     "main": {
       "description": "+30% logging, harvest gauge fills faster",
       "modifiers": [
@@ -159,9 +284,18 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "30",
-          "scope": { "job": "logging" }
+          "scope": {
+            "job": "logging"
+          }
         },
-        { "stat": "burst.fill", "kind": "mult", "value": "1.5", "scope": { "job": "logging" } }
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "logging"
+          }
+        }
       ]
     },
     "support": {
@@ -171,7 +305,9 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "20",
-          "scope": { "job": "logging" }
+          "scope": {
+            "job": "logging"
+          }
         }
       ]
     }
@@ -181,11 +317,25 @@
     "name": "Cave Digger",
     "job": "mining",
     "rarity": "common",
-    "main": { "description": "Steady output" },
+    "element": "earth",
+    "item": {
+      "kind": "pickaxe",
+      "name": "Pickaxe"
+    },
+    "main": {
+      "description": "Steady output"
+    },
     "support": {
       "description": "+5% mining",
       "modifiers": [
-        { "stat": "production.rate", "kind": "percent", "value": "5", "scope": { "job": "mining" } }
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "5",
+          "scope": {
+            "job": "mining"
+          }
+        }
       ]
     }
   },
@@ -194,6 +344,11 @@
     "name": "Gem Cutter",
     "job": "mining",
     "rarity": "rare",
+    "element": "crystal",
+    "item": {
+      "kind": "chisel",
+      "name": "Cutting Chisel"
+    },
     "main": {
       "description": "+10% mining",
       "modifiers": [
@@ -201,7 +356,9 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "10",
-          "scope": { "job": "mining" }
+          "scope": {
+            "job": "mining"
+          }
         }
       ]
     },
@@ -212,7 +369,9 @@
           "stat": "burst.fill",
           "kind": "flat",
           "value": "1",
-          "scope": { "job": "mining" },
+          "scope": {
+            "job": "mining"
+          },
           "scale": "none"
         }
       ]
@@ -223,15 +382,29 @@
     "name": "Geode Golem",
     "job": "mining",
     "rarity": "legendary",
+    "element": "crystal",
+    "item": {
+      "kind": "geode_hammer",
+      "name": "Geode Hammer"
+    },
     "main": {
       "description": "Harvest bursts give 15 s of output, +15% mining",
       "modifiers": [
-        { "stat": "burst.power", "kind": "set", "value": "15", "scope": { "job": "mining" } },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "mining"
+          }
+        },
         {
           "stat": "production.rate",
           "kind": "percent",
           "value": "15",
-          "scope": { "job": "mining" }
+          "scope": {
+            "job": "mining"
+          }
         }
       ]
     },
@@ -242,7 +415,9 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "15",
-          "scope": { "job": "mining" }
+          "scope": {
+            "job": "mining"
+          }
         }
       ]
     }
@@ -252,6 +427,11 @@
     "name": "Core Titan",
     "job": "mining",
     "rarity": "exotic",
+    "element": "void",
+    "item": {
+      "kind": "gauntlet",
+      "name": "Core Gauntlet"
+    },
     "main": {
       "description": "+40% mining, harvest gauge fills faster",
       "modifiers": [
@@ -259,9 +439,18 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "40",
-          "scope": { "job": "mining" }
+          "scope": {
+            "job": "mining"
+          }
         },
-        { "stat": "burst.fill", "kind": "mult", "value": "1.5", "scope": { "job": "mining" } }
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "mining"
+          }
+        }
       ]
     },
     "support": {
@@ -271,9 +460,15 @@
           "stat": "production.rate",
           "kind": "percent",
           "value": "25",
-          "scope": { "job": "mining" }
+          "scope": {
+            "job": "mining"
+          }
         },
-        { "stat": "drops.materialChance", "kind": "percent", "value": "5" }
+        {
+          "stat": "drops.materialChance",
+          "kind": "percent",
+          "value": "5"
+        }
       ]
     }
   }

@@ -49,6 +49,7 @@ import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
 import { gemCoin, mineTile, svg, treeTile } from './art/gems';
 import { installArtDefs } from './art/defs';
+import { itemArt } from './art/items';
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -106,6 +107,7 @@ function loadoutProps(
     label: role === 'main' ? COPY.table.main : COPY.table.support,
     job: card.job,
     emblem: role === 'main' ? 'blade' : 'gem',
+    item: itemArt(card.item.kind, card.rarity),
     rank,
     stats,
     theme: resolveCard(content, state.cosmetics.loadout, {
