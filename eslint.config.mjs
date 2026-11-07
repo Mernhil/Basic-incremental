@@ -44,7 +44,8 @@ export default tseslint.config(
         {
           patterns: [
             {
-              group: ['**/game/*', '**/data/*'],
+              // game/dev is the dev cheats entry: import it only behind import.meta.env.DEV.
+              group: ['**/game/*', '!**/game/dev', '**/data/*'],
               message: "Import from 'game' or 'data' (their index.ts), not their internal files.",
             },
           ],

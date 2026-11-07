@@ -1,0 +1,121 @@
+import { describe, expect, it } from 'vitest';
+import {
+  DEV_CHEATS_MARKER,
+  devAddAccountXp,
+  devAdvanceTime,
+  devGrant,
+  devGrantCosmetic,
+  devOptions,
+  devSetCardRank,
+  devSetDungeonCleared,
+} from '../src/game/dev';
+import { isProducerUnlocked } from '../src/game';
+import { content, freshState } from './helpers';
+
+describe('dev cheats (dev builds only)', () => {
+  it('grants an amount of a resource without touching the input state', () => {
+    const state = freshState();
+    const result = devGrant(state, content, { resource: 'moss_sigil', amount: 250 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.resources['moss_sigil']!.toNumber()).toBe(250);
+    expect(state.resources['moss_sigil']!.toNumber()).toBe(0);
+  });
+
+  it('accepts a decimal string amount and refuses unknown resources or bad amounts', () => {
+    const big = devGrant(freshState(), content, { resource: 'copper_gem', amount: '1e30' });
+    expect(big.ok && big.state.resources['copper_gem']!.toString()).toBe('1e30');
+    expect(devGrant(freshState(), content, { resource: 'nope', amount: 1 })).toEqual({
+      ok: false,
+      reason: 'unknown',
+    });
+    expect(devGrant(freshState(), content, { resource: 'oak_gem', amount: 'x' }).ok).toBe(false);
+  });
+
+  it('grants every resource at once with resource "all"', () => {
+    const result = devGrant(freshState(), content, { resource: 'all', amount: 5 });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    for (const r of content.resources) expect(result.state.resources[r.id]!.toNumber()).toBe(5);
+  });
+
+  it('marks a dungeon cleared with its unlocks, and can un-clear it', () => {
+    const result = devSetDungeonCleared(freshState(), content, 'mossy_cellar', true);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.clearedDungeons).toContain('mossy_cellar');
+    expect(result.state.combat.kills['mossy_cellar']).toBeGreaterThanOrEqual(1);
+    expect(isProducerUnlocked(result.state, content, 'mining', 'iron_deeps')).toBe(true);
+    const undone = devSetDungeonCleared(result.state, content, 'mossy_cellar', false);
+    expect(undone.ok && undone.state.clearedDungeons).toEqual([]);
+    expect(devSetDungeonCleared(freshState(), content, 'nowhere', true).ok).toBe(false);
+  });
+
+  it('clears the Glimmer Trial with a best score of 100%', () => {
+    const result = devSetDungeonCleared(freshState(), content, 'glimmer_trial', true);
+    expect(result.ok && result.state.combat.trialBest['glimmer_trial']).toBe(1);
+  });
+
+  it('sets a card rank and level, owning the card if needed, level clamped to the cap', () => {
+    const result = devSetCardRank(freshState(), content, 'dawnblade_regent', {
+      tier: 'gold',
+      stars: 6,
+      level: 999,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const owned = result.state.cards.owned['dawnblade_regent']!;
+    expect([owned.tier, owned.stars, owned.level]).toEqual(['gold', 6, 80]);
+    expect(devSetCardRank(freshState(), content, 'nobody', { tier: 'gold', stars: 1 }).ok).toBe(
+      false,
+    );
+    expect(
+      devSetCardRank(freshState(), content, 'ember_squire', { tier: 'gold', stars: 7 }).ok,
+    ).toBe(false);
+  });
+
+  it('adds account XP and settles the level-ups with their track rewards', () => {
+    const result = devAddAccountXp(freshState(), content, 1e6);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.account.level).toBeGreaterThan(10);
+    // Level 5 on the track gives 10 Moss Sigils.
+    expect(result.state.resources['moss_sigil']!.toNumber()).toBeGreaterThanOrEqual(10);
+  });
+
+  it('grants a cosmetic (new, then a copy)', () => {
+    const once = devGrantCosmetic(freshState(), content, 'holo_hex');
+    expect(once.ok && once.state.cosmetics.owned['holo_hex']).toEqual({ level: 1, copies: 0 });
+    if (!once.ok) return;
+    const twice = devGrantCosmetic(once.state, content, 'holo_hex');
+    expect(twice.ok && twice.state.cosmetics.owned['holo_hex']!.copies).toBe(1);
+    expect(devGrantCosmetic(freshState(), content, 'nothing').ok).toBe(false);
+  });
+
+  it('advances time with the real game rules', () => {
+    const result = devAdvanceTime(freshState(), content, 60);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.state.stats.playTimeMs).toBe(60_000);
+    expect(result.state.resources['oak_gem']!.toNumber()).toBeGreaterThan(0);
+    expect(devAdvanceTime(freshState(), content, -1).ok).toBe(false);
+  });
+
+  it('lists what a dev panel can pick from', () => {
+    const options = devOptions(content);
+    expect(options.resources.map((r) => r.id)).toContain('starlight');
+    expect(options.dungeons.map((d) => d.id)).toEqual([
+      'mossy_cellar',
+      'ember_crypt',
+      'frostspire_vault',
+      'glimmer_trial',
+    ]);
+    expect(options.cards).toHaveLength(content.cards.length);
+    expect(options.tiers).toEqual(['bronze', 'silver', 'gold', 'prismatic']);
+    expect(options.cosmetics.length).toBeGreaterThan(0);
+  });
+
+  it('carries a marker string the release bundle check looks for', () => {
+    expect(DEV_CHEATS_MARKER).toMatch(/^bi-dev-cheats/);
+  });
+});

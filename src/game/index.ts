@@ -1,3 +1,5 @@
+// Dev cheats are NOT exported here: they live in the separate `game/dev` entry, loaded only
+// behind `import.meta.env.DEV` so release bundles never contain them (see dev.ts).
 export { GAME_TITLE, formatVersionLabel } from './meta';
 export * from './num';
 export * from './format';
