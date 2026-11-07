@@ -91,3 +91,10 @@ Brave Frontier units are mid-resolution pixel sprites (roughly 100 to 150 px tal
 - **Parts overlap at different scales.** A big weapon in front of a small body, wings and tails behind it. Overlap order is used for depth instead of shadows.
 - **Small faces: eyes and a colour accent, nothing else.** At this size a face is a few pixels; hair colour and headgear carry identity.
 - **Gems and orbs: ring, core, glint.** A darker rim, a lighter body, a 1 to 2 px white core, and a plus-shaped sparkle at the peak.
+
+### Additions from the graphics session (2026-11-07, same Brave Frontier source)
+
+- Scale: a unit's body is about 90 to 110 px tall; oversized weapons, wings and auras push the whole sprite to about 250 to 300 × 180.
+- Lines between parts use the darkest tone of that material, not the ink, so parts separate without a colouring-book look; the ink stays on the silhouette.
+- Gold trim around plates is 1 to 2 px wide with a one-pixel bright line on its upper edge.
+- Tone shapes on large areas must follow the form (folds, plates). Concentric tone rings from a radial gradient read as banding (seen on the first Cinder Lich robe); break big areas with fold lines or hand-placed shapes.
