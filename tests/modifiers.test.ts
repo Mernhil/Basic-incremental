@@ -29,6 +29,7 @@ import portals from '../src/data/content/portals.json';
 import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
+import progression from '../src/data/content/progression.json';
 import { constantRng, content, freshState } from './helpers';
 
 const mod = (
@@ -201,6 +202,7 @@ describe('modifier data is validated', () => {
       rarities,
       wearRules,
       sets,
+      progression,
     });
   const issues = (input: RawContent): string[] => {
     try {

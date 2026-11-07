@@ -1,0 +1,43 @@
+{
+  "gemMastery": {
+    "thresholds": ["1e3", "1e5", "1e7", "1e9"],
+    "perTier": [{ "stat": "production.rate", "kind": "percent", "value": "10" }]
+  },
+  "bossMastery": {
+    "thresholds": [10, 100, 1000, 10000],
+    "perTier": [
+      { "stat": "combat.damage", "kind": "percent", "value": "5" },
+      { "stat": "drops.portalMultiplier", "kind": "percent", "value": "10" },
+      { "stat": "drops.materialChance", "kind": "percent", "value": "10" }
+    ]
+  },
+  "trialMastery": {
+    "thresholds": [0.25, 0.5, 0.75, 1],
+    "perTier": [
+      { "stat": "combat.damage", "kind": "percent", "value": "5" },
+      { "stat": "trial.reward", "kind": "percent", "value": "10" }
+    ]
+  },
+  "tileStages": {
+    "logging": { "source": "expansions", "every": 5 },
+    "mining": { "source": "mineLevel" }
+  },
+  "evolutions": {
+    "from": { "tier": "gold", "stars": 6 },
+    "items": [
+      { "kind": "flameblade", "name": "Flameblade" },
+      { "kind": "rootbloom_staff", "name": "Rootbloom Staff" },
+      { "kind": "soul_reaper", "name": "Soul Reaper" }
+    ]
+  },
+  "goals": [
+    { "kind": "clear_dungeon", "page": "dungeons" },
+    { "kind": "clear_trial", "page": "dungeons" },
+    { "kind": "unlock_tree", "page": "production" },
+    { "kind": "mine_milestone", "page": "production" },
+    { "kind": "damage_milestone", "page": "dungeons" },
+    { "kind": "gem_mastery", "page": "production", "minProgress": 0.25 },
+    { "kind": "boss_mastery", "page": "dungeons", "minProgress": 0.25 },
+    { "kind": "star_up", "page": "cards" }
+  ]
+}

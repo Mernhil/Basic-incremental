@@ -1,9 +1,20 @@
-import type { Card, CardModifierData, Content, Dungeon, Job, ModifierData, Rank } from '../data';
+import type {
+  Card,
+  CardModifierData,
+  Content,
+  Dungeon,
+  ItemKind,
+  Job,
+  ModifierData,
+  Rank,
+  UniqueItemKind,
+} from '../data';
 import { JOBS, MAX_STARS, RANK_TIERS } from '../data/schemas';
+import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { finalPrice, pay, type Price } from './production';
-import type { CardDrop, CardGain, TickReport } from './report';
+import type { CardDrop, CardGain, TickReport, TierUp } from './report';
 import type { Rng } from './rng';
 import {
   cloneState,
@@ -50,13 +61,84 @@ export type CardFailure =
   | 'requirements';
 
 export type CardResult = { ok: true; state: GameState } | { ok: false; reason: CardFailure };
+/** A star-up or tier-up: like CardResult, plus the tier-up moments it caused (a new card tier,
+ *  the unique evolution). */
+export type CardUpgradeResult =
+  { ok: true; state: GameState; tierUps: TierUp[] } | { ok: false; reason: CardFailure };
 
-const fail = (reason: CardFailure): CardResult => ({ ok: false, reason });
+const fail = (reason: CardFailure): { ok: false; reason: CardFailure } => ({ ok: false, reason });
 
 // ---- ranks, levels and power -----------------------------------------------------------------
 
 export function cardRank(owned: OwnedCard): Rank {
   return { tier: owned.tier, stars: owned.stars };
+}
+
+/** Whether `rank` is at least `min` (tier first, then stars). */
+export function rankAtLeast(rank: Rank, min: Rank): boolean {
+  const t = RANK_TIERS.indexOf(rank.tier) - RANK_TIERS.indexOf(min.tier);
+  return t > 0 || (t === 0 && rank.stars >= min.stars);
+}
+
+/** The item drawn inside a card (DESIGN.md 13, 16 E6). */
+export interface CardItem {
+  kind: ItemKind | UniqueItemKind;
+  name: string;
+  /** True for a unique evolution. */
+  unique: boolean;
+}
+
+/** The item to draw for a card at its rank: its unique evolution from the evolution rank (Gold
+ *  ★6) on, else its generic item. Not owned = the generic item. Null for unknown ids. */
+export function cardItem(
+  content: Content,
+  cardId: string,
+  owned: OwnedCard | null | undefined,
+): CardItem | null {
+  const card = content.cardById.get(cardId);
+  if (!card) return null;
+  const evo = content.progression.evolutions;
+  const unique = card.evolution ? evo.items.find((i) => i.kind === card.evolution) : undefined;
+  if (unique && owned && rankAtLeast(cardRank(owned), evo.from)) {
+    return { kind: unique.kind, name: unique.name, unique: true };
+  }
+  return { kind: card.item.kind, name: card.item.name, unique: false };
+}
+
+/** Just the item kind to draw (see cardItem). Null for unknown ids. */
+export function cardItemKind(
+  content: Content,
+  cardId: string,
+  owned: OwnedCard | null | undefined,
+): ItemKind | UniqueItemKind | null {
+  return cardItem(content, cardId, owned)?.kind ?? null;
+}
+
+/** A card tier as a metal index on the ladder (bronze 1 .. prismatic 4). */
+function tierMetalIndex(tier: OwnedCard['tier']): number {
+  return RANK_TIERS.indexOf(tier) + 1;
+}
+
+/** The evolution moment if the card's item became unique between two ranks. */
+function evolutionTierUps(
+  content: Content,
+  cardId: string,
+  before: OwnedCard,
+  after: OwnedCard,
+): TierUp[] {
+  const was = cardItem(content, cardId, before)?.unique ?? false;
+  const now = cardItem(content, cardId, after)?.unique ?? false;
+  return !was && now
+    ? [
+        {
+          kind: 'evolution',
+          id: cardId,
+          from: 0,
+          to: 1,
+          metal: metalOf(tierMetalIndex(after.tier)),
+        },
+      ]
+    : [];
 }
 
 /** Prismatic ★6, the top rank for now. */
@@ -438,17 +520,18 @@ export function starUp(
   content: Content,
   cardId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CardResult {
+): CardUpgradeResult {
   const result = starUpCheck(state, content, cardId, modifiers);
   if (!result) return fail(content.cardById.has(cardId) ? 'not-owned' : 'unknown');
   if (!result.available) return fail('unavailable');
   if (!result.met) return fail('requirements');
   const card = content.cardById.get(cardId)!;
-  const next = pay(state, starUpCost(content, card, state.cards.owned[cardId]!, modifiers));
+  const before = state.cards.owned[cardId]!;
+  const next = pay(state, starUpCost(content, card, before, modifiers));
   const owned = next.cards.owned[cardId]!;
   owned.duplicates -= content.cardRules.starUp.duplicates;
   owned.stars += 1;
-  return { ok: true, state: next };
+  return { ok: true, state: next, tierUps: evolutionTierUps(content, cardId, before, owned) };
 }
 
 /** Pays the tier-up costs and moves the card to the next tier at ★1. Level and XP carry over. */
@@ -457,17 +540,25 @@ export function tierUp(
   content: Content,
   cardId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CardResult {
+): CardUpgradeResult {
   const result = tierUpCheck(state, content, cardId, modifiers);
   if (!result) return fail(content.cardById.has(cardId) ? 'not-owned' : 'unknown');
   if (!result.available) return fail('unavailable');
   if (!result.met) return fail('requirements');
   const card = content.cardById.get(cardId)!;
-  const next = pay(state, tierUpCost(content, card, state.cards.owned[cardId]!, modifiers));
+  const before = state.cards.owned[cardId]!;
+  const next = pay(state, tierUpCost(content, card, before, modifiers));
   const owned = next.cards.owned[cardId]!;
   owned.tier = result.to!.tier;
   owned.stars = 1;
-  return { ok: true, state: next };
+  const from = tierMetalIndex(before.tier);
+  const to = tierMetalIndex(owned.tier);
+  const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];
+  return {
+    ok: true,
+    state: next,
+    tierUps: [...tierUps, ...evolutionTierUps(content, cardId, before, owned)],
+  };
 }
 
 // ---- gaining cards ---------------------------------------------------------------------------

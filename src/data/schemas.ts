@@ -188,6 +188,10 @@ export const STATS = [
   'combat.critChance',
   /** Damage multiplier of a crit (at least 1). Scope: dungeon. */
   'combat.critDamage',
+  /** Multiplier on the portal resource (sigils) units of each kill, base 1; a fraction is
+   *  rounded up with that chance, so the average is exact (DESIGN.md 16, E3). Scope: dungeon,
+   *  resource. */
+  'drops.portalMultiplier',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -272,6 +276,11 @@ export const ITEM_KINDS = [
   'gauntlet',
 ] as const;
 
+/** Unique ★6 evolutions (DESIGN.md 13, 16 E6): drawn in place of a card's generic item. */
+export const UNIQUE_ITEM_KINDS = ['flameblade', 'rootbloom_staff', 'soul_reaper'] as const;
+export type ItemKind = (typeof ITEM_KINDS)[number];
+export type UniqueItemKind = (typeof UNIQUE_ITEM_KINDS)[number];
+
 export const cardSchema = z.strictObject({
   id,
   name,
@@ -279,6 +288,9 @@ export const cardSchema = z.strictObject({
   rarity: z.enum(RARITIES),
   element: z.enum(ELEMENTS),
   item: z.strictObject({ kind: z.enum(ITEM_KINDS), name }),
+  /** Unique item that replaces `item` from the evolution rank on (progression.json); none = the
+   *  card keeps its generic item. */
+  evolution: z.enum(UNIQUE_ITEM_KINDS).optional(),
   /** Used when the card leads its job's loadout. */
   main: cardEffectSchema,
   /** Used when the card is in one of the 3 support slots. */
@@ -455,6 +467,111 @@ export const trialSchema = z
     message: 'tiers must be in increasing score order',
     path: ['tiers'],
   });
+
+// ---- Progression (DESIGN.md 16) ----------------------------------------------------------------
+
+/** The metal ladder (E1): tier 0..4 of anything with tiers. */
+export const METALS = ['stone', 'bronze', 'silver', 'gold', 'prismatic'] as const;
+export type Metal = (typeof METALS)[number];
+/** Tiers above stone: one threshold each (bronze, silver, gold, prismatic). */
+const MASTERY_TIERS = METALS.length - 1;
+
+/** A mastery bonus per tier reached: `value` is multiplied by the tier. The scope is filled in
+ *  by the game (the gem's resource, or the boss's dungeon). */
+const masteryBonusSchema = z.strictObject({
+  stat: z.enum(STATS),
+  kind: z.enum(['flat', 'percent']),
+  value: decimal,
+});
+
+const increasing = (list: (number | Decimal)[]): boolean =>
+  list.every((v, i) => i === 0 || new Decimal(v).gt(list[i - 1]!));
+
+/** Pages a goal can jump to (the renderer's page ids). */
+export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon'] as const;
+export type GoalPage = (typeof GOAL_PAGES)[number];
+/**
+ * Goal rules (E8). Each kind finds its candidates in the state:
+ * - `clear_dungeon`: unlocked dungeons not cleared yet (with what the clear opens);
+ * - `clear_trial`: unlocked special dungeons not cleared yet;
+ * - `unlock_tree`: tree kinds not bought yet;
+ * - `mine_milestone` / `damage_milestone`: the next level milestone of each mine type / line;
+ * - `gem_mastery` / `boss_mastery`: the next mastery tier of each gem / boss;
+ * - `star_up`: owned cards with the duplicate for their next star, missing level or materials.
+ */
+export const GOAL_KINDS = [
+  'clear_dungeon',
+  'clear_trial',
+  'unlock_tree',
+  'mine_milestone',
+  'damage_milestone',
+  'gem_mastery',
+  'boss_mastery',
+  'star_up',
+] as const;
+export type GoalKind = (typeof GOAL_KINDS)[number];
+
+export const progressionSchema = z.strictObject({
+  /** E2: tier from the lifetime total harvested of each production gem, kept through prestige. */
+  gemMastery: z.strictObject({
+    thresholds: z
+      .array(positiveDecimal)
+      .length(MASTERY_TIERS)
+      .refine(increasing, { message: 'thresholds must increase' }),
+    perTier: z.array(masteryBonusSchema),
+  }),
+  /** E3: medal tier from kills per dungeon (boss), kept through prestige. */
+  bossMastery: z.strictObject({
+    thresholds: z
+      .array(z.number().int().min(1))
+      .length(MASTERY_TIERS)
+      .refine(increasing, { message: 'thresholds must increase' }),
+    perTier: z.array(masteryBonusSchema),
+  }),
+  /** E3: special dungeons take their medal tier from their best score (0..1) instead. */
+  trialMastery: z.strictObject({
+    thresholds: z
+      .array(z.number().gt(0).max(1))
+      .length(MASTERY_TIERS)
+      .refine(increasing, { message: 'thresholds must increase' }),
+    perTier: z.array(masteryBonusSchema),
+  }),
+  /**
+   * E4: what grows each job's tiles. `mineLevel`: the mine type's level milestones (11.12);
+   * `expansions`: one stage every `every` plots / slots bought (trees have no levels). Both reset
+   * on prestige.
+   */
+  tileStages: z.strictObject({
+    logging: z.discriminatedUnion('source', [
+      z.strictObject({ source: z.literal('expansions'), every: z.number().int().min(1) }),
+      z.strictObject({ source: z.literal('mineLevel') }),
+    ]),
+    mining: z.discriminatedUnion('source', [
+      z.strictObject({ source: z.literal('expansions'), every: z.number().int().min(1) }),
+      z.strictObject({ source: z.literal('mineLevel') }),
+    ]),
+  }),
+  /** E6: unique evolutions. Cards name theirs in cards.json; shown from rank `from` on. */
+  evolutions: z.strictObject({
+    from: rankSchema,
+    items: z.array(z.strictObject({ kind: z.enum(UNIQUE_ITEM_KINDS), name })).min(1),
+  }),
+  /** E8: the goal tracker's rules, in no particular order (goals are sorted by time left). */
+  goals: z
+    .array(
+      z.strictObject({
+        kind: z.enum(GOAL_KINDS),
+        /** Page the goal jumps to when clicked. */
+        page: z.enum(GOAL_PAGES),
+        /** Only show candidates at least this far along (0..1). */
+        minProgress: z.number().min(0).max(1).default(0),
+      }),
+    )
+    .min(1),
+});
+export type Progression = z.output<typeof progressionSchema>;
+export type MasteryBonus = z.output<typeof masteryBonusSchema>;
+export type GoalRule = Progression['goals'][number];
 
 /** One job's burst gauge (DESIGN.md 11.3, 11.8). Each value is read through its `burst.*` stat. */
 const burstConfigSchema = z.strictObject({
@@ -725,6 +842,7 @@ export const contentSchemas = {
   rarities: z.array(rarityStyleSchema),
   wearRules: wearRulesSchema,
   sets: z.array(cosmeticSetSchema),
+  progression: progressionSchema,
 } as const;
 
 export type Resource = z.output<typeof resourceSchema>;

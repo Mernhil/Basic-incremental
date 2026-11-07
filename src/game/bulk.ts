@@ -11,6 +11,8 @@ import {
   type Price,
   type ProductionFailure,
 } from './production';
+import type { TierUp } from './report';
+import { expansionStageTierUps, milestoneTierUps } from './stages';
 import type { GameState } from './state';
 
 /**
@@ -45,7 +47,14 @@ export interface BuyOffer {
 
 /** A bulk purchase: the new state and the levels bought, or why it failed. */
 export type BulkBuyResult<F extends string> =
-  { ok: true; state: GameState; bought: number } | { ok: false; reason: F };
+  | {
+      ok: true;
+      state: GameState;
+      bought: number;
+      /** Milestones crossed (damage line, mine level) or tree tile stage reached (plots). */
+      tierUps: TierUp[];
+    }
+  | { ok: false; reason: F };
 
 /** The per-level price terms of a curve: growth and cost multiplier after modifiers. */
 function curveTerms(
@@ -172,8 +181,12 @@ export function buyDamageLevels(
     return { ok: false, reason: 'unaffordable' };
   }
   const next = pay(state, [offer.price]);
-  next.combat.damageLevels[upgradeId] = damageLevel(state, upgradeId) + offer.count;
-  return { ok: true, state: next, bought: offer.count };
+  const from = damageLevel(state, upgradeId);
+  next.combat.damageLevels[upgradeId] = from + offer.count;
+  const milestones = content.combat.damageUpgrades.find((u) => u.id === upgradeId)!.milestones;
+  const to = from + offer.count;
+  const tierUps = milestoneTierUps('damage_milestone', upgradeId, milestones, from, to);
+  return { ok: true, state: next, bought: offer.count, tierUps };
 }
 
 // ---- mine levels -----------------------------------------------------------------------------
@@ -219,8 +232,11 @@ export function buyMineLevels(
     return { ok: false, reason: 'unaffordable' };
   }
   const next = pay(state, [offer.price]);
-  next.production.mineLevels[mineId] = mineLevel(state, mineId) + offer.count;
-  return { ok: true, state: next, bought: offer.count };
+  const from = mineLevel(state, mineId);
+  next.production.mineLevels[mineId] = from + offer.count;
+  const milestones = content.mineById.get(mineId)!.level.milestones;
+  const tierUps = milestoneTierUps('mine_milestone', mineId, milestones, from, from + offer.count);
+  return { ok: true, state: next, bought: offer.count, tierUps };
 }
 
 // ---- plots and slots -------------------------------------------------------------------------
@@ -252,6 +268,8 @@ export function buyExpansions(
     return { ok: false, reason: 'unaffordable' };
   }
   const next = pay(state, [offer.price]);
+  const before = state.production[job].expansions;
   next.production[job].expansions += offer.count;
-  return { ok: true, state: next, bought: offer.count };
+  const tierUps = expansionStageTierUps(content, job, before, before + offer.count);
+  return { ok: true, state: next, bought: offer.count, tierUps };
 }

@@ -4,7 +4,7 @@ import type { Rng } from './rng';
 import type { GameState } from './state';
 import { collectModifiers, statValue } from './modifiers';
 import { advanceChunked } from './tick';
-import type { CardDrop } from './report';
+import type { CardDrop, TierUp } from './report';
 import { xpToNextLevel } from './cards';
 
 /** Base offline cap (8 hours). The offline.capHours modifiers can raise it. */
@@ -46,6 +46,8 @@ export interface OfflineSummary {
   materials: Record<string, number>;
   /** Card id -> XP gained while away, level-ups included (only cards that gained some). */
   cardXp: Record<string, Decimal>;
+  /** Mastery tiers (gem mastery, boss medals) reached while away, in order. */
+  tierUps: TierUp[];
 }
 
 /** XP a card has earned in total: every level below its level, plus its current XP. */
@@ -100,6 +102,7 @@ export function simulateOffline(
       knockouts: result.report.knockouts,
       materials: result.report.materials,
       cardXp,
+      tierUps: result.report.tierUps,
     },
   };
 }

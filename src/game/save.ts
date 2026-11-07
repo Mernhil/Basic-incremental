@@ -19,11 +19,12 @@ import {
 } from './state';
 import { sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { levelCap } from './cards';
+import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 7;
+export const CURRENT_SAVE_VERSION = 8;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -94,6 +95,12 @@ export const serializedStateSchema = z.object({
     playTimeMs: z.number().min(0),
     bossKills: z.number().int().min(0),
   }),
+  /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
+  mastery: z.object({
+    harvested: z.record(z.string(), decimalText),
+    gemTiers: counts.optional(),
+    bossTiers: counts.optional(),
+  }),
 });
 export type SerializedState = z.infer<typeof serializedStateSchema>;
 
@@ -143,6 +150,13 @@ export function serializeState(state: GameState): SerializedState {
       ),
       loadouts: cloneCards(state.cards).loadouts,
       shards: state.cards.shards,
+    },
+    mastery: {
+      harvested: Object.fromEntries(
+        Object.entries(state.mastery.harvested).map(([id, v]) => [id, decimalToString(v)]),
+      ),
+      gemTiers: { ...state.mastery.gemTiers },
+      bossTiers: { ...state.mastery.bossTiers },
     },
     cosmetics: {
       loadout: {
@@ -205,6 +219,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.prestigeCount = saved.prestigeCount;
   state.stats = { ...saved.stats };
   state.cards = deserializeCards(saved.cards, content);
+  deserializeMastery(state, saved.mastery, content);
   // Unknown ids (removed from the game) are dropped; starters are always owned.
   const owned: GameState['cosmetics']['owned'] = { ...base.cosmetics.owned };
   for (const [id, entry] of Object.entries(saved.cosmetics.owned)) {
@@ -330,6 +345,37 @@ export function importSaveString(
     throw new SaveError('invalid-export', 'The save string is damaged or incomplete.');
   }
   return readSave(text, content, migrations);
+}
+
+/**
+ * Rebuilds mastery: totals of unknown or non-gem resources are dropped, tiers are kept within
+ * 0..4 for known gems and dungeons. A save without tiers (migrated from v7) settles them from
+ * the totals and kills, silently.
+ */
+function deserializeMastery(
+  state: GameState,
+  saved: SerializedState['mastery'],
+  content: Content,
+): void {
+  const harvested: GameState['mastery']['harvested'] = {};
+  for (const [id, text] of Object.entries(saved.harvested)) {
+    if (isProductionGem(content, id)) harvested[id] = new Decimal(text);
+  }
+  const keep = (tiers: Record<string, number>, known: (id: string) => boolean) =>
+    Object.fromEntries(
+      Object.entries(tiers)
+        .filter(([id, tier]) => known(id) && tier > 0)
+        .map(([id, tier]) => [id, Math.min(tier, MAX_MASTERY_TIER)]),
+    );
+  state.mastery = {
+    harvested,
+    gemTiers: keep(saved.gemTiers ?? {}, (id) => isProductionGem(content, id)),
+    bossTiers: keep(
+      saved.bossTiers ?? {},
+      (id) => content.dungeonById.has(id) || content.trialById.has(id),
+    ),
+  };
+  if (!saved.gemTiers || !saved.bossTiers) settleMastery(state, content);
 }
 
 /**

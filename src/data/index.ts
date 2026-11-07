@@ -11,6 +11,7 @@ import type {
   ModifierData,
   Portal,
   ProductionConfig,
+  Progression,
   Rarity,
   RarityStyle,
   Resource,
@@ -32,6 +33,7 @@ import portalsJson from './content/portals.json';
 import raritiesJson from './content/rarities.json';
 import wearRulesJson from './content/wearRules.json';
 import setsJson from './content/sets.json';
+import progressionJson from './content/progression.json';
 
 export * from './schemas';
 
@@ -52,6 +54,8 @@ export interface Content {
   rarities: RarityStyle[];
   wearRules: WearRules;
   sets: CosmeticSet[];
+  /** Mastery, tile stages, evolutions and goal rules (DESIGN.md 16). */
+  progression: Progression;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -113,6 +117,7 @@ export function validateContent(raw: RawContent): Content {
     rarities,
     wearRules,
     sets,
+    progression,
   } = parsed;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
@@ -120,6 +125,7 @@ export function validateContent(raw: RawContent): Content {
   checkCosmetics(cosmetics, rarities, issues);
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
+  checkProgression({ cards, progression }, issues);
   checkModifiers(
     { resources, trees, mines, dungeons, trials, portals, cosmetics, sets, cards, cardRules },
     issues,
@@ -145,6 +151,7 @@ export function validateContent(raw: RawContent): Content {
     rarities,
     wearRules,
     sets,
+    progression,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -348,6 +355,26 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   }
 }
 
+/** Each unique evolution is listed once, and cards only evolve into listed ones. */
+function checkProgression(c: Pick<Content, 'cards' | 'progression'>, issues: string[]): void {
+  const kinds = new Set<string>();
+  c.progression.evolutions.items.forEach((item, i) => {
+    if (kinds.has(item.kind)) {
+      issues.push(
+        `progression.json › evolutions › items › [${i}] › kind: duplicate "${item.kind}"`,
+      );
+    }
+    kinds.add(item.kind);
+  });
+  c.cards.forEach((card, i) => {
+    if (card.evolution && !kinds.has(card.evolution)) {
+      issues.push(
+        `cards.json › [${i}] › evolution: "${card.evolution}" is not in progression.json evolutions`,
+      );
+    }
+  });
+}
+
 /** Dungeons, trials and damage upgrades must point at existing things of the right kind. */
 function checkCombat(
   c: Pick<Content, 'resources' | 'dungeons' | 'trials' | 'combat'>,
@@ -532,5 +559,6 @@ export function loadContent(): Content {
     rarities: raritiesJson,
     wearRules: wearRulesJson,
     sets: setsJson,
+    progression: progressionJson,
   });
 }

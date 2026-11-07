@@ -1,0 +1,190 @@
+import { describe, expect, it } from 'vitest';
+import {
+  allGoals,
+  curveBulkPrice,
+  Decimal,
+  incomePerSecond,
+  newOwnedCard,
+  nextGoals,
+  secondsPerKill,
+  stageReadout,
+  type GameState,
+  type Goal,
+} from '../src/game';
+import type { Content } from '../src/data';
+import { bareState, content as realContent, plainContent as content } from './helpers';
+
+const find = (goals: Goal[], id: string): Goal | undefined => goals.find((g) => g.id === id);
+
+/** A loadout-free game with some damage, so ETAs are exact and there is no knockout wall. */
+function fighter(): GameState {
+  const state = bareState();
+  state.combat.damageLevels = { copper_edge: 99 };
+  return state;
+}
+
+describe('incomePerSecond', () => {
+  it('counts production with the average harvest burst', () => {
+    // Oak 1/s plus a 10 s harvest every 30 ticks: 1 + 10/30.
+    expect(incomePerSecond(bareState(), content, 'oak_gem').toNumber()).toBeCloseTo(4 / 3);
+  });
+
+  it('counts the active dungeon drops per kill', () => {
+    const state = fighter();
+    const spk = secondsPerKill(state, content, 'mossy_cellar')!;
+    // Moss Cores: 10% of 1 per kill.
+    expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
+    // Moss Sigils: 2..4 per kill, 3 on average.
+    expect(incomePerSecond(state, content, 'moss_sigil').toNumber()).toBeCloseTo(3 / spk);
+  });
+
+  it('is 0 for a resource nothing gives', () => {
+    expect(incomePerSecond(bareState(), content, 'frost_core').toNumber()).toBe(0);
+  });
+});
+
+describe('goal rules (DESIGN.md 16, E8)', () => {
+  it('has a clear-dungeon goal naming what the clear opens, with the time to kill', () => {
+    const state = fighter();
+    const goal = find(allGoals(state, content), 'clear_dungeon:mossy_cellar')!;
+    expect(goal).toMatchObject({
+      kind: 'clear_dungeon',
+      targetId: 'mossy_cellar',
+      title: 'Clear Mossy Cellar → Iron Deeps',
+      page: 'dungeons',
+      progress: 0,
+    });
+    expect(goal.etaSeconds).toBeCloseTo(stageReadout(state, content).secondsLeft!);
+  });
+
+  it('shows how far the current boss is down', () => {
+    const state = fighter();
+    state.bossHp = new Decimal(15_000);
+    const goal = find(allGoals(state, content), 'clear_dungeon:mossy_cellar')!;
+    expect(goal.progress).toBeCloseTo(0.75);
+  });
+
+  it('has no ETA while the boss knocks the loadout out first', () => {
+    const state = fighter();
+    state.combat.damageLevels = {};
+    state.cards.loadouts.fighting.main = 'ember_squire';
+    state.cards.owned['ember_squire'] = newOwnedCard();
+    // A tiny health pool against a boss that takes ages to kill.
+    const goal = find(allGoals(state, content), 'clear_dungeon:mossy_cellar')!;
+    expect(goal.etaSeconds).toBeNull();
+  });
+
+  it('has a tree unlock goal from the gems owned and their income', () => {
+    const state = bareState();
+    state.resources['oak_gem'] = new Decimal(250);
+    const goal = find(allGoals(state, content), 'unlock_tree:ironbark')!;
+    expect(goal).toMatchObject({ title: 'Unlock Ironbark', page: 'production', progress: 0.5 });
+    expect(goal.etaSeconds).toBeCloseTo(250 / (4 / 3));
+  });
+
+  it('says 0 s when a goal is affordable now', () => {
+    const state = bareState();
+    state.resources['oak_gem'] = new Decimal(600);
+    expect(find(allGoals(state, content), 'unlock_tree:ironbark')!).toMatchObject({
+      progress: 1,
+      etaSeconds: 0,
+    });
+  });
+
+  it('has the next mine milestone with the price of the levels left', () => {
+    const state = bareState();
+    state.production.mineLevels['copper_quarry'] = 20;
+    const goal = find(allGoals(state, realContent), 'mine_milestone:copper_quarry')!;
+    expect(goal).toMatchObject({ title: 'Copper Quarry Lv 25 (×2)', page: 'production' });
+    expect(goal.progress).toBeCloseTo(0.8);
+    const mine = content.mineById.get('copper_quarry')!;
+    const price = curveBulkPrice(mine.level.cost, 20, 5).amount.toNumber();
+    const income = incomePerSecond(state, content, 'copper_gem').toNumber();
+    expect(goal.etaSeconds).toBeCloseTo(price / income, 3);
+  });
+
+  it('has the next damage line milestone on the dungeons page', () => {
+    const state = bareState();
+    state.combat.damageLevels = { copper_edge: 10 };
+    expect(find(allGoals(state, content), 'damage_milestone:copper_edge')).toMatchObject({
+      page: 'dungeons',
+      progress: 0.4,
+    });
+  });
+
+  it('shows a gem mastery tier only once it is a quarter of the way', () => {
+    const state = bareState();
+    state.mastery.harvested['oak_gem'] = new Decimal(100);
+    expect(find(allGoals(state, content), 'gem_mastery:oak_gem')).toBeUndefined();
+    state.mastery.harvested['oak_gem'] = new Decimal(600);
+    const goal = find(allGoals(state, content), 'gem_mastery:oak_gem')!;
+    expect(goal).toMatchObject({ title: 'Oak Gem mastery: Bronze', page: 'production' });
+    expect(goal.progress).toBeCloseTo(0.6);
+    expect(goal.etaSeconds).toBeCloseTo(400 / (4 / 3));
+  });
+
+  it('has the next boss medal with kills left times the time per kill', () => {
+    const state = fighter();
+    state.combat.kills['mossy_cellar'] = 50;
+    state.mastery.bossTiers['mossy_cellar'] = 1;
+    state.clearedDungeons = ['mossy_cellar'];
+    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar')!;
+    expect(goal).toMatchObject({ title: 'Root Warden medal: Silver', page: 'dungeons' });
+    expect(goal.progress).toBeCloseTo(40 / 90);
+    expect(goal.etaSeconds).toBeCloseTo(50 * secondsPerKill(state, content, 'mossy_cellar')!);
+  });
+
+  it('has a star-up goal when only materials are missing', () => {
+    const state = fighter();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, duplicates: 1 };
+    state.resources['moss_core'] = new Decimal(1);
+    const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
+    expect(goal).toMatchObject({ title: 'Star up Ember Squire to ★2', page: 'cards' });
+    expect(goal.progress).toBeCloseTo(0.5);
+    expect(goal.etaSeconds).toBeCloseTo(
+      1 / incomePerSecond(state, content, 'moss_core').toNumber(),
+    );
+  });
+
+  it('has no star-up goal without the duplicate', () => {
+    const state = fighter();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, duplicates: 0 };
+    expect(find(allGoals(state, content), 'star_up:ember_squire')).toBeUndefined();
+  });
+
+  it('has the Glimmer Trial clear from its best score once it is open', () => {
+    const state = fighter();
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
+    state.combat.trialBest['glimmer_trial'] = 0.3;
+    expect(find(allGoals(state, content), 'clear_trial:glimmer_trial')).toMatchObject({
+      progress: 0.3,
+      page: 'dungeons',
+    });
+  });
+
+  it('only uses the rules in the data', () => {
+    const state = bareState();
+    state.resources['oak_gem'] = new Decimal(250);
+    const noTrees: Content = {
+      ...content,
+      progression: {
+        ...content.progression,
+        goals: content.progression.goals.filter((r) => r.kind !== 'unlock_tree'),
+      },
+    };
+    expect(allGoals(state, noTrees).some((g) => g.kind === 'unlock_tree')).toBe(false);
+  });
+});
+
+describe('nextGoals', () => {
+  it('gives the n nearest goals by estimated time, unknown times last', () => {
+    const state = fighter();
+    state.resources['oak_gem'] = new Decimal(600);
+    const goals = nextGoals(state, content);
+    expect(goals).toHaveLength(3);
+    expect(goals[0]!.id).toBe('unlock_tree:ironbark');
+    const etas = allGoals(state, content).map((g) => g.etaSeconds ?? Infinity);
+    expect(etas).toEqual([...etas].sort((a, b) => a - b));
+    expect(nextGoals(state, content, 1)).toHaveLength(1);
+  });
+});

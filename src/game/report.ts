@@ -1,4 +1,34 @@
-import type { BurstJob } from '../data';
+import type { BurstJob, Metal } from '../data';
+
+/**
+ * What tiered up (DESIGN.md 16, E1): gem mastery, a boss medal (dungeon or special dungeon), a
+ * mine level or damage line milestone, a tree tile stage, a card tier, or a card's unique
+ * evolution.
+ */
+export type TierUpKind =
+  | 'gem_mastery'
+  | 'boss_mastery'
+  | 'mine_milestone'
+  | 'damage_milestone'
+  | 'tile_stage'
+  | 'card_tier'
+  | 'evolution';
+
+/**
+ * One tier-up moment, the same shape for everything with tiers so the UI plays one kind of
+ * moment (a metal flash and a short toast).
+ */
+export interface TierUp {
+  kind: TierUpKind;
+  /** Gem resource, dungeon, mine, damage line, producer or card id. */
+  id: string;
+  /** Tier before and after: mastery tier 0..4, milestones reached, tile stage 0..4, or the card
+   *  tier as a metal index (bronze 1 .. prismatic 4); for `evolution` 0 -> 1. */
+  from: number;
+  to: number;
+  /** The metal to flash: METALS[to] capped at prismatic (a card's own tier for `evolution`). */
+  metal: Metal;
+}
 
 /** What happened during one advance() call, for notifications, animations and the away summary. */
 export interface TickReport {
@@ -25,6 +55,8 @@ export interface TickReport {
   cardLevels: Record<string, { from: number; to: number }>;
   /** Times the fighting loadout was knocked out (DESIGN.md 11.10). */
   knockouts: number;
+  /** Mastery tiers reached (gem mastery and boss medals), in order. */
+  tierUps: TierUp[];
 }
 
 export function emptyReport(): TickReport {
@@ -41,6 +73,7 @@ export function emptyReport(): TickReport {
     cardDrops: [],
     cardLevels: {},
     knockouts: 0,
+    tierUps: [],
   };
 }
 
@@ -58,6 +91,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.trialTopScore = Math.max(into.trialTopScore, add.trialTopScore);
   into.knockouts += add.knockouts;
   into.cardDrops.push(...add.cardDrops);
+  into.tierUps.push(...add.tierUps);
   for (const [id, change] of Object.entries(add.cardLevels)) {
     const prev = into.cardLevels[id];
     into.cardLevels[id] = prev ? { from: prev.from, to: change.to } : { ...change };

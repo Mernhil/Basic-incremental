@@ -19,6 +19,55 @@ export * from './cards';
 export * from './milestones';
 export * from './bulk';
 export * from './previews';
+export * from './mastery';
+export * from './stages';
+export * from './goals';
+export { METALS, type Metal } from '../data';
+
+// ---- Progression layer (DESIGN.md 16): the contract with the UI, one line each ---------------
+
+export {
+  /** A production gem's mastery: settled tier 0..4, metal, lifetime total, next threshold, bar 0..1. */
+  gemMastery,
+  /** A dungeon's medal (kills) or a special dungeon's (best score): tier, metal, bar 0..1. */
+  bossMastery,
+  /** The metal of a tier 0..4 (stone .. prismatic). */
+  metalOf,
+  type GemMasteryInfo,
+  type BossMasteryInfo,
+  type MasteryInfo,
+} from './mastery';
+export {
+  /** Growth stage 0..4 of a tree / mine tile (mine level milestones; trees: plots bought). */
+  tileStage,
+  /** Forged-edge stage 0..4 of a damage line (one step per milestone). */
+  edgeStage,
+} from './stages';
+export {
+  /** The item to draw in a card: its unique evolution from Gold ★6 on, else its generic item. */
+  cardItemKind,
+  /** The item to draw with its name and whether it is a unique evolution. */
+  cardItem,
+  /** Whether a rank is at least another (tier, then stars). */
+  rankAtLeast,
+  type CardItem,
+  type CardUpgradeResult,
+} from './cards';
+export {
+  /** The n (default 3) nearest goals by estimated time, for the header quest scroll. */
+  nextGoals,
+  /** Every goal the data's rules find, nearest first. */
+  allGoals,
+  /** Units of a resource earned per second (production with bursts, plus drops being fought). */
+  incomePerSecond,
+  type Goal,
+} from './goals';
+export {
+  /** One tier-up moment for anything with tiers (mastery, medals, milestones, stages, cards). */
+  type TierUp,
+  /** What tiered up. */
+  type TierUpKind,
+} from './report';
 
 // ---- Juice pass (DESIGN.md 11.11, 11.12, 14): the contract with the UI, one line each ----------
 

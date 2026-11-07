@@ -7,7 +7,7 @@ import {
   grantLoadoutXp,
   rollCardDrop,
 } from './cards';
-import { rollBossDrop, rollMaterialDrop } from './drops';
+import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import {
@@ -259,7 +259,7 @@ export function bossStatus(
 }
 
 /** The dungeon's drop table after modifiers (chances clamped to 0..1, pity at least 1). */
-export function effectiveDrops(dungeon: Dungeon, modifiers: readonly Modifier[]): Dungeon['drops'] {
+export function effectiveDrops(dungeon: Dungeon, modifiers: readonly Modifier[]): DropTable {
   const ctx = { ...FIGHTING, dungeon: dungeon.id };
   const { rare, portalResource, material } = dungeon.drops;
   const clamp01 = (d: Decimal): number => Math.min(1, Math.max(0, d.toNumber()));
@@ -269,10 +269,19 @@ export function effectiveDrops(dungeon: Dungeon, modifiers: readonly Modifier[])
   const amount = (n: number): number =>
     Math.max(0, Math.floor(statValue('drops.portalAmount', n, modifiers, portalCtx).toNumber()));
   const min = amount(portalResource.min);
+  const multiplier = Math.max(
+    0,
+    statValue('drops.portalMultiplier', 1, modifiers, portalCtx).toNumber(),
+  );
   const materialCtx = { ...ctx, resource: material.resource };
   return {
     rare: { ...rare, chance, pityThreshold: Math.max(1, Math.round(pity)) },
-    portalResource: { ...portalResource, min, max: Math.max(min, amount(portalResource.max)) },
+    portalResource: {
+      ...portalResource,
+      min,
+      max: Math.max(min, amount(portalResource.max)),
+      multiplier,
+    },
     material: {
       ...material,
       chance: clamp01(statValue('drops.materialChance', material.chance, modifiers, materialCtx)),

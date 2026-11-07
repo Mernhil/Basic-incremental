@@ -11,6 +11,7 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   card: 'Card',
   prestige: 'Prestige',
   achievement: 'Achievement',
+  mastery: 'Mastery',
 };
 
 /** "Gilded Plate", "Gilded Tradition set", or a generic label for sources without a name yet. */
