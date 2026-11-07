@@ -58,6 +58,8 @@ export interface TickReport {
   knockouts: number;
   /** Mastery tiers reached (gem mastery and boss medals), in order. */
   tierUps: TierUp[];
+  /** Achievement ids unlocked, in order (their rewards are already granted). */
+  achievements: string[];
 }
 
 export function emptyReport(): TickReport {
@@ -75,6 +77,7 @@ export function emptyReport(): TickReport {
     cardLevels: {},
     knockouts: 0,
     tierUps: [],
+    achievements: [],
   };
 }
 
@@ -93,6 +96,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.knockouts += add.knockouts;
   into.cardDrops.push(...add.cardDrops);
   into.tierUps.push(...add.tierUps);
+  into.achievements.push(...add.achievements);
   for (const [id, change] of Object.entries(add.cardLevels)) {
     const prev = into.cardLevels[id];
     into.cardLevels[id] = prev ? { from: prev.from, to: change.to } : { ...change };

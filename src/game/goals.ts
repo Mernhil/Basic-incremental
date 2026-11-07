@@ -16,7 +16,8 @@ import {
 } from './combat';
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
 import { milestoneInfo } from './milestones';
-import { collectModifiers, type Modifier } from './modifiers';
+import { collectModifiers, statValue, type Modifier } from './modifiers';
+import { runPoints, starlightGain } from './prestige';
 import { Decimal } from './num';
 import {
   isProducerUnlocked,
@@ -328,6 +329,38 @@ const starUpRule: RuleFn = (state, content, modifiers) =>
     ];
   });
 
+/**
+ * The next ascension: progress is the Starlight gain over the minimum; the ETA is the weighted
+ * gem points still missing over the rate the current production earns them.
+ */
+const ascensionRule: RuleFn = (state, content, modifiers) => {
+  const { divisor, exponent, minimum, tierWeights } = content.prestige.gain;
+  const gain = starlightGain(state, content, modifiers);
+  const progress = clamp01(gain.toNumber() / minimum);
+  let eta: number | null = 0;
+  if (gain.lt(minimum)) {
+    // Points needed so that (points / divisor) ^ exponent, through prestige.gain, reaches it.
+    const factor = statValue('prestige.gain', 1, modifiers).toNumber();
+    const needed = factor > 0 ? divisor.mul(new Decimal(minimum / factor).pow(1 / exponent)) : null;
+    let rate = new Decimal(0);
+    for (const r of content.resources) {
+      if (r.kind !== 'tree_gem' && r.kind !== 'mine_gem') continue;
+      const weight = tierWeights[Math.min(r.tier, tierWeights.length) - 1]!;
+      rate = rate.add(incomePerSecond(state, content, r.id, modifiers).mul(weight));
+    }
+    const missing = needed ? needed.sub(runPoints(state, content)) : null;
+    eta = missing && rate.gt(0) ? Math.max(0, missing.div(rate).toNumber()) : null;
+  }
+  return [
+    {
+      targetId: 'ascension',
+      title: `Ascend: ${gain.toString()} / ${minimum} Starlight`,
+      progress,
+      etaSeconds: eta,
+    },
+  ];
+};
+
 const RULES: Record<GoalKind, RuleFn> = {
   clear_dungeon: clearDungeon,
   clear_trial: clearTrial,
@@ -337,6 +370,7 @@ const RULES: Record<GoalKind, RuleFn> = {
   gem_mastery: gemMasteryRule,
   boss_mastery: bossMasteryRule,
   star_up: starUpRule,
+  ascension: ascensionRule,
 };
 
 function goalsOf(

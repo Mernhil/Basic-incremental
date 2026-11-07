@@ -483,7 +483,7 @@ const increasing = (list: (number | Decimal)[]): boolean =>
   list.every((v, i) => i === 0 || new Decimal(v).gt(list[i - 1]!));
 
 /** Pages a goal can jump to (the renderer's page ids). */
-export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon'] as const;
+export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon', 'shop'] as const;
 export type GoalPage = (typeof GOAL_PAGES)[number];
 /**
  * Goal rules (E8). Each kind finds its candidates in the state:
@@ -503,6 +503,8 @@ export const GOAL_KINDS = [
   'gem_mastery',
   'boss_mastery',
   'star_up',
+  /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md 3). */
+  'ascension',
 ] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
 
@@ -871,6 +873,77 @@ export const prestigeSchema = z.strictObject({
   ),
 });
 
+/**
+ * What unlocks an achievement (DESIGN.md 11.6). Each kind reads one thing from the state:
+ * lifetime gems harvested (optionally one job), total boss kills, every producer of a job
+ * unlocked (or `count` of them), a dungeon / trial cleared, portal pulls, pity hits, any card at
+ * a tier or star count, a full loadout, a full non-starter set equipped, non-starter cosmetics
+ * owned, skill points spent, ascensions, the longest offline session, any gem mastery / boss
+ * medal tier, any mine or damage line level, any cosmetic at its max level.
+ */
+export const achievementConditionSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('harvested'),
+    job: z.enum(['logging', 'mining']).optional(),
+    amount: positiveDecimal,
+  }),
+  z.strictObject({ kind: z.literal('kills'), amount: z.number().int().min(1) }),
+  z.strictObject({
+    kind: z.literal('producers'),
+    job: z.enum(['logging', 'mining']),
+    count: z.number().int().min(1).optional(),
+  }),
+  z.strictObject({ kind: z.literal('cleared'), dungeon: id }),
+  z.strictObject({ kind: z.literal('pulls'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('pity_hits'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('card_tier'), tier: z.enum(RANK_TIERS) }),
+  z.strictObject({ kind: z.literal('card_stars'), stars: z.number().int().min(1).max(MAX_STARS) }),
+  z.strictObject({ kind: z.literal('full_loadout') }),
+  z.strictObject({ kind: z.literal('full_set') }),
+  z.strictObject({ kind: z.literal('cosmetics_owned'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('skill_points_spent'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('ascensions'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('offline_hours'), hours: z.number().positive() }),
+  z.strictObject({ kind: z.literal('gem_mastery'), tier: z.number().int().min(1).max(4) }),
+  z.strictObject({ kind: z.literal('boss_mastery'), tier: z.number().int().min(1).max(4) }),
+  z.strictObject({ kind: z.literal('milestone'), level: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('max_cosmetic') }),
+]);
+export type AchievementCondition = z.output<typeof achievementConditionSchema>;
+
+export const achievementSchema = z.strictObject({
+  id,
+  name,
+  description: z.string().min(1),
+  condition: achievementConditionSchema,
+  /** Granted on unlock: cosmetics (a copy when owned) and resources. */
+  reward: z.strictObject({
+    cosmetics: z.array(id).default([]),
+    resources: z.array(costSchema).default([]),
+  }),
+});
+export type Achievement = z.output<typeof achievementSchema>;
+
+/** One shard shop item (DESIGN.md 5: duplicates past max rank become shards for a shop). */
+export const shardShopItemSchema = z.strictObject({
+  id,
+  reward: z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('card'), card: id }),
+    z.strictObject({ kind: z.literal('resource'), resource: id, amount: positiveDecimal }),
+    z.strictObject({ kind: z.literal('cosmetic'), cosmetic: id }),
+  ]),
+  /** Card shards per purchase. */
+  price: z.number().int().min(1),
+  /** Purchases allowed ever; null = unlimited. */
+  stock: z.number().int().min(1).nullable(),
+});
+export type ShardShopItem = z.output<typeof shardShopItemSchema>;
+
+export const achievementsFileSchema = z.strictObject({
+  achievements: z.array(achievementSchema),
+  shardShop: z.array(shardShopItemSchema),
+});
+
 /** The steps of the cosmetic upgrade ladder, in order (DESIGN.md 7). */
 export const LADDER_STEPS = ['shape', 'accent', 'gems', 'glow', 'ambient'] as const;
 export type LadderStep = (typeof LADDER_STEPS)[number];
@@ -944,6 +1017,7 @@ export const contentSchemas = {
   progression: progressionSchema,
   prestige: prestigeSchema,
   cosmeticRules: cosmeticRulesSchema,
+  achievements: achievementsFileSchema,
 } as const;
 
 export type Resource = z.output<typeof resourceSchema>;
