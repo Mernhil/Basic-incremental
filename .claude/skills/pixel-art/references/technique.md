@@ -82,3 +82,15 @@ Brave Frontier units are mid-resolution pixel sprites (roughly 100 to 150 px tal
 - Black used as shadow inside parts (it should be the ink only); use the darkest hue-shifted tone instead.
 - Thin parts lost at game scale; details smaller than 2 px that turn into noise.
 - Everything the same brightness, so nothing leads the eye.
+
+## 9. Learned from Brave Frontier sprites (2026-11-07, source: Petshopbox, "Brave Frontier / Animated Pixel Art Sprites" on Behance)
+
+Principles only; never copy their sprites or characters.
+
+- Scale: a unit's body is about 90 to 110 px tall; weapons, wings and auras push the whole sprite to about 250 to 300 × 180. The silhouette is extended by oversized weapons and wings, not by a bigger body.
+- Ramps: four to six tones per material, hue-shifted: shadows lean purple or red, highlights lean yellow-white. Speculars on metal edges and gems go almost to white.
+- Lines: one-pixel dark lines between parts as well as around the silhouette; each part's inner line is the darkest tone of that material, so parts separate without looking like a colouring book.
+- Gold trim runs around armour plates, 1 to 2 px wide, with a one-pixel bright line on the upper edge.
+- Gems are small and saturated, each with a one-pixel white glint.
+- Colour plan: one dominant hue per unit, gold as the accent, one effect colour.
+- In this game: tone shapes on large areas must follow the form (folds, plates); concentric tone rings from a radial gradient read as banding (seen on the first Cinder Lich robe), so break big areas with fold lines or hand-placed shapes.

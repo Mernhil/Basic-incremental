@@ -86,3 +86,11 @@ Under `prefers-reduced-motion`, every loop stops on one chosen still frame (the 
 | Shine sweep         | as many steps as the band needs to cross, plus a long pause |
 
 Prefer fewer, stronger frames with good timing to many weak in-betweens.
+
+## Learned from Brave Frontier sprites (2026-11-07, source: Petshopbox, "Brave Frontier / Animated Pixel Art Sprites" on Behance)
+
+- Idle: the body barely moves (a one-pixel bob or breath); the life is in the effects, which change every frame.
+- Flames are many small tongues in four tones (dark red, orange, yellow, white core) that flicker frame to frame, with ember specks drifting up.
+- Smoke and wisps are tendrils in three or four shades that flow continuously around and behind the figure.
+- Auras follow the silhouette as a rim light (cyan or the element colour) and shimmer; in this game they are drawn as hard-pixel effects with a soft glow behind (DESIGN 13).
+- Effects are layered: most behind the figure, some in front.
