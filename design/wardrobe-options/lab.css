@@ -1,0 +1,373 @@
+/* Page chrome of the options page. One deliberate look: the game's own starter table (Light
+   Stone) with Gilded Nocturne panels, so every option is judged on the background it ships on.
+   Layout: one dark panel per batch; each option is a row, letter plate on the left, cards right. */
+:root {
+  --lab-table: #cfd5dd;
+  --lab-table-glow: rgba(255, 255, 255, 0.55);
+  --lab-ink: #1c2330;
+  --lab-ink-muted: #3d4757;
+  --lab-panel: #2a2f38;
+  --lab-panel-deep: #20242c;
+  --lab-panel-ink: #e9eef7;
+  --lab-panel-muted: #b4c0d4;
+  --lab-gilt: #d9b35a;
+  --lab-gilt-pale: #f3dc9a;
+  --lab-gilt-line: rgba(217, 179, 90, 0.35);
+  --lab-font: 'Outfit', 'Segoe UI', system-ui, sans-serif;
+  color-scheme: light;
+}
+
+html,
+body {
+  height: auto;
+}
+body {
+  min-height: 0;
+  background-color: var(--lab-table);
+  background-image: radial-gradient(80% 40% at 50% 0%, var(--lab-table-glow), transparent 70%);
+  color: var(--lab-ink);
+  font-family: var(--lab-font);
+}
+.lab {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-block: 40px 56px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid;
+  gap: 28px;
+}
+
+/* ---- head ---- */
+.lab-head {
+  display: grid;
+  gap: 12px;
+  max-width: 68ch;
+}
+.lab-title {
+  margin: 0;
+  font-size: clamp(30px, 4.4vw, 44px);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+.lab-lead {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--lab-ink-muted);
+}
+.lab-toggle,
+.lab-tab {
+  font: inherit;
+  cursor: pointer;
+}
+.lab-toggle {
+  justify-self: start;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--lab-panel);
+  color: var(--lab-panel-ink);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px var(--lab-gilt-line);
+}
+.lab-toggle[aria-pressed='true'] {
+  background: var(--lab-gilt);
+  color: var(--lab-panel-deep);
+}
+.lab-toggle:focus-visible,
+.lab-tab:focus-visible {
+  outline: 2px solid var(--lab-gilt);
+  outline-offset: 2px;
+}
+
+/* ---- batch panel ---- */
+.lab-batch {
+  display: grid;
+  gap: 4px;
+  padding: 22px clamp(14px, 2.4vw, 28px) 10px;
+  border-radius: 14px;
+  background: var(--lab-panel);
+  color: var(--lab-panel-ink);
+  box-shadow:
+    inset 0 0 0 1px var(--lab-gilt-line),
+    0 18px 40px -24px rgba(20, 26, 38, 0.6);
+  min-width: 0;
+}
+.lab-batch__title {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: 24px;
+  font-weight: 700;
+}
+.lab-batch__code {
+  color: var(--lab-gilt);
+  font-weight: 800;
+}
+.lab-batch__rule {
+  margin: 0 0 10px;
+  max-width: 82ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--lab-panel-muted);
+}
+
+/* ---- option row ---- */
+.lab-row {
+  display: grid;
+  grid-template-columns: minmax(170px, 210px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: center;
+  padding: 22px 0;
+  border-top: 1px solid var(--lab-gilt-line);
+  min-width: 0;
+}
+.lab-row--ref {
+  margin: 0 calc(-1 * clamp(14px, 2.4vw, 28px));
+  padding-inline: clamp(14px, 2.4vw, 28px);
+  background: var(--lab-panel-deep);
+}
+.lab-label {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+/* the letter is struck like the card name plate */
+.lab-letter {
+  display: grid;
+  place-items: center;
+  min-width: 48px;
+  height: 48px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--lab-gilt-pale), var(--lab-gilt) 55%, #a8843a);
+  color: #2b1a05;
+  font-size: 26px;
+  font-weight: 800;
+  box-shadow:
+    inset 0 0 0 1.5px #2b1a05,
+    inset 0 2px 0 rgba(255, 255, 255, 0.5);
+}
+.lab-row--ref .lab-letter {
+  background: transparent;
+  color: var(--lab-panel-muted);
+  font-size: 15px;
+  box-shadow: inset 0 0 0 1.5px var(--lab-panel-muted);
+}
+.lab-label__text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.lab-name {
+  margin: 0 0 2px;
+  font-size: 18px;
+  font-weight: 700;
+}
+.lab-line {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--lab-panel-muted);
+}
+.lab-strip {
+  align-items: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px 26px;
+  min-width: 0;
+}
+.lab-fig {
+  margin: 0;
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+}
+.lab-fig figcaption {
+  max-width: 200px;
+  font-size: 12px;
+  text-align: center;
+  color: var(--lab-panel-muted);
+}
+/* a real 176 x 248 card at a given scale, with a bleed margin for flourishes */
+.lab-card {
+  --s: 1;
+  position: relative;
+  width: calc(176px * var(--s));
+  height: calc(248px * var(--s));
+  margin: 14px;
+}
+.lab-card > .bi-card {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: scale(var(--s));
+  transform-origin: top left;
+}
+
+/* corner crops at 3x */
+.lab-zoom {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  overflow: hidden;
+  border-radius: 10px;
+  background: var(--lab-table);
+  box-shadow: inset 0 0 0 1px var(--lab-gilt-line);
+}
+.lab-zoom > .lab-card {
+  position: absolute;
+  margin: 0;
+  left: 30px;
+  top: 30px;
+}
+.lab-zoom--bl > .lab-card {
+  top: calc(150px - 30px - 248px * 3);
+}
+
+/* particle path diagrams */
+.lab-path svg {
+  display: block;
+  overflow: visible;
+}
+.lab-path .card {
+  fill: var(--lab-panel-deep);
+  stroke: var(--lab-panel-muted);
+  stroke-width: 2;
+}
+.lab-path .art {
+  fill: none;
+  stroke: rgba(180, 192, 212, 0.35);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+.lab-path .hatch {
+  fill: rgba(255, 140, 120, 0.35);
+}
+.lab-path .foot {
+  stroke: rgba(255, 140, 120, 0.6);
+  stroke-width: 1;
+}
+.lab-path .foot-t {
+  fill: var(--lab-panel-ink);
+  font: 600 11px var(--lab-font);
+  text-anchor: middle;
+}
+.lab-path .pb,
+.lab-path .pf {
+  fill: none;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.lab-path .pb {
+  stroke: var(--lab-gilt);
+}
+.lab-path .pf {
+  stroke: #8fd3ff;
+  stroke-dasharray: 2 6;
+}
+.lab-path .pb-dot,
+.lab-path .pb-head {
+  fill: var(--lab-gilt);
+}
+.lab-path .pf-dot,
+.lab-path .pf-head,
+.lab-path .pf-tw {
+  fill: #8fd3ff;
+}
+
+/* ---- B10 switcher ---- */
+.lab-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.lab-tab {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 7px 14px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--lab-panel-deep);
+  color: var(--lab-panel-ink);
+  font-size: 14px;
+  box-shadow: inset 0 0 0 1px var(--lab-gilt-line);
+}
+.lab-tab b {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--lab-gilt);
+}
+.lab-tab[aria-selected='true'] {
+  background: var(--lab-gilt);
+  color: #2b1a05;
+}
+.lab-tab[aria-selected='true'] b {
+  color: #2b1a05;
+}
+.lab-tabnote {
+  margin: 8px 0 12px;
+  min-height: 3em;
+  max-width: 82ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--lab-panel-muted);
+}
+.lab-wd {
+  margin: 0 calc(-1 * clamp(14px, 2.4vw, 28px)) 0;
+  padding: 18px clamp(14px, 2.4vw, 28px) 22px;
+  border-radius: 0 0 14px 14px;
+  background-color: var(--lab-table);
+  overflow-x: auto;
+}
+.lab-wd__page .wd-detail {
+  position: static;
+}
+.lab-wd button,
+.lab-wd select {
+  pointer-events: none;
+}
+/* two rows of items are enough to judge the tiles */
+.lab-wd .wd-grid > li:nth-child(n + 11) {
+  display: none;
+}
+
+/* ---- foot ---- */
+.lab-foot {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.lab-foot__ask {
+  margin: 0;
+  padding: 14px 20px;
+  border-radius: 10px;
+  background: var(--lab-panel);
+  color: var(--lab-gilt-pale);
+  font-size: clamp(20px, 3vw, 28px);
+  font-weight: 800;
+  box-shadow: inset 0 0 0 1px var(--lab-gilt-line);
+}
+.lab-foot__small {
+  margin: 0;
+  font-size: 13px;
+  color: var(--lab-ink-muted);
+}
+
+@media (max-width: 760px) {
+  .lab-row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .lab-strip {
+    justify-content: center;
+  }
+}
