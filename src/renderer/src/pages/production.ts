@@ -30,6 +30,7 @@ import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { statTip } from '../shell/stats';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
+import { mineTile, svg, treeTile } from '../art/gems';
 import './production.css';
 
 const EMBLEM = {
@@ -67,6 +68,16 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
   const { content } = ctx;
   const priceText = (p: Price): string =>
     `${amount(p.amount)} ${content.resourceById.get(p.resource)?.name ?? p.resource}`;
+
+  /** The faceted tree or mine tile for a producer (DESIGN.md 13); the line emblem if it has no gem art. */
+  const producerArt = (job: ProductionJob, p: Producer, cls = ''): HTMLElement => {
+    const gem = content.resourceById.get(p.resource)?.gem;
+    const tree = job === 'logging' ? content.treeById.get(p.id) : undefined;
+    if (!gem || (job === 'logging' && !tree)) return art(job, cls);
+    const box = h('span', `pp-art pp-art--tile ${cls}`.trim());
+    box.innerHTML = svg(tree ? treeTile(tree, gem) : mineTile(gem));
+    return box;
+  };
 
   const cols = h('div', 'pp-cols');
   page.append(cols);
@@ -179,7 +190,7 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
     const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
     if (p) {
       btn.append(
-        art(job),
+        producerArt(job, p),
         h('span', 'pp-plot__name', p.name),
         h(
           'span',
@@ -336,7 +347,7 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
       meta.textContent = dungeon ? COPY.production.clearToUnlock(dungeon) : COPY.production.locked;
     }
     info.append(name, meta);
-    li.append(art(job, unlocked ? '' : 'pp-art--locked'), info);
+    li.append(producerArt(job, p, unlocked ? '' : 'pp-art--locked'), info);
 
     if (job === 'logging' && !unlocked) {
       const btn = h('button', 'button pp-kind__action');

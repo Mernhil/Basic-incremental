@@ -1,0 +1,42 @@
+/* Gentle idle motion for the gem art (DESIGN.md 13). Off under reduced motion. */
+.bi-art-sway {
+  animation: bi-art-sway 4.5s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+@keyframes bi-art-sway {
+  50% {
+    transform: rotate(1.6deg);
+  }
+}
+.bi-art-glow {
+  animation: bi-art-glow 2.6s ease-in-out infinite;
+}
+@keyframes bi-art-glow {
+  50% {
+    opacity: 0.55;
+  }
+}
+.bi-art-tw {
+  animation: bi-art-tw 2.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes bi-art-tw {
+  0%,
+  100% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  45% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bi-art-sway,
+  .bi-art-glow,
+  .bi-art-tw {
+    animation: none;
+  }
+}

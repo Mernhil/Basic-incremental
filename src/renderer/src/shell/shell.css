@@ -140,6 +140,18 @@ body {
   height: 16px;
   color: var(--bi-chrome-accent);
 }
+/* gem coins (DESIGN.md 13): full colour, a little larger than the line icons */
+.shell-currency__art {
+  display: inline-grid;
+  width: 24px;
+  height: 24px;
+  margin-block: -4px;
+}
+.shell-currency__art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
 
 /* ---- sidebar ---- */
 .shell-rail {
