@@ -85,7 +85,10 @@
           "tick-color": "#f3dc9a",
           "tick-stroke": "#2b1a05",
           "tick-crit": "#ffb02e",
-          "tick-size": "22px"
+          "tick-size": "22px",
+          "tick-outline": "#ffffff",
+          "tick-hurt": "#ff4d4d",
+          "tick-gain": "#8af06a"
         }
       }
     ]

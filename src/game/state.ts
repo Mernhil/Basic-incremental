@@ -35,6 +35,23 @@ export interface GameState {
   mastery: MasteryState;
   /** Portal id -> pull counters (DESIGN.md 6). Kept through prestige; missing = no pulls yet. */
   portals: Record<string, PortalCounters>;
+  /** Ascension (DESIGN.md 3): the run's start, Starlight shop levels and Starlight earned. */
+  prestige: PrestigeState;
+}
+
+/** Ascension progress. Kept through prestige (the run start moves forward on each ascension). */
+export interface PrestigeState {
+  /** Production gem id -> lifetime total harvested when this run began (missing = 0). Starlight
+   *  comes from what was harvested since. */
+  runStart: Record<string, Decimal>;
+  /** Starlight shop item id -> level bought. */
+  shop: Record<string, number>;
+  /** Starlight gained over every ascension. */
+  starlightEarned: Decimal;
+}
+
+export function initialPrestige(): PrestigeState {
+  return { runStart: {}, shop: {}, starlightEarned: new Decimal(0) };
 }
 
 /** One portal's pull counters. */
@@ -182,6 +199,7 @@ export function createInitialState(content: Content): GameState {
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
+    prestige: initialPrestige(),
     cosmetics: {
       loadout: { slots: {}, cards: {} },
       owned: Object.fromEntries(
@@ -206,6 +224,11 @@ export function cloneState(state: GameState): GameState {
     cards: cloneCards(state.cards),
     mastery: cloneMastery(state.mastery),
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
+    prestige: {
+      runStart: { ...state.prestige.runStart },
+      shop: { ...state.prestige.shop },
+      starlightEarned: state.prestige.starlightEarned,
+    },
     cosmetics: {
       loadout: {
         slots: { ...state.cosmetics.loadout.slots },

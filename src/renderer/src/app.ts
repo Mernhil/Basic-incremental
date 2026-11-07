@@ -91,6 +91,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     mine_gem: 'ore',
     material: 'material',
     portal: 'portal',
+    prestige: 'portal', // compile fix (mechanics): Starlight; ui to pick its icon
   } as const;
   installArtDefs();
   const currencies: Currency[] = content.resources.map((r) => ({

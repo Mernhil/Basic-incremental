@@ -53,6 +53,10 @@ import {
   cardCost,
   pull,
   pullPrice,
+  ascend,
+  ascensionPreview,
+  buyStarlightItem,
+  starlightShop,
   type CardLoadout,
   type GameState,
   type Modifier,
@@ -120,7 +124,6 @@ export const MILESTONES: Milestone[] = [
     label: 'First prestige (Ascension)',
     targetHours: 8,
     reached: (s) => s.prestigeCount > 0,
-    pending: 'Phase 6',
   },
   {
     id: 'clear_d3',
@@ -266,6 +269,16 @@ export function buyerCandidates(
       });
     }
   }
+  // Starlight shop: every level as soon as it is affordable.
+  for (const offer of starlightShop(state, content, modifiers)) {
+    if (!offer.price) continue;
+    out.push({
+      id: `starlight:${offer.item.id}`,
+      prices: [offer.price],
+      priority: 1,
+      buy: (s, c, m) => okState(buyStarlightItem(s, c, offer.item.id, m)),
+    });
+  }
   // Summons: a single pull whenever one is affordable (lite: no saving up for 10-pulls).
   for (const portal of content.portals) {
     out.push({
@@ -380,6 +393,13 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
   return current;
 }
 
+/** Ascend once allowed and the gain at least matches all the Starlight earned so far (so each
+ *  ascension at least doubles the total). */
+export function shouldAscend(state: GameState, content: Content): boolean {
+  const preview = ascensionPreview(state, content);
+  return preview.canAscend && preview.gain.gte(state.prestige.starlightEarned);
+}
+
 // ---- where to fight ----------------------------------------------------------------------------
 
 /** Whether the loadout kills the boss before the boss knocks it out. */
@@ -465,6 +485,13 @@ export function runSim(content: Content, options: SimOptions): SimResult {
     const buys = greedyBuy(state, content, rng);
     state = buys.state;
     log.summons += buys.bought.filter((id) => id.startsWith('summon:')).length;
+    if (shouldAscend(state, content)) {
+      const result = ascend(state, content);
+      if (result.ok) {
+        state = greedyBuy(result.state, content, rng).state;
+        sinceChoose = RECHOOSE_SECONDS;
+      }
+    }
     if (sinceChoose >= RECHOOSE_SECONDS) {
       const target = chooseDungeon(state, content);
       if (target !== state.activeDungeonId) {

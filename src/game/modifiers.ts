@@ -4,6 +4,7 @@ import type { GameState } from './state';
 import { detectSets } from './theme';
 import { cardModifiers } from './cards';
 import { masteryModifiers } from './mastery';
+import { prestigeModifiers } from './prestige';
 
 /**
  * The shared modifier pipeline (DESIGN.md 11.5). Every tunable number goes through
@@ -139,6 +140,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Settled gem mastery tiers and boss medals.
   out.push(...masteryModifiers(state, content));
+
+  // Starlight shop levels (Ascension).
+  out.push(...prestigeModifiers(state, content));
 
   return out;
 }
