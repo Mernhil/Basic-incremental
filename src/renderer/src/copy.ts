@@ -124,7 +124,7 @@ export const COPY = {
     summon: {
       label: 'Summon',
       frame: 'Portals',
-      empty: 'Spend sigils from dungeons to summon new cards and cosmetics.',
+      empty: 'Spend crystals from dungeons to summon new cards and cosmetics.',
     },
     skills: {
       label: 'Skill Tree',
@@ -347,6 +347,7 @@ export const COPY = {
       mastery: 'Gem mastery',
       medals: 'Boss medals',
       portal_pity: 'Portal pity',
+      crystals: 'Crystals',
       starlight: 'Starlight',
     },
     keptDetail: {
@@ -359,6 +360,7 @@ export const COPY = {
       mastery: (n: number) => (n === 1 ? '1 mastery tier' : `${n} mastery tiers`),
       medals: (n: number) => (n === 1 ? '1 medal tier' : `${n} medal tiers`),
       portal_pity: 'Pulls counted toward each pity',
+      crystals: (summon: string, glamour: string) => `${summon} Summon, ${glamour} Glamour`,
       starlight: (n: string) => `${n} in hand`,
     },
     gainLabel: 'Starlight from this run',
@@ -563,7 +565,7 @@ export const COPY = {
       'combat.damage': 'damage',
       'production.rate': 'production',
       'drops.rareChance': 'rare drop chance',
-      'drops.portalAmount': 'sigils',
+      'drops.currencyAmount': 'Money and crystals per kill',
       'offline.capHours': 'offline hours',
       'xp.account': 'account XP',
       'xp.card': 'card XP',
@@ -576,7 +578,7 @@ export const COPY = {
     gemMastery: (gem: string, metal: string) => `${gem} mastery: ${metal}`,
     gemMasteryDetail: '+10% to its output, and its coin turns to the new metal.',
     bossMastery: (dungeon: string, metal: string) => `${dungeon} medal: ${metal}`,
-    bossMasteryDetail: 'More damage against this boss and more sigils and cores.',
+    bossMasteryDetail: 'More damage against this boss and more crystals and cores.',
     edge: (line: string, metal: string) => `${line} forged: ${metal}`,
     mine: (mine: string, metal: string) => `${mine}: ${metal}`,
     milestone: (n: number) => (n === 1 ? 'Level milestone reached' : `Milestone ${n} reached`),

@@ -66,7 +66,7 @@ await page.evaluate(
     s.cosmetics.owned['ember_crown'].level = 5;
     s.resources['glimmer_dust'] = new g.Decimal(5000);
     s.resources['facet_shard'] = new g.Decimal(1200);
-    s.resources['ember_sigil'] = new g.Decimal(240);
+    s.resources['glamour_crystal'] = new g.Decimal(240);
     const eq = (id, card) => {
       const r = g.equipCosmetic(s, content, id, card);
       if (r.ok) s = r.state;
