@@ -1,0 +1,344 @@
+/* Skill Tree page (DESIGN.md 17, A8 A radial constellation). The sky is always night: the gems
+   need a dark field to light up in their branch colours. Frames and buttons follow the table
+   cosmetic like every page. */
+
+.sk-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 1180px) {
+  .sk-wrap {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.sk-side {
+  display: grid;
+  gap: 16px;
+  position: sticky;
+  top: 40px;
+}
+.sk-status {
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 14px;
+  color: var(--bi-on-table);
+}
+
+/* ---- the sky ---- */
+.sk-sky {
+  position: relative;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  border-radius: calc(var(--bi-frame-radius) - 4px);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 220, 140, 0.16), transparent 24%),
+    radial-gradient(ellipse at 50% 50%, #1d2650 0%, #121731 55%, #0b0e20 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+.sk-lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sk-field circle {
+  fill: #dfe6ff;
+}
+.sk-ray {
+  stroke-width: 46;
+  stroke-linecap: round;
+  opacity: 0.07;
+}
+.sk-edge {
+  stroke: #454b72;
+  stroke-width: 2;
+  stroke-dasharray: 4 6;
+  stroke-linecap: round;
+}
+.sk-edge.is-lit {
+  stroke-width: 3;
+  stroke-dasharray: none;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
+}
+.sk-branch {
+  font-family: var(--bi-font-ui);
+  font-size: 16px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: #0b0e20;
+  stroke-width: 4px;
+}
+.sk-branch__count {
+  font-size: 13px;
+  font-weight: 600;
+  fill: #b7bedb;
+}
+
+/* the centre star holds the points to spend */
+.sk-centre {
+  position: absolute;
+  width: 11%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.sk-centre__star {
+  position: absolute;
+  inset: 0;
+  filter: drop-shadow(0 0 10px rgba(255, 214, 120, 0.55));
+}
+.sk-centre:not(.has-points) .sk-centre__star {
+  filter: saturate(0.4) brightness(0.8);
+}
+.sk-centre__num {
+  position: relative;
+  margin-top: -6%;
+  font-size: clamp(16px, 2.2vw, 26px);
+  font-weight: 800;
+  line-height: 1;
+  color: #3a2408;
+}
+.sk-centre__label {
+  position: absolute;
+  top: 100%;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffe7a0;
+  white-space: nowrap;
+}
+
+/* ---- gems ---- */
+.sk-nodes {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sk-node-slot {
+  position: absolute;
+  translate: -50% -50%;
+}
+.sk-node {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 1px;
+  width: 52px;
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: #e9ecfb;
+  font: inherit;
+  cursor: pointer;
+}
+.sk-node__gem {
+  display: block;
+  width: 40px;
+  height: 40px;
+  transition: transform 0.15s ease;
+}
+.sk-node:hover .sk-node__gem {
+  transform: scale(1.1);
+}
+.sk-node__rank {
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  background: rgba(11, 14, 32, 0.85);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.sk-node.is-locked .sk-node__rank {
+  color: #8c92b0;
+}
+.sk-node.is-open .sk-node__gem {
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--gem) 70%, transparent));
+}
+.sk-node.is-owned .sk-node__gem {
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gem) 80%, transparent));
+}
+.sk-node.is-maxed .sk-node__gem {
+  filter: drop-shadow(0 0 10px var(--gem)) brightness(1.08);
+}
+.sk-node.is-owned .sk-node__rank,
+.sk-node.is-maxed .sk-node__rank {
+  color: #ffffff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gem) 70%, transparent);
+}
+.sk-node.is-maxed .sk-node__rank {
+  background: color-mix(in srgb, var(--gem) 45%, #0b0e20);
+}
+/* a gem you can learn now breathes a ring */
+.sk-node.can-buy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -3px 0 0 -23px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--gem) 75%, transparent);
+  animation: sk-breathe 1.8s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sk-breathe {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.88);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.04);
+  }
+}
+.sk-node[aria-pressed='true'] .sk-node__gem {
+  transform: scale(1.14);
+}
+.sk-node[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 50px;
+  height: 50px;
+  margin-left: -25px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  opacity: 0.85;
+  pointer-events: none;
+}
+.sk-node:focus-visible {
+  outline: 2px solid #ffffff;
+  outline-offset: 3px;
+}
+.sk-node.is-flash .sk-node__gem {
+  animation: sk-flash 0.7s ease-out;
+}
+@keyframes sk-flash {
+  30% {
+    transform: scale(1.4);
+    filter: drop-shadow(0 0 16px var(--gem)) brightness(1.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sk-node.can-buy::before,
+  .sk-node.is-flash .sk-node__gem {
+    animation: none;
+  }
+  .sk-node.can-buy::before {
+    opacity: 0.8;
+  }
+}
+
+/* ---- tooltip ---- */
+.sk-tip__rank,
+.sk-tip__needs {
+  margin: 0 0 6px;
+  color: var(--bi-tip-ink-muted);
+}
+.sk-tip__needs {
+  margin: 6px 0 0;
+}
+
+/* ---- detail ---- */
+.sk-detail__head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.sk-detail__gem {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gem) 60%, transparent));
+}
+.sk-detail__gem.is-locked {
+  filter: none;
+}
+.sk-detail__meta {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+}
+.sk-detail__rank {
+  font-weight: 700;
+}
+.sk-detail__cost {
+  color: var(--bi-frame-ink-muted);
+}
+.sk-pips {
+  display: flex;
+  gap: 4px;
+}
+.sk-pips i {
+  width: 14px;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--bi-frame-ink) 18%, transparent);
+}
+.sk-pips i.is-on {
+  background: var(--gem);
+  box-shadow: 0 0 5px color-mix(in srgb, var(--gem) 70%, transparent);
+}
+.sk-effects {
+  margin: 0;
+  display: grid;
+  gap: 8px;
+}
+.sk-effects > div {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bi-frame-ink) 6%, transparent);
+}
+.sk-effects__next {
+  box-shadow: inset 3px 0 0 var(--gem);
+}
+.sk-effects dt {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.sk-effects dd {
+  margin: 0;
+  display: grid;
+  font-size: 15px;
+  font-weight: 600;
+}
+.sk-needs {
+  margin: 0;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
+.sk-buy {
+  justify-self: start;
+}
+
+/* ---- respec confirm ---- */
+.sk-confirm {
+  display: grid;
+  gap: 8px;
+}
+.sk-confirm__title {
+  margin: 0;
+  font-size: 15px;
+}
+.sk-confirm__body {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+.sk-confirm__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}

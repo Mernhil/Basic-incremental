@@ -116,6 +116,208 @@
   background: #4f8a3a;
 }
 
+/* reward track (DESIGN.md 16 E7 / A16 B): the quest scroll unrolls under the header with the
+   levels as waypoints on a path; plain levels are small stones, reward levels are signposts */
+.shell-track {
+  position: fixed;
+  z-index: 25;
+  top: var(--header-h);
+  left: var(--rail-w);
+  right: 0;
+  padding: 12px 26px 16px;
+  background: color-mix(in srgb, var(--bi-chrome-accent) 22%, #f3e6c4);
+  color: #3a2a12;
+  box-shadow:
+    inset 0 -2px 0 color-mix(in srgb, var(--bi-chrome-accent) 60%, #8a6a32),
+    0 10px 24px rgba(0, 0, 0, 0.35);
+  animation: shell-unroll 0.22s ease-out;
+  transform-origin: top;
+}
+.shell-track[hidden] {
+  display: none;
+}
+@keyframes shell-unroll {
+  from {
+    transform: scaleY(0.6);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-track {
+    animation: none;
+  }
+}
+.shell-track__head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.shell-track__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+.shell-track__note {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.shell-track__close {
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(255, 250, 235, 0.6);
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.3);
+  color: inherit;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.shell-track__close:hover {
+  background: rgba(255, 250, 235, 0.95);
+}
+.shell-track__close:focus-visible,
+.shell-track__row:focus-visible {
+  outline: 2px solid #6a4a1a;
+  outline-offset: 2px;
+}
+.shell-track__row {
+  position: relative;
+  margin: 0;
+  padding: 10px 4px 8px;
+  list-style: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(90, 60, 20, 0.4) transparent;
+}
+.shell-track__stop {
+  position: relative;
+  flex: none;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+/* the path: a dashed ink line through every stop's foot */
+.shell-track__stop::after {
+  content: '';
+  position: absolute;
+  left: -6px;
+  right: -6px;
+  bottom: 9px;
+  border-bottom: 3px dashed rgba(90, 60, 20, 0.35);
+  z-index: 0;
+}
+.shell-track__stop.is-reached::after {
+  border-bottom-style: solid;
+  border-color: #b4612a;
+}
+.shell-track__card {
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 3px;
+  min-width: 46px;
+  padding: 5px 7px 6px;
+  border-radius: 8px;
+  background: rgba(255, 250, 235, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.25);
+  font-size: 12px;
+  font-weight: 700;
+}
+.shell-track__stop.is-milestone .shell-track__card {
+  min-width: 78px;
+  padding: 6px 9px 8px;
+  background: rgba(255, 250, 235, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(90, 60, 20, 0.35),
+    0 2px 0 rgba(90, 60, 20, 0.25);
+}
+.shell-track__stop.is-next .shell-track__card {
+  box-shadow:
+    inset 0 0 0 2px #b4612a,
+    0 0 0 3px rgba(180, 97, 42, 0.18);
+}
+.shell-track__stop.is-reached .shell-track__card {
+  opacity: 0.62;
+}
+.shell-track__lv {
+  font-size: 11px;
+  opacity: 0.8;
+}
+.shell-track__art {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+}
+.shell-track__art .cs {
+  --cs: 26px;
+  --cs-scale: 0.125;
+}
+.shell-track__stop.is-milestone .shell-track__art {
+  height: 38px;
+}
+.shell-track__art svg {
+  width: 26px;
+  height: 26px;
+}
+.shell-track__glyph {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 800;
+  background: #3a2a12;
+  color: #ffe7a0;
+}
+.shell-track__glyph--cap {
+  border-radius: 7px;
+  background: #4f6a8a;
+  color: #fff;
+  font-size: 11px;
+}
+.shell-track__glyph--resource {
+  background: #6a3a8a;
+}
+.shell-track__extra {
+  max-width: 96px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+}
+/* the stone on the path: a filled dot once reached, a ring for the next one */
+.shell-track__dot {
+  position: relative;
+  z-index: 1;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #f3e6c4;
+  box-shadow: inset 0 0 0 2px rgba(90, 60, 20, 0.45);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: #fff;
+}
+.shell-track__stop.is-reached .shell-track__dot {
+  background: #b4612a;
+  box-shadow: none;
+}
+.shell-track__stop.is-next .shell-track__dot {
+  background: #ffd968;
+  box-shadow:
+    inset 0 0 0 2px #b4612a,
+    0 0 0 4px rgba(180, 97, 42, 0.2);
+}
+
 html,
 body {
   height: 100%;
@@ -181,8 +383,80 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
+  border: 0;
   border-radius: 10px;
-  padding: 4px 6px;
+  padding: 4px 8px 4px 6px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.shell-level:hover,
+.shell-level[aria-expanded='true'] {
+  background: var(--bi-chrome-active-bg);
+}
+.shell-level__badge-wrap {
+  position: relative;
+  flex: none;
+}
+/* unspent skill points: a small gem-coloured counter on the badge */
+.shell-level__points {
+  position: absolute;
+  right: -6px;
+  top: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 800;
+  background: #ffd968;
+  color: #3a2408;
+  box-shadow:
+    0 0 0 2px var(--bi-chrome-bg),
+    0 0 8px rgba(255, 217, 104, 0.6);
+}
+.shell-level__points[hidden] {
+  display: none;
+}
+/* level-up: the badge rings out in gold */
+.shell-level.is-levelling .shell-level__badge {
+  animation: shell-levelup 1.4s ease-out;
+}
+.shell-level.is-levelling .shell-level__fill {
+  animation: shell-levelup-bar 1.4s ease-out;
+}
+@keyframes shell-levelup {
+  15% {
+    transform: scale(1.25);
+    box-shadow:
+      inset 0 0 0 1px #ffd968,
+      0 0 0 3px #ffd968,
+      0 0 22px 6px rgba(255, 217, 104, 0.8);
+  }
+  60% {
+    transform: scale(1);
+    box-shadow:
+      inset 0 0 0 1px #ffd968,
+      0 0 0 3px #ffd968,
+      0 0 10px 2px rgba(255, 217, 104, 0.4);
+  }
+}
+@keyframes shell-levelup-bar {
+  0%,
+  30% {
+    background: #fff4d0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-level.is-levelling .shell-level__badge,
+  .shell-level.is-levelling .shell-level__fill {
+    animation: none;
+  }
 }
 .shell-level__badge {
   width: 40px;
@@ -503,6 +777,10 @@ body {
 .shell-tip__rows dd {
   margin: 0;
   text-align: right;
+}
+.shell-tip__note {
+  margin: 6px 0 0;
+  color: var(--bi-tip-ink-muted);
 }
 .shell-tip__rows .shell-tip__total {
   padding-top: 5px;

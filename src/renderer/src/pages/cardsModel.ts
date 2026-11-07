@@ -1,5 +1,6 @@
 import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
 import type { GameState, TierUp } from '../../../game';
+import type { StarChartView } from './skillsModel';
 export type Job = (typeof JOBS)[number];
 
 /**
@@ -81,4 +82,10 @@ export interface CardsModel {
   addSupport(state: GameState, id: string): ModelResult;
   remove(state: GameState, id: string): ModelResult;
   upgrade(state: GameState, id: string): ModelResult;
+  /** The card's enhancement star chart (DESIGN.md 10b), or null when not owned. */
+  chart(state: GameState, id: string): StarChartView | null;
+  /** Picks one enhancement option within the card's budget. */
+  enhance(state: GameState, id: string, optionId: string): ModelResult;
+  /** Clears the card's enhancements (free). */
+  resetEnhancements(state: GameState, id: string): ModelResult;
 }

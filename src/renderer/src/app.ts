@@ -10,8 +10,10 @@ import {
   formatDecimal,
   importSaveString,
   loadBestSave,
+  accountInfo,
   checkAchievements,
   collectModifiers,
+  rewardTrack,
   gemMastery,
   nextGoals,
   productionPerSecond,
@@ -33,6 +35,10 @@ import { createAscensionPage } from './pages/ascension';
 import { createWardrobePage } from './pages/wardrobe';
 import { createCardsPage } from './pages/cards';
 import { createAchievementsPage } from './pages/achievements';
+import { createSkillsPage } from './pages/skills';
+import { levelBadge, levelUpView, trackView } from './pages/accountModel';
+import { createRewardTrack } from './shell/rewardTrack';
+import { tipTable } from './shell/tooltip';
 import { unlockToast } from './pages/achievementsModel';
 import { toast } from './stage/toast';
 import { createCardsModel } from './pages/cardsAdapter';
@@ -115,17 +121,48 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     tip: () => `${r.name}: ${formatDecimal(loop.state.resources[r.id] ?? new Decimal(0))}`,
   }));
   const pages: Partial<Record<string, { render(): void }>> = {};
+  // the account level tooltip: XP, points to spend, and what the badge opens
+  const levelTip = (): HTMLElement => {
+    const v = levelBadge(accountInfo(loop.state, content));
+    const box = tipTable(COPY.shell.level(v.level), [
+      ['XP', v.xpText],
+      ['Skill points', String(v.points)],
+    ]);
+    const p = (text: string) => {
+      const el = document.createElement('p');
+      el.className = 'shell-tip__note';
+      el.textContent = text;
+      box.append(el);
+    };
+    p(COPY.account.tipXp);
+    p(COPY.account.tipOpen);
+    return box;
+  };
   const shell = createShell({
     version,
     currencies,
-    levelTip: COPY.shell.levelTip,
+    levelTip,
     onShow: (id) => pages[id]?.render(),
+    onLevel: () => {
+      if (track.isOpen()) track.close();
+      else track.open(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+    },
   });
-  shell.setLevel(1, 0, '');
+  const levelOf = (): [number, number] => {
+    const info = accountInfo(loop.state, content);
+    return [info.level, info.maxLevel];
+  };
+  const track = createRewardTrack(shell.track, {
+    content,
+    setOpen: (open) => shell.setTrackOpen(open),
+    returnFocus: () => shell.levelButton.focus(),
+  });
+  shell.setLevel(levelBadge(accountInfo(loop.state, content)));
   for (const p of PAGES) {
     if (
       ![
         'home',
+        'skills',
         'settings',
         'production',
         'dungeons',
@@ -190,10 +227,23 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     }
   };
 
+  // account level-ups (DESIGN.md 16 E7): the badge rings, a fanfare, and a toast listing what
+  // the new levels gave (skill points, sigils, a cosmetic, cost cap)
+  const celebrateLevel = (from: number, to: number): void => {
+    if (to <= from) return;
+    const v = levelUpView(content, rewardTrack(loop.state, content), from, to);
+    playSound('levelUp');
+    shell.flashLevel();
+    toast(v.title, v.lines, 'milestone', v.big ? 'prismatic' : 'gold');
+    track.update(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+  };
+
   const applyAndSave = (next: GameState): void => {
     // actions (buys, pulls, star-ups, equips, ascensions) unlock what they earned right away
+    const before = loop.state.account.level;
     const checked = checkAchievements(next, content);
     loop.state = checked.state;
+    celebrateLevel(before, loop.state.account.level);
     celebrateAchievements(checked.unlocked);
     rendered();
     void save(); // purchases are saved right away, not at the next autosave
@@ -249,6 +299,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     apply: applyAndSave,
     sound: playSound,
   });
+  pages['skills'] = createSkillsPage(shell.page('skills'), {
+    content,
+    state: () => loop.state,
+    apply: applyAndSave,
+    sound: playSound,
+  });
   pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
     content,
     state: () => loop.state,
@@ -291,6 +347,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       // the coin shows the gem's mastery metal (E2)
       if (r.gem) shell.setCurrencyArt(r.id, svg(gemCoin(r.gem, gemMastery(s, content, r.id).tier)));
     }
+    shell.setLevel(levelBadge(accountInfo(s, content)));
     renderQuest(performance.now());
     pages[shell.current()]?.render();
   };
@@ -300,6 +357,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     const before = loop.state;
     const report = loop.step(Date.now());
     announce(report);
+    if (report.accountLevel) {
+      if (document.hidden) {
+        track.update(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+      } else celebrateLevel(report.accountLevel.from, report.accountLevel.to);
+    }
     if (!document.hidden) celebrateAchievements(report.achievements);
     director.afterStep(report, before, loop.state);
     if (report.tierUps.length > 0 && !document.hidden) onTierUps(report.tierUps);
