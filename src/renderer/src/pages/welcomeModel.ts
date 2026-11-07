@@ -7,7 +7,8 @@ import { COPY } from '../copy';
  * happened while away, in deal order. Empty categories are left out.
  */
 
-export type WelcomeCardKind = 'time' | 'resources' | 'fights' | 'drops' | 'cards' | 'mastery';
+export type WelcomeCardKind =
+  'time' | 'resources' | 'fights' | 'drops' | 'cards' | 'mastery' | 'achievements';
 
 export interface WelcomeLine {
   text: string;
@@ -121,6 +122,19 @@ export function welcomeCards(summary: OfflineSummary, content: Content): Welcome
       title: t.mastery,
       headline: String(tiers.length),
       lines: tiers.map((u) => ({ text: t.tierUp(name(content, u.id), u.metal), rare: true })),
+    });
+  }
+
+  // stickers earned while away (DESIGN.md 17): their names, all highlighted
+  const stickers = summary.achievements
+    .map((id) => content.achievements.find((a) => a.id === id)?.name)
+    .filter((n): n is string => !!n);
+  if (stickers.length > 0) {
+    cards.push({
+      kind: 'achievements',
+      title: t.achievements,
+      headline: String(stickers.length),
+      lines: stickers.map((text) => ({ text, rare: true })),
     });
   }
   return cards;
