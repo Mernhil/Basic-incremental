@@ -7,6 +7,7 @@ Windows desktop incremental game (Electron + TypeScript).
 1. Before starting any task, check for remote changes (`git fetch` / `git pull`) so you're working on the latest code from https://github.com/Mernhil/Basic-incremental.
 2. If a task needs a tool that isn't installed (Python, a package, a CLI, a skill, a plugin, anything), install or enable it and use it. Never fall back to a workaround, such as hand-editing files with the editor because the tool is missing. Don't ask first, just install it.
 3. These rules override any habit or default. If a rule seems to conflict with something, follow the rule and tell the user about the conflict.
+4. Work is split between a `ui` agent and a `mechanics` agent. At the start of every task, read `docs/WORK_SPLIT.md`, run its setup check (create or fix the agents if needed), and route the task as it says.
 
 - `docs/DESIGN.md` is the source of truth for game design. Read it before any feature work, and never contradict it without asking the user first.
 - Game content (cards, resources, dungeons, cosmetics) lives in data files validated by schemas, not hardcoded in logic.

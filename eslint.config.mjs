@@ -4,7 +4,17 @@ import tseslint from 'typescript-eslint';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['design/**', 'node_modules/**', 'out/**', 'dist/**', 'release/**', 'coverage/**'] },
+  {
+    ignores: [
+      '.claude/worktrees/**',
+      'design/**',
+      'node_modules/**',
+      'out/**',
+      'dist/**',
+      'release/**',
+      'coverage/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -26,6 +36,20 @@ export default tseslint.config(
   {
     files: ['src/renderer/**/*.ts'],
     languageOptions: { globals: globals.browser },
+    rules: {
+      // UI talks to mechanics only through the public entry points.
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/game/*', '**/data/*'],
+              message: "Import from 'game' or 'data' (their index.ts), not their internal files.",
+            },
+          ],
+        },
+      ],
+    },
   },
   {
     // Game logic must stay pure: no UI, Electron or Node imports.
