@@ -3,10 +3,10 @@ import {
   ascensionPreview,
   buyStarlightItem,
   collectModifiers,
-  formatDecimal,
   starlightShop,
   type GameState,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import {
   EDGE_VIEWBOX,
@@ -276,7 +276,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
     mode = reducedMotion() ? 'done' : 'walking';
     ctx.apply(result.state);
     const ascension = result.state.prestigeCount;
-    const gainText = formatDecimal(result.gained);
+    const gainText = fmt(result.gained);
     const rewards = result.cosmetics.map((id) => rewardView(content, id));
     doneTitle.textContent = t.doneTitle(ascension);
     doneGain.textContent = t.doneGain(gainText);

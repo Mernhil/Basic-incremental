@@ -4,7 +4,6 @@ import {
   damageLevel,
   damageLineMilestone,
   damageLineOffer,
-  formatDecimal,
   formatDuration,
   isProducerUnlocked,
   milestoneInfo,
@@ -21,6 +20,7 @@ import {
   type Modifier,
   type ProductionJob,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
 /**
@@ -59,7 +59,7 @@ export const buyLabel = (offer: BuyOffer, count: BuyCount): string =>
   count === 'max' ? COPY.buy.max(offer.count) : COPY.buy.times(offer.count);
 
 const milestoneTag = (m: MilestoneInfo | null): string =>
-  m ? COPY.buy.milestone(m.nextLevel, formatDecimal(m.nextMultiplier)) : '';
+  m ? COPY.buy.milestone(m.nextLevel, fmt(m.nextMultiplier)) : '';
 
 /** The damage lines of the arena drawer for a buy count. */
 export function damageLineViews(
@@ -85,8 +85,8 @@ export function damageLineViews(
         available: level > 0 || have.gt(0),
         offer,
         label: buyLabel(offer, count),
-        price: `${formatDecimal(offer.price.amount)} ${resName(content, u.cost.resource)}`,
-        preview: COPY.buy.dps(formatDecimal(p.dpsBefore), formatDecimal(p.dpsAfter)) + ttk,
+        price: `${fmt(offer.price.amount)} ${resName(content, u.cost.resource)}`,
+        preview: COPY.buy.dps(fmt(p.dpsBefore), fmt(p.dpsAfter)) + ttk,
         milestone: milestoneTag(m),
         milestoneInfo: m,
         gain: Decimal.max(p.dpsAfter.sub(p.dpsBefore), 0),
@@ -120,10 +120,10 @@ export function mineLevelViews(
         available: true,
         offer,
         label: buyLabel(offer, count),
-        price: `${formatDecimal(offer.price.amount)} ${resName(content, offer.price.resource)}`,
+        price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
         preview: running
-          ? COPY.buy.rate(res, formatDecimal(p.rateBefore), formatDecimal(p.rateAfter))
-          : COPY.buy.perSlot(formatDecimal(p.perSlotBefore), formatDecimal(p.perSlotAfter)),
+          ? COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter))
+          : COPY.buy.perSlot(fmt(p.perSlotBefore), fmt(p.perSlotAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
         gain: Decimal.max(p.rateAfter.sub(p.rateBefore), 0),
@@ -146,11 +146,7 @@ export function expansionView(
   const t = COPY.production[job];
   const rate =
     p.resource && p.rateAfter.gt(p.rateBefore)
-      ? COPY.buy.rateTail(
-          resName(content, p.resource),
-          formatDecimal(p.rateBefore),
-          formatDecimal(p.rateAfter),
-        )
+      ? COPY.buy.rateTail(resName(content, p.resource), fmt(p.rateBefore), fmt(p.rateAfter))
       : '';
   return {
     id: `${job}-expansion`,
@@ -160,7 +156,7 @@ export function expansionView(
     available: true,
     offer,
     label: buyLabel(offer, count),
-    price: `${formatDecimal(offer.price.amount)} ${resName(content, offer.price.resource)}`,
+    price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
     preview: t.capacityPreview(p.capacityBefore, p.capacityAfter) + rate,
     milestone: '',
     milestoneInfo: null,

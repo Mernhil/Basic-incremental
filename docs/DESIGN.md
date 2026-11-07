@@ -135,6 +135,21 @@ Decided with the user for the beta. Numbers live in data and will be tuned.
 6. Table background
 7. Cursor
 
+**UI-skin slots (decided 2026-11-07).** Customization is a big part of the game, so four more global slots skin parts of the interface. Like the other global slots they are always worn:
+
+8. Starlight coin: the icon of the prestige currency.
+9. Sticker style: how achievement stickers look in the sticker book.
+10. Skill nodes: the gem nodes of the account tree and the card enhancement star chart.
+11. Wardrobe style: the slot plates, item tiles and level ladder of the Wardrobe.
+
+**Every option is kept (decided 2026-11-07).** All the options drawn for the beta art batch (B1–B10, mockups [Beta Art Batch](https://claude.ai/artifact/MCYUAzMXJuYwkSCnvZp52c) and [Wardrobe Options](https://claude.ai/artifact/YDW7qjLczmkvzMx4YzVAQT)) become cosmetics instead of one being picked:
+
+- **B1 Starlight coin, B6 sticker style, B7 skill nodes, B10 Wardrobe style:** option A of each is the starter item of its UI-skin slot; options B–E are unlockable items in that slot.
+- **B2 Verdant Reverie:** option A is the Verdant Reverie set; options B–E are four more garden sets (vine, fern, moss, blossom), each a full coherent set across the seven card and table slots with its own set bonus.
+- **B3 Heartwood Halo and B4 Core Pulse:** option A carries the name; options B–E are further card-exclusive borders (Moonwood Dryad) and finishes (Core Titan).
+- **B5 Common and Epic loose items:** all five styles ship (forge, woodcraft, star chart, candy enamel, runestone), each with its Common border, Common numbers, Epic attack and Epic tick.
+- **B8 max-level ambient particles** (rail drift, cel pop, frame orbit, slow pair, footer fountain) and **B9 corner flourishes** (acanthus scroll, pauldron plate, wing tips, gem shards, knot and cabochon) are spread across the borders and finishes, so different items reach their maximum level with different particles and corners. **Corners are pixel art** like the frames (section 13), never vector.
+
 - Some rare cosmetics are **exclusive to one specific card** and override the global slot on that card only.
 - **Wearing card cosmetics depends on the card's rank.** Any item can be owned (and its owned buff counts), but a card must reach a minimum rank to wear it; below that it shows the starter look for that slot. Starting values: card border from Gold ★1, card finish (holo) from Prismatic ★1, card-exclusive items from Prismatic ★6. Global slots (attack, tick, numbers, table, cursor) are always worn. The thresholds live in data and are expected to be tuned.
 - A holo finish covers the whole card, but card text always stays above it.
@@ -392,6 +407,13 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Account tree.** 23 nodes over the six branches, each rank adding its bonus once more (source `skill`): Combat holds Might, Keen Eye (crit chance), Brutal (crit damage), Vigor and Guard; Summoning / Luck is `luck`; Automation / Offline is `automation`. Respec refunds every point: free once per ascension, then 5 Starlight.
     - **Card enhancements.** Every card has five options from its job's template, values scaled by rarity, costing 20 points in total. Budgets: Bronze 0, Silver 4, Gold 7, Prismatic 10 (half the total at the top). Options apply while the card is in a loadout (source `enhancement`). Respec is free.
 22. **Dev saves.** Dev builds take `BI_PROFILE` / `--bi-profile` or `BI_USER_DATA_DIR` so parallel dev apps never autosave over each other (`docs/WORK_SPLIT.md`).
+23. **Settings page.** Four framed panels in two columns: Display, Sound, Save, Help.
+    - **Reduced motion:** Follow Windows (default), On or Off, applied to every reduced-motion check (CSS and script) in the app.
+    - **Number format:** Scientific (default, the game's own form), Suffixes (K, M, B … Dc, then scientific) or Engineering (exponents in steps of three). Numbers below a million always show in full. Display only; saves keep exact numbers.
+    - **Autosave:** every 10 s, 30 s (default), 1 min, 2 min or 5 min. Purchases still save right away.
+    - **Export:** copy to the clipboard or save a `.txt` file. **Import:** paste or load a file; the save is checked first, errors show in the page, and an in-page confirm compares both games before replacing.
+    - These preferences are stored per player next to the sound settings (not in the save).
+    - **Report an issue** opens the pre-filled issue of 12.5 in the browser. The log lines are the game window's own recent console lines and errors until the main process exposes its log. The link stays under about 7,500 characters by leaving out the oldest log lines.
 
 ## 13. Art style
 

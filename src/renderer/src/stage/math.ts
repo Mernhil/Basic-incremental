@@ -1,4 +1,5 @@
-import { Decimal, formatDecimal } from '../../../game';
+import { Decimal } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 
 /**
  * Pure helpers behind the stage juice (DESIGN.md 14): popup sizes, a running average of hits,
@@ -98,7 +99,7 @@ export function overCap<T>(items: T[], cap: number): T[] {
  * below 10, the game's short form from 1,000 up.
  */
 export function popText(value: Decimal): string {
-  if (value.gte(1000)) return formatDecimal(value);
+  if (value.gte(1000)) return fmt(value);
   if (value.gte(10)) return value.round().toString();
-  return formatDecimal(new Decimal(value.toFixed(1)));
+  return fmt(new Decimal(value.toFixed(1)));
 }

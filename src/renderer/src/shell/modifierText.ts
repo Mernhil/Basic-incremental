@@ -1,5 +1,6 @@
 import type { Content } from '../../../data';
-import { formatDecimal, type Modifier } from '../../../game';
+import { type Modifier } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 
 /** Modifier wording shared by stat tooltips and view models. No DOM, so models can use it. */
 
@@ -93,7 +94,7 @@ export function effectText(m: Pick<Modifier, 'stat' | 'kind' | 'value' | 'scope'
 
 /** A modifier's value as shown in tooltips and previews: "+10%", "+1", "×2". */
 export function modifierText(m: Pick<Modifier, 'kind' | 'value'>): string {
-  const v = formatDecimal(m.value);
+  const v = fmt(m.value);
   switch (m.kind) {
     case 'flat':
       return m.value.gte(0) ? `+${v}` : v;

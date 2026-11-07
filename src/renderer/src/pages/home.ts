@@ -2,7 +2,6 @@ import type { Content } from '../../../data';
 import {
   PRODUCTION_JOBS,
   collectModifiers,
-  formatDecimal,
   jobProductionPerSecond,
   plots,
   producersOf,
@@ -11,6 +10,7 @@ import {
   type GameState,
   type ProductionJob,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { bossArt, sentinelLevel } from '../art/bosses';
 import { mineTile, treeTile } from '../art/gems';
@@ -92,7 +92,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     const where = dungeon?.name ?? trial?.name ?? COPY.home.nothingFought;
     set(fight.where, where);
     const r = stageReadout(s, content);
-    set(fight.rate, art ? COPY.home.dps(formatDecimal(r.averageDps)) : '');
+    set(fight.rate, art ? COPY.home.dps(fmt(r.averageDps)) : '');
     fight.btn.setAttribute('aria-label', `${COPY.home.fight}: ${where}. ${COPY.home.openDungeons}`);
   }
 
@@ -120,7 +120,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
       if (tileAt[job].size === 0) ui.scene.append(h('span', 'hm-empty', COPY.home.idleJob));
     }
     const rates = Object.entries(jobProductionPerSecond(s, content, job, mods)).map(([res, v]) =>
-      COPY.table.perSecond(`${formatDecimal(v)} ${content.resourceById.get(res)?.name ?? res}`),
+      COPY.table.perSecond(`${fmt(v)} ${content.resourceById.get(res)?.name ?? res}`),
     );
     const total = list.filter(Boolean).length;
     set(ui.where, job === 'logging' ? COPY.table.plots(total) : COPY.table.slots(total));
