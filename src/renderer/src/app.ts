@@ -22,13 +22,14 @@ import {
   type TierUp,
 } from '../../game';
 import { COPY } from './copy';
-import { applyGlobalTheme, assertVisualsImplemented } from './theme/apply';
+import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
 import { createShell, frame, h, PAGES, placeholderPage, type Currency } from './shell/shell';
 import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
 import { createHomePage } from './pages/home';
 import { createSummonPage } from './pages/summon';
 import { createAscensionPage } from './pages/ascension';
+import { createWardrobePage } from './pages/wardrobe';
 import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
 import { cardItemArt, loadoutProps } from './pages/loadoutCards';
@@ -63,6 +64,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   try {
     content = loadContent();
     assertVisualsImplemented(content);
+    configureCardLevels(content);
   } catch (error) {
     showFatal(root, error);
     return;
@@ -117,7 +119,18 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   });
   shell.setLevel(1, 0, '');
   for (const p of PAGES) {
-    if (!['home', 'settings', 'production', 'dungeons', 'cards', 'summon', 'shop'].includes(p.id))
+    if (
+      ![
+        'home',
+        'settings',
+        'production',
+        'dungeons',
+        'cards',
+        'summon',
+        'shop',
+        'wardrobe',
+      ].includes(p.id)
+    )
       placeholderPage(shell.page(p.id as Exclude<typeof p.id, 'home'>), p.id as never);
   }
   const app = shell.notices;
@@ -203,6 +216,13 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     state: () => loop.state,
     apply: applyAndSave,
     sound: playSound,
+  });
+  pages['wardrobe'] = createWardrobePage(shell.page('wardrobe'), {
+    content,
+    state: () => loop.state,
+    apply: applyAndSave,
+    sound: playSound,
+    onLoadoutChange: applyTheme,
   });
   pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
     content,

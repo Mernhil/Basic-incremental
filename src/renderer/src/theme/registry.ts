@@ -21,6 +21,14 @@ export const RECIPES = [
   'holo-aurora',
   'holo-aurora-flow',
   'holo-sparkle',
+  // max level (DESIGN.md 7): edge-breaking corner flourishes and ambient animations. Cards at
+  // their max level also get these themed by their own recipe (data-max-* in recipes.css).
+  'flourish-corners',
+  'ambient-motes',
+  'ambient-embers',
+  'ambient-glints',
+  'ambient-stars',
+  'ambient-bubbles',
   // rarity
   'neon',
   'chrome',

@@ -26,7 +26,7 @@
     "id": "wardrobe_gate",
     "name": "Wardrobe Gate",
     "kind": "cosmetics",
-    "enabled": false,
+    "enabled": true,
     "cost": { "resource": "ember_sigil", "single": "10", "ten": "100" },
     "pool": [
       { "itemId": "holo_hex", "rarity": "rare", "weight": 10 },

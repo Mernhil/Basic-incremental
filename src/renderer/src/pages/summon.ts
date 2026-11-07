@@ -10,6 +10,7 @@ import { COPY } from '../copy';
 import { h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { showReveal } from '../stage/reveal';
+import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { cardFaceProps } from './loadoutCards';
 import type { PageContext } from './production';
 import { portalView, revealViews } from './summonModel';
@@ -18,7 +19,7 @@ import './summon.css';
 /**
  * Summon page (DESIGN.md 6 Beta portals, A6 E shelf of portals): the portals side by side as
  * cards, each with its pity bar, rates in a hover tooltip and ×1 / ×10 buttons; the reveal opens
- * in a modal over the shelf. The Wardrobe Gate waits for the Wardrobe (Phase 5).
+ * in a modal over the shelf. Cosmetic pulls (Wardrobe Gate) show their swatch in the reveal.
  */
 
 export interface SummonContext extends PageContext {
@@ -53,6 +54,10 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       portalName: portal.name,
       views: revealViews(result.results, content),
       face: (id) => (content.cardById.has(id) ? cardFaceProps(content, after, id) : null),
+      picture: (id) =>
+        content.cosmeticById.has(id)
+          ? cosmeticSwatch(content, id, after.cosmetics.owned[id]?.level ?? 1)
+          : null,
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
@@ -115,7 +120,9 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     return card;
   }
 
-  shelf.append(...content.portals.map((p) => portalCard(p.id)), gateCard());
+  // the Wardrobe Gate opens with the Wardrobe (DESIGN.md 6); until then it shows as locked
+  const gateOpen = content.portals.some((p) => p.kind === 'cosmetics');
+  shelf.append(...content.portals.map((p) => portalCard(p.id)), ...(gateOpen ? [] : [gateCard()]));
 
   function render(): void {
     const s: GameState = ctx.state();

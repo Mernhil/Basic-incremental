@@ -315,3 +315,302 @@
 .r-knight-plate {
   --bi-frame-family: knight-plate;
 }
+
+/* ===== max level: ambient animations and edge-breaking flourishes (DESIGN.md 7) ================
+   A card wearing a border or finish at its max level gets data-max-border / data-max-finish
+   (theme/apply.ts). The ambient look is themed by the item's own recipe; data may also name an
+   ambient recipe directly (r-ambient-*, r-flourish-corners) on the item's ambient level.
+   Rules: CSS only, transform and opacity only, 3 particles per slot (6 per card at most), never
+   over the rank footer, paused off screen (data-offscreen), a still frame under reduced motion. */
+.bi-amb,
+.bi-card__flourish {
+  display: none;
+  position: absolute;
+  pointer-events: none;
+}
+.bi-amb {
+  /* the particle zone: inside the card, above the rank footer keep-clear band */
+  inset: 6% 6% 14% 6%;
+  z-index: 3;
+}
+.bi-amb i {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  opacity: 0;
+  animation: var(--amb-anim) var(--amb-dur, 3.6s) ease-in-out var(--d) infinite;
+}
+.bi-amb i:nth-child(1) {
+  --x: 22%;
+  --y: 88%;
+  --d: 0s;
+}
+.bi-amb i:nth-child(2) {
+  --x: 58%;
+  --y: 94%;
+  --d: -1.2s;
+}
+.bi-amb i:nth-child(3) {
+  --x: 82%;
+  --y: 84%;
+  --d: -2.4s;
+}
+/* finish particles sit elsewhere so both slots read when both are maxed */
+.bi-amb--finish i:nth-child(1) {
+  --x: 34%;
+  --y: 30%;
+}
+.bi-amb--finish i:nth-child(2) {
+  --x: 72%;
+  --y: 46%;
+}
+.bi-amb--finish i:nth-child(3) {
+  --x: 18%;
+  --y: 62%;
+}
+
+/* -- border ambients -- */
+.bi-card[data-max-border] .bi-amb--border,
+:is(.r-ambient-motes, .r-ambient-embers, .r-ambient-glints) .bi-amb--border {
+  display: block;
+}
+/* fallback: motes in the border's own line colour */
+.bi-amb--border i {
+  --amb-anim: r-amb-rise;
+  border-radius: 50%;
+  background: var(--bi-plate-line, #f3dc9a);
+  box-shadow: 0 0 6px var(--bi-plate-line, #f3dc9a);
+}
+/* gilt motes: small gold diamonds drifting up (Gilded Filigree, Gilded Plate) */
+:is(.r-ambient-motes, .r-filigree-1[data-max-border], .r-inner-gilt[data-max-border])
+  .bi-amb--border
+  i {
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: linear-gradient(135deg, #fff6d6, #d9b35a);
+  box-shadow: 0 0 6px rgba(255, 222, 150, 0.9);
+  --amb-anim: r-amb-rise-turn;
+}
+/* floating flames (Ember Crown) */
+:is(.r-ambient-embers, .r-crown[data-max-border]) .bi-amb--border i {
+  width: 7px;
+  height: 10px;
+  margin: -5px -3.5px;
+  border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+  background: radial-gradient(circle at 50% 70%, #fff3c4, #ff8a3d 55%, rgba(184, 67, 26, 0));
+  box-shadow: none;
+  --amb-anim: r-amb-flame;
+  --amb-dur: 2.6s;
+}
+/* gold glints that flash in place near the corners (Gilded Frame) */
+:is(.r-ambient-glints, .r-frame-tradition[data-max-border]) .bi-amb--border i {
+  width: 9px;
+  height: 9px;
+  margin: -4.5px;
+  border-radius: 0;
+  background: #fff6d6;
+  box-shadow: none;
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  --amb-anim: r-amb-glint;
+  --amb-dur: 3s;
+}
+:is(.r-ambient-glints, .r-frame-tradition[data-max-border]) .bi-amb--border i:nth-child(1) {
+  --x: 4%;
+  --y: 4%;
+}
+:is(.r-ambient-glints, .r-frame-tradition[data-max-border]) .bi-amb--border i:nth-child(2) {
+  --x: 96%;
+  --y: 10%;
+}
+:is(.r-ambient-glints, .r-frame-tradition[data-max-border]) .bi-amb--border i:nth-child(3) {
+  --x: 8%;
+  --y: 96%;
+}
+
+/* -- finish ambients -- */
+.bi-card[data-max-finish] .bi-amb--finish,
+:is(.r-ambient-stars, .r-ambient-bubbles) .bi-amb--finish {
+  display: block;
+}
+/* fallback (Gilded Tradition's diamond holo): four-point glints in the finish colour */
+.bi-amb--finish i {
+  width: 8px;
+  height: 8px;
+  margin: -4px;
+  background: var(--bi-finish-b, #fff);
+  clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%);
+  --amb-anim: r-amb-glint;
+  --amb-dur: 3.2s;
+}
+/* stars appearing and fading (Aurora Veil) */
+:is(.r-ambient-stars, .r-holo-aurora[data-max-finish]) .bi-amb--finish i {
+  width: 6px;
+  height: 6px;
+  margin: -3px;
+  border-radius: 50%;
+  clip-path: none;
+  background: radial-gradient(circle, #fff 0 30%, var(--bi-finish-a, #8fe3ff) 60%, transparent 72%);
+  --amb-anim: r-amb-star;
+  --amb-dur: 4.2s;
+}
+/* rising bubbles (Hex and Wave holo) */
+:is(.r-ambient-bubbles, .r-holo-hex[data-max-finish], .r-holo-waves[data-max-finish])
+  .bi-amb--finish
+  i {
+  --y: 92%;
+  width: 7px;
+  height: 7px;
+  margin: -3.5px;
+  border-radius: 50%;
+  clip-path: none;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9), transparent 45%);
+  box-shadow: inset 0 0 0 1px var(--bi-finish-a, rgba(255, 255, 255, 0.7));
+  --amb-anim: r-amb-bubble;
+  --amb-dur: 4s;
+}
+
+@keyframes r-amb-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  20% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-120px) scale(1);
+  }
+}
+@keyframes r-amb-rise-turn {
+  0% {
+    opacity: 0;
+    transform: translateY(0) rotate(45deg) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-130px) rotate(225deg) scale(1);
+  }
+}
+@keyframes r-amb-flame {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.6);
+  }
+  25% {
+    opacity: 1;
+  }
+  60% {
+    transform: translate(4px, -60px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-3px, -110px) scale(0.4);
+  }
+}
+@keyframes r-amb-glint {
+  0%,
+  60%,
+  100% {
+    opacity: 0;
+    transform: scale(0.2) rotate(0deg);
+  }
+  75% {
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+  }
+}
+@keyframes r-amb-star {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  45%,
+  60% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+}
+@keyframes r-amb-bubble {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translate(5px, -70px) scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-2px, -150px) scale(1.1);
+  }
+}
+
+/* -- edge-breaking corner flourishes: corners only, at most ~8% of the card width outside the
+      edge (12px of 176), within the outer fifth of each side; bottom pieces stay outside the
+      card so the rank footer stays clear; the tier frame (drawn after) sits on top -- */
+:is(
+    .r-flourish-corners,
+    .r-filigree-1[data-max-border],
+    .r-inner-gilt[data-max-border],
+    .r-frame-tradition[data-max-border]
+  )
+  .bi-card__flourish {
+  display: block;
+  inset: -12px;
+  z-index: 3;
+}
+.bi-card__flourish::before,
+.bi-card__flourish::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 34px;
+  background:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M6 32V12Q6 6 12 6H32M10 2Q2 2 2 10' stroke='%232b1a05' stroke-width='4'/><path d='M6 32V12Q6 6 12 6H32M10 2Q2 2 2 10' stroke='%23f3dc9a' stroke-width='2'/></g><circle cx='12' cy='12' r='2.4' fill='%23d9404f' stroke='%232b1a05' stroke-width='1.2'/></svg>")
+      left top / 34px 34px no-repeat,
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='34' height='34' viewBox='0 0 34 34'><g transform='translate(34 0) scale(-1 1)'><g fill='none' stroke-linecap='round' stroke-linejoin='round'><path d='M6 32V12Q6 6 12 6H32M10 2Q2 2 2 10' stroke='%232b1a05' stroke-width='4'/><path d='M6 32V12Q6 6 12 6H32M10 2Q2 2 2 10' stroke='%23f3dc9a' stroke-width='2'/></g><circle cx='12' cy='12' r='2.4' fill='%23d9404f' stroke='%232b1a05' stroke-width='1.2'/></g></svg>")
+      right top / 34px 34px no-repeat;
+}
+.bi-card__flourish::before {
+  top: 0;
+}
+.bi-card__flourish::after {
+  bottom: 0;
+  transform: scaleY(-1);
+}
+/* the Gilded Frame's corners lean crimson */
+.r-frame-tradition[data-max-border] .bi-card__flourish {
+  filter: hue-rotate(-14deg) saturate(1.4);
+}
+
+/* off screen: paused; reduced motion: a still frame of the same elements */
+.bi-card[data-offscreen] .bi-amb i {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .bi-amb i {
+    animation: none !important;
+    opacity: 0.85;
+    transform: translateY(-40px);
+  }
+}
+:root[data-motion='reduced'] .bi-amb i {
+  animation: none !important;
+  opacity: 0.85;
+  transform: translateY(-40px);
+}
