@@ -330,6 +330,13 @@ describe('burst gauges (DESIGN.md 11.3, 11.8)', () => {
 });
 
 describe('The Glimmer Trial (timed attempts, DESIGN.md 11.8)', () => {
+  /** What the data pays for a score: every tier at or below it, summed per resource. */
+  const pays = (score: number, id: string): number =>
+    trial.tiers
+      .filter((t) => t.score <= score + 1e-9)
+      .flatMap((t) => t.rewards)
+      .filter((r) => r.resource === id)
+      .reduce((sum, r) => sum + r.amount.toNumber(), 0);
   const open = (): GameState =>
     ok(setActiveDungeon(cleared(mossy.id, ember.id), content, trial.id));
 
@@ -345,14 +352,17 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md 11.8)', () => {
         .find((r) => r.resource === id)
         ?.amount.toNumber() ?? 0;
     expect(trialRewards(trial, 0.2)).toEqual([]);
-    expect(amount(0.25, 'glimmer_dust')).toBe(1);
-    expect(amount(0.6, 'glimmer_dust')).toBe(3);
+    expect(amount(0.25, 'glimmer_dust')).toBe(pays(0.25, 'glimmer_dust'));
+    expect(amount(0.6, 'glimmer_dust')).toBe(pays(0.5, 'glimmer_dust'));
     expect(amount(0.6, 'facet_shard')).toBe(0);
-    expect(amount(0.75, 'facet_shard')).toBe(1);
-    expect(amount(1, 'glimmer_dust')).toBe(11);
-    expect(amount(1, 'facet_shard')).toBe(3);
+    expect(amount(0.75, 'facet_shard')).toBe(pays(0.75, 'facet_shard'));
+    expect(amount(0.75, 'facet_shard')).toBeGreaterThan(0);
+    expect(amount(1, 'glimmer_dust')).toBe(pays(1, 'glimmer_dust'));
+    expect(amount(1, 'facet_shard')).toBe(pays(1, 'facet_shard'));
     const doubled = trialRewards(trial, 1, [mod('trial.reward', 'mult', '2')]);
-    expect(doubled.find((r) => r.resource === 'facet_shard')!.amount.eq(6)).toBe(true);
+    expect(
+      doubled.find((r) => r.resource === 'facet_shard')!.amount.eq(2 * pays(1, 'facet_shard')),
+    ).toBe(true);
   });
 
   it('runs a 30 s attempt, pays by score and starts the next one', () => {
@@ -369,8 +379,8 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md 11.8)', () => {
     const { state, report } = advance(mid, content, 20_000, rng);
     expect(report.trialAttempts).toBe(1);
     expect(report.trialTopScore).toBeCloseTo(0.5);
-    expect(report.materials).toEqual({ glimmer_dust: 3 });
-    expect(state.resources['glimmer_dust']!.eq(3)).toBe(true);
+    expect(report.materials).toEqual({ glimmer_dust: pays(0.5, 'glimmer_dust') });
+    expect(state.resources['glimmer_dust']!.eq(pays(0.5, 'glimmer_dust'))).toBe(true);
     expect(state.combat.trialBest[trial.id]).toBeCloseTo(0.5);
     expect(state.combat.trialAttempt.elapsedSeconds).toBeCloseTo(0);
     expect(state.clearedDungeons).not.toContain(trial.id);
@@ -383,7 +393,7 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md 11.8)', () => {
     expect(report.cleared).toEqual([trial.id]);
     expect(state.clearedDungeons).toContain(trial.id);
     expect(trialStatus(state, content)!.cleared).toBe(true);
-    expect(state.resources['facet_shard']!.eq(3)).toBe(true);
+    expect(state.resources['facet_shard']!.eq(pays(1, 'facet_shard'))).toBe(true);
   });
 
   it('long spans resolve many attempts the same as small steps', () => {

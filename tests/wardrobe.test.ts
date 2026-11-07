@@ -136,7 +136,12 @@ describe('drawn levels of borders and finishes (DESIGN.md 7, 11.1)', () => {
         top.some((r) => r.startsWith('ambient-')),
         c.id,
       ).toBe(true);
-      if (c.slot === 'border') expect(top, c.id).toContain('flourish-corners');
+      if (c.slot === 'border') {
+        expect(
+          top.some((r) => r === 'flourish-corners' || r.startsWith('corner-')),
+          c.id,
+        ).toBe(true);
+      }
       // Only the ambient level animates.
       for (const level of c.levels.slice(0, -1)) {
         expect(
@@ -236,7 +241,7 @@ describe('the wardrobe grid', () => {
 describe('dungeon cosmetic drops are owned', () => {
   it('a rare drop that is a cosmetic goes into the wardrobe (a copy when owned)', () => {
     const state = freshState();
-    state.combat.damageLevels['copper_edge'] = 200;
+    state.combat.damageLevels['copper_edge'] = 250; // the first boss falls within the 5 s
     // rng 0: every chance roll succeeds, so the first kill drops Holo Hex.
     const { state: after, report } = advance(state, content, 5_000, constantRng(0));
     expect(report.bossKills).toBeGreaterThan(0);

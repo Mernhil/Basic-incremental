@@ -59,7 +59,7 @@ describe('goal rules (DESIGN.md 16, E8)', () => {
 
   it('shows how far the current boss is down', () => {
     const state = fighter();
-    state.bossHp = new Decimal(15_000);
+    state.bossHp = content.dungeons[0]!.boss.hp.mul(0.25);
     const goal = find(allGoals(state, content), 'clear_dungeon:mossy_cellar')!;
     expect(goal.progress).toBeCloseTo(0.75);
   });
@@ -137,12 +137,13 @@ describe('goal rules (DESIGN.md 16, E8)', () => {
   it('has a star-up goal when only materials are missing', () => {
     const state = fighter();
     state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, duplicates: 1 };
-    state.resources['moss_core'] = new Decimal(1);
+    const need = content.cardRules.starUp.tiers.bronze.amounts[0]!.toNumber();
+    state.resources['moss_core'] = new Decimal(need / 2); // half of the first star's Cores
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
     expect(goal).toMatchObject({ title: 'Star up Ember Squire to ★2', page: 'cards' });
     expect(goal.progress).toBeCloseTo(0.5);
     expect(goal.etaSeconds).toBeCloseTo(
-      1 / incomePerSecond(state, content, 'moss_core').toNumber(),
+      need / 2 / incomePerSecond(state, content, 'moss_core').toNumber(),
     );
   });
 

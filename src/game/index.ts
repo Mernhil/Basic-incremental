@@ -1,3 +1,5 @@
+// Dev cheats are NOT exported here: they live in the separate `game/dev` entry, loaded only
+// behind `import.meta.env.DEV` so release bundles never contain them (see dev.ts).
 export { GAME_TITLE, formatVersionLabel } from './meta';
 export * from './num';
 export * from './format';
@@ -129,7 +131,7 @@ export {
   upgradeCosmetic,
   /** What each level adds, level 1 first (shape, accent, gems, glow, ambient). */
   cosmeticLadder,
-  /** Where an item comes from: starter, dungeon, prestige or portal. */
+  /** Where an item comes from: starter, dungeon, prestige, achievement, reward track, shard shop or the Wardrobe Gate. */
   cosmeticSource,
   /** Each set's progress (equipped / total) and whether its bonus applies. */
   setBonuses,

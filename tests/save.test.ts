@@ -13,11 +13,14 @@ import {
 } from '../src/game';
 import { constantRng, bareState, plainContent as content, freshState } from './helpers';
 
+/** Damage levels that make the first boss fall twice in 25 s (about 5000 dps at 60,000 HP). */
+const STRONG_LEVELS = Math.round((4999 * content.dungeons[0]!.boss.hp.toNumber()) / 60_000);
+
 /** A state with non-trivial values everywhere. */
 function busyState() {
   const strong = bareState();
-  strong.combat.damageLevels = { copper_edge: 4999 };
-  // 5000 dps for 25 s plus one signature attack: 175,000 damage = 2 kills (2 rares) of 60,000 HP.
+  strong.combat.damageLevels = { copper_edge: STRONG_LEVELS };
+  // 25 s plus one signature attack: 2.9 times the first boss HP = 2 kills (2 rares).
   let state = advance(strong, content, 25_000, constantRng(0.001)).state;
   state = {
     ...state,
@@ -51,7 +54,7 @@ describe('save round-trip', () => {
     expect(serializeState(loaded.state)).toEqual(serializeState(state));
     expect(loaded.state.resources['oak_gem']!.eq(new Decimal('1.5e500'))).toBe(true);
     expect(loaded.state.combat.trialAttempt.dealt.eq(new Decimal('3e400'))).toBe(true);
-    expect(loaded.state.combat.damageLevels).toEqual({ copper_edge: 4999 });
+    expect(loaded.state.combat.damageLevels).toEqual({ copper_edge: STRONG_LEVELS });
     expect(loaded.state.combat.kills).toEqual({ mossy_cellar: 2 });
     expect(loaded.state.inventory['holo_hex']).toBe(2);
     expect(loaded.state.pity['root_warden']).toBe(17);

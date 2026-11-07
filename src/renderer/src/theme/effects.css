@@ -81,6 +81,12 @@
   font-size: calc(var(--bi-tick-size, 22px) * 1.45);
   color: var(--bi-tick-crit, #ffb02e);
 }
+/* pixel tick styles: the numeral is a drawn canvas (art/cosmetics.ts), no text stroke */
+.bi-tick--px {
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+  font-size: 0;
+}
 @keyframes bi-tick-rise {
   0% {
     opacity: 0;

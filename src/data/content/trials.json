@@ -8,7 +8,7 @@
       "id": "glimmer_sentinel",
       "name": "Crystal Sentinel",
       "art": "crystal_sentinel",
-      "hp": "1.4e5"
+      "hp": "6e6"
     },
     "tiers": [
       {
@@ -25,7 +25,7 @@
         "rewards": [
           {
             "resource": "glimmer_dust",
-            "amount": "2"
+            "amount": "4"
           }
         ]
       },
@@ -34,11 +34,11 @@
         "rewards": [
           {
             "resource": "glimmer_dust",
-            "amount": "3"
+            "amount": "6"
           },
           {
             "resource": "facet_shard",
-            "amount": "1"
+            "amount": "3"
           }
         ]
       },
@@ -47,11 +47,11 @@
         "rewards": [
           {
             "resource": "glimmer_dust",
-            "amount": "5"
+            "amount": "8"
           },
           {
             "resource": "facet_shard",
-            "amount": "2"
+            "amount": "8"
           }
         ]
       }

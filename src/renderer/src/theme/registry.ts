@@ -3,9 +3,11 @@
  * these; `missingVisuals` checks it at startup and in tests.
  *
  * Recipes are CSS classes (`.r-<id>`) in recipes.css. Effects are animations spawned by
- * effects.ts.
+ * effects.ts. The beta-batch pixel cosmetics add their generated ids (art/cosmeticIds.ts).
  */
-export const RECIPES = [
+import { PIXEL_EFFECTS, PIXEL_RECIPES } from '../art/cosmeticIds';
+
+export const BASE_RECIPES = [
   // border
   'knight-plate',
   'filigree-1',
@@ -38,7 +40,10 @@ export const RECIPES = [
   'cursor-prism',
 ] as const;
 
-export const EFFECTS = ['slash-sparks', 'slash-chips', 'heavy-hit', 'rise'] as const;
+export const BASE_EFFECTS = ['slash-sparks', 'slash-chips', 'heavy-hit', 'rise'] as const;
+
+export const RECIPES: readonly string[] = [...BASE_RECIPES, ...PIXEL_RECIPES];
+export const EFFECTS: readonly string[] = [...BASE_EFFECTS, ...PIXEL_EFFECTS];
 
 export const KNOWN_VISUALS = {
   recipes: new Set<string>(RECIPES),

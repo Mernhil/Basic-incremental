@@ -165,7 +165,7 @@ export function validateContent(raw: RawContent): Content {
   );
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
   checkCosmeticSources(
-    { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop },
+    { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop, account },
     issues,
   );
   for (const [step, cost] of Object.entries(cosmeticRules.materials)) {
@@ -454,7 +454,7 @@ function checkAccount(
 
 /**
  * Every non-starter cosmetic has a source (DESIGN.md 7: dungeon drops, a cosmetics portal,
- * prestige; achievements later), and portal pools list items at their own rarity.
+ * prestige, achievements, the account reward track, the shard shop), and portal pools list items at their own rarity.
  */
 function checkCosmeticSources(
   c: Pick<
@@ -467,6 +467,7 @@ function checkCosmeticSources(
     | 'cards'
     | 'achievements'
     | 'shardShop'
+    | 'account'
   >,
   issues: string[],
 ): void {
@@ -474,6 +475,7 @@ function checkCosmeticSources(
     ...c.dungeons.map((d) => d.drops.rare.itemId),
     ...c.prestige.rewards.flatMap((r) => r.cosmetics),
     ...c.achievements.flatMap((a) => a.reward.cosmetics),
+    ...c.account.rewardTrack.flatMap((r) => r.cosmetics),
     ...c.shardShop.flatMap((i) => (i.reward.kind === 'cosmetic' ? [i.reward.cosmetic] : [])),
     ...c.portals.filter((p) => p.kind === 'cosmetics').flatMap((p) => p.pool.map((e) => e.itemId)),
   ]);

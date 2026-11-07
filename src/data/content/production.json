@@ -2,11 +2,19 @@
   "logging": {
     "startPlots": 1,
     "startProducer": "oak",
-    "expansion": { "resource": "oak_gem", "base": "25", "growth": "1.6" }
+    "expansion": {
+      "resource": "oak_gem",
+      "base": "25",
+      "growth": "1.4"
+    }
   },
   "mining": {
     "startPlots": 1,
     "startProducer": "copper_quarry",
-    "expansion": { "resource": "copper_gem", "base": "25", "growth": "1.6" }
+    "expansion": {
+      "resource": "copper_gem",
+      "base": "25",
+      "growth": "1.4"
+    }
   }
 }
