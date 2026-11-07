@@ -179,7 +179,7 @@ export function createShell(opts: {
       const goal = Decimal.max(c.target.sub(c.held), 0);
       if (c.shown.eq(goal)) continue;
       c.shown = rollToward(c.shown, goal, dt);
-      // whole-number amounts (sigils, cores) roll through whole numbers only
+      // whole-number amounts (crystals, cores) roll through whole numbers only
       const text = fmt(goal.eq(goal.floor()) ? c.shown.round() : c.shown);
       const v = currencyValues.get(id)!;
       if (v.textContent !== text) v.textContent = text;

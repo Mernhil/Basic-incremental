@@ -109,7 +109,8 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     tree_gem: 'wood',
     mine_gem: 'ore',
     material: 'material',
-    portal: 'portal',
+    currency: 'material', // placeholder until Money gets its own coin
+    crystal: 'portal',
     prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();
@@ -237,7 +238,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   };
 
   // account level-ups (DESIGN.md 16 E7): the badge rings, a fanfare, and a toast listing what
-  // the new levels gave (skill points, sigils, a cosmetic, cost cap)
+  // the new levels gave (skill points, crystals, a cosmetic, cost cap)
   const celebrateLevel = (from: number, to: number): void => {
     if (to <= from) return;
     const v = levelUpView(content, rewardTrack(loop.state, content), from, to);

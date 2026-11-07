@@ -8,11 +8,16 @@ import { h } from './shell';
 /**
  * The reward track (DESIGN.md 16 E7, A16 B): the quest scroll unrolls under the header with every
  * account level as a stop on a path. Plain levels (a skill point) are small stones; levels with
- * sigils, a cosmetic or a cost cap bump are signposts. Opens from the account level badge.
+ * crystals, a cosmetic or a cost cap bump are signposts. Opens from the account level badge.
  */
 
-/** Sigil tints by tier until the sigils get their own coins (pixel-art request). */
-const SIGIL_TINT = ['#6fbf5a', '#e2773e', '#6cb8e8'];
+/** Crystal and material tints until they get their own coins (pixel-art request). */
+const RESOURCE_TINT: Record<string, string> = {
+  summon_crystal: '#6fbf5a',
+  glamour_crystal: '#e2773e',
+  frost_sigil: '#6cb8e8',
+};
+const DEFAULT_TINT = '#c9a14a';
 
 export interface RewardTrack {
   open(tiles: TrackTileView[], level: number, max: number): void;
@@ -34,9 +39,8 @@ export function createRewardTrack(
     const box = h('span', 'shell-track__art');
     if (r.kind === 'cosmetic') box.append(cosmeticSwatch(ctx.content, r.id, 1));
     else if (r.kind === 'resource') {
-      const tier = ctx.content.resourceById.get(r.id)?.tier ?? 1;
       const g = h('span', 'shell-track__glyph shell-track__glyph--resource');
-      g.style.background = SIGIL_TINT[Math.min(tier, SIGIL_TINT.length) - 1]!;
+      g.style.background = RESOURCE_TINT[r.id] ?? DEFAULT_TINT;
       g.append(icon('portal', 'shell-icon'));
       box.append(g);
     } else if (r.kind === 'cap') {

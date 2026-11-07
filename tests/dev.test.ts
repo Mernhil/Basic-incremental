@@ -15,11 +15,11 @@ import { content, freshState } from './helpers';
 describe('dev cheats (dev builds only)', () => {
   it('grants an amount of a resource without touching the input state', () => {
     const state = freshState();
-    const result = devGrant(state, content, { resource: 'moss_sigil', amount: 250 });
+    const result = devGrant(state, content, { resource: 'summon_crystal', amount: 250 });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.resources['moss_sigil']!.toNumber()).toBe(250);
-    expect(state.resources['moss_sigil']!.toNumber()).toBe(0);
+    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(250);
+    expect(state.resources['summon_crystal']!.toNumber()).toBe(0);
   });
 
   it('accepts a decimal string amount and refuses unknown resources or bad amounts', () => {
@@ -33,10 +33,13 @@ describe('dev cheats (dev builds only)', () => {
   });
 
   it('grants every resource at once with resource "all"', () => {
-    const result = devGrant(freshState(), content, { resource: 'all', amount: 5 });
+    const before = freshState();
+    const result = devGrant(before, content, { resource: 'all', amount: 5 });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    for (const r of content.resources) expect(result.state.resources[r.id]!.toNumber()).toBe(5);
+    for (const r of content.resources) {
+      expect(result.state.resources[r.id]!.toNumber()).toBe(before.resources[r.id]!.toNumber() + 5);
+    }
   });
 
   it('marks a dungeon cleared with its unlocks, and can un-clear it', () => {
@@ -79,8 +82,8 @@ describe('dev cheats (dev builds only)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.state.account.level).toBeGreaterThan(10);
-    // Level 5 on the track gives 10 Moss Sigils.
-    expect(result.state.resources['moss_sigil']!.toNumber()).toBeGreaterThanOrEqual(10);
+    // Level 5 on the track gives 10 Summon Crystals.
+    expect(result.state.resources['summon_crystal']!.toNumber()).toBeGreaterThanOrEqual(10);
   });
 
   it('grants a cosmetic (new, then a copy)', () => {

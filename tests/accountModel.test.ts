@@ -47,7 +47,7 @@ describe('reward track', () => {
     const lv10 = tiles.find((t) => t.level === 10)!;
     // the cosmetic is the headline, then the sigils
     expect(lv10.rewards.map((r) => r.kind)).toEqual(['cosmetic', 'resource', 'points']);
-    expect(lv10.rewards[1]!.text).toBe('+20 Moss Sigil');
+    expect(lv10.rewards[1]!.text).toBe('+20 Summon Crystal');
 
     expect(tiles.find((t) => t.level === 4)!.milestone).toBe(false);
     expect(lv3.label).toBe('Level 3: +1 loadout cost cap, +1 skill point. Reached');
@@ -61,7 +61,7 @@ describe('level-up toast', () => {
     const v = levelUpView(content, rewardTrack(s, content), 7, 10);
     expect(v.title).toBe('Account level 10!');
     expect(v.lines[0]).toBe('+3 skill points');
-    expect(v.lines).toContain('+20 Moss Sigil');
+    expect(v.lines).toContain('+20 Summon Crystal');
     expect(v.lines).toContain('+1 loadout cost cap');
     expect(v.lines).toContain(content.cosmeticById.get('holo_hex')!.name);
     expect(v.big).toBe(true);

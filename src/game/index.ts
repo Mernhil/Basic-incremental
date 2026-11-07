@@ -67,7 +67,7 @@ export {
   accountLevel,
   /** XP from one level to the next (quick early, slow later). */
   xpToNextAccountLevel,
-  /** The reward track: every level 2..max with skill points, sigils, cosmetics, cost cap, reached. */
+  /** The reward track: every level 2..max with skill points, crystals, cosmetics, cost cap, reached. */
   rewardTrack,
   /** The account tree: each node's rank, max, requirements met, can buy, bonus now / next. */
   skillTree,

@@ -147,7 +147,7 @@ export function createDirector(content: Content, state: () => GameState) {
       if (report.bossKills > 0) {
         const loot: Loot[] = [];
         for (const r of content.resources) {
-          if (r.kind !== 'portal' && r.kind !== 'material') continue;
+          if (r.kind !== 'crystal' && r.kind !== 'currency' && r.kind !== 'material') continue;
           const gained = (after.resources[r.id] ?? new Decimal(0)).sub(
             before.resources[r.id] ?? new Decimal(0),
           );

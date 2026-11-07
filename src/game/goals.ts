@@ -120,16 +120,21 @@ export function incomePerSecond(
   const active = state.activeDungeonId;
   const dungeon = active ? content.dungeonById.get(active) : undefined;
   if (dungeon) {
+    const drops = effectiveDrops(dungeon, modifiers, content);
+    // The wage is paid for every second of fighting.
+    if (drops.wage?.resource === resourceId) total = total.add(drops.wage.perSecond);
     const spk = killSeconds(state, content, dungeon.id, modifiers);
     if (spk !== null) {
-      const drops = effectiveDrops(dungeon, modifiers);
       let perKill = 0;
-      if (drops.portalResource.resource === resourceId) {
-        const avg = (drops.portalResource.min + drops.portalResource.max) / 2;
-        perKill += avg * (drops.portalResource.multiplier ?? 1);
+      for (const currency of drops.currencies) {
+        if (currency.resource !== resourceId) continue;
+        perKill += ((currency.min + currency.max) / 2) * (currency.multiplier ?? 1);
       }
       if (drops.material.resource === resourceId) {
         perKill += drops.material.chance * drops.material.amount;
+      }
+      for (const extra of drops.extraMaterials) {
+        if (extra.resource === resourceId) perKill += (extra.min + extra.max) / 2;
       }
       total = total.add(perKill / spk);
     }

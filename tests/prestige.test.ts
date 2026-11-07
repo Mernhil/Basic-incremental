@@ -37,7 +37,7 @@ function expectedGain(points: number): number {
 function progressedRun(): GameState {
   const state = runWith(1e8, 1e6);
   state.resources['oak_gem'] = new Decimal(5000);
-  state.resources['moss_sigil'] = new Decimal(40);
+  state.resources['summon_crystal'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
   state.production.logging.expansions = 6;
   state.production.logging.plots = Array(7).fill('ironbark');
@@ -110,6 +110,7 @@ describe('ascension preview', () => {
         'mastery',
         'medals',
         'portal_pity',
+        'crystals',
         'starlight',
       ]),
     );
@@ -133,12 +134,30 @@ describe('ascend', () => {
     expect(s.production.logging.plots).toEqual(['oak']);
     expect(s.production.mineLevels).toEqual({});
     for (const [id, amount] of Object.entries(s.resources)) {
-      if (id !== STAR) expect(amount.toNumber(), id).toBe(0);
+      const kind = content.resourceById.get(id)!.kind;
+      if (kind === 'prestige' || kind === 'crystal') continue;
+      // Gems, Money and Cores start over (Money from its starting amount).
+      const start = content.resourceById.get(id)!.startAmount?.toNumber() ?? 0;
+      expect(amount.toNumber(), id).toBe(start);
     }
     expect(s.bursts.logging).toEqual({ gauge: 0, timer: 0 });
     expect(s.bossHp).toBeNull();
     expect(s.combat.loadoutDamage.toNumber()).toBe(0);
     expect(s.prestigeCount).toBe(1);
+  });
+
+  it('keeps the premium crystals, and sends Money back to its starting amount (DESIGN.md 11.13)', () => {
+    const before = progressedRun();
+    before.resources['money'] = new Decimal('4e9');
+    before.resources['glamour_crystal'] = new Decimal(75);
+    const result = ascend(before, content);
+    if (!result.ok) throw new Error(result.reason);
+    const s = result.state;
+    expect(s.resources['summon_crystal']!.toNumber()).toBe(40);
+    expect(s.resources['glamour_crystal']!.toNumber()).toBe(75);
+    expect(s.resources['money']!.eq(content.resourceById.get('money')!.startAmount!)).toBe(true);
+    expect(s.resources['moss_core']!.toNumber()).toBe(0);
+    expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 
   it('keeps damage lines, cards, cosmetics, unlocks, mastery, medals and pity', () => {

@@ -8,15 +8,16 @@
  *   priority list) as soon as they are affordable, and rebuilds each card's enhancements as the
  *   best set its budget allows;
  * - keeps the resources the next waiting card upgrade or tree kind needs (reservations);
- * - spends the rest of each gem on the economy purchase with the best gain per gem: a damage line
+ * - spends its Money on the economy purchase with the best gain per Money: a damage line
  *   (relative DPS gain, with bulk buys up to the next x2 milestone), a mine level (relative gain
- *   of that gem) or a plot / slot (relative gain of the job), waiting for the best one unless a
- *   cheaper one costs a small share of it;
+ *   of the weighted production) or a plot / slot (the same for the job's share), waiting for the
+ *   best one unless a cheaper one costs a small share of it. Card upgrades use gems and Cores
+ *   only, so they never compete with Money;
  * - spreads plots / slots over the unlocked producers, fills loadouts with the rarest cards,
  *   equips complete cosmetic sets;
  * - fights: the Glimmer Trial once it can score 100%, else a newly killable dungeon, else the
  *   cleared trial for cosmetic materials within a time share, else a dungeon whose Core a card
- *   waits for, else the hardest killable one;
+ *   waits for, else the hardest killable one (every dungeon pays Money and both crystals);
  * - ascends once the run's Starlight per hour has passed its peak.
  * Mastery, milestones, crits, achievements and account levels come from the real game rules.
  */
@@ -47,6 +48,7 @@ import {
   emptyCardLoadout,
   expansionCost,
   incomePerSecond,
+  isDamageLineUnlocked,
   isDungeonCleared,
   isDungeonUnlocked,
   isProducerUnlocked,
@@ -55,6 +57,7 @@ import {
   mineLevel,
   mineLevelCost,
   nextMilestone,
+  productionPerSecond,
   plotCapacity,
   producerRate,
   secondsPerKill,
@@ -212,7 +215,7 @@ export const SKILL_PRIORITY = [
   'might',
   'vigor',
   'keen_eye',
-  'sigil_luck',
+  'crystal_luck',
   'core_luck',
   'vein_yield',
   'grove_yield',
@@ -247,7 +250,7 @@ const ENHANCEMENT_WEIGHT: Record<string, number> = {
   'burst.fill': 2,
   'burst.power': 2,
   'drops.materialChance': 1.5,
-  'drops.portalMultiplier': 1.5,
+  'drops.crystalMultiplier': 1.5,
   'xp.card': 1,
 };
 
@@ -299,6 +302,30 @@ const okState = (r: { ok: boolean; state?: GameState }): GameState | null =>
 
 const num = (d: Decimal): number => d.toNumber();
 
+/**
+ * How much the buyer values a share of the weighted production against the same share of damage.
+ * Production only feeds card upgrades and tree kinds now (DESIGN.md 11.13), while damage feeds
+ * every kill, Money included.
+ */
+export const PRODUCTION_VALUE = 0.35;
+
+/** Weighted production per second of every unlocked gem: Σ rate × Starlight tier weight. */
+function weightedProduction(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+  resources?: readonly string[],
+): number {
+  const weights = content.prestige.gain.tierWeights;
+  let total = 0;
+  for (const [id, rate] of Object.entries(productionPerSecond(state, content, modifiers))) {
+    if (resources && !resources.includes(id)) continue;
+    const tier = content.resourceById.get(id)?.tier ?? 1;
+    total += num(rate) * num(weights[Math.min(tier, weights.length) - 1]!);
+  }
+  return total;
+}
+
 /** The economy purchases (damage lines, mine levels, plots / slots) with their gains. */
 function economyCandidates(
   state: GameState,
@@ -307,7 +334,9 @@ function economyCandidates(
 ): Omit<Candidate, 'eta'>[] {
   const out: Omit<Candidate, 'eta'>[] = [];
   const base = num(baseDamage(state, content, modifiers));
+  const totalProduction = weightedProduction(state, content, modifiers);
   for (const line of content.combat.damageUpgrades) {
+    if (!isDamageLineUnlocked(state, content, line)) continue;
     const price = damageUpgradeCost(state, content, line.id, modifiers);
     if (!price) continue;
     const level = damageLevel(state, line.id);
@@ -341,21 +370,31 @@ function economyCandidates(
     const level = mineLevel(state, mine.id);
     const now = num(producerRate(mine, 'mining', modifiers, level));
     const next = num(producerRate(mine, 'mining', modifiers, level + 1));
+    // The mine's share of the weighted production grows by its relative gain.
+    const share =
+      totalProduction > 0
+        ? weightedProduction(state, content, modifiers, [mine.resource]) / totalProduction
+        : 1;
     out.push({
       id: `mine:${mine.id}`,
       kind: 'economy',
       prices: [price],
-      gain: now > 0 ? (next - now) / now : 1,
+      gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
       buy: (s, c, m) => okState(buyMineLevel(s, c, mine.id, m)),
     });
   }
   for (const job of ['logging', 'mining'] as const) {
     const capacity = plotCapacity(state, content, job, modifiers);
+    const gems = (job === 'logging' ? content.trees : content.mines).map((p) => p.resource);
+    const share =
+      totalProduction > 0
+        ? weightedProduction(state, content, modifiers, gems) / totalProduction
+        : 1;
     out.push({
       id: `expand:${job}`,
       kind: 'economy',
       prices: [expansionCost(state, content, job, modifiers)],
-      gain: 1 / Math.max(1, capacity),
+      gain: PRODUCTION_VALUE * (share / Math.max(1, capacity)),
       buy: (s, c, m) => okState(buyExpansion(s, c, job, m)),
     });
   }
@@ -780,9 +819,10 @@ const HOLD_SHARE = 0.4;
 export const HOLD_MAX_RUN_SECONDS = 12 * 3600;
 
 /**
- * Whether a tier-up is close: some card is at its level cap and ★6 and only a resource (the Cores
- * and Sigils an ascension resets) is short, with at least 40% of it in hand. A player finishes
- * that step before ascending instead of throwing the Cores away.
+ * Whether a tier-up is close: some card is at its level cap and ★6 and only resources are short,
+ * and the slow ones (the Cores and Frost Sigils an ascension resets) are at least 40% in hand, or
+ * all in hand with only gems to wait for (they come back within minutes). A player finishes that
+ * step before ascending instead of throwing the Cores away.
  */
 export function holdAscension(state: GameState, content: Content): boolean {
   for (const id of Object.keys(state.cards.owned)) {
@@ -790,7 +830,15 @@ export function holdAscension(state: GameState, content: Content): boolean {
     if (!check || !check.available || check.met) continue;
     const missing = check.requirements.filter((r) => !r.met);
     if (missing.some((r) => r.kind !== 'resource')) continue;
-    if (missing.every((r) => r.have.gte(r.need.mul(HOLD_SHARE)))) return true;
+    const slow = missing.filter(
+      (r) => content.resourceById.get(r.resource ?? '')?.kind === 'material',
+    );
+    // Only the Prismatic step is worth waiting for gems on: the lower steps' Cores are cheap.
+    if (slow.length === 0) {
+      if (state.cards.owned[id]?.tier === 'gold') return true;
+      continue;
+    }
+    if (slow.every((r) => r.have.gte(r.need.mul(HOLD_SHARE)))) return true;
   }
   return false;
 }
@@ -808,13 +856,20 @@ function canKill(state: GameState, content: Content, id: string, modifiers: Modi
   return !(health.gt(0) && incoming.gt(0) && health.div(incoming).toNumber() < spk);
 }
 
-/** Resources a card upgrade or cosmetic level is waiting for (duplicate and level in hand). */
-function wantedResources(state: GameState, content: Content, modifiers: Modifier[]): Set<string> {
-  const wanted = new Set<string>();
-  for (const c of buyerCandidates(state, content, modifiers)) {
-    if (c.kind !== 'card' && c.kind !== 'cosmetic') continue;
+/**
+ * Resources a card upgrade or cosmetic level is waiting for (duplicate and level in hand), the
+ * most advanced card's first: the Cores to farm next are the lead card's.
+ */
+function wantedResources(state: GameState, content: Content, modifiers: Modifier[]): string[] {
+  const wanted: string[] = [];
+  const waiting = buyerCandidates(state, content, modifiers)
+    .filter((c) => c.kind === 'card' || c.kind === 'cosmetic')
+    .sort((a, b) => (b.cardRank ?? 0) - (a.cardRank ?? 0));
+  for (const c of waiting) {
     for (const p of c.prices) {
-      if (have(state, p.resource).lt(p.amount)) wanted.add(p.resource);
+      if (have(state, p.resource).lt(p.amount) && !wanted.includes(p.resource)) {
+        wanted.push(p.resource);
+      }
     }
   }
   return wanted;
@@ -823,9 +878,6 @@ function wantedResources(state: GameState, content: Content, modifiers: Modifier
 /** A dungeon is pushed on (first clear) only when one kill takes at most this long, in seconds. */
 export const PUSH_MAX_SECONDS = 600;
 
-/** Share of the time the first dungeon is farmed for Sigils while a card is still missing. */
-export const PORTAL_FARM_SHARE = 0.1;
-
 /** Most of the time spent fighting the cleared Glimmer Trial for cosmetic materials. */
 export const TRIAL_FARM_SHARE = 0.25;
 
@@ -833,13 +885,13 @@ export const TRIAL_FARM_SHARE = 0.25;
  * What to fight: the Glimmer Trial once it can be cleared; a killable dungeon not cleared yet
  * whose kill takes at most PUSH_MAX_SECONDS;
  * the cleared trial for cosmetic materials while its share of the time is under
- * TRIAL_FARM_SHARE; a dungeon whose Core is wanted; the hardest killable dungeon; else the first
+ * TRIAL_FARM_SHARE; a dungeon whose Core is wanted (the crystals and Money drop everywhere); the hardest killable dungeon; else the first
  * open dungeon not cleared (a wall to push on).
  */
 export function chooseDungeon(
   state: GameState,
   content: Content,
-  options: { trialShare?: number; portalShare?: number } = {},
+  options: { trialShare?: number } = {},
 ): string | null {
   const modifiers = collectModifiers(state, content);
   for (const trial of content.trials) {
@@ -854,23 +906,19 @@ export function chooseDungeon(
       (secondsPerKill(state, content, d.id, modifiers) ?? Infinity) <= PUSH_MAX_SECONDS,
   );
   if (push) return push.id;
-  const wanted = wantedResources(state, content, modifiers);
+  const wantedList = wantedResources(state, content, modifiers);
+  const wanted = new Set(wantedList);
   const trialFarm = content.trials.find(
     (t) =>
       isDungeonCleared(state, t.id) &&
       t.tiers.some((tier) => tier.rewards.some((r) => wanted.has(r.resource))),
   );
   if (trialFarm && (options.trialShare ?? 0) < TRIAL_FARM_SHARE) return trialFarm.id;
-  // A card still missing from the Card Portal: some time goes to the Sigils of the first dungeon.
-  const missingCard = content.portals.some(
-    (p) => p.kind === 'cards' && p.pool.some((e) => !state.cards.owned[e.itemId]),
-  );
-  const sigilDungeon = killable[0];
-  if (missingCard && sigilDungeon && (options.portalShare ?? 0) < PORTAL_FARM_SHARE) {
-    return sigilDungeon.id;
+  // The lead card's missing Core first (a Moss Core for a Bronze tier-up is farmed in Mossy Cellar).
+  for (const resource of wantedList) {
+    const farm = killable.find((d) => d.drops.material.resource === resource);
+    if (farm) return farm.id;
   }
-  const farm = [...killable].reverse().find((d) => wanted.has(d.drops.material.resource));
-  if (farm) return farm.id;
   const hardest = killable[killable.length - 1];
   if (hardest) return hardest.id;
   const open = content.dungeons.find(
@@ -955,8 +1003,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       if (trialClearedAt === null && isDungeonCleared(state, 'glimmer_trial')) trialClearedAt = t;
       const since = trialClearedAt === null ? 0 : t - trialClearedAt;
       const trialShare = since > 0 ? (log.fought['glimmer_trial'] ?? 0) / since : 0;
-      const portalShare = t > 0 ? (log.fought[content.dungeons[0]!.id] ?? 0) / t : 0;
-      const target = chooseDungeon(state, content, { trialShare, portalShare });
+      const target = chooseDungeon(state, content, { trialShare });
       if (target !== state.activeDungeonId) {
         const result = setActiveDungeon(state, content, target);
         if (result.ok) state = result.state;
@@ -1108,6 +1155,7 @@ export function formatSummary(result: SimResult, content: Content): string {
       .map(([t, d]) => `${t / 3600} h ${d.toExponential(1)}`)
       .join(', ')}`,
     `Time fought: ${fought || 'none'}`,
+    `Summons: ${result.log.summons} pulls; Money in hand ${num(s.resources['money'] ?? new Decimal(0)).toExponential(1)}, crystals ${num(s.resources['summon_crystal'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_crystal'] ?? new Decimal(0)).toFixed(0)} glamour`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
     `Plots: ${plotCapacity(s, content, 'logging')}, slots: ${plotCapacity(s, content, 'mining')}`,
     `Damage lines: ${damage}`,

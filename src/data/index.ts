@@ -247,17 +247,18 @@ function checkProduction(
       issues.push(`${where}: "${resource}" is ${res.kind}, expected ${kind}`);
   };
 
-  // Logging is paid for with wood, mining with ore (DESIGN.md 2).
+  // Tree kinds are unlocked with tree gems (DESIGN.md 2).
   c.trees.forEach((tree, i) =>
     tree.unlockCost.forEach((cost, j) =>
       checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
     ),
   );
+  // Mine levels are bought with Money (DESIGN.md 2, 11.13).
   c.mines.forEach((mine, i) =>
     checkCost(
       `mines.json › [${i}] › level › cost › resource`,
       mine.level.cost.resource,
-      'mine_gem',
+      'currency',
     ),
   );
 
@@ -272,20 +273,22 @@ function checkProduction(
   const jobs = [
     {
       job: 'logging',
-      kind: 'tree_gem',
       starters: c.trees.filter((t) => t.unlockCost.length === 0),
       all: c.trees,
     },
     {
       job: 'mining',
-      kind: 'mine_gem',
       starters: c.mines.filter((m) => m.unlockedByDungeon === null),
       all: c.mines,
     },
   ] as const;
-  for (const { job, kind, starters, all } of jobs) {
+  for (const { job, starters, all } of jobs) {
     const config = c.production[job];
-    checkCost(`production.json › ${job} › expansion › resource`, config.expansion.resource, kind);
+    checkCost(
+      `production.json › ${job} › expansion › resource`,
+      config.expansion.resource,
+      'currency',
+    );
     const where = `production.json › ${job} › startProducer`;
     if (!all.some((p) => p.id === config.startProducer)) {
       issues.push(
@@ -587,9 +590,12 @@ function checkPrestige(
   );
 }
 
+/** Resource kinds card upgrades may cost: gems and dungeon / trial materials (DESIGN.md 11.9). */
+const UPGRADE_KINDS: readonly Resource['kind'][] = ['tree_gem', 'mine_gem', 'material'];
+
 /** Start cards, star-up and tier-up materials must exist; start cards lead distinct jobs. */
 function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issues: string[]): void {
-  const resources = new Set(c.resources.map((r) => r.id));
+  const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
   c.cardRules.startCards.forEach((id, i) => {
@@ -600,11 +606,31 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
     jobs.add(card.job);
   });
   const checkResource = (where: string, id: string): void => {
-    if (!resources.has(id)) issues.push(`${where}: unknown resource "${id}"`);
+    const res = resources.get(id);
+    if (!res) issues.push(`${where}: unknown resource "${id}"`);
+    else if (!UPGRADE_KINDS.includes(res.kind)) {
+      issues.push(`${where}: "${id}" is ${res.kind}, card upgrades use gems and materials only`);
+    }
+  };
+  // Every card upgrade of every job mixes both production loops with a dungeon material
+  // (DESIGN.md 11.9): a tree gem, a mine gem and a Core.
+  const checkMix = (where: string, ids: string[]): void => {
+    const kinds = new Set(ids.map((id) => resources.get(id)?.kind));
+    for (const kind of ['tree_gem', 'mine_gem', 'material'] as const) {
+      if (!kinds.has(kind)) issues.push(`${where}: needs a ${kind} among its costs`);
+    }
   };
   for (const tier of RANK_TIERS) {
-    const step = c.cardRules.starUp.tiers[tier];
-    checkResource(`cardRules.json › starUp › tiers › ${tier} › resource`, step.resource);
+    c.cardRules.starUp.tiers[tier].forEach((line, i) =>
+      checkResource(`cardRules.json › starUp › tiers › ${tier} › [${i}] › resource`, line.resource),
+    );
+    for (const job of JOBS) {
+      const used = c.cardRules.starUp.tiers[tier].filter((l) => (l.jobShare?.[job] ?? 1) > 0);
+      checkMix(
+        `cardRules.json › starUp › tiers › ${tier} › ${job}`,
+        used.map((l) => l.resource),
+      );
+    }
     const caps = c.cardRules.levelCaps[tier];
     if (caps.some((cap, i) => i > 0 && cap < caps[i - 1]!)) {
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
@@ -612,11 +638,16 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   }
   for (const tier of ['bronze', 'silver', 'gold'] as const) {
     for (const job of JOBS) {
-      c.cardRules.tierUp[tier][job].forEach((cost, i) =>
+      const costs = c.cardRules.tierUp[tier][job];
+      costs.forEach((cost, i) =>
         checkResource(
           `cardRules.json › tierUp › ${tier} › ${job} › [${i}] › resource`,
           cost.resource,
         ),
+      );
+      checkMix(
+        `cardRules.json › tierUp › ${tier} › ${job}`,
+        costs.map((x) => x.resource),
       );
     }
   }
@@ -688,13 +719,14 @@ function checkCombat(
     );
   });
 
-  // Damage is bought with ore (DESIGN.md 2), one line per ore (11.8).
+  // Damage is bought with Money (DESIGN.md 2, 11.13), one line per mine gem (11.8).
   const seen = new Set<string>();
   c.combat.damageUpgrades.forEach((u, i) => {
     const where = `combat.json › damageUpgrades › [${i}]`;
     if (seen.has(u.id)) issues.push(`${where} › id: duplicate id "${u.id}"`);
     seen.add(u.id);
-    checkResource(`${where} › cost › resource`, u.cost.resource, 'mine_gem');
+    checkResource(`${where} › cost › resource`, u.cost.resource, 'currency');
+    checkResource(`${where} › gem`, u.gem, 'mine_gem');
   });
 }
 
@@ -760,16 +792,38 @@ function checkReferences(
   });
 
   c.dungeons.forEach((dungeon, i) => {
-    const portal = dungeon.drops.portalResource.resource;
-    const res = resources.get(portal);
-    if (!res) {
-      issues.push(
-        `dungeons.json › [${i}] › drops › portalResource › resource: unknown resource "${portal}"`,
-      );
-    } else if (res.kind !== 'portal') {
-      issues.push(
-        `dungeons.json › [${i}] › drops › portalResource › resource: "${portal}" is ${res.kind}, expected portal`,
-      );
+    // Every dungeon drops Money and every crystal (DESIGN.md 6, 11.13).
+    const dropped = new Set<string>();
+    dungeon.drops.currencies.forEach((drop, j) => {
+      const where = `dungeons.json › [${i}] › drops › currencies › [${j}] › resource`;
+      const res = resources.get(drop.resource);
+      if (!res) issues.push(`${where}: unknown resource "${drop.resource}"`);
+      else if (res.kind !== 'currency' && res.kind !== 'crystal') {
+        issues.push(`${where}: "${drop.resource}" is ${res.kind}, expected currency or crystal`);
+      }
+      if (dropped.has(drop.resource)) issues.push(`${where}: duplicate "${drop.resource}"`);
+      dropped.add(drop.resource);
+    });
+    dungeon.drops.extraMaterials.forEach((extra, j) => {
+      const res = resources.get(extra.resource);
+      const where = `dungeons.json › [${i}] › drops › extraMaterials › [${j}] › resource`;
+      if (!res) issues.push(`${where}: unknown resource "${extra.resource}"`);
+      else if (res.kind !== 'material') {
+        issues.push(`${where}: "${extra.resource}" is ${res.kind}, expected material`);
+      }
+    });
+    if (dungeon.drops.wage) {
+      const wage = resources.get(dungeon.drops.wage.resource);
+      if (wage?.kind !== 'currency') {
+        issues.push(
+          `dungeons.json › [${i}] › drops › wage › resource: "${dungeon.drops.wage.resource}" must be a currency`,
+        );
+      }
+    }
+    for (const r of c.resources) {
+      if ((r.kind === 'currency' || r.kind === 'crystal') && !dropped.has(r.id)) {
+        issues.push(`dungeons.json › [${i}] › drops › currencies: "${r.id}" is not dropped`);
+      }
     }
     const item = dungeon.drops.rare.itemId;
     if (!cardIds.has(item) && !cosmeticIds.has(item)) {
@@ -785,9 +839,9 @@ function checkReferences(
       issues.push(
         `portals.json › [${i}] › cost › resource: unknown resource "${portal.cost.resource}"`,
       );
-    } else if (res.kind !== 'portal') {
+    } else if (res.kind !== 'crystal') {
       issues.push(
-        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected portal`,
+        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected crystal`,
       );
     }
     // Pity and the 10-pull guarantee pick from the pool at or above their rarity.

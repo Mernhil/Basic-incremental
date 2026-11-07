@@ -73,7 +73,7 @@ describe('account XP (DESIGN.md 10a, 12.4)', () => {
 
   it('comes from pulls and ascensions', () => {
     const state = freshState();
-    state.resources['moss_sigil'] = new Decimal(10);
+    state.resources['summon_crystal'] = new Decimal(10);
     const pulled = pull(state, content, 'card_portal', 1, constantRng(0.5));
     if (!pulled.ok) throw new Error(pulled.reason);
     expect(pulled.state.account.xp.eq(A.xp.perPull)).toBe(true);

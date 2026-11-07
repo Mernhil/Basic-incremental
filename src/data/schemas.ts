@@ -13,8 +13,21 @@ const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, 
 const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
-/** `prestige`: the prestige currency (Starlight), the one resource an ascension keeps. */
-export const RESOURCE_KINDS = ['tree_gem', 'mine_gem', 'material', 'portal', 'prestige'] as const;
+/**
+ * Resource kinds (DESIGN.md 2, 6). Three loops: `tree_gem` / `mine_gem` / `material` come from
+ * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
+ * and pays for mine levels, plots / slots and damage lines; `crystal` (Summon / Glamour Crystal)
+ * is the premium tier that pays for summons and is kept through an ascension; `prestige`
+ * (Starlight) is the prestige currency, kept too.
+ */
+export const RESOURCE_KINDS = [
+  'tree_gem',
+  'mine_gem',
+  'material',
+  'currency',
+  'crystal',
+  'prestige',
+] as const;
 
 /** A colour as #rrggbb. */
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/, 'colours are #rrggbb in lowercase');
@@ -37,6 +50,9 @@ export const resourceSchema = z.strictObject({
   tier,
   /** Art for tree and mine gems (required for those kinds, not allowed for others). */
   gem: gemArtSchema.optional(),
+  /** Amount a brand-new game starts with (default 0). Money starts with enough for the first
+   *  damage levels (DESIGN.md 11.13). */
+  startAmount: decimal.optional(),
 });
 
 const costSchema = z.strictObject({ resource: id, amount: positiveDecimal });
@@ -140,8 +156,9 @@ export const STATS = [
   'drops.rareChance',
   /** Kills without the rare drop before it is guaranteed (rounded, at least 1). Scope: dungeon. */
   'drops.pityThreshold',
-  /** Portal resource units per kill. Scope: dungeon, resource. */
-  'drops.portalAmount',
+  /** Units per kill of one currency a dungeon drops (Money or a crystal). Scope: dungeon,
+   *  resource. */
+  'drops.currencyAmount',
   /** Offline progress cap in hours. */
   'offline.capHours',
   /** Account XP gained. Scope: job. */
@@ -187,10 +204,12 @@ export const STATS = [
   'combat.critChance',
   /** Damage multiplier of a crit (at least 1). Scope: dungeon. */
   'combat.critDamage',
-  /** Multiplier on the portal resource (sigils) units of each kill, base 1; a fraction is
-   *  rounded up with that chance, so the average is exact (DESIGN.md 16, E3). Scope: dungeon,
-   *  resource. */
-  'drops.portalMultiplier',
+  /** Multiplier on the crystals (Summon and Glamour) of each kill, base 1; a fraction is rounded
+   *  up with that chance, so the average is exact (DESIGN.md 16, E3). Scope: dungeon, resource. */
+  'drops.crystalMultiplier',
+  /** Multiplier on the Money of each kill, base 1 (fraction rounded like the crystals).
+   *  Scope: dungeon, resource. */
+  'drops.moneyMultiplier',
   /** Starlight an ascension grants, before rounding down (DESIGN.md 3). */
   'prestige.gain',
 ] as const;
@@ -315,6 +334,23 @@ const perRarity = <T extends z.ZodType>(schema: T) =>
 const perJob = <T extends z.ZodType>(schema: T) =>
   z.strictObject({ mining: schema, logging: schema, fighting: schema });
 
+/**
+ * One material of a star-up (DESIGN.md 11.9): `amounts` for the 5 steps (★1→2 … ★5→6), times the
+ * card's job share. A mix of the tier's Core with tree and mine gems makes every job use both
+ * production loops; a share of 0 leaves the line out for that job, a missing share is 1.
+ */
+export const starUpLineSchema = z.strictObject({
+  resource: id,
+  amounts: z.array(positiveDecimal).length(MAX_STARS - 1),
+  jobShare: z
+    .strictObject({
+      mining: z.number().min(0).optional(),
+      logging: z.number().min(0).optional(),
+      fighting: z.number().min(0).optional(),
+    })
+    .optional(),
+});
+
 /** Card progression numbers (cardRules.json; DESIGN.md 11.2, 11.4, 11.9). All tunable. */
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
@@ -353,14 +389,13 @@ export const cardRulesSchema = z.strictObject({
    */
   mainGrowth: perJob(z.array(modifierSchema)),
   /**
-   * Star-up (★n → ★n+1): duplicates used, plus per tier the Core and its amount for each of the
-   * 5 steps (★1→2 … ★5→6). The card must be at its level cap.
+   * Star-up (★n → ★n+1): duplicates used, plus per tier the materials (Core, tree and mine gems,
+   * Frost Sigils) and their amounts for each of the 5 steps (★1→2 … ★5→6). The card must be at
+   * its level cap.
    */
   starUp: z.strictObject({
     duplicates: z.number().int().min(0),
-    tiers: perTier(
-      z.strictObject({ resource: id, amounts: z.array(positiveDecimal).length(MAX_STARS - 1) }),
-    ),
+    tiers: perTier(z.array(starUpLineSchema).min(1)),
   }),
   /** Tier-up (★6 → next tier ★1), keyed by the tier being left, per job. The card must be at
    *  its level cap. Prismatic is the top tier. */
@@ -418,14 +453,36 @@ export const dungeonSchema = z.strictObject({
       /** Guaranteed after this many consecutive kills without the item. */
       pityThreshold: z.number().int().min(1),
     }),
-    /** Portal resource granted on every kill, inclusive range. */
-    portalResource: z
-      .strictObject({
-        resource: id,
-        min: z.number().int().min(0),
-        max: z.number().int().min(0),
-      })
-      .refine((p) => p.min <= p.max, { message: 'min must not exceed max' }),
+    /** Currencies granted on every kill, each a range (inclusive): Money and both crystals
+     *  (DESIGN.md 6, 11.13). Deeper dungeons pay more. */
+    currencies: z
+      .array(
+        z
+          .strictObject({
+            resource: id,
+            min: z.number().int().min(0),
+            max: z.number().int().min(0),
+          })
+          .refine((p) => p.min <= p.max, { message: 'min must not exceed max' }),
+      )
+      .min(1),
+    /** Money paid for every second of fighting this dungeon's boss (not while knocked out), so
+     *  the very first levels can be bought before the first kill (DESIGN.md 11.13). Only the
+     *  first dungeon has one: later dungeons pay by the kill, so a wall cannot be farmed idle. */
+    wage: z.strictObject({ resource: id, perSecond: positiveDecimal }).optional(),
+    /** Further materials dropped on every kill, each a range like the currencies (the Frostspire
+     *  Vault drops Frost Sigils for the Prismatic card upgrades; DESIGN.md 11.9). */
+    extraMaterials: z
+      .array(
+        z
+          .strictObject({
+            resource: id,
+            min: z.number().int().min(0),
+            max: z.number().int().min(0),
+          })
+          .refine((p) => p.min <= p.max, { message: 'min must not exceed max' }),
+      )
+      .default([]),
     /** Tier-up material (Core) dropped with `chance` per kill, no pity. */
     material: z.strictObject({
       resource: id,
@@ -592,6 +649,9 @@ export const combatSchema = z.strictObject({
       z.strictObject({
         id,
         name,
+        /** The mine gem this line is forged from: its art and the `resource` scope of modifiers
+         *  (`combat.upgradeGain`). The price itself is in Money (DESIGN.md 11.13). */
+        gem: id,
         cost: costCurveSchema,
         /** Damage per second each level adds, read through `combat.upgradeGain`. */
         damagePerLevel: positiveDecimal,

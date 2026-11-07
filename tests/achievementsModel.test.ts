@@ -87,9 +87,10 @@ describe('sticker book', () => {
   });
 
   it('names the achievement and its reward in the unlock toast', () => {
+    const reward = content.achievements.find((a) => a.id === 'first_kill')!.reward.resources![0]!;
     expect(unlockToast(content, 'first_kill')).toEqual({
       title: 'Achievement: First Kill',
-      detail: 'Reward: 20 Moss Sigil',
+      detail: `Reward: ${reward.amount.toString()} Summon Crystal`,
     });
     expect(unlockToast(content, 'nope')).toBeNull();
   });

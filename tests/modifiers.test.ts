@@ -170,15 +170,21 @@ describe('game numbers go through the pipeline', () => {
     const hp = bossMaxHp(dungeon, 0, [mod('combat.bossHp', 'mult', '0.5')]);
     expect(hp.eq(dungeon.boss.hp.div(2))).toBe(true);
 
-    const drops = effectiveDrops(dungeon, [
-      mod('drops.rareChance', 'set', '5'),
-      mod('drops.pityThreshold', 'mult', '0'),
-      mod('drops.portalAmount', 'mult', '3'),
-    ]);
+    const drops = effectiveDrops(
+      dungeon,
+      [
+        mod('drops.rareChance', 'set', '5'),
+        mod('drops.pityThreshold', 'mult', '0'),
+        mod('drops.currencyAmount', 'mult', '3'),
+      ],
+      content,
+    );
     expect(drops.rare.chance).toBe(1);
     expect(drops.rare.pityThreshold).toBe(1);
-    expect(drops.portalResource.min).toBe(dungeon.drops.portalResource.min * 3);
-    expect(drops.portalResource.max).toBe(dungeon.drops.portalResource.max * 3);
+    drops.currencies.forEach((c, i) => {
+      expect(c.min).toBe(dungeon.drops.currencies[i]!.min * 3);
+      expect(c.max).toBe(dungeon.drops.currencies[i]!.max * 3);
+    });
 
     expect(offlineCapMs(freshState(), content)).toBe(OFFLINE_CAP_MS);
   });

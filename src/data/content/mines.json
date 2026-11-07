@@ -8,7 +8,7 @@
     "unlockedByDungeon": null,
     "level": {
       "cost": {
-        "resource": "copper_gem",
+        "resource": "money",
         "base": "15",
         "growth": "1.3"
       },
@@ -28,8 +28,8 @@
     "unlockedByDungeon": "mossy_cellar",
     "level": {
       "cost": {
-        "resource": "iron_gem",
-        "base": "20",
+        "resource": "money",
+        "base": "200",
         "growth": "1.32"
       },
       "ratePercent": "10",
@@ -48,8 +48,8 @@
     "unlockedByDungeon": "ember_crypt",
     "level": {
       "cost": {
-        "resource": "grotto_gem",
-        "base": "25",
+        "resource": "money",
+        "base": "2500",
         "growth": "1.34"
       },
       "ratePercent": "10",

@@ -97,6 +97,10 @@ Sim, 5 seeds, 45 h (`npm run sim -- --hours 45 --seeds 5`). Median of the seeds 
 
 DPS against Mossy Cellar (median seed): 1 h 3.4e3, 2 h 1.7e4, 4 h 6.2e4, 8 h 1.5e5, 12 h 1.7e5, 20 h 2.6e5, 40 h 4.6e5. "First ★6" is the first Gold ★6; "mostly exhausted" needs every other milestone, every card and a Prismatic ★6 card. The sim's summon (0.56 h, 75%) is the edge of the 25% band; Silver, Trial, Prismatic and exhausted spread widely between seeds. Tuning decisions: DESIGN 12.25.
 
+## Economy redesign (PR 1 of 4)
+
+Three loops: Money (dungeons), materials (production, card upgrades), crystals (premium, kept through ascension). DESIGN 11.13 and 12.27. The Phase 9 table above is from before this change; the full pacing re-tune is pending (14 h sanity run: first clear 0.51 h, Silver 1.65 h, Dungeon 2 3.08 h, Gold 4.5 h, Dungeon 3 9.6 h; first ascension and Prismatic off target).
+
 ## Notes
 
 - `portals.json` Card Portal pity is now the decided "Legendary+ at 90" plus the 10-pull Rare guarantee (Phase 4a).

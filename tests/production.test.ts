@@ -78,19 +78,19 @@ describe('plot and slot expansions', () => {
   it('cost base * growth^owned in the job tier-1 resource, rounded up', () => {
     const state = freshState();
     expect(expansionCost(state, content, 'logging')).toEqual({
-      resource: 'oak_gem',
+      resource: 'money',
       amount: new Decimal(25),
     });
     state.production.logging.expansions = 3;
     const { base, growth } = content.production.logging.expansion;
     const third = Math.ceil(base.toNumber() * growth.toNumber() ** 3); // base * growth^3, rounded up
     expect(expansionCost(state, content, 'logging').amount.eq(third)).toBe(true);
-    expect(expansionCost(freshState(), content, 'mining').resource).toBe('copper_gem');
+    expect(expansionCost(freshState(), content, 'mining').resource).toBe('money');
   });
 
   it('adds an empty plot and spends the price', () => {
-    const state = ok(buyExpansion(give(freshState(), 'oak_gem', 30), content, 'logging'));
-    expect(state.resources['oak_gem']!.eq(5)).toBe(true);
+    const state = ok(buyExpansion(give(freshState(), 'money', 30), content, 'logging'));
+    expect(state.resources['money']!.eq(5)).toBe(true);
     expect(plotCapacity(state, content, 'logging')).toBe(2);
     expect(plots(state, content, 'logging')).toEqual(['oak', null]);
     const { base, growth } = content.production.logging.expansion;
@@ -99,7 +99,7 @@ describe('plot and slot expansions', () => {
   });
 
   it('refuses when unaffordable and leaves the state alone', () => {
-    const start = give(freshState(), 'oak_gem', 24);
+    const start = give(freshState(), 'money', 24);
     expect(reason(buyExpansion(start, content, 'logging'))).toBe('unaffordable');
     expect(start.production.logging.expansions).toBe(0);
   });
@@ -213,27 +213,29 @@ describe('mine types and levels', () => {
     ]);
   });
 
-  it('level up with their own ore and raise that mine only', () => {
-    let state = give(freshState(), 'copper_gem', 100);
+  it('level up with Money and raise that mine only', () => {
+    let state = give(freshState(), 'money', 100);
     expect(mineLevelCost(state, content, 'copper_quarry')).toEqual({
-      resource: 'copper_gem',
+      resource: 'money',
       amount: new Decimal(15),
     });
     state = ok(buyMineLevel(state, content, 'copper_quarry'));
     state = ok(buyMineLevel(state, content, 'copper_quarry')); // 15 + ceil(15 * growth)
     const growth = content.mineById.get('copper_quarry')!.level.cost.growth.toNumber();
-    expect(state.resources['copper_gem']!.eq(100 - 15 - Math.ceil(15 * growth))).toBe(true);
+    expect(state.resources['money']!.eq(100 - 15 - Math.ceil(15 * growth))).toBe(true);
     expect(state.production.mineLevels['copper_quarry']).toBe(2);
     // 0.5 * (1 + 2 * 10%) = 0.6
     expect(productionPerSecond(state, content)['copper_gem']!.eq(0.6)).toBe(true);
-    expect(mineLevelCost(state, content, 'iron_deeps')!.resource).toBe('iron_gem');
+    expect(mineLevelCost(state, content, 'iron_deeps')!.resource).toBe('money');
   });
 
   it('refuse locked, unknown and unaffordable levels', () => {
-    const rich = give(give(freshState(), 'iron_gem', '1e9'), 'copper_gem', 0);
+    const rich = give(freshState(), 'money', '1e9');
     expect(reason(buyMineLevel(rich, content, 'iron_deeps'))).toBe('locked');
     expect(reason(buyMineLevel(rich, content, 'nope'))).toBe('unknown');
-    expect(reason(buyMineLevel(rich, content, 'copper_quarry'))).toBe('unaffordable');
+    expect(reason(buyMineLevel(give(freshState(), 'money', 0), content, 'copper_quarry'))).toBe(
+      'unaffordable',
+    );
   });
 
   it('read production.levelBonus before production.rate', () => {
@@ -250,7 +252,7 @@ describe('mine types and levels', () => {
 
 describe('production in the tick', () => {
   it('counts every active plot and ignores empty ones', () => {
-    let state = give(bareState(), 'oak_gem', 25);
+    let state = give(bareState(), 'money', 25);
     state = ok(buyExpansion(state, content, 'logging'));
     let { state: after } = advance(state, content, 10_000, constantRng(0.5));
     expect(after.resources['oak_gem']!.eq(10)).toBe(true); // one Oak plot, one empty
@@ -275,7 +277,7 @@ describe('canAfford', () => {
 
 describe('prestige reset', () => {
   it('resets plots, slots and mine levels but keeps unlocked trees and cleared dungeons', () => {
-    let state = give(give(freshState(), 'oak_gem', '1e6'), 'copper_gem', '1e6');
+    let state = give(give(freshState(), 'oak_gem', '1e6'), 'money', '1e6');
     state = ok(unlockTree(state, content, 'ironbark'));
     state = ok(buyExpansion(state, content, 'logging'));
     state = ok(assignPlot(state, content, 'logging', 1, 'ironbark'));

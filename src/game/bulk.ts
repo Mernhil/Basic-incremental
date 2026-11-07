@@ -1,5 +1,5 @@
 import type { Content, CostCurve, ProductionJob } from '../data';
-import { damageLevel, type CombatFailure } from './combat';
+import { damageLevel, isDamageLineUnlocked, type CombatFailure } from './combat';
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import {
@@ -158,7 +158,9 @@ export function damageLineOffer(
   if (!upgrade) return null;
   const owned = damageLevel(state, upgradeId);
   const budget = budgetOf(state, upgrade.cost.resource);
-  return curveOffer(upgrade.cost, owned, count, budget, modifiers, FIGHTING);
+  const offer = curveOffer(upgrade.cost, owned, count, budget, modifiers, FIGHTING);
+  if (offer && !isDamageLineUnlocked(state, content, upgrade)) offer.affordable = false;
+  return offer;
 }
 
 /**
@@ -172,9 +174,9 @@ export function buyDamageLevels(
   count: BuyCount,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BulkBuyResult<CombatFailure> {
-  if (!content.combat.damageUpgrades.some((u) => u.id === upgradeId)) {
-    return { ok: false, reason: 'unknown' };
-  }
+  const line = content.combat.damageUpgrades.find((u) => u.id === upgradeId);
+  if (!line) return { ok: false, reason: 'unknown' };
+  if (!isDamageLineUnlocked(state, content, line)) return { ok: false, reason: 'locked' };
   const offer = damageLineOffer(state, content, upgradeId, count, modifiers);
   if (!offer) return { ok: false, reason: 'invalid-count' };
   if (!offer.affordable || !canAfford(state, [offer.price])) {
