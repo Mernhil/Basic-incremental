@@ -56,6 +56,16 @@ describe('balance sim: greedy buyer', () => {
     expect(MILESTONES.find((m) => m.id === 'first_prestige')?.pending).toBeUndefined();
   });
 
+  it('upgrades a cosmetic once it has the copy and the material, and equips it', () => {
+    const state = freshState();
+    state.cosmetics.owned['holo_hex'] = { level: 1, copies: 1 };
+    state.resources['glimmer_dust'] = new Decimal(1000);
+    const { state: after, bought } = greedyBuy(state, content);
+    expect(bought).toContain('cosmetic:holo_hex');
+    expect(after.cosmetics.owned['holo_hex']!.level).toBe(2);
+    expect(MILESTONES.find((m) => m.id === 'max_cosmetic')?.pending).toBeUndefined();
+  });
+
   it('does nothing when nothing is affordable', () => {
     const { bought } = greedyBuy(freshState(), content);
     expect(bought).toEqual([]);
