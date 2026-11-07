@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, damageLevel, type GameState } from '../src/game';
+import { Decimal, cosmeticMaxLevel, damageLevel, type GameState } from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -123,6 +123,49 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(after.resources['iron_gem']!.toNumber()).toBe(600);
   });
 
+  it('keeps Cores for the most advanced card instead of spreading them over weaker ones', () => {
+    const state = freshState();
+    const squire = state.cards.owned['ember_squire']!;
+    squire.stars = 5;
+    squire.level = 36;
+    squire.duplicates = 1;
+    const feller = state.cards.owned['apprentice_feller']!;
+    feller.level = 20;
+    feller.duplicates = 1;
+    state.resources['moss_core'] = new Decimal(3); // ★5 to ★6 needs 10; ★1 to ★2 needs 1
+    const { bought } = greedyBuy(state, content);
+    expect(bought).not.toContain('star:apprentice_feller');
+  });
+
+  it('saves the Frost Cores for the lead card still levelling toward its tier-up', () => {
+    const state = freshState();
+    const squire = state.cards.owned['ember_squire']!;
+    squire.tier = 'gold';
+    squire.stars = 6;
+    squire.level = 70; // Gold cap 80: not ready, but its tier-up will need Frost Cores and Sigils
+    const digger = state.cards.owned['cave_digger']!;
+    digger.tier = 'gold';
+    digger.stars = 1;
+    digger.level = 60; // at the Gold ★1 cap
+    digger.duplicates = 1;
+    const [coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
+    state.resources['frost_core'] = new Decimal(coreCost!.amount);
+    state.resources['frost_sigil'] = new Decimal(sigilCost!.amount);
+    const { bought } = greedyBuy(state, content);
+    expect(bought).not.toContain('star:cave_digger');
+    state.resources['frost_core'] = new Decimal(coreCost!.amount).add(1);
+    expect(greedyBuy(state, content).bought).toContain('star:cave_digger');
+  });
+
+  it('saves the Glimmer Dust for the cosmetic closest to its top level', () => {
+    const state = freshState();
+    state.cosmetics.owned['holo_hex'] = { level: 2, copies: 1 }; // next step: accent, 600 Dust
+    state.cosmetics.owned['holo_waves'] = { level: 1, copies: 1 }; // next step: shape, 300 Dust
+    state.resources['glimmer_dust'] = new Decimal(400);
+    const { bought } = greedyBuy(state, content);
+    expect(bought).not.toContain('cosmetic:holo_waves');
+  });
+
   it('spends skill points by priority (Might before the data order)', () => {
     const state = freshState();
     state.account.level = 3;
@@ -159,6 +202,32 @@ describe('balance sim: where to fight', () => {
     squire.level = 20;
     squire.duplicates = 1;
     expect(chooseDungeon(state, content)).toBe('ember_crypt');
+  });
+
+  it('keeps farming Cores while the next boss would take over ten minutes to kill', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar'];
+    state.combat.damageLevels['iron_edge'] = 60; // Ember Crypt: about 2600 s per kill
+    const squire = state.cards.owned['ember_squire']!;
+    squire.level = 20;
+    squire.duplicates = 1;
+    // Harmless boss, so only the kill time decides.
+    const attack = content.dungeonById.get('ember_crypt')!.boss.attack;
+    const damage = attack.damage;
+    attack.damage = new Decimal(0);
+    try {
+      expect(chooseDungeon(state, content)).toBe('mossy_cellar');
+    } finally {
+      attack.damage = damage;
+    }
+  });
+
+  it('goes back to the first dungeon for Sigils while cards are missing, within a time share', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'frostspire_vault', 'glimmer_trial'];
+    state.combat.damageLevels['crystal_edge'] = 300;
+    expect(chooseDungeon(state, content, { portalShare: 0 })).toBe('mossy_cellar');
+    expect(chooseDungeon(state, content, { portalShare: 0.5 })).not.toBe('mossy_cellar');
   });
 
   it('farms the cleared Glimmer Trial for cosmetic materials only within its time share', () => {
@@ -226,6 +295,40 @@ describe('balance sim: run', () => {
     expect(MILESTONES.map((m) => m.targetHours)).toContain(40);
   });
 
+  it('counts the first ★6 only once a Gold card reaches it (the unique evolution)', () => {
+    const star6 = MILESTONES.find((m) => m.id === 'first_star6')!;
+    const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
+    const state = freshState();
+    const owned = state.cards.owned['ember_squire']!;
+    owned.stars = 6;
+    owned.tier = 'silver';
+    expect(star6.reached(state, content, log)).toBe(false);
+    owned.tier = 'gold';
+    expect(star6.reached(state, content, log)).toBe(true);
+  });
+
+  it('calls the content exhausted only with every card owned and a Prismatic ★6 card', () => {
+    const exhausted = MILESTONES.find((m) => m.id === 'exhausted')!;
+    const log = { summons: 1, levelAt: {}, ascensions: [], fought: {} };
+    const state = freshState();
+    for (const card of content.cards) {
+      state.cards.owned[card.id] ??= { ...state.cards.owned['ember_squire']! };
+    }
+    state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
+    state.prestigeCount = 1;
+    state.cards.owned['ember_squire']!.tier = 'gold';
+    state.cards.owned['ember_squire']!.stars = 6;
+    state.cards.owned['apprentice_feller']!.tier = 'prismatic';
+    state.cards.owned['apprentice_feller']!.stars = 5;
+    state.cosmetics.owned['holo_hex'] = {
+      level: cosmeticMaxLevel(content, content.cosmeticById.get('holo_hex')!),
+      copies: 0,
+    };
+    expect(exhausted.reached(state, content, log)).toBe(false);
+    state.cards.owned['apprentice_feller']!.stars = 6;
+    expect(exhausted.reached(state, content, log)).toBe(true);
+  });
+
   it('is deterministic for a seed and records milestone times', () => {
     const a = runSim(content, { hours: 1, seed: 7, stepSeconds: 10 });
     const b = runSim(content, { hours: 1, seed: 7, stepSeconds: 10 });
@@ -235,6 +338,12 @@ describe('balance sim: run', () => {
     expect(a.hits['clear_d1']).not.toBeNull();
     expect(a.hits['clear_d1']!).toBeLessThan(3600);
     // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
+  }, 30_000);
+
+  it('samples the fighting DPS every half hour for the tuning report', () => {
+    const result = runSim(content, { hours: 1.1, seed: 1, stepSeconds: 10 });
+    expect(result.dpsSamples.map(([t]) => t)).toEqual([1800, 3600]);
+    expect(result.dpsSamples[1]![1]).toBeGreaterThan(result.dpsSamples[0]![1]);
   }, 30_000);
 
   it('prints a markdown table with one row per milestone', () => {

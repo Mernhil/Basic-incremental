@@ -30,6 +30,7 @@ import {
 } from '../../src/data';
 import {
   advance,
+  type OwnedCard,
   bossAttackDps,
   buyDamageLevels,
   buyExpansion,
@@ -119,6 +120,7 @@ const tierAtLeast = (state: GameState, tier: (typeof RANK_TIERS)[number]): boole
   Object.values(state.cards.owned).some(
     (c) => RANK_TIERS.indexOf(c.tier) >= RANK_TIERS.indexOf(tier),
   );
+const tierRank = (tier: (typeof RANK_TIERS)[number]): number => RANK_TIERS.indexOf(tier);
 const cleared = (id: string) => (state: GameState) => isDungeonCleared(state, id);
 
 export const MILESTONES: Milestone[] = [
@@ -149,9 +151,13 @@ export const MILESTONES: Milestone[] = [
   },
   {
     id: 'first_star6',
-    label: 'First ★6',
+    label: 'First ★6 (Gold)',
     targetHours: 7,
-    reached: (s) => Object.values(s.cards.owned).some((c) => c.stars >= 6),
+    // Gold ★6 is the first unique evolution (a lower-tier ★6 comes long before Gold).
+    reached: (s) =>
+      Object.values(s.cards.owned).some(
+        (c) => c.stars >= 6 && tierRank(c.tier) >= tierRank('gold'),
+      ),
   },
   {
     id: 'first_prestige',
@@ -191,9 +197,10 @@ export const MILESTONES: Milestone[] = [
     id: 'exhausted',
     label: 'Beta content mostly exhausted',
     targetHours: 40,
-    // Every other milestone reached and every card owned.
+    // Every other milestone reached, every card owned and a card maxed out (Prismatic ★6).
     reached: (s, c, log) =>
       c.cards.every((card) => s.cards.owned[card.id]) &&
+      Object.values(s.cards.owned).some((card) => card.tier === 'prismatic' && card.stars >= 6) &&
       MILESTONES.every((m) => m.id === 'exhausted' || m.reached(s, c, log)),
   },
 ];
@@ -263,6 +270,10 @@ export interface Candidate {
   eta: number | null;
   /** Economy purchases: relative gain in their domain (damage or that gem's / job's output). */
   gain?: number;
+  /** Card upgrades: how advanced the card is (tier, stars, level), higher goes first. */
+  cardRank?: number;
+  /** A tier-up still short of its level: never bought, but its resources are kept for it. */
+  hold?: boolean;
   buy: (state: GameState, content: Content, modifiers: Modifier[], rng: Rng) => GameState | null;
 }
 
@@ -375,11 +386,16 @@ export function buyerCandidates(
           ? starUpCheck(state, content, card.id, modifiers)
           : tierUpCheck(state, content, card.id, modifiers);
       if (!check?.available) continue;
-      // Only worth waiting for when the duplicate and level are already there.
-      if (check.requirements.some((r) => r.kind !== 'resource' && !r.met)) continue;
+      // Only worth waiting for when the duplicate and level are already there (a tier-up that
+      // only lacks levels is held: its resources are kept).
+      const short = check.requirements.filter((r) => r.kind !== 'resource' && !r.met);
+      const hold = kind === 'tier' && short.length > 0 && short.every((r) => r.kind === 'level');
+      if (short.length > 0 && !hold) continue;
       out.push({
         id: `${kind}:${card.id}`,
         kind: 'card',
+        cardRank: cardProgress(content, state.cards.owned[card.id]!),
+        hold,
         prices: check.requirements
           .filter((r) => r.kind === 'resource' && r.resource)
           .map((r) => ({ resource: r.resource!, amount: r.need })),
@@ -423,6 +439,8 @@ export function buyerCandidates(
     out.push({
       id: `cosmetic:${id}`,
       kind: 'cosmetic',
+      // The cosmetic closest to its top level (and cheapest to max) goes first.
+      cardRank: cosmeticProgress(state, content, id),
       prices: check.requirements
         .filter((r) => r.kind === 'resource' && r.resource)
         .map((r) => ({ resource: r.resource!, amount: r.need })),
@@ -448,6 +466,18 @@ export function buyerCandidates(
   return out.map((c) => ({ ...c, eta: etaOf(state, content, c.prices, modifiers) }));
 }
 
+/** How far a card is along: tier, then stars, then level. */
+function cardProgress(content: Content, owned: OwnedCard): number {
+  return (RANK_TIERS.indexOf(owned.tier) * 10 + owned.stars) * 1000 + owned.level;
+}
+
+/** How far a cosmetic is along: its level, then the cheaper ladders first. */
+function cosmeticProgress(state: GameState, content: Content, id: string): number {
+  const cosmetic = content.cosmeticById.get(id);
+  const level = state.cosmetics.owned[id]?.level ?? 0;
+  return level * 100 + (10 - (cosmetic ? cosmeticMaxLevel(content, cosmetic) : 10));
+}
+
 const have = (state: GameState, resource: string): Decimal =>
   state.resources[resource] ?? new Decimal(0);
 
@@ -458,7 +488,7 @@ const have = (state: GameState, resource: string): Decimal =>
 function reservations(state: GameState, candidates: readonly Candidate[]): Map<string, Decimal> {
   const reserved = new Map<string, Decimal>();
   const waiting = candidates
-    .filter((c) => (c.kind === 'card' || c.kind === 'tree') && c.eta !== 0)
+    .filter((c) => (c.kind === 'card' || c.kind === 'tree') && (c.eta !== 0 || c.hold))
     .sort((a, b) => (a.eta ?? Infinity) - (b.eta ?? Infinity));
   const claimed = new Set<string>();
   for (const c of waiting) {
@@ -483,12 +513,49 @@ function spendable(state: GameState, reserved: Map<string, Decimal>, prices: Pri
 /** Order of the always-buy kinds when several are affordable. */
 const KIND_ORDER: CandidateKind[] = ['card', 'tree', 'skill', 'starlight', 'cosmetic', 'summon'];
 
+/**
+ * The card upgrades to buy now, most advanced card first. A card that waits for a resource
+ * (Cores) holds it back from every weaker card: the player finishes the lead card first.
+ */
+function focused(
+  state: GameState,
+  candidates: readonly Candidate[],
+  kind: CandidateKind,
+): Candidate[] {
+  const cards = candidates
+    .filter((c) => c.kind === kind)
+    .sort((a, b) => (b.cardRank ?? 0) - (a.cardRank ?? 0));
+  const claimed = new Map<string, Decimal>();
+  const now: Candidate[] = [];
+  let holding = false;
+  for (const c of cards) {
+    // Weaker cards only get what the cards before them do not wait for.
+    const blocked = c.prices.some((p) => {
+      const kept = claimed.get(p.resource);
+      return kept !== undefined && have(state, p.resource).sub(p.amount).lt(kept);
+    });
+    if (blocked) continue;
+    if (c.eta === 0 && !c.hold) {
+      now.push(c);
+      continue;
+    }
+    if (c.hold) {
+      if (holding) continue; // only the lead card's tier-up is held
+      holding = true;
+    }
+    for (const p of c.prices)
+      claimed.set(p.resource, (claimed.get(p.resource) ?? new Decimal(0)).add(p.amount));
+  }
+  return now;
+}
+
 /** The next purchase to make now, or null to wait. */
 function pickPurchase(state: GameState, candidates: readonly Candidate[]): Candidate[] {
   const ready = candidates.filter((c) => c.eta === 0);
   const picks: Candidate[] = [];
   for (const kind of KIND_ORDER) {
-    picks.push(...ready.filter((c) => c.kind === kind));
+    if (kind === 'card' || kind === 'cosmetic') picks.push(...focused(state, candidates, kind));
+    else picks.push(...ready.filter((c) => c.kind === kind));
   }
   // Economy: per resource, the best gain per unit of price; wait for it unless a cheap one fits.
   const reserved = reservations(state, candidates);
@@ -732,11 +799,18 @@ function wantedResources(state: GameState, content: Content, modifiers: Modifier
   return wanted;
 }
 
+/** A dungeon is pushed on (first clear) only when one kill takes at most this long, in seconds. */
+export const PUSH_MAX_SECONDS = 600;
+
+/** Share of the time the first dungeon is farmed for Sigils while a card is still missing. */
+export const PORTAL_FARM_SHARE = 0.1;
+
 /** Most of the time spent fighting the cleared Glimmer Trial for cosmetic materials. */
 export const TRIAL_FARM_SHARE = 0.25;
 
 /**
- * What to fight: the Glimmer Trial once it can be cleared; a killable dungeon not cleared yet;
+ * What to fight: the Glimmer Trial once it can be cleared; a killable dungeon not cleared yet
+ * whose kill takes at most PUSH_MAX_SECONDS;
  * the cleared trial for cosmetic materials while its share of the time is under
  * TRIAL_FARM_SHARE; a dungeon whose Core is wanted; the hardest killable dungeon; else the first
  * open dungeon not cleared (a wall to push on).
@@ -744,7 +818,7 @@ export const TRIAL_FARM_SHARE = 0.25;
 export function chooseDungeon(
   state: GameState,
   content: Content,
-  options: { trialShare?: number } = {},
+  options: { trialShare?: number; portalShare?: number } = {},
 ): string | null {
   const modifiers = collectModifiers(state, content);
   for (const trial of content.trials) {
@@ -753,7 +827,11 @@ export function chooseDungeon(
     if (dealt.gte(trial.target.hp)) return trial.id;
   }
   const killable = content.dungeons.filter((d) => canKill(state, content, d.id, modifiers));
-  const push = killable.find((d) => !isDungeonCleared(state, d.id));
+  const push = killable.find(
+    (d) =>
+      !isDungeonCleared(state, d.id) &&
+      (secondsPerKill(state, content, d.id, modifiers) ?? Infinity) <= PUSH_MAX_SECONDS,
+  );
   if (push) return push.id;
   const wanted = wantedResources(state, content, modifiers);
   const trialFarm = content.trials.find(
@@ -762,6 +840,14 @@ export function chooseDungeon(
       t.tiers.some((tier) => tier.rewards.some((r) => wanted.has(r.resource))),
   );
   if (trialFarm && (options.trialShare ?? 0) < TRIAL_FARM_SHARE) return trialFarm.id;
+  // A card still missing from the Card Portal: some time goes to the Sigils of the first dungeon.
+  const missingCard = content.portals.some(
+    (p) => p.kind === 'cards' && p.pool.some((e) => !state.cards.owned[e.itemId]),
+  );
+  const sigilDungeon = killable[0];
+  if (missingCard && sigilDungeon && (options.portalShare ?? 0) < PORTAL_FARM_SHARE) {
+    return sigilDungeon.id;
+  }
   const farm = [...killable].reverse().find((d) => wanted.has(d.drops.material.resource));
   if (farm) return farm.id;
   const hardest = killable[killable.length - 1];
@@ -789,12 +875,16 @@ export interface SimResult {
   simSeconds: number;
   state: GameState;
   log: SimLog;
+  /** [sim seconds, average fighting DPS against the first dungeon] every half hour. */
+  dpsSamples: Array<[number, number]>;
 }
 
 /** How often the fight target is re-chosen without a kill, in seconds. */
 const RECHOOSE_SECONDS = 300;
 /** How often the ascension rule is checked, in seconds. */
 const ASCEND_CHECK_SECONDS = 60;
+/** How often the fighting DPS is sampled for the report, in seconds. */
+const DPS_SAMPLE_SECONDS = 1800;
 
 export function runSim(bundled: Content, options: SimOptions): SimResult {
   // The sim plays the whole beta: portals waiting for their screen (the Wardrobe Gate) are open.
@@ -813,6 +903,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   let runStart = 0;
   let tracker: AscendTracker = { peakRate: 0 };
   let trialClearedAt: number | null = null;
+  const dpsSamples: Array<[number, number]> = [];
   let t = 0;
   const countSummons = (bought: string[]): void => {
     for (const id of bought) if (id.startsWith('summon:')) log.summons++;
@@ -842,7 +933,8 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       if (trialClearedAt === null && isDungeonCleared(state, 'glimmer_trial')) trialClearedAt = t;
       const since = trialClearedAt === null ? 0 : t - trialClearedAt;
       const trialShare = since > 0 ? (log.fought['glimmer_trial'] ?? 0) / since : 0;
-      const target = chooseDungeon(state, content, { trialShare });
+      const portalShare = t > 0 ? (log.fought[content.dungeons[0]!.id] ?? 0) / t : 0;
+      const target = chooseDungeon(state, content, { trialShare, portalShare });
       if (target !== state.activeDungeonId) {
         const result = setActiveDungeon(state, content, target);
         if (result.ok) state = result.state;
@@ -865,6 +957,10 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       sinceChoose = RECHOOSE_SECONDS;
     }
     if (report.cardDrops.length > 0) state = optimizeLoadouts(state, content);
+    if (t % DPS_SAMPLE_SECONDS < dt) {
+      const first = content.dungeons[0]!.id;
+      dpsSamples.push([t - (t % DPS_SAMPLE_SECONDS), num(averageDps(state, content, first))]);
+    }
     for (const m of MILESTONES) {
       if (hits[m.id] === null && m.reached(state, content, log)) hits[m.id] = t;
     }
@@ -872,7 +968,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       log.levelAt[level] ??= t;
     }
   }
-  return { hits, simSeconds: t, state, log };
+  return { hits, simSeconds: t, state, log, dpsSamples };
 }
 
 const hoursText = (seconds: number): string => `${(seconds / 3600).toFixed(2)} h`;
@@ -985,6 +1081,10 @@ export function formatSummary(result: SimResult, content: Content): string {
     `Kills: ${s.stats.bossKills} (${Object.entries(s.combat.kills)
       .map(([d, k]) => `${d} ${k}`)
       .join(', ')})`,
+    `DPS vs Mossy Cellar: ${result.dpsSamples
+      .filter(([t]) => [1, 2, 4, 8, 12, 16, 20, 30, 40].includes(t / 3600))
+      .map(([t, d]) => `${t / 3600} h ${d.toExponential(1)}`)
+      .join(', ')}`,
     `Time fought: ${fought || 'none'}`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
     `Plots: ${plotCapacity(s, content, 'logging')}, slots: ${plotCapacity(s, content, 'mining')}`,

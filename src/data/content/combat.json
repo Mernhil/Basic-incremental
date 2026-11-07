@@ -7,7 +7,7 @@
       "cost": {
         "resource": "copper_gem",
         "base": "10",
-        "growth": "1.15"
+        "growth": "1.11"
       },
       "damagePerLevel": "1",
       "milestones": {
@@ -21,7 +21,7 @@
       "cost": {
         "resource": "iron_gem",
         "base": "20",
-        "growth": "1.17"
+        "growth": "1.12"
       },
       "damagePerLevel": "10",
       "milestones": {
@@ -35,7 +35,7 @@
       "cost": {
         "resource": "grotto_gem",
         "base": "30",
-        "growth": "1.2"
+        "growth": "1.13"
       },
       "damagePerLevel": "100",
       "milestones": {

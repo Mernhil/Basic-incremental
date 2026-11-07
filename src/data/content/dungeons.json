@@ -9,7 +9,7 @@
       "id": "root_warden",
       "name": "Root Warden",
       "art": "root_warden",
-      "hp": "60000",
+      "hp": "3.3e5",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 5,
       "attack": {
@@ -30,7 +30,7 @@
       },
       "material": {
         "resource": "moss_core",
-        "chance": 0.1,
+        "chance": 0.6,
         "amount": 1
       }
     }
@@ -40,12 +40,12 @@
     "name": "Ember Crypt",
     "tier": 2,
     "unlockedBy": "mossy_cellar",
-    "killsToClear": 1,
+    "killsToClear": 10,
     "boss": {
       "id": "cinder_lich",
       "name": "Cinder Lich",
       "art": "cinder_lich",
-      "hp": "4e6",
+      "hp": "6e6",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 8,
       "attack": {
@@ -66,7 +66,7 @@
       },
       "material": {
         "resource": "cinder_core",
-        "chance": 0.1,
+        "chance": 0.5,
         "amount": 1
       }
     }
@@ -76,16 +76,16 @@
     "name": "Frostspire Vault",
     "tier": 3,
     "unlockedBy": "ember_crypt",
-    "killsToClear": 1,
+    "killsToClear": 50,
     "boss": {
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "hp": "1.5e8",
+      "hp": "3e7",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 12,
       "attack": {
-        "damage": "100",
+        "damage": "30",
         "intervalSeconds": 6
       }
     },
@@ -102,7 +102,7 @@
       },
       "material": {
         "resource": "frost_core",
-        "chance": 0.1,
+        "chance": 0.7,
         "amount": 1
       }
     }

@@ -13,8 +13,8 @@
   },
   "levels": {
     "maxLevel": 50,
-    "xpBase": "150",
-    "xpGrowth": "1.25",
+    "xpBase": "1100",
+    "xpGrowth": "1.2",
     "skillPointsPerLevel": 1
   },
   "rewardTrack": [

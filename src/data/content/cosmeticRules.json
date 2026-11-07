@@ -18,11 +18,26 @@
   },
   "copiesPerLevel": 1,
   "materials": {
-    "shape": { "resource": "glimmer_dust", "amount": "200" },
-    "accent": { "resource": "glimmer_dust", "amount": "400" },
-    "gems": { "resource": "facet_shard", "amount": "400" },
-    "glow": { "resource": "facet_shard", "amount": "800" },
-    "ambient": { "resource": "facet_shard", "amount": "2000" }
+    "shape": {
+      "resource": "glimmer_dust",
+      "amount": "200"
+    },
+    "accent": {
+      "resource": "glimmer_dust",
+      "amount": "400"
+    },
+    "gems": {
+      "resource": "facet_shard",
+      "amount": "400"
+    },
+    "glow": {
+      "resource": "facet_shard",
+      "amount": "800"
+    },
+    "ambient": {
+      "resource": "facet_shard",
+      "amount": "800"
+    }
   },
   "rarityCost": {
     "common": "1",
