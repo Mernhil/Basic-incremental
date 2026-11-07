@@ -7,6 +7,7 @@ import {
   runSim,
   formatTable,
   arrangePlots,
+  shouldAscend,
 } from '../scripts/sim/sim';
 import { content, freshState } from './helpers';
 
@@ -41,6 +42,18 @@ describe('balance sim: greedy buyer', () => {
     expect(bought).toContain('summon:card_portal');
     expect(after.portals['card_portal']?.pulls).toBe(1);
     expect(MILESTONES.find((m) => m.id === 'first_summon')?.pending).toBeUndefined();
+  });
+
+  it('ascends once the gain is worth it, then spends the Starlight', () => {
+    const state = freshState();
+    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    expect(shouldAscend(state, content)).toBe(true);
+    expect(shouldAscend(freshState(), content)).toBe(false);
+    const rich = freshState();
+    rich.resources['starlight'] = new Decimal(100);
+    const { bought } = greedyBuy(rich, content);
+    expect(bought.some((id) => id.startsWith('starlight:'))).toBe(true);
+    expect(MILESTONES.find((m) => m.id === 'first_prestige')?.pending).toBeUndefined();
   });
 
   it('does nothing when nothing is affordable', () => {

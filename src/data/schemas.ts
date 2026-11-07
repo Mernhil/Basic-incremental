@@ -13,7 +13,8 @@ const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, 
 const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
-export const RESOURCE_KINDS = ['tree_gem', 'mine_gem', 'material', 'portal'] as const;
+/** `prestige`: the prestige currency (Starlight), the one resource an ascension keeps. */
+export const RESOURCE_KINDS = ['tree_gem', 'mine_gem', 'material', 'portal', 'prestige'] as const;
 
 /** A colour as #rrggbb. */
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/, 'colours are #rrggbb in lowercase');
@@ -190,6 +191,8 @@ export const STATS = [
    *  rounded up with that chance, so the average is exact (DESIGN.md 16, E3). Scope: dungeon,
    *  resource. */
   'drops.portalMultiplier',
+  /** Starlight an ascension grants, before rounding down (DESIGN.md 3). */
+  'prestige.gain',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -822,6 +825,39 @@ export const portalSchema = z.strictObject({
   reveal: z.strictObject({ upgradeFlashChance: z.number().min(0).max(1) }),
 });
 
+/**
+ * Prestige, Ascension (DESIGN.md 3, 11.6; prestige.json). Starlight gained =
+ * floor(((Σ gems harvested this run × the weight of the gem's tier) / divisor) ^ exponent),
+ * through `prestige.gain`. An ascension needs at least `minimum`.
+ */
+export const prestigeSchema = z.strictObject({
+  /** The prestige resource (kind `prestige`): Starlight. */
+  currency: id,
+  gain: z.strictObject({
+    /** Weight of one gem by its resource tier (index 0 = tier 1). */
+    tierWeights: z.array(positiveDecimal).min(1),
+    divisor: positiveDecimal,
+    exponent: z.number().gt(0).max(1),
+    minimum: z.number().int().min(1),
+  }),
+  /** Starlight shop: permanent levels, each adding `perLevel` once more (source `prestige`). */
+  shop: z.array(
+    z.strictObject({
+      id,
+      name,
+      description: z.string().min(1),
+      maxLevel: z.number().int().min(1),
+      /** Starlight price of level n + 1 (0-based n): base × growth^n. */
+      cost: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
+      perLevel: z.array(modifierSchema).min(1),
+    }),
+  ),
+  /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */
+  rewards: z.array(
+    z.strictObject({ ascension: z.number().int().min(1), cosmetics: z.array(id).min(1) }),
+  ),
+});
+
 /** Bonus for equipping every item of a cosmetic set. */
 export const cosmeticSetSchema = z.strictObject({
   id,
@@ -845,6 +881,7 @@ export const contentSchemas = {
   wearRules: wearRulesSchema,
   sets: z.array(cosmeticSetSchema),
   progression: progressionSchema,
+  prestige: prestigeSchema,
 } as const;
 
 export type Resource = z.output<typeof resourceSchema>;
@@ -869,3 +906,5 @@ export type CosmeticLevel = z.output<typeof cosmeticLevelSchema>;
 export type RarityStyle = z.output<typeof rarityStyleSchema>;
 export type WearRules = z.output<typeof wearRulesSchema>;
 export type CosmeticSet = z.output<typeof cosmeticSetSchema>;
+export type PrestigeConfig = z.output<typeof prestigeSchema>;
+export type StarlightItem = PrestigeConfig['shop'][number];

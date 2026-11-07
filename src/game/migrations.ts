@@ -24,6 +24,12 @@ export const MIGRATIONS: MigrationTable = {
   /** v8 -> v9: summon portals (DESIGN.md 6). No pulls have been made yet, so every pity counter
    *  starts at 0. */
   8: (state) => ({ ...state, portals: {} }),
+  /** v9 -> v10: Ascension (DESIGN.md 3). Nobody has ascended yet, so the run started with the
+   *  save: every gem harvested so far counts toward the first Starlight. */
+  9: (state) => ({
+    ...state,
+    prestige: { runStart: {}, shop: {}, starlightEarned: '0' },
+  }),
 };
 
 /** Production gem ids at save format 7 (a snapshot, like the other steps). */

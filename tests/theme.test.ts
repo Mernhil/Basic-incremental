@@ -32,6 +32,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import prestige from '../src/data/content/prestige.json';
 
 const MAIN = 'dawnblade_regent';
 const r = (tier: Rank['tier'], stars: number): Rank => ({ tier, stars });
@@ -226,6 +227,7 @@ describe('invalid cosmetic data is rejected', () => {
       wearRules,
       sets,
       progression,
+      prestige,
     });
   const issues = (input: RawContent): string[] => {
     try {

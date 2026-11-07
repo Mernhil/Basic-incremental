@@ -1,0 +1,86 @@
+{
+  "currency": "starlight",
+  "gain": {
+    "tierWeights": ["1", "10", "100"],
+    "divisor": "2e5",
+    "exponent": 0.5,
+    "minimum": 10
+  },
+  "shop": [
+    {
+      "id": "starlit_groves",
+      "name": "Starlit Groves",
+      "description": "+10% logging output per level",
+      "maxLevel": 25,
+      "cost": { "base": "2", "growth": "1.5" },
+      "perLevel": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "10",
+          "scope": { "job": "logging" }
+        }
+      ]
+    },
+    {
+      "id": "starlit_veins",
+      "name": "Starlit Veins",
+      "description": "+10% mining output per level",
+      "maxLevel": 25,
+      "cost": { "base": "2", "growth": "1.5" },
+      "perLevel": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "10",
+          "scope": { "job": "mining" }
+        }
+      ]
+    },
+    {
+      "id": "starforged_edge",
+      "name": "Starforged Edge",
+      "description": "+15% damage per level",
+      "maxLevel": 25,
+      "cost": { "base": "3", "growth": "1.6" },
+      "perLevel": [{ "stat": "combat.damage", "kind": "percent", "value": "15" }]
+    },
+    {
+      "id": "celestial_ward",
+      "name": "Celestial Ward",
+      "description": "+20% card health per level",
+      "maxLevel": 10,
+      "cost": { "base": "3", "growth": "1.7" },
+      "perLevel": [{ "stat": "combat.health", "kind": "percent", "value": "20" }]
+    },
+    {
+      "id": "constellation_sigils",
+      "name": "Constellation Sigils",
+      "description": "+10% sigils from bosses per level",
+      "maxLevel": 10,
+      "cost": { "base": "5", "growth": "1.8" },
+      "perLevel": [{ "stat": "drops.portalMultiplier", "kind": "percent", "value": "10" }]
+    },
+    {
+      "id": "wide_skies",
+      "name": "Wide Skies",
+      "description": "Plot, slot and level prices grow 1% slower per level",
+      "maxLevel": 5,
+      "cost": { "base": "8", "growth": "2" },
+      "perLevel": [{ "stat": "cost.growth", "kind": "percent", "value": "-1" }]
+    },
+    {
+      "id": "long_night",
+      "name": "Long Night",
+      "description": "+1 h offline cap per level",
+      "maxLevel": 4,
+      "cost": { "base": "5", "growth": "2" },
+      "perLevel": [{ "stat": "offline.capHours", "kind": "flat", "value": "1" }]
+    }
+  ],
+  "rewards": [
+    { "ascension": 1, "cosmetics": ["gilded_plate"] },
+    { "ascension": 2, "cosmetics": ["aurora_veil"] },
+    { "ascension": 3, "cosmetics": ["gilded_filigree"] }
+  ]
+}

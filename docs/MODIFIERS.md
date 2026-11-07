@@ -26,6 +26,7 @@ Every tunable number in the game goes through one pipeline (DESIGN.md 11.5), so 
 - fully equipped sets (`modifiers` in `sets.json`);
 - cards in the three loadouts (`cardModifiers` in `src/game/cards.ts`): the main card's `main` modifiers plus the job's `mainGrowth` from `cardRules.json`, and each support card's `support` modifiers. Card modifiers carry a `scale` (`full` grows with the card's power from level, stars and tier; `none` stays fixed; default `full` for flat and percent, `none` otherwise);
 - mastery (`masteryModifiers` in `src/game/mastery.ts`, DESIGN.md 16 E2/E3): the `perTier` bonuses in `progression.json`, each value multiplied by the settled tier. Gem mastery is scoped to the gem (`resource`), boss and special dungeon medals to the `dungeon`. Source id = the gem or dungeon id. Tiers settle on the 1 s play-time grid like card levels, so splitting time never changes totals.
+- Starlight shop (`prestigeModifiers` in `src/game/prestige.ts`, DESIGN.md 3): each shop item's `perLevel` modifiers in `prestige.json`, each value multiplied by the level bought. Source kind `prestige`, id = the shop item id.
 
 New systems add their modifiers inside `collectModifiers`; callers never change.
 

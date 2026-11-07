@@ -5,6 +5,7 @@ import { canAfford, finalPrice, pay, type Price } from './production';
 import type { CardGain } from './report';
 import type { Rng } from './rng';
 import type { GameState, PortalCounters } from './state';
+import { grantCosmetic } from './wardrobe';
 
 /**
  * Summon portals (DESIGN.md 6, "Beta portals"): one engine for every portal (the Card Portal now,
@@ -91,14 +92,7 @@ function grantItem(state: GameState, content: Content, portal: Portal, itemId: s
   if (portal.kind === 'cards') {
     return grantCard(state.cards, content, content.cardById.get(itemId)!);
   }
-  const owned = state.cosmetics.owned[itemId];
-  if (!owned) {
-    state.cosmetics.owned[itemId] = { level: 1, copies: 0 };
-    return { kind: 'new' } as const;
-  }
-  const copies = owned.copies + 1;
-  state.cosmetics.owned[itemId] = { ...owned, copies };
-  return { kind: 'copy', copies } as const;
+  return grantCosmetic(state, itemId);
 }
 
 /**

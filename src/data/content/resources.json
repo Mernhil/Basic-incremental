@@ -72,5 +72,6 @@
   { "id": "cinder_core", "name": "Cinder Core", "kind": "material", "tier": 2 },
   { "id": "frost_core", "name": "Frost Core", "kind": "material", "tier": 3 },
   { "id": "glimmer_dust", "name": "Glimmer Dust", "kind": "material", "tier": 1 },
-  { "id": "facet_shard", "name": "Facet Shard", "kind": "material", "tier": 2 }
+  { "id": "facet_shard", "name": "Facet Shard", "kind": "material", "tier": 2 },
+  { "id": "starlight", "name": "Starlight", "kind": "prestige", "tier": 1 }
 ]

@@ -47,6 +47,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import prestige from '../src/data/content/prestige.json';
 import { constantRng, bareState, plainContent as content, freshState } from './helpers';
 
 const rng = constantRng(0.5);
@@ -461,6 +462,7 @@ describe('combat data is validated', () => {
       wearRules,
       sets,
       progression,
+      prestige,
     });
   const issues = (input: RawContent): string[] => {
     try {

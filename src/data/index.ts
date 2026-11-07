@@ -10,6 +10,7 @@ import type {
   Mine,
   ModifierData,
   Portal,
+  PrestigeConfig,
   ProductionConfig,
   Progression,
   Rarity,
@@ -34,6 +35,7 @@ import raritiesJson from './content/rarities.json';
 import wearRulesJson from './content/wearRules.json';
 import setsJson from './content/sets.json';
 import progressionJson from './content/progression.json';
+import prestigeJson from './content/prestige.json';
 
 export * from './schemas';
 
@@ -56,6 +58,8 @@ export interface Content {
   sets: CosmeticSet[];
   /** Mastery, tile stages, evolutions and goal rules (DESIGN.md 16). */
   progression: Progression;
+  /** Ascension: Starlight gain, the Starlight shop and prestige cosmetics (DESIGN.md 3). */
+  prestige: PrestigeConfig;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -118,6 +122,7 @@ export function validateContent(raw: RawContent): Content {
     wearRules,
     sets,
     progression,
+    prestige,
   } = parsed;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
@@ -126,8 +131,21 @@ export function validateContent(raw: RawContent): Content {
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
   checkProgression({ cards, progression }, issues);
+  checkPrestige({ resources, cosmetics, prestige }, issues);
   checkModifiers(
-    { resources, trees, mines, dungeons, trials, portals, cosmetics, sets, cards, cardRules },
+    {
+      resources,
+      trees,
+      mines,
+      dungeons,
+      trials,
+      portals,
+      cosmetics,
+      sets,
+      cards,
+      cardRules,
+      prestige,
+    },
     issues,
   );
   if (issues.length > 0) throw new ContentValidationError(issues);
@@ -152,6 +170,7 @@ export function validateContent(raw: RawContent): Content {
     wearRules,
     sets,
     progression,
+    prestige,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -288,6 +307,7 @@ function checkModifiers(
     | 'sets'
     | 'cards'
     | 'cardRules'
+    | 'prestige'
   >,
   issues: string[],
 ): void {
@@ -318,6 +338,42 @@ function checkModifiers(
   for (const job of JOBS) {
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
   }
+  c.prestige.shop.forEach((x, i) => check(`prestige.json › shop › [${i}] › perLevel`, x.perLevel));
+}
+
+/** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
+function checkPrestige(
+  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige'>,
+  issues: string[],
+): void {
+  const currency = c.resources.find((r) => r.id === c.prestige.currency);
+  if (!currency) {
+    issues.push(`prestige.json › currency: unknown resource "${c.prestige.currency}"`);
+  } else if (currency.kind !== 'prestige') {
+    issues.push(
+      `prestige.json › currency: "${currency.id}" is ${currency.kind}, expected prestige`,
+    );
+  }
+  c.resources.forEach((r, i) => {
+    if (r.kind === 'prestige' && r.id !== c.prestige.currency) {
+      issues.push(`resources.json › [${i}] › kind: only the prestige currency can be prestige`);
+    }
+  });
+  const ids = new Set<string>();
+  c.prestige.shop.forEach((item, i) => {
+    if (ids.has(item.id)) issues.push(`prestige.json › shop › [${i}] › id: duplicate "${item.id}"`);
+    ids.add(item.id);
+  });
+  const cosmetics = new Set(c.cosmetics.map((x) => x.id));
+  c.prestige.rewards.forEach((reward, i) =>
+    reward.cosmetics.forEach((id, j) => {
+      if (!cosmetics.has(id)) {
+        issues.push(
+          `prestige.json › rewards › [${i}] › cosmetics › [${j}]: unknown cosmetic "${id}"`,
+        );
+      }
+    }),
+  );
 }
 
 /** Start cards, star-up and tier-up materials must exist; start cards lead distinct jobs. */
@@ -573,5 +629,6 @@ export function loadContent(): Content {
     wearRules: wearRulesJson,
     sets: setsJson,
     progression: progressionJson,
+    prestige: prestigeJson,
   });
 }

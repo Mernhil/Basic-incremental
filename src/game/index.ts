@@ -23,7 +23,41 @@ export * from './mastery';
 export * from './stages';
 export * from './goals';
 export * from './portals';
+export * from './prestige';
+export * from './wardrobe';
 export { METALS, type Metal } from '../data';
+
+// ---- Ascension (DESIGN.md 3, 16): the contract with the UI, one line each ---------------------
+
+export {
+  /** The Ascension gate: Starlight gain, minimum, can ascend, rewards, what resets / persists. */
+  ascensionPreview,
+  /** Ascends: grants Starlight and prestige cosmetics, resets the run, starts a new one. */
+  ascend,
+  /** Starlight an ascension would grant now (after `prestige.gain`). */
+  starlightGain,
+  /** Weighted gems harvested this run (what the gain grows with). */
+  runPoints,
+  /** Prestige cosmetic ids the n-th ascension grants. */
+  ascensionRewards,
+  /** The Starlight shop: each item's level, price (null at max), affordable, bonus now / next. */
+  starlightShop,
+  /** Buys one level of a Starlight shop item. */
+  buyStarlightItem,
+  /** Ids of what an ascension resets / keeps, in display order. */
+  ASCENSION_RESETS,
+  ASCENSION_PERSISTS,
+  type AscensionPreview,
+  type AscendResult,
+  type StarlightOffer,
+  type StarlightBuyResult,
+  type AscensionResetPart,
+  type AscensionPersistPart,
+} from './prestige';
+export {
+  /** Adds one copy of a cosmetic: new at level 1, or a copy for its upgrade levels. */
+  grantCosmetic,
+} from './wardrobe';
 
 // ---- Summon portals (DESIGN.md 6): the contract with the UI, one line each --------------------
 

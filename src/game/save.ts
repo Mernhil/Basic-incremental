@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 9;
+export const CURRENT_SAVE_VERSION = 10;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -110,6 +110,12 @@ export const serializedStateSchema = z.object({
       pityHits: z.number().int().min(0),
     }),
   ),
+  /** v10: Ascension (DESIGN.md 3). */
+  prestige: z.object({
+    runStart: z.record(z.string(), decimalText),
+    shop: counts,
+    starlightEarned: decimalText,
+  }),
 });
 export type SerializedState = z.infer<typeof serializedStateSchema>;
 
@@ -168,6 +174,13 @@ export function serializeState(state: GameState): SerializedState {
       bossTiers: { ...state.mastery.bossTiers },
     },
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
+    prestige: {
+      runStart: Object.fromEntries(
+        Object.entries(state.prestige.runStart).map(([id, v]) => [id, decimalToString(v)]),
+      ),
+      shop: { ...state.prestige.shop },
+      starlightEarned: decimalToString(state.prestige.starlightEarned),
+    },
     cosmetics: {
       loadout: {
         slots: { ...state.cosmetics.loadout.slots },
@@ -237,6 +250,21 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       .filter(([id]) => portalIds.has(id))
       .map(([id, p]) => [id, { ...p }]),
   );
+  // Unknown gems and shop items are dropped; shop levels stay within the item's max.
+  state.prestige = {
+    runStart: Object.fromEntries(
+      Object.entries(saved.prestige.runStart)
+        .filter(([id]) => isProductionGem(content, id))
+        .map(([id, v]) => [id, new Decimal(v)]),
+    ),
+    shop: Object.fromEntries(
+      Object.entries(saved.prestige.shop).flatMap(([id, level]) => {
+        const item = content.prestige.shop.find((i) => i.id === id);
+        return item && level > 0 ? [[id, Math.min(level, item.maxLevel)]] : [];
+      }),
+    ),
+    starlightEarned: new Decimal(saved.prestige.starlightEarned),
+  };
   // Unknown ids (removed from the game) are dropped; starters are always owned.
   const owned: GameState['cosmetics']['owned'] = { ...base.cosmetics.owned };
   for (const [id, entry] of Object.entries(saved.cosmetics.owned)) {

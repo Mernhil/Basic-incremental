@@ -15,6 +15,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import prestige from '../src/data/content/prestige.json';
 
 type PortalRaw = {
   cost: { resource: string };
@@ -39,6 +40,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     wearRules,
     sets,
     progression,
+    prestige,
     ...overrides,
   });
 }
@@ -283,6 +285,22 @@ describe('card ranks and portals', () => {
     expect(portal.cost.ten.toNumber()).toBe(100);
     expect(portal.pity).toEqual({ rarity: 'legendary', threshold: 90 });
     expect(portal.tenPullGuarantee).toBe('rare');
+  });
+
+  it('checks the prestige currency, reward cosmetics and shop modifier scopes', () => {
+    const bad = raw();
+    const p = bad.prestige as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    p['currency'] = 'moss_sigil';
+    p['rewards'][0].cosmetics = ['nope'];
+    p['shop'][0].perLevel[0].scope = { dungeon: 'nowhere' };
+    const issues = issuesFor(bad);
+    expect(issues).toContain('prestige.json › currency: "moss_sigil" is portal, expected prestige');
+    expect(issues).toContain(
+      'prestige.json › rewards › [0] › cosmetics › [0]: unknown cosmetic "nope"',
+    );
+    expect(issues).toContain(
+      'prestige.json › shop › [0] › perLevel › [0] › scope › dungeon: unknown dungeon "nowhere"',
+    );
   });
 
   it('needs pool items at the pity and guarantee rarities, or they could never be met', () => {
