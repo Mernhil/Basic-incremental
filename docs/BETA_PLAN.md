@@ -59,7 +59,7 @@ Decided with the user in the graphics session (2026-11-07).
 - **Art style: pixel art** (DESIGN 13). Every existing vector asset is redrawn as pixel art and approved by the user one by one. Code phases keep using the current art until an asset here is marked approved; do not build new vector art. When an asset is approved, its pixel version replaces the vector one in its phase.
 - **Tiles (A13):** the tree is the in-game `treeTile` grown over the five stages, not the review mockup's `growth.ts` trees; the mine is a crystal cluster (a chunky centre crystal, side crystals leaning into it, rock lumps at the base). Pixel draft: [Vector or Pixel](https://claude.ai/artifact/52eMxizyhHcEfXozMUuNGR). Not approved yet.
 
-Approval queue (in order). Every asset is now approved for the beta; mockups: [Pixel Art Batch](https://claude.ai/artifact/NLU6j4dSGJZe587PWGDXdK) and [Pixel Art Round 2](https://claude.ai/artifact/MP6BXhgJFWdRJDdyLiNcs6).
+Approval queue (in order). Every asset is approved for the beta and built into the game (#43, #45, #48: baked by `scripts/art/bake-pixels.mjs`); mockups: [Pixel Art Batch](https://claude.ai/artifact/NLU6j4dSGJZe587PWGDXdK) and [Pixel Art Round 2](https://claude.ai/artifact/MP6BXhgJFWdRJDdyLiNcs6).
 
 Build note for the code phases: ship the sprites as pixel data on their native grid (pre-rendered at build time from the approved drawings) and draw them at whole-number scale. The browser renderers used for the mockups are in the graphics session's shared notes. Post-beta polish: a Brave Frontier pass on the tiles, and smoother tone shapes on the largest boss areas (the Lich's robe shows tone rings).
 
@@ -70,8 +70,8 @@ Build note for the code phases: ship the sprites as pixel data on their native g
 | Unique evolutions (Flameblade, Rootbloom Staff, Soul Reaper)                               | **In the game** (#43, `evolutionArt`; placing it on ★6 cards is a ui task): card-item treatment, animated in the effects style                                               |
 | Card frames by tier                                                                        | **In the game** (#43): frame ladder (material, sockets, crest; motion on Gold and Prismatic), DESIGN 13 ([Frame Ladder](https://claude.ai/artifact/BWviG6R6coWmmMLKCCY8ga))  |
 | Gem coins and resource icons                                                               | **In the game** (#45, coin metal = mastery tier once mechanics exposes it): 48 × 48, one big faceted gem, no carving lines                                                   |
-| Bosses and the Crystal Sentinel                                                            | **Approved for the beta**: 160 px, Brave Frontier technique, soft aura, idle effects                                                                                         |
-| Element effects and hit animations                                                         | **Approved for the beta**: pixel effects with a soft glow (P5 C), thin slash                                                                                                 |
+| Bosses and the Crystal Sentinel                                                            | **In the game** (#48): 160 px, Brave Frontier technique, soft aura, idle effects                                                                                             |
+| Element effects and hit animations                                                         | **In the game** (#48): pixel effects with a soft glow (P5 C), thin slash                                                                                                     |
 | Mastery medals, forged edges, navigation plaques                                           | **In the game** (#45, `masteryMedal`, `forgedEdge`, `navPlaque`; placing them is a ui task): 48 px medals with holo on Gold and Prismatic; forged-edge ladder; 64 px plaques |
 
 ## Notes
