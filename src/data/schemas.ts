@@ -650,7 +650,17 @@ export const SLOT_TOKENS = {
   ],
   finish: ['finish-a', 'finish-b', 'finish-c', 'finish-opacity', 'finish-speed'],
   attack: ['attack-edge', 'attack-glow', 'attack-particle'],
-  tick: ['tick-color', 'tick-stroke', 'tick-crit', 'tick-size'],
+  /* tick-outline: the sticker numerals' white ring; tick-hurt: boss hits on the cards;
+     tick-gain: "+n" gains rising off plots and slots. */
+  tick: [
+    'tick-color',
+    'tick-stroke',
+    'tick-crit',
+    'tick-size',
+    'tick-outline',
+    'tick-hurt',
+    'tick-gain',
+  ],
   number: ['num-font', 'num-weight', 'num-color'],
   /* The table item also skins the screen shell around it (DESIGN.md 9): header and sidebar
      (chrome-*), framed panels (frame-*) and tooltips (tip-*). */

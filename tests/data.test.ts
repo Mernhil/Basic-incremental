@@ -325,6 +325,13 @@ describe('the starter table defines every table token', () => {
     const defined = Object.keys(loadContent().starterBySlot.table.levels[0]!.tokens);
     for (const key of SLOT_TOKENS.table) expect(defined).toContain(key);
   });
+
+  it('and the starter tick item defines every tick token (outline, hurt and gain included)', async () => {
+    const { SLOT_TOKENS } = await import('../src/data');
+    const tokens = loadContent().starterBySlot.tick.levels[0]!.tokens;
+    for (const key of SLOT_TOKENS.tick) expect(Object.keys(tokens)).toContain(key);
+    expect(tokens['tick-outline']).toBe('#ffffff');
+  });
 });
 
 describe('production data', () => {
