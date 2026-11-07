@@ -483,7 +483,7 @@ const increasing = (list: (number | Decimal)[]): boolean =>
   list.every((v, i) => i === 0 || new Decimal(v).gt(list[i - 1]!));
 
 /** Pages a goal can jump to (the renderer's page ids). */
-export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon'] as const;
+export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon', 'shop'] as const;
 export type GoalPage = (typeof GOAL_PAGES)[number];
 /**
  * Goal rules (E8). Each kind finds its candidates in the state:
@@ -503,6 +503,8 @@ export const GOAL_KINDS = [
   'gem_mastery',
   'boss_mastery',
   'star_up',
+  /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md 3). */
+  'ascension',
 ] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
 

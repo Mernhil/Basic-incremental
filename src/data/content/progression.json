@@ -38,6 +38,7 @@
     { "kind": "damage_milestone", "page": "dungeons" },
     { "kind": "gem_mastery", "page": "production", "minProgress": 0.25 },
     { "kind": "boss_mastery", "page": "dungeons", "minProgress": 0.25 },
-    { "kind": "star_up", "page": "cards" }
+    { "kind": "star_up", "page": "cards" },
+    { "kind": "ascension", "page": "shop", "minProgress": 0.25 }
   ]
 }

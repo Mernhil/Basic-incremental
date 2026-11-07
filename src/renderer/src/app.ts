@@ -28,6 +28,7 @@ import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
 import { createHomePage } from './pages/home';
 import { createSummonPage } from './pages/summon';
+import { createAscensionPage } from './pages/ascension';
 import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
 import { cardItemArt, loadoutProps } from './pages/loadoutCards';
@@ -91,10 +92,16 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     mine_gem: 'ore',
     material: 'material',
     portal: 'portal',
-    prestige: 'portal', // compile fix (mechanics): Starlight; ui to pick its icon
+    prestige: 'starlight', // placeholder line star until the pixel Starlight coin is drawn
   } as const;
   installArtDefs();
-  const currencies: Currency[] = content.resources.map((r) => ({
+  // Starlight (the prestige currency) leads the header row: it is kept forever and would
+  // otherwise sit past the right edge behind every gem and material
+  const headerOrder = [
+    ...content.resources.filter((r) => r.kind === 'prestige'),
+    ...content.resources.filter((r) => r.kind !== 'prestige'),
+  ];
+  const currencies: Currency[] = headerOrder.map((r) => ({
     id: r.id,
     name: r.name,
     icon: KIND_ICON[r.kind],
@@ -110,7 +117,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   });
   shell.setLevel(1, 0, '');
   for (const p of PAGES) {
-    if (!['home', 'settings', 'production', 'dungeons', 'cards', 'summon'].includes(p.id))
+    if (!['home', 'settings', 'production', 'dungeons', 'cards', 'summon', 'shop'].includes(p.id))
       placeholderPage(shell.page(p.id as Exclude<typeof p.id, 'home'>), p.id as never);
   }
   const app = shell.notices;
@@ -185,6 +192,13 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     onTierUps,
   });
   pages['summon'] = createSummonPage(shell.page('summon'), {
+    content,
+    state: () => loop.state,
+    apply: applyAndSave,
+    sound: playSound,
+  });
+  // Ascension lives on the Shop page (DESIGN.md 12.19): the gate and the Starlight shop
+  pages['shop'] = createAscensionPage(shell.page('shop'), {
     content,
     state: () => loop.state,
     apply: applyAndSave,

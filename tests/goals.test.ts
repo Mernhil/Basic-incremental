@@ -176,6 +176,38 @@ describe('goal rules (DESIGN.md 16, E8)', () => {
   });
 });
 
+describe('ascension goal', () => {
+  const g = realContent.prestige.gain;
+  /** Weighted points that give exactly `gain` Starlight before rounding. */
+  const pointsFor = (gain: number) => g.divisor.toNumber() * Math.pow(gain, 1 / g.exponent);
+
+  it('shows once the Starlight gain reaches 25% of the minimum, with an ETA', () => {
+    const state = bareState();
+    state.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum * 0.55));
+    const goal = find(allGoals(state, realContent), 'ascension:ascension');
+    expect(goal).toBeDefined();
+    expect(goal!.page).toBe('shop');
+    expect(goal!.progress).toBeCloseTo(Math.floor(g.minimum * 0.55) / g.minimum, 9);
+    // ETA = missing points / weighted rate (Oak and Copper, both tier 1: weight 1).
+    const missing = pointsFor(g.minimum) - pointsFor(g.minimum * 0.55);
+    const rate =
+      incomePerSecond(state, realContent, 'oak_gem').toNumber() +
+      incomePerSecond(state, realContent, 'copper_gem').toNumber();
+    expect(goal!.etaSeconds!).toBeCloseTo(missing / rate, 0);
+  });
+
+  it('is not offered below 25% of the minimum, and is done at it', () => {
+    const low = bareState();
+    low.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum * 0.2));
+    expect(find(allGoals(low, realContent), 'ascension:ascension')).toBeUndefined();
+    const ready = bareState();
+    ready.mastery.harvested['oak_gem'] = new Decimal(pointsFor(g.minimum) * 1.01);
+    const goal = find(allGoals(ready, realContent), 'ascension:ascension')!;
+    expect(goal.progress).toBe(1);
+    expect(goal.etaSeconds).toBe(0);
+  });
+});
+
 describe('nextGoals', () => {
   it('gives the n nearest goals by estimated time, unknown times last', () => {
     const state = fighter();
