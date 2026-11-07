@@ -52,8 +52,28 @@ Section E (DESIGN 16): all lines accepted (none rejected over two rounds); DESIG
 
 User guidance from round 1: reuse the art already made earlier where possible: the unique evolutions, the weapons (scimitar, reaper sickle, moon bow, cleaver, pickaxes, axes) and the hit animations from the "Item Rarity and Effects" and "Hit Animation Options" pages and the in-game `effects.ts`.
 
+## Decided visuals
+
+Decided with the user in the graphics session (2026-11-07).
+
+- **Art style: pixel art** (DESIGN 13). Every existing vector asset is redrawn as pixel art and approved by the user one by one. Code phases keep using the current art until an asset here is marked approved; do not build new vector art. When an asset is approved, its pixel version replaces the vector one in its phase.
+- **Tiles (A13):** the tree is the in-game `treeTile` grown over the five stages, not the review mockup's `growth.ts` trees; the mine is a crystal cluster (a chunky centre crystal, side crystals leaning into it, rock lumps at the base). Pixel draft: [Vector or Pixel](https://claude.ai/artifact/52eMxizyhHcEfXozMUuNGR). Not approved yet.
+
+Approval queue (in order):
+
+| Asset                                                                                      | Status      |
+| ------------------------------------------------------------------------------------------ | ----------- |
+| Production tiles: tree and crystal mine, five stages                                       | Draft shown |
+| Card items and weapons, by rarity (swords, scimitar, sickle, bow, cleaver, pickaxes, axes) | Not started |
+| Unique evolutions (Flameblade, Rootbloom Staff, Soul Reaper)                               | Not started |
+| Card frames by tier                                                                        | Not started |
+| Gem coins and resource icons                                                               | Not started |
+| Bosses and the Crystal Sentinel                                                            | Not started |
+| Element effects and hit animations                                                         | Not started |
+| Mastery medals, forged edges, navigation plaques                                           | Not started |
+
 ## Notes
 
 - Existing data: `portals.json` Card Portal pity is "Rare at 30"; Phase 4 changes it to the decided "Legendary+ at 90" plus the 10-pull Rare guarantee.
-- The review page lives on branch `design/beta-review-mockups` (`design/beta-review/`, build with `npx vite build -c design/beta-review/vite.config.mts`). Its `growth.ts` (per-stage tree and mine tiles, A13 C) is the starting point for the Phase 2 tile art.
+- The review page lives on branch `design/beta-review-mockups` (`design/beta-review/`, build with `npx vite build -c design/beta-review/vite.config.mts`). Its `growth.ts` tiles are superseded by "Decided visuals" above.
 - Phase 10 brief was cut off after "pre-filled GitHub issue with version, save summary and". Default: also include the last 50 log lines and OS / app info (DESIGN 12).
