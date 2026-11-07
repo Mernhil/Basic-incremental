@@ -95,7 +95,7 @@ All particle themes (gilt motes, embers, glints, stars, bubbles) are pixel sprit
 | Slot           | Recipes             | Styles                                                                                                    | Art function                                                                       |
 | -------------- | ------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
 | Starlight coin | `ui-starlight-a..e` | a silver four-point, b indigo rim five-point, c bare star burst, d moon prism, e constellation            | `starlightCoin(style)` (48 × 48)                                                   |
-| Sticker style  | `ui-sticker-a..e`   | a paper die-cut, b enamel pin, c gold bezel, d postage stamp, e holo burst                                | `stickerArt(style, achievementId, chapter, unlocked)` (74 × 74), `cardShardIcon()` |
+| Sticker style  | `ui-sticker-a..e`   | a mini card, b silver card, c gold card, d legendary card, e prismatic card                               | `stickerArt(style, achievementId, chapter, unlocked)` (74 × 74), `cardShardIcon()` |
 | Skill nodes    | `ui-nodes-a..e`     | a brilliant in a bronze cup, b hex in a silver bezel, c bare rhombus, d star cut, e kite with gold prongs | `skillNode(style, branch, state, keystone?)`, `starChart(style, stars, links)`     |
 | Wardrobe style | `ui-wardrobe-a..e`  | a sockets, b gilt plaques, c quiet ink, d banners, e rarity glass                                         | `wardrobeChrome(style, part, rarity?)`, `chromeCss(piece, scale)`                  |
 
