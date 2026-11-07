@@ -15,6 +15,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 
@@ -41,6 +42,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     wearRules,
     sets,
     progression,
+    achievements,
     cosmeticRules,
     prestige,
     ...overrides,
@@ -311,9 +313,31 @@ describe('card ranks and portals', () => {
     gate.pool = (gate.pool as { itemId: string; rarity: string }[])
       .filter((e) => e.itemId !== 'ember_crown')
       .map((e) => (e.itemId === 'holo_hex' ? { ...e, rarity: 'epic' } : e));
+    const file = bad.achievements as { shardShop: { id: string }[] };
+    file.shardShop = file.shardShop.filter((i) => i.id !== 'ember_crown');
     const issues = issuesFor(bad);
     expect(issues.some((i) => i.includes('"ember_crown" has no source'))).toBe(true);
     expect(issues.some((i) => i.includes('"holo_hex" is rare, not epic'))).toBe(true);
+  });
+
+  it('checks what achievements and the shard shop name', () => {
+    const bad = raw();
+    const file = bad.achievements as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    file['achievements'][8].condition = { kind: 'cleared', dungeon: 'nowhere' };
+    file['achievements'][8].reward = { cosmetics: ['nope'] };
+    file['achievements'][1].id = file['achievements'][0].id;
+    file['shardShop'][0].reward = { kind: 'card', card: 'nobody' };
+    const issues = issuesFor(bad);
+    expect(issues).toContain(
+      'achievements.json › achievements › [8] › condition › dungeon: unknown dungeon "nowhere"',
+    );
+    expect(issues).toContain(
+      'achievements.json › achievements › [8] › reward › cosmetics › [0]: unknown cosmetic "nope"',
+    );
+    expect(issues).toContain(
+      'achievements.json › achievements › [1] › id: duplicate "first_harvest"',
+    );
+    expect(issues).toContain('achievements.json › shardShop › [0] › reward: unknown card "nobody"');
   });
 
   it('checks the cosmetic upgrade ladders', () => {

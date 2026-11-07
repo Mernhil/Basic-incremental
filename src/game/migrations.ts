@@ -31,6 +31,14 @@ export const MIGRATIONS: MigrationTable = {
     prestige: { runStart: {}, shop: {}, starlightEarned: '0' },
   }),
   10: v10ToV11,
+  /** v11 -> v12: achievements and the shard shop (DESIGN.md 11.6). Nothing is unlocked yet; the
+   *  next tick unlocks whatever the save already earned. No offline session was recorded. */
+  11: (state) => ({
+    ...state,
+    stats: { ...(isRecord(state['stats']) ? state['stats'] : {}), longestOfflineMs: 0 },
+    achievements: {},
+    shardShop: {},
+  }),
 };
 
 /** The cosmetics dungeons drop as their rare item, at save format 10 (a snapshot). */

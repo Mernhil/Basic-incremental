@@ -17,6 +17,7 @@ const base = (): OfflineSummary => ({
   materials: {},
   cardXp: {},
   tierUps: [],
+  achievements: [],
 });
 
 describe('welcome back cards', () => {

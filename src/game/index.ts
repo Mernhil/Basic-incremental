@@ -25,6 +25,7 @@ export * from './goals';
 export * from './portals';
 export * from './prestige';
 export * from './wardrobe';
+export * from './achievements';
 export { METALS, type Metal } from '../data';
 
 // ---- Ascension (DESIGN.md 3, 16): the contract with the UI, one line each ---------------------
@@ -54,6 +55,22 @@ export {
   type AscensionResetPart,
   type AscensionPersistPart,
 } from './prestige';
+// ---- Achievements and shard shop (DESIGN.md 11.6, 17): the contract with the UI ---------------
+
+export {
+  /** The sticker book: every achievement with unlocked, when, value / target and progress 0..1. */
+  achievementList,
+  /** Unlocks what an action just earned (rewards granted); call after pulls, upgrades, ... */
+  checkAchievements,
+  /** The shard shop: each item's price, affordable, bought, left (null = unlimited). */
+  shardShop,
+  /** Spends card shards on a shop item (card copy, resource bundle or cosmetic). */
+  buyShardItem,
+  type AchievementEntry,
+  type ShardOffer,
+  type ShardBuyResult,
+} from './achievements';
+
 // ---- Wardrobe (DESIGN.md 7, 11.1): the contract with the UI, one line each --------------------
 
 export {

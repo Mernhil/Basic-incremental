@@ -1,6 +1,7 @@
 import type { Content } from '../data';
 import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
 import { advanceCombat, advanceHarvestBursts } from './combat';
+import { achievementsDue, settleAchievements } from './achievements';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
@@ -47,6 +48,7 @@ export function advance(
     current = advanceSpan(current, content, toBoundary, rng, report);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
+    settleAchievements(current, content, report);
     remaining -= toBoundary;
   }
   return { state: current, report };
@@ -60,7 +62,8 @@ function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
   const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport());
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
-    masteryDue(ahead, content)
+    masteryDue(ahead, content) ||
+    achievementsDue(ahead, content)
   );
 }
 

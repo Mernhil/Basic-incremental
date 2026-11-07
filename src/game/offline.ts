@@ -1,11 +1,12 @@
 import type { Content } from '../data';
 import { Decimal } from './num';
 import type { Rng } from './rng';
-import type { GameState } from './state';
 import { collectModifiers, statValue } from './modifiers';
 import { advanceChunked } from './tick';
 import type { CardDrop, TierUp } from './report';
 import { xpToNextLevel } from './cards';
+import { settleAchievements } from './achievements';
+import { cloneState, type GameState } from './state';
 
 /** Base offline cap (8 hours). The offline.capHours modifiers can raise it. */
 export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
@@ -48,6 +49,8 @@ export interface OfflineSummary {
   cardXp: Record<string, Decimal>;
   /** Mastery tiers (gem mastery, boss medals) reached while away, in order. */
   tierUps: TierUp[];
+  /** Achievement ids unlocked while away (Night Owl included), in order. */
+  achievements: string[];
 }
 
 /** XP a card has earned in total: every level below its level, plus its current XP. */
@@ -75,6 +78,11 @@ export function simulateOffline(
   const capMs = offlineCapMs(state, content);
   const simulatedMs = Math.min(elapsedMs, capMs);
   const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS);
+  // The session itself counts (Night Owl), then whatever it earned unlocks.
+  const recorded = cloneState(result.state);
+  recorded.stats.longestOfflineMs = Math.max(recorded.stats.longestOfflineMs, simulatedMs);
+  const unlocked = settleAchievements(recorded, content);
+  result.state = recorded;
 
   const gains: Record<string, Decimal> = {};
   for (const [id, after] of Object.entries(result.state.resources)) {
@@ -103,6 +111,7 @@ export function simulateOffline(
       materials: result.report.materials,
       cardXp,
       tierUps: result.report.tierUps,
+      achievements: [...result.report.achievements, ...unlocked],
     },
   };
 }

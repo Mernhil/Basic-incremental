@@ -5,6 +5,8 @@ import type { CosmeticLoadout } from './theme';
 export interface GameStats {
   playTimeMs: number;
   bossKills: number;
+  /** Longest offline progress collected at once (for Night Owl). */
+  longestOfflineMs: number;
 }
 
 export interface GameState {
@@ -37,6 +39,10 @@ export interface GameState {
   portals: Record<string, PortalCounters>;
   /** Ascension (DESIGN.md 3): the run's start, Starlight shop levels and Starlight earned. */
   prestige: PrestigeState;
+  /** Achievement id -> play time (ms) when it unlocked. Kept through prestige. */
+  achievements: Record<string, number>;
+  /** Shard shop item id -> purchases made. */
+  shardShop: Record<string, number>;
 }
 
 /** Ascension progress. Kept through prestige (the run start moves forward on each ascension). */
@@ -195,7 +201,9 @@ export function createInitialState(content: Content): GameState {
     pity: {},
     inventory: {},
     prestigeCount: 0,
-    stats: { playTimeMs: 0, bossKills: 0 },
+    stats: { playTimeMs: 0, bossKills: 0, longestOfflineMs: 0 },
+    achievements: {},
+    shardShop: {},
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -224,6 +232,8 @@ export function cloneState(state: GameState): GameState {
     cards: cloneCards(state.cards),
     mastery: cloneMastery(state.mastery),
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
+    achievements: { ...state.achievements },
+    shardShop: { ...state.shardShop },
     prestige: {
       runStart: { ...state.prestige.runStart },
       shop: { ...state.prestige.shop },

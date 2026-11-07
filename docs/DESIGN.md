@@ -374,6 +374,11 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Dungeon drops.** A dungeon's rare drop that is a cosmetic is now owned (a copy when already owned).
     - **Wardrobe Gate pool.** It holds the items with no other source (the Gilded Tradition set, Ember Crown) plus the dungeon-drop items as a second way to get their duplicates, at the Card Portal's rarity weights. Prestige items stay prestige-only.
     - **Gate availability.** The gate is in `portals.json` with `enabled: false` until the Wardrobe screen ships; disabled portals are left out of `content.portals`.
+19. **Achievements and shard shop details.**
+    - **Readings.** "Ten Pulls" counts 10 pulls in total. "Fashionista" counts cosmetics owned besides the starter set. "Dressed Up" needs a complete set other than the starter set. "Night Owl" needs 8 h of offline progress simulated in one session. "Skilled" waits for the account tree (Phase 8).
+    - **Extra achievements.** First Milestone (a mine or damage line at Lv 25), Gem Adept (a gem at Gold mastery), Medalist (a Silver boss medal) and Masterwork (a cosmetic at its max level).
+    - **Detection.** Achievements unlock once and grant their reward automatically. Cosmetic rewards: Giant Slayer I / II / III give the three dungeon-drop items. Glimmer Seeker, Golden Hour, Six Stars, Prismatic Dawn, Pity Breaker, Fashionista and Night Owl give the Gilded Tradition pieces. The rest give sigils, Cores, Glimmer Dust or Facet Shards. The tick checks them on the whole-second grid like mastery tiers, offline progress checks them after the session, and actions call `checkAchievements`. A save from before achievements unlocks what it already earned on the next tick.
+    - **Shard shop.** Unlimited card copies (5 / 10 / 20 / 40 / 75 / 120 shards by rarity, Common to Exotic), sigil, Core, Glimmer Dust and Facet Shard bundles, and one Ember Crown (150 shards, once).
 
 ## 13. Art style
 

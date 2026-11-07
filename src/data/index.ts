@@ -12,6 +12,8 @@ import type {
   Portal,
   PrestigeConfig,
   CosmeticRules,
+  Achievement,
+  ShardShopItem,
   ProductionConfig,
   Progression,
   Rarity,
@@ -38,6 +40,7 @@ import setsJson from './content/sets.json';
 import progressionJson from './content/progression.json';
 import prestigeJson from './content/prestige.json';
 import cosmeticRulesJson from './content/cosmeticRules.json';
+import achievementsJson from './content/achievements.json';
 
 export * from './schemas';
 
@@ -67,6 +70,10 @@ export interface Content {
   /** Every portal, including those waiting for their screen (`enabled: false`); `portals`
    *  holds only the open ones. */
   allPortals: Portal[];
+  /** Achievements and their rewards (DESIGN.md 11.6). */
+  achievements: Achievement[];
+  /** Shard shop stock (card shards). */
+  shardShop: ShardShopItem[];
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -131,7 +138,9 @@ export function validateContent(raw: RawContent): Content {
     progression,
     prestige,
     cosmeticRules,
+    achievements: achievementsFile,
   } = parsed;
+  const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
   checkProduction({ resources, trees, mines, production }, issues);
@@ -140,7 +149,14 @@ export function validateContent(raw: RawContent): Content {
   checkCards({ resources, cards, cardRules }, issues);
   checkProgression({ cards, progression }, issues);
   checkPrestige({ resources, cosmetics, prestige }, issues);
-  checkCosmeticSources({ resources, cosmetics, dungeons, portals, prestige, cards }, issues);
+  checkAchievements(
+    { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
+    issues,
+  );
+  checkCosmeticSources(
+    { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop },
+    issues,
+  );
   for (const [step, cost] of Object.entries(cosmeticRules.materials)) {
     if (!resources.some((r) => r.id === cost.resource)) {
       issues.push(
@@ -189,6 +205,8 @@ export function validateContent(raw: RawContent): Content {
     progression,
     prestige,
     cosmeticRules,
+    achievements,
+    shardShop,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -364,12 +382,24 @@ function checkModifiers(
  * prestige; achievements later), and portal pools list items at their own rarity.
  */
 function checkCosmeticSources(
-  c: Pick<Content, 'resources' | 'cosmetics' | 'dungeons' | 'portals' | 'prestige' | 'cards'>,
+  c: Pick<
+    Content,
+    | 'resources'
+    | 'cosmetics'
+    | 'dungeons'
+    | 'portals'
+    | 'prestige'
+    | 'cards'
+    | 'achievements'
+    | 'shardShop'
+  >,
   issues: string[],
 ): void {
   const sourced = new Set<string>([
     ...c.dungeons.map((d) => d.drops.rare.itemId),
     ...c.prestige.rewards.flatMap((r) => r.cosmetics),
+    ...c.achievements.flatMap((a) => a.reward.cosmetics),
+    ...c.shardShop.flatMap((i) => (i.reward.kind === 'cosmetic' ? [i.reward.cosmetic] : [])),
     ...c.portals.filter((p) => p.kind === 'cosmetics').flatMap((p) => p.pool.map((e) => e.itemId)),
   ]);
   c.cosmetics.forEach((x, i) => {
@@ -393,6 +423,56 @@ function checkCosmeticSources(
       }
     }),
   );
+}
+
+/** Achievement and shard shop ids are unique and everything they name exists. */
+function checkAchievements(
+  c: Pick<
+    Content,
+    'resources' | 'cosmetics' | 'cards' | 'dungeons' | 'trials' | 'achievements' | 'shardShop'
+  >,
+  issues: string[],
+): void {
+  const resources = new Set(c.resources.map((x) => x.id));
+  const cosmetics = new Set(c.cosmetics.map((x) => x.id));
+  const cards = new Set(c.cards.map((x) => x.id));
+  const dungeons = new Set([...c.dungeons, ...c.trials].map((x) => x.id));
+  const unique = (where: string, items: { id: string }[]): void => {
+    const seen = new Set<string>();
+    items.forEach((x, i) => {
+      if (seen.has(x.id)) issues.push(`${where} › [${i}] › id: duplicate "${x.id}"`);
+      seen.add(x.id);
+    });
+  };
+  unique('achievements.json › achievements', c.achievements);
+  unique('achievements.json › shardShop', c.shardShop);
+  c.achievements.forEach((a, i) => {
+    const where = `achievements.json › achievements › [${i}]`;
+    if (a.condition.kind === 'cleared' && !dungeons.has(a.condition.dungeon)) {
+      issues.push(`${where} › condition › dungeon: unknown dungeon "${a.condition.dungeon}"`);
+    }
+    a.reward.cosmetics.forEach((id, j) => {
+      if (!cosmetics.has(id)) {
+        issues.push(`${where} › reward › cosmetics › [${j}]: unknown cosmetic "${id}"`);
+      }
+    });
+    a.reward.resources.forEach((r, j) => {
+      if (!resources.has(r.resource)) {
+        issues.push(`${where} › reward › resources › [${j}]: unknown resource "${r.resource}"`);
+      }
+    });
+  });
+  c.shardShop.forEach((item, i) => {
+    const where = `achievements.json › shardShop › [${i}] › reward`;
+    const r = item.reward;
+    if (r.kind === 'card' && !cards.has(r.card)) issues.push(`${where}: unknown card "${r.card}"`);
+    if (r.kind === 'resource' && !resources.has(r.resource)) {
+      issues.push(`${where}: unknown resource "${r.resource}"`);
+    }
+    if (r.kind === 'cosmetic' && !cosmetics.has(r.cosmetic)) {
+      issues.push(`${where}: unknown cosmetic "${r.cosmetic}"`);
+    }
+  });
 }
 
 /** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
@@ -685,5 +765,6 @@ export function loadContent(): Content {
     progression: progressionJson,
     prestige: prestigeJson,
     cosmeticRules: cosmeticRulesJson,
+    achievements: achievementsJson,
   });
 }

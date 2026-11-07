@@ -199,7 +199,8 @@ describe('the wardrobe grid', () => {
     expect(cosmeticSource(content, 'gn_border')).toBe('starter');
     expect(cosmeticSource(content, 'holo_waves')).toBe('dungeon');
     expect(cosmeticSource(content, 'gilded_plate')).toBe('prestige');
-    expect(cosmeticSource(content, 'gt_finish')).toBe('portal');
+    expect(cosmeticSource(content, 'gt_finish')).toBe('achievement');
+    expect(cosmeticSource(content, 'ember_crown')).toBe('portal');
     for (const c of content.cosmetics) expect(cosmeticSource(content, c.id), c.id).not.toBeNull();
   });
 });

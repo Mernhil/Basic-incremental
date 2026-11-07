@@ -278,6 +278,9 @@ export function cosmeticSource(content: Content, cosmeticId: string): CosmeticSo
   if (cosmetic.starter) return 'starter';
   if (content.dungeons.some((d) => d.drops.rare.itemId === cosmeticId)) return 'dungeon';
   if (content.prestige.rewards.some((r) => r.cosmetics.includes(cosmeticId))) return 'prestige';
+  if (content.achievements.some((a) => a.reward.cosmetics.includes(cosmeticId))) {
+    return 'achievement';
+  }
   if (content.allPortals.some((p) => p.pool.some((e) => e.itemId === cosmeticId))) {
     return 'portal';
   }

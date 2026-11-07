@@ -30,6 +30,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import { constantRng, content, freshState } from './helpers';
@@ -205,6 +206,7 @@ describe('modifier data is validated', () => {
       wearRules,
       sets,
       progression,
+      achievements,
       cosmeticRules,
       prestige,
     });

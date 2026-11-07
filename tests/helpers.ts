@@ -32,7 +32,18 @@ export const plainContent: Content = {
   },
 };
 
+/**
+ * A new game for rule tests: every achievement counts as already unlocked, so their rewards
+ * never change the exact totals those tests check. Achievement tests use `newGame()`.
+ */
 export function freshState(): GameState {
+  const state = createInitialState(content);
+  for (const a of content.achievements) state.achievements[a.id] = 0;
+  return state;
+}
+
+/** A brand-new game exactly as the player starts it (nothing unlocked). */
+export function newGame(): GameState {
   return createInitialState(content);
 }
 

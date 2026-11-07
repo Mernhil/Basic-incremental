@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 11;
+export const CURRENT_SAVE_VERSION = 12;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -94,7 +94,12 @@ export const serializedStateSchema = z.object({
   stats: z.object({
     playTimeMs: z.number().min(0),
     bossKills: z.number().int().min(0),
+    /** v12. */
+    longestOfflineMs: z.number().min(0),
   }),
+  /** v12: achievement id -> play time when unlocked, and shard shop purchases. */
+  achievements: z.record(z.string(), z.number().min(0)),
+  shardShop: counts,
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
     harvested: z.record(z.string(), decimalText),
@@ -156,6 +161,8 @@ export function serializeState(state: GameState): SerializedState {
     inventory: { ...state.inventory },
     prestigeCount: state.prestigeCount,
     stats: { ...state.stats },
+    achievements: { ...state.achievements },
+    shardShop: { ...state.shardShop },
     cards: {
       owned: Object.fromEntries(
         Object.entries(state.cards.owned).map(([id, c]) => [
@@ -241,6 +248,15 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.inventory = { ...saved.inventory };
   state.prestigeCount = saved.prestigeCount;
   state.stats = { ...saved.stats };
+  // Unknown achievements and shop items (removed from the game) are dropped.
+  const achievementIds = new Set(content.achievements.map((a) => a.id));
+  state.achievements = Object.fromEntries(
+    Object.entries(saved.achievements).filter(([id]) => achievementIds.has(id)),
+  );
+  const shopIds = new Set(content.shardShop.map((i) => i.id));
+  state.shardShop = Object.fromEntries(
+    Object.entries(saved.shardShop).filter(([id]) => shopIds.has(id)),
+  );
   state.cards = deserializeCards(saved.cards, content);
   deserializeMastery(state, saved.mastery, content);
   // Counters of portals removed from the game are dropped.
