@@ -1,6 +1,7 @@
 import type { Content } from '../../../data';
 import { formatDecimal, type Modifier, type StatResult } from '../../../game';
 import { COPY } from '../copy';
+import { modifierText } from './modifierText';
 import { tipTable } from './tooltip';
 
 const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
@@ -26,23 +27,7 @@ export function sourceName(content: Content, m: Modifier): string {
   return SOURCE_LABELS[kind];
 }
 
-export function modifierText(m: Modifier): string {
-  const v = formatDecimal(m.value);
-  switch (m.kind) {
-    case 'flat':
-      return m.value.gte(0) ? `+${v}` : v;
-    case 'percent':
-      return m.value.gte(0) ? `+${v}%` : `${v}%`;
-    case 'mult':
-      return `×${v}`;
-    case 'set':
-      return `= ${v}`;
-    case 'min':
-      return `at least ${v}`;
-    case 'max':
-      return `at most ${v}`;
-  }
-}
+export { modifierText };
 
 /** Tooltip body for a stat: base value, every modifier that applied, and the total. */
 export function statTip(

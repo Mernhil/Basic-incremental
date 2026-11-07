@@ -167,6 +167,15 @@ export const SOUNDS = {
     max: 1,
     windowMs: 1000,
   },
+  ascend: {
+    layers: [
+      tone('sine', 196, 1.4, 0.16, 784),
+      ...arp('triangle', [392, 523, 659, 784, 1047, 1319, 1568], 0.09, 0.5, 0.12),
+      noise(5000, 1.2, 0.07, 0.4, 0.2),
+    ],
+    max: 1,
+    windowMs: 2000,
+  },
   click: { layers: [tone('square', 1200, 0.025, 0.08, 900)], max: 8, windowMs: 1000 },
 } satisfies Record<string, SoundDef>;
 

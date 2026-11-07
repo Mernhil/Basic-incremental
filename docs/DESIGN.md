@@ -374,6 +374,7 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Dungeon drops.** A dungeon's rare drop that is a cosmetic is now owned (a copy when already owned).
     - **Wardrobe Gate pool.** It holds the items with no other source (the Gilded Tradition set, Ember Crown) plus the dungeon-drop items as a second way to get their duplicates, at the Card Portal's rarity weights. Prestige items stay prestige-only.
     - **Gate availability.** The gate is in `portals.json` with `enabled: false` until the Wardrobe screen ships; disabled portals are left out of `content.portals`.
+19. **Where Ascension lives.** Section 9 has no Ascension slot and the shard shop is a tab of the Achievements page (section 17), so the **Shop** page holds the Ascension gate (A9 E) with the **Starlight shop** under it; the sidebar order and labels stay as in section 9. Starlight leads the header's currency row, since it is the one currency kept forever.
 
 ## 13. Art style
 

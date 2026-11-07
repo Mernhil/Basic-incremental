@@ -18,6 +18,8 @@ const PATHS = {
   ore: '<path d="M4 18l5-9 4 5 3-3 4 7z"/>',
   material: '<path d="M12 3l7 6-7 12-7-12z"/><path d="M5 9h14"/>',
   portal: '<circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="3"/>',
+  // placeholder until the pixel Starlight coin arrives (pixel-art request)
+  starlight: '<path d="M12 2.5l2.2 7.3 7.3 2.2-7.3 2.2-2.2 7.3-2.2-7.3L2.5 12l7.3-2.2z"/>',
 } as const;
 
 export type IconName = keyof typeof PATHS;
