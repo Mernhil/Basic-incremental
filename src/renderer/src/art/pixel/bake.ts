@@ -4,7 +4,19 @@
  * rasterised with hard edges on its native grid and passed through the pixel treatment in
  * `raster.ts`. The result is written to `sprites/*.png` plus `manifest.ts`.
  */
-import { RARITIES } from '../../../../data';
+import { RARITIES, loadContent, type GemArt } from '../../../../data';
+import {
+  COIN_METALS,
+  COIN_RING,
+  EDGE_VB,
+  NAV_GLYPHS,
+  coinVector,
+  edgeVector,
+  medalVector,
+  plaqueVector,
+  type NavGlyph,
+} from '../vector/gems';
+import { TILE_SCALE, TILE_STAGES, TILE_VB, mineVector, treeVector } from '../vector/tiles';
 import {
   EVOLUTIONS,
   EVOLUTION_WINDOW,
@@ -29,6 +41,7 @@ import {
   ring,
   sparkles,
   toRGBA,
+  WHITE,
   type Grid,
 } from './raster';
 
@@ -167,6 +180,68 @@ export async function bakeFrames(): Promise<Baked[]> {
   return res;
 }
 
+/** Small stickers (coins, medals): flat ramps, ink outline, a ring in the tier colour. */
+async function sticker(markup: string, vb: VB, ringColour: string | null): Promise<Grid> {
+  const { grid } = await rasterSvg(markup, vb, 1);
+  const g = sweepOrphans(outline(cleanOrphans(grid)));
+  return ringColour ? ring(g, ringColour) : g;
+}
+
+export async function bakeSmall(): Promise<Baked[]> {
+  const content = loadContent();
+  const res: Baked[] = [];
+  const gems = new Map<string, GemArt>();
+  for (const r of content.resources) if (r.gem) gems.set(r.gem.shape, r.gem);
+  for (const [shape, gem] of gems) {
+    for (const m of COIN_METALS)
+      res.push(
+        out(
+          `coin-${shape}-${m}`,
+          await sticker(coinVector(gem, m, false), [0, 0, 48, 48], COIN_RING[m]),
+        ),
+      );
+    res.push(
+      out(
+        `coin-${shape}-locked`,
+        await sticker(coinVector(gem, 'stone', true), [0, 0, 48, 48], COIN_RING.stone),
+      ),
+    );
+  }
+  for (let t = 0; t < 5; t++)
+    res.push(out(`medal-${t}`, await sticker(medalVector(t), [0, 0, 48, 48], WHITE)));
+  for (const glyph of Object.keys(NAV_GLYPHS) as NavGlyph[])
+    res.push(out(`plaque-${glyph}`, await sticker(plaqueVector(glyph), [0, 0, 64, 64], null)));
+  // forged edges: every mine gem's line, five steps
+  for (const mine of content.mines) {
+    const gem = content.resourceById.get(mine.resource)?.gem;
+    if (!gem) continue;
+    for (let s = 0; s < 5; s++) {
+      const { grid, sparks } = await rasterSvg(edgeVector(gem, s), EDGE_VB, 0.3);
+      const g = sparkles(sweepOrphans(partLines(outline(bevel(cleanOrphans(grid))))), sparks, 1);
+      res.push(out(`edge-${gem.shape}-${s}`, ring(g, mix('#1a2030', '#ffffff', 0.3), 1, true)));
+    }
+  }
+  // production tiles: each tree and mine at its five growth stages, white sticker ring
+  const tile = async (markup: string): Promise<Grid> => {
+    const { grid, sparks } = await rasterSvg(markup, TILE_VB, TILE_SCALE);
+    const g = sparkles(sweepOrphans(outline(bevel(cleanOrphans(grid)))), sparks, 2);
+    return ring(g, WHITE, 1, true);
+  };
+  for (const tree of content.trees) {
+    const gem = content.resourceById.get(tree.resource)?.gem;
+    if (!gem) continue;
+    for (let s = 0; s < TILE_STAGES; s++)
+      res.push(out(`tile-tree-${gem.shape}-${s}`, await tile(treeVector(tree.art.bark, gem, s))));
+  }
+  for (const mine of content.mines) {
+    const gem = content.resourceById.get(mine.resource)?.gem;
+    if (!gem) continue;
+    for (let s = 0; s < TILE_STAGES; s++)
+      res.push(out(`tile-mine-${gem.shape}-${s}`, await tile(mineVector(gem, s))));
+  }
+  return res;
+}
+
 export async function bakeAll(): Promise<Baked[]> {
-  return [...(await bakeItems()), ...(await bakeFrames())];
+  return [...(await bakeItems()), ...(await bakeFrames()), ...(await bakeSmall())];
 }

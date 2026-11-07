@@ -144,7 +144,7 @@ export function outline(g: Grid, ink = INK): Grid {
   for (let j = 0; j < g.h; j++)
     for (let i = 0; i < g.w; i++) {
       const p = g.px[j * g.w + i];
-      if (!p || p === ink || p === WHITE) continue;
+      if (!p || p === ink) continue;
       if (N4.some(([a, b]) => !get(g, g.px, i + a, j + b))) out[j * g.w + i] = ink;
     }
   return { ...g, px: out };
