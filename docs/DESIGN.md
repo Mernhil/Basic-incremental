@@ -353,6 +353,7 @@ Points the decisions above leave open. These defaults apply until changed.
 2. **Rank for card enhancements.** Silver ★1.
 3. **Enhancement point budget.** Grows with rank (a few points per tier) and is about half of the total cost of the card's options.
 4. **XP rates.** Tuned in the balance phase so the account level rises quickly early and slowly later.
+5. **Report-an-issue contents.** The pre-filled GitHub issue carries the app version, a save summary (play time, prestige count, highest dungeon, save version), OS and Electron version, and the last 50 log lines. The player can edit it before submitting.
 
 ## 13. Art style
 
