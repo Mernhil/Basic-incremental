@@ -61,16 +61,16 @@ Decided with the user in the graphics session (2026-11-07).
 
 Approval queue (in order):
 
-| Asset                                                                                      | Status                                                                                                                                         |
-| ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Production tiles: tree and crystal mine, five stages                                       | Draft shown                                                                                                                                    |
-| Card items and weapons, by rarity (swords, scimitar, sickle, bow, cleaver, pickaxes, axes) | **Approved**: 100 × 120, black outline, light extra shading ([Pixel Weapons](https://claude.ai/artifact/LXvcdDWADiGMDBKkTVLbrZ), treatment E+) |
-| Unique evolutions (Flameblade, Rootbloom Staff, Soul Reaper)                               | Not started                                                                                                                                    |
-| Card frames by tier                                                                        | Not started                                                                                                                                    |
-| Gem coins and resource icons                                                               | Not started                                                                                                                                    |
-| Bosses and the Crystal Sentinel                                                            | Not started                                                                                                                                    |
-| Element effects and hit animations                                                         | Not started                                                                                                                                    |
-| Mastery medals, forged edges, navigation plaques                                           | Not started                                                                                                                                    |
+| Asset                                                                                      | Status                                                                                                                                                             |
+| ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Production tiles: tree and crystal mine, five stages                                       | Draft shown                                                                                                                                                        |
+| Card items and weapons, by rarity (swords, scimitar, sickle, bow, cleaver, pickaxes, axes) | **Approved**: 100 × 120, black outline, light extra shading ([Pixel Weapons](https://claude.ai/artifact/LXvcdDWADiGMDBKkTVLbrZ), treatment E+)                     |
+| Unique evolutions (Flameblade, Rootbloom Staff, Soul Reaper)                               | Not started                                                                                                                                                        |
+| Card frames by tier                                                                        | **Approved**: frame ladder (material, sockets, crest; motion on Gold and Prismatic), DESIGN 13 ([Frame Ladder](https://claude.ai/artifact/BWviG6R6coWmmMLKCCY8ga)) |
+| Gem coins and resource icons                                                               | Not started                                                                                                                                                        |
+| Bosses and the Crystal Sentinel                                                            | Not started                                                                                                                                                        |
+| Element effects and hit animations                                                         | Not started                                                                                                                                                        |
+| Mastery medals, forged edges, navigation plaques                                           | Not started                                                                                                                                                        |
 
 ## Notes
 
