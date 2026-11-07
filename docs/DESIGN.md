@@ -365,6 +365,7 @@ Decided with the user in the graphics overhaul. References (Knights & Dragons ar
 - **Outlines.** A one-pixel dark ink outline (one ink colour) around every part. Where parts overlap, the front part gets a one-pixel edge in its own darkest tone. Stickers (bosses, tiles, coins) add a one-pixel white ring outside the ink.
 - **Shading.** Flat faces lit from the top-left, three to five tones per material, white glints and sparkle specks; no stray single pixels.
 - **Sizes.** Production tiles are drafted at 58 × 64 pixels. Other sprite sizes are fixed per asset when it is approved.
+- **Card items (approved 2026-11-07).** The item in the card window is a 100 × 120 pixel sprite with the black one-pixel ink outline and **light extra shading**: inside every part, the lit edge (top-left) gets a subtle two-pixel lighter band (about 30% toward white, then 12%) and the shadow edge (bottom-right) a slightly darker one (about 24% toward the ink), on top of the part's own tones. A one-pixel light rim outside the outline keeps dark items (Void) readable on dark windows, and sparkles are pixel plus-shapes. The shapes and the rarity ladder are the ones already approved in vector.
 
 - **Simple but cool.** The art favours strong silhouettes and few parts, with detail only where it reads at game size.
 - **Look.** Cel-shaded, like Knights & Dragons and Brave Frontier: bold dark outlines (one ink colour), flat shadow shapes and white highlights instead of gradients, saturated metals, and a chunky display font for card names.
