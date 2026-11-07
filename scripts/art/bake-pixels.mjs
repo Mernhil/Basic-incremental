@@ -2,10 +2,15 @@
 // Usage: node scripts/art/bake-pixels.mjs
 // Bundles src/renderer/src/art/pixel/bake.ts, runs it in headless Chromium (hard-edged SVG
 // rasterising needs a browser), and writes src/renderer/src/art/pixel/sprites/*.png plus
-// manifest.ts. The output is deterministic, so re-running without art changes gives no diff.
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+// manifest.ts. Then the cosmetic art (scripts/art/cosmetics/export.py, Python 3 + Pillow; set
+// PYTHON when `python` is not on the path) draws cos-*.png from those sprites, and
+// cosmetics-gen.mjs writes art/pixel/cosmetics.gen.ts and the generated block of recipes.css.
+// The output is deterministic, so re-running without art changes gives no diff.
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { writeCosmeticCss, writeCosmeticTs } from './cosmetics-gen.mjs';
 import { rolldown } from 'rolldown';
 import { chromium } from 'playwright';
 
@@ -37,6 +42,22 @@ for (const b of baked) {
   writeFileSync(join(spriteDir, `${b.name}.png`), Buffer.from(b.png.split(',')[1], 'base64'));
   manifest[b.name] = b.outline ? { w: b.w, h: b.h, outline: b.outline } : { w: b.w, h: b.h };
 }
+
+// cosmetic art drawn on top of the baked sprites (coins, frames)
+const tmp = mkdtempSync(join(tmpdir(), 'bi-cos-'));
+const metaFile = join(tmp, 'meta.json');
+execFileSync(
+  process.env.PYTHON ?? 'python',
+  [join(root, 'scripts/art/cosmetics/export.py'), metaFile],
+  { stdio: 'inherit' },
+);
+const meta = JSON.parse(readFileSync(metaFile, 'utf8'));
+rmSync(tmp, { recursive: true, force: true });
+for (const name of meta.sprites) {
+  const png = readFileSync(join(spriteDir, `cos-${name}.png`));
+  manifest[`cos-${name}`] = { w: png.readUInt32BE(16), h: png.readUInt32BE(20) };
+}
+const generated = [writeCosmeticTs(root, meta), writeCosmeticCss(root, meta)];
 const file = join(pixelDir, 'manifest.ts');
 writeFileSync(
   file,
@@ -46,9 +67,11 @@ writeFileSync(
 );
 execFileSync(
   process.execPath,
-  [join(root, 'node_modules/prettier/bin/prettier.cjs'), '--write', file],
+  [join(root, 'node_modules/prettier/bin/prettier.cjs'), '--write', file, ...generated],
   {
     stdio: 'inherit',
   },
 );
-console.log(`baked ${baked.length} sprites into ${spriteDir}`);
+console.log(
+  `baked ${baked.length} sprites and ${meta.sprites.length} cosmetic sprites into ${spriteDir}`,
+);

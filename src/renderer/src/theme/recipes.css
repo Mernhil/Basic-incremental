@@ -614,3 +614,1140 @@
   opacity: 0.85;
   transform: translateY(-40px);
 }
+
+/* ===== pixel borders and finishes (beta art batch, DESIGN.md 7 and 13) =========================
+   Each level of a pixel border or finish is one baked layer on the card's frame grid (183 x 237,
+   the frame sprite's grid), placed exactly like the frame. Levels stack like every recipe: the
+   highest level's rule comes last in the generated block below, so it wins. Borders sit above the
+   tier frame (the layers are already cut around the sockets, crest and bottom gem, so the tier
+   ornaments still read on top) and below the rank footer; finishes sit on the finish layer under
+   the card text. */
+[class*='r-bd-'] .bi-card__deco {
+  z-index: 4;
+}
+[class*='r-bd-'] .bi-card__deco::before,
+[class*='r-fn-'] .bi-card__finish::before,
+[class*='r-fn-'] .bi-card__finish::after {
+  content: '';
+  position: absolute;
+  left: -19.3182%;
+  top: -20.1613%;
+  width: 138.6364%;
+  height: 127.4194%;
+  background: no-repeat 0 0 / 100% 100%;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+[class*='r-fn-'] .bi-card__finish {
+  display: block;
+}
+/* pixel particles: the item's own sprite at 2 css px per pixel, no soft shapes */
+[class*='r-bd-'][data-max-border] .bi-amb--border i,
+[class*='r-fn-'][data-max-finish] .bi-amb--finish i {
+  width: 14px;
+  height: 14px;
+  margin: -7px;
+  border-radius: 0;
+  clip-path: none;
+  box-shadow: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+}
+/* the Core Titan finishes pulse through three baked frames at their max level */
+@keyframes r-px-pulse {
+  to {
+    transform: translateX(-100%);
+  }
+}
+.bi-card[data-offscreen] .bi-card__finish::after {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*='r-fn-'] .bi-card__finish::after {
+    animation: none !important;
+  }
+}
+:root[data-motion='reduced'] [class*='r-fn-'] .bi-card__finish::after {
+  animation: none !important;
+}
+
+/* ===== generated: pixel cosmetics (scripts/art/bake-pixels.mjs). Do not edit by hand. ===== */
+.r-bd-antler-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-antler-1.png');
+}
+.r-bd-antler-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-antler-2.png');
+}
+.r-bd-antler-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-antler-3.png');
+}
+.r-bd-antler-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-antler-4.png');
+}
+.r-bd-antler-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-antler-5.png');
+}
+.r-bd-antler-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-antler.png');
+}
+.r-bd-blossom-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-blossom-1.png');
+}
+.r-bd-blossom-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-blossom-2.png');
+}
+.r-bd-blossom-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-blossom-3.png');
+}
+.r-bd-blossom-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-blossom-4.png');
+}
+.r-bd-blossom-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-blossom-5.png');
+}
+.r-bd-blossom-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-blossom.png');
+}
+.r-bd-candy-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-candy-1.png');
+}
+.r-bd-candy-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-candy-2.png');
+}
+.r-bd-candy-2 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-candy.png');
+}
+.r-bd-fern-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-fern-1.png');
+}
+.r-bd-fern-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-fern-2.png');
+}
+.r-bd-fern-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-fern-3.png');
+}
+.r-bd-fern-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-fern-4.png');
+}
+.r-bd-fern-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-fern-5.png');
+}
+.r-bd-fern-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-fern.png');
+}
+.r-bd-forge-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-forge-1.png');
+}
+.r-bd-forge-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-forge-2.png');
+}
+.r-bd-forge-2 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-forge.png');
+}
+.r-bd-heartwood-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-heartwood-1.png');
+}
+.r-bd-heartwood-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-heartwood-2.png');
+}
+.r-bd-heartwood-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-heartwood-3.png');
+}
+.r-bd-heartwood-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-heartwood-4.png');
+}
+.r-bd-heartwood-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-heartwood-5.png');
+}
+.r-bd-heartwood-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-heartwood.png');
+}
+.r-bd-luna-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-luna-1.png');
+}
+.r-bd-luna-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-luna-2.png');
+}
+.r-bd-luna-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-luna-3.png');
+}
+.r-bd-luna-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-luna-4.png');
+}
+.r-bd-luna-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-luna-5.png');
+}
+.r-bd-luna-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-luna.png');
+}
+.r-bd-moss-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-moss-1.png');
+}
+.r-bd-moss-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-moss-2.png');
+}
+.r-bd-moss-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-moss-3.png');
+}
+.r-bd-moss-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-moss-4.png');
+}
+.r-bd-moss-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-moss-5.png');
+}
+.r-bd-moss-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-moss.png');
+}
+.r-bd-rings-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rings-1.png');
+}
+.r-bd-rings-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rings-2.png');
+}
+.r-bd-rings-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rings-3.png');
+}
+.r-bd-rings-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rings-4.png');
+}
+.r-bd-rings-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rings-5.png');
+}
+.r-bd-rings-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-rings.png');
+}
+.r-bd-rune-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rune-1.png');
+}
+.r-bd-rune-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-rune-2.png');
+}
+.r-bd-rune-2 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-rune.png');
+}
+.r-bd-starmap-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-starmap-1.png');
+}
+.r-bd-starmap-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-starmap-2.png');
+}
+.r-bd-starmap-2 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-starmap.png');
+}
+.r-bd-verdant-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-verdant-1.png');
+}
+.r-bd-verdant-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-verdant-2.png');
+}
+.r-bd-verdant-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-verdant-3.png');
+}
+.r-bd-verdant-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-verdant-4.png');
+}
+.r-bd-verdant-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-verdant-5.png');
+}
+.r-bd-verdant-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-verdant.png');
+}
+.r-bd-vine-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-vine-1.png');
+}
+.r-bd-vine-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-vine-2.png');
+}
+.r-bd-vine-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-vine-3.png');
+}
+.r-bd-vine-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-vine-4.png');
+}
+.r-bd-vine-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-vine-5.png');
+}
+.r-bd-vine-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-vine.png');
+}
+.r-bd-woodcraft-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-woodcraft-1.png');
+}
+.r-bd-woodcraft-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-woodcraft-2.png');
+}
+.r-bd-woodcraft-2 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-woodcraft.png');
+}
+.r-bd-wreath-1 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-wreath-1.png');
+}
+.r-bd-wreath-2 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-wreath-2.png');
+}
+.r-bd-wreath-3 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-wreath-3.png');
+}
+.r-bd-wreath-4 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-wreath-4.png');
+}
+.r-bd-wreath-5 .bi-card__deco::before {
+  background-image: url('../art/pixel/sprites/cos-bd-wreath-5.png');
+}
+.r-bd-wreath-5 .bi-amb--border i {
+  background-image: url('../art/pixel/sprites/cos-amb-wreath.png');
+}
+.r-fn-blossom-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-blossom-1.png');
+}
+.r-fn-blossom-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-blossom-2.png');
+}
+.r-fn-blossom-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-blossom-3.png');
+}
+.r-fn-blossom-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-blossom-4.png');
+}
+.r-fn-blossom-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-blossom-5.png');
+}
+.r-fn-blossom-5 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-blossom.png');
+}
+.r-fn-corepulse-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-corepulse-1.png');
+}
+.r-fn-corepulse-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-corepulse-2.png');
+}
+.r-fn-corepulse-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-corepulse-3.png');
+}
+.r-fn-corepulse-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-corepulse-4.png');
+}
+.r-fn-corepulse-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-corepulse-5.png');
+}
+.r-fn-corepulse-6 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-corepulse-6.png');
+}
+.r-fn-corepulse-6 .bi-card__finish::after {
+  background-image: url('../art/pixel/sprites/cos-fnp-corepulse.png');
+  width: 415.9091%;
+  animation: r-px-pulse 1.5s steps(3, end) infinite;
+}
+.r-fn-corepulse-6 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-corepulse.png');
+}
+.r-fn-fern-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-fern-1.png');
+}
+.r-fn-fern-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-fern-2.png');
+}
+.r-fn-fern-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-fern-3.png');
+}
+.r-fn-fern-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-fern-4.png');
+}
+.r-fn-fern-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-fern-5.png');
+}
+.r-fn-fern-5 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-fern.png');
+}
+.r-fn-hexcore-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-hexcore-1.png');
+}
+.r-fn-hexcore-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-hexcore-2.png');
+}
+.r-fn-hexcore-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-hexcore-3.png');
+}
+.r-fn-hexcore-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-hexcore-4.png');
+}
+.r-fn-hexcore-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-hexcore-5.png');
+}
+.r-fn-hexcore-6 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-hexcore-6.png');
+}
+.r-fn-hexcore-6 .bi-card__finish::after {
+  background-image: url('../art/pixel/sprites/cos-fnp-hexcore.png');
+  width: 415.9091%;
+  animation: r-px-pulse 1.5s steps(3, end) infinite;
+}
+.r-fn-hexcore-6 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-hexcore.png');
+}
+.r-fn-moss-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-moss-1.png');
+}
+.r-fn-moss-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-moss-2.png');
+}
+.r-fn-moss-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-moss-3.png');
+}
+.r-fn-moss-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-moss-4.png');
+}
+.r-fn-moss-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-moss-5.png');
+}
+.r-fn-moss-5 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-moss.png');
+}
+.r-fn-starburst-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-starburst-1.png');
+}
+.r-fn-starburst-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-starburst-2.png');
+}
+.r-fn-starburst-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-starburst-3.png');
+}
+.r-fn-starburst-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-starburst-4.png');
+}
+.r-fn-starburst-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-starburst-5.png');
+}
+.r-fn-starburst-6 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-starburst-6.png');
+}
+.r-fn-starburst-6 .bi-card__finish::after {
+  background-image: url('../art/pixel/sprites/cos-fnp-starburst.png');
+  width: 415.9091%;
+  animation: r-px-pulse 1.5s steps(3, end) infinite;
+}
+.r-fn-starburst-6 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-starburst.png');
+}
+.r-fn-strata-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-strata-1.png');
+}
+.r-fn-strata-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-strata-2.png');
+}
+.r-fn-strata-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-strata-3.png');
+}
+.r-fn-strata-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-strata-4.png');
+}
+.r-fn-strata-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-strata-5.png');
+}
+.r-fn-strata-6 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-strata-6.png');
+}
+.r-fn-strata-6 .bi-card__finish::after {
+  background-image: url('../art/pixel/sprites/cos-fnp-strata.png');
+  width: 415.9091%;
+  animation: r-px-pulse 1.5s steps(3, end) infinite;
+}
+.r-fn-strata-6 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-strata.png');
+}
+.r-fn-veins-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-veins-1.png');
+}
+.r-fn-veins-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-veins-2.png');
+}
+.r-fn-veins-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-veins-3.png');
+}
+.r-fn-veins-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-veins-4.png');
+}
+.r-fn-veins-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-veins-5.png');
+}
+.r-fn-veins-6 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-veins-6.png');
+}
+.r-fn-veins-6 .bi-card__finish::after {
+  background-image: url('../art/pixel/sprites/cos-fnp-veins.png');
+  width: 415.9091%;
+  animation: r-px-pulse 1.5s steps(3, end) infinite;
+}
+.r-fn-veins-6 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-veins.png');
+}
+.r-fn-verdant-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-verdant-1.png');
+}
+.r-fn-verdant-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-verdant-2.png');
+}
+.r-fn-verdant-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-verdant-3.png');
+}
+.r-fn-verdant-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-verdant-4.png');
+}
+.r-fn-verdant-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-verdant-5.png');
+}
+.r-fn-verdant-5 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-verdant.png');
+}
+.r-fn-vine-1 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-vine-1.png');
+}
+.r-fn-vine-2 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-vine-2.png');
+}
+.r-fn-vine-3 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-vine-3.png');
+}
+.r-fn-vine-4 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-vine-4.png');
+}
+.r-fn-vine-5 .bi-card__finish::before {
+  background-image: url('../art/pixel/sprites/cos-fn-vine-5.png');
+}
+.r-fn-vine-5 .bi-amb--finish i {
+  background-image: url('../art/pixel/sprites/cos-amb-vine.png');
+}
+.r-tb-blossom-1 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-blossom-1.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-blossom-2 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-blossom-2.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-blossom-3 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-blossom-3.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-blossom-4 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-blossom-4.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-blossom-5 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-blossom-5.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-fern-1 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-fern-1.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-fern-2 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-fern-2.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-fern-3 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-fern-3.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-fern-4 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-fern-4.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-fern-5 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-fern-5.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-moss-1 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-moss-1.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-moss-2 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-moss-2.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-moss-3 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-moss-3.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-moss-4 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-moss-4.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-moss-5 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-moss-5.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-verdant-1 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-verdant-1.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-verdant-2 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-verdant-2.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-verdant-3 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-verdant-3.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-verdant-4 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-verdant-4.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-verdant-5 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-verdant-5.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-vine-1 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-vine-1.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-vine-2 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-vine-2.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-vine-3 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-vine-3.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-vine-4 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-vine-4.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-tb-vine-5 body {
+  background-image:
+    radial-gradient(80% 55% at 50% 0%, var(--bi-table-glow, transparent), transparent 70%),
+    url('../art/pixel/sprites/cos-tb-vine-5.png');
+  background-size:
+    auto,
+    192px 96px;
+  image-rendering: pixelated;
+}
+.r-cur-blossom-1,
+.r-cur-blossom-1 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-blossom-1.png') 6 4,
+    auto;
+}
+.r-cur-blossom-2,
+.r-cur-blossom-2 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-blossom-2.png') 6 4,
+    auto;
+}
+.r-cur-blossom-3,
+.r-cur-blossom-3 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-blossom-3.png') 6 4,
+    auto;
+}
+.r-cur-blossom-4,
+.r-cur-blossom-4 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-blossom-4.png') 6 4,
+    auto;
+}
+.r-cur-blossom-5,
+.r-cur-blossom-5 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-blossom-5.png') 6 4,
+    auto;
+}
+.r-cur-fern-1,
+.r-cur-fern-1 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-fern-1.png') 6 4,
+    auto;
+}
+.r-cur-fern-2,
+.r-cur-fern-2 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-fern-2.png') 6 4,
+    auto;
+}
+.r-cur-fern-3,
+.r-cur-fern-3 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-fern-3.png') 6 4,
+    auto;
+}
+.r-cur-fern-4,
+.r-cur-fern-4 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-fern-4.png') 6 4,
+    auto;
+}
+.r-cur-fern-5,
+.r-cur-fern-5 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-fern-5.png') 6 4,
+    auto;
+}
+.r-cur-moss-1,
+.r-cur-moss-1 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-moss-1.png') 6 4,
+    auto;
+}
+.r-cur-moss-2,
+.r-cur-moss-2 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-moss-2.png') 6 4,
+    auto;
+}
+.r-cur-moss-3,
+.r-cur-moss-3 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-moss-3.png') 6 4,
+    auto;
+}
+.r-cur-moss-4,
+.r-cur-moss-4 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-moss-4.png') 6 4,
+    auto;
+}
+.r-cur-moss-5,
+.r-cur-moss-5 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-moss-5.png') 6 4,
+    auto;
+}
+.r-cur-verdant-1,
+.r-cur-verdant-1 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-verdant-1.png') 6 4,
+    auto;
+}
+.r-cur-verdant-2,
+.r-cur-verdant-2 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-verdant-2.png') 6 4,
+    auto;
+}
+.r-cur-verdant-3,
+.r-cur-verdant-3 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-verdant-3.png') 6 4,
+    auto;
+}
+.r-cur-verdant-4,
+.r-cur-verdant-4 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-verdant-4.png') 6 4,
+    auto;
+}
+.r-cur-verdant-5,
+.r-cur-verdant-5 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-verdant-5.png') 6 4,
+    auto;
+}
+.r-cur-vine-1,
+.r-cur-vine-1 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-vine-1.png') 6 4,
+    auto;
+}
+.r-cur-vine-2,
+.r-cur-vine-2 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-vine-2.png') 6 4,
+    auto;
+}
+.r-cur-vine-3,
+.r-cur-vine-3 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-vine-3.png') 6 4,
+    auto;
+}
+.r-cur-vine-4,
+.r-cur-vine-4 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-vine-4.png') 6 4,
+    auto;
+}
+.r-cur-vine-5,
+.r-cur-vine-5 body {
+  cursor:
+    url('../art/pixel/sprites/cos-cur-vine-5.png') 6 4,
+    auto;
+}
+.r-tk-blossom-1 {
+  --bi-tick-px: blossom-1;
+}
+.r-tk-blossom-2 {
+  --bi-tick-px: blossom-2;
+}
+.r-tk-blossom-3 {
+  --bi-tick-px: blossom-3;
+}
+.r-tk-blossom-4 {
+  --bi-tick-px: blossom-4;
+}
+.r-tk-blossom-5 {
+  --bi-tick-px: blossom-5;
+}
+.r-tk-candy-1 {
+  --bi-tick-px: candy-1;
+}
+.r-tk-candy-2 {
+  --bi-tick-px: candy-2;
+}
+.r-tk-candy-3 {
+  --bi-tick-px: candy-3;
+}
+.r-tk-candy-4 {
+  --bi-tick-px: candy-4;
+}
+.r-tk-fern-1 {
+  --bi-tick-px: fern-1;
+}
+.r-tk-fern-2 {
+  --bi-tick-px: fern-2;
+}
+.r-tk-fern-3 {
+  --bi-tick-px: fern-3;
+}
+.r-tk-fern-4 {
+  --bi-tick-px: fern-4;
+}
+.r-tk-fern-5 {
+  --bi-tick-px: fern-5;
+}
+.r-tk-forge-1 {
+  --bi-tick-px: forge-1;
+}
+.r-tk-forge-2 {
+  --bi-tick-px: forge-2;
+}
+.r-tk-forge-3 {
+  --bi-tick-px: forge-3;
+}
+.r-tk-forge-4 {
+  --bi-tick-px: forge-4;
+}
+.r-tk-moss-1 {
+  --bi-tick-px: moss-1;
+}
+.r-tk-moss-2 {
+  --bi-tick-px: moss-2;
+}
+.r-tk-moss-3 {
+  --bi-tick-px: moss-3;
+}
+.r-tk-moss-4 {
+  --bi-tick-px: moss-4;
+}
+.r-tk-moss-5 {
+  --bi-tick-px: moss-5;
+}
+.r-tk-rune-1 {
+  --bi-tick-px: rune-1;
+}
+.r-tk-rune-2 {
+  --bi-tick-px: rune-2;
+}
+.r-tk-rune-3 {
+  --bi-tick-px: rune-3;
+}
+.r-tk-rune-4 {
+  --bi-tick-px: rune-4;
+}
+.r-tk-starmap-1 {
+  --bi-tick-px: starmap-1;
+}
+.r-tk-starmap-2 {
+  --bi-tick-px: starmap-2;
+}
+.r-tk-starmap-3 {
+  --bi-tick-px: starmap-3;
+}
+.r-tk-starmap-4 {
+  --bi-tick-px: starmap-4;
+}
+.r-tk-verdant-1 {
+  --bi-tick-px: verdant-1;
+}
+.r-tk-verdant-2 {
+  --bi-tick-px: verdant-2;
+}
+.r-tk-verdant-3 {
+  --bi-tick-px: verdant-3;
+}
+.r-tk-verdant-4 {
+  --bi-tick-px: verdant-4;
+}
+.r-tk-verdant-5 {
+  --bi-tick-px: verdant-5;
+}
+.r-tk-vine-1 {
+  --bi-tick-px: vine-1;
+}
+.r-tk-vine-2 {
+  --bi-tick-px: vine-2;
+}
+.r-tk-vine-3 {
+  --bi-tick-px: vine-3;
+}
+.r-tk-vine-4 {
+  --bi-tick-px: vine-4;
+}
+.r-tk-vine-5 {
+  --bi-tick-px: vine-5;
+}
+.r-tk-woodcraft-1 {
+  --bi-tick-px: woodcraft-1;
+}
+.r-tk-woodcraft-2 {
+  --bi-tick-px: woodcraft-2;
+}
+.r-tk-woodcraft-3 {
+  --bi-tick-px: woodcraft-3;
+}
+.r-tk-woodcraft-4 {
+  --bi-tick-px: woodcraft-4;
+}
+.r-num-blossom-1 {
+  --bi-num-px: blossom-1;
+}
+.r-num-blossom-2 {
+  --bi-num-px: blossom-2;
+}
+.r-num-blossom-3 {
+  --bi-num-px: blossom-3;
+}
+.r-num-blossom-4 {
+  --bi-num-px: blossom-4;
+}
+.r-num-blossom-5 {
+  --bi-num-px: blossom-5;
+}
+.r-num-candy-1 {
+  --bi-num-px: candy-1;
+}
+.r-num-candy-2 {
+  --bi-num-px: candy-2;
+}
+.r-num-fern-1 {
+  --bi-num-px: fern-1;
+}
+.r-num-fern-2 {
+  --bi-num-px: fern-2;
+}
+.r-num-fern-3 {
+  --bi-num-px: fern-3;
+}
+.r-num-fern-4 {
+  --bi-num-px: fern-4;
+}
+.r-num-fern-5 {
+  --bi-num-px: fern-5;
+}
+.r-num-forge-1 {
+  --bi-num-px: forge-1;
+}
+.r-num-forge-2 {
+  --bi-num-px: forge-2;
+}
+.r-num-moss-1 {
+  --bi-num-px: moss-1;
+}
+.r-num-moss-2 {
+  --bi-num-px: moss-2;
+}
+.r-num-moss-3 {
+  --bi-num-px: moss-3;
+}
+.r-num-moss-4 {
+  --bi-num-px: moss-4;
+}
+.r-num-moss-5 {
+  --bi-num-px: moss-5;
+}
+.r-num-rune-1 {
+  --bi-num-px: rune-1;
+}
+.r-num-rune-2 {
+  --bi-num-px: rune-2;
+}
+.r-num-starmap-1 {
+  --bi-num-px: starmap-1;
+}
+.r-num-starmap-2 {
+  --bi-num-px: starmap-2;
+}
+.r-num-verdant-1 {
+  --bi-num-px: verdant-1;
+}
+.r-num-verdant-2 {
+  --bi-num-px: verdant-2;
+}
+.r-num-verdant-3 {
+  --bi-num-px: verdant-3;
+}
+.r-num-verdant-4 {
+  --bi-num-px: verdant-4;
+}
+.r-num-verdant-5 {
+  --bi-num-px: verdant-5;
+}
+.r-num-vine-1 {
+  --bi-num-px: vine-1;
+}
+.r-num-vine-2 {
+  --bi-num-px: vine-2;
+}
+.r-num-vine-3 {
+  --bi-num-px: vine-3;
+}
+.r-num-vine-4 {
+  --bi-num-px: vine-4;
+}
+.r-num-vine-5 {
+  --bi-num-px: vine-5;
+}
+.r-num-woodcraft-1 {
+  --bi-num-px: woodcraft-1;
+}
+.r-num-woodcraft-2 {
+  --bi-num-px: woodcraft-2;
+}
+.r-ui-starlight-a {
+  --bi-skin-starlight: a;
+}
+.r-ui-starlight-b {
+  --bi-skin-starlight: b;
+}
+.r-ui-starlight-c {
+  --bi-skin-starlight: c;
+}
+.r-ui-starlight-d {
+  --bi-skin-starlight: d;
+}
+.r-ui-starlight-e {
+  --bi-skin-starlight: e;
+}
+/* ===== end of generated pixel cosmetics ===== */
