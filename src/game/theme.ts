@@ -84,12 +84,14 @@ export function wearRequirement(content: Content, cosmetic: Cosmetic): Rank | nu
 // ---- levels ---------------------------------------------------------------------------------
 
 /**
- * Highest upgrade level of an item (DESIGN.md 11.1): by rarity from cosmeticRules.json; starter
- * items keep their own level count. Levels above the drawn ones show the top drawn level until
- * its art arrives.
+ * Highest upgrade level of an item (DESIGN.md 11.1, 12.26): a slot override from cosmeticRules.json
+ * (UI skins: 1), else by rarity; starter items keep their own level count. Levels above the drawn
+ * ones show the top drawn level until its art arrives.
  */
 export function cosmeticMaxLevel(content: Content, cosmetic: Cosmetic): number {
   if (cosmetic.starter) return cosmetic.levels.length;
+  const bySlot = content.cosmeticRules.slotMaxLevel[cosmetic.slot];
+  if (bySlot !== undefined) return bySlot;
   return content.cosmeticRules.maxLevel[cosmetic.rarity];
 }
 

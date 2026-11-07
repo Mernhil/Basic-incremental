@@ -8,6 +8,7 @@
     "exotic": 6,
     "void": 6
   },
+  "slotMaxLevel": { "starlight": 1, "sticker": 1, "nodes": 1, "wardrobe": 1 },
   "ladders": {
     "1": ["shape"],
     "2": ["shape", "ambient"],

@@ -112,7 +112,7 @@
       },
       "prismatic": {
         "resource": "frost_core",
-        "amounts": ["14", "17", "20", "24", "72"]
+        "amounts": ["22", "26", "31", "37", "111"]
       }
     }
   },
@@ -185,7 +185,7 @@
       "logging": [
         {
           "resource": "frost_core",
-          "amount": "85"
+          "amount": "150"
         },
         {
           "resource": "frost_sigil",
@@ -195,7 +195,7 @@
       "mining": [
         {
           "resource": "frost_core",
-          "amount": "85"
+          "amount": "150"
         },
         {
           "resource": "frost_sigil",
@@ -205,7 +205,7 @@
       "fighting": [
         {
           "resource": "frost_core",
-          "amount": "85"
+          "amount": "150"
         },
         {
           "resource": "frost_sigil",
