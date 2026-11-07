@@ -7,7 +7,7 @@ import {
   Decimal,
   MAX_KILLS_PER_ADVANCE,
 } from '../src/game';
-import { constantRng, bareState, content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState } from './helpers';
 
 const dungeon = content.dungeons[0]!;
 const rng = constantRng(0.5);

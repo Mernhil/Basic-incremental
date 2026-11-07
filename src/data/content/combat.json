@@ -9,7 +9,11 @@
         "base": "10",
         "growth": "1.15"
       },
-      "damagePerLevel": "1"
+      "damagePerLevel": "1",
+      "milestones": {
+        "every": 25,
+        "multiplier": "2"
+      }
     },
     {
       "id": "iron_edge",
@@ -19,7 +23,11 @@
         "base": "20",
         "growth": "1.17"
       },
-      "damagePerLevel": "10"
+      "damagePerLevel": "10",
+      "milestones": {
+        "every": 25,
+        "multiplier": "2"
+      }
     },
     {
       "id": "crystal_edge",
@@ -29,7 +37,11 @@
         "base": "30",
         "growth": "1.2"
       },
-      "damagePerLevel": "100"
+      "damagePerLevel": "100",
+      "milestones": {
+        "every": 25,
+        "multiplier": "2"
+      }
     }
   ],
   "bursts": {
@@ -52,5 +64,9 @@
       "power": "10"
     }
   },
-  "knockoutSeconds": 30
+  "knockoutSeconds": 30,
+  "crit": {
+    "chance": 0.05,
+    "damage": "2"
+  }
 }

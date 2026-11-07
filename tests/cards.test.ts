@@ -45,7 +45,7 @@ import {
   type Modifier,
   type OwnedCard,
 } from '../src/game';
-import { bareState, constantRng, content, freshState } from './helpers';
+import { bareState, constantRng, plainContent as content, freshState } from './helpers';
 
 const rng = constantRng(0.5);
 

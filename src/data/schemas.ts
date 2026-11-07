@@ -69,6 +69,16 @@ export const treeSchema = z.strictObject({
   art: z.strictObject({ leaf: tones, bark: tones }),
 });
 
+/**
+ * Level milestones (DESIGN.md 11.12): every `every` levels the line's output is multiplied by
+ * `multiplier` (x2 every 25 levels to start). Per line, so milestones can differ later.
+ */
+export const milestoneSchema = z.strictObject({
+  every: z.number().int().min(1),
+  multiplier: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+});
+export type Milestones = z.output<typeof milestoneSchema>;
+
 export const mineSchema = z.strictObject({
   ...producerFields,
   /** Dungeon whose clear unlocks this mine type; null = available from the start. */
@@ -78,6 +88,8 @@ export const mineSchema = z.strictObject({
     cost: costCurveSchema,
     /** Percent output per level for this mine type, read through `production.levelBonus`. */
     ratePercent: decimal.refine((d) => d.gte(0), { message: 'must not be negative' }),
+    /** Output multiplier every N levels. */
+    milestones: milestoneSchema,
   }),
 });
 
@@ -172,6 +184,10 @@ export const STATS = [
   'combat.health',
   /** Percent of boss damage blocked (0 by default, clamped to 0..90). Scope: dungeon. */
   'combat.defence',
+  /** Chance a hit or signature attack crits (clamped to 0..1). Scope: dungeon. */
+  'combat.critChance',
+  /** Damage multiplier of a crit (at least 1). Scope: dungeon. */
+  'combat.critDamage',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -465,6 +481,8 @@ export const combatSchema = z.strictObject({
         cost: costCurveSchema,
         /** Damage per second each level adds, read through `combat.upgradeGain`. */
         damagePerLevel: positiveDecimal,
+        /** Output multiplier every N levels (kept through prestige with the levels). */
+        milestones: milestoneSchema,
       }),
     )
     .min(1),
@@ -475,6 +493,11 @@ export const combatSchema = z.strictObject({
   }),
   /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md 11.10). */
   knockoutSeconds: z.number().gt(0),
+  /** Crits (DESIGN.md 11.11): base chance (0..1) and damage multiplier of a critical hit. */
+  crit: z.strictObject({
+    chance: z.number().min(0).max(1),
+    damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+  }),
 });
 
 // ---- Cosmetics ----------------------------------------------------------------------------
