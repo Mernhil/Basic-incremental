@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Settings options</title>
+<link rel="stylesheet" href="../../node_modules/@fontsource/outfit/400.css" />
+<link rel="stylesheet" href="../../node_modules/@fontsource/outfit/600.css" />
+<link rel="stylesheet" href="../../node_modules/@fontsource/outfit/700.css" />
+<style>
+  :root {
+    --chrome: #1c2232; --chrome-2: #252c3f; --line: #3a4258; --ink: #e9eef7; --muted: #a3b0c6;
+    --gold: #d9b35a; --gold-soft: #d9b35a33; --frame: #2b2f3a; --frame-title: #1d2029;
+    --table: linear-gradient(160deg, #e3e7ee, #cfd6df); --on-table: #1d2433; --red: #e0606d; --green: #5fc2a0;
+    --paper: #f1e6c9; --paper-ink: #3b2a1c; --wine: #7a2a3a;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.4 Outfit, sans-serif; background: #111521; color: var(--ink); }
+  h1.opt { margin: 0; padding: 18px 24px 8px; font-size: 22px; color: #fff; }
+  p.why { margin: 0 24px 12px; color: var(--muted); max-width: 900px; }
+  .board { width: 1180px; height: 720px; margin: 0 24px 40px; display: grid; grid-template-columns: 200px 1fr; grid-template-rows: 56px 1fr; overflow: hidden; border-radius: 10px; box-shadow: 0 0 0 1px var(--line); }
+  .hdr { grid-column: 1 / -1; background: var(--chrome); display: flex; align-items: center; gap: 16px; padding: 0 18px; border-bottom: 1px solid var(--line); }
+  .hdr b { font-size: 16px; } .hdr small { color: var(--muted); }
+  .hdr .sp { flex: 1; } .chip { padding: 4px 10px; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--line); font-size: 13px; }
+  .nav { background: var(--chrome); padding: 14px 10px; display: grid; align-content: start; gap: 4px; }
+  .nav span { padding: 8px 12px; border-radius: 8px; color: var(--muted); font-size: 14px; }
+  .nav span.on { background: var(--chrome-2); color: var(--ink); box-shadow: inset 3px 0 0 var(--gold); }
+  .page { background: var(--table); color: var(--on-table); padding: 20px 26px; overflow: hidden; }
+  .page h2 { margin: 0 0 14px; font-size: 24px; }
+  .frame { background: var(--frame); color: var(--ink); border-radius: 12px; box-shadow: inset 0 0 0 1px #d9b35a55; padding: 10px; }
+  .frame > header { background: var(--frame-title); border-radius: 8px; padding: 6px 12px; font-weight: 600; box-shadow: inset 0 0 0 1px #d9b35a44; margin-bottom: 10px; display: flex; justify-content: space-between; }
+  .frame > header small { color: var(--muted); font-weight: 400; }
+  .seg { display: inline-flex; border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+  .seg span { padding: 5px 12px; font-size: 13px; color: var(--muted); }
+  .seg span.on { background: var(--gold); color: var(--chrome); font-weight: 600; }
+  .btn { display: inline-block; padding: 6px 14px; border-radius: 8px; background: var(--gold); color: var(--chrome); font-weight: 600; font-size: 14px; }
+  .btn.ghost { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+  .btn.danger { background: var(--red); color: #fff; }
+  .row { display: grid; grid-template-columns: 170px 1fr; gap: 12px; align-items: center; padding: 6px 2px; font-size: 14px; }
+  .row .hint { display: block; color: var(--muted); font-size: 12px; }
+  .slider { height: 6px; border-radius: 9px; background: var(--line); position: relative; }
+  .slider i { position: absolute; inset: 0 auto 0 0; border-radius: 9px; background: var(--gold); }
+  .slider i::after { content: ''; position: absolute; right: -7px; top: -5px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+  .switch { width: 38px; height: 22px; border-radius: 99px; background: var(--line); position: relative; display: inline-block; }
+  .switch.on { background: var(--gold); }
+  .switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+  .switch.on::after { left: 19px; }
+  .num { font-variant-numeric: tabular-nums; }
+  .ta { background: var(--frame-title); border-radius: 8px; box-shadow: inset 0 0 0 1px var(--line); padding: 8px 10px; font: 12px/1.5 ui-monospace, Consolas, monospace; color: var(--muted); }
+  .err { color: #ffb3ba; font-size: 13px; padding: 6px 10px; border-radius: 8px; background: #e0606d22; box-shadow: inset 0 0 0 1px var(--red); }
+  .confirm { border-radius: 10px; padding: 10px 12px; background: #e3a54822; box-shadow: inset 0 0 0 1px #e3a548; font-size: 13px; display: grid; gap: 8px; }
+  .preview { display: inline-flex; gap: 10px; font-size: 13px; color: var(--muted); }
+  .preview b { color: var(--ink); }
+
+  /* A */
+  .A .split { display: grid; grid-template-columns: 210px 1fr; gap: 16px; height: 600px; }
+  .A .sub { display: grid; align-content: start; gap: 4px; }
+  .A .sub span { padding: 10px 14px; border-radius: 10px; font-weight: 600; color: #4a5468; }
+  .A .sub span.on { background: var(--frame); color: var(--ink); box-shadow: inset 0 0 0 1px #d9b35a77; }
+  .A .sub span small { display: block; font-weight: 400; font-size: 12px; opacity: 0.75; }
+  .A .panel { display: grid; gap: 14px; align-content: start; }
+  /* B */
+  .B .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .B .frame { padding: 10px 12px 12px; }
+  /* C */
+  .C .desk { display: grid; grid-template-columns: 1.1fr 1fr; gap: 16px; }
+  .C .faders { display: flex; gap: 24px; justify-content: center; padding: 10px 0 4px; }
+  .C .fader { display: grid; justify-items: center; gap: 6px; font-size: 13px; }
+  .C .fader .track { width: 10px; height: 170px; border-radius: 9px; background: var(--line); position: relative; }
+  .C .fader .track i { position: absolute; bottom: 0; left: 0; right: 0; border-radius: 9px; background: linear-gradient(var(--gold), #a67c2a); }
+  .C .fader .knob { position: absolute; left: -11px; width: 32px; height: 16px; border-radius: 4px; background: linear-gradient(#f4f6fa, #b8c0cf); box-shadow: 0 2px 0 #0006; }
+  .C .keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .C .key { border-radius: 10px; padding: 10px 8px 12px; text-align: center; background: linear-gradient(#323848, #262b38); box-shadow: 0 4px 0 #151925, inset 0 0 0 1px var(--line); font-size: 13px; }
+  .C .key b { display: block; font-size: 18px; }
+  .C .key.on { background: linear-gradient(#e6c472, #c99d3f); color: var(--chrome); box-shadow: 0 2px 0 #7d5f1f; transform: translateY(2px); }
+  .C .cart { border-radius: 12px; padding: 14px; background: repeating-linear-gradient(90deg, #2f3443 0 6px, #2a2f3d 6px 12px); box-shadow: inset 0 0 0 2px #d9b35a55; display: grid; gap: 10px; }
+  /* D */
+  .D .page { background: #e9dfc6; }
+  .D .book { background: var(--paper); color: var(--paper-ink); border-radius: 14px; box-shadow: 0 0 0 8px var(--wine), 0 10px 0 8px #4d1a25; padding: 20px 26px; display: grid; grid-template-columns: 1fr 1fr; gap: 34px; height: 590px; background-image: radial-gradient(#3b2a1c14 1px, transparent 1px); background-size: 14px 14px; }
+  .D h3 { margin: 0 0 6px; font-size: 16px; display: inline-block; padding: 2px 12px; background: var(--wine); color: #f8e9c8; border-radius: 4px; transform: rotate(-1.5deg); }
+  .D .led { display: flex; align-items: baseline; gap: 6px; padding: 6px 0; font-size: 14px; }
+  .D .led .dots { flex: 1; border-bottom: 2px dotted #3b2a1c55; transform: translateY(-4px); }
+  .D .led .v { font-weight: 600; }
+  .D .letter { background: #fffaf0; border-radius: 6px; padding: 12px 14px; box-shadow: 0 2px 0 #3b2a1c22, inset 0 0 0 1px #3b2a1c22; font-size: 12px; line-height: 1.5; position: relative; }
+  .D .seal { position: absolute; right: -10px; top: -12px; width: 44px; height: 44px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #c2455c, #7a2a3a); box-shadow: 0 2px 0 #0003; }
+  .D .btn { background: var(--wine); color: #f8e9c8; }
+  /* E */
+  .E .list { max-width: 760px; }
+  .E .sec { margin: 12px 0 2px; font-size: 13px; font-weight: 600; color: #5a6478; }
+  .E .card { background: var(--frame); border-radius: 12px; box-shadow: inset 0 0 0 1px #d9b35a44; color: var(--ink); }
+  .E .li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 9px 16px; border-top: 1px solid #ffffff12; font-size: 14px; }
+  .E .li:first-child { border-top: 0; }
+  .E .li .hint { display: block; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<!-- shared chrome -->
+<template id="chrome">
+  <div class="hdr"><b>Basic Incremental</b><small>v0.3.0</small><span class="chip">Account level 12</span><span class="sp"></span><span class="chip">38.14 Oak Gem</span><span class="chip">6.57 Copper Gem</span><span class="chip">20 Moss Sigil</span></div>
+  <nav class="nav"><span>Home</span><span>Cards</span><span>Production</span><span>Dungeons</span><span>Summon</span><span>Skill Tree</span><span>Wardrobe</span><span>Achievements</span><span>Shop</span><span class="on">Settings</span></nav>
+</template>
+
+<h1 class="opt">A. Index rail</h1>
+<p class="why">A second rail inside the page: Display, Sound, Save, Help. One section at a time, so each gets room for a live preview (the number format shows a real header value in all three styles). Quietest, scales as settings grow.</p>
+<section class="board A" data-chrome>
+  <main class="page">
+    <h2>Settings</h2>
+    <div class="split">
+      <div class="sub"><span class="on">Display<small>Motion, numbers</small></span><span>Sound<small>Volume, mute</small></span><span>Save<small>Autosave, export, import</small></span><span>Help<small>Report an issue</small></span></div>
+      <div class="panel">
+        <div class="frame"><header>Motion</header>
+          <div class="row"><span>Reduced motion<span class="hint">No shake, flash or slow-down; numbers fade in place.</span></span><span class="seg"><span class="on">Follow Windows</span><span>On</span><span>Off</span></span></div>
+        </div>
+        <div class="frame"><header>Numbers</header>
+          <div class="row"><span>Number format</span><span class="seg"><span>Suffixes</span><span class="on">Scientific</span><span>Engineering</span></span></div>
+          <div class="row"><span></span><span class="preview">Header shows <b class="num">1.23e7</b> &nbsp;·&nbsp; suffixes <b class="num">12.3M</b> &nbsp;·&nbsp; engineering <b class="num">12.3e6</b></span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<h1 class="opt">B. Two-column panels</h1>
+<p class="why">Everything on one screen in four framed panels, the way the other wide pages use the desktop width. Nothing hidden behind tabs; import errors and the overwrite confirm sit right under the box.</p>
+<section class="board B" data-chrome>
+  <main class="page">
+    <h2>Settings</h2>
+    <div class="grid">
+      <div class="frame"><header>Display</header>
+        <div class="row"><span>Reduced motion</span><span class="seg"><span class="on">Follow Windows</span><span>On</span><span>Off</span></span></div>
+        <div class="row"><span>Number format</span><span class="seg"><span class="on">Suffixes</span><span>Scientific</span><span>Engineering</span></span></div>
+        <div class="row"><span></span><span class="preview">Example <b class="num">12.3M</b></span></div>
+      </div>
+      <div class="frame"><header>Sound</header>
+        <div class="row"><span>Master volume</span><span class="slider"><i style="width:60%"></i></span></div>
+        <div class="row"><span>Effects volume</span><span class="slider"><i style="width:80%"></i></span></div>
+        <div class="row"><span>Mute all sound</span><span><span class="switch"></span></span></div>
+        <div class="row"><span>Mute when in background</span><span><span class="switch on"></span></span></div>
+      </div>
+      <div class="frame"><header>Save <small>Saved 12 s ago</small></header>
+        <div class="row"><span>Autosave every</span><span class="seg"><span>10 s</span><span class="on">30 s</span><span>1 min</span><span>5 min</span></span></div>
+        <div style="display:flex;gap:8px;margin:6px 0 8px"><span class="btn">Copy save</span><span class="btn ghost">Save to file…</span><span class="btn ghost">Load from file…</span></div>
+        <div class="ta">BI1:eyJ2IjoxMywicyI6eyJyZXNvdXJjZXMiOnsib2FrX2dlbS…</div>
+        <div style="display:flex;gap:8px;margin-top:8px"><span class="btn">Import save</span></div>
+        <div class="err" style="margin-top:8px">This is not an exported save string. Copy the whole text from Export, starting with BI1:</div>
+      </div>
+      <div class="frame"><header>Help</header>
+        <p style="margin:2px 4px 10px;font-size:14px;color:var(--muted)">Found a bug? Opens a GitHub issue in your browser with the version, a save summary and recent log lines filled in. You can edit it before sending.</p>
+        <span class="btn">Report an issue</span>
+      </div>
+    </div>
+  </main>
+</section>
+
+<h1 class="opt">C. Mixing desk</h1>
+<p class="why">Tactile and playful: sound as vertical faders, display choices as chunky keycaps that press down, the save as a cartridge slot. The most game-like, most ornament, takes more space.</p>
+<section class="board C" data-chrome>
+  <main class="page">
+    <h2>Settings</h2>
+    <div class="desk">
+      <div class="frame"><header>Sound desk</header>
+        <div class="faders">
+          <div class="fader"><div class="track"><i style="height:60%"></i><span class="knob" style="bottom:calc(60% - 8px)"></span></div>Master<b class="num">60%</b></div>
+          <div class="fader"><div class="track"><i style="height:80%"></i><span class="knob" style="bottom:calc(80% - 8px)"></span></div>Effects<b class="num">80%</b></div>
+          <div style="display:grid;gap:10px;align-content:center;font-size:13px"><div class="key">Mute</div><div class="key on">Mute in background</div></div>
+        </div>
+      </div>
+      <div style="display:grid;gap:14px">
+        <div class="frame"><header>Motion</header><div class="keys"><div class="key on"><b>⟳</b>Follow Windows</div><div class="key"><b>▭</b>Reduced</div><div class="key"><b>≋</b>Full</div></div></div>
+        <div class="frame"><header>Numbers</header><div class="keys"><div class="key on"><b class="num">12.3M</b>Suffixes</div><div class="key"><b class="num">1.23e7</b>Scientific</div><div class="key"><b class="num">12.3e6</b>Engineering</div></div></div>
+      </div>
+      <div class="frame" style="grid-column:1/-1"><header>Save cartridge <small>Autosave every 30 s</small></header>
+        <div class="cart"><div style="display:flex;gap:8px"><span class="btn">Copy save</span><span class="btn ghost">Save to file…</span><span class="btn ghost">Load from file…</span><span style="flex:1"></span><span class="btn ghost">Report an issue</span></div></div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<h1 class="opt">D. Ledger</h1>
+<p class="why">The settings as a page in the same book as the sticker album: dotted leaders run from each setting to its value, the save is a sealed letter, and Report an issue shows the letter it will send. Warm and characterful, but paper fights the dark frames of the other tools.</p>
+<section class="board D" data-chrome>
+  <main class="page">
+    <div class="book">
+      <div>
+        <h3>Display</h3>
+        <div class="led">Reduced motion<span class="dots"></span><span class="v">Follow Windows ▾</span></div>
+        <div class="led">Number format<span class="dots"></span><span class="v">12.3M ▾</span></div>
+        <h3 style="margin-top:16px">Sound</h3>
+        <div class="led">Master volume<span class="dots"></span><span class="v num">60%</span></div>
+        <div class="led">Effects volume<span class="dots"></span><span class="v num">80%</span></div>
+        <div class="led">Mute all<span class="dots"></span><span class="v">No</span></div>
+        <div class="led">Mute in background<span class="dots"></span><span class="v">Yes</span></div>
+        <h3 style="margin-top:16px">Save</h3>
+        <div class="led">Autosave every<span class="dots"></span><span class="v">30 s ▾</span></div>
+        <div style="display:flex;gap:8px;margin-top:8px"><span class="btn">Copy save</span><span class="btn">Save to file…</span><span class="btn">Load…</span></div>
+      </div>
+      <div>
+        <h3>Report an issue</h3>
+        <div class="letter"><span class="seal"></span><b>[Bug] </b><br />**Version** 0.3.0 · Windows 10.0.26300 · Electron 45.2.3<br />**Save** v13 · play time 14h 3m · 2 ascensions · highest dungeon Ember Hollow<br /><br />**What happened?**<br />…<br /><br />**Recent log**<br />2026-11-07T10:02:11Z [info] save written<br />…</div>
+        <div style="margin-top:12px"><span class="btn">Open on GitHub</span></div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<h1 class="opt">E. Preference list</h1>
+<p class="why">One calm column, label and hint on the left, control on the right, grouped in four lists. The most compact and readable; the Report row expands to show exactly what will be sent before it opens GitHub.</p>
+<section class="board E" data-chrome>
+  <main class="page">
+    <h2>Settings</h2>
+    <div class="list">
+      <div class="sec">Display</div>
+      <div class="card">
+        <div class="li"><span>Reduced motion<span class="hint">No shake, flash or slow-down</span></span><span class="seg"><span class="on">Follow Windows</span><span>On</span><span>Off</span></span></div>
+        <div class="li"><span>Number format<span class="hint">Example: 12.3M</span></span><span class="seg"><span class="on">Suffixes</span><span>Scientific</span><span>Engineering</span></span></div>
+      </div>
+      <div class="sec">Sound</div>
+      <div class="card">
+        <div class="li"><span>Master volume</span><span style="display:flex;gap:10px;align-items:center;width:300px"><span class="slider" style="flex:1"><i style="width:60%"></i></span><span class="num">60%</span></span></div>
+        <div class="li"><span>Effects volume</span><span style="display:flex;gap:10px;align-items:center;width:300px"><span class="slider" style="flex:1"><i style="width:80%"></i></span><span class="num">80%</span></span></div>
+        <div class="li"><span>Mute all sound</span><span class="switch"></span></div>
+        <div class="li"><span>Mute when the game is in the background</span><span class="switch on"></span></div>
+      </div>
+      <div class="sec">Save</div>
+      <div class="card">
+        <div class="li"><span>Autosave every<span class="hint">Last saved 12 s ago</span></span><span class="seg"><span>10 s</span><span class="on">30 s</span><span>1 min</span><span>5 min</span></span></div>
+        <div class="li"><span>Export save</span><span style="display:flex;gap:8px"><span class="btn">Copy</span><span class="btn ghost">Save to file…</span></span></div>
+        <div class="li"><span>Import save<span class="hint">Replaces your current game</span></span><span style="display:flex;gap:8px"><span class="btn ghost">Paste…</span><span class="btn ghost">Load from file…</span></span></div>
+      </div>
+      <div class="sec">Help</div>
+      <div class="card"><div class="li"><span>Report an issue<span class="hint">Opens GitHub with version, save summary and recent log filled in</span></span><span class="btn">Report an issue</span></div></div>
+    </div>
+  </main>
+</section>
+
+<script>
+  const tpl = document.getElementById('chrome');
+  for (const b of document.querySelectorAll('[data-chrome]')) b.prepend(tpl.content.cloneNode(true));
+</script>
+</body>
+</html>
