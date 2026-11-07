@@ -1,7 +1,36 @@
 import type { Content } from '../../../data';
 import { cssVars, emptyLoadout, equip, resolveCard, slotVisual } from '../../../game';
 import { applyCardTheme } from '../theme/apply';
+import {
+  chromeCss,
+  SKIN_STYLES,
+  skillNode,
+  starlightCoin,
+  stickerArt,
+  STARLIGHT_VIEWBOX,
+  STICKER_VIEWBOX,
+  wardrobeChrome,
+} from '../art/cosmetics';
+import { svg } from '../art/gems';
 import './cosmeticSwatch.css';
+
+/** A sample of a UI-skin item (`ui-<slot>-<style>` recipe): its coin, sticker, node or plate. */
+function skinSample(slot: string, recipes: readonly string[]): string {
+  const letter = recipes.map((r) => r.split('-')[2]).find((l) => SKIN_STYLES.some((x) => x === l));
+  if (!letter) return '';
+  switch (slot) {
+    case 'starlight':
+      return svg(starlightCoin(letter), STARLIGHT_VIEWBOX);
+    case 'sticker':
+      return svg(stickerArt(letter, 'first_harvest', 'gathering', true), STICKER_VIEWBOX);
+    case 'nodes':
+      return svg(skillNode(letter, 'combat', 'owned'), '0 0 24 24');
+    default: {
+      const plate = wardrobeChrome(letter, 'plate-on', 'rare');
+      return plate ? `<span class="cs-plate" style="${chromeCss(plate, 2)}"></span>` : '';
+    }
+  }
+}
 
 /**
  * A small picture of one cosmetic at a level, for the Wardrobe grid, its slots and the summon
@@ -72,6 +101,12 @@ export function cosmeticSwatch(content: Content, cosmeticId: string, level: numb
     case 'cursor':
       el.innerHTML =
         '<svg class="cs-pointer" viewBox="0 0 32 32"><path d="M4 3 L25 15 L15 17 L11 27 Z" /></svg>';
+      break;
+    case 'starlight':
+    case 'sticker':
+    case 'nodes':
+    case 'wardrobe':
+      el.innerHTML = skinSample(cosmetic.slot, visual.recipes);
       break;
   }
   return el;

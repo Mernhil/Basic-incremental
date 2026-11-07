@@ -47,7 +47,9 @@ import { playTierUps } from './stage/tierUp';
 import { gemCoin, svg } from './art/gems';
 import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
-import { setNumberMotion } from './stage/numbers';
+import { setNumberMotion, setPixelTick } from './stage/numbers';
+import { starlightSvg } from './ui/skins';
+import { installPixelNumbers, refreshPixelNumbers } from './ui/pixelNumbers';
 import { showWelcomeBack } from './stage/welcome';
 import { initSound, playSound } from './sound/engine';
 import { createMuteToggle } from './sound/controls';
@@ -94,7 +96,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const applyTheme = (): void => {
     applyGlobalTheme(content, loop.state.cosmetics.loadout);
     setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick.visual.effect);
+    setPixelTick(getComputedStyle(document.documentElement).getPropertyValue('--bi-tick-px'));
+    refreshPixelNumbers();
+    shellRef?.setCurrencyArt(prestigeId, starlightSvg());
   };
+  let shellRef: { setCurrencyArt(id: string, art: string): void } | null = null;
+  const prestigeId = content.resources.find((r) => r.kind === 'prestige')?.id ?? '';
   applyTheme();
 
   // ---- layout ----
@@ -103,7 +110,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     mine_gem: 'ore',
     material: 'material',
     portal: 'portal',
-    prestige: 'starlight', // placeholder line star until the pixel Starlight coin is drawn
+    prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();
   // Starlight (the prestige currency) leads the header row: it is kept forever and would
@@ -117,6 +124,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     name: r.name,
     icon: KIND_ICON[r.kind],
     ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
+    ...(r.kind === 'prestige' ? { art: starlightSvg() } : {}),
     tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
   }));
   const pages: Partial<Record<string, { render(): void }>> = {};
@@ -157,6 +165,8 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     returnFocus: () => shell.levelButton.focus(),
   });
   shell.setLevel(levelBadge(accountInfo(loop.state, content)));
+  shellRef = shell;
+  installPixelNumbers(shell.el);
   for (const p of PAGES) {
     if (
       ![

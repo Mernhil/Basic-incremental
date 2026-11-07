@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   collectModifiers,
   cosmeticLadder,
+  cosmeticSource,
   Decimal,
   equipCosmetic,
   grantCosmetic,
@@ -157,6 +158,21 @@ describe('selected item', () => {
     expect(d.exclusive).toBe('Only for Dawnblade Regent, from Prismatic ★6');
     ownCard(s, 'dawnblade_regent');
     expect(detail(s, 'ember_crown', 'dawnblade_regent').equip.card).toBe('equip');
+  });
+
+  it('words the source of every item, including track and shop rewards', () => {
+    for (const c of content.cosmetics) {
+      const source = cosmeticSource(content, c.id);
+      if (!source) continue;
+      expect(sourceText(content, c.id, source), c.id).not.toBe('Source not known yet');
+    }
+    const track = content.account.rewardTrack.find((r) => r.cosmetics.length > 0);
+    if (track) {
+      expect(sourceText(content, track.cosmetics[0]!, 'track')).toBe(
+        `Account level ${track.level} reward`,
+      );
+    }
+    expect(sourceText(content, 'gn_border', 'shop')).toBe('Card shard shop');
   });
 
   it('names where an item comes from', () => {

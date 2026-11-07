@@ -441,6 +441,12 @@ export function sourceText(content: Content, id: string, source: WardrobeItem['s
       return t.source.gate;
     case 'achievement':
       return t.source.achievement;
+    case 'track': {
+      const step = content.account.rewardTrack.find((r) => r.cosmetics.includes(id));
+      return step ? t.source.track(step.level) : t.source.unknown;
+    }
+    case 'shop':
+      return t.source.shop;
     default:
       return t.source.unknown;
   }

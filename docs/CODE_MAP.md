@@ -43,7 +43,7 @@ Where things live, so agents can go straight to the right file instead of explor
 | Pages             | `pages/<page>.ts` + `<page>Model.ts` (view models, unit-tested) + `<page>.css`: home, production, dungeons, cards, summon, wardrobe, ascension (on Shop), achievements       |
 | Stage juice       | `stage/`: arena, director (reports -> moments), numbers, fly (coins), motion (shared rAF loop), tierUp, toast, reveal (summon), welcome                                      |
 | Sound             | `sound/`: registry (data), engine (Web Audio), settings, header mute                                                                                                         |
-| Widgets           | `ui/`: card, buy controls, HP stack, cosmetic swatch                                                                                                                         |
+| Widgets           | `ui/`: card, buy controls, HP stack, cosmetic swatch, `skins.ts` (equipped UI-skin style), `pixelNumbers.ts` (pixel `.bi-num`)                                               |
 | Theme             | `theme/`: apply (tokens/recipes), registry (implemented ids), recipes.css, effects.ts (hits, pixel-art owned)                                                                |
 | Art (`pixel-art`) | `art/`: items, frame, gems/coins/tiles, bosses, evolutions, fx (element effects), `pixel/` (raster treatment, bake, baked sprites, live motion), `vector/` (source drawings) |
 

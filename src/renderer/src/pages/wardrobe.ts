@@ -20,6 +20,8 @@ import { applyScopedGlobalTheme } from '../theme/apply';
 import { playHit, showTick } from '../theme/effects';
 import { createCard } from '../ui/card';
 import { cosmeticSwatch } from '../ui/cosmeticSwatch';
+import { skinStyle } from '../ui/skins';
+import { wardrobeSkinCss } from './wardrobeSkin';
 import { cardFaceProps } from './loadoutCards';
 import type { PageContext } from './production';
 import {
@@ -69,6 +71,17 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
   const status = h('p', 'wd-status');
   status.setAttribute('role', 'status');
   page.append(wrap, status);
+  // the equipped Wardrobe style draws the plates, tiles and ladder (wardrobeSkin.ts)
+  const skinSheet = document.createElement('style');
+  document.head.append(skinSheet);
+  let skin = '';
+  function applySkin(): void {
+    const style = skinStyle('wardrobe');
+    if (style === skin) return;
+    skin = style;
+    skinSheet.textContent = wardrobeSkinCss(style);
+    wrap.dataset['skin'] = style;
+  }
 
   const materials = [
     ...new Set(Object.values(content.cosmeticRules.materials).map((m) => m.resource)),
@@ -82,6 +95,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
 
   function build(focusKey?: string): void {
     hideTip();
+    applySkin();
     const state = ctx.state();
     last = signature(state);
     const mods = collectModifiers(state, content);
@@ -143,6 +157,8 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
     select.disabled = choices.length === 0;
     select.addEventListener('change', () => {
       previewCard = select.value;
+      // the new card's own border is selected, so it is not shown as a try-on of the old pick
+      selected = null;
       message = '';
       build('preview');
     });

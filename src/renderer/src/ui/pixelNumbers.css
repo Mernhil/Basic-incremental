@@ -1,0 +1,14 @@
+/* Pixel numbers: the real text stays for assistive tech and page logic, the drawn numeral shows. */
+.bi-num__txt {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.bi-pxnum {
+  display: inline-block;
+  vertical-align: middle;
+  image-rendering: pixelated;
+}

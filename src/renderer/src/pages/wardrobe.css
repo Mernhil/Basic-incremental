@@ -491,3 +491,53 @@
   background: conic-gradient(from 0deg, #7a5cff, #3ec6ff, #b67bff, #ff6fc8, #ffc23a, #7a5cff);
   color: #fff;
 }
+
+/* ---- Wardrobe style (UI-skin slot): baked chrome from art/cosmetics.ts wardrobeChrome ---------
+   wardrobeSkin.ts writes the pieces (border-image plates and tiles, ladder rungs and links);
+   these rules clear the flat look. Style A (sockets) is the starter. */
+.wd[data-skin] .wd-slot,
+.wd[data-skin] .wd-tile {
+  box-sizing: border-box;
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+}
+.wd[data-skin] .wd-slot {
+  padding: 4px 4px 4px 14px;
+}
+.wd[data-skin] .wd-slots--right .wd-slot {
+  padding: 4px 14px 4px 4px;
+}
+.wd[data-skin] .wd-slot > .cs {
+  position: relative;
+  z-index: 0;
+}
+.wd[data-skin] .wd-slot::after {
+  display: none;
+}
+.wd[data-skin] .wd-tile {
+  padding: 2px 0 4px;
+}
+.wd[data-skin] .wd-rung__lv {
+  border-radius: 0;
+  box-shadow: none;
+  background-color: transparent;
+  color: var(--bi-frame-ink-muted);
+  image-rendering: pixelated;
+}
+.wd[data-skin] .wd-rung.is-done .wd-rung__lv {
+  color: var(--bi-chrome-bg);
+}
+.wd[data-skin] .wd-rung.is-next .wd-rung__lv {
+  color: var(--bi-frame-ink);
+}
+.wd[data-skin] .wd-rung:not(:first-child)::before {
+  top: 12px;
+  background-color: transparent;
+}
+.wd[data-skin] .wd-rung--ambient .wd-rung__lv {
+  transform: none;
+}
+.wd[data-skin] .wd-rung--ambient .wd-rung__lv::after {
+  transform: none;
+}

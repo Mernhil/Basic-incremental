@@ -512,6 +512,8 @@ export const COPY = {
       prestige: 'Ascension reward',
       gate: 'Wardrobe Gate',
       achievement: 'Achievement reward',
+      track: (level: number) => `Account level ${level} reward`,
+      shop: 'Card shard shop',
       unknown: 'Source not known yet',
       or: (a: string, b: string) => `${a}, or the ${b}`,
     },
