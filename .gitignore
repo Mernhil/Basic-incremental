@@ -14,3 +14,7 @@ coverage/
 !.vscode/extensions.json
 .idea/
 graphify-out/
+
+# Third-party art kept only as local references (not ours to redistribute)
+design/references/*
+!design/references/README.md

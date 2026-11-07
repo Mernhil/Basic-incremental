@@ -24,23 +24,23 @@ Two production jobs, **mining** and **logging**. Each produces its own resources
 ### Logging
 
 - Starts with **one tree plot**.
-- Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different wood.
-- Plot expansions are paid in **Oak Wood**. Each tree kind is unlocked once with the wood of the tier below (Ironbark with Oak Wood, Moonwillow with Ironwood).
+- Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different gem.
+- Plot expansions are paid in **Oak Gems**. Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
 
 ### Mining
 
-- Works the same way as logging (limited slots, upgrades add capacity, higher mine types yield different ores).
+- Works the same way as logging (limited slots, upgrades add capacity, higher mine types yield different gems).
 - **New mine types are unlocked via dungeon expeditions.**
-- Starts with **one mine slot** (Copper Quarry). Slot expansions are paid in **Copper Ore**.
-- **Mine levels:** each mine type also has a level, bought with its own ore on an exponential curve; every level adds a percentage to that mine's output. Slots and mine levels both reset on prestige.
+- Starts with **one mine slot** (Copper Quarry). Slot expansions are paid in **Copper Gems**.
+- **Mine levels:** each mine type also has a level, bought with its own gems on an exponential curve; every level adds a percentage to that mine's output. Slots and mine levels both reset on prestige.
 
 ### Resource uses (starting point)
 
-| Resource               | Buys                            |
-| ---------------------- | ------------------------------- |
-| Ore                    | Damage, mine upgrades           |
-| Wood                   | Plot expansions, new tree kinds |
-| Higher-tier wood / ore | Card tier-ups                   |
+| Resource         | Buys                            |
+| ---------------- | ------------------------------- |
+| Mine gems        | Damage, mine upgrades           |
+| Tree gems        | Plot expansions, new tree kinds |
+| Higher-tier gems | Card tier-ups                   |
 
 This is a starting point and will be tuned.
 
@@ -87,14 +87,10 @@ Bronze ★1–6 → Silver ★1–6 → Gold ★1–6 → Prismatic ★1–6 (ma
 - ★6 of each tier is a **big upgrade plus a visual change**.
 - Star colors follow the tier; **Prismatic stars are animated**.
 - **★6 shine:** at ★6 the stars get a polished light sweep that moves back and forth across the star glyphs in a loop, coloured to the tier. On Prismatic it blends with the animated stars. ★1–5 have no shine.
-- **★6 evolution:** each tier's ★6 adds a small, escalating upgrade to the card's look, never a full redesign:
-  - Bronze ★6: shine and one thin ring just outside the card.
-  - Silver ★6: shine and two rings.
-  - Gold ★6: shine, two rings, a gold glow and four corner glints.
-  - Prismatic ★6: shine, a thick fast rainbow ring, a breathing aura behind the card and motes rising along the sides.
-  - Rings carry a thin dark edge so they read on light and dark tables. Reaching ★6 plays a one-time flash.
-- **Prismatic is the top tier for now and must look clearly different from ★1:** its own animated ring and rainbow tier name. Prismatic ★6 adds a much stronger treatment (thick fast ring, aura, rising motes).
-- **Rank visuals never clash with cosmetics:** rank effects sit outside the card edge (rings, aura) and on the stars; cosmetics sit inside the edge, except high-level border flourishes, which may break out at the corners (see "Breaking the edge" in section 7). Stars are never covered by a cosmetic.
+- **The tier is the card's frame** (see section 13): each tier-up rebuilds the frame in the next metal and adds ornament, like an armour set going from basic to epic. Bronze: plain riveted plate. Silver: spikes at the top corners. Gold: side spikes and a crest gem. Prismatic: plate wings and a rainbow-shifting metal.
+- **★6 within a tier** keeps the stars' shine and plays a one-time flash; it does not add rings. The next big visual step is the tier-up itself.
+- **Prismatic is the top tier for now and must look clearly different from ★1:** wings, rainbow metal and the strongest element effect.
+- **Rank visuals never clash with cosmetics:** the frame's tier ornaments (spikes, crest, wings) own the top, the sides and the area outside the edge; cosmetics change the frame's family and the card's finish (section 7). Stars are never covered.
 - **Card enhancements** (Brave Frontier Omni SP style) unlock at a set card rank. See section 10.
 - **Duplicates / shards add stars.**
 - **Tier-ups cost a dungeon material** (see resource uses above).
@@ -112,16 +108,16 @@ Bronze ★1–6 → Silver ★1–6 → Gold ★1–6 → Prismatic ★1–6 (ma
 
 - The UI itself is part of the customization system: **nothing visual is hardcoded**. The default look is just the **starter set** of cosmetics.
 - UI style: simple **card-based UI on a plain table**. More of the UI (for example colour themes or layout skins) can become customizable slots later.
-- **Starter set: Gilded Nocturne.** Gilded card anatomy (body, name plate, art window, stat panel) with calm, flat surfaces and thin gold hairlines; light stone table; the Outfit typeface. Each layer of the card is a place where more extravagant cosmetics can add decoration later.
+- **Starter set: Gilded Nocturne.** The night-table shell and the Outfit typeface for the interface; the cards themselves follow the cel-shaded art style of section 13 with the **Knight plate** frame. Each layer of the card is a place where more extravagant cosmetics can add decoration later.
 - **First unlockable set: Gilded Tradition** (classic trading card: crimson frame, gold plate, rainbow foil). The richer "Medium" gilt variant of the starter is an unlockable border.
 
 ### Slots
 
 **Seven global slots:**
 
-1. Card border
+1. Card border: the **frame family**. The starter is Knight plate; other families (Dragon horn, Celestial, Crystal, Royal crest) are cosmetics. Every family grows with the tier in the same steps (section 13).
 2. Card finish (holo, foil, …). Holo finishes are full-card, animated and restrained, using geometric or fluid patterns.
-3. Attack animation. Attacks are automatic; one attack item contains a variant per job. Starter: a slash that appears and fades at changing angles and positions (fighting, with sparks; logging, with wood chips) and a heavy hit (mining: shockwave, cracks, rock chips, dust).
+3. Attack animation. Attacks are automatic; one attack item contains a variant per job. Starter: a single brush-stroke slash, straight with a slight curve, that always lands on the target and varies in angle, length and thickness every hit (fighting, with sparks; logging, with chips), and an impact hit (mining and bows: shockwave, cracks, chips, dust). See section 13.
 4. Tick damage style
 5. Number style
 6. Table background
@@ -147,12 +143,12 @@ Bronze ★1–6 → Silver ★1–6 → Gold ★1–6 → Prismatic ★1–6 (ma
 
   A step may span more than one level on items with a higher maximum (e.g. two shape levels), and an item with a low maximum compresses the ladder but always keeps the order and always ends on the ambient animation.
 
-- **Ambient animations are small, subtle and cheap:** CSS only, animating `transform` and `opacity` only, at most about 6 particles per card, no per-frame scripting, paused when the card is off screen. Many cards must be on screen at once without a frame-rate cost. Under **reduced motion** they are static (a still frame of the same elements).
+- **Ambient animations of cosmetics are small, subtle and cheap** (element effects on items follow section 13 instead): CSS only, animating `transform` and `opacity` only, at most about 6 particles per card, no per-frame scripting, paused when the card is off screen. Many cards must be on screen at once without a frame-rate cost. Under **reduced motion** they are static (a still frame of the same elements).
 - **Breaking the edge.** High-level border flourishes **may extend outside the card edge**. They coexist with rank effects by zone:
   - **Corners belong to flourishes.** A flourish may reach outside the card edge by at most about 8% of the card width, only within a corner zone (the outer fifth of each side, measured from the corner).
-  - **Sides belong to rank effects.** Rank rings, the aura and rising motes run along the sides and are never hidden by a flourish.
+  - **Sides and top belong to the tier ornaments** (spikes, crest gem, wings) and are never hidden by a flourish.
   - **Stars are never covered.** The rank footer is a keep-clear band: no flourish, gem or animation draws over it, and bottom-corner flourishes sit above or outside it.
-  - **Where they meet at a corner**, the ring passes behind the flourish and Gold ★6 corner glints twinkle on top of the flourish tips (brief, so they never hide it).
+  - **Where they meet at a corner**, tier spikes sit on top and the flourish tucks behind them.
   - Card tiles in grids reserve a bleed margin so flourishes are not clipped.
 
 ## 8. Saves
@@ -230,8 +226,8 @@ Every tunable number (production rate, damage, drop chance, pity threshold, cost
 
 | Area                | Content                                                                                                                                                                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tree kinds (3)      | **Oak** (Oak Wood, start), **Ironbark** (Ironwood), **Moonwillow** (Moonwood)                                                                                                                                                 |
-| Mines (3)           | **Copper Quarry** (Copper Ore, start), **Iron Deeps** (Iron Ore, unlocked by clearing Dungeon 1), **Crystal Grotto** (Crystal Ore, unlocked by clearing Dungeon 2)                                                            |
+| Tree kinds (3)      | **Oak** (Oak Gem, start), **Ironbark** (Ironbark Gem), **Moonwillow** (Moonwillow Gem)                                                                                                                                        |
+| Mines (3)           | **Copper Quarry** (Copper Gem, start), **Iron Deeps** (Iron Gem, unlocked by clearing Dungeon 1), **Crystal Grotto** (Grotto Gem, unlocked by clearing Dungeon 2)                                                             |
 | Dungeons (3)        | **Mossy Cellar** (boss Root Warden, drops Moss Sigil and Moss Core), **Ember Crypt** (boss Cinder Lich, drops Ember Sigil and Cinder Core), **Frostspire Vault** (boss Glacier Colossus, drops Frost Sigil and Frost Core)    |
 | Special dungeon (1) | **The Glimmer Trial**, a strength test with a fixed target and a score. Drops **Glimmer Dust** (cosmetic upgrades, shape and accent levels) and **Facet Shards** (gem, glow and ambient levels)                               |
 | Cards (12)          | See below                                                                                                                                                                                                                     |
@@ -249,7 +245,7 @@ Every tunable number (production rate, damage, drop chance, pity threshold, cost
 | Logging  | Apprentice Feller | Grove Keeper  | Elder Treant (Epic)     | Moonwood Dryad (Mythic) |
 | Mining   | Cave Digger       | Gem Cutter    | Geode Golem (Legendary) | Core Titan (Exotic)     |
 
-**Achievements (25)**: First Harvest, First Kill, Lumberjack I / II (wood harvested), Prospector I / II (ore mined), Tree Hugger (all 3 tree kinds), Deep Delver (all 3 mines), Giant Slayer I / II / III (clear each dungeon), Glimmer Seeker (clear the special dungeon), First Summon, Ten Pulls, Pity Breaker (trigger a pity), Silver Lining (first Silver card), Golden Hour (first Gold card), Six Stars (first ★6), Prismatic Dawn (first Prismatic card), Full Loadout (fill a loadout), Dressed Up (equip a full set), Fashionista (own 10 cosmetics), Skilled (first 10 skill points spent), First Ascension, Night Owl (collect 8 h of offline progress). Cosmetic rewards from achievements are an item source.
+**Achievements (25)**: First Harvest, First Kill, Lumberjack I / II (tree gems harvested), Prospector I / II (mine gems mined), Tree Hugger (all 3 tree kinds), Deep Delver (all 3 mines), Giant Slayer I / II / III (clear each dungeon), Glimmer Seeker (clear the special dungeon), First Summon, Ten Pulls, Pity Breaker (trigger a pity), Silver Lining (first Silver card), Golden Hour (first Gold card), Six Stars (first ★6), Prismatic Dawn (first Prismatic card), Full Loadout (fill a loadout), Dressed Up (equip a full set), Fashionista (own 10 cosmetics), Skilled (first 10 skill points spent), First Ascension, Night Owl (collect 8 h of offline progress). Cosmetic rewards from achievements are an item source.
 
 ### 11.7 Target pacing for the beta
 
@@ -275,7 +271,7 @@ Active play with the game left open, in hours of play:
 Decided with the user for Phase 5. Numbers live in data and will be tuned.
 
 - **Clearing and unlocking.** A dungeon is **cleared on its first boss kill** (`killsToClear` in data, 1 for now). Clearing dungeon N unlocks dungeon N+1 (`unlockedBy` in data) and the mine type tied to it (Iron Deeps, Crystal Grotto).
-- **Damage purchases.** One upgrade line **per ore**: Copper, Iron and Crystal. Each line has its own exponential price in that ore and adds flat damage per level; higher ores add much more. Levels are kept through prestige.
+- **Damage purchases.** One upgrade line **per mine gem**: Copper, Iron and Grotto. Each line has its own exponential price in that gem and adds flat damage per level; higher gems add much more. Levels are kept through prestige.
 - **Cores** (Moss / Cinder / Frost) drop with a moderate **chance per kill** (10% to start), no pity. Sigils drop on every kill; the rare item keeps its low odds and pity.
 - **The Glimmer Trial.** Picked like a dungeon; unlocks when Dungeon 2 is cleared. Each **attempt lasts 30 s** against a target with a **fixed HP** (no prestige scaling) and repeats automatically. **Score** = share of the target's HP dealt in the attempt (capped at 100%). Rewards are paid every attempt by **score tier**: each of 25 / 50 / 75 / 100% adds Glimmer Dust; Facet Shards only at 75% and 100%. Reaching 100% clears the trial.
 - **Burst gauge.** The fighting job hits once per main-card interval (1 s while no card is equipped). Each hit fills the gauge by 1; at 20 the signature attack fires and deals **10× a hit** on top of the normal damage. Supports raise the fill per hit through modifiers.
@@ -290,7 +286,7 @@ Decided with the user for Phase 6 (roles, star and tier-up requirements, start).
 - **Collection.** Each card is owned once, with its tier, stars, level and XP. Further copies are stored on it as **duplicates**.
 - **Levels (11.2).** Cards in a loadout gain XP by doing their job: fighting cards per boss kill (more for harder dungeons), logging and mining cards per unit harvested. The cap is 20 at Bronze ★1 and rises by 4 per star (Bronze ★6 = 40, Silver ★1–6 = 40–60, and so on). Each level adds a little to the main ability's power and the support effect's strength.
 - **Star-up** (★n → ★n+1 within a tier) needs **one duplicate**, the card **at its level cap** and **materials**: the tier's Core (Bronze: Moss Core, Silver: Cinder Core, Gold and Prismatic: Frost Core). The amount grows per star, and the step to **★6, which brings the visual evolution, costs about three times the step before it**. Each star adds a little power; ★6 adds a big step.
-- **Tier-up** (★6 → next tier ★1) needs the card **at its level cap** and: Bronze → Silver: Moss Cores + Ironwood (logging) or Iron Ore (mining, fighting); Silver → Gold: Cinder Cores + Moonwood or Crystal Ore; Gold → Prismatic: Frost Cores + Frost Sigils. Level and XP carry over, and the new tier raises the cap. Each tier adds a big power step.
+- **Tier-up** (★6 → next tier ★1) needs the card **at its level cap** and: Bronze → Silver: Moss Cores + Ironbark Gems (logging) or Iron Gems (mining, fighting); Silver → Gold: Cinder Cores + Moonwillow Gems or Grotto Gems; Gold → Prismatic: Frost Cores + Frost Sigils. Level and XP carry over, and the new tier raises the cap. Each tier adds a big power step.
 - **Shards.** A duplicate gained once a card is Prismatic ★6 turns into shards, more for higher rarities (Common 1, Rare 2, Epic 4, Legendary 8, Mythic 15, Exotic 25, Void 40).
 - **Cost (11.4).** By rarity: Common 2, Rare 3, Epic 5, Legendary 8, Mythic 12, Exotic 16, Void 20. Each job's cap is 6 at account level 1 and grows by 2 per level (`loadout.costCap`). The main card must fit; a loadout over the cap cannot be saved.
 - **Abilities.** Fighting mains shape how damage is dealt (steady ticks, fast hits that fill the gauge quickly, slow heavy hits with a stronger signature attack). Production mains shape output (steady, bigger harvest bursts, faster gauges). Supports add a percentage bonus or a gauge, drop or material bonus. All card effects go through the modifier pipeline with source kind `card`.
@@ -310,6 +306,16 @@ Decided with the user for Phase 6 (roles, star and tier-up requirements, start).
 | Mining   | Geode Golem       | Legendary | Harvest bursts give 15 s of output, +15% mining    | +15% mining                        |
 | Mining   | Core Titan        | Exotic    | +40% mining, harvest gauge fills faster            | +25% mining, +5% Core drop chance  |
 
+### 11.10 Card health
+
+Decided with the user for the graphics overhaul, so the player can lose a fight and has a reason to upgrade. Numbers live in data and will be tuned.
+
+- **Bosses hit back.** Every boss attacks the fighting loadout at its own rhythm with its own damage (in data per boss, growing with dungeon tier and with prestige like boss HP). A special dungeon's target does not attack.
+- **One health pool.** The fighting loadout has one shared health bar. Each card adds health from its rarity, level and rank. It is shown like the boss's bar.
+- **Knocked out.** When the pool reaches 0, the loadout is knocked out for a short time (30 s to start), the boss heals to full, and then the fight starts again with full health. A boss you cannot kill before your cards fall is a wall until you get stronger.
+- **Protection** comes only through the modifier system: health and defence are stats, so cosmetics, set bonuses, the skill tree and card enhancements can raise them. There are no heal or shield support effects and no gem upgrade line for defence.
+- **Offline** progress uses the same rules: being knocked out offline costs the same time and boss healing as online.
+
 ## 12. Defaults for underspecified points
 
 Points the decisions above leave open. These defaults apply until changed.
@@ -318,3 +324,44 @@ Points the decisions above leave open. These defaults apply until changed.
 2. **Rank for card enhancements.** Silver ★1.
 3. **Enhancement point budget.** Grows with rank (a few points per tier) and is about half of the total cost of the card's options.
 4. **XP rates.** Tuned in the balance phase so the account level rises quickly early and slowly later.
+
+## 13. Art style
+
+Decided with the user in the graphics overhaul. References (Knights & Dragons armour sets and card UI, Brave Frontier, a cartoon flame-jet effect sheet) are kept locally in `design/references/` and never committed.
+
+- **Look.** Cel-shaded, like Knights & Dragons and Brave Frontier: bold dark outlines (one ink colour, about 3 px at card size), flat shadow shapes and white highlights instead of gradients, saturated metals, and a chunky display font for card names.
+- **The card is the showpiece.** The frame is the tier (section 5): the Knight plate frame grows from plain plate (Bronze) to spikes (Silver), side spikes and a crest gem (Gold) and plate wings with rainbow metal (Prismatic). Rarity colours the card body.
+- **Inside the card is its signature item**, not a character: a weapon, shield, tool or relic, cel-shaded like the frame. **Rarity sets how intricate the item is**, adding parts rather than only colour: Common plain; Rare a fuller, wrapped grip and gem pommel; Epic a winged guard and gem; Legendary a broader, serrated or ornate shape, gold inlay and a ribbon; Mythic neon runes and a crystal edge; Exotic forked or split shapes and floating rings; Void black chrome, glowing cracks and orbiting shards. Twinkles get more frequent with rarity.
+- **Characters** (chibi armoured figures in the same style) are used for **dungeon bosses** and may appear as special card skins later. Bosses and enemies **look like their area** (a mossy root guardian for the Mossy Cellar, an ember-and-bone caster for the Ember Crypt, an ice giant for the Frostspire Vault), and each boss needs a clearly different body shape, not a recolour.
+- **Element effects.** Every card has an element; its effect is generated from the item's own shape (edges, fuller, tip), never a static picture placed on top, and always stays secondary to the item: slow and calm. Effects **wrap around** the item: most of the effect sits behind it with a smaller share in front, arcs and streams may reach past the item's outline, and auras follow the outline itself. Effects are cartoon cel animations (outlined blobs and arcs); glowing embers and branching lightning are drawn in the same cel style.
+
+  | Element              | Effect                                                                                                     |
+  | -------------------- | ---------------------------------------------------------------------------------------------------------- |
+  | Fire                 | Edge fire: flames along the edges with uneven, drifting highs and lows; or a trailing stream off the tip   |
+  | Storm                | Arc crackle: jagged cel lightning jumping between points on the item and off its tip                       |
+  | Light                | Aura shell: outlines of the item pulsing outward, shedding sparks                                          |
+  | Nature               | Spiral wrap: a ribbon of leaves and light coiling around the item                                          |
+  | Earth, crystal, void | Power cracks: jagged glowing cracks inside the item, flickering like the arc crackle, in the item's colour |
+
+- **Hits.** Slashes are single brush strokes, straight with a slight curve, tapered with dry-brush streaks, re-rolled every hit (angle, length, thickness, offset) and always centred on the target. Bows and pickaxes use the impact hit instead; there are no arrow projectiles. Hit colour follows the element.
+- **Unique evolutions.** Some cards have a unique item at ★6 in place of the generic one: **Flameblade** (a sword made entirely of flame), **Soul Reaper** (a scythe) and **Rootbloom Staff** (roots at the base, petals at the head, falling leaves, wind and floating earth crystals).
+- **Effects unlock with tier**: none at Bronze and Silver, the element effect from **Gold**, stronger at **Prismatic**. ★6 keeps the stars' shine and one-time flash.
+- **Beta cards** (elements and items):
+
+  | Card              | Element | Item                   |
+  | ----------------- | ------- | ---------------------- |
+  | Ember Squire      | Fire    | Ember Blade (sword)    |
+  | Shield Warden     | Light   | Bulwark (shield)       |
+  | Storm Duelist     | Storm   | Twin storm blades      |
+  | Dawnblade Regent  | Fire    | Dawnblade (greatsword) |
+  | Apprentice Feller | Nature  | Hatchet                |
+  | Grove Keeper      | Nature  | Sapling staff          |
+  | Elder Treant      | Nature  | Heartwood maul         |
+  | Moonwood Dryad    | Light   | Moon bow               |
+  | Cave Digger       | Earth   | Pickaxe                |
+  | Gem Cutter        | Crystal | Cutting chisel         |
+  | Geode Golem       | Crystal | Geode hammer           |
+  | Core Titan        | Void    | Core gauntlet          |
+
+- **Resources are carved gems.** Every production resource is a gem: its **outline** says which one (Oak round, Ironbark pentagon, Moonwillow star, Copper square, Iron hexagon, Grotto drop) and its **carved pattern** comes from its source (grain, rings and swirls for the trees, glowing veins for the mines). Icons set the gem in a **notched coin**; the coin's metal is the tier (stone, bronze, silver, gold, prismatic), and a resource not discovered yet shows as a grey coin with a padlock. In the world, each tree is themed to its gem (colours and bark pattern) and hangs its gems, and each mine is rock with its gems set into it. The scenery is **faceted** like the gems: canopy, trunk, rocks and a hexagonal ground tile are cut into flat light and dark faces. Navigation icons keep the hexagonal plaque.
+- **Performance.** Element effects run on one shared canvas layer, only for cards on screen, at a capped frame rate. Under reduced motion they show a still frame.
