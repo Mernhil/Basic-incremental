@@ -20,7 +20,7 @@ import {
 } from '../art/gems';
 import { ITEM_VIEWBOX } from '../art/items';
 import { frame, h } from '../shell/shell';
-import { icon } from '../shell/icons';
+import { skinStyle, starlightSvg } from '../ui/skins';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { reducedMotion } from '../stage/motion';
 import { toast } from '../stage/toast';
@@ -138,7 +138,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
       case 'plaque':
         return svg(navPlaque(a.glyph), PLAQUE_VIEWBOX);
       case 'starlight':
-        return icon('starlight', 'as-star').outerHTML;
+        return starlightSvg();
     }
   };
 
@@ -176,7 +176,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
       }
       ui.detail = k.detail;
       ui.li.setAttribute('aria-label', `${k.label}: ${k.detail}`);
-      const key = JSON.stringify(k.art);
+      const key = `${JSON.stringify(k.art)}|${skinStyle('starlight')}`;
       if (ui.key !== key) {
         ui.key = key;
         ui.art.innerHTML = artMarkup(k.art, s);

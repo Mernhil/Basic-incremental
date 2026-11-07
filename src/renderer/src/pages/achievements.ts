@@ -1,7 +1,8 @@
-import type { Content } from '../../../data';
 import { achievementList, buyShardItem, shardShop, type GameState } from '../../../game';
 import { COPY } from '../copy';
-import { MEDAL_VIEWBOX, PLAQUE_VIEWBOX, gemCoin, masteryMedal, navPlaque, svg } from '../art/gems';
+import { PLAQUE_VIEWBOX, gemCoin, navPlaque, svg } from '../art/gems';
+import { STICKER_VIEWBOX, stickerArt } from '../art/cosmetics';
+import { shardSvg, skinStyle, starlightSvg } from '../ui/skins';
 import { ITEM_VIEWBOX } from '../art/items';
 import { frame, h } from '../shell/shell';
 import { icon, type IconName } from '../shell/icons';
@@ -19,7 +20,6 @@ import {
   spread,
   type ChapterView,
   type OfferArt,
-  type StickerArt,
   type StickerView,
 } from './achievementsModel';
 import { cardFaceProps, cardItemArt } from './loadoutCards';
@@ -39,23 +39,6 @@ export interface AchievementsContext extends PageContext {
 }
 
 type Tab = 'book' | 'shop';
-
-/**
- * The sticker's picture. Placeholder pixel art until the sticker art lands (pixel-art request:
- * achievement stickers): swap this one function.
- */
-export function stickerMarkup(content: Content, art: StickerArt): string {
-  switch (art.kind) {
-    case 'coin': {
-      const gem = content.resourceById.get(art.resource)?.gem;
-      return gem ? svg(gemCoin(gem, art.tier)) : '';
-    }
-    case 'medal':
-      return svg(masteryMedal(art.tier), MEDAL_VIEWBOX);
-    case 'plaque':
-      return svg(navPlaque(art.glyph), PLAQUE_VIEWBOX);
-  }
-}
 
 const RESOURCE_ICON: Record<string, IconName> = {
   tree_gem: 'wood',
@@ -139,6 +122,9 @@ export function createAchievementsPage(
   type SlotUi = {
     li: HTMLElement;
     sticker: HTMLElement;
+    art: HTMLElement;
+    /** Style and lock state the picture was drawn for. */
+    artKey: string;
     meta: HTMLElement;
     fill: HTMLElement;
     view: StickerView;
@@ -182,7 +168,6 @@ export function createAchievementsPage(
     const sticker = h('span', 'ac-sticker');
     sticker.setAttribute('aria-hidden', 'true');
     const art = h('span', 'ac-sticker__art');
-    art.innerHTML = stickerMarkup(content, s.art);
     sticker.append(art);
     const bar = h('i', 'ac-slot__bar');
     bar.setAttribute('aria-hidden', 'true');
@@ -190,7 +175,7 @@ export function createAchievementsPage(
     bar.append(fill);
     const meta = h('span', 'ac-slot__meta bi-num');
     li.append(sticker, h('span', 'ac-slot__name', s.name), bar, meta);
-    const ui: SlotUi = { li, sticker, meta, fill, view: s, unlocked: null };
+    const ui: SlotUi = { li, sticker, art, artKey: '', meta, fill, view: s, unlocked: null };
     attachTooltip(li, () => tip(ui.view));
     slots.set(s.id, ui);
     return li;
@@ -230,6 +215,13 @@ export function createAchievementsPage(
     const ui = slots.get(s.id);
     if (!ui) return;
     ui.view = s;
+    // the equipped sticker style draws the die-cut and the picture; redraw when either changes
+    const style = skinStyle('sticker');
+    const artKey = `${style}|${s.unlocked}`;
+    if (ui.artKey !== artKey) {
+      ui.artKey = artKey;
+      ui.art.innerHTML = svg(stickerArt(style, s.id, s.chapter, s.unlocked), STICKER_VIEWBOX);
+    }
     if (ui.unlocked !== s.unlocked) {
       ui.unlocked = s.unlocked;
       ui.li.classList.toggle('is-unlocked', s.unlocked);
@@ -258,6 +250,7 @@ export function createAchievementsPage(
   const balance = h('div', 'ac-balance');
   const shard = h('span', 'ac-shard');
   shard.setAttribute('aria-hidden', 'true');
+  shard.innerHTML = shardSvg();
   const balanceValue = h('strong', 'ac-balance__value bi-num');
   const balanceText = h('span', 'ac-balance__text');
   balanceText.append(h('span', 'ac-balance__label', t.shardsLabel), balanceValue);
@@ -289,6 +282,7 @@ export function createAchievementsPage(
       }
       case 'resource': {
         const kind = content.resourceById.get(art.resource)?.kind ?? 'material';
+        if (kind === 'prestige') return `<span class="ac-offer__icon">${starlightSvg()}</span>`;
         return icon(RESOURCE_ICON[kind] ?? 'material', 'ac-offer__icon').outerHTML;
       }
       case 'cosmetic':

@@ -31,15 +31,6 @@ export const CHAPTERS: readonly ChapterId[] = [
   'journey',
 ];
 
-/**
- * What a sticker is drawn with until the final sticker art arrives (pixel-art request): the page
- * turns it into existing pixel art (a gem coin, a mastery medal or a navigation plaque).
- */
-export type StickerArt =
-  | { kind: 'coin'; resource: string; tier: number }
-  | { kind: 'medal'; tier: number }
-  | { kind: 'plaque'; glyph: 'cards' | 'summon' | 'wardrobe' | 'skills' | 'shop' | 'home' };
-
 export interface StickerView {
   id: string;
   name: string;
@@ -56,7 +47,6 @@ export interface StickerView {
   rewards: string[];
   /** A small tilt in degrees, fixed per sticker, so the page looks hand-stuck. */
   tilt: number;
-  art: StickerArt;
 }
 
 export interface ChapterView {
@@ -103,59 +93,6 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'ascensions':
     case 'offline_hours':
       return 'journey';
-  }
-}
-
-const TIER_INDEX: Record<string, number> = { bronze: 1, silver: 2, gold: 3, prismatic: 4 };
-
-/** The gem a gathering sticker shows: the job's first or second gem. */
-function gemFor(content: Content, job: 'logging' | 'mining' | undefined, step: number): string {
-  const kind = job === 'mining' ? 'mine_gem' : 'tree_gem';
-  const gems = content.resources.filter((r) => r.kind === kind && r.gem);
-  return (gems[Math.min(step, gems.length - 1)] ?? gems[0])?.id ?? '';
-}
-
-/** The placeholder art for an achievement (swap here when the sticker art lands). */
-export function stickerArt(content: Content, achievement: Achievement): StickerArt {
-  const c = achievement.condition;
-  switch (c.kind) {
-    case 'harvested': {
-      const big = c.amount.gte(1e6);
-      return { kind: 'coin', resource: gemFor(content, c.job, big ? 1 : 0), tier: big ? 2 : 1 };
-    }
-    case 'producers':
-      return { kind: 'coin', resource: gemFor(content, c.job, 2), tier: 2 };
-    case 'milestone':
-      return { kind: 'coin', resource: gemFor(content, 'mining', 1), tier: 1 };
-    case 'gem_mastery':
-      return { kind: 'coin', resource: gemFor(content, 'logging', 2), tier: c.tier };
-    case 'kills':
-      return { kind: 'medal', tier: 1 };
-    case 'cleared': {
-      const n = content.dungeons.findIndex((d) => d.id === c.dungeon);
-      return { kind: 'medal', tier: n < 0 ? 4 : Math.min(3, n + 1) };
-    }
-    case 'boss_mastery':
-      return { kind: 'medal', tier: c.tier };
-    case 'card_tier':
-      return { kind: 'medal', tier: TIER_INDEX[c.tier] ?? 1 };
-    case 'card_stars':
-      return { kind: 'medal', tier: 3 };
-    case 'pulls':
-    case 'pity_hits':
-      return { kind: 'plaque', glyph: 'summon' };
-    case 'full_loadout':
-      return { kind: 'plaque', glyph: 'cards' };
-    case 'full_set':
-    case 'cosmetics_owned':
-    case 'max_cosmetic':
-      return { kind: 'plaque', glyph: 'wardrobe' };
-    case 'skill_points_spent':
-      return { kind: 'plaque', glyph: 'skills' };
-    case 'ascensions':
-      return { kind: 'plaque', glyph: 'shop' };
-    case 'offline_hours':
-      return { kind: 'plaque', glyph: 'home' };
   }
 }
 
@@ -222,7 +159,6 @@ export function stickerView(entry: AchievementEntry, content: Content): StickerV
         : COPY.achievements.unlockedAt(formatDuration(entry.unlockedAt)),
     rewards: rewardLines(content, a),
     tilt: tiltOf(a.id),
-    art: stickerArt(content, a),
   };
 }
 

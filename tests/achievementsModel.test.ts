@@ -47,7 +47,6 @@ describe('sticker book', () => {
     expect(v.progressText).toBe('5,000 / 10,000');
     expect(v.dateText).toBe('');
     expect(v.rewards).toEqual(['3 Moss Core']);
-    expect(v.art).toEqual({ kind: 'coin', resource: 'oak_gem', tier: 1 });
   });
 
   it('shows no count for yes / no goals and hours for Night Owl', () => {

@@ -132,3 +132,16 @@
   stroke-width: 2.2;
   stroke-linejoin: round;
 }
+
+/* UI-skin samples: the coin, sticker, node or plate the item draws */
+.cs[data-slot='starlight'] > svg,
+.cs[data-slot='sticker'] > svg,
+.cs[data-slot='nodes'] > svg {
+  width: 82%;
+  overflow: visible;
+}
+.cs-plate {
+  box-sizing: border-box;
+  width: 96%;
+  height: 40%;
+}

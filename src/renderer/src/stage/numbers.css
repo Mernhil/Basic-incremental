@@ -41,6 +41,11 @@
   rotate: var(--tilt);
 }
 
+/* a pixel tick style: the numeral is a drawn canvas (art/cosmetics.ts), no text styling */
+.st-num--px > b {
+  -webkit-text-stroke: 0;
+  text-shadow: none;
+}
 .st-num--crit {
   --ink: var(--bi-tick-crit, #ffb02e);
 }

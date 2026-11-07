@@ -1,4 +1,5 @@
 import type { Decimal } from '../../../game';
+import { pixelTick, preloadNumerals } from '../art/cosmetics';
 import { createMerger, overCap, popText } from './math';
 import { jitter, reducedMotion, stageHidden } from './motion';
 import './numbers.css';
@@ -27,6 +28,32 @@ let motion = 'bounce';
 /** Called when the theme changes: picks the motion of the equipped tick effect. */
 export function setNumberMotion(tickEffect: string | undefined): void {
   motion = (tickEffect && NUMBER_MOTION[tickEffect]) ?? 'bounce';
+}
+
+let pixelStyle = '';
+let numeralsLoaded = false;
+
+/** Called when the theme changes: the equipped pixel tick style (`--bi-tick-px`), '' for none. */
+export function setPixelTick(style: string): void {
+  pixelStyle = style.trim();
+  if (pixelStyle && !numeralsLoaded) {
+    numeralsLoaded = true;
+    void preloadNumerals().catch(() => undefined);
+  }
+}
+
+// text the pixel font can spell; anything else (words) stays text
+const SPELLABLE = /^[0-9.,+%\-xKMBTQSONDIVaceiop ]+$/;
+
+/** The drawn tick of a popup, or undefined when the equipped tick is not a pixel style. */
+function pixelTickFor(kind: PopKind, text: string, scale: number): HTMLCanvasElement | undefined {
+  if (!pixelStyle || kind === 'hurt' || !SPELLABLE.test(text)) return undefined;
+  const cv = pixelTick(pixelStyle, text);
+  if (!cv) return undefined;
+  const big = kind === 'crit' || kind === 'signature';
+  const k = Math.max(1, Math.round(2 * scale * (big ? 1.5 : 1)));
+  cv.style.cssText = `display:block;width:${cv.width * k}px;height:${cv.height * k}px;image-rendering:pixelated`;
+  return cv;
 }
 
 const live: HTMLElement[] = [];
@@ -78,7 +105,11 @@ export function popNumber(stage: HTMLElement, opts: PopOptions): HTMLElement | n
   el.style.setProperty('--s', (opts.scale ?? 1).toFixed(2));
   el.style.setProperty('--tilt', `${jitter(-9, 9).toFixed(1)}deg`);
   const text = document.createElement('b');
-  text.textContent = opts.text;
+  const px = pixelTickFor(opts.kind, opts.text, opts.scale ?? 1);
+  if (px) {
+    el.classList.add('st-num--px');
+    text.append(px);
+  } else text.textContent = opts.text;
   el.append(text);
   numberLayer(stage).append(el);
   live.push(el);
@@ -107,7 +138,11 @@ export function popGain(
   const result = gainMerger.push(key, amount, now);
   const open = gainEls.get(key);
   if (result.merged && open?.isConnected) {
-    open.querySelector('b')!.textContent = `+${popText(result.value)}`;
+    const merged = `+${popText(result.value)}`;
+    const box = open.querySelector('b')!;
+    const px = pixelTickFor('gain', merged, scale);
+    if (px) box.replaceChildren(px);
+    else box.textContent = merged;
     open.classList.remove('is-bumped');
     void open.offsetWidth;
     open.classList.add('is-bumped');
