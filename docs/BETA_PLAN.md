@@ -59,18 +59,20 @@ Decided with the user in the graphics session (2026-11-07).
 - **Art style: pixel art** (DESIGN 13). Every existing vector asset is redrawn as pixel art and approved by the user one by one. Code phases keep using the current art until an asset here is marked approved; do not build new vector art. When an asset is approved, its pixel version replaces the vector one in its phase.
 - **Tiles (A13):** the tree is the in-game `treeTile` grown over the five stages, not the review mockup's `growth.ts` trees; the mine is a crystal cluster (a chunky centre crystal, side crystals leaning into it, rock lumps at the base). Pixel draft: [Vector or Pixel](https://claude.ai/artifact/52eMxizyhHcEfXozMUuNGR). Not approved yet.
 
-Approval queue (in order):
+Approval queue (in order). Every asset is now approved for the beta; mockups: [Pixel Art Batch](https://claude.ai/artifact/NLU6j4dSGJZe587PWGDXdK) and [Pixel Art Round 2](https://claude.ai/artifact/MP6BXhgJFWdRJDdyLiNcs6).
+
+Build note for the code phases: ship the sprites as pixel data on their native grid (pre-rendered at build time from the approved drawings) and draw them at whole-number scale. The browser renderers used for the mockups are in the graphics session's shared notes. Post-beta polish: a Brave Frontier pass on the tiles, and smoother tone shapes on the largest boss areas (the Lich's robe shows tone rings).
 
 | Asset                                                                                      | Status                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Production tiles: tree and crystal mine, five stages                                       | Draft shown                                                                                                                                                        |
+| Production tiles: tree and crystal mine, five stages                                       | **Approved for the beta**: 58 × 64, gem-coloured leaves, crystal mine; Brave Frontier pass after the beta                                                          |
 | Card items and weapons, by rarity (swords, scimitar, sickle, bow, cleaver, pickaxes, axes) | **Approved**: 100 × 120, black outline, light extra shading ([Pixel Weapons](https://claude.ai/artifact/LXvcdDWADiGMDBKkTVLbrZ), treatment E+)                     |
-| Unique evolutions (Flameblade, Rootbloom Staff, Soul Reaper)                               | Not started                                                                                                                                                        |
+| Unique evolutions (Flameblade, Rootbloom Staff, Soul Reaper)                               | **Approved for the beta**: card-item treatment, animated in the effects style                                                                                      |
 | Card frames by tier                                                                        | **Approved**: frame ladder (material, sockets, crest; motion on Gold and Prismatic), DESIGN 13 ([Frame Ladder](https://claude.ai/artifact/BWviG6R6coWmmMLKCCY8ga)) |
-| Gem coins and resource icons                                                               | Not started                                                                                                                                                        |
-| Bosses and the Crystal Sentinel                                                            | Not started                                                                                                                                                        |
-| Element effects and hit animations                                                         | Not started                                                                                                                                                        |
-| Mastery medals, forged edges, navigation plaques                                           | Not started                                                                                                                                                        |
+| Gem coins and resource icons                                                               | **Approved for the beta**: 48 × 48, one big faceted gem, no carving lines                                                                                          |
+| Bosses and the Crystal Sentinel                                                            | **Approved for the beta**: 160 px, Brave Frontier technique, soft aura, idle effects                                                                               |
+| Element effects and hit animations                                                         | **Approved for the beta**: pixel effects with a soft glow (P5 C), thin slash                                                                                       |
+| Mastery medals, forged edges, navigation plaques                                           | **Approved for the beta**: 48 px medals with holo on Gold and Prismatic; forged-edge ladder; 64 px plaques                                                         |
 
 ## Notes
 
