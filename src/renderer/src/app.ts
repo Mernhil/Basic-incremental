@@ -3,59 +3,36 @@ import {
   Decimal,
   GameLoop,
   SaveError,
-  bossMaxHp,
-  burstStats,
-  cardInfo,
-  effectiveDamage,
-  hitDamage,
-  collectModifiers,
-  damageStat as combatDamageStat,
   createInitialState,
   createSaveText,
   defaultRng,
   exportSaveString,
   formatDecimal,
   formatDuration,
-  hpBarState,
-  loadoutHealth,
   importSaveString,
   loadBestSave,
-  PRODUCTION_JOBS,
-  mineLevel,
-  producerCounts,
-  producerRate,
-  producersOf,
-  resolveCard,
+  productionPerSecond,
   resolveGlobal,
   simulateOffline,
-  type CardRole,
   type GameState,
-  type Modifier,
-  type Producer,
-  type ProductionJob,
   type OfflineSummary,
   type TickReport,
 } from '../../game';
 import { COPY } from './copy';
 import { applyGlobalTheme, assertVisualsImplemented } from './theme/apply';
-import { playHit, showTick } from './theme/effects';
-import { createCard, type CardProps, type CardView } from './ui/card';
-import { createHpStack } from './ui/hpStack';
 import { createShell, frame, h, PAGES, placeholderPage, type Currency } from './shell/shell';
-import { statTip } from './shell/stats';
-import { attachTooltip } from './shell/tooltip';
 import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
+import { createHomePage } from './pages/home';
 import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
-import { gemCoin, mineTile, svg, treeTile } from './art/gems';
+import { gemCoin, svg } from './art/gems';
 import { installArtDefs } from './art/defs';
-import { itemArt } from './art/items';
-import { bossInItemBox, sentinelLevel } from './art/bosses';
+import { createDirector } from './stage/director';
+import { setNumberMotion } from './stage/numbers';
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 30_000;
-const PRODUCTION_HIT_MS = 1000;
 const CLEAR_NOTICE_MS = 12_000;
 
 function showFatal(root: HTMLElement, error: unknown): void {
@@ -85,43 +62,7 @@ function awayLines(summary: OfflineSummary, content: Content): string[] {
   return lines;
 }
 
-/** A fighting loadout card on Home. Null when the card is unknown or not owned. */
-function loadoutProps(
-  content: Content,
-  state: GameState,
-  cardId: string,
-  role: CardRole,
-  mods: Modifier[],
-): CardProps | null {
-  const info = cardInfo(state, content, cardId, mods);
-  if (!info?.owned || !info.rank) return null;
-  const { card, rank } = info;
-  const level = { label: 'Level', value: `${info.owned.level}/${info.levelCap}` };
-  const stats: CardProps['stats'] =
-    role === 'main'
-      ? [
-          level,
-          { label: 'Hits every', value: `${burstStats(content, 'fighting', mods).interval}s` },
-        ]
-      : [level, { label: 'Bonus', value: card.support.description }];
-  return {
-    name: card.name,
-    label: role === 'main' ? COPY.table.main : COPY.table.support,
-    job: card.job,
-    emblem: role === 'main' ? 'blade' : 'gem',
-    item: itemArt(card.item.kind, card.rarity),
-    element: card.element,
-    rank,
-    stats,
-    theme: resolveCard(content, state.cosmetics.loadout, {
-      id: card.id,
-      rank,
-      rarity: card.rarity,
-    }),
-  };
-}
-
-/** Loads content and the save, applies offline progress, builds the table and runs the loop. */
+/** Loads content and the save, applies offline progress, builds the pages and runs the loop. */
 export async function startGame(root: HTMLElement, version: string): Promise<void> {
   let content: Content;
   try {
@@ -144,7 +85,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     summary = offline.summary;
   }
   const loop = new GameLoop(state, content, defaultRng, startedAt);
-  applyGlobalTheme(content, loop.state.cosmetics.loadout);
+  const applyTheme = (): void => {
+    applyGlobalTheme(content, loop.state.cosmetics.loadout);
+    setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick.visual.effect);
+  };
+  applyTheme();
 
   // ---- layout ----
   const KIND_ICON = {
@@ -161,35 +106,21 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     ...(r.gem ? { art: svg(gemCoin(r.gem, r.tier)) } : {}),
     tip: () => `${r.name}: ${formatDecimal(loop.state.resources[r.id] ?? new Decimal(0))}`,
   }));
+  const pages: Partial<Record<string, { render(): void }>> = {};
   const shell = createShell({
     version,
     currencies,
     levelTip: COPY.shell.levelTip,
-    onShow: (id) => {
-      if (id === 'production') productionPage?.render();
-      if (id === 'dungeons') dungeonsPage?.render();
-      if (id === 'cards') cardsPage?.render();
-    },
+    onShow: (id) => pages[id]?.render(),
   });
   shell.setLevel(1, 0, '');
-  // eslint-disable-next-line prefer-const -- assigned once the Home view exists
-  let productionPage: { render(): void } | undefined;
-  // eslint-disable-next-line prefer-const -- assigned once the Home view exists
-  let dungeonsPage: { render(): void } | undefined;
-  // eslint-disable-next-line prefer-const -- assigned once the Home view exists
-  let cardsPage: { render(): void } | undefined;
-  const home = shell.page('home');
   for (const p of PAGES) {
-    if (
-      p.id !== 'home' &&
-      p.id !== 'settings' &&
-      p.id !== 'production' &&
-      p.id !== 'dungeons' &&
-      p.id !== 'cards'
-    )
-      placeholderPage(shell.page(p.id), p.id);
+    if (!['home', 'settings', 'production', 'dungeons', 'cards'].includes(p.id))
+      placeholderPage(shell.page(p.id as Exclude<typeof p.id, 'home'>), p.id as never);
   }
   const app = shell.notices;
+  const director = createDirector(content, () => loop.state);
+  const visible = (id: string) => () => shell.current() === id && !document.hidden;
 
   if (best.errors.length > 0) {
     const warning = h(
@@ -217,221 +148,37 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     queueMicrotask(() => ok.focus());
   }
 
-  const table = h('div', 'table');
-  home.append(table);
+  const applyAndSave = (next: GameState): void => {
+    loop.state = next;
+    rendered();
+    void save(); // purchases are saved right away, not at the next autosave
+  };
 
-  // boss: follows whatever is being fought (a dungeon's boss or a special dungeon's target)
-  let boss: CardView | null = null;
-  /** Props of the boss card, kept to redraw the Crystal Sentinel as the trial score rises. */
-  let bossProps: CardProps | null = null;
-  let bossLevel = 0;
-  let hp = createHpStack();
-  let battleEl: HTMLElement | null = null;
-  let homeFor: string | null = null;
-  const damageRow = h('dl', 'stat-row');
-  const damageLabel = h('dt', '', COPY.home.damage);
-  const damageValue = h('dd', 'bi-num');
-  damageValue.tabIndex = 0;
-  damageValue.classList.add('has-tip');
-  damageRow.append(damageLabel, damageValue);
-  const damageStat = () => combatDamageStat(loop.state, content);
-  attachTooltip(damageValue, () => statTip(content, COPY.home.damageTip, damageStat(), '/s'));
-  const buildHomeBoss = (): void => {
-    const id = loop.state.activeDungeonId;
-    homeFor = id;
-    const dungeon = id ? content.dungeonById.get(id) : undefined;
-    const trial = id ? content.trialById.get(id) : undefined;
-    const foe = dungeon ? dungeon.boss : trial?.target;
-    boss = null;
-    bossProps = null;
-    bossLevel = 0;
-    hp = createHpStack();
-    if (foe) {
-      const bossRank = { tier: 'bronze', stars: 1 } as const;
-      bossProps = {
-        name: foe.name,
-        label: COPY.table.boss,
-        job: 'fighting',
-        emblem: 'golem',
-        item: bossInItemBox(foe.art),
-        rank: bossRank,
-        boss: true,
-        stats: [
-          { label: '', value: '' },
-          { label: '', value: '' },
-        ],
-        theme: resolveCard(content, loop.state.cosmetics.loadout, {
-          id: foe.id,
-          rank: bossRank,
-          rarity: 'common',
-        }),
-      };
-      boss = createCard(bossProps);
-      boss.hpSlot.append(hp.el);
-    }
-    const title = dungeon?.name ?? trial?.name ?? COPY.table.boss;
-    const battle = frame(title, foe ? COPY.table.boss : undefined);
-    battle.el.classList.add('table__boss');
-    if (boss) battle.body.append(boss.el);
-    else battle.body.append(h('p', 'frame__muted', COPY.home.nothingFought));
-    battle.body.append(damageRow);
-    if (battleEl) battleEl.replaceWith(battle.el);
-    else table.prepend(battle.el);
-    battleEl = battle.el;
-  };
-  buildHomeBoss();
-
-  // loadout: 1 main + 3 supports
-  const loadout = frame(COPY.table.loadout);
-  loadout.el.classList.add('table__loadout');
-  const slots = h('div', 'loadout');
-  // Rebuilt whenever the fighting loadout or one of its cards' rank / level changes.
-  let loadoutKey = '';
-  const buildLoadout = (): void => {
-    const s = loop.state;
-    const { main, supports } = s.cards.loadouts.fighting;
-    const key = JSON.stringify(
-      [main, ...supports].map((id) => {
-        const owned = id ? s.cards.owned[id] : undefined;
-        return owned ? [id, owned.tier, owned.stars, owned.level] : null;
-      }),
-    );
-    if (key === loadoutKey) return;
-    loadoutKey = key;
-    const mods = collectModifiers(s, content);
-    const views = [main, ...supports].map((id, i) => {
-      const props = id ? loadoutProps(content, s, id, i === 0 ? 'main' : 'support', mods) : null;
-      if (props) return createCard(props).el;
-      return h('div', 'slot-empty', i === 0 ? COPY.table.emptyMain : COPY.table.emptySlot);
-    });
-    slots.replaceChildren(...views);
-  };
-  buildLoadout();
-  const fit = h('div', 'loadout-fit');
-  fit.append(slots);
-  // the loadout's shared health pool (DESIGN.md 11.10), shown like the boss's bar
-  const health = h('div', 'loadout-health');
-  const healthLabel = h('span', 'loadout-health__label', COPY.table.health);
-  const healthBar = createHpStack();
-  const knockout = h('p', 'loadout-health__ko');
-  knockout.setAttribute('role', 'status');
-  knockout.hidden = true;
-  health.append(healthLabel, healthBar.el, knockout);
-  loadout.body.append(fit, health);
-  const renderHealth = (): void => {
-    const s = loop.state;
-    const fighting = s.activeDungeonId !== null;
-    health.hidden = !fighting;
-    if (!fighting) return;
-    const h0 = loadoutHealth(s, content);
-    const max = Decimal.max(h0.max, 1e-9);
-    healthBar.update(
-      hpBarState(h0.current, max, 1),
-      formatDecimal(h0.current),
-      formatDecimal(h0.max),
-      h0.current.div(max).toNumber(),
-    );
-    const ko = h0.knockoutSeconds > 0;
-    knockout.hidden = !ko;
-    health.classList.toggle('is-knocked-out', ko);
-    if (ko) knockout.textContent = COPY.table.knockedOut(Math.ceil(h0.knockoutSeconds));
-  };
-  renderHealth();
-  table.append(loadout.el);
-
-  // production: the active plots and slots; managed on the Production page
-  const production = frame(COPY.table.production);
-  production.el.classList.add('production');
-  const tiles = h('div', 'production__tiles');
-  const manage = h('button', 'button', COPY.home.manageProduction);
-  manage.type = 'button';
-  manage.addEventListener('click', () => shell.show('production'));
-  production.body.append(tiles, manage);
-  home.append(production.el);
-  type ProducerTile = {
-    stage: HTMLElement;
-    emblem: SVGElement;
-    producer: Producer;
-    job: ProductionJob;
-  };
-  let producerTiles: ProducerTile[] = [];
-  const buildHomeProduction = (): void => {
-    const s = loop.state;
-    const mods = collectModifiers(s, content);
-    const counts = producerCounts(s, content, mods);
-    producerTiles = [];
-    tiles.replaceChildren();
-    for (const job of PRODUCTION_JOBS) {
-      for (const p of producersOf(content, job)) {
-        const count = counts[p.id] ?? 0;
-        if (count === 0) continue;
-        const tile = h('article', 'prod');
-        const stage = h('div', 'prod__stage');
-        // the faceted tree or mine tile (DESIGN.md 13); the line emblem only if it has no gem art
-        const gem = content.resourceById.get(p.resource)?.gem;
-        const tree = job === 'logging' ? content.treeById.get(p.id) : undefined;
-        if (gem && (tree || job === 'mining')) {
-          stage.classList.add('prod__stage--tile');
-          stage.innerHTML = svg(tree ? treeTile(tree, gem) : mineTile(gem));
-          stage.querySelector('svg')!.classList.add('prod__emblem');
-        } else {
-          stage.innerHTML = `<svg class="bi-card__emblem prod__emblem" viewBox="0 0 100 100" aria-hidden="true">${
-            job === 'logging'
-              ? '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>'
-              : '<path d="M14 70 26 38 46 26 70 30 86 52 82 76 54 86 28 84Z"/>'
-          }</svg>`;
-        }
-        const info = h('div', 'prod__info');
-        const resource = content.resourceById.get(p.resource)?.name ?? p.resource;
-        const level = job === 'mining' ? mineLevel(s, p.id) : 0;
-        const rate = producerRate(p, job, mods, level).mul(count);
-        info.append(
-          h('h3', 'prod__name', p.name),
-          h(
-            'p',
-            'prod__meta',
-            job === 'logging' ? COPY.table.plots(count) : COPY.table.slots(count),
-          ),
-          h('p', 'prod__meta bi-num', `${resource} ${COPY.table.perSecond(formatDecimal(rate))}`),
-        );
-        tile.append(stage, info);
-        tiles.append(tile);
-        producerTiles.push({ stage, emblem: stage.querySelector('svg')!, producer: p, job });
-      }
-    }
-    if (producerTiles.length === 0)
-      tiles.append(h('p', 'frame__muted', COPY.home.nothingProducing));
-  };
-  buildHomeProduction();
-
-  productionPage = createProductionPage(shell.page('production'), {
+  pages['home'] = createHomePage(shell.page('home'), {
     content,
     state: () => loop.state,
-    apply: (next) => {
-      loop.state = next;
-      buildHomeProduction();
-      rendered();
-      void save(); // purchases are saved right away, not at the next autosave
-    },
+    director,
+    visible: visible('home'),
+    open: (id) => shell.show(id),
   });
-  cardsPage = createCardsPage(shell.page('cards'), {
+  pages['production'] = createProductionPage(shell.page('production'), {
+    content,
+    state: () => loop.state,
+    apply: applyAndSave,
+  });
+  pages['cards'] = createCardsPage(shell.page('cards'), {
     content,
     model: createCardsModel(content),
     state: () => loop.state,
-    apply: (next) => {
-      loop.state = next;
-      rendered();
-      void save();
-    },
+    apply: applyAndSave,
   });
-  dungeonsPage = createDungeonsPage(shell.page('dungeons'), {
+  pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
     content,
     state: () => loop.state,
-    apply: (next) => {
-      loop.state = next;
-      rendered();
-      void save();
-    },
+    apply: applyAndSave,
+    director,
+    coins: shell,
+    visible: visible('dungeons'),
   });
 
   // save tools (Settings page)
@@ -459,41 +206,20 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   // ---- behaviour ----
   const rendered = (): void => {
     const s = loop.state;
-    if (s.activeDungeonId !== homeFor) buildHomeBoss();
-    const dungeon = s.activeDungeonId ? content.dungeonById.get(s.activeDungeonId) : undefined;
-    const trial = s.activeDungeonId ? content.trialById.get(s.activeDungeonId) : undefined;
-    if (dungeon && boss) {
-      const max = bossMaxHp(dungeon, s.prestigeCount, collectModifiers(s, content));
-      const current = Decimal.min(s.bossHp ?? max, max);
-      const bars = hpBarState(current, max, dungeon.boss.hpBars);
-      hp.update(bars, formatDecimal(current), formatDecimal(max), current.div(max).toNumber());
-    } else if (trial && boss) {
-      const max = trial.target.hp;
-      const current = Decimal.max(max.sub(s.combat.trialAttempt.dealt), 0);
-      const bars = hpBarState(current, max, 1);
-      hp.update(bars, formatDecimal(current), formatDecimal(max), current.div(max).toNumber());
-      // the Crystal Sentinel's shards light up at 25 / 50 / 75 / 100% of this attempt (DESIGN.md 13)
-      const level = sentinelLevel(Decimal.min(s.combat.trialAttempt.dealt.div(max), 1).toNumber());
-      if (bossProps && level !== bossLevel) {
-        bossLevel = level;
-        bossProps = { ...bossProps, item: bossInItemBox(trial.target.art, level) };
-        boss.update(bossProps);
-      }
-    }
+    const rates = productionPerSecond(s, content);
     for (const r of content.resources) {
-      const amount = s.resources[r.id] ?? new Decimal(0);
-      shell.setCurrency(r.id, formatDecimal(amount), amount.gt(0));
+      shell.setCurrency(r.id, s.resources[r.id] ?? new Decimal(0), rates[r.id] ?? null);
     }
-    damageValue.textContent = `${formatDecimal(damageStat().value)}/s`;
-    buildLoadout();
-    renderHealth();
-    if (shell.current() === 'production') productionPage?.render();
-    if (shell.current() === 'dungeons') dungeonsPage?.render();
-    if (shell.current() === 'cards') cardsPage?.render();
+    pages[shell.current()]?.render();
   };
 
-  /** Steps the loop and announces first clears. */
-  const step = (): void => announce(loop.step(Date.now()));
+  /** Steps the loop, announces first clears and hands the report to the stage director. */
+  const step = (): void => {
+    const before = loop.state;
+    const report = loop.step(Date.now());
+    announce(report);
+    director.afterStep(report, before, loop.state);
+  };
   const announce = (report: TickReport): void => {
     for (const id of report.cleared) {
       const name = content.dungeonById.get(id)?.name ?? content.trialById.get(id)?.name ?? id;
@@ -525,40 +251,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     step();
     rendered();
   }, TICK_INTERVAL_MS);
-
-  // Visual hits follow the main card's rhythm; damage itself is continuous in the game loop.
-  const attack = () => resolveGlobal(content, loop.state.cosmetics.loadout).attack.visual.effects;
-  const hitLoop = (): void => {
-    const mods = collectModifiers(loop.state, content);
-    const stats = burstStats(content, 'fighting', mods);
-    const view = boss;
-    if (!document.hidden && view && loop.state.activeDungeonId) {
-      const effect = attack()?.fighting;
-      if (effect)
-        playHit(effect, view.art, {
-          rng: defaultRng,
-          target: view.art.querySelector('.bi-card__item') ?? view.art.querySelector('svg'),
-        });
-      const dealt = hitDamage(effectiveDamage(loop.state, content, undefined, mods), stats);
-      showTick(view.art, formatDecimal(dealt), { rng: defaultRng });
-    }
-    window.setTimeout(hitLoop, stats.interval * 1000);
-  };
-  hitLoop();
-  window.setInterval(() => {
-    if (document.hidden) return;
-    const mods = collectModifiers(loop.state, content);
-    const counts = producerCounts(loop.state, content, mods);
-    for (const tile of producerTiles) {
-      const effect = attack()?.[tile.job];
-      if (effect) playHit(effect, tile.stage, { rng: defaultRng, target: tile.emblem });
-      const level = tile.job === 'mining' ? mineLevel(loop.state, tile.producer.id) : 0;
-      const gain = producerRate(tile.producer, tile.job, mods, level)
-        .mul(counts[tile.producer.id] ?? 0)
-        .mul(PRODUCTION_HIT_MS / 1000);
-      showTick(tile.stage, `+${formatDecimal(gain)}`, { rng: defaultRng });
-    }
-  }, PRODUCTION_HIT_MS);
+  director.start();
 
   window.setInterval(() => void save(), AUTOSAVE_INTERVAL_MS);
   window.api.onFlushRequest(() => {
@@ -583,8 +276,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       const imported = importSaveString(saveText.value, content);
       if (!window.confirm(COPY.save.importConfirm)) return;
       loop.reset(imported.state, Date.now());
-      applyGlobalTheme(content, loop.state.cosmetics.loadout);
-      buildLoadout();
+      applyTheme();
       saveText.value = '';
       message.textContent = COPY.save.imported;
       void save();

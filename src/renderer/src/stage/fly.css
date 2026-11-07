@@ -1,0 +1,24 @@
+.st-fly-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  overflow: hidden;
+}
+.st-coin {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
+  display: grid;
+  place-items: center;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}
+.st-coin svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.st-coin--rare {
+  filter: drop-shadow(0 0 8px var(--bi-tick-crit, #ffb02e));
+}

@@ -1,4 +1,7 @@
+import { Decimal, formatDecimal } from '../../../game';
 import { COPY } from '../copy';
+import { rollToward } from '../stage/math';
+import { onFrame, replay } from '../stage/motion';
 import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
 import './shell.css';
@@ -61,8 +64,22 @@ export interface Shell {
   show(id: PageId): void;
   current(): PageId;
   setLevel(level: number, xpFraction: number, xpText: string): void;
-  /** Updates a resource chip. Chips stay hidden until the amount is above zero once. */
-  setCurrency(id: string, text: string, positive: boolean): void;
+  /**
+   * Sets a resource chip's amount (the chip rolls to it smoothly) and its per-second rate (null
+   * hides the rate). Chips stay hidden until the amount is above zero once.
+   */
+  setCurrency(id: string, amount: Decimal, perSecond: Decimal | null): void;
+  /** The coin glyph of a resource chip: where flying coins land (null while the chip is hidden). */
+  currencyGlyph(id: string): HTMLElement | null;
+  /** A short pulse on a chip when coins land. */
+  pulseCurrency(id: string): void;
+  /**
+   * Holds back part of a chip's amount (welcome back: the gains stay off the counter until
+   * collected). `null` releases it and the counter rolls up.
+   */
+  holdCurrency(id: string, amount: Decimal | null): void;
+  /** Slot at the right end of the header for quick toggles (sound). */
+  tools: HTMLElement;
   scrollToTop(): void;
 }
 
@@ -99,23 +116,45 @@ export function createShell(opts: {
   currencyList.setAttribute('aria-label', COPY.shell.currencies);
   const currencyValues = new Map<string, HTMLElement>();
   const currencyItems = new Map<string, HTMLElement>();
+  const currencyRates = new Map<string, HTMLElement>();
+  const currencyGlyphs = new Map<string, HTMLElement>();
+  /** Rolling counters (DESIGN.md 14): shown value, target and held-back part per resource. */
+  const counters = new Map<string, { shown: Decimal; target: Decimal; held: Decimal }>();
   for (const c of opts.currencies) {
     const item = h('li', 'shell-currency');
     item.tabIndex = 0;
     const value = h('span', 'shell-currency__value bi-num', '0');
-    let glyph: Element = icon(c.icon, 'shell-icon shell-currency__icon');
-    if (c.art) {
-      glyph = h('span', 'shell-currency__art');
-      glyph.innerHTML = c.art;
-    }
-    item.append(glyph, value, h('span', 'shell-currency__name', c.name));
+    const glyph = h('span', 'shell-currency__art');
+    if (c.art) glyph.innerHTML = c.art;
+    else glyph.append(icon(c.icon, 'shell-icon shell-currency__icon'));
+    const amounts = h('span', 'shell-currency__amounts');
+    const rate = h('span', 'shell-currency__rate bi-num');
+    rate.hidden = true;
+    amounts.append(value, rate);
+    item.append(glyph, amounts, h('span', 'shell-currency__name', c.name));
+    currencyRates.set(c.id, rate);
+    currencyGlyphs.set(c.id, glyph);
+    counters.set(c.id, { shown: new Decimal(0), target: new Decimal(0), held: new Decimal(0) });
     attachTooltip(item, c.tip);
     item.hidden = true; // shown once the player has some
     currencyValues.set(c.id, value);
     currencyItems.set(c.id, item);
     currencyList.append(item);
   }
-  header.append(brand, level, currencyList);
+  const tools = h('div', 'shell-tools');
+  header.append(brand, level, currencyList, tools);
+
+  onFrame((dt) => {
+    for (const [id, c] of counters) {
+      const goal = Decimal.max(c.target.sub(c.held), 0);
+      if (c.shown.eq(goal)) continue;
+      c.shown = rollToward(c.shown, goal, dt);
+      // whole-number amounts (sigils, cores) roll through whole numbers only
+      const text = formatDecimal(goal.eq(goal.floor()) ? c.shown.round() : c.shown);
+      const v = currencyValues.get(id)!;
+      if (v.textContent !== text) v.textContent = text;
+    }
+  });
 
   // ---- sidebar ----
   const nav = h('nav', 'shell-rail');
@@ -196,12 +235,31 @@ export function createShell(opts: {
     scrollToTop() {
       main.scrollTop = 0;
     },
-    setCurrency(id, text, positive) {
-      const v = currencyValues.get(id);
-      if (v && v.textContent !== text) v.textContent = text;
+    setCurrency(id, amount, perSecond) {
+      const c = counters.get(id);
+      if (c) c.target = amount;
       const item = currencyItems.get(id);
-      if (item && positive && item.hidden) item.hidden = false;
+      if (item && amount.gt(0) && item.hidden) item.hidden = false;
+      const rate = currencyRates.get(id);
+      if (rate) {
+        const show = perSecond !== null && perSecond.gt(0);
+        if (rate.hidden === show) rate.hidden = !show;
+        const text = show ? COPY.shell.perSecond(formatDecimal(perSecond)) : '';
+        if (rate.textContent !== text) rate.textContent = text;
+      }
     },
+    currencyGlyph: (id) => {
+      const item = currencyItems.get(id);
+      return item && !item.hidden ? (currencyGlyphs.get(id) ?? null) : null;
+    },
+    pulseCurrency(id) {
+      replay(currencyItems.get(id), 'is-pulsing', 360);
+    },
+    holdCurrency(id, amount) {
+      const c = counters.get(id);
+      if (c) c.held = amount ?? new Decimal(0);
+    },
+    tools,
   };
 }
 
