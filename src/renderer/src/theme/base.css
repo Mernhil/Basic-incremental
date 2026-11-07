@@ -135,14 +135,6 @@ body {
 .bi-card--boss .bi-card__frame {
   display: none;
 }
-.bi-frame__prism {
-  animation: bi-frame-prism 6s linear infinite;
-}
-@keyframes bi-frame-prism {
-  to {
-    filter: hue-rotate(360deg);
-  }
-}
 .bi-card__rank {
   position: relative;
   z-index: 4;

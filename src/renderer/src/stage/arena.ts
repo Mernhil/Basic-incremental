@@ -13,9 +13,12 @@ import {
   stageReadout,
   trialStatus,
   type GameState,
+  bossMastery,
 } from '../../../game';
 import { COPY } from '../copy';
 import { bossArt, sentinelLevel } from '../art/bosses';
+import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
+import { medalTip } from '../pages/progressionModel';
 import { playHit } from '../theme/effects';
 import { createCard } from '../ui/card';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
@@ -73,7 +76,19 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   const name = document.createElement('h2');
   name.className = 'ar__name';
   const tags = div('ar__tags');
-  where.append(name, tags);
+  // the boss mastery medal next to the name (DESIGN.md 16 E3)
+  const medal = div('ar__medal');
+  medal.tabIndex = 0;
+  medal.setAttribute('role', 'img');
+  let medalTier = -1;
+  attachTooltip(medal, () => {
+    const id = ctx.state().activeDungeonId;
+    const info = id ? bossMastery(ctx.state(), content, id) : null;
+    return info ? medalTip(info) : '';
+  });
+  const nameRow = div('ar__name-row');
+  nameRow.append(name, medal);
+  where.append(nameRow, tags);
   const readouts = document.createElement('dl');
   readouts.className = 'ar__readouts';
   const readout = (label: string, tip: string): HTMLElement => {
@@ -181,7 +196,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     if (key === bossArtKey) return;
     bossArtKey = key;
     body.innerHTML = markup
-      ? `<svg viewBox="-8 -10 116 116" aria-hidden="true" focusable="false">${markup}</svg>`
+      ? `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${markup}</svg>`
       : '';
   }
 
@@ -205,6 +220,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     tags.replaceChildren();
     if (dungeon) tags.append(tag(COPY.dungeons.tier(dungeon.tier)), tag('', 'ar__kills'));
     if (t) tags.append(tag(COPY.dungeons.special));
+    medalTier = -1;
     el.setAttribute('aria-label', name.textContent);
     boss.setAttribute('aria-label', dungeon?.boss.name ?? t?.target.name ?? '');
     boss.setAttribute('role', 'img');
@@ -248,6 +264,14 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     setText(dpsOut, formatDecimal(r.averageDps));
     setText(kpmOut, formatRate(r.killsPerMinute));
     setText(ttkOut, r.secondsPerKill === null ? '—' : formatDuration(r.secondsPerKill * 1000));
+    const mastery = bossMastery(s, content, id);
+    medal.hidden = !mastery;
+    if (mastery && mastery.tier !== medalTier) {
+      medalTier = mastery.tier;
+      medal.innerHTML = svg(masteryMedal(mastery.tier), MEDAL_VIEWBOX);
+      medal.dataset['tier'] = String(mastery.tier);
+      medal.setAttribute('aria-label', medalTip(mastery));
+    }
     const kills = tags.querySelector<HTMLElement>('.ar__kills');
     if (kills) setText(kills, COPY.dungeons.kills(s.combat.kills[id] ?? 0));
 
@@ -328,7 +352,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
 
   // ---- show events ----
   const bossPoint = (): { x: number; y: number } => ({
-    x: jitter(0.42, 0.6),
+    x: jitter(0.58, 0.78),
     y: jitter(0.26, 0.42),
   });
   const live = (): boolean => ctx.active() && builtFor !== null && builtFor !== undefined;
@@ -358,7 +382,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     slowDown(el);
     replay(body, 'is-hit', 220);
     for (const s of slots) replay(s.wrap, 'is-lunging', 420);
-    popNumber(el, { kind: 'signature', text: popText(e.damage), x: 0.5, y: 0.3, scale: 2.4 });
+    popNumber(el, { kind: 'signature', text: popText(e.damage), x: 0.66, y: 0.3, scale: 2.4 });
     play('signature');
   });
 

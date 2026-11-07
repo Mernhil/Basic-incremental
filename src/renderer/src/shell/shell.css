@@ -2,6 +2,120 @@
    framed pages on the table. Every colour comes from the equipped table item's chrome-*, frame-*
    and tip-* tokens, so a table cosmetic re-skins the whole shell. */
 
+/* pixel navigation plaques (DESIGN.md 13): drawn at half their 64 px grid */
+.shell-rail__plaque {
+  display: grid;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  margin: -6px 0;
+}
+.shell-rail__plaque svg {
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.shell-rail__item:not([aria-current='page']) .shell-rail__plaque {
+  filter: saturate(0.6) brightness(0.85);
+}
+.shell-rail__item:hover .shell-rail__plaque {
+  filter: none;
+}
+
+/* quest scroll (DESIGN.md 16, E8 / A16 B): a parchment strip under the header */
+.shell-quest {
+  position: sticky;
+  top: -20px;
+  z-index: 9;
+  margin: -20px -26px 0;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 26px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, var(--bi-chrome-accent) 22%, #f3e6c4);
+  color: #3a2a12;
+  box-shadow:
+    inset 0 -1px 0 color-mix(in srgb, var(--bi-chrome-accent) 60%, #8a6a32),
+    0 3px 8px rgba(0, 0, 0, 0.18);
+}
+.shell-quest__title {
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0.75;
+}
+.shell-quest__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex: 1;
+  gap: 8px;
+  min-width: 0;
+}
+.shell-quest__goal {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto 4px;
+  align-items: center;
+  gap: 2px 7px;
+  padding: 4px 9px 5px;
+  border: 0;
+  border-radius: 7px;
+  background: rgba(255, 250, 235, 0.55);
+  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.25);
+  color: inherit;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.shell-quest__goal:hover {
+  background: rgba(255, 250, 235, 0.85);
+}
+.shell-quest__goal:focus-visible {
+  outline: 2px solid #6a4a1a;
+  outline-offset: 2px;
+}
+.shell-quest__box {
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  line-height: 1;
+}
+.shell-quest__text {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.shell-quest__eta {
+  font-size: 11.5px;
+  opacity: 0.75;
+}
+.shell-quest__bar {
+  grid-column: 1 / -1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(90, 60, 20, 0.2);
+  overflow: hidden;
+}
+.shell-quest__bar i {
+  display: block;
+  height: 100%;
+  background: #b4612a;
+}
+.shell-quest__goal.is-done .shell-quest__bar i {
+  background: #4f8a3a;
+}
+
 html,
 body {
   height: 100%;

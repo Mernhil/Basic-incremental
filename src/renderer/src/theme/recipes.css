@@ -311,10 +311,7 @@
 }
 
 /* ---- border: Knight plate (starter frame family) ---- */
-/* The plate rim and rivets drawn by art/frame.ts; other frame families keep only the tier ornaments. */
-.bi-frame__rim {
-  display: none;
-}
-.r-knight-plate .bi-frame__rim {
-  display: inline;
+/* The pixel frame ladder (art/frame.ts) draws the plate itself; the recipe only names the family. */
+.r-knight-plate {
+  --bi-frame-family: knight-plate;
 }

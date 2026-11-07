@@ -1,5 +1,5 @@
 import { RARITIES } from '../../../data';
-import { resolveCard, type GameState } from '../../../game';
+import { resolveCard, type GameState, type TierUp } from '../../../game';
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { hide as hideTip } from '../shell/tooltip';
@@ -34,6 +34,8 @@ const cap1 = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 export interface CardsPageContext extends PageContext {
   model: CardsModel;
+  /** Plays tier-up moments (star / tier ups, evolutions). */
+  onTierUps?: (list: TierUp[]) => void;
 }
 
 export function createCardsPage(
@@ -99,6 +101,7 @@ export function createCardsPage(
     message = '';
     ctx.apply(result.state);
     build(focusKey);
+    if (result.tierUps?.length) ctx.onTierUps?.(result.tierUps);
   };
 
   // ---- card faces ----

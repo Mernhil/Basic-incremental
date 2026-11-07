@@ -2,6 +2,7 @@ import { Decimal, formatDecimal } from '../../../game';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
 import { onFrame, replay } from '../stage/motion';
+import { navPlaque, PLAQUE_VIEWBOX, svg } from '../art/gems';
 import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
 import './shell.css';
@@ -80,6 +81,10 @@ export interface Shell {
   holdCurrency(id: string, amount: Decimal | null): void;
   /** Slot at the right end of the header for quick toggles (sound). */
   tools: HTMLElement;
+  /** Replaces a resource chip's coin art (the gem's mastery metal, DESIGN.md 16 E2). */
+  setCurrencyArt(id: string, art: string): void;
+  /** The quest scroll slot under the header (goal tracker, DESIGN.md 16 E8). */
+  quest: HTMLElement;
   scrollToTop(): void;
 }
 
@@ -118,6 +123,7 @@ export function createShell(opts: {
   const currencyItems = new Map<string, HTMLElement>();
   const currencyRates = new Map<string, HTMLElement>();
   const currencyGlyphs = new Map<string, HTMLElement>();
+  const glyphArt = new Map<string, string>();
   /** Rolling counters (DESIGN.md 14): shown value, target and held-back part per resource. */
   const counters = new Map<string, { shown: Decimal; target: Decimal; held: Decimal }>();
   for (const c of opts.currencies) {
@@ -167,7 +173,10 @@ export function createShell(opts: {
     btn.type = 'button';
     btn.dataset.page = p.id;
     btn.dataset.tipSide = 'right';
-    btn.append(icon(p.icon), h('span', 'shell-rail__label', COPY.pages[p.id].label));
+    // the pixel navigation plaque (DESIGN.md 13), half its 64 px grid
+    const plaque = h('span', 'shell-rail__plaque');
+    plaque.innerHTML = svg(navPlaque(p.id), PLAQUE_VIEWBOX);
+    btn.append(plaque, h('span', 'shell-rail__label', COPY.pages[p.id].label));
     // In the narrow (icons only) layout the label is hidden, so the tooltip names the page.
     attachTooltip(btn, () =>
       el.classList.contains('shell--narrow') ? COPY.pages[p.id].label : '',
@@ -183,7 +192,9 @@ export function createShell(opts: {
   const main = h('main', 'shell-main');
   main.tabIndex = -1;
   const notices = h('div', 'shell-notices');
-  main.append(notices);
+  const quest = h('div', 'shell-quest');
+  quest.hidden = true;
+  main.append(quest, notices);
   const pages = new Map<PageId, HTMLElement>();
   for (const p of PAGES) {
     const page = h('div', 'shell-page');
@@ -260,6 +271,14 @@ export function createShell(opts: {
       if (c) c.held = amount ?? new Decimal(0);
     },
     tools,
+    quest,
+    setCurrencyArt(id, art) {
+      const glyph = currencyGlyphs.get(id);
+      if (glyph && glyphArt.get(id) !== art) {
+        glyphArt.set(id, art);
+        glyph.innerHTML = art;
+      }
+    },
   };
 }
 

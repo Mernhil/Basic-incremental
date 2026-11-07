@@ -4,18 +4,19 @@ import {
   buyDamageLevels,
   clearUnlocks,
   collectModifiers,
-  damageLevel,
   damageStat,
   effectiveDrops,
   formatDecimal,
   formatDuration,
   isDungeonCleared,
   isDungeonUnlocked,
-  milestonesCrossed,
   secondsPerKill,
   setActiveDungeon,
   trialRewards,
+  bossMastery,
+  edgeStage,
   type GameState,
+  type TierUp,
 } from '../../../game';
 import { COPY } from '../copy';
 import { h } from '../shell/shell';
@@ -24,10 +25,11 @@ import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { createArena, type CoinTarget } from '../stage/arena';
 import type { Director } from '../stage/director';
 import { replay } from '../stage/motion';
-import { toast } from '../stage/toast';
 import { bossArt } from '../art/bosses';
+import { EDGE_VIEWBOX, MEDAL_VIEWBOX, forgedEdge, masteryMedal, svg } from '../art/gems';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
 import { bestLine, damageLineViews, type BuyLineView } from './buyModel';
+import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
 import './dungeons.css';
 
@@ -43,6 +45,8 @@ export interface StagePageContext extends PageContext {
   /** True while this page is on screen. */
   visible: () => boolean;
   sound?: (id: string) => void;
+  /** Plays tier-up moments (milestones, medals). */
+  onTierUps?: (list: TierUp[]) => void;
 }
 
 const pct = (x: number): string => {
@@ -121,38 +125,31 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
   const lootCol = h('section', 'dp-col dp-col--loot');
   body.append(floorsCol, damageCol, lootCol);
 
-  type LineUi = { li: HTMLElement; level: HTMLElement; tag: HTMLElement; btn: BuyButton };
+  type LineUi = {
+    li: HTMLElement;
+    level: HTMLElement;
+    tag: HTMLElement;
+    btn: BuyButton;
+    edges: HTMLElement[];
+    stage: number;
+  };
   const lineUis = new Map<string, LineUi>();
   let views: BuyLineView[] = [];
   let floorsSig = '';
   let updates: Array<() => void> = [];
 
   function buy(id: string): void {
-    const s = ctx.state();
-    const from = damageLevel(s, id);
-    const result = buyDamageLevels(s, content, id, buyCount());
+    const result = buyDamageLevels(ctx.state(), content, id, buyCount());
     if (!result.ok) return;
     ctx.apply(result.state);
-    const upgrade = content.combat.damageUpgrades.find((u) => u.id === id)!;
-    const to = damageLevel(result.state, id);
     lineUis.get(id)?.btn.celebrate();
     if (bestId === id) bestBtn.celebrate();
-    ctx.sound?.('buy');
-    const crossed = milestonesCrossed(upgrade.milestones, from, to);
-    if (crossed.length > 0) {
-      const level = crossed[crossed.length - 1]!;
+    if (result.tierUps.some((u) => u.kind === 'damage_milestone')) {
       replay(lineUis.get(id)?.li, 'is-milestone', 1100);
       replay(best, 'is-milestone', 1100);
-      toast(
-        COPY.buy.reached(upgrade.name, level),
-        COPY.buy.reachedDetail(
-          COPY.buy.damage,
-          formatDecimal(upgrade.milestones.multiplier.pow(crossed.length)),
-        ),
-        'milestone',
-      );
-      ctx.sound?.('milestone');
     }
+    if (result.tierUps.length > 0) ctx.onTierUps?.(result.tierUps);
+    else ctx.sound?.('buy');
     refresh();
   }
 
@@ -184,11 +181,21 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         return v?.milestoneInfo ? COPY.buy.milestoneTip(v.milestoneInfo.levelsToNext) : '';
       });
       info.append(name, level, tag);
+      // the forged edge ladder (DESIGN.md 16 E5, A14 D): five blade steps, the current one lit
+      const ladder = h('span', 'dp-ladder');
+      ladder.setAttribute('role', 'img');
+      const gem = content.resourceById.get(u.cost.resource)?.gem;
+      const edges = [0, 1, 2, 3, 4].map((step) => {
+        const edge = h('span', 'dp-edge');
+        if (gem) edge.innerHTML = svg(forgedEdge(gem, step), EDGE_VIEWBOX);
+        ladder.append(edge);
+        return edge;
+      });
       const btn = createBuyButton(() => buy(u.id));
       btn.el.dataset.key = `up-${u.id}`;
-      li.append(info, btn.el);
+      li.append(info, ladder, btn.el);
       list.append(li);
-      lineUis.set(u.id, { li, level, tag, btn });
+      lineUis.set(u.id, { li, level, tag, btn, edges, stage: -1 });
     }
     damageCol.append(head, total, list, h('p', 'dp-note', COPY.dungeons.damageKept));
   }
@@ -263,6 +270,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     if (unlocked && opened.length > 0 && !isDungeonCleared(state, entry.id))
       info.append(h('span', 'dp-floor__opens', COPY.dungeons.opens(COPY.dungeons.and(opened))));
     li.append(portrait, info);
+    if (unlocked) li.append(medal(entry.id));
     if (active) li.append(h('span', 'dp-tag dp-tag--fighting', COPY.dungeons.fighting));
     else if (unlocked) {
       const btn = h('button', 'button dp-floor__fight', COPY.dungeons.fight);
@@ -279,6 +287,29 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       li.append(btn);
     }
     return li;
+  }
+
+  /** The dungeon's mastery medal (DESIGN.md 16 E3, A12 D), updated as kills add up. */
+  function medal(id: string): HTMLElement {
+    const box = h('span', 'dp-medal');
+    box.tabIndex = 0;
+    box.setAttribute('role', 'img');
+    let tier = -1;
+    const sync = (): void => {
+      const info = bossMastery(ctx.state(), content, id);
+      if (!info || info.tier === tier) return;
+      tier = info.tier;
+      box.innerHTML = svg(masteryMedal(tier), MEDAL_VIEWBOX);
+      box.dataset.tier = String(tier);
+      box.setAttribute('aria-label', medalTip(info));
+    };
+    attachTooltip(box, () => {
+      const info = bossMastery(ctx.state(), content, id);
+      return info ? medalTip(info) : '';
+    });
+    sync();
+    updates.push(sync);
+    return box;
   }
 
   function buildLoot(state: GameState): void {
@@ -371,6 +402,15 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       if (ui.tag.textContent !== v.milestone) ui.tag.textContent = v.milestone;
       ui.tag.style.setProperty('--p', String(v.milestoneInfo?.progress ?? 0));
       ui.li.classList.toggle('dp-line--locked', !v.available);
+      const stage = edgeStage(s, content, v.id);
+      if (stage !== ui.stage) {
+        ui.stage = stage;
+        ui.edges.forEach((e, i) => {
+          e.classList.toggle('is-lit', i <= stage);
+          e.classList.toggle('is-current', i === stage);
+        });
+        ui.edges[0]?.parentElement?.setAttribute('aria-label', COPY.progress.edgeStep(stage));
+      }
     }
     const top = bestLine(views);
     bestId = top?.id ?? null;

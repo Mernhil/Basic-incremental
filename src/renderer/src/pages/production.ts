@@ -10,7 +10,6 @@ import {
   formatDecimal,
   isProducerUnlocked,
   jobProductionPerSecond,
-  milestonesCrossed,
   mineLevel,
   plotCapacity,
   plots,
@@ -24,6 +23,7 @@ import {
   type Price,
   type Producer,
   type ProductionJob,
+  type TierUp,
 } from '../../../game';
 import { COPY } from '../copy';
 import { mineTile, svg, treeTile } from '../art/gems';
@@ -36,7 +36,6 @@ import { centreOf, flyCoins } from '../stage/fly';
 import { createThrottle, popText } from '../stage/math';
 import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
-import { toast } from '../stage/toast';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
 import { expansionView, mineLevelViews, type BuyLineView } from './buyModel';
 import './production.css';
@@ -60,6 +59,8 @@ export interface ProductionContext extends PageContext {
   coins?: CoinTarget;
   visible?: () => boolean;
   sound?: (id: string) => void;
+  /** Plays tier-up moments (milestones, tile stages). */
+  onTierUps?: (list: TierUp[]) => void;
 }
 
 /** Coins flown to the header per resource per second at most. */
@@ -405,38 +406,23 @@ export function createProductionPage(
     return li;
   }
 
+  function bought(key: string, next: GameState, tierUps: TierUp[]): void {
+    act(next, key);
+    const line = lines.get(key);
+    line?.btn.celebrate();
+    if (tierUps.some((u) => u.kind === 'mine_milestone')) replay(line?.li, 'is-milestone', 1100);
+    if (tierUps.length > 0) ctx.onTierUps?.(tierUps);
+    else ctx.sound?.('buy');
+  }
+
   function buyExpansion(job: ProductionJob): void {
     const result = buyExpansions(ctx.state(), content, job, buyCount());
-    if (!result.ok) return;
-    lines.get(`${job}-expansion`)?.btn.celebrate();
-    ctx.sound?.('buy');
-    act(result.state, `${job}-expansion`);
+    if (result.ok) bought(job + '-expansion', result.state, result.tierUps);
   }
 
   function buyLevels(mineId: string): void {
-    const s = ctx.state();
-    const from = mineLevel(s, mineId);
-    const result = buyMineLevels(s, content, mineId, buyCount());
-    if (!result.ok) return;
-    const mine = content.mineById.get(mineId)!;
-    const to = mineLevel(result.state, mineId);
-    ctx.sound?.('buy');
-    act(result.state, `level-${mineId}`);
-    const line = lines.get(`level-${mineId}`);
-    line?.btn.celebrate();
-    const crossed = milestonesCrossed(mine.level.milestones, from, to);
-    if (crossed.length > 0) {
-      replay(line?.li, 'is-milestone', 1100);
-      toast(
-        COPY.buy.reached(mine.name, crossed[crossed.length - 1]!),
-        COPY.buy.reachedDetail(
-          COPY.buy.output,
-          formatDecimal(mine.level.milestones.multiplier.pow(crossed.length)),
-        ),
-        'milestone',
-      );
-      ctx.sound?.('milestone');
-    }
+    const result = buyMineLevels(ctx.state(), content, mineId, buyCount());
+    if (result.ok) bought('level-' + mineId, result.state, result.tierUps);
   }
 
   function refresh(): void {

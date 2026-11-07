@@ -10,12 +10,16 @@ import {
   formatDecimal,
   importSaveString,
   loadBestSave,
+  collectModifiers,
+  gemMastery,
+  nextGoals,
   productionPerSecond,
   resolveGlobal,
   simulateOffline,
   type GameState,
   type OfflineSummary,
   type TickReport,
+  type TierUp,
 } from '../../game';
 import { COPY } from './copy';
 import { applyGlobalTheme, assertVisualsImplemented } from './theme/apply';
@@ -25,6 +29,10 @@ import { createDungeonsPage } from './pages/dungeons';
 import { createHomePage } from './pages/home';
 import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
+import { cardItemArt, loadoutProps } from './pages/loadoutCards';
+import { goalRows } from './pages/progressionModel';
+import { createQuestScroll } from './shell/quest';
+import { playTierUps } from './stage/tierUp';
 import { gemCoin, svg } from './art/gems';
 import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
@@ -88,7 +96,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     id: r.id,
     name: r.name,
     icon: KIND_ICON[r.kind],
-    ...(r.gem ? { art: svg(gemCoin(r.gem, r.tier)) } : {}),
+    ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
     tip: () => `${r.name}: ${formatDecimal(loop.state.resources[r.id] ?? new Decimal(0))}`,
   }));
   const pages: Partial<Record<string, { render(): void }>> = {};
@@ -126,6 +134,24 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   });
   if (summary) showWelcomeBack(summary, content, shell, playSound);
 
+  // tier-up moments from the loop, purchases and card upgrades (DESIGN.md 16, E1)
+  const onTierUps = (list: TierUp[]): void =>
+    playTierUps(list, {
+      content,
+      sound: playSound,
+      cardProps: (id) =>
+        loadoutProps(content, loop.state, id, 'main', collectModifiers(loop.state, content)),
+    });
+
+  // the quest scroll under the header (E8); goals are worked out once a second
+  const quest = createQuestScroll(shell.quest, (page) => shell.show(page));
+  let questAt = 0;
+  const renderQuest = (now: number): void => {
+    if (now - questAt < 1000) return;
+    questAt = now;
+    quest.update(goalRows(nextGoals(loop.state, content, 3)));
+  };
+
   const applyAndSave = (next: GameState): void => {
     loop.state = next;
     rendered();
@@ -147,12 +173,14 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     coins: shell,
     visible: visible('production'),
     sound: playSound,
+    onTierUps,
   });
   pages['cards'] = createCardsPage(shell.page('cards'), {
     content,
-    model: createCardsModel(content),
+    model: createCardsModel(content, (id, owned) => cardItemArt(content, id, owned)),
     state: () => loop.state,
     apply: applyAndSave,
+    onTierUps,
   });
   pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
     content,
@@ -162,6 +190,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     coins: shell,
     visible: visible('dungeons'),
     sound: playSound,
+    onTierUps,
   });
 
   // save tools (Settings page)
@@ -192,7 +221,10 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     const rates = productionPerSecond(s, content);
     for (const r of content.resources) {
       shell.setCurrency(r.id, s.resources[r.id] ?? new Decimal(0), rates[r.id] ?? null);
+      // the coin shows the gem's mastery metal (E2)
+      if (r.gem) shell.setCurrencyArt(r.id, svg(gemCoin(r.gem, gemMastery(s, content, r.id).tier)));
     }
+    renderQuest(performance.now());
     pages[shell.current()]?.render();
   };
 
@@ -202,6 +234,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     const report = loop.step(Date.now());
     announce(report);
     director.afterStep(report, before, loop.state);
+    if (report.tierUps.length > 0 && !document.hidden) onTierUps(report.tierUps);
   };
   const announce = (report: TickReport): void => {
     for (const id of report.cleared) {
