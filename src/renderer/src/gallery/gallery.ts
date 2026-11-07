@@ -40,6 +40,10 @@ const SLOT_LABELS: Record<CosmeticSlot, string> = {
   number: 'Numbers',
   table: 'Table',
   cursor: 'Cursor',
+  starlight: 'Starlight coin',
+  sticker: 'Sticker style',
+  nodes: 'Skill nodes',
+  wardrobe: 'Wardrobe style',
 };
 const EXCLUSIVE_CARD = 'dawnblade_regent';
 

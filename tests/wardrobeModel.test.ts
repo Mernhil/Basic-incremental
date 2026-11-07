@@ -45,7 +45,7 @@ function ownCard(state: GameState, id: string): GameState {
 }
 
 describe('wardrobe slots', () => {
-  it('lists the seven slots with the starter set on a new game', () => {
+  it('lists the eleven slots with the starter set on a new game', () => {
     const s = freshState();
     const card = defaultPreview(s, content);
     const slots = slotViews(s, content, card, card ? resolveCardFor(s, content, card) : null);
@@ -57,6 +57,10 @@ describe('wardrobe slots', () => {
       'Numbers',
       'Table',
       'Cursor',
+      'Starlight coin',
+      'Stickers',
+      'Skill nodes',
+      'Wardrobe style',
     ]);
     expect(slots[0]).toMatchObject({ name: 'Knight Plate', level: 1, blocked: null });
   });

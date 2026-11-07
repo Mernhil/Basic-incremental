@@ -167,6 +167,66 @@
     ]
   },
   {
+    "id": "starlight_a",
+    "name": "Silver Four-Point",
+    "slot": "starlight",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "starter": true,
+    "ownedModifiers": [],
+    "levels": [
+      {
+        "recipes": ["ui-starlight-a"]
+      }
+    ]
+  },
+  {
+    "id": "sticker_a",
+    "name": "Paper Die-Cut",
+    "slot": "sticker",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "starter": true,
+    "ownedModifiers": [],
+    "levels": [
+      {
+        "recipes": ["ui-sticker-a"]
+      }
+    ]
+  },
+  {
+    "id": "nodes_a",
+    "name": "Bronze Brilliant",
+    "slot": "nodes",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "starter": true,
+    "ownedModifiers": [],
+    "levels": [
+      {
+        "recipes": ["ui-nodes-a"]
+      }
+    ]
+  },
+  {
+    "id": "wardrobe_a",
+    "name": "Sockets",
+    "slot": "wardrobe",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "starter": true,
+    "ownedModifiers": [],
+    "levels": [
+      {
+        "recipes": ["ui-wardrobe-a"]
+      }
+    ]
+  },
+  {
     "id": "gt_border",
     "name": "Gilded Frame",
     "slot": "border",
@@ -215,7 +275,7 @@
         }
       },
       {
-        "recipes": ["flourish-corners", "ambient-glints"]
+        "recipes": ["flourish-corners", "ambient-glints", "ambient-pop"]
       }
     ]
   },
@@ -260,7 +320,7 @@
         }
       },
       {
-        "recipes": ["ambient-stars"]
+        "recipes": ["ambient-stars", "ambient-pop-f"]
       }
     ]
   },
@@ -439,7 +499,7 @@
         }
       },
       {
-        "recipes": ["flourish-corners", "ambient-motes"]
+        "recipes": ["flourish-corners", "ambient-motes", "ambient-pair"]
       }
     ]
   },
@@ -468,7 +528,7 @@
         "recipes": ["filigree-3"]
       },
       {
-        "recipes": ["flourish-corners", "ambient-glints"]
+        "recipes": ["flourish-corners", "ambient-glints", "ambient-rail"]
       }
     ]
   },
@@ -510,7 +570,7 @@
         }
       },
       {
-        "recipes": ["ambient-stars"]
+        "recipes": ["ambient-stars", "ambient-orbit-f"]
       }
     ]
   },
@@ -545,7 +605,7 @@
         }
       },
       {
-        "recipes": ["ambient-glints"]
+        "recipes": ["ambient-glints", "ambient-fountain-f"]
       }
     ]
   },
@@ -580,7 +640,7 @@
         }
       },
       {
-        "recipes": ["ambient-bubbles"]
+        "recipes": ["ambient-bubbles", "ambient-rail-f"]
       }
     ]
   },
@@ -644,7 +704,3537 @@
         }
       },
       {
-        "recipes": ["flourish-corners", "ambient-embers"]
+        "recipes": ["flourish-corners", "ambient-embers", "ambient-fountain", "corner-wings"]
+      }
+    ]
+  },
+  {
+    "id": "verdant_border",
+    "name": "Leaf Crown",
+    "slot": "border",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-verdant-1"],
+        "tokens": {
+          "border-color": "#7fc25a",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#2f6b2a",
+          "plate-line": "#7fc25a",
+          "plate-ink": "#e6f3dc",
+          "plate-ink-muted": "#a9c4a0",
+          "art-line": "#7fc25a",
+          "panel-bg": "#14261a",
+          "panel-line": "rgba(127, 194, 90, 0.45)",
+          "panel-ink": "#e6f3dc",
+          "panel-ink-muted": "#a9c4a0"
+        }
+      },
+      {
+        "recipes": ["bd-verdant-2"],
+        "tokens": {
+          "border-color": "#9ae470",
+          "art-line": "#9ae470"
+        }
+      },
+      {
+        "recipes": ["bd-verdant-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-verdant-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-verdant-5", "ambient-rail", "corner-acanthus"]
+      }
+    ]
+  },
+  {
+    "id": "verdant_finish",
+    "name": "Leaf Gloss",
+    "slot": "finish",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-verdant-1"],
+        "tokens": {
+          "finish-a": "rgba(154, 228, 112, 0.9)",
+          "finish-b": "rgba(217, 255, 166, 0.85)",
+          "finish-c": "rgba(255, 247, 159, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-verdant-2"],
+        "tokens": {
+          "finish-c": "rgba(255, 247, 159, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-verdant-3"],
+        "tokens": {
+          "finish-b": "rgba(217, 255, 166, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-verdant-4"],
+        "tokens": {
+          "finish-opacity": "0.7"
+        }
+      },
+      {
+        "recipes": ["fn-verdant-5", "ambient-pop-f"]
+      }
+    ]
+  },
+  {
+    "id": "verdant_attack",
+    "name": "Verdant Cut",
+    "slot": "attack",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-verdant-1",
+          "logging": "px-slash-verdant-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#9ae470",
+          "attack-glow": "rgba(154, 228, 112, 0.9)",
+          "attack-particle": "#fff79f"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-verdant-2",
+          "logging": "px-slash-verdant-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-verdant-3",
+          "logging": "px-slash-verdant-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-verdant-4",
+          "logging": "px-slash-verdant-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-verdant-5",
+          "logging": "px-slash-verdant-5",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(154, 228, 112, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "verdant_tick",
+    "name": "Verdant Rise",
+    "slot": "tick",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-verdant-1"],
+        "tokens": {
+          "tick-color": "#d9ffa6",
+          "tick-stroke": "#125e2b",
+          "tick-crit": "#9ae470",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-verdant-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-verdant-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-verdant-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      },
+      {
+        "recipes": ["tk-verdant-5"],
+        "tokens": {
+          "tick-size": "30px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "verdant_number",
+    "name": "Verdant Digits",
+    "slot": "number",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-verdant-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#d9ffa6"
+        }
+      },
+      {
+        "recipes": ["num-verdant-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      },
+      {
+        "recipes": ["num-verdant-3"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-verdant-4"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-verdant-5"],
+        "tokens": {}
+      }
+    ]
+  },
+  {
+    "id": "verdant_table",
+    "name": "Clearing Floor",
+    "slot": "table",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["tb-verdant-1"],
+        "tokens": {
+          "table-bg": "#0f1d14",
+          "table-glow": "rgba(154, 228, 112, 0.1)",
+          "on-table": "#e6f3dc",
+          "on-table-muted": "#a9c4a0",
+          "chrome-bg": "#14261a",
+          "chrome-rail-bg": "#0f1d14",
+          "chrome-line": "#7fc25a",
+          "chrome-ink": "#e6f3dc",
+          "chrome-ink-muted": "#a9c4a0",
+          "chrome-accent": "#9ae470",
+          "chrome-active-bg": "rgba(154, 228, 112, 0.14)",
+          "frame-bg": "#14261a",
+          "frame-radius": "12px",
+          "frame-line": "rgba(127, 194, 90, 0.6)",
+          "frame-title-bg": "rgba(0, 0, 0, 0.35)",
+          "frame-title-line": "rgba(127, 194, 90, 0.3)",
+          "frame-title-ink": "#e6f3dc",
+          "frame-ink": "#e6f3dc",
+          "frame-ink-muted": "#a9c4a0",
+          "tip-bg": "#14261a",
+          "tip-line": "rgba(127, 194, 90, 0.65)",
+          "tip-ink": "#e6f3dc",
+          "tip-ink-muted": "#a9c4a0"
+        }
+      },
+      {
+        "recipes": ["tb-verdant-2"],
+        "tokens": {
+          "chrome-accent": "#7fc25a"
+        }
+      },
+      {
+        "recipes": ["tb-verdant-3"],
+        "tokens": {
+          "frame-line": "#7fc25a"
+        }
+      },
+      {
+        "recipes": ["tb-verdant-4"],
+        "tokens": {
+          "table-glow": "rgba(154, 228, 112, 0.18)"
+        }
+      },
+      {
+        "recipes": ["tb-verdant-5"],
+        "tokens": {
+          "frame-radius": "14px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "verdant_cursor",
+    "name": "Sprout Pointer",
+    "slot": "cursor",
+    "rarity": "legendary",
+    "set": "verdant_reverie",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["cur-verdant-1"]
+      },
+      {
+        "recipes": ["cur-verdant-2"]
+      },
+      {
+        "recipes": ["cur-verdant-3"]
+      },
+      {
+        "recipes": ["cur-verdant-4"]
+      },
+      {
+        "recipes": ["cur-verdant-5"]
+      }
+    ]
+  },
+  {
+    "id": "vine_border",
+    "name": "Vine Wrap",
+    "slot": "border",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-vine-1"],
+        "tokens": {
+          "border-color": "#8fb04a",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#5a3d24",
+          "plate-line": "#8fb04a",
+          "plate-ink": "#f1ead8",
+          "plate-ink-muted": "#bfb597",
+          "art-line": "#8fb04a",
+          "panel-bg": "#1c1710",
+          "panel-line": "rgba(143, 176, 74, 0.45)",
+          "panel-ink": "#f1ead8",
+          "panel-ink-muted": "#bfb597"
+        }
+      },
+      {
+        "recipes": ["bd-vine-2"],
+        "tokens": {
+          "border-color": "#a8cb62",
+          "art-line": "#a8cb62"
+        }
+      },
+      {
+        "recipes": ["bd-vine-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-vine-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-vine-5", "ambient-orbit", "corner-knot"]
+      }
+    ]
+  },
+  {
+    "id": "vine_finish",
+    "name": "Vine Weave",
+    "slot": "finish",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-vine-1"],
+        "tokens": {
+          "finish-a": "rgba(168, 203, 98, 0.9)",
+          "finish-b": "rgba(244, 255, 165, 0.85)",
+          "finish-c": "rgba(143, 176, 74, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-vine-2"],
+        "tokens": {
+          "finish-c": "rgba(143, 176, 74, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-vine-3"],
+        "tokens": {
+          "finish-b": "rgba(244, 255, 165, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-vine-4"],
+        "tokens": {
+          "finish-opacity": "0.7"
+        }
+      },
+      {
+        "recipes": ["fn-vine-5", "ambient-rail-f"]
+      }
+    ]
+  },
+  {
+    "id": "vine_attack",
+    "name": "Thorn Lash",
+    "slot": "attack",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-vine-1",
+          "logging": "px-slash-vine-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#a8cb62",
+          "attack-glow": "rgba(168, 203, 98, 0.9)",
+          "attack-particle": "#fff79f"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-vine-2",
+          "logging": "px-slash-vine-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-vine-3",
+          "logging": "px-slash-vine-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-vine-4",
+          "logging": "px-slash-vine-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-vine-5",
+          "logging": "px-slash-vine-5",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(168, 203, 98, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "vine_tick",
+    "name": "Tendril Rise",
+    "slot": "tick",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-vine-1"],
+        "tokens": {
+          "tick-color": "#f4ffa5",
+          "tick-stroke": "#0c440d",
+          "tick-crit": "#a8cb62",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-vine-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-vine-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-vine-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      },
+      {
+        "recipes": ["tk-vine-5"],
+        "tokens": {
+          "tick-size": "30px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "vine_number",
+    "name": "Twisted Digits",
+    "slot": "number",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-vine-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#f4ffa5"
+        }
+      },
+      {
+        "recipes": ["num-vine-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      },
+      {
+        "recipes": ["num-vine-3"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-vine-4"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-vine-5"],
+        "tokens": {}
+      }
+    ]
+  },
+  {
+    "id": "vine_table",
+    "name": "Trellis Table",
+    "slot": "table",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["tb-vine-1"],
+        "tokens": {
+          "table-bg": "#17130d",
+          "table-glow": "rgba(168, 203, 98, 0.1)",
+          "on-table": "#f1ead8",
+          "on-table-muted": "#bfb597",
+          "chrome-bg": "#1c1710",
+          "chrome-rail-bg": "#17130d",
+          "chrome-line": "#8fb04a",
+          "chrome-ink": "#f1ead8",
+          "chrome-ink-muted": "#bfb597",
+          "chrome-accent": "#a8cb62",
+          "chrome-active-bg": "rgba(168, 203, 98, 0.14)",
+          "frame-bg": "#1c1710",
+          "frame-radius": "12px",
+          "frame-line": "rgba(143, 176, 74, 0.6)",
+          "frame-title-bg": "rgba(0, 0, 0, 0.35)",
+          "frame-title-line": "rgba(143, 176, 74, 0.3)",
+          "frame-title-ink": "#f1ead8",
+          "frame-ink": "#f1ead8",
+          "frame-ink-muted": "#bfb597",
+          "tip-bg": "#1c1710",
+          "tip-line": "rgba(143, 176, 74, 0.65)",
+          "tip-ink": "#f1ead8",
+          "tip-ink-muted": "#bfb597"
+        }
+      },
+      {
+        "recipes": ["tb-vine-2"],
+        "tokens": {
+          "chrome-accent": "#8fb04a"
+        }
+      },
+      {
+        "recipes": ["tb-vine-3"],
+        "tokens": {
+          "frame-line": "#8fb04a"
+        }
+      },
+      {
+        "recipes": ["tb-vine-4"],
+        "tokens": {
+          "table-glow": "rgba(168, 203, 98, 0.18)"
+        }
+      },
+      {
+        "recipes": ["tb-vine-5"],
+        "tokens": {
+          "frame-radius": "14px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "vine_cursor",
+    "name": "Tendril Pointer",
+    "slot": "cursor",
+    "rarity": "legendary",
+    "set": "vine_wrap",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["cur-vine-1"]
+      },
+      {
+        "recipes": ["cur-vine-2"]
+      },
+      {
+        "recipes": ["cur-vine-3"]
+      },
+      {
+        "recipes": ["cur-vine-4"]
+      },
+      {
+        "recipes": ["cur-vine-5"]
+      }
+    ]
+  },
+  {
+    "id": "fern_border",
+    "name": "Fern Fronds",
+    "slot": "border",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-fern-1"],
+        "tokens": {
+          "border-color": "#5fd0a0",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#1f5a4a",
+          "plate-line": "#5fd0a0",
+          "plate-ink": "#e2f6ee",
+          "plate-ink-muted": "#9ec7b8",
+          "art-line": "#5fd0a0",
+          "panel-bg": "#0f2420",
+          "panel-line": "rgba(95, 208, 160, 0.45)",
+          "panel-ink": "#e2f6ee",
+          "panel-ink-muted": "#9ec7b8"
+        }
+      },
+      {
+        "recipes": ["bd-fern-2"],
+        "tokens": {
+          "border-color": "#66da8d",
+          "art-line": "#66da8d"
+        }
+      },
+      {
+        "recipes": ["bd-fern-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-fern-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-fern-5", "ambient-fountain", "corner-wings"]
+      }
+    ]
+  },
+  {
+    "id": "fern_finish",
+    "name": "Frond Frost",
+    "slot": "finish",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-fern-1"],
+        "tokens": {
+          "finish-a": "rgba(102, 218, 141, 0.9)",
+          "finish-b": "rgba(162, 255, 174, 0.85)",
+          "finish-c": "rgba(95, 208, 160, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-fern-2"],
+        "tokens": {
+          "finish-c": "rgba(95, 208, 160, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-fern-3"],
+        "tokens": {
+          "finish-b": "rgba(162, 255, 174, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-fern-4"],
+        "tokens": {
+          "finish-opacity": "0.7"
+        }
+      },
+      {
+        "recipes": ["fn-fern-5", "ambient-pair-f"]
+      }
+    ]
+  },
+  {
+    "id": "fern_attack",
+    "name": "Frond Sweep",
+    "slot": "attack",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-fern-1",
+          "logging": "px-slash-fern-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#66da8d",
+          "attack-glow": "rgba(102, 218, 141, 0.9)",
+          "attack-particle": "#d0ffd3"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-fern-2",
+          "logging": "px-slash-fern-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-fern-3",
+          "logging": "px-slash-fern-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-fern-4",
+          "logging": "px-slash-fern-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-fern-5",
+          "logging": "px-slash-fern-5",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(102, 218, 141, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fern_tick",
+    "name": "Spore Rise",
+    "slot": "tick",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-fern-1"],
+        "tokens": {
+          "tick-color": "#a2ffae",
+          "tick-stroke": "#0e5354",
+          "tick-crit": "#66da8d",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-fern-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-fern-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-fern-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      },
+      {
+        "recipes": ["tk-fern-5"],
+        "tokens": {
+          "tick-size": "30px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fern_number",
+    "name": "Frond Digits",
+    "slot": "number",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-fern-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#a2ffae"
+        }
+      },
+      {
+        "recipes": ["num-fern-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      },
+      {
+        "recipes": ["num-fern-3"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-fern-4"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-fern-5"],
+        "tokens": {}
+      }
+    ]
+  },
+  {
+    "id": "fern_table",
+    "name": "Glade Floor",
+    "slot": "table",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["tb-fern-1"],
+        "tokens": {
+          "table-bg": "#0b1a17",
+          "table-glow": "rgba(102, 218, 141, 0.1)",
+          "on-table": "#e2f6ee",
+          "on-table-muted": "#9ec7b8",
+          "chrome-bg": "#0f2420",
+          "chrome-rail-bg": "#0b1a17",
+          "chrome-line": "#5fd0a0",
+          "chrome-ink": "#e2f6ee",
+          "chrome-ink-muted": "#9ec7b8",
+          "chrome-accent": "#66da8d",
+          "chrome-active-bg": "rgba(102, 218, 141, 0.14)",
+          "frame-bg": "#0f2420",
+          "frame-radius": "12px",
+          "frame-line": "rgba(95, 208, 160, 0.6)",
+          "frame-title-bg": "rgba(0, 0, 0, 0.35)",
+          "frame-title-line": "rgba(95, 208, 160, 0.3)",
+          "frame-title-ink": "#e2f6ee",
+          "frame-ink": "#e2f6ee",
+          "frame-ink-muted": "#9ec7b8",
+          "tip-bg": "#0f2420",
+          "tip-line": "rgba(95, 208, 160, 0.65)",
+          "tip-ink": "#e2f6ee",
+          "tip-ink-muted": "#9ec7b8"
+        }
+      },
+      {
+        "recipes": ["tb-fern-2"],
+        "tokens": {
+          "chrome-accent": "#5fd0a0"
+        }
+      },
+      {
+        "recipes": ["tb-fern-3"],
+        "tokens": {
+          "frame-line": "#5fd0a0"
+        }
+      },
+      {
+        "recipes": ["tb-fern-4"],
+        "tokens": {
+          "table-glow": "rgba(102, 218, 141, 0.18)"
+        }
+      },
+      {
+        "recipes": ["tb-fern-5"],
+        "tokens": {
+          "frame-radius": "14px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "fern_cursor",
+    "name": "Frond Pointer",
+    "slot": "cursor",
+    "rarity": "legendary",
+    "set": "fern_fronds",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["cur-fern-1"]
+      },
+      {
+        "recipes": ["cur-fern-2"]
+      },
+      {
+        "recipes": ["cur-fern-3"]
+      },
+      {
+        "recipes": ["cur-fern-4"]
+      },
+      {
+        "recipes": ["cur-fern-5"]
+      }
+    ]
+  },
+  {
+    "id": "moss_border",
+    "name": "Moss and Mushrooms",
+    "slot": "border",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-moss-1"],
+        "tokens": {
+          "border-color": "#a8c24a",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#4d5f20",
+          "plate-line": "#a8c24a",
+          "plate-ink": "#f0f3d8",
+          "plate-ink-muted": "#b6bf92",
+          "art-line": "#a8c24a",
+          "panel-bg": "#1a1f0e",
+          "panel-line": "rgba(168, 194, 74, 0.45)",
+          "panel-ink": "#f0f3d8",
+          "panel-ink-muted": "#b6bf92"
+        }
+      },
+      {
+        "recipes": ["bd-moss-2"],
+        "tokens": {
+          "border-color": "#c7d464",
+          "art-line": "#c7d464"
+        }
+      },
+      {
+        "recipes": ["bd-moss-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-moss-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-moss-5", "ambient-pair", "corner-pauldron"]
+      }
+    ]
+  },
+  {
+    "id": "moss_finish",
+    "name": "Spore Sheen",
+    "slot": "finish",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-moss-1"],
+        "tokens": {
+          "finish-a": "rgba(199, 212, 100, 0.9)",
+          "finish-b": "rgba(255, 246, 163, 0.85)",
+          "finish-c": "rgba(168, 194, 74, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-moss-2"],
+        "tokens": {
+          "finish-c": "rgba(168, 194, 74, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-moss-3"],
+        "tokens": {
+          "finish-b": "rgba(255, 246, 163, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-moss-4"],
+        "tokens": {
+          "finish-opacity": "0.7"
+        }
+      },
+      {
+        "recipes": ["fn-moss-5", "ambient-fountain-f"]
+      }
+    ]
+  },
+  {
+    "id": "moss_attack",
+    "name": "Cap Strike",
+    "slot": "attack",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-moss-1",
+          "logging": "px-slash-moss-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#c7d464",
+          "attack-glow": "rgba(199, 212, 100, 0.9)",
+          "attack-particle": "#fff8d2"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-moss-2",
+          "logging": "px-slash-moss-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-moss-3",
+          "logging": "px-slash-moss-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-moss-4",
+          "logging": "px-slash-moss-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-moss-5",
+          "logging": "px-slash-moss-5",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(199, 212, 100, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "moss_tick",
+    "name": "Mossy Rise",
+    "slot": "tick",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-moss-1"],
+        "tokens": {
+          "tick-color": "#fff6a3",
+          "tick-stroke": "#4d430d",
+          "tick-crit": "#c7d464",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-moss-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-moss-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-moss-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      },
+      {
+        "recipes": ["tk-moss-5"],
+        "tokens": {
+          "tick-size": "30px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "moss_number",
+    "name": "Mossy Digits",
+    "slot": "number",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-moss-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#fff6a3"
+        }
+      },
+      {
+        "recipes": ["num-moss-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      },
+      {
+        "recipes": ["num-moss-3"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-moss-4"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-moss-5"],
+        "tokens": {}
+      }
+    ]
+  },
+  {
+    "id": "moss_table",
+    "name": "Mossy Stone",
+    "slot": "table",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["tb-moss-1"],
+        "tokens": {
+          "table-bg": "#12160b",
+          "table-glow": "rgba(199, 212, 100, 0.1)",
+          "on-table": "#f0f3d8",
+          "on-table-muted": "#b6bf92",
+          "chrome-bg": "#1a1f0e",
+          "chrome-rail-bg": "#12160b",
+          "chrome-line": "#a8c24a",
+          "chrome-ink": "#f0f3d8",
+          "chrome-ink-muted": "#b6bf92",
+          "chrome-accent": "#c7d464",
+          "chrome-active-bg": "rgba(199, 212, 100, 0.14)",
+          "frame-bg": "#1a1f0e",
+          "frame-radius": "12px",
+          "frame-line": "rgba(168, 194, 74, 0.6)",
+          "frame-title-bg": "rgba(0, 0, 0, 0.35)",
+          "frame-title-line": "rgba(168, 194, 74, 0.3)",
+          "frame-title-ink": "#f0f3d8",
+          "frame-ink": "#f0f3d8",
+          "frame-ink-muted": "#b6bf92",
+          "tip-bg": "#1a1f0e",
+          "tip-line": "rgba(168, 194, 74, 0.65)",
+          "tip-ink": "#f0f3d8",
+          "tip-ink-muted": "#b6bf92"
+        }
+      },
+      {
+        "recipes": ["tb-moss-2"],
+        "tokens": {
+          "chrome-accent": "#a8c24a"
+        }
+      },
+      {
+        "recipes": ["tb-moss-3"],
+        "tokens": {
+          "frame-line": "#a8c24a"
+        }
+      },
+      {
+        "recipes": ["tb-moss-4"],
+        "tokens": {
+          "table-glow": "rgba(199, 212, 100, 0.18)"
+        }
+      },
+      {
+        "recipes": ["tb-moss-5"],
+        "tokens": {
+          "frame-radius": "14px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "moss_cursor",
+    "name": "Toadstool Pointer",
+    "slot": "cursor",
+    "rarity": "legendary",
+    "set": "moss_mushrooms",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["cur-moss-1"]
+      },
+      {
+        "recipes": ["cur-moss-2"]
+      },
+      {
+        "recipes": ["cur-moss-3"]
+      },
+      {
+        "recipes": ["cur-moss-4"]
+      },
+      {
+        "recipes": ["cur-moss-5"]
+      }
+    ]
+  },
+  {
+    "id": "blossom_border",
+    "name": "Blossom Branch",
+    "slot": "border",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-blossom-1"],
+        "tokens": {
+          "border-color": "#f29cc0",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#3d6b34",
+          "plate-line": "#f29cc0",
+          "plate-ink": "#fbeaf0",
+          "plate-ink-muted": "#cdb0bc",
+          "art-line": "#f29cc0",
+          "panel-bg": "#1e1a1c",
+          "panel-line": "rgba(242, 156, 192, 0.45)",
+          "panel-ink": "#fbeaf0",
+          "panel-ink-muted": "#cdb0bc"
+        }
+      },
+      {
+        "recipes": ["bd-blossom-2"],
+        "tokens": {
+          "border-color": "#ff9ead",
+          "art-line": "#ff9ead"
+        }
+      },
+      {
+        "recipes": ["bd-blossom-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-blossom-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-blossom-5", "ambient-pop", "corner-shards"]
+      }
+    ]
+  },
+  {
+    "id": "blossom_finish",
+    "name": "Petal Sheen",
+    "slot": "finish",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-blossom-1"],
+        "tokens": {
+          "finish-a": "rgba(255, 158, 173, 0.9)",
+          "finish-b": "rgba(255, 192, 188, 0.85)",
+          "finish-c": "rgba(242, 156, 192, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-blossom-2"],
+        "tokens": {
+          "finish-c": "rgba(242, 156, 192, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-blossom-3"],
+        "tokens": {
+          "finish-b": "rgba(255, 192, 188, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-blossom-4"],
+        "tokens": {
+          "finish-opacity": "0.7"
+        }
+      },
+      {
+        "recipes": ["fn-blossom-5", "ambient-orbit-f"]
+      }
+    ]
+  },
+  {
+    "id": "blossom_attack",
+    "name": "Petal Slash",
+    "slot": "attack",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-blossom-1",
+          "logging": "px-slash-blossom-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#ffc5ce",
+          "attack-glow": "rgba(255, 197, 206, 0.9)",
+          "attack-particle": "#fff7f7"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-blossom-2",
+          "logging": "px-slash-blossom-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-blossom-3",
+          "logging": "px-slash-blossom-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-blossom-4",
+          "logging": "px-slash-blossom-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-blossom-5",
+          "logging": "px-slash-blossom-5",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(255, 197, 206, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "blossom_tick",
+    "name": "Petal Rise",
+    "slot": "tick",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-blossom-1"],
+        "tokens": {
+          "tick-color": "#ffc0bc",
+          "tick-stroke": "#8a317c",
+          "tick-crit": "#ff9ead",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-blossom-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-blossom-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-blossom-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      },
+      {
+        "recipes": ["tk-blossom-5"],
+        "tokens": {
+          "tick-size": "30px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "blossom_number",
+    "name": "Blossom Digits",
+    "slot": "number",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-blossom-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#ffc0bc"
+        }
+      },
+      {
+        "recipes": ["num-blossom-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      },
+      {
+        "recipes": ["num-blossom-3"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-blossom-4"],
+        "tokens": {}
+      },
+      {
+        "recipes": ["num-blossom-5"],
+        "tokens": {}
+      }
+    ]
+  },
+  {
+    "id": "blossom_table",
+    "name": "Orchard Table",
+    "slot": "table",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["tb-blossom-1"],
+        "tokens": {
+          "table-bg": "#151215",
+          "table-glow": "rgba(255, 158, 173, 0.1)",
+          "on-table": "#fbeaf0",
+          "on-table-muted": "#cdb0bc",
+          "chrome-bg": "#1e1a1c",
+          "chrome-rail-bg": "#151215",
+          "chrome-line": "#f29cc0",
+          "chrome-ink": "#fbeaf0",
+          "chrome-ink-muted": "#cdb0bc",
+          "chrome-accent": "#ff9ead",
+          "chrome-active-bg": "rgba(255, 158, 173, 0.14)",
+          "frame-bg": "#1e1a1c",
+          "frame-radius": "12px",
+          "frame-line": "rgba(242, 156, 192, 0.6)",
+          "frame-title-bg": "rgba(0, 0, 0, 0.35)",
+          "frame-title-line": "rgba(242, 156, 192, 0.3)",
+          "frame-title-ink": "#fbeaf0",
+          "frame-ink": "#fbeaf0",
+          "frame-ink-muted": "#cdb0bc",
+          "tip-bg": "#1e1a1c",
+          "tip-line": "rgba(242, 156, 192, 0.65)",
+          "tip-ink": "#fbeaf0",
+          "tip-ink-muted": "#cdb0bc"
+        }
+      },
+      {
+        "recipes": ["tb-blossom-2"],
+        "tokens": {
+          "chrome-accent": "#f29cc0"
+        }
+      },
+      {
+        "recipes": ["tb-blossom-3"],
+        "tokens": {
+          "frame-line": "#f29cc0"
+        }
+      },
+      {
+        "recipes": ["tb-blossom-4"],
+        "tokens": {
+          "table-glow": "rgba(255, 158, 173, 0.18)"
+        }
+      },
+      {
+        "recipes": ["tb-blossom-5"],
+        "tokens": {
+          "frame-radius": "14px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "blossom_cursor",
+    "name": "Blossom Pointer",
+    "slot": "cursor",
+    "rarity": "legendary",
+    "set": "blossom_branch",
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "0.2"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["cur-blossom-1"]
+      },
+      {
+        "recipes": ["cur-blossom-2"]
+      },
+      {
+        "recipes": ["cur-blossom-3"]
+      },
+      {
+        "recipes": ["cur-blossom-4"]
+      },
+      {
+        "recipes": ["cur-blossom-5"]
+      }
+    ]
+  },
+  {
+    "id": "heartwood_halo",
+    "name": "Heartwood Halo",
+    "slot": "border",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": "moonwood_dryad",
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-heartwood-1"],
+        "tokens": {
+          "border-color": "#d8c58a",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#3a2c20",
+          "plate-line": "#d8c58a",
+          "plate-ink": "#f4ecd6",
+          "plate-ink-muted": "#c4b898",
+          "art-line": "#d8c58a",
+          "panel-bg": "#17120d",
+          "panel-line": "rgba(216, 197, 138, 0.45)",
+          "panel-ink": "#f4ecd6",
+          "panel-ink-muted": "#c4b898"
+        }
+      },
+      {
+        "recipes": ["bd-heartwood-2"],
+        "tokens": {
+          "border-color": "#d8c58a",
+          "art-line": "#d8c58a"
+        }
+      },
+      {
+        "recipes": ["bd-heartwood-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-heartwood-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-heartwood-5", "ambient-orbit", "corner-knot"]
+      }
+    ]
+  },
+  {
+    "id": "moonwood_antlers",
+    "name": "Moonwood Antlers",
+    "slot": "border",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": "moonwood_dryad",
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-antler-1"],
+        "tokens": {
+          "border-color": "#e0d2b0",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#4a3a2c",
+          "plate-line": "#e0d2b0",
+          "plate-ink": "#f6efdf",
+          "plate-ink-muted": "#c9bda3",
+          "art-line": "#e0d2b0",
+          "panel-bg": "#19140f",
+          "panel-line": "rgba(224, 210, 176, 0.45)",
+          "panel-ink": "#f6efdf",
+          "panel-ink-muted": "#c9bda3"
+        }
+      },
+      {
+        "recipes": ["bd-antler-2"],
+        "tokens": {
+          "border-color": "#e0d2b0",
+          "art-line": "#e0d2b0"
+        }
+      },
+      {
+        "recipes": ["bd-antler-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-antler-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-antler-5", "ambient-rail", "corner-wings"]
+      }
+    ]
+  },
+  {
+    "id": "growth_rings",
+    "name": "Growth Rings",
+    "slot": "border",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": "moonwood_dryad",
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-rings-1"],
+        "tokens": {
+          "border-color": "#c8a06a",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#5a3d24",
+          "plate-line": "#c8a06a",
+          "plate-ink": "#f6ead6",
+          "plate-ink-muted": "#c9b394",
+          "art-line": "#c8a06a",
+          "panel-bg": "#1b140d",
+          "panel-line": "rgba(200, 160, 106, 0.45)",
+          "panel-ink": "#f6ead6",
+          "panel-ink-muted": "#c9b394"
+        }
+      },
+      {
+        "recipes": ["bd-rings-2"],
+        "tokens": {
+          "border-color": "#c8a06a",
+          "art-line": "#c8a06a"
+        }
+      },
+      {
+        "recipes": ["bd-rings-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-rings-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-rings-5", "ambient-pair", "corner-acanthus"]
+      }
+    ]
+  },
+  {
+    "id": "luna_moths",
+    "name": "Luna Moths",
+    "slot": "border",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": "moonwood_dryad",
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-luna-1"],
+        "tokens": {
+          "border-color": "#b8c8ff",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#1f2a4a",
+          "plate-line": "#b8c8ff",
+          "plate-ink": "#eef2ff",
+          "plate-ink-muted": "#b4bddb",
+          "art-line": "#b8c8ff",
+          "panel-bg": "#0f1322",
+          "panel-line": "rgba(184, 200, 255, 0.45)",
+          "panel-ink": "#eef2ff",
+          "panel-ink-muted": "#b4bddb"
+        }
+      },
+      {
+        "recipes": ["bd-luna-2"],
+        "tokens": {
+          "border-color": "#b8c8ff",
+          "art-line": "#b8c8ff"
+        }
+      },
+      {
+        "recipes": ["bd-luna-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-luna-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-luna-5", "ambient-pop", "corner-shards"]
+      }
+    ]
+  },
+  {
+    "id": "moon_wreath",
+    "name": "Moon Wreath",
+    "slot": "border",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": "moonwood_dryad",
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-wreath-1"],
+        "tokens": {
+          "border-color": "#cfe8c0",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#20402e",
+          "plate-line": "#cfe8c0",
+          "plate-ink": "#eef7e8",
+          "plate-ink-muted": "#b2c7a8",
+          "art-line": "#cfe8c0",
+          "panel-bg": "#0e1a13",
+          "panel-line": "rgba(207, 232, 192, 0.45)",
+          "panel-ink": "#eef7e8",
+          "panel-ink-muted": "#b2c7a8"
+        }
+      },
+      {
+        "recipes": ["bd-wreath-2"],
+        "tokens": {
+          "border-color": "#cfe8c0",
+          "art-line": "#cfe8c0"
+        }
+      },
+      {
+        "recipes": ["bd-wreath-3"],
+        "tokens": {
+          "plate-line": "rgba(255, 255, 255, 0.55)"
+        }
+      },
+      {
+        "recipes": ["bd-wreath-4"],
+        "tokens": {
+          "border-width": "3px"
+        }
+      },
+      {
+        "recipes": ["bd-wreath-5", "ambient-fountain", "corner-pauldron"]
+      }
+    ]
+  },
+  {
+    "id": "core_pulse",
+    "name": "Core Pulse",
+    "slot": "finish",
+    "rarity": "exotic",
+    "set": null,
+    "exclusiveCard": "core_titan",
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-corepulse-1"],
+        "tokens": {
+          "finish-a": "rgba(255, 170, 60, 0.9)",
+          "finish-b": "rgba(255, 226, 150, 0.85)",
+          "finish-c": "rgba(255, 120, 40, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-corepulse-2"],
+        "tokens": {
+          "finish-speed": "5s"
+        }
+      },
+      {
+        "recipes": ["fn-corepulse-3"],
+        "tokens": {
+          "finish-c": "rgba(255, 120, 40, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-corepulse-4"],
+        "tokens": {
+          "finish-b": "rgba(255, 226, 150, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-corepulse-5"],
+        "tokens": {
+          "finish-opacity": "0.72"
+        }
+      },
+      {
+        "recipes": ["fn-corepulse-6", "ambient-pair-f"]
+      }
+    ]
+  },
+  {
+    "id": "power_veins",
+    "name": "Power Veins",
+    "slot": "finish",
+    "rarity": "exotic",
+    "set": null,
+    "exclusiveCard": "core_titan",
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-veins-1"],
+        "tokens": {
+          "finish-a": "rgba(90, 230, 255, 0.9)",
+          "finish-b": "rgba(190, 250, 255, 0.85)",
+          "finish-c": "rgba(60, 160, 255, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-veins-2"],
+        "tokens": {
+          "finish-speed": "5s"
+        }
+      },
+      {
+        "recipes": ["fn-veins-3"],
+        "tokens": {
+          "finish-c": "rgba(60, 160, 255, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-veins-4"],
+        "tokens": {
+          "finish-b": "rgba(190, 250, 255, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-veins-5"],
+        "tokens": {
+          "finish-opacity": "0.72"
+        }
+      },
+      {
+        "recipes": ["fn-veins-6", "ambient-pop-f"]
+      }
+    ]
+  },
+  {
+    "id": "hex_core",
+    "name": "Hex Core",
+    "slot": "finish",
+    "rarity": "exotic",
+    "set": null,
+    "exclusiveCard": "core_titan",
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-hexcore-1"],
+        "tokens": {
+          "finish-a": "rgba(190, 130, 255, 0.9)",
+          "finish-b": "rgba(235, 210, 255, 0.85)",
+          "finish-c": "rgba(120, 90, 255, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-hexcore-2"],
+        "tokens": {
+          "finish-speed": "5s"
+        }
+      },
+      {
+        "recipes": ["fn-hexcore-3"],
+        "tokens": {
+          "finish-c": "rgba(120, 90, 255, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-hexcore-4"],
+        "tokens": {
+          "finish-b": "rgba(235, 210, 255, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-hexcore-5"],
+        "tokens": {
+          "finish-opacity": "0.72"
+        }
+      },
+      {
+        "recipes": ["fn-hexcore-6", "ambient-orbit-f"]
+      }
+    ]
+  },
+  {
+    "id": "magma_strata",
+    "name": "Magma Strata",
+    "slot": "finish",
+    "rarity": "exotic",
+    "set": null,
+    "exclusiveCard": "core_titan",
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-strata-1"],
+        "tokens": {
+          "finish-a": "rgba(255, 110, 50, 0.9)",
+          "finish-b": "rgba(255, 190, 110, 0.85)",
+          "finish-c": "rgba(200, 60, 30, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-strata-2"],
+        "tokens": {
+          "finish-speed": "5s"
+        }
+      },
+      {
+        "recipes": ["fn-strata-3"],
+        "tokens": {
+          "finish-c": "rgba(200, 60, 30, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-strata-4"],
+        "tokens": {
+          "finish-b": "rgba(255, 190, 110, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-strata-5"],
+        "tokens": {
+          "finish-opacity": "0.72"
+        }
+      },
+      {
+        "recipes": ["fn-strata-6", "ambient-fountain-f"]
+      }
+    ]
+  },
+  {
+    "id": "starburst",
+    "name": "Starburst",
+    "slot": "finish",
+    "rarity": "exotic",
+    "set": null,
+    "exclusiveCard": "core_titan",
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["fn-starburst-1"],
+        "tokens": {
+          "finish-a": "rgba(255, 226, 110, 0.9)",
+          "finish-b": "rgba(255, 250, 200, 0.85)",
+          "finish-c": "rgba(255, 170, 70, 0.85)",
+          "finish-opacity": "0.5",
+          "finish-speed": "6s"
+        }
+      },
+      {
+        "recipes": ["fn-starburst-2"],
+        "tokens": {
+          "finish-speed": "5s"
+        }
+      },
+      {
+        "recipes": ["fn-starburst-3"],
+        "tokens": {
+          "finish-c": "rgba(255, 170, 70, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-starburst-4"],
+        "tokens": {
+          "finish-b": "rgba(255, 250, 200, 0.95)"
+        }
+      },
+      {
+        "recipes": ["fn-starburst-5"],
+        "tokens": {
+          "finish-opacity": "0.72"
+        }
+      },
+      {
+        "recipes": ["fn-starburst-6", "ambient-rail-f"]
+      }
+    ]
+  },
+  {
+    "id": "forge_border",
+    "name": "Rivet Brackets",
+    "slot": "border",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-forge-1"],
+        "tokens": {
+          "border-color": "#c3d1df",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#433e5a",
+          "plate-line": "#c3d1df",
+          "plate-ink": "#eef4fb",
+          "plate-ink-muted": "#b4bccb",
+          "art-line": "#c3d1df",
+          "panel-bg": "#1c1b27",
+          "panel-line": "rgba(195, 209, 223, 0.45)",
+          "panel-ink": "#eef4fb",
+          "panel-ink-muted": "#b4bccb"
+        }
+      },
+      {
+        "recipes": ["bd-forge-2", "ambient-pop", "corner-pauldron"],
+        "tokens": {
+          "border-color": "#c3d1df",
+          "plate-line": "rgba(255, 255, 255, 0.5)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "forge_number",
+    "name": "Stamped Numerals",
+    "slot": "number",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-forge-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#e9f8ff"
+        }
+      },
+      {
+        "recipes": ["num-forge-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      }
+    ]
+  },
+  {
+    "id": "forge_attack",
+    "name": "Anvil Strike",
+    "slot": "attack",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-forge-1",
+          "logging": "px-slash-forge-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#c3d1df",
+          "attack-glow": "rgba(195, 209, 223, 0.9)",
+          "attack-particle": "#fff0a2"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-forge-2",
+          "logging": "px-slash-forge-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-forge-3",
+          "logging": "px-slash-forge-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-forge-4",
+          "logging": "px-slash-forge-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(195, 209, 223, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "forge_tick",
+    "name": "Spark Tick",
+    "slot": "tick",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-forge-1"],
+        "tokens": {
+          "tick-color": "#e9f8ff",
+          "tick-stroke": "#433e5a",
+          "tick-crit": "#f9e474",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-forge-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-forge-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-forge-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "woodcraft_border",
+    "name": "Twine Corners",
+    "slot": "border",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-woodcraft-1"],
+        "tokens": {
+          "border-color": "#e0c276",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#5b3a24",
+          "plate-line": "#e0c276",
+          "plate-ink": "#f9f0d6",
+          "plate-ink-muted": "#c9b996",
+          "art-line": "#e0c276",
+          "panel-bg": "#1d1610",
+          "panel-line": "rgba(224, 194, 118, 0.45)",
+          "panel-ink": "#f9f0d6",
+          "panel-ink-muted": "#c9b996"
+        }
+      },
+      {
+        "recipes": ["bd-woodcraft-2", "ambient-rail", "corner-knot"],
+        "tokens": {
+          "border-color": "#e0c276",
+          "plate-line": "rgba(255, 255, 255, 0.5)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "woodcraft_number",
+    "name": "Carved Numerals",
+    "slot": "number",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-woodcraft-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#fff2ac"
+        }
+      },
+      {
+        "recipes": ["num-woodcraft-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      }
+    ]
+  },
+  {
+    "id": "woodcraft_attack",
+    "name": "Whittle Cut",
+    "slot": "attack",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-woodcraft-1",
+          "logging": "px-slash-woodcraft-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#e0c276",
+          "attack-glow": "rgba(224, 194, 118, 0.9)",
+          "attack-particle": "#fff9d9"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-woodcraft-2",
+          "logging": "px-slash-woodcraft-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-woodcraft-3",
+          "logging": "px-slash-woodcraft-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-woodcraft-4",
+          "logging": "px-slash-woodcraft-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(224, 194, 118, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "woodcraft_tick",
+    "name": "Woodchip Tick",
+    "slot": "tick",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-woodcraft-1"],
+        "tokens": {
+          "tick-color": "#fff2ac",
+          "tick-stroke": "#5b1715",
+          "tick-crit": "#f9f0c2",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-woodcraft-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-woodcraft-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-woodcraft-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "starmap_border",
+    "name": "Compass Corners",
+    "slot": "border",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-starmap-1"],
+        "tokens": {
+          "border-color": "#b2f2ff",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#2c2f6a",
+          "plate-line": "#b2f2ff",
+          "plate-ink": "#eef6ff",
+          "plate-ink-muted": "#b4bddb",
+          "art-line": "#b2f2ff",
+          "panel-bg": "#101226",
+          "panel-line": "rgba(178, 242, 255, 0.45)",
+          "panel-ink": "#eef6ff",
+          "panel-ink-muted": "#b4bddb"
+        }
+      },
+      {
+        "recipes": ["bd-starmap-2", "ambient-orbit", "corner-wings"],
+        "tokens": {
+          "border-color": "#b2f2ff",
+          "plate-line": "rgba(255, 255, 255, 0.5)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "starmap_number",
+    "name": "Inked Numerals",
+    "slot": "number",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-starmap-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#edf9ff"
+        }
+      },
+      {
+        "recipes": ["num-starmap-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      }
+    ]
+  },
+  {
+    "id": "starmap_attack",
+    "name": "Comet Slash",
+    "slot": "attack",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-starmap-1",
+          "logging": "px-slash-starmap-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#e4f1ff",
+          "attack-glow": "rgba(228, 241, 255, 0.9)",
+          "attack-particle": "#b2f2ff"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-starmap-2",
+          "logging": "px-slash-starmap-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-starmap-3",
+          "logging": "px-slash-starmap-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-starmap-4",
+          "logging": "px-slash-starmap-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(228, 241, 255, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "starmap_tick",
+    "name": "Star Tick",
+    "slot": "tick",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-starmap-1"],
+        "tokens": {
+          "tick-color": "#edf9ff",
+          "tick-stroke": "#605a7c",
+          "tick-crit": "#8ed5ff",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-starmap-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-starmap-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-starmap-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "candy_border",
+    "name": "Gumdrop Corners",
+    "slot": "border",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-candy-1"],
+        "tokens": {
+          "border-color": "#ff9aa8",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#8a2f7a",
+          "plate-line": "#ff9aa8",
+          "plate-ink": "#fff0f4",
+          "plate-ink-muted": "#d9b4c4",
+          "art-line": "#ff9aa8",
+          "panel-bg": "#26121f",
+          "panel-line": "rgba(255, 154, 168, 0.45)",
+          "panel-ink": "#fff0f4",
+          "panel-ink-muted": "#d9b4c4"
+        }
+      },
+      {
+        "recipes": ["bd-candy-2", "ambient-fountain", "corner-shards"],
+        "tokens": {
+          "border-color": "#ff9aa8",
+          "plate-line": "rgba(255, 255, 255, 0.5)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "candy_number",
+    "name": "Candy Numerals",
+    "slot": "number",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-candy-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#ffbfba"
+        }
+      },
+      {
+        "recipes": ["num-candy-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      }
+    ]
+  },
+  {
+    "id": "candy_attack",
+    "name": "Ribbon Swipe",
+    "slot": "attack",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-candy-1",
+          "logging": "px-slash-candy-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#ff9aa8",
+          "attack-glow": "rgba(255, 154, 168, 0.9)",
+          "attack-particle": "#bafff2"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-candy-2",
+          "logging": "px-slash-candy-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-candy-3",
+          "logging": "px-slash-candy-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-candy-4",
+          "logging": "px-slash-candy-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(255, 154, 168, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "candy_tick",
+    "name": "Pop Tick",
+    "slot": "tick",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-candy-1"],
+        "tokens": {
+          "tick-color": "#ffbfba",
+          "tick-stroke": "#8a2f7a",
+          "tick-crit": "#9afdff",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-candy-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-candy-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-candy-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "rune_border",
+    "name": "Rune Corners",
+    "slot": "border",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["bd-rune-1"],
+        "tokens": {
+          "border-color": "#80fcc7",
+          "border-width": "2px",
+          "radius": "13px",
+          "plate-bg": "#3f394c",
+          "plate-line": "#80fcc7",
+          "plate-ink": "#f1f1fb",
+          "plate-ink-muted": "#bcbbcd",
+          "art-line": "#80fcc7",
+          "panel-bg": "#14131b",
+          "panel-line": "rgba(128, 252, 199, 0.45)",
+          "panel-ink": "#f1f1fb",
+          "panel-ink-muted": "#bcbbcd"
+        }
+      },
+      {
+        "recipes": ["bd-rune-2", "ambient-pair", "corner-acanthus"],
+        "tokens": {
+          "border-color": "#80fcc7",
+          "plate-line": "rgba(255, 255, 255, 0.5)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "rune_number",
+    "name": "Rune Numerals",
+    "slot": "number",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["num-rune-1"],
+        "tokens": {
+          "num-weight": "700",
+          "num-color": "#f5f1ff"
+        }
+      },
+      {
+        "recipes": ["num-rune-2"],
+        "tokens": {
+          "num-weight": "800"
+        }
+      }
+    ]
+  },
+  {
+    "id": "rune_attack",
+    "name": "Rune Cleave",
+    "slot": "attack",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effects": {
+          "fighting": "px-slash-rune-1",
+          "logging": "px-slash-rune-1",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-edge": "#c2c1d2",
+          "attack-glow": "rgba(194, 193, 210, 0.9)",
+          "attack-particle": "#a9ffc8"
+        }
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-rune-2",
+          "logging": "px-slash-rune-2",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-rune-3",
+          "logging": "px-slash-rune-3",
+          "mining": "heavy-hit"
+        },
+        "tokens": {}
+      },
+      {
+        "effects": {
+          "fighting": "px-slash-rune-4",
+          "logging": "px-slash-rune-4",
+          "mining": "heavy-hit"
+        },
+        "tokens": {
+          "attack-glow": "rgba(194, 193, 210, 1)"
+        }
+      }
+    ]
+  },
+  {
+    "id": "rune_tick",
+    "name": "Glyph Tick",
+    "slot": "tick",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.3"
+      }
+    ],
+    "levels": [
+      {
+        "effect": "rise",
+        "recipes": ["tk-rune-1"],
+        "tokens": {
+          "tick-color": "#f5f1ff",
+          "tick-stroke": "#3f394c",
+          "tick-crit": "#80fcc7",
+          "tick-size": "22px"
+        }
+      },
+      {
+        "recipes": ["tk-rune-2"],
+        "tokens": {
+          "tick-size": "24px"
+        }
+      },
+      {
+        "recipes": ["tk-rune-3"],
+        "tokens": {
+          "tick-size": "26px"
+        }
+      },
+      {
+        "recipes": ["tk-rune-4"],
+        "tokens": {
+          "tick-size": "28px"
+        }
+      }
+    ]
+  },
+  {
+    "id": "starlight_b",
+    "name": "Indigo Rim",
+    "slot": "starlight",
+    "rarity": "rare",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.25"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-starlight-b"]
+      }
+    ]
+  },
+  {
+    "id": "starlight_c",
+    "name": "Star Burst",
+    "slot": "starlight",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-starlight-c"]
+      }
+    ]
+  },
+  {
+    "id": "starlight_d",
+    "name": "Moon Prism",
+    "slot": "starlight",
+    "rarity": "legendary",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-starlight-d"]
+      }
+    ]
+  },
+  {
+    "id": "starlight_e",
+    "name": "Constellation",
+    "slot": "starlight",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-starlight-e"]
+      }
+    ]
+  },
+  {
+    "id": "sticker_b",
+    "name": "Enamel Pin",
+    "slot": "sticker",
+    "rarity": "rare",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.25"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-sticker-b"]
+      }
+    ]
+  },
+  {
+    "id": "sticker_c",
+    "name": "Gold Bezel",
+    "slot": "sticker",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-sticker-c"]
+      }
+    ]
+  },
+  {
+    "id": "sticker_d",
+    "name": "Postage Stamp",
+    "slot": "sticker",
+    "rarity": "legendary",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-sticker-d"]
+      }
+    ]
+  },
+  {
+    "id": "sticker_e",
+    "name": "Holo Burst",
+    "slot": "sticker",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-sticker-e"]
+      }
+    ]
+  },
+  {
+    "id": "nodes_b",
+    "name": "Silver Hex",
+    "slot": "nodes",
+    "rarity": "rare",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.25"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-nodes-b"]
+      }
+    ]
+  },
+  {
+    "id": "nodes_c",
+    "name": "Bare Rhombus",
+    "slot": "nodes",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-nodes-c"]
+      }
+    ]
+  },
+  {
+    "id": "nodes_d",
+    "name": "Star Cut",
+    "slot": "nodes",
+    "rarity": "legendary",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-nodes-d"]
+      }
+    ]
+  },
+  {
+    "id": "nodes_e",
+    "name": "Prong Kite",
+    "slot": "nodes",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-nodes-e"]
+      }
+    ]
+  },
+  {
+    "id": "wardrobe_b",
+    "name": "Gilt Plaques",
+    "slot": "wardrobe",
+    "rarity": "rare",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.25"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-wardrobe-b"]
+      }
+    ]
+  },
+  {
+    "id": "wardrobe_c",
+    "name": "Quiet Ink",
+    "slot": "wardrobe",
+    "rarity": "epic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-wardrobe-c"]
+      }
+    ]
+  },
+  {
+    "id": "wardrobe_d",
+    "name": "Banners",
+    "slot": "wardrobe",
+    "rarity": "legendary",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "0.5"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-wardrobe-d"]
+      }
+    ]
+  },
+  {
+    "id": "wardrobe_e",
+    "name": "Rarity Glass",
+    "slot": "wardrobe",
+    "rarity": "mythic",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "1"
+      }
+    ],
+    "levels": [
+      {
+        "recipes": ["ui-wardrobe-e"]
       }
     ]
   }

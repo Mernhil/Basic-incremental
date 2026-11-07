@@ -268,8 +268,12 @@ export function resolveCardFor(
 
 // ---- views for the Wardrobe screen -------------------------------------------------------------
 
-/** Where an item comes from (DESIGN.md 7 "Sources"). */
-export type CosmeticSource = 'starter' | 'dungeon' | 'prestige' | 'portal' | 'achievement';
+/**
+ * Where an item comes from (DESIGN.md 7 "Sources"): the first that applies. `track` = the account
+ * reward track, `shop` = the shard shop.
+ */
+export type CosmeticSource =
+  'starter' | 'dungeon' | 'prestige' | 'portal' | 'achievement' | 'track' | 'shop';
 
 /** The source of an item, or null when none is defined (content validation forbids that). */
 export function cosmeticSource(content: Content, cosmeticId: string): CosmeticSource | null {
@@ -281,8 +285,14 @@ export function cosmeticSource(content: Content, cosmeticId: string): CosmeticSo
   if (content.achievements.some((a) => a.reward.cosmetics.includes(cosmeticId))) {
     return 'achievement';
   }
+  if (content.account.rewardTrack.some((r) => r.cosmetics.includes(cosmeticId))) return 'track';
   if (content.allPortals.some((p) => p.pool.some((e) => e.itemId === cosmeticId))) {
     return 'portal';
+  }
+  if (
+    content.shardShop.some((i) => i.reward.kind === 'cosmetic' && i.reward.cosmetic === cosmeticId)
+  ) {
+    return 'shop';
   }
   return null;
 }

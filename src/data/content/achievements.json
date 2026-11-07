@@ -145,7 +145,10 @@
       "name": "Dressed Up",
       "description": "Equip a full cosmetic set.",
       "condition": { "kind": "full_set" },
-      "reward": { "resources": [{ "resource": "facet_shard", "amount": "100" }] }
+      "reward": {
+        "resources": [{ "resource": "facet_shard", "amount": "100" }],
+        "cosmetics": ["wardrobe_b"]
+      }
     },
     {
       "id": "fashionista",
@@ -159,7 +162,10 @@
       "name": "Skilled",
       "description": "Spend your first 10 skill points.",
       "condition": { "kind": "skill_points_spent", "amount": 10 },
-      "reward": { "resources": [{ "resource": "ember_sigil", "amount": "30" }] }
+      "reward": {
+        "resources": [{ "resource": "ember_sigil", "amount": "30" }],
+        "cosmetics": ["nodes_b"]
+      }
     },
     {
       "id": "first_ascension",
@@ -187,21 +193,30 @@
       "name": "Gem Adept",
       "description": "Reach Gold mastery on a gem.",
       "condition": { "kind": "gem_mastery", "tier": 3 },
-      "reward": { "resources": [{ "resource": "glimmer_dust", "amount": "200" }] }
+      "reward": {
+        "resources": [{ "resource": "glimmer_dust", "amount": "200" }],
+        "cosmetics": ["sticker_c"]
+      }
     },
     {
       "id": "medalist",
       "name": "Medalist",
       "description": "Earn a Silver medal on a boss.",
       "condition": { "kind": "boss_mastery", "tier": 2 },
-      "reward": { "resources": [{ "resource": "ember_sigil", "amount": "20" }] }
+      "reward": {
+        "resources": [{ "resource": "ember_sigil", "amount": "20" }],
+        "cosmetics": ["sticker_b"]
+      }
     },
     {
       "id": "masterwork",
       "name": "Masterwork",
       "description": "Take a cosmetic to its max level.",
       "condition": { "kind": "max_cosmetic" },
-      "reward": { "resources": [{ "resource": "facet_shard", "amount": "200" }] }
+      "reward": {
+        "resources": [{ "resource": "facet_shard", "amount": "200" }],
+        "cosmetics": ["sticker_e"]
+      }
     }
   ],
   "shardShop": [
@@ -311,6 +326,36 @@
       "id": "ember_crown",
       "reward": { "kind": "cosmetic", "cosmetic": "ember_crown" },
       "price": 150,
+      "stock": 1
+    },
+    {
+      "id": "starlight_d",
+      "reward": { "kind": "cosmetic", "cosmetic": "starlight_d" },
+      "price": 100,
+      "stock": 1
+    },
+    {
+      "id": "starlight_e",
+      "reward": { "kind": "cosmetic", "cosmetic": "starlight_e" },
+      "price": 160,
+      "stock": 1
+    },
+    {
+      "id": "sticker_d",
+      "reward": { "kind": "cosmetic", "cosmetic": "sticker_d" },
+      "price": 100,
+      "stock": 1
+    },
+    {
+      "id": "nodes_e",
+      "reward": { "kind": "cosmetic", "cosmetic": "nodes_e" },
+      "price": 160,
+      "stock": 1
+    },
+    {
+      "id": "wardrobe_e",
+      "reward": { "kind": "cosmetic", "cosmetic": "wardrobe_e" },
+      "price": 160,
       "stock": 1
     }
   ]

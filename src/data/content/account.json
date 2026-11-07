@@ -63,7 +63,7 @@
           "amount": "40"
         }
       ],
-      "cosmetics": ["holo_waves"]
+      "cosmetics": ["holo_waves", "wardrobe_c"]
     },
     {
       "level": 25,
@@ -83,7 +83,7 @@
           "amount": "60"
         }
       ],
-      "cosmetics": ["prism_pointer"]
+      "cosmetics": ["prism_pointer", "nodes_c"]
     },
     {
       "level": 35,
@@ -103,7 +103,7 @@
           "amount": "80"
         }
       ],
-      "cosmetics": ["aurora_veil"]
+      "cosmetics": ["aurora_veil", "wardrobe_d"]
     },
     {
       "level": 45,
@@ -123,7 +123,7 @@
           "amount": "100"
         }
       ],
-      "cosmetics": ["gilded_filigree"]
+      "cosmetics": ["gilded_filigree", "nodes_d"]
     }
   ],
   "tree": [
