@@ -9,6 +9,7 @@
       "kind": "sword",
       "name": "Ember Blade"
     },
+    "evolution": "flameblade",
     "main": {
       "description": "Steady hits every 1 s",
       "modifiers": [
@@ -202,6 +203,7 @@
       "kind": "staff",
       "name": "Sapling Staff"
     },
+    "evolution": "rootbloom_staff",
     "main": {
       "description": "+10% logging",
       "modifiers": [

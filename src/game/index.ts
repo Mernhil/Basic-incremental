@@ -20,6 +20,7 @@ export * from './milestones';
 export * from './bulk';
 export * from './previews';
 export * from './mastery';
+export * from './stages';
 export { METALS, type Metal } from '../data';
 
 // ---- Progression layer (DESIGN.md 16): the contract with the UI, one line each ---------------
@@ -35,6 +36,22 @@ export {
   type BossMasteryInfo,
   type MasteryInfo,
 } from './mastery';
+export {
+  /** Growth stage 0..4 of a tree / mine tile (mine level milestones; trees: plots bought). */
+  tileStage,
+  /** Forged-edge stage 0..4 of a damage line (one step per milestone). */
+  edgeStage,
+} from './stages';
+export {
+  /** The item to draw in a card: its unique evolution from Gold ★6 on, else its generic item. */
+  cardItemKind,
+  /** The item to draw with its name and whether it is a unique evolution. */
+  cardItem,
+  /** Whether a rank is at least another (tier, then stars). */
+  rankAtLeast,
+  type CardItem,
+  type CardUpgradeResult,
+} from './cards';
 export {
   /** One tier-up moment for anything with tiers (mastery, medals, milestones, stages, cards). */
   type TierUp,
