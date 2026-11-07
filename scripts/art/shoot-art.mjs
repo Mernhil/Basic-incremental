@@ -37,6 +37,8 @@ const panels = await page.evaluate(
     const frame = await load('src/art/frame.ts');
     const evo = await load('src/art/evolutions.ts');
     const gems = await load('src/art/gems.ts');
+    const bosses = await load('src/art/bosses.ts');
+    const fx = await load('src/theme/effects.ts');
     const box = (vb, w, h, inner, bg = '#1a2030') =>
       `<svg viewBox="${vb}" width="${w}" height="${h}" style="background:${bg}">${inner}</svg>`;
     const fig = (svg, label) => `<figure>${svg}<figcaption>${label}</figcaption></figure>`;
@@ -133,19 +135,79 @@ const panels = await page.evaluate(
           )
           .join(''),
       ),
+      sec(
+        'bosses',
+        ['root_warden', 'cinder_lich', 'glacier_colossus', 'crystal_sentinel']
+          .map((b) => fig(box('-6 -8 112 112', 320, 320, bosses.bossArt(b, 3), '#141a26'), b))
+          .join(''),
+      ),
+      sec(
+        'hits',
+        ['slash-sparks', 'slash-chips', 'heavy-hit']
+          .map(
+            (e) =>
+              `<figure><div class="hitstage" data-effect="${e}" style="position:relative;width:240px;height:200px;background:#141a26;overflow:hidden"></div><figcaption>${e}</figcaption></figure>`,
+          )
+          .join(''),
+      ),
     ];
     document.body.innerHTML = html
       .filter((h) => !only.length || only.some((o) => h.includes(`id="${o}"`)))
       .join('');
+    // hits: play one on each stage; the screenshot lands on the held frame
+    let seed = 7;
+    const rng = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    for (const st of document.querySelectorAll('.hitstage'))
+      fx.playHit(st.dataset.effect, st, { rng });
     return [...document.querySelectorAll('section')].map((s) => s.id);
   },
   { gemList, only },
 );
 await page.waitForTimeout(2500);
-for (const id of panels)
+const replayHits = (rngSeed) =>
+  page.evaluate(async (s) => {
+    const fx = await import(
+      /* @vite-ignore */ new URL('src/theme/effects.ts', document.baseURI).href
+    );
+    let seed = s;
+    const rng = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    for (const st of document.querySelectorAll('.hitstage'))
+      fx.playHit(st.dataset.effect, st, { rng });
+  }, rngSeed);
+for (const id of panels) {
+  if (id === 'hits') {
+    await replayHits(7);
+    await page.waitForTimeout(140); // the held frame of the slash, the burst of the impact
+  }
   await page
     .locator(`#${id}`)
     .screenshot({ path: join(out, `${id}${reduced ? '-still' : ''}.png`) });
+}
+// native frames of each hit over its life (hard-pixel layer only)
+if (panels.includes('hits') && process.argv.includes('--frames')) {
+  await replayHits(11);
+  const shots = await page.evaluate(async () => {
+    const res = {};
+    for (let f = 0; f < 10; f++) {
+      for (const st of document.querySelectorAll('.hitstage')) {
+        const c = st.querySelector('.bi-fx--px canvas:last-child');
+        if (c) (res[st.dataset.effect] ??= []).push(c.toDataURL('image/png'));
+      }
+      await new Promise((r) => setTimeout(r, 45));
+    }
+    return res;
+  });
+  for (const [name, list] of Object.entries(shots)) {
+    const dir = join(out, 'frames', `hit-${name}`);
+    mkdirSync(dir, { recursive: true });
+    list.forEach((d, i) =>
+      writeFileSync(
+        join(dir, `${String(i).padStart(2, '0')}.png`),
+        Buffer.from(d.split(',')[1], 'base64'),
+      ),
+    );
+  }
+}
 
 // native-resolution frames of every live layer, for pixel_check.py and sheet.py
 if (process.argv.includes('--frames')) {
