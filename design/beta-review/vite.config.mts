@@ -9,6 +9,7 @@ export default defineConfig({
     outDir: resolve(import.meta.dirname, 'dist'),
     emptyOutDir: true,
     cssCodeSplit: false,
+    assetsInlineLimit: 100_000_000,
     lib: {
       entry: resolve(import.meta.dirname, 'review.ts'),
       formats: ['iife'],

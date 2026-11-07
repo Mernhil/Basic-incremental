@@ -9,7 +9,10 @@ const content = loadContent();
 const res = (id: string) => content.resources.find((r) => r.id === id)!;
 const tree = (id: string) => content.trees.find((t) => t.id === id)!;
 
-export const coin = (id: string, tier: number, size = 36): string =>
+export const gemArt = (id: string) => res(id).gem!;
+export const treeData = tree;
+
+export const coin =(id: string, tier: number, size = 36): string =>
   `<span class="ico" style="width:${size}px;height:${size}px">${svg(gemCoin(res(id).gem!, tier))}</span>`;
 export const boss = (a: BossArt, size = 200): string =>
   `<span class="boss" style="width:${size}px;height:${size}px">${svg(bossArt(a))}</span>`;

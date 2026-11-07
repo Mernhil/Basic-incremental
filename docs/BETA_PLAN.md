@@ -11,36 +11,46 @@ Working checklist for the first playable beta. If context resets, read this file
 
 ## Status
 
-| Phase | What                                                                                                                                                                                | Status                     | PR                                                                                   | Notes                                                                                                           |
-| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| A     | Design batch + review gate (DESIGN.md 6, 11.11, 11.12, 14, 15, proposed 16; review page A1–A16)                                                                                     | **Waiting for user picks** | [Mernhil/Basic-incremental#31](https://github.com/Mernhil/Basic-incremental/pull/31) | Review page: `design/beta-review/`. Screens in `design/beta-review/screens/`                                    |
-| 1     | Juice pass: stages, numbers, reactions, crits, milestones, buy multipliers, previews, welcome-back, sound + header mute                                                             | Not started                |                                                                                      |                                                                                                                 |
-| 2     | Progression layer: E1–E6, E8 (metal ladder, gem + boss mastery with migration, growing tiles, forged edges, ★6 evolutions, goal tracker). **Release 0.2.3**                         | Not started                |                                                                                      | Depends on section E answers                                                                                    |
-| 3     | Balance sim (lite): greedy buyer, N hours, table vs 11.7 targets. Run after every later phase                                                                                       | Not started                |                                                                                      |                                                                                                                 |
-| 4     | Card Portal (DESIGN 6 Beta portals), reveal animation, remove 1% boss card drop                                                                                                     | Not started                |                                                                                      |                                                                                                                 |
-| 5     | Wardrobe: 7 slots, rank gating, exclusives, owned buffs, set bonuses, upgrade levels, edge flourishes, ambient max-level, borders on level system, Wardrobe Gate. **Release 0.2.4** | Not started                |                                                                                      |                                                                                                                 |
-| 6     | Prestige (Ascension): reset/persist rules, Starlight + shop, prestige cosmetics, boss HP/attack scaling                                                                             | Not started                |                                                                                      |                                                                                                                 |
-| 7     | Achievements (25 + mastery/milestone ones) and shard shop                                                                                                                           | Not started                |                                                                                      |                                                                                                                 |
-| 8     | Account XP, levels, cost cap growth, E7 reward track, account tree (6 branches, respec), card enhancements (Silver ★1). **Release 0.2.5**                                           | Not started                |                                                                                      |                                                                                                                 |
-| 9     | Balance tooling + tuning: smarter sim, dev cheats panel (excluded from release), tune to 11.7                                                                                       | Not started                |                                                                                      |                                                                                                                 |
-| 10    | Beta polish: Settings page (reduced motion, number format, autosave interval, export/import, sound sliders), Report-an-issue button. **Release v0.3.0**                             | Not started                |                                                                                      | Brief was cut off after "pre-filled GitHub issue with version, save summary and…": confirm the rest at the gate |
+| Phase | What                                                                                                                                                                                | Status                                        | PR                                                                                   | Notes                                                                                                           |
+| ----- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| A     | Design batch + review gate (DESIGN.md 6, 11.11, 11.12, 14, 15, proposed 16; review page A1–A16)                                                                                     | **Round 1 answered, round 2 open (A13, A15)** | [Mernhil/Basic-incremental#31](https://github.com/Mernhil/Basic-incremental/pull/31) | Review page: `design/beta-review/`. Screens in `design/beta-review/screens/`                                    |
+| 1     | Juice pass: stages, numbers, reactions, crits, milestones, buy multipliers, previews, welcome-back, sound + header mute                                                             | Not started                                   |                                                                                      |                                                                                                                 |
+| 2     | Progression layer: E1–E6, E8 (metal ladder, gem + boss mastery with migration, growing tiles, forged edges, ★6 evolutions, goal tracker). **Release 0.2.3**                         | Not started                                   |                                                                                      | Depends on section E answers                                                                                    |
+| 3     | Balance sim (lite): greedy buyer, N hours, table vs 11.7 targets. Run after every later phase                                                                                       | Not started                                   |                                                                                      |                                                                                                                 |
+| 4     | Card Portal (DESIGN 6 Beta portals), reveal animation, remove 1% boss card drop                                                                                                     | Not started                                   |                                                                                      |                                                                                                                 |
+| 5     | Wardrobe: 7 slots, rank gating, exclusives, owned buffs, set bonuses, upgrade levels, edge flourishes, ambient max-level, borders on level system, Wardrobe Gate. **Release 0.2.4** | Not started                                   |                                                                                      |                                                                                                                 |
+| 6     | Prestige (Ascension): reset/persist rules, Starlight + shop, prestige cosmetics, boss HP/attack scaling                                                                             | Not started                                   |                                                                                      |                                                                                                                 |
+| 7     | Achievements (25 + mastery/milestone ones) and shard shop                                                                                                                           | Not started                                   |                                                                                      |                                                                                                                 |
+| 8     | Account XP, levels, cost cap growth, E7 reward track, account tree (6 branches, respec), card enhancements (Silver ★1). **Release 0.2.5**                                           | Not started                                   |                                                                                      |                                                                                                                 |
+| 9     | Balance tooling + tuning: smarter sim, dev cheats panel (excluded from release), tune to 11.7                                                                                       | Not started                                   |                                                                                      |                                                                                                                 |
+| 10    | Beta polish: Settings page (reduced motion, number format, autosave interval, export/import, sound sliders), Report-an-issue button. **Release v0.3.0**                             | Not started                                   |                                                                                      | Brief was cut off after "pre-filled GitHub issue with version, save summary and…": confirm the rest at the gate |
 
 ## Review gate answers
 
-_To fill in when the user replies._
+Round 1 answered 2026-11-07. Round 2 (A13 redrawn, A15 rebuilt on the existing art) is open.
 
-| Set                         | Pick |     | Set                       | Pick |
-| --------------------------- | ---- | --- | ------------------------- | ---- |
-| A1 Dungeons layout          |      |     | A9 Prestige               |      |
-| A2 Production layout        |      |     | A10 Achievements + shop   |      |
-| A3 Home role                |      |     | A11 Welcome back          |      |
-| A4 Floating numbers         |      |     | A12 Medals + metal ladder |      |
-| A5 Kill + drop              |      |     | A13 Tile growth           |      |
-| A6 Summon reveal            |      |     | A14 Forged edges          |      |
-| A7 Wardrobe                 |      |     | A15 ★6 evolutions         |      |
-| A8 Skill tree + enhancement |      |     | A16 Goals + reward track  |      |
+| Set                         | Pick                             |
+| --------------------------- | -------------------------------- |
+| A1 Dungeons layout          | **D** Full-bleed stage, drawer   |
+| A2 Production layout        | **A** Two fields stacked + rail  |
+| A3 Home role                | **A** Command centre             |
+| A4 Floating numbers         | **B** Sticker numerals           |
+| A5 Kill + drop              | **B** Loot shower                |
+| A6 Summon reveal            | **E** Shelf of portals + modal   |
+| A7 Wardrobe                 | **A** Mannequin card             |
+| A8 Skill tree + enhancement | **A** Radial constellation       |
+| A9 Prestige                 | **E** Portal gate                |
+| A10 Achievements + shop     | **C** Sticker book               |
+| A11 Welcome back            | **B** Card fan                   |
+| A12 Medals + metal ladder   | **D** Faceted star               |
+| A13 Tile growth             | **A** concept, overhaul: round 2 |
+| A14 Forged edges            | **D** Ladder strip               |
+| A15 ★6 evolutions           | round 2 (use the existing art)   |
+| A16 Goals + reward track    | **B** Quest scroll               |
 
-Section E (DESIGN 16): E1 _ · E2 _ · E3 _ · E4 _ · E5 _ · E6 _ · E7 _ · E8 _ · E9 _
+Section E (DESIGN 16): no line was rejected and the picks for A12–A16 build on E1–E8; treated as accepted unless the user says otherwise in round 2.
+
+User guidance from round 1: reuse the art already made earlier where possible: the unique evolutions, the weapons (scimitar, reaper sickle, moon bow, cleaver, pickaxes, axes) and the hit animations from the "Item Rarity and Effects" and "Hit Animation Options" pages and the in-game `effects.ts`.
 
 ## Notes
 
