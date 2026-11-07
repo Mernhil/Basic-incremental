@@ -26,6 +26,7 @@ describe('sound registry', () => {
       'summonEpic',
       'summonLegendary',
       'summonMythic',
+      'ascend',
       'click',
     ]) {
       expect(SOUND_IDS).toContain(id);
