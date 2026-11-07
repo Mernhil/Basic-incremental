@@ -220,8 +220,8 @@ describe('dungeon cosmetic drops are owned', () => {
 });
 
 describe('the Wardrobe Gate (DESIGN.md 6)', () => {
-  it('waits for the Wardrobe screen: not among the open portals yet', () => {
-    expect(content.portals.some((p) => p.id === 'wardrobe_gate')).toBe(false);
+  it('opens with the Wardrobe screen (Phase 5b): among the open portals', () => {
+    expect(content.portals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
     expect(content.allPortals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
   });
 

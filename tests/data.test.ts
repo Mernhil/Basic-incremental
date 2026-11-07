@@ -76,7 +76,7 @@ describe('bundled content', () => {
       ['Frostspire Vault', 'Glacier Colossus'],
     ]);
     expect(content.cosmetics.length).toBeGreaterThan(7);
-    expect(content.portals).toHaveLength(1);
+    expect(content.portals).toHaveLength(2); // Card Portal and Wardrobe Gate (open with the Wardrobe)
     expect(content.dungeons.map((d) => d.boss.name)).toEqual([
       'Root Warden',
       'Cinder Lich',
