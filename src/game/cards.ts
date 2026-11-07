@@ -10,6 +10,7 @@ import type {
   UniqueItemKind,
 } from '../data';
 import { JOBS, MAX_STARS, RANK_TIERS } from '../data/schemas';
+import { accountLevel } from './account';
 import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -223,11 +224,6 @@ export function settleCardLevels(state: GameState, content: Content, report: Tic
 
 // ---- cost and loadouts -----------------------------------------------------------------------
 
-/** Account level. Stays 1 until account XP arrives (Phase 11). */
-export function accountLevel(): number {
-  return 1;
-}
-
 /** Loadout cost of a card, by rarity (11.4). 0 for unknown ids. */
 export function cardCost(content: Content, cardId: string): number {
   const card = content.cardById.get(cardId);
@@ -242,7 +238,7 @@ export function loadoutCostCap(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): number {
   const { base, perLevel } = content.cardRules.costCap;
-  const value = base + perLevel * (accountLevel() - 1);
+  const value = base + perLevel * (accountLevel(state) - 1);
   return Math.max(
     0,
     Math.floor(statValue('loadout.costCap', value, modifiers, { job }).toNumber()),

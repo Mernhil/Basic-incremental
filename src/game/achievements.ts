@@ -1,4 +1,5 @@
 import { RANK_TIERS, type Achievement, type AchievementCondition, type Content } from '../data';
+import { skillPointsSpent } from './account';
 import { grantCard } from './cards';
 import { damageLevel } from './combat';
 import { Decimal } from './num';
@@ -17,12 +18,6 @@ import type { CardGain } from './report';
  * whole-second grid (tick.ts), offline progress checks them after the session, and actions can
  * call `checkAchievements` straight after.
  */
-
-/** Skill points spent in the account tree (0 until it exists). */
-export function skillPointsSpent(state: GameState): number {
-  void state;
-  return 0;
-}
 
 /** Where a condition stands: the value read from the state and the target to reach. */
 function measure(
@@ -89,7 +84,7 @@ function measure(
       return { value: owned.length, target: condition.amount };
     }
     case 'skill_points_spent':
-      return { value: skillPointsSpent(state), target: condition.amount };
+      return { value: skillPointsSpent(state, content), target: condition.amount };
     case 'ascensions':
       return { value: state.prestigeCount, target: condition.amount };
     case 'offline_hours':

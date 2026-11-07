@@ -60,6 +60,8 @@ export interface TickReport {
   tierUps: TierUp[];
   /** Achievement ids unlocked, in order (their rewards are already granted). */
   achievements: string[];
+  /** Account level before and after, when it rose (the track's rewards are granted). */
+  accountLevel: { from: number; to: number } | null;
 }
 
 export function emptyReport(): TickReport {
@@ -78,6 +80,7 @@ export function emptyReport(): TickReport {
     knockouts: 0,
     tierUps: [],
     achievements: [],
+    accountLevel: null,
   };
 }
 
@@ -97,6 +100,12 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.cardDrops.push(...add.cardDrops);
   into.tierUps.push(...add.tierUps);
   into.achievements.push(...add.achievements);
+  if (add.accountLevel) {
+    into.accountLevel = {
+      from: into.accountLevel?.from ?? add.accountLevel.from,
+      to: add.accountLevel.to,
+    };
+  }
   for (const [id, change] of Object.entries(add.cardLevels)) {
     const prev = into.cardLevels[id];
     into.cardLevels[id] = prev ? { from: prev.from, to: change.to } : { ...change };

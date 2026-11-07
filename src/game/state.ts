@@ -43,6 +43,8 @@ export interface GameState {
   achievements: Record<string, number>;
   /** Shard shop item id -> purchases made. */
   shardShop: Record<string, number>;
+  /** Account XP, level, account tree and respecs. */
+  account: AccountState;
 }
 
 /** Ascension progress. Kept through prestige (the run start moves forward on each ascension). */
@@ -204,6 +206,7 @@ export function createInitialState(content: Content): GameState {
     stats: { playTimeMs: 0, bossKills: 0, longestOfflineMs: 0 },
     achievements: {},
     shardShop: {},
+    account: initialAccount(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -234,6 +237,7 @@ export function cloneState(state: GameState): GameState {
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
+    account: { ...state.account, skills: { ...state.account.skills } },
     prestige: {
       runStart: { ...state.prestige.runStart },
       shop: { ...state.prestige.shop },
@@ -284,6 +288,23 @@ export interface OwnedCard {
   xp: Decimal;
   /** Extra copies held, spent on star-ups. */
   duplicates: number;
+  /** Chosen card enhancement option ids (DESIGN.md 10b). */
+  enhancements: string[];
+}
+
+/** The account (DESIGN.md 10a, 16 E7). Kept through prestige. */
+export interface AccountState {
+  /** XP toward the next level (0 at the max level). */
+  xp: Decimal;
+  level: number;
+  /** Account tree node id -> rank bought. */
+  skills: Record<string, number>;
+  /** Free respecs used this run (reset on ascension). */
+  freeRespecsUsed: number;
+}
+
+export function initialAccount(): AccountState {
+  return { xp: new Decimal(0), level: 1, skills: {}, freeRespecsUsed: 0 };
 }
 
 /** One job's loadout: 1 main card and 3 support slots (null = empty). */
@@ -309,7 +330,14 @@ export function emptyCardLoadout(): CardLoadout {
 
 /** A card as first obtained: Bronze ★1, Lv 1, no XP or duplicates. */
 export function newOwnedCard(): OwnedCard {
-  return { tier: 'bronze', stars: 1, level: 1, xp: new Decimal(0), duplicates: 0 };
+  return {
+    tier: 'bronze',
+    stars: 1,
+    level: 1,
+    xp: new Decimal(0),
+    duplicates: 0,
+    enhancements: [],
+  };
 }
 
 /** A new game owns the start cards (cardRules.startCards), each leading its job. */
@@ -335,7 +363,12 @@ export function initialCards(content: Content): CardState {
 export function cloneCards(c: CardState): CardState {
   const loadout = (l: CardLoadout): CardLoadout => ({ main: l.main, supports: [...l.supports] });
   return {
-    owned: Object.fromEntries(Object.entries(c.owned).map(([id, card]) => [id, { ...card }])),
+    owned: Object.fromEntries(
+      Object.entries(c.owned).map(([id, card]) => [
+        id,
+        { ...card, enhancements: [...card.enhancements] },
+      ]),
+    ),
     loadouts: {
       mining: loadout(c.loadouts.mining),
       logging: loadout(c.loadouts.logging),

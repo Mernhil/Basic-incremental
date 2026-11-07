@@ -14,6 +14,8 @@ import type {
   CosmeticRules,
   Achievement,
   ShardShopItem,
+  AccountConfig,
+  EnhancementsConfig,
   ProductionConfig,
   Progression,
   Rarity,
@@ -41,6 +43,8 @@ import progressionJson from './content/progression.json';
 import prestigeJson from './content/prestige.json';
 import cosmeticRulesJson from './content/cosmeticRules.json';
 import achievementsJson from './content/achievements.json';
+import accountJson from './content/account.json';
+import enhancementsJson from './content/enhancements.json';
 
 export * from './schemas';
 
@@ -74,6 +78,10 @@ export interface Content {
   achievements: Achievement[];
   /** Shard shop stock (card shards). */
   shardShop: ShardShopItem[];
+  /** Account XP, levels, reward track, account tree and respec (DESIGN.md 10a, 16 E7). */
+  account: AccountConfig;
+  /** Card enhancements (DESIGN.md 10b). */
+  enhancements: EnhancementsConfig;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -139,6 +147,8 @@ export function validateContent(raw: RawContent): Content {
     prestige,
     cosmeticRules,
     achievements: achievementsFile,
+    account,
+    enhancements,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -153,6 +163,7 @@ export function validateContent(raw: RawContent): Content {
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
     issues,
   );
+  checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
   checkCosmeticSources(
     { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop },
     issues,
@@ -177,6 +188,8 @@ export function validateContent(raw: RawContent): Content {
       cards,
       cardRules,
       prestige,
+      account,
+      enhancements,
     },
     issues,
   );
@@ -207,6 +220,8 @@ export function validateContent(raw: RawContent): Content {
     cosmeticRules,
     achievements,
     shardShop,
+    account,
+    enhancements,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -344,6 +359,8 @@ function checkModifiers(
     | 'cards'
     | 'cardRules'
     | 'prestige'
+    | 'account'
+    | 'enhancements'
   >,
   issues: string[],
 ): void {
@@ -375,6 +392,64 @@ function checkModifiers(
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
   }
   c.prestige.shop.forEach((x, i) => check(`prestige.json › shop › [${i}] › perLevel`, x.perLevel));
+  c.account.tree.forEach((x, i) => check(`account.json › tree › [${i}] › perRank`, x.perRank));
+  for (const [card, options] of Object.entries(c.enhancements.cards)) {
+    options.forEach((o, i) =>
+      check(`enhancements.json › cards › ${card} › [${i}] › modifiers`, o.modifiers),
+    );
+  }
+}
+
+/** The account tree, reward track and enhancement lists name things that exist. */
+function checkAccount(
+  c: Pick<Content, 'resources' | 'cosmetics' | 'cards' | 'account' | 'enhancements'>,
+  issues: string[],
+): void {
+  const ids = new Set(c.account.tree.map((n) => n.id));
+  const seen = new Set<string>();
+  c.account.tree.forEach((n, i) => {
+    if (seen.has(n.id)) issues.push(`account.json › tree › [${i}] › id: duplicate "${n.id}"`);
+    seen.add(n.id);
+    n.requires.forEach((r, j) => {
+      if (!ids.has(r) || r === n.id) {
+        issues.push(`account.json › tree › [${i}] › requires › [${j}]: unknown node "${r}"`);
+      }
+    });
+  });
+  const resources = new Set(c.resources.map((x) => x.id));
+  const cosmetics = new Set(c.cosmetics.map((x) => x.id));
+  const levels = new Set<number>();
+  c.account.rewardTrack.forEach((e, i) => {
+    const where = `account.json › rewardTrack › [${i}]`;
+    if (e.level > c.account.levels.maxLevel) issues.push(`${where} › level: above the max level`);
+    if (levels.has(e.level)) issues.push(`${where} › level: level ${e.level} is listed twice`);
+    levels.add(e.level);
+    e.resources.forEach((r, j) => {
+      if (!resources.has(r.resource)) {
+        issues.push(`${where} › resources › [${j}]: unknown resource "${r.resource}"`);
+      }
+    });
+    e.cosmetics.forEach((id, j) => {
+      if (!cosmetics.has(id))
+        issues.push(`${where} › cosmetics › [${j}]: unknown cosmetic "${id}"`);
+    });
+  });
+  const cards = new Set(c.cards.map((x) => x.id));
+  for (const [card, options] of Object.entries(c.enhancements.cards)) {
+    if (!cards.has(card)) issues.push(`enhancements.json › cards › ${card}: unknown card`);
+    const optionIds = new Set<string>();
+    options.forEach((o, i) => {
+      if (optionIds.has(o.id)) {
+        issues.push(`enhancements.json › cards › ${card} › [${i}] › id: duplicate "${o.id}"`);
+      }
+      optionIds.add(o.id);
+    });
+  }
+  for (const card of c.cards) {
+    if (!c.enhancements.cards[card.id]) {
+      issues.push(`enhancements.json › cards: "${card.id}" has no enhancement options`);
+    }
+  }
 }
 
 /**
@@ -766,5 +841,7 @@ export function loadContent(): Content {
     prestige: prestigeJson,
     cosmeticRules: cosmeticRulesJson,
     achievements: achievementsJson,
+    account: accountJson,
+    enhancements: enhancementsJson,
   });
 }

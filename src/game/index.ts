@@ -26,6 +26,7 @@ export * from './portals';
 export * from './prestige';
 export * from './wardrobe';
 export * from './achievements';
+export * from './account';
 export { METALS, type Metal } from '../data';
 
 // ---- Ascension (DESIGN.md 3, 16): the contract with the UI, one line each ---------------------
@@ -55,6 +56,42 @@ export {
   type AscensionResetPart,
   type AscensionPersistPart,
 } from './prestige';
+// ---- Account, skill tree, card enhancements (DESIGN.md 10, 16 E7): the contract with the UI ----
+
+export {
+  /** Header: account level, XP toward the next level, bar 0..1, skill points (total/spent/free). */
+  accountInfo,
+  /** Account level of a state. */
+  accountLevel,
+  /** XP from one level to the next (quick early, slow later). */
+  xpToNextAccountLevel,
+  /** The reward track: every level 2..max with skill points, sigils, cosmetics, cost cap, reached. */
+  rewardTrack,
+  /** The account tree: each node's rank, max, requirements met, can buy, bonus now / next. */
+  skillTree,
+  /** Buys one rank of a tree node with skill points. */
+  buySkill,
+  /** Respec: free once per ascension, else its Starlight price; points refunded. */
+  respecInfo,
+  /** Refunds every skill point (free or for Starlight). */
+  respecSkills,
+  /** A card's enhancement chart: unlocked, budget, spent, options (chosen, can choose). */
+  cardEnhancements,
+  /** Picks one enhancement option for a card within its budget. */
+  chooseEnhancement,
+  /** Clears a card's enhancements (free). */
+  resetEnhancements,
+  type AccountInfo,
+  type TrackLevel,
+  type SkillNodeInfo,
+  type SkillPoints,
+  type SkillBuyResult,
+  type RespecInfo,
+  type RespecResult,
+  type CardEnhancementInfo,
+  type EnhanceResult,
+} from './account';
+
 // ---- Achievements and shard shop (DESIGN.md 11.6, 17): the contract with the UI ---------------
 
 export {
