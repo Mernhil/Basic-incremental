@@ -322,3 +322,137 @@ export function pixelNumberMarkup(style: string, text: string, scale = 2): strin
   if (!cv) return '';
   return `<img class="bi-pxnum" alt="" src="${cv.toDataURL()}" width="${cv.width * scale}" height="${cv.height * scale}" style="${PIXELATED}">`;
 }
+
+// ---- B6 sticker styles -------------------------------------------------------------------------
+
+export type StickerChapter = 'gathering' | 'battle' | 'cards' | 'wardrobe' | 'journey';
+export const STICKER_VIEWBOX = '0 0 74 74';
+const STICKERS = COSMETIC_META.stickers as unknown as { achievements: readonly string[] };
+
+/**
+ * An achievement sticker as SVG markup on a 74 x 74 viewBox: the style's die-cut base in the
+ * chapter colour and the achievement's ~50 px picture on it. Locked stickers use the style's grey
+ * base and a grey print of the picture. Pass anything that is not an achievement id (for example
+ * the chapter) for a blank sticker.
+ */
+export function stickerArt(
+  styleId: SkinStyle | string,
+  achievementId: string,
+  chapter: StickerChapter,
+  unlocked: boolean,
+): string {
+  const base = spriteImage(`cos-sticker-${styleId}-${unlocked ? chapter : 'locked'}`, 0, 0, 74, 74);
+  if (!STICKERS.achievements.includes(achievementId)) return base;
+  return base + spriteImage(`cos-ach-${achievementId}${unlocked ? '' : '-grey'}`, 11, 11, 52, 52);
+}
+
+/** The card-shard icon (32 x 32, viewBox '0 0 32 32'). */
+export function cardShardIcon(): string {
+  return spriteImage('cos-card-shard', 0, 0, 32, 32);
+}
+
+// ---- B7 skill nodes and the star chart ---------------------------------------------------------
+
+export type SkillBranch = 'logging' | 'mining' | 'combat' | 'luck' | 'collection' | 'automation';
+export type NodeState = 'locked' | 'open' | 'owned';
+
+/** A skill-tree gem node as SVG markup on its own viewBox (24 x 24, keystones 32 x 32). */
+export function skillNode(
+  styleId: SkinStyle | string,
+  branch: SkillBranch | string,
+  state: NodeState,
+  keystone = false,
+): string {
+  const n = keystone ? 32 : 24;
+  return spriteImage(`cos-${keystone ? 'key' : 'node'}-${styleId}-${branch}-${state}`, 0, 0, n, n);
+}
+
+export interface ChartStar {
+  /** Position on the 200 x 120 chart grid (whole pixels). */
+  x: number;
+  y: number;
+  state: NodeState;
+  major?: boolean;
+}
+
+export const STAR_CHART_VIEWBOX = '0 0 200 120';
+
+/**
+ * The card enhancement star chart as SVG markup on a '0 0 200 120' viewBox: the night-sky panel,
+ * links as one-pixel dotted lines (solid and lit once both ends are owned) and a star per option.
+ * Positions are the caller's (whole pixels on the chart grid).
+ */
+export function starChart(
+  styleId: SkinStyle | string,
+  stars: readonly ChartStar[],
+  links: readonly (readonly [number, number])[],
+): string {
+  const c = (COSMETIC_META.nodes as unknown as { chart: { line: string; lit: string } }).chart;
+  let out = spriteImage(`cos-chartsky-${styleId}`, 0, 0, 200, 120);
+  for (const [a, b] of links) {
+    const p = stars[a];
+    const q = stars[b];
+    if (!p || !q) continue;
+    const on = p.state === 'owned' && q.state === 'owned';
+    const n = Math.max(Math.abs(q.x - p.x), Math.abs(q.y - p.y), 1);
+    for (let i = 0; i <= n; i++) {
+      if (!on && i % 4 >= 2) continue;
+      const x = Math.round(p.x + ((q.x - p.x) * i) / n);
+      const y = Math.round(p.y + ((q.y - p.y) * i) / n);
+      out += `<rect x="${x}" y="${y}" width="1" height="1" fill="${on ? c.lit : c.line}"/>`;
+    }
+  }
+  for (const s of stars) {
+    const n = s.major ? 24 : 18;
+    const name = `cos-${s.major ? 'chartmajor' : 'chart'}-${styleId}-${s.state}`;
+    out += spriteImage(name, s.x - n / 2, s.y - n / 2, n, n);
+  }
+  return `<g shape-rendering="crispEdges">${out}</g>`;
+}
+
+// ---- B10 Wardrobe chrome -------------------------------------------------------------------------
+
+export type WardrobePart =
+  | 'plate'
+  | 'plate-on'
+  | 'tile'
+  | 'tile-on'
+  | 'socket'
+  | 'rung-off'
+  | 'rung-next'
+  | 'rung-done'
+  | 'link'
+  | 'link-done';
+
+export interface ChromePiece extends SpriteInfo {
+  /** Nine-slice inset in pixels (0: draw as is). Use with `border-image` at a whole scale. */
+  slice: number;
+}
+
+const WD = COSMETIC_META.wardrobe as unknown as {
+  perRarity: readonly string[];
+  parts: Record<string, readonly [number, number, number]>;
+};
+
+/**
+ * A Wardrobe chrome piece of a style. Style 'e' (rarity glass) is drawn per rarity: pass the
+ * item's rarity for its plates, tiles and rungs.
+ */
+export function wardrobeChrome(
+  styleId: SkinStyle | string,
+  part: WardrobePart,
+  rarity = 'common',
+): ChromePiece | undefined {
+  const perRarity =
+    WD.perRarity.includes(styleId) && !['socket', 'link', 'link-done'].includes(part);
+  const s = sprite(`cos-wd-${styleId}-${part}${perRarity ? `-${rarity}` : ''}`);
+  const p = WD.parts[part];
+  return s && p ? { ...s, slice: p[2] } : undefined;
+}
+
+/** CSS declarations that draw a chrome piece on an element (nine-slice border for plates, tiles). */
+export function chromeCss(piece: ChromePiece, scale = 2): string {
+  if (!piece.slice) return `background:url('${piece.url}') 0 0/100% 100% no-repeat;${PIXELATED}`;
+  const b = piece.slice * scale;
+  return `border:${b}px solid transparent;border-image:url('${piece.url}') ${piece.slice} fill / ${b}px stretch;${PIXELATED}`;
+}
