@@ -1,54 +1,30 @@
 import { describe, expect, it } from 'vitest';
-import { FRAME_METALS, cardFrame, mirror } from '../src/renderer/src/art/frame';
+import { RANK_TIERS } from '../src/data';
+import { FRAME_METALS, frameVector, mirror } from '../src/renderer/src/art/vector/frame';
+import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
-describe('card frame (DESIGN.md 5 and 13)', () => {
+describe('card frame ladder (DESIGN.md 5 and 13)', () => {
   it('mirrors a path across the card centre line', () => {
     expect(mirror('M6 30 L-10 6')).toBe('M170 30 L186 6');
   });
 
-  it('grows with the tier and keeps every ornament from the tiers below', () => {
-    const bronze = cardFrame('bronze');
-    const silver = cardFrame('silver');
-    const gold = cardFrame('gold');
-    const prism = cardFrame('prismatic');
-    const spike = 'M6 30 L-10 6 L20 13Z';
-    const crest = 'M76 6 L88 -8 L100 6 L88 14Z';
-    const wing = 'M4 70 C-32 50';
-    expect([bronze, silver, gold, prism].map((f) => f.includes(spike))).toEqual([
-      false,
-      true,
-      true,
-      true,
-    ]);
-    expect([bronze, silver, gold, prism].map((f) => f.includes(crest))).toEqual([
-      false,
-      false,
-      true,
-      true,
-    ]);
-    expect([bronze, silver, gold, prism].map((f) => f.includes(wing))).toEqual([
-      false,
-      false,
-      false,
-      true,
-    ]);
+  it('fills more sockets and grows the crest with every tier', () => {
+    const gems = (t: (typeof RANK_TIERS)[number]) =>
+      (frameVector(t).match(/fill="#ffffff"\/>/g) ?? []).length;
+    // every filled socket gem carries a white glint
+    expect(RANK_TIERS.map(gems)).toEqual([0, 2, 6, 8]); // Prismatic: six sockets and two crown gems
+    expect(frameVector('bronze')).toContain('#5fae8a'); // patina spots
+    expect(frameVector('gold')).toContain('#b0203e'); // red velvet liner
+    expect(frameVector('prismatic')).toContain('#c8a8ff'); // radiant crown
   });
 
-  it('draws each tier in its own metal, and Prismatic in shifting rainbow metal', () => {
-    expect(cardFrame('bronze')).toContain(FRAME_METALS.bronze.base);
-    expect(cardFrame('gold')).toContain(FRAME_METALS.gold.gem);
-    const prism = cardFrame('prismatic');
-    expect(prism).toContain('<linearGradient');
-    expect(prism).toContain('bi-frame__prism');
+  it('draws each tier in its own metal', () => {
+    for (const t of ['bronze', 'silver', 'gold'] as const)
+      expect(frameVector(t)).toContain(FRAME_METALS[t].base);
+    expect(frameVector('prismatic')).toContain('#eef4ff'); // the crystal band
   });
 
-  it('marks the plate rim so only the Knight plate family shows it', () => {
-    expect(cardFrame('silver')).toContain('class="bi-frame__rim"');
-  });
-
-  it('never repeats an id across frames on one page', () => {
-    const markup = cardFrame('prismatic') + cardFrame('prismatic') + cardFrame('gold');
-    const ids = [...markup.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
-    expect(new Set(ids).size).toBe(ids.length);
+  it('is baked for every tier on the whole-card grid (132 x 186 card, room for the crest)', () => {
+    for (const t of RANK_TIERS) expect(sprite(`frame-${t}`)).toMatchObject({ w: 183, h: 237 });
   });
 });
