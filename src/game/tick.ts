@@ -1,6 +1,7 @@
 import type { Content } from '../data';
 import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
 import { advanceCombat, advanceHarvestBursts } from './combat';
+import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
 import { jobProductionPerSecond, PRODUCTION_JOBS, producerCounts } from './production';
@@ -45,15 +46,22 @@ export function advance(
     }
     current = advanceSpan(current, content, toBoundary, rng, report);
     settleCardLevels(current, content, report);
+    settleMastery(current, content, report);
     remaining -= toBoundary;
   }
   return { state: current, report };
 }
 
-/** Whether a card would have a level-up pending after `dtMs`. Runs a throwaway copy. */
+/**
+ * Whether a card level-up or a mastery tier would be pending after `dtMs`. Runs a throwaway
+ * copy. Kills and harvests never depend on random drops, so the fixed lookahead rng is exact.
+ */
 function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
   const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport());
-  return Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned));
+  return (
+    Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
+    masteryDue(ahead, content)
+  );
 }
 
 /** One span with fixed modifiers: production, harvest bursts, card XP and combat. */
@@ -86,10 +94,19 @@ function advanceSpan(
   // Harvest bursts: production ticks fill each job's gauge; full = a bonus harvest.
   const burstSeconds = advanceHarvestBursts(next, state, content, seconds, report, modifiers);
 
-  // Card XP: each job's loadout gains XP per unit harvested (normal output and bursts).
+  // Card XP: each job's loadout gains XP per unit harvested (normal output and bursts), and
+  // every gem harvested counts toward its mastery.
   for (const job of PRODUCTION_JOBS) {
+    const harvestSeconds = burstSeconds[job].add(seconds);
+    countHarvest(
+      next,
+      content,
+      Object.fromEntries(
+        Object.entries(perJob[job]).map(([id, perSecond]) => [id, perSecond.mul(harvestSeconds)]),
+      ),
+    );
     const perSecond = Object.values(perJob[job]).reduce((a, b) => a.add(b), new Decimal(0));
-    const units = perSecond.mul(burstSeconds[job].add(seconds));
+    const units = perSecond.mul(harvestSeconds);
     grantLoadoutXp(next, content, job, units.mul(productionXpPerUnit(content, job, modifiers)));
   }
 

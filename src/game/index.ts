@@ -19,6 +19,28 @@ export * from './cards';
 export * from './milestones';
 export * from './bulk';
 export * from './previews';
+export * from './mastery';
+export { METALS, type Metal } from '../data';
+
+// ---- Progression layer (DESIGN.md 16): the contract with the UI, one line each ---------------
+
+export {
+  /** A production gem's mastery: settled tier 0..4, metal, lifetime total, next threshold, bar 0..1. */
+  gemMastery,
+  /** A dungeon's medal (kills) or a special dungeon's (best score): tier, metal, bar 0..1. */
+  bossMastery,
+  /** The metal of a tier 0..4 (stone .. prismatic). */
+  metalOf,
+  type GemMasteryInfo,
+  type BossMasteryInfo,
+  type MasteryInfo,
+} from './mastery';
+export {
+  /** One tier-up moment for anything with tiers (mastery, medals, milestones, stages, cards). */
+  type TierUp,
+  /** What tiered up. */
+  type TierUpKind,
+} from './report';
 
 // ---- Juice pass (DESIGN.md 11.11, 11.12, 14): the contract with the UI, one line each ----------
 

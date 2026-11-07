@@ -1,3 +1,4 @@
+import { isDecimalString } from './num';
 import { SaveError } from './saveError';
 
 /** Upgrades the state payload from version N to N + 1. Must not mutate its input. */
@@ -19,7 +20,33 @@ export const MIGRATIONS: MigrationTable = {
   4: v4ToV5,
   5: v5ToV6,
   6: v6ToV7,
+  7: v7ToV8,
 };
+
+/** Production gem ids at save format 7 (a snapshot, like the other steps). */
+const V7_GEMS = [
+  'oak_gem',
+  'ironbark_gem',
+  'moonwillow_gem',
+  'copper_gem',
+  'iron_gem',
+  'grotto_gem',
+] as const;
+
+/**
+ * v7 -> v8: gem mastery (DESIGN.md 16, E2). Each gem's lifetime total starts at the amount owned.
+ * Settled tiers are left out: loading fills them in from the totals and kills (they need the
+ * thresholds from the content).
+ */
+function v7ToV8(state: Record<string, unknown>): Record<string, unknown> {
+  const resources = isRecord(state['resources']) ? state['resources'] : {};
+  const harvested: Record<string, string> = {};
+  for (const id of V7_GEMS) {
+    const amount = resources[id];
+    if (typeof amount === 'string' && isDecimalString(amount)) harvested[id] = amount;
+  }
+  return { ...state, mastery: { harvested } };
+}
 
 /** v6 -> v7: card health (DESIGN.md 11.10). Loadouts start at full health and not knocked out. */
 function v6ToV7(state: Record<string, unknown>): Record<string, unknown> {

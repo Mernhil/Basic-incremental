@@ -159,3 +159,45 @@ describe('v5 -> v6 (woods and ores become gems)', () => {
     expect(input).toEqual({ resources: { oak_wood: '1' } });
   });
 });
+
+describe('v7 -> v8 (gem mastery, DESIGN.md 16 E2)', () => {
+  const step = MIGRATIONS[7]!;
+
+  it('starts each gem lifetime total at the amount owned and leaves tiers to be settled', () => {
+    const resources = {
+      oak_gem: '1200',
+      ironbark_gem: '3',
+      moonwillow_gem: '0',
+      copper_gem: '1.5e5',
+      iron_gem: '7',
+      grotto_gem: '2',
+      moss_sigil: '9',
+      frost_core: '4',
+    };
+    expect(step({ resources, other: 1 })).toEqual({
+      resources,
+      other: 1,
+      mastery: {
+        harvested: {
+          oak_gem: '1200',
+          ironbark_gem: '3',
+          moonwillow_gem: '0',
+          copper_gem: '1.5e5',
+          iron_gem: '7',
+          grotto_gem: '2',
+        },
+      },
+    });
+  });
+
+  it('copes with missing or junk resources and does not mutate its input', () => {
+    expect(step({})).toEqual({ mastery: { harvested: {} } });
+    expect(step({ resources: { oak_gem: 5, copper_gem: 'x' } })).toEqual({
+      resources: { oak_gem: 5, copper_gem: 'x' },
+      mastery: { harvested: {} },
+    });
+    const input = { resources: { oak_gem: '1' } };
+    step(input);
+    expect(input).toEqual({ resources: { oak_gem: '1' } });
+  });
+});

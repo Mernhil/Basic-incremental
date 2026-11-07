@@ -3,6 +3,7 @@ import { Decimal, type DecimalSource } from './num';
 import type { GameState } from './state';
 import { detectSets } from './theme';
 import { cardModifiers } from './cards';
+import { masteryModifiers } from './mastery';
 
 /**
  * The shared modifier pipeline (DESIGN.md 11.5). Every tunable number goes through
@@ -18,6 +19,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'card',
   'prestige',
   'achievement',
+  /** Gem mastery and boss medals (DESIGN.md 16, E2 and E3). */
+  'mastery',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -133,6 +136,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Cards in the loadouts: main abilities (with main growth) and support effects.
   out.push(...cardModifiers(state, content));
+
+  // Settled gem mastery tiers and boss medals.
+  out.push(...masteryModifiers(state, content));
 
   return out;
 }

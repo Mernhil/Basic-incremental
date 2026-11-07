@@ -258,3 +258,32 @@ describe('save format v3: production', () => {
     expect(serializeState(state).production).toEqual(serializeState(freshState()).production);
   });
 });
+
+describe('save format v8: mastery', () => {
+  it('loads a v7 save with lifetime totals from the gems owned and tiers settled from them', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.version = 7;
+    delete json.state.mastery;
+    json.state.resources.oak_gem = '2e5';
+    json.state.resources.copper_gem = '50';
+    json.state.combat.kills = { mossy_cellar: 150 };
+    const { state } = readSave(JSON.stringify(json), content);
+    expect(state.mastery.harvested['oak_gem']!.toNumber()).toBe(2e5);
+    expect(state.mastery.harvested['copper_gem']!.toNumber()).toBe(50);
+    expect(state.mastery.gemTiers).toEqual({ oak_gem: 2 });
+    expect(state.mastery.bossTiers).toEqual({ mossy_cellar: 2 });
+  });
+
+  it('drops totals of resources that are not production gems', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.state.mastery.harvested = { oak_gem: '5', moss_sigil: '9', removed_gem: '3' };
+    const { state } = readSave(JSON.stringify(json), content);
+    expect(Object.keys(state.mastery.harvested)).toEqual(['oak_gem']);
+  });
+
+  it('rejects malformed mastery data', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.state.mastery.harvested = { oak_gem: 'lots' };
+    expect(codeOf(() => readSave(JSON.stringify(json), content))).toBe('invalid-format');
+  });
+});

@@ -31,6 +31,34 @@ export interface GameState {
   cosmetics: CosmeticState;
   /** Owned cards, the loadout of each job and shards. See cards.ts. */
   cards: CardState;
+  /** Gem mastery totals and settled mastery tiers (DESIGN.md 16). Kept through prestige. */
+  mastery: MasteryState;
+}
+
+/**
+ * Mastery (DESIGN.md 16, E2 and E3). Tiers are settled on the same 1 s play-time grid as card
+ * levels (see tick.ts), so the bonuses they give change at the same moments however time is
+ * split; the totals themselves grow continuously.
+ */
+export interface MasteryState {
+  /** Production gem id -> lifetime total harvested (normal output, bursts and offline). */
+  harvested: Record<string, Decimal>;
+  /** Gem id -> settled mastery tier 1..4 (missing = 0, stone). */
+  gemTiers: Record<string, number>;
+  /** Dungeon or special dungeon id -> settled medal tier 1..4 (missing = 0). */
+  bossTiers: Record<string, number>;
+}
+
+export function initialMastery(): MasteryState {
+  return { harvested: {}, gemTiers: {}, bossTiers: {} };
+}
+
+export function cloneMastery(m: MasteryState): MasteryState {
+  return {
+    harvested: { ...m.harvested },
+    gemTiers: { ...m.gemTiers },
+    bossTiers: { ...m.bossTiers },
+  };
 }
 
 export interface OwnedCosmetic {
@@ -140,6 +168,7 @@ export function createInitialState(content: Content): GameState {
     prestigeCount: 0,
     stats: { playTimeMs: 0, bossKills: 0 },
     cards: initialCards(content),
+    mastery: initialMastery(),
     cosmetics: {
       loadout: { slots: {}, cards: {} },
       owned: Object.fromEntries(
@@ -162,6 +191,7 @@ export function cloneState(state: GameState): GameState {
     inventory: { ...state.inventory },
     stats: { ...state.stats },
     cards: cloneCards(state.cards),
+    mastery: cloneMastery(state.mastery),
     cosmetics: {
       loadout: {
         slots: { ...state.cosmetics.loadout.slots },
