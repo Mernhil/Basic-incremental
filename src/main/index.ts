@@ -5,6 +5,7 @@ import { IPC_CHANNELS } from '../preload/api';
 import { setupSaveIpc, saveBeforeClose } from './saves';
 import { setupAutoUpdates } from './updater';
 import { devUserDataDir } from './devPaths';
+import { devCheatsEnabled } from './devMode';
 
 // Dev builds keep their own saves and settings, so running from source never touches the
 // installed game's save (which may be an older version that cannot read a newer save format).
@@ -50,6 +51,7 @@ function createWindow(): void {
 
 void app.whenReady().then(() => {
   ipcMain.handle(IPC_CHANNELS.getVersion, () => app.getVersion());
+  ipcMain.handle(IPC_CHANNELS.devCheatsEnabled, () => devCheatsEnabled(app, process.env));
   setupSaveIpc();
   createWindow();
 

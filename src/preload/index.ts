@@ -18,6 +18,7 @@ const api: AppApi = {
   writeSave: (text) => ipcRenderer.invoke(IPC_CHANNELS.writeSave, text) as Promise<void>,
   onFlushRequest: (callback) => subscribe(IPC_CHANNELS.flushRequest, callback),
   flushDone: () => ipcRenderer.send(IPC_CHANNELS.flushDone),
+  devCheatsEnabled: () => ipcRenderer.invoke(IPC_CHANNELS.devCheatsEnabled) as Promise<boolean>,
 };
 
 contextBridge.exposeInMainWorld('api', api);

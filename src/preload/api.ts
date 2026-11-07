@@ -22,6 +22,8 @@ export interface AppApi {
   onFlushRequest(callback: () => void): () => void;
   /** Tell the main process the final save is written, so the window can close. */
   flushDone(): void;
+  /** Whether the dev cheats panel may show (dev builds only; always false in a release). */
+  devCheatsEnabled(): Promise<boolean>;
 }
 
 export const IPC_CHANNELS = {
@@ -33,4 +35,5 @@ export const IPC_CHANNELS = {
   writeSave: 'save:write',
   flushRequest: 'save:flush-request',
   flushDone: 'save:flush-done',
+  devCheatsEnabled: 'dev:cheats-enabled',
 } as const;
