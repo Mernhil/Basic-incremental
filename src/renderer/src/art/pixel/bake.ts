@@ -17,6 +17,7 @@ import {
   type NavGlyph,
 } from '../vector/gems';
 import { TILE_SCALE, TILE_STAGES, TILE_VB, mineVector, treeVector } from '../vector/tiles';
+import { BOSS_VB, bossVector, shardVector } from '../vector/bosses';
 import {
   EVOLUTIONS,
   EVOLUTION_WINDOW,
@@ -242,6 +243,30 @@ export async function bakeSmall(): Promise<Baked[]> {
   return res;
 }
 
+/** Bosses (160 x 172, Brave Frontier technique, soft aura instead of a sticker ring) and shards. */
+export async function bakeBosses(): Promise<Baked[]> {
+  const res: Baked[] = [];
+  for (const art of [
+    'root_warden',
+    'cinder_lich',
+    'glacier_colossus',
+    'crystal_sentinel',
+  ] as const) {
+    const { grid } = await rasterSvg(bossVector(art), BOSS_VB, 1);
+    res.push(out(`boss-${art}`, sweepOrphans(outline(cleanOrphans(grid)))));
+  }
+  for (const lit of [true, false]) {
+    const { grid } = await rasterSvg(shardVector(lit), [-1, -1, 18, 28], 1);
+    res.push(out(`boss-shard-${lit ? 'lit' : 'dim'}`, sweepOrphans(outline(cleanOrphans(grid)))));
+  }
+  return res;
+}
+
 export async function bakeAll(): Promise<Baked[]> {
-  return [...(await bakeItems()), ...(await bakeFrames()), ...(await bakeSmall())];
+  return [
+    ...(await bakeItems()),
+    ...(await bakeFrames()),
+    ...(await bakeSmall()),
+    ...(await bakeBosses()),
+  ];
 }

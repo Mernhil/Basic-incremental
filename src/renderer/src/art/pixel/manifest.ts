@@ -627,4 +627,10 @@ export const MANIFEST: Record<string, { w: number; h: number; outline?: string }
   'tile-mine-drop-2': { w: 58, h: 64 },
   'tile-mine-drop-3': { w: 58, h: 64 },
   'tile-mine-drop-4': { w: 58, h: 64 },
+  'boss-root_warden': { w: 160, h: 172 },
+  'boss-cinder_lich': { w: 160, h: 172 },
+  'boss-glacier_colossus': { w: 160, h: 172 },
+  'boss-crystal_sentinel': { w: 160, h: 172 },
+  'boss-shard-lit': { w: 18, h: 28 },
+  'boss-shard-dim': { w: 18, h: 28 },
 };

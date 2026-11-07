@@ -37,7 +37,7 @@ export function ramp(h: number, s: number, l: number): Ramp {
 export const GOLD = ramp(44, 0.9, 0.55);
 
 /** Collects the gradient defs one drawing needs; ids are unique per document. */
-class Defs {
+export class Defs {
   private list: string[] = [];
   private static n = 0;
   /** A radial ramp lit from (cx, cy): snaps to the ramp's five tones once baked. */
@@ -52,7 +52,7 @@ class Defs {
     return `<defs>${this.list.join('')}</defs>${body}`;
   }
 }
-const line = (d: string, c: string, w = 1): string =>
+export const line = (d: string, c: string, w = 1): string =>
   `<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>`;
 export const glint = (x: number, y: number, s = 1): string =>
   `<rect x="${x}" y="${y}" width="${s}" height="${s}" fill="#ffffff"/>`;
