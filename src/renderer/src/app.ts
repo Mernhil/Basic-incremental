@@ -50,6 +50,7 @@ import { createCardsModel } from './pages/cardsAdapter';
 import { gemCoin, mineTile, svg, treeTile } from './art/gems';
 import { installArtDefs } from './art/defs';
 import { itemArt } from './art/items';
+import { bossInItemBox, sentinelLevel } from './art/bosses';
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -219,6 +220,9 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   // boss: follows whatever is being fought (a dungeon's boss or a special dungeon's target)
   let boss: CardView | null = null;
+  /** Props of the boss card, kept to redraw the Crystal Sentinel as the trial score rises. */
+  let bossProps: CardProps | null = null;
+  let bossLevel = 0;
   let hp = createHpStack();
   let battleEl: HTMLElement | null = null;
   let homeFor: string | null = null;
@@ -237,14 +241,17 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     const trial = id ? content.trialById.get(id) : undefined;
     const foe = dungeon ? dungeon.boss : trial?.target;
     boss = null;
+    bossProps = null;
+    bossLevel = 0;
     hp = createHpStack();
     if (foe) {
       const bossRank = { tier: 'bronze', stars: 1 } as const;
-      boss = createCard({
+      bossProps = {
         name: foe.name,
         label: COPY.table.boss,
         job: 'fighting',
         emblem: 'golem',
+        item: bossInItemBox(foe.art),
         rank: bossRank,
         boss: true,
         stats: [
@@ -256,7 +263,8 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
           rank: bossRank,
           rarity: 'common',
         }),
-      });
+      };
+      boss = createCard(bossProps);
       boss.hpSlot.append(hp.el);
     }
     const title = dungeon?.name ?? trial?.name ?? COPY.table.boss;
@@ -435,6 +443,13 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       const current = Decimal.max(max.sub(s.combat.trialAttempt.dealt), 0);
       const bars = hpBarState(current, max, 1);
       hp.update(bars, formatDecimal(current), formatDecimal(max), current.div(max).toNumber());
+      // the Crystal Sentinel's shards light up at 25 / 50 / 75 / 100% of this attempt (DESIGN.md 13)
+      const level = sentinelLevel(Decimal.min(s.combat.trialAttempt.dealt.div(max), 1).toNumber());
+      if (bossProps && level !== bossLevel) {
+        bossLevel = level;
+        bossProps = { ...bossProps, item: bossInItemBox(trial.target.art, level) };
+        boss.update(bossProps);
+      }
     }
     for (const r of content.resources) {
       const amount = s.resources[r.id] ?? new Decimal(0);
@@ -490,7 +505,10 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     if (!document.hidden && view && loop.state.activeDungeonId) {
       const effect = attack()?.fighting;
       if (effect)
-        playHit(effect, view.art, { rng: defaultRng, target: view.art.querySelector('svg') });
+        playHit(effect, view.art, {
+          rng: defaultRng,
+          target: view.art.querySelector('.bi-card__item') ?? view.art.querySelector('svg'),
+        });
       const dealt = hitDamage(effectiveDamage(loop.state, content, undefined, mods), stats);
       showTick(view.art, formatDecimal(dealt), { rng: defaultRng });
     }

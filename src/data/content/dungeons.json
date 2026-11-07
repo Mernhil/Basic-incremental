@@ -8,6 +8,7 @@
     "boss": {
       "id": "root_warden",
       "name": "Root Warden",
+      "art": "root_warden",
       "hp": "60000",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 5
@@ -39,6 +40,7 @@
     "boss": {
       "id": "cinder_lich",
       "name": "Cinder Lich",
+      "art": "cinder_lich",
       "hp": "4e6",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 8
@@ -70,6 +72,7 @@
     "boss": {
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
+      "art": "glacier_colossus",
       "hp": "1.5e8",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 12

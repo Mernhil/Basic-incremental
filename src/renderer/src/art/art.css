@@ -44,7 +44,19 @@
     transform: rotate(360deg);
   }
 }
+/* bosses breathe slowly */
+.bi-art-breathe {
+  animation: bi-art-breathe 3.4s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+@keyframes bi-art-breathe {
+  50% {
+    transform: scale(1.012, 1.025);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
+  .bi-art-breathe,
   .bi-art-sway,
   .bi-art-glow,
   .bi-art-orbit,
