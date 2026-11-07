@@ -19,6 +19,9 @@ const api: AppApi = {
   onFlushRequest: (callback) => subscribe(IPC_CHANNELS.flushRequest, callback),
   flushDone: () => ipcRenderer.send(IPC_CHANNELS.flushDone),
   devCheatsEnabled: () => ipcRenderer.invoke(IPC_CHANNELS.devCheatsEnabled) as Promise<boolean>,
+  readLogTail: (lines) => ipcRenderer.invoke(IPC_CHANNELS.readLogTail, lines) as Promise<string[]>,
+  getSystemInfo: () =>
+    ipcRenderer.invoke(IPC_CHANNELS.getSystemInfo) as ReturnType<AppApi['getSystemInfo']>,
 };
 
 contextBridge.exposeInMainWorld('api', api);

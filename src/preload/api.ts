@@ -24,6 +24,22 @@ export interface AppApi {
   flushDone(): void;
   /** Whether the dev cheats panel may show (dev builds only; always false in a release). */
   devCheatsEnabled(): Promise<boolean>;
+  /** The last `lines` lines of main's logs (main.log + updater.log by time), oldest first. */
+  readLogTail(lines: number): Promise<string[]>;
+  /** OS, OS release, CPU architecture and the Electron / Chrome versions (for issue reports). */
+  getSystemInfo(): Promise<SystemInfo>;
+}
+
+/** What `getSystemInfo` returns. */
+export interface SystemInfo {
+  /** `process.platform`, e.g. "win32". */
+  os: string;
+  /** `os.release()`, e.g. "10.0.26300". */
+  osRelease: string;
+  /** `process.arch`, e.g. "x64". */
+  arch: string;
+  electron: string;
+  chrome: string;
 }
 
 export const IPC_CHANNELS = {
@@ -36,4 +52,6 @@ export const IPC_CHANNELS = {
   flushRequest: 'save:flush-request',
   flushDone: 'save:flush-done',
   devCheatsEnabled: 'dev:cheats-enabled',
+  readLogTail: 'app:read-log-tail',
+  getSystemInfo: 'app:get-system-info',
 } as const;

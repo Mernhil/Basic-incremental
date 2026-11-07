@@ -420,8 +420,7 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Autosave:** every 10 s, 30 s (default), 1 min, 2 min or 5 min. Purchases still save right away.
     - **Export:** copy to the clipboard or save a `.txt` file. **Import:** paste or load a file; the save is checked first, errors show in the page, and an in-page confirm compares both games before replacing.
     - These preferences are stored per player next to the sound settings (not in the save).
-    - **Report an issue** opens the pre-filled issue of 12.5 in the browser. The log lines are the game window's own recent console lines and errors until the main process exposes its log. The link stays under about 7,500 characters by leaving out the oldest log lines.
-
+    - **Report an issue** opens the pre-filled issue of 12.5 in the browser. The log lines are the game window's own recent console lines and errors until the main process exposes its log. The link stays under about 7,500 characters by leaving out the oldest log lines. Main exposes `readLogTail(lines)` (last N lines of `main.log`, `updater.log` and `saves.log`, oldest first, at most 1000) and `getSystemInfo()` (OS, release, arch, Electron, Chrome); main logs its own uncaught errors, renderer crashes and preload errors to `main.log`.
 24. **Dev cheats.** Pure cheat functions (grant resources, set a dungeon cleared, set a card's rank, add account XP, grant a cosmetic, advance time) live in the separate `game/dev` entry, not in `game/index.ts`. The renderer imports it only behind `import.meta.env.DEV` and shows the panel only when the main process says `!app.isPackaged` (`BI_NO_CHEATS=1` hides it in a dev build). `npm run build` fails if any bundle in `out/` contains the cheats' marker, so a release can never ship them.
 
 ## 13. Art style
