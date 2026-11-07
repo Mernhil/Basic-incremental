@@ -1,0 +1,134 @@
+/* Cosmetic swatches (ui/cosmeticSwatch.ts). Size with --cs (the swatch width; height = 1.4x). */
+.cs {
+  --cs: 72px;
+  --rar: #c9ced6;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--cs);
+  height: calc(var(--cs) * 1.4);
+  flex: none;
+}
+.cs[data-rarity='rare'] {
+  --rar: #5aa8ff;
+}
+.cs[data-rarity='epic'] {
+  --rar: #b67bff;
+}
+.cs[data-rarity='legendary'] {
+  --rar: #ffc23a;
+}
+.cs[data-rarity='mythic'] {
+  --rar: #ff4fb8;
+}
+.cs[data-rarity='exotic'] {
+  --rar: #ff8a1f;
+}
+.cs[data-rarity='void'] {
+  --rar: #8a5cff;
+}
+
+/* card slots: a blank card at full size, scaled down so flourishes and particles keep their
+   proportions; the swatch keeps a bleed margin so corner flourishes are not clipped */
+.cs-card.bi-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: calc(248px / -2) 0 0 calc(176px / -2);
+  transform: scale(var(--cs-scale, 0.34));
+}
+.cs-card__plate {
+  display: block;
+  height: 30px;
+  border-radius: 7px;
+  background: var(--bi-plate-bg, rgba(0, 0, 0, 0.4));
+  box-shadow: inset 0 0 0 1px var(--bi-plate-line, rgba(217, 179, 90, 0.5));
+}
+.cs-card__window {
+  display: block;
+  flex: 1;
+  border-radius: 8px;
+  background: radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.45));
+  box-shadow: inset 0 0 0 1px var(--bi-art-line, rgba(217, 179, 90, 0.5));
+}
+
+/* global slots: a dark tile showing a sample of the slot */
+.cs:not([data-slot='border']):not([data-slot='finish'])::before {
+  content: '';
+  position: absolute;
+  inset: 8% 4%;
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 35%, #2a3142, #11151d);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rar) 45%, transparent);
+}
+.cs > svg,
+.cs > b,
+.cs > .cs-table {
+  position: relative;
+}
+.cs-slash {
+  width: 78%;
+  fill: none;
+  stroke-linecap: round;
+}
+.cs-slash path {
+  stroke: var(--bi-attack-edge, #f3dc9a);
+  stroke-width: 7;
+  filter: drop-shadow(0 0 4px var(--bi-attack-glow, rgba(255, 222, 150, 0.9)));
+}
+.cs-slash .cs-slash__core {
+  stroke: var(--bi-attack-particle, #fff6d6);
+  stroke-width: 2.5;
+  filter: none;
+}
+.cs-tick {
+  font-size: calc(var(--cs) * 0.32);
+  font-weight: 900;
+  color: var(--bi-tick-color, #f3dc9a);
+  -webkit-text-stroke: 3px var(--bi-tick-stroke, #2b1a05);
+  paint-order: stroke fill;
+}
+.cs-number {
+  font-size: calc(var(--cs) * 0.24);
+  color: var(--bi-num-color, #e9eef7);
+}
+.cs-table {
+  position: relative;
+  display: block;
+  width: 78%;
+  height: 62%;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: var(--bi-table-bg, #cfd5dd);
+  background-image: radial-gradient(
+    80% 55% at 50% 0%,
+    var(--bi-table-glow, transparent),
+    transparent 70%
+  );
+}
+.cs-table__chrome {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 18%;
+  background: var(--bi-chrome-bg, #161b26);
+  box-shadow: 0 1px 0 var(--bi-chrome-line, #d9b35a);
+}
+.cs-table__frame {
+  position: absolute;
+  left: 16%;
+  right: 16%;
+  top: 32%;
+  bottom: 14%;
+  border-radius: 4px;
+  background: var(--bi-frame-bg, #2a2f38);
+  box-shadow: inset 0 0 0 1px var(--bi-frame-line, #d9b35a);
+}
+.cs-pointer {
+  width: 46%;
+}
+.cs-pointer path {
+  fill: #12100c;
+  stroke: var(--rar);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}

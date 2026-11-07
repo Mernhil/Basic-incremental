@@ -57,6 +57,19 @@ export function playTierUps(list: readonly TierUp[], host: TierUpHost): void {
   }
 }
 
+/**
+ * A single upgrade moment outside the TierUp list (a cosmetic level): the same metal flash,
+ * toast and sound as a tier-up.
+ */
+export function playUpgradeMoment(
+  moment: { title: string; detail: string; metal: string; big: boolean },
+  sound?: (id: string) => void,
+): void {
+  metalFlash(moment.metal);
+  sound?.(moment.big ? 'masteryTierUp' : 'milestone');
+  toast(moment.title, moment.detail, 'milestone', moment.metal);
+}
+
 /** The ★6 evolution moment (A15 E). Click or Escape skips it. */
 export function showEvolution(props: CardProps): void {
   const overlay = document.createElement('div');
