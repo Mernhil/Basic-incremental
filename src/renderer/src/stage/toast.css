@@ -31,6 +31,22 @@
 .st-toast span {
   color: var(--bi-tip-ink-muted, #aab4c8);
 }
+/* "what you got" (account level-ups) */
+.st-toast__list {
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  color: var(--bi-tip-ink, #e9eef7);
+}
+.st-toast__list li::before {
+  content: '◆';
+  margin-right: 6px;
+  font-size: 9px;
+  vertical-align: 1px;
+  color: #ffd968;
+}
 .st-toast--rare {
   box-shadow:
     inset 0 0 0 1px var(--bi-tick-crit, #ffb02e),

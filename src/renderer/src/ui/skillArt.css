@@ -1,0 +1,28 @@
+/* Pixel gem and chart art (ui/skillArt.ts). The sprites carry their own colours; whole-pixel
+   scaling only (set a whole-number size on the wrapper). */
+
+.sg,
+.cst,
+.cst-sky {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  image-rendering: pixelated;
+}
+
+/* centre star */
+.sg-star {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.sg-star__body {
+  fill: #ffe7a0;
+}
+
+/* chart */
+.cst-sky {
+  width: 100%;
+  height: auto;
+}

@@ -189,6 +189,27 @@ export const SOUNDS = {
     max: 2,
     windowMs: 1200,
   },
+  /** A skill gem lit: a glassy rising pair over a soft shimmer. */
+  skillLearn: {
+    layers: [
+      tone('sine', 880, 0.14, 0.18, 1320),
+      tone('triangle', 1320, 0.22, 0.12, undefined, 0.06),
+      noise(7000, 0.25, 0.05, 0.6, 0.04),
+    ],
+    max: 4,
+    windowMs: 1000,
+  },
+  /** Account level-up: a short fanfare that climbs and rings out. */
+  levelUp: {
+    layers: [
+      ...arp('square', [392, 523, 659, 784], 0.07, 0.2, 0.12),
+      tone('triangle', 1047, 0.6, 0.18, undefined, 0.28),
+      tone('triangle', 1568, 0.5, 0.08, undefined, 0.3),
+      noise(6000, 0.6, 0.06, 0.5, 0.28),
+    ],
+    max: 1,
+    windowMs: 1500,
+  },
   click: { layers: [tone('square', 1200, 0.025, 0.08, 900)], max: 8, windowMs: 1000 },
 } satisfies Record<string, SoundDef>;
 

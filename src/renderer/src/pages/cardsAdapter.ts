@@ -2,7 +2,10 @@ import type { Content, Rank } from '../../../data';
 import {
   SUPPORT_SLOTS,
   cardCollection,
+  cardEnhancements,
   cardInfo,
+  chooseEnhancement,
+  resetEnhancements,
   collectModifiers,
   levelCap,
   loadoutInfo,
@@ -20,6 +23,7 @@ import {
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { itemArt } from '../art/items';
+import { starChartView } from './skillsModel';
 import type {
   CardEntry,
   CardsModel,
@@ -165,6 +169,7 @@ export function createCardsModel(
           o.stars,
           o.level,
           o.duplicates,
+          o.enhancements,
         ]),
         state.cards.loadouts,
         state.cards.shards,
@@ -196,6 +201,18 @@ export function createCardsModel(
       if (info.starUp?.available) return wrap(starUp(state, content, id));
       if (info.tierUp?.available) return wrap(tierUp(state, content, id));
       return { ok: false, reason: reason('unavailable') };
+    },
+    chart(state, id) {
+      const info = cardEnhancements(state, content, id);
+      return info ? starChartView(info) : null;
+    },
+    enhance(state, id, optionId) {
+      const result = chooseEnhancement(state, content, id, optionId);
+      return result.ok ? result : { ok: false, reason: COPY.enhance.reasons[result.reason] };
+    },
+    resetEnhancements(state, id) {
+      if (!state.cards.owned[id]) return { ok: false, reason: COPY.enhance.reasons['not-owned'] };
+      return { ok: true, state: resetEnhancements(state, content, id) };
     },
   };
 }

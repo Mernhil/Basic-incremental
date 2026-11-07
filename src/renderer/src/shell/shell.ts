@@ -65,7 +65,20 @@ export interface Shell {
   page(id: PageId): HTMLElement;
   show(id: PageId): void;
   current(): PageId;
-  setLevel(level: number, xpFraction: number, xpText: string): void;
+  /** The account level badge, XP bar and points to spend (pages/accountModel `levelBadge`). */
+  setLevel(view: {
+    level: number;
+    fraction: number;
+    xpText: string;
+    points: number;
+    label: string;
+  }): void;
+  /** Plays the level-up flash on the badge. */
+  flashLevel(): void;
+  /** The reward track panel under the header (DESIGN.md 16 E7). */
+  track: HTMLElement;
+  setTrackOpen(open: boolean): void;
+  levelButton: HTMLElement;
   /**
    * Sets a resource chip's amount (the chip rolls to it smoothly) and its per-second rate (null
    * hides the rate). Chips stay hidden until the amount is above zero once.
@@ -94,6 +107,8 @@ export function createShell(opts: {
   currencies: Currency[];
   levelTip: TipContent;
   onShow?: (id: PageId) => void;
+  /** The account level was clicked (opens the reward track). */
+  onLevel?: () => void;
 }): Shell {
   const el = h('div', 'shell');
 
@@ -105,9 +120,16 @@ export function createShell(opts: {
     h('span', 'shell-brand__ver', opts.version),
   );
 
-  const level = h('div', 'shell-level');
-  level.tabIndex = 0;
+  // the account level (DESIGN.md 9, 16 E7): opens the reward track
+  const level = h('button', 'shell-level');
+  level.type = 'button';
+  level.setAttribute('aria-expanded', 'false');
+  level.setAttribute('aria-controls', 'shell-track');
   const badge = h('span', 'shell-level__badge bi-num', '1');
+  const points = h('span', 'shell-level__points bi-num');
+  points.hidden = true;
+  const badgeWrap = h('span', 'shell-level__badge-wrap');
+  badgeWrap.append(badge, points);
   const meta = h('span', 'shell-level__meta');
   const levelLabel = h('span', 'shell-level__label', COPY.shell.level(1));
   const bar = h('span', 'shell-level__bar');
@@ -115,8 +137,9 @@ export function createShell(opts: {
   bar.append(fill);
   const xp = h('span', 'shell-level__xp bi-num');
   meta.append(levelLabel, bar, xp);
-  level.append(badge, meta);
+  level.append(badgeWrap, meta);
   attachTooltip(level, opts.levelTip);
+  level.addEventListener('click', () => opts.onLevel?.());
 
   const currencyList = h('ul', 'shell-currencies');
   currencyList.setAttribute('aria-label', COPY.shell.currencies);
@@ -207,7 +230,12 @@ export function createShell(opts: {
     main.append(page);
   }
 
-  el.append(header, nav, main);
+  // the reward track drops down under the header (A16 B quest scroll)
+  const track = h('div', 'shell-track');
+  track.id = 'shell-track';
+  track.hidden = true;
+
+  el.append(header, nav, main, track);
 
   let active: PageId = 'home';
   function show(id: PageId): void {
@@ -238,12 +266,27 @@ export function createShell(opts: {
     page: (id) => pages.get(id)!,
     show,
     current: () => active,
-    setLevel(lv, fraction, text) {
-      badge.textContent = String(lv);
-      levelLabel.textContent = COPY.shell.level(lv);
-      fill.style.width = `${Math.round(Math.min(1, Math.max(0, fraction)) * 100)}%`;
-      xp.textContent = text;
+    setLevel(v) {
+      const set = (node: HTMLElement, text: string) => {
+        if (node.textContent !== text) node.textContent = text;
+      };
+      set(badge, String(v.level));
+      set(levelLabel, COPY.shell.level(v.level));
+      fill.style.width = `${(Math.min(1, Math.max(0, v.fraction)) * 100).toFixed(1)}%`;
+      set(xp, v.xpText);
+      points.hidden = v.points <= 0;
+      set(points, v.points > 0 ? String(v.points) : '');
+      if (level.getAttribute('aria-label') !== v.label) level.setAttribute('aria-label', v.label);
     },
+    flashLevel() {
+      replay(level, 'is-levelling', 1400);
+    },
+    track,
+    setTrackOpen(open) {
+      track.hidden = !open;
+      level.setAttribute('aria-expanded', String(open));
+    },
+    levelButton: level,
     scrollToTop() {
       main.scrollTop = 0;
     },

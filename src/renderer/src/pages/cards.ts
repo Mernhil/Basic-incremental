@@ -2,9 +2,11 @@ import { RARITIES } from '../../../data';
 import { resolveCard, type GameState, type TierUp } from '../../../game';
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
-import { hide as hideTip } from '../shell/tooltip';
+import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
 import { createCard, type CardProps } from '../ui/card';
+import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
 import type { CardEntry, CardsModel, Job, ModelResult, UpgradeStep } from './cardsModel';
+import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './cards.css';
 
@@ -291,6 +293,8 @@ export function createCardsPage(
 
     if (e.owned) {
       body.append(upgradeBox(e.id));
+      const chart = model.chart(state, e.id);
+      if (chart && chart.stars.length > 0) body.append(enhanceBox(e.id, chart));
       const actions = h('div', 'cp-actions');
       const btn = (label: string, key: string, run: () => ModelResult, disabled = false) => {
         const b = h('button', 'button button--ghost', label);
@@ -389,6 +393,108 @@ export function createCardsPage(
     };
     ticks.push(update);
     update();
+    return box;
+  }
+
+  /**
+   * Card enhancements (DESIGN.md 10b, 17; A8 A): a small star chart of the card's options over a
+   * point budget bar. A lit star is chosen; clicking an open one chooses it; reset is free.
+   */
+  const pixelState = (st: StarView['state']): 'owned' | 'open' | 'locked' =>
+    st === 'chosen' ? 'owned' : st === 'open' ? 'open' : 'locked';
+
+  function enhanceBox(id: string, v: StarChartView): HTMLElement {
+    const t = COPY.enhance;
+    const box = h('section', `cp-enhance${v.unlocked ? '' : ' is-locked'}`);
+    box.setAttribute('aria-labelledby', 'cp-enhance-title');
+    const head = h('div', 'cp-enhance__head');
+    const title = h('h3', 'cp-upgrade__title', t.title);
+    title.id = 'cp-enhance-title';
+    head.append(title);
+    if (v.unlocked) head.append(h('span', 'cp-enhance__points bi-num', v.pointsText));
+    box.append(head);
+
+    const choose = (optionId: string, key: string) => {
+      const name = v.stars.find((s) => s.id === optionId)?.name ?? '';
+      act(model.enhance(ctx.state(), id, optionId), key);
+      if (!message) status.textContent = t.picked(name);
+    };
+
+    // the chart: the pixel sky of the equipped nodes style, with a button laid over each star
+    const style = nodeStyle(ctx.content, ctx.state());
+    const chart = h('div', 'cp-chart');
+    chart.style.aspectRatio = `${CHART.w} / ${CHART.h}`;
+    chart.innerHTML = chartSky(
+      style,
+      v.stars.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
+      v.stars.slice(1).map((_, i) => [i, i + 1] as const),
+    );
+    for (const s of v.stars) {
+      const star = h('button', `cp-star is-${s.state}`);
+      star.type = 'button';
+      star.tabIndex = -1; // the list below is the keyboard way in
+      star.setAttribute('aria-hidden', 'true');
+      star.style.left = `${(s.x / CHART.w) * 100}%`;
+      star.style.top = `${(s.y / CHART.h) * 100}%`;
+      // not `disabled`: a disabled button gets no hover, and every star keeps its tooltip
+      attachTooltip(star, () => tipTable(s.name, [[s.effect, s.costText]]));
+      star.addEventListener('click', () => {
+        if (s.state === 'open') choose(s.id, `enh-${s.id}`);
+      });
+      chart.append(star);
+    }
+    box.append(chart);
+
+    if (!v.unlocked) {
+      box.append(h('p', 'cp-enhance__locked', v.lockedText));
+    } else {
+      const meter = h('div', 'cp-budget');
+      meter.setAttribute('role', 'meter');
+      meter.setAttribute('aria-valuemin', '0');
+      meter.setAttribute('aria-valuemax', String(v.budget));
+      meter.setAttribute('aria-valuenow', String(v.spent));
+      meter.setAttribute('aria-label', t.budgetLabel(v.spent, v.budget));
+      for (const on of v.pips) meter.append(h('i', on ? 'is-on' : ''));
+      box.append(meter);
+    }
+
+    // the key: every option as a row (the accessible way to choose)
+    const list = h('ul', 'cp-options');
+    for (const s of v.stars) {
+      const li = h('li');
+      const b = h('button', `cp-option is-${s.state}`);
+      b.type = 'button';
+      b.dataset.key = `enh-${s.id}`;
+      b.setAttribute('aria-label', s.label);
+      b.disabled = s.state !== 'open';
+      const mark = h('span', `cp-option__star is-${s.state}`);
+      mark.innerHTML = chartStar(style, pixelState(s.state));
+      b.append(
+        mark,
+        h('span', 'cp-option__name', s.name),
+        h('span', 'cp-option__effect bi-num', s.effect),
+        h('span', 'cp-option__cost bi-num', s.costText),
+      );
+      b.addEventListener('click', () => choose(s.id, `enh-${s.id}`));
+      li.append(b);
+      list.append(li);
+    }
+    box.append(list);
+
+    if (v.unlocked) {
+      const foot = h('div', 'cp-enhance__foot');
+      foot.append(h('p', 'cp-upgrade__note', t.note));
+      const reset = h('button', 'button button--ghost', t.reset);
+      reset.type = 'button';
+      reset.dataset.key = 'enh-reset';
+      reset.disabled = !v.canReset;
+      reset.addEventListener('click', () => {
+        act(model.resetEnhancements(ctx.state(), id), 'enh-reset');
+        if (!message) status.textContent = t.cleared;
+      });
+      foot.append(reset);
+      box.append(foot);
+    }
     return box;
   }
 

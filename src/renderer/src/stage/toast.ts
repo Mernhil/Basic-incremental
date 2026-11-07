@@ -24,7 +24,8 @@ export type ToastKind = 'rare' | 'milestone' | 'info';
 
 export function toast(
   title: string,
-  detail = '',
+  /** One line, or a short list ("what you got"). */
+  detail: string | readonly string[] = '',
   kind: ToastKind = 'info',
   /** A metal on the ladder (DESIGN.md 16, E1): colours the toast's edge. */
   metal?: string,
@@ -36,7 +37,16 @@ export function toast(
   const head = document.createElement('strong');
   head.textContent = title;
   el.append(head);
-  if (detail) {
+  if (typeof detail !== 'string') {
+    const list = document.createElement('ul');
+    list.className = 'st-toast__list';
+    for (const line of detail) {
+      const li = document.createElement('li');
+      li.textContent = line;
+      list.append(li);
+    }
+    if (detail.length > 0) el.append(list);
+  } else if (detail) {
     const p = document.createElement('span');
     p.textContent = detail;
     el.append(p);
