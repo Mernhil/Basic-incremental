@@ -83,6 +83,16 @@ export function wearRequirement(content: Content, cosmetic: Cosmetic): Rank | nu
 
 // ---- levels ---------------------------------------------------------------------------------
 
+/**
+ * Highest upgrade level of an item (DESIGN.md 11.1): by rarity from cosmeticRules.json; starter
+ * items keep their own level count. Levels above the drawn ones show the top drawn level until
+ * its art arrives.
+ */
+export function cosmeticMaxLevel(content: Content, cosmetic: Cosmetic): number {
+  if (cosmetic.starter) return cosmetic.levels.length;
+  return content.cosmeticRules.maxLevel[cosmetic.rarity];
+}
+
 /** Merges levels 1..level: later tokens win, recipes accumulate, effects are replaced. */
 export function levelVisual(cosmetic: Cosmetic, level: number): Visual {
   const visual: Visual = { tokens: {}, recipes: [] };
@@ -127,9 +137,8 @@ export function equipProblem(
   if (!Number.isInteger(equipped.level) || equipped.level < 1) {
     return `Level must be 1 or more.`;
   }
-  if (equipped.level > cosmetic.levels.length) {
-    return `"${cosmetic.name}" only has ${cosmetic.levels.length} level(s).`;
-  }
+  const max = cosmeticMaxLevel(content, cosmetic);
+  if (equipped.level > max) return `"${cosmetic.name}" only has ${max} level(s).`;
   if (cardId !== undefined) {
     if (!isCardSlot(slot)) return `${slot} is not a card slot.`;
     if (!content.cardById.has(cardId)) return `Unknown card "${cardId}".`;
@@ -200,7 +209,8 @@ export function sanitizeLoadout(content: Content, loadout: CosmeticLoadout): Cos
 function resolveEquipped(content: Content, slot: CosmeticSlot, eq: Equipped | undefined) {
   const starter = content.starterBySlot[slot];
   const cosmetic = (eq && content.cosmeticById.get(eq.id)) || starter;
-  const level = cosmetic === starter ? 1 : Math.min(eq?.level ?? 1, cosmetic.levels.length);
+  const level =
+    cosmetic === starter ? 1 : Math.min(eq?.level ?? 1, cosmeticMaxLevel(content, cosmetic));
   return { cosmetic, level };
 }
 

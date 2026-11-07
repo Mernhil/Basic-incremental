@@ -197,7 +197,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     apply: applyAndSave,
     sound: playSound,
   });
-  // Ascension lives on the Shop page (DESIGN.md 12.18): the gate and the Starlight shop
+  // Ascension lives on the Shop page (DESIGN.md 12.19): the gate and the Starlight shop
   pages['shop'] = createAscensionPage(shell.page('shop'), {
     content,
     state: () => loop.state,

@@ -833,6 +833,9 @@ export const portalSchema = z.strictObject({
   /** Reveal: chance that a result above the lowest rarity shows an orb one rarity lower first,
    *  then flashes up to its own colour. */
   reveal: z.strictObject({ upgradeFlashChance: z.number().min(0).max(1) }),
+  /** False while the portal waits for its screen (the Wardrobe Gate ships with the Wardrobe):
+   *  it is left out of `content.portals` (still in `content.allPortals`). */
+  enabled: z.boolean().default(true),
 });
 
 /**
@@ -868,6 +871,54 @@ export const prestigeSchema = z.strictObject({
   ),
 });
 
+/** The steps of the cosmetic upgrade ladder, in order (DESIGN.md 7). */
+export const LADDER_STEPS = ['shape', 'accent', 'gems', 'glow', 'ambient'] as const;
+export type LadderStep = (typeof LADDER_STEPS)[number];
+
+/**
+ * Cosmetic upgrade levels (cosmeticRules.json; DESIGN.md 7, 11.1). A non-starter item's max
+ * level comes from its rarity; `ladders[max]` says what each level adds (level 1 first, which
+ * owning the item gives). Level L + 1 costs `copiesPerLevel` duplicates and the step's material
+ * × the rarity's cost factor (through `cost.multiplier`, scope: resource).
+ */
+export const cosmeticRulesSchema = z
+  .strictObject({
+    maxLevel: perRarity(z.number().int().min(1).max(10)),
+    ladders: z.record(z.string().regex(/^\d+$/), z.array(z.enum(LADDER_STEPS)).min(1)),
+    copiesPerLevel: z.number().int().min(0),
+    materials: z.strictObject({
+      shape: costSchema,
+      accent: costSchema,
+      gems: costSchema,
+      glow: costSchema,
+      ambient: costSchema,
+    }),
+    rarityCost: perRarity(positiveDecimal),
+  })
+  .superRefine((r, ctx) => {
+    for (const [key, steps] of Object.entries(r.ladders)) {
+      const order = steps.map((s) => LADDER_STEPS.indexOf(s));
+      if (steps.length !== Number(key)) {
+        ctx.addIssue({ code: 'custom', path: ['ladders', key], message: `needs ${key} steps` });
+      }
+      if (order.some((v, i) => i > 0 && v < order[i - 1]!)) {
+        ctx.addIssue({ code: 'custom', path: ['ladders', key], message: 'never goes back a step' });
+      }
+      if (steps.length > 1 && steps[steps.length - 1] !== 'ambient') {
+        ctx.addIssue({ code: 'custom', path: ['ladders', key], message: 'must end on ambient' });
+      }
+    }
+    for (const max of new Set(Object.values(r.maxLevel))) {
+      if (!r.ladders[String(max)]) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['ladders'],
+          message: `no ladder for max level ${max}`,
+        });
+      }
+    }
+  });
+
 /** Bonus for equipping every item of a cosmetic set. */
 export const cosmeticSetSchema = z.strictObject({
   id,
@@ -892,6 +943,7 @@ export const contentSchemas = {
   sets: z.array(cosmeticSetSchema),
   progression: progressionSchema,
   prestige: prestigeSchema,
+  cosmeticRules: cosmeticRulesSchema,
 } as const;
 
 export type Resource = z.output<typeof resourceSchema>;
@@ -917,4 +969,5 @@ export type RarityStyle = z.output<typeof rarityStyleSchema>;
 export type WearRules = z.output<typeof wearRulesSchema>;
 export type CosmeticSet = z.output<typeof cosmeticSetSchema>;
 export type PrestigeConfig = z.output<typeof prestigeSchema>;
+export type CosmeticRules = z.output<typeof cosmeticRulesSchema>;
 export type StarlightItem = PrestigeConfig['shop'][number];

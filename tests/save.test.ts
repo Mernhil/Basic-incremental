@@ -186,7 +186,8 @@ describe('save format v2: cosmetics', () => {
     json.state.cosmetics.loadout.slots.border = { id: 'removed_item', level: 1 };
     const loaded = readSave(JSON.stringify(json), content);
     expect(loaded.state.cosmetics.owned['removed_item']).toBeUndefined();
-    expect(loaded.state.cosmetics.owned['aurora_veil']!.level).toBe(3);
+    // Epic: max level 4 (DESIGN.md 11.1).
+    expect(loaded.state.cosmetics.owned['aurora_veil']!.level).toBe(4);
     expect(loaded.state.cosmetics.loadout.slots.border).toBeUndefined();
   });
 });

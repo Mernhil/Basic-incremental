@@ -57,6 +57,10 @@ import {
   ascensionPreview,
   buyStarlightItem,
   starlightShop,
+  cosmeticMaxLevel,
+  cosmeticUpgradeCheck,
+  upgradeCosmetic,
+  equipCosmetic,
   type CardLoadout,
   type GameState,
   type Modifier,
@@ -150,14 +154,8 @@ export const MILESTONES: Milestone[] = [
     reached: (s, c) =>
       Object.entries(s.cosmetics.owned).some(([id, o]) => {
         const cosmetic = c.cosmeticById.get(id);
-        return (
-          !!cosmetic &&
-          !cosmetic.starter &&
-          cosmetic.levels.length > 1 &&
-          o.level >= cosmetic.levels.length
-        );
+        return !!cosmetic && !cosmetic.starter && o.level >= cosmeticMaxLevel(c, cosmetic);
       }),
-    pending: 'Phase 5',
   },
   {
     id: 'exhausted',
@@ -277,6 +275,26 @@ export function buyerCandidates(
       prices: [offer.price],
       priority: 1,
       buy: (s, c, m) => okState(buyStarlightItem(s, c, offer.item.id, m)),
+    });
+  }
+  // Cosmetic upgrade levels, once the duplicate is in hand (equipped right after).
+  for (const id of Object.keys(state.cosmetics.owned)) {
+    const check = cosmeticUpgradeCheck(state, content, id, modifiers);
+    if (!check?.available || check.requirements.some((r) => r.kind === 'copies' && !r.met)) {
+      continue;
+    }
+    out.push({
+      id: `cosmetic:${id}`,
+      prices: check.requirements
+        .filter((r) => r.kind === 'resource' && r.resource)
+        .map((r) => ({ resource: r.resource!, amount: r.need })),
+      priority: 1,
+      buy: (s, c, m) => {
+        const up = upgradeCosmetic(s, c, id, m);
+        if (!up.ok) return null;
+        const worn = equipCosmetic(up.state, c, id);
+        return worn.ok ? worn.state : up.state;
+      },
     });
   }
   // Summons: a single pull whenever one is affordable (lite: no saving up for 10-pulls).
@@ -417,7 +435,7 @@ function canKill(state: GameState, content: Content, id: string, modifiers: Modi
 function wantedCores(state: GameState, content: Content, modifiers: Modifier[]): Set<string> {
   const wanted = new Set<string>();
   for (const c of buyerCandidates(state, content, modifiers)) {
-    if (!c.id.startsWith('star:') && !c.id.startsWith('tier:')) continue;
+    if (!/^(star|tier|cosmetic):/.test(c.id)) continue;
     for (const p of c.prices) {
       if ((state.resources[p.resource] ?? new Decimal(0)).lt(p.amount)) wanted.add(p.resource);
     }
@@ -436,6 +454,13 @@ export function chooseDungeon(state: GameState, content: Content): string | null
   }
   const killable = content.dungeons.filter((d) => canKill(state, content, d.id, modifiers));
   const wanted = wantedCores(state, content, modifiers);
+  // A cleared trial is farmed for the Glimmer Dust / Facet Shards a cosmetic level waits for.
+  const trialFarm = content.trials.find(
+    (t) =>
+      isDungeonCleared(state, t.id) &&
+      t.tiers.some((tier) => tier.rewards.some((r) => wanted.has(r.resource))),
+  );
+  if (trialFarm) return trialFarm.id;
   const farm = killable.find((d) => wanted.has(d.drops.material.resource));
   if (farm) return farm.id;
   const hardest = killable[killable.length - 1];
@@ -457,6 +482,8 @@ export interface SimOptions {
   seed?: number;
   /** Seconds of play per step (the buyer acts between steps). */
   stepSeconds?: number;
+  /** Open portals that wait for their screen (default true: the sim plays the whole beta). */
+  openAllPortals?: boolean;
 }
 
 export interface SimResult {
@@ -470,7 +497,10 @@ export interface SimResult {
 /** How often the fight target is re-chosen without a kill, in seconds. */
 const RECHOOSE_SECONDS = 300;
 
-export function runSim(content: Content, options: SimOptions): SimResult {
+export function runSim(bundled: Content, options: SimOptions): SimResult {
+  // The sim plays the whole beta: portals waiting for their screen (the Wardrobe Gate) are open.
+  const content: Content =
+    options.openAllPortals === false ? bundled : { ...bundled, portals: bundled.allPortals };
   const rng: Rng = createSeededRng(options.seed ?? 1);
   const step = options.stepSeconds ?? 5;
   const total = Math.round(options.hours * 3600);

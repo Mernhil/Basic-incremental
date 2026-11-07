@@ -17,14 +17,14 @@ import {
   createInitialState,
   type GameState,
 } from './state';
-import { sanitizeLoadout, type CosmeticLoadout } from './theme';
+import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { levelCap } from './cards';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 10;
+export const CURRENT_SAVE_VERSION = 11;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -270,7 +270,10 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   for (const [id, entry] of Object.entries(saved.cosmetics.owned)) {
     const cosmetic = content.cosmeticById.get(id);
     if (cosmetic)
-      owned[id] = { level: Math.min(entry.level, cosmetic.levels.length), copies: entry.copies };
+      owned[id] = {
+        level: Math.min(entry.level, cosmeticMaxLevel(content, cosmetic)),
+        copies: entry.copies,
+      };
   }
   state.cosmetics = {
     loadout: sanitizeLoadout(content, saved.cosmetics.loadout as CosmeticLoadout),

@@ -21,5 +21,28 @@
     "pity": { "rarity": "legendary", "threshold": 90 },
     "tenPullGuarantee": "rare",
     "reveal": { "upgradeFlashChance": 0.25 }
+  },
+  {
+    "id": "wardrobe_gate",
+    "name": "Wardrobe Gate",
+    "kind": "cosmetics",
+    "enabled": false,
+    "cost": { "resource": "ember_sigil", "single": "10", "ten": "100" },
+    "pool": [
+      { "itemId": "holo_hex", "rarity": "rare", "weight": 10 },
+      { "itemId": "holo_waves", "rarity": "rare", "weight": 10 },
+      { "itemId": "prism_pointer", "rarity": "epic", "weight": 4 },
+      { "itemId": "gt_border", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "gt_finish", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "gt_attack", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "gt_tick", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "gt_number", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "gt_table", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "gt_cursor", "rarity": "legendary", "weight": 0.5 },
+      { "itemId": "ember_crown", "rarity": "mythic", "weight": 0.6 }
+    ],
+    "pity": { "rarity": "legendary", "threshold": 90 },
+    "tenPullGuarantee": "rare",
+    "reveal": { "upgradeFlashChance": 0.25 }
   }
 ]

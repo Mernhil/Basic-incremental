@@ -32,6 +32,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 
 const MAIN = 'dawnblade_regent';
@@ -74,13 +75,15 @@ describe('equipping', () => {
     const bad = [
       equipProblem(content, 'table', { id: 'gn_border', level: 1 }),
       equipProblem(content, 'border', { id: 'nope', level: 1 }),
-      equipProblem(content, 'border', { id: 'gilded_filigree', level: 4 }),
+      // Epic: max level 4 (DESIGN.md 11.1), whatever its drawn levels.
+      equipProblem(content, 'border', { id: 'gilded_filigree', level: 5 }),
       equipProblem(content, 'border', { id: 'gilded_filigree', level: 0 }),
       equipProblem(content, 'border', { id: 'ember_crown', level: 1 }),
       equipProblem(content, 'border', { id: 'ember_crown', level: 1 }, 'shield_warden'),
       equipProblem(content, 'table', { id: 'gt_table', level: 1 }, MAIN),
     ];
     for (const problem of bad) expect(problem).toBeTypeOf('string');
+    expect(equipProblem(content, 'border', { id: 'gilded_filigree', level: 4 })).toBeNull();
     expect(() => equip(content, emptyLoadout(), 'table', { id: 'gn_border', level: 1 })).toThrow(
       ThemeError,
     );
@@ -227,6 +230,7 @@ describe('invalid cosmetic data is rejected', () => {
       wearRules,
       sets,
       progression,
+      cosmeticRules,
       prestige,
     });
   const issues = (input: RawContent): string[] => {

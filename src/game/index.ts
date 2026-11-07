@@ -54,10 +54,43 @@ export {
   type AscensionResetPart,
   type AscensionPersistPart,
 } from './prestige';
+// ---- Wardrobe (DESIGN.md 7, 11.1): the contract with the UI, one line each --------------------
+
 export {
   /** Adds one copy of a cosmetic: new at level 1, or a copy for its upgrade levels. */
   grantCosmetic,
+  /** The item grid: owned, level / max, copies, next ladder step, upgrade check, source, worn. */
+  wardrobeItems,
+  /** Equips an owned item globally or on one card (exclusives only on their card). */
+  equipCosmetic,
+  /** Clears a slot: globally back to the starter, on a card back to the global choice. */
+  unequipCosmetic,
+  /** What an owned card shows after its rank's wear rules (for the mannequin card). */
+  resolveCardFor,
+  /** The next upgrade level's checklist: copies and Glimmer Dust / Facet Shards. */
+  cosmeticUpgradeCheck,
+  /** Material price of reaching a level (after modifiers). */
+  cosmeticUpgradeCost,
+  /** Spends copies and material and raises the level; worn copies follow. */
+  upgradeCosmetic,
+  /** What each level adds, level 1 first (shape, accent, gems, glow, ambient). */
+  cosmeticLadder,
+  /** Where an item comes from: starter, dungeon, prestige or portal. */
+  cosmeticSource,
+  /** Each set's progress (equipped / total) and whether its bonus applies. */
+  setBonuses,
+  type WardrobeItem,
+  type CosmeticUpgradeCheck,
+  type CosmeticUpgradeResult,
+  type CosmeticRequirement,
+  type CosmeticSource,
+  type EquipResult,
+  type SetBonusInfo,
 } from './wardrobe';
+export {
+  /** Highest upgrade level of an item: by rarity (DESIGN.md 11.1); starters keep theirs. */
+  cosmeticMaxLevel,
+} from './theme';
 
 // ---- Summon portals (DESIGN.md 6): the contract with the UI, one line each --------------------
 

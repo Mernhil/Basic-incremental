@@ -1,0 +1,36 @@
+{
+  "maxLevel": {
+    "common": 2,
+    "rare": 3,
+    "epic": 4,
+    "legendary": 5,
+    "mythic": 5,
+    "exotic": 6,
+    "void": 6
+  },
+  "ladders": {
+    "1": ["shape"],
+    "2": ["shape", "ambient"],
+    "3": ["shape", "accent", "ambient"],
+    "4": ["shape", "accent", "gems", "ambient"],
+    "5": ["shape", "accent", "gems", "glow", "ambient"],
+    "6": ["shape", "shape", "accent", "gems", "glow", "ambient"]
+  },
+  "copiesPerLevel": 1,
+  "materials": {
+    "shape": { "resource": "glimmer_dust", "amount": "200" },
+    "accent": { "resource": "glimmer_dust", "amount": "400" },
+    "gems": { "resource": "facet_shard", "amount": "400" },
+    "glow": { "resource": "facet_shard", "amount": "800" },
+    "ambient": { "resource": "facet_shard", "amount": "2000" }
+  },
+  "rarityCost": {
+    "common": "1",
+    "rare": "1.5",
+    "epic": "2",
+    "legendary": "3",
+    "mythic": "4",
+    "exotic": "6",
+    "void": "8"
+  }
+}
