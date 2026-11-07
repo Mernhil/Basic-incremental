@@ -25,6 +25,7 @@ export default tseslint.config(
       'vitest.config.mts',
       'tests/**/*.ts',
       'scripts/**/*.mjs',
+      'scripts/**/*.ts',
     ],
     languageOptions: { globals: globals.node },
   },
