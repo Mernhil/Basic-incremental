@@ -48,22 +48,7 @@ def sheet(frames):
     return s
 
 
-_frames = None
-
-
-def protect(layer):
-    """Tier ornaments win at the corners (DESIGN 7): clear the flourish wherever any tier frame
-    draws a socket, the crest or the bottom gem, so the layer can sit above the frame."""
-    global _frames
-    if _frames is None:
-        _frames = [sprite(f"frame-{t}") for t in ("bronze", "silver", "gold", "prismatic")]
-    px_ = layer.load()
-    for x0, y0, x1, y1 in K.PROTECT:
-        for y in range(y0, y1 + 1):
-            for x in range(x0, x1 + 1):
-                if any(f.getpixel((x, y))[3] for f in _frames):
-                    px_[x, y] = CLEAR
-    return layer
+protect = K.protect
 
 
 def hexes(rp):
