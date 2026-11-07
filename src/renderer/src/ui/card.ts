@@ -81,6 +81,9 @@ export function createCard(initial: CardProps): CardView {
     <span class="bi-card__rankfx" aria-hidden="true"><i class="bi-mote"></i><i class="bi-mote"></i><i class="bi-mote"></i><i class="bi-mote"></i></span>
     <span class="bi-card__finish" aria-hidden="true"></span>
     <span class="bi-card__deco" aria-hidden="true"><i class="bi-gem"></i></span>
+    <span class="bi-card__flourish" aria-hidden="true"></span>
+    <span class="bi-amb bi-amb--finish" aria-hidden="true"><i></i><i></i><i></i></span>
+    <span class="bi-amb bi-amb--border" aria-hidden="true"><i></i><i></i><i></i></span>
     <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span></header>
     <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg><svg class="bi-card__item" viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false"></svg></div>

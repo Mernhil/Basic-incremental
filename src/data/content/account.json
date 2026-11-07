@@ -13,8 +13,8 @@
   },
   "levels": {
     "maxLevel": 50,
-    "xpBase": "100",
-    "xpGrowth": "1.18",
+    "xpBase": "150",
+    "xpGrowth": "1.25",
     "skillPointsPerLevel": 1
   },
   "rewardTrack": [
@@ -27,7 +27,7 @@
       "resources": [
         {
           "resource": "moss_sigil",
-          "amount": "50"
+          "amount": "10"
         }
       ]
     },
@@ -40,7 +40,7 @@
       "resources": [
         {
           "resource": "moss_sigil",
-          "amount": "100"
+          "amount": "20"
         }
       ],
       "cosmetics": ["holo_hex"]
@@ -50,7 +50,7 @@
       "resources": [
         {
           "resource": "moss_sigil",
-          "amount": "150"
+          "amount": "30"
         }
       ],
       "costCap": 1
@@ -60,7 +60,7 @@
       "resources": [
         {
           "resource": "ember_sigil",
-          "amount": "200"
+          "amount": "40"
         }
       ],
       "cosmetics": ["holo_waves"]
@@ -70,7 +70,7 @@
       "resources": [
         {
           "resource": "ember_sigil",
-          "amount": "250"
+          "amount": "50"
         }
       ],
       "costCap": 1
@@ -80,7 +80,7 @@
       "resources": [
         {
           "resource": "ember_sigil",
-          "amount": "300"
+          "amount": "60"
         }
       ],
       "cosmetics": ["prism_pointer"]
@@ -90,7 +90,7 @@
       "resources": [
         {
           "resource": "frost_sigil",
-          "amount": "350"
+          "amount": "70"
         }
       ],
       "costCap": 1
@@ -100,7 +100,7 @@
       "resources": [
         {
           "resource": "frost_sigil",
-          "amount": "400"
+          "amount": "80"
         }
       ],
       "cosmetics": ["aurora_veil"]
@@ -110,7 +110,7 @@
       "resources": [
         {
           "resource": "frost_sigil",
-          "amount": "450"
+          "amount": "90"
         }
       ],
       "costCap": 1
@@ -120,7 +120,7 @@
       "resources": [
         {
           "resource": "frost_sigil",
-          "amount": "500"
+          "amount": "100"
         }
       ],
       "cosmetics": ["gilded_filigree"]

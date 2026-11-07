@@ -18,7 +18,7 @@ import {
   unequipCard,
   type CosmeticLoadout,
 } from '../../../game';
-import { applyGlobalTheme, assertVisualsImplemented } from '../theme/apply';
+import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from '../theme/apply';
 import { createCard, type CardView } from '../ui/card';
 import { itemArt } from '../art/items';
 import { installArtDefs } from '../art/defs';
@@ -54,6 +54,7 @@ interface Shown {
 export function renderGallery(root: HTMLElement = document.body): void {
   const content = loadContent();
   assertVisualsImplemented(content);
+  configureCardLevels(content);
   installArtDefs();
 
   let loadout: CosmeticLoadout = emptyLoadout();

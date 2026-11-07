@@ -37,6 +37,15 @@ Both also use verification-before-completion.
 - The contract between the two is the public exports of `src/game` and `src/data`. The renderer never imports their internal files, and `src/game` never imports UI, Electron or Node. ESLint enforces both.
 - To run a whole session as one worker: `claude --agent ui`, `claude --agent pixel-art` or `claude --agent mechanics`.
 
+## Running dev apps in parallel
+
+Dev builds share one save folder (`%APPDATA%\basic-incremental-dev`) by default. Two dev apps running at the same time autosave over each other, which makes resources look like they jump back or go down. Give each agent its own folder:
+
+- `BI_PROFILE=<name>` (or `--bi-profile=<name>` on the Electron command line) uses `%APPDATA%\basic-incremental-dev-<name>`, e.g. `BI_PROFILE=ui npm run dev`;
+- `BI_USER_DATA_DIR=<folder>` uses that folder as is.
+
+Profile names are letters, digits, `-` and `_`. Packaged builds ignore all of this.
+
 ## File: `.claude/agents/ui.md`
 
 ```markdown

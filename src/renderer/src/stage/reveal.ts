@@ -17,6 +17,8 @@ export interface RevealOptions {
   views: RevealView[];
   /** The card face of an item (null for items without one, e.g. cosmetics). */
   face: (itemId: string) => CardProps | null;
+  /** A picture for items without a card face (a cosmetic swatch), shown above the name. */
+  picture?: (itemId: string) => HTMLElement | null;
   sound?: (id: string) => void;
   onClose?: () => void;
 }
@@ -75,7 +77,13 @@ export function showReveal(opts: RevealOptions): void {
     else {
       const plain = document.createElement('div');
       plain.className = 'rv-slot__plain';
-      plain.textContent = v.name;
+      const pic = opts.picture?.(v.itemId);
+      if (pic) {
+        plain.classList.add('rv-slot__plain--pic');
+        const name = document.createElement('span');
+        name.textContent = v.name;
+        plain.append(pic, name);
+      } else plain.textContent = v.name;
       front.append(plain);
     }
     const tags = document.createElement('div');

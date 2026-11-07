@@ -57,6 +57,10 @@ import {
   ascensionPreview,
   buyStarlightItem,
   starlightShop,
+  skillTree,
+  buySkill,
+  cardEnhancements,
+  chooseEnhancement,
   cosmeticMaxLevel,
   cosmeticUpgradeCheck,
   upgradeCosmetic,
@@ -83,6 +87,8 @@ export interface Milestone {
 /** Counters the sim keeps beside the state (things the state does not record). */
 export interface SimLog {
   summons: number;
+  /** Account level -> sim seconds when first reached. */
+  levelAt: Record<number, number>;
 }
 
 const tierAtLeast = (state: GameState, tier: (typeof RANK_TIERS)[number]): boolean =>
@@ -267,6 +273,16 @@ export function buyerCandidates(
       });
     }
   }
+  // Account tree: any rank it can buy, in data order (no resource price).
+  for (const info of skillTree(state, content)) {
+    if (!info.canBuy) continue;
+    out.push({
+      id: `skill:${info.node.id}`,
+      prices: [],
+      priority: 1,
+      buy: (s, c) => okState(buySkill(s, c, info.node.id)),
+    });
+  }
   // Starlight shop: every level as soon as it is affordable.
   for (const offer of starlightShop(state, content, modifiers)) {
     if (!offer.price) continue;
@@ -355,7 +371,22 @@ export function greedyBuy(
     current = next;
   }
   if (bought.length > 0) current = optimizeLoadouts(arrangePlots(current, content), content);
+  current = fillEnhancements(current, content);
   return { state: current, bought };
+}
+
+/** Picks each card's enhancement options in data order while its budget allows. */
+export function fillEnhancements(state: GameState, content: Content): GameState {
+  let current = state;
+  for (const cardId of Object.keys(state.cards.owned)) {
+    const info = cardEnhancements(current, content, cardId);
+    if (!info?.unlocked) continue;
+    for (const { option } of info.options) {
+      const result = chooseEnhancement(current, content, cardId, option.id);
+      if (result.ok) current = result.state;
+    }
+  }
+  return current;
 }
 
 /**
@@ -504,7 +535,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const rng: Rng = createSeededRng(options.seed ?? 1);
   const step = options.stepSeconds ?? 5;
   const total = Math.round(options.hours * 3600);
-  const log: SimLog = { summons: 0 };
+  const log: SimLog = { summons: 0, levelAt: {} };
   const hits: Record<string, number | null> = Object.fromEntries(
     MILESTONES.map((m) => [m.id, null]),
   );
@@ -541,6 +572,9 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (report.cardDrops.length > 0) state = optimizeLoadouts(state, content);
     for (const m of MILESTONES) {
       if (hits[m.id] === null && m.reached(state, content, log)) hits[m.id] = t;
+    }
+    for (let level = 2; level <= state.account.level; level++) {
+      log.levelAt[level] ??= t;
     }
   }
   return { hits, simSeconds: t, state, log };
@@ -584,5 +618,14 @@ export function formatSummary(result: SimResult, content: Content): string {
     `Damage lines: ${damage}`,
     `Mine levels: ${mines}`,
     `Cards: ${cards}`,
+    `Account level ${s.account.level}, skills: ${
+      Object.entries(s.account.skills)
+        .map(([id, r]) => `${id} ${r}`)
+        .join(', ') || 'none'
+    }`,
+    `Account level reached at: ${[5, 10, 20, 30, 40, 50]
+      .map((l) => `${l}: ${l in result.log.levelAt ? hoursText(result.log.levelAt[l]!) : '-'}`)
+      .join(', ')}`,
+    `Achievements: ${Object.keys(s.achievements).length} / ${content.achievements.length}`,
   ].join('\n');
 }

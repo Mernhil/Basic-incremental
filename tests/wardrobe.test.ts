@@ -120,6 +120,34 @@ describe('upgrade levels (DESIGN.md 7, 11.1)', () => {
   });
 });
 
+describe('drawn levels of borders and finishes (DESIGN.md 7, 11.1)', () => {
+  const items = content.cosmetics.filter(
+    (c) => !c.starter && (c.slot === 'border' || c.slot === 'finish'),
+  );
+
+  it('have a level for every level up to the max', () => {
+    for (const c of items) expect(c.levels.length, c.id).toBe(cosmeticMaxLevel(content, c));
+  });
+
+  it('end on an ambient recipe; borders add the corner flourishes at the top', () => {
+    for (const c of items) {
+      const top = c.levels[c.levels.length - 1]!.recipes;
+      expect(
+        top.some((r) => r.startsWith('ambient-')),
+        c.id,
+      ).toBe(true);
+      if (c.slot === 'border') expect(top, c.id).toContain('flourish-corners');
+      // Only the ambient level animates.
+      for (const level of c.levels.slice(0, -1)) {
+        expect(
+          level.recipes.some((r) => r.startsWith('ambient-')),
+          c.id,
+        ).toBe(false);
+      }
+    }
+  });
+});
+
 describe('equipping (DESIGN.md 7)', () => {
   it('equips owned items in their slot at their level, and unequips back to the starter', () => {
     expect(equipCosmetic(freshState(), content, 'gt_table')).toMatchObject({
@@ -220,8 +248,8 @@ describe('dungeon cosmetic drops are owned', () => {
 });
 
 describe('the Wardrobe Gate (DESIGN.md 6)', () => {
-  it('waits for the Wardrobe screen: not among the open portals yet', () => {
-    expect(content.portals.some((p) => p.id === 'wardrobe_gate')).toBe(false);
+  it('opens with the Wardrobe screen (Phase 5b): among the open portals', () => {
+    expect(content.portals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
     expect(content.allPortals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
   });
 

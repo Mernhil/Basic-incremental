@@ -4,11 +4,13 @@ import { GAME_TITLE } from '../game/meta';
 import { IPC_CHANNELS } from '../preload/api';
 import { setupSaveIpc, saveBeforeClose } from './saves';
 import { setupAutoUpdates } from './updater';
+import { devUserDataDir } from './devPaths';
 
 // Dev builds keep their own saves and settings, so running from source never touches the
 // installed game's save (which may be an older version that cannot read a newer save format).
+// BI_PROFILE / --bi-profile / BI_USER_DATA_DIR give parallel dev apps separate saves.
 if (!app.isPackaged) {
-  app.setPath('userData', join(app.getPath('appData'), 'basic-incremental-dev'));
+  app.setPath('userData', devUserDataDir(app.getPath('appData'), process.env, process.argv));
 }
 
 function createWindow(): void {

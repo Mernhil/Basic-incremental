@@ -66,6 +66,15 @@ describe('balance sim: greedy buyer', () => {
     expect(MILESTONES.find((m) => m.id === 'max_cosmetic')?.pending).toBeUndefined();
   });
 
+  it('spends skill points and fills card enhancement budgets', () => {
+    const state = freshState();
+    state.account.level = 3;
+    state.cards.owned['ember_squire']!.tier = 'silver';
+    const { state: after, bought } = greedyBuy(state, content);
+    expect(bought.filter((id) => id.startsWith('skill:'))).toHaveLength(2);
+    expect(after.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThan(0);
+  });
+
   it('does nothing when nothing is affordable', () => {
     const { bought } = greedyBuy(freshState(), content);
     expect(bought).toEqual([]);
