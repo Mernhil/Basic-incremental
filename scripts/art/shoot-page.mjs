@@ -8,6 +8,7 @@ const [name = 'home', out = 'design/pixel/page.png', port = '9333'] = process.ar
 const browser = await chromium.connectOverCDP(`http://localhost:${port}`);
 const page = browser.contexts().flatMap((c) => c.pages())[0];
 if (!page) throw new Error('No app window found');
+if (process.argv.includes('--reload')) await page.reload();
 await page.waitForSelector('.shell-rail__item');
 const away = page.locator('.away button');
 if (await away.count()) await away.first().click();

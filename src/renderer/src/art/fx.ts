@@ -9,6 +9,7 @@
  */
 import type { ELEMENTS } from '../../../data';
 import { INK } from './kit';
+import { harden } from './pixel/live';
 import { centroid, outward, resample, zigzag, type Pt } from './fxGeometry';
 
 export type CardElement = (typeof ELEMENTS)[number];
@@ -17,6 +18,13 @@ const FRONT_SHARE = 0.22;
 const FPS = 30;
 const FIRE = ['#ff3b2e', '#ff8a1f', '#ffd23a', '#fff6c8'];
 const CRACK: Record<string, string> = { earth: '#ffb347', crystal: '#9fe8ff', void: '#b47cff' };
+/** Every colour each element's effect may draw: the hardening pass snaps to these. */
+const PALETTE: Partial<Record<CardElement, readonly string[]>> = {
+  fire: [INK, ...FIRE],
+  storm: [INK, '#3fd8ff', '#ffffff'],
+  light: ['#ffe27a', '#fff6c8', '#ffffff'],
+  nature: [INK, '#5fd35a', '#2a7a2e', '#9fe87a'],
+};
 
 interface Particle {
   x: number;
@@ -38,6 +46,7 @@ interface Bolt {
 }
 
 class Fx {
+  readonly glow: HTMLCanvasElement;
   readonly back: HTMLCanvasElement;
   readonly front: HTMLCanvasElement;
   element: CardElement;
@@ -61,9 +70,14 @@ class Fx {
   ) {
     this.element = element;
     this.strength = strength;
+    this.glow = canvas('bi-fx bi-fx--glow');
     this.back = canvas('bi-fx bi-fx--back');
     this.front = canvas('bi-fx bi-fx--front');
+    // the soft glow behind the hard pixels (approved effects style, P5 C)
+    this.glow.style.filter = 'blur(3px)';
+    this.glow.style.opacity = '0.7';
     art.prepend(this.back);
+    art.prepend(this.glow);
     art.append(this.front);
   }
 
@@ -75,6 +89,7 @@ class Fx {
   }
 
   destroy(): void {
+    this.glow.remove();
     this.back.remove();
     this.front.remove();
   }
@@ -86,10 +101,26 @@ class Fx {
     const key = `${w}x${h}`;
     if (!this.stale && key === this.sizeKey && this.outline.length) return true;
     if (!w || !h) return false;
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    for (const c of [this.back, this.front]) {
-      c.width = Math.round(w * dpr);
-      c.height = Math.round(h * dpr);
+    // effects are drawn on the item's own pixel grid: one canvas pixel per item pixel (2 units),
+    // over exactly the area the item's viewBox fills, scaled up with nearest neighbour
+    const itemSvg = this.art.querySelector<SVGSVGElement>('.bi-card__item');
+    const vb = itemSvg?.viewBox.baseVal;
+    if (!itemSvg || !vb || !vb.width) return false;
+    const k = Math.min(w / vb.width, h / vb.height);
+    const gw = Math.round(vb.width / 2);
+    const gh = Math.round(vb.height / 2);
+    const ox = (w - vb.width * k) / 2;
+    const oy = (h - vb.height * k) / 2;
+    for (const c of [this.glow, this.back, this.front]) {
+      c.width = gw;
+      c.height = gh;
+      Object.assign(c.style, {
+        left: `${ox}px`,
+        top: `${oy}px`,
+        width: `${vb.width * k}px`,
+        height: `${vb.height * k}px`,
+        imageRendering: 'pixelated',
+      });
     }
     const paths = [...this.art.querySelectorAll<SVGPathElement>('.bi-card__item .bi-item path')];
     let best: SVGPathElement | null = null;
@@ -106,6 +137,7 @@ class Fx {
     const m = best.getScreenCTM();
     const box = this.back.getBoundingClientRect();
     if (!m || !box.width) return false;
+    const dpr = this.back.width / box.width;
     const len = best.getTotalLength();
     const raw: Pt[] = [];
     for (let i = 0; i < 96; i++) {
@@ -283,6 +315,16 @@ class Fx {
         fc.restore();
       }
     }
+    // hard pixels: on/off alpha and the effect's own palette, then the glow copy behind
+    const pal = PALETTE[this.element] ?? [INK, '#ffffff', CRACK[this.element] ?? '#ffffff'];
+    harden(bc, pal);
+    harden(fc, pal);
+    const gc = this.glow.getContext('2d');
+    if (gc) {
+      gc.clearRect(0, 0, this.glow.width, this.glow.height);
+      gc.drawImage(this.back, 0, 0);
+      gc.drawImage(this.front, 0, 0);
+    }
   }
 }
 
@@ -334,7 +376,8 @@ function bolt(ctx: CanvasRenderingContext2D, pts: Pt[], s: number, alpha: number
     ctx.strokeStyle = c;
     ctx.lineWidth = w * s;
     ctx.shadowColor = '#3fd8ff';
-    ctx.shadowBlur = blur * s;
+    ctx.shadowBlur = 0; // the glow canvas behind does the glow (hard pixels here)
+    void blur;
     ctx.beginPath();
     pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
     ctx.stroke();
@@ -348,7 +391,7 @@ function aura(ctx: CanvasRenderingContext2D, o: Pt[], c: Pt, scale: number, alph
   ctx.globalAlpha = alpha;
   ctx.strokeStyle = '#ffe27a';
   ctx.shadowColor = '#ffe27a';
-  ctx.shadowBlur = 12;
+  ctx.shadowBlur = 0;
   ctx.lineWidth = 3;
   ctx.beginPath();
   o.forEach((p, i) => {
@@ -423,7 +466,8 @@ function crack(
   ] as const) {
     ctx.strokeStyle = c;
     ctx.shadowColor = col;
-    ctx.shadowBlur = blur * s;
+    ctx.shadowBlur = 0; // the glow canvas behind does the glow (hard pixels here)
+    void blur;
     ctx.lineWidth = w * s;
     ctx.beginPath();
     pts.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
