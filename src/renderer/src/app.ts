@@ -8,7 +8,6 @@ import {
   defaultRng,
   exportSaveString,
   formatDecimal,
-  formatDuration,
   importSaveString,
   loadBestSave,
   productionPerSecond,
@@ -30,6 +29,7 @@ import { gemCoin, svg } from './art/gems';
 import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
 import { setNumberMotion } from './stage/numbers';
+import { showWelcomeBack } from './stage/welcome';
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -43,23 +43,6 @@ function showFatal(root: HTMLElement, error: unknown): void {
       ? `${COPY.load.badData}\n\n${error.message}`
       : `${COPY.load.failed}\n\n${error instanceof Error ? error.message : String(error)}`;
   root.append(box);
-}
-
-function awayLines(summary: OfflineSummary, content: Content): string[] {
-  const lines = [COPY.away.duration(formatDuration(summary.elapsedMs))];
-  if (summary.capped) lines.push(COPY.away.capped(formatDuration(summary.capMs)));
-  for (const [id, amount] of Object.entries(summary.gains)) {
-    lines.push(COPY.away.gain(formatDecimal(amount), content.resourceById.get(id)?.name ?? id));
-  }
-  if (summary.bossKills > 0) lines.push(COPY.away.kills(summary.bossKills));
-  for (const [id, count] of Object.entries(summary.drops)) {
-    const name = content.cosmeticById.get(id)?.name ?? content.cardById.get(id)?.name ?? id;
-    lines.push(COPY.away.drop(name, count));
-  }
-  for (const drop of summary.cardDrops) {
-    lines.push(COPY.away.drop(content.cardById.get(drop.cardId)?.name ?? drop.cardId, 1));
-  }
-  return lines;
 }
 
 /** Loads content and the save, applies offline progress, builds the pages and runs the loop. */
@@ -132,21 +115,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     app.append(warning);
   }
 
-  if (summary) {
-    const away = frame(COPY.away.title);
-    away.el.classList.add('away');
-    const list = h('ul', 'away__list');
-    for (const line of awayLines(summary, content)) list.append(h('li', '', line));
-    const ok = h('button', 'button', COPY.away.dismiss);
-    ok.type = 'button';
-    ok.addEventListener('click', () => {
-      away.el.remove();
-      shell.scrollToTop();
-    });
-    away.body.append(list, ok);
-    app.append(away.el);
-    queueMicrotask(() => ok.focus());
-  }
+  if (summary) showWelcomeBack(summary, content, shell);
 
   const applyAndSave = (next: GameState): void => {
     loop.state = next;
@@ -165,6 +134,9 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     content,
     state: () => loop.state,
     apply: applyAndSave,
+    director,
+    coins: shell,
+    visible: visible('production'),
   });
   pages['cards'] = createCardsPage(shell.page('cards'), {
     content,

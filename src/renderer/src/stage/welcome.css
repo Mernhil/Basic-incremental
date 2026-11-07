@@ -1,0 +1,114 @@
+/* Welcome back, card fan (DESIGN.md 14, A11 B): small cream cards dealt onto the table one after
+   another in a gentle fan; rare ones glow. Card colours use the plate tokens of the cards. */
+
+.wb {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bi-chrome-bg) 72%, transparent);
+  backdrop-filter: blur(3px);
+  animation: wb-fade 0.25s ease-out both;
+}
+.wb.is-leaving {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+.wb__dialog {
+  display: grid;
+  justify-items: center;
+  gap: 28px;
+  padding: 24px;
+  max-width: min(1100px, 94vw);
+}
+.wb__title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--bi-chrome-ink);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.4);
+}
+.wb__fan {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+.wb-card {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  width: 168px;
+  min-height: 190px;
+  box-sizing: border-box;
+  padding: 14px 14px 16px;
+  border-radius: 14px;
+  background:
+    linear-gradient(var(--bi-frame-title-bg), var(--bi-frame-title-bg)), var(--bi-frame-bg);
+  color: var(--bi-frame-title-ink);
+  box-shadow:
+    inset 0 0 0 2px var(--bi-frame-title-line),
+    0 12px 26px rgba(0, 0, 0, 0.45);
+  rotate: var(--tilt);
+  translate: 0 var(--lift);
+  animation: wb-deal 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+  animation-delay: calc(var(--i) * 0.16s + 0.15s);
+}
+.wb-card__title {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bi-frame-ink-muted);
+}
+.wb-card__headline {
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.wb-card__lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 3px;
+  font-size: 12.5px;
+}
+.wb-card__lines .is-rare {
+  font-weight: 700;
+  color: var(--bi-tick-crit, #ffb02e);
+}
+.wb-card--rare {
+  box-shadow:
+    inset 0 0 0 2px var(--bi-tick-crit, #ffb02e),
+    0 0 26px color-mix(in srgb, var(--bi-tick-crit, #ffb02e) 45%, transparent),
+    0 12px 26px rgba(0, 0, 0, 0.45);
+}
+.wb__collect {
+  min-width: 180px;
+  padding: 10px 22px;
+  font-size: 16px;
+  font-weight: 800;
+  animation: wb-fade 0.3s ease-out both;
+  animation-delay: calc(var(--i) * 0.16s + 0.25s);
+}
+@keyframes wb-deal {
+  from {
+    opacity: 0;
+    translate: 0 -120px;
+    rotate: calc(var(--tilt) * -3);
+    scale: 0.8;
+  }
+}
+@keyframes wb-fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wb-card {
+    animation-name: wb-fade;
+  }
+}
