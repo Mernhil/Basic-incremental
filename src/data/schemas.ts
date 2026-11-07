@@ -1057,6 +1057,10 @@ export type LadderStep = (typeof LADDER_STEPS)[number];
 export const cosmeticRulesSchema = z
   .strictObject({
     maxLevel: perRarity(z.number().int().min(1).max(10)),
+    /** Max level of every non-starter item of a slot, replacing the rarity rule (UI skins: 1). */
+    slotMaxLevel: z
+      .partialRecord(z.enum(COSMETIC_SLOTS), z.number().int().min(1).max(10))
+      .default({}),
     ladders: z.record(z.string().regex(/^\d+$/), z.array(z.enum(LADDER_STEPS)).min(1)),
     copiesPerLevel: z.number().int().min(0),
     materials: z.strictObject({
@@ -1081,7 +1085,7 @@ export const cosmeticRulesSchema = z
         ctx.addIssue({ code: 'custom', path: ['ladders', key], message: 'must end on ambient' });
       }
     }
-    for (const max of new Set(Object.values(r.maxLevel))) {
+    for (const max of new Set([...Object.values(r.maxLevel), ...Object.values(r.slotMaxLevel)])) {
       if (!r.ladders[String(max)]) {
         ctx.addIssue({
           code: 'custom',

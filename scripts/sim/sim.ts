@@ -774,6 +774,27 @@ export function ascendNow(
   return rate <= tracker.peakRate * PAST_PEAK;
 }
 
+/** Share of a tier-up's missing resource already held at which the player waits for it. */
+const HOLD_SHARE = 0.4;
+/** The longest a run is stretched while waiting for a tier-up, in seconds. */
+export const HOLD_MAX_RUN_SECONDS = 12 * 3600;
+
+/**
+ * Whether a tier-up is close: some card is at its level cap and ★6 and only a resource (the Cores
+ * and Sigils an ascension resets) is short, with at least 40% of it in hand. A player finishes
+ * that step before ascending instead of throwing the Cores away.
+ */
+export function holdAscension(state: GameState, content: Content): boolean {
+  for (const id of Object.keys(state.cards.owned)) {
+    const check = tierUpCheck(state, content, id);
+    if (!check || !check.available || check.met) continue;
+    const missing = check.requirements.filter((r) => !r.met);
+    if (missing.some((r) => r.kind !== 'resource')) continue;
+    if (missing.every((r) => r.have.gte(r.need.mul(HOLD_SHARE)))) return true;
+  }
+  return false;
+}
+
 // ---- where to fight ----------------------------------------------------------------------------
 
 /** Whether the loadout kills the boss before the boss knocks it out. */
@@ -916,7 +937,8 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       sinceAscendCheck = 0;
       const preview = ascensionPreview(state, content);
       const now = { gain: num(preview.gain), minimum: preview.minimum, runSeconds: t - runStart };
-      if (ascendNow(now, tracker)) {
+      const holding = now.runSeconds < HOLD_MAX_RUN_SECONDS && holdAscension(state, content);
+      if (ascendNow(now, tracker) && !holding) {
         const result = ascend(state, content);
         if (result.ok) {
           const after = greedyBuy(result.state, content, rng);
