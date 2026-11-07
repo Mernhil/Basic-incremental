@@ -65,7 +65,7 @@ describe('account XP (DESIGN.md 10a, 12.4)', () => {
     const state = bareState();
     state.production.logging.plots = [];
     state.production.mining.plots = [];
-    state.combat.damageLevels = { copper_edge: 200 };
+    state.combat.damageLevels = { copper_edge: 250 }; // the first boss falls within the 3 s
     const { state: after, report } = advance(state, content, 3_000, constantRng(0.5));
     expect(report.bossKills).toBeGreaterThan(0);
     expect(after.account.xp.toNumber()).toBeCloseTo(report.bossKills * A.xp.perKill.toNumber(), 6);

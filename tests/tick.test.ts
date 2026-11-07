@@ -45,10 +45,11 @@ describe('advance (tick math)', () => {
     const { state, report } = advance(withDps(maxHp), content, 1000, rng);
     expect(report.bossKills).toBe(1);
     expect(state.stats.bossKills).toBe(1);
-    // rng 0.5 -> min + floor(0.5 * span) sigils; 0.5 >= the 10% Core chance -> no Core.
+    // rng 0.5 -> min + floor(0.5 * span) sigils; a Core drops only when 0.5 is under its chance.
     const { min, max } = dungeon.drops.portalResource;
     expect(state.resources['moss_sigil']!.eq(min + Math.floor(0.5 * (max - min + 1)))).toBe(true);
-    expect(state.resources['moss_core']!.eq(0)).toBe(true);
+    const { chance, amount } = dungeon.drops.material;
+    expect(state.resources['moss_core']!.eq(0.5 < chance ? amount : 0)).toBe(true);
     expect(state.bossHp!.eq(maxHp)).toBe(true);
   });
 

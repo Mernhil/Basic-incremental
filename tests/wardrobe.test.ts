@@ -236,7 +236,7 @@ describe('the wardrobe grid', () => {
 describe('dungeon cosmetic drops are owned', () => {
   it('a rare drop that is a cosmetic goes into the wardrobe (a copy when owned)', () => {
     const state = freshState();
-    state.combat.damageLevels['copper_edge'] = 200;
+    state.combat.damageLevels['copper_edge'] = 250; // the first boss falls within the 5 s
     // rng 0: every chance roll succeeds, so the first kill drops Holo Hex.
     const { state: after, report } = advance(state, content, 5_000, constantRng(0));
     expect(report.bossKills).toBeGreaterThan(0);

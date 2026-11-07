@@ -144,7 +144,9 @@ describe('levels (DESIGN.md 11.2, 11.9)', () => {
 
     const state = bareState();
     state.cards.loadouts.fighting.main = 'ember_squire';
-    state.combat.damageLevels = { copper_edge: 4999 }; // 5000 dps: 60,000 HP in 12 s
+    // The first boss falls in exactly 12 s: its HP over 12 is the damage per second.
+    const hp = content.dungeons[0]!.boss.hp.toNumber();
+    state.combat.damageLevels = { copper_edge: hp / 12 - 1 };
     const { state: after, report } = advance(state, content, 12_000, constantRng(0.9));
     expect(report.bossKills).toBe(1);
     const squire = after.cards.owned['ember_squire']!;
@@ -163,7 +165,8 @@ describe('levels (DESIGN.md 11.2, 11.9)', () => {
 
   it('gives XP while offline exactly like the live game loop', () => {
     const start = freshState();
-    start.combat.damageLevels = { copper_edge: 199 }; // 200 dps: a Mossy Cellar kill per ~4 min
+    // A Mossy Cellar kill per ~4 min.
+    start.combat.damageLevels = { copper_edge: content.dungeons[0]!.boss.hp.toNumber() / 240 - 1 };
     const offline = simulateOffline(start, content, 0, 3_600_000, rng);
     const live = advanceChunked(start, content, 3_600_000, rng, 1000).state;
     expect(offline.summary!.cardLevels['apprentice_feller']).toEqual({
@@ -351,6 +354,7 @@ describe('loadouts (DESIGN.md 11.4, 11.9)', () => {
 describe('star-up and tier-up (DESIGN.md 11.9)', () => {
   it('lists what a star-up needs, met or not, with have / need', () => {
     const state = own(freshState(), 'ember_squire', { level: 12 });
+    const mossNeed = content.cardRules.starUp.tiers.bronze.amounts[0]!.toNumber();
     const check = starUpCheck(state, content, 'ember_squire')!;
     expect(check.available).toBe(true);
     expect(check.to).toEqual({ tier: 'bronze', stars: 2 });
@@ -366,7 +370,7 @@ describe('star-up and tier-up (DESIGN.md 11.9)', () => {
     ).toEqual([
       ['duplicates', undefined, 0, 1, false],
       ['level', undefined, 12, 20, false],
-      ['resource', 'moss_core', 0, 2, false],
+      ['resource', 'moss_core', 0, mossNeed, false],
     ]);
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
     expect(starUpCheck(state, content, 'storm_duelist')).toBeNull();
@@ -375,14 +379,15 @@ describe('star-up and tier-up (DESIGN.md 11.9)', () => {
   });
 
   it('spends a duplicate and Cores and keeps the level; the cap rises', () => {
+    const mossNeed = content.cardRules.starUp.tiers.bronze.amounts[0]!.toNumber();
     const state = give(
       own(freshState(), 'ember_squire', { level: 20, duplicates: 2 }),
       'moss_core',
-      5,
+      mossNeed + 3,
     );
     const after = ok(starUp(state, content, 'ember_squire'));
     expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, duplicates: 1 });
-    expect(after.resources['moss_core']!.eq(3)).toBe(true);
+    expect(after.resources['moss_core']!.eq(3)).toBe(true); // paid the first star's Cores
     expect(cardInfo(after, content, 'ember_squire')!.levelCap).toBe(24);
     expect(state.cards.owned['ember_squire']!.stars).toBe(1); // pure
   });
@@ -429,7 +434,8 @@ describe('star-up and tier-up (DESIGN.md 11.9)', () => {
       'moss_core',
       'ironbark_gem',
     ]);
-    state = give(give(state, 'moss_core', 10), 'ironbark_gem', 2000);
+    const mossTier = content.cardRules.tierUp.bronze.logging[0]!.amount.toNumber();
+    state = give(give(state, 'moss_core', mossTier), 'ironbark_gem', 2000);
     state = ok(tierUp(state, content, 'apprentice_feller'));
     expect(state.cards.owned['apprentice_feller']).toMatchObject({
       tier: 'silver',

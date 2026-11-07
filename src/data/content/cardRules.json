@@ -9,99 +9,208 @@
     "exotic": 16,
     "void": 20
   },
-  "costCap": { "base": 6, "perLevel": 2 },
+  "costCap": {
+    "base": 6,
+    "perLevel": 2
+  },
   "levelCaps": {
     "bronze": [20, 24, 28, 32, 36, 40],
     "silver": [40, 44, 48, 52, 56, 60],
     "gold": [60, 64, 68, 72, 76, 80],
     "prismatic": [80, 84, 88, 92, 96, 100]
   },
-  "xpCurve": { "base": "10", "growth": "1.12" },
+  "xpCurve": {
+    "base": "10",
+    "growth": "1.12"
+  },
   "xp": {
     "perKill": "50",
     "tierGrowth": "5",
-    "perUnit": { "logging": "1", "mining": "2" }
+    "perUnit": {
+      "logging": "1",
+      "mining": "2"
+    }
   },
   "power": {
     "perLevel": 0.02,
     "perStar": 0.05,
     "star6Bonus": 0.25,
-    "tier": { "bronze": 1, "silver": 1.5, "gold": 2.25, "prismatic": 3.5 }
+    "tier": {
+      "bronze": 1,
+      "silver": 1.5,
+      "gold": 2.25,
+      "prismatic": 3.5
+    }
   },
   "mainGrowth": {
     "fighting": [
-      { "stat": "combat.damage", "kind": "percent", "value": "100" },
-      { "stat": "burst.fill", "kind": "percent", "value": "10", "scope": { "job": "fighting" } }
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "100"
+      },
+      {
+        "stat": "burst.fill",
+        "kind": "percent",
+        "value": "10",
+        "scope": {
+          "job": "fighting"
+        }
+      }
     ],
     "logging": [
       {
         "stat": "production.rate",
         "kind": "percent",
         "value": "100",
-        "scope": { "job": "logging" }
+        "scope": {
+          "job": "logging"
+        }
       },
-      { "stat": "burst.fill", "kind": "percent", "value": "10", "scope": { "job": "logging" } }
+      {
+        "stat": "burst.fill",
+        "kind": "percent",
+        "value": "10",
+        "scope": {
+          "job": "logging"
+        }
+      }
     ],
     "mining": [
       {
         "stat": "production.rate",
         "kind": "percent",
         "value": "100",
-        "scope": { "job": "mining" }
+        "scope": {
+          "job": "mining"
+        }
       },
-      { "stat": "burst.fill", "kind": "percent", "value": "10", "scope": { "job": "mining" } }
+      {
+        "stat": "burst.fill",
+        "kind": "percent",
+        "value": "10",
+        "scope": {
+          "job": "mining"
+        }
+      }
     ]
   },
   "starUp": {
     "duplicates": 1,
     "tiers": {
-      "bronze": { "resource": "moss_core", "amounts": ["2", "3", "4", "5", "15"] },
-      "silver": { "resource": "cinder_core", "amounts": ["3", "4", "6", "8", "24"] },
-      "gold": { "resource": "frost_core", "amounts": ["4", "6", "8", "10", "30"] },
-      "prismatic": { "resource": "frost_core", "amounts": ["8", "10", "12", "15", "45"] }
+      "bronze": {
+        "resource": "moss_core",
+        "amounts": ["1", "2", "3", "5", "15"]
+      },
+      "silver": {
+        "resource": "cinder_core",
+        "amounts": ["1", "2", "3", "4", "12"]
+      },
+      "gold": {
+        "resource": "frost_core",
+        "amounts": ["1", "1", "2", "2", "6"]
+      },
+      "prismatic": {
+        "resource": "frost_core",
+        "amounts": ["14", "17", "20", "24", "72"]
+      }
     }
   },
   "tierUp": {
     "bronze": {
       "logging": [
-        { "resource": "moss_core", "amount": "10" },
-        { "resource": "ironbark_gem", "amount": "2000" }
+        {
+          "resource": "moss_core",
+          "amount": "6"
+        },
+        {
+          "resource": "ironbark_gem",
+          "amount": "2000"
+        }
       ],
       "mining": [
-        { "resource": "moss_core", "amount": "10" },
-        { "resource": "iron_gem", "amount": "1000" }
+        {
+          "resource": "moss_core",
+          "amount": "6"
+        },
+        {
+          "resource": "iron_gem",
+          "amount": "1000"
+        }
       ],
       "fighting": [
-        { "resource": "moss_core", "amount": "10" },
-        { "resource": "iron_gem", "amount": "1000" }
+        {
+          "resource": "moss_core",
+          "amount": "6"
+        },
+        {
+          "resource": "iron_gem",
+          "amount": "1000"
+        }
       ]
     },
     "silver": {
       "logging": [
-        { "resource": "cinder_core", "amount": "20" },
-        { "resource": "moonwillow_gem", "amount": "5000" }
+        {
+          "resource": "cinder_core",
+          "amount": "8"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "5000"
+        }
       ],
       "mining": [
-        { "resource": "cinder_core", "amount": "20" },
-        { "resource": "grotto_gem", "amount": "2000" }
+        {
+          "resource": "cinder_core",
+          "amount": "8"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "2000"
+        }
       ],
       "fighting": [
-        { "resource": "cinder_core", "amount": "20" },
-        { "resource": "grotto_gem", "amount": "2000" }
+        {
+          "resource": "cinder_core",
+          "amount": "8"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "2000"
+        }
       ]
     },
     "gold": {
       "logging": [
-        { "resource": "frost_core", "amount": "40" },
-        { "resource": "frost_sigil", "amount": "100" }
+        {
+          "resource": "frost_core",
+          "amount": "85"
+        },
+        {
+          "resource": "frost_sigil",
+          "amount": "175"
+        }
       ],
       "mining": [
-        { "resource": "frost_core", "amount": "40" },
-        { "resource": "frost_sigil", "amount": "100" }
+        {
+          "resource": "frost_core",
+          "amount": "85"
+        },
+        {
+          "resource": "frost_sigil",
+          "amount": "175"
+        }
       ],
       "fighting": [
-        { "resource": "frost_core", "amount": "40" },
-        { "resource": "frost_sigil", "amount": "100" }
+        {
+          "resource": "frost_core",
+          "amount": "85"
+        },
+        {
+          "resource": "frost_sigil",
+          "amount": "175"
+        }
       ]
     }
   },

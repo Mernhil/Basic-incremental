@@ -82,8 +82,9 @@ describe('plot and slot expansions', () => {
       amount: new Decimal(25),
     });
     state.production.logging.expansions = 3;
-    // 25 * 1.6^3 = 102.4 -> 103
-    expect(expansionCost(state, content, 'logging').amount.eq(103)).toBe(true);
+    const { base, growth } = content.production.logging.expansion;
+    const third = Math.ceil(base.toNumber() * growth.toNumber() ** 3); // base * growth^3, rounded up
+    expect(expansionCost(state, content, 'logging').amount.eq(third)).toBe(true);
     expect(expansionCost(freshState(), content, 'mining').resource).toBe('copper_gem');
   });
 
@@ -92,7 +93,9 @@ describe('plot and slot expansions', () => {
     expect(state.resources['oak_gem']!.eq(5)).toBe(true);
     expect(plotCapacity(state, content, 'logging')).toBe(2);
     expect(plots(state, content, 'logging')).toEqual(['oak', null]);
-    expect(expansionCost(state, content, 'logging').amount.eq(40)).toBe(true);
+    const { base, growth } = content.production.logging.expansion;
+    const second = Math.ceil(base.toNumber() * growth.toNumber());
+    expect(expansionCost(state, content, 'logging').amount.eq(second)).toBe(true);
   });
 
   it('refuses when unaffordable and leaves the state alone', () => {
@@ -217,8 +220,9 @@ describe('mine types and levels', () => {
       amount: new Decimal(15),
     });
     state = ok(buyMineLevel(state, content, 'copper_quarry'));
-    state = ok(buyMineLevel(state, content, 'copper_quarry')); // 15 + ceil(22.5) = 38
-    expect(state.resources['copper_gem']!.eq(62)).toBe(true);
+    state = ok(buyMineLevel(state, content, 'copper_quarry')); // 15 + ceil(15 * growth)
+    const growth = content.mineById.get('copper_quarry')!.level.cost.growth.toNumber();
+    expect(state.resources['copper_gem']!.eq(100 - 15 - Math.ceil(15 * growth))).toBe(true);
     expect(state.production.mineLevels['copper_quarry']).toBe(2);
     // 0.5 * (1 + 2 * 10%) = 0.6
     expect(productionPerSecond(state, content)['copper_gem']!.eq(0.6)).toBe(true);
