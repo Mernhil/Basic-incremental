@@ -2,6 +2,8 @@ import type { Rank } from '../../../data';
 import type { ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
 import { ITEM_VIEWBOX } from '../art/items';
+import { attachElementFx, type CardElement } from '../art/fx';
+import { effectStrength } from '../art/fxGeometry';
 import { applyCardTheme } from '../theme/apply';
 
 /** Placeholder emblems until real card art exists. */
@@ -38,6 +40,8 @@ export interface CardProps {
   emblem: keyof typeof EMBLEMS | string;
   /** The signature item (art/items.ts). Replaces the emblem when set. */
   item?: string;
+  /** The card's element: its effect plays from Gold (DESIGN.md 13). */
+  element?: CardElement;
   rank: Rank;
   stats: [CardStat, CardStat];
   theme: ResolvedCard;
@@ -92,6 +96,7 @@ export function createCard(initial: CardProps): CardView {
   const job = q<HTMLElement>('.bi-card__job');
   const emblem = q<SVGElement>('.bi-card__emblem');
   const itemSvg = q<SVGElement>('.bi-card__item');
+  const artBox = q<HTMLElement>('.bi-card__art');
   let itemMarkup: string | undefined;
   const dts = el.querySelectorAll('dt');
   const dds = el.querySelectorAll('dd');
@@ -119,7 +124,8 @@ export function createCard(initial: CardProps): CardView {
     );
     name.textContent = p.name;
     job.textContent = p.label;
-    if (p.item !== itemMarkup) {
+    const itemChanged = p.item !== itemMarkup;
+    if (itemChanged) {
       itemMarkup = p.item;
       itemSvg.innerHTML = p.item ?? '';
       el.classList.toggle('bi-card--item', Boolean(p.item));
@@ -138,6 +144,12 @@ export function createCard(initial: CardProps): CardView {
       frameTier = tier;
       frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier);
     }
+    attachElementFx(
+      artBox,
+      p.boss || !p.item ? null : (p.element ?? null),
+      p.boss ? 0 : effectStrength(p.rank.tier),
+      itemChanged,
+    );
     applyCardTheme(el, p.theme);
   };
 

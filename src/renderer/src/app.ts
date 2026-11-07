@@ -110,6 +110,7 @@ function loadoutProps(
     job: card.job,
     emblem: role === 'main' ? 'blade' : 'gem',
     item: itemArt(card.item.kind, card.rarity),
+    element: card.element,
     rank,
     stats,
     theme: resolveCard(content, state.cosmetics.loadout, {

@@ -8,6 +8,7 @@ import {
   type CosmeticSlot,
   type Rank,
   type Rarity,
+  type CardElement,
 } from '../../../data';
 import {
   detectSets,
@@ -223,6 +224,31 @@ export function renderGallery(root: HTMLElement = document.body): void {
     ladder.append(fig);
   }
   items.append(ladder);
+  // element effects at Gold and Prismatic, one representative card per element
+  items.append(el('h2', 'gallery__h2', 'Element effects (Gold, then Prismatic)'));
+  const elementRow = el('div', 'gallery__row');
+  const picks: Array<[string, string]> = [
+    ['ember_squire', 'Fire'],
+    ['storm_duelist', 'Storm'],
+    ['shield_warden', 'Light'],
+    ['grove_keeper', 'Nature'],
+    ['cave_digger', 'Earth'],
+    ['gem_cutter', 'Crystal'],
+    ['core_titan', 'Void'],
+  ];
+  for (const tier of ['gold', 'prismatic'] as const)
+    for (const [id, label] of picks) {
+      const card = content.cardById.get(id)!;
+      const view = createCard({
+        ...cardProps(content, loadout, id, { tier, stars: 1 }, card.name, 'blade', card.rarity),
+        item: itemArt(card.item.kind, card.rarity),
+        element: card.element,
+      });
+      const fig = el('figure', 'gallery__fig');
+      fig.append(view.el, el('figcaption', '', `${label}, ${cap(tier)}`));
+      elementRow.append(fig);
+    }
+  items.append(elementRow);
   page.append(items);
 
   // star 5 -> 6 transition demo
@@ -300,6 +326,7 @@ function cardProps(
     job: 'fighting',
     emblem,
     item: itemArt(emblem === 'gem' ? 'shield' : 'sword', rarity),
+    element: (emblem === 'gem' ? 'light' : 'fire') as CardElement,
     rank,
     stats: [
       { label: 'Power', value: '12.4K' },

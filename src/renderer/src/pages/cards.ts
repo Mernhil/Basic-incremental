@@ -109,6 +109,7 @@ export function createCardsPage(
       job: e.job,
       emblem: e.emblem,
       item: e.item,
+      ...(e.owned ? { element: e.element } : {}),
       rank: e.rank,
       stats: e.owned
         ? e.stats
