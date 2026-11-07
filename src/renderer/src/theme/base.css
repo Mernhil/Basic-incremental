@@ -108,6 +108,22 @@ body {
   overflow: visible;
   pointer-events: none;
 }
+/* the signature item (art/items.ts) fills the art window and replaces the line emblem */
+.bi-card__item {
+  display: none;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.bi-card--item .bi-card__item {
+  display: block;
+}
+.bi-card--item .bi-card__emblem {
+  display: none;
+}
 .bi-card--boss .bi-card__frame {
   display: none;
 }

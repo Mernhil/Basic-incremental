@@ -233,11 +233,31 @@ export type CardEffect = z.output<typeof cardEffectSchema>;
  * A collectible card (DESIGN.md 5, 11.9). Every card can lead its job (`main`) or sit in one of
  * its 3 support slots (`support`); only the effect of the slot it is in applies.
  */
+/** Card elements (DESIGN.md 13): each picks the card's element effect. */
+export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
+/** The signature item drawn inside a card (DESIGN.md 13); its detail grows with the card's rarity. */
+export const ITEM_KINDS = [
+  'sword',
+  'shield',
+  'twin_blades',
+  'greatsword',
+  'hatchet',
+  'staff',
+  'maul',
+  'bow',
+  'pickaxe',
+  'chisel',
+  'geode_hammer',
+  'gauntlet',
+] as const;
+
 export const cardSchema = z.strictObject({
   id,
   name,
   job: z.enum(JOBS),
   rarity: z.enum(RARITIES),
+  element: z.enum(ELEMENTS),
+  item: z.strictObject({ kind: z.enum(ITEM_KINDS), name }),
   /** Used when the card leads its job's loadout. */
   main: cardEffectSchema,
   /** Used when the card is in one of the 3 support slots. */

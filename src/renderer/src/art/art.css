@@ -33,9 +33,21 @@
     opacity: 1;
   }
 }
+/* Void items: dark shards orbiting the item (centre of the 200 x 240 item box) */
+.bi-art-orbit {
+  animation: bi-art-orbit 14s linear infinite;
+  transform-box: view-box;
+  transform-origin: 110px 120px;
+}
+@keyframes bi-art-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .bi-art-sway,
   .bi-art-glow,
+  .bi-art-orbit,
   .bi-art-tw {
     animation: none;
   }

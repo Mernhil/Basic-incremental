@@ -1,6 +1,7 @@
 import type { Rank } from '../../../data';
 import type { ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
+import { ITEM_VIEWBOX } from '../art/items';
 import { applyCardTheme } from '../theme/apply';
 
 /** Placeholder emblems until real card art exists. */
@@ -35,6 +36,8 @@ export interface CardProps {
   label: string;
   job: string;
   emblem: keyof typeof EMBLEMS | string;
+  /** The signature item (art/items.ts). Replaces the emblem when set. */
+  item?: string;
   rank: Rank;
   stats: [CardStat, CardStat];
   theme: ResolvedCard;
@@ -76,7 +79,7 @@ export function createCard(initial: CardProps): CardView {
     <span class="bi-card__deco" aria-hidden="true"><i class="bi-gem"></i></span>
     <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span></header>
-    <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg></div>
+    <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg><svg class="bi-card__item" viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false"></svg></div>
     <dl class="bi-card__stats">
       <div><dt></dt><dd class="bi-num"></dd></div>
       <div><dt></dt><dd class="bi-num"></dd></div>
@@ -88,6 +91,8 @@ export function createCard(initial: CardProps): CardView {
   const name = q<HTMLElement>('.bi-card__name');
   const job = q<HTMLElement>('.bi-card__job');
   const emblem = q<SVGElement>('.bi-card__emblem');
+  const itemSvg = q<SVGElement>('.bi-card__item');
+  let itemMarkup: string | undefined;
   const dts = el.querySelectorAll('dt');
   const dds = el.querySelectorAll('dd');
   const rankName = q<HTMLElement>('.bi-rank-name');
@@ -114,7 +119,12 @@ export function createCard(initial: CardProps): CardView {
     );
     name.textContent = p.name;
     job.textContent = p.label;
-    emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
+    if (p.item !== itemMarkup) {
+      itemMarkup = p.item;
+      itemSvg.innerHTML = p.item ?? '';
+      el.classList.toggle('bi-card--item', Boolean(p.item));
+    }
+    if (!p.item) emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
     p.stats.forEach((s, i) => {
       dts[i]!.textContent = s.label;
       dds[i]!.textContent = s.value;

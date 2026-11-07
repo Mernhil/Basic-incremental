@@ -17,6 +17,7 @@ import {
   type UpgradeCheck,
 } from '../../../game';
 import { COPY } from '../copy';
+import { itemArt } from '../art/items';
 import type {
   CardEntry,
   CardsModel,
@@ -115,6 +116,7 @@ export function createCardsModel(content: Content): CardsModel {
       job: card.job,
       rarity: card.rarity,
       emblem: JOB_EMBLEM[card.job],
+      item: itemArt(card.item.kind, card.rarity),
       owned: owned !== null,
       rank,
       level,
