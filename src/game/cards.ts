@@ -14,8 +14,7 @@ import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { finalPrice, pay, type Price } from './production';
-import type { CardDrop, CardGain, TickReport, TierUp } from './report';
-import type { Rng } from './rng';
+import type { CardGain, TickReport, TierUp } from './report';
 import {
   cloneState,
   newOwnedCard,
@@ -563,8 +562,9 @@ export function tierUp(
 
 // ---- gaining cards ---------------------------------------------------------------------------
 
-/** Adds one copy to a card collection (mutates it): new card, duplicate, or shards at max rank. */
-function grantCard(cards: CardState, content: Content, card: Card): CardGain {
+/** Adds one copy to a card collection (mutates it): new card, duplicate, or shards at max rank.
+ *  Used by `addCard` and the summon portals. */
+export function grantCard(cards: CardState, content: Content, card: Card): CardGain {
   const owned = cards.owned[card.id];
   if (!owned) {
     cards.owned[card.id] = newOwnedCard();
@@ -589,42 +589,6 @@ export function addCard(
   if (!card) return null;
   const next = cloneState(state);
   return { state: next, gain: grantCard(next.cards, content, card) };
-}
-
-/** Chance per boss kill of a random card in this dungeon, through `drops.cardChance` (0..1). */
-export function cardDropChance(
-  content: Content,
-  dungeon: Dungeon,
-  modifiers: readonly Modifier[] = [],
-): number {
-  const ctx = { job: 'fighting' as const, dungeon: dungeon.id };
-  const value = statValue('drops.cardChance', content.cardRules.drop.chance, modifiers, ctx);
-  return Math.min(1, Math.max(0, value.toNumber()));
-}
-
-/** Each card's chance to be the one dropped (its rarity weight over the total), for tooltips. */
-export function cardDropWeights(content: Content): { cardId: string; share: number }[] {
-  const weights = content.cards.map((c) => content.cardRules.drop.weights[c.rarity]);
-  const total = weights.reduce((a, b) => a + b, 0);
-  return content.cards.map((c, i) => ({
-    cardId: c.id,
-    share: total > 0 ? weights[i]! / total : 0,
-  }));
-}
-
-/** Rolls one boss kill's card drop: null, or the card picked by rarity weight. */
-export function rollCardDrop(content: Content, chance: number, rng: Rng): Card | null {
-  if (!(rng() < chance)) return null;
-  const weights = content.cards.map((c) => content.cardRules.drop.weights[c.rarity]);
-  const total = weights.reduce((a, b) => a + b, 0);
-  if (total <= 0) return null;
-  let roll = rng() * total;
-  for (let i = 0; i < content.cards.length; i++) {
-    roll -= weights[i]!;
-    if (roll < 0 && weights[i]! > 0) return content.cards[i]!;
-  }
-  for (let i = content.cards.length - 1; i >= 0; i--) if (weights[i]! > 0) return content.cards[i]!;
-  return null;
 }
 
 // ---- XP from doing the job (called while advancing) ------------------------------------------
@@ -668,17 +632,6 @@ export function grantLoadoutXp(
     if (owned.level >= levelCap(content, cardRank(owned))) owned.xp = new Decimal(0);
     else owned.xp = owned.xp.add(amount);
   }
-}
-
-/** Adds a dropped card to the collection (mutates `state`) and records the drop. */
-export function grantCardDrop(
-  state: GameState,
-  content: Content,
-  card: Card,
-  report: TickReport,
-): void {
-  const drop: CardDrop = { cardId: card.id, ...grantCard(state.cards, content, card) };
-  report.cardDrops.push(drop);
 }
 
 // ---- views for the UI ------------------------------------------------------------------------

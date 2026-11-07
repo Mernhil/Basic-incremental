@@ -22,7 +22,27 @@ export * from './previews';
 export * from './mastery';
 export * from './stages';
 export * from './goals';
+export * from './portals';
 export { METALS, type Metal } from '../data';
+
+// ---- Summon portals (DESIGN.md 6): the contract with the UI, one line each --------------------
+
+export {
+  /** Pulls 1 or 10 times from a portal: pays, rolls with pity and the 10-pull guarantee, grants. */
+  pull,
+  /** A portal card on the shelf: prices, affordability, pity bar, guarantee, rates, pulls made. */
+  portalInfo,
+  /** Price of a single pull or a 10-pull after modifiers. */
+  pullPrice,
+  /** Pulls in a row without the pity rarity before it is guaranteed, after modifiers. */
+  pityThreshold,
+  type PullCount,
+  type PullResult,
+  type PullOutcome,
+  type PullFailure,
+  type PortalInfo,
+  type CosmeticGain,
+} from './portals';
 
 // ---- Progression layer (DESIGN.md 16): the contract with the UI, one line each ---------------
 

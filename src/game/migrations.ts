@@ -21,6 +21,9 @@ export const MIGRATIONS: MigrationTable = {
   5: v5ToV6,
   6: v6ToV7,
   7: v7ToV8,
+  /** v8 -> v9: summon portals (DESIGN.md 6). No pulls have been made yet, so every pity counter
+   *  starts at 0. */
+  8: (state) => ({ ...state, portals: {} }),
 };
 
 /** Production gem ids at save format 7 (a snapshot, like the other steps). */

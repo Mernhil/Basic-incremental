@@ -122,17 +122,5 @@
     "mythic": 15,
     "exotic": 25,
     "void": 40
-  },
-  "drop": {
-    "chance": 0.01,
-    "weights": {
-      "common": 60,
-      "rare": 25,
-      "epic": 10,
-      "legendary": 4,
-      "mythic": 2,
-      "exotic": 1,
-      "void": 0.5
-    }
   }
 }

@@ -51,6 +51,8 @@ import {
   averageDps,
   cloneState,
   cardCost,
+  pull,
+  pullPrice,
   type CardLoadout,
   type GameState,
   type Modifier,
@@ -93,7 +95,6 @@ export const MILESTONES: Milestone[] = [
     label: 'First summon',
     targetHours: 0.75,
     reached: (_s, _c, log) => log.summons > 0,
-    pending: 'Phase 4',
   },
   {
     id: 'first_silver',
@@ -176,7 +177,7 @@ export interface Candidate {
   eta: number | null;
   /** Card upgrades go first among affordable purchases. */
   priority: number;
-  buy: (state: GameState, content: Content, modifiers: Modifier[]) => GameState | null;
+  buy: (state: GameState, content: Content, modifiers: Modifier[], rng: Rng) => GameState | null;
 }
 
 function etaOf(
@@ -265,6 +266,15 @@ export function buyerCandidates(
       });
     }
   }
+  // Summons: a single pull whenever one is affordable (lite: no saving up for 10-pulls).
+  for (const portal of content.portals) {
+    out.push({
+      id: `summon:${portal.id}`,
+      prices: [pullPrice(portal, 1, modifiers)],
+      priority: 2,
+      buy: (s, c, m, rng) => okState(pull(s, c, portal.id, 1, rng, m)),
+    });
+  }
   return out.map((c) => ({ ...c, eta: etaOf(state, content, c.prices, modifiers) }));
 }
 
@@ -288,6 +298,7 @@ const MAX_BUYS_PER_PASS = 500;
 export function greedyBuy(
   state: GameState,
   content: Content,
+  rng: Rng = createSeededRng(1),
 ): { state: GameState; bought: string[] } {
   let current = state;
   const bought: string[] = [];
@@ -303,7 +314,7 @@ export function greedyBuy(
       );
     let next: GameState | null = null;
     for (const candidate of ready) {
-      next = candidate.buy(current, content, modifiers);
+      next = candidate.buy(current, content, modifiers, rng);
       if (next) {
         bought.push(candidate.id);
         break;
@@ -451,7 +462,9 @@ export function runSim(content: Content, options: SimOptions): SimResult {
   let sinceChoose = Infinity;
   let t = 0;
   while (t < total) {
-    state = greedyBuy(state, content).state;
+    const buys = greedyBuy(state, content, rng);
+    state = buys.state;
+    log.summons += buys.bought.filter((id) => id.startsWith('summon:')).length;
     if (sinceChoose >= RECHOOSE_SECONDS) {
       const target = chooseDungeon(state, content);
       if (target !== state.activeDungeonId) {

@@ -523,6 +523,19 @@ function checkReferences(
         `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected portal`,
       );
     }
+    // Pity and the 10-pull guarantee pick from the pool at or above their rarity.
+    const reaches = (rarity: Rarity): boolean =>
+      portal.pool.some((e) => RARITIES.indexOf(e.rarity) >= RARITIES.indexOf(rarity));
+    if (portal.pool.length > 0 && !reaches(portal.pity.rarity)) {
+      issues.push(
+        `portals.json › [${i}] › pity › rarity: no pool item is ${portal.pity.rarity} or better`,
+      );
+    }
+    if (portal.pool.length > 0 && !reaches(portal.tenPullGuarantee)) {
+      issues.push(
+        `portals.json › [${i}] › tenPullGuarantee: no pool item is ${portal.tenPullGuarantee} or better`,
+      );
+    }
     const valid = portal.kind === 'cards' ? cardIds : cosmeticIds;
     portal.pool.forEach((entry, j) => {
       if (!valid.has(entry.itemId)) {

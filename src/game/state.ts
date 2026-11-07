@@ -33,6 +33,18 @@ export interface GameState {
   cards: CardState;
   /** Gem mastery totals and settled mastery tiers (DESIGN.md 16). Kept through prestige. */
   mastery: MasteryState;
+  /** Portal id -> pull counters (DESIGN.md 6). Kept through prestige; missing = no pulls yet. */
+  portals: Record<string, PortalCounters>;
+}
+
+/** One portal's pull counters. */
+export interface PortalCounters {
+  /** Pulls since the last one of the pity rarity or better (hard pity counter). */
+  pity: number;
+  /** Pulls ever made. */
+  pulls: number;
+  /** Pulls that were given by hard pity. */
+  pityHits: number;
 }
 
 /**
@@ -169,6 +181,7 @@ export function createInitialState(content: Content): GameState {
     stats: { playTimeMs: 0, bossKills: 0 },
     cards: initialCards(content),
     mastery: initialMastery(),
+    portals: {},
     cosmetics: {
       loadout: { slots: {}, cards: {} },
       owned: Object.fromEntries(
@@ -192,6 +205,7 @@ export function cloneState(state: GameState): GameState {
     stats: { ...state.stats },
     cards: cloneCards(state.cards),
     mastery: cloneMastery(state.mastery),
+    portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     cosmetics: {
       loadout: {
         slots: { ...state.cosmetics.loadout.slots },

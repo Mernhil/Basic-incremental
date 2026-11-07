@@ -3,7 +3,7 @@
     "id": "card_portal",
     "name": "Card Portal",
     "kind": "cards",
-    "cost": { "resource": "moss_sigil", "amount": "10" },
+    "cost": { "resource": "moss_sigil", "single": "10", "ten": "100" },
     "pool": [
       { "itemId": "ember_squire", "rarity": "common", "weight": 30 },
       { "itemId": "apprentice_feller", "rarity": "common", "weight": 30 },
@@ -18,6 +18,8 @@
       { "itemId": "moonwood_dryad", "rarity": "mythic", "weight": 0.6 },
       { "itemId": "core_titan", "rarity": "exotic", "weight": 0.3 }
     ],
-    "pity": { "rarity": "rare", "threshold": 30 }
+    "pity": { "rarity": "legendary", "threshold": 90 },
+    "tenPullGuarantee": "rare",
+    "reveal": { "upgradeFlashChance": 0.25 }
   }
 ]

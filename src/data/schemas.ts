@@ -137,8 +137,6 @@ export const STATS = [
   'combat.bossHp',
   /** Chance per kill of the rare drop (clamped to 0..1). Scope: dungeon. */
   'drops.rareChance',
-  /** Chance per boss kill of a random card (clamped to 0..1). Scope: dungeon. */
-  'drops.cardChance',
   /** Kills without the rare drop before it is guaranteed (rounded, at least 1). Scope: dungeon. */
   'drops.pityThreshold',
   /** Portal resource units per kill. Scope: dungeon, resource. */
@@ -373,12 +371,6 @@ export const cardRulesSchema = z.strictObject({
   health: perRarity(positiveDecimal),
   /** Shards for a duplicate gained once the card is Prismatic ★6, by rarity. */
   shards: perRarity(count),
-  /** Random card on boss kills (until summon portals): `chance` per kill (`drops.cardChance`),
-   *  then one card picked with its rarity's weight. */
-  drop: z.strictObject({
-    chance: z.number().min(0).max(1),
-    weights: perRarity(z.number().min(0)),
-  }),
 });
 
 /** Boss drawings (DESIGN.md 13: sticker style, a distinct body shape each). */
@@ -806,18 +798,28 @@ export const wearRulesSchema = z.strictObject({
 
 export const PORTAL_KINDS = ['cards', 'cosmetics'] as const;
 
+/**
+ * A summon portal (DESIGN.md 6, "Beta portals"). Every portal offers a single pull and a
+ * 10-pull; prices go through `cost.multiplier` (scope: portal, resource).
+ */
 export const portalSchema = z.strictObject({
   id,
   name,
   kind: z.enum(PORTAL_KINDS),
-  /** Portal resource (from specific dungeons) spent per summon, and how much. */
-  cost: z.strictObject({ resource: id, amount: positiveDecimal }),
+  /** Portal resource (from specific dungeons) spent on a single pull and on a 10-pull. */
+  cost: z.strictObject({ resource: id, single: positiveDecimal, ten: positiveDecimal }),
   /** The pool: one entry per item, picked by weight. Items must match the portal kind. */
   pool: z
     .array(z.strictObject({ itemId: id, rarity: z.enum(RARITIES), weight: z.number().positive() }))
     .min(1),
-  /** Guarantee: after this many summons without this rarity or better, the next one is it. */
+  /** Hard pity: after `threshold - 1` pulls without this rarity or better, the next one is it
+   *  (`summon.pityThreshold`, scope: portal). Counted per portal, kept through prestige. */
   pity: z.strictObject({ rarity: z.enum(RARITIES), threshold: z.number().int().min(1) }),
+  /** Every 10-pull holds at least one item of this rarity or better. */
+  tenPullGuarantee: z.enum(RARITIES),
+  /** Reveal: chance that a result above the lowest rarity shows an orb one rarity lower first,
+   *  then flashes up to its own colour. */
+  reveal: z.strictObject({ upgradeFlashChance: z.number().min(0).max(1) }),
 });
 
 /** Bonus for equipping every item of a cosmetic set. */
