@@ -117,7 +117,7 @@ Bronze ★1–6 → Silver ★1–6 → Gold ★1–6 → Prismatic ★1–6 (ma
 
 1. Card border: the **frame family**. The starter is Knight plate; other families (Dragon horn, Celestial, Crystal, Royal crest) are cosmetics. Every family grows with the tier in the same steps (section 13).
 2. Card finish (holo, foil, …). Holo finishes are full-card, animated and restrained, using geometric or fluid patterns.
-3. Attack animation. Attacks are automatic; one attack item contains a variant per job. Starter: a slash that appears and fades at changing angles and positions (fighting, with sparks; logging, with wood chips) and a heavy hit (mining: shockwave, cracks, rock chips, dust).
+3. Attack animation. Attacks are automatic; one attack item contains a variant per job. Starter: a single brush-stroke slash, straight with a slight curve, that always lands on the target and varies in angle, length and thickness every hit (fighting, with sparks; logging, with chips), and an impact hit (mining and bows: shockwave, cracks, chips, dust). See section 13.
 4. Tick damage style
 5. Number style
 6. Table background
@@ -332,8 +332,8 @@ Decided with the user in the graphics overhaul. References (Knights & Dragons ar
 - **Look.** Cel-shaded, like Knights & Dragons and Brave Frontier: bold dark outlines (one ink colour, about 3 px at card size), flat shadow shapes and white highlights instead of gradients, saturated metals, and a chunky display font for card names.
 - **The card is the showpiece.** The frame is the tier (section 5): the Knight plate frame grows from plain plate (Bronze) to spikes (Silver), side spikes and a crest gem (Gold) and plate wings with rainbow metal (Prismatic). Rarity colours the card body.
 - **Inside the card is its signature item**, not a character: a weapon, shield, tool or relic, cel-shaded like the frame. **Rarity sets how intricate the item is**, adding parts rather than only colour: Common plain; Rare a fuller, wrapped grip and gem pommel; Epic a winged guard and gem; Legendary a broader, serrated or ornate shape, gold inlay and a ribbon; Mythic neon runes and a crystal edge; Exotic forked or split shapes and floating rings; Void black chrome, glowing cracks and orbiting shards. Twinkles get more frequent with rarity.
-- **Characters** (chibi armoured figures in the same style) are used for **dungeon bosses** and may appear as special card skins later.
-- **Element effects.** Every card has an element; its effect is generated from the item's own shape (edges, fuller, tip), never a static picture placed on top, and always stays secondary to the item: slow, calm, with fire drawn behind the item. Effects are cartoon cel animations (outlined blobs and arcs), not realistic light.
+- **Characters** (chibi armoured figures in the same style) are used for **dungeon bosses** and may appear as special card skins later. Bosses and enemies **look like their area** (a mossy root guardian for the Mossy Cellar, an ember-and-bone caster for the Ember Crypt, an ice giant for the Frostspire Vault), and each boss needs a clearly different body shape, not a recolour.
+- **Element effects.** Every card has an element; its effect is generated from the item's own shape (edges, fuller, tip), never a static picture placed on top, and always stays secondary to the item: slow and calm. Effects **wrap around** the item: most of the effect sits behind it with a smaller share in front, arcs and streams may reach past the item's outline, and auras follow the outline itself. Effects are cartoon cel animations (outlined blobs and arcs); glowing embers and branching lightning are drawn in the same cel style.
 
   | Element              | Effect                                                                                                     |
   | -------------------- | ---------------------------------------------------------------------------------------------------------- |
@@ -343,6 +343,8 @@ Decided with the user in the graphics overhaul. References (Knights & Dragons ar
   | Nature               | Spiral wrap: a ribbon of leaves and light coiling around the item                                          |
   | Earth, crystal, void | Power cracks: jagged glowing cracks inside the item, flickering like the arc crackle, in the item's colour |
 
+- **Hits.** Slashes are single brush strokes, straight with a slight curve, tapered with dry-brush streaks, re-rolled every hit (angle, length, thickness, offset) and always centred on the target. Bows and pickaxes use the impact hit instead; there are no arrow projectiles. Hit colour follows the element.
+- **Unique evolutions.** Some cards have a unique item at ★6 in place of the generic one: **Flameblade** (a sword made entirely of flame), **Soul Reaper** (a scythe) and **Rootbloom Staff** (roots at the base, petals at the head, falling leaves, wind and floating earth crystals).
 - **Effects unlock with tier**: none at Bronze and Silver, the element effect from **Gold**, stronger at **Prismatic**. ★6 keeps the stars' shine and one-time flash.
 - **Beta cards** (elements and items):
 
@@ -361,5 +363,5 @@ Decided with the user in the graphics overhaul. References (Knights & Dragons ar
   | Geode Golem       | Crystal | Geode hammer           |
   | Core Titan        | Void    | Core gauntlet          |
 
-- **Resources are carved gems.** Every production resource is a gem: its **outline** says which one (Oak round, Ironbark pentagon, Moonwillow star, Copper square, Iron hexagon, Grotto drop) and its **carved pattern** comes from its source (grain, rings and swirls for the trees, glowing veins for the mines). Icons set the gem in a **notched coin**; the coin's metal is the tier (stone, bronze, silver, gold, prismatic), and a resource not discovered yet shows as a grey coin with a padlock. In the world, each tree is themed to its gem (colours and bark pattern) and hangs its gems, and each mine is rock with its gems set into it. Navigation icons keep the hexagonal plaque.
+- **Resources are carved gems.** Every production resource is a gem: its **outline** says which one (Oak round, Ironbark pentagon, Moonwillow star, Copper square, Iron hexagon, Grotto drop) and its **carved pattern** comes from its source (grain, rings and swirls for the trees, glowing veins for the mines). Icons set the gem in a **notched coin**; the coin's metal is the tier (stone, bronze, silver, gold, prismatic), and a resource not discovered yet shows as a grey coin with a padlock. In the world, each tree is themed to its gem (colours and bark pattern) and hangs its gems, and each mine is rock with its gems set into it. The scenery is **faceted** like the gems: canopy, trunk, rocks and a hexagonal ground tile are cut into flat light and dark faces. Navigation icons keep the hexagonal plaque.
 - **Performance.** Element effects run on one shared canvas layer, only for cards on screen, at a capped frame rate. Under reduced motion they show a still frame.
