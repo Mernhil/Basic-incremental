@@ -261,3 +261,23 @@
 [hidden] {
   display: none !important;
 }
+
+/* fighting loadout health (DESIGN.md 11.10) */
+.loadout-health {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+}
+.loadout-health__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bi-panel-ink-muted, #b4c0d4);
+}
+.loadout-health__ko {
+  margin: 0;
+  font-weight: 700;
+  color: #ff7a6a;
+}
+.loadout-health.is-knocked-out .bi-hpstack {
+  filter: grayscale(0.7);
+}

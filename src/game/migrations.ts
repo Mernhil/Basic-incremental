@@ -18,7 +18,14 @@ export const MIGRATIONS: MigrationTable = {
   3: v3ToV4,
   4: v4ToV5,
   5: v5ToV6,
+  6: v6ToV7,
 };
+
+/** v6 -> v7: card health (DESIGN.md 11.10). Loadouts start at full health and not knocked out. */
+function v6ToV7(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  return { ...state, combat: { ...combat, loadoutDamage: '0', knockoutSeconds: 0 } };
+}
 
 /**
  * v5 -> v6: the woods and ores became gems (DESIGN.md 13, "Resources are carved gems"). Only the

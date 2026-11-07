@@ -23,6 +23,8 @@ export interface TickReport {
   cardDrops: CardDrop[];
   /** Card id -> levels before and after, for cards that levelled up. */
   cardLevels: Record<string, { from: number; to: number }>;
+  /** Times the fighting loadout was knocked out (DESIGN.md 11.10). */
+  knockouts: number;
 }
 
 export function emptyReport(): TickReport {
@@ -38,6 +40,7 @@ export function emptyReport(): TickReport {
     trialTopScore: 0,
     cardDrops: [],
     cardLevels: {},
+    knockouts: 0,
   };
 }
 
@@ -53,6 +56,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.unlockedMines.push(...add.unlockedMines);
   into.trialAttempts += add.trialAttempts;
   into.trialTopScore = Math.max(into.trialTopScore, add.trialTopScore);
+  into.knockouts += add.knockouts;
   into.cardDrops.push(...add.cardDrops);
   for (const [id, change] of Object.entries(add.cardLevels)) {
     const prev = into.cardLevels[id];

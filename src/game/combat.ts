@@ -1,6 +1,7 @@
 import type { BurstJob, Content, DamageUpgrade, Dungeon, ProductionJob, Trial } from '../data';
 import {
   cardDropChance,
+  cardHealth,
   fightingXpPerKill,
   grantCardDrop,
   grantLoadoutXp,
@@ -473,6 +474,71 @@ export function advanceHarvestBursts(
   return harvested;
 }
 
+// ---- card health (DESIGN.md 11.10) ----
+
+/** Most a defence stat can block, in percent. */
+const MAX_DEFENCE = 90;
+
+/** Fighting loadout's health pool: the sum of its cards' health, read through `combat.health`. */
+export function loadoutMaxHealth(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+  dungeonId?: string,
+): Decimal {
+  const l = state.cards.loadouts.fighting;
+  let sum = new Decimal(0);
+  for (const id of [l.main, ...l.supports]) {
+    const owned = id ? state.cards.owned[id] : undefined;
+    if (id && owned) sum = sum.add(cardHealth(content, id, owned));
+  }
+  const ctx: StatContext = dungeonId ? { dungeon: dungeonId } : {};
+  return Decimal.max(computeStat('combat.health', sum, modifiers, ctx).value, 0);
+}
+
+/** Percent of boss damage blocked (0..90), from `combat.defence`. */
+export function defencePercent(modifiers: readonly Modifier[], dungeonId: string): number {
+  const v = computeStat('combat.defence', 0, modifiers, { dungeon: dungeonId }).value.toNumber();
+  return Math.max(0, Math.min(MAX_DEFENCE, v));
+}
+
+/** Damage per second a boss deals to the loadout: grows with prestige like its HP, less defence. */
+export function bossAttackDps(
+  dungeon: Dungeon,
+  prestigeCount: number,
+  modifiers: readonly Modifier[],
+): Decimal {
+  const a = dungeon.boss.attack;
+  const grown = a.damage.mul(Decimal.pow(1 + dungeon.boss.hpScalingPerPrestige, prestigeCount));
+  return grown.div(a.intervalSeconds).mul(1 - defencePercent(modifiers, dungeon.id) / 100);
+}
+
+export interface LoadoutHealth {
+  max: Decimal;
+  current: Decimal;
+  /** Seconds of knockout left; 0 when fighting. */
+  knockoutSeconds: number;
+  /** Damage per second the current boss deals (0 for special dungeons and when idle). */
+  incoming: Decimal;
+}
+
+/** The fighting loadout's health as the Home screen shows it. */
+export function loadoutHealth(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): LoadoutHealth {
+  const id = state.activeDungeonId ?? undefined;
+  const dungeon = id ? content.dungeonById.get(id) : undefined;
+  const max = loadoutMaxHealth(state, content, modifiers, id);
+  const ko = state.combat.knockoutSeconds;
+  const current = ko > 0 ? new Decimal(0) : Decimal.max(max.sub(state.combat.loadoutDamage), 0);
+  const incoming = dungeon
+    ? bossAttackDps(dungeon, state.prestigeCount, modifiers)
+    : new Decimal(0);
+  return { max, current, knockoutSeconds: ko, incoming };
+}
+
 /** Fights whatever is active for `seconds`. Mutates `next` (a fresh clone owned by advance). */
 export function advanceCombat(
   next: GameState,
@@ -484,21 +550,90 @@ export function advanceCombat(
 ): void {
   const id = next.activeDungeonId;
   if (!id || !isDungeonUnlocked(next, content, id)) return;
+  // A knocked-out loadout sits out first, whatever is active (DESIGN.md 11.10).
+  let left = seconds;
+  if (next.combat.knockoutSeconds > 0) {
+    const wait = Math.min(left, next.combat.knockoutSeconds);
+    next.combat.knockoutSeconds -= wait;
+    left -= wait;
+    if (next.combat.knockoutSeconds <= EPSILON) {
+      next.combat.knockoutSeconds = 0;
+      next.combat.loadoutDamage = new Decimal(0);
+    } else return;
+  }
+  if (left <= EPSILON) return;
   const dps = effectiveDamage(next, content, id, modifiers);
   if (dps.lte(0)) return;
   const stats = burstStats(content, 'fighting', modifiers);
 
   const dungeon = content.dungeonById.get(id);
   if (dungeon) {
-    const run = advanceGauge(next.bursts.fighting, seconds, stats);
-    next.bursts.fighting = run.gauge;
-    report.bursts.fighting += run.bursts;
-    const dealt = dps.mul(seconds).add(signatureDamage(dps, stats).mul(run.bursts));
-    fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
+    fightDungeon(next, content, dungeon, dps, stats, left, rng, report, modifiers);
     return;
   }
   const trial = content.trialById.get(id);
-  if (trial) fightTrial(next, content, trial, dps, stats, seconds, report, modifiers);
+  if (trial) fightTrial(next, content, trial, dps, stats, left, report, modifiers);
+}
+
+/** Most knockouts handled in one advance (each costs knockoutSeconds, so this is generous). */
+const MAX_KNOCKOUTS_PER_ADVANCE = 100_000;
+
+/**
+ * A dungeon fight where the boss hits back. Time splits at the moment the pool runs out: the
+ * loadout deals damage until then, is knocked out (the boss heals to full), sits out, and the
+ * fight starts again with full health.
+ */
+function fightDungeon(
+  next: GameState,
+  content: Content,
+  dungeon: Dungeon,
+  dps: Decimal,
+  stats: BurstStats,
+  seconds: number,
+  rng: Rng,
+  report: TickReport,
+  modifiers: readonly Modifier[],
+): void {
+  const fight = (t: number): void => {
+    if (t <= EPSILON) return;
+    const run = advanceGauge(next.bursts.fighting, t, stats);
+    next.bursts.fighting = run.gauge;
+    report.bursts.fighting += run.bursts;
+    const dealt = dps.mul(t).add(signatureDamage(dps, stats).mul(run.bursts));
+    fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
+  };
+  const max = loadoutMaxHealth(next, content, modifiers, dungeon.id);
+  const incoming = bossAttackDps(dungeon, next.prestigeCount, modifiers);
+  const ko = content.combat.knockoutSeconds;
+  let left = seconds;
+  let knockouts = 0;
+  while (left > EPSILON) {
+    if (max.lte(0) || incoming.lte(0)) {
+      fight(left);
+      return;
+    }
+    const hpLeft = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
+    const untilDown = hpLeft.div(incoming).toNumber();
+    if (untilDown >= left) {
+      fight(left);
+      next.combat.loadoutDamage = next.combat.loadoutDamage.add(incoming.mul(left));
+      return;
+    }
+    fight(untilDown);
+    left -= untilDown;
+    // Knocked out: the boss heals to full and the loadout sits out.
+    next.bossHp = null;
+    report.knockouts++;
+    knockouts++;
+    const wait = Math.min(left, ko);
+    left -= wait;
+    if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
+      next.combat.knockoutSeconds = ko - wait;
+      next.combat.loadoutDamage = max;
+      return;
+    }
+    next.combat.loadoutDamage = new Decimal(0);
+  }
 }
 
 function addResource(state: GameState, resource: string, amount: Decimal | number): void {

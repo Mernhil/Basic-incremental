@@ -23,7 +23,7 @@ import { levelCap } from './cards';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 6;
+export const CURRENT_SAVE_VERSION = 7;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -53,6 +53,8 @@ export const serializedStateSchema = z.object({
     kills: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
+    loadoutDamage: decimalText,
+    knockoutSeconds: z.number().min(0),
   }),
   bursts: z.object({ fighting: gaugeSchema, logging: gaugeSchema, mining: gaugeSchema }),
   activeDungeonId: z.string().nullable(),
@@ -122,6 +124,8 @@ export function serializeState(state: GameState): SerializedState {
         dealt: decimalToString(state.combat.trialAttempt.dealt),
       },
       trialBest: { ...state.combat.trialBest },
+      loadoutDamage: decimalToString(state.combat.loadoutDamage),
+      knockoutSeconds: state.combat.knockoutSeconds,
     },
     bursts: cloneBursts(state.bursts),
     activeDungeonId: state.activeDungeonId,
@@ -184,6 +188,8 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       dealt: new Decimal(saved.combat.trialAttempt.dealt),
     },
     trialBest: { ...saved.combat.trialBest },
+    loadoutDamage: new Decimal(saved.combat.loadoutDamage),
+    knockoutSeconds: saved.combat.knockoutSeconds,
   };
   state.bursts = cloneBursts(saved.bursts);
   const active = saved.activeDungeonId;

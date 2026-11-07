@@ -168,6 +168,10 @@ export const STATS = [
   'burst.power',
   /** Special dungeon reward units per score tier reached (floored). Scope: dungeon, resource. */
   'trial.reward',
+  /** Fighting loadout health pool (DESIGN.md 11.10): the sum of the cards' health. Scope: dungeon. */
+  'combat.health',
+  /** Percent of boss damage blocked (0 by default, clamped to 0..90). Scope: dungeon. */
+  'combat.defence',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -374,6 +378,12 @@ export const dungeonSchema = z.strictObject({
     hpScalingPerPrestige: z.number().min(0).max(1),
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
+    /** The boss hits the fighting loadout back (DESIGN.md 11.10). Damage grows with prestige
+     *  like the HP (hpScalingPerPrestige). */
+    attack: z.strictObject({
+      damage: positiveDecimal,
+      intervalSeconds: z.number().gt(0),
+    }),
   }),
   drops: z.strictObject({
     /** Rare item (card, cosmetic, ...) dropped on boss kills. */
@@ -462,6 +472,8 @@ export const combatSchema = z.strictObject({
     logging: burstConfigSchema,
     mining: burstConfigSchema,
   }),
+  /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md 11.10). */
+  knockoutSeconds: z.number().gt(0),
 });
 
 // ---- Cosmetics ----------------------------------------------------------------------------
