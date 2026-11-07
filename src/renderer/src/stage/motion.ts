@@ -43,9 +43,15 @@ export function stageHidden(): boolean {
 const reduceQuery =
   typeof window !== 'undefined' ? window.matchMedia?.('(prefers-reduced-motion: reduce)') : null;
 
-/** Reduced motion: no shake, flash or slow-down; numbers fade in place. */
+/**
+ * Reduced motion: no shake, flash or slow-down; numbers fade in place. The Settings override
+ * (`data-motion` on <html>, settings/motion.ts) wins over the Windows setting.
+ */
 export function reducedMotion(): boolean {
-  return reduceQuery?.matches === true || document.documentElement.dataset['motion'] === 'reduced';
+  const forced = document.documentElement.dataset['motion'];
+  if (forced === 'reduced') return true;
+  if (forced === 'full') return false;
+  return reduceQuery?.matches === true;
 }
 
 /** Restarts a one-shot CSS animation class on an element. */
