@@ -62,4 +62,13 @@ describe('welcome back cards', () => {
     expect(cards[4]!.lines).toHaveLength(1); // XP of a card that levelled is not repeated
     expect(cards[5]!.lines[0]!.text).toContain('reached Bronze');
   });
+
+  it('deals the achievements earned while away last, by name', () => {
+    const cards = welcomeCards({ ...base(), achievements: ['first_kill', 'night_owl'] }, content);
+    const last = cards[cards.length - 1]!;
+    expect(last.kind).toBe('achievements');
+    expect(last.headline).toBe('2');
+    expect(last.lines.map((l) => l.text)).toEqual(['First Kill', 'Night Owl']);
+    expect(last.lines.every((l) => l.rare)).toBe(true);
+  });
 });

@@ -176,6 +176,19 @@ export const SOUNDS = {
     max: 1,
     windowMs: 2000,
   },
+  /** An achievement sticker slapped in: a papery slap, then a bright two-note chime. */
+  achievement: {
+    layers: [
+      noise(900, 0.07, 0.35, 0.8),
+      tone('triangle', 180, 0.08, 0.2, 90),
+      ...arp('triangle', [784, 1175], 0.1, 0.3, 0.17).map((l) => ({
+        ...l,
+        start: (l.start ?? 0) + 0.08,
+      })),
+    ],
+    max: 2,
+    windowMs: 1200,
+  },
   click: { layers: [tone('square', 1200, 0.025, 0.08, 900)], max: 8, windowMs: 1000 },
 } satisfies Record<string, SoundDef>;
 
