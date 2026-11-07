@@ -1,73 +1,14 @@
-/* Placeholder gem and star art (ui/skillArt.ts). State classes sit on an ancestor:
-   .is-locked / .is-open / .is-owned / .is-maxed for gems, .is-chosen / .is-open / .is-blocked /
-   .is-locked for chart stars. --gem is the branch colour. */
+/* Pixel gem and chart art (ui/skillArt.ts). The sprites carry their own colours; whole-pixel
+   scaling only (set a whole-number size on the wrapper). */
 
-.sg {
+.sg,
+.cst,
+.cst-sky {
+  display: block;
   width: 100%;
   height: 100%;
   overflow: visible;
-}
-.sg polygon {
-  transition: fill 0.25s ease;
-}
-/* lit (owned, maxed) */
-.sg__base {
-  fill: var(--gem);
-}
-.sg__hi {
-  fill: color-mix(in srgb, var(--gem) 45%, #ffffff);
-}
-.sg__mid {
-  fill: var(--gem);
-}
-.sg__lo {
-  fill: color-mix(in srgb, var(--gem) 70%, #1a1020);
-}
-.sg__deep {
-  fill: color-mix(in srgb, var(--gem) 45%, #1a1020);
-}
-.sg__table {
-  fill: color-mix(in srgb, var(--gem) 70%, #ffffff);
-}
-.sg__glint {
-  stroke: #ffffff;
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-/* open: the outline glows in the branch colour, facets still dark */
-.is-open .sg__base,
-.is-open .sg__mid,
-.is-open .sg__table {
-  fill: color-mix(in srgb, var(--gem) 22%, #20223a);
-}
-.is-open .sg__hi {
-  fill: color-mix(in srgb, var(--gem) 35%, #2c3050);
-}
-.is-open .sg__lo,
-.is-open .sg__deep {
-  fill: color-mix(in srgb, var(--gem) 12%, #161828);
-}
-.is-open .sg__glint {
-  stroke: color-mix(in srgb, var(--gem) 60%, #ffffff);
-  opacity: 0.6;
-}
-
-/* locked: unlit stone */
-.is-locked .sg__base,
-.is-locked .sg__mid,
-.is-locked .sg__table {
-  fill: #3a3d52;
-}
-.is-locked .sg__hi {
-  fill: #4a4e66;
-}
-.is-locked .sg__lo,
-.is-locked .sg__deep {
-  fill: #272939;
-}
-.is-locked .sg__glint {
-  opacity: 0;
+  image-rendering: pixelated;
 }
 
 /* centre star */
@@ -80,30 +21,8 @@
   fill: #ffe7a0;
 }
 
-/* chart stars */
-.cst {
+/* chart */
+.cst-sky {
   width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.cst__body {
-  fill: #ffd968;
-}
-.cst__hi {
-  fill: #fff6d0;
-}
-.is-open .cst__body {
-  fill: #2f3354;
-  stroke: #ffd968;
-}
-.is-open .cst__hi {
-  fill: #4a4f78;
-}
-.is-blocked .cst__body,
-.is-locked .cst__body {
-  fill: #2a2c40;
-}
-.is-blocked .cst__hi,
-.is-locked .cst__hi {
-  fill: #35384f;
+  height: auto;
 }

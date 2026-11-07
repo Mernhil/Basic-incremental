@@ -1,5 +1,6 @@
+import { fmt } from '../settings/numberFormat';
 import type { Content } from '../../../data';
-import { Decimal, formatDecimal, type AccountInfo, type TrackLevel } from '../../../game';
+import { Decimal, type AccountInfo, type TrackLevel } from '../../../game';
 import { COPY } from '../copy';
 
 /**
@@ -21,7 +22,7 @@ export interface LevelBadgeView {
 
 export function levelBadge(info: AccountInfo): LevelBadgeView {
   const xpText = info.xpToNext
-    ? COPY.account.xp(formatDecimal(info.xp.floor()), formatDecimal(info.xpToNext.ceil()))
+    ? COPY.account.xp(fmt(info.xp.floor()), fmt(info.xpToNext.ceil()))
     : COPY.account.maxLevel;
   const points = info.skillPoints.available;
   const pointsText = points > 0 ? COPY.account.points(points) : '';
@@ -64,7 +65,7 @@ function rewardsOf(content: Content, t: Omit<TrackLevel, 'level' | 'reached'>): 
   }
   for (const r of t.resources) {
     const name = content.resourceById.get(r.resource)?.name ?? r.resource;
-    const amount = formatDecimal(r.amount);
+    const amount = fmt(r.amount);
     out.push({
       kind: 'resource',
       id: r.resource,

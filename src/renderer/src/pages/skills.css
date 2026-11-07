@@ -128,7 +128,7 @@
   display: grid;
   justify-items: center;
   gap: 1px;
-  width: 52px;
+  width: 64px;
   padding: 0;
   border: 0;
   border-radius: 10px;
@@ -139,9 +139,13 @@
 }
 .sk-node__gem {
   display: block;
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   transition: transform 0.15s ease;
+}
+.sk-node.is-key .sk-node__gem {
+  width: 64px;
+  height: 64px;
 }
 .sk-node:hover .sk-node__gem {
   transform: scale(1.1);
@@ -257,9 +261,13 @@
 }
 .sk-detail__gem {
   flex: none;
-  width: 56px;
-  height: 56px;
+  width: 48px;
+  height: 48px;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gem) 60%, transparent));
+}
+.sk-detail__gem.is-key {
+  width: 64px;
+  height: 64px;
 }
 .sk-detail__gem.is-locked {
   filter: none;

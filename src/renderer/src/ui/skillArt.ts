@@ -1,34 +1,57 @@
+import type { Content } from '../../../data';
+import { resolveGlobal, type GameState } from '../../../game';
+import {
+  STAR_CHART_VIEWBOX,
+  skillNode,
+  starChart,
+  type ChartStar,
+  type NodeState,
+  type SkillBranch,
+  type SkinStyle,
+} from '../art/cosmetics';
+import { spriteImage } from '../art/pixel/sprites';
 import './skillArt.css';
 
 /**
- * Placeholder art for the account tree gems and the enhancement star chart (DESIGN.md 17).
- *
- * PIXEL-ART REQUEST (skill nodes): the final look waits for the user's pick of B7 on the art
- * options page. When the pixel-art agent delivers it, swap the bodies of these two functions
- * only; the pages call nothing else. Wanted from the sprite set:
- * - `skillGem`: a faceted gem, ~40 px, tinted by the branch colour (`--gem`), in four states:
- *   locked (unlit stone), open (outline lit, empty facets), owned (lit facets), maxed (lit +
- *   a small ambient sparkle); plus the centre star (`centreStar`).
- * - `chartStar`: a small four-point star, ~28 px, in chosen / open / blocked / locked.
- *
- * Both draw simple cel-shaded shapes with the game's ink outline; colours come from CSS
- * (`skillArt.css`), so states only switch a class.
+ * Art for the account tree and the enhancement star chart (DESIGN.md 7 "UI-skin slots", 17): the
+ * pixel gems and chart of the equipped `nodes` item (recipe `ui-nodes-<a..e>`), drawn by
+ * `art/cosmetics.ts`. This module resolves the style and wraps the sprites in SVG; only the
+ * centre star is still vector (it has no pixel version).
  */
 
 const INK = '#1a1020';
 
-/** A faceted gem in the branch colour (set `--gem` on an ancestor). */
-export function skillGem(): string {
-  return `<svg class="sg" viewBox="-20 -20 40 40" aria-hidden="true">
-  <polygon class="sg__base" points="0,-17 15,0 0,17 -15,0" />
-  <polygon class="sg__hi" points="0,-17 -15,0 -6,0 0,-7" />
-  <polygon class="sg__mid" points="0,-17 15,0 6,0 0,-7" />
-  <polygon class="sg__lo" points="-15,0 0,17 0,7 -6,0" />
-  <polygon class="sg__deep" points="15,0 0,17 0,7 6,0" />
-  <polygon class="sg__table" points="0,-7 6,0 0,7 -6,0" />
-  <polygon points="0,-17 15,0 0,17 -15,0" fill="none" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" />
-  <path class="sg__glint" d="M-7 -6 L-3 -10" />
-</svg>`;
+/** The style letter of the equipped nodes item (the starter, `a`, when nothing else is worn). */
+export function nodeStyle(content: Content, state: GameState): SkinStyle {
+  const recipe = resolveGlobal(content, state.cosmetics.loadout).nodes.visual.recipes.find((r) =>
+    r.startsWith('ui-nodes-'),
+  );
+  return (recipe?.slice('ui-nodes-'.length) ?? 'a') as SkinStyle;
+}
+
+/** A pixel gem node (24 px native, keystones 32 px) as a ready-to-place SVG. */
+export function skillGem(
+  style: SkinStyle,
+  branch: SkillBranch,
+  state: NodeState,
+  keystone = false,
+): string {
+  const n = keystone ? 32 : 24;
+  return `<svg class="sg${keystone ? ' sg--key' : ''}" viewBox="0 0 ${n} ${n}" aria-hidden="true">${skillNode(style, branch, state, keystone)}</svg>`;
+}
+
+/** The enhancement chart (200 x 120 pixel grid): sky, dotted links and a pixel star per option. */
+export function chartSky(
+  style: SkinStyle,
+  stars: readonly ChartStar[],
+  links: readonly (readonly [number, number])[],
+): string {
+  return `<svg class="cst-sky" viewBox="${STAR_CHART_VIEWBOX}" aria-hidden="true">${starChart(style, stars, links)}</svg>`;
+}
+
+/** One chart star (18 px native) for the option key. */
+export function chartStar(style: SkinStyle, state: NodeState): string {
+  return `<svg class="cst" viewBox="0 0 18 18" aria-hidden="true">${spriteImage(`cos-chart-${style}-${state}`, 0, 0, 18, 18)}</svg>`;
 }
 
 /** The centre star of the constellation (eight points). */
@@ -41,13 +64,5 @@ export function centreStar(): string {
   }
   return `<svg class="sg-star" viewBox="-34 -34 68 68" aria-hidden="true">
   <polygon class="sg-star__body" points="${pts.join(' ')}" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round" />
-</svg>`;
-}
-
-/** A four-point chart star for one enhancement option. */
-export function chartStar(): string {
-  return `<svg class="cst" viewBox="-16 -16 32 32" aria-hidden="true">
-  <path class="cst__body" d="M0 -14 L3.5 -3.5 L14 0 L3.5 3.5 L0 14 L-3.5 3.5 L-14 0 L-3.5 -3.5 Z" stroke="${INK}" stroke-width="2" stroke-linejoin="round" />
-  <path class="cst__hi" d="M0 -14 L3.5 -3.5 L0 0 L-3.5 -3.5 Z" />
 </svg>`;
 }

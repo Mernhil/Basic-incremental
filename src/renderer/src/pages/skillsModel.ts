@@ -1,7 +1,7 @@
+import { fmt } from '../settings/numberFormat';
 import { SKILL_BRANCHES, type Content, type Rank, type SkillBranch } from '../../../data';
 import {
   Decimal,
-  formatDecimal,
   type CardEnhancementInfo,
   type GameState,
   type RespecInfo,
@@ -53,6 +53,8 @@ export interface NodeView {
   x: number;
   y: number;
   depth: number;
+  /** An outermost gem (the ring's far end) is drawn as a larger keystone. */
+  keystone: boolean;
   rank: number;
   maxRank: number;
   state: NodeState;
@@ -190,6 +192,7 @@ export function treeView(
         colour: BRANCH_COLOUR[branch],
         ...pos,
         depth,
+        keystone: depth >= RING.length - 1,
         rank: i.rank,
         maxRank: i.maxRank,
         state,
@@ -248,7 +251,7 @@ export interface RespecView {
 
 export function respecView(content: Content, state: GameState, info: RespecInfo): RespecView {
   const priceText = info.price
-    ? `${formatDecimal(info.price.amount)} ${content.resourceById.get(info.price.resource)?.name ?? info.price.resource}`
+    ? `${fmt(info.price.amount)} ${content.resourceById.get(info.price.resource)?.name ?? info.price.resource}`
     : '';
   const have = info.price ? (state.resources[info.price.resource] ?? new Decimal(0)) : null;
   const affordable = !info.price || (have !== null && have.gte(info.price.amount));
@@ -278,14 +281,14 @@ export function respecView(content: Content, state: GameState, info: RespecInfo)
 // ---- card enhancement star chart ----------------------------------------------------------------
 
 /** The star chart's drawing box and star spots (a small constellation, left to right). */
-export const CHART = { w: 280, h: 132 } as const;
+export const CHART = { w: 200, h: 120 } as const;
 const STAR_SPOTS = [
-  [34, 86],
-  [92, 34],
-  [146, 92],
-  [200, 40],
-  [250, 96],
-  [140, 22],
+  [24, 78],
+  [66, 31],
+  [104, 84],
+  [143, 36],
+  [179, 87],
+  [100, 20],
 ] as const;
 
 export type StarState = 'chosen' | 'open' | 'blocked' | 'locked';

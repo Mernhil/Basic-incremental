@@ -11,7 +11,7 @@ import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import type { SoundId } from '../sound/registry';
 import { replay } from '../stage/motion';
-import { centreStar, skillGem } from '../ui/skillArt';
+import { centreStar, nodeStyle, skillGem } from '../ui/skillArt';
 import type { PageContext } from './production';
 import { CENTRE, SKY, respecView, treeView, type NodeView, type TreeView } from './skillsModel';
 import './skills.css';
@@ -79,7 +79,14 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   const signature = (): string => {
     const s = ctx.state();
     const r = respec();
-    return JSON.stringify([s.account.skills, s.account.level, r.enabled, r.free, r.priceText]);
+    return JSON.stringify([
+      s.cosmetics.loadout.slots.nodes,
+      s.account.skills,
+      s.account.level,
+      r.enabled,
+      r.free,
+      r.priceText,
+    ]);
   };
 
   function say(text: string): void {
@@ -207,7 +214,13 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     b.setAttribute('aria-label', n.label);
     b.setAttribute('aria-pressed', String(n.id === selected));
     const gem = h('span', 'sk-node__gem');
-    gem.innerHTML = skillGem();
+    gem.innerHTML = skillGem(
+      nodeStyle(content, ctx.state()),
+      n.branch,
+      n.state === 'maxed' ? 'owned' : n.state,
+      n.keystone,
+    );
+    b.classList.toggle('is-key', n.keystone);
     const rank = h('span', 'sk-node__rank bi-num', n.rankText);
     b.append(gem, rank);
     attachTooltip(b, () => tip(n));
@@ -252,7 +265,13 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     el.style.setProperty('--gem', n.colour);
     const head = h('div', 'sk-detail__head');
     const gem = h('span', `sk-detail__gem is-${n.state}`);
-    gem.innerHTML = skillGem();
+    gem.innerHTML = skillGem(
+      nodeStyle(content, ctx.state()),
+      n.branch,
+      n.state === 'maxed' ? 'owned' : n.state,
+      n.keystone,
+    );
+    gem.classList.toggle('is-key', n.keystone);
     const meta = h('div', 'sk-detail__meta');
     const pips = h('span', 'sk-pips');
     pips.setAttribute('role', 'img');

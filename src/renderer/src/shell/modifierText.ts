@@ -64,14 +64,14 @@ function effectValue(m: Pick<Modifier, 'stat' | 'kind' | 'value'>): string {
     const sign = m.value.gte(0) ? '+' : '−';
     const abs = m.value.abs();
     if (m.stat === 'combat.critChance' || m.stat === 'combat.critDamage') {
-      return `${sign}${formatDecimal(abs.mul(100))}%`;
+      return `${sign}${fmt(abs.mul(100))}%`;
     }
-    if (m.stat === 'combat.defence') return `${sign}${formatDecimal(abs)}%`;
-    if (m.stat === 'offline.capHours') return `${sign}${formatDecimal(abs)} h`;
-    if (m.stat === 'burst.power') return `${sign}${formatDecimal(abs)} s`;
-    return `${sign}${formatDecimal(abs)}`;
+    if (m.stat === 'combat.defence') return `${sign}${fmt(abs)}%`;
+    if (m.stat === 'offline.capHours') return `${sign}${fmt(abs)} h`;
+    if (m.stat === 'burst.power') return `${sign}${fmt(abs)} s`;
+    return `${sign}${fmt(abs)}`;
   }
-  if (m.kind === 'percent' && m.value.lt(0)) return `−${formatDecimal(m.value.abs())}%`;
+  if (m.kind === 'percent' && m.value.lt(0)) return `−${fmt(m.value.abs())}%`;
   return modifierText(m);
 }
 
