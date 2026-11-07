@@ -627,6 +627,12 @@ export const COSMETIC_SLOTS = [
   'number',
   'table',
   'cursor',
+  /* UI-skin slots (DESIGN.md 7): art-driven, so they set no tokens; the item's `ui-<slot>-<style>`
+     recipe names the style the pages draw. */
+  'starlight',
+  'sticker',
+  'nodes',
+  'wardrobe',
 ] as const;
 export type CosmeticSlot = (typeof COSMETIC_SLOTS)[number];
 
@@ -692,6 +698,10 @@ export const SLOT_TOKENS = {
     'tip-ink-muted',
   ],
   cursor: [],
+  starlight: [],
+  sticker: [],
+  nodes: [],
+  wardrobe: [],
 } as const satisfies Record<CosmeticSlot, readonly string[]>;
 
 /** Token keys a rarity may set. Each becomes `--bi-rarity-<key>`. */

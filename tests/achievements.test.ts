@@ -126,8 +126,9 @@ describe('achievements (DESIGN.md 11.6)', () => {
       ]),
     );
     expect(got).not.toContain('prismatic_dawn');
-    // 7 Gilded Tradition items are fewer than the 10 non-starter items Fashionista needs.
-    expect(got).not.toContain('fashionista');
+    // The 7 Gilded Tradition items plus the 3 UI-skin pieces that Dressed Up, Medalist and Gem Adept
+    // grant make the 10 non-starter items Fashionista needs.
+    expect(got).toContain('fashionista');
   });
 
   it('does not count the starter set as a full set', () => {

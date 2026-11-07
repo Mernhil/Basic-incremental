@@ -131,7 +131,7 @@ export {
   upgradeCosmetic,
   /** What each level adds, level 1 first (shape, accent, gems, glow, ambient). */
   cosmeticLadder,
-  /** Where an item comes from: starter, dungeon, prestige or portal. */
+  /** Where an item comes from: starter, dungeon, prestige, achievement, reward track, shard shop or the Wardrobe Gate. */
   cosmeticSource,
   /** Each set's progress (equipped / total) and whether its bonus applies. */
   setBonuses,

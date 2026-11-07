@@ -8,8 +8,96 @@
     "id": "gilded_tradition",
     "name": "Gilded Tradition",
     "modifiers": [
-      { "stat": "combat.damage", "kind": "percent", "value": "3" },
-      { "stat": "production.rate", "kind": "percent", "value": "3" }
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "3"
+      },
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "id": "verdant_reverie",
+    "name": "Verdant Reverie",
+    "modifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "3"
+      },
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "id": "vine_wrap",
+    "name": "Vine Wrap",
+    "modifiers": [
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "4"
+      },
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "2"
+      }
+    ]
+  },
+  {
+    "id": "fern_fronds",
+    "name": "Fern Fronds",
+    "modifiers": [
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "4"
+      },
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "2"
+      }
+    ]
+  },
+  {
+    "id": "moss_mushrooms",
+    "name": "Moss and Mushrooms",
+    "modifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "6"
+      },
+      {
+        "stat": "production.rate",
+        "kind": "percent",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "id": "blossom_branch",
+    "name": "Blossom Branch",
+    "modifiers": [
+      {
+        "stat": "xp.card",
+        "kind": "percent",
+        "value": "6"
+      },
+      {
+        "stat": "combat.damage",
+        "kind": "percent",
+        "value": "3"
+      }
     ]
   }
 ]

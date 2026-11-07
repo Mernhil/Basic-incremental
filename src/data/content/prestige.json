@@ -145,6 +145,14 @@
     {
       "ascension": 3,
       "cosmetics": ["gilded_filigree"]
+    },
+    {
+      "ascension": 4,
+      "cosmetics": ["starlight_b"]
+    },
+    {
+      "ascension": 6,
+      "cosmetics": ["starlight_c"]
     }
   ]
 }

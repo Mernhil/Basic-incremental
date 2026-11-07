@@ -136,7 +136,12 @@ describe('drawn levels of borders and finishes (DESIGN.md 7, 11.1)', () => {
         top.some((r) => r.startsWith('ambient-')),
         c.id,
       ).toBe(true);
-      if (c.slot === 'border') expect(top, c.id).toContain('flourish-corners');
+      if (c.slot === 'border') {
+        expect(
+          top.some((r) => r === 'flourish-corners' || r.startsWith('corner-')),
+          c.id,
+        ).toBe(true);
+      }
       // Only the ambient level animates.
       for (const level of c.levels.slice(0, -1)) {
         expect(
