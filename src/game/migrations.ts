@@ -39,7 +39,27 @@ export const MIGRATIONS: MigrationTable = {
     achievements: {},
     shardShop: {},
   }),
+  12: v12ToV13,
 };
+
+/**
+ * v12 -> v13: the account (DESIGN.md 10a) and card enhancements (10b). Accounts start at level
+ * 1 with no XP and no skills (XP is earned from now on); no card has enhancements yet.
+ */
+function v12ToV13(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? state['cards'] : {};
+  const owned = isRecord(cards['owned']) ? cards['owned'] : {};
+  return {
+    ...state,
+    account: { xp: '0', level: 1, skills: {}, freeRespecsUsed: 0 },
+    cards: {
+      ...cards,
+      owned: Object.fromEntries(
+        Object.entries(owned).map(([id, c]) => [id, isRecord(c) ? { ...c, enhancements: [] } : c]),
+      ),
+    },
+  };
+}
 
 /** The cosmetics dungeons drop as their rare item, at save format 10 (a snapshot). */
 const V10_DROPPED_COSMETICS = ['holo_hex', 'holo_waves', 'prism_pointer'] as const;

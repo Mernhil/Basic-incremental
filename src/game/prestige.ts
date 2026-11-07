@@ -5,6 +5,7 @@ import { Decimal } from './num';
 import { canAfford, finalPrice, pay, resetProduction, type Price } from './production';
 import { initialBursts, type GameState } from './state';
 import { grantCosmetic } from './wardrobe';
+import { grantAccountXp } from './account';
 
 /**
  * Prestige, Ascension (DESIGN.md 3, 11.6, 16). An ascension resets the run (plots, slots, mine
@@ -143,6 +144,9 @@ export function ascend(
     starlightEarned: state.prestige.starlightEarned.add(preview.gain),
   };
   for (const id of preview.rewards) grantCosmetic(next, id);
+  // The account tree's free respec comes back with every ascension (DESIGN.md 12.1).
+  next.account = { ...next.account, freeRespecsUsed: 0 };
+  grantAccountXp(next, content, content.account.xp.perAscension, modifiers);
   return { ok: true, state: next, gained: preview.gain, cosmetics: preview.rewards };
 }
 

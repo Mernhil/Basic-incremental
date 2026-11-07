@@ -66,6 +66,15 @@ describe('balance sim: greedy buyer', () => {
     expect(MILESTONES.find((m) => m.id === 'max_cosmetic')?.pending).toBeUndefined();
   });
 
+  it('spends skill points and fills card enhancement budgets', () => {
+    const state = freshState();
+    state.account.level = 3;
+    state.cards.owned['ember_squire']!.tier = 'silver';
+    const { state: after, bought } = greedyBuy(state, content);
+    expect(bought.filter((id) => id.startsWith('skill:'))).toHaveLength(2);
+    expect(after.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThan(0);
+  });
+
   it('does nothing when nothing is affordable', () => {
     const { bought } = greedyBuy(freshState(), content);
     expect(bought).toEqual([]);
@@ -95,7 +104,8 @@ describe('balance sim: run', () => {
     // The first boss falls well within the first hour of greedy play.
     expect(a.hits['clear_d1']).not.toBeNull();
     expect(a.hits['clear_d1']!).toBeLessThan(3600);
-  });
+    // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
+  }, 30_000);
 
   it('prints a markdown table with one row per milestone', () => {
     const result = runSim(content, { hours: 0.05, seed: 1, stepSeconds: 10 });

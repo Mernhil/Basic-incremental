@@ -15,6 +15,8 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import enhancements from '../src/data/content/enhancements.json';
+import account from '../src/data/content/account.json';
 import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
@@ -42,6 +44,8 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     wearRules,
     sets,
     progression,
+    enhancements,
+    account,
     achievements,
     cosmeticRules,
     prestige,
@@ -338,6 +342,27 @@ describe('card ranks and portals', () => {
       'achievements.json › achievements › [1] › id: duplicate "first_harvest"',
     );
     expect(issues).toContain('achievements.json › shardShop › [0] › reward: unknown card "nobody"');
+  });
+
+  it('checks the account tree, reward track and enhancement lists', () => {
+    const bad = raw();
+    const account = bad.account as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    account['tree'][1].requires = ['nowhere'];
+    account['tree'][0].perRank[0].scope = { dungeon: 'nowhere' };
+    account['rewardTrack'][0].cosmetics = ['nope'];
+    const enh = bad.enhancements as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    delete enh['cards']['core_titan'];
+    enh['cards']['nobody'] = enh['cards']['ember_squire'];
+    const issues = issuesFor(bad);
+    expect(issues).toContain('account.json › tree › [1] › requires › [0]: unknown node "nowhere"');
+    expect(issues).toContain(
+      'account.json › tree › [0] › perRank › [0] › scope › dungeon: unknown dungeon "nowhere"',
+    );
+    expect(issues).toContain(
+      'account.json › rewardTrack › [0] › cosmetics › [0]: unknown cosmetic "nope"',
+    );
+    expect(issues).toContain('enhancements.json › cards › nobody: unknown card');
+    expect(issues).toContain('enhancements.json › cards: "core_titan" has no enhancement options');
   });
 
   it('checks the cosmetic upgrade ladders', () => {

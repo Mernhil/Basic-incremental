@@ -1,6 +1,7 @@
 import type { Content } from '../data';
 import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
 import { advanceCombat, advanceHarvestBursts } from './combat';
+import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
@@ -48,6 +49,7 @@ export function advance(
     current = advanceSpan(current, content, toBoundary, rng, report);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
+    settleAccount(current, content, report);
     settleAchievements(current, content, report);
     remaining -= toBoundary;
   }
@@ -63,6 +65,7 @@ function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
+    accountLevelDue(ahead, content) ||
     achievementsDue(ahead, content)
   );
 }
@@ -101,13 +104,11 @@ function advanceSpan(
   // every gem harvested counts toward its mastery.
   for (const job of PRODUCTION_JOBS) {
     const harvestSeconds = burstSeconds[job].add(seconds);
-    countHarvest(
-      next,
-      content,
-      Object.fromEntries(
-        Object.entries(perJob[job]).map(([id, perSecond]) => [id, perSecond.mul(harvestSeconds)]),
-      ),
+    const gains = Object.fromEntries(
+      Object.entries(perJob[job]).map(([id, perSecond]) => [id, perSecond.mul(harvestSeconds)]),
     );
+    countHarvest(next, content, gains);
+    grantAccountXp(next, content, harvestXp(content, job, gains), modifiers, job);
     const perSecond = Object.values(perJob[job]).reduce((a, b) => a.add(b), new Decimal(0));
     const units = perSecond.mul(harvestSeconds);
     grantLoadoutXp(next, content, job, units.mul(productionXpPerUnit(content, job, modifiers)));

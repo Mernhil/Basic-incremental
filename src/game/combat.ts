@@ -1,6 +1,7 @@
 import type { BurstJob, Content, DamageUpgrade, Dungeon, ProductionJob, Trial } from '../data';
 import { cardHealth, fightingXpPerKill, grantLoadoutXp } from './cards';
 import { grantCosmetic } from './wardrobe';
+import { grantAccountXp, killXp } from './account';
 import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
@@ -859,6 +860,7 @@ function fightBoss(
       for (let i = 0; i < rares; i++) grantCosmetic(state, item);
     }
   }
+  grantAccountXp(state, content, killXp(content, dungeon.tier).mul(kills), modifiers, 'fighting');
   // Cards: the fighting loadout gains XP per kill.
   grantLoadoutXp(
     state,
@@ -908,5 +910,9 @@ function fightTrial(
     dealt = new Decimal(0);
   }
   report.trialAttempts += attempts;
+  if (attempts > 0) {
+    const xp = content.account.xp.perTrialAttempt.mul(attempts);
+    grantAccountXp(state, content, xp, modifiers, 'fighting');
+  }
   state.combat.trialAttempt = { elapsedSeconds, dealt };
 }

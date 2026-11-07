@@ -47,6 +47,8 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import enhancements from '../src/data/content/enhancements.json';
+import account from '../src/data/content/account.json';
 import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
@@ -464,6 +466,8 @@ describe('combat data is validated', () => {
       wearRules,
       sets,
       progression,
+      enhancements,
+      account,
       achievements,
       cosmeticRules,
       prestige,

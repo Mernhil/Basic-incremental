@@ -1,0 +1,504 @@
+{
+  "xp": {
+    "perUnit": {
+      "logging": "0.02",
+      "mining": "0.04"
+    },
+    "tierWeights": ["1", "5", "25"],
+    "perKill": "10",
+    "killTierGrowth": "4",
+    "perPull": "20",
+    "perTrialAttempt": "2",
+    "perAscension": "500"
+  },
+  "levels": {
+    "maxLevel": 50,
+    "xpBase": "150",
+    "xpGrowth": "1.25",
+    "skillPointsPerLevel": 1
+  },
+  "rewardTrack": [
+    {
+      "level": 3,
+      "costCap": 1
+    },
+    {
+      "level": 5,
+      "resources": [
+        {
+          "resource": "moss_sigil",
+          "amount": "10"
+        }
+      ]
+    },
+    {
+      "level": 8,
+      "costCap": 1
+    },
+    {
+      "level": 10,
+      "resources": [
+        {
+          "resource": "moss_sigil",
+          "amount": "20"
+        }
+      ],
+      "cosmetics": ["holo_hex"]
+    },
+    {
+      "level": 15,
+      "resources": [
+        {
+          "resource": "moss_sigil",
+          "amount": "30"
+        }
+      ],
+      "costCap": 1
+    },
+    {
+      "level": 20,
+      "resources": [
+        {
+          "resource": "ember_sigil",
+          "amount": "40"
+        }
+      ],
+      "cosmetics": ["holo_waves"]
+    },
+    {
+      "level": 25,
+      "resources": [
+        {
+          "resource": "ember_sigil",
+          "amount": "50"
+        }
+      ],
+      "costCap": 1
+    },
+    {
+      "level": 30,
+      "resources": [
+        {
+          "resource": "ember_sigil",
+          "amount": "60"
+        }
+      ],
+      "cosmetics": ["prism_pointer"]
+    },
+    {
+      "level": 35,
+      "resources": [
+        {
+          "resource": "frost_sigil",
+          "amount": "70"
+        }
+      ],
+      "costCap": 1
+    },
+    {
+      "level": 40,
+      "resources": [
+        {
+          "resource": "frost_sigil",
+          "amount": "80"
+        }
+      ],
+      "cosmetics": ["aurora_veil"]
+    },
+    {
+      "level": 45,
+      "resources": [
+        {
+          "resource": "frost_sigil",
+          "amount": "90"
+        }
+      ],
+      "costCap": 1
+    },
+    {
+      "level": 50,
+      "resources": [
+        {
+          "resource": "frost_sigil",
+          "amount": "100"
+        }
+      ],
+      "cosmetics": ["gilded_filigree"]
+    }
+  ],
+  "tree": [
+    {
+      "id": "grove_yield",
+      "name": "Grove Yield",
+      "branch": "logging",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "5",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "grove_rhythm",
+      "name": "Grove Rhythm",
+      "branch": "logging",
+      "cost": 1,
+      "maxRank": 3,
+      "requires": ["grove_yield"],
+      "perRank": [
+        {
+          "stat": "burst.fill",
+          "kind": "percent",
+          "value": "10",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "wide_groves",
+      "name": "Wide Groves",
+      "branch": "logging",
+      "cost": 2,
+      "maxRank": 3,
+      "requires": ["grove_yield"],
+      "perRank": [
+        {
+          "stat": "cost.growth",
+          "kind": "percent",
+          "value": "-1",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "grove_bounty",
+      "name": "Grove Bounty",
+      "branch": "logging",
+      "cost": 2,
+      "maxRank": 3,
+      "requires": ["grove_rhythm"],
+      "perRank": [
+        {
+          "stat": "burst.power",
+          "kind": "flat",
+          "value": "2",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vein_yield",
+      "name": "Vein Yield",
+      "branch": "mining",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "5",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vein_rhythm",
+      "name": "Vein Rhythm",
+      "branch": "mining",
+      "cost": 1,
+      "maxRank": 3,
+      "requires": ["vein_yield"],
+      "perRank": [
+        {
+          "stat": "burst.fill",
+          "kind": "percent",
+          "value": "10",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "deep_levels",
+      "name": "Deep Levels",
+      "branch": "mining",
+      "cost": 2,
+      "maxRank": 3,
+      "requires": ["vein_yield"],
+      "perRank": [
+        {
+          "stat": "production.levelBonus",
+          "kind": "percent",
+          "value": "10",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vein_bounty",
+      "name": "Vein Bounty",
+      "branch": "mining",
+      "cost": 2,
+      "maxRank": 3,
+      "requires": ["vein_rhythm"],
+      "perRank": [
+        {
+          "stat": "burst.power",
+          "kind": "flat",
+          "value": "2",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "might",
+      "name": "Might",
+      "branch": "combat",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "keen_eye",
+      "name": "Keen Eye",
+      "branch": "combat",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": ["might"],
+      "perRank": [
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.01"
+        }
+      ]
+    },
+    {
+      "id": "brutal",
+      "name": "Brutal",
+      "branch": "combat",
+      "cost": 2,
+      "maxRank": 5,
+      "requires": ["keen_eye"],
+      "perRank": [
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.1"
+        }
+      ]
+    },
+    {
+      "id": "vigor",
+      "name": "Vigor",
+      "branch": "combat",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "combat.health",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "name": "Guard",
+      "branch": "combat",
+      "cost": 2,
+      "maxRank": 5,
+      "requires": ["vigor"],
+      "perRank": [
+        {
+          "stat": "combat.defence",
+          "kind": "flat",
+          "value": "2"
+        }
+      ]
+    },
+    {
+      "id": "sigil_luck",
+      "name": "Sigil Luck",
+      "branch": "luck",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "drops.portalMultiplier",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "core_luck",
+      "name": "Core Luck",
+      "branch": "luck",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": ["sigil_luck"],
+      "perRank": [
+        {
+          "stat": "drops.materialChance",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "rare_luck",
+      "name": "Rare Luck",
+      "branch": "luck",
+      "cost": 2,
+      "maxRank": 3,
+      "requires": ["core_luck"],
+      "perRank": [
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "id": "pity_sense",
+      "name": "Pity Sense",
+      "branch": "luck",
+      "cost": 2,
+      "maxRank": 5,
+      "requires": ["sigil_luck"],
+      "perRank": [
+        {
+          "stat": "summon.pityThreshold",
+          "kind": "flat",
+          "value": "-2"
+        }
+      ]
+    },
+    {
+      "id": "quick_study",
+      "name": "Quick Study",
+      "branch": "collection",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "xp.card",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "id": "deep_pockets",
+      "name": "Deep Pockets",
+      "branch": "collection",
+      "cost": 2,
+      "maxRank": 3,
+      "requires": ["quick_study"],
+      "perRank": [
+        {
+          "stat": "loadout.costCap",
+          "kind": "flat",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": "renown",
+      "name": "Renown",
+      "branch": "collection",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": ["quick_study"],
+      "perRank": [
+        {
+          "stat": "xp.account",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    },
+    {
+      "id": "long_watch",
+      "name": "Long Watch",
+      "branch": "automation",
+      "cost": 1,
+      "maxRank": 4,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "offline.capHours",
+          "kind": "flat",
+          "value": "1"
+        }
+      ]
+    },
+    {
+      "id": "trial_focus",
+      "name": "Trial Focus",
+      "branch": "automation",
+      "cost": 1,
+      "maxRank": 5,
+      "requires": [],
+      "perRank": [
+        {
+          "stat": "trial.reward",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    },
+    {
+      "id": "starlit_mind",
+      "name": "Starlit Mind",
+      "branch": "automation",
+      "cost": 2,
+      "maxRank": 5,
+      "requires": ["long_watch"],
+      "perRank": [
+        {
+          "stat": "prestige.gain",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  ],
+  "respec": {
+    "cost": "5",
+    "freePerAscension": 1
+  }
+}

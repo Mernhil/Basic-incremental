@@ -380,6 +380,18 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Extra achievements.** First Milestone (a mine or damage line at Lv 25), Gem Adept (a gem at Gold mastery), Medalist (a Silver boss medal) and Masterwork (a cosmetic at its max level).
     - **Detection.** Achievements unlock once and grant their reward automatically. Cosmetic rewards: Giant Slayer I / II / III give the three dungeon-drop items. Glimmer Seeker, Golden Hour, Six Stars, Prismatic Dawn, Pity Breaker, Fashionista and Night Owl give the Gilded Tradition pieces. The rest give sigils, Cores, Glimmer Dust or Facet Shards. The tick checks them on the whole-second grid like mastery tiers, offline progress checks them after the session, and actions call `checkAchievements`. A save from before achievements unlocks what it already earned on the next tick.
     - **Shard shop.** Unlimited card copies (5 / 10 / 20 / 40 / 75 / 120 shards by rarity, Common to Exotic), sigil, Core, Glimmer Dust and Facet Shard bundles, and one Ember Crown (150 shards, once).
+21. **Account details (`account.json`, `enhancements.json`).**
+    - **XP rates.** Account XP comes from four sources, all through `xp.account`:
+      - per gem harvested: 0.02 logging / 0.04 mining, × tier weight 1 / 5 / 25;
+      - per boss kill: 10 × 4^(dungeon tier − 1);
+      - 2 per Glimmer Trial attempt and 20 per pull;
+      - 500 per ascension.
+    - **Levels.** Level L → L + 1 costs 150 × 1.25^(L − 1), up to level 50. In the sim this gives level 10 at about 0.5 h, 20 at 2 h, 30 at 7 h and 40 at 23 h (quick early, slow later; 12.4). Level-ups settle on the whole-second grid like card levels.
+    - **Saves from before the account.** They start at level 1 with no XP.
+    - **Reward track.** Every level gives 1 skill point. Every 5 levels: 2 × level sigils (Moss to level 15, Ember to 30, then Frost). Every 10 levels: a cosmetic (Holo Hex, Holo Waves, Prism Pointer, Aurora Veil, Gilded Filigree; a copy when owned). Levels 3, 8, 15, 25, 35 and 45: +1 loadout cost cap for every job (source `account`), on top of the 2 per level.
+    - **Account tree.** 23 nodes over the six branches, each rank adding its bonus once more (source `skill`): Combat holds Might, Keen Eye (crit chance), Brutal (crit damage), Vigor and Guard; Summoning / Luck is `luck`; Automation / Offline is `automation`. Respec refunds every point: free once per ascension, then 5 Starlight.
+    - **Card enhancements.** Every card has five options from its job's template, values scaled by rarity, costing 20 points in total. Budgets: Bronze 0, Silver 4, Gold 7, Prismatic 10 (half the total at the top). Options apply while the card is in a loadout (source `enhancement`). Respec is free.
+22. **Dev saves.** Dev builds take `BI_PROFILE` / `--bi-profile` or `BI_USER_DATA_DIR` so parallel dev apps never autosave over each other (`docs/WORK_SPLIT.md`).
 
 ## 13. Art style
 

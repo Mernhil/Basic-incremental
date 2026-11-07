@@ -529,7 +529,14 @@ describe('saving cards (save format v5)', () => {
     const text = createSaveText(freshState(), 1);
     const envelope = JSON.parse(text);
     const cards = envelope.state.cards;
-    cards.owned['removed_card'] = { tier: 'bronze', stars: 1, level: 1, xp: '0', duplicates: 0 };
+    cards.owned['removed_card'] = {
+      tier: 'bronze',
+      stars: 1,
+      level: 1,
+      xp: '0',
+      duplicates: 0,
+      enhancements: [],
+    };
     cards.owned['ember_squire'].level = 99;
     cards.owned['ember_squire'].xp = '5';
     cards.loadouts.fighting = {

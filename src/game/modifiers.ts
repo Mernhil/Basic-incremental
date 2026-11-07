@@ -5,6 +5,7 @@ import { detectSets } from './theme';
 import { cardModifiers } from './cards';
 import { masteryModifiers } from './mastery';
 import { prestigeModifiers } from './prestige';
+import { accountModifiers } from './account';
 
 /**
  * The shared modifier pipeline (DESIGN.md 11.5). Every tunable number goes through
@@ -22,6 +23,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'achievement',
   /** Gem mastery and boss medals (DESIGN.md 16, E2 and E3). */
   'mastery',
+  /** Account level rewards: the reward track's cost cap bumps (DESIGN.md 16, E7). */
+  'account',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -143,6 +146,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Starlight shop levels (Ascension).
   out.push(...prestigeModifiers(state, content));
+
+  // Account tree ranks, reward track cost cap bumps, card enhancements.
+  out.push(...accountModifiers(state, content));
 
   return out;
 }

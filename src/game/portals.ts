@@ -6,6 +6,7 @@ import type { CardGain } from './report';
 import type { Rng } from './rng';
 import type { GameState, PortalCounters } from './state';
 import { grantCosmetic } from './wardrobe';
+import { grantAccountXp } from './account';
 
 /**
  * Summon portals (DESIGN.md 6, "Beta portals"): one engine for every portal (the Card Portal now,
@@ -147,6 +148,7 @@ export function pull(
     if (byPity) pityHits += 1;
   }
   next.portals[portalId] = { pity, pulls, pityHits };
+  grantAccountXp(next, content, content.account.xp.perPull.mul(count), modifiers);
   return { ok: true, state: next, results };
 }
 

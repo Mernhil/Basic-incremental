@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 12;
+export const CURRENT_SAVE_VERSION = 13;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -82,6 +82,8 @@ export const serializedStateSchema = z.object({
         level: z.number().int().min(1),
         xp: decimalText,
         duplicates: z.number().int().min(0),
+        /** v13. */
+        enhancements: z.array(z.string()),
       }),
     ),
     loadouts: z.object({
@@ -100,6 +102,13 @@ export const serializedStateSchema = z.object({
   /** v12: achievement id -> play time when unlocked, and shard shop purchases. */
   achievements: z.record(z.string(), z.number().min(0)),
   shardShop: counts,
+  /** v13: account XP, level, account tree and respecs (DESIGN.md 10a). */
+  account: z.object({
+    xp: decimalText,
+    level: z.number().int().min(1),
+    skills: counts,
+    freeRespecsUsed: z.number().int().min(0),
+  }),
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
     harvested: z.record(z.string(), decimalText),
@@ -163,11 +172,17 @@ export function serializeState(state: GameState): SerializedState {
     stats: { ...state.stats },
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
+    account: {
+      xp: decimalToString(state.account.xp),
+      level: state.account.level,
+      skills: { ...state.account.skills },
+      freeRespecsUsed: state.account.freeRespecsUsed,
+    },
     cards: {
       owned: Object.fromEntries(
         Object.entries(state.cards.owned).map(([id, c]) => [
           id,
-          { ...c, xp: decimalToString(c.xp) },
+          { ...c, xp: decimalToString(c.xp), enhancements: [...c.enhancements] },
         ]),
       ),
       loadouts: cloneCards(state.cards).loadouts,
@@ -253,6 +268,18 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.achievements = Object.fromEntries(
     Object.entries(saved.achievements).filter(([id]) => achievementIds.has(id)),
   );
+  // Unknown tree nodes are dropped; ranks stay within the node's max; the level within the max.
+  const skills: Record<string, number> = {};
+  for (const [id, rank] of Object.entries(saved.account.skills)) {
+    const node = content.account.tree.find((n) => n.id === id);
+    if (node && rank > 0) skills[id] = Math.min(rank, node.maxRank);
+  }
+  state.account = {
+    xp: new Decimal(saved.account.xp),
+    level: Math.min(saved.account.level, content.account.levels.maxLevel),
+    skills,
+    freeRespecsUsed: saved.account.freeRespecsUsed,
+  };
   const shopIds = new Set(content.shardShop.map((i) => i.id));
   state.shardShop = Object.fromEntries(
     Object.entries(saved.shardShop).filter(([id]) => shopIds.has(id)),
@@ -458,6 +485,10 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
       level,
       xp: level >= cap ? new Decimal(0) : new Decimal(c.xp),
       duplicates: c.duplicates,
+      // Unknown options are dropped (the budget is checked when choosing, not on load).
+      enhancements: c.enhancements.filter((o) =>
+        content.enhancements.cards[id]?.some((x) => x.id === o),
+      ),
     };
   }
   const loadouts = {} as CardState['loadouts'];

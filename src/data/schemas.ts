@@ -944,6 +944,96 @@ export const achievementsFileSchema = z.strictObject({
   shardShop: z.array(shardShopItemSchema),
 });
 
+// ---- Account (DESIGN.md 10, 16 E7) -------------------------------------------------------------
+
+export const SKILL_BRANCHES = [
+  'logging',
+  'mining',
+  'combat',
+  'luck',
+  'collection',
+  'automation',
+] as const;
+export type SkillBranch = (typeof SKILL_BRANCHES)[number];
+
+/**
+ * Account XP, levels, the reward track, the account tree and its respec (account.json).
+ * XP (through `xp.account`, scope job): per unit harvested by job × the gem tier's weight, per
+ * boss kill × killTierGrowth^(dungeon tier − 1), per pull, per Glimmer Trial attempt, per
+ * ascension. Level L → L + 1 costs xpBase × xpGrowth^(L − 1); each level gives skill points.
+ */
+export const accountSchema = z.strictObject({
+  xp: z.strictObject({
+    perUnit: z.strictObject({ logging: decimal, mining: decimal }),
+    tierWeights: z.array(positiveDecimal).min(1),
+    perKill: decimal,
+    killTierGrowth: atLeastOne,
+    perPull: decimal,
+    perTrialAttempt: decimal,
+    perAscension: decimal,
+  }),
+  levels: z.strictObject({
+    maxLevel: z.number().int().min(1),
+    xpBase: positiveDecimal,
+    xpGrowth: atLeastOne,
+    skillPointsPerLevel: z.number().int().min(0),
+  }),
+  /** What reaching a level gives besides its skill points (E7). */
+  rewardTrack: z.array(
+    z.strictObject({
+      level: z.number().int().min(2),
+      resources: z.array(costSchema).default([]),
+      cosmetics: z.array(id).default([]),
+      /** Extra loadout cost cap for every job, kept from then on (`loadout.costCap`). */
+      costCap: z.number().int().min(0).default(0),
+    }),
+  ),
+  /** The account tree: ranks bought with skill points; each rank adds `perRank` once more. */
+  tree: z.array(
+    z.strictObject({
+      id,
+      name,
+      branch: z.enum(SKILL_BRANCHES),
+      /** Skill points per rank. */
+      cost: z.number().int().min(1),
+      maxRank: z.number().int().min(1),
+      /** Nodes that need at least one rank first. */
+      requires: z.array(id),
+      perRank: z.array(modifierSchema).min(1),
+    }),
+  ),
+  /** Respec (DESIGN.md 12.1): `freePerAscension` free ones each run, then `cost` Starlight. */
+  respec: z.strictObject({ cost: positiveDecimal, freePerAscension: z.number().int().min(0) }),
+});
+export type AccountConfig = z.output<typeof accountSchema>;
+export type SkillNode = AccountConfig['tree'][number];
+export type RewardTrackEntry = AccountConfig['rewardTrack'][number];
+
+/**
+ * Card enhancements (DESIGN.md 10b, 12.2, 12.3; enhancements.json): from `unlockRank`, each card
+ * picks options from its own list within its tier's point budget. An option's modifiers apply
+ * while the card is in a loadout (source `enhancement`). Respec is free.
+ */
+export const enhancementsSchema = z.strictObject({
+  unlockRank: rankSchema,
+  budget: perTier(z.number().int().min(0)),
+  cards: z.record(
+    id,
+    z
+      .array(
+        z.strictObject({
+          id,
+          name,
+          cost: z.number().int().min(1),
+          modifiers: z.array(modifierSchema).min(1),
+        }),
+      )
+      .min(1),
+  ),
+});
+export type EnhancementsConfig = z.output<typeof enhancementsSchema>;
+export type EnhancementOption = EnhancementsConfig['cards'][string][number];
+
 /** The steps of the cosmetic upgrade ladder, in order (DESIGN.md 7). */
 export const LADDER_STEPS = ['shape', 'accent', 'gems', 'glow', 'ambient'] as const;
 export type LadderStep = (typeof LADDER_STEPS)[number];
@@ -1018,6 +1108,8 @@ export const contentSchemas = {
   prestige: prestigeSchema,
   cosmeticRules: cosmeticRulesSchema,
   achievements: achievementsFileSchema,
+  account: accountSchema,
+  enhancements: enhancementsSchema,
 } as const;
 
 export type Resource = z.output<typeof resourceSchema>;
