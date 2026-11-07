@@ -1,0 +1,176 @@
+/* Tier-up moments (DESIGN.md 16, E1): the metal ladder's own colours. */
+
+:root {
+  --st-metal-stone: #b9b2a6;
+  --st-metal-bronze: #d58a4a;
+  --st-metal-silver: #dfe6f0;
+  --st-metal-gold: #f4cf55;
+  --st-metal-prismatic: linear-gradient(110deg, #ff8fc8, #ffd36b, #8ff0b0, #7fc8ff, #c79bff);
+}
+[data-metal='stone'] {
+  --metal: var(--st-metal-stone);
+}
+[data-metal='bronze'] {
+  --metal: var(--st-metal-bronze);
+}
+[data-metal='silver'] {
+  --metal: var(--st-metal-silver);
+}
+[data-metal='gold'] {
+  --metal: var(--st-metal-gold);
+}
+[data-metal='prismatic'] {
+  --metal: #ffd36b;
+}
+
+.st-metal-flash {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(70% 60% at 50% 40%, var(--metal, #fff), transparent 70%);
+  mix-blend-mode: screen;
+}
+.st-metal-flash[data-metal='prismatic'] {
+  background:
+    radial-gradient(70% 60% at 50% 40%, rgba(255, 255, 255, 0.8), transparent 70%),
+    var(--st-metal-prismatic);
+}
+.st-metal-flash.is-on {
+  animation: st-metal-flash 0.7s ease-out;
+}
+@keyframes st-metal-flash {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.st-toast[data-metal] {
+  box-shadow:
+    inset 0 0 0 1px var(--metal),
+    inset 4px 0 0 var(--metal),
+    0 0 20px color-mix(in srgb, var(--metal) 40%, transparent);
+}
+
+/* ---- evolution moment (A15 E) ---- */
+.st-evo {
+  position: fixed;
+  inset: 0;
+  z-index: 58;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bi-chrome-bg) 80%, transparent);
+  cursor: pointer;
+  animation: st-evo-in 0.25s ease-out both;
+}
+.st-evo.is-leaving {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.st-evo__stage {
+  position: relative;
+  scale: 1.5;
+}
+.st-evo__beam {
+  position: absolute;
+  left: 30%;
+  right: 30%;
+  bottom: 40%;
+  height: 200vh;
+  background: linear-gradient(
+    0deg,
+    #fffbe6,
+    color-mix(in srgb, var(--st-metal-gold) 70%, transparent) 40%,
+    transparent
+  );
+  filter: blur(6px);
+  transform-origin: bottom;
+  animation: st-evo-beam 1.4s ease-out both;
+}
+.st-evo .bi-card__frame {
+  animation: st-evo-frame 0.7s 0.55s ease-out both;
+}
+.st-evo .bi-card__item {
+  animation: st-evo-rise 0.6s 1.2s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.st-evo__flare {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 120px;
+  height: 120px;
+  translate: -50% -50%;
+  background: radial-gradient(closest-side, #fff, var(--st-metal-gold) 40%, transparent);
+  clip-path: polygon(50% 0, 58% 40%, 100% 50%, 58% 60%, 50% 100%, 42% 60%, 0 50%, 42% 40%);
+  animation: st-evo-flare 0.6s 1.05s ease-out both;
+}
+@keyframes st-evo-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes st-evo-beam {
+  0% {
+    scale: 0.1 0;
+    opacity: 0;
+  }
+  35% {
+    scale: 1 1;
+    opacity: 1;
+  }
+  100% {
+    scale: 1.6 1;
+    opacity: 0;
+  }
+}
+@keyframes st-evo-frame {
+  from {
+    clip-path: inset(100% 0 0 0);
+    filter: brightness(3);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+    filter: brightness(1);
+  }
+}
+@keyframes st-evo-rise {
+  from {
+    translate: 0 40px;
+    opacity: 0;
+  }
+}
+@keyframes st-evo-flare {
+  0% {
+    scale: 0.2;
+    opacity: 0;
+    rotate: -30deg;
+  }
+  40% {
+    scale: 1.3;
+    opacity: 1;
+  }
+  100% {
+    scale: 1;
+    opacity: 0;
+    rotate: 20deg;
+  }
+}
+.st-evo--still .st-evo__beam,
+.st-evo--still .st-evo__flare {
+  display: none;
+}
+.st-evo--still .bi-card__frame,
+.st-evo--still .bi-card__item {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .st-metal-flash.is-on {
+    animation: none;
+  }
+}

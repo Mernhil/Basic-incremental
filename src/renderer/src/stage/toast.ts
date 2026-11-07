@@ -22,10 +22,17 @@ function region(): HTMLElement {
 
 export type ToastKind = 'rare' | 'milestone' | 'info';
 
-export function toast(title: string, detail = '', kind: ToastKind = 'info'): void {
+export function toast(
+  title: string,
+  detail = '',
+  kind: ToastKind = 'info',
+  /** A metal on the ladder (DESIGN.md 16, E1): colours the toast's edge. */
+  metal?: string,
+): void {
   const box = region();
   const el = document.createElement('div');
   el.className = `st-toast st-toast--${kind}`;
+  if (metal) el.dataset['metal'] = metal;
   const head = document.createElement('strong');
   head.textContent = title;
   el.append(head);

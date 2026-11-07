@@ -2,14 +2,33 @@ import type { Content } from '../../../data';
 import {
   burstStats,
   cardInfo,
+  cardItem,
   resolveCard,
   type CardRole,
   type GameState,
   type Modifier,
 } from '../../../game';
 import { COPY } from '../copy';
+import { evolutionArt, EVOLUTIONS, type Evolution } from '../art/evolutions';
 import { itemArt } from '../art/items';
 import type { CardProps } from '../ui/card';
+
+/**
+ * A card's item art: its unique ★6 evolution from the evolution rank on (DESIGN.md 16, E6),
+ * otherwise its item drawn for its rarity.
+ */
+export function cardItemArt(
+  content: Content,
+  cardId: string,
+  owned: Parameters<typeof cardItem>[2],
+): string {
+  const card = content.cardById.get(cardId);
+  if (!card) return '';
+  const item = cardItem(content, cardId, owned);
+  if (item?.unique && (EVOLUTIONS as readonly string[]).includes(item.kind))
+    return evolutionArt(item.kind as Evolution);
+  return itemArt(item?.kind ?? card.item.kind, card.rarity);
+}
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */
 export function loadoutProps(
@@ -35,7 +54,7 @@ export function loadoutProps(
     label: role === 'main' ? COPY.table.main : COPY.table.support,
     job: card.job,
     emblem: role === 'main' ? 'blade' : 'gem',
-    item: itemArt(card.item.kind, card.rarity),
+    item: cardItemArt(content, card.id, info.owned),
     element: card.element,
     rank,
     stats,

@@ -85,7 +85,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     if (key !== fightKey) {
       fightKey = key;
       fight.scene.innerHTML = art
-        ? `<div class="hm-boss"><svg viewBox="-8 -10 116 116" aria-hidden="true" focusable="false">${bossArt(art, level)}</svg></div>`
+        ? `<div class="hm-boss"><svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(art, level)}</svg></div>`
         : '';
       fight.scene.append(h('i', 'hm-floor'));
     }

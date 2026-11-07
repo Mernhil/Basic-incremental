@@ -13,6 +13,8 @@ import {
   type CardFailure,
   type CardInfo,
   type GameState,
+  type OwnedCard,
+  type TierUp,
   type Requirement as GameRequirement,
   type UpgradeCheck,
 } from '../../../game';
@@ -39,13 +41,20 @@ const BASE_RANK: Rank = { tier: 'bronze', stars: 1 };
 /** Placeholder emblems until the graphics overhaul brings per-card art (see ui/card.ts). */
 const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', mining: 'pick' };
 
-export function createCardsModel(content: Content): CardsModel {
+/**
+ * `art` draws a card's item (the renderer passes one that shows unique ★6 evolutions); without
+ * it the plain item is drawn.
+ */
+export function createCardsModel(
+  content: Content,
+  art?: (cardId: string, owned: OwnedCard | null) => string,
+): CardsModel {
   const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
 
   const reason = (r: CardFailure | string): string =>
     (COPY.cards.reasons as Record<string, string>)[r] ?? COPY.cards.reasons.unknown;
   const wrap = (
-    result: { ok: true; state: GameState } | { ok: false; reason: CardFailure },
+    result: { ok: true; state: GameState; tierUps?: TierUp[] } | { ok: false; reason: CardFailure },
   ): ModelResult => (result.ok ? result : { ok: false, reason: reason(result.reason) });
 
   function requirement(r: GameRequirement): Requirement {
@@ -116,7 +125,7 @@ export function createCardsModel(content: Content): CardsModel {
       job: card.job,
       rarity: card.rarity,
       emblem: JOB_EMBLEM[card.job],
-      item: itemArt(card.item.kind, card.rarity),
+      item: art?.(card.id, owned) ?? itemArt(card.item.kind, card.rarity),
       element: card.element,
       owned: owned !== null,
       rank,

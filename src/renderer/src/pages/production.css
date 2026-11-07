@@ -80,7 +80,7 @@
 }
 .pp-tile {
   position: relative;
-  width: 132px;
+  width: 136px;
   display: grid;
   justify-items: center;
   gap: 1px;
@@ -101,8 +101,9 @@
   outline-offset: 2px;
 }
 .pp-tile__art {
-  width: 124px;
-  height: 124px;
+  /* 2 px per tile pixel (grid 58 x 64) */
+  width: 128px;
+  height: 128px;
   transform-origin: 50% 90%;
   animation: pp-sway 4.2s ease-in-out var(--d, 0s) infinite;
 }
@@ -275,7 +276,7 @@
 }
 .pp-kind {
   display: grid;
-  grid-template-columns: 44px minmax(0, 1fr);
+  grid-template-columns: 64px minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   padding: 4px 6px;
@@ -285,8 +286,8 @@
   filter: grayscale(1) brightness(0.7);
 }
 .pp-kind__art {
-  width: 44px;
-  height: 44px;
+  width: 64px;
+  height: 64px;
 }
 .pp-kind__art svg {
   width: 100%;

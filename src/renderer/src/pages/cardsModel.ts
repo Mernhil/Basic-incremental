@@ -1,5 +1,5 @@
 import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
-import type { GameState } from '../../../game';
+import type { GameState, TierUp } from '../../../game';
 export type Job = (typeof JOBS)[number];
 
 /**
@@ -67,7 +67,9 @@ export interface JobLoadout {
   cap: number;
 }
 
-export type ModelResult = { ok: true; state: GameState } | { ok: false; reason: string };
+/** A card action's result; tier-ups (DESIGN.md 16, E1) play their moment. */
+export type ModelResult =
+  { ok: true; state: GameState; tierUps?: TierUp[] } | { ok: false; reason: string };
 
 export interface CardsModel {
   entries(state: GameState): CardEntry[];
