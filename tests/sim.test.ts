@@ -104,7 +104,8 @@ describe('balance sim: run', () => {
     // The first boss falls well within the first hour of greedy play.
     expect(a.hits['clear_d1']).not.toBeNull();
     expect(a.hits['clear_d1']!).toBeLessThan(3600);
-  });
+    // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
+  }, 30_000);
 
   it('prints a markdown table with one row per milestone', () => {
     const result = runSim(content, { hours: 0.05, seed: 1, stepSeconds: 10 });
