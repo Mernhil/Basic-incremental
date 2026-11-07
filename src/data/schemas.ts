@@ -239,6 +239,7 @@ export type CardEffect = z.output<typeof cardEffectSchema>;
  */
 /** Card elements (DESIGN.md 13): each picks the card's element effect. */
 export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
+export type CardElement = (typeof ELEMENTS)[number];
 /** The signature item drawn inside a card (DESIGN.md 13); its detail grows with the card's rarity. */
 export const ITEM_KINDS = [
   'sword',

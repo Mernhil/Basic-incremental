@@ -1,4 +1,4 @@
-import type { JOBS, Rank, Rarity } from '../../../data';
+import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
 import type { GameState } from '../../../game';
 export type Job = (typeof JOBS)[number];
 
@@ -40,6 +40,7 @@ export interface CardEntry {
   emblem: string;
   /** Signature item markup (art/items.ts). */
   item: string;
+  element: CardElement;
   owned: boolean;
   /** Owned cards only; unowned cards show their starting rank greyed out. */
   rank: Rank;

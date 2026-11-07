@@ -117,6 +117,7 @@ export function createCardsModel(content: Content): CardsModel {
       rarity: card.rarity,
       emblem: JOB_EMBLEM[card.job],
       item: itemArt(card.item.kind, card.rarity),
+      element: card.element,
       owned: owned !== null,
       rank,
       level,
