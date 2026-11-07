@@ -1,12 +1,5 @@
 import type { BurstJob, Content, DamageUpgrade, Dungeon, ProductionJob, Trial } from '../data';
-import {
-  cardDropChance,
-  cardHealth,
-  fightingXpPerKill,
-  grantCardDrop,
-  grantLoadoutXp,
-  rollCardDrop,
-} from './cards';
+import { cardHealth, fightingXpPerKill, grantLoadoutXp } from './cards';
 import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
@@ -833,7 +826,6 @@ function fightBoss(
 
   const bossId = dungeon.boss.id;
   const drops = effectiveDrops(dungeon, modifiers);
-  const cardChance = cardDropChance(content, dungeon, modifiers);
   let pity = state.pity[bossId] ?? 0;
   let portal = 0;
   let rares = 0;
@@ -844,9 +836,6 @@ function fightBoss(
     portal += roll.portal;
     if (roll.rare) rares++;
     material += rollMaterialDrop(drops, rng);
-    // Rolled per kill, after the other drops, so the rolls keep their order however time is split.
-    const card = rollCardDrop(content, cardChance, rng);
-    if (card) grantCardDrop(state, content, card, report);
   }
 
   state.pity[bossId] = pity;

@@ -276,6 +276,29 @@ describe('card ranks and portals', () => {
     expect(issues.some((i) => i.startsWith('portals.json › [0] › pool'))).toBe(true);
     expect(issues.some((i) => i.startsWith('portals.json › [0] › pity › threshold'))).toBe(true);
   });
+
+  it('has the beta Card Portal: 10 / 100 Moss Sigils, Legendary+ at 90, Rare+ per 10-pull', () => {
+    const portal = loadContent().portals.find((p) => p.id === 'card_portal')!;
+    expect(portal.cost.single.toNumber()).toBe(10);
+    expect(portal.cost.ten.toNumber()).toBe(100);
+    expect(portal.pity).toEqual({ rarity: 'legendary', threshold: 90 });
+    expect(portal.tenPullGuarantee).toBe('rare');
+  });
+
+  it('needs pool items at the pity and guarantee rarities, or they could never be met', () => {
+    const bad = raw();
+    const portal = (bad.portals as PortalRaw[])[0]!;
+    portal.pool = (portal.pool as { itemId: string; rarity: string }[]).filter(
+      (e) => e.rarity === 'common',
+    );
+    const issues = issuesFor(bad);
+    expect(issues).toContain(
+      'portals.json › [0] › pity › rarity: no pool item is legendary or better',
+    );
+    expect(issues).toContain(
+      'portals.json › [0] › tenPullGuarantee: no pool item is rare or better',
+    );
+  });
 });
 
 describe('the starter table defines every table token', () => {

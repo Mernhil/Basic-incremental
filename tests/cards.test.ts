@@ -6,8 +6,6 @@ import {
   approxEq,
   burstStats,
   cardCollection,
-  cardDropChance,
-  cardDropWeights,
   cardEffectModifiers,
   cardHealth,
   cardInfo,
@@ -36,7 +34,6 @@ import {
   simulateOffline,
   starUp,
   starUpCheck,
-  statValue,
   tierUp,
   tierUpCheck,
   xpToNextLevel,
@@ -481,41 +478,6 @@ describe('gaining cards (DESIGN.md 11.9)', () => {
       exotic: 25,
       void: 40,
     });
-  });
-
-  it('drops a card on 1% of boss kills, weighted towards lower rarities', () => {
-    const mossy = content.dungeons[0]!;
-    expect(cardDropChance(content, mossy)).toBe(0.01);
-    const weights = cardDropWeights(content);
-    const share = (id: string) => weights.find((w) => w.cardId === id)!.share;
-    expect(weights.reduce((a, w) => a + w.share, 0)).toBeCloseTo(1);
-    expect(share('ember_squire')).toBeGreaterThan(share('shield_warden'));
-    expect(share('shield_warden')).toBeGreaterThan(share('storm_duelist'));
-    expect(share('dawnblade_regent')).toBeGreaterThan(share('core_titan'));
-
-    const state = bareState();
-    state.combat.damageLevels = { copper_edge: 4999 };
-    // rng 0.001: every roll succeeds and the weighted pick lands on the first card.
-    const { state: after, report } = advance(state, content, 12_000, constantRng(0.001));
-    expect(report.bossKills).toBe(1);
-    expect(report.cardDrops).toEqual([
-      { cardId: 'ember_squire', kind: 'duplicate', duplicates: 1 },
-    ]);
-    expect(after.cards.owned['ember_squire']!.duplicates).toBe(1);
-    const none = advance(state, content, 12_000, constantRng(0.5)).report;
-    expect(none.cardDrops).toEqual([]);
-  });
-
-  it('reads the card drop chance through drops.cardChance', () => {
-    const mossy = content.dungeons[0]!;
-    const double: Modifier = {
-      stat: 'drops.cardChance',
-      kind: 'mult',
-      value: new Decimal(2),
-      source: { kind: 'skill', id: 'test' },
-    };
-    expect(cardDropChance(content, mossy, [double])).toBe(0.02);
-    expect(statValue('drops.cardChance', 0.01, [double]).toNumber()).toBe(0.02);
   });
 });
 

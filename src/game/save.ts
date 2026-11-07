@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 8;
+export const CURRENT_SAVE_VERSION = 9;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -101,6 +101,15 @@ export const serializedStateSchema = z.object({
     gemTiers: counts.optional(),
     bossTiers: counts.optional(),
   }),
+  /** v9: pull counters per portal (DESIGN.md 6). */
+  portals: z.record(
+    z.string(),
+    z.object({
+      pity: z.number().int().min(0),
+      pulls: z.number().int().min(0),
+      pityHits: z.number().int().min(0),
+    }),
+  ),
 });
 export type SerializedState = z.infer<typeof serializedStateSchema>;
 
@@ -158,6 +167,7 @@ export function serializeState(state: GameState): SerializedState {
       gemTiers: { ...state.mastery.gemTiers },
       bossTiers: { ...state.mastery.bossTiers },
     },
+    portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     cosmetics: {
       loadout: {
         slots: { ...state.cosmetics.loadout.slots },
@@ -220,6 +230,13 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.stats = { ...saved.stats };
   state.cards = deserializeCards(saved.cards, content);
   deserializeMastery(state, saved.mastery, content);
+  // Counters of portals removed from the game are dropped.
+  const portalIds = new Set(content.portals.map((p) => p.id));
+  state.portals = Object.fromEntries(
+    Object.entries(saved.portals)
+      .filter(([id]) => portalIds.has(id))
+      .map(([id, p]) => [id, { ...p }]),
+  );
   // Unknown ids (removed from the game) are dropped; starters are always owned.
   const owned: GameState['cosmetics']['owned'] = { ...base.cosmetics.owned };
   for (const [id, entry] of Object.entries(saved.cosmetics.owned)) {

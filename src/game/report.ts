@@ -49,7 +49,8 @@ export interface TickReport {
   trialAttempts: number;
   /** Best score (0..1) among those attempts; 0 when there were none. */
   trialTopScore: number;
-  /** Cards dropped by boss kills, in order. */
+  /** Cards gained while advancing, in order. Empty in the beta: cards come from the Card Portal
+   *  (`pull`), which replaced the boss card drop (DESIGN.md 6, 11.9). */
   cardDrops: CardDrop[];
   /** Card id -> levels before and after, for cards that levelled up. */
   cardLevels: Record<string, { from: number; to: number }>;

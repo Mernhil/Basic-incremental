@@ -35,6 +35,14 @@ describe('balance sim: greedy buyer', () => {
     expect(after.resources['copper_gem']!.toNumber()).toBe(0);
   });
 
+  it('summons from a portal once a pull is affordable', () => {
+    const state = rich(freshState(), 'moss_sigil', 10);
+    const { state: after, bought } = greedyBuy(state, content);
+    expect(bought).toContain('summon:card_portal');
+    expect(after.portals['card_portal']?.pulls).toBe(1);
+    expect(MILESTONES.find((m) => m.id === 'first_summon')?.pending).toBeUndefined();
+  });
+
   it('does nothing when nothing is affordable', () => {
     const { bought } = greedyBuy(freshState(), content);
     expect(bought).toEqual([]);
