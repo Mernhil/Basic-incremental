@@ -348,6 +348,9 @@ export const cardRulesSchema = z.strictObject({
   }),
 });
 
+/** Boss drawings (DESIGN.md 13: sticker style, a distinct body shape each). */
+export const BOSS_ARTS = ['root_warden', 'cinder_lich', 'glacier_colossus', 'crystal_sentinel'] as const;
+
 export const dungeonSchema = z.strictObject({
   id,
   name,
@@ -359,6 +362,8 @@ export const dungeonSchema = z.strictObject({
   boss: z.strictObject({
     id,
     name,
+    /** Which boss drawing to use. */
+    art: z.enum(BOSS_ARTS),
     hp: positiveDecimal,
     /** Boss HP is multiplied by (1 + this) for every prestige. Keep it small. */
     hpScalingPerPrestige: z.number().min(0).max(1),
@@ -403,7 +408,7 @@ export const trialSchema = z
     /** Dungeon whose clear unlocks this trial; null = open from the start. */
     unlockedBy: id.nullable(),
     durationSeconds: z.number().positive(),
-    target: z.strictObject({ id, name, hp: positiveDecimal }),
+    target: z.strictObject({ id, name, art: z.enum(BOSS_ARTS), hp: positiveDecimal }),
     tiers: z
       .array(
         z.strictObject({

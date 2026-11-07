@@ -6,7 +6,8 @@
     "durationSeconds": 30,
     "target": {
       "id": "glimmer_sentinel",
-      "name": "Glimmer Sentinel",
+      "name": "Crystal Sentinel",
+      "art": "crystal_sentinel",
       "hp": "1.4e5"
     },
     "tiers": [

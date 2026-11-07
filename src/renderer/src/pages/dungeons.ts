@@ -31,6 +31,7 @@ import { statTip } from '../shell/stats';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
 import type { PageContext } from './production';
+import { bossArt } from '../art/bosses';
 import './dungeons.css';
 
 /**
@@ -173,7 +174,14 @@ export function createDungeonsPage(page: HTMLElement, ctx: PageContext): { rende
   ): { li: HTMLElement; info: HTMLElement; title: HTMLElement } {
     const li = h('li', `dp-floor dp-floor--${fs}${special ? ' dp-floor--branch' : ''}`);
     li.dataset.tier = special ? 'special' : String((entry as Dungeon).tier);
-    li.append(art(fs === 'locked' ? 'lock' : special ? 'trial' : 'gate'));
+    if (fs === 'locked') li.append(art('lock'));
+    else {
+      // the floor's boss in the sticker style (DESIGN.md 13)
+      const portrait = h('span', 'dp-art dp-art--boss');
+      const foe = special ? (entry as Trial).target : (entry as Dungeon).boss;
+      portrait.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(foe.art)}</svg>`;
+      li.append(portrait);
+    }
     const info = h('div', 'dp-floor__info');
     const title = h('h3', 'dp-floor__name', entry.name);
     title.append(
