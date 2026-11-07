@@ -253,7 +253,14 @@ function checkProduction(
       checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
     ),
   );
-  // Mine levels are bought with Money (DESIGN.md 2, 11.13).
+  // Tree levels and mine levels are bought with Money (DESIGN.md 2, 11.13).
+  c.trees.forEach((tree, i) =>
+    checkCost(
+      `trees.json › [${i}] › level › cost › resource`,
+      tree.level.cost.resource,
+      'currency',
+    ),
+  );
   c.mines.forEach((mine, i) =>
     checkCost(
       `mines.json › [${i}] › level › cost › resource`,

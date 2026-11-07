@@ -181,7 +181,7 @@ export {
   type MasteryInfo,
 } from './mastery';
 export {
-  /** Growth stage 0..4 of a tree / mine tile (mine level milestones; trees: plots bought). */
+  /** Growth stage 0..4 of a tree / mine tile (mine and tree level milestones). */
   tileStage,
   /** Forged-edge stage 0..4 of a damage line (one step per milestone). */
   edgeStage,
@@ -239,6 +239,16 @@ export {
 export {
   /** A mine type's milestone info by id ("Lv 25: x2"). */
   mineLevelMilestone,
+  /** A tree kind's milestone info by id ("Lv 25: x2"). */
+  treeLevelMilestone,
+  /** A tree kind's level (0 = none bought). Reset on ascension. */
+  treeLevel,
+  /** Level of a tree or mine in a job. */
+  producerLevel,
+  /** Money price of a tree kind's next level. */
+  treeLevelCost,
+  /** Buys one level of a tree kind (`buyTreeLevels` does x10 / x100 / Max). */
+  buyTreeLevel,
 } from './production';
 export {
   /** Milestones reached at a level. */
@@ -272,6 +282,10 @@ export {
   mineLevelOffer,
   /** Buys mine levels in bulk. */
   buyMineLevels,
+  /** Buy offer of a tree kind's levels (x1 / x10 / x100 / Max). */
+  treeLevelOffer,
+  /** Buys tree levels in bulk. */
+  buyTreeLevels,
   /** Buy offer of plots / slots. */
   expansionOffer,
   /** Buys plots / slots in bulk. */
@@ -285,9 +299,12 @@ export {
   previewDamageLine,
   /** Mine level purchase preview: gem per second before / after (total and per slot). */
   previewMineLevel,
+  /** Tree level purchase preview: gem per second before / after (total and per plot). */
+  previewTreeLevel,
   /** Plot / slot purchase preview: capacity and output with the best producer before / after. */
   previewExpansion,
   type DamagePreview,
   type MinePreview,
+  type TreePreview,
   type ExpansionPreview,
 } from './previews';

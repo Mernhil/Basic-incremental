@@ -9,6 +9,7 @@ export type TierUpKind =
   | 'gem_mastery'
   | 'boss_mastery'
   | 'mine_milestone'
+  | 'tree_milestone'
   | 'damage_milestone'
   | 'tile_stage'
   | 'card_tier'

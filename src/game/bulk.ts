@@ -8,11 +8,12 @@ import {
   isProducerUnlocked,
   mineLevel,
   pay,
+  treeLevel,
   type Price,
   type ProductionFailure,
 } from './production';
 import type { TierUp } from './report';
-import { expansionStageTierUps, milestoneTierUps } from './stages';
+import { milestoneTierUps } from './stages';
 import type { GameState } from './state';
 
 /**
@@ -241,6 +242,58 @@ export function buyMineLevels(
   return { ok: true, state: next, bought: offer.count, tierUps };
 }
 
+// ---- tree levels -----------------------------------------------------------------------------
+
+/** The buy offer of a tree kind's levels (null for an unknown tree or an invalid count). Not
+ *  affordable while the tree kind is locked. */
+export function treeLevelOffer(
+  state: GameState,
+  content: Content,
+  treeId: string,
+  count: BuyCount,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): BuyOffer | null {
+  const tree = content.treeById.get(treeId);
+  if (!tree) return null;
+  const ctx: StatContext = { job: 'logging', producer: tree.id, resource: tree.resource };
+  const budget = budgetOf(state, tree.level.cost.resource);
+  const offer = curveOffer(
+    tree.level.cost,
+    treeLevel(state, treeId),
+    count,
+    budget,
+    modifiers,
+    ctx,
+  );
+  if (offer && !isProducerUnlocked(state, content, 'logging', treeId)) offer.affordable = false;
+  return offer;
+}
+
+/** Buys tree levels like `buyMineLevels`. Only for unlocked tree kinds; reset on prestige. */
+export function buyTreeLevels(
+  state: GameState,
+  content: Content,
+  treeId: string,
+  count: BuyCount,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): BulkBuyResult<ProductionFailure> {
+  if (!content.treeById.has(treeId)) return { ok: false, reason: 'unknown' };
+  if (!isProducerUnlocked(state, content, 'logging', treeId)) {
+    return { ok: false, reason: 'locked' };
+  }
+  const offer = treeLevelOffer(state, content, treeId, count, modifiers);
+  if (!offer) return { ok: false, reason: 'invalid-count' };
+  if (!offer.affordable || !canAfford(state, [offer.price])) {
+    return { ok: false, reason: 'unaffordable' };
+  }
+  const next = pay(state, [offer.price]);
+  const from = treeLevel(state, treeId);
+  next.production.treeLevels[treeId] = from + offer.count;
+  const milestones = content.treeById.get(treeId)!.level.milestones;
+  const tierUps = milestoneTierUps('tree_milestone', treeId, milestones, from, from + offer.count);
+  return { ok: true, state: next, bought: offer.count, tierUps };
+}
+
 // ---- plots and slots -------------------------------------------------------------------------
 
 /** The buy offer of plots (logging) or slots (mining); null for an invalid count. */
@@ -270,8 +323,6 @@ export function buyExpansions(
     return { ok: false, reason: 'unaffordable' };
   }
   const next = pay(state, [offer.price]);
-  const before = state.production[job].expansions;
   next.production[job].expansions += offer.count;
-  const tierUps = expansionStageTierUps(content, job, before, before + offer.count);
-  return { ok: true, state: next, bought: offer.count, tierUps };
+  return { ok: true, state: next, bought: offer.count, tierUps: [] };
 }

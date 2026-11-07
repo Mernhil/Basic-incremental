@@ -55,6 +55,9 @@ import {
   loadoutCostCap,
   loadoutMaxHealth,
   mineLevel,
+  treeLevel,
+  treeLevelCost,
+  buyTreeLevel,
   mineLevelCost,
   nextMilestone,
   productionPerSecond,
@@ -381,6 +384,25 @@ function economyCandidates(
       prices: [price],
       gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
       buy: (s, c, m) => okState(buyMineLevel(s, c, mine.id, m)),
+    });
+  }
+  for (const tree of content.trees) {
+    if (!isProducerUnlocked(state, content, 'logging', tree.id)) continue;
+    const price = treeLevelCost(state, content, tree.id, modifiers);
+    if (!price) continue;
+    const level = treeLevel(state, tree.id);
+    const now = num(producerRate(tree, 'logging', modifiers, level));
+    const next = num(producerRate(tree, 'logging', modifiers, level + 1));
+    const share =
+      totalProduction > 0
+        ? weightedProduction(state, content, modifiers, [tree.resource]) / totalProduction
+        : 1;
+    out.push({
+      id: `tree:${tree.id}`,
+      kind: 'economy',
+      prices: [price],
+      gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
+      buy: (s, c, m) => okState(buyTreeLevel(s, c, tree.id, m)),
     });
   }
   for (const job of ['logging', 'mining'] as const) {

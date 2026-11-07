@@ -125,8 +125,10 @@ export interface ProductionState {
   mining: JobProductionState;
   /** Tree kinds bought with wood (start kinds are always unlocked). Kept through prestige. */
   unlockedTrees: string[];
-  /** Mine id -> level bought with ore. Reset on prestige. */
+  /** Mine id -> level bought with Money. Reset on prestige. */
   mineLevels: Record<string, number>;
+  /** Tree id -> level bought with Money (DESIGN.md 2, 11.14). Reset on prestige. */
+  treeLevels: Record<string, number>;
 }
 
 export interface CombatState {
@@ -185,7 +187,13 @@ export function initialProduction(content: Content): ProductionState {
       plots: Array<string | null>(config.startPlots).fill(config.startProducer),
     };
   };
-  return { logging: job('logging'), mining: job('mining'), unlockedTrees: [], mineLevels: {} };
+  return {
+    logging: job('logging'),
+    mining: job('mining'),
+    unlockedTrees: [],
+    mineLevels: {},
+    treeLevels: {},
+  };
 }
 
 /** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md 11.13). */
@@ -265,6 +273,7 @@ export function cloneProduction(p: ProductionState): ProductionState {
     mining: { expansions: p.mining.expansions, plots: [...p.mining.plots] },
     unlockedTrees: [...p.unlockedTrees],
     mineLevels: { ...p.mineLevels },
+    treeLevels: { ...p.treeLevels },
   };
 }
 

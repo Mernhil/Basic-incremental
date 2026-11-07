@@ -25,7 +25,7 @@ Two production jobs, **mining** and **logging**. Each produces its own resources
 
 - Starts with **one tree plot**.
 - Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different gem.
-- Plot expansions are paid in **Money** (11.13). Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
+- Plot expansions are paid in **Money** (11.13). **Tree levels** work like mine levels: each tree kind has a level bought with Money on an exponential curve, each level adds 10% to that tree's output and every 25 levels doubles it (11.12, 11.14); tree levels reset on prestige with the plots. Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
 
 ### Mining
 
@@ -359,9 +359,10 @@ Decided with the user for the beta.
 
 Decided with the user for the beta.
 
-- **Mine levels** and the **three damage lines** give **×2** to that line's output **every 25 levels**. Milestones are data-driven per line so they can differ later.
+- **Tree levels**, **mine levels** and the **three damage lines** give **×2** to that line's output **every 25 levels**. Milestones are data-driven per line so they can differ later.
 - The next milestone is marked on the upgrade ("Lv 25: ×2"); reaching one plays a small celebration and a toast.
 - Damage lines persist through prestige, so their milestones do too; mine levels reset, and their milestones with them.
+- **Tree levels** have the same milestones (x2 every 25 levels).
 - Milestones also drive the visual growth of tiles and edges (section 16).
 
 ### 11.13 The three loops: Money, materials and crystals
@@ -376,6 +377,12 @@ Decided with the user for the economy redesign (PR 1 of 4; the later PRs add tre
 - **Cores and Sigils** (Moss 80%, Cinder 50%, Frost 70% for 2 per drop; Frost Sigils 1-3 per Frostspire kill) are the dungeon materials for card upgrades, so each dungeon keeps a reason to be farmed beside Money and crystals.
 - **Saves.** Format 14 renames the sigils (Moss to Summon, Ember to Glamour; the Frost Sigil keeps its id), the skill, the Starlight shop item and the shard shop bundles, keeps every level and expansion, and **pays back as Money what they would cost** at the new prices (plus the starting Money), so nothing feels lost. Gems are kept as materials.
 
+### 11.14 Tree levels and the upgrade shelf
+
+Decided for the economy redesign (PR 2 of 4). Numbers live in data.
+
+- **Tree levels.** Every tree kind has a level line in `trees.json` (`level`), the same model as the mines: cost `base × growth^n` in **Money**, +10% output per level (`production.levelBonus`), x2 every 25 levels. Prices: Oak 20 × 1.3, Ironbark 250 × 1.32, Moonwillow 3,000 × 1.34. A tree must be unlocked to be levelled. Levels reset on ascension. All level lines (tree levels, mine levels, damage lines) buy x1 / x10 / x100 / Max through `bulk.ts` with before/after previews (`previews.ts`).
+
 ## 12. Defaults for underspecified points
 
 Points the decisions above leave open. These defaults apply until changed.
@@ -388,7 +395,7 @@ Points the decisions above leave open. These defaults apply until changed.
 6. **Crits in the simulation.** The game deals crits at their **expected value** (every hit and signature attack does 1 + chance × (crit damage − 1) times its damage), so online, offline and any split of time give the same totals. The stage rolls individual crits only for show (the number and its look).
 7. **Buy Max.** Max buys as many levels as the player can afford (at least one); when none is affordable it shows the next level. Its fill bar shows progress toward one more level than it can buy now. A ×N buy buys exactly N levels or nothing.
 8. **Plot and slot previews.** A plot or slot preview assumes the new one runs the best unlocked producer of that job (the highest tier) and shows that gem per second before and after.
-9. **Tree tile stages (E4).** Trees have no levels, so a tree tile grows **one stage every 5 plots bought** (logging expansions; `tileStages` in `progression.json`), up to the top stage. All tree tiles share the stage; it resets on prestige with the plots. Mine tiles follow their mine level milestones.
+9. **Tree tile stages (E4).** Tree tiles grow with the tree's own **level milestones**, one stage per 25 levels like mine tiles (`tileStages` in `progression.json` is `level` for both jobs; DESIGN 11.14). Buying plots no longer grows tiles or fires a tile tier-up; buying tree levels that cross a milestone fires a `tree_milestone` tier-up. Levels and stages reset on prestige.
 10. **When mastery tiers apply.** Lifetime totals and kills grow continuously, but a new mastery tier (gem or medal) takes effect on the next whole second of play, like card levels, so online, offline and any split of time give the same totals. A save migrated from before mastery gets its tiers from its totals when loaded, without tier-up moments.
 11. **What counts as harvested (E2).** Every gem gained from plots / slots, harvest bursts included, online and offline. Gems from other sources (none yet) would not count.
 12. **Medal bonuses.** "+10% crystal drops" multiplies the Summon and Glamour Crystals of each kill by 1.1 per tier (Money is not affected); a fraction rounds up with that chance, so the average is exact. "+10% core drops" is +10% per tier on the Core drop chance. The **Glimmer Trial medal** (from its best score at 25 / 50 / 75 / 100%) gives +5% damage in the trial and +10% to its rewards per tier, mirroring the boss medals.

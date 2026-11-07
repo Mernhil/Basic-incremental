@@ -274,3 +274,29 @@ describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md 11.13)', () => 
     ).not.toThrow();
   });
 });
+
+describe('v14 -> v15 (tree levels and the upgrade shelf, DESIGN.md 2, 11.14)', () => {
+  const step = MIGRATIONS[14]!;
+
+  it('adds empty tree levels and keeps the plots and mine levels', () => {
+    const out = step({
+      production: {
+        logging: { expansions: 4, plots: ['oak', 'oak'] },
+        mining: { expansions: 1, plots: [] },
+        unlockedTrees: ['ironbark'],
+        mineLevels: { copper_quarry: 7 },
+      },
+    }) as { production: Record<string, unknown> };
+    expect(out.production['treeLevels']).toEqual({});
+    expect(out.production['mineLevels']).toEqual({ copper_quarry: 7 });
+    expect(out.production['unlockedTrees']).toEqual(['ironbark']);
+    expect((out.production['logging'] as { expansions: number }).expansions).toBe(4);
+  });
+
+  it('does not mutate its input and copes with a missing production section', () => {
+    const input = { production: { logging: { expansions: 1, plots: [] } } };
+    step(input);
+    expect(input).toEqual({ production: { logging: { expansions: 1, plots: [] } } });
+    expect(() => step({})).not.toThrow();
+  });
+});

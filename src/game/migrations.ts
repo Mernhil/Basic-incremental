@@ -41,7 +41,17 @@ export const MIGRATIONS: MigrationTable = {
   }),
   12: v12ToV13,
   13: v13ToV14,
+  14: v14ToV15,
 };
+
+/**
+ * v14 -> v15: tree levels (DESIGN.md 2, 11.14). Trees get a level line like the mines; every
+ * existing tree starts at level 0 and the plots are kept.
+ */
+function v14ToV15(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  return { ...state, production: { ...production, treeLevels: {} } };
+}
 
 /** The Money curves of save format 14 (a snapshot of the prices of DESIGN.md 11.13): base and growth. */
 const V14_MONEY_CURVES = {

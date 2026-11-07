@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 14;
+export const CURRENT_SAVE_VERSION = 15;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -47,6 +47,8 @@ export const serializedStateSchema = z.object({
     mining: jobProductionSchema,
     unlockedTrees: z.array(z.string()),
     mineLevels: counts,
+    /** v15. */
+    treeLevels: counts,
   }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
@@ -228,6 +230,9 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     unlockedTrees: saved.production.unlockedTrees.filter((id) => content.treeById.has(id)),
     mineLevels: Object.fromEntries(
       Object.entries(saved.production.mineLevels).filter(([id]) => content.mineById.has(id)),
+    ),
+    treeLevels: Object.fromEntries(
+      Object.entries(saved.production.treeLevels).filter(([id]) => content.treeById.has(id)),
     ),
   };
   for (const job of PRODUCTION_JOBS) {
