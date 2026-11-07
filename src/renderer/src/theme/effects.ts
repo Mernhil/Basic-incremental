@@ -1,5 +1,6 @@
 import type { Rng } from '../../../game';
-import type { EFFECTS } from './registry';
+import type { BASE_EFFECTS } from './registry';
+import { attackSheet, pixelTick, preloadNumerals } from '../art/cosmetics';
 import './effects.css';
 
 /**
@@ -17,7 +18,7 @@ import './effects.css';
  * are skipped under reduced motion; tick numbers still show.
  */
 
-type EffectId = (typeof EFFECTS)[number];
+type EffectId = (typeof BASE_EFFECTS)[number];
 
 export interface HitOptions {
   rng: Rng;
@@ -275,13 +276,63 @@ const effects: Record<EffectId, (stage: HTMLElement, opts: HitOptions) => void> 
   rise: () => undefined,
 };
 
+/**
+ * A baked pixel slash (beta-batch attack cosmetics, `px-slash-<style>-<level>`): the four drawn
+ * frames (snap, held hit, thinning, break) on the target, re-rolled every hit by mirroring and a
+ * small offset (whole-pixel transforms only, so the pixels stay square), with a soft glow copy
+ * behind as the approved effects style.
+ */
+function pixelSlash(stage: HTMLElement, effectId: string, rng: Rng): boolean {
+  const sheet = attackSheet(effectId);
+  if (!sheet) return false;
+  const fx = layer(stage);
+  while (fx.querySelectorAll('.bi-fx').length >= MAX_LIVE_HITS)
+    fx.querySelector('.bi-fx')?.remove();
+  const size = sheet.size * PX;
+  const box = document.createElement('div');
+  box.className = 'bi-fx bi-fx--sheet';
+  const dx = Math.round(between(rng, -0.06, 0.06) * stage.clientWidth);
+  const dy = Math.round(between(rng, -0.06, 0.06) * stage.clientHeight);
+  const sx = rng() < 0.5 ? -1 : 1;
+  const sy = rng() < 0.25 ? -1 : 1;
+  const cell = (style: string): HTMLElement => {
+    const el = document.createElement('i');
+    el.style.cssText =
+      `position:absolute;left:calc(50% - ${size / 2}px + ${dx}px);top:calc(50% - ${size / 2}px + ${dy}px);` +
+      `width:${size}px;height:${size}px;background:url("${sheet.sprite.url}") 0 0/${size * sheet.frames}px ${size}px no-repeat;` +
+      `image-rendering:pixelated;transform:scale(${sx},${sy});${style}`;
+    return el;
+  };
+  const glow = cell('filter:blur(3px);opacity:.7');
+  const hard = cell('');
+  box.append(glow, hard);
+  fx.append(box);
+  let t = 0;
+  sheet.durations.forEach((d, i) => {
+    window.setTimeout(() => {
+      const pos = `${-i * size}px 0`;
+      glow.style.backgroundPosition = pos;
+      hard.style.backgroundPosition = pos;
+    }, t);
+    t += d;
+  });
+  window.setTimeout(() => box.remove(), t);
+  return true;
+}
+
 /** Plays one hit of an attack effect. Skipped entirely with reduced motion. */
 export function playHit(effectId: string, stage: HTMLElement, opts: HitOptions): void {
   if (prefersReducedMotion()) return;
+  if (pixelSlash(stage, effectId, opts.rng)) {
+    react(opts.target, 'bi-react-flinch');
+    return;
+  }
   const effect = effects[effectId as EffectId];
   if (!effect) throw new Error(`Unknown effect "${effectId}"`);
   effect(stage, opts);
 }
+
+let numeralsReady: Promise<void> | undefined;
 
 /** Shows one floating damage or gain number. */
 export function showTick(
@@ -295,7 +346,16 @@ export function showTick(
   const tick = document.createElement('span');
   tick.className = `bi-tick${opts.crit ? ' bi-tick--crit' : ''}`;
   tick.style.setProperty('--x', `${between(opts.rng, 12, 64).toFixed(1)}%`);
-  tick.textContent = text;
+  // a pixel tick style (beta-batch tick cosmetics) names itself in --bi-tick-px
+  numeralsReady ??= preloadNumerals().catch(() => undefined);
+  const px = getComputedStyle(stage).getPropertyValue('--bi-tick-px').trim();
+  const cv = px ? pixelTick(px, text) : undefined;
+  if (cv) {
+    tick.classList.add('bi-tick--px');
+    const scale = opts.crit ? 3 : 2;
+    cv.style.cssText = `display:block;width:${cv.width * scale}px;height:${cv.height * scale}px;image-rendering:pixelated`;
+    tick.append(cv);
+  } else tick.textContent = text;
   tick.setAttribute('aria-hidden', 'true');
   fx.append(tick);
   window.setTimeout(() => tick.remove(), 1150);
