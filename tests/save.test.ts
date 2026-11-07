@@ -11,7 +11,7 @@ import {
   SaveError,
   serializeState,
 } from '../src/game';
-import { constantRng, bareState, content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState } from './helpers';
 
 /** A state with non-trivial values everywhere. */
 function busyState() {

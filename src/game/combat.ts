@@ -9,6 +9,7 @@ import {
 } from './cards';
 import { rollBossDrop, rollMaterialDrop } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
+import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import {
   collectModifiers,
   computeStat,
@@ -52,7 +53,9 @@ export type CombatFailure =
   /** The dungeon is not unlocked yet. */
   | 'locked'
   /** Not enough resources. */
-  | 'unaffordable';
+  | 'unaffordable'
+  /** A bulk buy count that is not a whole number from 1 to MAX_BULK_LEVELS. */
+  | 'invalid-count';
 
 export type CombatResult = { ok: true; state: GameState } | { ok: false; reason: CombatFailure };
 
@@ -76,6 +79,28 @@ export function damageUpgradeGain(
   return Decimal.max(statValue('combat.upgradeGain', upgrade.damagePerLevel, modifiers, ctx), 0);
 }
 
+/** Damage per second one line adds at its level, milestones included (DESIGN.md 11.12). */
+export function damageLineDps(
+  upgrade: DamageUpgrade,
+  level: number,
+  modifiers: readonly Modifier[] = [],
+): Decimal {
+  if (level <= 0) return new Decimal(0);
+  return damageUpgradeGain(upgrade, modifiers)
+    .mul(level)
+    .mul(milestoneMultiplier(upgrade.milestones, level));
+}
+
+/** A damage line's milestones at its level ("Lv 25: x2"), or null for an unknown line. */
+export function damageLineMilestone(
+  state: GameState,
+  content: Content,
+  upgradeId: string,
+): MilestoneInfo | null {
+  const upgrade = content.combat.damageUpgrades.find((u) => u.id === upgradeId);
+  return upgrade ? milestoneInfo(upgrade.milestones, damageLevel(state, upgradeId)) : null;
+}
+
 /** Damage per second before `combat.damage` modifiers: start + every upgrade level bought. */
 export function baseDamage(
   state: GameState,
@@ -84,8 +109,7 @@ export function baseDamage(
 ): Decimal {
   let total = content.combat.startingDamage;
   for (const upgrade of content.combat.damageUpgrades) {
-    const level = damageLevel(state, upgrade.id);
-    if (level > 0) total = total.add(damageUpgradeGain(upgrade, modifiers).mul(level));
+    total = total.add(damageLineDps(upgrade, damageLevel(state, upgrade.id), modifiers));
   }
   return total;
 }
@@ -262,6 +286,53 @@ export function effectiveDrops(dungeon: Dungeon, modifiers: readonly Modifier[])
   };
 }
 
+// ---- crits (DESIGN.md 11.11) -------------------------------------------------------------------
+
+export interface CritStats {
+  /** Chance a hit or signature attack crits, 0..1. */
+  chance: number;
+  /** Damage multiplier of a crit, at least 1. */
+  damage: Decimal;
+}
+
+export function critStats(
+  content: Content,
+  modifiers: readonly Modifier[] = [],
+  dungeonId?: string | null,
+): CritStats {
+  const ctx: StatContext = dungeonId ? { ...FIGHTING, dungeon: dungeonId } : FIGHTING;
+  const base = content.combat.crit;
+  const chance = statValue('combat.critChance', base.chance, modifiers, ctx).toNumber();
+  return {
+    chance: Math.min(1, Math.max(0, chance)),
+    damage: Decimal.max(statValue('combat.critDamage', base.damage, modifiers, ctx), 1),
+  };
+}
+
+/**
+ * Average damage factor from crits: 1 + chance * (damage - 1). The simulation deals this
+ * expected value so online, offline and split steps give the same totals; the stage rolls
+ * individual crits only for show.
+ */
+export function critFactor(crit: CritStats): Decimal {
+  return crit.damage.sub(1).mul(crit.chance).add(1);
+}
+
+/** Rolls whether one shown hit is a crit. For the stage only: never changes the state. */
+export function rollCritForShow(crit: CritStats, rng: Rng): boolean {
+  return rng() < crit.chance;
+}
+
+/** One hit as the stage shows it: rolls a crit and gives the number to float. Show only. */
+export function rollHitForShow(
+  hit: Decimal,
+  crit: CritStats,
+  rng: Rng,
+): { damage: Decimal; crit: boolean } {
+  const isCrit = rollCritForShow(crit, rng);
+  return { damage: isCrit ? hit.mul(crit.damage) : hit, crit: isCrit };
+}
+
 // ---- burst gauges ----------------------------------------------------------------------------
 
 /** One job's burst numbers after modifiers. */
@@ -364,10 +435,76 @@ export function secondsPerKill(
 ): number | null {
   const dungeon = content.dungeonById.get(dungeonId);
   if (!dungeon) return null;
-  const dps = effectiveDamage(state, content, dungeonId, modifiers);
-  if (dps.lte(0)) return null;
-  const avg = averageDamage(dps, burstStats(content, 'fighting', modifiers));
+  const avg = averageDps(state, content, dungeonId, modifiers);
+  if (avg.lte(0)) return null;
   return bossMaxHp(dungeon, state.prestigeCount, modifiers).div(avg).toNumber();
+}
+
+// ---- live stage readouts (DESIGN.md 14) --------------------------------------------------------
+
+/**
+ * Average damage per second against a dungeon or special dungeon: damage after modifiers with
+ * signature attacks and crits at their expected value (what the simulation deals).
+ */
+export function averageDps(
+  state: GameState,
+  content: Content,
+  dungeonId: string | null = state.activeDungeonId,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): Decimal {
+  const dps = effectiveDamage(state, content, dungeonId, modifiers);
+  return averageDamage(dps, burstStats(content, 'fighting', modifiers)).mul(
+    critFactor(critStats(content, modifiers, dungeonId)),
+  );
+}
+
+/** Boss kills per minute in a dungeon (60 / seconds per kill), or null without kills. */
+export function killsPerMinute(
+  state: GameState,
+  content: Content,
+  dungeonId: string | null = state.activeDungeonId,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): number | null {
+  if (!dungeonId) return null;
+  const spk = secondsPerKill(state, content, dungeonId, modifiers);
+  return spk === null || spk <= 0 ? null : 60 / spk;
+}
+
+/** The stage's live numbers for whatever is being fought. */
+export interface StageReadout {
+  /** Damage per second after modifiers (no signature attacks or crits). */
+  dps: Decimal;
+  /** Damage per second with signature attacks and crits at their expected value. */
+  averageDps: Decimal;
+  /** Boss kills per minute; null for a special dungeon, nothing active or no damage. */
+  killsPerMinute: number | null;
+  /** Average seconds to kill the boss from full HP; null like killsPerMinute. */
+  secondsPerKill: number | null;
+  /** Seconds to finish the current boss from its HP now; null like killsPerMinute. */
+  secondsLeft: number | null;
+}
+
+/**
+ * DPS, kills per minute and time-to-kill for the active dungeon. Knockouts are not counted
+ * in: the readouts say how fast the loadout kills while it is fighting.
+ */
+export function stageReadout(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): StageReadout {
+  const id = state.activeDungeonId;
+  const avg = averageDps(state, content, id, modifiers);
+  const dungeon = id ? content.dungeonById.get(id) : undefined;
+  const spk = dungeon ? secondsPerKill(state, content, dungeon.id, modifiers) : null;
+  const boss = dungeon && spk !== null ? bossStatus(state, content, modifiers) : null;
+  return {
+    dps: effectiveDamage(state, content, id, modifiers),
+    averageDps: avg,
+    killsPerMinute: spk === null || spk <= 0 ? null : 60 / spk,
+    secondsPerKill: spk,
+    secondsLeft: boss ? boss.hp.div(avg).toNumber() : null,
+  };
 }
 
 /** What clearing a dungeon or special dungeon for the first time opens. */
@@ -562,7 +699,10 @@ export function advanceCombat(
     } else return;
   }
   if (left <= EPSILON) return;
-  const dps = effectiveDamage(next, content, id, modifiers);
+  // Crits add their expected damage to every hit and signature attack.
+  const dps = effectiveDamage(next, content, id, modifiers).mul(
+    critFactor(critStats(content, modifiers, id)),
+  );
   if (dps.lte(0)) return;
   const stats = burstStats(content, 'fighting', modifiers);
 

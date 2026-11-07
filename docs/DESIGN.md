@@ -354,6 +354,9 @@ Points the decisions above leave open. These defaults apply until changed.
 3. **Enhancement point budget.** Grows with rank (a few points per tier) and is about half of the total cost of the card's options.
 4. **XP rates.** Tuned in the balance phase so the account level rises quickly early and slowly later.
 5. **Report-an-issue contents.** The pre-filled GitHub issue carries the app version, a save summary (play time, prestige count, highest dungeon, save version), OS and Electron version, and the last 50 log lines. The player can edit it before submitting.
+6. **Crits in the simulation.** The game deals crits at their **expected value** (every hit and signature attack does 1 + chance × (crit damage − 1) times its damage), so online, offline and any split of time give the same totals. The stage rolls individual crits only for show (the number and its look).
+7. **Buy Max.** Max buys as many levels as the player can afford (at least one); when none is affordable it shows the next level. Its fill bar shows progress toward one more level than it can buy now. A ×N buy buys exactly N levels or nothing.
+8. **Plot and slot previews.** A plot or slot preview assumes the new one runs the best unlocked producer of that job (the highest tier) and shows that gem per second before and after.
 
 ## 13. Art style
 

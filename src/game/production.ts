@@ -1,4 +1,5 @@
 import type { Content, CostCurve, Mine, ProductionJob, Tree } from '../data';
+import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import { cloneState, initialProduction, type GameState } from './state';
@@ -35,7 +36,9 @@ export type ProductionFailure =
   /** Not enough resources. */
   | 'unaffordable'
   /** The plot/slot index is not within the current capacity. */
-  | 'invalid-plot';
+  | 'invalid-plot'
+  /** A bulk buy count that is not a whole number from 1 to MAX_BULK_LEVELS. */
+  | 'invalid-count';
 
 export type ProductionResult =
   { ok: true; state: GameState } | { ok: false; reason: ProductionFailure };
@@ -181,6 +184,15 @@ export function assignPlot(
 
 // ---- prices ----------------------------------------------------------------------------------
 
+/**
+ * Rounds a price up to a whole amount, first dropping float noise from powers (10 x 2^5 comes
+ * out as 320.00000000000006 and must cost 320, not 321).
+ */
+export function ceilPrice(amount: Decimal): Decimal {
+  const near = amount.round();
+  return amount.sub(near).abs().lte(near.abs().mul(1e-9)) ? near : amount.ceil();
+}
+
 /** Scales a price by `cost.multiplier` and rounds up to a whole amount. Never negative. */
 export function finalPrice(
   resource: string,
@@ -190,7 +202,7 @@ export function finalPrice(
 ): Price {
   const ctx = { ...context, resource };
   const multiplier = Decimal.max(statValue('cost.multiplier', 1, modifiers, ctx), 0);
-  return { resource, amount: amount.mul(multiplier).ceil() };
+  return { resource, amount: ceilPrice(amount.mul(multiplier)) };
 }
 
 /** The `owned`-th purchase on an exponential curve: base * growth^owned, growth via `cost.growth`. */
@@ -236,6 +248,16 @@ export function treeUnlockCost(
 
 export function mineLevel(state: GameState, mineId: string): number {
   return state.production.mineLevels[mineId] ?? 0;
+}
+
+/** A mine type's level milestones ("Lv 25: x2"), or null for an unknown mine. */
+export function mineLevelMilestone(
+  state: GameState,
+  content: Content,
+  mineId: string,
+): MilestoneInfo | null {
+  const mine = content.mineById.get(mineId);
+  return mine ? milestoneInfo(mine.level.milestones, mineLevel(state, mineId)) : null;
 }
 
 /** Price of the next level of a mine type, in its own ore. */
@@ -321,7 +343,8 @@ export function buyMineLevel(
 /**
  * Output per second of one plot/slot running this producer, after modifiers. For mines,
  * `level` adds `production.levelBonus` percent per level (from the mine's `ratePercent`)
- * before the `production.rate` modifiers apply.
+ * and every level milestone multiplies it (DESIGN.md 11.12), before the `production.rate`
+ * modifiers apply.
  */
 export function producerRate(
   producer: Producer,
@@ -333,7 +356,9 @@ export function producerRate(
   let base = producer.baseRate;
   if (level > 0 && 'level' in producer) {
     const percent = statValue('production.levelBonus', producer.level.ratePercent, modifiers, ctx);
-    base = base.mul(Decimal.max(percent.mul(level).div(100).add(1), 0));
+    base = base
+      .mul(Decimal.max(percent.mul(level).div(100).add(1), 0))
+      .mul(milestoneMultiplier(producer.level.milestones, level));
   }
   return Decimal.max(statValue('production.rate', base, modifiers, ctx), 0);
 }
