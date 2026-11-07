@@ -46,7 +46,7 @@ import portals from '../src/data/content/portals.json';
 import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
-import { constantRng, bareState, content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState } from './helpers';
 
 const rng = constantRng(0.5);
 const [mossy, ember, frost] = content.dungeons as [

@@ -7,6 +7,7 @@ import {
   buyMineLevel,
   canAfford,
   clearDungeon,
+  curvePrice,
   Decimal,
   expansionCost,
   isProducerUnlocked,
@@ -285,5 +286,15 @@ describe('prestige reset', () => {
     expect(reset.clearedDungeons).toEqual(['mossy_cellar']);
     expect(isProducerUnlocked(reset, content, 'mining', 'iron_deeps')).toBe(true);
     expect(state.production.logging.expansions).toBe(1); // input untouched
+  });
+});
+
+describe('curve prices', () => {
+  it('rounds float noise away before rounding up (10 x 2^5 costs 320, not 321)', () => {
+    const curve = { resource: 'copper_gem', base: new Decimal(10), growth: new Decimal(2) };
+    expect(curvePrice(curve, 3, []).amount.toNumber()).toBe(80);
+    expect(curvePrice(curve, 5, []).amount.toNumber()).toBe(320);
+    const odd = { ...curve, growth: new Decimal(1.15) };
+    expect(curvePrice(odd, 1, []).amount.toNumber()).toBe(12); // 11.5 still rounds up
   });
 });

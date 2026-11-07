@@ -328,3 +328,22 @@ describe('production data', () => {
     );
   });
 });
+
+describe('crit and milestone data (DESIGN.md 11.11, 11.12)', () => {
+  it('rejects a crit chance above 1 and a crit multiplier below 1', () => {
+    const bad = { ...combat, crit: { chance: 1.5, damage: '0.5' } };
+    const issues = issuesFor(raw({ combat: bad }));
+    expect(issues.some((i) => i.includes('crit › chance'))).toBe(true);
+    expect(issues.some((i) => i.includes('crit › damage'))).toBe(true);
+  });
+
+  it('rejects milestones every 0 levels or with a multiplier below 1', () => {
+    const lines = combat.damageUpgrades.map((u) => ({
+      ...u,
+      milestones: { every: 0, multiplier: '0.5' },
+    }));
+    const issues = issuesFor(raw({ combat: { ...combat, damageUpgrades: lines } }));
+    expect(issues.some((i) => i.includes('milestones › every'))).toBe(true);
+    expect(issues.some((i) => i.includes('milestones › multiplier'))).toBe(true);
+  });
+});
