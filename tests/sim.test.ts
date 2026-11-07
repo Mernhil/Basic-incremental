@@ -8,6 +8,11 @@ import {
   formatTable,
   arrangePlots,
   shouldAscend,
+  fillEnhancements,
+  chooseDungeon,
+  ascendNow,
+  summarizeRuns,
+  formatSeedTable,
 } from '../scripts/sim/sim';
 import { content, freshState } from './helpers';
 
@@ -86,6 +91,131 @@ describe('balance sim: greedy buyer', () => {
     state.production.unlockedTrees = ['ironbark'];
     const arranged = arrangePlots(state, content);
     expect([...arranged.production.logging.plots].sort()).toEqual(['ironbark', 'oak', 'oak']);
+  });
+});
+
+describe('balance sim: smarter buyer (Phase 9)', () => {
+  it('values an economy purchase by its gain: the first Copper Edge level doubles damage', () => {
+    const state = rich(freshState(), 'copper_gem', 10);
+    const edge = buyerCandidates(state, content).find((c) => c.id === 'damage:copper_edge');
+    expect(edge?.gain).toBeCloseTo(1);
+  });
+
+  it('offers a bulk buy up to the next milestone, valued with the x2', () => {
+    const state = rich(freshState(), 'copper_gem', 1e6);
+    state.combat.damageLevels['copper_edge'] = 20;
+    const bulk = buyerCandidates(state, content).find((c) => c.id === 'damage:copper_edge:x5');
+    expect(bulk).toBeDefined();
+    // 21 -> 25 levels with the x2: from 1 + 20 to 1 + 50 damage.
+    expect(bulk!.gain).toBeCloseTo(30 / 21);
+  });
+
+  it('keeps the gems a waiting tier-up needs instead of spending them on upgrades', () => {
+    const state = freshState();
+    const squire = state.cards.owned['ember_squire']!;
+    squire.stars = 6;
+    squire.level = 40;
+    state.resources['moss_core'] = new Decimal(10);
+    state.resources['iron_gem'] = new Decimal(600);
+    state.clearedDungeons = ['mossy_cellar'];
+    const { state: after, bought } = greedyBuy(state, content);
+    expect(bought.some((id) => id.startsWith('damage:iron_edge'))).toBe(false);
+    expect(after.resources['iron_gem']!.toNumber()).toBe(600);
+  });
+
+  it('spends skill points by priority (Might before the data order)', () => {
+    const state = freshState();
+    state.account.level = 3;
+    const { state: after } = greedyBuy(state, content);
+    expect(after.account.skills).toEqual({ might: 2 });
+  });
+
+  it('picks the best enhancement set for the budget, rebuilt when the budget grows', () => {
+    const state = freshState();
+    state.cards.owned['ember_squire']!.tier = 'silver';
+    const silver = fillEnhancements(state, content);
+    expect(silver.cards.owned['ember_squire']!.enhancements).toEqual(['edge']);
+    silver.cards.owned['ember_squire']!.tier = 'gold';
+    const gold = fillEnhancements(silver, content);
+    expect([...gold.cards.owned['ember_squire']!.enhancements].sort()).toEqual(['bulwark', 'edge']);
+  });
+
+  it('equips a complete cosmetic set for its bonus', () => {
+    const state = freshState();
+    for (const c of content.cosmetics.filter((c) => c.set === 'gilded_tradition')) {
+      state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
+    }
+    const { state: after } = greedyBuy(state, content);
+    expect(after.cosmetics.loadout.slots['attack']?.id).toBe('gt_attack');
+  });
+});
+
+describe('balance sim: where to fight', () => {
+  it('pushes a newly killable dungeon before farming Cores for a waiting star-up', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar'];
+    state.combat.damageLevels['crystal_edge'] = 300;
+    const squire = state.cards.owned['ember_squire']!;
+    squire.level = 20;
+    squire.duplicates = 1;
+    expect(chooseDungeon(state, content)).toBe('ember_crypt');
+  });
+
+  it('farms the cleared Glimmer Trial for cosmetic materials only within its time share', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'glimmer_trial'];
+    state.combat.damageLevels['copper_edge'] = 100;
+    state.cosmetics.owned['holo_hex'] = { level: 1, copies: 1 };
+    expect(chooseDungeon(state, content, { trialShare: 0 })).toBe('glimmer_trial');
+    expect(chooseDungeon(state, content, { trialShare: 0.9 })).not.toBe('glimmer_trial');
+  });
+});
+
+describe('balance sim: ascension decision', () => {
+  it('ascends once the Starlight per hour of the run has passed its peak', () => {
+    const tracker = { peakRate: 0 };
+    // Rate rising: 10/h, 15/h, then falling to 12/h (90% of the peak or less is past it).
+    expect(ascendNow({ gain: 10, minimum: 10, runSeconds: 3600 }, tracker)).toBe(false);
+    expect(ascendNow({ gain: 30, minimum: 10, runSeconds: 7200 }, tracker)).toBe(false);
+    expect(ascendNow({ gain: 36, minimum: 10, runSeconds: 10800 }, tracker)).toBe(true);
+  });
+
+  it('never ascends below the minimum gain', () => {
+    const tracker = { peakRate: 100 };
+    expect(ascendNow({ gain: 5, minimum: 10, runSeconds: 36000 }, tracker)).toBe(false);
+  });
+});
+
+describe('balance sim: several seeds', () => {
+  it('reports the median and spread of each milestone, unreached runs counted as not reached', () => {
+    const runs = [
+      { clear_d1: 1000, clear_d2: null },
+      { clear_d1: 2000, clear_d2: 9000 },
+      { clear_d1: 3000, clear_d2: 7000 },
+    ];
+    const summary = summarizeRuns(runs);
+    expect(summary['clear_d1']).toEqual({
+      median: 2000,
+      min: 1000,
+      max: 3000,
+      reached: 3,
+      runs: 3,
+    });
+    // Unreached counts as the end of the run for the median.
+    expect(summary['clear_d2']).toEqual({
+      median: 9000,
+      min: 7000,
+      max: 9000,
+      reached: 2,
+      runs: 3,
+    });
+  });
+
+  it('prints target, median, spread and the ratio to the target', () => {
+    const summary = summarizeRuns([{ clear_d1: 1800 }]);
+    const table = formatSeedTable(summary, 3600);
+    expect(table).toContain('| First dungeon cleared | 0.5 h | 0.50 h |');
+    expect(table).toContain('100%');
   });
 });
 
