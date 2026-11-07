@@ -1,5 +1,6 @@
 import type { Content } from '../../../data';
-import { formatDecimal, type StatResult } from '../../../game';
+import { type StatResult } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { modifierText, sourceName } from './modifierText';
 import { tipTable } from './tooltip';
@@ -13,7 +14,7 @@ export function statTip(
   result: StatResult,
   unit = '',
 ): HTMLElement {
-  const rows: Array<[string, string]> = [[COPY.home.base, formatDecimal(result.base) + unit]];
+  const rows: Array<[string, string]> = [[COPY.home.base, fmt(result.base) + unit]];
   for (const m of result.applied) rows.push([sourceName(content, m), modifierText(m)]);
-  return tipTable(title, rows, [COPY.home.total, formatDecimal(result.value) + unit]);
+  return tipTable(title, rows, [COPY.home.total, fmt(result.value) + unit]);
 }

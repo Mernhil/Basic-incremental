@@ -6,7 +6,6 @@ import {
   collectModifiers,
   damageStat,
   effectiveDrops,
-  formatDecimal,
   formatDuration,
   isDungeonCleared,
   isDungeonUnlocked,
@@ -18,6 +17,7 @@ import {
   type GameState,
   type TierUp,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { h } from '../shell/shell';
 import { statTip } from '../shell/stats';
@@ -164,7 +164,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       statTip(content, COPY.home.damageTip, damageStat(ctx.state(), content), '/s'),
     );
     updates.push(() => {
-      const text = COPY.dungeons.damageNote(formatDecimal(damageStat(ctx.state(), content).value));
+      const text = COPY.dungeons.damageNote(fmt(damageStat(ctx.state(), content).value));
       if (total.textContent !== text) total.textContent = text;
     });
     const list = h('ul', 'dp-lines');
@@ -376,7 +376,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
             trialRewards({ ...t, tiers: [tier] }, tier.score, collectModifiers(state, content))
               .map(
                 (r) =>
-                  `${formatDecimal(r.amount)} ${content.resourceById.get(r.resource)?.name ?? r.resource}`,
+                  `${fmt(r.amount)} ${content.resourceById.get(r.resource)?.name ?? r.resource}`,
               )
               .join(', '),
           ),

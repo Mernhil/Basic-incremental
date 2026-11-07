@@ -1,7 +1,6 @@
 import type { Achievement, AchievementCondition, Content, Rarity } from '../../../data';
 import {
   Decimal,
-  formatDecimal,
   formatDuration,
   type AchievementEntry,
   type CardGain,
@@ -9,6 +8,7 @@ import {
   type GameState,
   type ShardOffer,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { rewardView } from './ascensionModel';
 import type { BuyLineView } from './buyModel';
@@ -182,9 +182,9 @@ function progressText(entry: AchievementEntry): string {
     const metal = (n: number): string => COPY.achievements.metals[n] ?? String(n);
     return COPY.achievements.of(metal(value), metal(entry.target));
   }
-  const fmt = (n: number): string =>
-    n < 1e6 ? Math.floor(n).toLocaleString('en-US') : formatDecimal(new Decimal(n));
-  return COPY.achievements.of(fmt(value), fmt(entry.target));
+  const count = (n: number): string =>
+    n < 1e6 ? Math.floor(n).toLocaleString('en-US') : fmt(new Decimal(n));
+  return COPY.achievements.of(count(value), count(entry.target));
 }
 
 const resName = (content: Content, id: string): string => content.resourceById.get(id)?.name ?? id;
@@ -194,7 +194,7 @@ export function rewardLines(content: Content, achievement: Achievement): string[
   return [
     ...achievement.reward.cosmetics.map((id) => rewardView(content, id).text),
     ...achievement.reward.resources.map((r) =>
-      COPY.achievements.bundle(formatDecimal(r.amount), resName(content, r.resource)),
+      COPY.achievements.bundle(fmt(r.amount), resName(content, r.resource)),
     ),
   ];
 }
@@ -338,12 +338,12 @@ export function shardOfferViews(
       gain = t.copyOf(name);
     } else if (r.kind === 'resource') {
       name = resName(content, r.resource);
-      detail = t.amount(formatDecimal(r.amount));
+      detail = t.amount(fmt(r.amount));
       art = content.resourceById.get(r.resource)?.gem
         ? { kind: 'coin', resource: r.resource }
         : { kind: 'resource', resource: r.resource };
       group = 'supplies';
-      gain = t.bundle(formatDecimal(r.amount), name);
+      gain = t.bundle(fmt(r.amount), name);
     } else {
       const v = rewardView(content, r.cosmetic);
       const c = content.cosmeticById.get(r.cosmetic);
@@ -406,7 +406,7 @@ export function shardGainView(
     return {
       kind: 'toast',
       title: t.bought,
-      detail: t.bundle(formatDecimal(r.amount), resName(content, r.resource)),
+      detail: t.bundle(fmt(r.amount), resName(content, r.resource)),
     };
   }
   const id = r.kind === 'card' ? r.card : r.cosmetic;

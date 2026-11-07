@@ -4,7 +4,6 @@ import {
   cardCollection,
   cardInfo,
   collectModifiers,
-  formatDecimal,
   levelCap,
   loadoutInfo,
   setLoadoutSlot,
@@ -18,6 +17,7 @@ import {
   type Requirement as GameRequirement,
   type UpgradeCheck,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { itemArt } from '../art/items';
 import type {
@@ -58,8 +58,8 @@ export function createCardsModel(
   ): ModelResult => (result.ok ? result : { ok: false, reason: reason(result.reason) });
 
   function requirement(r: GameRequirement): Requirement {
-    const have = formatDecimal(r.have);
-    const need = formatDecimal(r.need);
+    const have = fmt(r.have);
+    const need = fmt(r.need);
     if (r.kind === 'level')
       return {
         label: COPY.cards.req.level,
@@ -77,7 +77,7 @@ export function createCardsModel(
       .map((r) =>
         r.kind === 'duplicates'
           ? COPY.cards.req.duplicates(r.need.toNumber())
-          : `${formatDecimal(r.need)} ${resName(r.resource ?? '')}`,
+          : `${fmt(r.need)} ${resName(r.resource ?? '')}`,
       )
       .join(', ');
   }
