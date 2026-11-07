@@ -111,6 +111,7 @@ Decided with the user for the beta. Numbers live in data and will be tuned.
 - **Rates** are shown in a hover tooltip on the portal.
 - **Card Portal** costs Moss Sigils: single 10, 10-pull 100. When it ships, the **1% card drop from bosses is removed** (11.9).
 - **Wardrobe Gate** costs Ember Sigils and ships **with the Wardrobe**, never before, so cosmetics are never pulled before they can be equipped or upgraded. Same pull and pity structure. Its pool holds the cosmetic sets and loose items; **duplicates feed cosmetic upgrade levels**. Any item whose source this document does not define goes in the Wardrobe Gate at its rarity.
+- **Screen.** The portals sit side by side as cards on a **shelf** (Card Portal, Wardrobe Gate), each with its pity bar and its ×1 / ×10 buttons; the reveal opens in a modal over the shelf.
 - **Reveal.** The portal swirls and an **orb** drops whose colour hints the rarity, with an occasional mid-reveal **upgrade flash** to a higher colour. The card then **flips inside its frame**. A 10-pull shows a row of card backs that flip one by one. Click skips to the next; an option skips all.
 
 ## 7. Cosmetics
@@ -342,7 +343,7 @@ Decided with the user for the beta.
 - **Mine levels** and the **three damage lines** give **×2** to that line's output **every 25 levels**. Milestones are data-driven per line so they can differ later.
 - The next milestone is marked on the upgrade ("Lv 25: ×2"); reaching one plays a small celebration and a toast.
 - Damage lines persist through prestige, so their milestones do too; mine levels reset, and their milestones with them.
-- Milestones also drive the visual growth of tiles and edges (section 16, if accepted).
+- Milestones also drive the visual growth of tiles and edges (section 16).
 
 ## 12. Defaults for underspecified points
 
@@ -392,16 +393,19 @@ Decided with the user in the graphics overhaul. References (Knights & Dragons ar
   | Geode Golem       | Crystal | Geode hammer           |
   | Core Titan        | Void    | Core gauntlet          |
 
-- **Resources are carved gems.** Every production resource is a gem: its **outline** says which one (Oak round, Ironbark pentagon, Moonwillow star, Copper square, Iron hexagon, Grotto drop) and its **carved pattern** comes from its source (grain, rings and swirls for the trees, glowing veins for the mines). Icons set the faceted gem in a **notched coin** with a **sticker outline in the tier colour**: the coin's metal and its outline both show the tier (stone, bronze, silver, gold, prismatic), and a resource not discovered yet shows as a grey coin with a stone outline and a padlock. In the world, each tree is themed to its gem (colours and bark pattern) and hangs its gems, and each mine is rock with its gems set into it. The scenery is **faceted** like the gems: canopy, trunk, rocks and a hexagonal ground tile are cut into flat light and dark faces, with the same white sticker outline as the bosses. Navigation icons keep the hexagonal plaque.
+- **Resources are carved gems.** Every production resource is a gem: its **outline** says which one (Oak round, Ironbark pentagon, Moonwillow star, Copper square, Iron hexagon, Grotto drop) and its **carved pattern** comes from its source (grain, rings and swirls for the trees, glowing veins for the mines). Icons set the faceted gem in a **notched coin** with a **sticker outline in the tier colour**: the coin's metal and its outline both show the gem's **mastery tier** (stone, bronze, silver, gold, prismatic; section 16, E2), and a resource not discovered yet shows as a grey coin with a stone outline and a padlock. In the world, each tree is themed to its gem (colours and bark pattern) and hangs its gems, and each mine is rock with its gems set into it. The scenery is **faceted** like the gems: canopy, trunk, rocks and a hexagonal ground tile are cut into flat light and dark faces, with the same white sticker outline as the bosses. Navigation icons keep the hexagonal plaque.
 - **Performance.** Element effects run on one shared animation loop (a small canvas behind and one in front of each item, so effects can wrap around it), only for cards on screen, at a capped frame rate. Under reduced motion they show a still frame.
 
 ## 14. Stages and juice
 
-Decided with the user for the beta. The Dungeons and Production pages are the focus of the game, so they are **stages**, not menus. Layout details follow the options picked at the beta review gate (`docs/BETA_PLAN.md`).
+Decided with the user for the beta. The Dungeons and Production pages are the focus of the game, so they are **stages**, not menus. Picks from the beta review gate (`docs/BETA_PLAN.md`) are written into each part below.
 
 ### Layout
 
 - **Stage first.** Each focus page has a large live stage on top (about 60% of the height). Management (upgrade lines, lists, unlocks) goes below or in a side rail. The dungeon list becomes a compact **floor map / rail**.
+- **Dungeons: full-bleed stage.** The arena fills the page. Floors and upgrades live in a **drawer** that slides up from the bottom; collapsed, it shows one buy button for the best damage line. DPS and time-to-kill sit in the top-right corner.
+- **Production: two fields stacked.** The logging field above the mining field, each a wide strip of tiles; upgrade lines (tree kinds, mine levels, plots / slots) in a **side rail**.
+- **Home: command centre.** Three live mini-stages (fight, logging, mining) with their rates; clicking one opens its page. The goal tracker sits on top.
 
 ### Dungeon arena
 
@@ -410,7 +414,7 @@ Decided with the user for the beta. The Dungeons and Production pages are the fo
 - The fighting loadout stands **facing the boss** and lunges on its attacks. Its shared health bar is visible.
 - **Boss attacks** land on the cards with red numbers and a card shake. A **knockout** is a visible moment, with the countdown shown on the stage.
 - The **burst gauge** is visible on the main card. When it fires, the signature attack gets a screen flash, a big number and a brief slow-down.
-- **On a kill** the boss pops and its drops burst out as gem coins that fly to the header counters. A rare drop gets a light beam and a toast.
+- **On a kill** the boss pops and its drops burst out as gem coins: they **spill out with small bounces, rest for a beat, then vacuum to the header counters** (loot shower). A rare drop gets a light beam, a brief slow-down and a toast.
 - Live readouts on the stage: **DPS, kills per minute, time-to-kill**.
 
 ### Production field
@@ -423,13 +427,14 @@ Decided with the user for the beta. The Dungeons and Production pages are the fo
 ### Header, numbers and buying
 
 - **Header counters** roll smoothly instead of jumping, show the per-second rate under them, and pulse when coins land.
-- **Floating numbers** go through the **number style** cosmetic slot and the attack / tick style slots; nothing is hardcoded. Sizes scale with the hit relative to the current average. Crits and signature attacks have distinct looks.
+- **Floating numbers** go through the **number style** cosmetic slot and the attack / tick style slots; nothing is hardcoded. Sizes scale with the hit relative to the current average. Crits and signature attacks have distinct looks. The starter number style is **sticker numerals**: chunky digits with a thick white outline, a drop shadow and a slight tilt; hits bounce in place rather than rise; a crit adds a starburst behind the number.
+- **Hits reuse the existing attack effects** (`effects.ts`: brush-stroke slash, impact hit) and the item art already drawn (section 13).
 - **Upgrade previews.** Every buy button shows its effect before buying, e.g. "DPS 12 → 13, time-to-kill 11h → 2h" or "Oak 4/s → 5/s".
 - **Buy ×1 / ×10 / ×100 / Max** toggle on all upgrade lines. Affordable buttons glow. A small fill bar shows progress toward the next affordable level.
 
 ### Welcome back
 
-After offline progress, a summary shows: time away (and the cap), resources gained, kills, knockouts, drops (rare ones highlighted), card XP and levels gained, and mastery tiers reached.
+After offline progress, a summary shows: time away (and the cap), resources gained, kills, knockouts, drops (rare ones highlighted), card XP and levels gained, and mastery tiers reached. It is a **card fan**: each category is a small card dealt onto the table one after another, then a Collect button sends the coins to the header.
 
 ### Performance
 
@@ -449,13 +454,13 @@ Decided with the user for the beta.
 - Settings: master volume, SFX volume, mute, and "mute when the window is unfocused" (default on). A quick **mute toggle in the header**; the full sliders live in Settings.
 - **On by default at moderate volume.** No music for now.
 
-## 16. Progression (PROPOSED: awaiting the user's decision per line)
+## 16. Progression
 
-> **Status: proposed.** Nothing in this section is decided yet. The user accepts, changes or removes each line at the beta review gate; accepted lines then become decided.
+Decided with the user at the beta review gate (all lines accepted; picks written in).
 
 The five metals (stone, bronze, silver, gold, prismatic), gem coins, item intricacy by rarity and frames by tier are already a visual tier language. Gameplay progression drives that language everywhere, so getting stronger is always visible.
 
-- **E1 One metal ladder.** Stone → bronze → silver → gold → prismatic is THE progression language. Everything with tiers uses these five metals: card frames (already), coins, mastery medals, tile growth and forged edges. A tier-up of anything plays the same kind of moment: a metal flash and a short toast.
+- **E1 One metal ladder.** Stone → bronze → silver → gold → prismatic is THE progression language. Everything with tiers uses these five metals: card frames (already), coins, mastery medals, tile growth and forged edges. A tier-up of anything plays the same kind of moment: a metal flash and a short toast. **Mastery medals are faceted stars** in the metal, cut into light and dark faces like the gems and scenery.
 - **E2 Gem mastery.** _Replaces "coin metal = resource tier" in section 13_ (the gem's outline shape and the tree/mine tier already tell resources apart).
   - Each production gem has a mastery tier from its **lifetime total harvested**, kept through prestige. The save counts it from now on, with a migration that starts it at the current amount owned.
   - Thresholds: **1e3 / 1e5 / 1e7 / 1e9** for bronze / silver / gold / prismatic.
@@ -469,22 +474,34 @@ The five metals (stone, bronze, silver, gold, prismatic), gem coins, item intric
   - Tree and mine tiles grow visually with their level, **one visible step per 25-level milestone**.
   - Trees: sapling → young tree → full canopy → grand tree with more hanging gems → gem-crowned tree with a subtle ambient sparkle.
   - Mines: surface rock → open quarry → deeper shaft with more gems → glowing veins → crystal-lined cavern with a subtle ambient glint.
-  - The tile's ground rim uses the metal ladder for its stage.
+  - The tile's ground uses the metal ladder for its stage as a **rising plinth**: the hexagon sits on a metal plinth that gets taller every stage.
+  - Each stage is drawn as its own faceted tile, not a scaled copy. A mine is **one solid faceted rock mass** with gems set in sockets; the glowing seams follow the rock's facet edges. The top tree stage turns its top canopy into the gem's own colours with a glow.
   - New plots start at the base stage; prestige resets the stages with the levels.
 - **E5 Forged edges.**
   - Each damage line (Copper, Iron, Crystal Edge) shows a forged blade made from its gem.
   - At every milestone the blade steps up: bare → inlaid → gem-set → glowing runes → prismatic.
-  - The three edges sit beside the arena as a **weapon rack**, so damage progress is visible on the stage.
+  - Each line is shown as a **ladder strip**: the five blade steps in a row with the current one lit and the buy button at the end, in the arena drawer.
 - **E6 Unique ★6 evolutions** (section 13, not built yet).
   - **Flameblade** replaces Ember Squire's Ember Blade.
   - **Rootbloom Staff** replaces Grove Keeper's Sapling staff.
   - **Soul Reaper** waits for the first Void fighting card (not in the beta).
-  - The unique item appears from **Gold ★6** onward and keeps the tier's element effect; its reveal gets its own evolution moment (a bigger flash than the normal ★6 flash).
+  - The unique item appears from **Gold ★6** onward and keeps the tier's element effect; its reveal gets its own evolution moment (a bigger flash than the normal ★6 flash): **a light beam drops into the card, the Gold frame rebuilds around it with an extra crest flare, then the unique item rises into the window**.
+  - The art is the one already designed (Flameblade's flame blade, Rootbloom Staff's braided roots and bloom, Soul Reaper's skull scythe with soul fire).
 - **E7 Account level reward track.**
   - Every account level gives its skill point plus a listed reward: every 5 levels a bundle of sigils, every 10 levels a cosmetic, some levels a loadout cost cap bump.
   - Shown BF-style as a horizontal row of upcoming rewards, opened from the account level in the header. A level-up plays a moment and lists what you got.
+  - Goals and the reward track share a **quest scroll** look: a parchment panel under the header listing goals with check boxes, with the reward track as a path on it.
 - **E8 Goal tracker.**
   - A small header widget always shows the next 1–3 goals with progress bars (next unlock, a milestone or mastery tier close to completion, materials missing for the next star-up).
   - Clicking a goal jumps to the right page.
   - Goals are picked by simple rules in data (nearest by estimated time), never a fixed script.
 - **E9 Pacing.** Mastery, milestones and growth must not break the 11.7 targets. The balance sim includes them, and their numbers are tuned with everything else.
+
+## 17. Screen picks for the beta
+
+Decided at the beta review gate; each is built in its phase.
+
+- **Wardrobe: mannequin card.** A large preview card in the centre with the seven slots around it like an equipment screen; the item grid below.
+- **Skill tree: radial constellation.** Six branches radiate from a centre star; nodes are faceted gems lit in the branch colour. Card enhancements use a small star chart on the card.
+- **Ascension: portal gate.** A large prismatic gate; everything that persists floats into it. Confirming walks through with a prismatic sweep.
+- **Achievements: sticker book.** Each achievement is a sticker slot; unlocking slaps the sticker in with a bounce. The shard shop is its own tab.

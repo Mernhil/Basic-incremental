@@ -10,7 +10,7 @@ import {
   facetPoly,
   halo,
   jitterPoly,
-  rnd,
+
   shadow,
   twinkle,
   type Pt,
@@ -154,7 +154,10 @@ export function treeAt(tree: Pick<Tree, 'art'>, gem: GemArt, stage: number, look
     ][stage]!;
     obj += `<g class="bi-art-sway">`;
     blobs.forEach(([x, y, rx, ry, n], i) => {
-      obj += facetPoly(jitterPoly(x, y, rx, ry, n, 3 + i * 2), x - 2, y - 2, 0.48, Lc);
+      // the gem-crowned tree's top canopy turns into the gem's own colours
+      const top = stage === 4 && i === blobs.length - 1;
+      if (top) obj += halo(x, y, rx * 0.9, gem.colors[1]);
+      obj += facetPoly(jitterPoly(x, y, rx, ry, n, 3 + i * 2), x - 2, y - 2, 0.48, top ? crystalL : Lc);
     });
     const spots: [number, number, number][] = [
       [],
@@ -187,12 +190,6 @@ export function treeAt(tree: Pick<Tree, 'art'>, gem: GemArt, stage: number, look
     ][stage]!;
     obj += spots.map(([x, y, r]) => hang(gem, x, y, r)).join('');
     obj += `</g>`;
-    if (stage === 4) {
-      obj +=
-        halo(50, 4, 16, gem.colors[0]) +
-        `<g transform="translate(50 6)">${carvedGem(gem, 0, 0, 11)}</g>` +
-        `<path d="M38 12 L44 2 L50 10 L56 2 L62 12Z" fill="${METALS.gold[1]}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/>`;
-    }
   }
   const scale = look.scale[stage]!;
   const amb =
@@ -201,28 +198,6 @@ export function treeAt(tree: Pick<Tree, 'art'>, gem: GemArt, stage: number, look
       : '';
   const glow = look.ambient > 1 && stage >= 2 ? halo(50, 40, 18 + stage * 6, gem.colors[1]) : '';
   return sticker(ground(GRASS, stage, look.rim, gem) + glow + on(obj, scale)) + amb;
-}
-
-function rock(cx: number, cy: number, w: number, h: number, seed: number, tones: Tones = ROCK): string {
-  const r = rnd(seed);
-  const j = (v: number): number => v + (r() - 0.5) * w * 0.12;
-  const tl: Pt = [j(cx - w * 0.45), j(cy - h * 0.45)];
-  const tr: Pt = [j(cx + w * 0.32), j(cy - h * 0.58)];
-  const fr: Pt = [j(cx + w * 0.5), j(cy - h * 0.18)];
-  const fl: Pt = [j(cx - w * 0.22), j(cy - h * 0.08)];
-  const bl: Pt = [j(cx - w * 0.5), cy + h * 0.38];
-  const bm: Pt = [j(cx - w * 0.08), cy + h * 0.5];
-  const br: Pt = [j(cx + w * 0.46), cy + h * 0.42];
-  return facet(
-    P([tl, tr, fr, br, bm, bl]),
-    [
-      [[tl, tr, fr, fl], tones[0]],
-      [[tl, fl, bm, bl], tones[1]],
-      [[fl, fr, br, bm], tones[2]],
-    ],
-    tones[2],
-    2.4,
-  );
 }
 
 function crystal(x: number, y: number, h: number, w: number, tilt: number, c: Tones): string {
@@ -244,51 +219,90 @@ function crystal(x: number, y: number, h: number, w: number, tilt: number, c: To
   )}</g>`;
 }
 
-/** A mine at a growth stage: surface rock, open quarry, deeper shaft, glowing veins, crystal cavern. */
+/** One faceted rock mass: a fan of faces from an apex, lit from the top-left, so it reads as one solid outcrop. */
+function outcrop(o: Pt[], apex: Pt, t: Tones): string {
+  const faces = o.map((pt, i) => {
+    const n = o[(i + 1) % o.length]!;
+    const mx = (pt[0] + n[0]) / 2 - apex[0];
+    const my = (pt[1] + n[1]) / 2 - apex[1];
+    const d = (-mx - my) / Math.hypot(mx, my) / Math.SQRT2;
+    const tone = i === o.length - 1 ? t[3] : d > 0.35 ? t[0] : d > -0.25 ? t[1] : t[2];
+    return [[pt, n, apex], tone] as const;
+  });
+  return facet(P(o), faces, t[2], 2.6);
+}
+
+/** A gem set into the rock: a dark socket, then the carved gem. */
+function setGem(gem: GemArt, x: number, y: number, r: number, rot: number): string {
+  return `<circle cx="${f(x)}" cy="${f(y)}" r="${f(r * 1.2)}" fill="${ROCK[3]}"/><g transform="rotate(${rot} ${x} ${y})">${carvedGem(gem, x, y, r)}</g>`;
+}
+
+const SHAFT =
+  `<path d="M40 92 L40 73 Q50 64 60 73 L60 92Z" fill="#120e16" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/>` +
+  `<path d="M37 93 L37 70 M63 93 L63 70 M34 69 L66 69" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>` +
+  `<path d="M37 93 L37 70 M63 93 L63 70 M34 69 L66 69" fill="none" stroke="#9a6236" stroke-width="3" stroke-linecap="round"/>`;
+
+const PEAK: Pt[] = [[8, 92], [6, 70], [17, 50], [33, 34], [52, 26], [69, 34], [84, 50], [94, 70], [93, 92]];
+const MASS: { o: Pt[]; apex: Pt }[] = [
+  { o: [[30, 92], [27, 80], [36, 68], [52, 63], [67, 70], [73, 82], [72, 92]], apex: [46, 74] },
+  { o: [[16, 92], [13, 76], [24, 60], [42, 51], [60, 53], [77, 63], [87, 78], [86, 92]], apex: [44, 66] },
+  { o: [[10, 92], [8, 72], [19, 54], [38, 42], [60, 43], [79, 54], [92, 72], [91, 92]], apex: [44, 58] },
+  { o: PEAK, apex: [46, 50] },
+  { o: PEAK, apex: [46, 50] },
+];
+const TOP_GEMS: [number, number, number, number][] = [
+  [22, 68, 9, -14],
+  [78, 68, 8.5, 18],
+  [44, 44, 8, 6],
+  [64, 50, 6.5, -8],
+  [16, 84, 6, -24],
+  [86, 84, 5.5, 20],
+];
+const GEMS: [number, number, number, number][][] = [
+  [[50, 76, 7.5, -10]],
+  [
+    [32, 70, 8, -14],
+    [62, 66, 7.5, 16],
+    [76, 80, 6, 4],
+  ],
+  [
+    [24, 68, 8.5, -14],
+    [76, 68, 8, 18],
+    [46, 52, 7, 6],
+    [18, 84, 5.5, -24],
+  ],
+  TOP_GEMS,
+  TOP_GEMS,
+];
+
+/** A mine at a growth stage: surface boulder, open outcrop, shaft, glowing seams, crystal cavern. */
 export function mineAt(gem: GemArt, stage: number, look: GrowthLook): string {
-  const g = (x: number, y: number, r: number, rot: number): string =>
-    `<g transform="rotate(${rot} ${x} ${y})">${carvedGem(gem, x, y, r)}</g>`;
   const gt: Tones = [gem.colors[0], gem.colors[1], gem.colors[2], gem.colors[3]];
-  const rockT = look.crystal && stage >= 3 ? (['#6a6280', '#4e4864', '#36324a', '#262236'] as Tones) : ROCK;
-  let obj = shadow(50, 92, 20 + stage * 5);
-  if (stage === 0) {
-    obj += rock(50, 76, 40, 30, 61, rockT) + g(46, 70, 9, -10);
-  } else if (stage === 1) {
+  const rockT: Tones = look.crystal && stage >= 3 ? ['#6a6280', '#4e4864', '#36324a', '#262236'] : ROCK;
+  const { o, apex } = MASS[stage]!;
+  let obj = shadow(50, 93, 24 + stage * 5);
+  if (stage >= 3) obj += halo(50, 60, 30, gem.colors[1]);
+  obj += outcrop(o, apex, rockT);
+  if (stage >= 3) {
+    // seams run along the rock's own facet edges, so the glow belongs to its cuts
+    const seams = o
+      .slice(1, -1)
+      .filter((_, i) => i % 2 === 1)
+      .map((v) => `M${f(apex[0])} ${f(apex[1])} L${f(apex[0] + (v[0] - apex[0]) * 0.85)} ${f(apex[1] + (v[1] - apex[1]) * 0.85)}`)
+      .join(' ');
+    obj += `<path d="${seams}" fill="none" stroke="${gem.colors[0]}" stroke-width="2.2" stroke-linecap="round"/>`;
+  }
+  if (stage >= 2) obj += SHAFT;
+  obj += GEMS[stage]!.map(([x, y, r, rot]) => setGem(gem, x, y, r, rot)).join('');
+  if (stage === 4) {
     obj +=
-      `<ellipse cx="50" cy="88" rx="26" ry="6" fill="#2a2430" stroke="${INK}" stroke-width="2"/>` +
-      rock(30, 70, 38, 34, 61, rockT) +
-      rock(72, 74, 30, 26, 63, rockT) +
-      g(30, 60, 10, -14) +
-      g(72, 64, 8, 18) +
-      g(52, 82, 7, 4);
-  } else {
-    const shaft =
-      `<path d="M38 90 L38 66 L62 66 L62 90Z" fill="#120e16" stroke="${INK}" stroke-width="2.4"/>` +
-      `<path d="M34 92 L34 62 L66 62 L66 92 M32 62 L68 62" fill="none" stroke="${INK}" stroke-width="6" stroke-linecap="round"/>` +
-      `<path d="M34 92 L34 62 L66 62 L66 92 M32 62 L68 62" fill="none" stroke="#9a6236" stroke-width="3" stroke-linecap="round"/>`;
-    obj +=
-      rock(22, 64, 40, 44, 61, rockT) +
-      rock(80, 66, 36, 40, 63, rockT) +
-      (stage >= 3 ? rock(50, 40, 44, 30, 69, rockT) : '') +
-      shaft +
-      g(20, 52, 11, -14) +
-      g(80, 56, 10, 18) +
-      g(26, 78, 7, -30) +
-      g(76, 80, 6.5, 24) +
-      (stage >= 3 ? g(50, 34, 10, 6) + g(36, 42, 6, -20) : '');
-    if (stage >= 3) {
-      const vein = 'M10 60 L18 66 L16 74 M86 52 L78 62 L84 70 M40 30 L48 38 L58 34 L64 40';
-      obj += `<path d="${vein}" fill="none" stroke="${INK}" stroke-width="5" stroke-linecap="round"/><path d="${vein}" fill="none" stroke="${gem.colors[0]}" stroke-width="2.4" stroke-linecap="round"/>`;
-      obj = halo(50, 56, 34, gem.colors[1]) + obj;
-    }
-    if (stage === 4) {
-      obj +=
-        crystal(12, 92, 30, 6, -14, gt) +
-        crystal(22, 94, 22, 5, -4, gt) +
-        crystal(88, 92, 32, 6, 14, gt) +
-        crystal(78, 94, 20, 5, 6, gt) +
-        crystal(50, 22, 22, 6, 0, gt);
-    }
+      crystal(46, 92, 14, 3.5, -12, gt) +
+      crystal(54, 92, 18, 4, 8, gt) +
+      crystal(9, 94, 26, 5.5, -16, gt) +
+      crystal(18, 94, 18, 4.5, -4, gt) +
+      crystal(91, 94, 28, 5.5, 14, gt) +
+      crystal(82, 94, 17, 4.5, 4, gt) +
+      crystal(52, 30, 18, 5, 4, gt);
   }
   const amb =
     look.ambient > 0 && stage >= 3

@@ -25,41 +25,31 @@ const growth = (look: GrowthLook, tree: string, tgem: string, mgem: string): str
   `<div class="scr col gscr">${row(look, 'tree', tree, tgem)}${row(look, 'mine', '', mgem)}</div>`;
 
 const MOD = [0.62, 0.74, 0.86, 0.96, 1.04];
-const BIG = [0.5, 0.66, 0.84, 1, 1.12];
+
 
 const evoImg = (src: string, alt: string): string => `<img class="evoimg" src="${src}" alt="${alt}">`;
 
 export const sets4: OptionSet[] = [
   {
     id: 'A13',
-    title: 'Growth stages of tree and mine tiles (round 2: “grows in size”, redrawn)',
+    title: 'Growth stages: C Rising plinth, fixed',
     brief:
-      'Your pick A, overhauled: every stage is now drawn as its own faceted tile with the game kit, not a scaled copy. Trees: sapling → young tree → full canopy → grand tree with roots and more gems → gem-crowned. Mines: surface rock → open quarry → shaft with timber frame → glowing veins → crystal cavern. Options differ in how the metal ladder shows on the ground and how far the top stages go.',
+      'Option C (rising plinth), fixed after your notes: mines are one solid rock mass per stage, seams follow the rock’s cuts, and the top tree stage is a gem-coloured canopy instead of a floating crown. Shown for all three tiers; nothing to pick here, just a check.',
     options: [
       {
-        title: 'Metal tile sides',
-        note: 'The hexagon’s side faces are cast in the stage metal; growth is moderate so the field grid stays even. Closest to the current tiles.',
-        html: growth({ rim: 'sides', scale: MOD, crystal: false, ambient: 1 }, 'oak', 'oak_gem', 'copper_gem'),
+        title: 'Rising plinth (your pick, fixed)',
+        note: 'Mines are now one solid faceted rock mass per stage (no gaps between blocks), gems sit in sockets, and the glowing seams run along the rock’s own facet edges instead of random lines. The top tree stage drops the floating crown: its top canopy turns into the gem’s own colours with a glow, which is what “gem-crowned” means.',
+        html: growth({ rim: 'plinth', scale: MOD, crystal: false, ambient: 1 }, 'oak', 'oak_gem', 'copper_gem'),
       },
       {
-        title: 'Metal band',
-        note: 'Earth-coloured sides, a metal band around the top edge of the tile. Bigger growth range: the grand trees overhang the tile.',
-        html: growth({ rim: 'band', scale: BIG, crystal: false, ambient: 1 }, 'oak', 'oak_gem', 'copper_gem'),
-      },
-      {
-        title: 'Rising plinth',
-        note: 'The tile sits on a metal plinth that gets taller every stage, so a maxed tile literally stands higher than a new one.',
+        title: 'Same, Ironbark / Iron Deeps',
+        note: 'The fixed stages with the tier 2 tree and mine, to check they hold up with other gems.',
         html: growth({ rim: 'plinth', scale: MOD, crystal: false, ambient: 1 }, 'ironbark', 'ironbark_gem', 'iron_gem'),
       },
       {
-        title: 'Gem inlay',
-        note: 'A metal rim with one inlaid gem per milestone reached (0–4), so you can count the milestones on each tile.',
-        html: growth({ rim: 'inlay', scale: MOD, crystal: false, ambient: 1 }, 'oak', 'oak_gem', 'copper_gem'),
-      },
-      {
-        title: 'Crystal turn',
-        note: 'Metal sides like A, but from Grand onward the canopy and rock turn into the gem’s own crystal and glow more. Most dramatic top stages.',
-        html: growth({ rim: 'sides', scale: BIG, crystal: true, ambient: 2 }, 'moonwillow', 'moonwillow_gem', 'grotto_gem'),
+        title: 'Same, Moonwillow / Crystal Grotto',
+        note: 'The fixed stages with the tier 3 tree and mine.',
+        html: growth({ rim: 'plinth', scale: MOD, crystal: false, ambient: 1 }, 'moonwillow', 'moonwillow_gem', 'grotto_gem'),
       },
     ],
   },
