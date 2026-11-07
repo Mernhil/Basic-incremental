@@ -10,6 +10,7 @@ import {
   formatDecimal,
   importSaveString,
   loadBestSave,
+  checkAchievements,
   collectModifiers,
   gemMastery,
   nextGoals,
@@ -31,6 +32,9 @@ import { createSummonPage } from './pages/summon';
 import { createAscensionPage } from './pages/ascension';
 import { createWardrobePage } from './pages/wardrobe';
 import { createCardsPage } from './pages/cards';
+import { createAchievementsPage } from './pages/achievements';
+import { unlockToast } from './pages/achievementsModel';
+import { toast } from './stage/toast';
 import { createCardsModel } from './pages/cardsAdapter';
 import { cardItemArt, loadoutProps } from './pages/loadoutCards';
 import { goalRows } from './pages/progressionModel';
@@ -129,6 +133,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         'summon',
         'shop',
         'wardrobe',
+        'achievements',
       ].includes(p.id)
     )
       placeholderPage(shell.page(p.id as Exclude<typeof p.id, 'home'>), p.id as never);
@@ -174,8 +179,22 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     quest.update(goalRows(nextGoals(loop.state, content, 3)));
   };
 
+  // achievement unlocks (DESIGN.md 17): a toast and the sticker sound wherever they happen;
+  // the sticker itself is slapped into the book when the page next shows it
+  const celebrateAchievements = (ids: readonly string[]): void => {
+    if (ids.length === 0) return;
+    playSound('achievement');
+    for (const id of ids) {
+      const t = unlockToast(content, id);
+      if (t) toast(t.title, t.detail, 'milestone', 'gold');
+    }
+  };
+
   const applyAndSave = (next: GameState): void => {
-    loop.state = next;
+    // actions (buys, pulls, star-ups, equips, ascensions) unlock what they earned right away
+    const checked = checkAchievements(next, content);
+    loop.state = checked.state;
+    celebrateAchievements(checked.unlocked);
     rendered();
     void save(); // purchases are saved right away, not at the next autosave
   };
@@ -223,6 +242,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     apply: applyAndSave,
     sound: playSound,
     onLoadoutChange: applyTheme,
+  });
+  pages['achievements'] = createAchievementsPage(shell.page('achievements'), {
+    content,
+    state: () => loop.state,
+    apply: applyAndSave,
+    sound: playSound,
   });
   pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
     content,
@@ -275,6 +300,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     const before = loop.state;
     const report = loop.step(Date.now());
     announce(report);
+    if (!document.hidden) celebrateAchievements(report.achievements);
     director.afterStep(report, before, loop.state);
     if (report.tierUps.length > 0 && !document.hidden) onTierUps(report.tierUps);
   };
