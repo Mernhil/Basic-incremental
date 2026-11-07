@@ -5,6 +5,7 @@ import type { GameState } from './state';
 import { collectModifiers, statValue } from './modifiers';
 import { advanceChunked } from './tick';
 import type { CardDrop } from './report';
+import { xpToNextLevel } from './cards';
 
 /** Base offline cap (8 hours). The offline.capHours modifiers can raise it. */
 export const OFFLINE_CAP_MS = 8 * 60 * 60 * 1000;
@@ -39,6 +40,20 @@ export interface OfflineSummary {
   cardDrops: CardDrop[];
   /** Card id -> levels before and after, for cards that levelled up while away. */
   cardLevels: Record<string, { from: number; to: number }>;
+  /** Times the fighting loadout was knocked out while away (DESIGN.md 11.10). */
+  knockouts: number;
+  /** Material id (Cores, Glimmer Dust, Facet Shards) -> units gained while away. */
+  materials: Record<string, number>;
+  /** Card id -> XP gained while away, level-ups included (only cards that gained some). */
+  cardXp: Record<string, Decimal>;
+}
+
+/** XP a card has earned in total: every level below its level, plus its current XP. */
+function totalXp(content: Content, owned: { level: number; xp: Decimal } | undefined): Decimal {
+  if (!owned) return new Decimal(0);
+  let sum = owned.xp;
+  for (let level = 1; level < owned.level; level++) sum = sum.add(xpToNextLevel(content, level));
+  return sum;
 }
 
 /** Simulates the time between `savedAtMs` and `nowMs`, capped at OFFLINE_CAP_MS. */
@@ -64,6 +79,11 @@ export function simulateOffline(
     const gained = after.sub(state.resources[id] ?? new Decimal(0));
     if (gained.gt(0)) gains[id] = gained;
   }
+  const cardXp: Record<string, Decimal> = {};
+  for (const [id, after] of Object.entries(result.state.cards.owned)) {
+    const gained = totalXp(content, after).sub(totalXp(content, state.cards.owned[id]));
+    if (gained.gt(0)) cardXp[id] = gained;
+  }
 
   return {
     state: result.state,
@@ -77,6 +97,9 @@ export function simulateOffline(
       drops: result.report.drops,
       cardDrops: result.report.cardDrops,
       cardLevels: result.report.cardLevels,
+      knockouts: result.report.knockouts,
+      materials: result.report.materials,
+      cardXp,
     },
   };
 }
