@@ -30,7 +30,33 @@ export const MIGRATIONS: MigrationTable = {
     ...state,
     prestige: { runStart: {}, shop: {}, starlightEarned: '0' },
   }),
+  10: v10ToV11,
 };
+
+/** The cosmetics dungeons drop as their rare item, at save format 10 (a snapshot). */
+const V10_DROPPED_COSMETICS = ['holo_hex', 'holo_waves', 'prism_pointer'] as const;
+
+/**
+ * v10 -> v11: the Wardrobe (DESIGN.md 7). Rare drops that are cosmetics used to sit in the
+ * inventory; now they are owned. The first copy owns the item, the rest are duplicates for its
+ * upgrade levels. The inventory counts stay (they are the drop history).
+ */
+function v10ToV11(state: Record<string, unknown>): Record<string, unknown> {
+  const inventory = isRecord(state['inventory']) ? state['inventory'] : {};
+  const cosmetics = isRecord(state['cosmetics']) ? state['cosmetics'] : {};
+  const owned = isRecord(cosmetics['owned']) ? { ...cosmetics['owned'] } : {};
+  for (const id of V10_DROPPED_COSMETICS) {
+    const n = Math.floor(Number(inventory[id] ?? 0));
+    if (!(n > 0)) continue;
+    const had = owned[id];
+    if (isRecord(had)) {
+      owned[id] = { ...had, copies: Number(had['copies'] ?? 0) + n };
+    } else {
+      owned[id] = { level: 1, copies: n - 1 };
+    }
+  }
+  return { ...state, cosmetics: { ...cosmetics, owned } };
+}
 
 /** Production gem ids at save format 7 (a snapshot, like the other steps). */
 const V7_GEMS = [

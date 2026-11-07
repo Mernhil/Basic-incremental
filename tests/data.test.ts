@@ -15,6 +15,7 @@ import rarities from '../src/data/content/rarities.json';
 import wearRules from '../src/data/content/wearRules.json';
 import sets from '../src/data/content/sets.json';
 import progression from '../src/data/content/progression.json';
+import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 
 type PortalRaw = {
@@ -40,6 +41,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     wearRules,
     sets,
     progression,
+    cosmeticRules,
     prestige,
     ...overrides,
   });
@@ -301,6 +303,29 @@ describe('card ranks and portals', () => {
     expect(issues).toContain(
       'prestige.json › shop › [0] › perLevel › [0] › scope › dungeon: unknown dungeon "nowhere"',
     );
+  });
+
+  it('needs a source for every non-starter cosmetic, and pool rarities that match the item', () => {
+    const bad = raw();
+    const gate = (bad.portals as PortalRaw[]).find((p) => p['id'] === 'wardrobe_gate')!;
+    gate.pool = (gate.pool as { itemId: string; rarity: string }[])
+      .filter((e) => e.itemId !== 'ember_crown')
+      .map((e) => (e.itemId === 'holo_hex' ? { ...e, rarity: 'epic' } : e));
+    const issues = issuesFor(bad);
+    expect(issues.some((i) => i.includes('"ember_crown" has no source'))).toBe(true);
+    expect(issues.some((i) => i.includes('"holo_hex" is rare, not epic'))).toBe(true);
+  });
+
+  it('checks the cosmetic upgrade ladders', () => {
+    const bad = raw();
+    const rules = bad.cosmeticRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    rules['ladders']['3'] = ['accent', 'shape', 'ambient'];
+    rules['ladders']['4'] = ['shape', 'accent', 'gems', 'glow'];
+    rules['ladders']['5'] = ['shape', 'ambient'];
+    const issues = issuesFor(bad);
+    expect(issues).toContain('cosmeticRules.json › ladders › 3: never goes back a step');
+    expect(issues).toContain('cosmeticRules.json › ladders › 4: must end on ambient');
+    expect(issues).toContain('cosmeticRules.json › ladders › 5: needs 5 steps');
   });
 
   it('needs pool items at the pity and guarantee rarities, or they could never be met', () => {

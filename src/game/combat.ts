@@ -1,5 +1,6 @@
 import type { BurstJob, Content, DamageUpgrade, Dungeon, ProductionJob, Trial } from '../data';
 import { cardHealth, fightingXpPerKill, grantLoadoutXp } from './cards';
+import { grantCosmetic } from './wardrobe';
 import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
@@ -853,6 +854,10 @@ function fightBoss(
     const item = dungeon.drops.rare.itemId;
     state.inventory[item] = (state.inventory[item] ?? 0) + rares;
     report.drops[item] = (report.drops[item] ?? 0) + rares;
+    // The rare item joins the collection: a cosmetic in the wardrobe (copies feed its levels).
+    if (content.cosmeticById.has(item)) {
+      for (let i = 0; i < rares; i++) grantCosmetic(state, item);
+    }
   }
   // Cards: the fighting loadout gains XP per kill.
   grantLoadoutXp(

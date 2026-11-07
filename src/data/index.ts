@@ -11,6 +11,7 @@ import type {
   ModifierData,
   Portal,
   PrestigeConfig,
+  CosmeticRules,
   ProductionConfig,
   Progression,
   Rarity,
@@ -36,6 +37,7 @@ import wearRulesJson from './content/wearRules.json';
 import setsJson from './content/sets.json';
 import progressionJson from './content/progression.json';
 import prestigeJson from './content/prestige.json';
+import cosmeticRulesJson from './content/cosmeticRules.json';
 
 export * from './schemas';
 
@@ -60,6 +62,11 @@ export interface Content {
   progression: Progression;
   /** Ascension: Starlight gain, the Starlight shop and prestige cosmetics (DESIGN.md 3). */
   prestige: PrestigeConfig;
+  /** Cosmetic upgrade levels: max level by rarity, ladders, costs (DESIGN.md 7, 11.1). */
+  cosmeticRules: CosmeticRules;
+  /** Every portal, including those waiting for their screen (`enabled: false`); `portals`
+   *  holds only the open ones. */
+  allPortals: Portal[];
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -123,6 +130,7 @@ export function validateContent(raw: RawContent): Content {
     sets,
     progression,
     prestige,
+    cosmeticRules,
   } = parsed;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
@@ -132,6 +140,14 @@ export function validateContent(raw: RawContent): Content {
   checkCards({ resources, cards, cardRules }, issues);
   checkProgression({ cards, progression }, issues);
   checkPrestige({ resources, cosmetics, prestige }, issues);
+  checkCosmeticSources({ resources, cosmetics, dungeons, portals, prestige, cards }, issues);
+  for (const [step, cost] of Object.entries(cosmeticRules.materials)) {
+    if (!resources.some((r) => r.id === cost.resource)) {
+      issues.push(
+        `cosmeticRules.json › materials › ${step} › resource: unknown resource "${cost.resource}"`,
+      );
+    }
+  }
   checkModifiers(
     {
       resources,
@@ -165,12 +181,14 @@ export function validateContent(raw: RawContent): Content {
     trials,
     combat,
     cosmetics,
-    portals,
+    portals: portals.filter((p) => p.enabled),
+    allPortals: portals,
     rarities,
     wearRules,
     sets,
     progression,
     prestige,
+    cosmeticRules,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -339,6 +357,42 @@ function checkModifiers(
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
   }
   c.prestige.shop.forEach((x, i) => check(`prestige.json › shop › [${i}] › perLevel`, x.perLevel));
+}
+
+/**
+ * Every non-starter cosmetic has a source (DESIGN.md 7: dungeon drops, a cosmetics portal,
+ * prestige; achievements later), and portal pools list items at their own rarity.
+ */
+function checkCosmeticSources(
+  c: Pick<Content, 'resources' | 'cosmetics' | 'dungeons' | 'portals' | 'prestige' | 'cards'>,
+  issues: string[],
+): void {
+  const sourced = new Set<string>([
+    ...c.dungeons.map((d) => d.drops.rare.itemId),
+    ...c.prestige.rewards.flatMap((r) => r.cosmetics),
+    ...c.portals.filter((p) => p.kind === 'cosmetics').flatMap((p) => p.pool.map((e) => e.itemId)),
+  ]);
+  c.cosmetics.forEach((x, i) => {
+    if (!x.starter && !sourced.has(x.id)) {
+      issues.push(
+        `cosmetics.json › [${i}]: "${x.id}" has no source (put it in the Wardrobe Gate pool)`,
+      );
+    }
+  });
+  const rarityOf = new Map<string, Rarity>([
+    ...c.cosmetics.map((x) => [x.id, x.rarity] as const),
+    ...c.cards.map((x) => [x.id, x.rarity] as const),
+  ]);
+  c.portals.forEach((p, i) =>
+    p.pool.forEach((e, j) => {
+      const rarity = rarityOf.get(e.itemId);
+      if (rarity && rarity !== e.rarity) {
+        issues.push(
+          `portals.json › [${i}] › pool › [${j}] › rarity: "${e.itemId}" is ${rarity}, not ${e.rarity}`,
+        );
+      }
+    }),
+  );
 }
 
 /** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
@@ -630,5 +684,6 @@ export function loadContent(): Content {
     sets: setsJson,
     progression: progressionJson,
     prestige: prestigeJson,
+    cosmeticRules: cosmeticRulesJson,
   });
 }
