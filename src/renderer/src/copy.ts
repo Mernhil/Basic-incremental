@@ -41,6 +41,8 @@ export const COPY = {
   },
   table: {
     boss: 'Boss',
+    health: 'Loadout health',
+    knockedOut: (s: number) => `Knocked out · back in ${s}s`,
     loadout: 'Fighting loadout',
     production: 'Production',
     resources: 'Resources',

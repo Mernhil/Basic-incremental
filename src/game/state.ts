@@ -73,6 +73,10 @@ export interface CombatState {
   trialAttempt: TrialAttempt;
   /** Special dungeon id -> best score, 0..1. */
   trialBest: Record<string, number>;
+  /** Damage the fighting loadout's health pool has taken (0 = full health; DESIGN.md 11.10). */
+  loadoutDamage: Decimal;
+  /** Seconds left of a knockout; while above 0 the loadout does not fight. */
+  knockoutSeconds: number;
 }
 
 export interface TrialAttempt {
@@ -94,6 +98,8 @@ export function initialCombat(): CombatState {
     kills: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     trialBest: {},
+    loadoutDamage: new Decimal(0),
+    knockoutSeconds: 0,
   };
 }
 
@@ -181,6 +187,8 @@ export function cloneCombat(c: CombatState): CombatState {
     kills: { ...c.kills },
     trialAttempt: { ...c.trialAttempt },
     trialBest: { ...c.trialBest },
+    loadoutDamage: c.loadoutDamage,
+    knockoutSeconds: c.knockoutSeconds,
   };
 }
 

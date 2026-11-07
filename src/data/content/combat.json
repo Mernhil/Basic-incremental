@@ -4,25 +4,53 @@
     {
       "id": "copper_edge",
       "name": "Copper Edge",
-      "cost": { "resource": "copper_gem", "base": "10", "growth": "1.15" },
+      "cost": {
+        "resource": "copper_gem",
+        "base": "10",
+        "growth": "1.15"
+      },
       "damagePerLevel": "1"
     },
     {
       "id": "iron_edge",
       "name": "Iron Edge",
-      "cost": { "resource": "iron_gem", "base": "20", "growth": "1.17" },
+      "cost": {
+        "resource": "iron_gem",
+        "base": "20",
+        "growth": "1.17"
+      },
       "damagePerLevel": "10"
     },
     {
       "id": "crystal_edge",
       "name": "Crystal Edge",
-      "cost": { "resource": "grotto_gem", "base": "30", "growth": "1.2" },
+      "cost": {
+        "resource": "grotto_gem",
+        "base": "30",
+        "growth": "1.2"
+      },
       "damagePerLevel": "100"
     }
   ],
   "bursts": {
-    "fighting": { "intervalSeconds": 1, "gaugeSize": 20, "fill": 1, "power": "10" },
-    "logging": { "intervalSeconds": 1, "gaugeSize": 30, "fill": 1, "power": "10" },
-    "mining": { "intervalSeconds": 1, "gaugeSize": 30, "fill": 1, "power": "10" }
-  }
+    "fighting": {
+      "intervalSeconds": 1,
+      "gaugeSize": 20,
+      "fill": 1,
+      "power": "10"
+    },
+    "logging": {
+      "intervalSeconds": 1,
+      "gaugeSize": 30,
+      "fill": 1,
+      "power": "10"
+    },
+    "mining": {
+      "intervalSeconds": 1,
+      "gaugeSize": 30,
+      "fill": 1,
+      "power": "10"
+    }
+  },
+  "knockoutSeconds": 30
 }

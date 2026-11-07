@@ -17,6 +17,7 @@ import {
   formatDecimal,
   formatDuration,
   hpBarState,
+  loadoutHealth,
   importSaveString,
   loadBestSave,
   PRODUCTION_JOBS,
@@ -307,7 +308,34 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   buildLoadout();
   const fit = h('div', 'loadout-fit');
   fit.append(slots);
-  loadout.body.append(fit);
+  // the loadout's shared health pool (DESIGN.md 11.10), shown like the boss's bar
+  const health = h('div', 'loadout-health');
+  const healthLabel = h('span', 'loadout-health__label', COPY.table.health);
+  const healthBar = createHpStack();
+  const knockout = h('p', 'loadout-health__ko');
+  knockout.setAttribute('role', 'status');
+  knockout.hidden = true;
+  health.append(healthLabel, healthBar.el, knockout);
+  loadout.body.append(fit, health);
+  const renderHealth = (): void => {
+    const s = loop.state;
+    const fighting = s.activeDungeonId !== null;
+    health.hidden = !fighting;
+    if (!fighting) return;
+    const h0 = loadoutHealth(s, content);
+    const max = Decimal.max(h0.max, 1e-9);
+    healthBar.update(
+      hpBarState(h0.current, max, 1),
+      formatDecimal(h0.current),
+      formatDecimal(h0.max),
+      h0.current.div(max).toNumber(),
+    );
+    const ko = h0.knockoutSeconds > 0;
+    knockout.hidden = !ko;
+    health.classList.toggle('is-knocked-out', ko);
+    if (ko) knockout.textContent = COPY.table.knockedOut(Math.ceil(h0.knockoutSeconds));
+  };
+  renderHealth();
   table.append(loadout.el);
 
   // production: the active plots and slots; managed on the Production page
@@ -457,6 +485,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     }
     damageValue.textContent = `${formatDecimal(damageStat().value)}/s`;
     buildLoadout();
+    renderHealth();
     if (shell.current() === 'production') productionPage?.render();
     if (shell.current() === 'dungeons') dungeonsPage?.render();
     if (shell.current() === 'cards') cardsPage?.render();
