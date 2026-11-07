@@ -1,5 +1,5 @@
-/* One-shot hit effects spawned by effects.ts inside a stage element (the boss art window).
-   Colours come from the equipped attack and tick cosmetics (--bi-attack-*, --bi-tick-*). */
+/* One-shot hit effects spawned by effects.ts inside a stage element (the boss art window). The
+   hits themselves are pixel canvases; colours come from the attack cosmetic (--bi-attack-*). */
 
 .bi-fx-layer {
   position: absolute;
@@ -12,220 +12,23 @@
   position: absolute;
   inset: 0;
 }
-.bi-fx > * {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  opacity: 0;
-}
-.bi-fx--slash {
-  filter: drop-shadow(0 0 5px var(--bi-attack-glow, rgba(255, 222, 150, 0.9)));
-}
 
-/* slash: a crescent blade-light that draws in, thins and fades */
-.bi-fx__slash {
-  width: 70%;
-  height: 26px;
-  margin: -13px 0 0 -35%;
-  background: linear-gradient(
-    90deg,
-    transparent 2%,
-    rgba(255, 255, 255, 0.95) 30%,
-    var(--bi-attack-edge, #f3dc9a) 68%,
-    transparent 98%
-  );
-  clip-path: polygon(
-    0% 64%,
-    14% 38%,
-    32% 20%,
-    50% 13%,
-    68% 20%,
-    86% 38%,
-    100% 64%,
-    86% 52%,
-    68% 42%,
-    50% 39%,
-    32% 42%,
-    14% 52%
-  );
-  animation: bi-fx-slash 0.5s cubic-bezier(0.2, 0.75, 0.25, 1) forwards;
-}
-@keyframes bi-fx-slash {
-  0% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(0.1, 1);
-  }
-  20% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(1, 1);
-  }
-  55% {
-    opacity: 0.85;
-    transform: translate(calc(var(--dx) + 3px), calc(var(--dy) + 3px)) rotate(var(--r))
-      scale(1.06, 0.5);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(calc(var(--dx) + 5px), calc(var(--dy) + 5px)) rotate(var(--r))
-      scale(1.1, 0.12);
-  }
-}
-
-/* particles: sparks (fighting), wood chips (logging), rock chips (mining) */
-.bi-fx__p {
-  width: 4px;
-  height: 4px;
-  margin: -2px;
-  border-radius: 50%;
-  background: var(--bi-attack-particle, #fff6d6);
-  box-shadow: 0 0 6px 1px var(--bi-attack-glow, #fff);
-  animation: bi-fx-spark 0.55s ease-out forwards;
-}
-@keyframes bi-fx-spark {
-  0% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(calc(var(--dx) + var(--sx)), calc(var(--dy) + var(--sy))) scale(0.3);
-  }
-}
-.bi-fx--chips .bi-fx__p {
-  width: 7px;
-  height: 3px;
-  border-radius: 1px;
-  background: #c99a5b;
-  box-shadow: 0 0 0 1px rgba(60, 35, 10, 0.5);
-  animation-name: bi-fx-chip;
-  animation-duration: 0.8s;
-}
-.bi-fx--rock .bi-fx__p {
-  width: 7px;
-  height: 6px;
-  margin: -3px;
-  border-radius: 1px;
-  background: #9a9ca6;
-  box-shadow: none;
-  clip-path: polygon(0 30%, 40% 0, 100% 20%, 80% 100%, 20% 90%);
-  animation-name: bi-fx-chip;
-  animation-duration: 0.8s;
-}
-@keyframes bi-fx-chip {
-  0% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) rotate(0deg);
-  }
-  45% {
-    opacity: 1;
-    transform: translate(calc(var(--dx) + var(--sx)), calc(var(--dy) + var(--sy))) rotate(200deg);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(calc(var(--dx) + var(--sx) * 1.4), calc(var(--dy) + var(--sy) + 48px))
-      rotate(420deg);
-  }
-}
-
-/* heavy hit: flash, shockwave ring, crack burst, dust */
-.bi-fx__flash {
-  width: 70px;
-  height: 70px;
-  margin: -35px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #fff 0 18%, rgba(255, 214, 140, 0.8) 34%, transparent 70%);
-  animation: bi-fx-flash 0.2s ease-out forwards;
-}
-@keyframes bi-fx-flash {
-  0% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) scale(0.5);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(1.5);
-  }
-}
-.bi-fx__ring {
-  width: 40px;
-  height: 40px;
-  margin: -20px;
-  border-radius: 50%;
-  border: 4px solid var(--bi-attack-edge, #fff1c9);
-  box-shadow:
-    0 0 12px var(--bi-attack-glow, rgba(255, 196, 110, 0.75)),
-    inset 0 0 8px var(--bi-attack-glow, rgba(255, 196, 110, 0.6));
-  animation: bi-fx-ring 0.32s cubic-bezier(0.1, 0.7, 0.3, 1) forwards;
-}
-@keyframes bi-fx-ring {
-  0% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) scale(0.2);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(2.3);
-  }
-}
-.bi-fx__burst {
-  width: 96px;
-  height: 96px;
-  margin: -48px;
-  background: repeating-conic-gradient(
-    from var(--r),
-    var(--bi-attack-particle, #fff3d0) 0 4deg,
-    transparent 4deg 40deg
-  );
-  -webkit-mask: radial-gradient(circle, transparent 0 26%, #000 28% 47%, transparent 50%);
-  mask: radial-gradient(circle, transparent 0 26%, #000 28% 47%, transparent 50%);
-  animation: bi-fx-burst 0.32s ease-out forwards;
-}
-@keyframes bi-fx-burst {
-  0% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) scale(0.5);
-  }
-  45% {
-    opacity: 1;
-    transform: translate(var(--dx), var(--dy)) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), var(--dy)) scale(1.25);
-  }
-}
-.bi-fx__dust {
-  width: 84px;
-  height: 84px;
-  margin: -42px;
-  border-radius: 50%;
-  filter: blur(5px);
-  background: radial-gradient(circle, rgba(190, 186, 176, 0.6), transparent 70%);
-  animation: bi-fx-dust 0.75s ease-out forwards;
-}
-@keyframes bi-fx-dust {
-  0% {
-    opacity: 0.8;
-    transform: translate(var(--dx), var(--dy)) scale(0.4);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(var(--dx), calc(var(--dy) - 10px)) scale(1.7);
-  }
-}
-
-/* the target reacts to a hit */
+/* the target reacts to a hit (pixel rules: one flash frame, a whole-pixel knockback, no squash) */
 .bi-react-flinch {
-  animation: bi-react-flinch 0.25s ease-out;
+  animation: bi-react-flinch 0.26s steps(1, end);
 }
 @keyframes bi-react-flinch {
   0% {
-    filter: brightness(2) drop-shadow(0 0 8px #fff);
-    transform: translateX(3px);
+    filter: brightness(2.2);
+    transform: translateX(2px);
   }
-  50% {
+  25% {
     filter: none;
-    transform: translateX(-2px);
+    transform: translateX(2px);
+  }
+  60% {
+    filter: none;
+    transform: translateX(-1px);
   }
   100% {
     filter: none;
@@ -233,21 +36,24 @@
   }
 }
 .bi-react-thud {
-  animation: bi-react-thud 0.25s ease-out;
-  transform-origin: 50% 85%;
+  animation: bi-react-thud 0.26s steps(1, end);
 }
 @keyframes bi-react-thud {
   0% {
-    transform: scale(1.1, 0.84);
-    filter: brightness(1.8);
+    filter: brightness(2);
+    transform: translateY(2px);
   }
-  50% {
-    transform: scale(0.95, 1.06);
+  25% {
     filter: none;
+    transform: translateY(2px);
+  }
+  60% {
+    filter: none;
+    transform: translateY(-1px);
   }
   100% {
-    transform: none;
     filter: none;
+    transform: none;
   }
 }
 
