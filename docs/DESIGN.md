@@ -25,30 +25,31 @@ Two production jobs, **mining** and **logging**. Each produces its own resources
 
 - Starts with **one tree plot**.
 - Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different gem.
-- Plot expansions are paid in **Oak Gems**. Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
+- Plot expansions are paid in **Money** (11.13). Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
 
 ### Mining
 
 - Works the same way as logging (limited slots, upgrades add capacity, higher mine types yield different gems).
 - **New mine types are unlocked via dungeon expeditions.**
-- Starts with **one mine slot** (Copper Quarry). Slot expansions are paid in **Copper Gems**.
-- **Mine levels:** each mine type also has a level, bought with its own gems on an exponential curve; every level adds a percentage to that mine's output. Slots and mine levels both reset on prestige.
+- Starts with **one mine slot** (Copper Quarry). Slot expansions are paid in **Money**.
+- **Mine levels:** each mine type also has a level, bought with **Money** on an exponential curve; every level adds a percentage to that mine's output. Slots and mine levels both reset on prestige.
+- **Trees and mines produce materials only** (the six gems). Money never comes from production (11.13).
 
 ### Resource uses (starting point)
 
-| Resource         | Buys                            |
-| ---------------- | ------------------------------- |
-| Mine gems        | Damage, mine upgrades           |
-| Tree gems        | Plot expansions, new tree kinds |
-| Higher-tier gems | Card tier-ups                   |
+| Resource                                    | Buys                                                                   |
+| ------------------------------------------- | ---------------------------------------------------------------------- |
+| Money (dungeon drops)                       | Damage lines, mine levels, plot and slot expansions (11.13)            |
+| Tree and mine gems, Cores, Frost Sigils     | Card star-ups and tier-ups of every job (11.9); tree kinds (tree gems) |
+| Summon and Glamour Crystals (dungeon drops) | Summons in the Card Portal and the Wardrobe Gate (6)                   |
 
-This is a starting point and will be tuned.
+The resource model is the three loops of 11.13. Numbers will be tuned.
 
 ## 3. Prestige
 
-- Prestige **resets**: plots, mine levels, resources.
+- Prestige **resets**: plots, mine levels, resources (gems, Money, Cores and the other materials).
 - Prestige **grants**: a permanent prestige currency.
-- Prestige **persists through**: damage, cards, cosmetics, and unlocked dungeons / trees / mines.
+- Prestige **persists through**: damage, cards, cosmetics, unlocked dungeons / trees / mines, and the premium **crystals** (11.13).
 
 ## 4. Combat
 
@@ -58,7 +59,7 @@ This is a starting point and will be tuned.
 - Boss HP is shown as **stacked bars** with a **×N** count of bars left (like a fighting-game life gauge). The current bar drains over the colour of the next one. Each boss sets its number of bars.
 - Attacks are automatic. Each hit plays the equipped attack animation and a floating damage number; with reduced motion the hit animations are skipped and numbers simply fade.
 - New, harder **dungeons** unlock with progress.
-- Dungeons drop **rare items** at low odds (e.g. 0.5%) with a **pity counter**, plus **portal resources**.
+- Dungeons drop **rare items** at low odds (e.g. 0.5%) with a **pity counter**, plus **Money and both crystals** on every kill (11.13).
 
 ### Special dungeons
 
@@ -98,7 +99,7 @@ Bronze ★1–6 → Silver ★1–6 → Gold ★1–6 → Prismatic ★1–6 (ma
 
 ## 6. Summon portals (gacha)
 
-- Several portals (cards, cosmetics, more later), each with its **own pool** and a **cost resource from specific dungeons**.
+- Several portals (cards, cosmetics, more later), each with its **own pool** and a **cost in a crystal** that every dungeon drops (11.13).
 - **In-game currency only** — no real-money purchases.
 - Rarities and **pity** apply.
 
@@ -109,8 +110,8 @@ Decided with the user for the beta. Numbers live in data and will be tuned.
 - **Pulls.** Every portal offers a **single pull** (1× cost) and a **10-pull** (10× cost). Every 10-pull **guarantees at least one Rare or better**.
 - **Hard pity.** **Legendary or better at 90 pulls** without one. Pity counters are **per portal**, saved, and **kept through prestige**.
 - **Rates** are shown in a hover tooltip on the portal.
-- **Card Portal** costs Moss Sigils: single 10, 10-pull 100. When it ships, the **1% card drop from bosses is removed** (11.9).
-- **Wardrobe Gate** costs Ember Sigils and ships **with the Wardrobe**, never before, so cosmetics are never pulled before they can be equipped or upgraded. Same pull and pity structure. Its pool holds the cosmetic sets and loose items; **duplicates feed cosmetic upgrade levels**. Any item whose source this document does not define goes in the Wardrobe Gate at its rarity.
+- **Card Portal** costs Summon Crystals: single 10, 10-pull 100. When it ships, the **1% card drop from bosses is removed** (11.9).
+- **Wardrobe Gate** costs Glamour Crystals and ships **with the Wardrobe**, never before, so cosmetics are never pulled before they can be equipped or upgraded. Same pull and pity structure. Its pool holds the cosmetic sets and loose items; **duplicates feed cosmetic upgrade levels**. Any item whose source this document does not define goes in the Wardrobe Gate at its rarity.
 - **Screen.** The portals sit side by side as cards on a **shelf** (Card Portal, Wardrobe Gate), each with its pity bar and its ×1 / ×10 buttons; the reveal opens in a modal over the shelf.
 - **Reveal.** The portal swirls and an **orb** drops whose colour hints the rarity, with an occasional mid-reveal **upgrade flash** to a higher colour. The card then **flips inside its frame**. A 10-pull shows a row of card backs that flip one by one. Click skips to the next; an option skips all.
 
@@ -189,7 +190,7 @@ Decided with the user for the beta. Numbers live in data and will be tuned.
 
 Inspired by Brave Frontier (screen order, upgrades, the evolution / "skin" feel, the gacha), **adapted to a desktop app**: no characters, no turn-based combat, no energy or stamina timers.
 
-- **Header bar:** account level (with XP bar) and currencies.
+- **Header bar:** account level (with XP bar) and currencies (Starlight, Money, the crystals, gems and materials).
 - **Left sidebar navigation**, in this order: Home, Cards, Production, Dungeons, Summon, Skill Tree, Wardrobe, Achievements, Shop, Settings.
 - **Framed panels** and **wide, multi-panel screens** that use the desktop width.
 - **Hover tooltips** on stats, items, costs and modifiers.
@@ -255,10 +256,10 @@ Every tunable number (production rate, damage, drop chance, pity threshold, cost
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Tree kinds (3)      | **Oak** (Oak Gem, start), **Ironbark** (Ironbark Gem), **Moonwillow** (Moonwillow Gem)                                                                                                                                        |
 | Mines (3)           | **Copper Quarry** (Copper Gem, start), **Iron Deeps** (Iron Gem, unlocked by clearing Dungeon 1), **Crystal Grotto** (Grotto Gem, unlocked by clearing Dungeon 2)                                                             |
-| Dungeons (3)        | **Mossy Cellar** (boss Root Warden, drops Moss Sigil and Moss Core), **Ember Crypt** (boss Cinder Lich, drops Ember Sigil and Cinder Core), **Frostspire Vault** (boss Glacier Colossus, drops Frost Sigil and Frost Core)    |
+| Dungeons (3)        | **Mossy Cellar** (boss Root Warden, drops Moss Core), **Ember Crypt** (boss Cinder Lich, drops Cinder Core), **Frostspire Vault** (boss Glacier Colossus, drops Frost Core); every dungeon also drops Money and both crystals |
 | Special dungeon (1) | **The Glimmer Trial**, a strength test with a fixed target and a score. Drops **Glimmer Dust** (cosmetic upgrades, shape and accent levels) and **Facet Shards** (gem, glow and ambient levels)                               |
 | Cards (12)          | See below                                                                                                                                                                                                                     |
-| Portals (2)         | **Card Portal** (costs Moss Sigils), **Wardrobe Gate** (costs Ember Sigils). Frost Sigils and the three Cores are used for tier-ups                                                                                           |
+| Portals (2)         | **Card Portal** (costs Summon Crystals), **Wardrobe Gate** (costs Glamour Crystals). Frost Sigils (a material now) and the three Cores are used for card upgrades                                                             |
 | Prestige            | 1 layer, **Ascension**, granting **Starlight**                                                                                                                                                                                |
 | Cosmetic sets       | The two existing sets (Gilded Nocturne, Gilded Tradition) plus a new one, **Verdant Reverie** (leaf-green, moss and dew; ambient animation: drifting petals). Plus the existing loose items, and card-exclusives listed below |
 | Card-exclusives (3) | Ember Crown (for Dawnblade Regent), **Heartwood Halo** (border, for Moonwood Dryad), **Core Pulse** (finish, for Core Titan)                                                                                                  |
@@ -300,8 +301,8 @@ In the balance sim (12.15), "First ★6" is the first **Gold** ★6 (the unique 
 Decided with the user for Phase 5. Numbers live in data and will be tuned.
 
 - **Clearing and unlocking.** A dungeon is **cleared after a number of boss kills set per dungeon** (`killsToClear` in data: 1 for Mossy Cellar, 10 for Ember Crypt, 50 for Frostspire Vault, see 12.25; confirmed by the user 2026-11-07). Clearing dungeon N unlocks dungeon N+1 (`unlockedBy` in data) and the mine type tied to it (Iron Deeps, Crystal Grotto).
-- **Damage purchases.** One upgrade line **per mine gem**: Copper, Iron and Grotto. Each line has its own exponential price in that gem and adds flat damage per level; higher gems add much more. Levels are kept through prestige.
-- **Cores** (Moss / Cinder / Frost) drop with a moderate **chance per kill** (60% / 50% / 70% for Moss / Cinder / Frost after the Phase 9 tuning, 12.25), no pity. Sigils drop on every kill; the rare item keeps its low odds and pity.
+- **Damage purchases.** One upgrade line **per mine gem**: Copper, Iron and Grotto. Each line has its own exponential **Money** price and adds flat damage per level; higher gems add much more. A line is bought once its mine is unlocked (Iron Edge with Iron Deeps, Crystal Edge with the Crystal Grotto). Levels are kept through prestige.
+- **Cores** (Moss / Cinder / Frost) drop with a moderate **chance per kill** (60% / 50% / 70% for Moss / Cinder / Frost after the Phase 9 tuning, 12.25), no pity. Money and both crystals drop on every kill (11.13); the rare item keeps its low odds and pity.
 - **The Glimmer Trial.** Picked like a dungeon; unlocks when Dungeon 2 is cleared. Each **attempt lasts 30 s** against a target with a **fixed HP** (no prestige scaling) and repeats automatically. **Score** = share of the target's HP dealt in the attempt (capped at 100%). Rewards are paid every attempt by **score tier**: each of 25 / 50 / 75 / 100% adds Glimmer Dust; Facet Shards only at 75% and 100%. Reaching 100% clears the trial.
 - **Burst gauge.** The fighting job hits once per main-card interval (1 s while no card is equipped). Each hit fills the gauge by 1; at 20 the signature attack fires and deals **10× a hit** on top of the normal damage. Supports raise the fill per hit through modifiers.
 - **Harvest burst.** Each production job ticks once per second; each tick fills that job's gauge by 1; at 30 a bonus harvest gives **10 s of the job's output** from every plot / slot at once.
@@ -314,8 +315,9 @@ Decided with the user for Phase 6 (roles, star and tier-up requirements, start).
 - **Start.** A new game owns the three Common cards (Ember Squire, Apprentice Feller, Cave Digger) at Bronze ★1, Lv 1, each leading its job. Until the Summon portals arrive, every boss kill has a small chance (1%) to drop a random card, weighted towards lower rarities.
 - **Collection.** Each card is owned once, with its tier, stars, level and XP. Further copies are stored on it as **duplicates**.
 - **Levels (11.2).** Cards in a loadout gain XP by doing their job: fighting cards per boss kill (more for harder dungeons), logging and mining cards per unit harvested. The cap is 20 at Bronze ★1 and rises by 4 per star (Bronze ★6 = 40, Silver ★1–6 = 40–60, and so on). Each level adds a little to the main ability's power and the support effect's strength.
-- **Star-up** (★n → ★n+1 within a tier) needs **one duplicate**, the card **at its level cap** and **materials**: the tier's Core (Bronze: Moss Core, Silver: Cinder Core, Gold and Prismatic: Frost Core). The amount grows per star, and the step to **★6, which brings the visual evolution, costs about three times the step before it**. Each star adds a little power; ★6 adds a big step.
-- **Tier-up** (★6 → next tier ★1) needs the card **at its level cap** and: Bronze → Silver: Moss Cores + Ironbark Gems (logging) or Iron Gems (mining, fighting); Silver → Gold: Cinder Cores + Moonwillow Gems or Grotto Gems; Gold → Prismatic: Frost Cores + Frost Sigils. Level and XP carry over, and the new tier raises the cap. Each tier adds a big power step.
+- **Star-up** (★n → ★n+1 within a tier) needs **one duplicate**, the card **at its level cap** and **materials from all three loops (11.13)**: the tier's Core (Bronze: Moss Core, Silver: Cinder Core, Gold and Prismatic: Frost Core), the tier's **tree gem** and **mine gem** (Bronze: Oak and Copper, Silver: Ironbark and Iron, Gold and Prismatic: Moonwillow and Grotto) and, at Prismatic, **Frost Sigils**. The amounts grow per star, and the step to **★6, which brings the visual evolution, costs about three times the step before it**. Each gem line is scaled by the card's job (`jobShare` in `cardRules.json`, rounded up): a logging card pays 1× tree gems and 0.3× mine gems, a mining card the reverse, a fighting card 0.6× of both, so every job leans on its own loop and still uses the other. Each star adds a little power; ★6 adds a big step.
+- **Tier-up** (★6 → next tier ★1) needs the card **at its level cap** and: Bronze → Silver: 6 Moss Cores + Ironbark and Iron Gems (logging 40,000 / 12,000, mining 12,000 / 20,000, fighting 24,000 / 14,000); Silver → Gold: 8 Cinder Cores + Moonwillow and Grotto Gems (logging 100,000 / 20,000, mining 30,000 / 40,000, fighting 60,000 / 28,000); Gold → Prismatic: 220 Frost Cores + 200 Frost Sigils + Moonwillow and Grotto Gems (logging 400,000 / 120,000, mining 160,000 / 240,000, fighting 240,000 / 180,000). Every job's tier-up (and star-up) must mix a Core, a tree gem and a mine gem; `validateContent` refuses a card cost that leaves one out or uses Money, crystals or Starlight. Level and XP carry over, and the new tier raises the cap. Each tier adds a big power step.
+- **Levels cost nothing.** Levels stay XP-based (11.2): doing the job is the only way to level, so no resource buys a level. Glimmer Dust and Facet Shards stay the cosmetic upgrade materials (12.18), card shards stay the shard shop currency.
 - **Shards.** A duplicate gained once a card is Prismatic ★6 turns into shards, more for higher rarities (Common 1, Rare 2, Epic 4, Legendary 8, Mythic 15, Exotic 25, Void 40).
 - **Cost (11.4).** By rarity: Common 2, Rare 3, Epic 5, Legendary 8, Mythic 12, Exotic 16, Void 20. Each job's cap is 6 at account level 1 and grows by 2 per level (`loadout.costCap`). The main card must fit; a loadout over the cap cannot be saved.
 - **Abilities.** Fighting mains shape how damage is dealt (steady ticks, fast hits that fill the gauge quickly, slow heavy hits with a stronger signature attack). Production mains shape output (steady, bigger harvest bursts, faster gauges). Supports add a percentage bonus or a gauge, drop or material bonus. All card effects go through the modifier pipeline with source kind `card`.
@@ -362,6 +364,18 @@ Decided with the user for the beta.
 - Damage lines persist through prestige, so their milestones do too; mine levels reset, and their milestones with them.
 - Milestones also drive the visual growth of tiles and edges (section 16).
 
+### 11.13 The three loops: Money, materials and crystals
+
+Decided with the user for the economy redesign (PR 1 of 4; the later PRs add tree levels and the upgrade shelf, the header and Details display, and the production stage). Numbers live in data.
+
+- **Fighting → Money.** Money (id `money`, resource kind `currency`; its display name lives only in `resources.json`, so it can be renamed in one place) comes from **dungeons** and from nothing else. Every dungeon pays it twice: a **wage** for every second spent fighting its boss, not while the loadout is knocked out or in a special dungeon (`drops.wage`), and a **purse** on every kill (`drops.currencies`). The wage exists because a boss is an HP wall: a new player cannot reach the first kill of a 3.3e5 HP Root Warden with 1 damage, so the very first levels are paid for while fighting. Wage and purse grow with the dungeon: Mossy Cellar 50 Money per second and 12,000-18,000 per kill, Ember Crypt 260,000-390,000 per kill, Frostspire Vault 2.4-3.6 million per kill; only the first dungeon pays a wage (later ones pay by the kill, so a wall cannot be farmed idle). Both read `drops.moneyMultiplier`. A new game starts with 100 Money.
+- **Money buys** mine levels, plot and slot expansions and damage lines. Every Money price is a cost curve `base × growth^n` with `resource: money`, read through `cost.multiplier` and `cost.growth`, so any later Money price (tree levels, the upgrade shelf of PR 2) is a data entry with the same curve and no new rule. Tree kind and mine type **unlocks stay paid in gems** (trees) or by clearing a dungeon (mines). Prices follow the weight of the gem each line used to be paid in (1 : 10 : 100, the Starlight tier weights): Copper Edge 10 x 1.11 (+1 damage), Iron Edge 200 x 1.12 (+10), Crystal Edge 3,000 x 1.13 (+100); mine levels 15 x 1.3, 200 x 1.32, 2,500 x 1.34; plots and slots 25 x 1.4. A **damage line is bought once its mine is unlocked** (Iron Edge with Iron Deeps, Crystal Edge with the Crystal Grotto), as the gems used to gate them.
+- **Production → materials only.** Trees and mines yield only the six gems. Gems, Cores, Frost Sigils (now a **material**, dropped by the Frostspire Vault only, 1-3 per kill), Glimmer Dust and Facet Shards pay for card upgrades (11.9), cosmetic upgrades (12.18) and tree kinds. Nothing in the production loop produces Money.
+- **Crystals are the premium tier.** The **Summon Crystal** (Card Portal) and the **Glamour Crystal** (Wardrobe Gate) replace the Moss and Ember Sigil. **Every dungeon drops both** on every kill and the deeper ones drop more (`drops.currencies`): Summon Crystals 2-4 / 4-6 / 6-10 and Glamour Crystals 1-2 / 2-4 / 5-8 per kill in Mossy Cellar / Ember Crypt / Frostspire Vault. Medals (`drops.crystalMultiplier`), the Starlight shop's Constellation Crystals and the account tree's Crystal Luck raise them; they do not raise Money. Only the portals spend them.
+- **Ascension** resets Money to its starting amount, with the gems and Cores (a run starts from the lifetime of what the damage lines kept), and **keeps the crystals**, like Starlight and like the portal pity counters that go with them (3, 12.17). Keeping them is a recommendation of the user's, adopted here; the full pacing re-tune is pending (12.27).
+- **Cores and Sigils** (Moss 80%, Cinder 50%, Frost 70% for 2 per drop; Frost Sigils 1-3 per Frostspire kill) are the dungeon materials for card upgrades, so each dungeon keeps a reason to be farmed beside Money and crystals.
+- **Saves.** Format 14 renames the sigils (Moss to Summon, Ember to Glamour; the Frost Sigil keeps its id), the skill, the Starlight shop item and the shard shop bundles, keeps every level and expansion, and **pays back as Money what they would cost** at the new prices (plus the starting Money), so nothing feels lost. Gems are kept as materials.
+
 ## 12. Defaults for underspecified points
 
 Points the decisions above leave open. These defaults apply until changed.
@@ -377,20 +391,20 @@ Points the decisions above leave open. These defaults apply until changed.
 9. **Tree tile stages (E4).** Trees have no levels, so a tree tile grows **one stage every 5 plots bought** (logging expansions; `tileStages` in `progression.json`), up to the top stage. All tree tiles share the stage; it resets on prestige with the plots. Mine tiles follow their mine level milestones.
 10. **When mastery tiers apply.** Lifetime totals and kills grow continuously, but a new mastery tier (gem or medal) takes effect on the next whole second of play, like card levels, so online, offline and any split of time give the same totals. A save migrated from before mastery gets its tiers from its totals when loaded, without tier-up moments.
 11. **What counts as harvested (E2).** Every gem gained from plots / slots, harvest bursts included, online and offline. Gems from other sources (none yet) would not count.
-12. **Medal bonuses.** "+10% sigil drops" multiplies the sigils of each kill by 1.1 per tier; a fraction rounds up with that chance, so the average is exact. "+10% core drops" is +10% per tier on the Core drop chance. The **Glimmer Trial medal** (from its best score at 25 / 50 / 75 / 100%) gives +5% damage in the trial and +10% to its rewards per tier, mirroring the boss medals.
+12. **Medal bonuses.** "+10% crystal drops" multiplies the Summon and Glamour Crystals of each kill by 1.1 per tier (Money is not affected); a fraction rounds up with that chance, so the average is exact. "+10% core drops" is +10% per tier on the Core drop chance. The **Glimmer Trial medal** (from its best score at 25 / 50 / 75 / 100%) gives +5% damage in the trial and +10% to its rewards per tier, mirroring the boss medals.
 13. **Unified tier-up moments (E1).** One `TierUp` shape for gem mastery, boss medals, mine and damage line milestones, tree tile stages, card tier-ups and the Gold ★6 unique evolution. Mastery tier-ups come from the game tick (and the welcome-back summary); the others from the purchase that caused them.
 14. **Goal tracker (E8).** Goals come from the rules in `progression.json`: dungeon and trial clears, tree unlocks, the next mine / damage milestone, gem mastery and boss medals at least 25% of the way, and star-ups whose duplicate is in hand, and the next ascension once its Starlight gain is at least 25% of the minimum (progress = gain / minimum, ETA from the weighted gem points still missing at the current harvest rates; it jumps to the Shop page). ETAs use the current rates (production with the average harvest burst, the drops of what is being fought); a boss that would knock the loadout out before dying has no ETA. Goals sort by ETA, unknown last, then by progress. Clicking jumps to Dungeons, Production or Cards.
 15. **Balance sim.** `npm run sim -- --hours 40 --seeds 5` plays the real game logic (mastery, milestones, crits, achievements, account levels included) for several seeds in parallel and prints, per 11.7 milestone, the target, the median, the spread (min-max) and the runs that reached it, plus the most typical run's end state. Its player (Phase 9):
-    - **Always-buy purchases**, as soon as affordable: card star-ups and tier-ups, tree kinds, skill points (a fixed priority list: Might, Vigor, Keen Eye, Sigil Luck, Core Luck, the yields, ...), the cheapest useful Starlight shop level, cosmetic levels whose copy is in hand, summons (a 10-pull when affordable, else a single pull). Each card's enhancements are rebuilt as the highest-value set its budget allows (damage / output 3, health 2.5, crit / burst 2, drops 1.5, XP 1).
+    - **Always-buy purchases**, as soon as affordable: card star-ups and tier-ups, tree kinds, skill points (a fixed priority list: Might, Vigor, Keen Eye, Crystal Luck, Core Luck, the yields, ...), the cheapest useful Starlight shop level, cosmetic levels whose copy is in hand, summons (a 10-pull when affordable, else a single pull). Each card's enhancements are rebuilt as the highest-value set its budget allows (damage / output 3, health 2.5, crit / burst 2, drops 1.5, XP 1).
     - **Focus.** Card upgrades and cosmetic levels go to the most advanced item first (card: tier, stars, level; cosmetic: level, cheapest ladder first). An item that waits for a resource keeps it from every weaker one, and a Gold card short only of levels holds the Frost Cores and Sigils of its Prismatic tier-up, like a player finishing their lead card before spreading the Cores.
     - **Reservations.** The resources of the soonest waiting card upgrade (copy and level in hand) or tree kind are kept back from economy purchases.
-    - **Economy purchases** (damage lines, mine levels, plots / slots), per gem: the best relative gain per gem (DPS for a damage line, with bulk buys up to the next ×2 milestone; that gem's output for a mine level; 1 / capacity for a plot or slot). It waits for the best one unless another costs at most 10% of it.
+    - **Economy purchases** (damage lines, mine levels, plots / slots), all paid in Money: the best relative gain per Money. A damage line is valued by its DPS gain (bulk buys up to the next ×2 milestone included); a mine level or a plot by its share of the weighted production (gem output × the Starlight tier weights 1 / 10 / 100), times `PRODUCTION_VALUE` (0.35), because production only feeds card upgrades now. It waits for the best one unless another costs at most 10% of it. Card upgrades cost gems and Cores only, so they never compete with Money for a reservation.
     - Plots / slots spread evenly over the unlocked producers (remainder to the lowest tier); loadouts take the rarest cards within the cost cap; complete cosmetic sets are equipped.
-    - **Fighting:** the Glimmer Trial once it can score 100%; else a killable dungeon not cleared yet whose kill takes at most 10 minutes (a slower boss is not worth waiting for: the cleared dungeons are farmed for Cores meanwhile); else the cleared trial for cosmetic materials while it has had under 25% of the time since its clear; else the first dungeon for Sigils while a Card Portal card is still missing and under 10% of the time went there; else the hardest killable dungeon whose Core is wanted; else the hardest killable dungeon.
+    - **Fighting:** the Glimmer Trial once it can score 100%; else a killable dungeon not cleared yet whose kill takes at most 10 minutes (a slower boss is not worth waiting for: the cleared dungeons are farmed for Cores meanwhile); else the cleared trial for cosmetic materials while it has had under 25% of the time since its clear; else the dungeon that drops the Core the most advanced waiting card is missing; else the hardest killable dungeon. Every dungeon pays Money and both crystals, so none is farmed for them. The ascension hold ignores missing gems (they come back within minutes) and waits for the slow dungeon materials.
     - **Ascension:** once the gain reaches the minimum, it ascends when the run's Starlight per second has fallen to 90% of its peak.
     - "Beta content mostly exhausted" counts as every other 11.7 milestone reached, every card owned and a Prismatic ★6 card. "First ★6" is the first Gold ★6.
 16. **Portal pulls.** Pulls in a batch are rolled in order. Hard pity is checked first on every pull; the 10-pull guarantee applies to the **last** pull of a 10-pull when none of the first nine (and no pity pull) reached it, and then picks from the pool's items at or above the guarantee rarity by weight. A pity or guarantee pick keeps the pool weights among the eligible items. The reveal's upgrade flash happens on 25% of results above the pool's lowest rarity (`reveal.upgradeFlashChance`): the orb starts one rarity lower. The boss card drop and its `drops.cardChance` stat are removed with the Card Portal.
-17. **Ascension details.** Starlight = floor(((Σ gems harvested this run × tier weight 1 / 10 / 100) / 2e5) ^ 0.4), through `prestige.gain`; an ascension needs at least 10 (all in `prestige.json`, tuned so the sim's first ascension lands near 8 h). Starlight is a resource of kind `prestige`, the only resource an ascension keeps. Besides DESIGN 3 and 16, an ascension also resets the burst gauges, the boss being fought (back to full HP), the loadout's health and a running Glimmer Trial attempt; it keeps boss kills, trial best scores, the rare-drop pity counters, card levels and loadouts, rare items and the active dungeon. The Starlight shop holds permanent levels (logging and mining output, damage, card health, sigils, slower price growth, offline cap), each level adding its bonus once more (source `prestige`). Prestige cosmetics: Gilded Plate at the first ascension, Aurora Veil at the second, Gilded Filigree at the third; a duplicate becomes a copy. The balance sim ascends when allowed and the gain at least matches all Starlight earned so far.
+17. **Ascension details.** Starlight = floor(((Σ gems harvested this run × tier weight 1 / 10 / 100) / 2e5) ^ 0.4), through `prestige.gain`; an ascension needs at least 10 (all in `prestige.json`, tuned so the sim's first ascension lands near 8 h). Starlight is a resource of kind `prestige`, kept by an ascension together with the crystals (kind `crystal`; 11.13). Besides DESIGN 3 and 16, an ascension also resets the burst gauges, the boss being fought (back to full HP), the loadout's health and a running Glimmer Trial attempt; it keeps boss kills, trial best scores, the rare-drop pity counters, card levels and loadouts, rare items and the active dungeon. The Starlight shop holds permanent levels (logging and mining output, damage, card health, crystals, slower price growth, offline cap), each level adding its bonus once more (source `prestige`). Prestige cosmetics: Gilded Plate at the first ascension, Aurora Veil at the second, Gilded Filigree at the third; a duplicate becomes a copy. The balance sim ascends when allowed and the gain at least matches all Starlight earned so far.
 18. **Wardrobe details.**
     - **Levels.** A non-starter item's max level comes from its rarity (11.1, `cosmeticRules.json`); levels above its drawn ones show the top drawn level until the art arrives. The ladder for each max level is in data: 2 = shape, ambient; 3 = shape, accent, ambient; 4 = shape, accent, gems, ambient; 5 = shape, accent, gems, glow, ambient; 6 = shape, shape, accent, gems, glow, ambient.
     - **Upgrade cost.** Each level costs one duplicate plus the step's material × a rarity factor (common 1 … void 8). Shape 200 and accent 400 Glimmer Dust; gems 400, glow 800 and ambient 2000 Facet Shards, set so the sim's first max-level item lands before 20 h.
@@ -403,8 +417,8 @@ Points the decisions above leave open. These defaults apply until changed.
 20. **Achievements and shard shop details.**
     - **Readings.** "Ten Pulls" counts 10 pulls in total. "Fashionista" counts cosmetics owned besides the starter set. "Dressed Up" needs a complete set other than the starter set. "Night Owl" needs 8 h of offline progress simulated in one session. "Skilled" waits for the account tree (Phase 8).
     - **Extra achievements.** First Milestone (a mine or damage line at Lv 25), Gem Adept (a gem at Gold mastery), Medalist (a Silver boss medal) and Masterwork (a cosmetic at its max level).
-    - **Detection.** Achievements unlock once and grant their reward automatically. Cosmetic rewards: Giant Slayer I / II / III give the three dungeon-drop items. Glimmer Seeker, Golden Hour, Six Stars, Prismatic Dawn, Pity Breaker, Fashionista and Night Owl give the Gilded Tradition pieces. The rest give sigils, Cores, Glimmer Dust or Facet Shards. The tick checks them on the whole-second grid like mastery tiers, offline progress checks them after the session, and actions call `checkAchievements`. A save from before achievements unlocks what it already earned on the next tick.
-    - **Shard shop.** Unlimited card copies (5 / 10 / 20 / 40 / 75 / 120 shards by rarity, Common to Exotic), sigil, Core, Glimmer Dust and Facet Shard bundles, and one Ember Crown (150 shards, once).
+    - **Detection.** Achievements unlock once and grant their reward automatically. Cosmetic rewards: Giant Slayer I / II / III give the three dungeon-drop items. Glimmer Seeker, Golden Hour, Six Stars, Prismatic Dawn, Pity Breaker, Fashionista and Night Owl give the Gilded Tradition pieces. The rest give crystals, Cores, Glimmer Dust or Facet Shards. The tick checks them on the whole-second grid like mastery tiers, offline progress checks them after the session, and actions call `checkAchievements`. A save from before achievements unlocks what it already earned on the next tick.
+    - **Shard shop.** Unlimited card copies (5 / 10 / 20 / 40 / 75 / 120 shards by rarity, Common to Exotic), crystal, Core, Glimmer Dust and Facet Shard bundles, and one Ember Crown (150 shards, once).
 21. **Account details (`account.json`, `enhancements.json`).**
     - **XP rates.** Account XP comes from four sources, all through `xp.account`:
       - per gem harvested: 0.02 logging / 0.04 mining, × tier weight 1 / 5 / 25;
@@ -413,7 +427,7 @@ Points the decisions above leave open. These defaults apply until changed.
       - 500 per ascension.
     - **Levels.** Level L → L + 1 costs 1100 × 1.2^(L − 1), up to level 50. In the sim this gives level 5 at about 0.6 h, 10 at 1.1 h, 20 at 3.3 h, 30 at 10 h and 40 at 31 h (quick early, slow later; 12.4). Level-ups settle on the whole-second grid like card levels.
     - **Saves from before the account.** They start at level 1 with no XP.
-    - **Reward track.** Every level gives 1 skill point. Every 5 levels: 2 × level sigils (Moss to level 15, Ember to 30, then Frost). Every 10 levels: a cosmetic (Holo Hex, Holo Waves, Prism Pointer, Aurora Veil, Gilded Filigree; a copy when owned). Levels 3, 8, 15, 25, 35 and 45: +1 loadout cost cap for every job (source `account`), on top of the 2 per level.
+    - **Reward track.** Every level gives 1 skill point. Every 5 levels: 2 × level crystals or Frost Sigils (Summon Crystals to level 15, Glamour Crystals to 30, then Frost Sigils, which are a material). Every 10 levels: a cosmetic (Holo Hex, Holo Waves, Prism Pointer, Aurora Veil, Gilded Filigree; a copy when owned). Levels 3, 8, 15, 25, 35 and 45: +1 loadout cost cap for every job (source `account`), on top of the 2 per level.
     - **Account tree.** 23 nodes over the six branches, each rank adding its bonus once more (source `skill`): Combat holds Might, Keen Eye (crit chance), Brutal (crit damage), Vigor and Guard; Summoning / Luck is `luck`; Automation / Offline is `automation`. Respec refunds every point: free once per ascension, then 5 Starlight.
     - **Card enhancements.** Every card has five options from its job's template, values scaled by rarity, costing 20 points in total. Budgets: Bronze 0, Silver 4, Gold 7, Prismatic 10 (half the total at the top). Options apply while the card is in a loadout (source `enhancement`). Respec is free.
 22. **Dev saves.** Dev builds take `BI_PROFILE` / `--bi-profile` or `BI_USER_DATA_DIR` so parallel dev apps never autosave over each other (`docs/WORK_SPLIT.md`).
@@ -440,6 +454,8 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Garden sets.** Verdant Reverie, Vine Wrap, Fern Fronds, Moss and Mushrooms, Blossom Branch: Legendary, 5 levels, seven slots, in the Wardrobe Gate. Each piece owns +0.2 percent of one of its set's stats; set bonuses (6 percent in total per set, like Gilded Tradition): verdant damage 3 / output 3, vine output 4 / damage 2, fern damage 4 / output 2, moss card XP 6 / output 3, blossom card XP 6 / damage 3.
     - **Exclusives and loose items.** Five Moonwood Dryad borders (Mythic, 5 levels, +1 percent damage) and five Core Titan finishes (Exotic, 6 levels, +1.5 percent output); 20 loose items (Common border and numbers, Epic attack and tick, 0.1 and 0.3 percent). Max-level motions and corners follow the manifest, and the existing items get theirs too.
     - **Gate pool.** Per-item weights keep each rarity's share sensible: Common 3 each, Epic loose 0.1, Legendary garden 0.1, Mythic 0.12, Exotic 0.06. The pool now covers Common to Exotic. The sim's first max-level cosmetic is at about 19 h.
+
+27. **Economy redesign tuning (PR 1 of 4, full re-tune pending).** Prices, purses, wage, crystal amounts and card costs (11.9, 11.13) are first-pass numbers. A 14 h, 3-seed sanity sim gives: first clear 0.51 h, first summon 0.56 h, Silver 1.65 h, Dungeon 2 3.08 h, Gold 4.5 h, Gold ★6 5.7 h, Dungeon 3 9.6 h, Trial 11.6 h. Known off-target: the first ascension (the sim's hold waits for gems and Frost Cores, 12-13 h instead of 8 h), the first Prismatic (about 11-18 h instead of 25 h) and "mostly exhausted" (not re-run). The user will playtest and tune; the full 40 h, 5-seed run was not redone. Decisions: Money gives Moss Core 80% (was 60%) and Frost Core 2 per drop; the Glimmer Trial target is 9e6 HP; Dungeon 3 clears after 90 kills; the first max-level cosmetic milestone fires at about 1.4 h because UI-skin items have one level (also true before this change).
 
 ## 13. Art style
 
@@ -584,7 +600,7 @@ The five metals (stone, bronze, silver, gold, prismatic), gem coins, item intric
   - The coin's metal and outline show the gem's mastery tier, so coins visibly upgrade as you farm.
 - **E3 Boss mastery.**
   - Kills per boss give medal tiers (bronze / silver / gold / prismatic at **10 / 100 / 1,000 / 10,000** kills), kept through prestige.
-  - Each tier gives **+5% damage** against that boss and **+10%** to that dungeon's sigil and core drops (source `mastery`, condition = dungeon).
+  - Each tier gives **+5% damage** against that boss and **+10%** to that dungeon's crystal and Core drops (source `mastery`, condition = dungeon).
   - The medal shows on the floor rail and next to the boss on the stage. The Glimmer Trial's medal tiers come from its **best score** instead.
 - **E4 Growing tiles.**
   - Tree and mine tiles grow visually with their level, **one visible step per 25-level milestone**.
@@ -604,7 +620,7 @@ The five metals (stone, bronze, silver, gold, prismatic), gem coins, item intric
   - The unique item appears from **Gold ★6** onward and keeps the tier's element effect; its reveal gets its own evolution moment (a bigger flash than the normal ★6 flash): **a light beam drops into the card, the Gold frame rebuilds around it with an extra crest flare, then the unique item rises into the window**.
   - The art is the one already designed (Flameblade's flame blade, Rootbloom Staff's braided roots and bloom, Soul Reaper's skull scythe with soul fire).
 - **E7 Account level reward track.**
-  - Every account level gives its skill point plus a listed reward: every 5 levels a bundle of sigils, every 10 levels a cosmetic, some levels a loadout cost cap bump.
+  - Every account level gives its skill point plus a listed reward: every 5 levels a bundle of crystals, every 10 levels a cosmetic, some levels a loadout cost cap bump.
   - Shown BF-style as a horizontal row of upcoming rewards, opened from the account level in the header. A level-up plays a moment and lists what you got.
   - Goals and the reward track share a **quest scroll** look: a parchment panel under the header listing goals with check boxes, with the reward track as a path on it.
 - **E8 Goal tracker.**
