@@ -12,6 +12,8 @@ Craft notes for static sprites in the Brave Frontier-style cel look. DESIGN.md 1
 6. Lines and curves
 7. Detail and rarity
 8. Common mistakes
+9. Learned from Brave Frontier sprites (Behance)
+10. Learned from The Spriters Resource sheets
 
 ## 1. What the Brave Frontier look is made of
 
@@ -98,3 +100,32 @@ Brave Frontier units are mid-resolution pixel sprites (roughly 100 to 150 px tal
 - Lines between parts use the darkest tone of that material, not the ink, so parts separate without a colouring-book look; the ink stays on the silhouette.
 - Gold trim around plates is 1 to 2 px wide with a one-pixel bright line on its upper edge.
 - Tone shapes on large areas must follow the form (folds, plates). Concentric tone rings from a radial gradient read as banding (seen on the first Cinder Lich robe); break big areas with fold lines or hand-placed shapes.
+
+## 10. Learned from The Spriters Resource sheets (2026-11-07, source: The Spriters Resource, "Brave Frontier" and "Brave Frontier Memories" mobile pages)
+
+Studied the extracted sheets of a fire blob creature and a goblin (base form and evolutions) from Brave Frontier, and the field sprites and backgrounds from Brave Frontier Memories, zoomed to 3 to 4×. Principles only, in my own words; never copy their sprites.
+
+**Battle sprites (regular units and enemies)**
+
+- **They are small.** A regular enemy's body is about 50 to 60 px tall at 1×; the pose is compact and crouched (knees bent, head forward, wide stance). The weapon makes the sprite about 1.5× wider than the body. For this game: a 96 × 96 enemy canvas with a 56 to 64 px body, the rest for the weapon, plume and effects. Bosses stay bigger.
+- **Outlines are coloured per material.** Red armour is outlined in its own darkest red, green skin in dark green, steel in dark slate; the outline lightens a little on lit edges. DESIGN 13 keeps one ink colour for the silhouette, so get the same effect with the part lines (darkest tone of the front part) and the lit-edge band, and say so when it matters.
+- **Plate armour is all contrast.** Three to four tones per plate, a near-white specular on the upper rim of every plate, a 1 px steel or gold trim on plate edges, and one big round highlight on a chest plate or pauldron. Armour reads as metal because the jump from shadow to highlight is huge, not because of detail.
+- **Weapons are oversized and high contrast.** A curved blade has a dark spine, a mid body and a 1 px near-white cutting edge, plus one bright streak along the length; the hilt is a small warm accent (wood or gold).
+- **Faces are tiny and expressive.** One bright eye with a dark pupil, a 2 to 3 px brow line for the mood, a toothy grin with single white pixels for teeth. Big ears or a nose extend the head silhouette.
+- **Accent colour on the head.** A plume, horsehair tail or flame tuft in a contrasting warm colour sits on top and is the part that moves most.
+- **A flat shadow ellipse** (dark grey, no outline) sits under the feet as a separate sprite.
+- **No dithering.** Every tone is placed in chunky clusters; transitions are hard steps.
+
+**Creature blobs**
+
+- Four to five tones per body, in broad cel bands that follow the volume (not concentric rings). A strong highlight band along the top, and a lighter reflected-light rim along the bottom edge just inside the outline, so the blob reads round on any background.
+- Features are 1 to 2 px dots; the expression comes from the body shape (squash, a huge open mouth on attack) more than from the face.
+
+**Evolutions (how forms grow)**
+
+- Higher forms keep the base body and add parts: gold armour pieces, a crown, spikes, flame accessories, wings or shoulder blades. The silhouette grows with accessories, and gold and white-hot accents increase. This matches the game's rarity ladder (parts, not only colour), so use it for enemy tiers and boss phases too.
+
+**Brave Frontier Memories**
+
+- Field sprites are tiny chibis (about 24 to 32 px) with oversized heads and weapons, a dark outline and three tones per material: useful as a model for very small icons and markers.
+- Its backgrounds are painted, not pixel art; the pixel sprites sit on top of painted scenery. Nothing to copy for this game's plain table, but it confirms that the sprite, not the scenery, carries the pixel look.

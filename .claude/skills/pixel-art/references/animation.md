@@ -12,6 +12,8 @@ How to make pixel sprites and effects move with weight, in the Brave Frontier sp
 6. Element effects (DESIGN 13 table)
 7. Reduced motion
 8. Frame budget
+9. Learned from Brave Frontier sprites (Behance)
+10. Learned from The Spriters Resource sheets
 
 ## 1. Timing basics
 
@@ -100,3 +102,13 @@ Studied 25 animated unit sheets by watching them play and zooming into timed scr
 - **Ground anchor.** Units stand on a ring or circle of the element's colour that pulses a little, so a floating, oversized sprite still feels placed.
 
 How this applies here: card items should keep a calm idle (shine, small sparkles), and use the charge, held peak, release, settle beat only for hits and unlock moments. Keep effect pieces a different shape family from the item, with one lighter 1 px trail.
+
+## 10. Learned from The Spriters Resource sheets (2026-11-07, source: The Spriters Resource, "Brave Frontier" mobile page)
+
+From the extracted part sheets of a goblin and a fire blob creature, zoomed to 4×. Principles only, in my own words:
+
+- **The sheets are parts, not whole frames.** Bodies, heads and effect pieces (flame tufts, plumes, blade smears) are stored separately, each drawn in several rotations. The game builds frames by placing parts with small offsets. Under the clean-pixel rule, draw each rotation as its own part instead of rotating in code.
+- **Enemy idle (about 4 frames):** shoulders and arms rise and fall 1 px, the weapon tip moves 1 to 2 px, and the head accessory (plume or flame tuft) sways the most and lags a frame behind the body. The legs and the shadow stay still.
+- **Enemy attack:** two anticipation frames with the weapon raised overhead and the body leaning back, then a lunge frame with the body forward and the blade extended level, with a separate pale crescent smear for the swing (draw it in hard pixels here, breaking into dashes), then a short recovery back to idle.
+- **Blob creatures** squash flat on landing and stretch forward on attack with the mouth wide open; the attack is carried by the body shape, not a weapon.
+- **The shadow ellipse never moves with the body**; it only shrinks a little when the creature leaves the ground.

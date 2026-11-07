@@ -19,6 +19,7 @@ If a technique here conflicts with DESIGN.md (for example Brave Frontier's colou
 
 1. Read DESIGN.md 13 and the BETA_PLAN approval row for the asset. Note its fixed size if approved (card items 100 × 120, production tiles 58 × 64) and what has already been decided about its shapes.
 2. Look at `design/references/` if it has files. They are the user's local reference images (Brave Frontier sprites, Knights & Dragons, effect sheets). Study them for technique; never copy a sprite, never commit them (they are gitignored on purpose), never trace them.
+   Online sources the user approved for study (open them in the browser when a task needs a reference; the pages block plain fetches, so use the browser tool and the sheet viewer's zoom): Brave Frontier sheets at https://www.spriters-resource.com/mobile/bravefrontier/ (units with their evolutions, part sheets and attack smears) and Brave Frontier Memories at https://www.spriters-resource.com/mobile/bravefrontiermemories/ (field sprites, portraits, backgrounds). Same rules: study technique, never copy, trace or download into the repo. What has been learned from them so far is in `references/technique.md` section 10 and `references/animation.md` section 10.
 3. Read `references/technique.md` for the drawing and shading craft, and `references/animation.md` when anything moves or any effect is involved. Read `references/checklist.md` before showing anything.
 
 ## How art is built in this repo
