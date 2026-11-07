@@ -2,7 +2,7 @@
 // Usage: node scripts/art/shoot-art.mjs <outDir> [baseUrl] [--reduced]
 // Loads the art modules through Vite, places their markup in plain SVG boxes at whole-number
 // scales, waits for the live layers to tick and saves one PNG per panel.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 
@@ -22,50 +22,125 @@ await page.setContent(
   `<!doctype html><html><head><base href="${base}"><style>body{margin:0;background:#0e1219;color:#e9eef7;font:14px system-ui}section{display:flex;flex-wrap:wrap;gap:16px;padding:16px;align-items:flex-end}figure{margin:0;display:grid;gap:4px;justify-items:center}svg{overflow:visible}html,body{background:#0e1219}</style></head><body></body></html>`,
 );
 
-const panels = await page.evaluate(async () => {
-  const load = (p) => import(/* @vite-ignore */ new URL(p, document.baseURI).href);
-  const items = await load('src/art/items.ts');
-  const frame = await load('src/art/frame.ts');
-  const evo = await load('src/art/evolutions.ts');
-  const fig = (svg, label) => `<figure>${svg}<figcaption>${label}</figcaption></figure>`;
-  const rarities = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'];
-  const sec = (id, html) => `<section id="${id}">${html}</section>`;
-  document.body.innerHTML =
-    sec(
-      'items',
-      ['sword', 'bow', 'pickaxe', 'staff', 'shield', 'gauntlet']
-        .flatMap((k) =>
-          rarities.map((r) =>
-            fig(
-              `<svg viewBox="0 0 200 240" width="100" height="120">${items.itemArt(k, r)}</svg>`,
-              `${k} ${r}`,
+const resources = JSON.parse(
+  readFileSync(new URL('../../src/data/content/resources.json', import.meta.url), 'utf8'),
+);
+const gemList = resources.filter((r) => r.gem).map((r) => r.gem);
+const only = (process.argv.find((a) => a.startsWith('--only=')) ?? '')
+  .slice(7)
+  .split(',')
+  .filter(Boolean);
+const panels = await page.evaluate(
+  async ({ gemList, only }) => {
+    const load = (p) => import(/* @vite-ignore */ new URL(p, document.baseURI).href);
+    const items = await load('src/art/items.ts');
+    const frame = await load('src/art/frame.ts');
+    const evo = await load('src/art/evolutions.ts');
+    const gems = await load('src/art/gems.ts');
+    const box = (vb, w, h, inner, bg = '#1a2030') =>
+      `<svg viewBox="${vb}" width="${w}" height="${h}" style="background:${bg}">${inner}</svg>`;
+    const fig = (svg, label) => `<figure>${svg}<figcaption>${label}</figcaption></figure>`;
+    const rarities = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'];
+    const sec = (id, html) => `<section id="${id}">${html}</section>`;
+    const html = [
+      sec(
+        'items',
+        ['sword', 'bow', 'pickaxe', 'staff', 'shield', 'gauntlet']
+          .flatMap((k) =>
+            rarities.map((r) =>
+              fig(
+                `<svg viewBox="0 0 200 240" width="100" height="120">${items.itemArt(k, r)}</svg>`,
+                `${k} ${r}`,
+              ),
             ),
-          ),
-        )
-        .join(''),
-    ) +
-    sec(
-      'frames',
-      ['bronze', 'silver', 'gold', 'prismatic']
-        .map((t) =>
+          )
+          .join(''),
+      ),
+      sec(
+        'frames',
+        ['bronze', 'silver', 'gold', 'prismatic']
+          .map((t) =>
+            fig(
+              `<svg viewBox="0 0 176 248" width="264" height="372" style="background:#3a2410;border-radius:18px">${frame.cardFrame(t)}</svg>`,
+              t,
+            ),
+          )
+          .join(''),
+      ),
+      sec(
+        'evolutions',
+        evo.EVOLUTIONS.map((id) =>
           fig(
-            `<svg viewBox="0 0 176 248" width="264" height="372" style="background:#3a2410;border-radius:18px">${frame.cardFrame(t)}</svg>`,
-            t,
+            `<svg viewBox="0 0 200 240" width="300" height="360" style="background:#2a1a0d">${evo.evolutionArt(id)}</svg>`,
+            id,
           ),
-        )
-        .join(''),
-    ) +
-    sec(
-      'evolutions',
-      evo.EVOLUTIONS.map((id) =>
-        fig(
-          `<svg viewBox="0 0 200 240" width="300" height="360" style="background:#2a1a0d">${evo.evolutionArt(id)}</svg>`,
-          id,
-        ),
-      ).join(''),
-    );
-  return [...document.querySelectorAll('section')].map((s) => s.id);
-});
+        ).join(''),
+      ),
+      sec(
+        'coins',
+        gemList
+          .flatMap((g) =>
+            [0, 1, 2, 3, 4, -1].map((t) =>
+              fig(
+                box(gems.ICON_VIEWBOX, 112, 112, gems.gemCoin(g, Math.max(0, t), t < 0)),
+                `${g.shape} ${t < 0 ? 'locked' : t}`,
+              ),
+            ),
+          )
+          .join(''),
+      ),
+      sec(
+        'medals',
+        [0, 1, 2, 3, 4]
+          .map((t) => fig(box(gems.MEDAL_VIEWBOX, 144, 144, gems.masteryMedal(t)), `tier ${t}`))
+          .join(''),
+      ),
+      sec(
+        'plaques',
+        Object.keys(gems.NAV_GLYPHS)
+          .map((n) => fig(box(gems.PLAQUE_VIEWBOX, 128, 128, gems.navPlaque(n)), n))
+          .join(''),
+      ),
+      sec(
+        'edges',
+        gemList
+          .filter((g) => ['square', 'hexagon', 'drop'].includes(g.shape))
+          .flatMap((g) =>
+            [0, 1, 2, 3, 4].map((s) =>
+              fig(box(gems.EDGE_VIEWBOX, 213, 183, gems.forgedEdge(g, s)), `${g.shape} ${s}`),
+            ),
+          )
+          .join(''),
+      ),
+      sec(
+        'tiles',
+        gemList
+          .flatMap((g) =>
+            [0, 1, 2, 3, 4].map((s) =>
+              fig(
+                box(
+                  gems.ICON_VIEWBOX,
+                  168,
+                  168,
+                  ['round', 'pentagon', 'star'].includes(g.shape)
+                    ? gems.treeTile({}, g, s)
+                    : gems.mineTile(g, s),
+                  'transparent',
+                ),
+                `${g.shape} ${s}`,
+              ),
+            ),
+          )
+          .join(''),
+      ),
+    ];
+    document.body.innerHTML = html
+      .filter((h) => !only.length || only.some((o) => h.includes(`id="${o}"`)))
+      .join('');
+    return [...document.querySelectorAll('section')].map((s) => s.id);
+  },
+  { gemList, only },
+);
 await page.waitForTimeout(2500);
 for (const id of panels)
   await page
