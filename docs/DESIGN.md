@@ -135,6 +135,21 @@ Decided with the user for the beta. Numbers live in data and will be tuned.
 6. Table background
 7. Cursor
 
+**UI-skin slots (decided 2026-11-07).** Customization is a big part of the game, so four more global slots skin parts of the interface. Like the other global slots they are always worn:
+
+8. Starlight coin: the icon of the prestige currency.
+9. Sticker style: how achievement stickers look in the sticker book.
+10. Skill nodes: the gem nodes of the account tree and the card enhancement star chart.
+11. Wardrobe style: the slot plates, item tiles and level ladder of the Wardrobe.
+
+**Every option is kept (decided 2026-11-07).** All the options drawn for the beta art batch (B1–B10, mockups [Beta Art Batch](https://claude.ai/artifact/MCYUAzMXJuYwkSCnvZp52c) and [Wardrobe Options](https://claude.ai/artifact/YDW7qjLczmkvzMx4YzVAQT)) become cosmetics instead of one being picked:
+
+- **B1 Starlight coin, B6 sticker style, B7 skill nodes, B10 Wardrobe style:** option A of each is the starter item of its UI-skin slot; options B–E are unlockable items in that slot.
+- **B2 Verdant Reverie:** option A is the Verdant Reverie set; options B–E are four more garden sets (vine, fern, moss, blossom), each a full coherent set across the seven card and table slots with its own set bonus.
+- **B3 Heartwood Halo and B4 Core Pulse:** option A carries the name; options B–E are further card-exclusive borders (Moonwood Dryad) and finishes (Core Titan).
+- **B5 Common and Epic loose items:** all five styles ship (forge, woodcraft, star chart, candy enamel, runestone), each with its Common border, Common numbers, Epic attack and Epic tick.
+- **B8 max-level ambient particles** (rail drift, cel pop, frame orbit, slow pair, footer fountain) and **B9 corner flourishes** (acanthus scroll, pauldron plate, wing tips, gem shards, knot and cabochon) are spread across the borders and finishes, so different items reach their maximum level with different particles and corners. **Corners are pixel art** like the frames (section 13), never vector.
+
 - Some rare cosmetics are **exclusive to one specific card** and override the global slot on that card only.
 - **Wearing card cosmetics depends on the card's rank.** Any item can be owned (and its owned buff counts), but a card must reach a minimum rank to wear it; below that it shows the starter look for that slot. Starting values: card border from Gold ★1, card finish (holo) from Prismatic ★1, card-exclusive items from Prismatic ★6. Global slots (attack, tick, numbers, table, cursor) are always worn. The thresholds live in data and are expected to be tuned.
 - A holo finish covers the whole card, but card text always stays above it.

@@ -54,6 +54,8 @@ User guidance from round 1: reuse the art already made earlier where possible: t
 
 ## Decided visuals
 
+**Beta art batch B1–B10 (2026-11-07): every option is kept as a cosmetic** (DESIGN 7, "UI-skin slots" and "Every option is kept"). Four new global slots (Starlight coin, sticker style, skill nodes, Wardrobe style) take B1/B6/B7/B10 with option A as the starter. B2 gives five garden sets, B3/B4 five exclusives each, B5 twenty loose items, B8/B9 are spread over borders and finishes. Corners (B9) are redrawn in pixel art. Drafts: branches `art/beta-batch-options` and `ui/wardrobe-options`.
+
 Decided with the user in the graphics session (2026-11-07).
 
 - **Art style: pixel art** (DESIGN 13). Every existing vector asset is redrawn as pixel art and approved by the user one by one. Code phases keep using the current art until an asset here is marked approved; do not build new vector art. When an asset is approved, its pixel version replaces the vector one in its phase.
