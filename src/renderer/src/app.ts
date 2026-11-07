@@ -47,7 +47,7 @@ import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
 import { createCardsPage } from './pages/cards';
 import { createCardsModel } from './pages/cardsAdapter';
-import { gemCoin, svg } from './art/gems';
+import { gemCoin, mineTile, svg, treeTile } from './art/gems';
 import { installArtDefs } from './art/defs';
 
 const TICK_INTERVAL_MS = 100;
@@ -328,11 +328,20 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         if (count === 0) continue;
         const tile = h('article', 'prod');
         const stage = h('div', 'prod__stage');
-        stage.innerHTML = `<svg class="bi-card__emblem prod__emblem" viewBox="0 0 100 100" aria-hidden="true">${
-          job === 'logging'
-            ? '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>'
-            : '<path d="M14 70 26 38 46 26 70 30 86 52 82 76 54 86 28 84Z"/>'
-        }</svg>`;
+        // the faceted tree or mine tile (DESIGN.md 13); the line emblem only if it has no gem art
+        const gem = content.resourceById.get(p.resource)?.gem;
+        const tree = job === 'logging' ? content.treeById.get(p.id) : undefined;
+        if (gem && (tree || job === 'mining')) {
+          stage.classList.add('prod__stage--tile');
+          stage.innerHTML = svg(tree ? treeTile(tree, gem) : mineTile(gem));
+          stage.querySelector('svg')!.classList.add('prod__emblem');
+        } else {
+          stage.innerHTML = `<svg class="bi-card__emblem prod__emblem" viewBox="0 0 100 100" aria-hidden="true">${
+            job === 'logging'
+              ? '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>'
+              : '<path d="M14 70 26 38 46 26 70 30 86 52 82 76 54 86 28 84Z"/>'
+          }</svg>`;
+        }
         const info = h('div', 'prod__info');
         const resource = content.resourceById.get(p.resource)?.name ?? p.resource;
         const level = job === 'mining' ? mineLevel(s, p.id) : 0;

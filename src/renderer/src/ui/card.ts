@@ -1,5 +1,6 @@
 import type { Rank } from '../../../data';
 import type { ResolvedCard } from '../../../game';
+import { cardFrame } from '../art/frame';
 import { applyCardTheme } from '../theme/apply';
 
 /** Placeholder emblems until real card art exists. */
@@ -73,6 +74,7 @@ export function createCard(initial: CardProps): CardView {
     <span class="bi-card__rankfx" aria-hidden="true"><i class="bi-mote"></i><i class="bi-mote"></i><i class="bi-mote"></i><i class="bi-mote"></i></span>
     <span class="bi-card__finish" aria-hidden="true"></span>
     <span class="bi-card__deco" aria-hidden="true"><i class="bi-gem"></i></span>
+    <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span></header>
     <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg></div>
     <dl class="bi-card__stats">
@@ -90,6 +92,8 @@ export function createCard(initial: CardProps): CardView {
   const dds = el.querySelectorAll('dd');
   const rankName = q<HTMLElement>('.bi-rank-name');
   const stars = q<HTMLElement>('.bi-stars');
+  const frameSvg = q<SVGElement>('.bi-card__frame');
+  let frameTier = '';
 
   const update = (p: CardProps): void => {
     el.classList.toggle('bi-card--boss', Boolean(p.boss));
@@ -118,6 +122,12 @@ export function createCard(initial: CardProps): CardView {
     rankName.textContent = TIER_NAMES[p.rank.tier];
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
+    // the tier is the frame (DESIGN.md 5); bosses have no rank and so no frame
+    const tier = p.boss ? '' : p.rank.tier;
+    if (tier !== frameTier) {
+      frameTier = tier;
+      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier);
+    }
     applyCardTheme(el, p.theme);
   };
 

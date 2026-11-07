@@ -1,12 +1,7 @@
-/* Rank layer. Separate from cosmetics: it draws only on the stars and OUTSIDE the card edge
-   (.bi-card__rankfx), so equipped borders, finishes and exclusives are never replaced.
-
-   Star 6 of each tier is a small evolution, escalating:
-     Bronze 6     shine + one thin ring + faint glow
-     Silver 6     shine + two rings + soft glow
-     Gold 6       shine + two rings + glow + four corner glints
-     Prismatic 6  shine + thick fast rainbow ring + breathing aura + rising motes
-   Prismatic 1-5 already has its own slow rainbow ring, rainbow tier name and a hopping glint. */
+/* Rank layer. Separate from cosmetics: it draws only on the stars and OUTSIDE the card edge.
+   The tier itself is the card's frame (DESIGN.md 5 and 13): the Knight plate ornaments are drawn
+   by art/frame.ts. This file keeps the stars, the ★6 shine and one-time flash, and the Prismatic
+   extras (rainbow tier name, a glint hopping between stars, rising motes at ★6). No rings. */
 
 @property --bi-angle {
   syntax: '<angle>';
@@ -26,6 +21,12 @@
     #b48cff,
     #ff5f9e
   );
+}
+/* also used by the crown recipe */
+@keyframes bi-spin {
+  to {
+    --bi-angle: 360deg;
+  }
 }
 .bi-card[data-tier='bronze'] {
   --star: #cd7f32;
@@ -122,100 +123,9 @@
   border-radius: calc(var(--bi-radius, 12px) + 5px);
 }
 
-/* Bronze 6, Silver 6, Gold 6: rings in the tier colour, with a small gap from the card */
-.bi-card[data-stars='6']:not([data-tier='prismatic']) .bi-card__rankfx {
-  display: block;
-  /* a dark hairline under the tier colour keeps the ring readable on any table, light or dark */
-  box-shadow:
-    inset 0 0 0 1px rgba(10, 14, 22, 0.55),
-    inset 0 0 0 2.5px var(--star),
-    inset 0 0 0 3.5px rgba(10, 14, 22, 0.35),
-    0 0 var(--glow, 10px) color-mix(in srgb, var(--star) 35%, transparent);
-}
-.bi-card[data-stars='6'][data-tier='bronze'] .bi-card__rankfx {
-  --glow: 8px;
-  opacity: 0.85;
-}
-.bi-card[data-stars='6'][data-tier='silver'] .bi-card__rankfx {
-  --glow: 14px;
-}
-.bi-card[data-stars='6'][data-tier='gold'] .bi-card__rankfx {
-  --glow: 22px;
-}
-
-/* second ring from Silver 6 */
-.bi-card[data-stars='6'][data-tier='silver'] .bi-card__rankfx::before,
-.bi-card[data-stars='6'][data-tier='gold'] .bi-card__rankfx::before {
-  content: '';
-  position: absolute;
-  inset: -4px;
-  border-radius: calc(var(--bi-radius, 12px) + 9px);
-  border: 1.5px solid var(--star);
-  box-shadow:
-    0 0 0 1px rgba(10, 14, 22, 0.45),
-    inset 0 0 0 1px rgba(10, 14, 22, 0.35);
-}
-
-/* corner glints at Gold 6 */
-.bi-card[data-stars='6'][data-tier='gold'] .bi-card__rankfx::after {
-  content: '';
-  position: absolute;
-  inset: -9px;
-  background:
-    radial-gradient(circle at 6px 6px, #fff 0 1.4px, var(--star) 2.4px, transparent 6px),
-    radial-gradient(
-      circle at calc(100% - 6px) 6px,
-      #fff 0 1.4px,
-      var(--star) 2.4px,
-      transparent 6px
-    ),
-    radial-gradient(
-      circle at 6px calc(100% - 6px),
-      #fff 0 1.4px,
-      var(--star) 2.4px,
-      transparent 6px
-    ),
-    radial-gradient(
-      circle at calc(100% - 6px) calc(100% - 6px),
-      #fff 0 1.4px,
-      var(--star) 2.4px,
-      transparent 6px
-    );
-  filter: drop-shadow(0 0 4px var(--star));
-  animation: bi-glint 2.6s ease-in-out infinite alternate;
-}
-@keyframes bi-glint {
-  from {
-    opacity: 0.45;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* Prismatic 1-5: slow thin rainbow ring, rainbow tier name, a glint hopping between stars */
+/* Prismatic: the motes live in the outer layer */
 .bi-card[data-tier='prismatic'] .bi-card__rankfx {
   display: block;
-}
-.bi-card[data-tier='prismatic'] .bi-card__rankfx::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.5px;
-  opacity: 0.85;
-  background: var(--prism-conic);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation: bi-spin 9s linear infinite;
-}
-@keyframes bi-spin {
-  to {
-    --bi-angle: 360deg;
-  }
 }
 .bi-card[data-tier='prismatic'] .bi-rank-name {
   font-weight: 600;
@@ -266,37 +176,7 @@
   }
 }
 
-/* Prismatic 6: thick fast ring, breathing aura behind the card, motes rising along the sides */
-.bi-card[data-tier='prismatic'][data-stars='6'] .bi-card__rankfx::before {
-  padding: 3px;
-  opacity: 1;
-  animation-duration: 3.5s;
-}
-.bi-card[data-tier='prismatic'][data-stars='6'] .bi-card__rankfx::after {
-  content: '';
-  position: absolute;
-  inset: -12px;
-  border-radius: calc(var(--bi-radius, 12px) + 17px);
-  padding: 18px;
-  background: var(--prism-conic);
-  filter: blur(14px);
-  -webkit-mask:
-    linear-gradient(#000 0 0) content-box,
-    linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  animation:
-    bi-spin 3.5s linear infinite,
-    bi-aura 2.2s ease-in-out infinite alternate;
-}
-@keyframes bi-aura {
-  from {
-    opacity: 0.35;
-  }
-  to {
-    opacity: 0.8;
-  }
-}
+/* Prismatic 6: motes rising along the sides */
 .bi-mote {
   display: none;
 }

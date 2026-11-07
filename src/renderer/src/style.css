@@ -169,6 +169,11 @@
   width: 52%;
   height: 52%;
 }
+.prod__stage--tile .prod__emblem {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
 .prod__name {
   margin: 0;
   font-size: 15px;

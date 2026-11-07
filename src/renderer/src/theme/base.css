@@ -98,6 +98,27 @@ body {
 .bi-card__deco {
   z-index: 3;
 }
+/* the frame (art/frame.ts): tier ornaments on every card; the plate rim is the knight-plate recipe */
+.bi-card__frame {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.bi-card--boss .bi-card__frame {
+  display: none;
+}
+.bi-frame__prism {
+  animation: bi-frame-prism 6s linear infinite;
+}
+@keyframes bi-frame-prism {
+  to {
+    filter: hue-rotate(360deg);
+  }
+}
 .bi-card__rank {
   position: relative;
   z-index: 4;

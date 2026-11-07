@@ -309,3 +309,12 @@
     animation: none !important;
   }
 }
+
+/* ---- border: Knight plate (starter frame family) ---- */
+/* The plate rim and rivets drawn by art/frame.ts; other frame families keep only the tier ornaments. */
+.bi-frame__rim {
+  display: none;
+}
+.r-knight-plate .bi-frame__rim {
+  display: inline;
+}
