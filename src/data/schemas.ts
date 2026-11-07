@@ -349,7 +349,12 @@ export const cardRulesSchema = z.strictObject({
 });
 
 /** Boss drawings (DESIGN.md 13: sticker style, a distinct body shape each). */
-export const BOSS_ARTS = ['root_warden', 'cinder_lich', 'glacier_colossus', 'crystal_sentinel'] as const;
+export const BOSS_ARTS = [
+  'root_warden',
+  'cinder_lich',
+  'glacier_colossus',
+  'crystal_sentinel',
+] as const;
 
 export const dungeonSchema = z.strictObject({
   id,
