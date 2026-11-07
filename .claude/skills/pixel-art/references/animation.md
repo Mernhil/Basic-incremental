@@ -14,6 +14,7 @@ How to make pixel sprites and effects move with weight, in the Brave Frontier sp
 8. Frame budget
 9. Learned from Brave Frontier sprites (Behance)
 10. Learned from The Spriters Resource sheets
+11. Core animation principles in pixel terms
 
 ## 1. Timing basics
 
@@ -112,3 +113,18 @@ From the extracted part sheets of a goblin and a fire blob creature, zoomed to 4
 - **Enemy attack:** two anticipation frames with the weapon raised overhead and the body leaning back, then a lunge frame with the body forward and the blade extended level, with a separate pale crescent smear for the swing (draw it in hard pixels here, breaking into dashes), then a short recovery back to idle.
 - **Blob creatures** squash flat on landing and stretch forward on attack with the mouth wide open; the attack is carried by the body shape, not a weapon.
 - **The shadow ellipse never moves with the body**; it only shrinks a little when the creature leaves the ground.
+
+## 11. Core animation principles in pixel terms (2026-11-07)
+
+The user pointed to the Udemy course "Pixel Art Animation for Game Developers: Learn the Basics" (Youssef Ankousse). Its lessons are behind a paywall, so nothing here comes from the course itself. This section covers the topics in its outline that the notes above did not yet spell out, written from general animation craft and applied to this game's clean-pixel rules. If the user shares notes from the course, add them here with the source.
+
+- **Squash and stretch keeps the volume.** When a shape squashes 2 px shorter it gets about 2 px wider, and the reverse. Squash on contact and landing, stretch on the fastest frame. In pixels, use 1 to 2 px steps for small sprites and up to 4 px for big blobs. Rigid things (blades, armour, gems) never squash; they move instead.
+- **Timing and spacing are separate choices.** Timing is how long each frame holds (per-frame durations). Spacing is how far things move between frames. Pixel sprites have few frames, so get easing from spacing: big jumps in the middle of a move, 1 px steps near the key poses.
+- **Arcs.** Natural motion follows curves: a weapon tip, a swinging tail, a bobbing head and a falling leaf all trace arcs, not straight lines. Plot the path of the leading point first, then place it on the arc frame by frame. Straight-line paths make pixel motion look robotic.
+- **Smear frames.** A smear stands in for an in-between that would be too fast to read. Build it as one frame where the moving part is stretched along its path (a blade becomes a crescent, a fist a teardrop) or repeated as 2 to 3 outlines. Hold it for one short frame only (40 to 60 ms), then show the impact pose. In this game, smears are hard-pixel shapes in the part's own lightest tones, never motion blur.
+- **Straight ahead versus pose to pose.** Use pose to pose for anything with a clear story (attacks, hits, evolutions): draw the key poses first, check the timing with just those, then add in-betweens. Use straight ahead for loose, organic motion (fire, smoke, water, falling leaves, wisps): draw one frame after another without planning keys. Mixed: key poses for the body, straight-ahead loops for the effects on top.
+- **Exaggeration.** Pixel sprites are small, so poses must be pushed further than feels natural: deeper crouches, bigger wind-ups, wider mouths, longer smears. If a key pose is unreadable as a silhouette at 1×, it is not exaggerated enough.
+- **Idle cycles.** Pick the 2 to 3 parts that move (chest, head accessory, weapon tip) and keep the feet and the shadow still. Offset each moving part's timing by a frame so the loop never moves as one block, and make the first and last frames flow into each other without a pop.
+- **Attack keyframes.** Block in four poses first (ready, wind-up, contact, recovery), play them at game speed with holds, then add one smear between wind-up and contact and one settle frame after recovery.
+- **Clean-up pass.** After the timing works, redraw each frame: fix outline breaks and doubled corners, keep every colour cluster consistent from frame to frame (a highlight must not jump around), remove single-pixel flicker that is not a deliberate sparkle, and check the GIF at real speed again.
+- **Form transitions (evolutions).** For the ★6 evolution and boss phase changes: anticipation (the old form gathers light and shrinks slightly), a held flash or silhouette frame that hides the swap (full-white or single-colour silhouette for 1 to 2 frames), then the new form overshoots in size by 1 to 2 px and settles, with effect pieces (sparks, petals, shards) bursting outward. Never cross-fade between forms; opacity fades blur pixel art.
