@@ -1,22 +1,22 @@
 import type { Content } from '../../../data';
 import {
-  Decimal,
   PRODUCTION_JOBS,
   assignPlot,
-  buyExpansion,
-  buyMineLevel,
+  buyExpansions,
+  buyMineLevels,
   canAfford,
   collectModifiers,
   computeStat,
-  expansionCost,
   formatDecimal,
   isProducerUnlocked,
+  jobProductionPerSecond,
+  milestonesCrossed,
   mineLevel,
-  mineLevelCost,
   plotCapacity,
   plots,
   producerRate,
   producersOf,
+  tileStage,
   treeUnlockCost,
   unlockTree,
   type GameState,
@@ -24,20 +24,29 @@ import {
   type Price,
   type Producer,
   type ProductionJob,
-  type ProductionResult,
 } from '../../../game';
 import { COPY } from '../copy';
-import { frame, h } from '../shell/shell';
+import { mineTile, svg, treeTile } from '../art/gems';
+import { h } from '../shell/shell';
 import { statTip } from '../shell/stats';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
-import { mineTile, svg, treeTile } from '../art/gems';
+import type { CoinTarget } from '../stage/arena';
+import type { Director } from '../stage/director';
+import { centreOf, flyCoins } from '../stage/fly';
+import { createThrottle, popText } from '../stage/math';
+import { replay } from '../stage/motion';
+import { popGain, popNumber } from '../stage/numbers';
+import { toast } from '../stage/toast';
+import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
+import { expansionView, mineLevelViews, type BuyLineView } from './buyModel';
 import './production.css';
 
-const EMBLEM = {
-  logging: '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>',
-  mining: '<path d="M14 70 26 38 46 26 70 30 86 52 82 76 54 86 28 84Z"/>',
-  empty: '<path d="M50 32v36M32 50h36"/>',
-} as const;
+/**
+ * Production page (DESIGN.md 14, A2 A): the logging field above the mining field, each a wide
+ * strip of faceted tiles at their growth stage; upgrade lines (tree kinds, mine levels, plots
+ * and slots) in a side rail. Every tick floats a "+n" off each tile and flies coins to the
+ * header; a harvest burst runs a wave across the field with one big total.
+ */
 
 export interface PageContext {
   content: Content;
@@ -46,53 +55,61 @@ export interface PageContext {
   apply: (state: GameState) => void;
 }
 
-function art(kind: keyof typeof EMBLEM, cls = ''): HTMLElement {
-  const box = h('span', `pp-art ${cls}`.trim());
-  box.innerHTML = `<svg viewBox="0 0 100 100" aria-hidden="true">${EMBLEM[kind]}</svg>`;
-  return box;
+export interface ProductionContext extends PageContext {
+  director?: Director;
+  coins?: CoinTarget;
+  visible?: () => boolean;
+  sound?: (id: string) => void;
 }
 
-const amount = (d: Decimal): string => formatDecimal(d);
+/** Coins flown to the header per resource per second at most. */
+const COINS_PER_SECOND = 3;
 
-/** Everything that changes the page's structure. Resource amounts are not in it. */
 function signature(state: GameState, content: Content, mods: readonly Modifier[]): string {
   return JSON.stringify([
     PRODUCTION_JOBS.map((job) => plots(state, content, job, mods)),
+    PRODUCTION_JOBS.map((job) =>
+      producersOf(content, job).map((p) => tileStage(state, content, job, p.id)),
+    ),
     state.production.unlockedTrees,
-    state.production.mineLevels,
     state.clearedDungeons,
   ]);
 }
 
-export function createProductionPage(page: HTMLElement, ctx: PageContext): { render(): void } {
+export function createProductionPage(
+  page: HTMLElement,
+  ctx: ProductionContext,
+): { render(): void } {
   const { content } = ctx;
-  const priceText = (p: Price): string =>
-    `${amount(p.amount)} ${content.resourceById.get(p.resource)?.name ?? p.resource}`;
+  const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
+  const priceText = (p: Price): string => `${formatDecimal(p.amount)} ${resName(p.resource)}`;
+  const visible = (): boolean => ctx.visible?.() ?? true;
+  const coinThrottle = createThrottle(COINS_PER_SECOND, 1000);
 
-  /** The faceted tree or mine tile for a producer (DESIGN.md 13); the line emblem if it has no gem art. */
-  const producerArt = (job: ProductionJob, p: Producer, cls = ''): HTMLElement => {
+  const tileArt = (job: ProductionJob, p: Producer, stage: number): string => {
     const gem = content.resourceById.get(p.resource)?.gem;
+    if (!gem) return '';
     const tree = job === 'logging' ? content.treeById.get(p.id) : undefined;
-    if (!gem || (job === 'logging' && !tree)) return art(job, cls);
-    const box = h('span', `pp-art pp-art--tile ${cls}`.trim());
-    box.innerHTML = svg(tree ? treeTile(tree, gem) : mineTile(gem));
-    return box;
+    return svg(tree ? treeTile(tree, gem, stage) : mineTile(gem, stage));
   };
 
-  const cols = h('div', 'pp-cols');
-  page.append(cols);
+  const layout = h('div', 'pp-layout');
+  const fields = h('div', 'pp-fields');
+  const rail = h('aside', 'pp-rail');
+  layout.append(fields, rail);
+  page.append(layout);
 
-  /** Buttons whose enabled state depends on current resources; refreshed every tick. */
-  let priced: Array<{ btn: HTMLButtonElement; prices: () => Price[] }> = [];
-  let notes: Array<{ el: HTMLElement; text: () => string }> = [];
   let last = '';
   let openMenu: { close(): void } | null = null;
-
-  const act = (result: ProductionResult, focusKey?: string): void => {
-    if (!result.ok) return; // buttons are disabled when an action cannot succeed
-    ctx.apply(result.state);
-    build(focusKey);
+  let notes: Array<() => void> = [];
+  let priced: Array<{ btn: HTMLButtonElement; prices: () => Price[] }> = [];
+  const fieldEls: Partial<Record<ProductionJob, HTMLElement>> = {};
+  /** Plot index -> tile button, per job. */
+  const tiles: Record<ProductionJob, Map<number, HTMLElement>> = {
+    logging: new Map(),
+    mining: new Map(),
   };
+  const lines = new Map<string, { li: HTMLElement; btn: BuyButton; tag?: HTMLElement }>();
 
   function build(focusKey?: string): void {
     openMenu?.close();
@@ -100,77 +117,51 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
     const state = ctx.state();
     const mods = collectModifiers(state, content);
     last = signature(state, content, mods);
-    priced = [];
     notes = [];
-    cols.replaceChildren(...PRODUCTION_JOBS.map((job) => ledger(job, state, mods)));
-    if (focusKey) cols.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+    priced = [];
+    lines.clear();
+    fields.replaceChildren(...PRODUCTION_JOBS.map((job) => field(job, state, mods)));
+    rail.replaceChildren(railHead(), ...PRODUCTION_JOBS.map((job) => railJob(job, state, mods)));
+    if (focusKey) page.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+    refresh();
   }
 
-  function rateOf(p: Producer, job: ProductionJob, state: GameState, mods: readonly Modifier[]) {
-    return producerRate(p, job, mods, job === 'mining' ? mineLevel(state, p.id) : 0);
-  }
+  const act = (next: GameState | null, focusKey?: string): void => {
+    if (!next) return;
+    ctx.apply(next);
+    build(focusKey);
+  };
 
-  function ledger(job: ProductionJob, state: GameState, mods: readonly Modifier[]): HTMLElement {
+  // ---- fields ----
+
+  function field(job: ProductionJob, state: GameState, mods: readonly Modifier[]): HTMLElement {
     const t = COPY.production[job];
     const list = plots(state, content, job, mods);
-    const capacity = plotCapacity(state, content, job, mods);
     const used = list.filter((id) => id !== null).length;
-    const { el, body } = frame(t.title, t.capacity(used, capacity));
-    el.classList.add('pp-ledger');
-    el.dataset.job = job;
-
-    // output summary, refreshed every tick
-    const summary = h('p', 'pp-summary bi-num');
-    notes.push({
-      el: summary,
-      text: () => {
-        const s = ctx.state();
-        const m = collectModifiers(s, content);
-        const parts: string[] = [];
-        const totals = new Map<string, Decimal>();
-        plots(s, content, job, m).forEach((id) => {
-          if (!id) return;
-          const p = producersOf(content, job).find((x) => x.id === id)!;
-          totals.set(
-            p.resource,
-            (totals.get(p.resource) ?? new Decimal(0)).add(rateOf(p, job, s, m)),
-          );
-        });
-        for (const [res, v] of totals) {
-          parts.push(
-            COPY.production.perSecond(amount(v), content.resourceById.get(res)?.name ?? res),
-          );
-        }
-        return parts.length ? parts.join(' · ') : t.idle;
-      },
+    const capacity = plotCapacity(state, content, job, mods);
+    const section = h('section', `pp-field pp-field--${job}`);
+    section.setAttribute('aria-label', t.title);
+    const head = h('header', 'pp-field__head');
+    const summary = h('span', 'pp-field__rate bi-num');
+    notes.push(() => {
+      const s = ctx.state();
+      const rates = Object.entries(
+        jobProductionPerSecond(s, content, job, collectModifiers(s, content)),
+      ).map(([res, v]) => COPY.production.perSecond(formatDecimal(v), resName(res)));
+      set(summary, rates.length ? rates.join(' · ') : t.idle);
     });
-
-    // plot tiles
-    const grid = h('ul', 'pp-plots');
-    grid.setAttribute('aria-label', t.plotsLabel);
-    list.forEach((id, index) => grid.append(plotTile(job, index, id, state, mods)));
-    const buy = h('li', 'pp-plot');
-    const buyBtn = h('button', 'pp-plot__btn pp-plot__btn--buy');
-    buyBtn.type = 'button';
-    buyBtn.dataset.key = `${job}-buy`;
-    const buyCost = h('span', 'pp-plot__rate bi-num');
-    buyBtn.append(art('empty', 'pp-art--empty'), h('span', 'pp-plot__name', t.newPlot), buyCost);
-    const buyPrice = () => [expansionCost(ctx.state(), content, job)];
-    priced.push({ btn: buyBtn, prices: buyPrice });
-    notes.push({ el: buyCost, text: () => priceText(buyPrice()[0]!) });
-    buyBtn.addEventListener('click', () =>
-      act(buyExpansion(ctx.state(), content, job), `${job}-buy`),
+    head.append(
+      h('h2', 'pp-field__title', t.title),
+      h('span', 'pp-field__cap', t.capacity(used, capacity)),
+      summary,
     );
-    buy.append(buyBtn);
-    grid.append(buy);
-
-    // kinds
-    const kinds = h('ul', 'pp-kinds');
-    kinds.setAttribute('aria-label', t.kindsLabel);
-    for (const p of producersOf(content, job)) kinds.append(kindRow(job, p, list, state, mods));
-
-    body.append(summary, grid, kinds);
-    return el;
+    const strip = h('ul', 'pp-strip');
+    strip.setAttribute('aria-label', t.plotsLabel);
+    tiles[job].clear();
+    list.forEach((id, index) => strip.append(plotTile(job, index, id, state, mods)));
+    section.append(head, strip);
+    fieldEls[job] = section;
+    return section;
   }
 
   function plotTile(
@@ -182,30 +173,31 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
   ): HTMLElement {
     const t = COPY.production[job];
     const li = h('li', 'pp-plot');
-    const btn = h('button', 'pp-plot__btn');
+    const btn = h('button', 'pp-tile');
     btn.type = 'button';
     btn.dataset.key = `${job}-plot-${index}`;
     btn.setAttribute('aria-haspopup', 'menu');
     btn.setAttribute('aria-expanded', 'false');
     const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
     if (p) {
+      const art = h('span', 'pp-tile__art');
+      art.innerHTML = tileArt(job, p, tileStage(state, content, job, p.id));
+      art.style.setProperty('--d', `${((index * 0.37) % 3).toFixed(2)}s`);
+      const level = job === 'mining' ? mineLevel(state, p.id) : 0;
       btn.append(
-        producerArt(job, p),
-        h('span', 'pp-plot__name', p.name),
+        art,
+        h('span', 'pp-tile__name', p.name),
         h(
           'span',
-          'pp-plot__rate bi-num',
-          COPY.production.rate(amount(rateOf(p, job, state, mods))),
+          'pp-tile__rate bi-num',
+          COPY.production.rate(formatDecimal(producerRate(p, job, mods, level))),
         ),
       );
       btn.setAttribute('aria-label', t.plotLabel(index + 1, p.name));
+      tiles[job].set(index, btn);
     } else {
-      btn.classList.add('pp-plot__btn--empty');
-      btn.append(
-        art('empty', 'pp-art--empty'),
-        h('span', 'pp-plot__name', t.empty),
-        h('span', 'pp-plot__rate', ''),
-      );
+      btn.classList.add('pp-tile--empty');
+      btn.append(h('span', 'pp-tile__plus', '+'), h('span', 'pp-tile__name', t.empty));
       btn.setAttribute('aria-label', t.plotLabel(index + 1, t.empty));
     }
     btn.addEventListener('click', () => openPicker(li, btn, job, index, id));
@@ -231,7 +223,8 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
     const items: HTMLButtonElement[] = [];
     const choose = (pid: string | null): void => {
       close();
-      act(assignPlot(ctx.state(), content, job, index, pid), `${job}-plot-${index}`);
+      const result = assignPlot(ctx.state(), content, job, index, pid);
+      act(result.ok ? result.state : null, `${job}-plot-${index}`);
     };
     for (const p of producersOf(content, job)) {
       const unlocked = isProducerUnlocked(state, content, job, p.id);
@@ -239,13 +232,14 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
       item.type = 'button';
       item.setAttribute('role', 'menuitemradio');
       item.setAttribute('aria-checked', String(p.id === current));
+      const level = job === 'mining' ? mineLevel(state, p.id) : 0;
       item.append(
         h('span', '', p.name),
         h(
           'span',
           'pp-menu__meta bi-num',
           unlocked
-            ? COPY.production.rate(amount(rateOf(p, job, state, mods)))
+            ? COPY.production.rate(formatDecimal(producerRate(p, job, mods, level)))
             : COPY.production.locked,
         ),
       );
@@ -296,49 +290,95 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
     (enabled.find((i) => i.getAttribute('aria-checked') === 'true') ?? enabled[0])?.focus();
   }
 
+  // ---- rail ----
+
+  function railHead(): HTMLElement {
+    const head = h('header', 'pp-rail__head');
+    head.append(h('h2', 'pp-rail__title', COPY.production.upgrades), createBuyToggle());
+    return head;
+  }
+
+  function buyLine(key: string, onBuy: () => void, withTag: boolean): HTMLElement {
+    const li = h('li', 'pp-line');
+    const info = h('div', 'pp-line__info');
+    const name = h('span', 'pp-line__name');
+    const meta = h('span', 'pp-line__meta bi-num');
+    info.append(name, meta);
+    let tag: HTMLElement | undefined;
+    if (withTag) {
+      tag = h('span', 'ms-tag bi-num');
+      info.append(tag);
+    }
+    const btn = createBuyButton(onBuy);
+    btn.el.dataset.key = key;
+    li.append(info, btn.el);
+    lines.set(key, { li, btn, ...(tag ? { tag } : {}) });
+    return li;
+  }
+
+  function railJob(job: ProductionJob, state: GameState, mods: readonly Modifier[]): HTMLElement {
+    const t = COPY.production[job];
+    const section = h('section', 'pp-rail__group');
+    section.append(h('h3', 'pp-rail__sub', t.title));
+    const list = h('ul', 'pp-lines');
+    list.append(buyLine(`${job}-expansion`, () => buyExpansion(job), false));
+    if (job === 'mining') {
+      for (const mine of content.mines) {
+        if (!isProducerUnlocked(state, content, 'mining', mine.id)) continue;
+        list.append(buyLine(`level-${mine.id}`, () => buyLevels(mine.id), true));
+      }
+    }
+    section.append(list);
+    // kinds: tree unlocks, locked mines
+    const kinds = h('ul', 'pp-kinds');
+    kinds.setAttribute('aria-label', t.kindsLabel);
+    for (const p of producersOf(content, job)) {
+      const unlocked = isProducerUnlocked(state, content, job, p.id);
+      if (unlocked && job === 'mining') continue; // shown as a level line above
+      kinds.append(kindRow(job, p, unlocked, state, mods));
+    }
+    if (kinds.childElementCount > 0) section.append(kinds);
+    return section;
+  }
+
   function kindRow(
     job: ProductionJob,
     p: Producer,
-    list: (string | null)[],
+    unlocked: boolean,
     state: GameState,
     mods: readonly Modifier[],
   ): HTMLElement {
     const t = COPY.production[job];
-    const li = h('li', 'pp-kind');
-    const unlocked = isProducerUnlocked(state, content, job, p.id);
-    if (!unlocked) li.classList.add('pp-kind--locked');
+    const li = h('li', `pp-kind${unlocked ? '' : ' pp-kind--locked'}`);
+    const art = h('span', 'pp-kind__art');
+    art.innerHTML = tileArt(job, p, 0);
     const info = h('div', 'pp-kind__info');
     const name = h('span', 'pp-kind__name', p.name);
     name.append(h('span', 'pp-tier', COPY.production.tier(p.tier)));
-    const level = job === 'mining' ? mineLevel(state, p.id) : 0;
-    if (job === 'mining' && unlocked)
-      name.append(h('span', 'pp-kind__level', COPY.production.level(level)));
-    const resource = content.resourceById.get(p.resource)?.name ?? p.resource;
-    const count = list.filter((x) => x === p.id).length;
     const meta = h('span', 'pp-kind__meta bi-num');
     if (unlocked) {
       const rate = h(
         'span',
         'has-tip',
-        COPY.production.perPlot(amount(rateOf(p, job, state, mods)), resource, t.unit),
+        COPY.production.perPlot(
+          formatDecimal(producerRate(p, job, mods, 0)),
+          resName(p.resource),
+          t.unit,
+        ),
       );
       rate.tabIndex = 0;
       attachTooltip(rate, () => {
-        const s = ctx.state();
-        const m = collectModifiers(s, content);
-        const lv = job === 'mining' ? mineLevel(s, p.id) : 0;
-        // the level bonus is part of the base the rate modifiers apply to
-        const base = producerRate(p, job, [], lv);
-        const result = computeStat('production.rate', base, m, {
+        const m = collectModifiers(ctx.state(), content);
+        const result = computeStat('production.rate', producerRate(p, job, [], 0), m, {
           job,
           producer: p.id,
           resource: p.resource,
         });
-        return statTip(content, t.rateTip(p.name, lv), result, '/s');
+        return statTip(content, t.rateTip(p.name, 0), result, '/s');
       });
-      meta.append(rate, document.createTextNode(` · ${t.inUse(count)}`));
+      meta.append(rate);
     } else if (job === 'logging') {
-      meta.textContent = COPY.production.yields(resource);
+      meta.textContent = COPY.production.yields(resName(p.resource));
     } else {
       const dungeon =
         'unlockedByDungeon' in p && p.unlockedByDungeon
@@ -347,58 +387,161 @@ export function createProductionPage(page: HTMLElement, ctx: PageContext): { ren
       meta.textContent = dungeon ? COPY.production.clearToUnlock(dungeon) : COPY.production.locked;
     }
     info.append(name, meta);
-    li.append(producerArt(job, p, unlocked ? '' : 'pp-art--locked'), info);
-
+    li.append(art, info);
     if (job === 'logging' && !unlocked) {
       const btn = h('button', 'button pp-kind__action');
       btn.type = 'button';
       btn.dataset.key = `unlock-${p.id}`;
       const prices = () => treeUnlockCost(content, p.id, collectModifiers(ctx.state(), content));
       priced.push({ btn, prices });
-      notes.push({
-        el: btn,
-        text: () => COPY.production.unlock(prices().map(priceText).join(', ')),
+      notes.push(() => set(btn, COPY.production.unlock(prices().map(priceText).join(', '))));
+      btn.addEventListener('click', () => {
+        const result = unlockTree(ctx.state(), content, p.id);
+        if (result.ok) ctx.sound?.('buy');
+        act(result.ok ? result.state : null);
       });
-      btn.addEventListener('click', () => act(unlockTree(ctx.state(), content, p.id)));
-      li.append(btn);
-    } else if (job === 'mining' && unlocked) {
-      const btn = h('button', 'button pp-kind__action');
-      btn.type = 'button';
-      btn.dataset.key = `level-${p.id}`;
-      const prices = () => {
-        const price = mineLevelCost(ctx.state(), content, p.id);
-        return price ? [price] : [];
-      };
-      priced.push({ btn, prices });
-      notes.push({
-        el: btn,
-        text: () => COPY.production.levelUp(prices().map(priceText).join(', ')),
-      });
-      btn.addEventListener('click', () =>
-        act(buyMineLevel(ctx.state(), content, p.id), `level-${p.id}`),
-      );
       li.append(btn);
     }
     return li;
   }
 
-  function refresh(): void {
-    const state = ctx.state();
-    for (const { btn, prices } of priced) {
-      const ok = canAfford(state, prices());
-      if (btn.disabled === ok) btn.disabled = !ok;
-    }
-    for (const { el, text } of notes) {
-      const value = text();
-      if (el.textContent !== value) el.textContent = value;
+  function buyExpansion(job: ProductionJob): void {
+    const result = buyExpansions(ctx.state(), content, job, buyCount());
+    if (!result.ok) return;
+    lines.get(`${job}-expansion`)?.btn.celebrate();
+    ctx.sound?.('buy');
+    act(result.state, `${job}-expansion`);
+  }
+
+  function buyLevels(mineId: string): void {
+    const s = ctx.state();
+    const from = mineLevel(s, mineId);
+    const result = buyMineLevels(s, content, mineId, buyCount());
+    if (!result.ok) return;
+    const mine = content.mineById.get(mineId)!;
+    const to = mineLevel(result.state, mineId);
+    ctx.sound?.('buy');
+    act(result.state, `level-${mineId}`);
+    const line = lines.get(`level-${mineId}`);
+    line?.btn.celebrate();
+    const crossed = milestonesCrossed(mine.level.milestones, from, to);
+    if (crossed.length > 0) {
+      replay(line?.li, 'is-milestone', 1100);
+      toast(
+        COPY.buy.reached(mine.name, crossed[crossed.length - 1]!),
+        COPY.buy.reachedDetail(
+          COPY.buy.output,
+          formatDecimal(mine.level.milestones.multiplier.pow(crossed.length)),
+        ),
+        'milestone',
+      );
+      ctx.sound?.('milestone');
     }
   }
+
+  function refresh(): void {
+    const s = ctx.state();
+    const mods = collectModifiers(s, content);
+    const count = buyCount();
+    const views: Array<[string, BuyLineView | null]> = [
+      ...PRODUCTION_JOBS.map(
+        (job) =>
+          [`${job}-expansion`, expansionView(s, content, job, count, mods)] as [
+            string,
+            BuyLineView | null,
+          ],
+      ),
+      ...mineLevelViews(s, content, count, mods).map(
+        (v) => [`level-${v.id}`, v] as [string, BuyLineView],
+      ),
+    ];
+    for (const [key, v] of views) {
+      const line = lines.get(key);
+      if (!line || !v) continue;
+      line.btn.update(v);
+      const [name, meta] = line.li.querySelectorAll<HTMLElement>('.pp-line__name, .pp-line__meta');
+      set(name!, v.name);
+      set(
+        meta!,
+        key.endsWith('expansion') ? COPY.production.owned(v.level) : COPY.production.level(v.level),
+      );
+      if (line.tag) {
+        set(line.tag, v.milestone);
+        line.tag.style.setProperty('--p', String(v.milestoneInfo?.progress ?? 0));
+      }
+    }
+    for (const { btn, prices } of priced) {
+      const ok = canAfford(s, prices());
+      if (btn.disabled === ok) btn.disabled = !ok;
+    }
+    for (const note of notes) note();
+  }
+
+  // ---- show events ----
+
+  ctx.director?.on('harvest', (e) => {
+    const area = fieldEls[e.job];
+    if (!visible() || !area) return;
+    const box = area.getBoundingClientRect();
+    if (box.width === 0) return;
+    const now = performance.now();
+    for (const p of e.plots) {
+      const tile = tiles[e.job].get(p.index);
+      if (!tile) continue;
+      const t = tile.getBoundingClientRect();
+      popGain(
+        area,
+        `pp-${e.job}-${p.index}`,
+        p.amount,
+        (t.left + t.width / 2 - box.left) / box.width,
+        (t.top + 8 - box.top) / box.height,
+      );
+      replay(tile.querySelector('.pp-tile__art'), 'is-harvest', 400);
+      if (coinThrottle.allow(p.resource, now)) {
+        flyCoins({
+          from: centreOf(tile),
+          target: ctx.coins?.currencyGlyph(p.resource) ?? null,
+          count: 1,
+          onLand: () => ctx.coins?.pulseCurrency(p.resource),
+        });
+      }
+    }
+  });
+
+  ctx.director?.on('harvestBurst', (e) => {
+    const area = fieldEls[e.job];
+    if (!visible() || !area) return;
+    // a wave across the plots, then one big total
+    [...tiles[e.job].values()].forEach((tile, i) => {
+      window.setTimeout(() => replay(tile, 'is-wave', 500), i * 70);
+    });
+    const text = e.totals.map((t) => `+${popText(t.amount)}`).join('  ');
+    popNumber(area, { kind: 'total', text, x: 0.5, y: 0.45, scale: 1.9 });
+    ctx.sound?.('harvestBurst');
+    for (const t of e.totals) {
+      flyCoins({
+        from: centreOf(area),
+        target: ctx.coins?.currencyGlyph(t.resource) ?? null,
+        count: 6,
+        spill: true,
+        onLand: () => ctx.coins?.pulseCurrency(t.resource),
+      });
+    }
+  });
+
+  onBuyCount(() => {
+    if (visible()) refresh();
+  });
 
   return {
     render() {
       const state = ctx.state();
       if (signature(state, content, collectModifiers(state, content)) !== last) build();
-      refresh();
+      else refresh();
     },
   };
+}
+
+function set(node: HTMLElement, text: string): void {
+  if (node.textContent !== text) node.textContent = text;
 }

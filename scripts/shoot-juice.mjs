@@ -3,6 +3,8 @@
 // Usage: node scripts/shoot-juice.mjs <page> <outFile> [port] [--drawer] [--fight]
 //   --fight   starts the first open dungeon when nothing is being fought
 //   --drawer  opens the Dungeons drawer before the shot
+//   --keep    leaves the welcome-back fan open
+//   --reload  reloads the window first
 import { chromium } from 'playwright';
 
 const [pageId = 'home', out = 'design/app-screens/juice.png', port = '9333'] = process.argv
@@ -25,8 +27,12 @@ if (flags.has('--reload')) {
 }
 await page.bringToFront();
 await page.waitForSelector('.shell');
-await page.evaluate(() => document.querySelector('.away button, .wb__collect')?.click());
-await page.click(`.shell-rail__item[data-page="${pageId}"]`);
+if (!flags.has('--keep'))
+  await page.evaluate(() => document.querySelector('.away button, .wb__collect')?.click());
+await page.evaluate(
+  (id) => document.querySelector(`.shell-rail__item[data-page="${id}"]`)?.click(),
+  pageId,
+);
 if (flags.has('--fight')) {
   await page.evaluate(() => {
     if (document.querySelector('.dp-floor--active')) return;
