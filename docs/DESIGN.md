@@ -24,23 +24,23 @@ Two production jobs, **mining** and **logging**. Each produces its own resources
 ### Logging
 
 - Starts with **one tree plot**.
-- Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different wood.
-- Plot expansions are paid in **Oak Wood**. Each tree kind is unlocked once with the wood of the tier below (Ironbark with Oak Wood, Moonwillow with Ironwood).
+- Upgrades add more plots and unlock new **tree kinds**; each tree kind yields a different gem.
+- Plot expansions are paid in **Oak Gems**. Each tree kind is unlocked once with the gems of the tier below (Ironbark with Oak Gems, Moonwillow with Ironbark Gems).
 
 ### Mining
 
-- Works the same way as logging (limited slots, upgrades add capacity, higher mine types yield different ores).
+- Works the same way as logging (limited slots, upgrades add capacity, higher mine types yield different gems).
 - **New mine types are unlocked via dungeon expeditions.**
-- Starts with **one mine slot** (Copper Quarry). Slot expansions are paid in **Copper Ore**.
-- **Mine levels:** each mine type also has a level, bought with its own ore on an exponential curve; every level adds a percentage to that mine's output. Slots and mine levels both reset on prestige.
+- Starts with **one mine slot** (Copper Quarry). Slot expansions are paid in **Copper Gems**.
+- **Mine levels:** each mine type also has a level, bought with its own gems on an exponential curve; every level adds a percentage to that mine's output. Slots and mine levels both reset on prestige.
 
 ### Resource uses (starting point)
 
-| Resource               | Buys                            |
-| ---------------------- | ------------------------------- |
-| Ore                    | Damage, mine upgrades           |
-| Wood                   | Plot expansions, new tree kinds |
-| Higher-tier wood / ore | Card tier-ups                   |
+| Resource         | Buys                            |
+| ---------------- | ------------------------------- |
+| Mine gems        | Damage, mine upgrades           |
+| Tree gems        | Plot expansions, new tree kinds |
+| Higher-tier gems | Card tier-ups                   |
 
 This is a starting point and will be tuned.
 
@@ -226,8 +226,8 @@ Every tunable number (production rate, damage, drop chance, pity threshold, cost
 
 | Area                | Content                                                                                                                                                                                                                       |
 | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Tree kinds (3)      | **Oak** (Oak Wood, start), **Ironbark** (Ironwood), **Moonwillow** (Moonwood)                                                                                                                                                 |
-| Mines (3)           | **Copper Quarry** (Copper Ore, start), **Iron Deeps** (Iron Ore, unlocked by clearing Dungeon 1), **Crystal Grotto** (Crystal Ore, unlocked by clearing Dungeon 2)                                                            |
+| Tree kinds (3)      | **Oak** (Oak Gem, start), **Ironbark** (Ironbark Gem), **Moonwillow** (Moonwillow Gem)                                                                                                                                        |
+| Mines (3)           | **Copper Quarry** (Copper Gem, start), **Iron Deeps** (Iron Gem, unlocked by clearing Dungeon 1), **Crystal Grotto** (Grotto Gem, unlocked by clearing Dungeon 2)                                                             |
 | Dungeons (3)        | **Mossy Cellar** (boss Root Warden, drops Moss Sigil and Moss Core), **Ember Crypt** (boss Cinder Lich, drops Ember Sigil and Cinder Core), **Frostspire Vault** (boss Glacier Colossus, drops Frost Sigil and Frost Core)    |
 | Special dungeon (1) | **The Glimmer Trial**, a strength test with a fixed target and a score. Drops **Glimmer Dust** (cosmetic upgrades, shape and accent levels) and **Facet Shards** (gem, glow and ambient levels)                               |
 | Cards (12)          | See below                                                                                                                                                                                                                     |
@@ -245,7 +245,7 @@ Every tunable number (production rate, damage, drop chance, pity threshold, cost
 | Logging  | Apprentice Feller | Grove Keeper  | Elder Treant (Epic)     | Moonwood Dryad (Mythic) |
 | Mining   | Cave Digger       | Gem Cutter    | Geode Golem (Legendary) | Core Titan (Exotic)     |
 
-**Achievements (25)**: First Harvest, First Kill, Lumberjack I / II (wood harvested), Prospector I / II (ore mined), Tree Hugger (all 3 tree kinds), Deep Delver (all 3 mines), Giant Slayer I / II / III (clear each dungeon), Glimmer Seeker (clear the special dungeon), First Summon, Ten Pulls, Pity Breaker (trigger a pity), Silver Lining (first Silver card), Golden Hour (first Gold card), Six Stars (first ★6), Prismatic Dawn (first Prismatic card), Full Loadout (fill a loadout), Dressed Up (equip a full set), Fashionista (own 10 cosmetics), Skilled (first 10 skill points spent), First Ascension, Night Owl (collect 8 h of offline progress). Cosmetic rewards from achievements are an item source.
+**Achievements (25)**: First Harvest, First Kill, Lumberjack I / II (tree gems harvested), Prospector I / II (mine gems mined), Tree Hugger (all 3 tree kinds), Deep Delver (all 3 mines), Giant Slayer I / II / III (clear each dungeon), Glimmer Seeker (clear the special dungeon), First Summon, Ten Pulls, Pity Breaker (trigger a pity), Silver Lining (first Silver card), Golden Hour (first Gold card), Six Stars (first ★6), Prismatic Dawn (first Prismatic card), Full Loadout (fill a loadout), Dressed Up (equip a full set), Fashionista (own 10 cosmetics), Skilled (first 10 skill points spent), First Ascension, Night Owl (collect 8 h of offline progress). Cosmetic rewards from achievements are an item source.
 
 ### 11.7 Target pacing for the beta
 
@@ -271,7 +271,7 @@ Active play with the game left open, in hours of play:
 Decided with the user for Phase 5. Numbers live in data and will be tuned.
 
 - **Clearing and unlocking.** A dungeon is **cleared on its first boss kill** (`killsToClear` in data, 1 for now). Clearing dungeon N unlocks dungeon N+1 (`unlockedBy` in data) and the mine type tied to it (Iron Deeps, Crystal Grotto).
-- **Damage purchases.** One upgrade line **per ore**: Copper, Iron and Crystal. Each line has its own exponential price in that ore and adds flat damage per level; higher ores add much more. Levels are kept through prestige.
+- **Damage purchases.** One upgrade line **per mine gem**: Copper, Iron and Grotto. Each line has its own exponential price in that gem and adds flat damage per level; higher gems add much more. Levels are kept through prestige.
 - **Cores** (Moss / Cinder / Frost) drop with a moderate **chance per kill** (10% to start), no pity. Sigils drop on every kill; the rare item keeps its low odds and pity.
 - **The Glimmer Trial.** Picked like a dungeon; unlocks when Dungeon 2 is cleared. Each **attempt lasts 30 s** against a target with a **fixed HP** (no prestige scaling) and repeats automatically. **Score** = share of the target's HP dealt in the attempt (capped at 100%). Rewards are paid every attempt by **score tier**: each of 25 / 50 / 75 / 100% adds Glimmer Dust; Facet Shards only at 75% and 100%. Reaching 100% clears the trial.
 - **Burst gauge.** The fighting job hits once per main-card interval (1 s while no card is equipped). Each hit fills the gauge by 1; at 20 the signature attack fires and deals **10× a hit** on top of the normal damage. Supports raise the fill per hit through modifiers.
@@ -286,7 +286,7 @@ Decided with the user for Phase 6 (roles, star and tier-up requirements, start).
 - **Collection.** Each card is owned once, with its tier, stars, level and XP. Further copies are stored on it as **duplicates**.
 - **Levels (11.2).** Cards in a loadout gain XP by doing their job: fighting cards per boss kill (more for harder dungeons), logging and mining cards per unit harvested. The cap is 20 at Bronze ★1 and rises by 4 per star (Bronze ★6 = 40, Silver ★1–6 = 40–60, and so on). Each level adds a little to the main ability's power and the support effect's strength.
 - **Star-up** (★n → ★n+1 within a tier) needs **one duplicate**, the card **at its level cap** and **materials**: the tier's Core (Bronze: Moss Core, Silver: Cinder Core, Gold and Prismatic: Frost Core). The amount grows per star, and the step to **★6, which brings the visual evolution, costs about three times the step before it**. Each star adds a little power; ★6 adds a big step.
-- **Tier-up** (★6 → next tier ★1) needs the card **at its level cap** and: Bronze → Silver: Moss Cores + Ironwood (logging) or Iron Ore (mining, fighting); Silver → Gold: Cinder Cores + Moonwood or Crystal Ore; Gold → Prismatic: Frost Cores + Frost Sigils. Level and XP carry over, and the new tier raises the cap. Each tier adds a big power step.
+- **Tier-up** (★6 → next tier ★1) needs the card **at its level cap** and: Bronze → Silver: Moss Cores + Ironbark Gems (logging) or Iron Gems (mining, fighting); Silver → Gold: Cinder Cores + Moonwillow Gems or Grotto Gems; Gold → Prismatic: Frost Cores + Frost Sigils. Level and XP carry over, and the new tier raises the cap. Each tier adds a big power step.
 - **Shards.** A duplicate gained once a card is Prismatic ★6 turns into shards, more for higher rarities (Common 1, Rare 2, Epic 4, Legendary 8, Mythic 15, Exotic 25, Void 40).
 - **Cost (11.4).** By rarity: Common 2, Rare 3, Epic 5, Legendary 8, Mythic 12, Exotic 16, Void 20. Each job's cap is 6 at account level 1 and grows by 2 per level (`loadout.costCap`). The main card must fit; a loadout over the cap cannot be saved.
 - **Abilities.** Fighting mains shape how damage is dealt (steady ticks, fast hits that fill the gauge quickly, slow heavy hits with a stronger signature attack). Production mains shape output (steady, bigger harvest bursts, faster gauges). Supports add a percentage bonus or a gauge, drop or material bonus. All card effects go through the modifier pipeline with source kind `card`.
@@ -313,7 +313,7 @@ Decided with the user for the graphics overhaul, so the player can lose a fight 
 - **Bosses hit back.** Every boss attacks the fighting loadout at its own rhythm with its own damage (in data per boss, growing with dungeon tier and with prestige like boss HP). A special dungeon's target does not attack.
 - **One health pool.** The fighting loadout has one shared health bar. Each card adds health from its rarity, level and rank. It is shown like the boss's bar.
 - **Knocked out.** When the pool reaches 0, the loadout is knocked out for a short time (30 s to start), the boss heals to full, and then the fight starts again with full health. A boss you cannot kill before your cards fall is a wall until you get stronger.
-- **Protection** comes only through the modifier system: health and defence are stats, so cosmetics, set bonuses, the skill tree and card enhancements can raise them. There are no heal or shield support effects and no ore upgrade line for defence.
+- **Protection** comes only through the modifier system: health and defence are stats, so cosmetics, set bonuses, the skill tree and card enhancements can raise them. There are no heal or shield support effects and no gem upgrade line for defence.
 - **Offline** progress uses the same rules: being knocked out offline costs the same time and boss healing as online.
 
 ## 12. Defaults for underspecified points
@@ -361,4 +361,5 @@ Decided with the user in the graphics overhaul. References (Knights & Dragons ar
   | Geode Golem       | Crystal | Geode hammer           |
   | Core Titan        | Void    | Core gauntlet          |
 
+- **Resources are carved gems.** Every production resource is a gem: its **outline** says which one (Oak round, Ironbark pentagon, Moonwillow star, Copper square, Iron hexagon, Grotto drop) and its **carved pattern** comes from its source (grain, rings and swirls for the trees, glowing veins for the mines). Icons set the gem in a **notched coin**; the coin's metal is the tier (stone, bronze, silver, gold, prismatic), and a resource not discovered yet shows as a grey coin with a padlock. In the world, each tree is themed to its gem (colours and bark pattern) and hangs its gems, and each mine is rock with its gems set into it. Navigation icons keep the hexagonal plaque.
 - **Performance.** Element effects run on one shared canvas layer, only for cards on screen, at a capped frame rate. Under reduced motion they show a still frame.
