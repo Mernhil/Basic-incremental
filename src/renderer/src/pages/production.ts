@@ -7,7 +7,6 @@ import {
   canAfford,
   collectModifiers,
   computeStat,
-  formatDecimal,
   isProducerUnlocked,
   jobProductionPerSecond,
   mineLevel,
@@ -25,6 +24,7 @@ import {
   type ProductionJob,
   type TierUp,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { mineTile, svg, treeTile } from '../art/gems';
 import { h } from '../shell/shell';
@@ -83,7 +83,7 @@ export function createProductionPage(
 ): { render(): void } {
   const { content } = ctx;
   const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
-  const priceText = (p: Price): string => `${formatDecimal(p.amount)} ${resName(p.resource)}`;
+  const priceText = (p: Price): string => `${fmt(p.amount)} ${resName(p.resource)}`;
   const visible = (): boolean => ctx.visible?.() ?? true;
   const coinThrottle = createThrottle(COINS_PER_SECOND, 1000);
 
@@ -148,7 +148,7 @@ export function createProductionPage(
       const s = ctx.state();
       const rates = Object.entries(
         jobProductionPerSecond(s, content, job, collectModifiers(s, content)),
-      ).map(([res, v]) => COPY.production.perSecond(formatDecimal(v), resName(res)));
+      ).map(([res, v]) => COPY.production.perSecond(fmt(v), resName(res)));
       set(summary, rates.length ? rates.join(' · ') : t.idle);
     });
     head.append(
@@ -191,7 +191,7 @@ export function createProductionPage(
         h(
           'span',
           'pp-tile__rate bi-num',
-          COPY.production.rate(formatDecimal(producerRate(p, job, mods, level))),
+          COPY.production.rate(fmt(producerRate(p, job, mods, level))),
         ),
       );
       btn.setAttribute('aria-label', t.plotLabel(index + 1, p.name));
@@ -240,7 +240,7 @@ export function createProductionPage(
           'span',
           'pp-menu__meta bi-num',
           unlocked
-            ? COPY.production.rate(formatDecimal(producerRate(p, job, mods, level)))
+            ? COPY.production.rate(fmt(producerRate(p, job, mods, level)))
             : COPY.production.locked,
         ),
       );
@@ -361,11 +361,7 @@ export function createProductionPage(
       const rate = h(
         'span',
         'has-tip',
-        COPY.production.perPlot(
-          formatDecimal(producerRate(p, job, mods, 0)),
-          resName(p.resource),
-          t.unit,
-        ),
+        COPY.production.perPlot(fmt(producerRate(p, job, mods, 0)), resName(p.resource), t.unit),
       );
       rate.tabIndex = 0;
       attachTooltip(rate, () => {

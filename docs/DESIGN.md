@@ -407,6 +407,13 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Account tree.** 23 nodes over the six branches, each rank adding its bonus once more (source `skill`): Combat holds Might, Keen Eye (crit chance), Brutal (crit damage), Vigor and Guard; Summoning / Luck is `luck`; Automation / Offline is `automation`. Respec refunds every point: free once per ascension, then 5 Starlight.
     - **Card enhancements.** Every card has five options from its job's template, values scaled by rarity, costing 20 points in total. Budgets: Bronze 0, Silver 4, Gold 7, Prismatic 10 (half the total at the top). Options apply while the card is in a loadout (source `enhancement`). Respec is free.
 22. **Dev saves.** Dev builds take `BI_PROFILE` / `--bi-profile` or `BI_USER_DATA_DIR` so parallel dev apps never autosave over each other (`docs/WORK_SPLIT.md`).
+23. **Settings page.** Four framed panels in two columns: Display, Sound, Save, Help.
+    - **Reduced motion:** Follow Windows (default), On or Off, applied to every reduced-motion check (CSS and script) in the app.
+    - **Number format:** Scientific (default, the game's own form), Suffixes (K, M, B … Dc, then scientific) or Engineering (exponents in steps of three). Numbers below a million always show in full. Display only; saves keep exact numbers.
+    - **Autosave:** every 10 s, 30 s (default), 1 min, 2 min or 5 min. Purchases still save right away.
+    - **Export:** copy to the clipboard or save a `.txt` file. **Import:** paste or load a file; the save is checked first, errors show in the page, and an in-page confirm compares both games before replacing.
+    - These preferences are stored per player next to the sound settings (not in the save).
+    - **Report an issue** opens the pre-filled issue of 12.5 in the browser. The log lines are the game window's own recent console lines and errors until the main process exposes its log. The link stays under about 7,500 characters by leaving out the oldest log lines.
 
 ## 13. Art style
 

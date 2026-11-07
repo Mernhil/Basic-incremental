@@ -2,13 +2,10 @@ import { ContentValidationError, loadContent, type Content } from '../../data';
 import {
   Decimal,
   GameLoop,
-  SaveError,
   createInitialState,
   createSaveText,
   defaultRng,
   exportSaveString,
-  formatDecimal,
-  importSaveString,
   loadBestSave,
   checkAchievements,
   collectModifiers,
@@ -22,9 +19,10 @@ import {
   type TickReport,
   type TierUp,
 } from '../../game';
+import { fmt } from './settings/numberFormat';
 import { COPY } from './copy';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
-import { createShell, frame, h, PAGES, placeholderPage, type Currency } from './shell/shell';
+import { createShell, h, PAGES, placeholderPage, type Currency } from './shell/shell';
 import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
 import { createHomePage } from './pages/home';
@@ -46,10 +44,11 @@ import { createDirector } from './stage/director';
 import { setNumberMotion } from './stage/numbers';
 import { showWelcomeBack } from './stage/welcome';
 import { initSound, playSound } from './sound/engine';
-import { createMuteToggle, soundSettingsFrame } from './sound/controls';
+import { createMuteToggle } from './sound/controls';
+import { createSettingsPage } from './pages/settings';
+import { onPrefs, prefs } from './settings/prefs';
 
 const TICK_INTERVAL_MS = 100;
-const AUTOSAVE_INTERVAL_MS = 30_000;
 const CLEAR_NOTICE_MS = 12_000;
 
 function showFatal(root: HTMLElement, error: unknown): void {
@@ -112,7 +111,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     name: r.name,
     icon: KIND_ICON[r.kind],
     ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
-    tip: () => `${r.name}: ${formatDecimal(loop.state.resources[r.id] ?? new Decimal(0))}`,
+    tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
   }));
   const pages: Partial<Record<string, { render(): void }>> = {};
   const shell = createShell({
@@ -260,25 +259,24 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     onTierUps,
   });
 
-  // save tools (Settings page)
-  const toolsFrame = frame(COPY.save.heading);
-  const tools = toolsFrame.body;
-  tools.classList.add('tools');
-  const exportBtn = h('button', 'button', COPY.save.export);
-  const importBtn = h('button', 'button', COPY.save.import);
-  exportBtn.type = 'button';
-  importBtn.type = 'button';
-  const saveText = h('textarea', 'tools__text');
-  saveText.rows = 3;
-  saveText.spellcheck = false;
-  saveText.placeholder = COPY.save.placeholder;
-  saveText.setAttribute('aria-label', COPY.save.placeholder);
-  const message = h('p', 'tools__message');
-  message.setAttribute('role', 'status');
-  const buttons = h('div', 'tools__buttons');
-  buttons.append(exportBtn, importBtn);
-  tools.append(buttons, saveText, message);
-  shell.page('settings').append(soundSettingsFrame(), toolsFrame.el);
+  // Settings (DESIGN.md 9, 12.23): display, sound, save, help
+  let lastSavedAt: number | null = null;
+  pages['settings'] = createSettingsPage(shell.page('settings'), {
+    content,
+    state: () => loop.state,
+    version,
+    exportText: () => {
+      step();
+      return exportSaveString(loop.state, Date.now());
+    },
+    replace: (imported) => {
+      loop.reset(imported, Date.now());
+      applyTheme();
+      rendered();
+      void save();
+    },
+    lastSavedAt: () => lastSavedAt,
+  });
 
   root.replaceChildren(shell.el);
 
@@ -324,10 +322,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     step();
     try {
       await window.api.writeSave(createSaveText(loop.state, Date.now()));
+      lastSavedAt = Date.now();
     } catch (error) {
-      message.textContent = COPY.save.writeFailed(
-        error instanceof Error ? error.message : String(error),
-      );
+      const reason = error instanceof Error ? error.message : String(error);
+      console.error('Save failed:', reason);
+      toast(COPY.save.heading, COPY.save.writeFailed(reason));
     }
   };
 
@@ -337,36 +336,19 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   }, TICK_INTERVAL_MS);
   director.start();
 
-  window.setInterval(() => void save(), AUTOSAVE_INTERVAL_MS);
+  // autosave on the interval chosen in Settings
+  let autosaveTimer = 0;
+  let autosaveEvery = 0;
+  const scheduleAutosave = (seconds: number): void => {
+    if (seconds === autosaveEvery) return;
+    autosaveEvery = seconds;
+    window.clearInterval(autosaveTimer);
+    autosaveTimer = window.setInterval(() => void save(), seconds * 1000);
+  };
+  scheduleAutosave(prefs().autosaveSeconds);
+  onPrefs((p) => scheduleAutosave(p.autosaveSeconds));
   window.api.onFlushRequest(() => {
     void save().finally(() => window.api.flushDone());
-  });
-
-  exportBtn.addEventListener('click', () => {
-    step();
-    saveText.value = exportSaveString(loop.state, Date.now());
-    saveText.select();
-    navigator.clipboard
-      ?.writeText(saveText.value)
-      .then(() => (message.textContent = COPY.save.exported))
-      .catch(() => (message.textContent = COPY.save.exportedNoClipboard));
-  });
-  importBtn.addEventListener('click', () => {
-    if (!saveText.value.trim()) {
-      message.textContent = COPY.save.importEmpty;
-      return;
-    }
-    try {
-      const imported = importSaveString(saveText.value, content);
-      if (!window.confirm(COPY.save.importConfirm)) return;
-      loop.reset(imported.state, Date.now());
-      applyTheme();
-      saveText.value = '';
-      message.textContent = COPY.save.imported;
-      void save();
-    } catch (error) {
-      message.textContent = error instanceof SaveError ? error.message : COPY.save.importFailed;
-    }
   });
 
   rendered();

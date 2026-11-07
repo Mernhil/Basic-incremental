@@ -12,7 +12,6 @@ import {
 import {
   Decimal,
   equip,
-  formatDecimal,
   type Modifier,
   meetsRank,
   resolveGlobal,
@@ -23,6 +22,7 @@ import {
   type ResolvedCard,
   type WardrobeItem,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { modifierText, sourceName } from '../shell/modifierText';
 
@@ -54,7 +54,7 @@ const rarityName = (content: Content, r: Rarity): string => content.rarityById.g
 
 /** "+1% damage", "×2 sigils", ... */
 export function buffText(m: ModifierData): string {
-  const v = formatDecimal(m.value);
+  const v = fmt(m.value);
   const stat = t.stat[m.stat as keyof typeof t.stat] ?? m.stat;
   switch (m.kind) {
     case 'percent':
@@ -348,22 +348,22 @@ export function itemDetail(
   let upgrade: UpgradeView | null = null;
   if (item.upgrade?.available && item.upgrade.step && item.upgrade.toLevel) {
     const reqs = item.upgrade.requirements.map((r): Requirement => {
-      const need = formatDecimal(r.need);
+      const need = fmt(r.need);
       if (r.kind === 'copies') {
         return {
           label: t.copiesLabel,
-          value: t.haveOf(formatDecimal(r.have), need),
+          value: t.haveOf(fmt(r.have), need),
           met: r.met,
         };
       }
       const name = content.resourceById.get(r.resource ?? '')?.name ?? r.resource ?? '';
-      return { label: name, value: t.haveOf(formatDecimal(r.have), need), met: r.met };
+      return { label: name, value: t.haveOf(fmt(r.have), need), met: r.met };
     });
     const price = item.upgrade.requirements
       .map((r) =>
         r.kind === 'copies'
           ? t.copies(r.need.toNumber())
-          : `${formatDecimal(r.need)} ${content.resourceById.get(r.resource ?? '')?.name ?? ''}`,
+          : `${fmt(r.need)} ${content.resourceById.get(r.resource ?? '')?.name ?? ''}`,
       )
       .join(', ');
     upgrade = {
@@ -497,7 +497,7 @@ export function buffBreakdown(
   return {
     title: t.breakdownTitle(statName),
     rows,
-    total: [t.breakdownTotal, `+${formatDecimal(sum)}%`],
+    total: [t.breakdownTotal, `+${fmt(sum)}%`],
   };
 }
 

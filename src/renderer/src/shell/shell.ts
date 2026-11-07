@@ -1,4 +1,5 @@
-import { Decimal, formatDecimal } from '../../../game';
+import { Decimal } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
 import { onFrame, replay } from '../stage/motion';
@@ -156,7 +157,7 @@ export function createShell(opts: {
       if (c.shown.eq(goal)) continue;
       c.shown = rollToward(c.shown, goal, dt);
       // whole-number amounts (sigils, cores) roll through whole numbers only
-      const text = formatDecimal(goal.eq(goal.floor()) ? c.shown.round() : c.shown);
+      const text = fmt(goal.eq(goal.floor()) ? c.shown.round() : c.shown);
       const v = currencyValues.get(id)!;
       if (v.textContent !== text) v.textContent = text;
     }
@@ -255,7 +256,7 @@ export function createShell(opts: {
       if (rate) {
         const show = perSecond !== null && perSecond.gt(0);
         if (rate.hidden === show) rate.hidden = !show;
-        const text = show ? COPY.shell.perSecond(formatDecimal(perSecond)) : '';
+        const text = show ? COPY.shell.perSecond(fmt(perSecond)) : '';
         if (rate.textContent !== text) rate.textContent = text;
       }
     },

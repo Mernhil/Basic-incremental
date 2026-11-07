@@ -4,13 +4,13 @@ import {
   bossMastery,
   damageLevel,
   edgeStage,
-  formatDecimal,
   gemMastery,
   type AscensionPreview,
   type GameState,
   type Modifier,
   type StarlightOffer,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { modifierText } from '../shell/modifierText';
 import type { BuyLineView } from './buyModel';
@@ -203,7 +203,7 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
         views.push({
           id,
           label,
-          detail: t.keptDetail.starlight(formatDecimal(have)),
+          detail: t.keptDetail.starlight(fmt(have)),
           art: { kind: 'starlight' },
         });
         break;
@@ -216,7 +216,7 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
 /** Everything the gate shows before (and while) confirming. */
 export function gateView(preview: AscensionPreview, state: GameState, content: Content): GateView {
   const t = COPY.ascension;
-  const gain = formatDecimal(preview.gain);
+  const gain = fmt(preview.gain);
   const progress = preview.canAscend
     ? 1
     : Math.min(1, Math.max(0, preview.gain.toNumber() / Math.max(1, preview.minimum)));
@@ -298,7 +298,7 @@ export function starlightViews(
         available: !maxed,
         offer: { count: 1, price, affordable: o.affordable, progress },
         label: maxed ? t.maxed : t.buy,
-        price: maxed ? '' : t.price(formatDecimal(price.amount)),
+        price: maxed ? '' : t.price(fmt(price.amount)),
         preview,
         milestone: '',
         milestoneInfo: null,

@@ -1,5 +1,6 @@
 import type { Content, Rarity } from '../../../data';
-import { formatDecimal, type PortalInfo, type PullResult } from '../../../game';
+import { type PortalInfo, type PullResult } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
 /**
@@ -37,12 +38,12 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
     name: info.portal.name,
     single: {
       label: t.single,
-      price: `${formatDecimal(info.single.price.amount)} ${res(info.single.price.resource)}`,
+      price: `${fmt(info.single.price.amount)} ${res(info.single.price.resource)}`,
       affordable: info.single.affordable,
     },
     ten: {
       label: t.ten,
-      price: `${formatDecimal(info.ten.price.amount)} ${res(info.ten.price.resource)}`,
+      price: `${fmt(info.ten.price.amount)} ${res(info.ten.price.resource)}`,
       affordable: info.ten.affordable,
     },
     pity: t.pity(rarityName(content, info.pity.rarity), left),

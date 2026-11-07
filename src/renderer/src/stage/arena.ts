@@ -5,7 +5,6 @@ import {
   burstView,
   collectModifiers,
   defaultRng,
-  formatDecimal,
   formatDuration,
   hpBarState,
   loadoutHealth,
@@ -15,6 +14,7 @@ import {
   type GameState,
   bossMastery,
 } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { bossArt, sentinelLevel } from '../art/bosses';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
@@ -261,7 +261,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const mods = collectModifiers(s, content);
     const dungeon = content.dungeonById.get(id);
     const r = stageReadout(s, content, mods);
-    setText(dpsOut, formatDecimal(r.averageDps));
+    setText(dpsOut, fmt(r.averageDps));
     setText(kpmOut, formatRate(r.killsPerMinute));
     setText(ttkOut, r.secondsPerKill === null ? '—' : formatDuration(r.secondsPerKill * 1000));
     const mastery = bossMastery(s, content, id);
@@ -280,8 +280,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
       if (status) {
         hp.update(
           status.bars,
-          formatDecimal(status.hp),
-          formatDecimal(status.maxHp),
+          fmt(status.hp),
+          fmt(status.maxHp),
           status.hp.div(status.maxHp).toNumber(),
         );
         // a bar ran out: it shatters and the counter ticks down
@@ -306,8 +306,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const max = Decimal.max(lh.max, 1e-9);
     healthBar.update(
       hpBarState(lh.current, max, 1),
-      formatDecimal(lh.current),
-      formatDecimal(lh.max),
+      fmt(lh.current),
+      fmt(lh.max),
       lh.current.div(max).toNumber(),
     );
     const out = lh.knockoutSeconds > 0;

@@ -1,5 +1,6 @@
 import type { Content } from '../../../data';
-import { formatDecimal, formatDuration, type Decimal, type OfflineSummary } from '../../../game';
+import { formatDuration, type Decimal, type OfflineSummary } from '../../../game';
+import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
 /**
@@ -55,9 +56,9 @@ export function welcomeCards(summary: OfflineSummary, content: Content): Welcome
     cards.push({
       kind: 'resources',
       title: t.resources,
-      headline: `+${formatDecimal(gains[0]![1])}`,
+      headline: `+${fmt(gains[0]![1])}`,
       lines: gains.map(([id, amount]) => ({
-        text: t.gain(formatDecimal(amount), name(content, id)),
+        text: t.gain(fmt(amount), name(content, id)),
         resource: id,
         amount,
       })),
@@ -102,7 +103,7 @@ export function welcomeCards(summary: OfflineSummary, content: Content): Welcome
       text: t.level(name(content, id), l.from, l.to),
     }));
     for (const [id, v] of xp) {
-      if (!summary.cardLevels[id]) lines.push({ text: t.xp(name(content, id), formatDecimal(v)) });
+      if (!summary.cardLevels[id]) lines.push({ text: t.xp(name(content, id), fmt(v)) });
     }
     const gained = levels.reduce((n, [, l]) => n + (l.to - l.from), 0);
     cards.push({
