@@ -51,6 +51,7 @@ if (process.env.SHOOT_FREEZE)
   });
 if (process.env.SHOOT_WAIT_FOR)
   await page.waitForSelector(process.env.SHOOT_WAIT_FOR, { timeout: 8000 }).catch(() => {});
+if (process.env.SHOOT_AFTER) await page.waitForTimeout(Number(process.env.SHOOT_AFTER));
 // Freeze the one-shot stage animations mid-way so a slow, occluded window still shows them.
 if (process.env.SHOOT_FREEZE)
   await page.evaluate((t) => {

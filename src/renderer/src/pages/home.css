@@ -94,7 +94,7 @@
 }
 .hm-tile {
   flex: none;
-  width: clamp(84px, 9vw, 140px);
+  width: clamp(110px, 13vw, 180px);
   aspect-ratio: 1;
   animation: hm-sway 4s ease-in-out var(--d, 0s) infinite;
 }
