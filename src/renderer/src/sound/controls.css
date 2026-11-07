@@ -1,0 +1,65 @@
+.snd-mute {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 9px;
+  background: var(--bi-chrome-active-bg);
+  color: var(--bi-chrome-ink);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+  cursor: pointer;
+}
+.snd-mute svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.snd-mute[aria-pressed='true'] {
+  color: var(--bi-chrome-ink-muted);
+}
+.snd-mute:hover {
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-accent);
+}
+.snd-mute:focus-visible,
+.snd-row input:focus-visible,
+.snd-check input:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+
+.snd-settings {
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+}
+.snd-row {
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+.snd-row input {
+  accent-color: var(--bi-chrome-accent);
+}
+.snd-row__value {
+  text-align: right;
+  color: var(--bi-frame-ink-muted);
+}
+.snd-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+.snd-check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--bi-chrome-accent);
+}
