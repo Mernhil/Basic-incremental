@@ -292,6 +292,15 @@ export const COPY = {
     base: 'Base',
     total: 'Total',
   },
+  sound: {
+    heading: 'Sound',
+    mute: 'Mute sound',
+    unmute: 'Turn sound on',
+    master: 'Master volume',
+    sfx: 'Effects volume',
+    muteAll: 'Mute all sound',
+    muteUnfocused: 'Mute when the game is in the background',
+  },
   welcome: {
     title: 'Welcome back',
     collect: 'Collect',

@@ -30,6 +30,8 @@ import { installArtDefs } from './art/defs';
 import { createDirector } from './stage/director';
 import { setNumberMotion } from './stage/numbers';
 import { showWelcomeBack } from './stage/welcome';
+import { initSound, playSound } from './sound/engine';
+import { createMuteToggle, soundSettingsFrame } from './sound/controls';
 
 const TICK_INTERVAL_MS = 100;
 const AUTOSAVE_INTERVAL_MS = 30_000;
@@ -115,7 +117,14 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     app.append(warning);
   }
 
-  if (summary) showWelcomeBack(summary, content, shell);
+  initSound();
+  shell.tools.append(createMuteToggle());
+  // UI click for plain buttons; buy buttons and stage moments play their own sounds
+  document.addEventListener('click', (e) => {
+    const btn = (e.target as Element | null)?.closest?.('button');
+    if (btn && !btn.classList.contains('buy-btn')) playSound('click');
+  });
+  if (summary) showWelcomeBack(summary, content, shell, playSound);
 
   const applyAndSave = (next: GameState): void => {
     loop.state = next;
@@ -137,6 +146,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     director,
     coins: shell,
     visible: visible('production'),
+    sound: playSound,
   });
   pages['cards'] = createCardsPage(shell.page('cards'), {
     content,
@@ -151,6 +161,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     director,
     coins: shell,
     visible: visible('dungeons'),
+    sound: playSound,
   });
 
   // save tools (Settings page)
@@ -171,7 +182,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const buttons = h('div', 'tools__buttons');
   buttons.append(exportBtn, importBtn);
   tools.append(buttons, saveText, message);
-  shell.page('settings').append(toolsFrame.el);
+  shell.page('settings').append(soundSettingsFrame(), toolsFrame.el);
 
   root.replaceChildren(shell.el);
 
