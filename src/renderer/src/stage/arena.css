@@ -1,0 +1,538 @@
+/* The dungeon arena (DESIGN.md 14, A1 D): a full-bleed stage. The backdrop comes from the table
+   tokens; frame-* tokens skin the readouts. The boss sits centre stage on a lit floor, the party
+   stands bottom-left facing it. */
+
+.ar {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 420px;
+  height: 100%;
+  color: var(--bi-chrome-ink);
+  background:
+    radial-gradient(
+      42% 20% at 56% 76%,
+      color-mix(in srgb, var(--bi-chrome-accent) 22%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      70% 60% at 56% 30%,
+      color-mix(in srgb, var(--bi-chrome-active-bg) 90%, transparent),
+      transparent 75%
+    ),
+    linear-gradient(
+      180deg,
+      var(--bi-chrome-bg),
+      color-mix(in srgb, var(--bi-chrome-rail-bg) 70%, var(--bi-chrome-bg))
+    );
+}
+/* the floor line the fight stands on */
+.ar::before {
+  content: '';
+  position: absolute;
+  left: -5%;
+  right: -5%;
+  top: 70%;
+  bottom: -20%;
+  z-index: -1;
+  border-radius: 50% 50% 0 0 / 18% 18% 0 0;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--bi-chrome-line) 35%, transparent),
+    transparent 70%
+  );
+  box-shadow: inset 0 1px 0 var(--bi-chrome-line);
+}
+
+/* ---- top bar: where, and the readouts top-right ---- */
+.ar__top {
+  position: absolute;
+  inset: 16px 18px auto;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  pointer-events: none;
+}
+.ar__top > * {
+  pointer-events: auto;
+}
+.ar__where {
+  display: grid;
+  gap: 6px;
+}
+.ar__name {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: var(--bi-chrome-ink);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+.ar__tags {
+  display: flex;
+  gap: 6px;
+}
+.ar__tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--bi-frame-title-bg);
+  color: var(--bi-frame-title-ink);
+  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+}
+.ar__readouts {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+}
+.ar__readout {
+  min-width: 74px;
+  padding: 6px 12px 7px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--bi-frame-bg) 88%, transparent);
+  box-shadow: inset 0 0 0 1px var(--bi-frame-line);
+  color: var(--bi-frame-ink);
+}
+.ar__readout dt {
+  font-size: 11px;
+  color: var(--bi-frame-ink-muted);
+}
+.ar__readout dd {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+}
+.ar__readout:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+
+/* ---- boss ---- */
+.ar__boss {
+  position: absolute;
+  left: 56%;
+  top: 46%;
+  translate: -50% -50%;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  width: min(420px, 46%);
+}
+.ar__hp {
+  width: 100%;
+  z-index: 3;
+}
+.ar-boss {
+  position: relative;
+  width: min(300px, 100%);
+  aspect-ratio: 1;
+}
+.ar-boss__shadow {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 2%;
+  height: 9%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+  animation: ar-shadow 3.2s ease-in-out infinite;
+}
+.ar-boss__bob {
+  position: absolute;
+  inset: 0;
+  animation: ar-bob 3.2s ease-in-out infinite;
+}
+.ar-boss__body {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 92%;
+}
+.ar-boss__body svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.ar-boss__fx {
+  position: absolute;
+  inset: 12%;
+  z-index: 3;
+  pointer-events: none;
+}
+/* every hit: white flash + squash */
+.ar-boss__body.is-hit {
+  animation: ar-squash 0.22s ease-out;
+}
+.ar-boss__body.is-hit svg {
+  animation: ar-white 0.1s steps(1) 1;
+}
+.ar-boss.is-attacking .ar-boss__bob {
+  animation: ar-boss-lunge 0.42s ease-in-out;
+}
+.ar-boss.is-popping .ar-boss__body {
+  animation: ar-pop 0.7s cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+@keyframes ar-bob {
+  50% {
+    translate: 0 -10px;
+  }
+}
+@keyframes ar-shadow {
+  50% {
+    scale: 0.88 0.85;
+    opacity: 0.8;
+  }
+}
+@keyframes ar-squash {
+  0% {
+    scale: 1.08 0.9;
+  }
+  45% {
+    scale: 0.96 1.05;
+  }
+  100% {
+    scale: 1 1;
+  }
+}
+@keyframes ar-white {
+  0% {
+    filter: brightness(0) invert(1);
+  }
+}
+@keyframes ar-boss-lunge {
+  40% {
+    translate: -26px 6px;
+    rotate: -4deg;
+  }
+}
+@keyframes ar-pop {
+  0% {
+    scale: 1;
+    opacity: 1;
+  }
+  22% {
+    scale: 1.22;
+    opacity: 0;
+    filter: brightness(0) invert(1);
+  }
+  55% {
+    scale: 0.2;
+    opacity: 0;
+  }
+  80% {
+    scale: 1.08;
+    opacity: 1;
+  }
+  100% {
+    scale: 1;
+  }
+}
+
+/* HP bar shatter + counter tick */
+.ar-shards {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.ar-shards i {
+  position: absolute;
+  top: 0;
+  width: 12%;
+  height: 100%;
+  background: var(--bi-hp-0);
+  clip-path: polygon(0 0, 100% 20%, 70% 100%, 10% 80%);
+  animation: ar-shard 0.65s ease-out forwards;
+}
+@keyframes ar-shard {
+  to {
+    translate: var(--sx) var(--sy);
+    rotate: var(--sr);
+    opacity: 0;
+  }
+}
+.ar__hp .bi-hpstack__track {
+  position: relative;
+}
+.bi-hpstack__count.is-ticking {
+  animation: ar-tick 0.5s ease-out;
+}
+@keyframes ar-tick {
+  30% {
+    scale: 1.6;
+    color: var(--bi-tick-crit, #ffb02e);
+  }
+}
+
+/* rare drop: a light beam on the boss */
+.ar-beam {
+  position: absolute;
+  left: 38%;
+  right: 38%;
+  bottom: 10%;
+  height: 260%;
+  z-index: 4;
+  pointer-events: none;
+  background: linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--bi-tick-crit, #ffb02e) 80%, #fff),
+    transparent
+  );
+  filter: blur(4px);
+  transform-origin: bottom;
+  animation: ar-beam 1.6s ease-out forwards;
+}
+@keyframes ar-beam {
+  0% {
+    scale: 0.2 0;
+    opacity: 0;
+  }
+  20% {
+    scale: 1 1;
+    opacity: 0.9;
+  }
+  100% {
+    scale: 1.4 1;
+    opacity: 0;
+  }
+}
+
+/* ---- party ---- */
+.ar__party {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  z-index: 3;
+  display: grid;
+  gap: 10px;
+  transition: filter 0.3s;
+}
+.ar__slots {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+.ar-slot {
+  --k: 0.5;
+  position: relative;
+  width: calc(176px * var(--k));
+  height: calc(248px * var(--k));
+  flex: none;
+}
+.ar-slot--main {
+  --k: 0.64;
+  order: 4; /* the main card stands closest to the boss */
+}
+.ar-slot > .bi-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+}
+.ar-slot--empty {
+  border-radius: 10px;
+  box-sizing: border-box;
+  border: 2px dashed var(--bi-chrome-line);
+  opacity: 0.7;
+}
+.ar-slot.is-lunging {
+  animation: ar-lunge 0.36s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+.ar-slot.is-hurt {
+  animation: ar-hurt 0.4s linear;
+}
+.ar-slot.is-hurt > .bi-card {
+  filter: drop-shadow(0 0 10px var(--bi-hp-0));
+}
+@keyframes ar-lunge {
+  35% {
+    translate: 28px -6px;
+    rotate: 4deg;
+  }
+}
+@keyframes ar-hurt {
+  20% {
+    translate: -6px 0;
+  }
+  40% {
+    translate: 5px 0;
+  }
+  60% {
+    translate: -3px 0;
+  }
+}
+.ar__party.is-ko .ar__slots {
+  filter: grayscale(0.85) brightness(0.65);
+}
+.ar__party.is-ko .ar-slot {
+  rotate: -6deg;
+  translate: 0 8px;
+  transition:
+    rotate 0.3s,
+    translate 0.3s;
+}
+
+/* burst gauge, on the main card */
+.ar-gauge {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: -16px;
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+}
+.ar-gauge span {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  white-space: nowrap;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--bi-chrome-ink-muted);
+}
+.ar-gauge i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--bi-tick-color, #f3dc9a), var(--bi-tick-crit, #ffb02e));
+  transition: width 0.2s linear;
+}
+.ar-gauge.is-full i {
+  box-shadow: 0 0 10px var(--bi-tick-crit, #ffb02e);
+  animation: ar-gauge-ready 0.6s ease-in-out infinite alternate;
+}
+@keyframes ar-gauge-ready {
+  to {
+    filter: brightness(1.4);
+  }
+}
+
+.ar__health {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 26px;
+}
+.ar__health-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--bi-chrome-ink-muted);
+}
+
+/* knockout: the countdown big on the stage */
+.ar__ko {
+  position: absolute;
+  left: 28px;
+  top: 96px;
+  z-index: 5;
+  display: grid;
+  justify-items: start;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--bi-chrome-bg) 85%, transparent);
+  box-shadow: inset 0 0 0 2px var(--bi-hp-0);
+  color: var(--bi-chrome-ink);
+}
+.ar__ko span {
+  font-size: 13px;
+  font-weight: 600;
+}
+.ar__ko b {
+  font-size: 44px;
+  line-height: 1;
+  color: var(--bi-hp-0);
+}
+.ar__party.is-knocked {
+  animation: ar-hurt 0.7s linear;
+}
+
+/* special dungeon: time and score meters under the name */
+.ar__trial {
+  position: absolute;
+  left: 18px;
+  top: 96px;
+  z-index: 4;
+  display: grid;
+  gap: 8px;
+  width: 260px;
+}
+.ar-meter {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 3px 8px;
+  font-size: 12.5px;
+}
+.ar-meter__track {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: 4px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.45);
+}
+.ar-meter__track i {
+  display: block;
+  height: 100%;
+  background: var(--bi-chrome-accent);
+}
+
+.ar__empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0 20%;
+  text-align: center;
+  font-size: 16px;
+  color: var(--bi-chrome-ink-muted);
+}
+
+/* signature attack: screen flash */
+.ar__flash {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+}
+.ar__flash.st-flash {
+  animation: ar-flash 0.26s ease-out;
+}
+@keyframes ar-flash {
+  0% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ar-boss__bob,
+  .ar-boss__shadow,
+  .ar-boss__body.is-hit,
+  .ar-boss__body.is-hit svg,
+  .ar-boss.is-attacking .ar-boss__bob,
+  .ar-slot.is-lunging,
+  .ar-slot.is-hurt,
+  .ar__party.is-knocked,
+  .ar-gauge.is-full i,
+  .ar__flash.st-flash {
+    animation: none;
+  }
+  .ar-boss.is-popping .ar-boss__body {
+    animation: ar-fade-pop 0.7s ease;
+  }
+  @keyframes ar-fade-pop {
+    40% {
+      opacity: 0.2;
+    }
+  }
+}
