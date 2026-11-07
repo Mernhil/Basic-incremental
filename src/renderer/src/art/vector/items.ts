@@ -5,8 +5,8 @@
  * inlay and a ribbon; Mythic neon runes and a crystal edge; Exotic forked shapes and floating rings;
  * Void black chrome, glowing cracks and orbiting shards. Twinkles get more frequent with rarity.
  */
-import type { Rarity } from '../../../data';
-import { INK, f, ink } from './kit';
+import type { Rarity } from '../../../../data';
+import { INK, f, ink } from '../kit';
 
 type V = [number, number];
 
@@ -190,9 +190,14 @@ function bladeSvg(
   geo: Blade,
   ri: number,
   l: RarityLook,
-  o: { wood?: boolean; smooth?: boolean; nofuller?: boolean } = {},
+  o: {
+    wood?: boolean;
+    smooth?: boolean;
+    nofuller?: boolean;
+    metal?: readonly [string, string, string];
+  } = {},
 ): string {
-  const [c0, c1, c2] = steelOf(ri, o.wood);
+  const [c0, c1, c2] = o.metal ?? steelOf(ri, o.wood);
   let left = geo.left.slice();
   let right = geo.right.slice();
   if (ri >= 3 && !o.smooth)
@@ -990,7 +995,7 @@ const DRAW: Record<string, Draw> = {
 };
 
 /** The item's SVG body for a card art window, in a box that fits the landscape window. */
-export function itemArt(kind: string, rarity: Rarity): string {
+export function itemVector(kind: string, rarity: Rarity): string {
   const draw = DRAW[kind];
   if (!draw) return '';
   const ri = ORDER.indexOf(rarity);
@@ -1000,3 +1005,297 @@ export function itemArt(kind: string, rarity: Rarity): string {
 /** viewBox for item art: the 200 x 240 drawing, centred in the card's landscape art window. */
 export const ITEM_VIEWBOX = '-18 16 236 204';
 export const ITEM_KINDS_DRAWN = Object.keys(DRAW);
+
+/** Rarity window colour behind each rarity (the approved weapons page); the light rim mixes from it. */
+export const RARITY_WINDOW: Record<Rarity, string> = {
+  common: '#2a303c',
+  rare: '#16294d',
+  epic: '#2c1a4f',
+  legendary: '#4a2b0d',
+  mythic: '#1d0d19',
+  exotic: '#1f1108',
+  void: '#120d1c',
+};
+
+// ---- unique evolutions (DESIGN.md 13): approved in the batch review, 2026-11-07 ----
+
+export const EVOLUTIONS = ['flameblade', 'soul_reaper', 'rootbloom_staff'] as const;
+export type Evolution = (typeof EVOLUTIONS)[number];
+
+/** Blade geometry each evolution's motion runs along (200 x 240 item box). */
+export const EVOLUTION_GEO: Record<Evolution, Blade> = {
+  flameblade: makeBlade(
+    [
+      [70, 178],
+      [96, 128],
+      [128, 76],
+      [156, 26],
+    ],
+    (s) =>
+      s < 0.84
+        ? 11 + 3.2 * Math.sin(s * Math.PI * 7)
+        : ((11 + 3.2 * Math.sin(0.84 * Math.PI * 7)) * (1 - s)) / 0.16,
+  ),
+  soul_reaper: makeBlade(
+    [
+      [122, 44],
+      [178, 38],
+      [198, 104],
+      [170, 178],
+    ],
+    (s) => 18 * Math.pow(1 - s, 0.8) + 1.2,
+  ),
+  rootbloom_staff: makeBlade(
+    [
+      [102, 168],
+      [103, 148],
+      [104, 128],
+      [104, 106],
+    ],
+    () => 10,
+  ),
+};
+/** The rarity window each evolution is shown on. */
+export const EVOLUTION_WINDOW: Record<Evolution, Rarity> = {
+  flameblade: 'legendary',
+  soul_reaper: 'void',
+  rootbloom_staff: 'epic',
+};
+
+function flameblade(): string {
+  const geo = EVOLUTION_GEO.flameblade;
+  const l = LOOK.legendary;
+  const g: string[] = [];
+  const p0 = geo.spine[0]!;
+  const n = geo.nor[0]!;
+  const u: V = [n[1], -n[0]];
+  // the blade is a flame: tongues licking off both edges, layered red, orange, yellow, white-hot
+  const layer = (k: number, tongues: boolean): string => {
+    const L: V[] = [];
+    const R: V[] = [];
+    geo.spine.forEach((c, i) => {
+      const s0 = i / (geo.spine.length - 1);
+      const nn = geo.nor[i]!;
+      let w = geo.ws[i]! * k;
+      if (tongues && i > 2 && i < geo.spine.length - 3)
+        w += (i % 4 === 1 ? 6 : i % 4 === 3 ? 2.5 : 0) * k * (1 - s0 * 0.4);
+      const lift = tongues && i % 4 === 1 ? 5 * k : 0;
+      const t: V = [nn[1], -nn[0]];
+      L.push([c[0] - nn[0] * w + t[0] * lift, c[1] - nn[1] * w + t[1] * lift]);
+      R.push([
+        c[0] + nn[0] * w * 0.92 + t[0] * lift * 0.6,
+        c[1] + nn[1] * w * 0.92 + t[1] * lift * 0.6,
+      ]);
+    });
+    const last = geo.nor[geo.nor.length - 1]!;
+    const tt: V = [last[1], -last[0]];
+    return PATH([...L, [geo.tip[0] + tt[0] * 14 * k, geo.tip[1] + tt[1] * 14 * k], ...R.reverse()]);
+  };
+  g.push(`<path d="${layer(1.05, true)}" fill="#ff3b2e" ${ink(3.2)}/>`);
+  g.push(`<path d="${layer(0.78, true)}" fill="#ff8a1f"/>`);
+  g.push(`<path d="${layer(0.5, false)}" fill="#ffd23a"/>`);
+  g.push(
+    `<path d="${PATH(geo.spine.slice(2, 27), false)}" fill="none" stroke="#fff6c8" stroke-width="3.2" stroke-linecap="round"/>`,
+  );
+  const at = (back: number, side: number): V => [
+    p0[0] - u[0] * back + n[0] * side,
+    p0[1] - u[1] * back + n[1] * side,
+  ];
+  g.push(
+    `<path d="${PATH([at(6, 5), at(44, 4), at(44, -4), at(6, -5)])}" fill="#5a1f1f" ${ink(3)}/>`,
+  );
+  for (let i = 1; i < 5; i++)
+    g.push(
+      `<path d="M${f(at(6 + i * 8, 5)[0])} ${f(at(6 + i * 8, 5)[1])} L${f(at(10 + i * 8, -5)[0])} ${f(at(10 + i * 8, -5)[1])}" stroke="${l.acc}" stroke-width="2"/>`,
+    );
+  g.push(
+    `<path d="${PATH([at(3, -30), at(3, 30), at(-7, 22), at(-7, -22)])}" fill="${l.acc}" ${ink(3.2)}/>`,
+    gem(p0[0], p0[1] + 1, 6, '#ff3d2e'),
+  );
+  const pe = at(48, 0);
+  g.push(pommel(pe[0], pe[1], 3, l, 6), twinkles(3));
+  return g.join('');
+}
+
+function soulReaper(): string {
+  const geo = EVOLUTION_GEO.soul_reaper;
+  const l = LOOK.void;
+  const g: string[] = [];
+  g.push(`<path d="M40 216 L48 220 L126 48 L118 44Z" fill="#5a4668" ${ink(3)}/>`);
+  g.push(
+    bladeSvg(geo, 6, l, { smooth: true, nofuller: true, metal: ['#dcd4ea', '#8f7cb0', '#ffffff'] }),
+  );
+  for (const t of [0.12, 0.28, 0.44, 0.6, 0.76]) {
+    const [x, y] = lerpPt(geo.spine, t);
+    g.push(
+      `<path d="M${f(x - 4)} ${f(y)} L${f(x + 4)} ${f(y)} M${f(x)} ${f(y - 5)} L${f(x)} ${f(y + 4)}" stroke="#b47cff" stroke-width="2.2" stroke-linecap="round"/>`,
+    );
+  }
+  g.push(
+    `<path d="M106 26 C106 12 136 12 136 26 C136 34 132 38 130 42 L130 48 L112 48 L112 42 C108 38 106 34 106 26Z" fill="#e8e2d6" ${ink(3)}/><path d="M112 30 l6 -2 2 5 -6 2Z M124 28 l6 2 -2 5 -6 -2Z" fill="#8a3cff"/><path d="M116 48 L116 42 M121 48 L121 42 M126 48 L126 42" stroke="${INK}" stroke-width="2"/>`,
+  );
+  g.push(
+    twinkles(4, [
+      [170, 196],
+      [40, 80],
+      [80, 150],
+      [180, 60],
+    ]),
+  );
+  return g.join('');
+}
+
+function rootbloomStaff(): string {
+  const g: string[] = [];
+  const cx = 104;
+  const top = 100;
+  const bot = 194;
+  const sx = (t: number, ph: number, amp: number): number =>
+    cx + Math.sin(t * 9 + ph) * amp + (1 - t) * -5;
+  // roots, thick and shaded, with moss tufts
+  for (const [dx, dy, c1, c2, w] of [
+    [-36, 12, -4, 14, 5],
+    [-18, 26, -12, 8, 6],
+    [-2, 32, -2, 16, 4.6],
+    [16, 26, 12, 8, 6],
+    [34, 10, 8, 16, 5],
+  ] as const) {
+    const d = `M${cx - 5} ${bot - 10} C${f(cx - 5 + c1)} ${bot} ${f(cx - 5 + dx * 0.6)} ${f(bot + c2)} ${f(cx - 5 + dx)} ${f(bot + dy)}`;
+    g.push(
+      `<path d="${d}" fill="none" stroke="${INK}" stroke-width="${f(w + 3.4)}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#6a4224" stroke-width="${w}" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#b07a4c" stroke-width="1.4" stroke-linecap="round" transform="translate(-1 -1)"/><circle cx="${f(cx - 5 + dx)}" cy="${f(bot + dy)}" r="${f(w * 0.3)}" fill="#6a4224"/>`,
+    );
+  }
+  for (const [x, y, r] of [
+    [cx - 24, bot + 6, 6],
+    [cx + 14, bot + 10, 5],
+    [cx - 4, bot + 2, 4.5],
+  ] as const)
+    g.push(
+      `<path d="M${f(x - r)} ${f(y)} q${f(r * 0.4)} ${f(-r * 1.4)} ${f(r)} ${f(-r * 0.4)} q${f(r * 0.3)} ${f(-r)} ${f(r)} 0 q${f(r * 0.5)} ${f(-r * 0.3)} ${f(r * 0.2)} ${f(r * 0.6)}Z" fill="#4fbf4a" ${ink(2)}/>`,
+    );
+  // braided staff: three strands, each with a highlight
+  const strand = (ph: number, col: string, hi: string): string => {
+    let d = '';
+    for (let i = 0; i <= 44; i++) {
+      const t = i / 44;
+      const y = bot - (bot - top) * t;
+      d += `${i ? 'L' : 'M'}${f(sx(t, ph, 5.5 - t * 1.5))} ${f(y)}`;
+    }
+    return `<path d="${d}" fill="none" stroke="${INK}" stroke-width="8" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round"/><path d="${d}" fill="none" stroke="${hi}" stroke-width="1.4" stroke-linecap="round" transform="translate(-1.4 0)"/>`;
+  };
+  g.push(
+    strand(2.1, '#5e3a1e', '#8a5a32'),
+    strand(0, '#7e5030', '#b07a4c'),
+    strand(4.2, '#9a6a40', '#d4a070'),
+  );
+  // vine with two-tone veined leaves
+  const vineAt = (t: number): V => [
+    cx + Math.sin(t * 16) * 10 - (1 - t) * 4,
+    bot - (bot - top) * t,
+  ];
+  let vine = '';
+  for (let i = 0; i <= 40; i++) {
+    const [x, y] = vineAt(0.12 + (i / 40) * 0.8);
+    vine += `${i ? 'L' : 'M'}${f(x)} ${f(y)}`;
+  }
+  g.push(
+    `<path d="${vine}" fill="none" stroke="${INK}" stroke-width="4.6" stroke-linecap="round"/><path d="${vine}" fill="none" stroke="#3fa84a" stroke-width="2.2" stroke-linecap="round"/>`,
+  );
+  const vleaf = (x: number, y: number, rot: number, sz: number): string =>
+    `<g transform="translate(${f(x)} ${f(y)}) rotate(${rot}) scale(${sz})"><path d="M0 0 q 11 -10 22 -2 q -10 10 -22 2Z" fill="#3fa84a" ${ink(2.2 / sz)}/><path d="M0 0 q 11 -10 22 -2 q -11 -1 -22 2Z" fill="#7fe06a"/><path d="M2 0 L18 -2" stroke="#1f7a34" stroke-width="${f(1.1 / sz)}"/></g>`;
+  for (const [t, rot, sz] of [
+    [0.22, -25, 0.75],
+    [0.36, 205, 0.8],
+    [0.5, -35, 0.85],
+    [0.64, 200, 0.9],
+    [0.78, -50, 0.95],
+  ] as const) {
+    const [x, y] = vineAt(t);
+    g.push(vleaf(x, y, rot, sz));
+  }
+  // glowing rune bands
+  for (const t of [0.34, 0.6]) {
+    const y = bot - (bot - top) * t;
+    const x = sx(t, 0, 4);
+    g.push(
+      `<ellipse cx="${f(x)}" cy="${f(y)}" rx="10" ry="3.6" fill="none" stroke="${INK}" stroke-width="5"/><ellipse cx="${f(x)}" cy="${f(y)}" rx="10" ry="3.6" fill="none" stroke="#b8ff8a" stroke-width="2.8"/>`,
+    );
+  }
+  // head: big two-tone petals, the bloom
+  const petal = (
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    bend: number,
+    dark: string,
+    light: string,
+  ): string => {
+    const mx = (x0 + x1) / 2 + bend;
+    const my = (y0 + y1) / 2;
+    return `<path d="M${x0} ${y0} Q${f(mx - 22)} ${f(my)} ${x1} ${y1} Q${f(mx + 22)} ${f(my + 4)} ${x0} ${y0}Z" fill="${dark}" ${ink(3)}/><path d="M${x0} ${y0} Q${f(mx - 22)} ${f(my)} ${x1} ${y1} Q${f(mx - 4)} ${f(my)} ${x0} ${y0}Z" fill="${light}"/><path d="M${x0} ${y0} Q${f(mx + 1)} ${f(my + 1)} ${x1} ${y1}" fill="none" stroke="#1f6a2e" stroke-width="1.5"/>`;
+  };
+  g.push(
+    petal(cx - 2, top + 4, cx - 48, top - 48, -20, '#2f8a3a', '#4fbf4a'),
+    petal(cx + 2, top + 4, cx + 48, top - 52, 20, '#2f8a3a', '#4fbf4a'),
+    petal(cx - 2, top + 2, cx - 22, top - 70, -6, '#3fa84a', '#7fe06a'),
+    petal(cx + 2, top + 2, cx + 22, top - 72, 6, '#3fa84a', '#7fe06a'),
+  );
+  const fx = cx;
+  const fy = top - 30;
+  for (let i = 0; i < 7; i++) {
+    const ang = i * 0.8976 - 1.4;
+    const px = fx + Math.cos(ang) * 14;
+    const py = fy + Math.sin(ang) * 14;
+    g.push(
+      `<ellipse cx="${f(px)}" cy="${f(py)}" rx="10.5" ry="6.6" transform="rotate(${f(ang * 57.3)} ${f(px)} ${f(py)})" fill="#ff6ab8" ${ink(2.6)}/><ellipse cx="${f(px)}" cy="${f(py)}" rx="6" ry="3" transform="rotate(${f(ang * 57.3)} ${f(px)} ${f(py)})" fill="#ff9ad2"/>`,
+    );
+  }
+  for (let i = 0; i < 6; i++) {
+    const ang = i * 1.047 - 0.9;
+    const px = fx + Math.cos(ang) * 9;
+    const py = fy + Math.sin(ang) * 9;
+    g.push(
+      `<ellipse cx="${f(px)}" cy="${f(py)}" rx="7.4" ry="5" transform="rotate(${f(ang * 57.3)} ${f(px)} ${f(py)})" fill="#ffd6ef" ${ink(2.2)}/><ellipse cx="${f(px - 1)}" cy="${f(py - 1.2)}" rx="2.8" ry="1.3" transform="rotate(${f(ang * 57.3)} ${f(px)} ${f(py)})" fill="#fff"/>`,
+    );
+  }
+  g.push(
+    `<circle cx="${fx}" cy="${fy}" r="7" fill="#ffd23a" ${ink(2.6)}/><circle cx="${fx}" cy="${fy}" r="3.4" fill="#ff8a1f"/>`,
+  );
+  for (let i = 0; i < 6; i++) {
+    const a = i * 1.047;
+    g.push(
+      `<circle cx="${f(fx + Math.cos(a) * 4.6)}" cy="${f(fy + Math.sin(a) * 4.6)}" r=".9" fill="#fff6c8"/>`,
+    );
+  }
+  g.push(`<circle cx="${f(fx - 2.4)}" cy="${f(fy - 2.4)}" r="1.6" fill="#fff"/>`);
+  g.push(
+    twinkles(4, [
+      [cx + 34, top - 66],
+      [cx - 36, top - 70],
+      [cx + 58, top + 6],
+      [cx - 60, top + 4],
+    ]),
+  );
+  return g.join('');
+}
+
+/**
+ * One floating earth crystal of the Rootbloom Staff, drawn separately so it can bob on its own
+ * (whole-pixel steps) instead of being baked into the staff.
+ */
+export const ROOTBLOOM_CRYSTALS: readonly (readonly [number, number, number, number])[] = [
+  [46, 70, 1, -18],
+  [164, 82, 0.9, 20],
+  [60, 126, 0.7, 8],
+  [150, 136, 0.75, -12],
+];
+export const rootbloomCrystal = (s: number, rot: number): string =>
+  `<g transform="translate(16 16) rotate(${rot}) scale(${s})"><path d="M0 -13 L8 -3 L5 11 L-5 11 L-8 -3Z" fill="#d8953a" ${ink(2.4 / s)}/><path d="M0 -13 L8 -3 L1 0Z" fill="#ffd88a"/><path d="M0 -13 L1 0 L-8 -3Z" fill="#f0b45a"/><path d="M1 0 L5 11 L-5 11Z" fill="#a8682a"/><path d="M-3 -6 L-1 -9" stroke="#fff" stroke-width="${f(1.4 / s)}" stroke-linecap="round"/></g>`;
+
+/** The vector drawing of a unique evolution, in the 200 x 240 item box (the pixel source). */
+export function evolutionVector(id: Evolution): string {
+  const body =
+    id === 'flameblade' ? flameblade() : id === 'soul_reaper' ? soulReaper() : rootbloomStaff();
+  return `<g class="bi-item">${body}</g>`;
+}
