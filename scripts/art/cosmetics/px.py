@@ -316,3 +316,57 @@ def sprite(name):
 
 def rng(seed):
     return random.Random(seed)
+
+
+def alpha_mask(img):
+    """The opaque area of img as a 1-bit-style L mask (255 where any alpha)."""
+    return img.getchannel("A").point(lambda v: 255 if v else 0)
+
+
+def cel(layer, rp, d=None, lit=1, glint=True, deep=False):
+    """Flat cel shading of a one-colour part (the achievement-sticker technique, DESIGN.md 13):
+    base tone, one hard shadow shape on the bottom-right (where the part's mask shifted d pixels
+    toward the light no longer covers it), a one-pixel lit band on the top-left edge and a white
+    glint on the first interior pixel nearest the light. `deep` adds the darkest tone on the very
+    bottom-right edge of big parts. Returns a new layer; the outline is drawn later."""
+    a = alpha_mask(layer)
+    w, h = a.size
+    bb = a.getbbox()
+    if not bb:
+        return layer
+    bw, bh = bb[2] - bb[0], bb[3] - bb[1]
+    if d is None:
+        d = max(1, round(min(bw, bh) * 0.26))
+    A = a.load()
+
+    def ins(x, y):
+        return 0 <= x < w and 0 <= y < h and A[x, y]
+
+    out = new(w, h)
+    for y in range(h):
+        for x in range(w):
+            if not A[x, y]:
+                continue
+            c = rp[2]
+            if not ins(x + d, y + d):
+                c = rp[1]
+                if deep and not ins(x + 1, y + 1) and min(bw, bh) > 10:
+                    c = rp[0]
+            if lit and (not ins(x - lit, y) or not ins(x, y - lit)):
+                c = rp[3]
+            out.putpixel((x, y), c)
+    if glint and min(bw, bh) >= 5:
+        best = None
+        for y in range(h):
+            for x in range(w):
+                if ins(x, y) and ins(x - 2, y) and ins(x, y - 2) and ins(x - 2, y - 2) and ins(x + 1, y + 1):
+                    key = (x + y, x)
+                    if best is None or key < best[0]:
+                        best = (key, x, y)
+        if best:
+            _, gx, gy = best
+            put(out, gx, gy, WHITE)
+            if min(bw, bh) >= 11:
+                put(out, gx + 1, gy, WHITE)
+                put(out, gx, gy + 1, WHITE)
+    return out
