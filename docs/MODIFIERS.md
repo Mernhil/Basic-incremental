@@ -8,7 +8,7 @@ Every tunable number in the game goes through one pipeline (DESIGN.md 11.5), so 
 { "stat": "production.rate", "kind": "percent", "value": "5", "scope": { "job": "logging" } }
 ```
 
-- **stat**: one of `STATS` (production rate, damage, damage upgrade gain, boss HP, drop chance, card drop chance, pity, portal amount, material chance and amount, burst interval / size / fill / power, special dungeon rewards, offline cap, XP, loadout cost cap, summon pity, cost multiplier, cost growth, plot/slot capacity, mine level bonus).
+- **stat**: one of `STATS` (production rate, damage, damage upgrade gain, boss HP, drop chance, card drop chance, pity, portal amount, portal multiplier (base 1; a fraction rounds up with that chance so the average is exact), material chance and amount, burst interval / size / fill / power, special dungeon rewards, offline cap, XP, loadout cost cap, summon pity, cost multiplier, cost growth, plot/slot capacity, mine level bonus).
 - **kind** and the fixed order they apply in:
   1. `flat`: added (all flats summed)
   2. `percent`: all percents summed, then applied once (`"5"` = +5%)
@@ -20,11 +20,12 @@ Every tunable number in the game goes through one pipeline (DESIGN.md 11.5), so 
 
 ## Sources
 
-`collectModifiers(state, content)` gathers every active modifier with its source (`cosmetic`, `set`, `skill`, `enhancement`, `card`, `prestige`, `achievement`). Today it reads:
+`collectModifiers(state, content)` gathers every active modifier with its source (`cosmetic`, `set`, `skill`, `enhancement`, `card`, `prestige`, `achievement`, `mastery`). Today it reads:
 
 - owned cosmetics (`ownedModifiers` in `cosmetics.json`), worn or not;
 - fully equipped sets (`modifiers` in `sets.json`);
-- cards in the three loadouts (`cardModifiers` in `src/game/cards.ts`): the main card's `main` modifiers plus the job's `mainGrowth` from `cardRules.json`, and each support card's `support` modifiers. Card modifiers carry a `scale` (`full` grows with the card's power from level, stars and tier; `none` stays fixed; default `full` for flat and percent, `none` otherwise).
+- cards in the three loadouts (`cardModifiers` in `src/game/cards.ts`): the main card's `main` modifiers plus the job's `mainGrowth` from `cardRules.json`, and each support card's `support` modifiers. Card modifiers carry a `scale` (`full` grows with the card's power from level, stars and tier; `none` stays fixed; default `full` for flat and percent, `none` otherwise);
+- mastery (`masteryModifiers` in `src/game/mastery.ts`, DESIGN.md 16 E2/E3): the `perTier` bonuses in `progression.json`, each value multiplied by the settled tier. Gem mastery is scoped to the gem (`resource`), boss and special dungeon medals to the `dungeon`. Source id = the gem or dungeon id. Tiers settle on the 1 s play-time grid like card levels, so splitting time never changes totals.
 
 New systems add their modifiers inside `collectModifiers`; callers never change.
 

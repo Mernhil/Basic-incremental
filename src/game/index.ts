@@ -21,6 +21,7 @@ export * from './bulk';
 export * from './previews';
 export * from './mastery';
 export * from './stages';
+export * from './goals';
 export { METALS, type Metal } from '../data';
 
 // ---- Progression layer (DESIGN.md 16): the contract with the UI, one line each ---------------
@@ -52,6 +53,15 @@ export {
   type CardItem,
   type CardUpgradeResult,
 } from './cards';
+export {
+  /** The n (default 3) nearest goals by estimated time, for the header quest scroll. */
+  nextGoals,
+  /** Every goal the data's rules find, nearest first. */
+  allGoals,
+  /** Units of a resource earned per second (production with bursts, plus drops being fought). */
+  incomePerSecond,
+  type Goal,
+} from './goals';
 export {
   /** One tier-up moment for anything with tiers (mastery, medals, milestones, stages, cards). */
   type TierUp,
