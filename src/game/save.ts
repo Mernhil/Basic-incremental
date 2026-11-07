@@ -111,6 +111,8 @@ export const serializedStateSchema = z.object({
     skills: counts,
     freeRespecsUsed: z.number().int().min(0),
   }),
+  /** v15: the upgrade shelf (DESIGN.md 11.14). */
+  upgrades: z.object({ owned: z.array(z.string()), moneyEarned: decimalText }),
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
     harvested: z.record(z.string(), decimalText),
@@ -174,6 +176,10 @@ export function serializeState(state: GameState): SerializedState {
     stats: { ...state.stats },
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
+    upgrades: {
+      owned: [...state.upgrades.owned],
+      moneyEarned: decimalToString(state.upgrades.moneyEarned),
+    },
     account: {
       xp: decimalToString(state.account.xp),
       level: state.account.level,
@@ -289,6 +295,11 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.shardShop = Object.fromEntries(
     Object.entries(saved.shardShop).filter(([id]) => shopIds.has(id)),
   );
+  // Upgrades removed from the game are dropped.
+  state.upgrades = {
+    owned: saved.upgrades.owned.filter((id) => content.upgradeById.has(id)),
+    moneyEarned: new Decimal(saved.upgrades.moneyEarned),
+  };
   state.cards = deserializeCards(saved.cards, content);
   deserializeMastery(state, saved.mastery, content);
   // Counters of portals removed from the game are dropped.

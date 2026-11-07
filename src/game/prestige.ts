@@ -4,6 +4,7 @@ import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, finalPrice, pay, resetProduction, type Price } from './production';
 import { initialBursts, startingAmount, type GameState } from './state';
+import { keepPermanentUpgrades } from './upgrades';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 
@@ -150,6 +151,8 @@ export function ascend(
   for (const id of preview.rewards) grantCosmetic(next, id);
   // The account tree's free respec comes back with every ascension (DESIGN.md 12.1).
   next.account = { ...next.account, freeRespecsUsed: 0 };
+  // Per-run upgrades are bought again; permanent ones and the lifetime Money stay (DESIGN.md 11.14).
+  next.upgrades = keepPermanentUpgrades(state, content);
   grantAccountXp(next, content, content.account.xp.perAscension, modifiers);
   return { ok: true, state: next, gained: preview.gain, cosmetics: preview.rewards };
 }

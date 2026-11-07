@@ -293,6 +293,15 @@ describe('v14 -> v15 (tree levels and the upgrade shelf, DESIGN.md 2, 11.14)', (
     expect((out.production['logging'] as { expansions: number }).expansions).toBe(4);
   });
 
+  it('owns no upgrade and starts the lifetime Money at the Money held', () => {
+    const out = step({ resources: { money: '4500' } }) as {
+      upgrades: { owned: string[]; moneyEarned: string };
+    };
+    expect(out.upgrades).toEqual({ owned: [], moneyEarned: '4500' });
+    const none = step({}) as { upgrades: { moneyEarned: string } };
+    expect(none.upgrades.moneyEarned).toBe('0');
+  });
+
   it('does not mutate its input and copes with a missing production section', () => {
     const input = { production: { logging: { expansions: 1, plots: [] } } };
     step(input);

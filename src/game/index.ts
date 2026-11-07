@@ -29,6 +29,7 @@ export * from './prestige';
 export * from './wardrobe';
 export * from './achievements';
 export * from './account';
+export * from './upgrades';
 export { METALS, type Metal } from '../data';
 
 // ---- Ascension (DESIGN.md 3, 16): the contract with the UI, one line each ---------------------

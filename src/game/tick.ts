@@ -6,6 +6,7 @@ import { achievementsDue, settleAchievements } from './achievements';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
+import { countMoneyEarned } from './upgrades';
 import { jobProductionPerSecond, PRODUCTION_JOBS, producerCounts } from './production';
 import { emptyReport, mergeReports, type TickReport } from './report';
 import type { Rng } from './rng';
@@ -115,7 +116,9 @@ function advanceSpan(
   }
 
   // Combat: the boss is auto-fought in parallel and respawns for farming.
+  const moneyBefore = next.resources[content.upgrades.currency];
   advanceCombat(next, content, seconds, rng, report, modifiers);
+  countMoneyEarned(next, content, moneyBefore);
 
   return next;
 }

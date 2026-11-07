@@ -45,6 +45,20 @@ export interface GameState {
   shardShop: Record<string, number>;
   /** Account XP, level, account tree and respecs. */
   account: AccountState;
+  /** The upgrade shelf (DESIGN.md 11.14): owned upgrades and the lifetime Money earned. */
+  upgrades: UpgradeState;
+}
+
+/** The upgrade shelf's state. */
+export interface UpgradeState {
+  /** Ids of the upgrades bought. Non-permanent ones are dropped by an ascension. */
+  owned: string[];
+  /** Money earned from dungeons (wage and purses) over every run; kept through prestige. */
+  moneyEarned: Decimal;
+}
+
+export function initialUpgrades(): UpgradeState {
+  return { owned: [], moneyEarned: new Decimal(0) };
 }
 
 /** Ascension progress. Kept through prestige (the run start moves forward on each ascension). */
@@ -221,6 +235,7 @@ export function createInitialState(content: Content): GameState {
     achievements: {},
     shardShop: {},
     account: initialAccount(),
+    upgrades: initialUpgrades(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -251,6 +266,7 @@ export function cloneState(state: GameState): GameState {
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
+    upgrades: { owned: [...state.upgrades.owned], moneyEarned: state.upgrades.moneyEarned },
     account: { ...state.account, skills: { ...state.account.skills } },
     prestige: {
       runStart: { ...state.prestige.runStart },

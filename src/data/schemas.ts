@@ -220,6 +220,9 @@ export const STATS = [
   'drops.moneyMultiplier',
   /** Starlight an ascension grants, before rounding down (DESIGN.md 3). */
   'prestige.gain',
+  /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
+   *  their modifiers (DESIGN.md 11.14). Only read from upgrades. Scope: job. */
+  'card.supportPower',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -1164,6 +1167,48 @@ export const cosmeticSetSchema = z.strictObject({
   modifiers: z.array(modifierSchema).default([]),
 });
 
+/**
+ * The upgrade shelf (DESIGN.md 11.14): one-time multipliers bought with Money that appear when
+ * their unlock condition is met. `permanent` ones are kept through an ascension, the rest are
+ * bought again each run. Effects are ordinary modifiers (source `upgrade`).
+ */
+export const UPGRADE_UNLOCK_KINDS = [
+  'treeLevel',
+  'mineLevel',
+  'damageLevel',
+  'gemMastery',
+  'bossKills',
+  'lifetimeMoney',
+] as const;
+export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
+  z.strictObject({ kind: z.literal('treeLevel'), tree: id, level: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('mineLevel'), mine: id, level: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('damageLevel'), line: id, level: z.number().int().min(1) }),
+  z.strictObject({
+    kind: z.literal('gemMastery'),
+    gem: id,
+    tier: z.number().int().min(1).max(MASTERY_TIERS),
+  }),
+  z.strictObject({ kind: z.literal('bossKills'), dungeon: id, kills: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('lifetimeMoney'), amount: positiveDecimal }),
+]);
+export const upgradeSchema = z.strictObject({
+  id,
+  name,
+  /** The effect as shown to the player, e.g. "Oak output x2". */
+  description: z.string().min(1),
+  unlock: upgradeUnlockSchema,
+  cost: costSchema,
+  /** Kept through an ascension (its unlock must be lasting progress). */
+  permanent: z.boolean(),
+  effects: z.array(modifierSchema).min(1),
+});
+export const upgradesFileSchema = z.strictObject({
+  /** The resource every upgrade is paid in (Money). */
+  currency: id,
+  upgrades: z.array(upgradeSchema),
+});
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1185,8 +1230,12 @@ export const contentSchemas = {
   achievements: achievementsFileSchema,
   account: accountSchema,
   enhancements: enhancementsSchema,
+  upgrades: upgradesFileSchema,
 } as const;
 
+export type Upgrade = z.output<typeof upgradeSchema>;
+export type UpgradeUnlock = z.output<typeof upgradeUnlockSchema>;
+export type UpgradesConfig = z.output<typeof upgradesFileSchema>;
 export type Resource = z.output<typeof resourceSchema>;
 export type GemArt = z.output<typeof gemArtSchema>;
 export type Tree = z.output<typeof treeSchema>;

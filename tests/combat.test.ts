@@ -54,6 +54,7 @@ import account from '../src/data/content/account.json';
 import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
+import upgrades from '../src/data/content/upgrades.json';
 import { constantRng, bareState, plainContent as content, freshState } from './helpers';
 
 const rng = constantRng(0.5);
@@ -576,6 +577,7 @@ describe('combat data is validated', () => {
       achievements,
       cosmeticRules,
       prestige,
+      upgrades,
     });
   const issues = (input: RawContent): string[] => {
     try {
