@@ -263,7 +263,7 @@ export const COPY = {
       opened ? `Cleared ${name}! Opened ${opened}.` : `Cleared ${name}!`,
     damageTitle: 'Damage',
     damageNote: (dps: string) => `${dps} damage/s`,
-    damageKept: 'Damage is bought with ore and kept when you prestige.',
+    damageKept: 'Damage is bought with mine gems and kept when you prestige.',
     upgradeLevel: (n: number) => `Level ${n}`,
     upgradeGain: (n: string) => `+${n} damage/s per level`,
     upgradeLocked: (ore: string) => `Mine ${ore} to buy`,

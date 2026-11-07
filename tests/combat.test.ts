@@ -55,7 +55,7 @@ const [mossy, ember, frost] = content.dungeons as [
   (typeof content.dungeons)[0],
 ];
 const trial = content.trials[0]!;
-const copper = content.combat.damageUpgrades.find((u) => u.cost.resource === 'copper_ore')!;
+const copper = content.combat.damageUpgrades.find((u) => u.cost.resource === 'copper_gem')!;
 
 const mod = (
   stat: Modifier['stat'],
@@ -93,7 +93,7 @@ function cleared(...ids: string[]): GameState {
 
 describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
   it('has one upgrade line per ore, higher ores adding more', () => {
-    const ores = content.resources.filter((r) => r.kind === 'ore').map((r) => r.id);
+    const ores = content.resources.filter((r) => r.kind === 'mine_gem').map((r) => r.id);
     const lines = content.combat.damageUpgrades;
     expect(lines.map((u) => u.cost.resource).sort()).toEqual([...ores].sort());
     const byTier = [...lines].sort(
@@ -116,14 +116,14 @@ describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
 
   it('buys a level with ore on an exponential curve', () => {
     const first = damageUpgradeCost(freshState(), content, copper.id)!;
-    expect(first.resource).toBe('copper_ore');
+    expect(first.resource).toBe('copper_gem');
     expect(first.amount.eq(copper.cost.base.ceil())).toBe(true);
 
     const rich = freshState();
-    rich.resources['copper_ore'] = new Decimal(1000);
+    rich.resources['copper_gem'] = new Decimal(1000);
     const after = ok(buyDamageUpgrade(rich, content, copper.id));
     expect(after.combat.damageLevels[copper.id]).toBe(1);
-    expect(after.resources['copper_ore']!.eq(new Decimal(1000).sub(first.amount))).toBe(true);
+    expect(after.resources['copper_gem']!.eq(new Decimal(1000).sub(first.amount))).toBe(true);
     const second = damageUpgradeCost(after, content, copper.id)!;
     expect(second.amount.eq(copper.cost.base.mul(copper.cost.growth).ceil())).toBe(true);
     expect(rich.combat.damageLevels[copper.id]).toBeUndefined(); // input untouched
@@ -143,7 +143,7 @@ describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
   it('runs every number through the modifier pipeline', () => {
     const state = freshState();
     state.combat.damageLevels = { [copper.id]: 10 };
-    const gain = [mod('combat.upgradeGain', 'mult', '2', { resource: 'copper_ore' })];
+    const gain = [mod('combat.upgradeGain', 'mult', '2', { resource: 'copper_gem' })];
     expect(baseDamage(state, content, gain).eq(content.combat.startingDamage.add(20))).toBe(true);
 
     const double = [mod('combat.damage', 'mult', '2', { dungeon: 'mossy_cellar' })];
@@ -318,8 +318,8 @@ describe('burst gauges (DESIGN.md 11.3, 11.8)', () => {
   it('a harvest burst adds 10 s of each job’s output', () => {
     const { state, report } = advance(bareState(), content, 30_000, rng);
     expect(report.bursts).toMatchObject({ logging: 1, mining: 1 });
-    expect(state.resources['oak_wood']!.eq(30 + 10)).toBe(true); // Oak: 1/s
-    expect(state.resources['copper_ore']!.eq(15 + 5)).toBe(true); // Copper Quarry: 0.5/s
+    expect(state.resources['oak_gem']!.eq(30 + 10)).toBe(true); // Oak: 1/s
+    expect(state.resources['copper_gem']!.eq(15 + 5)).toBe(true); // Copper Quarry: 0.5/s
   });
 });
 
@@ -490,16 +490,16 @@ describe('combat data is validated', () => {
     (bad.dungeons as { drops: { material: { resource: string } } }[])[0]!.drops.material.resource =
       'moss_sigil';
     const t = (bad.trials as { tiers: { rewards: { resource: string }[] }[] }[])[0]!;
-    t.tiers[0]!.rewards[0]!.resource = 'oak_wood';
+    t.tiers[0]!.rewards[0]!.resource = 'oak_gem';
     const c = bad.combat as { damageUpgrades: { cost: { resource: string } }[] };
-    c.damageUpgrades[0]!.cost.resource = 'oak_wood';
+    c.damageUpgrades[0]!.cost.resource = 'oak_gem';
     const found = issues(bad).join('\n');
     expect(found).toContain(
       'drops › material › resource: "moss_sigil" is portal, expected material',
     );
-    expect(found).toContain('rewards › [0] › resource: "oak_wood" is wood, expected material');
+    expect(found).toContain('rewards › [0] › resource: "oak_gem" is tree_gem, expected material');
     expect(found).toContain(
-      'damageUpgrades › [0] › cost › resource: "oak_wood" is wood, expected ore',
+      'damageUpgrades › [0] › cost › resource: "oak_gem" is tree_gem, expected mine_gem',
     );
   });
 

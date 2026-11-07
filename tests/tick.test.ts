@@ -25,13 +25,13 @@ function withDps(dps: Decimal) {
 describe('advance (tick math)', () => {
   it('produces rate * plots * seconds', () => {
     const { state } = advance(bareState(), content, 10_000, rng);
-    expect(state.resources['oak_wood']!.eq(10)).toBe(true);
-    expect(state.resources['copper_ore']!.eq(5)).toBe(true); // 1 slot * 0.5/s
+    expect(state.resources['oak_gem']!.eq(10)).toBe(true);
+    expect(state.resources['copper_gem']!.eq(5)).toBe(true); // 1 slot * 0.5/s
 
     const triple = bareState();
     triple.production.logging = { expansions: 2, plots: ['oak', 'oak', 'oak'] };
     const result = advance(triple, content, 10_000, rng);
-    expect(result.state.resources['oak_wood']!.eq(30)).toBe(true);
+    expect(result.state.resources['oak_gem']!.eq(30)).toBe(true);
   });
 
   it('applies damage to the boss without killing it', () => {
@@ -68,7 +68,7 @@ describe('advance (tick math)', () => {
   it('does not mutate the previous state', () => {
     const start = freshState();
     advance(start, content, 100_000, rng);
-    expect(start.resources['oak_wood']!.eq(0)).toBe(true);
+    expect(start.resources['oak_gem']!.eq(0)).toBe(true);
     expect(start.bossHp).toBeNull();
     expect(start.stats.bossKills).toBe(0);
   });
@@ -90,7 +90,7 @@ describe('advance (tick math)', () => {
     const coarse = advanceChunked(freshState(), content, total, rng, 1000).state;
     const fine = advanceChunked(freshState(), content, total, rng, 16).state;
     for (const other of [coarse, fine]) {
-      expect(approxEq(other.resources['oak_wood']!, whole.resources['oak_wood']!)).toBe(true);
+      expect(approxEq(other.resources['oak_gem']!, whole.resources['oak_gem']!)).toBe(true);
       expect(approxEq(other.bossHp!, whole.bossHp!)).toBe(true);
       expect(other.stats.playTimeMs).toBe(total);
     }

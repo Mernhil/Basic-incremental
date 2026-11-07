@@ -17,6 +17,24 @@ export const MIGRATIONS: MigrationTable = {
   2: v2ToV3,
   3: v3ToV4,
   4: v4ToV5,
+  5: v5ToV6,
+};
+
+/**
+ * v5 -> v6: the woods and ores became gems (DESIGN.md 13, "Resources are carved gems"). Only the
+ * ids changed; amounts carry over one to one. Ids are a snapshot of the v0.3 data.
+ */
+function v5ToV6(state: Record<string, unknown>): Record<string, unknown> {
+  return { ...state, resources: renameKeys(state['resources'], GEM_RESOURCES) };
+}
+
+const GEM_RESOURCES: Record<string, string> = {
+  oak_wood: 'oak_gem',
+  ironwood: 'ironbark_gem',
+  moonwood: 'moonwillow_gem',
+  copper_ore: 'copper_gem',
+  iron_ore: 'iron_gem',
+  crystal_ore: 'grotto_gem',
 };
 
 /**

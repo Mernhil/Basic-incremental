@@ -115,12 +115,12 @@ describe('content validation errors', () => {
 
   it('catches wrong resource kinds and duplicate ids', () => {
     const base = raw();
-    (base.mines as Record<string, unknown>[])[0]!['resource'] = 'oak_wood';
+    (base.mines as Record<string, unknown>[])[0]!['resource'] = 'oak_gem';
     const list = base.resources as object[];
     const bad = { ...base, resources: [...list, list[0]!] };
     const issues = issuesFor(bad);
-    expect(issues.some((i) => i.includes('is wood, expected ore'))).toBe(true);
-    expect(issues.some((i) => i.includes('duplicate id "oak_wood"'))).toBe(true);
+    expect(issues.some((i) => i.includes('is tree_gem, expected mine_gem'))).toBe(true);
+    expect(issues.some((i) => i.includes('duplicate id "oak_gem"'))).toBe(true);
   });
 
   it('requires a message that explains the whole failure', () => {
@@ -219,11 +219,11 @@ describe('card ranks and portals', () => {
   it('catches portal cost and pool problems', () => {
     const bad = raw();
     const portal = (bad.portals as PortalRaw[])[0]!;
-    portal.cost.resource = 'oak_wood';
+    portal.cost.resource = 'oak_gem';
     portal.pool[0]!.itemId = 'holo_hex'; // a cosmetic in a cards portal
     portal.pool[1]!.itemId = 'missing_card';
     const issues = issuesFor(bad);
-    expect(issues.some((i) => i.includes('is wood, expected portal'))).toBe(true);
+    expect(issues.some((i) => i.includes('is tree_gem, expected portal'))).toBe(true);
     expect(
       issues.some((i) => i.includes('pool › [0] › itemId') && i.includes('not a known card')),
     ).toBe(true);
@@ -258,9 +258,9 @@ describe('production data', () => {
   it('catches wrong cost resources, bad start producers and shared ids', () => {
     const bad = raw();
     const trees = bad.trees as { unlockCost: { resource: string }[] }[];
-    trees[1]!.unlockCost[0]!.resource = 'copper_ore';
+    trees[1]!.unlockCost[0]!.resource = 'copper_gem';
     const mines = bad.mines as { id: string; level: { cost: { resource: string } } }[];
-    mines[0]!.level.cost.resource = 'oak_wood';
+    mines[0]!.level.cost.resource = 'oak_gem';
     mines[2]!.id = 'oak';
     const production = bad.production as ProductionRaw;
     production.logging.startProducer = 'ironbark';
@@ -268,10 +268,10 @@ describe('production data', () => {
     production.mining.expansion.resource = 'moss_sigil';
     const issues = issuesFor(bad);
     expect(issues).toContain(
-      'trees.json › [1] › unlockCost › [0] › resource: "copper_ore" is ore, expected wood',
+      'trees.json › [1] › unlockCost › [0] › resource: "copper_gem" is mine_gem, expected tree_gem',
     );
     expect(issues).toContain(
-      'mines.json › [0] › level › cost › resource: "oak_wood" is wood, expected ore',
+      'mines.json › [0] › level › cost › resource: "oak_gem" is tree_gem, expected mine_gem',
     );
     expect(issues).toContain('mines.json › [2] › id: "oak" is already a tree id');
     expect(issues).toContain(
@@ -281,7 +281,7 @@ describe('production data', () => {
       'production.json › mining › startProducer: unknown mine "missing_mine"',
     );
     expect(issues).toContain(
-      'production.json › mining › expansion › resource: "moss_sigil" is portal, expected ore',
+      'production.json › mining › expansion › resource: "moss_sigil" is portal, expected mine_gem',
     );
   });
 

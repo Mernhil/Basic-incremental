@@ -12,8 +12,8 @@ describe('simulateOffline', () => {
     expect(summary!.capped).toBe(false);
     expect(summary!.simulatedMs).toBe(HOUR);
     // 3600 s of Oak at 1/s, plus 120 harvest bursts (one per 30 ticks) of 10 s each.
-    expect(state.resources['oak_wood']!.eq(4800)).toBe(true);
-    expect(summary!.gains['oak_wood']!.eq(4800)).toBe(true);
+    expect(state.resources['oak_gem']!.eq(4800)).toBe(true);
+    expect(summary!.gains['oak_gem']!.eq(4800)).toBe(true);
     // 3600 damage plus 180 signature attacks (one per 20 hits) of 10 hits each = 5400 dealt.
     expect(state.bossHp!.eq(content.dungeons[0]!.boss.hp.sub(5400))).toBe(true);
     expect(summary!.bossKills).toBe(0);
@@ -25,7 +25,7 @@ describe('simulateOffline', () => {
     expect(summary!.capped).toBe(true);
     expect(summary!.elapsedMs).toBe(20 * HOUR);
     expect(summary!.simulatedMs).toBe(8 * HOUR);
-    expect(state.resources['oak_wood']!.eq(8 * 3600 + 960 * 10)).toBe(true); // + harvest bursts
+    expect(state.resources['oak_gem']!.eq(8 * 3600 + 960 * 10)).toBe(true); // + harvest bursts
   });
 
   it('is not capped at exactly 8 hours', () => {

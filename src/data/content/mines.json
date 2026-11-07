@@ -3,11 +3,11 @@
     "id": "copper_quarry",
     "name": "Copper Quarry",
     "tier": 1,
-    "resource": "copper_ore",
+    "resource": "copper_gem",
     "baseRate": "0.5",
     "unlockedByDungeon": null,
     "level": {
-      "cost": { "resource": "copper_ore", "base": "15", "growth": "1.5" },
+      "cost": { "resource": "copper_gem", "base": "15", "growth": "1.5" },
       "ratePercent": "10"
     }
   },
@@ -15,11 +15,11 @@
     "id": "iron_deeps",
     "name": "Iron Deeps",
     "tier": 2,
-    "resource": "iron_ore",
+    "resource": "iron_gem",
     "baseRate": "0.25",
     "unlockedByDungeon": "mossy_cellar",
     "level": {
-      "cost": { "resource": "iron_ore", "base": "20", "growth": "1.55" },
+      "cost": { "resource": "iron_gem", "base": "20", "growth": "1.55" },
       "ratePercent": "10"
     }
   },
@@ -27,11 +27,11 @@
     "id": "crystal_grotto",
     "name": "Crystal Grotto",
     "tier": 3,
-    "resource": "crystal_ore",
+    "resource": "grotto_gem",
     "baseRate": "0.1",
     "unlockedByDungeon": "ember_crypt",
     "level": {
-      "cost": { "resource": "crystal_ore", "base": "25", "growth": "1.6" },
+      "cost": { "resource": "grotto_gem", "base": "25", "growth": "1.6" },
       "ratePercent": "10"
     }
   }

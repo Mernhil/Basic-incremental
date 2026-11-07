@@ -4,19 +4,19 @@
     {
       "id": "copper_edge",
       "name": "Copper Edge",
-      "cost": { "resource": "copper_ore", "base": "10", "growth": "1.15" },
+      "cost": { "resource": "copper_gem", "base": "10", "growth": "1.15" },
       "damagePerLevel": "1"
     },
     {
       "id": "iron_edge",
       "name": "Iron Edge",
-      "cost": { "resource": "iron_ore", "base": "20", "growth": "1.17" },
+      "cost": { "resource": "iron_gem", "base": "20", "growth": "1.17" },
       "damagePerLevel": "10"
     },
     {
       "id": "crystal_edge",
       "name": "Crystal Edge",
-      "cost": { "resource": "crystal_ore", "base": "30", "growth": "1.2" },
+      "cost": { "resource": "grotto_gem", "base": "30", "growth": "1.2" },
       "damagePerLevel": "100"
     }
   ],

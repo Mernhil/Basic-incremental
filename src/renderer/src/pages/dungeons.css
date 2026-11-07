@@ -297,10 +297,10 @@
   box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
   color: var(--bi-frame-title-ink);
 }
-.dp-up[data-ore='iron_ore'] {
+.dp-up[data-ore='iron_gem'] {
   --dp-hue: #b3c0ce;
 }
-.dp-up[data-ore='crystal_ore'] {
+.dp-up[data-ore='grotto_gem'] {
   --dp-hue: #b7a3ee;
 }
 .dp-up .dp-art {
