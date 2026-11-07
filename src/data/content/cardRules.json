@@ -98,22 +98,106 @@
   "starUp": {
     "duplicates": 1,
     "tiers": {
-      "bronze": {
-        "resource": "moss_core",
-        "amounts": ["1", "2", "3", "5", "15"]
-      },
-      "silver": {
-        "resource": "cinder_core",
-        "amounts": ["1", "2", "3", "4", "12"]
-      },
-      "gold": {
-        "resource": "frost_core",
-        "amounts": ["1", "1", "2", "2", "6"]
-      },
-      "prismatic": {
-        "resource": "frost_core",
-        "amounts": ["22", "26", "31", "37", "111"]
-      }
+      "bronze": [
+        {
+          "resource": "moss_core",
+          "amounts": ["1", "2", "3", "5", "15"]
+        },
+        {
+          "resource": "oak_gem",
+          "amounts": ["600", "1200", "1800", "3000", "9000"],
+          "jobShare": {
+            "logging": 1,
+            "fighting": 0.6,
+            "mining": 0.3
+          }
+        },
+        {
+          "resource": "copper_gem",
+          "amounts": ["600", "1200", "1800", "3000", "9000"],
+          "jobShare": {
+            "mining": 1,
+            "fighting": 0.6,
+            "logging": 0.3
+          }
+        }
+      ],
+      "silver": [
+        {
+          "resource": "cinder_core",
+          "amounts": ["1", "2", "3", "4", "12"]
+        },
+        {
+          "resource": "ironbark_gem",
+          "amounts": ["1200", "2400", "3600", "4800", "14400"],
+          "jobShare": {
+            "logging": 1,
+            "fighting": 0.6,
+            "mining": 0.3
+          }
+        },
+        {
+          "resource": "iron_gem",
+          "amounts": ["1200", "2400", "3600", "4800", "14400"],
+          "jobShare": {
+            "mining": 1,
+            "fighting": 0.6,
+            "logging": 0.3
+          }
+        }
+      ],
+      "gold": [
+        {
+          "resource": "frost_core",
+          "amounts": ["1", "1", "2", "2", "6"]
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amounts": ["2400", "2400", "4800", "4800", "14400"],
+          "jobShare": {
+            "logging": 1,
+            "fighting": 0.6,
+            "mining": 0.3
+          }
+        },
+        {
+          "resource": "grotto_gem",
+          "amounts": ["2400", "2400", "4800", "4800", "14400"],
+          "jobShare": {
+            "mining": 1,
+            "fighting": 0.6,
+            "logging": 0.3
+          }
+        }
+      ],
+      "prismatic": [
+        {
+          "resource": "frost_core",
+          "amounts": ["33", "39", "46", "55", "165"]
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amounts": ["10000", "12000", "14000", "17000", "50000"],
+          "jobShare": {
+            "logging": 1,
+            "fighting": 0.6,
+            "mining": 0.3
+          }
+        },
+        {
+          "resource": "grotto_gem",
+          "amounts": ["10000", "12000", "14000", "17000", "50000"],
+          "jobShare": {
+            "mining": 1,
+            "fighting": 0.6,
+            "logging": 0.3
+          }
+        },
+        {
+          "resource": "frost_sigil",
+          "amounts": ["6", "8", "9", "11", "30"]
+        }
+      ]
     }
   },
   "tierUp": {
@@ -125,7 +209,11 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "2000"
+          "amount": "40000"
+        },
+        {
+          "resource": "iron_gem",
+          "amount": "12000"
         }
       ],
       "mining": [
@@ -135,7 +223,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "1000"
+          "amount": "20000"
+        },
+        {
+          "resource": "ironbark_gem",
+          "amount": "12000"
         }
       ],
       "fighting": [
@@ -145,7 +237,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "1000"
+          "amount": "14000"
+        },
+        {
+          "resource": "ironbark_gem",
+          "amount": "24000"
         }
       ]
     },
@@ -157,7 +253,11 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "5000"
+          "amount": "100000"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "20000"
         }
       ],
       "mining": [
@@ -167,7 +267,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "2000"
+          "amount": "40000"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "30000"
         }
       ],
       "fighting": [
@@ -177,7 +281,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "2000"
+          "amount": "28000"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "60000"
         }
       ]
     },
@@ -185,31 +293,55 @@
       "logging": [
         {
           "resource": "frost_core",
-          "amount": "150"
+          "amount": "220"
         },
         {
           "resource": "frost_sigil",
-          "amount": "175"
+          "amount": "200"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "400000"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "120000"
         }
       ],
       "mining": [
         {
           "resource": "frost_core",
-          "amount": "150"
+          "amount": "220"
         },
         {
           "resource": "frost_sigil",
-          "amount": "175"
+          "amount": "200"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "240000"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "160000"
         }
       ],
       "fighting": [
         {
           "resource": "frost_core",
-          "amount": "150"
+          "amount": "220"
         },
         {
           "resource": "frost_sigil",
-          "amount": "175"
+          "amount": "200"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "180000"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "240000"
         }
       ]
     }

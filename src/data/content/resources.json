@@ -65,13 +65,65 @@
       "colors": ["#eafaff", "#9adcf2", "#58acd2", "#2a7298"]
     }
   },
-  { "id": "moss_sigil", "name": "Moss Sigil", "kind": "portal", "tier": 1 },
-  { "id": "ember_sigil", "name": "Ember Sigil", "kind": "portal", "tier": 2 },
-  { "id": "frost_sigil", "name": "Frost Sigil", "kind": "portal", "tier": 3 },
-  { "id": "moss_core", "name": "Moss Core", "kind": "material", "tier": 1 },
-  { "id": "cinder_core", "name": "Cinder Core", "kind": "material", "tier": 2 },
-  { "id": "frost_core", "name": "Frost Core", "kind": "material", "tier": 3 },
-  { "id": "glimmer_dust", "name": "Glimmer Dust", "kind": "material", "tier": 1 },
-  { "id": "facet_shard", "name": "Facet Shard", "kind": "material", "tier": 2 },
-  { "id": "starlight", "name": "Starlight", "kind": "prestige", "tier": 1 }
+  {
+    "id": "money",
+    "name": "Money",
+    "kind": "currency",
+    "tier": 1,
+    "startAmount": "100"
+  },
+  {
+    "id": "summon_crystal",
+    "name": "Summon Crystal",
+    "kind": "crystal",
+    "tier": 1
+  },
+  {
+    "id": "glamour_crystal",
+    "name": "Glamour Crystal",
+    "kind": "crystal",
+    "tier": 2
+  },
+  {
+    "id": "moss_core",
+    "name": "Moss Core",
+    "kind": "material",
+    "tier": 1
+  },
+  {
+    "id": "cinder_core",
+    "name": "Cinder Core",
+    "kind": "material",
+    "tier": 2
+  },
+  {
+    "id": "frost_core",
+    "name": "Frost Core",
+    "kind": "material",
+    "tier": 3
+  },
+  {
+    "id": "frost_sigil",
+    "name": "Frost Sigil",
+    "kind": "material",
+    "tier": 3
+  },
+  {
+    "id": "glimmer_dust",
+    "name": "Glimmer Dust",
+    "kind": "material",
+    "tier": 1
+  },
+  {
+    "id": "facet_shard",
+    "name": "Facet Shard",
+    "kind": "material",
+    "tier": 2
+  },
+  {
+    "id": "starlight",
+    "name": "Starlight",
+    "kind": "prestige",
+    "tier": 1
+  }
 ]

@@ -1,4 +1,4 @@
-import { isDecimalString } from './num';
+import { Decimal, isDecimalString } from './num';
 import { SaveError } from './saveError';
 
 /** Upgrades the state payload from version N to N + 1. Must not mutate its input. */
@@ -40,7 +40,97 @@ export const MIGRATIONS: MigrationTable = {
     shardShop: {},
   }),
   12: v12ToV13,
+  13: v13ToV14,
 };
+
+/** The Money curves of save format 14 (a snapshot of the prices of DESIGN.md 11.13): base and growth. */
+const V14_MONEY_CURVES = {
+  mines: {
+    copper_quarry: { base: 15, growth: 1.3 },
+    iron_deeps: { base: 200, growth: 1.32 },
+    crystal_grotto: { base: 2500, growth: 1.34 },
+  },
+  expansions: { logging: { base: 25, growth: 1.4 }, mining: { base: 25, growth: 1.4 } },
+  damage: {
+    copper_edge: { base: 10, growth: 1.11 },
+    iron_edge: { base: 200, growth: 1.12 },
+    crystal_edge: { base: 3000, growth: 1.13 },
+  },
+} as const;
+/** Money a brand-new game starts with at save format 14 (resources.json `startAmount`). */
+const V14_START_MONEY = 100;
+
+/** Price of the first `count` purchases of an exponential curve. */
+function curveSum(curve: { base: number; growth: number }, count: number): Decimal {
+  const n = Math.max(0, Math.floor(count));
+  if (!(n > 0)) return new Decimal(0);
+  const g = new Decimal(curve.growth);
+  return new Decimal(curve.base).mul(g.pow(n).sub(1)).div(g.sub(1));
+}
+
+const levelOf = (value: unknown): number => {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) && n > 0 ? n : 0;
+};
+
+/**
+ * v13 -> v14: the three loops (DESIGN.md 11.13). Money buys mine levels, plots / slots and damage
+ * lines (they cost gems before); the Moss and Ember Sigils became the Summon and Glamour
+ * Crystal; the Frost Sigil is a material with the same id. Levels and expansions are kept, and
+ * the Money they would cost now is paid back on top of the starting Money, so nothing feels lost.
+ * Ids that were about sigils are renamed (skill, Starlight shop item, shard shop bundles).
+ */
+function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  const moved = renameKeys(resources, {
+    moss_sigil: 'summon_crystal',
+    ember_sigil: 'glamour_crystal',
+  }) as Record<string, unknown>;
+
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const mineLevels = isRecord(production['mineLevels']) ? production['mineLevels'] : {};
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const damageLevels = isRecord(combat['damageLevels']) ? combat['damageLevels'] : {};
+  let refund = new Decimal(0);
+  for (const [id, curve] of Object.entries(V14_MONEY_CURVES.mines)) {
+    refund = refund.add(curveSum(curve, levelOf(mineLevels[id])));
+  }
+  for (const job of ['logging', 'mining'] as const) {
+    const part = isRecord(production[job]) ? production[job] : {};
+    refund = refund.add(curveSum(V14_MONEY_CURVES.expansions[job], levelOf(part['expansions'])));
+  }
+  for (const [id, curve] of Object.entries(V14_MONEY_CURVES.damage)) {
+    refund = refund.add(curveSum(curve, levelOf(damageLevels[id])));
+  }
+  const held =
+    typeof moved['money'] === 'string' && isDecimalString(moved['money'])
+      ? new Decimal(moved['money'])
+      : new Decimal(0);
+  moved['money'] = held.add(V14_START_MONEY).add(refund).toString();
+
+  const out: Record<string, unknown> = { ...state, resources: moved };
+  if (isRecord(state['account'])) {
+    out['account'] = {
+      ...state['account'],
+      skills: renameKeys(state['account']['skills'], { sigil_luck: 'crystal_luck' }),
+    };
+  }
+  if (isRecord(state['prestige'])) {
+    out['prestige'] = {
+      ...state['prestige'],
+      shop: renameKeys(state['prestige']['shop'], {
+        constellation_sigils: 'constellation_crystals',
+      }),
+    };
+  }
+  if ('shardShop' in state) {
+    out['shardShop'] = renameKeys(state['shardShop'], {
+      moss_sigils: 'summon_crystals',
+      ember_sigils: 'glamour_crystals',
+    });
+  }
+  return out;
+}
 
 /**
  * v12 -> v13: the account (DESIGN.md 10a) and card enhancements (10b). Accounts start at level

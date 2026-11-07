@@ -12,6 +12,8 @@ import {
   burstStats,
   burstView,
   buyDamageUpgrade,
+  clearDungeon,
+  isDamageLineUnlocked,
   createSaveText,
   damageStat,
   damageUpgradeCost,
@@ -61,7 +63,7 @@ const [mossy, ember, frost] = content.dungeons as [
   (typeof content.dungeons)[0],
 ];
 const trial = content.trials[0]!;
-const copper = content.combat.damageUpgrades.find((u) => u.cost.resource === 'copper_gem')!;
+const copper = content.combat.damageUpgrades.find((u) => u.gem === 'copper_gem')!;
 
 const mod = (
   stat: Modifier['stat'],
@@ -101,11 +103,11 @@ describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
   it('has one upgrade line per ore, higher ores adding more', () => {
     const ores = content.resources.filter((r) => r.kind === 'mine_gem').map((r) => r.id);
     const lines = content.combat.damageUpgrades;
-    expect(lines.map((u) => u.cost.resource).sort()).toEqual([...ores].sort());
+    expect(lines.map((u) => u.gem).sort()).toEqual([...ores].sort());
+    // Damage is bought with Money, whichever gem the line is forged from.
+    expect(lines.every((u) => u.cost.resource === 'money')).toBe(true);
     const byTier = [...lines].sort(
-      (a, b) =>
-        content.resourceById.get(a.cost.resource)!.tier -
-        content.resourceById.get(b.cost.resource)!.tier,
+      (a, b) => content.resourceById.get(a.gem)!.tier - content.resourceById.get(b.gem)!.tier,
     );
     for (let i = 1; i < byTier.length; i++) {
       expect(byTier[i]!.damagePerLevel.gt(byTier[i - 1]!.damagePerLevel)).toBe(true);
@@ -120,19 +122,35 @@ describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
     expect(baseDamage(state, content).eq(expected)).toBe(true);
   });
 
-  it('buys a level with ore on an exponential curve', () => {
+  it('buys a level with Money on an exponential curve', () => {
     const first = damageUpgradeCost(freshState(), content, copper.id)!;
-    expect(first.resource).toBe('copper_gem');
+    expect(first.resource).toBe('money');
     expect(first.amount.eq(copper.cost.base.ceil())).toBe(true);
 
     const rich = freshState();
-    rich.resources['copper_gem'] = new Decimal(1000);
+    rich.resources['money'] = new Decimal(1000);
     const after = ok(buyDamageUpgrade(rich, content, copper.id));
     expect(after.combat.damageLevels[copper.id]).toBe(1);
-    expect(after.resources['copper_gem']!.eq(new Decimal(1000).sub(first.amount))).toBe(true);
+    expect(after.resources['money']!.eq(new Decimal(1000).sub(first.amount))).toBe(true);
     const second = damageUpgradeCost(after, content, copper.id)!;
     expect(second.amount.eq(copper.cost.base.mul(copper.cost.growth).ceil())).toBe(true);
     expect(rich.combat.damageLevels[copper.id]).toBeUndefined(); // input untouched
+  });
+
+  it('unlocks the Iron and Crystal Edge with their mines, and refuses them before', () => {
+    const state = freshState();
+    state.resources['money'] = new Decimal(1e12);
+    const iron = content.combat.damageUpgrades.find((u) => u.gem === 'iron_gem')!;
+    const crystal = content.combat.damageUpgrades.find((u) => u.gem === 'grotto_gem')!;
+    expect(isDamageLineUnlocked(state, content, copper)).toBe(true);
+    expect(isDamageLineUnlocked(state, content, iron)).toBe(false);
+    expect(buyDamageUpgrade(state, content, iron.id)).toEqual({ ok: false, reason: 'locked' });
+    const cleared1 = clearDungeon(state, content, 'mossy_cellar').state;
+    expect(isDamageLineUnlocked(cleared1, content, iron)).toBe(true);
+    expect(isDamageLineUnlocked(cleared1, content, crystal)).toBe(false);
+    expect(buyDamageUpgrade(cleared1, content, iron.id).ok).toBe(true);
+    const cleared2 = clearDungeon(cleared1, content, 'ember_crypt').state;
+    expect(buyDamageUpgrade(cleared2, content, crystal.id).ok).toBe(true);
   });
 
   it('refuses unknown lines and unaffordable levels', () => {
@@ -140,7 +158,9 @@ describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
       ok: false,
       reason: 'unknown',
     });
-    expect(buyDamageUpgrade(freshState(), content, copper.id)).toEqual({
+    const broke = freshState();
+    broke.resources['money'] = new Decimal(0);
+    expect(buyDamageUpgrade(broke, content, copper.id)).toEqual({
       ok: false,
       reason: 'unaffordable',
     });
@@ -236,14 +256,89 @@ describe('dungeon progression (first kill clears, DESIGN.md 11.8)', () => {
 });
 
 describe('drops', () => {
-  it('each dungeon drops its sigil and its Core', () => {
-    expect(
-      content.dungeons.map((d) => [d.drops.portalResource.resource, d.drops.material.resource]),
-    ).toEqual([
-      ['moss_sigil', 'moss_core'],
-      ['ember_sigil', 'cinder_core'],
-      ['frost_sigil', 'frost_core'],
+  it('each dungeon drops its own Core', () => {
+    expect(content.dungeons.map((d) => d.drops.material.resource)).toEqual([
+      'moss_core',
+      'cinder_core',
+      'frost_core',
     ]);
+  });
+
+  it('every dungeon drops Money and both crystals, and deeper ones drop more', () => {
+    const ids = ['money', 'summon_crystal', 'glamour_crystal'];
+    for (const d of content.dungeons) {
+      expect(d.drops.currencies.map((c) => c.resource)).toEqual(ids);
+    }
+    for (const id of ids) {
+      const average = content.dungeons.map((d) => {
+        const c = d.drops.currencies.find((x) => x.resource === id)!;
+        return (c.min + c.max) / 2;
+      });
+      expect(average[1]!).toBeGreaterThan(average[0]!);
+      expect(average[2]!).toBeGreaterThan(average[1]!);
+    }
+    // Only the first dungeon pays a wage: a wall cannot be farmed idle.
+    expect(content.dungeons.map((d) => d.drops.wage !== undefined)).toEqual([true, false, false]);
+  });
+
+  it('only the Frostspire Vault drops Frost Sigils, a material used for Prismatic card upgrades', () => {
+    const extras = content.dungeons.map((d) => d.drops.extraMaterials.map((e) => e.resource));
+    expect(extras).toEqual([[], [], ['frost_sigil']]);
+    const frost = content.dungeonById.get('frostspire_vault')!;
+    const { min, max } = frost.drops.extraMaterials[0]!;
+    expect(min).toBeGreaterThan(0);
+    const state = bareState();
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
+    state.activeDungeonId = frost.id;
+    state.bossHp = new Decimal(1e-6);
+    const { state: after, report } = advance(state, content, 1000, constantRng(0));
+    expect(report.bossKills).toBe(1);
+    expect(after.resources['frost_sigil']!.toNumber()).toBe(min);
+    expect(report.materials['frost_sigil']).toBe(min);
+    // The widest roll gives the maximum.
+    const top = advance(
+      { ...state, bossHp: new Decimal(1e-6) },
+      content,
+      1000,
+      constantRng(0.999),
+    ).state;
+    expect(top.resources['frost_sigil']!.toNumber()).toBe(max);
+  });
+
+  it('pays the Money wage for every second of fighting, even before the first kill', () => {
+    const dungeon = content.dungeons[0]!;
+    const state = bareState();
+    state.resources['money'] = new Decimal(0);
+    const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
+    expect(report.bossKills).toBe(0);
+    expect(after.resources['money']!.toNumber()).toBeCloseTo(
+      dungeon.drops.wage!.perSecond.toNumber() * 10,
+    );
+    expect(report.currencies['money']).toBeCloseTo(dungeon.drops.wage!.perSecond.toNumber() * 10);
+  });
+
+  it('pays no wage in the later dungeons, only by the kill', () => {
+    const state = bareState();
+    state.resources['money'] = new Decimal(0);
+    state.clearedDungeons = ['mossy_cellar'];
+    state.activeDungeonId = 'ember_crypt';
+    const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
+    expect(report.bossKills).toBe(0);
+    expect(after.resources['money']!.toNumber()).toBe(0);
+  });
+
+  it('pays no wage while the loadout is knocked out or in a special dungeon', () => {
+    const state = bareState();
+    state.resources['money'] = new Decimal(0);
+    state.combat.knockoutSeconds = 30;
+    const knocked = advance(state, content, 10_000, constantRng(0.5)).state;
+    expect(knocked.resources['money']!.toNumber()).toBe(0);
+    const trial = bareState();
+    trial.resources['money'] = new Decimal(0);
+    trial.clearedDungeons = ['ember_crypt'];
+    trial.activeDungeonId = 'glimmer_trial';
+    const inTrial = advance(trial, content, 10_000, constantRng(0.5)).state;
+    expect(inTrial.resources['money']!.toNumber()).toBe(0);
   });
 
   it('drops a Core when the roll is under its chance', () => {
@@ -262,7 +357,7 @@ describe('drops', () => {
       mod('drops.materialChance', 'mult', '100', { dungeon: mossy.id }),
       mod('drops.materialAmount', 'flat', '2', { resource: 'moss_core' }),
     ];
-    const drops = effectiveDrops(mossy, mods);
+    const drops = effectiveDrops(mossy, mods, content);
     expect(drops.material.chance).toBe(1);
     expect(drops.material.amount).toBe(mossy.drops.material.amount + 2);
   });
@@ -510,18 +605,18 @@ describe('combat data is validated', () => {
   it('catches wrong resource kinds for Cores, trial rewards and damage costs', () => {
     const bad = raw();
     (bad.dungeons as { drops: { material: { resource: string } } }[])[0]!.drops.material.resource =
-      'moss_sigil';
+      'summon_crystal';
     const t = (bad.trials as { tiers: { rewards: { resource: string }[] }[] }[])[0]!;
     t.tiers[0]!.rewards[0]!.resource = 'oak_gem';
     const c = bad.combat as { damageUpgrades: { cost: { resource: string } }[] };
     c.damageUpgrades[0]!.cost.resource = 'oak_gem';
     const found = issues(bad).join('\n');
     expect(found).toContain(
-      'drops › material › resource: "moss_sigil" is portal, expected material',
+      'drops › material › resource: "summon_crystal" is crystal, expected material',
     );
     expect(found).toContain('rewards › [0] › resource: "oak_gem" is tree_gem, expected material');
     expect(found).toContain(
-      'damageUpgrades › [0] › cost › resource: "oak_gem" is tree_gem, expected mine_gem',
+      'damageUpgrades › [0] › cost › resource: "oak_gem" is tree_gem, expected currency',
     );
   });
 

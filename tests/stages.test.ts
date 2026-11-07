@@ -73,7 +73,7 @@ describe('tier-ups from purchases (DESIGN.md 16, E1)', () => {
   it('reports damage line milestones crossed by a bulk buy', () => {
     const state = freshState();
     state.combat.damageLevels['copper_edge'] = 20;
-    state.resources['copper_gem'] = new Decimal('1e30');
+    state.resources['money'] = new Decimal('1e30');
     const result = buyDamageLevels(state, content, 'copper_edge', 10);
     expect(result.ok && result.tierUps).toEqual([
       { kind: 'damage_milestone', id: 'copper_edge', from: 0, to: 1, metal: 'bronze' },
@@ -82,7 +82,7 @@ describe('tier-ups from purchases (DESIGN.md 16, E1)', () => {
 
   it('reports mine milestones and nothing when none is crossed', () => {
     const state = freshState();
-    state.resources['copper_gem'] = new Decimal('1e60');
+    state.resources['money'] = new Decimal('1e60');
     const small = buyMineLevels(state, content, 'copper_quarry', 10);
     expect(small.ok && small.tierUps).toEqual([]);
     const big = buyMineLevels(state, content, 'copper_quarry', 100);
@@ -94,8 +94,7 @@ describe('tier-ups from purchases (DESIGN.md 16, E1)', () => {
   it('reports a tree tile stage reached by buying plots', () => {
     const state = freshState();
     state.production.logging.expansions = 3;
-    state.resources['oak_gem'] = new Decimal('1e30');
-    state.resources['copper_gem'] = new Decimal('1e30');
+    state.resources['money'] = new Decimal('1e30');
     const result = buyExpansions(state, content, 'logging', 2);
     expect(result.ok && result.tierUps).toEqual([
       { kind: 'tile_stage', id: 'logging', from: 0, to: 1, metal: 'bronze' },

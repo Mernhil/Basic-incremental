@@ -3,14 +3,14 @@ import { isProductionGem } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, finalPrice, pay, resetProduction, type Price } from './production';
-import { initialBursts, type GameState } from './state';
+import { initialBursts, startingAmount, type GameState } from './state';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 
 /**
  * Prestige, Ascension (DESIGN.md 3, 11.6, 16). An ascension resets the run (plots, slots, mine
  * levels, resources, tile stages) and keeps everything else (damage lines, cards, cosmetics,
- * unlocks, mastery, medals, portal pity). It grants Starlight from the gems harvested this run,
+ * unlocks, mastery, medals, portal pity, crystals). It grants Starlight from the gems harvested this run,
  * spent in the Starlight shop on permanent bonuses (modifier source `prestige`), and the n-th
  * ascension grants the prestige cosmetics listed for it. Boss HP and attack grow with the
  * prestige count (combat.ts). All numbers are in prestige.json.
@@ -33,6 +33,7 @@ export const ASCENSION_PERSISTS = [
   'mastery',
   'medals',
   'portal_pity',
+  'crystals',
   'starlight',
 ] as const;
 export type AscensionResetPart = (typeof ASCENSION_RESETS)[number];
@@ -125,8 +126,11 @@ export function ascend(
   if (!preview.canAscend) return { ok: false, reason: 'too-early' };
   const next = resetProduction(state, content);
   const currency = content.prestige.currency;
+  // Gems, Money, Cores and the rest start over; Starlight and the premium crystals are kept
+  // (DESIGN.md 11.13), like the pity counters that go with them.
   for (const resource of content.resources) {
-    if (resource.kind !== 'prestige') next.resources[resource.id] = new Decimal(0);
+    if (resource.kind === 'prestige' || resource.kind === 'crystal') continue;
+    next.resources[resource.id] = startingAmount(content, resource.id);
   }
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);
   next.bursts = initialBursts();

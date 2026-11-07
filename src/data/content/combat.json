@@ -4,8 +4,9 @@
     {
       "id": "copper_edge",
       "name": "Copper Edge",
+      "gem": "copper_gem",
       "cost": {
-        "resource": "copper_gem",
+        "resource": "money",
         "base": "10",
         "growth": "1.11"
       },
@@ -18,9 +19,10 @@
     {
       "id": "iron_edge",
       "name": "Iron Edge",
+      "gem": "iron_gem",
       "cost": {
-        "resource": "iron_gem",
-        "base": "20",
+        "resource": "money",
+        "base": "200",
         "growth": "1.12"
       },
       "damagePerLevel": "10",
@@ -32,9 +34,10 @@
     {
       "id": "crystal_edge",
       "name": "Crystal Edge",
+      "gem": "grotto_gem",
       "cost": {
-        "resource": "grotto_gem",
-        "base": "30",
+        "resource": "money",
+        "base": "3000",
         "growth": "1.13"
       },
       "damagePerLevel": "100",

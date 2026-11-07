@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createSeededRng, rollBossDrop } from '../src/game';
 import { constantRng, content } from './helpers';
 
-const drops = content.dungeons[0]!.drops; // chance 0.005, pity threshold 200, portal 1..3
+const drops = content.dungeons[0]!.drops; // chance 0.005, pity threshold 200, Money and both crystals
 
 describe('rollBossDrop', () => {
   it('does not drop when the roll misses and pity is not reached', () => {
@@ -72,16 +72,44 @@ describe('rollBossDrop', () => {
     expect(Math.abs(observed - expectedKillsPerDrop) / expectedKillsPerDrop).toBeLessThan(0.05);
   });
 
-  it('grants portal resource uniformly within [min, max]', () => {
+  it('grants every currency uniformly within its own [min, max]', () => {
     const rng = createSeededRng(99);
-    const seen = new Set<number>();
-    for (let i = 0; i < 1000; i++) {
-      const { portal } = rollBossDrop(drops, 0, rng);
-      expect(portal).toBeGreaterThanOrEqual(drops.portalResource.min);
-      expect(portal).toBeLessThanOrEqual(drops.portalResource.max);
-      seen.add(portal);
+    const seen = drops.currencies.map(() => new Set<number>());
+    for (let i = 0; i < 4000; i++) {
+      const { currencies } = rollBossDrop(drops, 0, rng);
+      expect(currencies).toHaveLength(drops.currencies.length);
+      currencies.forEach((amount, j) => {
+        const { min, max } = drops.currencies[j]!;
+        expect(amount).toBeGreaterThanOrEqual(min);
+        expect(amount).toBeLessThanOrEqual(max);
+        seen[j]!.add(amount);
+      });
     }
-    const { min, max } = drops.portalResource;
-    expect([...seen].sort()).toEqual(Array.from({ length: max - min + 1 }, (_, i) => min + i));
+    drops.currencies.forEach(({ min, max }, j) => {
+      const values = [...seen[j]!].sort((x, y) => x - y);
+      if (max - min < 20) {
+        expect(values).toEqual(Array.from({ length: max - min + 1 }, (_, k) => min + k));
+      } else {
+        // A wide range (Money): spread over the range, reaching near both ends.
+        expect(values.length).toBeGreaterThan(500);
+        expect(values[0]!).toBeLessThan(min + (max - min) * 0.05);
+        expect(values[values.length - 1]!).toBeGreaterThan(max - (max - min) * 0.05);
+      }
+    });
+  });
+
+  it('scales a currency by its multiplier, rounding a fraction up with that chance', () => {
+    const doubled = {
+      ...drops,
+      currencies: drops.currencies.map((c) => ({ ...c, multiplier: 2 })),
+    };
+    const rng = createSeededRng(5);
+    for (let i = 0; i < 200; i++) {
+      const { currencies } = rollBossDrop(doubled, 0, rng);
+      currencies.forEach((amount, j) => {
+        expect(amount).toBeGreaterThanOrEqual(doubled.currencies[j]!.min * 2);
+        expect(amount).toBeLessThanOrEqual(doubled.currencies[j]!.max * 2);
+      });
+    }
   });
 });

@@ -188,9 +188,15 @@ export function initialProduction(content: Content): ProductionState {
   return { logging: job('logging'), mining: job('mining'), unlockedTrees: [], mineLevels: {} };
 }
 
+/** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md 11.13). */
+export function startingAmount(content: Content, resourceId: string): Decimal {
+  return content.resourceById.get(resourceId)?.startAmount ?? new Decimal(0);
+}
+
 export function createInitialState(content: Content): GameState {
   const resources: Record<string, Decimal> = {};
-  for (const resource of content.resources) resources[resource.id] = new Decimal(0);
+  for (const resource of content.resources)
+    resources[resource.id] = startingAmount(content, resource.id);
 
   return {
     resources,

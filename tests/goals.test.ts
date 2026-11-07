@@ -34,8 +34,8 @@ describe('incomePerSecond', () => {
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
     // Moss Cores: 10% of 1 per kill.
     expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
-    // Moss Sigils: 2..4 per kill, 3 on average.
-    expect(incomePerSecond(state, content, 'moss_sigil').toNumber()).toBeCloseTo(3 / spk);
+    // Summon Crystals: 2..4 per kill, 3 on average.
+    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(3 / spk);
   });
 
   it('is 0 for a resource nothing gives', () => {
@@ -44,6 +44,18 @@ describe('incomePerSecond', () => {
 });
 
 describe('goal rules (DESIGN.md 16, E8)', () => {
+  it('counts the Frost Sigils of the Frostspire Vault in the income', () => {
+    const state = bareState();
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
+    state.activeDungeonId = 'frostspire_vault';
+    state.combat.damageLevels = { crystal_edge: 10_000 };
+    const spk = secondsPerKill(state, content, 'frostspire_vault')!;
+    const frost = content.dungeonById.get('frostspire_vault')!.drops.extraMaterials[0]!;
+    expect(incomePerSecond(state, content, 'frost_sigil').toNumber()).toBeCloseTo(
+      (frost.min + frost.max) / 2 / spk,
+    );
+  });
+
   it('has a clear-dungeon goal naming what the clear opens, with the time to kill', () => {
     const state = fighter();
     const goal = find(allGoals(state, content), 'clear_dungeon:mossy_cellar')!;
@@ -99,8 +111,11 @@ describe('goal rules (DESIGN.md 16, E8)', () => {
     expect(goal.progress).toBeCloseTo(0.8);
     const mine = content.mineById.get('copper_quarry')!;
     const price = curveBulkPrice(mine.level.cost, 20, 5).amount.toNumber();
-    const income = incomePerSecond(state, content, 'copper_gem').toNumber();
-    expect(goal.etaSeconds).toBeCloseTo(price / income, 3);
+    state.resources['money'] = new Decimal(0);
+    const income = incomePerSecond(state, realContent, 'money').toNumber();
+    expect(
+      allGoals(state, realContent).find((g) => g.id === 'mine_milestone:copper_quarry')!.etaSeconds,
+    ).toBeCloseTo(price / income, 3);
   });
 
   it('has the next damage line milestone on the dungeons page', () => {
@@ -137,7 +152,9 @@ describe('goal rules (DESIGN.md 16, E8)', () => {
   it('has a star-up goal when only materials are missing', () => {
     const state = fighter();
     state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, duplicates: 1 };
-    const need = content.cardRules.starUp.tiers.bronze.amounts[0]!.toNumber();
+    const need = content.cardRules.starUp.tiers.bronze[0]!.amounts[0]!.toNumber();
+    state.resources['oak_gem'] = new Decimal(1e6); // the gems are in hand, only Cores are missing
+    state.resources['copper_gem'] = new Decimal(1e6);
     state.resources['moss_core'] = new Decimal(need / 2); // half of the first star's Cores
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
     expect(goal).toMatchObject({ title: 'Star up Ember Squire to ★2', page: 'cards' });

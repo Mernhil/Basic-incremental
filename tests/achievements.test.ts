@@ -185,9 +185,9 @@ describe('shard shop (DESIGN.md 5, 17)', () => {
     expect(card.state.cards.shards).toBe(95);
     expect(card.state.cards.owned['ember_squire']!.duplicates).toBe(1);
 
-    const bundle = buyShardItem(withShards(100), content, 'moss_sigils');
+    const bundle = buyShardItem(withShards(100), content, 'summon_crystals');
     if (!bundle.ok) throw new Error(bundle.reason);
-    expect(bundle.state.resources['moss_sigil']!.toNumber()).toBe(100);
+    expect(bundle.state.resources['summon_crystal']!.toNumber()).toBe(100);
 
     const crown = buyShardItem(withShards(200), content, 'ember_crown');
     if (!crown.ok) throw new Error(crown.reason);

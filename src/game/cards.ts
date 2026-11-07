@@ -446,7 +446,11 @@ function resourceRequirements(state: GameState, prices: Price[]): Requirement[] 
   );
 }
 
-/** Star-up materials of the next star (through `cost.multiplier`, scope: job, resource). */
+/**
+ * Star-up materials of the next star (DESIGN.md 11.9): the tier's Core, tree gems and mine gems,
+ * each line scaled by the card's job share (rounded up, at least 1; a share of 0 leaves it out),
+ * then through `cost.multiplier` (scope: job, resource).
+ */
 export function starUpCost(
   content: Content,
   card: Card,
@@ -454,9 +458,15 @@ export function starUpCost(
   modifiers: readonly Modifier[] = [],
 ): Price[] {
   if (owned.stars >= MAX_STARS) return [];
-  const step = content.cardRules.starUp.tiers[owned.tier];
-  const amount = step.amounts[owned.stars - 1]!;
-  return [finalPrice(step.resource, amount, modifiers, { job: card.job })];
+  const prices: Price[] = [];
+  for (const line of content.cardRules.starUp.tiers[owned.tier]) {
+    const share = line.jobShare?.[card.job] ?? 1;
+    if (share <= 0) continue;
+    const base = line.amounts[owned.stars - 1]!;
+    const amount = share === 1 ? base : Decimal.max(base.mul(share).ceil(), 1);
+    prices.push(finalPrice(line.resource, amount, modifiers, { job: card.job }));
+  }
+  return prices;
 }
 
 /** Tier-up costs from the current tier (through `cost.multiplier`, scope: job, resource). */
@@ -490,7 +500,7 @@ export function starUpCheck(
   ]);
 }
 
-/** Tier-up checklist (★6 → next tier ★1): level cap, Cores and wood / ore / sigils. Null if not
+/** Tier-up checklist (★6 → next tier ★1): level cap, Cores, tree and mine gems and Frost Sigils. Null if not
  *  owned. Unavailable below ★6 and at Prismatic. */
 export function tierUpCheck(
   state: GameState,

@@ -113,33 +113,31 @@ describe('buy offers (x1 / x10 / x100 / Max)', () => {
 
 describe('bulk buys for damage lines, mine levels and expansions', () => {
   it('buys exactly N damage levels for the same price as N single buys', () => {
-    const start = rich('copper_gem', 1e6);
+    const start = rich('money', 1e6);
     const bulk = buyDamageLevels(start, content, 'copper_edge', 10);
     if (!bulk.ok) throw new Error(bulk.reason);
     expect(bulk.bought).toBe(10);
     const ref = oneByOne(start, 10, (s) => buyDamageUpgrade(s, content, 'copper_edge'));
     expect(bulk.state.combat.damageLevels['copper_edge']).toBe(10);
-    expect(bulk.state.resources['copper_gem']!.eq(ref.resources['copper_gem']!)).toBe(true);
+    expect(bulk.state.resources['money']!.eq(ref.resources['money']!)).toBe(true);
     expect(start.combat.damageLevels['copper_edge']).toBeUndefined(); // input untouched
   });
 
   it('fails an xN buy that is not fully affordable, without buying part of it', () => {
-    const start = rich('copper_gem', 15); // one level costs 10, two cost 10 + 11.5 -> 22
+    const start = rich('money', 15); // one level costs 10, two cost 10 + 11.5 -> 22
     const r = buyDamageLevels(start, content, 'copper_edge', 2);
     expect(r).toEqual({ ok: false, reason: 'unaffordable' });
   });
 
   it('Max buys every affordable damage level and fails when none is', () => {
-    const start = rich('copper_gem', 1000);
+    const start = rich('money', 1000);
     const offer = damageLineOffer(start, content, 'copper_edge', 'max')!;
     const r = buyDamageLevels(start, content, 'copper_edge', 'max');
     if (!r.ok) throw new Error(r.reason);
     expect(r.bought).toBe(offer.count);
     expect(r.bought).toBeGreaterThan(1);
-    expect(r.state.resources['copper_gem']!.eq(new Decimal(1000).sub(offer.price.amount))).toBe(
-      true,
-    );
-    expect(buyDamageLevels(freshState(), content, 'copper_edge', 'max')).toEqual({
+    expect(r.state.resources['money']!.eq(new Decimal(1000).sub(offer.price.amount))).toBe(true);
+    expect(buyDamageLevels(rich('money', 0), content, 'copper_edge', 'max')).toEqual({
       ok: false,
       reason: 'unaffordable',
     });
@@ -151,27 +149,27 @@ describe('bulk buys for damage lines, mine levels and expansions', () => {
   });
 
   it('buys mine levels in bulk, only for unlocked mines', () => {
-    const start = rich('copper_gem', 1e6);
+    const start = rich('money', 1e6);
     const r = buyMineLevels(start, content, 'copper_quarry', 5);
     if (!r.ok) throw new Error(r.reason);
     const ref = oneByOne(start, 5, (s) => buyMineLevel(s, content, 'copper_quarry'));
     expect(r.state.production.mineLevels['copper_quarry']).toBe(5);
-    expect(r.state.resources['copper_gem']!.eq(ref.resources['copper_gem']!)).toBe(true);
-    const iron = rich('iron_gem', 1e6);
+    expect(r.state.resources['money']!.eq(ref.resources['money']!)).toBe(true);
+    const iron = rich('money', 1e6);
     expect(buyMineLevels(iron, content, 'iron_deeps', 1)).toEqual({ ok: false, reason: 'locked' });
     expect(mineLevelOffer(iron, content, 'iron_deeps', 1)!.affordable).toBe(false);
     expect(mineLevelOffer(iron, content, 'nope', 1)).toBeNull();
   });
 
   it('buys plots and slots in bulk', () => {
-    const start = rich('oak_gem', 1e6);
+    const start = rich('money', 1e6);
     const r = buyExpansions(start, content, 'logging', 'max');
     if (!r.ok) throw new Error(r.reason);
     const ref = oneByOne(start, r.bought, (s) => buyExpansion(s, content, 'logging'));
     expect(r.state.production.logging.expansions).toBe(r.bought);
-    expect(r.state.resources['oak_gem']!.eq(ref.resources['oak_gem']!)).toBe(true);
-    const offer = expansionOffer(freshState(), content, 'mining', 1);
-    expect(offer!.price.resource).toBe('copper_gem');
+    expect(r.state.resources['money']!.eq(ref.resources['money']!)).toBe(true);
+    const offer = expansionOffer(rich('money', 0), content, 'mining', 1);
+    expect(offer!.price.resource).toBe('money');
     expect(offer!.affordable).toBe(false);
     expect(offer!.progress).toBe(0);
   });

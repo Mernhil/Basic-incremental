@@ -258,11 +258,11 @@ describe('the Wardrobe Gate (DESIGN.md 6)', () => {
     expect(content.allPortals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
   });
 
-  it('costs Ember Sigils with the same pull, pity and guarantee rules', () => {
+  it('costs Glamour Crystals with the same pull, pity and guarantee rules', () => {
     const state = freshState();
-    state.resources['ember_sigil'] = new Decimal(100);
+    state.resources['glamour_crystal'] = new Decimal(100);
     const info = portalInfo(state, gateOpen, 'wardrobe_gate')!;
-    expect(info.single.price.resource).toBe('ember_sigil');
+    expect(info.single.price.resource).toBe('glamour_crystal');
     expect(info.ten.affordable).toBe(true);
     expect(info.pity.threshold).toBe(90);
     expect(info.tenPullGuarantee).toBe('rare');
@@ -270,7 +270,7 @@ describe('the Wardrobe Gate (DESIGN.md 6)', () => {
 
   it('pulls cosmetics; a duplicate becomes a copy for upgrade levels', () => {
     const state = freshState();
-    state.resources['ember_sigil'] = new Decimal(20);
+    state.resources['glamour_crystal'] = new Decimal(20);
     const once = pull(state, gateOpen, 'wardrobe_gate', 1, constantRng(0));
     if (!once.ok) throw new Error(once.reason);
     const id = once.results[0]!.itemId;

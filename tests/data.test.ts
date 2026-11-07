@@ -235,12 +235,12 @@ describe('card ranks and portals', () => {
   it('catches unknown materials and card modifier scopes', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['starUp'].tiers.bronze.resource = 'nope';
+    rules['starUp'].tiers.bronze[0].resource = 'nope';
     rules['tierUp'].bronze.mining[0].resource = 'nope';
     (bad.cards as Record<string, any>[])[0]!['support'].modifiers[0].scope = { dungeon: 'nowhere' }; // eslint-disable-line @typescript-eslint/no-explicit-any
     const issues = issuesFor(bad);
     expect(issues).toContain(
-      'cardRules.json › starUp › tiers › bronze › resource: unknown resource "nope"',
+      'cardRules.json › starUp › tiers › bronze › [0] › resource: unknown resource "nope"',
     );
     expect(issues).toContain(
       'cardRules.json › tierUp › bronze › mining › [0] › resource: unknown resource "nope"',
@@ -270,7 +270,7 @@ describe('card ranks and portals', () => {
     portal.pool[0]!.itemId = 'holo_hex'; // a cosmetic in a cards portal
     portal.pool[1]!.itemId = 'missing_card';
     const issues = issuesFor(bad);
-    expect(issues.some((i) => i.includes('is tree_gem, expected portal'))).toBe(true);
+    expect(issues.some((i) => i.includes('is tree_gem, expected crystal'))).toBe(true);
     expect(
       issues.some((i) => i.includes('pool › [0] › itemId') && i.includes('not a known card')),
     ).toBe(true);
@@ -287,7 +287,7 @@ describe('card ranks and portals', () => {
     expect(issues.some((i) => i.startsWith('portals.json › [0] › pity › threshold'))).toBe(true);
   });
 
-  it('has the beta Card Portal: 10 / 100 Moss Sigils, Legendary+ at 90, Rare+ per 10-pull', () => {
+  it('has the beta Card Portal: 10 / 100 Summon Crystals, Legendary+ at 90, Rare+ per 10-pull', () => {
     const portal = loadContent().portals.find((p) => p.id === 'card_portal')!;
     expect(portal.cost.single.toNumber()).toBe(10);
     expect(portal.cost.ten.toNumber()).toBe(100);
@@ -298,11 +298,13 @@ describe('card ranks and portals', () => {
   it('checks the prestige currency, reward cosmetics and shop modifier scopes', () => {
     const bad = raw();
     const p = bad.prestige as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    p['currency'] = 'moss_sigil';
+    p['currency'] = 'summon_crystal';
     p['rewards'][0].cosmetics = ['nope'];
     p['shop'][0].perLevel[0].scope = { dungeon: 'nowhere' };
     const issues = issuesFor(bad);
-    expect(issues).toContain('prestige.json › currency: "moss_sigil" is portal, expected prestige');
+    expect(issues).toContain(
+      'prestige.json › currency: "summon_crystal" is crystal, expected prestige',
+    );
     expect(issues).toContain(
       'prestige.json › rewards › [0] › cosmetics › [0]: unknown cosmetic "nope"',
     );
@@ -424,13 +426,13 @@ describe('production data', () => {
     const production = bad.production as ProductionRaw;
     production.logging.startProducer = 'ironbark';
     production.mining.startProducer = 'missing_mine';
-    production.mining.expansion.resource = 'moss_sigil';
+    production.mining.expansion.resource = 'summon_crystal';
     const issues = issuesFor(bad);
     expect(issues).toContain(
       'trees.json › [1] › unlockCost › [0] › resource: "copper_gem" is mine_gem, expected tree_gem',
     );
     expect(issues).toContain(
-      'mines.json › [0] › level › cost › resource: "oak_gem" is tree_gem, expected mine_gem',
+      'mines.json › [0] › level › cost › resource: "oak_gem" is tree_gem, expected currency',
     );
     expect(issues).toContain('mines.json › [2] › id: "oak" is already a tree id');
     expect(issues).toContain(
@@ -440,7 +442,7 @@ describe('production data', () => {
       'production.json › mining › startProducer: unknown mine "missing_mine"',
     );
     expect(issues).toContain(
-      'production.json › mining › expansion › resource: "moss_sigil" is portal, expected mine_gem',
+      'production.json › mining › expansion › resource: "summon_crystal" is crystal, expected currency',
     );
   });
 
@@ -450,6 +452,64 @@ describe('production data', () => {
     expect(issuesFor(bad)).toContain(
       'production.json › logging › expansion › growth: must be at least 1',
     );
+  });
+});
+
+describe('the three loops (DESIGN.md 11.13)', () => {
+  it('has Money, two crystals and a Frost Sigil that is a material', () => {
+    const c = loadContent();
+    const kind = (id: string) => c.resourceById.get(id)!.kind;
+    expect(kind('money')).toBe('currency');
+    expect(kind('summon_crystal')).toBe('crystal');
+    expect(kind('glamour_crystal')).toBe('crystal');
+    expect(kind('frost_sigil')).toBe('material');
+    expect(c.resourceById.get('money')!.name).toBe('Money');
+    expect(c.resourceById.get('money')!.startAmount!.gt(0)).toBe(true);
+    expect(c.resourceById.get('moss_sigil')).toBeUndefined();
+  });
+
+  it('prices plots, slots, mine levels and damage lines in Money, and unlocks in gems', () => {
+    const c = loadContent();
+    expect(c.production.logging.expansion.resource).toBe('money');
+    expect(c.production.mining.expansion.resource).toBe('money');
+    for (const m of c.mines) expect(m.level.cost.resource).toBe('money');
+    for (const u of c.combat.damageUpgrades) expect(u.cost.resource).toBe('money');
+    for (const t of c.trees) {
+      for (const cost of t.unlockCost)
+        expect(c.resourceById.get(cost.resource)!.kind).toBe('tree_gem');
+    }
+  });
+
+  it('makes the portals cost a crystal', () => {
+    const c = loadContent();
+    expect(c.allPortals.map((p) => [p.id, p.cost.resource])).toEqual([
+      ['card_portal', 'summon_crystal'],
+      ['wardrobe_gate', 'glamour_crystal'],
+    ]);
+  });
+
+  it('refuses a dungeon that leaves out a crystal or drops a gem', () => {
+    const bad = raw();
+    const drops = (bad.dungeons as { drops: { currencies: { resource: string }[] } }[])[1]!.drops;
+    drops.currencies = drops.currencies.filter((x) => x.resource !== 'glamour_crystal');
+    drops.currencies.push({ resource: 'oak_gem', min: 1, max: 2 } as never);
+    const issues = issuesFor(bad);
+    expect(issues.join(String.fromCharCode(10))).toContain('"glamour_crystal" is not dropped');
+    expect(issues.join(String.fromCharCode(10))).toContain(
+      '"oak_gem" is tree_gem, expected currency or crystal',
+    );
+  });
+
+  it('refuses card upgrades paid in Money or without both production loops', () => {
+    const bad = raw();
+    const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
+    rules['starUp'].tiers.bronze[0].resource = 'money';
+    rules['tierUp'].silver.mining = rules['tierUp'].silver.mining.filter(
+      (x: { resource: string }) => x.resource !== 'moonwillow_gem',
+    );
+    const issues = issuesFor(bad).join(String.fromCharCode(10));
+    expect(issues).toContain('card upgrades use gems and materials only');
+    expect(issues).toContain('cardRules.json › tierUp › silver › mining: needs a tree_gem');
   });
 });
 

@@ -82,9 +82,9 @@
       ]
     },
     {
-      "id": "constellation_sigils",
-      "name": "Constellation Sigils",
-      "description": "+10% sigils from bosses per level",
+      "id": "constellation_crystals",
+      "name": "Constellation Crystals",
+      "description": "+10% crystals from bosses per level",
       "maxLevel": 10,
       "cost": {
         "base": "5",
@@ -92,7 +92,7 @@
       },
       "perLevel": [
         {
-          "stat": "drops.portalMultiplier",
+          "stat": "drops.crystalMultiplier",
           "kind": "percent",
           "value": "10"
         }
