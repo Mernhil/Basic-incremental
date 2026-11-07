@@ -82,3 +82,12 @@ Brave Frontier units are mid-resolution pixel sprites (roughly 100 to 150 px tal
 - Black used as shadow inside parts (it should be the ink only); use the darkest hue-shifted tone instead.
 - Thin parts lost at game scale; details smaller than 2 px that turn into noise.
 - Everything the same brightness, so nothing leads the eye.
+
+## 9. Learned from "Brave Frontier / Animated Pixel Art Sprites" (Petshopbox Studio, Behance, 2026-11-07)
+
+- **Value contrast beats colour contrast.** Each unit has one dark ink-like shade and one near-white highlight, with the mid tones carrying the hue; against a flat saturated background the unit still reads because of that value spread.
+- **Hue-shifted ramps on metal.** Gold goes orange in shadow and pale yellow in light; steel goes blue-violet in shadow and near-white in light; purple gear goes toward blue in shadow and pink in light. Shadows are never plain darker greys.
+- **Fire is built from edge shapes, not a texture.** Tongues are pointed, taper to a single pixel, and run from red at the base through orange to yellow at the tip. They hug the weapon's own outline and break into loose single-pixel embers. (Those orphan embers are deliberate; the checker should treat them as effects, not errors.)
+- **Parts overlap at different scales.** A big weapon in front of a small body, wings and tails behind it. Overlap order is used for depth instead of shadows.
+- **Small faces: eyes and a colour accent, nothing else.** At this size a face is a few pixels; hair colour and headgear carry identity.
+- **Gems and orbs: ring, core, glint.** A darker rim, a lighter body, a 1 to 2 px white core, and a plus-shaped sparkle at the peak.

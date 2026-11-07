@@ -86,3 +86,17 @@ Under `prefers-reduced-motion`, every loop stops on one chosen still frame (the 
 | Shine sweep         | as many steps as the band needs to cross, plus a long pause |
 
 Prefer fewer, stronger frames with good timing to many weak in-betweens.
+
+## 9. Learned from "Brave Frontier / Animated Pixel Art Sprites" (Petshopbox Studio, Behance, 2026-11-07)
+
+Studied 25 animated unit sheets by watching them play and zooming into timed screenshots (frame data could not be read directly, so timings below are approximate). Principles only, in my own words:
+
+- **Every unit is one big, readable shape with a small head.** The body is a tiny core (about a quarter of the area); the weapon, wings, cape or beast companion carries the silhouette. Details cluster on the face and gem; the rest stays flat and chunky.
+- **Idle is a gentle bob plus a busy aura.** The body barely moves; the life comes from secondary layers: flames licking up in 3 to 4 uneven shapes, embers rising, cloth and hair lagging, a ring or rune floating below the feet. Layers loop at different lengths so the whole never visibly repeats.
+- **Special attacks follow a clear beat sheet:** (1) the idle pose drops and a glow gathers at the chest or weapon, (2) the glow grows into one big soft orb or arc that is the brightest and biggest thing in frame, (3) a short held peak where the orb is at full size with a bright white core and a sparkle, (4) release: the effect streams away in one direction as separate small pieces (notes, shards, embers) trailing thin streaks, (5) pieces fade, the glow shrinks, the unit returns to idle. Charge and release are about equal in length; the peak is held noticeably longer than any single in-between.
+- **Effect pieces are a different shape family from the body.** A music hero fires notes and staff lines; a fire hero fires flame tongues. Each piece is a few pixels, has its own tiny ramp, and trails 1 px lines in a lighter tone, so motion reads even in a still.
+- **Blank beat before the loop.** Several sheets cleared to empty for a moment, then the unit pops back in. That pause makes each loop read as a fresh performance rather than a stutter; a still frame is never used as the pause.
+- **Glow is the only soft thing.** Orbs and auras use a few concentric rings stepping from white to hue to a darker hue, in hard-edged bands, rather than a blur. At 1x the band steps look smooth; at 4x they show as clean contours.
+- **Ground anchor.** Units stand on a ring or circle of the element's colour that pulses a little, so a floating, oversized sprite still feels placed.
+
+How this applies here: card items should keep a calm idle (shine, small sparkles), and use the charge, held peak, release, settle beat only for hits and unlock moments. Keep effect pieces a different shape family from the item, with one lighter 1 px trail.
