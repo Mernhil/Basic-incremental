@@ -8,6 +8,7 @@ import {
   canAfford,
   collectModifiers,
   computeStat,
+  defaultRng,
   isProducerUnlocked,
   jobProductionPerSecond,
   producerLevel,
@@ -32,6 +33,17 @@ import { h } from '../shell/shell';
 import { statTip } from '../shell/stats';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import type { CoinTarget } from '../stage/arena';
+import { createHarvestParty, type HarvestParty } from '../stage/harvestParty';
+import { playHit } from '../theme/effects';
+import { flash, reducedMotion, shake, slowDown } from '../stage/motion';
+import {
+  harvestMoments,
+  lungeVector,
+  strikeLook,
+  strikeNumberKind,
+  type BurstMoment,
+  type StrikeMoment,
+} from './productionStageModel';
 import type { Director } from '../stage/director';
 import { centreOf, flyCoins } from '../stage/fly';
 import { createThrottle, popText } from '../stage/math';
@@ -114,6 +126,8 @@ export function createProductionPage(
   let notes: Array<() => void> = [];
   let priced: Array<{ btn: HTMLButtonElement; prices: () => Price[] }> = [];
   const fieldEls: Partial<Record<ProductionJob, HTMLElement>> = {};
+  const parties: Partial<Record<ProductionJob, HarvestParty>> = {};
+  const flashes: Partial<Record<ProductionJob, HTMLElement>> = {};
   /** Plot index -> tile button, per job. */
   const tiles: Record<ProductionJob, Map<number, HTMLElement>> = {
     logging: new Map(),
@@ -173,7 +187,14 @@ export function createProductionPage(
     strip.setAttribute('aria-label', t.plotsLabel);
     tiles[job].clear();
     list.forEach((id, index) => strip.append(plotTile(job, index, id, state, mods)));
-    section.append(head, strip);
+    const party = createHarvestParty(content, ctx.state, job);
+    parties[job] = party;
+    const stage = h('div', 'pp-stage');
+    stage.append(party.el, strip);
+    const flashEl = h('div', 'pp-flash');
+    flashEl.setAttribute('aria-hidden', 'true');
+    flashes[job] = flashEl;
+    section.append(head, stage, flashEl);
     fieldEls[job] = section;
     return section;
   }
@@ -187,6 +208,7 @@ export function createProductionPage(
   ): HTMLElement {
     const t = COPY.production[job];
     const li = h('li', 'pp-plot');
+    li.append(h('span', 'pp-fx'));
     const btn = h('button', 'pp-tile');
     btn.type = 'button';
     btn.dataset.key = `${job}-plot-${index}`;
@@ -485,51 +507,79 @@ export function createProductionPage(
       if (btn.disabled === ok) btn.disabled = !ok;
     }
     for (const note of notes) note();
+    for (const job of PRODUCTION_JOBS) parties[job]?.update();
     shelf.update();
   }
 
   // ---- show events ----
 
-  ctx.director?.on('harvest', (e) => {
-    const area = fieldEls[e.job];
-    if (!visible() || !area) return;
+  /** One strike: the main card lunges at the plot, the plot is hit, the yield pops on it. */
+  function strike(job: ProductionJob, m: StrikeMoment): void {
+    const area = fieldEls[job];
+    const party = parties[job];
+    const tile = tiles[job].get(m.plot);
+    if (!area || !party || !tile) return;
     const box = area.getBoundingClientRect();
     if (box.width === 0) return;
-    const now = performance.now();
-    for (const p of e.plots) {
-      const tile = tiles[e.job].get(p.index);
-      if (!tile) continue;
-      const t = tile.getBoundingClientRect();
-      popGain(
-        area,
-        `pp-${e.job}-${p.index}`,
-        p.amount,
-        (t.left + t.width / 2 - box.left) / box.width,
-        (t.top + 8 - box.top) / box.height,
-      );
-      replay(tile.querySelector('.pp-tile__art'), 'is-harvest', 400);
-      if (coinThrottle.allow(p.resource, now)) {
-        flyCoins({
-          from: centreOf(tile),
-          target: ctx.coins?.currencyGlyph(p.resource) ?? null,
-          count: 1,
-          onLand: () => ctx.coins?.pulseCurrency(p.resource),
-        });
+    const view = party.view();
+    const look = strikeLook(view.pattern);
+    const slot = party.mainSlot();
+    if (slot) {
+      const v = lungeVector(centreOf(slot), centreOf(tile), look);
+      party.lunge(look, v.dx, v.dy);
+    }
+    party.pulse(m.supports);
+    const art = tile.querySelector('.pp-tile__art');
+    replay(art, 'is-harvest', 400);
+    const fx = tile.parentElement?.querySelector<HTMLElement>('.pp-fx');
+    if (fx && view.attackEffect && !reducedMotion()) {
+      try {
+        playHit(view.attackEffect, fx, { rng: defaultRng, target: art });
+      } catch {
+        /* an unknown effect id must not stop the harvest */
       }
     }
-  });
+    if (look.shake || m.crit) shake(area);
+    const t = tile.getBoundingClientRect();
+    const x = (t.left + t.width / 2 - box.left) / box.width;
+    const y = (t.top + 8 - box.top) / box.height;
+    if (strikeNumberKind(m) === 'crit') {
+      popNumber(area, {
+        kind: 'crit',
+        text: `+${popText(m.amount)}`,
+        x,
+        y,
+        scale: look.numberScale * 1.25,
+      });
+    } else {
+      popGain(area, `pp-${job}-${m.plot}`, m.amount, x, y, look.numberScale);
+    }
+    if (coinThrottle.allow(m.resource, performance.now())) {
+      flyCoins({
+        from: centreOf(tile),
+        target: ctx.coins?.currencyGlyph(m.resource) ?? null,
+        count: 1,
+        onLand: () => ctx.coins?.pulseCurrency(m.resource),
+      });
+    }
+  }
 
-  ctx.director?.on('harvestBurst', (e) => {
-    const area = fieldEls[e.job];
-    if (!visible() || !area) return;
-    // a wave across the plots, then one big total
-    [...tiles[e.job].values()].forEach((tile, i) => {
-      window.setTimeout(() => replay(tile, 'is-wave', 500), i * 70);
-    });
-    const text = e.totals.map((t) => `+${popText(t.amount)}`).join('  ');
-    popNumber(area, { kind: 'total', text, x: 0.5, y: 0.45, scale: 1.9 });
+  /** The burst: a wave across the plots, a flash, one big total. */
+  function burst(job: ProductionJob, b: BurstMoment): void {
+    const area = fieldEls[job];
+    if (!area) return;
+    parties[job]?.burst();
+    parties[job]?.pulse(b.supports);
+    flash(flashes[job]);
+    slowDown(area, 450, 0.4);
+    for (const p of b.plots) {
+      const tile = tiles[job].get(p.plot);
+      if (tile) window.setTimeout(() => replay(tile, 'is-wave', 500), p.plot * 70);
+    }
+    const text = b.totals.map((t) => `+${popText(t.amount)}`).join('  ');
+    popNumber(area, { kind: 'total', text, x: 0.62, y: 0.45, scale: 1.9 });
     ctx.sound?.('harvestBurst');
-    for (const t of e.totals) {
+    for (const t of b.totals) {
       flyCoins({
         from: centreOf(area),
         target: ctx.coins?.currencyGlyph(t.resource) ?? null,
@@ -537,6 +587,21 @@ export function createProductionPage(
         spill: true,
         onLand: () => ctx.coins?.pulseCurrency(t.resource),
       });
+    }
+  }
+
+  ctx.director?.on('harvests', ({ events }) => {
+    if (!visible()) return;
+    for (const job of PRODUCTION_JOBS) {
+      const moments = harvestMoments(events, job);
+      const look = strikeLook(parties[job]?.view().pattern ?? { style: 'steady' });
+      moments.strikes.forEach((m, i) =>
+        window.setTimeout(() => strike(job, m), i * look.staggerMs),
+      );
+      if (moments.burst) {
+        const b = moments.burst;
+        window.setTimeout(() => burst(job, b), moments.strikes.length * look.staggerMs);
+      }
     }
   });
 
