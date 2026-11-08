@@ -31,9 +31,14 @@ RS = load(HERE / "restyle.py", "restyle")
 P = RS.P
 RAW = HERE / "pixellab/rollout"
 PILOT_RAW = {"coin-body-gold": HERE / "pixellab/restyle/pro-m-coin-round-gold-2.png"}
-PILOT_DONE = {  # already cleaned in the pilot (same cleanup), copied as they are
-    "item-katana-epic", "item-staff-epic", "item-book-epic", "item-maul-epic", "evo-bronze_hammer",
-}
+PILOT_DONE: set[str] = set()  # the pilot sprites are rebuilt from their raw picks like the rest
+PILOT_RAW.update({
+    "item-katana-epic": HERE / "pixellab/restyle/pro-o-item-katana-epic-0.png",
+    "item-staff-epic": HERE / "pixellab/restyle/pro-n-item-staff-epic-0.png",
+    "item-book-epic": HERE / "pixellab/restyle/pro-m-item-book-epic-0.png",
+    "item-maul-epic": HERE / "pixellab/restyle/pro-m-item-maul-epic-2.png",
+    "evo-bronze_hammer": HERE / "pixellab/restyle/pro-m-evo-bronze_hammer-3.png",
+})
 KEEP_LARGEST = {"item-maul-common"}
 SHAPES = ["round", "square", "hexagon", "pentagon", "star", "drop"]
 RING_TIER = {"stone": "stone", "bronze": "bronze", "silver": "silver", "gold": "gold", "prism": "prism",

@@ -9,14 +9,14 @@
 | old void | 80x116 | 2301 | 41 | 1.3 |
 | new common | 65x101 | 1628 | 18 | 0.0 |
 | new rare | 68x101 | 1441 | 18 | 0.0 |
-| new epic | 68x102 | 1515 | 13 | 0.0 |
+| new epic | 68x102 | 1515 | 18 | 0.0 |
 | new legendary | 80x109 | 1629 | 18 | 0.0 |
 | new mythic | 85x110 | 2339 | 19 | 0.2 |
 | new exotic | 85x115 | 2646 | 21 | 0.0 |
 | new void | 87x114 | 3329 | 21 | 0.0 |
 | new common | 65x65 | 2959 | 18 | 0.0 |
 | new rare | 61x65 | 3042 | 18 | 0.0 |
-| new epic | 67x67 | 3199 | 12 | 0.0 |
+| new epic | 67x67 | 3199 | 18 | 0.0 |
 | new legendary | 67x72 | 3329 | 18 | 0.0 |
 | new mythic | 67x67 | 3205 | 18 | 0.0 |
 | new exotic | 90x90 | 5557 | 20 | 0.0 |
@@ -30,7 +30,7 @@
 | old void | 79x95 | 1675 | 35 | 3.8 |
 | new common | 44x64 | 661 | 13 | 0.0 |
 | new rare | 49x67 | 1058 | 16 | 0.0 |
-| new epic | 62x78 | 986 | 12 | 0.0 |
+| new epic | 62x78 | 986 | 19 | 0.0 |
 | new legendary | 62x80 | 1750 | 19 | 0.1 |
 | new mythic | 75x80 | 1354 | 19 | 0.1 |
 | new exotic | 75x81 | 1371 | 19 | 0.1 |
@@ -44,7 +44,7 @@
 | old void | 79x105 | 2065 | 56 | 2.6 |
 | new common | 62x62 | 1798 | 16 | 0.0 |
 | new rare | 59x71 | 1502 | 16 | 0.0 |
-| new epic | 72x70 | 1676 | 13 | 0.1 |
+| new epic | 72x70 | 1676 | 19 | 0.1 |
 | new legendary | 72x97 | 2100 | 19 | 0.0 |
 | new mythic | 72x98 | 2044 | 18 | 0.0 |
 | new exotic | 77x101 | 2675 | 21 | 0.0 |
@@ -70,7 +70,7 @@
 | old twin_daggers | 80x105 | 2012 | 34 | 1.1 |
 | new twin_daggers | 78x99 | 2433 | 23 | 0.0 |
 | old bronze_hammer | 80x105 | 2012 | 34 | 1.1 |
-| new bronze_hammer | 79x97 | 2517 | 11 | 0.2 |
+| new bronze_hammer | 79x97 | 2517 | 23 | 0.1 |
 | old round stone | 44x44 | 1560 | 14 | 0.1 |
 | old round bronze | 44x44 | 1560 | 14 | 0.1 |
 | old round silver | 44x44 | 1560 | 14 | 0.1 |

@@ -1,4 +1,4 @@
-"""Applies the palette rule to the cleaned drafts that were not regenerated with PixelLab pro (trail
+"""Applies the palette rule (review 2026-11-08: only to over-budget sprites, otherwise the draft is kept) to the cleaned drafts that were not regenerated with PixelLab pro (trail
 swatches, debuffs, portraits, flora, hex badges, attack frames, interface and cosmetic frames):
 per material at most 3 flat tones plus a white glint, specks merged (restyle.cel_palette / islands).
 The magic patterns already sit on a 4-tone ramp and are copied as they are.
@@ -35,7 +35,7 @@ def main() -> None:
         dst.mkdir(parents=True, exist_ok=True)
         for p in sorted((HERE / "drafts" / group).glob("*.png")):
             a = np.array(Image.open(p).convert("RGBA"), dtype=np.uint8)
-            b = RS.islands(RS.cel_palette(a, mats))
+            b = RS.islands(a, 1, 2) if len({tuple(c) for c in a[a[..., 3] > 0][:, :3]}) <= 22 else RS.islands(RS.cel_palette(a, mats))
             Image.fromarray(b, "RGBA").save(dst / p.name)
             lines.append(f"| {group}/{p.stem} | {F.metrics(p)['tones']} | {F.metrics(dst / p.name)['tones']} |")
     shutil.copytree(HERE / "drafts/magic", OUT / "magic", dirs_exist_ok=True)
