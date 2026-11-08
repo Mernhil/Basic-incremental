@@ -18,3 +18,9 @@ graphify-out/
 # Third-party art kept only as local references (not ours to redistribute)
 design/references/*
 !design/references/README.md
+
+# Local-only scratch (never committed)
+tracing pics/
+design/art-trials/
+design/app-screens/production-*.png
+/2026-11-08-game-changes.md
