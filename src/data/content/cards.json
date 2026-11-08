@@ -177,7 +177,13 @@
       "name": "Hatchet"
     },
     "main": {
-      "description": "Steady output"
+      "description": "Steady output",
+      "harvest": {
+        "style": "steady",
+        "intervalSeconds": 1,
+        "strikes": 1,
+        "targeting": "sweep"
+      }
     },
     "support": {
       "description": "+5% logging",
@@ -206,6 +212,12 @@
     "evolution": "rootbloom_staff",
     "main": {
       "description": "+10% logging",
+      "harvest": {
+        "style": "flurry",
+        "intervalSeconds": 0.5,
+        "strikes": 1,
+        "targeting": "sweep"
+      },
       "modifiers": [
         {
           "stat": "production.rate",
@@ -244,6 +256,12 @@
     },
     "main": {
       "description": "Harvest bursts give 15 s of output instead of 10 s",
+      "harvest": {
+        "style": "chop",
+        "intervalSeconds": 2,
+        "strikes": 1,
+        "targeting": "random"
+      },
       "modifiers": [
         {
           "stat": "burst.power",
@@ -281,6 +299,12 @@
     },
     "main": {
       "description": "+30% logging, harvest gauge fills faster",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2,
+        "targeting": "all"
+      },
       "modifiers": [
         {
           "stat": "production.rate",
@@ -325,7 +349,13 @@
       "name": "Pickaxe"
     },
     "main": {
-      "description": "Steady output"
+      "description": "Steady output",
+      "harvest": {
+        "style": "steady",
+        "intervalSeconds": 1,
+        "strikes": 1,
+        "targeting": "sweep"
+      }
     },
     "support": {
       "description": "+5% mining",
@@ -353,6 +383,12 @@
     },
     "main": {
       "description": "+10% mining",
+      "harvest": {
+        "style": "flurry",
+        "intervalSeconds": 0.5,
+        "strikes": 1,
+        "targeting": "sweep"
+      },
       "modifiers": [
         {
           "stat": "production.rate",
@@ -391,6 +427,12 @@
     },
     "main": {
       "description": "Harvest bursts give 15 s of output, +15% mining",
+      "harvest": {
+        "style": "chop",
+        "intervalSeconds": 2,
+        "strikes": 1,
+        "targeting": "random"
+      },
       "modifiers": [
         {
           "stat": "burst.power",
@@ -436,6 +478,12 @@
     },
     "main": {
       "description": "+40% mining, harvest gauge fills faster",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2,
+        "targeting": "all"
+      },
       "modifiers": [
         {
           "stat": "production.rate",

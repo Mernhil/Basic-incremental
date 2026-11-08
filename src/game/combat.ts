@@ -4,6 +4,7 @@ import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
 import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
+import { recordBurst } from './harvest';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import {
   collectModifiers,
@@ -663,6 +664,7 @@ export function advanceHarvestBursts(
     report.bursts[job] += run.bursts;
     const harvestSeconds = stats.power.mul(run.bursts);
     harvested[job] = harvestSeconds;
+    recordBurst(before, content, job, harvestSeconds, modifiers, report);
     for (const [resource, perSecond] of Object.entries(
       jobProductionPerSecond(before, content, job, modifiers),
     )) {
