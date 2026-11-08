@@ -2,6 +2,12 @@
    Colours come from the chrome-*, frame-* and tip-* tokens; the cards themselves are the real
    card component, scaled down with a transform (zoom breaks the rank star rendering). */
 
+/* a wide window has room for the grid at 2x (DESIGN.md §11 Sharp cards): four cards at 2x, the
+   gaps, the frame and the detail panel take about 1,600 px */
+.shell-page--cards {
+  max-width: 1680px;
+}
+
 .cp-tabs {
   display: flex;
   gap: 8px;
@@ -33,7 +39,8 @@
 
 .cp-wrap {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  /* the collection, and the detail card at 2x beside it (DESIGN.md §11 Sharp cards) */
+  grid-template-columns: minmax(0, 1fr) 376px;
   gap: 16px;
   align-items: start;
 }
@@ -94,13 +101,15 @@
 /* ---- grid ---- */
 .cp-grid {
   margin: 0;
-  /* room for ★6 rings and badges outside the card edge */
-  padding: 10px 4px 4px;
+  /* room for ★6 crowns and badges outside the card edge */
+  padding: 14px 4px 6px;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(176px * var(--card-k) + 16px), 1fr));
-  gap: 18px 8px;
-  justify-items: center;
+  /* the full card, as wide as fitCard() made it (132 x 186 art pixels at a whole scale): four
+     across at 1x, reflowing to fewer when the window is narrow */
+  grid-template-columns: repeat(auto-fill, calc(176px * var(--card-k)));
+  gap: 24px 10px;
+  justify-content: center;
 }
 .cp-tile {
   position: relative;
@@ -129,6 +138,7 @@
 /* --card-k comes from the host (grid, detail or slot row) that fitCard() set, so every card is
    a whole number of device pixels per art pixel (DESIGN.md §12 Clean pixels) */
 .cp-fit {
+  position: relative;
   display: block;
   width: calc(176px * var(--card-k));
   height: calc(248px * var(--card-k));
@@ -140,6 +150,25 @@
 }
 .cp-fit--locked > .bi-card {
   filter: grayscale(1) brightness(0.55);
+}
+/* Real text at a readable size on the small card (DESIGN.md §11): the card's own text scales
+   with the card (--card-k), which leaves 9 to 10 px labels at 1x, so the small lines get a floor of
+   11 CSS px. The job label is on the filters, so the grid drops it (and loadout slots at 1x) and the name gets
+   the room. At 2x everything is already larger and nothing changes. */
+.cp-fit > .bi-card {
+  --cp-floor: calc(11px / var(--card-k));
+  gap: 3px;
+}
+.cp-fit > .bi-card .bi-card__stats dt,
+.cp-fit > .bi-card .bi-rank-name {
+  font-size: max(12px, var(--cp-floor));
+}
+.cp-fit > .bi-card .bi-card__name {
+  font-size: max(14px, var(--cp-floor));
+}
+.cp-grid .bi-card__job,
+.cp-slots[data-n='1'] .bi-card__job {
+  display: none;
 }
 
 .cp-badge,
@@ -178,16 +207,16 @@
 }
 
 /* ---- detail ---- */
+/* the card at 2x, with room around it for the level badge and the ★6 crown */
 .cp-detail__top {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  gap: 14px;
-  align-items: start;
+  justify-items: center;
+  padding: 30px 0 8px;
 }
-.cp-detail__side {
+.cp-detail__under {
   display: grid;
   gap: 10px;
-  align-content: start;
+  justify-items: stretch;
   min-width: 0;
 }
 .cp-inrole {
@@ -231,11 +260,6 @@
   .cp-level__track i {
     transition: none;
   }
-}
-.cp-level__note {
-  margin: 0;
-  font-size: 12px;
-  color: var(--bi-frame-ink-muted);
 }
 
 .cp-facts {

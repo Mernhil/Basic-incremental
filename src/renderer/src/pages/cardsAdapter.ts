@@ -25,6 +25,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { itemArt } from '../art/items';
 import { starChartView } from './skillsModel';
+import { weaponView } from './weaponModel';
 import type {
   CardEntry,
   CardsModel,
@@ -72,6 +73,8 @@ export function createCardsModel(
         met: r.met,
         value: COPY.cards.req.levelValue(have, need),
       };
+    if (r.kind === 'stars')
+      return { label: COPY.cards.req.stars, met: r.met, value: `★${have} / ★${need}` };
     if (r.kind === 'starFill')
       return { label: COPY.cards.req.starBar, met: r.met, value: COPY.cards.req.of(have, need) };
     return { label: resName(r.resource ?? ''), met: r.met, value: COPY.cards.req.of(have, need) };
@@ -79,7 +82,7 @@ export function createCardsModel(
 
   function priceText(check: UpgradeCheck): string {
     return check.requirements
-      .filter((r) => r.kind !== 'level')
+      .filter((r) => r.kind !== 'level' && r.kind !== 'stars')
       .map((r) =>
         r.kind === 'starFill'
           ? COPY.cards.req.copies(r.need.toNumber())
@@ -147,6 +150,7 @@ export function createCardsModel(
         : null,
       next: owned ? step('star', info.starUp) : null,
       tier: owned ? step('tier', info.tierUp) : null,
+      weapon: weaponView(content, info),
     };
   }
 
@@ -155,6 +159,10 @@ export function createCardsModel(
 
   return {
     entries: (state) => all(state).map(entry),
+    entry(state, id) {
+      const info = cardInfo(state, content, id);
+      return info ? entry(info) : null;
+    },
     loadout(state, job) {
       const lo = loadoutInfo(state, content, job);
       return { job, slots: [lo.main, ...lo.supports], cost: lo.cost, cap: lo.cap };

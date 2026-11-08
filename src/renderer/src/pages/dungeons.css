@@ -73,8 +73,7 @@
 }
 .dp-drawer__handle:focus-visible,
 .dp-floor__fight:focus-visible,
-.ms-tag:focus-visible,
-.dp-dps:focus-visible {
+.ms-tag:focus-visible {
   outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 2px;
 }
@@ -110,21 +109,28 @@
   min-height: 0;
   overflow-y: auto;
   display: grid;
-  grid-template-columns: minmax(260px, 0.9fr) minmax(420px, 1.4fr);
+  grid-template-columns: minmax(260px, 0.9fr) minmax(440px, 1.4fr);
   grid-template-areas:
-    'floors damage'
-    'loot damage';
+    'floors weapon'
+    'loot weapon';
   gap: 22px;
   padding: 4px 18px 20px;
 }
 .dp-col--floors {
   grid-area: floors;
 }
-.dp-col--damage {
-  grid-area: damage;
+.dp-col--weapon {
+  grid-area: weapon;
 }
 .dp-col--loot {
   grid-area: loot;
+}
+/* a wide window has room for the weapon between the floors and the drops (1080p) */
+@media (min-width: 1500px) {
+  .dp-drawer__body {
+    grid-template-columns: minmax(280px, 0.8fr) minmax(560px, 1.5fr) minmax(240px, 0.7fr);
+    grid-template-areas: 'floors weapon loot';
+  }
 }
 .dp-col {
   display: grid;
@@ -148,12 +154,6 @@
   margin: 0;
   font-size: 12px;
   color: var(--bi-frame-ink-muted);
-}
-.dp-dps {
-  margin: 0;
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted);
-  justify-self: start;
 }
 
 /* floors: a compact rail */
@@ -234,52 +234,6 @@
   color: var(--bi-chrome-bg);
 }
 
-/* damage lines */
-.dp-lines {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 6px;
-}
-/* forged edge ladder (DESIGN.md §12, A14 D): five steps, the current one lit */
-.dp-ladder {
-  grid-area: ladder;
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-.dp-edge {
-  width: 42px;
-  height: 36px;
-  opacity: 0.3;
-  filter: grayscale(0.8) brightness(0.7);
-  transition:
-    opacity 0.3s,
-    filter 0.3s;
-}
-.dp-edge svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-.dp-edge.is-lit {
-  opacity: 0.75;
-  filter: none;
-}
-.dp-edge.is-current {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bi-chrome-accent) 70%, transparent));
-}
-.dp-line.is-milestone .dp-edge.is-current {
-  animation: dp-edge-forge 0.9s ease-out;
-}
-@keyframes dp-edge-forge {
-  30% {
-    scale: 1.35;
-    filter: brightness(2.2) drop-shadow(0 0 10px #fff);
-  }
-}
 /* boss mastery medal (DESIGN.md §6, A12 D) */
 .dp-medal {
   /* the 48 px medal at a whole device scale (DESIGN.md §12) */
@@ -299,41 +253,6 @@
 .dp-medal:focus-visible {
   outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 2px;
-}
-
-.dp-line {
-  display: grid;
-  grid-template-columns: auto minmax(180px, 1fr);
-  grid-template-areas:
-    'info info'
-    'ladder buy';
-  align-items: center;
-  gap: 4px 10px;
-  padding: 6px 6px 6px 12px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bi-frame-title-bg) 55%, transparent);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-}
-.dp-line__info {
-  grid-area: info;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-}
-.dp-line__name {
-  font-size: 14px;
-  font-weight: 700;
-}
-.dp-line__level {
-  font-size: 12px;
-  color: var(--bi-frame-ink-muted);
-}
-.dp-line > .buy-btn {
-  grid-area: buy;
-}
-.dp-line--locked {
-  opacity: 0.6;
 }
 
 /* drops */
@@ -391,10 +310,4 @@
   .dp-drawer__chev {
     transition: none;
   }
-}
-
-/* a line that waits for its mine: names the mine instead of showing a milestone */
-.dp-line__lock {
-  font-size: 11.5px;
-  color: var(--bi-frame-ink-muted);
 }

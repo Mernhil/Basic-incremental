@@ -4,7 +4,6 @@ import {
   Decimal,
   clearUnlocks,
   collectModifiers,
-  damageStat,
   effectiveDrops,
   formatDuration,
   isDungeonCleared,
@@ -19,26 +18,29 @@ import {
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { h } from '../shell/shell';
-import { statTip } from '../shell/stats';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { createArena, type CoinTarget } from '../stage/arena';
 import type { Director } from '../stage/director';
 import { bossArt } from '../art/bosses';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { createShelf } from '../ui/shelf';
+import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
+import type { CardsModel } from './cardsModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
 import './dungeons.css';
 
 /**
  * Dungeons page (DESIGN.md §11, A1 D): the arena fills the page; floors, the damage readout, the
- * upgrade shelf and drops live in a drawer that slides up from the bottom. (Damage comes from the
- * main card now, DESIGN.md §5; the weapon panel is decided at the review gate.)
+ * weapon panel (the main card's level, XP, stars and tier-up, DESIGN.md §5), the upgrade shelf and
+ * drops live in a drawer that slides up from the bottom. Damage comes from the main card.
  */
 
 export interface StagePageContext extends PageContext {
   director: Director;
   coins: CoinTarget;
+  /** The card view models: the weapon panel follows the main fighting card. */
+  cards: CardsModel;
   /** True while this page is on screen. */
   visible: () => boolean;
   sound?: (id: string) => void;
@@ -119,27 +121,51 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
 
   // ---- drawer columns ----
   const floorsCol = h('section', 'dp-col dp-col--floors');
-  const damageCol = h('section', 'dp-col dp-col--damage');
+  const weaponCol = h('section', 'dp-col dp-col--weapon');
   const lootCol = h('section', 'dp-col dp-col--loot');
-  body.append(floorsCol, damageCol, lootCol);
+  body.append(floorsCol, weaponCol, lootCol);
 
   let floorsSig = '';
   let updates: Array<() => void> = [];
 
-  function buildDamage(): void {
-    damageCol.replaceChildren();
+  /** The weapon panel follows the main fighting card; it is rebuilt when another card leads. */
+  let weaponId: string | null | undefined;
+  let weapon: WeaponPanel | null = null;
+  const weaponNote = h('p', 'dp-note');
+  weaponNote.setAttribute('role', 'status');
+
+  function buildWeapon(mainId: string | null): void {
+    weaponId = mainId;
+    weapon = null;
+    weaponNote.textContent = '';
     const head = h('header', 'dp-col__head');
-    head.append(h('h3', 'dp-col__title', COPY.arena.damage));
-    const total = h('p', 'dp-dps bi-num has-tip');
-    total.tabIndex = 0;
-    attachTooltip(total, () =>
-      statTip(content, COPY.home.damageTip, damageStat(ctx.state(), content), '/s'),
-    );
-    updates.push(() => {
-      const text = COPY.dungeons.damageNote(fmt(damageStat(ctx.state(), content).value));
-      if (total.textContent !== text) total.textContent = text;
+    head.append(h('h3', 'dp-col__title', COPY.arena.weapon));
+    if (!mainId) {
+      weaponCol.replaceChildren(head, h('p', 'dp-note', COPY.weapon.noMain), shelf.el);
+      return;
+    }
+    weapon = createWeaponPanel({
+      variant: 'drawer',
+      content,
+      state: ctx.state,
+      act(kind) {
+        const result = ctx.cards.upgrade(ctx.state(), mainId, kind);
+        if (!result.ok) {
+          weaponNote.textContent = result.reason;
+          return;
+        }
+        weaponNote.textContent = '';
+        ctx.apply(result.state);
+        if (result.tierUps?.length) ctx.onTierUps?.(result.tierUps);
+        render();
+      },
     });
-    damageCol.append(head, total, shelf.el);
+    weaponCol.replaceChildren(head, weapon.el, weaponNote, shelf.el);
+  }
+
+  function updateWeapon(): void {
+    const entry = weaponId ? ctx.cards.entry(ctx.state(), weaponId) : null;
+    if (entry) weapon?.update(entry);
   }
 
   function buildFloors(state: GameState): void {
@@ -344,15 +370,17 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
 
   function refresh(): void {
     for (const u of updates) u();
+    updateWeapon();
     shelf.update();
   }
 
   function render(): void {
     const s = ctx.state();
+    const mainId = s.cards.loadouts.fighting.main;
+    if (mainId !== weaponId) buildWeapon(mainId);
     if (floorsSignature(s) !== floorsSig) {
       hideTip();
       updates = [];
-      buildDamage();
       buildFloors(s);
     }
     arena.update();
