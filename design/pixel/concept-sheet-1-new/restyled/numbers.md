@@ -29,9 +29,9 @@
 | old exotic | 75x93 | 1490 | 44 | 4.4 |
 | old void | 79x95 | 1675 | 35 | 3.8 |
 | new common | 79x102 | 1102 | 13 | 0.0 |
-| new rare | 49x67 | 1058 | 16 | 0.0 |
+| new rare | 79x98 | 1609 | 16 | 0.1 |
 | new epic | 62x78 | 986 | 19 | 0.0 |
-| new legendary | 62x80 | 1750 | 19 | 0.1 |
+| new legendary | 77x96 | 1646 | 18 | 0.0 |
 | new mythic | 75x80 | 1354 | 19 | 0.1 |
 | new exotic | 75x81 | 1371 | 19 | 0.1 |
 | new void | 75x86 | 1944 | 20 | 0.0 |
