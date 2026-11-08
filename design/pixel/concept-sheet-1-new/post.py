@@ -44,6 +44,11 @@ BOOK = dict(zip(RAR, [f"book-{i}" for i in range(1, 8)]))
 STAFF = dict(zip(RAR, ["gap:staff-common", "staff-A", "staff-B", "gap:staff-legendary", "gap:staff-mythic",
                        "gap:staff-exotic", "gap:staff-void"]))
 UNIQUES = {"twin_daggers": ("unique-daggers", "void"), "bronze_hammer": ("unique-hammer", "legendary")}
+# attack frames PixelLab's animate_image added after the last concept frame (pixellab/anim-*)
+ATTACK_GAPS = {"atk-crimson-4": "anim-crimson-4", "atk-triple-4": "anim-triple-4",
+               "atk-pierce-3": "anim-pierce-3", "atk-pierce-4": "anim-pierce-4", "atk-burst-4": "anim-burst-4"}
+ATTACK_STRIPS = {style: [f"atk-{style}-{i}" for i in range(1, 5)]
+                 for style in ("cross", "crimson", "triple", "pierce", "burst")}
 HOLLOW = {"frame-1", "frame-2", "frame-3", "frame-4", "panel-wide", "cos-frame-1", "cos-frame-2",
           "cos-frame-wide", "bar-progress"}
 
@@ -171,10 +176,16 @@ def main() -> None:
         if not atk:
             a = glow_ramp(a, MAGIC_FAMILY.get(name, "gold"))
         save(a, "attacks/frames" if name.startswith("atk") else "magic", name)
-    for f in sorted(PL.glob("gap-atk-*.png")):
-        a = gap(f.stem)
-        a = P.settle_orphans(P.quantize(a, 16))
-        save(a, "attacks/frames", f.stem[4:])
+    for frame, src in ATTACK_GAPS.items():
+        a = gap(src)
+        a[a[..., :3].max(-1) < 48] = 0
+        save(P.settle_orphans(P.quantize(P.drop_specks(a, 1), 16)), "attacks/frames", frame)
+    # the 4-frame strips (snap, held hit, thin, break), 64 x 64 per frame like cos-atk-*
+    for style, frames in ATTACK_STRIPS.items():
+        strip = Image.new("RGBA", (64 * 4, 64), (0, 0, 0, 0))
+        for i, f in enumerate(frames):
+            strip.alpha_composite(Image.open(OUT / "attacks/frames" / f"{f}.png"), (64 * i, 0))
+        strip.save(OUT / "attacks" / f"atk-{style}.png")
 
     # interface and cosmetic frames
     for name in lay["ui"]:

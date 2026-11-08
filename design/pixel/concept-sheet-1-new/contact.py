@@ -86,7 +86,7 @@ def main() -> None:
               HERE / f"contact-{kind}.png", lambda n: n in GAP_NAMES)
     sheet("New uniques (100 x 120, evo treatment)", sorted((D / "uniques").glob("*.png")), 2, HERE / "contact-uniques.png")
     sheet("Attack frames (64 x 64; gap-filled frames marked)", sorted((D / "attacks/frames").glob("*.png")), 4,
-          HERE / "contact-attack-frames.png", lambda n: n.endswith("-gap") or "gap" in n)
+          HERE / "contact-attack-frames.png", lambda n: n in N.ATTACK_GAPS)
     for g, cols, title in (("trails", 10, "Elemental trail swatches (48 x 48)"), ("debuffs", 7, "Debuff icons (48 x 48)"),
                            ("magic", 9, "Magic circles and VFX patterns (64 x 64)"),
                            ("interface", 6, "Interface parts (own sizes)"), ("cosmetics", 6, "Cosmetics: portraits, flora, frames")):
