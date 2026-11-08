@@ -59,11 +59,10 @@
   color: var(--bi-chrome-ink-muted);
 }
 .sm-deck__buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  display: grid;
   gap: 8px;
   margin-top: 4px;
+  min-width: 230px;
 }
 .sm-deck.is-odds .sm-deck__name::after {
   content: '';
