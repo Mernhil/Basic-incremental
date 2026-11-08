@@ -335,10 +335,32 @@
   gap: 10px;
   transition: filter 0.3s;
 }
-.ar__slots {
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
+/* the party fan (ui/loadoutFan.ts): its own cards stay whole-pixel and unrotated (DESIGN.md §11, §12) */
+.ar__fan {
+  /* the gauge and the health bar hang below the main card */
+  margin-bottom: 4px;
+}
+.ar__fan .lf-slot.is-lunging {
+  animation: ar-lunge-fan 0.36s cubic-bezier(0.3, 0.8, 0.4, 1);
+}
+.ar__fan .lf-slot.is-hurt {
+  animation: ar-hurt 0.4s linear;
+}
+.ar__fan .lf-slot.is-hurt > .bi-card {
+  filter: drop-shadow(0 0 10px var(--bi-hp-0));
+}
+@keyframes ar-lunge-fan {
+  35% {
+    translate: calc(var(--lf-u) * 20) calc(var(--lf-u) * -4);
+  }
+}
+.ar__party.is-ko .ar__fan {
+  filter: grayscale(0.85) brightness(0.65);
+  translate: 0 calc(var(--lf-u) * 6);
+  transition: translate 0.3s;
+}
+.ar__fan .ar-gauge {
+  bottom: calc(var(--lf-u) * -12);
 }
 .ar-slot {
   /* --card-k is set by fitCard() (ui/pixelFit.ts): the card grid 132 x 186 at a whole number of
@@ -389,16 +411,6 @@
   60% {
     translate: -3px 0;
   }
-}
-.ar__party.is-ko .ar__slots {
-  filter: grayscale(0.85) brightness(0.65);
-}
-.ar__party.is-ko .ar-slot {
-  rotate: -6deg;
-  translate: 0 8px;
-  transition:
-    rotate 0.3s,
-    translate 0.3s;
 }
 
 /* burst gauge, on the main card */
@@ -548,6 +560,8 @@
   .ar-boss.is-attacking .ar-boss__bob,
   .ar-slot.is-lunging,
   .ar-slot.is-hurt,
+  .ar__fan .lf-slot.is-lunging,
+  .ar__fan .lf-slot.is-hurt,
   .ar__party.is-knocked,
   .ar-gauge.is-full i,
   .ar__flash.st-flash {

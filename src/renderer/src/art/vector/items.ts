@@ -961,10 +961,10 @@ export type Evolution = (typeof EVOLUTIONS)[number];
 export const EVOLUTION_GEO: Record<Evolution, Blade> = {
   flameblade: makeBlade(
     [
-      [70, 178],
-      [96, 128],
-      [128, 76],
-      [156, 26],
+      [92, 160],
+      [108, 112],
+      [128, 64],
+      [168, 12],
     ],
     (s) =>
       s < 0.84
@@ -973,12 +973,12 @@ export const EVOLUTION_GEO: Record<Evolution, Blade> = {
   ),
   soul_reaper: makeBlade(
     [
-      [122, 44],
-      [178, 38],
-      [198, 104],
-      [170, 178],
+      [140, 40],
+      [176, 52],
+      [188, 92],
+      [180, 124],
     ],
-    (s) => 18 * Math.pow(1 - s, 0.8) + 1.2,
+    (s) => 14 * Math.pow(1 - s, 0.8) + 1.2,
   ),
   rootbloom_staff: makeBlade(
     [
