@@ -171,12 +171,24 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has a tier-up goal for a card at its level cap, from what Money and materials are missing', () => {
     const state = fighter();
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20 };
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, stars: 6 };
     const costs = content.cardRules.tierUp.bronze.fighting;
     for (const c of costs) state.resources[c.resource] = c.amount.div(2);
     const goal = find(allGoals(state, content), 'tier_up:ember_squire')!;
     expect(goal).toMatchObject({ title: 'Tier up Ember Squire to Silver', page: 'cards' });
     expect(goal.progress).toBeCloseTo(0.5);
+  });
+
+  it('shows the missing stars when the card is at its level cap but short of ★6', () => {
+    const state = fighter();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, stars: 4 };
+    const goal = find(allGoals(state, content), 'tier_up:ember_squire')!;
+    expect(goal).toMatchObject({
+      title: 'Tier up Ember Squire to Silver: needs ★6',
+      page: 'cards',
+    });
+    expect(goal.progress).toBeCloseTo(4 / 6);
+    expect(goal.etaSeconds).toBeNull();
   });
 
   it('has no tier-up goal below the level cap', () => {

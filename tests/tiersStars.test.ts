@@ -147,6 +147,17 @@ describe('copies past ★6 become shards', () => {
     }
   });
 
+  it('fills the emptied star bar again after a tier-up, and shards again at the new ★6', () => {
+    const state = fund(
+      own(freshState(), 'dawnblade_regent', { stars: 6, level: 20 }),
+      'dawnblade_regent',
+    );
+    const tiered = ok(tierUp(state, content, 'dawnblade_regent'));
+    const copy = addCard(tiered, content, 'dawnblade_regent')!;
+    expect(copy.gain).toMatchObject({ kind: 'duplicate' });
+    expect(copy.state.cards.owned['dawnblade_regent']!.starFill).toBeGreaterThan(0);
+  });
+
   it('turns a copy into shards once the bar already holds every star left to ★6', () => {
     // Exotic ★4 -> ★5 is the only star left that needs a copy (table: 1, 0, 0, 1, 0).
     const state = own(freshState(), 'core_titan', { stars: 4, starFill: 1 });
@@ -190,29 +201,41 @@ describe('star impact on base stats', () => {
   });
 });
 
-describe('tier-up at max level, paid with Money (DESIGN.md §5)', () => {
-  it('needs the level cap, Money, the tier Core and gems, but not ★6', () => {
-    const state = own(freshState(), 'ember_squire', { stars: 2, level: 20 });
+describe('tier-up at max level and ★6, paid with Money (DESIGN.md §5)', () => {
+  it('needs the level cap, ★6, Money, the tier Core and gems; the stars restart at ★1', () => {
+    const state = own(freshState(), 'ember_squire', { stars: 6, level: 20 });
     const check = tierUpCheck(state, content, 'ember_squire')!;
     expect(check.available).toBe(true);
-    expect(check.to).toEqual({ tier: 'silver', stars: 2 });
+    expect(check.to).toEqual({ tier: 'silver', stars: 1 });
     expect(check.requirements.map((r) => r.kind)).not.toContain('starFill');
     const resources = check.requirements.flatMap((r) => r.resource ?? []);
     expect(resources).toEqual(['money', 'moss_core', 'iron_gem', 'ironbark_gem']);
     expect(check.requirements[0]).toMatchObject({ kind: 'level', met: true });
+    expect(check.requirements[1]).toMatchObject({ kind: 'stars', met: true });
+  });
+
+  it('reports the missing stars and refuses the tier-up below ★6', () => {
+    const state = fund(own(freshState(), 'ember_squire', { stars: 5, level: 20 }), 'ember_squire');
+    const check = tierUpCheck(state, content, 'ember_squire')!;
+    const stars = check.requirements.find((r) => r.kind === 'stars')!;
+    expect(stars).toMatchObject({ met: false });
+    expect(stars.have.toNumber()).toBe(5);
+    expect(stars.need.toNumber()).toBe(6);
+    expect(check.met).toBe(false);
+    expect(tierUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
   });
 
   it('refuses below the level cap and with missing Money', () => {
-    const low = fund(own(freshState(), 'ember_squire', { level: 19 }), 'ember_squire');
+    const low = fund(own(freshState(), 'ember_squire', { level: 19, stars: 6 }), 'ember_squire');
     expect(tierUp(low, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
-    const poor = fund(own(freshState(), 'ember_squire', { level: 20 }), 'ember_squire');
+    const poor = fund(own(freshState(), 'ember_squire', { level: 20, stars: 6 }), 'ember_squire');
     give(poor, 'money', 0);
     expect(tierUp(poor, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
   });
 
-  it('pays Money and materials and keeps stars, star fill, level and XP', () => {
+  it('pays Money and materials, resets stars to ★1 with an empty bar and keeps level and XP', () => {
     const state = fund(
-      own(freshState(), 'ember_squire', { stars: 3, starFill: 2, level: 20 }),
+      own(freshState(), 'ember_squire', { stars: 6, starFill: 0, level: 20, xp: new Decimal(7) }),
       'ember_squire',
     );
     const costs = tierUpCost(
@@ -225,25 +248,27 @@ describe('tier-up at max level, paid with Money (DESIGN.md §5)', () => {
     const after = ok(tierUp(state, content, 'ember_squire'));
     expect(after.cards.owned['ember_squire']).toMatchObject({
       tier: 'silver',
-      stars: 3,
-      starFill: 2,
+      stars: 1,
+      starFill: 0,
       level: 20,
     });
+    expect(after.cards.owned['ember_squire']!.xp.eq(7)).toBe(true);
     for (const c of costs) expect(after.resources[c.resource]!.eq(5)).toBe(true);
   });
 
-  it('keeps stars through every tier on the way up', () => {
-    let state = own(freshState(), 'ember_squire', { stars: 4 });
+  it('restarts the stars at every tier on the way up', () => {
+    let state = own(freshState(), 'ember_squire', { stars: 6 });
     for (const tier of ['bronze', 'silver', 'gold'] as const) {
-      state.cards.owned['ember_squire']!.level = levelCap(content, { tier, stars: 4 });
+      state.cards.owned['ember_squire']!.level = levelCap(content, { tier, stars: 6 });
+      state.cards.owned['ember_squire']!.stars = 6;
       state = ok(tierUp(fund(state, 'ember_squire'), content, 'ember_squire'));
-      expect(state.cards.owned['ember_squire']!.stars).toBe(4);
+      expect(state.cards.owned['ember_squire']).toMatchObject({ stars: 1, starFill: 0 });
     }
     expect(state.cards.owned['ember_squire']!.tier).toBe('prismatic');
   });
 
   it('asks Frost Sigils on Gold to Prismatic', () => {
-    const state = own(freshState(), 'ember_squire', { tier: 'gold', level: 60 });
+    const state = own(freshState(), 'ember_squire', { tier: 'gold', level: 60, stars: 6 });
     const resources = tierUpCheck(state, content, 'ember_squire')!.requirements.flatMap(
       (r) => r.resource ?? [],
     );
@@ -267,9 +292,9 @@ describe('the Unique tier (DESIGN.md §5)', () => {
     expect(cardTopTier(content, 'grove_keeper')).toBe('unique');
     expect(cardTopTier(content, 'shield_warden')).toBe('prismatic');
     const state = own(
-      own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80 }),
+      own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80, stars: 6 }),
       'shield_warden',
-      { tier: 'prismatic', level: 80 },
+      { tier: 'prismatic', level: 80, stars: 6 },
     );
     expect(tierUpCheck(state, content, 'shield_warden')).toMatchObject({ available: false });
     expect(tierUp(state, content, 'shield_warden')).toEqual({ ok: false, reason: 'unavailable' });
@@ -281,7 +306,7 @@ describe('the Unique tier (DESIGN.md §5)', () => {
     expect(levelCap(content, { tier: 'unique', stars: 1 })).toBe(100);
     expect(levelCap(content, { tier: 'prismatic', stars: 1 })).toBe(80);
     const state = fund(
-      own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80 }),
+      own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80, stars: 6 }),
       'ember_squire',
     );
     const after = ok(tierUp(state, content, 'ember_squire'));
@@ -292,7 +317,7 @@ describe('the Unique tier (DESIGN.md §5)', () => {
 
   it('tells the unique evolution moment when a card reaches it', () => {
     const state = fund(
-      own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80 }),
+      own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80, stars: 6 }),
       'ember_squire',
     );
     const result = tierUp(state, content, 'ember_squire');
@@ -354,8 +379,13 @@ describe('production cards use the same model', () => {
     fund(state, 'apprentice_feller');
     const starred = ok(starUp(state, content, 'apprentice_feller'));
     expect(starred.cards.owned['apprentice_feller']).toMatchObject({ stars: 2, starFill: 0 });
+    expect(tierUp(starred, content, 'apprentice_feller')).toEqual({
+      ok: false,
+      reason: 'requirements',
+    });
+    starred.cards.owned['apprentice_feller']!.stars = 6;
     const tiered = ok(tierUp(starred, content, 'apprentice_feller'));
-    expect(tiered.cards.owned['apprentice_feller']).toMatchObject({ tier: 'silver', stars: 2 });
+    expect(tiered.cards.owned['apprentice_feller']).toMatchObject({ tier: 'silver', stars: 1 });
     expect(cardTopTier(content, 'apprentice_feller')).toBe('prismatic');
     expect(cardTopTier(content, 'grove_keeper')).toBe('unique');
   });
