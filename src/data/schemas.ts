@@ -706,7 +706,7 @@ export const combatSchema = z.strictObject({
 // ---- Cosmetics ----------------------------------------------------------------------------
 // The visual language of a cosmetic is data: CSS custom property values ("tokens"), named CSS
 // recipes for things a token cannot express (decorations, patterns), and named animation
-// effects. See docs/COSMETICS.md for the naming rules.
+// effects. See docs/ASSET_RULES.md §6 for the naming rules.
 
 export const COSMETIC_SLOTS = [
   'border',

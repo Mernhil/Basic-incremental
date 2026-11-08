@@ -1,7 +1,7 @@
 /**
  * Every recipe and effect id the beta-batch cosmetic art implements (DESIGN.md §8, "Every option is
  * kept"), derived from the generated art meta so data, CSS and sprites cannot drift apart. The
- * full list with slots and level counts is in docs/COSMETIC_ART_IDS.md.
+ * full list with slots and level counts is in docs/ASSET_RULES.md §7.
  *
  * - `bd-<style>-<level>` border layer, `fn-<style>-<level>` finish layer (card slots)
  * - `tb-<style>-<level>` table, `cur-<style>-<level>` cursor, `tk-<style>-<level>` tick style,

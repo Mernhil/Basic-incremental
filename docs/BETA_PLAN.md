@@ -56,7 +56,7 @@ User guidance from round 1: reuse the art already made earlier where possible: t
 
 ## Decided visuals
 
-**Beta art batch B1–B10 (2026-11-07): every option is kept as a cosmetic** (DESIGN 7, "UI-skin slots" and "Every option is kept"). Four new global slots (Starlight coin, sticker style, skill nodes, Wardrobe style) take B1/B6/B7/B10 with option A as the starter. B2 gives five garden sets, B3/B4 five exclusives each, B5 twenty loose items, B8/B9 are spread over borders and finishes. Corners (B9) are redrawn in pixel art. Drafts: branches `art/beta-batch-options` and `ui/wardrobe-options`. **Art built** (#68 B1–B5, and the follow-up PR for B6–B10): every id, slot, level count and the particle / corner assignments are in `docs/COSMETIC_ART_IDS.md`; next are the data (mechanics) and the page wiring of the UI-skin art and pixel numbers (ui).
+**Beta art batch B1–B10 (2026-11-07): every option is kept as a cosmetic** (DESIGN 7, "UI-skin slots" and "Every option is kept"). Four new global slots (Starlight coin, sticker style, skill nodes, Wardrobe style) take B1/B6/B7/B10 with option A as the starter. B2 gives five garden sets, B3/B4 five exclusives each, B5 twenty loose items, B8/B9 are spread over borders and finishes. Corners (B9) are redrawn in pixel art. Drafts: branches `art/beta-batch-options` and `ui/wardrobe-options`. **Art built** (#68 B1–B5, and the follow-up PR for B6–B10): every id, slot, level count and the particle / corner assignments are in `docs/ASSET_RULES.md` §7; next are the data (mechanics) and the page wiring of the UI-skin art and pixel numbers (ui).
 
 Decided with the user in the graphics session (2026-11-07).
 

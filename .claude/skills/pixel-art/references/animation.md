@@ -1,6 +1,8 @@
 # Animation and effects
 
-How to make pixel sprites and effects move with weight, in the Brave Frontier spirit, inside the game's clean-pixel rules (DESIGN.md §12: whole-pixel positions, no blur, no soft glows, slow and calm element effects, reduced motion respected).
+> **Rules live in `docs/ASSET_RULES.md`** (read it first; it wins over this file). This file is drawing technique only: how to draw, never what the game requires.
+
+How to make pixel sprites and effects move with weight, in the Brave Frontier spirit, inside the game's clean-pixel rules (ASSET_RULES.md §5: whole-pixel positions, no blur, no soft glows, slow and calm element effects, reduced motion respected).
 
 ## Contents
 
@@ -9,7 +11,7 @@ How to make pixel sprites and effects move with weight, in the Brave Frontier sp
 3. Loops: idle, shine, sparkle
 4. Action: attack, hit, hurt
 5. Cel effects: how to build them
-6. Element effects (DESIGN §12 table)
+6. Element effects (ASSET_RULES.md §5 table)
 7. Reduced motion
 8. Frame budget
 9. Learned from Brave Frontier sprites (Behance)
@@ -43,7 +45,7 @@ Brave Frontier builds units from parts animated as layers (offset, rotation, sca
 
 ## 4. Action: attack, hit, hurt
 
-- **Slash (DESIGN §12):** a single brush stroke, straight with a slight curve, tapered, with dry-brush streaks, re-rolled every hit and centred on the target. Pixel construction: frame 1 a thin bright line (anticipation is the card's own wind-up), frame 2 the full thick arc with a near-white core and coloured edges, frame 3 hold with streaks breaking off, frames 4 to 5 the stroke thins from the back end and breaks into dashes, then gone. Colour follows the element.
+- **Slash (ASSET_RULES.md §5):** a single brush stroke, straight with a slight curve, tapered, with dry-brush streaks, re-rolled every hit and centred on the target. Pixel construction: frame 1 a thin bright line (anticipation is the card's own wind-up), frame 2 the full thick arc with a near-white core and coloured edges, frame 3 hold with streaks breaking off, frames 4 to 5 the stroke thins from the back end and breaks into dashes, then gone. Colour follows the element.
 - **Impact hit (bows, pickaxes):** frame 1 a white star-shaped flash (4 or 8 points), frame 2 a coloured burst with an expanding ring, frames 3 to 4 the ring thins and breaks into segments while a few square particles fly out and shrink, then gone. The first frame can be held slightly longer for punch.
 - **Hurt / boss hit:** 1 frame where the whole sprite flashes to a light tone (or white), then a 1 to 2 px knockback away from the hit and a return over a few frames.
 - **Dissipation:** effects end by thinning and breaking into pieces (dashes, squares, dots) that shrink, never by fading opacity. Opacity fades blur pixel art.
@@ -58,13 +60,13 @@ Brave Frontier-style effects look rich because they are layered. Build each effe
 4. **Particles**: squares, diamonds and plus shapes, 1 to 3 px, that shrink over their life.
 5. **Speed lines / streaks** in the direction of motion, broken into dashes.
 
-Glow without blur: put a 1 px ring of a lighter-than-background tone around the effect, or a checkered half-dither ring that appears for one frame only. Use these sparingly; DESIGN §12 bans soft glows.
+Glow without blur: put a 1 px ring of a lighter-than-background tone around the effect, or a checkered half-dither ring that appears for one frame only. Use these sparingly; ASSET_RULES.md §5 bans soft glows.
 
 Shape language: fire is teardrop blobs that rise and split; lightning is jagged lines with 1 px forks, redrawn every few frames; light is concentric outline copies of the item; nature is leaves (3 to 5 px) on a spiral path; earth/crystal/void is jagged cracks that flicker.
 
-## 6. Element effects (DESIGN §12 table)
+## 6. Element effects (ASSET_RULES.md §5 table)
 
-Element effects appear from the Gold tier, stronger at Prismatic, and stay secondary: slow and calm, mostly behind the item, a smaller part in front, generated from the item's own shape (`fxGeometry.ts`).
+Element effects and light begin at T5, are full at T6 and on uniques (`ASSET_RULES.md` §2, §3); T1 to T4 have none. They stay secondary: slow and calm, mostly behind the item, a smaller part in front, generated from the item's own shape (`fxGeometry.ts`).
 
 | Element              | Pixel construction                                                                                                                                                             |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -76,7 +78,7 @@ Element effects appear from the Gold tier, stronger at Prismatic, and stay secon
 
 ## 7. Reduced motion
 
-Under `prefers-reduced-motion`, every loop stops on one chosen still frame (the most readable one: shine at rest, sparkles off, effect at a calm pose). Hits play a single frame or none. Gold and Prismatic frames are still (DESIGN §12).
+Under `prefers-reduced-motion`, every loop stops on one chosen still frame (the most readable one: shine at rest, sparkles off, effect at a calm pose). Hits play a single frame or none. Gold and Prismatic frames are still (ASSET_RULES.md §5).
 
 ## 8. Frame budget
 
@@ -127,4 +129,4 @@ The user pointed to the Udemy course "Pixel Art Animation for Game Developers: L
 - **Idle cycles.** Pick the 2 to 3 parts that move (chest, head accessory, weapon tip) and keep the feet and the shadow still. Offset each moving part's timing by a frame so the loop never moves as one block, and make the first and last frames flow into each other without a pop.
 - **Attack keyframes.** Block in four poses first (ready, wind-up, contact, recovery), play them at game speed with holds, then add one smear between wind-up and contact and one settle frame after recovery.
 - **Clean-up pass.** After the timing works, redraw each frame: fix outline breaks and doubled corners, keep every colour cluster consistent from frame to frame (a highlight must not jump around), remove single-pixel flicker that is not a deliberate sparkle, and check the GIF at real speed again.
-- **Form transitions (evolutions).** For the ★6 evolution and boss phase changes: anticipation (the old form gathers light and shrinks slightly), a held flash or silhouette frame that hides the swap (full-white or single-colour silhouette for 1 to 2 frames), then the new form overshoots in size by 1 to 2 px and settles, with effect pieces (sparks, petals, shards) bursting outward. Never cross-fade between forms; opacity fades blur pixel art.
+- **Form transitions.** For a boss phase change or a tier-up moment (a unique never transforms, `ASSET_RULES.md` §3): anticipation (the old form gathers light and shrinks slightly), a held flash or silhouette frame that hides the swap (full-white or single-colour silhouette for 1 to 2 frames), then the new form overshoots in size by 1 to 2 px and settles, with effect pieces (sparks, petals, shards) bursting outward. Never cross-fade between forms; opacity fades blur pixel art.
