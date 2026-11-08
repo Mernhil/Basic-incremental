@@ -3,10 +3,10 @@ import type { Modifier } from './modifiers';
 import { Decimal } from './num';
 import {
   harvestCrit,
-  plots,
   producerLevel,
   producerRate,
   producersOf,
+  unlockedProducers,
   type Producer,
 } from './production';
 import { pushHarvest, type HarvestEvent, type TickReport } from './report';
@@ -15,13 +15,13 @@ import type { GameState } from './state';
 /**
  * Production cards in play (DESIGN.md §4). The main logging / mining card's `harvest` block
  * (cards.json) sets a rhythm: a cycle of `intervalSeconds` with `strikes` strikes, each landing on
- * a plot / slot chosen by `targeting`. The economy stays the expected value (production.ts); the
+ * an unlocked tree kind / mine type chosen by `targeting`. The economy stays the expected value (production.ts); the
  * strikes are discrete events for the stage that add up to it. They depend only on play time, so
  * they need no saved state and any split of time gives the same strikes.
  */
 
 const EPSILON = 1e-9;
-/** Spans with more strikes than this are reported merged, one event per plot. */
+/** Spans with more strikes than this are reported merged, one event per kind. */
 const MAX_DETAILED_STRIKES = 16;
 
 /** The pattern the job's main card strikes with, or the job default with no (owned) main card. */
@@ -62,11 +62,12 @@ export function harvestSupports(state: GameState, content: Content, job: Product
   return out;
 }
 
-/** Plots / slots that run something: their index, producer and its output per second. */
+/** An unlocked tree kind / mine type a strike can land on: its position, producer and output per second. */
 export interface HarvestTarget {
-  plot: number;
+  /** Position among the job's kinds in content order (locked ones count, so it stays stable). */
+  kind: number;
   producer: Producer;
-  /** Output per second of this one plot, crits left out (they are added per strike). */
+  /** Output per second of this kind, crits left out (they are added per strike). */
   rate: Decimal;
 }
 
@@ -76,15 +77,12 @@ export function activeTargets(
   job: ProductionJob,
   modifiers: readonly Modifier[],
 ): HarvestTarget[] {
-  const byId = new Map(producersOf(content, job).map((p) => [p.id, p]));
-  const out: HarvestTarget[] = [];
-  plots(state, content, job, modifiers).forEach((id, plot) => {
-    const producer = id === null ? undefined : byId.get(id);
-    if (!producer) return;
-    const level = producerLevel(state, job, producer.id);
-    out.push({ plot, producer, rate: producerRate(producer, job, modifiers, level) });
-  });
-  return out;
+  const all = producersOf(content, job);
+  return unlockedProducers(state, content, job).map((producer) => ({
+    kind: all.indexOf(producer),
+    producer,
+    rate: producerRate(producer, job, modifiers, producerLevel(state, job, producer.id)),
+  }));
 }
 
 /** Seconds between two strikes of a pattern. */
@@ -105,8 +103,8 @@ const JOB_SALT: Record<ProductionJob, number> = { logging: 11, mining: 23 };
 
 /**
  * Records the strikes of one job that land in (`fromMs`, `toMs`] of play time. `state` is the
- * state at the start of the span and `modifiers` are those of the span. A strike on a plot yields
- * that plot's output for the time between its strikes, so the strikes of a span add up to the
+ * state at the start of the span and `modifiers` are those of the span. A strike on a kind yields
+ * that kind's output for the time between its strikes, so the strikes of a span add up to the
  * span's output (with crits, to its expected value).
  */
 export function recordStrikes(
@@ -131,12 +129,12 @@ export function recordStrikes(
   const supports = harvestSupports(state, content, job);
   const periodSeconds = periodMs / 1000;
   const all = pattern.targeting === 'all';
-  // A plot struck 1 in N times (or every time, for `all`) collects the whole interval it covers.
+  // A kind struck 1 in N times (or every time, for `all`) collects the whole interval it covers.
   const reach = all ? 1 : targets.length;
   const base = (t: HarvestTarget): Decimal => t.rate.mul(periodSeconds * reach);
   const event = (t: HarvestTarget, strikes: number, crits: number): HarvestEvent => ({
     job,
-    plot: t.plot,
+    kind: t.kind,
     producer: t.producer.id,
     resource: t.producer.resource,
     amount: base(t).mul(crit.damage.sub(1).mul(crits).add(strikes)),
@@ -147,7 +145,7 @@ export function recordStrikes(
   });
 
   if (count > MAX_DETAILED_STRIKES) {
-    // Too many to play one by one: one merged event per plot, strikes shared out in turn.
+    // Too many to play one by one: one merged event per kind, strikes shared out in turn.
     targets.forEach((t, i) => {
       const strikes = all
         ? count
@@ -177,7 +175,7 @@ export function recordStrikes(
 }
 
 /**
- * Records the bonus harvest of a full gauge: one event per plot carrying `seconds` of its output.
+ * Records the bonus harvest of a full gauge: one event per kind carrying `seconds` of its output.
  * `before` is the state at the start of the span.
  */
 export function recordBurst(
@@ -194,7 +192,7 @@ export function recordBurst(
   for (const t of activeTargets(before, content, job, modifiers)) {
     pushHarvest(report.harvests, {
       job,
-      plot: t.plot,
+      kind: t.kind,
       producer: t.producer.id,
       resource: t.producer.resource,
       amount: t.rate.mul(factor).mul(seconds),

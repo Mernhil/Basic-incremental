@@ -5,10 +5,9 @@ import { Decimal } from './num';
 import { cloneState, initialProduction, type GameState } from './state';
 
 /**
- * Production (DESIGN.md §4): logging plots and mining slots. Capacity is limited and bought
- * with the job's tier-1 resource; the player freely chooses what runs in each plot/slot.
- * Tree kinds are unlocked with gems, mine types by clearing dungeons, and each tree kind and
- * mine type has levels bought with Money (DESIGN.md §4). Every number goes through the modifier pipeline.
+ * Production (DESIGN.md §4): one of each. Every unlocked tree kind and mine type produces once,
+ * at its level. Tree kinds are unlocked with gems, mine types by clearing dungeons, and each
+ * tree kind and mine type has levels bought with Money. Every number goes through the modifier pipeline.
  *
  * Every function is pure: state changes return a new state. Functions that need modifiers take
  * them as an optional last argument (pass `collectModifiers(state, content)` once when calling
@@ -35,8 +34,6 @@ export type ProductionFailure =
   | 'already-unlocked'
   /** Not enough resources. */
   | 'unaffordable'
-  /** The plot/slot index is not within the current capacity. */
-  | 'invalid-plot'
   /** A bulk buy count that is not a whole number from 1 to MAX_BULK_LEVELS. */
   | 'invalid-count';
 
@@ -47,10 +44,6 @@ const fail = (reason: ProductionFailure): ProductionResult => ({ ok: false, reas
 
 export function producersOf(content: Content, job: ProductionJob): readonly Producer[] {
   return job === 'logging' ? content.trees : content.mines;
-}
-
-function findProducer(content: Content, job: ProductionJob, id: string): Producer | undefined {
-  return job === 'logging' ? content.treeById.get(id) : content.mineById.get(id);
 }
 
 function producerContext(producer: Producer, job: ProductionJob): StatContext {
@@ -105,83 +98,6 @@ export function clearDungeon(
   return { state: next, unlockedMines };
 }
 
-// ---- capacity and plots --------------------------------------------------------------------
-
-/** Plots/slots available: start + bought expansions, through `production.capacity`. */
-export function plotCapacity(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): number {
-  const base = content.production[job].startPlots + state.production[job].expansions;
-  const value = statValue('production.capacity', base, modifiers, { job });
-  return Math.max(0, Math.floor(value.toNumber()));
-}
-
-/**
- * What runs in each plot/slot within the capacity (length = capacity), null = empty.
- * Locked or removed producers show as empty.
- */
-export function plots(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): (string | null)[] {
-  const capacity = plotCapacity(state, content, job, modifiers);
-  const saved = state.production[job].plots;
-  return Array.from({ length: capacity }, (_, i) => {
-    const id = saved[i] ?? null;
-    return id !== null && isProducerUnlocked(state, content, job, id) ? id : null;
-  });
-}
-
-/** Producer id -> number of plots/slots running it (only producers with at least one). */
-export function producerCounts(
-  state: GameState,
-  content: Content,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Record<string, number> {
-  const counts: Record<string, number> = {};
-  for (const job of PRODUCTION_JOBS) {
-    for (const id of plots(state, content, job, modifiers)) {
-      if (id !== null) counts[id] = (counts[id] ?? 0) + 1;
-    }
-  }
-  return counts;
-}
-
-/**
- * Puts a tree/mine in a plot/slot, or empties it with `producerId` null. Free (DESIGN.md §4).
- * The producer must belong to the job and be unlocked; the index must be within the capacity.
- */
-export function assignPlot(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  index: number,
-  producerId: string | null,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): ProductionResult {
-  if (
-    !Number.isInteger(index) ||
-    index < 0 ||
-    index >= plotCapacity(state, content, job, modifiers)
-  ) {
-    return fail('invalid-plot');
-  }
-  if (producerId !== null) {
-    if (!findProducer(content, job, producerId)) return fail('unknown');
-    if (!isProducerUnlocked(state, content, job, producerId)) return fail('locked');
-  }
-  const next = cloneState(state);
-  const list = next.production[job].plots;
-  while (list.length <= index) list.push(null);
-  list[index] = producerId;
-  return { ok: true, state: next };
-}
-
 // ---- prices ----------------------------------------------------------------------------------
 
 /**
@@ -215,23 +131,6 @@ export function curvePrice(
   const ctx = { ...context, resource: curve.resource };
   const growth = Decimal.max(statValue('cost.growth', curve.growth, modifiers, ctx), 1);
   return finalPrice(curve.resource, curve.base.mul(growth.pow(owned)), modifiers, ctx);
-}
-
-/** Price of the next plot (logging) or slot (mining). */
-export function expansionCost(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Price {
-  return curvePrice(
-    content.production[job].expansion,
-    state.production[job].expansions,
-    modifiers,
-    {
-      job,
-    },
-  );
 }
 
 /** One-time wood price to unlock a tree kind. Empty for start kinds. */
@@ -329,20 +228,6 @@ export function pay(state: GameState, prices: readonly Price[]): GameState {
 
 // ---- purchases -------------------------------------------------------------------------------
 
-/** Buys one more plot/slot. The new one starts empty. */
-export function buyExpansion(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): ProductionResult {
-  const price = expansionCost(state, content, job, modifiers);
-  if (!canAfford(state, [price])) return fail('unaffordable');
-  const next = pay(state, [price]);
-  next.production[job].expansions += 1;
-  return { ok: true, state: next };
-}
-
 /** Unlocks a tree kind for wood. Kept through prestige. */
 export function unlockTree(
   state: GameState,
@@ -394,10 +279,9 @@ export function buyMineLevel(
 // ---- output ----------------------------------------------------------------------------------
 
 /**
- * Output per second of one plot/slot running this producer, after modifiers. For mines,
- * `level` adds `production.levelBonus` percent per level (from the producer's `ratePercent`)
- * and every level milestone multiplies it (DESIGN.md §4), before the `production.rate`
- * modifiers apply.
+ * Output per second of this tree kind or mine type at `level`, after modifiers. `level` adds
+ * `production.levelBonus` percent per level (from the producer's `ratePercent`) and every level
+ * milestone multiplies it (DESIGN.md §4), before the `production.rate` modifiers apply.
  */
 export function producerRate(
   producer: Producer,
@@ -445,37 +329,33 @@ export function harvestCritFactor(crit: HarvestCrit): Decimal {
   return crit.damage.sub(1).mul(crit.chance).add(1);
 }
 
-/** Resource id -> gained per second from one job's active plots/slots (crits included). */
+/** Resource id -> gained per second from one job's unlocked kinds, once each (crits included). */
 export function jobProductionPerSecond(
   state: GameState,
   content: Content,
   job: ProductionJob,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
-  counts: Record<string, number> = producerCounts(state, content, modifiers),
 ): Record<string, Decimal> {
   const out: Record<string, Decimal> = {};
   const crit = harvestCritFactor(harvestCrit(content, job, modifiers));
-  for (const producer of producersOf(content, job)) {
-    const count = counts[producer.id] ?? 0;
-    if (count === 0) continue;
+  for (const producer of unlockedProducers(state, content, job)) {
     const level = producerLevel(state, job, producer.id);
-    const gained = producerRate(producer, job, modifiers, level).mul(count).mul(crit);
+    const gained = producerRate(producer, job, modifiers, level).mul(crit);
     out[producer.resource] = (out[producer.resource] ?? new Decimal(0)).add(gained);
   }
   return out;
 }
 
-/** Resource id -> total gained per second from every active plot/slot. */
+/** Resource id -> total gained per second from every unlocked tree kind and mine type. */
 export function productionPerSecond(
   state: GameState,
   content: Content,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Record<string, Decimal> {
   const out: Record<string, Decimal> = {};
-  const counts = producerCounts(state, content, modifiers);
   for (const job of PRODUCTION_JOBS) {
     for (const [resource, gained] of Object.entries(
-      jobProductionPerSecond(state, content, job, modifiers, counts),
+      jobProductionPerSecond(state, content, job, modifiers),
     )) {
       out[resource] = (out[resource] ?? new Decimal(0)).add(gained);
     }
@@ -486,14 +366,14 @@ export function productionPerSecond(
 // ---- prestige --------------------------------------------------------------------------------
 
 /**
- * The production part of a prestige (DESIGN.md §9): plots, slots and mine levels go back to the
+ * The production part of a prestige (DESIGN.md §9): tree and mine levels go back to the
  * start; unlocked tree kinds and cleared dungeons (so unlocked mines) are kept. Resources are
  * not touched here; the prestige system resets them.
  */
-export function resetProduction(state: GameState, content: Content): GameState {
+export function resetProduction(state: GameState): GameState {
   const next = cloneState(state);
   next.production = {
-    ...initialProduction(content),
+    ...initialProduction(),
     unlockedTrees: [...state.production.unlockedTrees],
   };
   return next;

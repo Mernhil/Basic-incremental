@@ -35,13 +35,13 @@ export interface TierUp {
 /**
  * One harvest strike for the stage (DESIGN.md §4): "the card chops tree 2 for +14". The
  * economy is the expected value; these are the discrete moments that add up to it. When many
- * strikes land on one plot in a report they are merged: `strikes` counts them.
+ * strikes land on one kind in a report they are merged: `strikes` counts them.
  */
 export interface HarvestEvent {
   job: ProductionJob;
-  /** Plot (logging) / slot (mining) index. */
-  plot: number;
-  /** Tree or mine id running there. */
+  /** Position of the struck tree kind / mine type among the job's, in content order (stable). */
+  kind: number;
+  /** Tree or mine id struck. */
   producer: string;
   /** Gem harvested. */
   resource: string;
@@ -51,13 +51,13 @@ export interface HarvestEvent {
   strikes: number;
   /** How many of them were crits; `crits > 0` means show the crit look. */
   crits: number;
-  /** The bonus harvest of a full harvest gauge (one event per plot). */
+  /** The bonus harvest of a full harvest gauge (one event per unlocked kind). */
   burst: boolean;
   /** Support card ids whose effect helps this job's harvest. */
   supports: string[];
 }
 
-/** Most harvest events a merged report keeps before folding strikes of the same plot together. */
+/** Most harvest events a merged report keeps before folding strikes of the same kind together. */
 export const MAX_REPORT_HARVESTS = 64;
 
 /** Adds a strike event, folding it into a matching one when the list is full. */
@@ -66,7 +66,7 @@ export function pushHarvest(into: HarvestEvent[], event: HarvestEvent): void {
     const same = into.find(
       (e) =>
         e.job === event.job &&
-        e.plot === event.plot &&
+        e.kind === event.kind &&
         e.burst === event.burst &&
         e.producer === event.producer,
     );

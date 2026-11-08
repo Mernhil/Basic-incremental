@@ -23,15 +23,16 @@ function withDps(dps: Decimal) {
 }
 
 describe('advance (tick math)', () => {
-  it('produces rate * plots * seconds', () => {
+  it('produces rate * seconds for each unlocked kind, once', () => {
     const { state } = advance(bareState(), content, 10_000, rng);
     expect(state.resources['oak_gem']!.eq(10)).toBe(true);
-    expect(state.resources['copper_gem']!.eq(5)).toBe(true); // 1 slot * 0.5/s
+    expect(state.resources['copper_gem']!.eq(5)).toBe(true); // 0.5/s
 
-    const triple = bareState();
-    triple.production.logging = { expansions: 2, plots: ['oak', 'oak', 'oak'] };
-    const result = advance(triple, content, 10_000, rng);
-    expect(result.state.resources['oak_gem']!.eq(30)).toBe(true);
+    const two = bareState();
+    two.production.unlockedTrees = ['ironbark'];
+    const result = advance(two, content, 10_000, rng);
+    expect(result.state.resources['oak_gem']!.eq(10)).toBe(true);
+    expect(result.state.resources['ironbark_gem']!.eq(5)).toBe(true);
   });
 
   it('applies damage to the boss without killing it', () => {

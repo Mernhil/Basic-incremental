@@ -413,22 +413,13 @@ describe('the starter table defines every table token', () => {
 });
 
 describe('production data', () => {
-  type ProductionRaw = Record<
-    'logging' | 'mining',
-    { startProducer: string; expansion: { resource: string; growth: string } }
-  >;
-
-  it('catches wrong cost resources, bad start producers and shared ids', () => {
+  it('catches wrong cost resources and shared ids', () => {
     const bad = raw();
     const trees = bad.trees as { unlockCost: { resource: string }[] }[];
     trees[1]!.unlockCost[0]!.resource = 'copper_gem';
     const mines = bad.mines as { id: string; level: { cost: { resource: string } } }[];
     mines[0]!.level.cost.resource = 'oak_gem';
     mines[2]!.id = 'oak';
-    const production = bad.production as ProductionRaw;
-    production.logging.startProducer = 'ironbark';
-    production.mining.startProducer = 'missing_mine';
-    production.mining.expansion.resource = 'summon_crystal';
     const issues = issuesFor(bad);
     expect(issues).toContain(
       'trees.json › [1] › unlockCost › [0] › resource: "copper_gem" is mine_gem, expected tree_gem',
@@ -437,22 +428,32 @@ describe('production data', () => {
       'mines.json › [0] › level › cost › resource: "oak_gem" is tree_gem, expected currency',
     );
     expect(issues).toContain('mines.json › [2] › id: "oak" is already a tree id');
+  });
+
+  it('has no plots, slots or expansions: only the harvest rules', () => {
+    expect(Object.keys(production).sort()).toEqual(['harvest']);
+  });
+
+  it('needs a tree and a mine available from the start, since every unlocked kind produces', () => {
+    const bad = raw();
+    for (const t of bad.trees as { unlockCost: unknown[] }[]) {
+      t.unlockCost = [{ resource: 'oak_gem', amount: '1' }];
+    }
+    for (const m of bad.mines as { unlockedByDungeon: string | null }[]) {
+      m.unlockedByDungeon = 'mossy_cellar';
+    }
+    const issues = issuesFor(bad);
     expect(issues).toContain(
-      'production.json › logging › startProducer: "ironbark" is not available from the start',
+      'trees.json: at least one tree must be unlocked from the start (no unlockCost)',
     );
-    expect(issues).toContain(
-      'production.json › mining › startProducer: unknown mine "missing_mine"',
-    );
-    expect(issues).toContain(
-      'production.json › mining › expansion › resource: "summon_crystal" is crystal, expected currency',
-    );
+    expect(issues).toContain('mines.json: at least one mine must be available from the start');
   });
 
   it('rejects a cost curve that shrinks', () => {
     const bad = raw();
-    (bad.production as ProductionRaw).logging.expansion.growth = '0.9';
+    (bad.mines as { level: { cost: { growth: string } } }[])[0]!.level.cost.growth = '0.9';
     expect(issuesFor(bad)).toContain(
-      'production.json › logging › expansion › growth: must be at least 1',
+      'mines.json › [0] › level › cost › growth: must be at least 1',
     );
   });
 });
@@ -470,10 +471,9 @@ describe('the three loops (DESIGN.md §3)', () => {
     expect(c.resourceById.get('moss_sigil')).toBeUndefined();
   });
 
-  it('prices plots, slots, mine levels and damage lines in Money, and unlocks in gems', () => {
+  it('prices tree levels, mine levels and damage lines in Money, and unlocks in gems', () => {
     const c = loadContent();
-    expect(c.production.logging.expansion.resource).toBe('money');
-    expect(c.production.mining.expansion.resource).toBe('money');
+    for (const t of c.trees) expect(t.level.cost.resource).toBe('money');
     for (const m of c.mines) expect(m.level.cost.resource).toBe('money');
     for (const u of c.combat.damageUpgrades) expect(u.cost.resource).toBe('money');
     for (const t of c.trees) {

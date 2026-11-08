@@ -101,7 +101,7 @@
     {
       "id": "wide_skies",
       "name": "Wide Skies",
-      "description": "Plot, slot and level prices grow 1% slower per level",
+      "description": "Tree and mine level prices grow 1% slower per level",
       "maxLevel": 5,
       "cost": {
         "base": "8",

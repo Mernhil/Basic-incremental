@@ -42,7 +42,48 @@ export const MIGRATIONS: MigrationTable = {
   12: v12ToV13,
   13: v13ToV14,
   14: v14ToV15,
+  15: v15ToV16,
 };
+
+/** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
+const V15_EXPANSION = { base: 25, growth: 1.4 };
+
+/** Money the first `count` expansions cost: each price `base * growth^n`, rounded up like a buy. */
+function expansionsPaid(count: number): Decimal {
+  let paid = new Decimal(0);
+  for (let n = 0; n < Math.max(0, Math.floor(count)); n++) {
+    const price = new Decimal(V15_EXPANSION.base).mul(new Decimal(V15_EXPANSION.growth).pow(n));
+    const near = price.round();
+    // Drop float noise first (25 x 1.4^2 is 49.00000000000001 and must cost 49, not 50).
+    paid = paid.add(price.sub(near).abs().lte(near.abs().mul(1e-9)) ? near : price.ceil());
+  }
+  return paid;
+}
+
+/**
+ * v15 -> v16: one of each (DESIGN.md §4). Plots, slots and expansions are gone: every unlocked
+ * tree kind and mine type produces once, at its level. The production part loses `logging` and
+ * `mining` (plots, slots, expansions) and keeps unlocks and levels; the Money spent on the
+ * expansions is paid back (each price of the old curve, rounded up).
+ */
+function v15ToV16(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const { logging, mining, ...kept } = production;
+  let refund = new Decimal(0);
+  for (const part of [logging, mining]) {
+    refund = refund.add(expansionsPaid(isRecord(part) ? levelOf(part['expansions']) : 0));
+  }
+  const out: Record<string, unknown> = { ...state, production: kept };
+  if (refund.gt(0)) {
+    const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+    const money = resources['money'];
+    const held =
+      typeof money === 'string' && isDecimalString(money) ? new Decimal(money) : new Decimal(0);
+    resources['money'] = held.add(refund).toString();
+    out['resources'] = resources;
+  }
+  return out;
+}
 
 /**
  * v14 -> v15: tree levels and the upgrade shelf (DESIGN.md §4). Trees get a level line like

@@ -8,7 +8,7 @@ import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
 import { countMoneyEarned } from './upgrades';
-import { jobProductionPerSecond, PRODUCTION_JOBS, producerCounts } from './production';
+import { jobProductionPerSecond, PRODUCTION_JOBS } from './production';
 import { emptyReport, mergeReports, type TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type GameState } from './state';
@@ -91,13 +91,9 @@ function advanceSpan(
     recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report);
   }
 
-  // Production: every active plot/slot yields its producer's rate per second.
-  const counts = producerCounts(state, content, modifiers);
+  // Production: every unlocked tree kind and mine type yields its rate per second, once.
   const perJob = Object.fromEntries(
-    PRODUCTION_JOBS.map((job) => [
-      job,
-      jobProductionPerSecond(state, content, job, modifiers, counts),
-    ]),
+    PRODUCTION_JOBS.map((job) => [job, jobProductionPerSecond(state, content, job, modifiers)]),
   ) as Record<(typeof PRODUCTION_JOBS)[number], Record<string, Decimal>>;
   for (const job of PRODUCTION_JOBS) {
     for (const [resource, perSecond] of Object.entries(perJob[job])) {

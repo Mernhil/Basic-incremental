@@ -196,11 +196,9 @@ describe('save format v2: cosmetics', () => {
 });
 
 describe('save format v3: production', () => {
-  it('round-trips plots, slots, unlocked trees, mine levels and cleared dungeons', () => {
+  it('round-trips unlocked trees, tree and mine levels and cleared dungeons', () => {
     const state = freshState();
     state.production = {
-      logging: { expansions: 2, plots: ['oak', null, 'ironbark'] },
-      mining: { expansions: 1, plots: ['copper_quarry', 'iron_deeps'] },
       unlockedTrees: ['ironbark'],
       mineLevels: { copper_quarry: 4, iron_deeps: 1 },
       treeLevels: { oak: 6 },
@@ -211,16 +209,12 @@ describe('save format v3: production', () => {
     expect(loaded.state.clearedDungeons).toEqual(['mossy_cellar']);
   });
 
-  it('drops removed ids and empties plots whose producer is locked', () => {
+  it('drops removed ids from unlocks, levels and cleared dungeons', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    json.state.production.logging.plots = ['oak', 'moonwillow', 'removed_tree'];
-    json.state.production.mining.plots = ['iron_deeps'];
     json.state.production.unlockedTrees = ['removed_tree'];
     json.state.production.mineLevels = { removed_mine: 3, copper_quarry: 2 };
     json.state.clearedDungeons = ['removed_dungeon'];
     const loaded = readSave(JSON.stringify(json), content).state;
-    expect(loaded.production.logging.plots).toEqual(['oak', null, null]);
-    expect(loaded.production.mining.plots).toEqual([null]);
     expect(loaded.production.unlockedTrees).toEqual([]);
     expect(loaded.production.mineLevels).toEqual({ copper_quarry: 2 });
     expect(loaded.clearedDungeons).toEqual([]);
@@ -228,7 +222,7 @@ describe('save format v3: production', () => {
 
   it('rejects malformed production data', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    json.state.production.logging.expansions = -1;
+    json.state.production.mineLevels = { copper_quarry: -1 };
     expect(codeOf(() => readSave(JSON.stringify(json), content))).toBe('invalid-format');
   });
 
@@ -254,8 +248,6 @@ describe('save format v3: production', () => {
     expect(state.resources['summon_crystal']!.eq(7)).toBe(true);
     expect(state.activeDungeonId).toBe('mossy_cellar');
     expect(state.pity).toEqual({ root_warden: 12 });
-    expect(state.production.logging).toEqual({ expansions: 0, plots: ['oak'] });
-    expect(state.production.mining).toEqual({ expansions: 0, plots: ['copper_quarry'] });
     // v3 -> v4: the 3 earlier kills were in the Mossy Cellar, so it counts as cleared.
     expect(state.clearedDungeons).toEqual(['mossy_cellar']);
     expect(state.combat.kills).toEqual({ mossy_cellar: 3 });
@@ -275,7 +267,8 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     json.state.resources.ember_sigil = '9';
     json.state.resources.frost_sigil = '5';
     json.state.production.mineLevels = { copper_quarry: 2 };
-    json.state.production.logging.expansions = 1;
+    json.state.production.logging = { expansions: 1, plots: ['oak', null] };
+    json.state.production.mining = { expansions: 0, plots: ['copper_quarry'] };
     json.state.combat.damageLevels = { copper_edge: 1 };
     json.state.account.skills = { sigil_luck: 2 };
     const { state } = readSave(JSON.stringify(json), content);
@@ -284,11 +277,11 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     expect(state.resources['frost_sigil']!.toNumber()).toBe(5);
     expect('moss_sigil' in state.resources).toBe(false);
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
-    expect(state.production.logging.expansions).toBe(1);
     expect(state.combat.damageLevels).toEqual({ copper_edge: 1 });
     expect(state.account.skills).toEqual({ crystal_luck: 2 });
-    // Start 100 + two copper levels (15 + 19.5) + a plot (25) + a Copper Edge level (10).
-    expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 25 + 10);
+    // Start 100 + two copper levels (15 + 19.5) + a plot (25) + a Copper Edge level (10), and the
+    // plot is paid back once more when plots go away (v16).
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 25 + 10 + 25);
   });
 
   it('writes the current version, so a v14 save loads without the refund twice', () => {
@@ -325,5 +318,36 @@ describe('save format v8: mastery', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
     json.state.mastery.harvested = { oak_gem: 'lots' };
     expect(codeOf(() => readSave(JSON.stringify(json), content))).toBe('invalid-format');
+  });
+});
+
+describe('save format v16: one of each (DESIGN.md §4)', () => {
+  it('loads a v15 save: plots and slots are gone, the Money of the expansions comes back', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.version = 15;
+    json.state.resources.money = '100';
+    json.state.production.logging = { expansions: 2, plots: ['oak', 'ironbark', 'oak'] };
+    json.state.production.mining = { expansions: 1, plots: ['copper_quarry', null] };
+    json.state.production.unlockedTrees = ['ironbark'];
+    json.state.production.treeLevels = { oak: 4, ironbark: 1 };
+    json.state.production.mineLevels = { copper_quarry: 2 };
+    const { state } = readSave(JSON.stringify(json), content);
+    expect(Object.keys(state.production).sort()).toEqual([
+      'mineLevels',
+      'treeLevels',
+      'unlockedTrees',
+    ]);
+    expect(state.production.unlockedTrees).toEqual(['ironbark']);
+    expect(state.production.treeLevels).toEqual({ oak: 4, ironbark: 1 });
+    expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
+    // Plots 25 + 35 and one slot 25.
+    expect(state.resources['money']!.toNumber()).toBe(100 + 60 + 25);
+  });
+
+  it('writes the current version, so a v16 save never pays the refund twice', () => {
+    const state = freshState();
+    state.resources['money'] = new Decimal(321);
+    const { state: back } = readSave(createSaveText(state, NOW), content);
+    expect(back.resources['money']!.toNumber()).toBe(321);
   });
 });

@@ -39,13 +39,7 @@ describe('ascension gate', () => {
     expect(v.button).toBe('Ascend');
     expect(v.rewards.map((r) => r.id)).toEqual(['gilded_plate']);
     expect(v.rewards[0]!.text).toMatch(/^Gilded Plate, \w+ border$/);
-    expect(v.resets.map((r) => r.id)).toEqual([
-      'plots',
-      'slots',
-      'mine_levels',
-      'resources',
-      'tile_stages',
-    ]);
+    expect(v.resets.map((r) => r.id)).toEqual(['mine_levels', 'resources', 'tile_stages']);
     expect(v.resets.every((r) => r.label && r.detail)).toBe(true);
   });
 

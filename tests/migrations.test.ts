@@ -309,3 +309,62 @@ describe('v14 -> v15 (tree levels and the upgrade shelf, DESIGN.md §4)', () => 
     expect(() => step({})).not.toThrow();
   });
 });
+
+describe('v15 -> v16 (one of each: no plots, slots or expansions, DESIGN.md §4)', () => {
+  const step = MIGRATIONS[15]!;
+
+  it('drops the plots, slots and expansions and keeps levels and unlocks', () => {
+    const out = step({
+      production: {
+        logging: { expansions: 4, plots: ['oak', 'ironbark'] },
+        mining: { expansions: 1, plots: ['copper_quarry'] },
+        unlockedTrees: ['ironbark'],
+        mineLevels: { copper_quarry: 7 },
+        treeLevels: { oak: 3 },
+      },
+    }) as { production: Record<string, unknown> };
+    expect(out.production).toEqual({
+      unlockedTrees: ['ironbark'],
+      mineLevels: { copper_quarry: 7 },
+      treeLevels: { oak: 3 },
+    });
+  });
+
+  it('pays back the Money of every expansion, each price rounded up', () => {
+    const out = step({
+      resources: { money: '10', oak_gem: '5' },
+      production: {
+        logging: { expansions: 3, plots: [] },
+        mining: { expansions: 2, plots: [] },
+      },
+    }) as { resources: Record<string, string> };
+    // Plots 25 + 35 + 49 and slots 25 + 35, on top of the 10 held. Other resources stay.
+    expect(out.resources['money']).toBe(String(10 + 109 + 60));
+    expect(out.resources['oak_gem']).toBe('5');
+  });
+
+  it('refunds nothing for a save with no expansions', () => {
+    const out = step({
+      resources: { money: '40' },
+      production: {
+        logging: { expansions: 0, plots: ['oak'] },
+        mining: { expansions: 0, plots: [] },
+      },
+    }) as { resources: Record<string, string> };
+    expect(out.resources['money']).toBe('40');
+  });
+
+  it('does not mutate its input and copes with missing or junk sections', () => {
+    const input = {
+      resources: { money: '0' },
+      production: { logging: { expansions: 1, plots: [] }, mining: 'junk' },
+    };
+    step(input);
+    expect(input).toEqual({
+      resources: { money: '0' },
+      production: { logging: { expansions: 1, plots: [] }, mining: 'junk' },
+    });
+    expect(() => step({})).not.toThrow();
+    expect(() => step({ resources: 3, production: 'x' })).not.toThrow();
+  });
+});

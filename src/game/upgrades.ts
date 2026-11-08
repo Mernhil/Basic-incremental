@@ -22,7 +22,7 @@ export type UpgradeBuyResult =
 /** What an upgrade changes, worked out for the shelf (null when there is no simple number). */
 export type UpgradePreview =
   | {
-      /** One plot / slot of a tree or mine: gems per second before and after. */
+      /** A tree kind or mine type: gems per second before and after. */
       kind: 'rate';
       producer: string;
       resource: string;

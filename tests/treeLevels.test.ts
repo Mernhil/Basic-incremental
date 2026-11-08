@@ -126,7 +126,7 @@ describe('tree levels (DESIGN.md §4)', () => {
     if (!bought.ok) throw new Error(bought.reason);
     expect(p.resource).toBe('oak_gem');
     expect(p.levels).toBe(5);
-    expect(p.perSlotAfter.gt(p.perSlotBefore)).toBe(true);
+    expect(p.rateAfter.gt(p.rateBefore)).toBe(true);
     expect(
       p.rateAfter.eq(jobProductionPerSecond(bought.state, content, 'logging')['oak_gem']!),
     ).toBe(true);
@@ -148,8 +148,7 @@ describe('tree levels (DESIGN.md §4)', () => {
     state.production.treeLevels['oak'] = 50;
     expect(tileStage(state, content, 'logging', 'oak')).toBe(2);
     expect(tileStage(state, content, 'logging', 'ironbark')).toBe(0);
-    state.production.logging.expansions = 20; // plots no longer grow the tile
-    const after = resetProduction(state, content);
+    const after = resetProduction(state);
     expect(after.production.treeLevels).toEqual({});
     expect(tileStage(after, content, 'logging', 'oak')).toBe(0);
   });

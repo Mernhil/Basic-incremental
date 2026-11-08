@@ -88,7 +88,7 @@ describe('level milestones (DESIGN.md §4)', () => {
     state.combat.damageLevels = { copper_edge: 50 };
     state.production.mineLevels = { copper_quarry: 50 };
     const before = baseDamage(state, content);
-    const after = resetProduction(state, content);
+    const after = resetProduction(state);
     after.prestigeCount = 1;
     expect(baseDamage(after, content).eq(before)).toBe(true);
     expect(damageLineMilestone(after, content, 'copper_edge')!.reached).toBe(2);

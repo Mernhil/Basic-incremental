@@ -5,7 +5,6 @@ import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
 import { Decimal, decimalToString, isDecimalString } from './num';
 import { SaveError } from './saveError';
 import { isDungeonUnlocked } from './combat';
-import { isProducerUnlocked, PRODUCTION_JOBS } from './production';
 import {
   cloneBursts,
   cloneCards,
@@ -24,7 +23,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 15;
+export const CURRENT_SAVE_VERSION = 16;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -34,17 +33,11 @@ const cardLoadoutSchema = z.object({
   supports: z.array(z.string().nullable()),
 });
 const gaugeSchema = z.object({ gauge: z.number().min(0), timer: z.number().min(0) });
-const jobProductionSchema = z.object({
-  expansions: z.number().int().min(0),
-  plots: z.array(z.string().nullable()),
-});
 
 /** The on-disk shape of GameState: Decimals as strings, nothing else special. */
 export const serializedStateSchema = z.object({
   resources: z.record(z.string(), decimalText),
   production: z.object({
-    logging: jobProductionSchema,
-    mining: jobProductionSchema,
     unlockedTrees: z.array(z.string()),
     mineLevels: counts,
     /** v15. */
@@ -226,13 +219,11 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   const base = createInitialState(content);
   const state = cloneState(base);
   for (const [id, text] of Object.entries(saved.resources)) state.resources[id] = new Decimal(text);
-  // Unknown ids (removed from the game) are dropped; locked producers leave their plot empty.
+  // Unknown ids (removed from the game) are dropped.
   state.clearedDungeons = saved.clearedDungeons.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),
   );
   state.production = {
-    logging: { ...saved.production.logging, plots: [...saved.production.logging.plots] },
-    mining: { ...saved.production.mining, plots: [...saved.production.mining.plots] },
     unlockedTrees: saved.production.unlockedTrees.filter((id) => content.treeById.has(id)),
     mineLevels: Object.fromEntries(
       Object.entries(saved.production.mineLevels).filter(([id]) => content.mineById.has(id)),
@@ -241,12 +232,6 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       Object.entries(saved.production.treeLevels).filter(([id]) => content.treeById.has(id)),
     ),
   };
-  for (const job of PRODUCTION_JOBS) {
-    const list = state.production[job].plots;
-    list.forEach((id, i) => {
-      if (id !== null && !isProducerUnlocked(state, content, job, id)) list[i] = null;
-    });
-  }
   const upgrades = new Set(content.combat.damageUpgrades.map((u) => u.id));
   state.combat = {
     damageLevels: Object.fromEntries(

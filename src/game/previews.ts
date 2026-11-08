@@ -1,23 +1,9 @@
-import type { Content, ProductionJob } from '../data';
-import {
-  damageLineOffer,
-  expansionOffer,
-  mineLevelOffer,
-  treeLevelOffer,
-  type BuyCount,
-} from './bulk';
+import type { Content } from '../data';
+import { damageLineOffer, mineLevelOffer, treeLevelOffer, type BuyCount } from './bulk';
 import { averageDps, damageLevel, secondsPerKill } from './combat';
 import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import {
-  jobProductionPerSecond,
-  mineLevel,
-  plotCapacity,
-  producerLevel,
-  producerRate,
-  treeLevel,
-  unlockedProducers,
-} from './production';
+import { jobProductionPerSecond, mineLevel, treeLevel } from './production';
 import { cloneState, type GameState } from './state';
 
 /**
@@ -63,17 +49,14 @@ export function previewDamageLine(
   };
 }
 
-/** A tree or mine level purchase: the gem per second, in total and per plot / slot. */
+/** A tree or mine level purchase: the gem per second before and after (one of each, so one number). */
 export interface MinePreview {
   levels: number;
   /** The gem the mine produces. */
   resource: string;
-  /** That gem per second from every mining slot (0 when no slot runs the mine). */
+  /** That gem per second from the mine (0 while it is locked). */
   rateBefore: Decimal;
   rateAfter: Decimal;
-  /** Per second of one slot running this mine. */
-  perSlotBefore: Decimal;
-  perSlotAfter: Decimal;
 }
 
 /** Previews buying `count` levels of a mine type; null for an unknown mine or bad count. */
@@ -97,8 +80,6 @@ export function previewMineLevel(
     resource: mine.resource,
     rateBefore: rate(state),
     rateAfter: rate(after),
-    perSlotBefore: producerRate(mine, 'mining', modifiers, level),
-    perSlotAfter: producerRate(mine, 'mining', modifiers, level + offer.count),
   };
 }
 
@@ -126,63 +107,5 @@ export function previewTreeLevel(
     resource: tree.resource,
     rateBefore: rate(state),
     rateAfter: rate(after),
-    perSlotBefore: producerRate(tree, 'logging', modifiers, level),
-    perSlotAfter: producerRate(tree, 'logging', modifiers, level + offer.count),
-  };
-}
-
-/** A plot / slot purchase: capacity, and output if the new ones run the best producer. */
-export interface ExpansionPreview {
-  /** Expansions the purchase buys. */
-  plots: number;
-  capacityBefore: number;
-  capacityAfter: number;
-  /** The best unlocked producer (the highest tier), assumed in the new plots; null if none. */
-  producer: string | null;
-  /** Its resource; null with no producer. */
-  resource: string | null;
-  /** That resource per second from the job now, and with the new plots running the producer. */
-  rateBefore: Decimal;
-  rateAfter: Decimal;
-}
-
-/** Previews buying `count` plots (logging) or slots (mining). A bad count previews one. */
-export function previewExpansion(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  count: BuyCount = 1,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): ExpansionPreview {
-  const plots = expansionOffer(state, content, job, count, modifiers)?.count ?? 1;
-  const after = cloneState(state);
-  after.production[job].expansions += plots;
-  const capacityBefore = plotCapacity(state, content, job, modifiers);
-  const capacityAfter = plotCapacity(after, content, job, modifiers);
-  const best = unlockedProducers(state, content, job).at(-1) ?? null;
-  if (!best) {
-    const zero = new Decimal(0);
-    return {
-      plots,
-      capacityBefore,
-      capacityAfter,
-      producer: null,
-      resource: null,
-      rateBefore: zero,
-      rateAfter: zero,
-    };
-  }
-  const level = producerLevel(state, job, best.id);
-  const rateBefore =
-    jobProductionPerSecond(state, content, job, modifiers)[best.resource] ?? new Decimal(0);
-  const added = Math.max(0, capacityAfter - capacityBefore);
-  return {
-    plots,
-    capacityBefore,
-    capacityAfter,
-    producer: best.id,
-    resource: best.resource,
-    rateBefore,
-    rateAfter: rateBefore.add(producerRate(best, job, modifiers, level).mul(added)),
   };
 }

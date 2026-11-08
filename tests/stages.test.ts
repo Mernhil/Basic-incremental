@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   buyDamageLevels,
-  buyExpansions,
   buyMineLevels,
   cardItem,
   cardItemKind,
@@ -33,7 +32,6 @@ describe('tile stages (DESIGN.md §12)', () => {
   it('grows a tree tile one stage per 25-level milestone (DESIGN.md §4)', () => {
     expect(content.progression.tileStages.logging).toEqual({ source: 'level' });
     const state = freshState();
-    state.production.logging.expansions = 12; // plots no longer grow the tile
     expect(tileStage(state, content, 'logging', 'oak')).toBe(0);
     state.production.treeLevels['oak'] = 50;
     expect(tileStage(state, content, 'logging', 'oak')).toBe(2);
@@ -47,11 +45,11 @@ describe('tile stages (DESIGN.md §12)', () => {
     expect(tileStage(state, content, 'logging', 'copper_quarry')).toBe(0);
   });
 
-  it('resets with the levels and plots on prestige', () => {
+  it('resets with the levels on prestige', () => {
     const state = freshState();
     state.production.mineLevels['copper_quarry'] = 75;
     state.production.treeLevels['oak'] = 50;
-    const after = resetProduction(state, content);
+    const after = resetProduction(state);
     expect(tileStage(after, content, 'mining', 'copper_quarry')).toBe(0);
     expect(tileStage(after, content, 'logging', 'oak')).toBe(0);
   });
@@ -89,14 +87,6 @@ describe('tier-ups from purchases (DESIGN.md §12)', () => {
     expect(big.ok && big.tierUps).toEqual([
       { kind: 'mine_milestone', id: 'copper_quarry', from: 0, to: 4, metal: 'prismatic' },
     ]);
-  });
-
-  it('reports no tier-up for buying plots or slots (tiles grow with levels)', () => {
-    const state = freshState();
-    state.production.logging.expansions = 3;
-    state.resources['money'] = new Decimal('1e30');
-    const result = buyExpansions(state, content, 'logging', 2);
-    expect(result.ok && result.tierUps).toEqual([]);
   });
 });
 

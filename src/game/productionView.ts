@@ -4,7 +4,7 @@ import { burstView } from './combat';
 import { activeTargets, harvestSupports, mainHarvestPattern, strikePeriodSeconds } from './harvest';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
-import { harvestCrit, harvestCritFactor, plots, producersOf } from './production';
+import { harvestCrit, harvestCritFactor } from './production';
 import type { GameState } from './state';
 import { jobAttackEffect, resolveCard, jobNumberStyle, type ResolvedCard } from './theme';
 
@@ -25,17 +25,18 @@ export interface StageCard {
   look: ResolvedCard;
 }
 
-/** One plot / slot as the stage draws it. */
+/** One unlocked tree kind / mine type as the stage draws it. */
 export interface StageTarget {
-  plot: number;
-  /** Tree / mine id, or null for an empty plot. */
-  producer: string | null;
-  resource: string | null;
-  /** Output per second of this plot (crits included). */
+  /** Position among the job's kinds in content order (matches `HarvestEvent.kind`). */
+  kind: number;
+  /** Tree / mine id. */
+  producer: string;
+  resource: string;
+  /** Output per second of this kind (crits included). */
   ratePerSecond: Decimal;
-  /** Share of the job's output, 0..1 (0 for an empty plot). */
+  /** Share of the job's output, 0..1. */
   share: number;
-  /** What one strike on this plot yields without a crit. */
+  /** What one strike on this kind yields without a crit. */
   perStrike: Decimal;
 }
 
@@ -55,7 +56,7 @@ export interface ProductionStageView {
   nextStrike: { progress: number; inSeconds: number };
   /** Harvest crit chance (0..1) and multiplier. */
   crit: { chance: number; damage: Decimal };
-  /** One entry per plot / slot (capacity), empty ones included. */
+  /** One entry per unlocked tree kind / mine type, in content order. */
   targets: StageTarget[];
   /** Animation ids from the equipped cosmetics for this job's strikes and numbers. */
   attackEffect: string | null;
@@ -98,33 +99,18 @@ export function productionStageView(
   const crit = harvestCrit(content, job, modifiers);
   const factor = harvestCritFactor(crit);
 
-  const live = new Map(activeTargets(state, content, job, modifiers).map((t) => [t.plot, t]));
-  const slots = plots(state, content, job, modifiers);
-  const total = [...live.values()].reduce((a, t) => a.add(t.rate), new Decimal(0));
-  const reach = pattern.targeting === 'all' ? 1 : Math.max(1, live.size);
+  const live = activeTargets(state, content, job, modifiers);
+  const total = live.reduce((a, t) => a.add(t.rate), new Decimal(0));
+  const reach = pattern.targeting === 'all' ? 1 : Math.max(1, live.length);
   const periodSeconds = periodMs / 1000;
-  const byId = new Map(producersOf(content, job).map((p) => [p.id, p]));
-  const targets = slots.map((id, plot): StageTarget => {
-    const t = live.get(plot);
-    if (!t) {
-      return {
-        plot,
-        producer: id,
-        resource: id ? (byId.get(id)?.resource ?? null) : null,
-        ratePerSecond: new Decimal(0),
-        share: 0,
-        perStrike: new Decimal(0),
-      };
-    }
-    return {
-      plot,
-      producer: t.producer.id,
-      resource: t.producer.resource,
-      ratePerSecond: t.rate.mul(factor),
-      share: total.gt(0) ? t.rate.div(total).toNumber() : 0,
-      perStrike: t.rate.mul(periodSeconds * reach),
-    };
-  });
+  const targets = live.map((t): StageTarget => ({
+    kind: t.kind,
+    producer: t.producer.id,
+    resource: t.producer.resource,
+    ratePerSecond: t.rate.mul(factor),
+    share: total.gt(0) ? t.rate.div(total).toNumber() : 0,
+    perStrike: t.rate.mul(periodSeconds * reach),
+  }));
 
   return {
     job,

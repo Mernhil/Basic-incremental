@@ -266,7 +266,7 @@ describe('mastery through prestige and saves', () => {
     const state = settled(bareState());
     state.mastery.harvested['oak_gem'] = new Decimal(5e5);
     state.mastery.gemTiers['oak_gem'] = 2;
-    const after = resetProduction(state, content);
+    const after = resetProduction(state);
     expect(after.mastery.harvested['oak_gem']!.toNumber()).toBe(5e5);
     expect(after.mastery.gemTiers['oak_gem']).toBe(2);
   });

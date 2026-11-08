@@ -301,10 +301,6 @@ export {
   treeLevelOffer,
   /** Buys tree levels in bulk. */
   buyTreeLevels,
-  /** Buy offer of plots / slots. */
-  expansionOffer,
-  /** Buys plots / slots in bulk. */
-  buyExpansions,
   type BuyCount,
   type BuyOffer,
   type BulkBuyResult,
@@ -312,14 +308,11 @@ export {
 export {
   /** Damage line purchase preview: average DPS and time-to-kill before / after. */
   previewDamageLine,
-  /** Mine level purchase preview: gem per second before / after (total and per slot). */
+  /** Mine level purchase preview: gem per second before / after. */
   previewMineLevel,
-  /** Tree level purchase preview: gem per second before / after (total and per plot). */
+  /** Tree level purchase preview: gem per second before / after. */
   previewTreeLevel,
-  /** Plot / slot purchase preview: capacity and output with the best producer before / after. */
-  previewExpansion,
   type DamagePreview,
   type MinePreview,
   type TreePreview,
-  type ExpansionPreview,
 } from './previews';
