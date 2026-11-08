@@ -64,3 +64,25 @@
     animation: none;
   }
 }
+
+/* Palette-cycling sprites (art/pixel/animate.ts): the strip steps one frame at a time, exactly on
+   each frame. Reduced motion stays on frame 0. */
+.bi-px-anim {
+  animation-name: bi-px-anim;
+  animation-timing-function: steps(var(--bi-anim-steps, 8), jump-none);
+  animation-iteration-count: infinite;
+}
+@keyframes bi-px-anim {
+  from {
+    background-position: 0% 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bi-px-anim {
+    animation: none;
+    background-position: 0 0;
+  }
+}
