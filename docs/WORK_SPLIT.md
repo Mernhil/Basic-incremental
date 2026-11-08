@@ -25,7 +25,7 @@ Both also use verification-before-completion.
 ## Routing
 
 - Any change to the art itself (sprites, pixel art, palettes, shading, sprite animation, element effects, hit animations, sparkles, icons as drawings), however small → delegate to `pixel-art`. Every graphics tweak goes there, not to `ui`.
-- Other visual task (layout, CSS, theme colours, pages, tooltips, copy on screen) → delegate to `ui`.
+- Other visual task (layout, CSS, theme colours, pages, tooltips, copy on screen) → delegate to `ui`, which reads `docs/UI_RULES.md` (the only UI rulebook).
 - A screen that needs new art → `pixel-art` draws the asset, `ui` places it.
 - Pure logic, numbers, content, saves, process task → delegate to `mechanics`.
 - A feature that needs both → `mechanics` first (logic + tests + exports in `src/game/index.ts` / `src/data/index.ts`), then `ui` builds the screen on those exports. One PR for each part.
