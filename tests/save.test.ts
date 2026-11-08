@@ -279,9 +279,9 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
     expect(state.combat.damageLevels).toEqual({ copper_edge: 1 });
     expect(state.account.skills).toEqual({ crystal_luck: 2 });
-    // Start 100 + two copper levels (15 + 19.5) + a plot (25) + a Copper Edge level (10), and the
-    // plot is paid back once more when plots go away (v16).
-    expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 25 + 10 + 25);
+    // Start 100 + two copper levels (15 + 19.5) + a Copper Edge level (10) + the one plot (25),
+    // which is paid back once, when plots go away (v16).
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 10 + 25);
   });
 
   it('writes the current version, so a v14 save loads without the refund twice', () => {
@@ -322,6 +322,18 @@ describe('save format v8: mastery', () => {
 });
 
 describe('save format v16: one of each (DESIGN.md §4)', () => {
+  it('pays a v13 save with plots and slots exactly one expansion refund, the v16 one', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.version = 13;
+    delete json.state.resources.money;
+    json.state.resources.moss_sigil = '0';
+    json.state.production.logging = { expansions: 3, plots: ['oak', null, null, null] };
+    json.state.production.mining = { expansions: 2, plots: ['copper_quarry', null, null] };
+    const { state } = readSave(JSON.stringify(json), content);
+    // Start 100 + plots 25 + 35 + 49 + slots 25 + 35, each paid once.
+    expect(state.resources['money']!.toNumber()).toBe(100 + 109 + 60);
+  });
+
   it('loads a v15 save: plots and slots are gone, the Money of the expansions comes back', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
     json.version = 15;

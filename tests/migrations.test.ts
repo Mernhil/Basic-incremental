@@ -240,7 +240,7 @@ describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md §3)', () => {
     expect(out.resources['money']).toBe('100');
   });
 
-  it('refunds the price of every mine level, plot, slot and damage line as Money', () => {
+  it('refunds the price of every mine level and damage line as Money, and leaves the expansions to v16', () => {
     const out = step({
       resources: { money: '0' },
       production: {
@@ -250,11 +250,14 @@ describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md §3)', () => {
       },
       combat: { damageLevels: { copper_edge: 2, iron_edge: 1 } },
     }) as { resources: Record<string, string> };
-    // Start 100 + copper levels 15 + 15 * 1.3 + 15 * 1.3^2 + logging plots 25 + 25 * 1.4
-    // + mining slot 25 + copper edge 10 + 10 * 1.11 + iron edge 200.
-    const expected =
-      100 + (15 + 15 * 1.3 + 15 * 1.69) + (25 + 25 * 1.4) + 25 + (10 + 10 * 1.11) + 200;
+    // Start 100 + copper levels 15 + 15 * 1.3 + 15 * 1.3^2 + copper edge 10 + 10 * 1.11 + iron
+    // edge 200. The plots and slots are refunded once, by v15 -> v16 (not here).
+    const expected = 100 + (15 + 15 * 1.3 + 15 * 1.69) + (10 + 10 * 1.11) + 200;
     expect(Number(out.resources['money'])).toBeCloseTo(expected, 6);
+    expect(
+      (out as unknown as { production: { logging: { expansions: number } } }).production.logging
+        .expansions,
+    ).toBe(2); // kept in the state for v16
   });
 
   it('adds the refund to Money already held and does not mutate its input', () => {

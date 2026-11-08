@@ -109,7 +109,6 @@ const V14_MONEY_CURVES = {
     iron_deeps: { base: 200, growth: 1.32 },
     crystal_grotto: { base: 2500, growth: 1.34 },
   },
-  expansions: { logging: { base: 25, growth: 1.4 }, mining: { base: 25, growth: 1.4 } },
   damage: {
     copper_edge: { base: 10, growth: 1.11 },
     iron_edge: { base: 200, growth: 1.12 },
@@ -135,8 +134,9 @@ const levelOf = (value: unknown): number => {
 /**
  * v13 -> v14: the three loops (DESIGN.md §3). Money buys mine levels, plots / slots and damage
  * lines (they cost gems before); the Moss and Ember Sigils became the Summon and Glamour
- * Crystal; the Frost Sigil is a material with the same id. Levels and expansions are kept, and
- * the Money they would cost now is paid back on top of the starting Money, so nothing feels lost.
+ * Crystal; the Frost Sigil is a material with the same id. Levels are kept, and the Money they
+ * would cost now is paid back on top of the starting Money, so nothing feels lost. Plots and slots
+ * are kept too; their Money is paid back once, by v15 -> v16, when they go away.
  * Ids that were about sigils are renamed (skill, Starlight shop item, shard shop bundles).
  */
 function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
@@ -153,10 +153,6 @@ function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
   let refund = new Decimal(0);
   for (const [id, curve] of Object.entries(V14_MONEY_CURVES.mines)) {
     refund = refund.add(curveSum(curve, levelOf(mineLevels[id])));
-  }
-  for (const job of ['logging', 'mining'] as const) {
-    const part = isRecord(production[job]) ? production[job] : {};
-    refund = refund.add(curveSum(V14_MONEY_CURVES.expansions[job], levelOf(part['expansions'])));
   }
   for (const [id, curve] of Object.entries(V14_MONEY_CURVES.damage)) {
     refund = refund.add(curveSum(curve, levelOf(damageLevels[id])));
