@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 19;
+export const CURRENT_SAVE_VERSION = 20;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -58,7 +58,7 @@ export const serializedStateSchema = z.object({
   pity: counts,
   inventory: counts,
   prestigeCount: z.number().int().min(0),
-  /** v19: weapon kind -> chosen skin id. */
+  /** v20: weapon kind -> chosen skin id. */
   weaponSkins: z.record(z.string(), z.string()),
   cosmetics: z.object({
     loadout: z.object({

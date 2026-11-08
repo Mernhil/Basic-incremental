@@ -77,8 +77,8 @@ describe('bundled content', () => {
       ['Iron Deeps', 'mossy_cellar'],
       ['Crystal Grotto', 'ember_crypt'],
     ]);
-    // 12 beta cards plus the weapon-skins test card (`reaper_test`).
-    expect(content.cards).toHaveLength(13);
+    // 11 beta cards plus the weapon-skins test card (`reaper_test`).
+    expect(content.cards).toHaveLength(12);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -182,18 +182,23 @@ describe('content validation errors', () => {
 });
 
 describe('card ranks and portals', () => {
-  it('has the 12 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
+  it('has the 11 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
     const loaded = loadContent();
     // The weapon-skins test card (`reaper_test`) is not one of the beta cards.
     const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
     expect(loaded.cardById.get('reaper_test')?.name).toBe('Reaper Test Card');
-    expect(content.cards).toHaveLength(12);
-    for (const job of ['fighting', 'logging', 'mining'] as const) {
-      expect(content.cards.filter((c) => c.job === job)).toHaveLength(4);
+    expect(content.cards).toHaveLength(11);
+    // Fighting lost its Rare (the Shield Warden); logging and mining keep four cards each.
+    for (const [job, n] of [
+      ['fighting', 3],
+      ['logging', 4],
+      ['mining', 4],
+    ] as const) {
+      expect(content.cards.filter((c) => c.job === job)).toHaveLength(n);
     }
     const rarities = content.cards.map((c) => c.rarity);
     expect(rarities.filter((r) => r === 'common')).toHaveLength(3);
-    expect(rarities.filter((r) => r === 'rare')).toHaveLength(3);
+    expect(rarities.filter((r) => r === 'rare')).toHaveLength(2);
     expect(rarities.filter((r) => r === 'epic')).toHaveLength(2);
     expect(rarities.filter((r) => r === 'legendary')).toHaveLength(2);
     expect(rarities.filter((r) => r === 'mythic')).toHaveLength(1);
@@ -211,18 +216,20 @@ describe('card ranks and portals', () => {
 
   it('scales flat and percent card bonuses by default, and nothing else', () => {
     const content = loadContent();
-    const warden = content.cardById.get('shield_warden')!;
-    expect(warden.main.modifiers.map((m) => [m.kind, m.scale])).toEqual([
+    const duelist = content.cardById.get('storm_duelist')!;
+    expect(duelist.main.modifiers.map((m) => [m.kind, m.scale])).toEqual([
       ['set', 'none'],
-      ['percent', 'full'],
+      ['mult', 'none'],
     ]);
-    expect(warden.support.modifiers[0]!.scale).toBe('none'); // explicit: +1 fill stays +1
+    expect(duelist.support.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
+    const keeper = content.cardById.get('grove_keeper')!;
+    expect(keeper.support.modifiers[0]!.scale).toBe('none'); // explicit: +1 fill stays +1
   });
 
   it('catches bad card rules', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['startCards'] = ['ember_squire', 'shield_warden', 'missing_card'];
+    rules['startCards'] = ['ember_squire', 'storm_duelist', 'missing_card'];
     rules['levelCaps'].gold = 30; // below Silver's 40
     const issues = issuesFor(bad);
     expect(issues.some((i) => i.includes('startCards › [1]: a start card already leads'))).toBe(

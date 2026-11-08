@@ -45,8 +45,9 @@ export const MIGRATIONS: MigrationTable = {
   15: v15ToV16,
   16: v16ToV17,
   17: v17ToV18,
-  /** v18 -> v19: weapon skins (weaponSkins.json). Nothing is equipped: every weapon is unskinned. */
-  18: (state) => ({ ...state, weaponSkins: {} }),
+  18: v18ToV19,
+  /** v19 -> v20: weapon skins (weaponSkins.json). Nothing is equipped: every weapon is unskinned. */
+  19: (state) => ({ ...state, weaponSkins: {} }),
 };
 
 /** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
@@ -111,6 +112,59 @@ const V16_DAMAGE_UPGRADES = {
 } as const;
 /** The level cap of each tier from format 17 on (cardRules.json `levelCaps`); stars do not count. */
 const V17_LEVEL_CAPS: Record<string, number> = { bronze: 20, silver: 40, gold: 60, prismatic: 80 };
+
+/**
+ * v18 -> v19: the Shield Warden card was removed (DESIGN.md §5: shields do not fit the weapon
+ * cards). A saved Shield Warden is paid back in shards, 2 per star (its Rare shard value in
+ * format 18), and its cosmetics, shard shop purchases and loadout slots are dropped.
+ */
+function v18ToV19(state: Record<string, unknown>): Record<string, unknown> {
+  const REMOVED = 'shield_warden';
+  const out: Record<string, unknown> = { ...state };
+  if (isRecord(state['cards'])) {
+    const cards = { ...state['cards'] };
+    const owned = isRecord(cards['owned']) ? { ...cards['owned'] } : {};
+    const card = owned[REMOVED];
+    if (isRecord(card)) {
+      const stars = Math.max(1, Math.floor(Number(card['stars']) || 1));
+      cards['shards'] = Math.floor(Number(cards['shards']) || 0) + 2 * stars;
+    }
+    delete owned[REMOVED];
+    cards['owned'] = owned;
+    if (isRecord(cards['loadouts'])) {
+      const loadouts: Record<string, unknown> = {};
+      for (const [job, l] of Object.entries(cards['loadouts'])) {
+        if (!isRecord(l)) {
+          loadouts[job] = l;
+          continue;
+        }
+        loadouts[job] = {
+          ...l,
+          main: l['main'] === REMOVED ? null : l['main'],
+          supports: Array.isArray(l['supports'])
+            ? l['supports'].map((id: unknown) => (id === REMOVED ? null : id))
+            : l['supports'],
+        };
+      }
+      cards['loadouts'] = loadouts;
+    }
+    out['cards'] = cards;
+  }
+  if (isRecord(state['cosmetics']) && isRecord(state['cosmetics']['loadout'])) {
+    const loadout = state['cosmetics']['loadout'];
+    if (isRecord(loadout['cards'])) {
+      const perCard = { ...loadout['cards'] };
+      delete perCard[REMOVED];
+      out['cosmetics'] = { ...state['cosmetics'], loadout: { ...loadout, cards: perCard } };
+    }
+  }
+  if (isRecord(state['shardShop'])) {
+    const shop = { ...state['shardShop'] };
+    delete shop['copy_shield_warden'];
+    out['shardShop'] = shop;
+  }
+  return out;
+}
 
 /**
  * v17 -> v18: tiers, stars and the Unique tier (DESIGN.md §5). A card's `duplicates` became its

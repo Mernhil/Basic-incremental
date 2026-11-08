@@ -174,7 +174,7 @@ describe('equipping (DESIGN.md §8)', () => {
       ok: false,
       reason: 'invalid',
     });
-    expect(equipCosmetic(state, content, 'ember_crown', 'shield_warden')).toMatchObject({
+    expect(equipCosmetic(state, content, 'ember_crown', 'storm_duelist')).toMatchObject({
       ok: false,
       reason: 'invalid',
     });

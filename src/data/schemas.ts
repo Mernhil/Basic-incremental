@@ -309,7 +309,6 @@ export type CardElement = (typeof ELEMENTS)[number];
 /** The signature item drawn inside a card (DESIGN.md §12); its detail grows with the card's rarity. */
 export const ITEM_KINDS = [
   'sword',
-  'shield',
   'twin_blades',
   'greatsword',
   'hatchet',

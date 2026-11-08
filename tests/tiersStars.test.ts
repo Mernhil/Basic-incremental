@@ -95,8 +95,8 @@ describe('the star bar (DESIGN.md §5)', () => {
       gauge: 1 / commonNeed(4),
       ready: false,
     });
-    own(state, 'shield_warden', { stars: 6 });
-    expect(cardInfo(state, content, 'shield_warden')!.starBar).toBeNull();
+    own(state, 'storm_duelist', { stars: 6 });
+    expect(cardInfo(state, content, 'storm_duelist')!.starBar).toBeNull();
     expect(cardInfo(state, content, 'storm_duelist')!.starBar).toBeNull();
   });
 
@@ -290,14 +290,14 @@ describe('the Unique tier (DESIGN.md §5)', () => {
   it('opens after Prismatic only for cards with a unique version', () => {
     expect(cardTopTier(content, 'ember_squire')).toBe('unique');
     expect(cardTopTier(content, 'grove_keeper')).toBe('unique');
-    expect(cardTopTier(content, 'shield_warden')).toBe('prismatic');
+    expect(cardTopTier(content, 'storm_duelist')).toBe('prismatic');
     const state = own(
       own(freshState(), 'ember_squire', { tier: 'prismatic', level: 80, stars: 6 }),
-      'shield_warden',
+      'storm_duelist',
       { tier: 'prismatic', level: 80, stars: 6 },
     );
-    expect(tierUpCheck(state, content, 'shield_warden')).toMatchObject({ available: false });
-    expect(tierUp(state, content, 'shield_warden')).toEqual({ ok: false, reason: 'unavailable' });
+    expect(tierUpCheck(state, content, 'storm_duelist')).toMatchObject({ available: false });
+    expect(tierUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'unavailable' });
     const check = tierUpCheck(state, content, 'ember_squire')!;
     expect(check).toMatchObject({ available: true, to: { tier: 'unique', stars: 1 } });
   });
@@ -332,11 +332,11 @@ describe('the Unique tier (DESIGN.md §5)', () => {
   it('counts as fully ranked at Unique ★6, and at Prismatic ★6 for a card without one', () => {
     const state = own(
       own(freshState(), 'ember_squire', { tier: 'prismatic', stars: 6 }),
-      'shield_warden',
+      'storm_duelist',
       { tier: 'prismatic', stars: 6 },
     );
     expect(cardInfo(state, content, 'ember_squire')!.maxRank).toBe(false);
-    expect(cardInfo(state, content, 'shield_warden')!.maxRank).toBe(true);
+    expect(cardInfo(state, content, 'storm_duelist')!.maxRank).toBe(true);
     own(state, 'ember_squire', { tier: 'unique', stars: 6 });
     expect(cardInfo(state, content, 'ember_squire')!.maxRank).toBe(true);
   });
@@ -368,8 +368,8 @@ describe('weapon looks for now (DESIGN.md §5)', () => {
       rarity: 'common',
     });
     expect(
-      cardItem(content, 'shield_warden', { ...newOwnedCard(), tier: 'prismatic' }),
-    ).toMatchObject({ kind: 'shield', unique: false, rarity: 'mythic' });
+      cardItem(content, 'storm_duelist', { ...newOwnedCard(), tier: 'prismatic' }),
+    ).toMatchObject({ kind: 'twin_blades', unique: false, rarity: 'exotic' });
   });
 });
 

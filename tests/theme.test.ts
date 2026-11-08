@@ -84,7 +84,7 @@ describe('equipping', () => {
       equipProblem(content, 'border', { id: 'gilded_filigree', level: 5 }),
       equipProblem(content, 'border', { id: 'gilded_filigree', level: 0 }),
       equipProblem(content, 'border', { id: 'ember_crown', level: 1 }),
-      equipProblem(content, 'border', { id: 'ember_crown', level: 1 }, 'shield_warden'),
+      equipProblem(content, 'border', { id: 'ember_crown', level: 1 }, 'storm_duelist'),
       equipProblem(content, 'table', { id: 'gt_table', level: 1 }, MAIN),
     ];
     for (const problem of bad) expect(problem).toBeTypeOf('string');
@@ -131,7 +131,7 @@ describe('card-exclusive overrides', () => {
     expect(own.slots.border.cosmetic.id).toBe('ember_crown');
     expect(own.recipes).toContain('crown');
 
-    const other = resolveCard(content, withGlobal, cardAt(r('prismatic', 6), 'shield_warden'));
+    const other = resolveCard(content, withGlobal, cardAt(r('prismatic', 6), 'storm_duelist'));
     expect(other.slots.border.cosmetic.id).toBe('gilded_plate');
   });
 

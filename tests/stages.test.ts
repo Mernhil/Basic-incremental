@@ -131,7 +131,7 @@ describe('unique evolutions (DESIGN.md §5)', () => {
   });
 
   it('keeps the generic item for cards without an evolution', () => {
-    expect(cardItemKind(content, 'shield_warden', cardAt('prismatic', 6))).toBe('shield');
+    expect(cardItemKind(content, 'storm_duelist', cardAt('prismatic', 6))).toBe('twin_blades');
     expect(cardItemKind(content, 'nope', null)).toBeNull();
   });
 

@@ -11,7 +11,6 @@ const EMBLEMS: Record<string, string> = {
   blade:
     '<path d="M50 8 62 60 50 70 38 60Z"/><path d="M30 64H70V71H30Z"/><path d="M45 70H55V92H45Z"/>',
   gem: '<path d="M30 16H70L90 40 50 90 10 40Z"/>',
-  shield: '<path d="M50 8 84 20V48C84 70 68 84 50 92 32 84 16 70 16 48V20Z"/>',
   pick: '<path d="M12 40C30 14 70 14 88 40 70 30 30 30 12 40Z"/><path d="M46 30H54V92H46Z"/>',
   axe: '<path d="M30 20C62 8 84 26 76 52 60 44 44 42 30 50Z"/><path d="M26 20H34V92H26Z"/>',
   golem:

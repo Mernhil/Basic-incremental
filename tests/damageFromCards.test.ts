@@ -69,8 +69,8 @@ describe('fighting damage comes from the main card', () => {
   });
 
   it('follows the rarity of whichever card leads', () => {
-    const rare = leadWith('shield_warden');
-    expect(baseDamage(rare, content).eq(rules.baseDamage.rare)).toBe(true);
+    const epic = leadWith('storm_duelist');
+    expect(baseDamage(epic, content).eq(rules.baseDamage.epic)).toBe(true);
     const legendary = leadWith('dawnblade_regent');
     expect(baseDamage(legendary, content).eq(rules.baseDamage.legendary)).toBe(true);
   });
@@ -95,8 +95,8 @@ describe('fighting damage comes from the main card', () => {
 
   it('ignores support cards in the base damage, which a support only changes through its bonus', () => {
     const state = leadWith('ember_squire');
-    state.cards.owned['shield_warden'] = newOwnedCard();
-    state.cards.loadouts.fighting.supports = ['shield_warden', null, null];
+    state.cards.owned['storm_duelist'] = newOwnedCard();
+    state.cards.loadouts.fighting.supports = ['storm_duelist', null, null];
     expect(baseDamage(state, content).eq(rules.baseDamage.common)).toBe(true);
   });
 
@@ -125,12 +125,12 @@ describe('card XP from fighting time (DESIGN.md §5)', () => {
 
   it('gives every fighting card in the loadout XP for each second of a fight with no kill', () => {
     const state = freshState();
-    state.cards.owned['shield_warden'] = newOwnedCard();
-    state.cards.loadouts.fighting.supports = ['shield_warden', null, null];
+    state.cards.owned['storm_duelist'] = newOwnedCard();
+    state.cards.loadouts.fighting.supports = ['storm_duelist', null, null];
     const { state: after, report } = advance(state, content, 100_000, rng);
     expect(report.bossKills).toBe(0);
     const expected = rules.xp.perSecond.mul(100);
-    for (const id of ['ember_squire', 'shield_warden']) {
+    for (const id of ['ember_squire', 'storm_duelist']) {
       expect(approxEq(totalXp(after.cards.owned[id]!), expected)).toBe(true);
     }
   });

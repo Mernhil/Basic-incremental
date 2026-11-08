@@ -15,7 +15,7 @@ describe('signature items (DESIGN.md §12)', () => {
   it('matches the card table: element and item per card', () => {
     const byId = Object.fromEntries(content.cards.map((c) => [c.id, [c.element, c.item.name]]));
     expect(byId['ember_squire']).toEqual(['fire', 'Ember Blade']);
-    expect(byId['shield_warden']).toEqual(['light', 'Bulwark']);
+    expect(byId['storm_duelist']).toEqual(['storm', 'Twin Storm Blades']);
     expect(byId['core_titan']).toEqual(['void', 'Core Gauntlet']);
   });
 
