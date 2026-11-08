@@ -283,7 +283,9 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     onTierUps,
   });
   // one card view model for the Cards page and the dungeon drawer's weapon panel
-  const cardsModel = createCardsModel(content, (id, owned) => cardItemArt(content, id, owned));
+  const cardsModel = createCardsModel(content, (id, owned) =>
+    cardItemArt(content, id, owned, loop.state),
+  );
   pages['cards'] = createCardsPage(shell.page('cards'), {
     content,
     model: cardsModel,

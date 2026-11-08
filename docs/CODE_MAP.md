@@ -23,7 +23,7 @@ Where things live, so agents can go straight to the right file instead of explor
 | `mastery.ts`                      | Gem mastery and boss medals                                                                                                    |
 | `goals.ts`                        | Goal tracker rules (quest scroll), star bar and tier-ups                                                                       |
 | `portals.ts`                      | Summon engine (Card Portal, Wardrobe Gate): pulls, pity, rates                                                                 |
-| `wardrobe.ts`, `theme.ts`         | Owning, equipping, upgrading cosmetics; resolving what is shown where                                                          |
+| `wardrobe.ts`, `theme.ts`         | Owning, equipping, upgrading cosmetics; resolving what is shown where; weapon skins (`equipWeaponSkin`, `weaponSkinFor`)       |
 | `prestige.ts`                     | Ascension (keeps Starlight and crystals, resets Money), Starlight, Starlight shop                                              |
 | `achievements.ts`                 | Achievements and the shard shop                                                                                                |
 | `account.ts`                      | Account XP and levels, reward track, account tree, card enhancements                                                           |
@@ -32,7 +32,7 @@ Where things live, so agents can go straight to the right file instead of explor
 
 ## Data (`src/data`)
 
-`schemas.ts` (zod schemas, `STATS`, cosmetic slots/tokens), `index.ts` (`loadContent`, `Content`), `content/*.json` (every number and piece of content: cards, combat, dungeons, mines, trees, production, portals, cosmetics, sets, rarities, wearRules, cardRules, progression, prestige, achievements, account, enhancements, cosmeticRules, trials, resources, upgrades).
+`schemas.ts` (zod schemas, `STATS`, cosmetic slots/tokens), `index.ts` (`loadContent`, `Content`), `content/*.json` (every number and piece of content: cards, combat, dungeons, mines, trees, production, portals, cosmetics, sets, rarities, wearRules, cardRules, progression, prestige, achievements, account, enhancements, cosmeticRules, trials, resources, upgrades, weaponSkins).
 
 ## Electron (`src/main`, `src/preload`)
 
