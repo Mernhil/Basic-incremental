@@ -2,7 +2,7 @@ import { Decimal, formatDecimal } from '../../../game';
 import { prefs, type NumberStyle } from './prefs';
 
 /**
- * Number styles of the Settings page (DESIGN.md 12.23). Below a million every style matches the
+ * Number styles of the Settings page (DESIGN.md §11). Below a million every style matches the
  * game's `formatDecimal` (two decimals under 1,000, then grouped digits). From a million up:
  * suffixes (12.3M, 4.56B … Dc), scientific (1.23e7, the game's own form) or engineering
  * (12.3e6, exponents in steps of three). Past the last suffix, suffixes fall back to scientific.

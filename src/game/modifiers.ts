@@ -9,7 +9,7 @@ import { accountModifiers } from './account';
 import { upgradeModifiers } from './upgrades';
 
 /**
- * The shared modifier pipeline (DESIGN.md 11.5). Every tunable number goes through
+ * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
  * `computeStat`, fed by modifiers from skill trees, owned items, sets, cards and prestige,
  * so balancing means editing data.
  */
@@ -22,11 +22,11 @@ export const MODIFIER_SOURCE_KINDS = [
   'card',
   'prestige',
   'achievement',
-  /** Gem mastery and boss medals (DESIGN.md 16, E2 and E3). */
+  /** Gem mastery and boss medals (DESIGN.md §4, §6). */
   'mastery',
-  /** Account level rewards: the reward track's cost cap bumps (DESIGN.md 16, E7). */
+  /** Account level rewards: the reward track's cost cap bumps (DESIGN.md §10). */
   'account',
-  /** Upgrade shelf purchases (DESIGN.md 11.14). */
+  /** Upgrade shelf purchases (DESIGN.md §4). */
   'upgrade',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];

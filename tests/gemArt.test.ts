@@ -18,7 +18,7 @@ const content = loadContent();
 const gemOf = (id: string) => content.resourceById.get(id)!.gem!;
 const gems = content.resources.filter((r) => r.gem).map((r) => r.gem!);
 
-describe('gem art (DESIGN.md 13 and 16)', () => {
+describe('gem art (DESIGN.md §12)', () => {
   it('draws each shape with its own outline; round uses many facets so it reads as round', () => {
     expect(shapePoints('round', 50, 50, 10)).toHaveLength(24);
     expect(shapePoints('pentagon', 50, 50, 10)).toHaveLength(5);

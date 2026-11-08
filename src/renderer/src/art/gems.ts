@@ -1,5 +1,5 @@
 /**
- * Gem art in pixels (DESIGN.md 13 and 16): the gem coin whose metal shows the gem's mastery tier,
+ * Gem art in pixels (DESIGN.md §12): the gem coin whose metal shows the gem's mastery tier,
  * the mastery medal, the navigation plaques, the forged-edge ladder and the growing production
  * tiles. All are baked sprites (`pixel/bake.ts`) on their approved grids:
  *

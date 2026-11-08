@@ -13,7 +13,7 @@ import {
 import { content, freshState } from './helpers';
 
 /**
- * The beta art batch B1-B10 as content (DESIGN.md 7 "Every option is kept", 11.1; ids from
+ * The beta art batch B1-B10 as content (DESIGN.md §8 "Every option is kept", 11.1; ids from
  * docs/COSMETIC_ART_IDS.md).
  */
 

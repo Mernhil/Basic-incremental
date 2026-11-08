@@ -17,7 +17,7 @@ import { portalView, revealViews } from './summonModel';
 import './summon.css';
 
 /**
- * Summon page (DESIGN.md 6 Beta portals, A6 E shelf of portals): the portals side by side as
+ * Summon page (DESIGN.md §7 Beta portals, A6 E shelf of portals): the portals side by side as
  * cards, each with its pity bar, rates in a hover tooltip and ×1 / ×10 buttons; the reveal opens
  * in a modal over the shelf. Cosmetic pulls (Wardrobe Gate) show their swatch in the reveal.
  */
@@ -120,7 +120,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     return card;
   }
 
-  // the Wardrobe Gate opens with the Wardrobe (DESIGN.md 6); until then it shows as locked
+  // the Wardrobe Gate opens with the Wardrobe (DESIGN.md §7); until then it shows as locked
   const gateOpen = content.portals.some((p) => p.kind === 'cosmetics');
   shelf.append(...content.portals.map((p) => portalCard(p.id)), ...(gateOpen ? [] : [gateCard()]));
 

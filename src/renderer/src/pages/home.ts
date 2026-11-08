@@ -22,7 +22,7 @@ import { popGain, popNumber } from '../stage/numbers';
 import './home.css';
 
 /**
- * Home (DESIGN.md 14, A3 A command centre): three live mini-stages (fight, logging, mining) with
+ * Home (DESIGN.md §11, A3 A command centre): three live mini-stages (fight, logging, mining) with
  * their rates; clicking one opens its page. The goal tracker joins on top in Phase 2 (E8).
  */
 

@@ -13,7 +13,7 @@ import { pushHarvest, type HarvestEvent, type TickReport } from './report';
 import type { GameState } from './state';
 
 /**
- * Production cards in play (DESIGN.md 11.15). The main logging / mining card's `harvest` block
+ * Production cards in play (DESIGN.md §4). The main logging / mining card's `harvest` block
  * (cards.json) sets a rhythm: a cycle of `intervalSeconds` with `strikes` strikes, each landing on
  * a plot / slot chosen by `targeting`. The economy stays the expected value (production.ts); the
  * strikes are discrete events for the stage that add up to it. They depend only on play time, so

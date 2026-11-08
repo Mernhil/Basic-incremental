@@ -1,5 +1,5 @@
 /**
- * Unique evolutions (DESIGN.md 13): at ★6 some cards show a unique item in place of the generic
+ * Unique evolutions (DESIGN.md §12): at ★6 some cards show a unique item in place of the generic
  * one. Each is a baked card-item sprite (the approved card-item treatment) with its own motion in
  * the approved effects style: hard pixels on the item's grid with a soft glow behind.
  *

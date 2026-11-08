@@ -5,7 +5,7 @@ import { replay } from '../stage/motion';
 import './buy.css';
 
 /**
- * Buy controls (DESIGN.md 14): the ×1 / ×10 / ×100 / Max toggle shared by every upgrade line, and
+ * Buy controls (DESIGN.md §11): the ×1 / ×10 / ×100 / Max toggle shared by every upgrade line, and
  * the buy button with its price, preview, glow when affordable and a fill bar toward the next
  * affordable purchase. The chosen amount is remembered per player in localStorage.
  */

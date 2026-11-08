@@ -9,7 +9,7 @@ import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 
 /**
- * Prestige, Ascension (DESIGN.md 3, 11.6, 16). An ascension resets the run (plots, slots, mine
+ * Prestige, Ascension (DESIGN.md §9). An ascension resets the run (plots, slots, mine
  * levels, resources, tile stages) and keeps everything else (damage lines, cards, cosmetics,
  * unlocks, mastery, medals, portal pity, crystals). It grants Starlight from the gems harvested this run,
  * spent in the Starlight shop on permanent bonuses (modifier source `prestige`), and the n-th
@@ -17,7 +17,7 @@ import { grantAccountXp } from './account';
  * prestige count (combat.ts). All numbers are in prestige.json.
  */
 
-/** What an ascension resets, as ids for the UI to label (DESIGN.md 3, 16 E4). */
+/** What an ascension resets, as ids for the UI to label (DESIGN.md §9, §12). */
 export const ASCENSION_RESETS = [
   'plots',
   'slots',
@@ -128,7 +128,7 @@ export function ascend(
   const next = resetProduction(state, content);
   const currency = content.prestige.currency;
   // Gems, Money, Cores and the rest start over; Starlight and the premium crystals are kept
-  // (DESIGN.md 11.13), like the pity counters that go with them.
+  // (DESIGN.md §3), like the pity counters that go with them.
   for (const resource of content.resources) {
     if (resource.kind === 'prestige' || resource.kind === 'crystal') continue;
     next.resources[resource.id] = startingAmount(content, resource.id);
@@ -149,9 +149,9 @@ export function ascend(
     starlightEarned: state.prestige.starlightEarned.add(preview.gain),
   };
   for (const id of preview.rewards) grantCosmetic(next, id);
-  // The account tree's free respec comes back with every ascension (DESIGN.md 12.1).
+  // The account tree's free respec comes back with every ascension (DESIGN.md §10).
   next.account = { ...next.account, freeRespecsUsed: 0 };
-  // Per-run upgrades are bought again; permanent ones and the lifetime Money stay (DESIGN.md 11.14).
+  // Per-run upgrades are bought again; permanent ones and the lifetime Money stay (DESIGN.md §4).
   next.upgrades = keepPermanentUpgrades(state, content);
   grantAccountXp(next, content, content.account.xp.perAscension, modifiers);
   return { ok: true, state: next, gained: preview.gain, cosmetics: preview.rewards };

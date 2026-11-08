@@ -25,7 +25,7 @@ function rich() {
   return state;
 }
 
-describe('tree levels (DESIGN.md 2, 11.12, 11.14)', () => {
+describe('tree levels (DESIGN.md §4)', () => {
   it('gives every tree a Money level line like the mines', () => {
     for (const tree of content.trees) {
       expect(tree.level.cost.resource).toBe('money');

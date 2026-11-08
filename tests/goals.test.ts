@@ -43,7 +43,7 @@ describe('incomePerSecond', () => {
   });
 });
 
-describe('goal rules (DESIGN.md 16, E8)', () => {
+describe('goal rules (DESIGN.md §10)', () => {
   it('counts the Frost Sigils of the Frostspire Vault in the income', () => {
     const state = bareState();
     state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];

@@ -2,7 +2,7 @@ import { overrideMatches, overrideMediaText } from './motionRules';
 import { onPrefs, prefs, type MotionPref } from './prefs';
 
 /**
- * App-wide reduced-motion override (Settings, DESIGN.md 12.23). Every place that checks reduced
+ * App-wide reduced-motion override (Settings, DESIGN.md §11). Every place that checks reduced
  * motion follows the player's choice without being edited:
  *
  * - `<html data-motion="reduced|full">` for code that reads the attribute (`stage/motion.ts`);

@@ -1,4 +1,4 @@
-/* Details panel (DESIGN.md 9): a modal over the page. Colours come from the frame-* / chrome-*
+/* Details panel (DESIGN.md §11): a modal over the page. Colours come from the frame-* / chrome-*
    tokens; override the --details-* ones to restyle it in the graphics pass. */
 
 .details {

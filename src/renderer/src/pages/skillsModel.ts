@@ -12,7 +12,7 @@ import { COPY } from '../copy';
 import { effectText } from '../shell/modifierText';
 
 /**
- * The Skill Tree page (DESIGN.md 10, 17 "radial constellation", A8 A) and the card enhancement
+ * The Skill Tree page (DESIGN.md §10, §11 "radial constellation", A8 A) and the card enhancement
  * star chart, as plain display data: positions on the constellation, node states, effect lines,
  * the respec offer. No DOM, no rules: every number comes from the game's account API.
  */
@@ -32,7 +32,7 @@ const SLOT_DEG = 20;
 const SLOT_GAP = 66;
 const slotDeg = (r: number): number => Math.max(SLOT_DEG, ((SLOT_GAP / r) * 180) / Math.PI);
 
-/** Branch colours: each branch lights its gems in its own colour (DESIGN.md 17). */
+/** Branch colours: each branch lights its gems in its own colour (DESIGN.md §11). */
 export const BRANCH_COLOUR: Record<SkillBranch, string> = {
   logging: '#74d06a',
   mining: '#5cb8f0',
@@ -107,7 +107,7 @@ const at = (deg: number, r: number) => ({
   y: round(CENTRE.y + r * Math.sin(rad(deg))),
 });
 
-/** Ray angle of a branch: Logging at the top, then clockwise in DESIGN.md 10 order. */
+/** Ray angle of a branch: Logging at the top, then clockwise in DESIGN.md §10 order. */
 export const branchAngle = (branch: SkillBranch): number =>
   -90 + SKILL_BRANCHES.indexOf(branch) * (360 / SKILL_BRANCHES.length);
 

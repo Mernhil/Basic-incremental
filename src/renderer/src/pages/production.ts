@@ -55,7 +55,7 @@ import { expansionView, mineLevelViews, treeLevelViews, type BuyLineView } from 
 import './production.css';
 
 /**
- * Production page (DESIGN.md 14, A2 A): the logging field above the mining field, each a wide
+ * Production page (DESIGN.md §11, A2 A): the logging field above the mining field, each a wide
  * strip of faceted tiles at their growth stage; upgrade lines (tree kinds, mine levels, plots
  * and slots) in a side rail. Every tick floats a "+n" off each tile and flies coins to the
  * header; a harvest burst runs a wave across the field with one big total.

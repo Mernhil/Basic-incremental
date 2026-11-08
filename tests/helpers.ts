@@ -10,7 +10,7 @@ const plainMines = content.mines.map((m) => ({
 }));
 
 /**
- * The bundled content with crits (DESIGN.md 11.11), level milestones (11.12) and mastery
+ * The bundled content with crits (DESIGN.md §6), level milestones (11.12) and mastery
  * bonuses (16, E2 and E3; tiers still settle) switched off, so rule tests can set an exact
  * damage through upgrade levels and check exact totals. Crit, milestone and mastery tests use
  * the real `content`.

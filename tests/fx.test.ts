@@ -14,7 +14,7 @@ const square = [
   { x: 0, y: 10 },
 ];
 
-describe('element effect geometry (DESIGN.md 13)', () => {
+describe('element effect geometry (DESIGN.md §12)', () => {
   it('plays effects only from Gold, stronger at Prismatic', () => {
     expect(['bronze', 'silver', 'gold', 'prismatic'].map(effectStrength)).toEqual([0, 0, 1, 2]);
   });

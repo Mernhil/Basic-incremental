@@ -66,7 +66,7 @@ function issuesFor(input: RawContent): string[] {
 }
 
 describe('bundled content', () => {
-  it('validates and exposes the beta content (DESIGN.md 11.6)', () => {
+  it('validates and exposes the beta content (DESIGN.md §5)', () => {
     const content = loadContent();
     expect(content.resources.length).toBeGreaterThanOrEqual(3);
     expect(content.trees.map((t) => t.name)).toEqual(['Oak', 'Ironbark', 'Moonwillow']);
@@ -92,7 +92,7 @@ describe('bundled content', () => {
   });
 });
 
-describe('gem art (DESIGN.md 13)', () => {
+describe('gem art (DESIGN.md §12)', () => {
   it('gives every tree and mine gem a shape, carving and four colours, and every tree its colours', () => {
     const content = loadContent();
     const gems = content.resources.filter((r) => r.kind === 'tree_gem' || r.kind === 'mine_gem');
@@ -179,7 +179,7 @@ describe('content validation errors', () => {
 });
 
 describe('card ranks and portals', () => {
-  it('has the 12 beta cards of DESIGN.md 11.9, 4 per job, each with a main and support effect', () => {
+  it('has the 12 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
     const content = loadContent();
     expect(content.cards).toHaveLength(12);
     for (const job of ['fighting', 'logging', 'mining'] as const) {
@@ -457,7 +457,7 @@ describe('production data', () => {
   });
 });
 
-describe('the three loops (DESIGN.md 11.13)', () => {
+describe('the three loops (DESIGN.md §3)', () => {
   it('has Money, two crystals and a Frost Sigil that is a material', () => {
     const c = loadContent();
     const kind = (id: string) => c.resourceById.get(id)!.kind;
@@ -515,7 +515,7 @@ describe('the three loops (DESIGN.md 11.13)', () => {
   });
 });
 
-describe('crit and milestone data (DESIGN.md 11.11, 11.12)', () => {
+describe('crit and milestone data (DESIGN.md §6, §4)', () => {
   it('rejects a crit chance above 1 and a crit multiplier below 1', () => {
     const bad = { ...combat, crit: { chance: 1.5, damage: '0.5' } };
     const issues = issuesFor(raw({ combat: bad }));

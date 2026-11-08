@@ -7,7 +7,7 @@ import { toast } from './toast';
 import './tierUp.css';
 
 /**
- * Tier-up moments (DESIGN.md 16, E1): every tier-up of anything plays the same kind of moment, a
+ * Tier-up moments (DESIGN.md §12): every tier-up of anything plays the same kind of moment, a
  * metal flash and a short toast. A card evolution (E6, A15 E) gets its own bigger moment: a light
  * beam drops into the card, the Gold frame rebuilds with a crest flare, then the unique item
  * rises into the window.

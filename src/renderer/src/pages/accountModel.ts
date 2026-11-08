@@ -4,7 +4,7 @@ import { Decimal, type AccountInfo, type TrackLevel } from '../../../game';
 import { COPY } from '../copy';
 
 /**
- * The account level in the header, the reward track (DESIGN.md 16 E7, A16 B quest scroll) and
+ * The account level in the header, the reward track (DESIGN.md §10, A16 B quest scroll) and
  * the level-up "what you got" list, as plain display data. No DOM, no rules.
  */
 

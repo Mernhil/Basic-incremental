@@ -17,7 +17,7 @@ import {
 import './settings.css';
 
 /**
- * The Settings page (DESIGN.md 9, 12.23), option B "two-column panels": Display, Sound, Save
+ * The Settings page (DESIGN.md §11), option B "two-column panels": Display, Sound, Save
  * and Help as framed panels side by side. Import checks the save first and asks in the page
  * before it replaces the game.
  */

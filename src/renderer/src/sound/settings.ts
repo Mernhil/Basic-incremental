@@ -1,5 +1,5 @@
 /**
- * Sound settings (DESIGN.md 15): master and SFX volume, mute, and mute while the window is not
+ * Sound settings (DESIGN.md §13): master and SFX volume, mute, and mute while the window is not
  * focused (on by default). On by default at a moderate volume. Stored per player in localStorage.
  */
 

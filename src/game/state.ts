@@ -33,11 +33,11 @@ export interface GameState {
   cosmetics: CosmeticState;
   /** Owned cards, the loadout of each job and shards. See cards.ts. */
   cards: CardState;
-  /** Gem mastery totals and settled mastery tiers (DESIGN.md 16). Kept through prestige. */
+  /** Gem mastery totals and settled mastery tiers (DESIGN.md §4, §6). Kept through prestige. */
   mastery: MasteryState;
-  /** Portal id -> pull counters (DESIGN.md 6). Kept through prestige; missing = no pulls yet. */
+  /** Portal id -> pull counters (DESIGN.md §7). Kept through prestige; missing = no pulls yet. */
   portals: Record<string, PortalCounters>;
-  /** Ascension (DESIGN.md 3): the run's start, Starlight shop levels and Starlight earned. */
+  /** Ascension (DESIGN.md §9): the run's start, Starlight shop levels and Starlight earned. */
   prestige: PrestigeState;
   /** Achievement id -> play time (ms) when it unlocked. Kept through prestige. */
   achievements: Record<string, number>;
@@ -45,7 +45,7 @@ export interface GameState {
   shardShop: Record<string, number>;
   /** Account XP, level, account tree and respecs. */
   account: AccountState;
-  /** The upgrade shelf (DESIGN.md 11.14): owned upgrades and the lifetime Money earned. */
+  /** The upgrade shelf (DESIGN.md §4): owned upgrades and the lifetime Money earned. */
   upgrades: UpgradeState;
 }
 
@@ -87,7 +87,7 @@ export interface PortalCounters {
 }
 
 /**
- * Mastery (DESIGN.md 16, E2 and E3). Tiers are settled on the same 1 s play-time grid as card
+ * Mastery (DESIGN.md §4, §6). Tiers are settled on the same 1 s play-time grid as card
  * levels (see tick.ts), so the bonuses they give change at the same moments however time is
  * split; the totals themselves grow continuously.
  */
@@ -141,7 +141,7 @@ export interface ProductionState {
   unlockedTrees: string[];
   /** Mine id -> level bought with Money. Reset on prestige. */
   mineLevels: Record<string, number>;
-  /** Tree id -> level bought with Money (DESIGN.md 2, 11.14). Reset on prestige. */
+  /** Tree id -> level bought with Money (DESIGN.md §4). Reset on prestige. */
   treeLevels: Record<string, number>;
 }
 
@@ -154,7 +154,7 @@ export interface CombatState {
   trialAttempt: TrialAttempt;
   /** Special dungeon id -> best score, 0..1. */
   trialBest: Record<string, number>;
-  /** Damage the fighting loadout's health pool has taken (0 = full health; DESIGN.md 11.10). */
+  /** Damage the fighting loadout's health pool has taken (0 = full health; DESIGN.md §6). */
   loadoutDamage: Decimal;
   /** Seconds left of a knockout; while above 0 the loadout does not fight. */
   knockoutSeconds: number;
@@ -210,7 +210,7 @@ export function initialProduction(content: Content): ProductionState {
   };
 }
 
-/** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md 11.13). */
+/** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md §3). */
 export function startingAmount(content: Content, resourceId: string): Decimal {
   return content.resourceById.get(resourceId)?.startAmount ?? new Decimal(0);
 }
@@ -308,7 +308,7 @@ export function cloneBursts(b: Record<BurstJob, BurstGauge>): Record<BurstJob, B
   return { fighting: { ...b.fighting }, logging: { ...b.logging }, mining: { ...b.mining } };
 }
 
-/** One owned card (DESIGN.md 11.9). Each card is owned once; further copies are duplicates. */
+/** One owned card (DESIGN.md §5). Each card is owned once; further copies are duplicates. */
 export interface OwnedCard {
   tier: RankTier;
   /** 1..6 within the tier. */
@@ -319,11 +319,11 @@ export interface OwnedCard {
   xp: Decimal;
   /** Extra copies held, spent on star-ups. */
   duplicates: number;
-  /** Chosen card enhancement option ids (DESIGN.md 10b). */
+  /** Chosen card enhancement option ids (DESIGN.md §10b). */
   enhancements: string[];
 }
 
-/** The account (DESIGN.md 10a, 16 E7). Kept through prestige. */
+/** The account (DESIGN.md §10a, 16 E7). Kept through prestige. */
 export interface AccountState {
   /** XP toward the next level (0 at the max level). */
   xp: Decimal;

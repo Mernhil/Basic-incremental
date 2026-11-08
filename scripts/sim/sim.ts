@@ -1,5 +1,5 @@
 /**
- * Balance sim, DESIGN.md 11.7, 12.15 and 16 E9: plays the real game logic fast with a scripted
+ * Balance sim, DESIGN.md §14: plays the real game logic fast with a scripted
  * player and records when each beta pacing milestone is reached.
  *
  * The buyer (Phase 9), every step:
@@ -101,7 +101,7 @@ import {
   type Rng,
 } from '../../src/game';
 
-// ---- milestones (DESIGN.md 11.7) ---------------------------------------------------------------
+// ---- milestones (DESIGN.md §14) ---------------------------------------------------------------
 
 export interface Milestone {
   id: string;
@@ -309,7 +309,7 @@ const num = (d: Decimal): number => d.toNumber();
 
 /**
  * How much the buyer values a share of the weighted production against the same share of damage.
- * Production only feeds card upgrades and tree kinds now (DESIGN.md 11.13), while damage feeds
+ * Production only feeds card upgrades and tree kinds now (DESIGN.md §3), while damage feeds
  * every kill, Money included.
  */
 export const PRODUCTION_VALUE = 0.35;
@@ -1079,7 +1079,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
 
 const hoursText = (seconds: number): string => `${(seconds / 3600).toFixed(2)} h`;
 
-/** The result as a markdown table: milestone, sim time, DESIGN 11.7 target. */
+/** The result as a markdown table: milestone, sim time, DESIGN §14 target. */
 export function formatTable(result: SimResult): string {
   const lines = ['| Milestone | Sim time | Target |', '|---|---|---|'];
   for (const m of MILESTONES) {

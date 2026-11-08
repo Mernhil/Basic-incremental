@@ -17,7 +17,7 @@ import { milestoneTierUps } from './stages';
 import type { GameState } from './state';
 
 /**
- * Bulk buying (DESIGN.md 14, "Buy x1 / x10 / x100 / Max"): prices of several levels on an
+ * Bulk buying (DESIGN.md §11, "Buy x1 / x10 / x100 / Max"): prices of several levels on an
  * exponential cost curve, the most a budget affords, and the buy offers and purchases of the
  * damage lines, mine levels and plot / slot expansions.
  *

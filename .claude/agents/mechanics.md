@@ -21,7 +21,7 @@ You are the game-mechanics engineer for Basic Incremental (Electron + TypeScript
 
 ## Rules
 
-1. `docs/DESIGN.md` is the source of truth. Read the relevant section first (and `docs/CODE_MAP.md` to find the right files) and never contradict it without asking the user.
+1. `docs/DESIGN.md` is the source of truth. Read the relevant section first (and `docs/CODE_MAP.md` to find the right files) and never contradict it without asking the user. Follow its "How this document works" rules: update the status tags of the rules you build or change in the same PR, and write any gap you must fill in place as `[Default]`, listed under Open questions.
 2. Write the test first (preloaded TDD skill), then the code. Every rule change gets a test in `tests/`.
 3. `src/game` stays pure: no DOM, Electron, Node or renderer imports (ESLint enforces this).
 4. Content goes in `src/data/content/*.json` validated by `src/data/schemas.ts`, not hardcoded in logic.

@@ -104,14 +104,14 @@ export const serializedStateSchema = z.object({
   /** v12: achievement id -> play time when unlocked, and shard shop purchases. */
   achievements: z.record(z.string(), z.number().min(0)),
   shardShop: counts,
-  /** v13: account XP, level, account tree and respecs (DESIGN.md 10a). */
+  /** v13: account XP, level, account tree and respecs (DESIGN.md §10a). */
   account: z.object({
     xp: decimalText,
     level: z.number().int().min(1),
     skills: counts,
     freeRespecsUsed: z.number().int().min(0),
   }),
-  /** v15: the upgrade shelf (DESIGN.md 11.14). */
+  /** v15: the upgrade shelf (DESIGN.md §4). */
   upgrades: z.object({ owned: z.array(z.string()), moneyEarned: decimalText }),
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
@@ -119,7 +119,7 @@ export const serializedStateSchema = z.object({
     gemTiers: counts.optional(),
     bossTiers: counts.optional(),
   }),
-  /** v9: pull counters per portal (DESIGN.md 6). */
+  /** v9: pull counters per portal (DESIGN.md §7). */
   portals: z.record(
     z.string(),
     z.object({
@@ -128,7 +128,7 @@ export const serializedStateSchema = z.object({
       pityHits: z.number().int().min(0),
     }),
   ),
-  /** v10: Ascension (DESIGN.md 3). */
+  /** v10: Ascension (DESIGN.md §9). */
   prestige: z.object({
     runStart: z.record(z.string(), decimalText),
     shop: counts,

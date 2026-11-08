@@ -1,5 +1,5 @@
 /**
- * The approved card frame ladder (DESIGN.md 5 and 13, approved in pixel art 2026-11-07), as the
+ * The approved card frame ladder (DESIGN.md §5, §12, approved in pixel art 2026-11-07), as the
  * vector drawing the pixel frame is baked from. Drawn over a 176 x 248 card; every tier changes the
  * material, fills more of the six gem sockets and grows the crest, and stays a border.
  *

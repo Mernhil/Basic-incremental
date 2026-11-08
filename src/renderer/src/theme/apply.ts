@@ -54,7 +54,7 @@ let levelContent: Content | null = null;
 
 /**
  * Lets card themes mark upgrade levels: with content known, a card wearing a border or finish
- * at its max level gets `data-max-<slot>` (DESIGN.md 7: the ambient animation and, for borders,
+ * at its max level gets `data-max-<slot>` (DESIGN.md §8: the ambient animation and, for borders,
  * the edge-breaking corner flourishes in recipes.css) and `data-lv-<slot>` with its level.
  */
 export function configureCardLevels(content: Content): void {
@@ -73,7 +73,7 @@ function markLevels(el: HTMLElement, resolved: ResolvedCard): void {
   if (el.hasAttribute('data-max-border') || el.hasAttribute('data-max-finish')) watchAmbient(el);
 }
 
-// Ambient animations pause while their card is off screen (DESIGN.md 7).
+// Ambient animations pause while their card is off screen (DESIGN.md §8).
 let observer: IntersectionObserver | null = null;
 function watchAmbient(el: HTMLElement): void {
   if (typeof IntersectionObserver === 'undefined') return;

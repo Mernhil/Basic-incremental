@@ -1,5 +1,5 @@
 /**
- * The card frame (DESIGN.md 5 and 13): the approved pixel frame ladder. The tier is the frame:
+ * The card frame (DESIGN.md §5, §12): the approved pixel frame ladder. The tier is the frame:
  * material, gem sockets and crest all step up together, and it stays a border. The whole card is
  * one pixel grid (0.75 pixels per card unit, 132 x 186); the frame sprite is baked on that grid
  * with room above for the crest.

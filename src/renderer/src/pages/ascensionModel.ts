@@ -16,7 +16,7 @@ import { modifierText } from '../shell/modifierText';
 import type { BuyLineView } from './buyModel';
 
 /**
- * Ascension view models (DESIGN.md 3, 16, 17 "portal gate", A9 E): what starts over, what floats
+ * Ascension view models (DESIGN.md §9, §11 "portal gate", A9 E): what starts over, what floats
  * into the gate, the Starlight gain and the Starlight shop. Display logic only; the gain, rules
  * and prices come from game.
  */

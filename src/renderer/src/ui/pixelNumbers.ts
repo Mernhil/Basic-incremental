@@ -2,7 +2,7 @@ import { pixelNumberMarkup, preloadNumerals } from '../art/cosmetics';
 import './pixelNumbers.css';
 
 /**
- * Pixel numbers (DESIGN.md 7, "Number" cosmetics). When the equipped number item sets
+ * Pixel numbers (DESIGN.md §8, "Number" cosmetics). When the equipped number item sets
  * `--bi-num-px`, every plain-number `.bi-num` element is drawn with `pixelNumberMarkup`.
  *
  * Pages keep writing text with `textContent`, so the real text stays in a visually hidden span

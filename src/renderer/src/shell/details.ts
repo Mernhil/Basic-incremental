@@ -9,7 +9,7 @@ import { h } from './shell';
 import './details.css';
 
 /**
- * The Details panel (DESIGN.md 9): everything the header does not show, grouped, with amount,
+ * The Details panel (DESIGN.md §11): everything the header does not show, grouped, with amount,
  * rate, mastery and what each is used for. A modal over the page: Escape or the backdrop closes
  * it and focus goes back to the Details button. Look lives in details.css tokens (`--details-*`).
  */

@@ -1,5 +1,5 @@
 /**
- * Element effects (DESIGN.md 13). Each effect is generated from the card's own item drawing: the
+ * Element effects (DESIGN.md §12). Each effect is generated from the card's own item drawing: the
  * outline is sampled from the item's largest path, so flames run along the real edges, arcs jump
  * between real points and auras follow the real shape. Effects wrap around the item: most is drawn
  * on a canvas behind it, about a fifth on a canvas in front. They stay slow and secondary.

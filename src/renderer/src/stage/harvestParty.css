@@ -1,4 +1,4 @@
-/* Cards of a production field (DESIGN.md 14). Reuses the arena slot (.ar-slot, the card scaled by
+/* Cards of a production field (DESIGN.md §11). Reuses the arena slot (.ar-slot, the card scaled by
    --k) and the arena burst meter (.ar-gauge); this file is the layout and the strike motions.
    Restyle through the tokens: --pp-ease (motion curve), --pp-glow (pulse colour) and
    --pp-support-k (size of the support cards). */

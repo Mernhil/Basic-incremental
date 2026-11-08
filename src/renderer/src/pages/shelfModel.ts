@@ -4,7 +4,7 @@ import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 
 /**
- * Upgrade shelf view models (DESIGN.md 11.14, 14): the chips of the shelf panel. Hidden upgrades
+ * Upgrade shelf view models (DESIGN.md §4, §11): the chips of the shelf panel. Hidden upgrades
  * are never returned. Display logic only; status, cost, previews and unlock text come from game.
  */
 

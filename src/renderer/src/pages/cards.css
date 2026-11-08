@@ -385,7 +385,7 @@
   outline-offset: 3px;
 }
 
-/* ---- card enhancements: a small star chart (DESIGN.md 17, A8 A) ---- */
+/* ---- card enhancements: a small star chart (DESIGN.md §11, A8 A) ---- */
 .cp-enhance {
   display: grid;
   gap: 8px;

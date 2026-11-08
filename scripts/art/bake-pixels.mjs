@@ -1,4 +1,4 @@
-// Bakes every approved pixel sprite (DESIGN.md 13) from the approved vector drawings.
+// Bakes every approved pixel sprite (DESIGN.md §12) from the approved vector drawings.
 // Usage: node scripts/art/bake-pixels.mjs
 // Bundles src/renderer/src/art/pixel/bake.ts, runs it in headless Chromium (hard-edged SVG
 // rasterising needs a browser), and writes src/renderer/src/art/pixel/sprites/*.png plus

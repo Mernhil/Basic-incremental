@@ -1,4 +1,4 @@
-/* Upgrade shelf (DESIGN.md 11.14): chips on the frame tokens. Every colour comes from --bi-frame-*
+/* Upgrade shelf (DESIGN.md §4): chips on the frame tokens. Every colour comes from --bi-frame-*
    and --bi-chrome-* tokens; the graphics pass can restyle by overriding the --shelf-* ones. */
 
 .shelf {

@@ -14,7 +14,7 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   achievement: 'Achievement',
   mastery: 'Mastery',
   account: 'Account level', // compile fix (mechanics): reward track cost cap bumps
-  upgrade: 'Upgrade', // compile fix (mechanics): upgrade shelf purchases (DESIGN 11.14)
+  upgrade: 'Upgrade', // compile fix (mechanics): upgrade shelf purchases (DESIGN §4)
 };
 
 /** "Gilded Plate", "Gilded Tradition set", or a generic label for sources without a name yet. */

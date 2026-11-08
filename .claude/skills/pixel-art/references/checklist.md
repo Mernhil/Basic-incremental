@@ -2,14 +2,14 @@
 
 Run `scripts/pixel_check.py` first, then go through this by eye at 1× and at game scale.
 
-## Rules (DESIGN.md 13)
+## Rules (DESIGN.md §12)
 
 - [ ] Native grid, whole-number scale, `image-rendering: pixelated`; no anti-aliasing, blur, gradients, soft glows, opacity fades or sub-pixel positions.
 - [ ] One ink colour for outer outlines, 1 px; front-part edges in the part's own darkest tone.
 - [ ] Sticker assets (bosses, tiles, coins) have the 1 px white ring; card items have the 1 px light rim.
 - [ ] Lit from the top-left; 3 to 5 tones per material; white glints; sparkles are plus shapes.
 - [ ] Size matches the approved size for the asset (card items 100 × 120, production tiles 58 × 64, others as approved).
-- [ ] Content matches what DESIGN 13 says the asset shows (shapes, rarity ladder, boss body shapes, element effects).
+- [ ] Content matches what DESIGN §12 says the asset shows (shapes, rarity ladder, boss body shapes, element effects).
 
 ## Craft
 

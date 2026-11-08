@@ -1,5 +1,5 @@
 /**
- * The pixel treatment (DESIGN.md 13), as pure functions on a hard pixel grid. The build step
+ * The pixel treatment (DESIGN.md §12), as pure functions on a hard pixel grid. The build step
  * (`bake.ts`, run by `scripts/art/bake-pixels.mjs`) rasterises the approved drawings with hard
  * edges and then runs these passes, so every sprite in the game comes out of one pipeline:
  *
@@ -109,7 +109,7 @@ export function cleanOrphans(g: Grid, passes = 2): Grid {
 }
 
 /**
- * Light extra shading (DESIGN.md 13, card items): inside each flat part the lit edge gets a lighter
+ * Light extra shading (DESIGN.md §12, card items): inside each flat part the lit edge gets a lighter
  * step (30% then 12% toward a warm white) and the shadow edge a darker one (24% toward deep purple).
  */
 export function bevel(g: Grid): Grid {
@@ -151,7 +151,7 @@ export function outline(g: Grid, ink = INK): Grid {
 }
 
 /**
- * Lines between parts (DESIGN.md 13): ink stays on the silhouette, while ink inside the shape (where
+ * Lines between parts (DESIGN.md §12): ink stays on the silhouette, while ink inside the shape (where
  * one part overlaps another) becomes a dark tone of the part it borders, so parts separate without
  * a colouring-book look. The line takes the darker neighbour's colour pulled toward deep purple.
  */

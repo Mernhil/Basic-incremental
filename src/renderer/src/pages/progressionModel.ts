@@ -3,7 +3,7 @@ import { formatDuration, type Goal, type TierUp } from '../../../game';
 import { COPY } from '../copy';
 
 /**
- * Progression view models (DESIGN.md 16): the words of a tier-up moment (E1), goal rows for the
+ * Progression view models (DESIGN.md §4, §6, §10, §12): the words of a tier-up moment (E1), goal rows for the
  * quest scroll (E8, A16 B) and medal tips (E3). Display logic only.
  */
 

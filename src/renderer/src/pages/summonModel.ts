@@ -4,7 +4,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
 /**
- * Summon view models (DESIGN.md 6 Beta portals, A6 E): a portal card on the shelf, its rates
+ * Summon view models (DESIGN.md §7 Beta portals, A6 E): a portal card on the shelf, its rates
  * tooltip, and each pull of a reveal. Display logic only; pulls and pity come from game.
  */
 
@@ -92,7 +92,7 @@ export function revealViews(results: readonly PullResult[], content: Content): R
   });
 }
 
-/** The summon reveal sound for a rarity (DESIGN.md 15). */
+/** The summon reveal sound for a rarity (DESIGN.md §13). */
 export function revealSound(rarity: Rarity): string {
   switch (rarity) {
     case 'common':

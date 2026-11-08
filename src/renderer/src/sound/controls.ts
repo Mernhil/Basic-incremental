@@ -4,7 +4,7 @@ import { attachTooltip } from '../shell/tooltip';
 import { onSoundSettings, setSoundSettings, soundSettings } from './engine';
 import './controls.css';
 
-/** The quick mute toggle in the header (DESIGN.md 15). */
+/** The quick mute toggle in the header (DESIGN.md §13). */
 export function createMuteToggle(): HTMLButtonElement {
   const btn = h('button', 'snd-mute');
   btn.type = 'button';

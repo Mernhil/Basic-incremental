@@ -27,7 +27,7 @@ export function toast(
   /** One line, or a short list ("what you got"). */
   detail: string | readonly string[] = '',
   kind: ToastKind = 'info',
-  /** A metal on the ladder (DESIGN.md 16, E1): colours the toast's edge. */
+  /** A metal on the ladder (DESIGN.md §12): colours the toast's edge. */
   metal?: string,
 ): void {
   const box = region();

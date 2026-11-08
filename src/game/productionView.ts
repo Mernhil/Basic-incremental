@@ -39,7 +39,7 @@ export interface StageTarget {
   perStrike: Decimal;
 }
 
-/** Everything the production stage shows for one job, ready to draw (DESIGN.md 11.15). */
+/** Everything the production stage shows for one job, ready to draw (DESIGN.md §4). */
 export interface ProductionStageView {
   job: ProductionJob;
   main: StageCard | null;

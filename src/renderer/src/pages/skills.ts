@@ -17,7 +17,7 @@ import { CENTRE, SKY, respecView, treeView, type NodeView, type TreeView } from 
 import './skills.css';
 
 /**
- * Skill Tree page (DESIGN.md 9, 10a, 17; A8 A "radial constellation"): six branches radiate from
+ * Skill Tree page (DESIGN.md §11, §10a, 17; A8 A "radial constellation"): six branches radiate from
  * a centre star that holds the points to spend; each node is a faceted gem lit in its branch
  * colour. Choosing a gem shows its current and next bonus in the side panel, with the buy
  * button; the respec sits under it with an in-page confirm.

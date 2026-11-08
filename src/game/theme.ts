@@ -85,7 +85,7 @@ export function wearRequirement(content: Content, cosmetic: Cosmetic): Rank | nu
 // ---- levels ---------------------------------------------------------------------------------
 
 /**
- * Highest upgrade level of an item (DESIGN.md 11.1, 12.26): a slot override from cosmeticRules.json
+ * Highest upgrade level of an item (DESIGN.md §8): a slot override from cosmeticRules.json
  * (UI skins: 1), else by rarity; starter items keep their own level count. Levels above the drawn
  * ones show the top drawn level until its art arrives.
  */
@@ -285,7 +285,7 @@ export function resolveCard(
 }
 
 /**
- * The attack animation id the equipped attack cosmetic uses for a job (DESIGN.md 11.15): logging
+ * The attack animation id the equipped attack cosmetic uses for a job (DESIGN.md §4): logging
  * and mining cards strike with the same cosmetic slot as fighting cards, each job has its own
  * variant. Null when the item lists none.
  */

@@ -12,7 +12,7 @@ import { fmt } from '../settings/numberFormat';
 import { isHeaderResource, resourceIconId, type ResourceIconId } from '../ui/resourceIcons';
 
 /**
- * The Details panel's view model (DESIGN.md 9, 14): every resource the header does not show,
+ * The Details panel's view model (DESIGN.md §11): every resource the header does not show,
  * grouped, with amount, per-second rate, mastery tier and what it is used for. "Used for" is
  * derived from the content data (card costs, unlocks, cosmetic costs, portals, the shop), so a
  * new cost in the data shows up here without a change.

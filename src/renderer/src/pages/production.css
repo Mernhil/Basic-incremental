@@ -1,4 +1,4 @@
-/* Production page (DESIGN.md 14, A2 A): two fields stacked (logging above mining), each a wide
+/* Production page (DESIGN.md §11, A2 A): two fields stacked (logging above mining), each a wide
    strip of faceted tiles on a lit ground, and the upgrade lines in a side rail. Field colours mix
    the chrome tokens with a job hue; everything else comes from the frame-* tokens. */
 
@@ -328,7 +328,7 @@
   }
 }
 
-/* ---- the stage: cards on the left, the plot strip beside them (DESIGN.md 14) ---- */
+/* ---- the stage: cards on the left, the plot strip beside them (DESIGN.md §11) ---- */
 .pp-stage {
   padding-top: 14px;
   display: flex;

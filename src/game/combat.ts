@@ -29,7 +29,7 @@ import type { Rng } from './rng';
 import { cloneState, type BurstGauge, type GameState } from './state';
 
 /**
- * Combat (DESIGN.md 4, 11.3, 11.8): bosses are HP walls auto-fought in parallel with production,
+ * Combat (DESIGN.md §6): bosses are HP walls auto-fought in parallel with production,
  * respawning for farming. Damage is bought with ore (one upgrade line per ore) and kept through
  * prestige. The first kill clears a dungeon, which unlocks the next dungeon and a mine type.
  * The Glimmer Trial is a special dungeon fought in timed attempts for a score.
@@ -76,7 +76,7 @@ export function damageUpgradeGain(
   return Decimal.max(statValue('combat.upgradeGain', upgrade.damagePerLevel, modifiers, ctx), 0);
 }
 
-/** Damage per second one line adds at its level, milestones included (DESIGN.md 11.12). */
+/** Damage per second one line adds at its level, milestones included (DESIGN.md §4). */
 export function damageLineDps(
   upgrade: DamageUpgrade,
   level: number,
@@ -134,7 +134,7 @@ export function effectiveDamage(
 
 /**
  * Whether a damage line can be bought: its gem's mine must be unlocked (Iron Edge once Iron Deeps
- * opens, Crystal Edge with the Crystal Grotto; DESIGN.md 11.8, 11.13). The price is in Money.
+ * opens, Crystal Edge with the Crystal Grotto; DESIGN.md §6, §3). The price is in Money.
  */
 export function isDamageLineUnlocked(
   state: GameState,
@@ -270,7 +270,7 @@ export function bossStatus(
   };
 }
 
-/** The multiplier stat a currency's drops use: Money or crystals (DESIGN.md 11.13). */
+/** The multiplier stat a currency's drops use: Money or crystals (DESIGN.md §3). */
 function currencyMultiplierStat(
   content: Content,
   resource: string,
@@ -350,7 +350,7 @@ export function effectiveDrops(
   };
 }
 
-// ---- crits (DESIGN.md 11.11) -------------------------------------------------------------------
+// ---- crits (DESIGN.md §6) -------------------------------------------------------------------
 
 export interface CritStats {
   /** Chance a hit or signature attack crits, 0..1. */
@@ -504,7 +504,7 @@ export function secondsPerKill(
   return bossMaxHp(dungeon, state.prestigeCount, modifiers).div(avg).toNumber();
 }
 
-// ---- live stage readouts (DESIGN.md 14) --------------------------------------------------------
+// ---- live stage readouts (DESIGN.md §11) --------------------------------------------------------
 
 /**
  * Average damage per second against a dungeon or special dungeon: damage after modifiers with
@@ -676,7 +676,7 @@ export function advanceHarvestBursts(
   return harvested;
 }
 
-// ---- card health (DESIGN.md 11.10) ----
+// ---- card health (DESIGN.md §6) ----
 
 /** Most a defence stat can block, in percent. */
 const MAX_DEFENCE = 90;
@@ -752,7 +752,7 @@ export function advanceCombat(
 ): void {
   const id = next.activeDungeonId;
   if (!id || !isDungeonUnlocked(next, content, id)) return;
-  // A knocked-out loadout sits out first, whatever is active (DESIGN.md 11.10).
+  // A knocked-out loadout sits out first, whatever is active (DESIGN.md §6).
   let left = seconds;
   if (next.combat.knockoutSeconds > 0) {
     const wait = Math.min(left, next.combat.knockoutSeconds);
@@ -807,7 +807,7 @@ function fightDungeon(
     const dealt = dps.mul(t).add(signatureDamage(dps, stats).mul(run.bursts));
     fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
     // The wage: Money for every second spent fighting, so the first levels can be bought before
-    // the first kill (DESIGN.md 11.13).
+    // the first kill (DESIGN.md §3).
     const wage = effectiveDrops(dungeon, modifiers, content).wage;
     if (wage) {
       const paid = wage.perSecond.mul(t);

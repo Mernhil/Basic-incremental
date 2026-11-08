@@ -40,7 +40,7 @@ const ok = (r: EquipResult): GameState => {
 /** Content with the Wardrobe Gate open (it ships with the Wardrobe screen). */
 const gateOpen: Content = { ...content, portals: content.allPortals };
 
-describe('upgrade levels (DESIGN.md 7, 11.1)', () => {
+describe('upgrade levels (DESIGN.md §8)', () => {
   it('caps levels by rarity; starters keep their own level count', () => {
     expect(cosmeticMaxLevel(content, cosmetic('holo_hex'))).toBe(3); // rare
     expect(cosmeticMaxLevel(content, cosmetic('gilded_filigree'))).toBe(4); // epic
@@ -120,7 +120,7 @@ describe('upgrade levels (DESIGN.md 7, 11.1)', () => {
   });
 });
 
-describe('drawn levels of borders and finishes (DESIGN.md 7, 11.1)', () => {
+describe('drawn levels of borders and finishes (DESIGN.md §8)', () => {
   const items = content.cosmetics.filter(
     (c) => !c.starter && (c.slot === 'border' || c.slot === 'finish'),
   );
@@ -153,7 +153,7 @@ describe('drawn levels of borders and finishes (DESIGN.md 7, 11.1)', () => {
   });
 });
 
-describe('equipping (DESIGN.md 7)', () => {
+describe('equipping (DESIGN.md §8)', () => {
   it('equips owned items in their slot at their level, and unequips back to the starter', () => {
     expect(equipCosmetic(freshState(), content, 'gt_table')).toMatchObject({
       ok: false,
@@ -252,7 +252,7 @@ describe('dungeon cosmetic drops are owned', () => {
   });
 });
 
-describe('the Wardrobe Gate (DESIGN.md 6)', () => {
+describe('the Wardrobe Gate (DESIGN.md §7)', () => {
   it('opens with the Wardrobe screen (Phase 5b): among the open portals', () => {
     expect(content.portals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
     expect(content.allPortals.some((p) => p.id === 'wardrobe_gate')).toBe(true);

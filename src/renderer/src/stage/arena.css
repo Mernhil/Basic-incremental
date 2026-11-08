@@ -1,4 +1,4 @@
-/* The dungeon arena (DESIGN.md 14, A1 D): a full-bleed stage. The backdrop comes from the table
+/* The dungeon arena (DESIGN.md §11, A1 D): a full-bleed stage. The backdrop comes from the table
    tokens; frame-* tokens skin the readouts. The boss sits centre stage on a lit floor, the party
    stands bottom-left facing it. */
 
@@ -149,7 +149,7 @@
 }
 .ar-boss {
   position: relative;
-  /* 2 px per boss pixel: the boss grid is 160 x 172 (DESIGN.md 13) */
+  /* 2 px per boss pixel: the boss grid is 160 x 172 (DESIGN.md §12) */
   width: 344px;
   max-width: 100%;
   aspect-ratio: 1;

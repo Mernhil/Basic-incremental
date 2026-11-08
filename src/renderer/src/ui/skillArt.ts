@@ -13,7 +13,7 @@ import { spriteImage } from '../art/pixel/sprites';
 import './skillArt.css';
 
 /**
- * Art for the account tree and the enhancement star chart (DESIGN.md 7 "UI-skin slots", 17): the
+ * Art for the account tree and the enhancement star chart (DESIGN.md §8 "UI-skin slots", 17): the
  * pixel gems and chart of the equipped `nodes` item (recipe `ui-nodes-<a..e>`), drawn by
  * `art/cosmetics.ts`. This module resolves the style and wraps the sprites in SVG; only the
  * centre star is still vector (it has no pixel version).

@@ -58,7 +58,7 @@ function progressedRun(): GameState {
   return state;
 }
 
-describe('Starlight gain (DESIGN.md 3, 11.6)', () => {
+describe('Starlight gain (DESIGN.md §9)', () => {
   it('is 0 for a new game, which cannot ascend yet', () => {
     const preview = ascensionPreview(freshState(), content);
     expect(preview.gain.toNumber()).toBe(0);
@@ -146,7 +146,7 @@ describe('ascend', () => {
     expect(s.prestigeCount).toBe(1);
   });
 
-  it('keeps the premium crystals, and sends Money back to its starting amount (DESIGN.md 11.13)', () => {
+  it('keeps the premium crystals, and sends Money back to its starting amount (DESIGN.md §3)', () => {
     const before = progressedRun();
     before.resources['money'] = new Decimal('4e9');
     before.resources['glamour_crystal'] = new Decimal(75);
@@ -264,7 +264,7 @@ describe('Starlight shop', () => {
   });
 });
 
-describe('bosses grow with prestige (DESIGN.md 3, 11.10)', () => {
+describe('bosses grow with prestige (DESIGN.md §9, §6)', () => {
   it('scales HP and attack slowly by the prestige count', () => {
     const d = content.dungeons[0]!;
     const growth = 1 + d.boss.hpScalingPerPrestige;

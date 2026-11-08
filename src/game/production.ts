@@ -5,10 +5,10 @@ import { Decimal } from './num';
 import { cloneState, initialProduction, type GameState } from './state';
 
 /**
- * Production (DESIGN.md 2): logging plots and mining slots. Capacity is limited and bought
+ * Production (DESIGN.md §4): logging plots and mining slots. Capacity is limited and bought
  * with the job's tier-1 resource; the player freely chooses what runs in each plot/slot.
  * Tree kinds are unlocked with gems, mine types by clearing dungeons, and each tree kind and
- * mine type has levels bought with Money (DESIGN.md 2, 11.14). Every number goes through the modifier pipeline.
+ * mine type has levels bought with Money (DESIGN.md §4). Every number goes through the modifier pipeline.
  *
  * Every function is pure: state changes return a new state. Functions that need modifiers take
  * them as an optional last argument (pass `collectModifiers(state, content)` once when calling
@@ -153,7 +153,7 @@ export function producerCounts(
 }
 
 /**
- * Puts a tree/mine in a plot/slot, or empties it with `producerId` null. Free (DESIGN.md 2).
+ * Puts a tree/mine in a plot/slot, or empties it with `producerId` null. Free (DESIGN.md §4).
  * The producer must belong to the job and be unlocked; the index must be within the capacity.
  */
 export function assignPlot(
@@ -396,7 +396,7 @@ export function buyMineLevel(
 /**
  * Output per second of one plot/slot running this producer, after modifiers. For mines,
  * `level` adds `production.levelBonus` percent per level (from the producer's `ratePercent`)
- * and every level milestone multiplies it (DESIGN.md 11.12), before the `production.rate`
+ * and every level milestone multiplies it (DESIGN.md §4), before the `production.rate`
  * modifiers apply.
  */
 export function producerRate(
@@ -416,7 +416,7 @@ export function producerRate(
   return Decimal.max(statValue('production.rate', base, modifiers, ctx), 0);
 }
 
-/** A job's harvest crit numbers after modifiers (DESIGN.md 11.15). */
+/** A job's harvest crit numbers after modifiers (DESIGN.md §4). */
 export interface HarvestCrit {
   /** Chance one strike crits, 0..1. */
   chance: number;
@@ -486,7 +486,7 @@ export function productionPerSecond(
 // ---- prestige --------------------------------------------------------------------------------
 
 /**
- * The production part of a prestige (DESIGN.md 3): plots, slots and mine levels go back to the
+ * The production part of a prestige (DESIGN.md §9): plots, slots and mine levels go back to the
  * start; unlocked tree kinds and cleared dungeons (so unlocked mines) are kept. Resources are
  * not touched here; the prestige system resets them.
  */

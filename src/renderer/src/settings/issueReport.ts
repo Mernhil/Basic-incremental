@@ -1,5 +1,5 @@
 /**
- * Report an issue (DESIGN.md 12.5): a pre-filled GitHub "new issue" link with the app version,
+ * Report an issue (DESIGN.md §2): a pre-filled GitHub "new issue" link with the app version,
  * a save summary, OS and Electron version and the last log lines. The player edits it on GitHub
  * before submitting. The link stays under GitHub's URL limit by leaving out the oldest log lines.
  */

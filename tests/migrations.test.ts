@@ -160,7 +160,7 @@ describe('v5 -> v6 (woods and ores become gems)', () => {
   });
 });
 
-describe('v7 -> v8 (gem mastery, DESIGN.md 16 E2)', () => {
+describe('v7 -> v8 (gem mastery, DESIGN.md §4)', () => {
   const step = MIGRATIONS[7]!;
 
   it('starts each gem lifetime total at the amount owned and leaves tiers to be settled', () => {
@@ -202,7 +202,7 @@ describe('v7 -> v8 (gem mastery, DESIGN.md 16 E2)', () => {
   });
 });
 
-describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md 11.13)', () => {
+describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md §3)', () => {
   const step = MIGRATIONS[13]!;
 
   it('turns the Moss and Ember Sigils into the Summon and Glamour Crystal', () => {
@@ -275,7 +275,7 @@ describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md 11.13)', () => 
   });
 });
 
-describe('v14 -> v15 (tree levels and the upgrade shelf, DESIGN.md 2, 11.14)', () => {
+describe('v14 -> v15 (tree levels and the upgrade shelf, DESIGN.md §4)', () => {
   const step = MIGRATIONS[14]!;
 
   it('adds empty tree levels and keeps the plots and mine levels', () => {

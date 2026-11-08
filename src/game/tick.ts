@@ -14,7 +14,7 @@ import type { Rng } from './rng';
 import { cloneState, type GameState } from './state';
 
 /**
- * Card level-ups happen only when play time reaches a whole multiple of this (DESIGN.md 11.2).
+ * Card level-ups happen only when play time reaches a whole multiple of this (DESIGN.md §5).
  * XP itself accrues continuously; settling levels on a fixed grid keeps the modifiers they give
  * changing at the same moments however the time is split into steps (frame-rate independence,
  * and offline progress matching live play).
@@ -86,7 +86,7 @@ function advanceSpan(
   const fromMs = state.stats.playTimeMs;
   next.stats.playTimeMs += dtMs;
 
-  // The main logging / mining cards' strikes for the stage: events only, no state (DESIGN.md 11.15).
+  // The main logging / mining cards' strikes for the stage: events only, no state (DESIGN.md §4).
   for (const job of PRODUCTION_JOBS) {
     recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report);
   }

@@ -79,7 +79,7 @@ describe('equipping', () => {
     const bad = [
       equipProblem(content, 'table', { id: 'gn_border', level: 1 }),
       equipProblem(content, 'border', { id: 'nope', level: 1 }),
-      // Epic: max level 4 (DESIGN.md 11.1), whatever its drawn levels.
+      // Epic: max level 4 (DESIGN.md §8), whatever its drawn levels.
       equipProblem(content, 'border', { id: 'gilded_filigree', level: 5 }),
       equipProblem(content, 'border', { id: 'gilded_filigree', level: 0 }),
       equipProblem(content, 'border', { id: 'ember_crown', level: 1 }),

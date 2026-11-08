@@ -8,7 +8,7 @@ import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
 import './shell.css';
 
-/** Sidebar order is fixed by DESIGN.md section 9. */
+/** Sidebar order is fixed by DESIGN.md §11. */
 export const PAGES = [
   { id: 'home', icon: 'home' },
   { id: 'cards', icon: 'cards' },
@@ -55,7 +55,7 @@ export interface Currency {
   icon: IconName;
   /** Full-colour SVG markup (a gem coin). Replaces the line icon when set. */
   art?: string;
-  /** Not in the header: its coins fly to the Details button instead (DESIGN.md 9, 14). */
+  /** Not in the header: its coins fly to the Details button instead (DESIGN.md §11). */
   inDetails?: boolean;
   /** Swappable icon id (`ui/resourceIcons.ts`), set as `data-icon` for the graphics pass. */
   iconId?: string;
@@ -81,7 +81,7 @@ export interface Shell {
   }): void;
   /** Plays the level-up flash on the badge. */
   flashLevel(): void;
-  /** The reward track panel under the header (DESIGN.md 16 E7). */
+  /** The reward track panel under the header (DESIGN.md §10). */
   track: HTMLElement;
   setTrackOpen(open: boolean): void;
   levelButton: HTMLElement;
@@ -103,9 +103,9 @@ export interface Shell {
   detailsButton: HTMLButtonElement;
   /** Slot at the right end of the header for quick toggles (sound). */
   tools: HTMLElement;
-  /** Replaces a resource chip's coin art (the gem's mastery metal, DESIGN.md 16 E2). */
+  /** Replaces a resource chip's coin art (the gem's mastery metal, DESIGN.md §4). */
   setCurrencyArt(id: string, art: string): void;
-  /** The quest scroll slot under the header (goal tracker, DESIGN.md 16 E8). */
+  /** The quest scroll slot under the header (goal tracker, DESIGN.md §10). */
   quest: HTMLElement;
   scrollToTop(): void;
 }
@@ -128,7 +128,7 @@ export function createShell(opts: {
     h('span', 'shell-brand__ver', opts.version),
   );
 
-  // the account level (DESIGN.md 9, 16 E7): opens the reward track
+  // the account level (DESIGN.md §11, §10): opens the reward track
   const level = h('button', 'shell-level');
   level.type = 'button';
   level.setAttribute('aria-expanded', 'false');
@@ -157,7 +157,7 @@ export function createShell(opts: {
   const currencyGlyphs = new Map<string, HTMLElement>();
   const glyphArt = new Map<string, string>();
   const crystals = new Set<string>();
-  /** Rolling counters (DESIGN.md 14): shown value, target and held-back part per resource. */
+  /** Rolling counters (DESIGN.md §11): shown value, target and held-back part per resource. */
   const counters = new Map<string, { shown: Decimal; target: Decimal; held: Decimal }>();
   // the Details button: resources the header leaves out land their coins here
   const detailsBtn = h('button', 'shell-details');
@@ -226,7 +226,7 @@ export function createShell(opts: {
     btn.type = 'button';
     btn.dataset.page = p.id;
     btn.dataset.tipSide = 'right';
-    // the pixel navigation plaque (DESIGN.md 13), half its 64 px grid
+    // the pixel navigation plaque (DESIGN.md §12), half its 64 px grid
     const plaque = h('span', 'shell-rail__plaque');
     plaque.innerHTML = svg(navPlaque(p.id), PLAQUE_VIEWBOX);
     btn.append(plaque, h('span', 'shell-rail__label', COPY.pages[p.id].label));

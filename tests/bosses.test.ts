@@ -10,7 +10,7 @@ import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
 const content = loadContent();
 
-describe('pixel bosses (DESIGN.md 13)', () => {
+describe('pixel bosses (DESIGN.md §12)', () => {
   it('draws every boss art, and every dungeon boss and trial target names one', () => {
     for (const art of BOSS_ARTS) expect(bossVector(art).length).toBeGreaterThan(500);
     expect(content.dungeons.map((d) => d.boss.art)).toEqual([

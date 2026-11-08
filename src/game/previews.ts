@@ -21,7 +21,7 @@ import {
 import { cloneState, type GameState } from './state';
 
 /**
- * Upgrade previews (DESIGN.md 14, "DPS 12 -> 13, time-to-kill 11h -> 2h", "Oak 4/s -> 5/s"):
+ * Upgrade previews (DESIGN.md §11, "DPS 12 -> 13, time-to-kill 11h -> 2h", "Oak 4/s -> 5/s"):
  * what a purchase would change, worked out on a copy of the state without paying. Max previews
  * the levels Max would buy now (the next level when none is affordable).
  */

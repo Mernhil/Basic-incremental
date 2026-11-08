@@ -3,7 +3,7 @@ import { RANK_TIERS } from '../src/data';
 import { FRAME_METALS, frameVector, mirror } from '../src/renderer/src/art/vector/frame';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
-describe('card frame ladder (DESIGN.md 5 and 13)', () => {
+describe('card frame ladder (DESIGN.md §5, §12)', () => {
   it('mirrors a path across the card centre line', () => {
     expect(mirror('M6 30 L-10 6')).toBe('M170 30 L186 6');
   });

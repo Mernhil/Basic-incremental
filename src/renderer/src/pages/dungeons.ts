@@ -36,7 +36,7 @@ import type { PageContext } from './production';
 import './dungeons.css';
 
 /**
- * Dungeons page (DESIGN.md 14, A1 D): the arena fills the page; floors, damage lines and drops
+ * Dungeons page (DESIGN.md §11, A1 D): the arena fills the page; floors, damage lines and drops
  * live in a drawer that slides up from the bottom. Collapsed, the drawer shows one buy button for
  * the best damage line.
  */
@@ -196,7 +196,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       lockHint.textContent = mine ? COPY.dungeons.unlocksWith(mine.name) : '';
       lockHint.hidden = true;
       info.append(name, level, tag, lockHint);
-      // the forged edge ladder (DESIGN.md 16 E5, A14 D): five blade steps, the current one lit
+      // the forged edge ladder (DESIGN.md §12, A14 D): five blade steps, the current one lit
       const ladder = h('span', 'dp-ladder');
       ladder.setAttribute('role', 'img');
       const gem = content.resourceById.get(u.gem)?.gem;
@@ -304,7 +304,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     return li;
   }
 
-  /** The dungeon's mastery medal (DESIGN.md 16 E3, A12 D), updated as kills add up. */
+  /** The dungeon's mastery medal (DESIGN.md §6, A12 D), updated as kills add up. */
   function medal(id: string): HTMLElement {
     const box = h('span', 'dp-medal');
     box.tabIndex = 0;

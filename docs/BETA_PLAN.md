@@ -1,10 +1,12 @@
 # Beta plan (v0.3.0)
 
+A finished plan, kept as history. The DESIGN section numbers below (11.x, 12.x and so on) refer to the old layout of `docs/DESIGN.md` at commit `ac33acd`.
+
 Working checklist for the first playable beta. If context resets, read this file and continue from the first phase that is not done. Rules for the run:
 
 - One review gate (Phase A). After the user's picks, all remaining phases run back to back.
 - Stop only if something would contradict `DESIGN.md` or a decision of the beta brief, if blocked (CI failing after several real fix attempts, missing permission), or if a change would break saves without a migration.
-- Any other open question: pick a sensible default, add it to `DESIGN.md` section 12, list it under "Decisions I made" in the PR.
+- Any other open question: ask the user. If the work cannot wait, write the choice where the rule belongs in `DESIGN.md`, tagged `[Default]`, list it under Open questions there and under "Decisions I made" in the PR.
 - One PR per phase (split if big). Tests for all logic, screenshots for anything visual. Save format change = version bump + migration.
 - After each phase: one line to the user with what merged (+ release link).
 - Patch releases after Phases 2, 5 and 8. Phase 10 ends with v0.3.0.

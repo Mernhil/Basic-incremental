@@ -1,5 +1,5 @@
 /**
- * The beta-batch cosmetic art (DESIGN.md 7 "UI-skin slots" and "Every option is kept", drawn in
+ * The beta-batch cosmetic art (DESIGN.md §8 "UI-skin slots" and "Every option is kept", drawn in
  * the pixel rules of section 13). Borders, finishes, tables and cursors are baked layers shown by
  * recipes (theme/recipes.css); this module gives the art that code places: the Starlight coin,
  * the attack sheets and the pixel numerals of the tick and number styles.
@@ -336,7 +336,7 @@ const STICKERS = COSMETIC_META.stickers as unknown as {
 };
 
 /**
- * An achievement sticker as SVG markup on a 74 x 74 viewBox: a mini card (DESIGN.md 13) whose
+ * An achievement sticker as SVG markup on a 74 x 74 viewBox: a mini card (DESIGN.md §12) whose
  * frame is the style's step on the card-tier ladder and whose band is the chapter colour, with the
  * achievement's cel-shaded picture in its window and, for tiered achievements, the numeral on its
  * nameplate (otherwise three chapter pips). Locked stickers are the style's face-down card back

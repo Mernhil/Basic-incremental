@@ -7,7 +7,7 @@ import {
 } from '../src/renderer/src/sound/settings';
 
 describe('sound registry', () => {
-  it('has every sound DESIGN.md 15 lists', () => {
+  it('has every sound DESIGN.md §13 lists', () => {
     for (const id of [
       'hit',
       'crit',

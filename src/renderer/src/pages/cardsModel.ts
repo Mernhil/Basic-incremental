@@ -68,7 +68,7 @@ export interface JobLoadout {
   cap: number;
 }
 
-/** A card action's result; tier-ups (DESIGN.md 16, E1) play their moment. */
+/** A card action's result; tier-ups (DESIGN.md §12) play their moment. */
 export type ModelResult =
   { ok: true; state: GameState; tierUps?: TierUp[] } | { ok: false; reason: string };
 
@@ -82,7 +82,7 @@ export interface CardsModel {
   addSupport(state: GameState, id: string): ModelResult;
   remove(state: GameState, id: string): ModelResult;
   upgrade(state: GameState, id: string): ModelResult;
-  /** The card's enhancement star chart (DESIGN.md 10b), or null when not owned. */
+  /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */
   enhance(state: GameState, id: string, optionId: string): ModelResult;

@@ -27,7 +27,7 @@ function rich(state: GameState = freshState()): GameState {
   return state;
 }
 
-describe('live stage readouts (DESIGN.md 14)', () => {
+describe('live stage readouts (DESIGN.md §11)', () => {
   it('averages signature attacks and crits into the DPS', () => {
     const state = freshState();
     const dps = effectiveDamage(state, content);
@@ -68,7 +68,7 @@ describe('live stage readouts (DESIGN.md 14)', () => {
   });
 });
 
-describe('upgrade previews (DESIGN.md 14)', () => {
+describe('upgrade previews (DESIGN.md §11)', () => {
   it('previews a damage purchase without paying: DPS and time-to-kill before and after', () => {
     const state = rich();
     const p = previewDamageLine(state, content, 'copper_edge', 10)!;

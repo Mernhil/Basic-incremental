@@ -33,7 +33,7 @@ const secondsToDown = (s: GameState) =>
     .div(bossAttackDps(warden, s.prestigeCount, mods(s)))
     .toNumber();
 
-describe('card health (DESIGN.md 11.10)', () => {
+describe('card health (DESIGN.md §6)', () => {
   it('pools the fighting loadout cards health', () => {
     const s = inCellar();
     const owned = s.cards.owned['ember_squire']!;

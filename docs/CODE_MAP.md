@@ -10,13 +10,13 @@ Where things live, so agents can go straight to the right file instead of explor
 | `tick.ts`                         | `advance()`: one step of production, bursts, card XP, combat, mastery                              |
 | `loop.ts`, `offline.ts`           | Real-time loop clamp; offline progress and the welcome-back summary                                |
 | `report.ts`                       | `TickReport` (what happened in a step), `TierUp` events                                            |
-| `modifiers.ts`                    | The one modifier pipeline (DESIGN 11.5); `collectModifiers` gathers every source                   |
+| `modifiers.ts`                    | The one modifier pipeline (DESIGN §14); `collectModifiers` gathers every source                    |
 | `production.ts`                   | Plots, slots, tree/mine unlocks, mine levels, prices (`curvePrice`, in Money), output              |
-| `harvest.ts`, `productionView.ts` | Production main-card strikes and burst events for the stage (DESIGN 11.15); `productionStageView`  |
+| `harvest.ts`, `productionView.ts` | Production main-card strikes and burst events for the stage (DESIGN §4); `productionStageView`     |
 | `combat.ts`                       | Damage lines (Money), bosses, wage and drops (`effectiveDrops`), bursts, crits, card health, trial |
 | `drops.ts`, `hpBars.ts`           | Boss kill rolls (rare item and pity, Money and crystal purses); stacked HP bar maths               |
 | `milestones.ts`, `stages.ts`      | x2-every-25-levels milestones; growth stages 0..4 for tiles (tree and mine levels) and edges       |
-| `upgrades.ts`                     | Upgrade shelf (DESIGN 11.14): hidden/available/owned items, buy, lifetime Money, support power     |
+| `upgrades.ts`                     | Upgrade shelf (DESIGN §4): hidden/available/owned items, buy, lifetime Money, support power        |
 | `bulk.ts`, `previews.ts`          | x1/x10/x100/Max buying (damage, mine, tree levels, plots); before/after previews                   |
 | `cards.ts`                        | Collection, loadouts, levels, star-ups and tier-ups (Core + tree and mine gems), evolutions        |
 | `mastery.ts`                      | Gem mastery and boss medals                                                                        |
@@ -51,4 +51,4 @@ Where things live, so agents can go straight to the right file instead of explor
 
 ## Scripts and tests
 
-`scripts/sim/` balance sim (`npm run sim -- --hours 40`), `scripts/art/bake-pixels.mjs` (bake sprites), `scripts/shoot-*.mjs` (screenshots), `tests/` (vitest; `helpers.ts` has `plainContent`, `freshState`, `newGame`).
+`scripts/check-design.mjs` (checks `docs/DESIGN.md` against its own rules; part of `npm run lint`), `scripts/sim/` balance sim (`npm run sim -- --hours 40`), `scripts/art/bake-pixels.mjs` (bake sprites), `scripts/shoot-*.mjs` (screenshots), `tests/` (vitest; `helpers.ts` has `plainContent`, `freshState`, `newGame`).

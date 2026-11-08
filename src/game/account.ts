@@ -8,7 +8,7 @@ import { cloneState, type GameState, type OwnedCard } from './state';
 import { grantCosmetic } from './wardrobe';
 
 /**
- * The account (DESIGN.md 10, 16 E7): account XP from harvests, kills, trial attempts, pulls and
+ * The account (DESIGN.md §10): account XP from harvests, kills, trial attempts, pulls and
  * ascensions; levels that give skill points and the reward track (crystals, cosmetics, cost cap
  * bumps); the account tree (six branches, respec); and card enhancements. Every effect reaches
  * the game through `collectModifiers` (sources `skill`, `account`, `enhancement`). All numbers

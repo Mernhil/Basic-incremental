@@ -38,9 +38,9 @@ import type { PageContext } from './production';
 import './ascension.css';
 
 /**
- * Ascension (DESIGN.md 3, 16, 17 "portal gate", A9 E). Lives on the Shop page: DESIGN 9 has no
- * Ascension slot in the sidebar and the shard shop moves to Achievements (DESIGN 17), so the Shop
- * page holds the gate and the Starlight shop (DESIGN 12.19).
+ * Ascension (DESIGN.md §9, §11 "portal gate", A9 E). Lives on the Shop page: DESIGN §11 has no
+ * Ascension slot in the sidebar and the shard shop moves to Achievements (DESIGN §11), so the Shop
+ * page holds the gate and the Starlight shop (DESIGN §11).
  *
  * A large prismatic gate; what an ascension keeps floats around it and drifts into it; what starts
  * over is listed on the left; the Starlight gain sits on the right in big type. Ascend opens an

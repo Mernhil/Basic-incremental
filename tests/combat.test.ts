@@ -100,7 +100,7 @@ function cleared(...ids: string[]): GameState {
   return state;
 }
 
-describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
+describe('damage purchases (one line per ore, DESIGN.md §6)', () => {
   it('has one upgrade line per ore, higher ores adding more', () => {
     const ores = content.resources.filter((r) => r.kind === 'mine_gem').map((r) => r.id);
     const lines = content.combat.damageUpgrades;
@@ -184,7 +184,7 @@ describe('damage purchases (one line per ore, DESIGN.md 11.8)', () => {
   });
 });
 
-describe('dungeon progression (first kill clears, DESIGN.md 11.8)', () => {
+describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
   it('opens only the first dungeon in a new game', () => {
     const state = freshState();
     expect(unlockedDungeons(state, content).map((d) => d.id)).toEqual(['mossy_cellar']);
@@ -364,7 +364,7 @@ describe('drops', () => {
   });
 });
 
-describe('burst gauges (DESIGN.md 11.3, 11.8)', () => {
+describe('burst gauges (DESIGN.md §6)', () => {
   const fighting = burstStats(content, 'fighting');
 
   it('uses the data numbers: 20 hits, 10x a hit; harvest 30 ticks, 10 s', () => {
@@ -425,7 +425,7 @@ describe('burst gauges (DESIGN.md 11.3, 11.8)', () => {
   });
 });
 
-describe('The Glimmer Trial (timed attempts, DESIGN.md 11.8)', () => {
+describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
   /** What the data pays for a score: every tier at or below it, summed per resource. */
   const pays = (score: number, id: string): number =>
     trial.tiers

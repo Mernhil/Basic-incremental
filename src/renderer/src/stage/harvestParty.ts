@@ -14,7 +14,7 @@ import { reducedMotion, replay } from './motion';
 import './harvestParty.css';
 
 /**
- * The cards of a production field (DESIGN.md 11.15, 14): the main logging / mining card with its
+ * The cards of a production field (DESIGN.md §4, §11): the main logging / mining card with its
  * harvest gauge (the same meter as Brave Burst in the arena) and its three supports, drawn with
  * the cosmetics of the fighting cards (`look`). The page tells it when to lunge and which
  * supports to pulse; it only owns the card DOM.

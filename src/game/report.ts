@@ -2,7 +2,7 @@ import type { BurstJob, Metal, ProductionJob } from '../data';
 import type { Decimal } from './num';
 
 /**
- * What tiered up (DESIGN.md 16, E1): gem mastery, a boss medal (dungeon or special dungeon), a
+ * What tiered up (DESIGN.md §12): gem mastery, a boss medal (dungeon or special dungeon), a
  * mine level or damage line milestone, a tree tile stage, a card tier, or a card's unique
  * evolution.
  */
@@ -33,7 +33,7 @@ export interface TierUp {
 }
 
 /**
- * One harvest strike for the stage (DESIGN.md 11.15): "the card chops tree 2 for +14". The
+ * One harvest strike for the stage (DESIGN.md §4): "the card chops tree 2 for +14". The
  * economy is the expected value; these are the discrete moments that add up to it. When many
  * strikes land on one plot in a report they are merged: `strikes` counts them.
  */
@@ -103,11 +103,11 @@ export interface TickReport {
   /** Best score (0..1) among those attempts; 0 when there were none. */
   trialTopScore: number;
   /** Cards gained while advancing, in order. Empty in the beta: cards come from the Card Portal
-   *  (`pull`), which replaced the boss card drop (DESIGN.md 6, 11.9). */
+   *  (`pull`), which replaced the boss card drop (DESIGN.md §7, §5). */
   cardDrops: CardDrop[];
   /** Card id -> levels before and after, for cards that levelled up. */
   cardLevels: Record<string, { from: number; to: number }>;
-  /** Times the fighting loadout was knocked out (DESIGN.md 11.10). */
+  /** Times the fighting loadout was knocked out (DESIGN.md §6). */
   knockouts: number;
   /** Mastery tiers reached (gem mastery and boss medals), in order. */
   tierUps: TierUp[];
@@ -175,7 +175,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   return into;
 }
 
-/** What a card obtained turned into (DESIGN.md 11.9). */
+/** What a card obtained turned into (DESIGN.md §5). */
 export type CardGain =
   /** A card not owned before, now at Bronze ★1 Lv 1. */
   | { kind: 'new' }

@@ -4,7 +4,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
 /**
- * Welcome back view model (DESIGN.md 14, A11 B card fan): one small card per category of what
+ * Welcome back view model (DESIGN.md §11, A11 B card fan): one small card per category of what
  * happened while away, in deal order. Empty categories are left out.
  */
 
@@ -126,7 +126,7 @@ export function welcomeCards(summary: OfflineSummary, content: Content): Welcome
     });
   }
 
-  // stickers earned while away (DESIGN.md 17): their names, all highlighted
+  // stickers earned while away (DESIGN.md §11): their names, all highlighted
   const stickers = summary.achievements
     .map((id) => content.achievements.find((a) => a.id === id)?.name)
     .filter((n): n is string => !!n);

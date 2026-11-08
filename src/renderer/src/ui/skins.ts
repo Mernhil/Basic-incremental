@@ -7,7 +7,7 @@ import {
 } from '../art/cosmetics';
 import { svg } from '../art/gems';
 
-/** The four UI-skin slots (DESIGN.md 7): each recipe sets `--bi-skin-<slot>` on <html>. */
+/** The four UI-skin slots (DESIGN.md §8): each recipe sets `--bi-skin-<slot>` on <html>. */
 export type SkinSlot = 'starlight' | 'sticker' | 'nodes' | 'wardrobe';
 
 /**

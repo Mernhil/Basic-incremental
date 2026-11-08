@@ -17,7 +17,7 @@ import {
 } from '../src/game';
 import { bareState, constantRng, content, freshState } from './helpers';
 
-describe('tile stages (DESIGN.md 16, E4)', () => {
+describe('tile stages (DESIGN.md §12)', () => {
   it('grows a mine tile one stage per 25-level milestone, up to stage 4', () => {
     const state = freshState();
     expect(tileStage(state, content, 'mining', 'copper_quarry')).toBe(0);
@@ -30,7 +30,7 @@ describe('tile stages (DESIGN.md 16, E4)', () => {
     expect(tileStage(state, content, 'mining', 'iron_deeps')).toBe(0);
   });
 
-  it('grows a tree tile one stage per 25-level milestone (DESIGN.md 11.14)', () => {
+  it('grows a tree tile one stage per 25-level milestone (DESIGN.md §4)', () => {
     expect(content.progression.tileStages.logging).toEqual({ source: 'level' });
     const state = freshState();
     state.production.logging.expansions = 12; // plots no longer grow the tile
@@ -57,7 +57,7 @@ describe('tile stages (DESIGN.md 16, E4)', () => {
   });
 });
 
-describe('forged edges (DESIGN.md 16, E5)', () => {
+describe('forged edges (DESIGN.md §12)', () => {
   it('steps the blade at every damage line milestone, up to stage 4', () => {
     const state = freshState();
     expect(edgeStage(state, content, 'copper_edge')).toBe(0);
@@ -69,7 +69,7 @@ describe('forged edges (DESIGN.md 16, E5)', () => {
   });
 });
 
-describe('tier-ups from purchases (DESIGN.md 16, E1)', () => {
+describe('tier-ups from purchases (DESIGN.md §12)', () => {
   it('reports damage line milestones crossed by a bulk buy', () => {
     const state = freshState();
     state.combat.damageLevels['copper_edge'] = 20;
@@ -134,7 +134,7 @@ describe('card tier and evolution tier-ups', () => {
   });
 });
 
-describe('unique evolutions (DESIGN.md 16, E6)', () => {
+describe('unique evolutions (DESIGN.md §5)', () => {
   it('maps Flameblade and Rootbloom Staff, and defines Soul Reaper unassigned', () => {
     expect(content.cardById.get('ember_squire')!.evolution).toBe('flameblade');
     expect(content.cardById.get('grove_keeper')!.evolution).toBe('rootbloom_staff');

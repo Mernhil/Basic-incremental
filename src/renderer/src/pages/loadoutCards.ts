@@ -14,7 +14,7 @@ import { itemArt } from '../art/items';
 import type { CardProps } from '../ui/card';
 
 /**
- * A card's item art: its unique ★6 evolution from the evolution rank on (DESIGN.md 16, E6),
+ * A card's item art: its unique ★6 evolution from the evolution rank on (DESIGN.md §5),
  * otherwise its item drawn for its rarity.
  */
 export function cardItemArt(

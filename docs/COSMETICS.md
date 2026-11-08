@@ -26,7 +26,7 @@ An item only lists what it changes: tokens it does not set are inherited from th
 
 ## Screen shell
 
-The header, sidebar, framed panels and tooltips (DESIGN.md 9) are skinned by the **table** item, so equipping a table re-skins the whole screen. Token groups, each following the card's `<surface>-bg / -line / -ink / -ink-muted` pattern:
+The header, sidebar, framed panels and tooltips (DESIGN.md §11) are skinned by the **table** item, so equipping a table re-skins the whole screen. Token groups, each following the card's `<surface>-bg / -line / -ink / -ink-muted` pattern:
 
 | Group      | Tokens                                                                            | Used by                     |
 | ---------- | --------------------------------------------------------------------------------- | --------------------------- |

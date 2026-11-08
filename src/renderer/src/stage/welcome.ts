@@ -7,7 +7,7 @@ import { centreOf, flyCoins } from './fly';
 import './welcome.css';
 
 /**
- * Welcome back (DESIGN.md 14, A11 B card fan): each category is a small card dealt onto the table
+ * Welcome back (DESIGN.md §11, A11 B card fan): each category is a small card dealt onto the table
  * one after another; Collect sends the coins to the header. Until then the header counters hold
  * the offline gains back, so they visibly roll up when the coins land.
  */

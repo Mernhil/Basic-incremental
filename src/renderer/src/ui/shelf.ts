@@ -7,7 +7,7 @@ import { replay } from '../stage/motion';
 import './shelf.css';
 
 /**
- * The upgrade shelf panel (DESIGN.md 11.14, 14): card-like chips for the one-time upgrades,
+ * The upgrade shelf panel (DESIGN.md §4, §11): card-like chips for the one-time upgrades,
  * available ones first (glowing when affordable), owned ones folded below. One component, shown
  * on Production and (fighting upgrades) in the Dungeons drawer. The look lives in shelf.css
  * tokens; the chip art slot is `data-icon`, set to the upgrade id for the graphics pass.

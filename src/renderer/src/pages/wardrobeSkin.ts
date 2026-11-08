@@ -1,7 +1,7 @@
 import { chromeCss, wardrobeChrome, type WardrobePart } from '../art/cosmetics';
 
 /**
- * The Wardrobe style (DESIGN.md 7, UI-skin slot 11): the slot plates, item tiles and level ladder
+ * The Wardrobe style (DESIGN.md §8, UI-skin slot 11): the slot plates, item tiles and level ladder
  * of the page are drawn by the equipped style's baked chrome pieces (`wardrobeChrome`). This turns
  * the pieces into one stylesheet scoped to `.wd`; layout per style (paddings, the ladder shape)
  * lives in wardrobe.css under `.wd[data-skin='<style>']`.

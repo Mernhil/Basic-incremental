@@ -1,7 +1,7 @@
 import { createLogRing } from './logRing';
 
 /**
- * The window's recent log lines for Report an issue (DESIGN.md 12.5): console output plus
+ * The window's recent log lines for Report an issue (DESIGN.md §2): console output plus
  * uncaught errors and rejections, kept in a small ring. The console itself works as before.
  */
 export const rendererLog = createLogRing();
