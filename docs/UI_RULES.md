@@ -9,8 +9,8 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 ## 1. Working conventions
 
 - [Built] **One UI rulebook.** This file is the only document for screens, layout and UI conventions. Art rules are in `docs/ASSET_RULES.md`; the game design is in `docs/DESIGN.md`. Read this file before any UI change.
-- [Built] **Who builds UI.** The `ui` agent (`.claude/agents/ui.md`) owns `src/renderer/**` except the art folders and `design/**` except `design/pixel`. Sprites and effects belong to the `pixel-art` agent, rules and numbers to `mechanics` (`docs/WORK_SPLIT.md`). A screen that needs a value the game does not expose yet gets a mechanics request (types wanted and why), not a UI-side workaround.
-- [Built] **Five options first.** Every design, UI or graphics change shows the user 5 options that differ in ways that matter (layout, colour, density, motion, ornament) as mockups or screenshots, and the user picks before the final version is built. Options are never merged into `main`.
+- [Built] **Who builds UI.** UI lives in `src/renderer/**` outside the art folders and in `design/**` outside `design/pixel`; the optional `ui` agent (`.claude/agents/ui.md`) can help. Sprites and effects are art (`docs/ASSET_RULES.md`), rules and numbers are in `src/game` and `src/data`. A screen that needs a value the game does not expose yet gets the value added to the game side first (types wanted and why), not a UI-side workaround.
+- [Built] **Five options first.** A design, UI or graphics brainstorm in the Claude Desktop home chat shows the user 5 options that differ in ways that matter (layout, colour, density, motion, ornament) as mockups or screenshots, and the user picks before the final version is built. Small direct jobs in Code need no options. Options are never merged into `main`.
 - [Built] **Skills.** UI work uses the frontend-design skill and the Design plugin skills (critique, design system, accessibility, UX copy).
 - [Built] **Game data through public entry points.** The renderer imports game code only from `src/game` and `src/data` index files, never from files inside them (ESLint enforces it).
 - [Built] **Adapters, no rules.** Display logic lives in adapters (`pages/*Adapter.ts`, `pages/*Model.ts`) that turn game state into view models. No game rules in the renderer.
@@ -59,4 +59,4 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 
 ## 4. Changelog
 
-- 2026-11-08 — Created this file: DESIGN section 11 "Interface and screens" and the UI conventions from the `ui` agent, `CLAUDE.md` and `docs/WORK_SPLIT.md` moved here; no rule changed (user: exactly two graphics documents).
+- 2026-11-08 — Created this file: DESIGN section 11 "Interface and screens" and the UI conventions from the `ui` agent and `CLAUDE.md` moved here; no rule changed (user: exactly two graphics documents).

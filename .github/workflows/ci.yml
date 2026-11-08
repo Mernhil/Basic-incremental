@@ -2,6 +2,8 @@ name: CI
 
 on:
   pull_request:
+    # `edited` re-runs the checks when the PR description changes (check-workflow reads it).
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 
@@ -17,6 +19,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:

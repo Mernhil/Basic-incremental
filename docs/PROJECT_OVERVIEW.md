@@ -1,0 +1,139 @@
+# Basic Incremental — Project Overview
+
+The project as it is built right now (version 0.4.0): one entry per system, screen and data area, with what it does today, where it lives and which rule in `docs/DESIGN.md` it implements ("DESIGN §n"; UI rules are in `docs/UI_RULES.md`, art rules in `docs/ASSET_RULES.md`). It describes only what exists in the code. Plans, targets and open questions live in DESIGN.md.
+
+**This file is rewritten in place.** Every PR that changes `src/` updates the entries it touches (add, change or delete them) so the file always equals the code. No history and no "removed" notes: a deleted feature simply drops out. Exception: a tiny direct-in-Code job with no behaviour change (typo, comment, one-line fix) puts the line `no overview change` in its PR description.
+
+## Project shape
+
+Windows desktop game, Electron + TypeScript, built with electron-vite; tests are vitest (`tests/`, `helpers.ts` has `plainContent`, `freshState`, `newGame`). Numbers use `break_eternity.js` (`Decimal`). Save format version 21 (`CURRENT_SAVE_VERSION` in `src/game/save.ts`).
+
+| Folder         | What it is                                                                                                                   |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `src/game`     | Pure game logic (no DOM, Electron or Node). The only door for the UI is `src/game/index.ts`.                                 |
+| `src/data`     | Content JSON (`content/*.json`), zod schemas and `loadContent`. The only door is `src/data/index.ts`.                        |
+| `src/main`     | Electron main process: window, IPC, save files, auto-update, logs.                                                           |
+| `src/preload`  | The bridge (`window.api`) the renderer may call.                                                                             |
+| `src/renderer` | The UI: shell, pages, stage effects, widgets, themes, sound and art.                                                         |
+| `tests`        | vitest suites for logic, data, view models and art helpers.                                                                  |
+| `scripts`      | Checks (`check-*.mjs`), the balance sim (`sim/`), art bake (`art/`) and screenshot scripts (`shoot-*.mjs`, `probe-app.mjs`). |
+| `design`       | Exploration pages, option mockups, screenshots, pixel drafts (`design/pixel`), local references (never committed).           |
+| `.claude`      | Optional helper agents (`ui`, `pixel-art`, `mechanics`), the `pixel-art` skill and the shared permission settings.           |
+| `.github`      | `ci.yml` (lint, test, build on PRs and main) and `release.yml` (tag `vX.Y.Z` builds and publishes the installer).            |
+
+**Contract between logic and UI.** The renderer imports game code only from `src/game/index.ts` and `src/data/index.ts`, never from files inside them; `src/game` never imports UI, Electron or Node. ESLint enforces both (`eslint.config.mjs`). The renderer has no game rules: adapters (`pages/*Adapter.ts`, `pages/*Model.ts`) turn state into view models. Dev cheats are the separate `game/dev` entry, not exported from `index.ts`; `npm run build` fails when a release bundle contains them (`scripts/check-release-bundle.mjs`).
+
+**Dev profiles.** Dev builds share one save folder (`%APPDATA%\basic-incremental-dev`). Two dev apps at once autosave over each other, so give each its own: `BI_PROFILE=<name>` (or `--bi-profile=<name>`) uses `%APPDATA%\basic-incremental-dev-<name>`, `BI_USER_DATA_DIR=<folder>` uses that folder as is. Names are letters, digits, `-` and `_`; packaged builds ignore both (`src/main/devPaths.ts`, DESIGN §2).
+
+**Commands.** `npm run dev`, `npm run lint` (eslint, prettier, `check-design`, `check-workflow`), `npm run typecheck`, `npm test`, `npm run build`, `npm run sim -- --hours 40` (balance sim, DESIGN §14), `npx tsx scripts/sim/timeline.ts` (one run row by row).
+
+## Game logic (`src/game`)
+
+### Core
+
+| System           | What it does today                                                                                                                                                                                                         | Where                                      |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| State            | `GameState` shape, initial state, `cloneState`; owned legacy skins, cards, cosmetics, prestige, portal counters, mastery                                                                                                   | `state.ts`                                 |
+| Step             | `advance()` runs one step of production, bursts, card XP, combat, mastery and settles tier-ups/levels/achievements; `advanceChunked` splits long spans                                                                     | `tick.ts`                                  |
+| Loop and offline | Real-time loop with a clamp; offline progress (cap 8 h, raised by modifiers) and the welcome-back summary (DESIGN §2)                                                                                                      | `loop.ts`, `offline.ts`                    |
+| Report           | `TickReport`: harvest, player-hit, boss-attack and tier-up events the stage plays back                                                                                                                                     | `report.ts`                                |
+| Modifiers        | The one pipeline for every tunable number (base, flat, percent, multipliers, caps); `collectModifiers` gathers cards, enhancements, upgrades, mastery, prestige, account tree, cosmetics (DESIGN §14, `docs/MODIFIERS.md`) | `modifiers.ts`                             |
+| Numbers, RNG     | `Decimal` helpers, injectable seeded RNG, number and duration formatting, game title and version label                                                                                                                     | `num.ts`, `rng.ts`, `format.ts`, `meta.ts` |
+| Saves            | Versioned JSON save, migrations (bump the version and add a migration on every format change), export/import strings, save errors (DESIGN §2)                                                                              | `save.ts`, `migrations.ts`, `saveError.ts` |
+| Dev cheats       | Pure state changes for dev builds (grant, clear dungeon, set rank, account XP, cosmetics, advance time); only in the `game/dev` entry (DESIGN §2)                                                                          | `dev.ts`                                   |
+
+### Production (DESIGN §4)
+
+| System        | What it does today                                                                                                                                                       | Where                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------- |
+| Producers     | One of each tree kind and mine type (Oak, Ironbark, Moonwillow; Copper Quarry, Iron Deeps, Crystal Grotto); unlocks, levels bought with Money, price curves, output      | `production.ts`, `trees.json`, `mines.json` |
+| Milestones    | +10% per level, ×2 every 25 levels; tile growth stages 0..4                                                                                                              | `milestones.ts`, `stages.ts`                |
+| Harvest       | The main production card strikes the unlocked kinds in its pattern; bursts at 30 gauge give 10 s of output; harvest crits; strikes are show, economy uses expected value | `harvest.ts`, `productionView.ts`           |
+| Buying        | ×1/×10/×100/Max level buys with previews                                                                                                                                 | `bulk.ts`, `previews.ts`                    |
+| Upgrade shelf | One-time Money upgrades (per-run and permanent), lifetime Money counter                                                                                                  | `upgrades.ts`, `upgrades.json`              |
+| Gem mastery   | Lifetime harvest per gem gives tiers at 1e3/1e5/1e7/1e9; boss medals at 10/100/1,000/10,000 kills                                                                        | `mastery.ts`                                |
+
+### Cards and weapons (DESIGN §5)
+
+| System                  | What it does today                                                                                                                                                                                                                                                                                                    | Where                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| Collection              | Each card owned once, duplicates fill the star bar, past the last star become shards; the 12 cards of `cards.json` (fighting, logging, mining, plus the Reaper Test Card)                                                                                                                                             | `cards.ts`, `cards.json`               |
+| Loadouts                | Per job: 1 main + 3 supports, once each, cost cap that grows with account level; `loadoutInfo`                                                                                                                                                                                                                        | `cards.ts`, `cardRules.json`           |
+| Level, XP, stars, tiers | Level caps by tier (20/40/60/80/100), XP from fight time and kills (fighting) or gems (production), star bar and star impact, tier-ups Bronze → Silver → Gold → Prismatic → Unique paid with Money, Cores, gems and Frost Sigils and resetting stars; Commons stop at Gold; Unique only for cards with an `evolution` | `cards.ts`, `cardRules.json`           |
+| Weapon look             | `weaponLookRarity`: until each weapon has its own tier art, every tier moves one step up the rarity ladder                                                                                                                                                                                                            | `cards.ts`                             |
+| Enhancements            | Five options per card, point budget by tier, free respec; apply while in a loadout                                                                                                                                                                                                                                    | `account.ts`, `enhancements.json`      |
+| Base stats              | Base damage and health from rarity; no damage lines; bare-hands damage with no main card                                                                                                                                                                                                                              | `cards.ts`, `combat.ts`, `combat.json` |
+
+### Combat and dungeons (DESIGN §6)
+
+| System       | What it does today                                                                                                                                                                                                                           | Where                                                   |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Fighting     | Main card damage × power, delivered in hits at its interval; burst gauge (signature attack at 20); crits; expected-value economy                                                                                                             | `combat.ts`, `combat.json`                              |
+| Dungeons     | Mossy Cellar, Ember Crypt, Frostspire Vault (bosses Root Warden, Cinder Lich, Glacier Colossus); kills pay Money and both crystals; clears unlock the next dungeon and mine; rare drop with pity; Glimmer Trial against the Crystal Sentinel | `combat.ts`, `drops.ts`, `dungeons.json`, `trials.json` |
+| Boss attacks | Light hits plus a slam every sixth on the play-time clock; shared loadout health, 30 s knockout; `bossAttackView`, `stageReadout` ("You fall in")                                                                                            | `bossAttacks.ts`, `combat.ts`                           |
+| HP bars      | Stacked HP bar maths                                                                                                                                                                                                                         | `hpBars.ts`                                             |
+
+### Summon, cosmetics, prestige, account
+
+| System              | What it does today                                                                                                                                                                                                                                                                                                                      | Where                                                                                            |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Portals             | Pulls, 10-pull guarantee, hard pity (90), rates, reveal data. Card Portal (Summon Crystals) and Wardrobe Gate (Glamour Crystals) are open; the Legacy Gate (legacy weapon skins, duplicate payback 20% of a pull) is in the data with `enabled: false`, so it has no screen yet (DESIGN §7)                                             | `portals.ts`, `portals.json`                                                                     |
+| Cosmetics           | Owning, equipping, upgrading (one duplicate plus Glimmer Dust/Facet Shards per level), wear rules by rank, set bonuses, ranks; resolving what is shown where (`resolveCardFor`)                                                                                                                                                         | `wardrobe.ts`, `theme.ts`, `cosmetics.json`, `sets.json`, `cosmeticRules.json`, `wearRules.json` |
+| Weapon skins        | Per-weapon skin choice (`equipWeaponSkin`, `weaponSkinFor`), owned legacy skins (`legacySkins`, kept through Ascension), `legacyWeaponArt` resolving the art of a worn legacy skin at every tier below Unique. Data: Soul Reaper scythe (original + 12 free skins) and 3 legacy staff skins (`legacy-staff-01..03`, art `skin-staff-*`) | `wardrobe.ts`, `weaponSkins.json`                                                                |
+| Ascension           | Resets tree/mine levels, Money, materials and per-run upgrades; keeps cards, cosmetics, crystals, Starlight, pity, medals, mastery, permanent upgrades; Starlight formula and shop                                                                                                                                                      | `prestige.ts`, `prestige.json`                                                                   |
+| Account             | Account XP and levels, skill points, reward track, 23-node skill tree (six branches, respec)                                                                                                                                                                                                                                            | `account.ts`, `account.json`                                                                     |
+| Goals, achievements | Goal tracker rules (next 1–3 goals by estimated time); 29 achievements; shard shop rules                                                                                                                                                                                                                                                | `goals.ts`, `achievements.ts`, `progression.json`, `achievements.json`                           |
+
+## Data (`src/data`)
+
+`schemas.ts` holds the zod schemas (stats, cosmetic slots/tokens); `index.ts` exports `loadContent` and `Content` (including `allPortals` with disabled portals, `portals` with enabled ones, `legacySkinById`). Content files in `content/`: `account`, `achievements`, `cardRules`, `cards`, `combat`, `cosmeticRules`, `cosmetics`, `dungeons`, `enhancements`, `mines`, `portals`, `prestige`, `production`, `progression`, `rarities`, `resources`, `sets`, `trees`, `trials`, `upgrades`, `weaponSkins`, `wearRules`. Every number and piece of content lives there, not in logic (DESIGN §2, §3).
+
+## Electron (`src/main`, `src/preload`)
+
+`main/index.ts` (window, IPC), `saves.ts` and `saveStore.ts` (save files, autosave, final save before close), `updater.ts` (auto-update on launch, DESIGN §2), `fileLogger.ts` and `logTail.ts` (logs and the Report-an-issue text), `devPaths.ts` (dev profiles), `devMode.ts` (whether dev cheats are on: unpackaged builds only). `preload/api.ts` defines `window.api`.
+
+## Renderer (`src/renderer/src`)
+
+### App shell
+
+`main.ts` starts `game-entry.ts` (the dev-only card gallery `gallery/` opens with Ctrl+Shift+G), `app.ts` loads content and the save, runs the loop and dispatches actions to the pages, `copy.ts` holds all on-screen text. `shell/`: sidebar (Home, Cards, Production, Dungeons, Summon, Skill Tree, Wardrobe, Achievements, Shop, Settings), header (account level and XP, mute, Money and the two crystals), Details panel (`details.ts`, other resources behind a button), quest scroll (`quest.ts`, goal tracker), reward track, tooltips with stat breakdowns (`stats.ts`, `modifierText.ts`). UI rules: UI_RULES §2.
+
+### Pages (`pages/<page>.ts` + `<page>Model.ts` + `<page>.css`)
+
+| Screen       | What it shows today                                                                                                                                                                                                                                                                                       | Files                                                                                                   |
+| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| Home         | Command centre: three live mini-stages (fight, logging, mining), goal tracker                                                                                                                                                                                                                             | `home.ts`                                                                                               |
+| Production   | Side stage: one row per tree kind/mine type with buy controls and milestone bar, sticky stage with the main card in its loadout fan and harvest gauge, Logging/Mining switch, upgrade shelf drawer (DESIGN §4)                                                                                            | `production.ts`, `productionModel.ts`, `productionStageModel.ts`, `shelfModel.ts`                       |
+| Dungeons     | Full-bleed arena with the loadout fan beside it (supports behind the main card, burst gauge, shared health bar), boss with stacked HP, edge pulse before slams and "You fall in" pill; drawer with dungeon list, upgrade shelf and the weapon panel for the main fighting card; Glimmer Trial (DESIGN §6) | `dungeons.ts`, `progressionModel.ts`                                                                    |
+| Cards        | Collection grid of full cards (whole pixel scales), detail panel with the weapon panel, abilities, cost and enhancements, loadout editing                                                                                                                                                                 | `cards.ts`, `cardsModel.ts`, `cardsAdapter.ts`, `cardFaceModel.ts`, `loadoutCards.ts`, `weaponModel.ts` |
+| Summon       | Deck and Table (Nocturne panel): Card Portal and Wardrobe Gate as decks whose edge thickness follows pity, odds in the middle, "Your last hand" below; reveal opens in a modal (DESIGN §7)                                                                                                                | `summon.ts`, `summonModel.ts`, `stage/reveal.ts`                                                        |
+| Wardrobe     | Mannequin card with the seven slots and the item grid; "Weapon skins" tab (pick a weapon, preview a skin on the card, apply; a "Legacy" group for owned legacy skins; palette-cycling previews) (DESIGN §8)                                                                                               | `wardrobe.ts`, `wardrobeModel.ts`, `wardrobeSkin.ts`, `weaponSkinsTab.ts`, `weaponSkinsModel.ts`        |
+| Shop         | Market Stalls: Starlight shop, Shard shop and the Ascension gate (prismatic ring, confirm step, Kept and Reset lists) with candy pixel art `art/pixel/hand/shop-*`                                                                                                                                        | `shop.ts`, `ascensionModel.ts`, `achievementsModel.ts`                                                  |
+| Skill Tree   | Radial constellation of the account tree with gem nodes                                                                                                                                                                                                                                                   | `skills.ts`, `skillsModel.ts`, `accountModel.ts`, `ui/skillArt.ts`                                      |
+| Achievements | Sticker book                                                                                                                                                                                                                                                                                              | `achievements.ts`, `achievementsModel.ts`                                                               |
+| Settings     | Display (reduced motion, number format), Sound, Save (autosave interval, export/import), Help (Report an issue); preferences stored per player, not in the save                                                                                                                                           | `settings.ts`, `settingsModel.ts`, `settings/`                                                          |
+
+### Stage effects (`stage/`)
+
+`arena.ts` (the boss fight), `director.ts` (reports to moments; boss attacks come from `TickReport.bossAttacks`), `bossHitModel.ts` (edge pulse, chunk spans, "You fall in"), `numbers.ts` (floating numbers), `fly.ts` (coins to the header), `motion.ts` (one shared animation loop), `harvestParty.ts` (production cards, lunges, gauge), `tierUp.ts`, `toast.ts`, `reveal.ts` (summon), `welcome.ts` (welcome-back card fan), `math.ts`. Reduced motion is respected everywhere (UI_RULES §2).
+
+### Widgets (`ui/`)
+
+`card.ts` and `cardFace.ts` (full-art card layout; bottom plate built by `pages/cardFaceModel.ts`), `loadoutFan.ts` (main card with supports fanned behind and pop-out; used on the Production stage and in the dungeon party), `weaponPanel.ts` (XP ring, level badge, star pips, tier plate, price chips and the tier-up button; model `pages/weaponModel.ts`), `buy.ts` (×1/×10/×100/Max controls), `shelf.ts` (upgrade shelf), `hpStack.ts`, `cosmeticSwatch.ts`, `skins.ts` (equipped UI-skin style), `resourceIcons.ts`, `pixelNumbers.ts`, `skillArt.ts`, and `pixelScale.ts` + `pixelFit.ts` + `pixelScale.css` (whole device-pixel scales, `--dpr`, `fitCard()`; DESIGN §12 / ASSET_RULES §5).
+
+### Theme and sound
+
+`theme/`: `apply.ts` (tokens and recipes), `registry.ts` (implemented cosmetic ids), `recipes.css`, `rank.css`, `base.css`, `effects.ts`/`effects.css` (hit animations, art-owned). `sound/`: synthesized Web Audio effects (`engine.ts`), the sound registry as data, settings and the header mute (DESIGN §13).
+
+### Art (`art/`, rules in `docs/ASSET_RULES.md`)
+
+Vector sources (`vector/`: items, frame, gems, bosses, tiles) and drawing code (`items.ts`, `frame.ts`, `gems.ts`, `bosses.ts`, `evolutions.ts`, `fx.ts`, `fxGeometry.ts`, `kit.ts`, `cosmetics.ts`, `cosmeticIds.ts`), plus the pixel pipeline in `art/pixel/`: `raster.ts` (raster treatment), `bake.ts` and `manifest.ts` (baked sprites, run by `scripts/art/bake-pixels.mjs`), `sprites.ts` and `sprites/` (baked PNGs), `hand/` (hand-made PNGs: coins, tiles, items, medals, evolutions `evo-*`, shop art `shop-*`, skins `skin-scythe-*` and `skin-staff-*`), `live.ts` (live canvas motion) and `animate.ts` (palette cycling: a sprite with a strip `<name>-anim.png` of pre-rendered frames, played at 110 ms a frame, still under reduced motion; DESIGN §12). Card borders, finishes and corner flourishes are generated (`cosmetics.gen.ts`, `scripts/art/cosmetics-gen.mjs`).
+
+## Scripts and CI
+
+- `scripts/check-design.mjs`: every rule in `docs/DESIGN.md` and `docs/UI_RULES.md` has a status tag, no amendment-style sections.
+- `scripts/check-workflow.mjs`: a PR that changes `src/` must change this file or say `no overview change` in its description; nothing but a README may remain in `docs/plans/` on main (`CLAUDE.md`, Workflow).
+- `scripts/check-cards.mjs`, `check-dungeons.mjs`, `check-pixel-scale.mjs`, `check-release-bundle.mjs`, `a11y-*.mjs`: content, pixel-scale, bundle and accessibility checks.
+- `scripts/sim/`: balance sim playing the real game logic against the pacing targets (DESIGN §14).
+- `scripts/shoot-*.mjs`, `probe-app.mjs`, `demo-progression.mjs`: screenshots and probes of the running app.
+- `.github/workflows/ci.yml` runs `npm run lint`, `npm test` and `npm run build` on every PR and on pushes to main; `release.yml` publishes a GitHub Release when a `vX.Y.Z` tag is pushed (`RELEASING.md`).

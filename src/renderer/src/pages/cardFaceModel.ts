@@ -38,8 +38,7 @@ export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Mod
     else progress = 1; // at the level cap
   }
   return {
-    // The weapon's name stands in for the ability name until the card data has one (handoff
-    // docs/handoffs/2026-11-08-ability-names.md).
+    // The weapon's name stands in for the ability name until the card data has one.
     ability: card.item.name,
     speed: COPY.card.hitsEvery(secondsText(hitSeconds(content, info, mods))),
     level: owned && cap !== null ? { value: owned.level, cap } : null,

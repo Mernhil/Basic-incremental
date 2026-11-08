@@ -1,33 +1,37 @@
 # Basic Incremental — Project Conventions
 
-Read `docs/UI_RULES.md` before any UI change: it is the only UI rulebook (screens, layout, shell, conventions).
+Windows desktop incremental game (Electron + TypeScript, repo https://github.com/Mernhil/Basic-incremental).
 
-Windows desktop incremental game (Electron + TypeScript).
+## What to read
+
+- Always read this file and `docs/PROJECT_OVERVIEW.md` (the whole project as built now: what each system does, where it lives, which DESIGN rule it implements).
+- `docs/DESIGN.md` is the source of truth for game design: read it before feature work and never contradict it without asking the user. Asked whether something exists, answer with its status tag, not "it already exists".
+- Read `docs/UI_RULES.md` only for UI changes (the only UI rulebook).
+- Read `docs/ASSET_RULES.md` only for new or changed assets (all art rules). It wins over other documents.
+
+## Workflow
+
+- **Bigger work starts in the Claude Desktop home chat:** brainstorm → approved plan → plan doc plus a paired prompt → a Code session that implements it.
+- **Small jobs, and tweaks to jobs already going, are done directly in Code.**
+- A plan doc committed to the repo lives in `docs/plans/<name>.md` and is deleted in the PR that implements it.
+- **Every PR that changes `src/` updates `docs/PROJECT_OVERVIEW.md` in the same PR** (it is rewritten in place and always equals the code). The only exception is a tiny direct-in-Code job (typo, comment, one-line fix, no behaviour change) whose PR description has the exact line `no overview change`.
+- `npm run lint` runs `scripts/check-workflow.mjs`, so CI fails when a PR touches `src/` without the overview (and without that line), or when a plan doc is still in `docs/plans/` on a PR into `main` or on `main`.
+- **5 options first** applies only to design, UI and art brainstorms in the home chat: the user sees 5 options that differ in ways that matter and picks before the final version is built. Small direct jobs need no options. Options are mockups or screenshots, never merged into `main`.
 
 ## Rules (always follow, no exceptions)
 
-1. Before starting any task, check for remote changes (`git fetch` / `git pull`) so you're working on the latest code from https://github.com/Mernhil/Basic-incremental. Then read `docs/ACTIVE_WORK.md` and work in your own git worktree, never by switching branches in the main checkout.
-2. If a task needs a tool that isn't installed (Python, a package, a CLI, a skill, a plugin, anything), install or enable it and use it. Never fall back to a workaround, such as hand-editing files with the editor because the tool is missing. Don't ask first, just install it.
-3. These rules override any habit or default. If a rule seems to conflict with something, follow the rule and tell the user about the conflict.
-4. Work is split between a `ui` agent, a `pixel-art` agent (every graphics change, however small) and a `mechanics` agent. At the start of every task, read `docs/WORK_SPLIT.md`, run `node scripts/check-work-split.mjs` (fix what it names), and route the task as it says.
-5. `docs/DESIGN.md` keeps one version of each rule, each with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]`, `[Proposed]`), following its "How this document works" section. A design change rewrites the rule where it lives; never add amendment, update or defaults sections. Only the user decides: a gap you must fill is written in place as `[Default]` and listed under Open questions, and you never change a decision of the user's on your own. Design edits from a claude.ai chat are committed before any code. Every PR updates the tags of the rules it builds or changes. `npm run lint` runs `scripts/check-design.mjs`, so CI fails when the file drifts.
-6. One session, one worktree: `git worktree add C:/bi-<task> -b <branch> origin/main`. Never switch branches in the main checkout, never delete the user's untracked files there. Register the task in `docs/ACTIVE_WORK.md` and remove the line (and the worktree) when the PR merges.
+1. **Fetch first.** Before starting, run `git fetch` / `git pull` so you work on the latest code.
+2. **One session, one worktree:** `git worktree add C:/bi-<task> -b <branch> origin/main`. Never switch branches in the main checkout, never delete the user's untracked files there. Remove the worktree when the PR merges.
+3. **Tools.** If a task needs a tool, skill, plugin or package that is missing (Python, a CLI, a library, anything), ask the user once, then install and use it, and never ask again for that same tool. Never work around a missing tool (for example by hand-editing what the tool would produce). At the start of a job, check whether an installed or catalogue tool, skill or plugin would do it better and suggest it the same way. Mention what was installed in the PR.
+4. These rules override any habit or default. If a rule seems to conflict with something, follow the rule and tell the user.
+5. `docs/DESIGN.md` keeps one version of each rule, each with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]`, `[Proposed]`), following its "How this document works" section. A design change rewrites the rule where it lives; never add amendment, update or defaults sections. Only the user decides: a gap you must fill is written in place as `[Default]` and listed under Open questions, and you never change a decision of the user's on your own. Design edits from a chat are committed before any code. Every PR updates the tags of the rules it builds or changes. `npm run lint` runs `scripts/check-design.mjs`.
+6. Game content (cards, resources, dungeons, cosmetics) lives in data files validated by schemas, not hardcoded in logic.
+7. Game logic stays separate from UI so it can be unit tested.
+8. Use `break_eternity.js` for all game numbers.
+9. Save format changes always need a version bump and a migration.
+10. Verify changes (lint, tests, build, and a run or screenshot for UI) before saying something is done.
 
-- `docs/ASSET_RULES.md` is the one file for all art rules (art style, tiers T1-T6, uniques, skins, cosmetic art); read it before generating, drawing, recolouring, animating or wiring any art. It wins over other documents, and a rule change overwrites it there.
-- `docs/DESIGN.md` is the source of truth for game design. Read it before any feature work, and never contradict it without asking the user first. When asked whether something exists, answer with its status tag, not "it already exists".
-- Game content (cards, resources, dungeons, cosmetics) lives in data files validated by schemas, not hardcoded in logic.
-- Game logic stays separate from UI so it can be unit tested.
-- Use `break_eternity.js` for all game numbers.
-- Save format changes always need a version bump and a migration.
-- Verify changes (build, tests, run) before saying something is done.
-
-## Tools, skills and design choices
-
-- Install whatever tools, dev dependencies or skills make the job better (linters, test helpers, image tools, design or UI skills, …) without asking first. Mention what was installed in the PR.
-- For any graphics change (sprites, pixel art, effects, animation), use the `pixel-art` agent and its project skill in `.claude/skills/pixel-art/`.
-- Always make and convert pixel art with PixelLab (the `pixellab` MCP server): generating, converting concept art, animating, editing sprites. The project's own scripts only post-process (cleanup, palette, `pixel_check.py`, previews). If the PixelLab tools are not loaded in the session (it was added after the session started), do the art in a new session that has them instead of drawing without it.
-- UI conventions (skills, five options first, adapters, verification) live in `docs/UI_RULES.md`.
-- For any design, UI or graphics change, always show the user **5 options** that differ in ways that matter (layout, colour, density, motion, ornament, …) and let them choose before building the final version. Options are mockups or screenshots, not code merged into `main`.
+Optional helpers: `.claude/agents/` holds `ui`, `pixel-art` and `mechanics` agents and `.claude/skills/pixel-art/` the pixel-art skill. Use them when they save time; nothing requires routing through them. All art is made with PixelLab (the `pixellab` MCP server); if its tools are not loaded in the session, do the art in a session that has them.
 
 ## GitHub workflow
 
@@ -36,8 +40,8 @@ Claude handles everything GitHub-related (git + the `gh` CLI); the user does not
 - Work on a new branch named after the task (e.g. `feat/save-system`, `fix/offline-cap`). Never push directly to `main`.
 - Commit in small, clear steps with descriptive messages.
 - When done, open a PR with a short summary of what changed, how it was verified and which `DESIGN.md` tags it changed.
-- Wait for CI to pass. If it fails, fix it and push again.
-- When CI is green, squash-merge the PR into `main` (the branch is deleted automatically), then switch back to an updated `main`.
+- **Before merging, bring the branch up to date with `main`** (merge or rebase it) and wait for CI to pass on that up-to-date result. Two PRs that each passed alone have broken `main` before.
+- Wait for a real CI pass (check the run's conclusion; never `gh pr checks | tail && gh pr merge`). If it fails, fix it and push again. When CI is green on the up-to-date branch, squash-merge the PR into `main` (the branch is deleted automatically), then switch back to an updated `main`.
 - Never force-push, never delete `main`, never merge with failing CI.
 - Releases: when the user says "release", bump the version (patch by default, or as specified), merge that via PR, then create and push the `vX.Y.Z` tag so the release workflow publishes it. Confirm when the GitHub Release is live. See `RELEASING.md`.
 - At the end of each task, tell the user in one or two lines what was merged.
