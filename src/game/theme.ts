@@ -6,6 +6,7 @@ import {
   type CardSlot,
   type Content,
   type Cosmetic,
+  type Job,
   type CosmeticSlot,
   type Rank,
   type Rarity,
@@ -281,6 +282,34 @@ export function resolveCard(
     recipes.push(...rarity.recipes);
   }
   return { slots, vars, recipes: [...new Set(recipes)] };
+}
+
+/**
+ * The attack animation id the equipped attack cosmetic uses for a job (DESIGN.md 11.15): logging
+ * and mining cards strike with the same cosmetic slot as fighting cards, each job has its own
+ * variant. Null when the item lists none.
+ */
+export function jobAttackEffect(
+  content: Content,
+  loadout: CosmeticLoadout,
+  job: Job,
+): string | null {
+  const { cosmetic, level } = resolveEquipped(content, 'attack', loadout.slots.attack);
+  return levelVisual(cosmetic, level).effects?.[job] ?? null;
+}
+
+/** The equipped tick animation id and number style id, for a job's floating "+n" (same for every job). */
+export function jobNumberStyle(
+  content: Content,
+  loadout: CosmeticLoadout,
+): { tick: string; tickEffect: string | null; number: string } {
+  const tick = resolveEquipped(content, 'tick', loadout.slots.tick);
+  const number = resolveEquipped(content, 'number', loadout.slots.number);
+  return {
+    tick: tick.cosmetic.id,
+    tickEffect: levelVisual(tick.cosmetic, tick.level).effect ?? null,
+    number: number.cosmetic.id,
+  };
 }
 
 /** CSS custom properties for the global (non-card) look: table, numbers, ticks, attack, cursor. */

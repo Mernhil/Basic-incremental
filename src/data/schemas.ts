@@ -128,9 +128,36 @@ const jobProductionSchema = z.strictObject({
   expansion: costCurveSchema,
 });
 
+/** How a production main card strikes (DESIGN.md 11.15): a look and a rhythm, never extra output. */
+export const HARVEST_STYLES = ['steady', 'chop', 'flurry', 'volley'] as const;
+export type HarvestStyle = (typeof HARVEST_STYLES)[number];
+/** Which plots / slots a strike lands on: the next one in turn, a random one, or every one. */
+export const HARVEST_TARGETING = ['sweep', 'random', 'all'] as const;
+export type HarvestTargeting = (typeof HARVEST_TARGETING)[number];
+
+export const harvestPatternSchema = z.strictObject({
+  /** Name of the strike's look, for the stage to pick an animation. */
+  style: z.enum(HARVEST_STYLES),
+  /** Seconds in one cycle. */
+  intervalSeconds: z.number().positive(),
+  /** Strikes in one cycle, spread evenly over it. */
+  strikes: z.number().int().min(1).max(8),
+  targeting: z.enum(HARVEST_TARGETING),
+});
+export type HarvestPattern = z.output<typeof harvestPatternSchema>;
+
 export const productionSchema = z.strictObject({
   logging: jobProductionSchema,
   mining: jobProductionSchema,
+  harvest: z.strictObject({
+    /** Pattern of a job with no main card. */
+    default: z.strictObject({ logging: harvestPatternSchema, mining: harvestPatternSchema }),
+    /** Base harvest crit (the `harvest.*` stats change it). 0 keeps the output exactly as before. */
+    crit: z.strictObject({
+      chance: z.number().min(0).max(1),
+      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+    }),
+  }),
 });
 
 export const JOBS = ['mining', 'logging', 'fighting'] as const;
@@ -202,6 +229,10 @@ export const STATS = [
   /** Burst strength: fighting = damage as a multiple of one hit; logging / mining = seconds of
    *  the job's output harvested at once. Scope: job. */
   'burst.power',
+  /** Chance a logging / mining harvest strike crits (clamped to 0..1, base 0). Scope: job. */
+  'harvest.critChance',
+  /** Output multiplier of a harvest crit (at least 1). Scope: job. */
+  'harvest.critDamage',
   /** Special dungeon reward units per score tier reached (floored). Scope: dungeon, resource. */
   'trial.reward',
   /** Fighting loadout health pool (DESIGN.md 11.10): the sum of the cards' health. Scope: dungeon. */
@@ -322,8 +353,9 @@ export const cardSchema = z.strictObject({
   /** Unique item that replaces `item` from the evolution rank on (progression.json); none = the
    *  card keeps its generic item. */
   evolution: z.enum(UNIQUE_ITEM_KINDS).optional(),
-  /** Used when the card leads its job's loadout. */
-  main: cardEffectSchema,
+  /** Used when the card leads its job's loadout. Logging and mining mains also set how it
+   *  strikes (`harvest`, DESIGN.md 11.15). */
+  main: cardEffectSchema.extend({ harvest: harvestPatternSchema.optional() }),
   /** Used when the card is in one of the 3 support slots. */
   support: cardEffectSchema,
 });

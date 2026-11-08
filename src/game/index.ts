@@ -16,6 +16,20 @@ export * from './save';
 export * from './theme';
 export * from './modifiers';
 export * from './production';
+// ---- Production cards in play (DESIGN.md 11.15): the contract with the UI ----------------------
+export {
+  /** The harvest pattern (style, interval, strikes, targeting) the job's main card strikes with. */
+  mainHarvestPattern,
+  /** Ids of a job's support cards whose effect helps its harvest. */
+  harvestSupports,
+} from './harvest';
+export {
+  /** Ready-to-show view of one production job's stage: cards, pattern, gauge 0..1, next strike, targets. */
+  productionStageView,
+  type ProductionStageView,
+  type StageCard,
+  type StageTarget,
+} from './productionView';
 export * from './hpBars';
 export * from './cards';
 export * from './milestones';

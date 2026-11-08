@@ -16,5 +16,25 @@
       "base": "25",
       "growth": "1.4"
     }
+  },
+  "harvest": {
+    "default": {
+      "logging": {
+        "style": "steady",
+        "intervalSeconds": 1,
+        "strikes": 1,
+        "targeting": "sweep"
+      },
+      "mining": {
+        "style": "steady",
+        "intervalSeconds": 1,
+        "strikes": 1,
+        "targeting": "sweep"
+      }
+    },
+    "crit": {
+      "chance": 0,
+      "damage": "2"
+    }
   }
 }

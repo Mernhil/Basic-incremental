@@ -394,6 +394,19 @@ Decided for the economy redesign (PR 2 of 4). Numbers live in data.
 - **Saves.** Format 15 adds `production.treeLevels` (empty) and `upgrades` (none owned; lifetime Money starts at the Money held). The sim buys tree levels and the shelf by gain per Money.
 - **Sanity sim (8 h, 2 seeds, not a tuning run).** With tree levels and the shelf in the sim everything runs; it now reaches Gold ★6 at 3.7 h, Dungeon 3 at 5.2 h and the first Prismatic at 6.1 h, faster than the 11.7 targets, and no ascension within 8 h. Pacing is deliberately left for the user's playtest and the later PRs (11.13, 12.27).
 
+### 11.15 Production cards in play
+
+Decided for the "Production cards actually play" work (logic half; the stage is the `ui` half). Numbers live in data.
+
+- **The main logging / mining card strikes like the main fighting card hits.** Its `main.harvest` block in `cards.json` is a pattern: `style` (steady, chop, flurry, volley: a hint for the stage animation), `intervalSeconds` (one cycle), `strikes` per cycle (spread evenly) and `targeting` (`sweep`: the next plot in turn, `random`: a fixed pseudo-random plot, `all`: every plot on every strike). No main card uses `production.json` `harvest.default`. Every logging / mining card must have a pattern and fighting cards must not (validated).
+- **Strikes are show, the economy is the expected value (12.6).** A strike on a plot carries that plot's output for the time between its strikes (`rate x period`, times the number of plots for `sweep` / `random`), so strikes add up to the plots' output. Which plot, when, and crit rolls are derived from play time only, so there is no new saved state (save format unchanged) and any split of time (online, offline) gives the same strikes and totals.
+- **Harvest crits.** Stats `harvest.critChance` (base 0) and `harvest.critDamage` (base x2) per job through the modifier pipeline. Output uses the average factor `1 + chance x (damage - 1)`; a crit strike shows `damage x`. The base chance is **0**, so today's totals are unchanged; no card or node grants it yet.
+- **Harvest burst.** The existing gauge (11.3, 11.8) is unchanged: 1 tick per second, 30 to fire, 10 s of output. It is exposed as a 0..1 gauge on the card's stage view and fires one burst event per plot.
+- **Events.** `TickReport.harvests` lists `HarvestEvent`s (job, plot, producer, resource, amount, strikes, crits, burst, supports). Supports listed are the job's support cards whose effect touches rate, crits or the gauge. Long steps merge: more than 16 strikes in one step become one event per plot with `strikes` counting them, and merged reports fold events of the same plot once 64 are held.
+- **Cosmetics.** Production cards use the same slots as fighting cards: border and finish per card; the attack slot already has a per-job (logging, mining) animation and the tick and number slots are global. `jobAttackEffect` and `jobNumberStyle` resolve them for a job.
+- **Cards in the data.** Apprentice Feller / Cave Digger: steady, 1 s, one strike, sweep. Grove Keeper / Gem Cutter: flurry, 0.5 s, sweep. Elder Treant / Geode Golem: chop, 2 s, one strike, random. Moonwood Dryad / Core Titan: volley, 1.5 s, two strikes, all.
+- **Numbers changed:** none (crit base 0, patterns do not change output).
+
 ## 12. Defaults for underspecified points
 
 Points the decisions above leave open. These defaults apply until changed.
@@ -574,6 +587,7 @@ Decided with the user for the beta. The Dungeons and Production pages are the fo
 - Trees grow and hang their gems, which pop off on harvest. Mines show pickaxe strikes with chips.
 - Every tick shows a **"+n"** rising off each plot or slot, and the coins fly to the header.
 - A **harvest burst** is a wave across all plots with one big total number.
+- **The main card plays it (11.15).** The main logging / mining card stands at the field and strikes the plots it targets with its pattern (steady ticks, big chops, flurries, volleys), the attack and tick cosmetics of the wardrobe, and a "+n" per strike (crits look different). Support cards show beside it and flash when a strike lists them. The harvest gauge sits on the main card like Brave Burst. The stage reads `productionStageView` and the report's `harvests`.
 
 ### Header, numbers and buying
 

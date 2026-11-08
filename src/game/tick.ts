@@ -3,6 +3,7 @@ import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels 
 import { advanceCombat, advanceHarvestBursts } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { recordStrikes } from './harvest';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
@@ -82,7 +83,13 @@ function advanceSpan(
   const next = cloneState(state);
   const seconds = dtMs / 1000;
   const modifiers = collectModifiers(state, content);
+  const fromMs = state.stats.playTimeMs;
   next.stats.playTimeMs += dtMs;
+
+  // The main logging / mining cards' strikes for the stage: events only, no state (DESIGN.md 11.15).
+  for (const job of PRODUCTION_JOBS) {
+    recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report);
+  }
 
   // Production: every active plot/slot yields its producer's rate per second.
   const counts = producerCounts(state, content, modifiers);

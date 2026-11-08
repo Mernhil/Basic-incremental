@@ -416,7 +416,36 @@ export function producerRate(
   return Decimal.max(statValue('production.rate', base, modifiers, ctx), 0);
 }
 
-/** Resource id -> gained per second from one job's active plots/slots. */
+/** A job's harvest crit numbers after modifiers (DESIGN.md 11.15). */
+export interface HarvestCrit {
+  /** Chance one strike crits, 0..1. */
+  chance: number;
+  /** Output multiplier of a crit, at least 1. */
+  damage: Decimal;
+}
+
+export function harvestCrit(
+  content: Content,
+  job: ProductionJob,
+  modifiers: readonly Modifier[] = [],
+): HarvestCrit {
+  const base = content.production.harvest.crit;
+  const chance = statValue('harvest.critChance', base.chance, modifiers, { job }).toNumber();
+  return {
+    chance: Math.min(1, Math.max(0, chance)),
+    damage: Decimal.max(statValue('harvest.critDamage', base.damage, modifiers, { job }), 1),
+  };
+}
+
+/**
+ * Average output factor from crits: 1 + chance * (damage - 1). Output is always the expected
+ * value, so online, offline and split steps give the same totals; the strike events only show it.
+ */
+export function harvestCritFactor(crit: HarvestCrit): Decimal {
+  return crit.damage.sub(1).mul(crit.chance).add(1);
+}
+
+/** Resource id -> gained per second from one job's active plots/slots (crits included). */
 export function jobProductionPerSecond(
   state: GameState,
   content: Content,
@@ -425,11 +454,12 @@ export function jobProductionPerSecond(
   counts: Record<string, number> = producerCounts(state, content, modifiers),
 ): Record<string, Decimal> {
   const out: Record<string, Decimal> = {};
+  const crit = harvestCritFactor(harvestCrit(content, job, modifiers));
   for (const producer of producersOf(content, job)) {
     const count = counts[producer.id] ?? 0;
     if (count === 0) continue;
     const level = producerLevel(state, job, producer.id);
-    const gained = producerRate(producer, job, modifiers, level).mul(count);
+    const gained = producerRate(producer, job, modifiers, level).mul(count).mul(crit);
     out[producer.resource] = (out[producer.resource] ?? new Decimal(0)).add(gained);
   }
   return out;

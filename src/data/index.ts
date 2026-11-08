@@ -681,6 +681,18 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
+  // Logging and mining mains say how they strike; fighting mains have no harvest pattern (11.15).
+  c.cards.forEach((card, i) => {
+    const has = card.main.harvest !== undefined;
+    if (card.job === 'fighting' && has) {
+      issues.push(`cards.json › [${i}] › main › harvest: fighting cards do not harvest`);
+    }
+    if (card.job !== 'fighting' && !has) {
+      issues.push(
+        `cards.json › [${i}] › main › harvest: a ${card.job} card needs a harvest pattern`,
+      );
+    }
+  });
   c.cardRules.startCards.forEach((id, i) => {
     const where = `cardRules.json › startCards › [${i}]`;
     const card = cards.get(id);

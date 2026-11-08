@@ -1,4 +1,5 @@
-import type { BurstJob, Metal } from '../data';
+import type { BurstJob, Metal, ProductionJob } from '../data';
+import type { Decimal } from './num';
 
 /**
  * What tiered up (DESIGN.md 16, E1): gem mastery, a boss medal (dungeon or special dungeon), a
@@ -31,6 +32,55 @@ export interface TierUp {
   metal: Metal;
 }
 
+/**
+ * One harvest strike for the stage (DESIGN.md 11.15): "the card chops tree 2 for +14". The
+ * economy is the expected value; these are the discrete moments that add up to it. When many
+ * strikes land on one plot in a report they are merged: `strikes` counts them.
+ */
+export interface HarvestEvent {
+  job: ProductionJob;
+  /** Plot (logging) / slot (mining) index. */
+  plot: number;
+  /** Tree or mine id running there. */
+  producer: string;
+  /** Gem harvested. */
+  resource: string;
+  /** Total gained by the merged strikes (crits included). */
+  amount: Decimal;
+  /** Strikes merged into this event (1 when played live). */
+  strikes: number;
+  /** How many of them were crits; `crits > 0` means show the crit look. */
+  crits: number;
+  /** The bonus harvest of a full harvest gauge (one event per plot). */
+  burst: boolean;
+  /** Support card ids whose effect helps this job's harvest. */
+  supports: string[];
+}
+
+/** Most harvest events a merged report keeps before folding strikes of the same plot together. */
+export const MAX_REPORT_HARVESTS = 64;
+
+/** Adds a strike event, folding it into a matching one when the list is full. */
+export function pushHarvest(into: HarvestEvent[], event: HarvestEvent): void {
+  if (into.length >= MAX_REPORT_HARVESTS) {
+    const same = into.find(
+      (e) =>
+        e.job === event.job &&
+        e.plot === event.plot &&
+        e.burst === event.burst &&
+        e.producer === event.producer,
+    );
+    if (same) {
+      same.amount = same.amount.add(event.amount);
+      same.strikes += event.strikes;
+      same.crits += event.crits;
+      for (const id of event.supports) if (!same.supports.includes(id)) same.supports.push(id);
+      return;
+    }
+  }
+  into.push(event);
+}
+
 /** What happened during one advance() call, for notifications, animations and the away summary. */
 export interface TickReport {
   bossKills: number;
@@ -61,6 +111,8 @@ export interface TickReport {
   knockouts: number;
   /** Mastery tiers reached (gem mastery and boss medals), in order. */
   tierUps: TierUp[];
+  /** Harvest strikes and harvest bursts of the production main cards, in order (11.15). */
+  harvests: HarvestEvent[];
   /** Achievement ids unlocked, in order (their rewards are already granted). */
   achievements: string[];
   /** Account level before and after, when it rose (the track's rewards are granted). */
@@ -83,6 +135,7 @@ export function emptyReport(): TickReport {
     cardLevels: {},
     knockouts: 0,
     tierUps: [],
+    harvests: [],
     achievements: [],
     accountLevel: null,
   };
@@ -106,6 +159,8 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.knockouts += add.knockouts;
   into.cardDrops.push(...add.cardDrops);
   into.tierUps.push(...add.tierUps);
+  for (const event of add.harvests)
+    pushHarvest(into.harvests, { ...event, supports: [...event.supports] });
   into.achievements.push(...add.achievements);
   if (add.accountLevel) {
     into.accountLevel = {
