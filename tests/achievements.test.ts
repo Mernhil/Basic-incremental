@@ -98,10 +98,10 @@ describe('achievements (DESIGN.md §10)', () => {
     const state = newGame();
     const squire = state.cards.owned['ember_squire']!;
     state.cards.owned['ember_squire'] = { ...squire, tier: 'gold', stars: 6 };
-    state.cards.owned['shield_warden'] = { ...squire };
-    state.cards.loadouts.fighting = {
-      main: 'ember_squire',
-      supports: ['shield_warden', 'storm_duelist', 'dawnblade_regent'],
+    // Fighting has three cards, so the full loadout is a logging one: Feller leads, three supports.
+    state.cards.loadouts.logging = {
+      main: 'apprentice_feller',
+      supports: ['grove_keeper', 'elder_treant', 'moonwood_dryad'],
     };
     for (const c of content.cosmetics.filter((x) => x.set === 'gilded_tradition')) {
       state.cosmetics.owned[c.id] = { level: 1, copies: 0 };

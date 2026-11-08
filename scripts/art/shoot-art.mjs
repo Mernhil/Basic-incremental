@@ -47,7 +47,7 @@ const panels = await page.evaluate(
     const html = [
       sec(
         'items',
-        ['sword', 'bow', 'pickaxe', 'staff', 'shield', 'gauntlet']
+        ['sword', 'bow', 'pickaxe', 'staff', 'gauntlet']
           .flatMap((k) =>
             rarities.map((r) =>
               fig(
