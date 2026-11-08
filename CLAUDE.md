@@ -1,5 +1,7 @@
 # Basic Incremental — Project Conventions
 
+Read `docs/UI_RULES.md` before any UI change: it is the only UI rulebook (screens, layout, shell, conventions).
+
 Windows desktop incremental game (Electron + TypeScript).
 
 ## Rules (always follow, no exceptions)
@@ -24,7 +26,7 @@ Windows desktop incremental game (Electron + TypeScript).
 - Install whatever tools, dev dependencies or skills make the job better (linters, test helpers, image tools, design or UI skills, …) without asking first. Mention what was installed in the PR.
 - For any graphics change (sprites, pixel art, effects, animation), use the `pixel-art` agent and its project skill in `.claude/skills/pixel-art/`.
 - Always make and convert pixel art with PixelLab (the `pixellab` MCP server): generating, converting concept art, animating, editing sprites. The project's own scripts only post-process (cleanup, palette, `pixel_check.py`, previews). If the PixelLab tools are not loaded in the session (it was added after the session started), do the art in a new session that has them instead of drawing without it.
-- For any UI or visual design change, use the frontend-design skill and the Design plugin skills, and install or enable other relevant skills when they would help.
+- UI conventions (skills, five options first, adapters, verification) live in `docs/UI_RULES.md`.
 - For any design, UI or graphics change, always show the user **5 options** that differ in ways that matter (layout, colour, density, motion, ornament, …) and let them choose before building the final version. Options are mockups or screenshots, not code merged into `main`.
 
 ## GitHub workflow
