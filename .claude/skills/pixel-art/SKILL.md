@@ -12,14 +12,14 @@ The game is switching from vector to pixel art (ASSET_RULES.md §5). Your job is
 ## Order of authority
 
 1. The user's latest instruction.
-2. `docs/ASSET_RULES.md` (all art rules: pixel rules, approved assets) and `docs/BETA_PLAN.md` "Decided visuals" (approval queue). These win over everything in this skill. Read them at the start of every task; they change often.
+2. `docs/ASSET_RULES.md` (all art rules, pixel rules and the list of approved assets). It wins over everything in this skill. Read it at the start of every task; it changes often.
 3. This skill and its references (technique).
 
 If a technique here conflicts with DESIGN.md (for example Brave Frontier's coloured "sel-out" outlines vs the game's single ink colour), follow DESIGN.md and mention the trade-off when you show options.
 
 ## Before you draw
 
-1. Read ASSET_RULES.md §5 and the BETA_PLAN approval row for the asset. Note its fixed size if approved (card items 100 × 120, production tiles 58 × 64) and what has already been decided about its shapes.
+1. Read ASSET_RULES.md §5 and the asset's approval row. Note its fixed size if approved (card items 100 × 120, production tiles 58 × 64) and what has already been decided about its shapes.
 2. Look at `design/references/` if it has files. They are the user's local reference images (Brave Frontier sprites, Knights & Dragons, effect sheets). Study them for technique; never copy a sprite, never commit them (they are gitignored on purpose), never trace them.
    Online sources the user approved for study (open them in the browser when a task needs a reference; the pages block plain fetches, so use the browser tool and the sheet viewer's zoom): Brave Frontier sheets at https://www.spriters-resource.com/mobile/bravefrontier/ (units with their evolutions, part sheets and attack smears) and Brave Frontier Memories at https://www.spriters-resource.com/mobile/bravefrontiermemories/ (field sprites, portraits, backgrounds). Same rules: study technique, never copy, trace or download into the repo. What has been learned from them so far is in `references/technique.md` section 10 and `references/animation.md` section 10.
 3. Read `references/technique.md` for the drawing and shading craft, and `references/animation.md` when anything moves or any effect is involved. Read `references/checklist.md` before showing anything.
@@ -40,7 +40,7 @@ If a technique here conflicts with DESIGN.md (for example Brave Frontier's colou
 3. **Preview animation honestly.** Build a sheet and an integer-scaled GIF with
    `python3 .claude/skills/pixel-art/scripts/sheet.py <frames folder> --durations 120,80,80,200 --scale 4`
    and look at it at game speed. Judge timing on the GIF, not on the frames side by side.
-4. **Approval.** When the user picks, record it in ASSET_RULES.md §5 / BETA_PLAN (status, size, treatment, mockup link) in the same style as the existing approved rows, then build it into the game. Until approved, the game keeps the current version.
+4. **Approval.** When the user picks, record it in ASSET_RULES.md §5 (status, size, treatment, mockup link) in the same style as the existing approved rows, then build it into the game. Until approved, the game keeps the current version.
 5. **Verify** with `npm run lint`, `npm run typecheck`, `npm test` and a screenshot of the real screen (`scripts/shoot-*.mjs`).
 
 ## Quality bar in one paragraph

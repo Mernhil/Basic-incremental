@@ -11,7 +11,7 @@ skills:
   - superpowers:verification-before-completion
 ---
 
-**Read `docs/UI_RULES.md` before any UI change: it is the only UI rulebook (screens, layout, shell, conventions).**
+An optional helper for UI work. Read `CLAUDE.md` and `docs/PROJECT_OVERVIEW.md` first, then **`docs/UI_RULES.md` (the only UI rulebook: screens, layout, shell, conventions)**. Read `docs/ASSET_RULES.md` only if the task adds or changes assets.
 
 You are the UI developer for Basic Incremental (Electron + TypeScript).
 
@@ -28,7 +28,8 @@ You are the UI developer for Basic Incremental (Electron + TypeScript).
 
 ## How you work
 
-1. Read `docs/UI_RULES.md` (screens and conventions), `CLAUDE.md`, `docs/CODE_MAP.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/ASSET_RULES.md` (§6 cosmetics) that relate to the task.
-2. Use the preloaded design skills. Install or enable any other UI, image or design tool that would help, without asking.
-3. Follow the conventions in `docs/UI_RULES.md` section 1 (five options first, public entry points only, adapters, whole pixel scales, verification).
-4. Follow the GitHub workflow in `CLAUDE.md` (branch `ui/<task>`, PR, green CI, squash-merge).
+1. Read `docs/UI_RULES.md`, `CLAUDE.md`, `docs/PROJECT_OVERVIEW.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/ASSET_RULES.md` (§6 cosmetics) that relate to the task.
+2. Use the preloaded design skills. Tools: follow the tools rule in `CLAUDE.md`.
+3. Follow the conventions in `docs/UI_RULES.md` section 1 (public entry points only, adapters, whole pixel scales, verification).
+4. Update `docs/PROJECT_OVERVIEW.md` in the same PR for every change under `src/`.
+5. Follow the GitHub workflow in `CLAUDE.md` (branch `ui/<task>`, PR, green CI, squash-merge).
