@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, cosmeticMaxLevel, damageLevel, type GameState } from '../src/game';
+import { Decimal, cosmeticMaxLevel, type GameState } from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -13,7 +13,7 @@ import {
   summarizeRuns,
   formatSeedTable,
 } from '../scripts/sim/sim';
-import { content, freshState } from './helpers';
+import { content, freshState, withDps } from './helpers';
 
 const rich = (state: GameState, resource: string, amount: number): GameState => {
   state.resources[resource] = new Decimal(amount);
@@ -22,12 +22,12 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
 
 describe('balance sim: greedy buyer', () => {
   it('lists purchases with an ETA, 0 when affordable now', () => {
-    const state = rich(freshState(), 'money', 10);
+    const state = rich(freshState(), 'money', 15);
     const candidates = buyerCandidates(state, content);
-    const copperEdge = candidates.find((c) => c.id === 'damage:copper_edge');
-    expect(copperEdge?.eta).toBe(0);
-    // Iron Edge waits for Iron Deeps; an Oak level (20 Money) is paid by the wage being earned.
-    expect(candidates.find((c) => c.id === 'damage:iron_edge')).toBeUndefined();
+    // The damage lines are gone: damage comes from cards, so nothing on the list is a damage buy.
+    expect(candidates.some((c) => c.id.startsWith('damage:'))).toBe(false);
+    // A Copper Quarry level (15 Money) is affordable now; an Oak level (20) is paid by the wage.
+    expect(candidates.find((c) => c.id === 'mine:copper_quarry')?.eta).toBe(0);
     const oak = candidates.find((c) => c.id === 'tree:oak');
     expect(oak?.eta).toBeGreaterThan(0);
     expect(Number.isFinite(oak!.eta!)).toBe(true);
@@ -39,11 +39,11 @@ describe('balance sim: greedy buyer', () => {
   });
 
   it('buys the cheapest affordable purchase first, then keeps buying', () => {
-    // 10 Money buys Copper Edge (10); a mine level costs 15 and an Oak level 20.
-    const state = rich(freshState(), 'money', 10);
+    // 20 Money buys an Oak level (20, the best gain per Money); a mine level costs 15.
+    const state = rich(freshState(), 'money', 20);
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought).toContain('damage:copper_edge');
-    expect(damageLevel(after, 'copper_edge')).toBe(1);
+    expect(bought).toContain('tree:oak');
+    expect(after.production.treeLevels['oak']).toBe(1);
     expect(after.resources['money']!.toNumber()).toBe(0);
   });
 
@@ -93,21 +93,6 @@ describe('balance sim: greedy buyer', () => {
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
-  it('values an economy purchase by its gain: the first Copper Edge level doubles damage', () => {
-    const state = rich(freshState(), 'money', 10);
-    const edge = buyerCandidates(state, content).find((c) => c.id === 'damage:copper_edge');
-    expect(edge?.gain).toBeCloseTo(1);
-  });
-
-  it('offers a bulk buy up to the next milestone, valued with the x2', () => {
-    const state = rich(freshState(), 'money', 1e6);
-    state.combat.damageLevels['copper_edge'] = 20;
-    const bulk = buyerCandidates(state, content).find((c) => c.id === 'damage:copper_edge:x5');
-    expect(bulk).toBeDefined();
-    // 21 -> 25 levels with the x2: from 1 + 20 to 1 + 50 damage.
-    expect(bulk!.gain).toBeCloseTo(30 / 21);
-  });
-
   it('spends Money on the economy and leaves the gems to the card upgrades waiting for them', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
@@ -118,18 +103,16 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought.some((id) => id.startsWith('damage:'))).toBe(true);
+    expect(bought.some((id) => id.startsWith('mine:') || id.startsWith('tree:'))).toBe(true);
     expect(after.resources['iron_gem']!.toNumber()).toBe(600);
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
-  it('weighs a mine or tree level against damage by the share of the production', () => {
+  it('weighs a mine or tree level by the share of the production', () => {
     const state = rich(freshState(), 'money', 1e9);
     const candidates = buyerCandidates(state, content);
     const gain = (id: string): number => candidates.find((c) => c.id === id)!.gain!;
-    // The first Copper Edge level doubles the damage; no production purchase beats that.
-    expect(gain('damage:copper_edge')).toBeGreaterThan(gain('mine:copper_quarry'));
-    expect(gain('damage:copper_edge')).toBeGreaterThan(gain('tree:oak'));
+    expect(gain('mine:copper_quarry')).toBeGreaterThan(0);
     expect(gain('tree:oak')).toBeGreaterThan(0);
   });
 
@@ -210,17 +193,16 @@ describe('balance sim: where to fight', () => {
   it('pushes a newly killable dungeon before farming Cores for a waiting star-up', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar'];
-    state.combat.damageLevels['crystal_edge'] = 300;
     const squire = state.cards.owned['ember_squire']!;
     squire.level = 20;
     squire.duplicates = 1;
-    expect(chooseDungeon(state, content)).toBe('ember_crypt');
+    // Strong enough to kill the Cinder Lich in good time.
+    expect(chooseDungeon(state, withDps(1e6, content))).toBe('ember_crypt');
   });
 
   it('keeps farming Cores while the next boss would take over ten minutes to kill', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar'];
-    state.combat.damageLevels['iron_edge'] = 60; // Ember Crypt: about 2600 s per kill
     const squire = state.cards.owned['ember_squire']!;
     squire.level = 20;
     squire.duplicates = 1;
@@ -238,7 +220,6 @@ describe('balance sim: where to fight', () => {
   it('farms the cleared Glimmer Trial for cosmetic materials only within its time share', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'glimmer_trial'];
-    state.combat.damageLevels['copper_edge'] = 100;
     state.cosmetics.owned['holo_hex'] = { level: 1, copies: 1 };
     expect(chooseDungeon(state, content, { trialShare: 0 })).toBe('glimmer_trial');
     expect(chooseDungeon(state, content, { trialShare: 0.9 })).not.toBe('glimmer_trial');

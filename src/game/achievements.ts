@@ -1,7 +1,6 @@
 import { RANK_TIERS, type Achievement, type AchievementCondition, type Content } from '../data';
 import { skillPointsSpent } from './account';
 import { grantCard } from './cards';
-import { damageLevel } from './combat';
 import { Decimal } from './num';
 import { isProducerUnlocked, mineLevel, producersOf } from './production';
 import type { TickReport } from './report';
@@ -100,10 +99,7 @@ function measure(
         target: condition.tier,
       };
     case 'milestone': {
-      const levels = [
-        ...content.mines.map((m) => mineLevel(state, m.id)),
-        ...content.combat.damageUpgrades.map((u) => damageLevel(state, u.id)),
-      ];
+      const levels = content.mines.map((m) => mineLevel(state, m.id));
       return { value: Math.max(0, ...levels), target: condition.level };
     }
     case 'max_cosmetic': {

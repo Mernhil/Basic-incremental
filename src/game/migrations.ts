@@ -43,21 +43,36 @@ export const MIGRATIONS: MigrationTable = {
   13: v13ToV14,
   14: v14ToV15,
   15: v15ToV16,
+  16: v16ToV17,
 };
 
 /** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
 const V15_EXPANSION = { base: 25, growth: 1.4 };
 
-/** Money the first `count` expansions cost: each price `base * growth^n`, rounded up like a buy. */
-function expansionsPaid(count: number): Decimal {
+/**
+ * Money the first `count` buys of an exponential curve cost: each price is `base * growth^n`,
+ * rounded up like a buy (the game never charges a fraction).
+ */
+function curvePaid(curve: { base: number; growth: number }, count: number): Decimal {
   let paid = new Decimal(0);
   for (let n = 0; n < Math.max(0, Math.floor(count)); n++) {
-    const price = new Decimal(V15_EXPANSION.base).mul(new Decimal(V15_EXPANSION.growth).pow(n));
+    const price = new Decimal(curve.base).mul(new Decimal(curve.growth).pow(n));
     const near = price.round();
     // Drop float noise first (25 x 1.4^2 is 49.00000000000001 and must cost 49, not 50).
     paid = paid.add(price.sub(near).abs().lte(near.abs().mul(1e-9)) ? near : price.ceil());
   }
   return paid;
+}
+
+/** Adds Money to the resources of a state payload (a copy). Junk money counts as 0. */
+function withMoney(state: Record<string, unknown>, refund: Decimal): Record<string, unknown> {
+  if (!refund.gt(0)) return state;
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  const money = resources['money'];
+  const held =
+    typeof money === 'string' && isDecimalString(money) ? new Decimal(money) : new Decimal(0);
+  resources['money'] = held.add(refund).toString();
+  return { ...state, resources };
 }
 
 /**
@@ -71,18 +86,80 @@ function v15ToV16(state: Record<string, unknown>): Record<string, unknown> {
   const { logging, mining, ...kept } = production;
   let refund = new Decimal(0);
   for (const part of [logging, mining]) {
-    refund = refund.add(expansionsPaid(isRecord(part) ? levelOf(part['expansions']) : 0));
+    refund = refund.add(curvePaid(V15_EXPANSION, isRecord(part) ? levelOf(part['expansions']) : 0));
   }
-  const out: Record<string, unknown> = { ...state, production: kept };
-  if (refund.gt(0)) {
-    const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
-    const money = resources['money'];
-    const held =
-      typeof money === 'string' && isDecimalString(money) ? new Decimal(money) : new Decimal(0);
-    resources['money'] = held.add(refund).toString();
-    out['resources'] = resources;
+  return withMoney({ ...state, production: kept }, refund);
+}
+
+/** The Money curves of the three damage lines at save format 16 (combat.json): base and growth. */
+const V16_DAMAGE_LINES = {
+  copper_edge: { base: 10, growth: 1.11 },
+  iron_edge: { base: 200, growth: 1.12 },
+  crystal_edge: { base: 3000, growth: 1.13 },
+} as const;
+/** The six shelf upgrades that depended on the damage lines, with their Money price at format 16. */
+const V16_DAMAGE_UPGRADES = {
+  copper_temper: 5_000,
+  copper_hardening: 1_000_000,
+  iron_temper: 100_000,
+  iron_hardening: 30_000_000,
+  crystal_temper: 1_500_000,
+  crystal_hardening: 1_000_000_000,
+} as const;
+/** The level cap of each tier from format 17 on (cardRules.json `levelCaps`); stars do not count. */
+const V17_LEVEL_CAPS: Record<string, number> = { bronze: 20, silver: 40, gold: 60, prismatic: 80 };
+
+/**
+ * v16 -> v17: damage comes from cards (DESIGN.md §5). The three damage lines (Copper, Iron and
+ * Crystal Edge) and the six Temper / Hardening shelf upgrades are gone. The Money they cost is
+ * paid back: every level of a line at its old price (`base * growth^n`, each rounded up like a
+ * buy, before any modifier) and the price of every owned upgrade. A card above its tier's new
+ * level cap is set to the cap with no XP, so it can tier up at once; stars are kept.
+ */
+function v16ToV17(state: Record<string, unknown>): Record<string, unknown> {
+  let refund = new Decimal(0);
+  const out: Record<string, unknown> = { ...state };
+
+  if (isRecord(state['combat'])) {
+    const { damageLevels, ...combat } = state['combat'];
+    const levels = isRecord(damageLevels) ? damageLevels : {};
+    for (const [id, curve] of Object.entries(V16_DAMAGE_LINES)) {
+      refund = refund.add(curvePaid(curve, levelOf(levels[id])));
+    }
+    out['combat'] = combat;
   }
-  return out;
+
+  if (isRecord(state['upgrades'])) {
+    const owned = Array.isArray(state['upgrades']['owned']) ? state['upgrades']['owned'] : [];
+    const gone = new Set(Object.keys(V16_DAMAGE_UPGRADES));
+    for (const id of owned) {
+      if (typeof id === 'string' && gone.has(id)) {
+        refund = refund.add(V16_DAMAGE_UPGRADES[id as keyof typeof V16_DAMAGE_UPGRADES]);
+      }
+    }
+    out['upgrades'] = {
+      ...state['upgrades'],
+      owned: owned.filter((id) => !(typeof id === 'string' && gone.has(id))),
+    };
+  }
+
+  if (isRecord(state['cards']) && isRecord(state['cards']['owned'])) {
+    const cards = state['cards'];
+    out['cards'] = {
+      ...cards,
+      owned: Object.fromEntries(
+        Object.entries(cards['owned'] as Record<string, unknown>).map(([id, card]) => {
+          if (!isRecord(card)) return [id, card];
+          const cap = V17_LEVEL_CAPS[String(card['tier'])];
+          return cap !== undefined && levelOf(card['level']) > cap
+            ? [id, { ...card, level: cap, xp: '0' }]
+            : [id, card];
+        }),
+      ),
+    };
+  }
+
+  return withMoney(out, refund);
 }
 
 /**
@@ -109,11 +186,6 @@ const V14_MONEY_CURVES = {
     iron_deeps: { base: 200, growth: 1.32 },
     crystal_grotto: { base: 2500, growth: 1.34 },
   },
-  damage: {
-    copper_edge: { base: 10, growth: 1.11 },
-    iron_edge: { base: 200, growth: 1.12 },
-    crystal_edge: { base: 3000, growth: 1.13 },
-  },
 } as const;
 /** Money a brand-new game starts with at save format 14 (resources.json `startAmount`). */
 const V14_START_MONEY = 100;
@@ -134,9 +206,10 @@ const levelOf = (value: unknown): number => {
 /**
  * v13 -> v14: the three loops (DESIGN.md §3). Money buys mine levels, plots / slots and damage
  * lines (they cost gems before); the Moss and Ember Sigils became the Summon and Glamour
- * Crystal; the Frost Sigil is a material with the same id. Levels are kept, and the Money they
- * would cost now is paid back on top of the starting Money, so nothing feels lost. Plots and slots
- * are kept too; their Money is paid back once, by v15 -> v16, when they go away.
+ * Crystal; the Frost Sigil is a material with the same id. Levels are kept, and the Money the mine
+ * levels would cost now is paid back on top of the starting Money, so nothing feels lost. Plots,
+ * slots and damage lines are kept too; their Money is paid back once, by v15 -> v16 and v16 -> v17,
+ * when they go away.
  * Ids that were about sigils are renamed (skill, Starlight shop item, shard shop bundles).
  */
 function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
@@ -148,14 +221,9 @@ function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
 
   const production = isRecord(state['production']) ? state['production'] : {};
   const mineLevels = isRecord(production['mineLevels']) ? production['mineLevels'] : {};
-  const combat = isRecord(state['combat']) ? state['combat'] : {};
-  const damageLevels = isRecord(combat['damageLevels']) ? combat['damageLevels'] : {};
   let refund = new Decimal(0);
   for (const [id, curve] of Object.entries(V14_MONEY_CURVES.mines)) {
     refund = refund.add(curveSum(curve, levelOf(mineLevels[id])));
-  }
-  for (const [id, curve] of Object.entries(V14_MONEY_CURVES.damage)) {
-    refund = refund.add(curveSum(curve, levelOf(damageLevels[id])));
   }
   const held =
     typeof moved['money'] === 'string' && isDecimalString(moved['money'])

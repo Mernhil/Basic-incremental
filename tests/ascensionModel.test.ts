@@ -52,15 +52,7 @@ describe('ascension gate', () => {
     const s = freshState();
     const kept = keptViews(s, content);
     const ids = kept.map((k) => k.id);
-    for (const id of [
-      'damage_lines',
-      'cosmetics',
-      'unlocks',
-      'mastery',
-      'medals',
-      'portal_pity',
-      'starlight',
-    ])
+    for (const id of ['cosmetics', 'unlocks', 'mastery', 'medals', 'portal_pity', 'starlight'])
       expect(ids).toContain(id);
     const v = gateView(ascensionPreview(s, content), s, content);
     expect(v.kept.length).toBe(kept.length);

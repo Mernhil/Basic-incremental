@@ -56,8 +56,6 @@ describe('shelf status', () => {
     const state = freshState();
     state.production.mineLevels['copper_quarry'] = 10;
     expect(item(state, 'sharp_picks').status).toBe('available');
-    state.combat.damageLevels['copper_edge'] = 25;
-    expect(item(state, 'copper_temper').status).toBe('available');
     state.combat.kills['mossy_cellar'] = 20;
     expect(item(state, 'tax_collector').status).toBe('available');
     state.mastery.gemTiers['oak_gem'] = 1;
@@ -158,11 +156,11 @@ describe('ascension', () => {
     const state = freshState();
     state.mastery.harvested['oak_gem'] = new Decimal(1e9);
     state.mastery.harvested['grotto_gem'] = new Decimal(1e8);
-    state.upgrades.owned.push('keen_axes', 'copper_temper');
+    state.upgrades.owned.push('keen_axes', 'battle_cry');
     state.upgrades.moneyEarned = new Decimal(123456);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
-    expect(result.state.upgrades.owned).toEqual(['copper_temper']);
+    expect(result.state.upgrades.owned).toEqual(['battle_cry']);
     expect(result.state.upgrades.moneyEarned.eq(123456)).toBe(true);
   });
 });

@@ -8,8 +8,7 @@
  *   priority list) as soon as they are affordable, and rebuilds each card's enhancements as the
  *   best set its budget allows;
  * - keeps the resources the next waiting card upgrade or tree kind needs (reservations);
- * - spends its Money on the economy purchase with the best gain per Money: a damage line
- *   (relative DPS gain, with bulk buys up to the next x2 milestone), a mine level (relative gain
+ * - spends its Money on the economy purchase with the best gain per Money: a mine level (relative gain
  *   of the weighted production) or a tree level (the same), waiting for the
  *   best one unless a cheaper one costs a small share of it. Card upgrades use gems and Cores
  *   only, so they never compete with Money;
@@ -25,20 +24,14 @@ import { JOBS, RANK_TIERS, RARITIES, type Content, type Job } from '../../src/da
 import {
   advance,
   type OwnedCard,
-  buyDamageLevels,
   buyMineLevel,
   cardPower,
   collectModifiers,
   createInitialState,
   createSeededRng,
-  damageLevel,
-  damageLineDps,
-  damageLineOffer,
-  damageUpgradeCost,
   Decimal,
   emptyCardLoadout,
   incomePerSecond,
-  isDamageLineUnlocked,
   isDungeonCleared,
   isDungeonUnlocked,
   isProducerUnlocked,
@@ -50,7 +43,6 @@ import {
   treeLevelCost,
   buyTreeLevel,
   mineLevelCost,
-  nextMilestone,
   productionPerSecond,
   producerRate,
   secondsPerKill,
@@ -64,7 +56,6 @@ import {
   treeUnlockCost,
   unlockTree,
   averageDps,
-  baseDamage,
   cardCost,
   pull,
   pullPrice,
@@ -318,43 +309,14 @@ function weightedProduction(
   return total;
 }
 
-/** The economy purchases (damage lines, mine and tree levels, shelf upgrades) with their gains. */
+/** The economy purchases (mine and tree levels, shelf upgrades) with their gains. */
 function economyCandidates(
   state: GameState,
   content: Content,
   modifiers: Modifier[],
 ): Omit<Candidate, 'eta'>[] {
   const out: Omit<Candidate, 'eta'>[] = [];
-  const base = num(baseDamage(state, content, modifiers));
   const totalProduction = weightedProduction(state, content, modifiers);
-  for (const line of content.combat.damageUpgrades) {
-    if (!isDamageLineUnlocked(state, content, line)) continue;
-    const price = damageUpgradeCost(state, content, line.id, modifiers);
-    if (!price) continue;
-    const level = damageLevel(state, line.id);
-    const dpsAt = (l: number): number => num(damageLineDps(line, l, modifiers));
-    out.push({
-      id: `damage:${line.id}`,
-      kind: 'economy',
-      prices: [price],
-      gain: base > 0 ? (dpsAt(level + 1) - dpsAt(level)) / base : 1,
-      buy: (s, c, m) => okState(buyDamageLevels(s, c, line.id, 1, m)),
-    });
-    // A bulk buy up to the next x2 milestone, valued with it.
-    const toNext = nextMilestone(line.milestones, level).level - level;
-    if (toNext > 1 && toNext <= 10 && line.milestones.multiplier.gt(1)) {
-      const offer = damageLineOffer(state, content, line.id, toNext, modifiers);
-      if (offer) {
-        out.push({
-          id: `damage:${line.id}:x${toNext}`,
-          kind: 'economy',
-          prices: [offer.price],
-          gain: base > 0 ? (dpsAt(level + toNext) - dpsAt(level)) / base : 1,
-          buy: (s, c, m) => okState(buyDamageLevels(s, c, line.id, toNext, m)),
-        });
-      }
-    }
-  }
   for (const mine of content.mines) {
     if (!isProducerUnlocked(state, content, 'mining', mine.id)) continue;
     const price = mineLevelCost(state, content, mine.id, modifiers);
@@ -1111,9 +1073,6 @@ export function formatSummary(result: SimResult, content: Content): string {
   const cards = Object.entries(s.cards.owned)
     .map(([id, c]) => `${content.cardById.get(id)?.name ?? id} ${c.tier} ★${c.stars} Lv ${c.level}`)
     .join(', ');
-  const damage = content.combat.damageUpgrades
-    .map((u) => `${u.name} ${s.combat.damageLevels[u.id] ?? 0}`)
-    .join(', ');
   const mines = content.mines
     .map((m) => `${m.name} ${s.production.mineLevels[m.id] ?? 0}`)
     .join(', ');
@@ -1144,7 +1103,6 @@ export function formatSummary(result: SimResult, content: Content): string {
     `Summons: ${result.log.summons} pulls; Money in hand ${num(s.resources['money'] ?? new Decimal(0)).toExponential(1)}, crystals ${num(s.resources['summon_crystal'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_crystal'] ?? new Decimal(0)).toFixed(0)} glamour`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
     `Tree levels: ${trees}`,
-    `Damage lines: ${damage}`,
     `Mine levels: ${mines}`,
     `Cards: ${cards}`,
     `Account level ${s.account.level}, skills: ${

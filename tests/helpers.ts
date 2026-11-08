@@ -12,7 +12,7 @@ const plainMines = content.mines.map((m) => ({
 /**
  * The bundled content with crits (DESIGN.md §6), level milestones (11.12) and mastery
  * bonuses (16, E2 and E3; tiers still settle) switched off, so rule tests can set an exact
- * damage through upgrade levels and check exact totals. Crit, milestone and mastery tests use
+ * damage (`withDps`) and check exact totals. Crit, milestone and mastery tests use
  * the real `content`.
  */
 export const plainContent: Content = {
@@ -28,9 +28,32 @@ export const plainContent: Content = {
   combat: {
     ...content.combat,
     crit: { chance: 0, damage: new Decimal(1) },
-    damageUpgrades: content.combat.damageUpgrades.map((u) => ({ ...u, milestones: noMilestones })),
   },
 };
+
+/**
+ * The same content with the Common base damage set to `dps`: a fresh game (Ember Squire, Bronze
+ * ★1 Lv 1, leading) then deals exactly `dps` per second, and so does a bare-handed one (the unarmed
+ * damage is set to it too). Rule tests use it where they need an exact damage; the rarity ratios stay as they are.
+ */
+export function withDps(dps: Decimal | number | string, base: Content = plainContent): Content {
+  const common = new Decimal(dps);
+  const baseDamage = Object.fromEntries(
+    Object.keys(base.cardRules.baseDamage).map((rarity) => [
+      rarity,
+      common.mul(
+        base.cardRules.baseDamage[rarity as keyof typeof base.cardRules.baseDamage].div(
+          base.cardRules.baseDamage.common,
+        ),
+      ),
+    ]),
+  ) as Content['cardRules']['baseDamage'];
+  return {
+    ...base,
+    cardRules: { ...base.cardRules, baseDamage },
+    combat: { ...base.combat, unarmedDamage: common },
+  };
+}
 
 /**
  * A new game for rule tests: every achievement counts as already unlocked, so their rewards

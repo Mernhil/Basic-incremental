@@ -325,7 +325,6 @@ export const COPY = {
       'Per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
     kept: 'Kept forever',
     keptParts: {
-      damage_lines: 'Damage lines',
       cards: 'Cards',
       cosmetics: 'Cosmetics',
       unlocks: 'Unlocks',
@@ -336,8 +335,6 @@ export const COPY = {
       starlight: 'Starlight',
     },
     keptDetail: {
-      damage_lines: (levels: number) =>
-        levels === 1 ? '1 level bought' : `${levels} levels bought`,
       cards: (n: number) => (n === 1 ? '1 card, rank and level' : `${n} cards, ranks and levels`),
       cosmetics: (n: number) => (n === 1 ? '1 cosmetic owned' : `${n} cosmetics owned`),
       unlocks: (n: number) =>

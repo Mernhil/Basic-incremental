@@ -7,20 +7,11 @@ import {
   Decimal,
   MAX_KILLS_PER_ADVANCE,
 } from '../src/game';
-import { constantRng, bareState, plainContent as content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
 
 const dungeon = content.dungeons[0]!;
 const rng = constantRng(0.5);
 const maxHp = bossMaxHp(dungeon, 0);
-
-/** A fresh state dealing `dps` damage per second (through Copper Edge levels). */
-function withDps(dps: Decimal) {
-  const state = freshState();
-  const perLevel = content.combat.damageUpgrades[0]!.damagePerLevel;
-  const levels = dps.sub(content.combat.startingDamage).div(perLevel).toNumber();
-  state.combat.damageLevels = { [content.combat.damageUpgrades[0]!.id]: levels };
-  return state;
-}
 
 describe('advance (tick math)', () => {
   it('produces rate * seconds for each unlocked kind, once', () => {
@@ -37,13 +28,14 @@ describe('advance (tick math)', () => {
 
   it('applies damage to the boss without killing it', () => {
     const { state, report } = advance(freshState(), content, 10_000, rng);
-    expect(state.bossHp!.eq(maxHp.sub(10))).toBe(true); // 1 dps, no burst yet
+    // 10 s of the Ember Squire's base damage, no burst yet.
+    expect(state.bossHp!.eq(maxHp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(true);
     expect(report.bossKills).toBe(0);
   });
 
   it('kills, rolls the drops and respawns the boss at full HP', () => {
     // Exactly enough damage for one kill in one second.
-    const { state, report } = advance(withDps(maxHp), content, 1000, rng);
+    const { state, report } = advance(freshState(), withDps(maxHp), 1000, rng);
     expect(report.bossKills).toBe(1);
     expect(state.stats.bossKills).toBe(1);
     // rng 0.5 -> min + floor(0.5 * span) of every currency; a Core drops only when 0.5 is under
@@ -63,7 +55,7 @@ describe('advance (tick math)', () => {
   });
 
   it('carries overflow damage into the next boss', () => {
-    const { state, report } = advance(withDps(maxHp.mul(2.5)), content, 1000, rng);
+    const { state, report } = advance(freshState(), withDps(maxHp.mul(2.5)), 1000, rng);
     expect(report.bossKills).toBe(2);
     expect(approxEq(state.bossHp!, maxHp.div(2))).toBe(true);
   });
@@ -90,7 +82,7 @@ describe('advance (tick math)', () => {
   });
 
   it('caps boss kills per call', () => {
-    const { report } = advance(withDps(new Decimal('1e30')), content, 1000, rng);
+    const { report } = advance(freshState(), withDps(new Decimal('1e30')), 1000, rng);
     expect(report.bossKills).toBe(MAX_KILLS_PER_ADVANCE);
   });
 

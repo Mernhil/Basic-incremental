@@ -1,16 +1,10 @@
 import type { Content } from '../../../data';
 import {
-  isDamageLineUnlocked,
   Decimal,
-  damageLevel,
-  damageLineMilestone,
-  damageLineOffer,
-  formatDuration,
   isProducerUnlocked,
   milestoneInfo,
   mineLevel,
   mineLevelOffer,
-  previewDamageLine,
   previewMineLevel,
   previewTreeLevel,
   treeLevel,
@@ -26,7 +20,7 @@ import { COPY } from '../copy';
 
 /**
  * Buy-line view models (DESIGN.md §11, "Header, numbers and buying"): the offer for the chosen
- * ×1 / ×10 / ×100 / Max, its preview ("DPS 12 → 13, time-to-kill 11h → 2h") and the next
+ * ×1 / ×10 / ×100 / Max, its preview ("Oak 4/s → 5/s") and the next
  * milestone ("Lv 25: ×2"). Display logic only; prices, previews and milestones come from game.
  */
 
@@ -36,7 +30,7 @@ export interface BuyLineView {
   /** The resource paid with. */
   resource: string;
   level: number;
-  /** False while the line cannot be bought at all (locked mine, no ore seen yet). */
+  /** False while the line cannot be bought at all (locked mine). */
   available: boolean;
   offer: BuyOffer;
   /** Button text: "Buy ×10" and the price. */
@@ -53,48 +47,11 @@ export interface BuyLineView {
 
 const resName = (content: Content, id: string): string => content.resourceById.get(id)?.name ?? id;
 
-const fmtTtk = (s: number | null): string =>
-  s === null || !Number.isFinite(s) ? '—' : formatDuration(s * 1000);
-
 export const buyLabel = (offer: BuyOffer, count: BuyCount): string =>
   count === 'max' ? COPY.buy.max(offer.count) : COPY.buy.times(offer.count);
 
 const milestoneTag = (m: MilestoneInfo | null): string =>
   m ? COPY.buy.milestone(m.nextLevel, fmt(m.nextMultiplier)) : '';
-
-/** The damage lines of the arena drawer for a buy count. */
-export function damageLineViews(
-  state: GameState,
-  content: Content,
-  count: BuyCount,
-  mods: readonly Modifier[],
-): BuyLineView[] {
-  return content.combat.damageUpgrades.flatMap((u) => {
-    const offer = damageLineOffer(state, content, u.id, count, mods);
-    const p = previewDamageLine(state, content, u.id, count, mods);
-    if (!offer || !p) return [];
-    const level = damageLevel(state, u.id);
-    const have = state.resources[u.cost.resource] ?? new Decimal(0);
-    const m = damageLineMilestone(state, content, u.id);
-    const ttk = p.ttkBefore === null ? '' : COPY.buy.ttk(fmtTtk(p.ttkBefore), fmtTtk(p.ttkAfter));
-    return [
-      {
-        id: u.id,
-        name: u.name,
-        resource: u.cost.resource,
-        level,
-        available: isDamageLineUnlocked(state, content, u) && (level > 0 || have.gt(0)),
-        offer,
-        label: buyLabel(offer, count),
-        price: `${fmt(offer.price.amount)} ${resName(content, u.cost.resource)}`,
-        preview: COPY.buy.dps(fmt(p.dpsBefore), fmt(p.dpsAfter)) + ttk,
-        milestone: milestoneTag(m),
-        milestoneInfo: m,
-        gain: Decimal.max(p.dpsAfter.sub(p.dpsBefore), 0),
-      },
-    ];
-  });
-}
 
 /** The mine level lines of the production rail (unlocked mines only). */
 export function mineLevelViews(

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { MIN_OFFLINE_MS, OFFLINE_CAP_MS, simulateOffline } from '../src/game';
-import { constantRng, bareState, plainContent as content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
 
 const HOUR = 3_600_000;
 const rng = constantRng(0.5);
@@ -36,8 +36,7 @@ describe('simulateOffline', () => {
   it('reports knockouts, materials and card XP for the welcome-back summary', () => {
     const start = freshState();
     // 5000 dps farms the Mossy Cellar; a constant 0.05 roll lands every 10% Moss Core drop.
-    start.combat.damageLevels = { copper_edge: 4999 };
-    const { summary } = simulateOffline(start, content, 0, HOUR, constantRng(0.05));
+    const { summary } = simulateOffline(start, withDps(5000), 0, HOUR, constantRng(0.05));
     expect(summary!.bossKills).toBeGreaterThan(0);
     expect(summary!.materials['moss_core']).toBe(summary!.bossKills);
     const main = start.cards.loadouts.fighting.main!;

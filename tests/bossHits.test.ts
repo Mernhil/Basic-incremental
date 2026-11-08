@@ -13,6 +13,7 @@ import {
   collectModifiers,
   Decimal,
   emptyReport,
+  levelCap,
   loadoutHealth,
   loadoutMaxHealth,
   mergeReports,
@@ -38,6 +39,13 @@ const ok = (r: CombatResult): GameState => {
   return r.state;
 };
 const inCellar = (): GameState => ok(setActiveDungeon(freshState(), content, 'mossy_cellar'));
+/** The cellar with the Ember Squire at its level cap, so the time spent fighting does not level it
+ *  up (and grow the health pool) while a knockout is timed. */
+const inCappedCellar = (): GameState => {
+  const state = inCellar();
+  state.cards.owned['ember_squire']!.level = levelCap(content, { tier: 'bronze', stars: 1 });
+  return state;
+};
 const mods = (s: GameState) => collectModifiers(s, content);
 const pool = (s: GameState) => loadoutMaxHealth(s, content, mods(s), 'mossy_cellar');
 const run = (s: GameState, seconds: number, c: Content = content) =>
@@ -172,7 +180,7 @@ describe('online equals offline', () => {
 
 describe('knockout timing', () => {
   it('knocks the loadout out on the hit that empties the pool (a light hit)', () => {
-    const start = inCellar();
+    const start = inCappedCellar();
     start.combat.loadoutDamage = pool(start).sub(0.7); // 0.7 left: the 2nd light hit empties it
     const before = run(start, 19.9);
     expect(before.report.knockouts).toBe(0);
@@ -187,7 +195,7 @@ describe('knockout timing', () => {
   });
 
   it('knocks the loadout out on a slam when only a slam can finish it', () => {
-    const start = inCellar();
+    const start = inCappedCellar();
     start.combat.loadoutDamage = pool(start).sub(3); // five lights take 2, the slam takes 4
     expect(run(start, 59.9).report.knockouts).toBe(0);
     const after = run(start, 60.1);
@@ -198,7 +206,7 @@ describe('knockout timing', () => {
   });
 
   it('deals no further hits while knocked out, then starts again at full health', () => {
-    const start = inCellar();
+    const start = inCappedCellar();
     start.combat.loadoutDamage = pool(start).sub(0.1);
     const ko = content.combat.knockoutSeconds;
     const out = run(start, 10 + ko / 2);
@@ -217,7 +225,7 @@ describe('knockout timing', () => {
   });
 
   it('survives a light hit that leaves a sliver, and falls to the next one', () => {
-    const start = inCellar();
+    const start = inCappedCellar();
     start.combat.loadoutDamage = pool(start).sub(0.5);
     expect(run(start, 10.1).report.knockouts).toBe(0);
     expect(run(start, 20.1).report.knockouts).toBe(1);

@@ -44,7 +44,7 @@ import {
   type Modifier,
   type OwnedCard,
 } from '../src/game';
-import { bareState, constantRng, plainContent as content, freshState } from './helpers';
+import { bareState, constantRng, plainContent as content, freshState, withDps } from './helpers';
 
 const rng = constantRng(0.5);
 
@@ -86,13 +86,12 @@ describe('a new game (DESIGN.md §5)', () => {
 });
 
 describe('levels (DESIGN.md §5)', () => {
-  it('caps levels at 20 for Bronze ★1, +4 per star, up to 100 at Prismatic ★6', () => {
+  it('caps levels by tier only: 20 / 40 / 60 / 80, whatever the stars', () => {
     expect(levelCap(content, { tier: 'bronze', stars: 1 })).toBe(20);
-    expect(levelCap(content, { tier: 'bronze', stars: 6 })).toBe(40);
+    expect(levelCap(content, { tier: 'bronze', stars: 6 })).toBe(20);
     expect(levelCap(content, { tier: 'silver', stars: 1 })).toBe(40);
-    expect(levelCap(content, { tier: 'silver', stars: 6 })).toBe(60);
-    expect(levelCap(content, { tier: 'gold', stars: 3 })).toBe(68);
-    expect(levelCap(content, { tier: 'prismatic', stars: 6 })).toBe(100);
+    expect(levelCap(content, { tier: 'gold', stars: 3 })).toBe(60);
+    expect(levelCap(content, { tier: 'prismatic', stars: 6 })).toBe(80);
   });
 
   it('follows the XP curve from data', () => {
@@ -136,7 +135,7 @@ describe('levels (DESIGN.md §5)', () => {
     expect(after.stats.playTimeMs % CARD_LEVEL_STEP_MS).toBe(0);
   });
 
-  it('gives fighting cards XP per boss kill, more in harder dungeons', () => {
+  it('gives fighting cards XP per boss kill (on top of the time fought), more in harder dungeons', () => {
     const [mossy, ember, frost] = content.dungeons;
     const perKill = fightingXpPerKill(content, mossy!);
     expect(perKill.eq(content.cardRules.xp.perKill)).toBe(true);
@@ -148,16 +147,16 @@ describe('levels (DESIGN.md §5)', () => {
     state.cards.loadouts.fighting.main = 'ember_squire';
     // The first boss falls in exactly 12 s: its HP over 12 is the damage per second.
     const hp = content.dungeons[0]!.boss.hp.toNumber();
-    state.combat.damageLevels = { copper_edge: hp / 12 - 1 };
-    const { state: after, report } = advance(state, content, 12_000, constantRng(0.9));
+    const { state: after, report } = advance(state, withDps(hp / 12), 12_000, constantRng(0.9));
     expect(report.bossKills).toBe(1);
     const squire = after.cards.owned['ember_squire']!;
-    // 50 XP on the kill: levels 1..5 cost 10 + 11.2 + 12.544 + 14.049 = 47.793; 2.207 left.
+    // 12 s fought (1 XP each) and 50 XP on the kill = 62: levels 1..5 cost 10 + 11.2 + 12.544 +
+    // 14.049 = 47.793; 14.207 is left, short of the 15.735 for level 6.
     expect(squire.level).toBe(5);
-    expect(squire.xp.toNumber()).toBeCloseTo(50 - 47.79328, 6);
+    expect(squire.xp.toNumber()).toBeCloseTo(62 - 47.79328, 6);
   });
 
-  it('stops XP at the level cap until a star-up raises it', () => {
+  it('stops XP at the level cap until a tier-up raises it', () => {
     const state = own(bareState(), 'apprentice_feller', { level: 20 });
     state.cards.loadouts.logging.main = 'apprentice_feller';
     const after = advance(state, content, 60_000, rng).state;
@@ -168,9 +167,9 @@ describe('levels (DESIGN.md §5)', () => {
   it('gives XP while offline exactly like the live game loop', () => {
     const start = freshState();
     // A Mossy Cellar kill per ~4 min.
-    start.combat.damageLevels = { copper_edge: content.dungeons[0]!.boss.hp.toNumber() / 240 - 1 };
-    const offline = simulateOffline(start, content, 0, 3_600_000, rng);
-    const live = advanceChunked(start, content, 3_600_000, rng, 1000).state;
+    const strong = withDps(content.dungeons[0]!.boss.hp.toNumber() / 240);
+    const offline = simulateOffline(start, strong, 0, 3_600_000, rng);
+    const live = advanceChunked(start, strong, 3_600_000, rng, 1000).state;
     expect(offline.summary!.cardLevels['apprentice_feller']).toEqual({
       from: 1,
       to: live.cards.owned['apprentice_feller']!.level,
@@ -233,8 +232,8 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
       main: 'shield_warden',
       supports: ['ember_squire', null, null],
     });
-    // Warden main: +10%; Squire support: +5%.
-    expect(effectiveDamage(state, content).eq(base.mul(1.15))).toBe(true);
+    // A Rare main deals 1.5x a Common's base damage, plus Warden main +10% and Squire support +5%.
+    expect(effectiveDamage(state, content).eq(base.mul(1.5).mul(1.15))).toBe(true);
     expect(fighting(state).fill).toBe(1);
   });
 
@@ -252,11 +251,11 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     const support = cardEffectModifiers(content, 'storm_duelist', 'support', lv11);
     expect(support[0]!.value.toNumber()).toBeCloseTo(12 * 1.2); // +12% damage at power 1.2
     const main = cardEffectModifiers(content, 'storm_duelist', 'main', lv11);
-    // The fill ×2 is a `mult` that stays fixed; main growth adds +20% damage and +2% fill.
+    // The fill ×2 is a `mult` that stays fixed; main growth adds +2% fill. Damage grows through
+    // the card's base damage instead (DESIGN.md §5), so there is no damage percent here.
     expect(main.find((m) => m.stat === 'burst.fill' && m.kind === 'mult')!.value.eq(2)).toBe(true);
     const growth = main.filter((m) => m.kind === 'percent');
     expect(growth.map((m) => [m.stat, Math.round(m.value.toNumber() * 1000) / 1000])).toEqual([
-      ['combat.damage', 20],
       ['burst.fill', 2],
     ]);
   });
@@ -386,7 +385,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     expect(starUp(state, content, 'nope')).toEqual({ ok: false, reason: 'unknown' });
   });
 
-  it('spends a duplicate, Cores and gems and keeps the level; the cap rises', () => {
+  it('spends a duplicate, Cores and gems and keeps the level; the cap stays', () => {
     const owned = own(freshState(), 'ember_squire', { level: 20, duplicates: 2 });
     const costs = starUpCost(
       content,
@@ -398,7 +397,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     const after = ok(starUp(state, content, 'ember_squire'));
     for (const c of costs) expect(after.resources[c.resource]!.eq(3)).toBe(true);
     expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, duplicates: 1 });
-    expect(cardInfo(after, content, 'ember_squire')!.levelCap).toBe(24);
+    expect(cardInfo(after, content, 'ember_squire')!.levelCap).toBe(20); // stars do not raise it
     expect(state.cards.owned['ember_squire']!.stars).toBe(1); // pure
   });
 
@@ -583,7 +582,7 @@ describe('saving cards (save format v5)', () => {
     const state = own(freshState(), 'shield_warden', {
       tier: 'gold',
       stars: 3,
-      level: 61,
+      level: 55,
       xp: new Decimal('123.5'),
       duplicates: 4,
     });

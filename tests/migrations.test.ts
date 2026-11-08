@@ -240,7 +240,7 @@ describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md §3)', () => {
     expect(out.resources['money']).toBe('100');
   });
 
-  it('refunds the price of every mine level and damage line as Money, and leaves the expansions to v16', () => {
+  it('refunds the price of every mine level as Money, and leaves the expansions to v16 and the damage lines to v17', () => {
     const out = step({
       resources: { money: '0' },
       production: {
@@ -250,14 +250,18 @@ describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md §3)', () => {
       },
       combat: { damageLevels: { copper_edge: 2, iron_edge: 1 } },
     }) as { resources: Record<string, string> };
-    // Start 100 + copper levels 15 + 15 * 1.3 + 15 * 1.3^2 + copper edge 10 + 10 * 1.11 + iron
-    // edge 200. The plots and slots are refunded once, by v15 -> v16 (not here).
-    const expected = 100 + (15 + 15 * 1.3 + 15 * 1.69) + (10 + 10 * 1.11) + 200;
+    // Start 100 + copper levels 15 + 15 * 1.3 + 15 * 1.3^2. The plots and slots are refunded once,
+    // by v15 -> v16, and the damage lines once, by v16 -> v17 (not here).
+    const expected = 100 + (15 + 15 * 1.3 + 15 * 1.69);
     expect(Number(out.resources['money'])).toBeCloseTo(expected, 6);
     expect(
       (out as unknown as { production: { logging: { expansions: number } } }).production.logging
         .expansions,
     ).toBe(2); // kept in the state for v16
+    expect((out as unknown as { combat: { damageLevels: unknown } }).combat.damageLevels).toEqual({
+      copper_edge: 2,
+      iron_edge: 1,
+    }); // kept in the state for v17
   });
 
   it('adds the refund to Money already held and does not mutate its input', () => {
@@ -369,5 +373,95 @@ describe('v15 -> v16 (one of each: no plots, slots or expansions, DESIGN.md §4)
     });
     expect(() => step({})).not.toThrow();
     expect(() => step({ resources: 3, production: 'x' })).not.toThrow();
+  });
+});
+
+describe('v16 -> v17 (damage comes from cards: no damage lines, Temper or Hardening, DESIGN.md §5)', () => {
+  const step = MIGRATIONS[16]!;
+
+  it('drops the damage line levels from the combat part and keeps the rest', () => {
+    const out = step({
+      combat: { damageLevels: { copper_edge: 2 }, kills: { mossy_cellar: 4 }, trialBest: {} },
+    }) as { combat: Record<string, unknown> };
+    expect(out.combat).toEqual({ kills: { mossy_cellar: 4 }, trialBest: {} });
+  });
+
+  it('pays back every level of every line, each price rounded up', () => {
+    const out = step({
+      resources: { money: '10', oak_gem: '5' },
+      combat: { damageLevels: { copper_edge: 3, iron_edge: 1, crystal_edge: 2 } },
+    }) as { resources: Record<string, string> };
+    // Copper Edge 10 x 1.11^n: 10 + 12 + 13. Iron Edge 200. Crystal Edge 3000 + 3390.
+    expect(out.resources['money']).toBe(String(10 + (10 + 12 + 13) + 200 + (3000 + 3390)));
+    expect(out.resources['oak_gem']).toBe('5');
+  });
+
+  it('pays back the price of each owned Temper and Hardening and removes it from the shelf', () => {
+    const out = step({
+      resources: { money: '0' },
+      upgrades: {
+        owned: ['keen_axes', 'copper_temper', 'iron_hardening', 'crystal_temper'],
+        moneyEarned: '77',
+      },
+    }) as { resources: Record<string, string>; upgrades: { owned: string[]; moneyEarned: string } };
+    expect(out.upgrades.owned).toEqual(['keen_axes']);
+    expect(out.upgrades.moneyEarned).toBe('77');
+    // Copper Temper 5,000 + Iron Hardening 30,000,000 + Crystal Temper 1,500,000.
+    expect(out.resources['money']).toBe('31505000');
+  });
+
+  it('adds nothing for a save with no lines and no shelf items', () => {
+    const out = step({ resources: { money: '40' }, combat: { damageLevels: {} } }) as {
+      resources: Record<string, string>;
+    };
+    expect(out.resources['money']).toBe('40');
+  });
+
+  it('sets a card above its new tier cap to the cap and clears its XP', () => {
+    const card = (tier: string, stars: number, level: number) => ({
+      tier,
+      stars,
+      level,
+      xp: '12',
+      duplicates: 0,
+      enhancements: [],
+    });
+    const out = step({
+      cards: {
+        owned: {
+          a: card('bronze', 6, 36),
+          b: card('silver', 2, 44),
+          c: card('gold', 6, 80),
+          d: card('prismatic', 6, 100),
+          e: card('bronze', 1, 7),
+          f: card('silver', 1, 40),
+        },
+      },
+    }) as { cards: { owned: Record<string, { level: number; xp: string }> } };
+    const levels = Object.fromEntries(
+      Object.entries(out.cards.owned).map(([id, c]) => [id, [c.level, c.xp]]),
+    );
+    expect(levels).toEqual({
+      a: [20, '0'],
+      b: [40, '0'],
+      c: [60, '0'],
+      d: [80, '0'],
+      e: [7, '12'],
+      f: [40, '12'],
+    });
+  });
+
+  it('does not mutate its input and copes with missing or junk sections', () => {
+    const input = {
+      resources: { money: '0' },
+      combat: { damageLevels: { copper_edge: 1 } },
+      upgrades: { owned: ['copper_temper'], moneyEarned: '1' },
+      cards: { owned: { a: { tier: 'bronze', stars: 6, level: 30, xp: '5' } } },
+    };
+    const copy = JSON.parse(JSON.stringify(input));
+    step(input);
+    expect(input).toEqual(copy);
+    expect(() => step({})).not.toThrow();
+    expect(() => step({ resources: 3, combat: 'x', upgrades: 7, cards: [] })).not.toThrow();
   });
 });

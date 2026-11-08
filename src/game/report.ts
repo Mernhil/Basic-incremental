@@ -3,7 +3,7 @@ import type { Decimal } from './num';
 
 /**
  * What tiered up (DESIGN.md §12): gem mastery, a boss medal (dungeon or special dungeon), a
- * mine level or damage line milestone, a tree tile stage, a card tier, or a card's unique
+ * mine level or tree level milestone, a tree tile stage, a card tier, or a card's unique
  * evolution.
  */
 export type TierUpKind =
@@ -11,7 +11,6 @@ export type TierUpKind =
   | 'boss_mastery'
   | 'mine_milestone'
   | 'tree_milestone'
-  | 'damage_milestone'
   | 'tile_stage'
   | 'card_tier'
   | 'evolution';
@@ -22,7 +21,7 @@ export type TierUpKind =
  */
 export interface TierUp {
   kind: TierUpKind;
-  /** Gem resource, dungeon, mine, damage line, producer or card id. */
+  /** Gem resource, dungeon, mine, producer or card id. */
   id: string;
   /** Tier before and after: mastery tier 0..4, milestones reached, tile stage 0..4, or the card
    *  tier as a metal index (bronze 1 .. prismatic 4); for `evolution` 0 -> 1. */

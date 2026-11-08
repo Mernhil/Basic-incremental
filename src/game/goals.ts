@@ -5,7 +5,6 @@ import {
   averageDps,
   bossMaxHp,
   burstStats,
-  damageLevel,
   effectiveDrops,
   isDungeonCleared,
   isDungeonUnlocked,
@@ -39,7 +38,7 @@ export interface Goal {
   /** `<kind>:<targetId>`, stable across ticks (for keys and animations). */
   id: string;
   kind: GoalKind;
-  /** The dungeon, special dungeon, tree, mine, damage line, gem or card it is about. */
+  /** The dungeon, special dungeon, tree, mine, gem or card it is about. */
   targetId: string;
   /** Ready to show, e.g. "Clear Ember Crypt → Crystal Grotto". */
   title: string;
@@ -248,20 +247,6 @@ const mineMilestone: RuleFn = (state, content, modifiers) =>
       };
     });
 
-const damageMilestone: RuleFn = (state, content, modifiers) =>
-  content.combat.damageUpgrades.map((u) => {
-    const level = damageLevel(state, u.id);
-    const info = milestoneInfo(u.milestones, level);
-    const count = Math.min(info.levelsToNext, MAX_BULK_LEVELS);
-    const price = curveBulkPrice(u.cost, level, count, modifiers, { job: 'fighting' });
-    return {
-      targetId: u.id,
-      title: `${u.name} Lv ${info.nextLevel} (×${info.nextMultiplier.toString()})`,
-      progress: info.progress,
-      etaSeconds: secondsToAfford(state, content, [price], modifiers),
-    };
-  });
-
 const gemMasteryRule: RuleFn = (state, content, modifiers) =>
   content.resources
     .filter((r) => r.kind === 'tree_gem' || r.kind === 'mine_gem')
@@ -370,7 +355,6 @@ const RULES: Record<GoalKind, RuleFn> = {
   clear_trial: clearTrial,
   unlock_tree: unlockTree,
   mine_milestone: mineMilestone,
-  damage_milestone: damageMilestone,
   gem_mastery: gemMasteryRule,
   boss_mastery: bossMasteryRule,
   star_up: starUpRule,

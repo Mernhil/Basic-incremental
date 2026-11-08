@@ -10,7 +10,7 @@ import { grantAccountXp } from './account';
 
 /**
  * Prestige, Ascension (DESIGN.md §9). An ascension resets the run (tree and mine
- * levels, resources, tile stages) and keeps everything else (damage lines, cards, cosmetics,
+ * levels, resources, tile stages) and keeps everything else (cards, cosmetics,
  * unlocks, mastery, medals, portal pity, crystals). It grants Starlight from the gems harvested this run,
  * spent in the Starlight shop on permanent bonuses (modifier source `prestige`), and the n-th
  * ascension grants the prestige cosmetics listed for it. Boss HP and attack grow with the
@@ -21,7 +21,6 @@ import { grantAccountXp } from './account';
 export const ASCENSION_RESETS = ['mine_levels', 'tree_levels', 'resources', 'tile_stages'] as const;
 /** What an ascension keeps. */
 export const ASCENSION_PERSISTS = [
-  'damage_lines',
   'cards',
   'cosmetics',
   'unlocks',

@@ -1,5 +1,5 @@
 import type { Content, ModifierData, Upgrade, UpgradeUnlock } from '../data';
-import { damageLevel, effectiveDamage } from './combat';
+import { effectiveDamage } from './combat';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, mineLevel, pay, producerRate, treeLevel, type Price } from './production';
@@ -110,8 +110,6 @@ function unlockMet(state: GameState, u: UpgradeUnlock): boolean {
       return treeLevel(state, u.tree) >= u.level;
     case 'mineLevel':
       return mineLevel(state, u.mine) >= u.level;
-    case 'damageLevel':
-      return damageLevel(state, u.line) >= u.level;
     case 'gemMastery':
       return (state.mastery.gemTiers[u.gem] ?? 0) >= u.tier;
     case 'bossKills':
@@ -130,10 +128,6 @@ export function unlockText(content: Content, u: UpgradeUnlock): string {
       return `${content.treeById.get(u.tree)?.name ?? u.tree} level ${u.level}`;
     case 'mineLevel':
       return `${content.mineById.get(u.mine)?.name ?? u.mine} level ${u.level}`;
-    case 'damageLevel': {
-      const line = content.combat.damageUpgrades.find((d) => d.id === u.line);
-      return `${line?.name ?? u.line} level ${u.level}`;
-    }
     case 'gemMastery':
       return `${METAL_NAMES[u.tier] ?? u.tier} ${content.resourceById.get(u.gem)?.name ?? u.gem} mastery`;
     case 'bossKills': {
@@ -175,7 +169,7 @@ function previewOf(
       };
     }
   }
-  if (upgrade.effects.some((m) => m.stat === 'combat.damage' || m.stat === 'combat.upgradeGain')) {
+  if (upgrade.effects.some((m) => m.stat === 'combat.damage')) {
     return {
       kind: 'damage',
       before: effectiveDamage(state, content, state.activeDungeonId, modifiers),

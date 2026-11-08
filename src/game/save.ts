@@ -23,7 +23,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 16;
+export const CURRENT_SAVE_VERSION = 17;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -45,7 +45,6 @@ export const serializedStateSchema = z.object({
   }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
-    damageLevels: counts,
     kills: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
@@ -150,7 +149,6 @@ export function serializeState(state: GameState): SerializedState {
     production: cloneProduction(state.production),
     clearedDungeons: [...state.clearedDungeons],
     combat: {
-      damageLevels: { ...state.combat.damageLevels },
       kills: { ...state.combat.kills },
       trialAttempt: {
         elapsedSeconds: state.combat.trialAttempt.elapsedSeconds,
@@ -232,11 +230,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       Object.entries(saved.production.treeLevels).filter(([id]) => content.treeById.has(id)),
     ),
   };
-  const upgrades = new Set(content.combat.damageUpgrades.map((u) => u.id));
   state.combat = {
-    damageLevels: Object.fromEntries(
-      Object.entries(saved.combat.damageLevels).filter(([id]) => upgrades.has(id)),
-    ),
     kills: { ...saved.combat.kills },
     trialAttempt: {
       elapsedSeconds: saved.combat.trialAttempt.elapsedSeconds,

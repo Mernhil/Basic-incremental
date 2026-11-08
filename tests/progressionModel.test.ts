@@ -7,11 +7,9 @@ describe('tier-up moments', () => {
   it('names every kind of tier-up with its metal', () => {
     const gem = content.resources.find((r) => r.gem)!;
     const dungeon = content.dungeons[0]!;
-    const line = content.combat.damageUpgrades[0]!;
     const cases: Array<[TierUp, RegExp]> = [
       [{ kind: 'gem_mastery', id: gem.id, from: 0, to: 1, metal: 'bronze' }, /mastery: Bronze/],
       [{ kind: 'boss_mastery', id: dungeon.id, from: 1, to: 2, metal: 'silver' }, /medal: Silver/],
-      [{ kind: 'damage_milestone', id: line.id, from: 1, to: 2, metal: 'silver' }, /forged/],
       [{ kind: 'tile_stage', id: content.trees[0]!.id, from: 0, to: 1, metal: 'bronze' }, /grew/],
     ];
     for (const [u, title] of cases) expect(tierUpText(u, content).title).toMatch(title);

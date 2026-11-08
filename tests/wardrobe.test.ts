@@ -23,7 +23,7 @@ import {
   type EquipResult,
   type GameState,
 } from '../src/game';
-import { constantRng, content, freshState } from './helpers';
+import { constantRng, content, freshState, withDps } from './helpers';
 
 const rules = content.cosmeticRules;
 const cosmetic = (id: string) => content.cosmeticById.get(id)!;
@@ -241,9 +241,8 @@ describe('the wardrobe grid', () => {
 describe('dungeon cosmetic drops are owned', () => {
   it('a rare drop that is a cosmetic goes into the wardrobe (a copy when owned)', () => {
     const state = freshState();
-    state.combat.damageLevels['copper_edge'] = 250; // the first boss falls within the 5 s
     // rng 0: every chance roll succeeds, so the first kill drops Holo Hex.
-    const { state: after, report } = advance(state, content, 5_000, constantRng(0));
+    const { state: after, report } = advance(state, withDps(1e6, content), 5_000, constantRng(0));
     expect(report.bossKills).toBeGreaterThan(0);
     expect(after.cosmetics.owned['holo_hex']).toEqual({
       level: 1,

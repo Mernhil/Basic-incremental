@@ -36,7 +36,6 @@ const name = (content: Content, id: string): string =>
   content.trialById.get(id)?.name ??
   content.mineById.get(id)?.name ??
   content.treeById.get(id)?.name ??
-  content.combat.damageUpgrades.find((u) => u.id === id)?.name ??
   id;
 
 export function welcomeCards(summary: OfflineSummary, content: Content): WelcomeCard[] {

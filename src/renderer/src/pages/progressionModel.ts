@@ -17,7 +17,6 @@ function nameOf(content: Content, id: string): string {
     content.mineById.get(id)?.name ??
     content.treeById.get(id)?.name ??
     content.cardById.get(id)?.name ??
-    content.combat.damageUpgrades.find((u) => u.id === id)?.name ??
     id
   );
 }
@@ -32,8 +31,6 @@ export function tierUpText(u: TierUp, content: Content): { title: string; detail
       return { title: t.gemMastery(name, metal), detail: t.gemMasteryDetail };
     case 'boss_mastery':
       return { title: t.bossMastery(name, metal), detail: t.bossMasteryDetail };
-    case 'damage_milestone':
-      return { title: t.edge(name, metal), detail: t.milestone(u.to) };
     case 'tree_milestone':
     case 'mine_milestone':
       return { title: t.mine(name, metal), detail: t.milestone(u.to) };

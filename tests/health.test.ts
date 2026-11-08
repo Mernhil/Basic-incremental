@@ -6,6 +6,7 @@ import {
   createSaveText,
   Decimal,
   defencePercent,
+  levelCap,
   loadoutHealth,
   loadoutMaxHealth,
   secondsToKnockoutNow,
@@ -25,8 +26,12 @@ const ok = (r: CombatResult): GameState => {
   if (!r.ok) throw new Error(r.reason);
   return r.state;
 };
+/** The Mossy Cellar with the Ember Squire at its level cap, so the time spent fighting does not
+ *  level it up (and grow the health pool) while a test measures it. */
 function inCellar(): GameState {
-  return ok(setActiveDungeon(freshState(), content, 'mossy_cellar'));
+  const state = ok(setActiveDungeon(freshState(), content, 'mossy_cellar'));
+  state.cards.owned['ember_squire']!.level = levelCap(content, { tier: 'bronze', stars: 1 });
+  return state;
 }
 const mods = (s: GameState) => collectModifiers(s, content);
 /** When the hit that empties the pool lands (hits come in chunks, see bossHits.test.ts). */

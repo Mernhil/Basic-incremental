@@ -7,6 +7,7 @@ import type {
   Job,
   ModifierData,
   Rank,
+  Trial,
   UniqueItemKind,
 } from '../data';
 import { JOBS, MAX_STARS, RANK_TIERS } from '../data/schemas';
@@ -147,10 +148,9 @@ export function isMaxRank(owned: OwnedCard): boolean {
   return owned.tier === RANK_TIERS[RANK_TIERS.length - 1] && owned.stars >= MAX_STARS;
 }
 
-/** Level cap of a rank (cardRules.levelCaps). */
+/** Level cap of a rank (cardRules.levelCaps): by tier only, stars do not raise it (DESIGN.md §5). */
 export function levelCap(content: Content, rank: Rank): number {
-  const caps = content.cardRules.levelCaps[rank.tier];
-  return caps[Math.min(Math.max(rank.stars, 1), MAX_STARS) - 1]!;
+  return content.cardRules.levelCaps[rank.tier];
 }
 
 /** XP needed to go from `level` to `level + 1`: base × growth^(level − 1). */
@@ -182,8 +182,19 @@ export function cardHealth(content: Content, cardId: string, owned: OwnedCard): 
 }
 
 /**
+ * A card's base damage per second (DESIGN.md §5): its rarity's base damage × its power, so it
+ * grows with level, stars and tier like its health. 0 for unknown ids. The fighting main's value
+ * is the base of all fighting damage; the modifiers (supports, tree, mastery) come on top.
+ */
+export function cardBaseDamage(content: Content, cardId: string, owned: OwnedCard): Decimal {
+  const card = content.cardById.get(cardId);
+  if (!card) return new Decimal(0);
+  return content.cardRules.baseDamage[card.rarity].mul(cardPower(content, owned));
+}
+
+/**
  * Levels a card up while its XP allows (mutates it). XP stops at the level cap: a card at its cap
- * keeps 0 XP until a star-up or tier-up raises the cap. Returns the levels before and after, or
+ * keeps 0 XP until a tier-up raises the cap. Returns the levels before and after, or
  * null when the level did not change.
  */
 function levelUp(content: Content, owned: OwnedCard): { from: number; to: number } | null {
@@ -532,7 +543,7 @@ export function tierUpCheck(
   ]);
 }
 
-/** Spends a duplicate and the Core and adds a star. Level and XP stay; the cap rises. */
+/** Spends a duplicate and the Core and adds a star. Level and XP stay (stars do not move the cap). */
 export function starUp(
   state: GameState,
   content: Content,
@@ -621,6 +632,23 @@ export function fightingXpPerKill(
   const { perKill, tierGrowth } = content.cardRules.xp;
   const base = perKill.mul(tierGrowth.pow(dungeon.tier - 1));
   const ctx = { job: 'fighting' as const, dungeon: dungeon.id };
+  return Decimal.max(statValue('xp.card', base, modifiers, ctx), 0);
+}
+
+/**
+ * XP each fighting card in the loadout gets per second fought (`xp.card`), at the dungeon's tier
+ * like the kill XP. The special dungeon pays the tier 1 rate. Never paid while knocked out: the
+ * fight code calls this only for time spent fighting.
+ */
+export function fightingXpPerSecond(
+  content: Content,
+  place: Dungeon | Trial,
+  modifiers: readonly Modifier[] = [],
+): Decimal {
+  const { perSecond, tierGrowth } = content.cardRules.xp;
+  const tier = 'tier' in place ? place.tier : 1;
+  const base = perSecond.mul(tierGrowth.pow(tier - 1));
+  const ctx = { job: 'fighting' as const, dungeon: place.id };
   return Decimal.max(statValue('xp.card', base, modifiers, ctx), 0);
 }
 
