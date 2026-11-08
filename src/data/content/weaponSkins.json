@@ -1,0 +1,80 @@
+[
+  {
+    "weapon": "soul_reaper",
+    "baseArt": "skin-scythe-base",
+    "skins": [
+      {
+        "id": "skin-01",
+        "name": "Pale Harvest",
+        "art": "skin-scythe-01",
+        "cost": 0
+      },
+      {
+        "id": "skin-02",
+        "name": "Gravedigger",
+        "art": "skin-scythe-02",
+        "cost": 0
+      },
+      {
+        "id": "skin-03",
+        "name": "Moonlit Reap",
+        "art": "skin-scythe-03",
+        "cost": 0
+      },
+      {
+        "id": "skin-04",
+        "name": "Ember Toll",
+        "art": "skin-scythe-04",
+        "cost": 0
+      },
+      {
+        "id": "skin-05",
+        "name": "Frostbitten",
+        "art": "skin-scythe-05",
+        "cost": 0
+      },
+      {
+        "id": "skin-06",
+        "name": "Verdant Rot",
+        "art": "skin-scythe-06",
+        "cost": 0
+      },
+      {
+        "id": "skin-07",
+        "name": "Bone Orchard",
+        "art": "skin-scythe-07",
+        "cost": 0
+      },
+      {
+        "id": "skin-08",
+        "name": "Stormcaller",
+        "art": "skin-scythe-08",
+        "cost": 0
+      },
+      {
+        "id": "skin-09",
+        "name": "Gilded Dusk",
+        "art": "skin-scythe-09",
+        "cost": 0
+      },
+      {
+        "id": "skin-10",
+        "name": "Midnight Veil",
+        "art": "skin-scythe-10",
+        "cost": 0
+      },
+      {
+        "id": "skin-11",
+        "name": "Crimson Tithe",
+        "art": "skin-scythe-11",
+        "cost": 0
+      },
+      {
+        "id": "skin-12",
+        "name": "Starfall",
+        "art": "skin-scythe-12",
+        "cost": 0
+      }
+    ]
+  }
+]

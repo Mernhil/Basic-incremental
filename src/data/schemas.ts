@@ -1233,6 +1233,28 @@ export const upgradesFileSchema = z.strictObject({
   upgrades: z.array(upgradeSchema),
 });
 
+/**
+ * Weapon skins (weaponSkins.json): alternate art for a weapon, chosen per weapon kind (not per
+ * card). `weapon` is a generic item kind or a unique item kind; `baseArt` is the unskinned art.
+ */
+/** Skin and art ids may use hyphens (`skin-01`, `skin-scythe-01`). */
+const skinArtId = z
+  .string()
+  .regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/, 'ids are lowercase letters, digits, "-" or "_"');
+export const weaponSkinSchema = z.strictObject({
+  id: skinArtId,
+  name,
+  /** Art id the renderer draws for this skin (e.g. `skin-scythe-01`). */
+  art: skinArtId,
+  /** Price in the skin's own currency later; 0 = free (all skins are free in the test). */
+  cost: z.number().int().min(0),
+});
+export const weaponSkinSetSchema = z.strictObject({
+  weapon: z.enum([...ITEM_KINDS, ...UNIQUE_ITEM_KINDS]),
+  baseArt: skinArtId,
+  skins: z.array(weaponSkinSchema).min(1),
+});
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1255,8 +1277,11 @@ export const contentSchemas = {
   account: accountSchema,
   enhancements: enhancementsSchema,
   upgrades: upgradesFileSchema,
+  weaponSkins: z.array(weaponSkinSetSchema),
 } as const;
 
+export type WeaponSkin = z.output<typeof weaponSkinSchema>;
+export type WeaponSkinSet = z.output<typeof weaponSkinSetSchema>;
 export type Upgrade = z.output<typeof upgradeSchema>;
 export type UpgradeUnlock = z.output<typeof upgradeUnlockSchema>;
 export type UpgradesConfig = z.output<typeof upgradesFileSchema>;

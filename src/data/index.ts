@@ -26,6 +26,7 @@ import type {
   Upgrade,
   UpgradesConfig,
   WearRules,
+  WeaponSkinSet,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
@@ -48,6 +49,7 @@ import achievementsJson from './content/achievements.json';
 import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
 import upgradesJson from './content/upgrades.json';
+import weaponSkinsJson from './content/weaponSkins.json';
 
 export * from './schemas';
 
@@ -87,6 +89,8 @@ export interface Content {
   enhancements: EnhancementsConfig;
   /** The upgrade shelf: one-time Money multipliers that appear at a threshold (DESIGN.md §4). */
   upgrades: UpgradesConfig;
+  /** Weapon skins: alternate art per weapon kind (weaponSkins.json). */
+  weaponSkins: WeaponSkinSet[];
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -97,6 +101,8 @@ export interface Content {
   cosmeticById: ReadonlyMap<string, Cosmetic>;
   rarityById: ReadonlyMap<Rarity, RarityStyle>;
   setById: ReadonlyMap<string, CosmeticSet>;
+  /** Weapon kind -> its skins and base art. */
+  weaponSkinsByWeapon: ReadonlyMap<string, WeaponSkinSet>;
   /** The starter item of each slot (validated: exactly one per slot). */
   starterBySlot: Readonly<Record<CosmeticSlot, Cosmetic>>;
 }
@@ -156,6 +162,7 @@ export function validateContent(raw: RawContent): Content {
     account,
     enhancements,
     upgrades,
+    weaponSkins,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -183,6 +190,7 @@ export function validateContent(raw: RawContent): Content {
       );
     }
   }
+  checkWeaponSkins(weaponSkins, issues);
   checkModifiers(
     {
       resources,
@@ -232,6 +240,7 @@ export function validateContent(raw: RawContent): Content {
     account,
     enhancements,
     upgrades,
+    weaponSkins,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -242,6 +251,7 @@ export function validateContent(raw: RawContent): Content {
     cosmeticById: new Map(cosmetics.map((x) => [x.id, x])),
     rarityById: new Map(rarities.map((r) => [r.id, r])),
     setById: new Map(sets.map((x) => [x.id, x])),
+    weaponSkinsByWeapon: new Map(weaponSkins.map((w) => [w.weapon, w])),
     starterBySlot,
   };
 }
@@ -928,9 +938,37 @@ function checkReferences(
   });
 }
 
-/** Loads and validates the bundled game data. Call once at startup. */
-export function loadContent(): Content {
-  return validateContent({
+/** Each weapon is listed once; skin ids and art ids are unique across the file. */
+function checkWeaponSkins(sets: WeaponSkinSet[], issues: string[]): void {
+  const weapons = new Set<string>();
+  const arts = new Set<string>();
+  sets.forEach((set, i) => {
+    if (weapons.has(set.weapon)) {
+      issues.push(`weaponSkins.json › [${i}] › weapon: duplicate weapon "${set.weapon}"`);
+    }
+    weapons.add(set.weapon);
+    arts.add(set.baseArt);
+    const own = new Set<string>();
+    set.skins.forEach((skin, j) => {
+      if (own.has(skin.id)) {
+        issues.push(
+          `weaponSkins.json › [${i}] › skins › [${j}] › id: duplicate skin id "${skin.id}"`,
+        );
+      }
+      own.add(skin.id);
+      if (arts.has(skin.art)) {
+        issues.push(
+          `weaponSkins.json › [${i}] › skins › [${j}] › art: duplicate art id "${skin.art}"`,
+        );
+      }
+      arts.add(skin.art);
+    });
+  });
+}
+
+/** The raw bundled JSON, before validation (tests use it to build broken variants). */
+export function bundledRawContent(): RawContent {
+  return {
     resources: resourcesJson,
     trees: treesJson,
     mines: minesJson,
@@ -952,5 +990,11 @@ export function loadContent(): Content {
     account: accountJson,
     enhancements: enhancementsJson,
     upgrades: upgradesJson,
-  });
+    weaponSkins: weaponSkinsJson,
+  };
+}
+
+/** Loads and validates the bundled game data. Call once at startup. */
+export function loadContent(): Content {
+  return validateContent(bundledRawContent());
 }

@@ -21,6 +21,7 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
+import weaponSkins from '../src/data/content/weaponSkins.json';
 
 type PortalRaw = {
   cost: { resource: string };
@@ -51,6 +52,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     cosmeticRules,
     prestige,
     upgrades,
+    weaponSkins,
     ...overrides,
   });
 }
