@@ -28,6 +28,67 @@ export interface UpgradeStep {
   ready: boolean;
 }
 
+/** One price of a tier-up, as the weapon panel's cost tag shows it. */
+export interface CostChip {
+  /** Resource id (the icon and name come from it). */
+  id: string;
+  name: string;
+  have: string;
+  need: string;
+  met: boolean;
+}
+
+/**
+ * The weapon panel's view of an owned card (DESIGN.md §5, §11): level and XP, the star bar and
+ * the next tier-up with its price. Built by `weaponView` (weaponModel.ts); the panel draws it in
+ * the dungeon drawer and on the Cards detail.
+ */
+export interface WeaponView {
+  /** The weapon's name (the unique weapon's name at the Unique tier). */
+  weapon: string;
+  tier: Rank['tier'];
+  tierName: string;
+  level: number;
+  cap: number;
+  atCap: boolean;
+  /** Progress to the next level, 0..1 (1 at the cap). */
+  xp: number;
+  /** "121 / 190 XP", or empty at the cap. */
+  xpText: string;
+  stars: number;
+  /** The star bar towards the next star; null at ★6. */
+  starBar: {
+    fill: number;
+    need: number;
+    /** fill / need, 0..1. */
+    gauge: number;
+    ready: boolean;
+    /** "4 / 7 copies to ★4" */
+    text: string;
+    /** "×1.6 → ×2" */
+    impact: string;
+  } | null;
+  /** The next tier-up, or null at the weapon's top tier. */
+  tierUp: {
+    toTier: Rank['tier'];
+    toName: string;
+    /** The step to the unique weapon (button "Reveal Flameblade"). */
+    unique: boolean;
+    /** leveling: below the cap; ready: at the cap and paid for; short: at the cap, missing prices. */
+    phase: 'leveling' | 'ready' | 'short';
+    /** "Reach Lv 40 to tier up. It costs:" below the cap, "It costs:" at it. */
+    lead: string;
+    costs: CostChip[];
+    /** The button text. */
+    action: string;
+    ready: boolean;
+    /** What is missing, for the tag's hint ("Missing Frost Sigil."), empty when nothing is. */
+    missing: string;
+  } | null;
+  /** Why there is no tier-up (top tier, or the unique weapon is not drawn yet); null otherwise. */
+  endNote: string | null;
+}
+
 export interface LoadoutRole {
   job: Job;
   slot: 'main' | 'support';
@@ -61,6 +122,8 @@ export interface CardEntry {
   next: UpgradeStep | null;
   /** The next tier-up (level cap, Money, materials), or null at the card's top tier. */
   tier: UpgradeStep | null;
+  /** The weapon panel's data (level ring, star bar, tier-up cost); null when not owned. */
+  weapon: WeaponView | null;
 }
 
 export interface JobLoadout {

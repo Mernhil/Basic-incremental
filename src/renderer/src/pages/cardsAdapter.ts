@@ -25,6 +25,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { itemArt } from '../art/items';
 import { starChartView } from './skillsModel';
+import { weaponView } from './weaponModel';
 import type {
   CardEntry,
   CardsModel,
@@ -147,6 +148,7 @@ export function createCardsModel(
         : null,
       next: owned ? step('star', info.starUp) : null,
       tier: owned ? step('tier', info.tierUp) : null,
+      weapon: weaponView(content, info),
     };
   }
 
