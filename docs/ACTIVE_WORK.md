@@ -11,9 +11,10 @@ One line per task in flight, so parallel sessions do not collide. Read this at t
 
 ## In flight
 
-| Branch                     | Worktree                                               | Owner agent | Files / area                                                    | Started    |
-| -------------------------- | ------------------------------------------------------ | ----------- | --------------------------------------------------------------- | ---------- |
-| chore/session-coordination | C:/bi-coord                                            | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md              | 2026-11-08 |
-| art/sheet-1-clean          | C:/bi-s1                                               | pixel-art   | art/pixel/hand coins, medals, maul, bow, evo-*                  | 2026-11-08 |
-| art/concept-sheet-1-new    | C:/bi-art                                              | pixel-art   | design/pixel/concept-sheet-1-new (drafts only)                  | 2026-11-08 |
-| claude/ui-rules-651faa     | C:/Basic Incremental/.claude/worktrees/ui-rules-651faa | ui          | docs/UI_RULES.md, DESIGN §11, ui agent, CLAUDE.md, check-design | 2026-11-08 |
+| Branch                     | Worktree                                               | Owner agent              | Files / area                                                                       | Started    |
+| -------------------------- | ------------------------------------------------------ | ------------------------ | ---------------------------------------------------------------------------------- | ---------- |
+| chore/session-coordination | C:/bi-coord                                            | mechanics                | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md                                 | 2026-11-08 |
+| art/sheet-1-clean          | C:/bi-s1                                               | pixel-art                | art/pixel/hand coins, medals, maul, bow, evo-*                                     | 2026-11-08 |
+| art/concept-sheet-1-new    | C:/bi-art                                              | pixel-art                | design/pixel/concept-sheet-1-new (drafts only)                                     | 2026-11-08 |
+| feat/legacy-skins-*        | C:/bi-legacy                                           | mechanics, ui, pixel-art | DESIGN §7/§8, weaponSkins.json, portals, Wardrobe skins tab, art/pixel/hand/skin-* | 2026-11-08 |
+| claude/ui-rules-651faa     | C:/Basic Incremental/.claude/worktrees/ui-rules-651faa | ui                       | docs/UI_RULES.md, DESIGN §11, ui agent, CLAUDE.md, check-design                    | 2026-11-08 |
