@@ -13,6 +13,7 @@ import {
   summarizeRuns,
   formatSeedTable,
 } from '../scripts/sim/sim';
+import { loadContent } from '../src/data';
 import { content, freshState, withDps } from './helpers';
 
 const rich = (state: GameState, resource: string, amount: number): GameState => {
@@ -139,18 +140,12 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(gain('tree:oak')).toBeGreaterThan(0);
   });
 
-  it('keeps Cores for the most advanced card instead of spreading them over weaker ones', () => {
+  it('buys a star-up from the star bar alone: it needs no Cores to share', () => {
     const state = freshState();
-    const squire = state.cards.owned['ember_squire']!;
-    squire.stars = 5;
-    squire.level = 36;
-    squire.starFill = 1;
     const feller = state.cards.owned['apprentice_feller']!;
-    feller.level = 20;
-    feller.starFill = 1;
-    state.resources['moss_core'] = new Decimal(3); // ★5 to ★6 needs 10; ★1 to ★2 needs 1
+    feller.starFill = content.cardRules.starBar.needs.common[0]!;
     const { bought } = greedyBuy(state, content);
-    expect(bought).not.toContain('star:apprentice_feller');
+    expect(bought).toContain('star:apprentice_feller');
   });
 
   it('finishes the fighting lead first: a more advanced production card does not starve its tier-up of gems', () => {
@@ -166,6 +161,20 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['moonwillow_gem'] = new Decimal(100000);
     state.resources['grotto_gem'] = new Decimal(100000);
     expect(greedyBuy(state, content).bought).toContain('tier:ember_squire');
+  });
+
+  it('lets a weaker card take its step while the lead is hours from its gems', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar'];
+    state.production.unlockedTrees = ['ironbark'];
+    state.activeDungeonId = 'mossy_cellar';
+    state.cards.owned['ember_squire']!.level = 20; // Bronze cap: needs 24,000 Ironbark, has 14,000
+    state.cards.owned['cave_digger']!.level = 20; // needs 12,000 Ironbark and 20,000 Iron
+    state.resources['money'] = new Decimal(2e5);
+    state.resources['moss_core'] = new Decimal(6);
+    state.resources['iron_gem'] = new Decimal(20000);
+    state.resources['ironbark_gem'] = new Decimal(14000);
+    expect(greedyBuy(state, content).bought).toContain('tier:cave_digger');
   });
 
   it('saves the Frost Cores for the lead card still levelling toward its tier-up', () => {
@@ -272,6 +281,24 @@ describe('balance sim: ascension decision', () => {
     expect(ascendNow({ gain: 36, minimum: 10, runSeconds: 10800 }, tracker)).toBe(true);
   });
 
+  it('takes the first Ascension as soon as the minimum gain is there, without waiting for a peak', () => {
+    const tracker = { peakRate: 0 };
+    expect(ascendNow({ gain: 9, minimum: 10, runSeconds: 3600, earned: 0 }, tracker)).toBe(false);
+    expect(ascendNow({ gain: 10, minimum: 10, runSeconds: 7200, earned: 0 }, tracker)).toBe(true);
+    // Later Ascensions still wait for the rate to pass its peak.
+    const later = { peakRate: 0 };
+    expect(ascendNow({ gain: 10, minimum: 10, runSeconds: 3600, earned: 10 }, later)).toBe(false);
+  });
+
+  it('ascends again only once the gain at least matches all the Starlight earned so far', () => {
+    const tracker = { peakRate: 100 };
+    // The rate is long past its peak, but 30 would add less than the 50 already earned.
+    expect(ascendNow({ gain: 30, minimum: 10, runSeconds: 36000, earned: 50 }, tracker)).toBe(
+      false,
+    );
+    expect(ascendNow({ gain: 50, minimum: 10, runSeconds: 36000, earned: 50 }, tracker)).toBe(true);
+  });
+
   it('never ascends below the minimum gain', () => {
     const tracker = { peakRate: 100 };
     expect(ascendNow({ gain: 5, minimum: 10, runSeconds: 36000 }, tracker)).toBe(false);
@@ -330,7 +357,16 @@ describe('balance sim: run', () => {
     expect(star6.reached(state, content, log)).toBe(true);
   });
 
-  it('calls the content exhausted only with every card owned and a Prismatic ★6 card', () => {
+  it('does not count a one-level UI skin as a max-level cosmetic', () => {
+    const maxCosmetic = MILESTONES.find((m) => m.id === 'max_cosmetic')!;
+    const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
+    const state = freshState();
+    state.cosmetics.owned['nodes_b'] = { level: 1, copies: 0 };
+    expect(cosmeticMaxLevel(content, content.cosmeticById.get('nodes_b')!)).toBe(1);
+    expect(maxCosmetic.reached(state, content, log)).toBe(false);
+  });
+
+  it('calls the content exhausted only with every card owned and a card at the Unique tier', () => {
     const exhausted = MILESTONES.find((m) => m.id === 'exhausted')!;
     const log = { summons: 1, levelAt: {}, ascensions: [], fought: {} };
     const state = freshState();
@@ -339,16 +375,15 @@ describe('balance sim: run', () => {
     }
     state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
     state.prestigeCount = 1;
-    state.cards.owned['ember_squire']!.tier = 'gold';
-    state.cards.owned['ember_squire']!.stars = 6;
     state.cards.owned['apprentice_feller']!.tier = 'prismatic';
-    state.cards.owned['apprentice_feller']!.stars = 5;
+    state.cards.owned['apprentice_feller']!.stars = 6;
+    state.cards.owned['ember_squire']!.tier = 'prismatic';
     state.cosmetics.owned['holo_hex'] = {
       level: cosmeticMaxLevel(content, content.cosmeticById.get('holo_hex')!),
       copies: 0,
     };
     expect(exhausted.reached(state, content, log)).toBe(false);
-    state.cards.owned['apprentice_feller']!.stars = 6;
+    state.cards.owned['ember_squire']!.tier = 'unique';
     expect(exhausted.reached(state, content, log)).toBe(true);
   });
 
@@ -361,6 +396,18 @@ describe('balance sim: run', () => {
     expect(a.hits['clear_d1']).not.toBeNull();
     expect(a.hits['clear_d1']!).toBeLessThan(3600);
     // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
+  }, 30_000);
+
+  it('keeps the first hour of the shipped content on its §14 pacing targets (within 25%)', () => {
+    // The shipped numbers, not the pinned test content: the first dungeon and the first summon.
+    const result = runSim(loadContent(), { hours: 1, seed: 1, stepSeconds: 10 });
+    for (const id of ['clear_d1', 'first_summon']) {
+      const target = MILESTONES.find((m) => m.id === id)!.targetHours * 3600;
+      const hit = result.hits[id];
+      expect(hit, id).not.toBeNull();
+      expect(hit! / target, id).toBeGreaterThan(0.75);
+      expect(hit! / target, id).toBeLessThan(1.25);
+    }
   }, 30_000);
 
   it('samples the fighting DPS every half hour for the tuning report', () => {

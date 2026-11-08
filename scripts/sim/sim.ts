@@ -176,17 +176,22 @@ export const MILESTONES: Milestone[] = [
     reached: (s, c) =>
       Object.entries(s.cosmetics.owned).some(([id, o]) => {
         const cosmetic = c.cosmeticById.get(id);
-        return !!cosmetic && !cosmetic.starter && o.level >= cosmeticMaxLevel(c, cosmetic);
+        if (!cosmetic || cosmetic.starter) return false;
+        // Slot items whose only level is 1 (UI skins) are max from the moment they are owned:
+        // the milestone is about a cosmetic taken up its whole upgrade ladder.
+        const max = cosmeticMaxLevel(c, cosmetic);
+        return max > 1 && o.level >= max;
       }),
   },
   {
     id: 'exhausted',
     label: 'Beta content mostly exhausted',
     targetHours: 40,
-    // Every other milestone reached, every card owned and a card maxed out (Prismatic ★6).
+    // Every other milestone reached, every card owned and a weapon taken to the last tier
+    // (Unique, DESIGN.md §5): the final upgrade of the beta.
     reached: (s, c, log) =>
       c.cards.every((card) => s.cards.owned[card.id]) &&
-      Object.values(s.cards.owned).some((card) => card.tier === 'prismatic' && card.stars >= 6) &&
+      Object.values(s.cards.owned).some((card) => card.tier === 'unique') &&
       MILESTONES.every((m) => m.id === 'exhausted' || m.reached(s, c, log)),
   },
 ];
@@ -537,6 +542,20 @@ function keptPrices(c: Candidate): Price[] {
   return c.deferMoney ? c.prices.filter((p) => p.resource !== 'money') : c.prices;
 }
 
+/** A far-off card upgrade (further than this, in seconds) holds back only its scarce materials. */
+const CLAIM_HORIZON_SECONDS = 3600;
+
+/**
+ * What a waiting card upgrade holds back from weaker cards: all of its kept prices when it is
+ * close, only its scarce materials (Cores, Sigils, Dust) when it is hours away, so a far-off
+ * step does not starve the cheaper steps of the other cards of gems and Money meanwhile.
+ */
+function claimedPrices(content: Content, c: Candidate): Price[] {
+  const kept = keptPrices(c);
+  if (c.eta !== null && c.eta <= CLAIM_HORIZON_SECONDS) return kept;
+  return kept.filter((p) => content.resourceById.get(p.resource)?.kind === 'material');
+}
+
 /**
  * Resources kept for what the buyer waits for: the cheapest waiting card upgrade per resource
  * set and the next tree kind. Economy purchases only spend what is left over.
@@ -576,6 +595,7 @@ const KIND_ORDER: CandidateKind[] = ['card', 'tree', 'skill', 'starlight', 'cosm
  */
 function focused(
   state: GameState,
+  content: Content,
   candidates: readonly Candidate[],
   kind: CandidateKind,
 ): Candidate[] {
@@ -587,7 +607,7 @@ function focused(
   let holding = false;
   for (const c of cards) {
     // Weaker cards only get what the cards before them do not wait for.
-    const blocked = keptPrices(c).some((p) => {
+    const blocked = claimedPrices(content, c).some((p) => {
       const kept = claimed.get(p.resource);
       return kept !== undefined && have(state, p.resource).sub(p.amount).lt(kept);
     });
@@ -600,18 +620,23 @@ function focused(
       if (holding) continue; // only the lead card's tier-up is held
       holding = true;
     }
-    for (const p of keptPrices(c))
+    for (const p of claimedPrices(content, c))
       claimed.set(p.resource, (claimed.get(p.resource) ?? new Decimal(0)).add(p.amount));
   }
   return now;
 }
 
 /** The next purchase to make now, or null to wait. */
-function pickPurchase(state: GameState, candidates: readonly Candidate[]): Candidate[] {
+function pickPurchase(
+  state: GameState,
+  content: Content,
+  candidates: readonly Candidate[],
+): Candidate[] {
   const ready = candidates.filter((c) => c.eta === 0);
   const picks: Candidate[] = [];
   for (const kind of KIND_ORDER) {
-    if (kind === 'card' || kind === 'cosmetic') picks.push(...focused(state, candidates, kind));
+    if (kind === 'card' || kind === 'cosmetic')
+      picks.push(...focused(state, content, candidates, kind));
     else picks.push(...ready.filter((c) => c.kind === kind));
   }
   // Economy: per resource, the best gain per unit of price; wait for it unless a cheap one fits.
@@ -659,7 +684,11 @@ export function greedyBuy(
   for (let i = 0; i < MAX_BUYS_PER_PASS; i++) {
     const modifiers = collectModifiers(current, content);
     let next: GameState | null = null;
-    for (const candidate of pickPurchase(current, buyerCandidates(current, content, modifiers))) {
+    for (const candidate of pickPurchase(
+      current,
+      content,
+      buyerCandidates(current, content, modifiers),
+    )) {
       next = candidate.buy(current, content, modifiers, rng);
       if (next) {
         bought.push(candidate.id);
@@ -792,14 +821,20 @@ export interface AscendTracker {
 const PAST_PEAK = 0.9;
 
 /**
- * The ascension rule: once the gain reaches the minimum, track the run's Starlight per second;
- * ascend when it has dropped to 90% of its peak or less (more run time no longer pays).
+ * The ascension rule: the first one is taken as soon as the gain reaches the minimum (the
+ * player wants the first Starlight shop levels, and the Starlight formula makes the minimum the
+ * pacing lever, DESIGN.md §9). After that the gain must at least match all the Starlight earned
+ * so far, and the run's Starlight per second must have dropped to 90% of its peak or less (more
+ * run time no longer pays).
  */
 export function ascendNow(
-  now: { gain: number; minimum: number; runSeconds: number },
+  now: { gain: number; minimum: number; runSeconds: number; earned?: number },
   tracker: AscendTracker,
 ): boolean {
   if (now.gain < now.minimum || now.runSeconds <= 0) return false;
+  if (now.earned === 0) return true;
+  // Each later Ascension must be worth at least all the Starlight earned so far (a doubling).
+  if (now.earned !== undefined && now.gain < now.earned) return false;
   const rate = now.gain / now.runSeconds;
   if (rate > tracker.peakRate) {
     tracker.peakRate = rate;
@@ -809,7 +844,7 @@ export function ascendNow(
 }
 
 /** Share of a tier-up's missing resource already held at which the player waits for it. */
-const HOLD_SHARE = 0.4;
+const HOLD_SHARE = 0.75;
 /** The longest a run is stretched while waiting for a tier-up, in seconds. */
 export const HOLD_MAX_RUN_SECONDS = 12 * 3600;
 
@@ -983,7 +1018,12 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (sinceAscendCheck >= ASCEND_CHECK_SECONDS) {
       sinceAscendCheck = 0;
       const preview = ascensionPreview(state, content);
-      const now = { gain: num(preview.gain), minimum: preview.minimum, runSeconds: t - runStart };
+      const now = {
+        gain: num(preview.gain),
+        minimum: preview.minimum,
+        runSeconds: t - runStart,
+        earned: num(state.prestige.starlightEarned),
+      };
       const holding = now.runSeconds < HOLD_MAX_RUN_SECONDS && holdAscension(state, content);
       if (ascendNow(now, tracker) && !holding) {
         const result = ascend(state, content);
