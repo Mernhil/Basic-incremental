@@ -35,7 +35,7 @@ export interface LoadoutFanOptions {
   popWant?: number;
   /** Most CSS px a popped-out card may take. */
   popMax?: () => number;
-  /** Art pixels each support peeks out (default 12) and drops lower (default 6). */
+  /** Art pixels each support peeks out (default 16) and sits lower (default 0). Both count past the card frame, which bleeds about 11 art pixels around the card. */
   peek?: number;
   drop?: number;
   /** Accessible name of the group ("Logging cards"). */
@@ -75,8 +75,8 @@ const sameCard = (a: FanCard | null | undefined, b: FanCard | null | undefined):
   JSON.stringify([a?.id, a?.props, a?.effect]) === JSON.stringify([b?.id, b?.props, b?.effect]);
 
 export function createLoadoutFan(opts: LoadoutFanOptions): LoadoutFan {
-  const peek = opts.peek ?? 12;
-  const drop = opts.drop ?? 6;
+  const peek = opts.peek ?? 16;
+  const drop = opts.drop ?? 0;
   const el = document.createElement('div');
   el.className = 'lf';
   el.style.setProperty('--lf-peek', String(peek));

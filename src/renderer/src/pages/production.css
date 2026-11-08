@@ -41,7 +41,7 @@
 }
 .pp-split {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 384px;
+  grid-template-columns: minmax(0, 1fr) 432px;
   gap: 14px;
   align-items: start;
 }
@@ -126,6 +126,7 @@
 }
 
 .pp-row__tile {
+  position: relative;
   display: grid;
   place-items: center;
 }
@@ -216,6 +217,13 @@
 }
 .pp-buy--locked .buy-btn__top {
   min-height: 1.3em;
+  flex-wrap: wrap;
+  justify-content: center;
+  column-gap: 8px;
+  text-align: center;
+}
+.pp-buy--locked .buy-btn__preview {
+  text-align: center;
 }
 /* narrow rows column: the bar drops under the name, the buy button stays on the row */
 @container (max-width: 640px) {
@@ -422,7 +430,8 @@
   display: none;
 }
 .pp-drawer .shelf__list {
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  /* at most four a row, as many as fit below that */
+  grid-template-columns: repeat(auto-fill, minmax(max(270px, calc((100% - 24px) / 4)), 1fr));
 }
 .pp-sup[role='button'] {
   cursor: pointer;

@@ -29,7 +29,7 @@ import './harvestParty.css';
 const SUPPORTS = 3;
 /** The side stage's main card: about twice the grid; the whole fan fits the stage column. */
 const SIDE_MAIN_WANT = 264;
-const SIDE_FAN_MAX = 360;
+const SIDE_FAN_MAX = 362;
 /** CSS px wide the main card and the supports want; the screen scale rounds each to whole pixels. */
 const MAIN_WANT = 132;
 const SUPPORT_WANT = 74;
@@ -153,11 +153,18 @@ export function createHarvestParty(
         role === 'main'
           ? [
               { label: 'Level', value: String(c.level) },
-              { label: COPY.production.strikesEvery, value: `${Number(every.toFixed(2))}s` },
+              {
+                // the stage card is drawn large: a short label keeps the plate on one line
+                label: side ? COPY.production.every : COPY.production.strikesEvery,
+                value: `${Number(every.toFixed(2))}s`,
+              },
             ]
           : [
               { label: 'Level', value: String(c.level) },
-              { label: 'Bonus', value: c.abilityText },
+              // in the fan the effect is read in the pop-out and in the list, not on the plate
+              side
+                ? { label: COPY.production.supportRole, value: COPY.table.support }
+                : { label: 'Bonus', value: c.abilityText },
             ],
       theme: c.look,
     };

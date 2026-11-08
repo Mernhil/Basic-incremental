@@ -7,8 +7,8 @@
 .lf {
   --lf-glow: var(--bi-tick-crit, #ffb02e);
   --lf-ease: cubic-bezier(0.3, 0.8, 0.4, 1);
-  --lf-peek: 12;
-  --lf-drop: 6;
+  --lf-peek: 16;
+  --lf-drop: 0;
   /* one art pixel in CSS px */
   --lf-u: calc(var(--card-n) / var(--dpr) * 1px);
   position: relative;

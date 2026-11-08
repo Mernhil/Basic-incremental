@@ -169,7 +169,9 @@ export function createProductionPage(
   screen.append(scroll, drawer);
   page.append(screen);
 
-  let open = readStored(DRAWER_KEY) !== 'closed';
+  // open the first time on a tall window, closed on a short one; after that the player's choice
+  const stored = readStored(DRAWER_KEY);
+  let open = stored ? stored === 'open' : window.innerHeight >= 900;
   const setOpen = (value: boolean): void => {
     open = value;
     drawer.classList.toggle('is-open', open);
@@ -261,13 +263,13 @@ export function createProductionPage(
     const locked = row.kind !== 'active';
     const li = h('li', `pp-row${locked ? ' pp-row--locked' : ''}`);
     li.dataset.key = row.key;
-    li.append(h('span', 'pp-fx'));
     const tile = h('div', 'pp-row__tile');
     const art = h('span', 'pp-tile__art');
     art.setAttribute('aria-hidden', 'true');
     art.innerHTML = tileArt(row.job, p, row.stage);
     art.style.setProperty('--d', `${((row.kindIndex * 0.37) % 3).toFixed(2)}s`);
-    tile.append(art);
+    // the hit effect plays on the tile, so the fx layer is the tile's size
+    tile.append(art, h('span', 'pp-fx'));
     const id = h('div', 'pp-row__id');
     const level = h('span', 'pp-row__lv', row.levelText);
     const output = h('span', 'pp-row__out bi-num');
@@ -383,7 +385,7 @@ export function createProductionPage(
         } else if (ref.unlock) {
           const u = ref.unlock;
           if (row.kind === 'locked-tree' && row.unlock) {
-            set(u.label, COPY.production.unlock(''));
+            set(u.label, COPY.production.unlockLabel);
             set(u.price, row.unlock.price);
             set(u.have, row.unlock.have);
             u.btn.setAttribute('aria-disabled', String(!row.unlock.affordable));
@@ -470,7 +472,7 @@ export function createProductionPage(
     party.pulse(m.supports);
     replay(ref.art, 'is-harvest', 400);
     replay(ref.li, 'is-hit', 420);
-    const fx = ref.li.querySelector<HTMLElement>('.pp-fx');
+    const fx = ref.tile.querySelector<HTMLElement>('.pp-fx');
     if (fx && view.attackEffect && !reducedMotion()) {
       try {
         playHit(view.attackEffect, fx, { rng: defaultRng, target: ref.art });

@@ -139,6 +139,10 @@
   align-content: start;
   width: 100%;
 }
+/* the card frame bleeds about 11 art pixels past the card box: keep the gauge clear of it */
+.pp-party--side > .lf {
+  margin: 10px 0 14px;
+}
 .pp-meta {
   display: grid;
   gap: 8px;
