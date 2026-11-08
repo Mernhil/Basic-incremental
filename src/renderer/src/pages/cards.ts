@@ -4,6 +4,7 @@ import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
 import { createCard, type CardProps } from '../ui/card';
+import { fitCard } from '../ui/pixelFit';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
 import type { CardEntry, CardsModel, Job, ModelResult, UpgradeStep } from './cardsModel';
 import { CHART, type StarChartView, type StarView } from './skillsModel';
@@ -32,6 +33,8 @@ const TIER_NAMES: Record<string, string> = {
   gold: 'Gold',
   prismatic: 'Prismatic',
 };
+/** Card widths wanted (CSS px); ui/pixelFit.ts snaps each to a whole pixel scale (DESIGN.md §12). */
+const CARD_WANT = { tile: 105.6, detail: 151.4, slot: 88 } as const;
 const cap1 = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 export interface CardsPageContext extends PageContext {
@@ -107,7 +110,7 @@ export function createCardsPage(
   };
 
   // ---- card faces ----
-  function cardEl(e: CardEntry, state: GameState, scale: number): HTMLElement {
+  function cardEl(e: CardEntry, state: GameState): HTMLElement {
     const props: CardProps = {
       name: e.name,
       label: JOB_NAMES[e.job],
@@ -132,7 +135,6 @@ export function createCardsPage(
     view.el.removeAttribute('aria-label');
     view.el.setAttribute('aria-hidden', 'true');
     const fit = h('span', `cp-fit${e.owned ? '' : ' cp-fit--locked'}`);
-    fit.style.setProperty('--s', String(scale));
     fit.append(view.el);
     return fit;
   }
@@ -213,6 +215,7 @@ export function createCardsPage(
       entries.filter((e) => (!jobFilter || e.job === jobFilter) && (!readyOnly || e.next?.ready)),
     );
     const grid = h('ul', 'cp-grid');
+    fitCard(grid, { want: CARD_WANT.tile });
     grid.setAttribute('aria-label', COPY.cards.collectionTab);
     for (const e of shown) {
       const li = h('li', 'cp-cell');
@@ -224,7 +227,7 @@ export function createCardsPage(
         ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}`
         : COPY.cards.notFound;
       b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, detail));
-      b.append(cardEl(e, state, 0.6));
+      b.append(cardEl(e, state));
       if (e.owned && e.duplicates > 0) b.append(h('span', 'cp-badge bi-num', `+${e.duplicates}`));
       if (e.role) b.append(h('span', 'cp-role', COPY.cards.role[e.role.slot]));
       if (e.next?.ready) b.append(h('span', 'cp-ready', '▲'));
@@ -265,7 +268,8 @@ export function createCardsPage(
     const { el, body } = frame(e.name, `${cap1(e.rarity)} · ${JOB_NAMES[e.job]}`);
     el.classList.add('cp-detail');
     const top = h('div', 'cp-detail__top');
-    top.append(cardEl(e, state, 0.86));
+    fitCard(top, { want: CARD_WANT.detail });
+    top.append(cardEl(e, state));
     const side = h('div', 'cp-detail__side');
     if (!e.owned) {
       side.append(h('p', 'frame__muted', COPY.cards.lockedDetail));
@@ -527,6 +531,7 @@ export function createCardsPage(
       meter.append(row, track);
 
       const slots = h('ol', 'cp-slots');
+      fitCard(slots, { want: CARD_WANT.slot });
       lo.slots.forEach((id, i) => {
         const li = h('li', 'cp-slot');
         const label = i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);
@@ -537,7 +542,7 @@ export function createCardsPage(
           open.type = 'button';
           open.dataset.key = `slot-${job}-${i}`;
           open.setAttribute('aria-label', `${label}: ${e.name}`);
-          open.append(cardEl(e, state, 0.5));
+          open.append(cardEl(e, state));
           open.addEventListener('click', () => {
             selected = e.id;
             switchTab('collection');

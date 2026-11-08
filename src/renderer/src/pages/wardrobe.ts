@@ -41,6 +41,7 @@ import {
   type SlotFilter,
   type SlotView,
 } from './wardrobeModel';
+import { fitCard } from '../ui/pixelFit';
 import './wardrobe.css';
 
 /**
@@ -177,6 +178,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
     for (const s of slots) (LEFT.includes(s.slot) ? left : right).append(slotButton(s));
 
     const centre = h('div', 'wd-centre');
+    fitCard(centre, { want: 218 });
     let art: HTMLElement | null = null;
     const props = previewCard ? cardFaceProps(content, state, previewCard) : null;
     if (props && previewCard) {

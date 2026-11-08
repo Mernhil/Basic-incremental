@@ -36,12 +36,12 @@ body {
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 4px;
   flex: none;
   box-sizing: border-box;
   width: var(--w);
   height: var(--h);
-  padding: 10px;
+  padding: 8px 9px;
   border: var(--bi-border-width, 1px) solid var(--bi-border-color, #b98a2a);
   border-radius: var(--bi-radius, 12px);
   color: var(--bi-plate-ink, #e9eef7);
@@ -52,6 +52,12 @@ body {
   --w: 280px;
   --h: 380px;
   padding: 14px;
+}
+.bi-card--boss .bi-card__art {
+  flex: 1;
+  align-self: stretch;
+  width: auto;
+  height: auto;
 }
 
 /* layers: rarity body < content < finish < decoration < rank footer; rank effects outside */
@@ -149,7 +155,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 4px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
   background: var(--bi-plate-bg, rgba(0, 0, 0, 0.3));
   box-shadow: inset 0 0 0 1px var(--bi-plate-line, rgba(217, 179, 90, 0.5));
@@ -175,7 +181,14 @@ body {
 }
 
 .bi-card__art {
-  flex: 1;
+  /* Clean pixels (DESIGN.md §12): the item sprite is 100 x 120 art pixels, shown at the card
+     grid scale (4/3 box unit per art pixel), so the window is exactly the item's 236 x 204
+     view box at that scale: 157.33 x 136 units. The frame, the item and its effects are then
+     all drawn at the same whole scale as the card. */
+  flex: none;
+  align-self: center;
+  width: 158px;
+  height: 136px;
   min-height: 0;
   display: grid;
   place-items: center;
@@ -203,7 +216,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: 6px;
   margin: 0;
-  padding: 5px 8px;
+  padding: 3px 8px;
   border-radius: 6px;
   background: var(--bi-panel-bg, rgba(0, 0, 0, 0.3));
   box-shadow: inset 0 0 0 1px var(--bi-panel-line, rgba(217, 179, 90, 0.25));

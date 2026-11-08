@@ -2,6 +2,7 @@ import { RARITIES, type Rarity } from '../../../data';
 import { COPY } from '../copy';
 import { revealSound, type RevealView } from '../pages/summonModel';
 import { createCard, type CardProps } from '../ui/card';
+import { fitCard } from '../ui/pixelFit';
 import { reducedMotion } from './motion';
 import './reveal.css';
 
@@ -62,6 +63,8 @@ export function showReveal(opts: RevealOptions): void {
   const slots = views.map((v, i) => {
     const li = document.createElement('li');
     li.className = 'rv-slot';
+    // a ten-pull deals small cards, a single pull one big card; both whole pixel scales (§12)
+    fitCard(li, { want: views.length > 1 ? 132 : 264 });
     li.dataset['orb'] = v.orb;
     li.dataset['rarity'] = v.rarity;
     li.style.setProperty('--i', String(i));
