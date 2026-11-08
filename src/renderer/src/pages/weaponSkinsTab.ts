@@ -44,10 +44,13 @@ export function createWeaponSkinsTab(
       item: weaponArtMarkup(v.weapon, v.previewArt),
       element: card.element,
       rank,
-      stats: [
-        { label: t.level, value: '1' },
-        { label: t.hitsEvery, value: '1s' },
-      ],
+      rarity: card.rarity,
+      face: {
+        ability: card.name,
+        speed: `${t.hitsEvery.toLowerCase()} 1s`,
+        level: { value: 1, cap: 20 },
+        progress: 0,
+      },
       theme: resolveCard(content, state.cosmetics.loadout, {
         id: card.id,
         rank,
