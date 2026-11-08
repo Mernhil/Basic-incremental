@@ -5,9 +5,10 @@
  * `raster.ts`. The result is written to `sprites/*.png` plus `manifest.ts`.
  *
  * Hand-made sprites are not baked here: they live in `hand/*.png` and the bake script copies them
- * into `sprites/` as they are. The production tiles (`tile-{tree,mine}-<shape>-<stage>`) come from
- * there, converted from the user's approved concept sheets by
- * `design/pixel/concept-tiles/convert_tiles.py`.
+ * into `sprites/` as they are, passing their names in so no drawing here is baked over them. They
+ * are converted with PixelLab from the user's approved concept sheets: the production tiles
+ * (`design/pixel/concept-tiles/`) and, from sheet 1, the gem coins, the mastery medals, the maul and
+ * bow ladders and the Flameblade and Soul Reaper (`design/pixel/concept-sheet-1/`).
  */
 import { RARITIES, loadContent, type GemArt } from '../../../../data';
 import {
@@ -153,10 +154,15 @@ const out = (name: string, g: Grid, extra: Partial<Baked> = {}): Baked => ({
   ...extra,
 });
 
+/** Names that have a hand-made sprite (`hand/*.png`): skipped here, copied in by the script. */
+let HAND = new Set<string>();
+const drawn = (name: string): boolean => !HAND.has(name);
+
 export async function bakeItems(): Promise<Baked[]> {
   const res: Baked[] = [];
   for (const kind of ITEM_KINDS_DRAWN)
     for (const r of RARITIES) {
+      if (!drawn(`item-${kind}-${r}`)) continue;
       const markup = itemVector(kind, r);
       res.push(
         out(`item-${kind}-${r}`, await cardItem(markup, RARITY_WINDOW[r]), {
@@ -165,6 +171,7 @@ export async function bakeItems(): Promise<Baked[]> {
       );
     }
   for (const id of EVOLUTIONS) {
+    if (!drawn(`evo-${id}`)) continue;
     const markup = evolutionVector(id);
     const bg = RARITY_WINDOW[EVOLUTION_WINDOW[id]];
     res.push(out(`evo-${id}`, await cardItem(markup, bg), { outline: largestPath(markup) }));
@@ -198,22 +205,26 @@ export async function bakeSmall(): Promise<Baked[]> {
   const gems = new Map<string, GemArt>();
   for (const r of content.resources) if (r.gem) gems.set(r.gem.shape, r.gem);
   for (const [shape, gem] of gems) {
-    for (const m of COIN_METALS)
+    for (const m of COIN_METALS) {
+      if (!drawn(`coin-${shape}-${m}`)) continue;
       res.push(
         out(
           `coin-${shape}-${m}`,
           await sticker(coinVector(gem, m, false), [0, 0, 48, 48], COIN_RING[m]),
         ),
       );
-    res.push(
-      out(
-        `coin-${shape}-locked`,
-        await sticker(coinVector(gem, 'stone', true), [0, 0, 48, 48], COIN_RING.stone),
-      ),
-    );
+    }
+    if (drawn(`coin-${shape}-locked`))
+      res.push(
+        out(
+          `coin-${shape}-locked`,
+          await sticker(coinVector(gem, 'stone', true), [0, 0, 48, 48], COIN_RING.stone),
+        ),
+      );
   }
   for (let t = 0; t < 5; t++)
-    res.push(out(`medal-${t}`, await sticker(medalVector(t), [0, 0, 48, 48], WHITE)));
+    if (drawn(`medal-${t}`))
+      res.push(out(`medal-${t}`, await sticker(medalVector(t), [0, 0, 48, 48], WHITE)));
   for (const glyph of Object.keys(NAV_GLYPHS) as NavGlyph[])
     res.push(out(`plaque-${glyph}`, await sticker(plaqueVector(glyph), [0, 0, 64, 64], null)));
   // forged edges: every mine gem's line, five steps
@@ -249,7 +260,9 @@ export async function bakeBosses(): Promise<Baked[]> {
   return res;
 }
 
-export async function bakeAll(): Promise<Baked[]> {
+/** Bakes every drawn sprite, skipping the names in `hand` (the hand-made sprites). */
+export async function bakeAll(hand: readonly string[] = []): Promise<Baked[]> {
+  HAND = new Set(hand);
   return [
     ...(await bakeItems()),
     ...(await bakeFrames()),
