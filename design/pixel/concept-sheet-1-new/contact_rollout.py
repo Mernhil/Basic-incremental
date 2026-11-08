@@ -64,7 +64,10 @@ def main() -> None:
             [(f"old {r}", Path(table[f"item-{kind}-{r}"]["old"]), WIN[r]) for r in RAR],
             [(f"new {r}", OUT / "items" / f"item-{kind}-{r}.png", WIN[r]) for r in RAR],
         ]
-        sheet(rows, HERE / f"contact-restyled-{kind}.png", f"{kind} ladder: old (above) and restyled, 3x", lines)
+        if kind == "book":  # there was no book before: the shield row was only a size reference, so it is not shown
+            rows = rows[1:]
+        sheet(rows, HERE / f"contact-restyled-{kind}.png",
+              f"{kind} ladder, 3x" if kind == "book" else f"{kind} ladder: old (above) and restyled, 3x", lines)
     rows = [[(f"old {n[4:]}", Path(table[n]["old"]), WIN["legendary" if n != "evo-soul_reaper" and n != "evo-twin_daggers" else "void"]),
              (f"new {n[4:]}", OUT / "uniques" / f"{n}.png", WIN["legendary" if n in ("evo-flameblade", "evo-bronze_hammer") else "void"])]
             for n in ("evo-flameblade", "evo-soul_reaper", "evo-twin_daggers", "evo-bronze_hammer")]

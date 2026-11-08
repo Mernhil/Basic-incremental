@@ -38,7 +38,15 @@ _fp.loader.exec_module(F)
 # white glint; about 16 colours per sprite with ink and rim, about 20 for the busiest Uniques; hard
 # steps only (no blend tones, dithering, gradients or noise). MATERIALS is how many materials a sprite
 # may have: 3 tones each + ink + white glint + rim (+ sparkles, also white).
-MATERIALS = {"item": 4, "unique": 5, "coin": 3, "sticker": 4}
+MATERIALS = {"item": 5, "unique": 6, "coin": 3, "sticker": 4}
+# Review 2026-11-08 ("we lost small details on the crystal and the chrome"): a material with a big
+# area may keep a 4th tone (a highlight), steps only merge when closer than MERGE_L lightness units,
+# and only near-black pixels (L* under INK_L) turn into part lines, so dark chrome keeps its shading.
+BUDGET = {"item": 22, "unique": 24, "coin": 18, "sticker": 18}  # colours incl. ink, before the rim
+BIG_AREA = 220
+TONES_MAX = 4
+MERGE_L = 6
+INK_L = 9
 
 
 def ink_edge(a: np.ndarray) -> np.ndarray:
@@ -121,7 +129,7 @@ def cel_palette(a: np.ndarray, materials: int) -> np.ndarray:
     op = a[..., 3] > 0
     lab = rgb2lab(rgb.astype(float) / 255)
     # near-black pixels inside are PixelLab's part lines: they become ink, so parts stay separated
-    out[op & (lab[..., 0] < 14) & (np.hypot(lab[..., 1], lab[..., 2]) < 10), :3] = P.INK
+    out[op & (lab[..., 0] < INK_L) & (np.hypot(lab[..., 1], lab[..., 2]) < 10), :3] = P.INK
     ink = (out[..., :3] == np.array(P.INK)).all(-1)
     glint = op & ~ink & (lab[..., 0] > 92) & (np.hypot(lab[..., 1], lab[..., 2]) < 12)
     out[glint, :3] = 255
@@ -136,7 +144,7 @@ def cel_palette(a: np.ndarray, materials: int) -> np.ndarray:
     for c in range(k):
         sel = mat == c
         L = X[sel, 0].reshape(-1, 1)
-        n = min(3, len(np.unique(L.round(0))))
+        n = min(TONES_MAX if sel.sum() >= BIG_AREA else 3, len(np.unique(L.round(0))))
         lab_c = KMeans(n_clusters=n, n_init=4, random_state=0).fit(L)
         order = np.argsort(lab_c.cluster_centers_[:, 0])
         rank = np.empty(n, int)
@@ -146,7 +154,7 @@ def cel_palette(a: np.ndarray, materials: int) -> np.ndarray:
         # merge steps closer than 9 L*, so every step reads
         merged = [means[0]]
         for t in means[1:]:
-            if t[0] - merged[-1][0] < 9:
+            if t[0] - merged[-1][0] < MERGE_L:
                 merged[-1] = (merged[-1] + t) / 2
             else:
                 merged.append(t)
@@ -219,7 +227,11 @@ def clean(raw: np.ndarray, kind: str, gem: str | None = None, old: np.ndarray | 
         a = P.disc(a, 20.5)
     # the ink outline (PixelLab's own, snapped to the game ink, gaps filled), then the palette rule
     a = ink_edge(a)
-    a = islands(cel_palette(a, MATERIALS[base]))
+    # PixelLab was asked for max_colors, so its shading is usually inside the budget already; snapping it
+    # again flattened crystal facets and dark chrome highlights (review 2026-11-08). Only over-budget
+    # results get the per-material snap.
+    n_colours = len({tuple(c) for c in a[a[..., 3] > 0][:, :3]})
+    a = islands(a, 1, 2) if n_colours <= BUDGET[base] else islands(cel_palette(a, MATERIALS[base]))
     if base == "coin":
         # the resource's gem back in the centre (DESIGN §12 "Resources are carved gems")
         if gem:
