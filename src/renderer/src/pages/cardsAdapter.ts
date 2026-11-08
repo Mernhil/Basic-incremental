@@ -26,6 +26,7 @@ import { COPY } from '../copy';
 import { itemArt } from '../art/items';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
+import { weaponView } from './weaponModel';
 import type {
   CardEntry,
   CardsModel,
@@ -145,6 +146,7 @@ export function createCardsModel(
         : null,
       next: owned ? step('star', info.starUp) : null,
       tier: owned ? step('tier', info.tierUp) : null,
+      weapon: weaponView(content, info),
     };
   }
 
@@ -153,6 +155,10 @@ export function createCardsModel(
 
   return {
     entries: (state) => all(state).map(entry),
+    entry(state, id) {
+      const info = cardInfo(state, content, id);
+      return info ? entry(info) : null;
+    },
     loadout(state, job) {
       const lo = loadoutInfo(state, content, job);
       return { job, slots: [lo.main, ...lo.supports], cost: lo.cost, cap: lo.cap };
