@@ -14,3 +14,4 @@ One line per task in flight, so parallel sessions do not collide. Read this at t
 | Branch                     | Worktree    | Owner agent | Files / area                                       | Started    |
 | -------------------------- | ----------- | ----------- | -------------------------------------------------- | ---------- |
 | chore/session-coordination | C:/bi-coord | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md | 2026-11-08 |
+| feat-scythe-skins-b78d7b   | .claude/worktrees/feat-scythe-skins-b78d7b | mechanics + ui | weapon skins test (cards.json, save, wardrobe tab, art/pixel/hand/skin-scythe-*) | 2026-11-08 |
