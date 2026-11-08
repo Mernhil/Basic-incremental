@@ -81,6 +81,45 @@ export function pushHarvest(into: HarvestEvent[], event: HarvestEvent): void {
   into.push(event);
 }
 
+/**
+ * One boss attack on the fighting loadout (DESIGN.md §6): a chunk taken from its health pool, at
+ * the boss's rhythm. Live spans list every attack; a long span (offline) folds them into one
+ * event for the light hits and one for the slams, so `attacks` counts the merged ones.
+ */
+export interface BossAttackEvent {
+  /** Dungeon whose boss attacked. */
+  dungeon: string;
+  /** Total taken from the pool by the merged attacks, after defence. */
+  damage: Decimal;
+  /** A slam (every sixth attack) rather than a light hit. */
+  slam: boolean;
+  /** Attacks merged into this event (1 when played live). */
+  attacks: number;
+  /** This single hit emptied the pool and knocked the loadout out (false once merged). */
+  knockout: boolean;
+  /** Seconds from this attack (the last one, when merged) until the next slam lands, for the
+   *  wind-up; a slam itself looks a whole cycle ahead. */
+  nextSlamSeconds: number;
+}
+
+/** Most boss attack events a merged report keeps before folding attacks of one kind together. */
+export const MAX_REPORT_BOSS_ATTACKS = 64;
+
+/** Adds a boss attack event, folding it into a matching one when the list is full. */
+export function pushBossAttack(into: BossAttackEvent[], event: BossAttackEvent): void {
+  if (into.length >= MAX_REPORT_BOSS_ATTACKS) {
+    const same = into.find((e) => e.dungeon === event.dungeon && e.slam === event.slam);
+    if (same) {
+      same.damage = same.damage.add(event.damage);
+      same.attacks += event.attacks;
+      same.knockout = false; // a merged event is no single lethal hit
+      same.nextSlamSeconds = event.nextSlamSeconds;
+      return;
+    }
+  }
+  into.push(event);
+}
+
 /** What happened during one advance() call, for notifications, animations and the away summary. */
 export interface TickReport {
   bossKills: number;
@@ -109,6 +148,8 @@ export interface TickReport {
   cardLevels: Record<string, { from: number; to: number }>;
   /** Times the fighting loadout was knocked out (DESIGN.md §6). */
   knockouts: number;
+  /** The boss's attacks on the fighting loadout, in order (merged when there are many). */
+  bossAttacks: BossAttackEvent[];
   /** Mastery tiers reached (gem mastery and boss medals), in order. */
   tierUps: TierUp[];
   /** Harvest strikes and harvest bursts of the production main cards, in order (11.15). */
@@ -134,6 +175,7 @@ export function emptyReport(): TickReport {
     cardDrops: [],
     cardLevels: {},
     knockouts: 0,
+    bossAttacks: [],
     tierUps: [],
     harvests: [],
     achievements: [],
@@ -158,6 +200,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.trialTopScore = Math.max(into.trialTopScore, add.trialTopScore);
   into.knockouts += add.knockouts;
   into.cardDrops.push(...add.cardDrops);
+  for (const event of add.bossAttacks) pushBossAttack(into.bossAttacks, { ...event });
   into.tierUps.push(...add.tierUps);
   for (const event of add.harvests)
     pushHarvest(into.harvests, { ...event, supports: [...event.supports] });
