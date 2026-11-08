@@ -2,13 +2,15 @@
 // Usage: node scripts/art/bake-pixels.mjs
 // Bundles src/renderer/src/art/pixel/bake.ts, runs it in headless Chromium (hard-edged SVG
 // rasterising needs a browser), and writes src/renderer/src/art/pixel/sprites/*.png plus
-// manifest.ts. Hand-made sprites in src/renderer/src/art/pixel/hand/*.png (the production tiles,
-// from design/pixel/concept-tiles/convert_tiles.py) are copied in as they are. Then the cosmetic art (scripts/art/cosmetics/export.py, Python 3 + Pillow; set
+// manifest.ts. Hand-made sprites in src/renderer/src/art/pixel/hand/*.png (converted with PixelLab
+// from the user's concept sheets: design/pixel/concept-tiles/ and design/pixel/concept-sheet-1/)
+// are not baked: they are copied in as they are, with hand/outlines.json for card items. Then the cosmetic art (scripts/art/cosmetics/export.py, Python 3 + Pillow; set
 // PYTHON when `python` is not on the path) draws cos-*.png from those sprites, and
 // cosmetics-gen.mjs writes art/pixel/cosmetics.gen.ts and the generated block of recipes.css.
 // The output is deterministic, so re-running without art changes gives no diff.
 import {
   copyFileSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -37,12 +39,16 @@ const { output } = await bundle.generate({ format: 'iife', name: 'BAKE' });
 await bundle.close();
 const code = output[0].code;
 
+// hand-made sprites (src/renderer/src/art/pixel/hand/*.png) are never baked over
+const hand = readdirSync(handDir).filter((f) => f.endsWith('.png'));
+const handNames = hand.map((f) => f.slice(0, -4));
+
 const browser = await chromium.launch();
 const page = await browser.newPage();
 page.on('pageerror', (e) => console.error('page error:', e.message));
 await page.setContent('<!doctype html><html><body></body></html>');
 await page.addScriptTag({ content: code });
-const baked = await page.evaluate(() => window.BAKE.bakeAll());
+const baked = await page.evaluate((names) => window.BAKE.bakeAll(names), handNames);
 await browser.close();
 
 mkdirSync(spriteDir, { recursive: true });
@@ -53,14 +59,17 @@ for (const b of baked) {
   manifest[b.name] = b.outline ? { w: b.w, h: b.h, outline: b.outline } : { w: b.w, h: b.h };
 }
 
-// hand-made sprites: copied as they are, size read from the PNG header
-const hand = readdirSync(handDir).filter((f) => f.endsWith('.png'));
+// hand-made sprites: copied as they are, size read from the PNG header; card items also carry
+// the outline the element effects trace (hand/outlines.json, from their own silhouette)
+const outlinesFile = join(handDir, 'outlines.json');
+const outlines = existsSync(outlinesFile) ? JSON.parse(readFileSync(outlinesFile, 'utf8')) : {};
 for (const f of hand) {
   const name = f.slice(0, -4);
   if (manifest[name]) throw new Error(`${name} is both baked and hand-made`);
   copyFileSync(join(handDir, f), join(spriteDir, f));
   const png = readFileSync(join(handDir, f));
-  manifest[name] = { w: png.readUInt32BE(16), h: png.readUInt32BE(20) };
+  const size = { w: png.readUInt32BE(16), h: png.readUInt32BE(20) };
+  manifest[name] = outlines[name] ? { ...size, outline: outlines[name] } : size;
 }
 
 // cosmetic art drawn on top of the baked sprites (coins, frames)
