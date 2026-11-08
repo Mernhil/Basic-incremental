@@ -79,6 +79,7 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 - [Built] **Start.** A new game owns Ember Squire, Apprentice Feller and Cave Digger at Bronze ★1, Lv 1, each leading its job.
 - [Built] **Collection.** Each card is owned once; further copies are stored on it as duplicates. Duplicates past the last star become shards for the shard shop (§10), more for higher rarities.
 - [Built] **Abilities.** Fighting mains shape how damage is dealt (steady ticks, fast hits that fill the gauge quickly, slow heavy hits with a stronger signature attack). Production mains shape output and the harvest pattern. Supports add a percentage or a gauge, drop or material bonus. Every card effect goes through the modifier pipeline (source `card`).
+- [Proposed] **Full-art layout.** The card's signature item fills the whole card. Top plate: name and stars side by side, nothing else. Bottom plate: ability name and hit speed on one line, level and the rarity word on the next, then the progress bar. No separate chips elsewhere on the art. The tier frame (§12 frame ladder) and the cosmetic border/finish slots (§8) apply over this layout unchanged. Reference: Design canvas "Full-art weapon card concepts" at https://claude.ai/artifact/52eC1yo35gn16NrDp5btik, artboard G is the one to build; boards A-F are the trail, not alternatives (user, 2026-11-08).
 - [Built] **Beta cards** (`cards.json`):
 
   | Job      | Card              | Rarity    | Element | Weapon                 | Main ability                                       | Support effect                     |
@@ -271,6 +272,10 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
   | Prismatic | Crystal band cut into pastel facets               | All six hold rainbow gems                         | A small radiant crown | The band cycles through the rainbow, the shine sweeps, sparks orbit |
 
 - [Built] **The signature item.** Inside the card is a weapon, tool or relic, not a character. Rarity sets how intricate it is, adding parts rather than only colour: Common plain; Rare a wrapped grip and gem pommel; Epic a winged guard and gem; Legendary a broader ornate shape, gold inlay and a ribbon; Mythic neon runes and a crystal edge; Exotic forked shapes and floating rings; Void black chrome, glowing cracks and orbiting shards. The maul and bow follow the user's concept sheet (2026-11-08) instead: the maul climbs from a plain wooden mallet through iron and gold to a crystal-headed hammer, the bow from a plain longbow to an ornate recurve and a flaming bow, one concept step per rarity. How this combines with the tier looks of §5 is an open question.
+- [Default] **Ladder steps.** Concept ladders map L1-L5 to Bronze, Silver, Gold, Prismatic and Unique. L6 is the Unique weapon's attack effect, drawn as animation frames (concept sheets, 2026-11-08).
+- [Default] **Common look.** Commons are crude and dull: plain wood at the first step, then simple iron weapons, with no glow or effects. Their ladder ends at Gold (concept sheet, 2026-11-08).
+- [Default] **Concept images.** The user's Gemini concept images are catalogued in the graphics chat (ID, asset, game size) and stored in `design/references/concept-<date>/` (local, never committed). A concept sheet is cut into one reference image per weapon/step with `design/pixel/concept-sheet-2/cut_sheet.py` (grid and labels removed, background kept, flat magenta only as a Gemini-redraw reference, not a PixelLab input).
+- [Default] **PixelLab inputs.** PixelLab converts plain rectangle crops of the original concept image, one weapon per cell at its game size, keeping the image's own background, same as `design/pixel/concept-sheet-1/make_inputs.py`. Keying happens afterwards in post-processing. A Gemini redraw of a weapon (clean, large, on flat magenta) replaces its sheet crop as the input when one exists.
 - [Built] **Unique weapons.** Flameblade (a sword made entirely of flame), Rootbloom Staff (roots, petals, falling leaves, wind and floating earth crystals) and Soul Reaper (a pale curved scythe with soul fire), with their own motion. The reveal: a light beam drops into the card, the frame rebuilds around it with a crest flare, then the unique weapon rises into the window. It belongs to the final tier (§5), the Unique tier.
 - [Built] **Characters** (chibi armoured figures) are used for bosses and may become special card skins later. Each boss looks like its area and has its own body shape: the Root Warden wide and squat, the Cinder Lich tall and floating, the Glacier Colossus top-heavy; drawn in the Brave Frontier pixel style with a soft aura in the boss colour. The Glimmer Trial target is the Crystal Sentinel, a floating one-eyed crystal with four orbiting shards that light up at 25, 50, 75 and 100%.
 - [Built] **Element effects.** Every card has an element. Its effect is generated from the item's own shape and stays secondary to it, slow and calm, mostly behind the item with a smaller share in front, in a cartoon cel style:
@@ -353,6 +358,7 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user. Answer a 
 
 Waiting since 2026-11-08 (`[Proposed]`):
 
+- Full-art card layout, artboard G of the "Full-art weapon card concepts" canvas (§5).
 - Weapons: the moves and damage types each card learns by level, and how they sit on the enhancement chart (§5).
 - Double-detail sprites: an optional re-bake of the sprites at double detail for full screen (§11, §12).
 - Beta systems: replacing Bare Hands and Single Plot; the new autobuyer list (§15).
@@ -365,6 +371,7 @@ Waiting since 2026-11-08 (weapon skins test, §8): how weapon skins are unlocked
 
 Defaults by Claude, never confirmed (`[Default]`):
 
+- §12 the concept ladder steps (L1-L5 = Bronze to Unique, L6 the Unique attack effect), the Common look, how concept images are stored and cut, and which image PixelLab converts (2026-11-08).
 - §2 dev tools and the Report an issue contents.
 - §4 what counts as harvested and when mastery tiers apply.
 - §5 the enhancement numbers (unlock at Silver ★1, five options, budgets).
@@ -386,6 +393,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 ## 17. Changelog
 
 - 2026-11-08 — Built the weapon skins test: a Wardrobe tab, per-weapon skins saved in save format 20, the Soul Reaper scythe with 12 free skins and a test card (user). Unlock rules come later.
+- 2026-11-08 — Proposed the full-art card layout (artboard G) and wrote the concept-sheet pipeline defaults: ladder steps, Common look, concept image storage and PixelLab inputs (§5, §12; user).
 - 2026-11-08 — Our damage to bosses and the Glimmer Trial's target lands in hits every burst interval instead of draining the bar smoothly, and a tier-up now needs all six stars and resets them to ★1 (a Bronze ★6 becomes a Silver ★1); the old default that stars carry across tiers is dropped (user, §5, §6).
 - 2026-11-08 — Built the boss-hit visuals the user picked at the review gate (option C, "Screen edge pulse"): edge pulse before each slam, the pale chunk that falls off the health bar, red numbers from the game's reported attacks, and the "You fall in" pill (§6).
 - 2026-11-08 — Built the Production screen as the side stage the user picked at the review gate (rows on the left, a sticky stage with the main card, the shelf in a bottom drawer) and the loadout fan from the user's sketch, with its Dungeons use still to build (§4, §11).

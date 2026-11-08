@@ -1,5 +1,6 @@
 import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
 import type { GameState, TierUp } from '../../../game';
+import type { CardFace } from '../ui/cardFace';
 import type { StarChartView } from './skillsModel';
 export type Job = (typeof JOBS)[number];
 
@@ -116,8 +117,8 @@ export interface CardEntry {
   cost: number;
   mainAbility: string;
   supportEffect: string;
-  /** Short stat lines for the card face. */
-  stats: [{ label: string; value: string }, { label: string; value: string }];
+  /** The bottom plate of the card face (ability, speed, level, progress). */
+  face: CardFace;
   role: LoadoutRole | null;
   /** The next star-up (the star bar), or null at ★6. */
   next: UpgradeStep | null;

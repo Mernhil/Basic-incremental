@@ -223,17 +223,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
       const base = id ? loadoutProps(content, s, id, role, mods) : null;
       const def = id ? content.cardById.get(id) : undefined;
       if (!id || !base || !def) return undefined;
-      // in the fan a support's effect is read in the pop-out, not on the plate (as on Production)
-      const props: CardProps =
-        role === 'support'
-          ? {
-              ...base,
-              stats: [
-                base.stats[0],
-                { label: COPY.production.supportRole, value: COPY.table.support },
-              ],
-            }
-          : base;
+      // in the fan a support's effect is read in the pop-out, not on the card face
+      const props: CardProps = base;
       return { id, name: def.name, effect: def.support.description, props };
     };
     const cards = [

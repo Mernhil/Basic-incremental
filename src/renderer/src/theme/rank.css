@@ -127,15 +127,6 @@
 .bi-card[data-tier='prismatic'] .bi-card__rankfx {
   display: block;
 }
-.bi-card[data-tier='prismatic'] .bi-rank-name {
-  font-weight: 600;
-  color: transparent;
-  background-image: var(--prism);
-  background-size: 300% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  animation: bi-prism 5s linear infinite;
-}
 .bi-card[data-tier='prismatic'] .bi-stars::after {
   content: '✦';
   position: absolute;

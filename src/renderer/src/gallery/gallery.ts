@@ -21,6 +21,7 @@ import {
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from '../theme/apply';
 import { createCard, type CardView } from '../ui/card';
 import { itemArt } from '../art/items';
+import { COPY } from '../copy';
 import { installArtDefs } from '../art/defs';
 import { playHit, showTick } from '../theme/effects';
 import { defaultRng, resolveGlobal } from '../../../game';
@@ -333,10 +334,13 @@ function cardProps(
     item: itemArt(emblem === 'gem' ? 'staff' : 'sword', rarity),
     element: (emblem === 'gem' ? 'light' : 'fire') as CardElement,
     rank,
-    stats: [
-      { label: 'Power', value: '12.4K' },
-      { label: 'Tick', value: '1.0s' },
-    ] as [{ label: string; value: string }, { label: string; value: string }],
+    rarity,
+    face: {
+      ability: emblem === 'gem' ? 'Bulwark' : 'Ember Blade',
+      speed: COPY.card.hitsEvery('1s'),
+      level: { value: 12, cap: 20 },
+      progress: 0.6,
+    },
     theme: resolveCard(content, loadout, { id, rank, rarity }),
   };
 }
