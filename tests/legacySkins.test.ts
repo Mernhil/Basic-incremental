@@ -355,8 +355,7 @@ describe('legacy maul and twin blades skins content', () => {
   it('gives every skin name in all sets once', () => {
     const names = baseContent.weaponSkins.flatMap((w) => w.skins.map((s) => s.name));
     const dupes = names.filter((n, i) => names.indexOf(n) !== i);
-    // "Ember Toll" is a pre-existing repeat (scythe 04 and bow 01 of the earlier sets).
-    expect(dupes.filter((n) => n !== 'Ember Toll')).toEqual([]);
+    expect(dupes).toEqual([]);
   });
 
   it('pools the maul and twin blades skins in the Legacy Gate with the rarity weights', () => {
