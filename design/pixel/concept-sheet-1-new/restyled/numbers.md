@@ -58,7 +58,7 @@
 | old void | 79x106 | 1768 | 45 | 2.5 |
 | new common | 34x85 | 1348 | 15 | 0.0 |
 | new rare | 31x91 | 1233 | 15 | 0.2 |
-| new epic | 63x94 | 1960 | 18 | 0.0 |
+| new epic | 62x106 | 1869 | 18 | 0.1 |
 | new legendary | 69x99 | 1754 | 19 | 0.1 |
 | new mythic | 60x97 | 1520 | 18 | 0.1 |
 | new exotic | 67x104 | 1768 | 21 | 0.1 |

@@ -25,7 +25,7 @@ OUT = HERE / "previews"
 
 def main() -> None:
     OUT.mkdir(exist_ok=True)
-    for strip in sorted((HERE / "drafts/attacks").glob("atk-*.png")):
+    for strip in sorted((HERE / "restyled/attacks").glob("atk-*.png")):
         style = strip.stem[4:]
         im = Image.open(strip).convert("RGBA")
         frames = [im.crop((64 * i, 0, 64 * i + 64, 64)) for i in range(4)]
