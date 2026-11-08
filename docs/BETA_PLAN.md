@@ -31,24 +31,24 @@ Working checklist for the first playable beta. If context resets, read this file
 
 Answered 2026-11-07 (two rounds).
 
-| Set                         | Pick                                                      |
-| --------------------------- | --------------------------------------------------------- |
-| A1 Dungeons layout          | **D** Full-bleed stage, drawer                            |
-| A2 Production layout        | **A** Two fields stacked + rail                           |
-| A3 Home role                | **A** Command centre                                      |
-| A4 Floating numbers         | **B** Sticker numerals                                    |
-| A5 Kill + drop              | **B** Loot shower                                         |
-| A6 Summon reveal            | **E** Shelf of portals + modal                            |
-| A7 Wardrobe                 | **A** Mannequin card                                      |
-| A8 Skill tree + enhancement | **A** Radial constellation                                |
-| A9 Prestige                 | **E** Portal gate                                         |
-| A10 Achievements + shop     | **C** Sticker book                                        |
-| A11 Welcome back            | **B** Card fan                                            |
-| A12 Medals + metal ladder   | **D** Faceted star                                        |
-| A13 Tile growth             | **C** Rising plinth (redrawn per stage, solid rock mines) |
-| A14 Forged edges            | **D** Ladder strip                                        |
-| A15 ★6 evolutions           | **E** Beam + frame rebuild, existing art                  |
-| A16 Goals + reward track    | **B** Quest scroll                                        |
+| Set                         | Pick                                            |
+| --------------------------- | ----------------------------------------------- |
+| A1 Dungeons layout          | **D** Full-bleed stage, drawer                  |
+| A2 Production layout        | **A** Two fields stacked + rail                 |
+| A3 Home role                | **A** Command centre                            |
+| A4 Floating numbers         | **B** Sticker numerals                          |
+| A5 Kill + drop              | **B** Loot shower                               |
+| A6 Summon reveal            | **E** Shelf of portals + modal                  |
+| A7 Wardrobe                 | **A** Mannequin card                            |
+| A8 Skill tree + enhancement | **A** Radial constellation                      |
+| A9 Prestige                 | **E** Portal gate                               |
+| A10 Achievements + shop     | **C** Sticker book                              |
+| A11 Welcome back            | **B** Card fan                                  |
+| A12 Medals + metal ladder   | **D** Faceted star                              |
+| A13 Tile growth             | Floating islands from the user's concept sheets |
+| A14 Forged edges            | **D** Ladder strip                              |
+| A15 ★6 evolutions           | **E** Beam + frame rebuild, existing art        |
+| A16 Goals + reward track    | **B** Quest scroll                              |
 
 Section E (DESIGN 16): all lines accepted (none rejected over two rounds); DESIGN 16 is now decided.
 
@@ -61,7 +61,7 @@ User guidance from round 1: reuse the art already made earlier where possible: t
 Decided with the user in the graphics session (2026-11-07).
 
 - **Art style: pixel art** (DESIGN 13). Every existing vector asset is redrawn as pixel art and approved by the user one by one. Code phases keep using the current art until an asset here is marked approved; do not build new vector art. When an asset is approved, its pixel version replaces the vector one in its phase.
-- **Tiles (A13):** the tree is the in-game `treeTile` grown over the five stages, not the review mockup's `growth.ts` trees; the mine is a crystal cluster (a chunky centre crystal, side crystals leaning into it, rock lumps at the base). Pixel draft: [Vector or Pixel](https://claude.ai/artifact/52eMxizyhHcEfXozMUuNGR). Not approved yet.
+- **Tiles (A13):** approved 2026-11-08. The user's own concept sheets (floating islands, three mines and three trees, five stages each) are converted to 58 × 64 hand-made sprites in `src/renderer/src/art/pixel/hand/` by `design/pixel/concept-tiles/convert_tiles.py`; the bake copies them instead of drawing the vector tiles.
 
 Approval queue (in order). Every asset is approved for the beta and built into the game (#43, #45, #48: baked by `scripts/art/bake-pixels.mjs`); mockups: [Pixel Art Batch](https://claude.ai/artifact/NLU6j4dSGJZe587PWGDXdK) and [Pixel Art Round 2](https://claude.ai/artifact/MP6BXhgJFWdRJDdyLiNcs6).
 

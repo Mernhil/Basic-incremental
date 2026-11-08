@@ -2,11 +2,20 @@
 // Usage: node scripts/art/bake-pixels.mjs
 // Bundles src/renderer/src/art/pixel/bake.ts, runs it in headless Chromium (hard-edged SVG
 // rasterising needs a browser), and writes src/renderer/src/art/pixel/sprites/*.png plus
-// manifest.ts. Then the cosmetic art (scripts/art/cosmetics/export.py, Python 3 + Pillow; set
+// manifest.ts. Hand-made sprites in src/renderer/src/art/pixel/hand/*.png (the production tiles,
+// from design/pixel/concept-tiles/convert_tiles.py) are copied in as they are. Then the cosmetic art (scripts/art/cosmetics/export.py, Python 3 + Pillow; set
 // PYTHON when `python` is not on the path) draws cos-*.png from those sprites, and
 // cosmetics-gen.mjs writes art/pixel/cosmetics.gen.ts and the generated block of recipes.css.
 // The output is deterministic, so re-running without art changes gives no diff.
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  copyFileSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
@@ -17,6 +26,7 @@ import { chromium } from 'playwright';
 const root = join(import.meta.dirname, '..', '..');
 const pixelDir = join(root, 'src/renderer/src/art/pixel');
 const spriteDir = join(pixelDir, 'sprites');
+const handDir = join(pixelDir, 'hand');
 
 const bundle = await rolldown({
   input: join(pixelDir, 'bake.ts'),
@@ -41,6 +51,16 @@ const manifest = {};
 for (const b of baked) {
   writeFileSync(join(spriteDir, `${b.name}.png`), Buffer.from(b.png.split(',')[1], 'base64'));
   manifest[b.name] = b.outline ? { w: b.w, h: b.h, outline: b.outline } : { w: b.w, h: b.h };
+}
+
+// hand-made sprites: copied as they are, size read from the PNG header
+const hand = readdirSync(handDir).filter((f) => f.endsWith('.png'));
+for (const f of hand) {
+  const name = f.slice(0, -4);
+  if (manifest[name]) throw new Error(`${name} is both baked and hand-made`);
+  copyFileSync(join(handDir, f), join(spriteDir, f));
+  const png = readFileSync(join(handDir, f));
+  manifest[name] = { w: png.readUInt32BE(16), h: png.readUInt32BE(20) };
 }
 
 // cosmetic art drawn on top of the baked sprites (coins, frames)
@@ -73,5 +93,6 @@ execFileSync(
   },
 );
 console.log(
-  `baked ${baked.length} sprites and ${meta.sprites.length} cosmetic sprites into ${spriteDir}`,
+  `baked ${baked.length} sprites, copied ${hand.length} hand-made sprites and drew ` +
+    `${meta.sprites.length} cosmetic sprites into ${spriteDir}`,
 );
