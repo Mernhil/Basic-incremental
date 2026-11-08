@@ -14,7 +14,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Built] **Skills.** UI work uses the frontend-design skill and the Design plugin skills (critique, design system, accessibility, UX copy).
 - [Built] **Game data through public entry points.** The renderer imports game code only from `src/game` and `src/data` index files, never from files inside them (ESLint enforces it).
 - [Built] **Adapters, no rules.** Display logic lives in adapters (`pages/*Adapter.ts`, `pages/*Model.ts`) that turn game state into view models. No game rules in the renderer.
-- [Built] **Whole pixel scales.** Layouts that hold pixel art size it with `src/renderer/src/ui/pixelScale.ts` and `pixelFit.ts` so every sprite is a whole number of device pixels per art pixel at 100%, 125%, 150% and 200% (the rule itself is Clean pixels, DESIGN §12). A layout that cannot fit the wanted scale takes the nearest whole one and reflows.
+- [Built] **Whole pixel scales.** Layouts that hold pixel art size it with `src/renderer/src/ui/pixelScale.ts` and `pixelFit.ts` so every sprite is a whole number of device pixels per art pixel at 100%, 125%, 150% and 200% (the rule itself is Clean pixels, ASSET_RULES.md §5). A layout that cannot fit the wanted scale takes the nearest whole one and reflows.
 - [Built] **Verify UI changes.** `npm run lint`, `npm run typecheck`, `npm test` and a run or screenshot of the changed screen come before saying it is done; one screenshot set per PR.
 - [Built] **Branches.** UI work goes on a branch `ui/<task>` in its own worktree, with a PR and green CI (GitHub workflow in `CLAUDE.md`).
 
@@ -27,7 +27,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Built] **Home** is a command centre: three live mini-stages (fight, logging, mining) with their rates, each opening its page, and the goal tracker on top.
 - [Built] **Dungeons** is a full-bleed arena. Floors, the weapon panel (DESIGN §5) and the upgrade shelf live in a drawer that slides up from the bottom; DPS, kills per minute and time-to-kill sit in the top-right corner.
 - [Built] **Production** is a side stage: one row per tree kind and mine type on the left, each bought and upgraded on its own row, a sticky stage with the main card on the right and the upgrade shelf in a drawer at the bottom (user, 2026-11-08; the rules are in §4).
-- [Built] **Loadout fan.** A loadout shows as a fan: the main card in front and up to three support cards behind it, each peeking out at the side. A click on a support (or on its line in the list beside it) pops it out in front as a full card with its effect written out; a click on it again, anywhere else or Escape puts it back. Cards keep whole device-pixel scales and nothing is rotated, so the art stays crisp (DESIGN §12). Built for the Production stage (the user's sketch, 2026-11-08).
+- [Built] **Loadout fan.** A loadout shows as a fan: the main card in front and up to three support cards behind it, each peeking out at the side. A click on a support (or on its line in the list beside it) pops it out in front as a full card with its effect written out; a click on it again, anywhere else or Escape puts it back. Cards keep whole device-pixel scales and nothing is rotated, so the art stays crisp (ASSET_RULES.md §5). Built for the Production stage (the user's sketch, 2026-11-08).
 - [Built] The same fan on the Dungeons fight screen, for the party beside the arena: the main card in front (about 2x on a window of at least 1200 × 760, the grid size on a smaller one), the supports behind it, the burst gauge under the main card and the shared health bar under the fan. A support plate reads "Support"; its effect is read in the pop-out. The lunge and knockout moves are slides only, nothing rotates.
 - [Built] **Dungeon arena.** The boss is large and centred with an idle bob and its stacked HP bars. Every hit flashes and squashes it, big hits shake, and a finished HP bar shatters. The loadout faces the boss and lunges on its attacks, with its health bar visible. Boss attacks land on the cards with red numbers and a shake; a knockout is a visible moment with its countdown. The burst gauge sits on the main card; the signature attack gets a screen flash, a big number and a brief slow-down. On a kill the boss pops and its drops spill out as coins, rest a beat, then fly to the header; a rare drop gets a light beam, a slow-down and a toast.
 - [Built] **Production field.** Every strike shows "+n" off its tree or mine and the coins fly to the header; a harvest burst is a wave with one big total. The main card lunges by its pattern and its supports flash when they help. Reduced motion drops lunges, shakes and flashes.
@@ -48,7 +48,7 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user.
 
 Waiting since 2026-11-08 (`[Proposed]`):
 
-- Double-detail sprites: an optional re-bake of the sprites at double detail for full screen (§2, DESIGN §12).
+- Double-detail sprites: an optional re-bake of the sprites at double detail for full screen (§2, ASSET_RULES.md §5).
 
 Defaults by Claude, never confirmed (`[Default]`):
 

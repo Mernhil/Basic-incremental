@@ -1,15 +1,17 @@
 # Checklist before showing art
 
+> **Rules live in `docs/ASSET_RULES.md`** (read it first; it wins over this file). This file is drawing technique only: how to draw, never what the game requires.
+
 Run `scripts/pixel_check.py` first, then go through this by eye at 1× and at game scale.
 
-## Rules (DESIGN.md §12)
+## Rules (`docs/ASSET_RULES.md` §1 to §5)
 
 - [ ] Native grid, whole-number scale, `image-rendering: pixelated`; no anti-aliasing, blur, gradients, soft glows, opacity fades or sub-pixel positions.
 - [ ] One ink colour for outer outlines, 1 px; front-part edges in the part's own darkest tone.
 - [ ] Sticker assets (bosses, tiles, coins) have the 1 px white ring; card items have the 1 px light rim.
 - [ ] Lit from the top-left; 3 to 5 tones per material; white glints; sparkles are plus shapes.
 - [ ] Size matches the approved size for the asset (card items 100 × 120, production tiles 58 × 64, others as approved).
-- [ ] Content matches what DESIGN §12 says the asset shows (shapes, rarity ladder, boss body shapes, element effects).
+- [ ] Content matches what ASSET_RULES.md says the asset shows (kind: tiered T?, unique or skin; tier look; boss body shapes; element effects).
 
 ## Craft
 
@@ -17,7 +19,7 @@ Run `scripts/pixel_check.py` first, then go through this by eye at 1× and at ga
 - [ ] No orphan pixels, doubled corners, jaggy runs or banding.
 - [ ] Ramps are hue-shifted; tones still distinct when desaturated.
 - [ ] Detail goes where the eye should go; nothing important is under 2 px.
-- [ ] Rarity steps differ in parts and silhouette, not only colour.
+- [ ] Cosmetic upgrades (T1 to T6) add parts or trim, not only colour; T2 to T4 share one look; no light or animation below T5.
 
 ## Motion
 

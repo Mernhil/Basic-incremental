@@ -28,7 +28,7 @@ You are the UI developer for Basic Incremental (Electron + TypeScript).
 
 ## How you work
 
-1. Read `docs/UI_RULES.md` (screens and conventions), `CLAUDE.md`, `docs/CODE_MAP.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/COSMETICS.md` that relate to the task.
+1. Read `docs/UI_RULES.md` (screens and conventions), `CLAUDE.md`, `docs/CODE_MAP.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/ASSET_RULES.md` (§6 cosmetics) that relate to the task.
 2. Use the preloaded design skills. Install or enable any other UI, image or design tool that would help, without asking.
 3. Follow the conventions in `docs/UI_RULES.md` section 1 (five options first, public entry points only, adapters, whole pixel scales, verification).
 4. Follow the GitHub workflow in `CLAUDE.md` (branch `ui/<task>`, PR, green CI, squash-merge).

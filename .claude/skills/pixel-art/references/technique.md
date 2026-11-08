@@ -1,6 +1,8 @@
 # Drawing technique
 
-Craft notes for static sprites in the Brave Frontier-style cel look. DESIGN.md §12 overrides anything here.
+> **Rules live in `docs/ASSET_RULES.md`** (read it first; it wins over this file). This file is drawing technique only: how to draw, never what the game requires.
+
+Craft notes for static sprites in the Brave Frontier-style cel look. `docs/ASSET_RULES.md` overrides anything here.
 
 ## Contents
 
@@ -40,11 +42,11 @@ Brave Frontier units are mid-resolution pixel sprites (roughly 100 to 150 px tal
 - Game rule: one ink colour (`INK` in `kit.ts`) for every outer outline, one pixel wide. Stickers (bosses, tiles, coins) add a 1 px white ring outside the ink. Card items add a 1 px light rim outside the ink for dark windows.
 - Internal lines where a front part overlaps another use the front part's darkest tone, not the ink, so the interior stays lighter than the silhouette.
 - Outline corners: for curves, use pixel-perfect lines (no L-shaped doubled corners). For straight edges, the outline can be continuous.
-- Brave Frontier often lightens the outline on lit sides (selective coloured outlining). The game uses one ink, so get the same effect with the lit-edge band inside the outline instead (DESIGN §12 "light extra shading").
+- Brave Frontier often lightens the outline on lit sides (selective coloured outlining). The game uses one ink, so get the same effect with the lit-edge band inside the outline instead (ASSET_RULES.md §5 "light extra shading").
 
 ## 4. Colour ramps
 
-- Each material gets 3 to 5 tones (DESIGN §12). Typical: shadow, base, light, highlight, plus a shared white glint.
+- Each material gets 3 to 5 tones (ASSET_RULES.md §5). Typical: shadow, base, light, highlight, plus a shared white glint.
 - Build ramps with hue shift: as tones get darker, rotate hue 10 to 30 degrees toward blue or violet and raise saturation a little; as they get lighter, rotate toward yellow and lower saturation near the top.
 - Keep value steps clear and even: test by desaturating; adjacent tones must still be distinguishable.
 - Share tones across materials where possible (the same dark violet can be the shadow of red cloth and of blue steel). Fewer colours make a stronger, more unified sprite.
@@ -74,7 +76,7 @@ Brave Frontier units are mid-resolution pixel sprites (roughly 100 to 150 px tal
 ## 7. Detail and rarity
 
 - Put detail where the eye goes: the head of the weapon, the gem, the crest. Leave the grip and the far side simple.
-- Rarity adds parts, not only colour (DESIGN §12 has the ladder: plain → wrapped grip and gem pommel → winged guard → serrated or ornate shape with gold inlay and ribbon → neon runes and crystal edge → forked shapes and floating rings → black chrome with glowing cracks and orbiting shards).
+- Rarity adds parts, not only colour (`ASSET_RULES.md` §2 has the cosmetic ladder: each tier keeps every earlier upgrade and adds one layer of parts, trim or richer ramp).
 - Each step up should be recognisable from the silhouette alone, not just from the palette.
 
 ## 8. Common mistakes
@@ -109,7 +111,7 @@ Studied the extracted sheets of a fire blob creature and a goblin (base form and
 **Battle sprites (regular units and enemies)**
 
 - **They are small.** A regular enemy's body is about 50 to 60 px tall at 1×; the pose is compact and crouched (knees bent, head forward, wide stance). The weapon makes the sprite about 1.5× wider than the body. For this game: a 96 × 96 enemy canvas with a 56 to 64 px body, the rest for the weapon, plume and effects. Bosses stay bigger.
-- **Outlines are coloured per material.** Red armour is outlined in its own darkest red, green skin in dark green, steel in dark slate; the outline lightens a little on lit edges. DESIGN §12 keeps one ink colour for the silhouette, so get the same effect with the part lines (darkest tone of the front part) and the lit-edge band, and say so when it matters.
+- **Outlines are coloured per material.** Red armour is outlined in its own darkest red, green skin in dark green, steel in dark slate; the outline lightens a little on lit edges. ASSET_RULES.md §5 keeps one ink colour for the silhouette, so get the same effect with the part lines (darkest tone of the front part) and the lit-edge band, and say so when it matters.
 - **Plate armour is all contrast.** Three to four tones per plate, a near-white specular on the upper rim of every plate, a 1 px steel or gold trim on plate edges, and one big round highlight on a chest plate or pauldron. Armour reads as metal because the jump from shadow to highlight is huge, not because of detail.
 - **Weapons are oversized and high contrast.** A curved blade has a dark spine, a mid body and a 1 px near-white cutting edge, plus one bright streak along the length; the hilt is a small warm accent (wood or gold).
 - **Faces are tiny and expressive.** One bright eye with a dark pupil, a 2 to 3 px brow line for the mood, a toothy grin with single white pixels for teeth. Big ears or a nose extend the head silhouette.
@@ -124,7 +126,7 @@ Studied the extracted sheets of a fire blob creature and a goblin (base form and
 
 **Evolutions (how forms grow)**
 
-- Higher forms keep the base body and add parts: gold armour pieces, a crown, spikes, flame accessories, wings or shoulder blades. The silhouette grows with accessories, and gold and white-hot accents increase. This matches the game's rarity ladder (parts, not only colour), so use it for enemy tiers and boss phases too.
+- Higher forms keep the base body and add parts: gold armour pieces, a crown, spikes, flame accessories, wings or shoulder blades. The silhouette grows with accessories, and gold and white-hot accents increase. This matches the cosmetic ladder (parts, not only colour; `ASSET_RULES.md` §2), so use it for enemy tiers and boss phases too. It is a Brave Frontier lesson, not a rule: a unique weapon never evolves (`ASSET_RULES.md` §3).
 
 **Brave Frontier Memories**
 
