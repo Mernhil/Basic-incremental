@@ -36,6 +36,8 @@ function apply(host: HTMLElement, f: Fit): void {
  * them right when the screen scale changes. Call again to change the spec. Returns the scale.
  */
 export function fitCard(host: HTMLElement, fit: Fit): number {
+  // pages rebuild their hosts often: drop the ones that left the page before the map grows
+  if (fits.size > 64) refitCards();
   fits.set(host, fit);
   apply(host, fit);
   return Number(host.style.getPropertyValue('--card-n'));

@@ -4,7 +4,7 @@
 // `node scripts/check-pixel-scale.mjs [port] [--reload] [--shots=<dir>] [--dpr=1,1.25,1.5,2] [--pages=home,cards]`.
 // Exit code 1 when any element is not a whole scale (use in review; CI cannot run Electron).
 import { chromium } from 'playwright';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2);
 const flag = (name, dflt) => args.find((a) => a.startsWith(`--${name}=`))?.split('=')[1] ?? dflt;
@@ -120,15 +120,23 @@ for (const dpr of dprs) {
   // the emulation changes the ratio without a resize event (a real zoom or monitor move fires one)
   await page.evaluate(() => window.dispatchEvent(new Event('resize')));
   await page.waitForTimeout(500);
-  const dismiss = () =>
-    page.evaluate(() => document.querySelector('.wb__collect, .away button')?.click());
+  // the welcome-back cards cover the page after a reload until Collect is pressed
+  const dismiss = async () => {
+    if (!(await page.$('.wb'))) return;
+    await page.click('.wb__collect', { timeout: 5000 }).catch(() => {});
+    await page.waitForSelector('.wb', { state: 'detached', timeout: 5000 }).catch(() => {});
+  };
   await dismiss();
   await page.waitForTimeout(900);
   for (const id of pageIds) {
     await dismiss();
     await page.click(`.shell-rail__item[data-page="${id}"]`, { timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(900);
-    if (shots) await page.screenshot({ path: `${shots}/${id}-dpr${dpr}.png` });
+    if (shots) {
+      // the CDP capture is in device pixels (Playwright would scale it back to CSS pixels)
+      const { data } = await cdp.send('Page.captureScreenshot', { format: 'png' });
+      writeFileSync(`${shots}/${id}-dpr${dpr}.png`, Buffer.from(data, 'base64'));
+    }
     const styleTag = await page.addStyleTag({ content: still });
     await page.evaluate(() => document.getAnimations().forEach((a) => a.cancel()));
     const list = await page.evaluate(`(${measure})()`);

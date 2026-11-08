@@ -236,12 +236,14 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Default · in game] The Ascension gate and the Starlight shop live on the Shop page.
 - [Built] **Settings** has reduced motion, number format, autosave interval, export / import, sound volumes and Report an issue.
 - [Default · in game] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
-- [Proposed] **Sharp cards.** The collection grid gets its own compact card instead of shrinking the big one, card text is real text at a readable size, and cards grow with the window in whole-number steps (§12). Optionally the sprites are re-baked at double detail for full screen.
+- [Proposed] **Sharp cards.** The collection grid gets its own compact card instead of shrinking the big one, and card text is real text at a readable size (cards already grow in whole-number steps, §12). Optionally the sprites are re-baked at double detail for full screen.
 
 ## 12. Art style
 
 - [Built] **Pixel art.** Every asset is pixel art, and each one is approved by the user before it goes into the game (queue in `docs/BETA_PLAN.md`, "Decided visuals"). Reference images stay in `design/references/` and are never committed.
-- [Differs] **Clean pixels.** Every sprite is drawn on its own pixel grid and shown at a whole-number scale with nearest-neighbour scaling. No anti-aliasing, blur, gradients or sub-pixel positions, and never shrink art to make pixels. The only soft glow is the approved one behind effects and the bosses' aura. Today cards are drawn at 1.33 screen pixels per art pixel, the collection grid shrinks them to about 55%, and nothing reads `devicePixelRatio`, so cards look low-res on a full screen (user, 2026-11-08).
+- [Built] **Clean pixels.** Every sprite is drawn on its own pixel grid and shown at a whole number of device pixels per art pixel (`devicePixelRatio` counts, so 125%, 150% and 200% screens each get their own whole scales), with nearest-neighbour scaling. No anti-aliasing, blur, gradients or sub-pixel sizes at rest, and art is never shrunk to make pixels. The only soft glow is the approved one behind effects and the bosses' aura. A card is a whole multiple of its 132 × 186 grid, and its frame, item and effects all share that one scale (132 × 186 CSS px on a 100% screen, 176 × 248 at 150%). Where a layout cannot fit a card at its wanted scale it takes the nearest whole scale that does, and the grid reflows (user, 2026-11-08). The scale choice is `src/renderer/src/ui/pixelScale.ts` (pure, tested) and `pixelFit.ts`; `node scripts/check-pixel-scale.mjs` measures every pixel-art element in the running app at 1x, 1.25x, 1.5x and 2x.
+- [Differs] **Small art.** A few places still show art below 1x because the small drawing does not exist yet: the boss portraits in the Dungeons floor list, the card thumbnails of the Wardrobe swatches, and the forged edges (which go with the damage lines). Each needs a small version from the pixel artist; until then they are the only art not on a whole scale.
+- [Default · in game] Brief motion is exempt: a hit squash, the idle breathing and bob, a sticker's tilt and a pop may scale or turn art for a moment. At rest everything is on a whole scale.
 - [Built] **Pixel rules.** A one-pixel dark ink outline around every part, a one-pixel edge in the part's darkest tone where parts overlap, and a white ring outside the ink on stickers (bosses, tiles, coins). Flat faces lit from the top-left, three to five tones per material, white glints, no stray pixels.
 - [Built] **Sizes.** Card items 100 × 120; the whole card is one grid of 132 × 186; production tiles 58 × 64; bosses 160 × 172; coins and medals 48 × 48; navigation plaques 64 × 64.
 - [Built] **Brave Frontier technique** (learned from their sprites, never copying them): five tones per material, shadows leaning purple and highlights leaning yellow-white, dark lines between parts, gold trim with a bright top edge, small gems with a white glint. The body barely moves; the life is in the effects.
@@ -342,7 +344,7 @@ Waiting since 2026-11-08 (`[Proposed]`):
 
 - Production: the row layout, picked from five mockups at the review gate (§4, §11).
 - Weapons: the moves and damage types each card learns by level, and how they sit on the enhancement chart (§5).
-- Cards on screen: the compact collection card, real text and whole-number growth, picked at the review gate; an optional re-bake at double detail (§11, §12).
+- Cards on screen: the compact collection card and real text, picked at the review gate; an optional re-bake at double detail (§11, §12).
 - Beta systems: replacing Bare Hands and Single Plot; the new autobuyer list (§15).
 
 Changed without asking (to confirm or undo):
@@ -363,6 +365,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §9 the Starlight formula and the extra Ascension resets.
 - §10 account XP and level curve, reward track details, account tree nodes and respec cost, goal rules, the four extra achievements and their rewards, shard prices.
 - §11 Buy Max, the Settings layout and options, the Shop page holding Ascension.
+- §12 brief motion (hit squash, breathing, sticker tilt) may scale or turn art for a moment while Clean pixels holds at rest.
 - §14 the sim player's choices.
 - §15 every detail of the beta systems (numbers, names, lists), and whether all of them are still wanted after the 2026-11-08 changes. Dungeon floors in particular would change how a dungeon is cleared (§6).
 
@@ -374,4 +377,5 @@ Defaults by Claude, never confirmed (`[Default]`):
 - 2026-11-08 — Boss hits take health in chunks instead of draining smoothly (user).
 - 2026-11-08 — Elements, presets, bonds, floors, expeditions, challenges, autobuyers, palette cycling and pixel workers (chosen 2026-11-07) were written in for the first time (§12, §15).
 - 2026-11-08 — Claude filled in defaults so the 2026-11-08 decisions can be built (§4, §5, §6), waiting for the user's confirmation: XP from fighting time, level caps by tier, the star bar and its impact, stars across tiers, tier-up costs, base damage, the Unique tier, interim weapon looks, the boss attack pattern and the "You fall in" readout.
+- 2026-11-08 — Clean pixels is built (the user decided it earlier): art is shown at whole device-pixel scales, cards are whole multiples of the 132 × 186 grid, and the few places still below 1x are listed in §12 Small art.
 - 2026-11-07 and earlier — see git history.
