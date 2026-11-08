@@ -157,6 +157,10 @@ export function createCardsModel(
 
   return {
     entries: (state) => all(state).map(entry),
+    entry(state, id) {
+      const info = cardInfo(state, content, id);
+      return info ? entry(info) : null;
+    },
     loadout(state, job) {
       const lo = loadoutInfo(state, content, job);
       return { job, slots: [lo.main, ...lo.supports], cost: lo.cost, cap: lo.cap };
