@@ -10,9 +10,9 @@ import {
   defaultRng,
   effectiveDamage,
   hitDamage,
+  isProducerUnlocked,
   jobProductionPerSecond,
   producerLevel,
-  plots,
   producerRate,
   producersOf,
   rollHitForShow,
@@ -108,9 +108,8 @@ export function createDirector(content: Content, state: () => GameState) {
       const mods = collectModifiers(s, content);
       for (const job of PRODUCTION_JOBS) {
         const out: ShowEvents['harvest']['plots'] = [];
-        plots(s, content, job, mods).forEach((id, index) => {
-          const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
-          if (!p) return;
+        producersOf(content, job).forEach((p, index) => {
+          if (!isProducerUnlocked(s, content, job, p.id)) return;
           const level = producerLevel(s, job, p.id);
           const amount = producerRate(p, job, mods, level).mul(HARVEST_TICK_S);
           if (amount.gt(0)) out.push({ index, resource: p.resource, amount });

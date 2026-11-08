@@ -34,7 +34,6 @@ export function sourceName(content: Content, m: Modifier): string {
 const STAT_NAMES: Partial<Record<Modifier['stat'], string>> = {
   'production.rate': 'production',
   'production.levelBonus': 'output per mine level',
-  'production.capacity': 'plots and slots',
   'combat.damage': 'damage',
   'combat.health': 'loadout health',
   'combat.defence': 'damage blocked',

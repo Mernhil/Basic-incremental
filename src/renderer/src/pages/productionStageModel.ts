@@ -8,13 +8,13 @@ import type { HarvestPattern } from '../../../data';
 
 /**
  * View model of the Production stage (DESIGN.md §4, §11): turns the report's harvest events into
- * the "moments" the stage plays (one strike per plot, one burst), and the strike pattern into
+ * the "moments" the stage plays (one strike per kind, one burst), and the strike pattern into
  * how the main card moves. Pure, no DOM, unit tested.
  */
 
-/** One strike on one plot, after merging the events of a step. */
+/** One strike on one tree kind or mine type, after merging the events of a step. */
 export interface StrikeMoment {
-  plot: number;
+  kind: number;
   resource: string;
   amount: Decimal;
   /** Strikes folded into this moment (>1 when a long step was merged). */
@@ -24,9 +24,9 @@ export interface StrikeMoment {
   supports: string[];
 }
 
-/** The harvest burst: a wave over the plots in order, one big total per resource. */
+/** The harvest burst: a wave over the kinds in order, one big total per resource. */
 export interface BurstMoment {
-  plots: Array<{ plot: number; resource: string; amount: Decimal }>;
+  kinds: Array<{ kind: number; resource: string; amount: Decimal }>;
   totals: Array<{ resource: string; amount: Decimal }>;
   supports: string[];
 }
@@ -36,7 +36,7 @@ export interface HarvestMoments {
   burst: BurstMoment | null;
 }
 
-/** Strike moments played per report at most (the rest fold into the plots already shown). */
+/** Strike moments played per report at most (the rest fold into the kinds already shown). */
 export const MAX_STRIKE_MOMENTS = 12;
 
 const addUnique = (into: string[], more: readonly string[]): void => {
@@ -44,7 +44,7 @@ const addUnique = (into: string[], more: readonly string[]): void => {
 };
 
 /**
- * Events -> moments for one job: other jobs are dropped, strikes on the same plot merge (amounts
+ * Events -> moments for one job: other jobs are dropped, strikes on the same kind merge (amounts
  * add, any crit makes the moment a crit), burst events become one wave. Strikes keep the order
  * of their first event; beyond `cap` the smallest are dropped (their gain is still in the
  * header counters, only the show is trimmed).
@@ -55,27 +55,27 @@ export function harvestMoments(
   cap = MAX_STRIKE_MOMENTS,
 ): HarvestMoments {
   const strikes = new Map<number, StrikeMoment>();
-  const wave = new Map<number, { plot: number; resource: string; amount: Decimal }>();
+  const wave = new Map<number, { kind: number; resource: string; amount: Decimal }>();
   const supports: string[] = [];
   const burstSupports: string[] = [];
   for (const e of events) {
     if (e.job !== job || e.amount.lte(0)) continue;
     if (e.burst) {
-      const open = wave.get(e.plot);
+      const open = wave.get(e.kind);
       if (open) open.amount = open.amount.add(e.amount);
-      else wave.set(e.plot, { plot: e.plot, resource: e.resource, amount: e.amount });
+      else wave.set(e.kind, { kind: e.kind, resource: e.resource, amount: e.amount });
       addUnique(burstSupports, e.supports);
       continue;
     }
-    const open = strikes.get(e.plot);
+    const open = strikes.get(e.kind);
     if (open) {
       open.amount = open.amount.add(e.amount);
       open.strikes += e.strikes;
       open.crit ||= e.crits > 0;
       addUnique(open.supports, e.supports);
     } else {
-      strikes.set(e.plot, {
-        plot: e.plot,
+      strikes.set(e.kind, {
+        kind: e.kind,
         resource: e.resource,
         amount: e.amount,
         strikes: e.strikes,
@@ -94,14 +94,14 @@ export function harvestMoments(
     );
     list = list.filter((s) => keep.has(s));
   }
-  const plots = [...wave.values()].sort((a, b) => a.plot - b.plot);
+  const kinds = [...wave.values()].sort((a, b) => a.kind - b.kind);
   let burst: BurstMoment | null = null;
-  if (plots.length > 0) {
+  if (kinds.length > 0) {
     const totals = new Map<string, Decimal>();
-    for (const p of plots)
+    for (const p of kinds)
       totals.set(p.resource, (totals.get(p.resource) ?? new Decimal(0)).add(p.amount));
     burst = {
-      plots,
+      kinds,
       totals: [...totals].map(([resource, amount]) => ({ resource, amount })),
       supports: burstSupports,
     };
@@ -114,7 +114,7 @@ export interface StrikeLook {
   style: HarvestPattern['style'];
   /** Class on the card slot while it lunges. */
   lungeClass: string;
-  /** How far the card travels toward the plot, 0..1 of the way. */
+  /** How far the card travels toward the tile, 0..1 of the way. */
   reach: number;
   /** Lunge animation length in ms. */
   ms: number;

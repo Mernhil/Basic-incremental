@@ -15,14 +15,11 @@ import {
   previewTreeLevel,
   treeLevel,
   treeLevelOffer,
-  expansionOffer,
-  previewExpansion,
   type BuyCount,
   type BuyOffer,
   type GameState,
   type MilestoneInfo,
   type Modifier,
-  type ProductionJob,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -127,7 +124,7 @@ export function mineLevelViews(
         price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
         preview: running
           ? COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter))
-          : COPY.buy.perSlot(fmt(p.perSlotBefore), fmt(p.perSlotAfter)),
+          : COPY.buy.perSlot(fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
         gain: Decimal.max(p.rateAfter.sub(p.rateBefore), 0),
@@ -164,45 +161,13 @@ export function treeLevelViews(
         price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
         preview: running
           ? COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter))
-          : COPY.buy.perPlot(fmt(p.perSlotBefore), fmt(p.perSlotAfter)),
+          : COPY.buy.perPlot(fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
         gain: Decimal.max(p.rateAfter.sub(p.rateBefore), 0),
       },
     ];
   });
-}
-
-/** The plot (logging) or slot (mining) expansion line. */
-export function expansionView(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  count: BuyCount,
-  mods: readonly Modifier[],
-): BuyLineView | null {
-  const offer = expansionOffer(state, content, job, count, mods);
-  if (!offer) return null;
-  const p = previewExpansion(state, content, job, count, mods);
-  const t = COPY.production[job];
-  const rate =
-    p.resource && p.rateAfter.gt(p.rateBefore)
-      ? COPY.buy.rateTail(resName(content, p.resource), fmt(p.rateBefore), fmt(p.rateAfter))
-      : '';
-  return {
-    id: `${job}-expansion`,
-    name: t.expansion,
-    resource: offer.price.resource,
-    level: p.capacityBefore,
-    available: true,
-    offer,
-    label: buyLabel(offer, count),
-    price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
-    preview: t.capacityPreview(p.capacityBefore, p.capacityAfter) + rate,
-    milestone: '',
-    milestoneInfo: null,
-    gain: Decimal.max(p.rateAfter.sub(p.rateBefore), 0),
-  };
 }
 
 /**
