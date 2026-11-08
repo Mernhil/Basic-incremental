@@ -12,14 +12,14 @@ import type { Content } from '../src/data';
 import { content, freshState } from './helpers';
 
 describe('weapon skins content (weaponSkins.json)', () => {
-  it('lists twelve free skins for the Soul Reaper scythe', () => {
+  it('lists thirteen free skins for the Soul Reaper scythe', () => {
     const set = content.weaponSkinsByWeapon.get('soul_reaper')!;
     const skins = set.skins;
     expect(skins.map((s) => s.id)).toEqual(
-      Array.from({ length: 12 }, (_, i) => `skin-${String(i + 1).padStart(2, '0')}`),
+      Array.from({ length: 13 }, (_, i) => `skin-${String(i + 1).padStart(2, '0')}`),
     );
     expect(skins.map((s) => s.art)).toEqual(
-      Array.from({ length: 12 }, (_, i) => `skin-scythe-${String(i + 1).padStart(2, '0')}`),
+      Array.from({ length: 13 }, (_, i) => `skin-scythe-${String(i + 1).padStart(2, '0')}`),
     );
     expect(set.baseArt).toBe('skin-scythe-base');
     for (const s of skins) {
@@ -112,7 +112,7 @@ describe('equipping weapon skins', () => {
     const first = equipWeaponSkin(freshState(), content, 'soul_reaper', 'skin-03');
     if (!first.ok) throw new Error(first.reason);
     const choices = weaponSkinChoices(first.state, content, 'soul_reaper');
-    expect(choices).toHaveLength(12);
+    expect(choices).toHaveLength(13);
     expect(choices.filter((c) => c.equipped).map((c) => c.id)).toEqual(['skin-03']);
     expect(choices.every((c) => c.available)).toBe(true);
     expect(weaponSkinChoices(first.state, content, 'sword')).toEqual([]);
