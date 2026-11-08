@@ -1,163 +1,337 @@
-/* Summon page, shelf of portals (DESIGN.md §7, A6 E): portal cards side by side. */
+/* Summon page, "Deck and Table" (DESIGN.md §7): two decks, an odds panel between them, the last
+   hand below. Flat Nocturne panel on the game's chrome tokens; the only motion is the deck edge. */
 
-.sm-shelf {
+.sm-table {
+  --sm-line: var(--bi-chrome-line, rgba(217, 179, 90, 0.45));
+  --sm-gold: var(--bi-chrome-accent, #d9b35a);
+  --sm-panel: color-mix(in srgb, var(--bi-chrome-bg) 88%, #fff);
+  --sm-common: #c9ced6;
+  --sm-rare: #5aa8ff;
+  --sm-epic: #b67bff;
+  --sm-legendary: #ffc23a;
+  --sm-mythic: #ff4fb8;
+  --sm-exotic: #ff8a1f;
+  --sm-void: #8a5cff;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 380px));
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr) 210px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  align-items: start;
+  gap: 24px 20px;
+  min-height: 100%;
+  padding: 28px 28px 24px;
+  box-sizing: border-box;
+  border-radius: 12px;
+  color: var(--bi-chrome-ink);
+  background: var(--bi-chrome-bg);
+  box-shadow: inset 0 0 0 1px var(--sm-line);
 }
-.sm-portal {
-  position: relative;
+
+/* decks */
+.sm-deck {
   display: grid;
   justify-items: center;
-  align-content: start;
   gap: 8px;
-  min-height: 440px;
-  padding: 28px 22px 22px;
-  border-radius: var(--bi-frame-radius, 14px);
-  color: var(--bi-chrome-ink);
-  background:
-    radial-gradient(
-      60% 40% at 50% 26%,
-      color-mix(in srgb, #8a6cff 30%, transparent),
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bi-chrome-bg) 82%, #3a2a7a),
-      var(--bi-chrome-bg)
-    );
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
   text-align: center;
 }
-.sm-portal__ring {
-  width: 168px;
-  height: 168px;
-  margin-bottom: 10px;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, #7a5cff, #3ec6ff, #b67bff, #ff6fc8, #7a5cff);
-  mask: radial-gradient(closest-side, transparent 58%, #000 61%, #000 98%, transparent);
-  box-shadow: 0 0 40px rgba(140, 110, 255, 0.45);
-  animation: sm-spin 9s linear infinite;
+.sm-deck--left {
+  grid-column: 1;
 }
-/* the Wardrobe Gate burns in ember tones (Ember Sigils) */
-.sm-portal[data-portal='wardrobe_gate'] {
-  background:
-    radial-gradient(
-      60% 40% at 50% 26%,
-      color-mix(in srgb, #ff8a3d 26%, transparent),
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bi-chrome-bg) 82%, #6a2a14),
-      var(--bi-chrome-bg)
-    );
+.sm-deck--right {
+  grid-column: 3;
 }
-.sm-portal[data-portal='wardrobe_gate'] .sm-portal__ring {
-  background: conic-gradient(from 0deg, #ff8a3d, #ffd08a, #d9404f, #ffc23a, #ff8a3d);
-  box-shadow: 0 0 40px rgba(255, 138, 61, 0.45);
-}
-.sm-portal--locked .sm-portal__ring {
-  background: conic-gradient(from 0deg, #7a5a3a, #c08a4a, #5a3e28, #c08a4a, #7a5a3a);
-  filter: grayscale(0.5) brightness(0.7);
-  animation: none;
-}
-.sm-portal--locked {
-  color: var(--bi-chrome-ink-muted);
-}
-.sm-portal__name {
+.sm-deck__name {
   margin: 0;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--bi-chrome-ink);
 }
-.sm-portal--locked .sm-portal__name {
-  color: var(--bi-chrome-ink-muted);
-}
-.sm-portal__rates {
-  position: absolute;
-  top: 14px;
-  right: 14px;
-  padding: 3px 10px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--bi-chrome-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-  color: var(--bi-chrome-ink);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: help;
-}
-.sm-portal__pity {
-  margin: 4px 0 0;
+.sm-deck__pity {
+  margin: 0;
+  max-width: 290px;
   font-size: 13.5px;
   font-weight: 600;
+  color: var(--bi-chrome-ink-muted);
 }
-.sm-portal__track {
-  width: 80%;
-  height: 8px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.45);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-}
-.sm-portal__track i {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, #ffc23a, #ff8a1f);
-}
-.sm-portal__note {
+.sm-deck__about {
   margin: 0;
+  max-width: 260px;
   font-size: 12.5px;
   color: var(--bi-chrome-ink-muted);
 }
-.sm-portal__buttons {
-  display: grid;
+.sm-deck__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 8px;
-  width: 100%;
-  margin-top: 10px;
+  margin-top: 4px;
 }
-.sm-pull {
-  padding: 10px 14px;
-  border: 0;
+.sm-deck.is-odds .sm-deck__name::after {
+  content: '';
+  display: block;
+  height: 2px;
+  margin: 4px auto 0;
+  width: 36px;
+  border-radius: 1px;
+  background: var(--sm-gold);
+}
+
+/* the stack: a card back with a page edge whose height is the pity (--layers 1..9) */
+.sm-stack {
+  --layers: 1;
+  position: relative;
+  width: 150px;
+  height: 222px;
+  margin: 18px 0 30px;
+}
+.sm-stack__back {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
   border-radius: 10px;
-  font: inherit;
-  font-size: 14.5px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      transparent 0 9px,
+      color-mix(in srgb, var(--sm-gold) 10%, transparent) 9px 18px
+    ),
+    var(--sm-panel);
+  box-shadow:
+    inset 0 0 0 1px var(--sm-gold),
+    inset 0 0 0 5px var(--bi-chrome-bg),
+    inset 0 0 0 6px var(--sm-line);
+}
+.sm-stack__edge {
+  position: absolute;
+  left: 5px;
+  right: 5px;
+  top: 100%;
+  z-index: 1;
+  height: calc(var(--layers) * 3px);
+  margin-top: -8px;
+  padding-top: 8px;
+  box-sizing: content-box;
+  border-radius: 0 0 8px 8px;
+  background: repeating-linear-gradient(0deg, #e8dfc6 0 2px, #b9ad8c 2px 4px);
+  transition: height 0.4s ease;
+}
+.sm-crest {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+}
+.sm-crest__icon {
+  display: block;
+  width: 64px;
+  height: 64px;
+}
+.sm-crest__icon svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sm-crest__count {
+  font-size: 32px;
+  line-height: 1;
   font-weight: 800;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+}
+.sm-crest__of {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-deck.is-locked {
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-deck.is-locked .sm-deck__name {
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-deck.is-locked .sm-stack__back {
+  filter: grayscale(0.7) brightness(0.75);
+}
+.sm-deck.is-locked .sm-stack__edge {
+  filter: grayscale(1) brightness(0.6);
+}
+
+/* buttons: gold primary for the x10, outlined for the x1 */
+.sm-pull {
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
-  color: var(--bi-frame-ink-muted);
-  background: var(--bi-frame-title-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+  color: var(--bi-chrome-ink-muted);
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--sm-line);
 }
 .sm-pull.is-affordable {
+  color: var(--bi-chrome-ink);
+  box-shadow: inset 0 0 0 1.5px var(--sm-gold);
+}
+.sm-pull--ten.is-affordable {
   color: var(--bi-chrome-bg);
-  background: var(--bi-chrome-accent);
-  box-shadow: 0 0 16px color-mix(in srgb, var(--bi-chrome-accent) 45%, transparent);
+  background: var(--sm-gold);
+  box-shadow: none;
 }
 .sm-pull:disabled {
   cursor: default;
+  opacity: 0.7;
 }
-.sm-pull:focus-visible,
-.sm-portal__rates:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
+.sm-pull:not(:disabled):hover {
+  filter: brightness(1.12);
+}
+.sm-pull:focus-visible {
+  outline: 2px solid var(--bi-chrome-ink);
   outline-offset: 2px;
 }
-.sm-rates ul {
-  margin: 6px 0;
+
+/* odds panel */
+.sm-odds {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: start;
+  margin-top: 44px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--sm-panel);
+  box-shadow: inset 0 0 0 1px var(--sm-line);
+}
+.sm-odds__title {
+  margin: 0;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--sm-gold);
+}
+.sm-odds__for {
+  margin: 2px 0 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bi-chrome-ink-muted);
+}
+.sm-odds__list {
+  margin: 0;
   padding: 0;
   list-style: none;
 }
-.sm-rates p {
+.sm-odds__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 2px 0;
+}
+.sm-odds__row b,
+.sm-hand__card[data-rarity] .sm-hand__rarity {
+  color: var(--rc);
+}
+.sm-odds__note {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--bi-chrome-ink-muted);
+  border-top: 1px solid var(--sm-line);
+}
+[data-rarity='common'] {
+  --rc: var(--sm-common);
+}
+[data-rarity='rare'] {
+  --rc: var(--sm-rare);
+}
+[data-rarity='epic'] {
+  --rc: var(--sm-epic);
+}
+[data-rarity='legendary'] {
+  --rc: var(--sm-legendary);
+}
+[data-rarity='mythic'] {
+  --rc: var(--sm-mythic);
+}
+[data-rarity='exotic'] {
+  --rc: var(--sm-exotic);
+}
+[data-rarity='void'] {
+  --rc: var(--sm-void);
+}
+
+/* last hand */
+.sm-hand {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--sm-line);
+}
+.sm-hand__title {
   margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bi-chrome-ink-muted);
 }
-@keyframes sm-spin {
-  to {
-    rotate: 360deg;
-  }
+.sm-hand__empty {
+  margin: 0 0 24px;
+  font-size: 13.5px;
+  color: var(--bi-chrome-ink-muted);
 }
+.sm-hand__list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0 6px;
+  margin: 0;
+  padding: 6px 0 14px;
+  list-style: none;
+}
+.sm-hand__card {
+  --rc: var(--sm-common);
+  position: relative;
+  display: grid;
+  align-content: space-between;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 88px;
+  height: 118px;
+  padding: 8px 7px;
+  border-radius: 8px;
+  background: var(--sm-panel);
+  box-shadow:
+    inset 0 0 0 1.5px var(--rc),
+    0 3px 8px rgba(0, 0, 0, 0.35);
+  rotate: var(--tilt, 0deg);
+  transform-origin: 50% 160%;
+}
+.sm-hand__rarity {
+  font-size: 11px;
+  font-weight: 700;
+}
+.sm-hand__name {
+  font-size: 12.5px;
+  line-height: 1.15;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.sm-hand__new {
+  position: absolute;
+  top: -8px;
+  right: -6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bi-chrome-bg);
+  background: var(--sm-gold);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .sm-portal__ring {
-    animation: none;
+  .sm-stack__edge {
+    transition: none;
   }
 }
