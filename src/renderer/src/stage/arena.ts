@@ -13,6 +13,7 @@ import {
   trialStatus,
   type GameState,
   bossMastery,
+  bossAttackView,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -29,7 +30,14 @@ import { loadoutKey, loadoutProps } from '../pages/loadoutCards';
 import { attachTooltip } from '../shell/tooltip';
 import { centreOf, flyCoins } from './fly';
 import type { Director } from './director';
-import { flash, jitter, reducedMotion, replay, shake, slowDown } from './motion';
+import { flash, jitter, onFrame, reducedMotion, replay, shake, slowDown } from './motion';
+import {
+  edgeStrength,
+  fallBanner,
+  windupProgress,
+  windupSeconds,
+  type ChunkSpan,
+} from './bossHitModel';
 import { popText } from './math';
 import { popNumber } from './numbers';
 import { toast } from './toast';
@@ -39,7 +47,9 @@ import './arena.css';
  * The dungeon arena (DESIGN.md §11, A1 D full-bleed stage): the boss large and centred with an
  * idle bob and stacked HP bars, the fighting loadout facing it with its shared health bar, the
  * burst gauge on the main card and live readouts in the top-right corner. Reacts to the
- * director's show events while it is on screen.
+ * director's show events while it is on screen. Boss hits (DESIGN.md §6): before a slam the
+ * screen edges pulse harder as the game's wind-up runs, each hit drops a chunk off the health
+ * bar, and a "You fall in" banner shows when the loadout would fall before the boss does.
  */
 
 /** What the arena needs from the header: where coins land, and the pulse when they do. */
@@ -108,7 +118,13 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   const dpsOut = readout(COPY.arena.dps, COPY.arena.dpsTip);
   const kpmOut = readout(COPY.arena.kpm, COPY.arena.kpmTip);
   const ttkOut = readout(COPY.arena.ttk, COPY.dungeons.perKillTip);
-  top.append(where, readouts);
+  // "You fall in": only while the loadout would fall before it kills the boss
+  const fall = div('ar__fall');
+  fall.hidden = true;
+  fall.tabIndex = 0;
+  let fallNow: string | null = null;
+  attachTooltip(fall, () => COPY.arena.fallTip(fallNow));
+  top.append(where, fall, readouts);
 
   // the boss
   const bossBox = div('ar__boss');
@@ -142,6 +158,12 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   gauge.setAttribute('aria-valuemin', '0');
   gauge.setAttribute('aria-valuemax', '100');
 
+  // boss hits: the screen edges pulse before a slam, and flash once when it lands
+  const edge = div('ar__edge');
+  edge.setAttribute('aria-hidden', 'true');
+  const slamFlash = div('ar__slam-flash');
+  slamFlash.setAttribute('aria-hidden', 'true');
+
   const ko = div('ar__ko');
   ko.setAttribute('role', 'status');
   ko.hidden = true;
@@ -151,13 +173,35 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   const empty = div('ar__empty');
   empty.textContent = COPY.arena.idle;
 
-  el.append(top, bossBox, party, ko, trial, empty, flashEl);
+  el.append(top, bossBox, party, ko, trial, empty, flashEl, edge, slamFlash);
 
   let slots: Slot[] = [];
   let builtFor: string | null | undefined;
   let builtParty = '';
   let lastBars = -1;
   let bossArtKey = '';
+
+  // The wind-up follows the game's attack clock: each update() takes the time to the next attack
+  // from bossAttackView and the frame loop counts down from there, so the pulse stays smooth
+  // between the game's steps and lines up with the hit that arrives in the report.
+  let windup: { at: number; nextAttack: number; nextIsSlam: boolean; interval: number } | null =
+    null;
+  let edgeShown = 0;
+  const setEdge = (value: number): void => {
+    const v = Math.round(value * 100) / 100;
+    if (v === edgeShown) return;
+    edgeShown = v;
+    edge.style.opacity = String(v);
+  };
+  onFrame((_dt, now) => {
+    if (!windup || !ctx.active()) {
+      setEdge(0);
+      return;
+    }
+    const remaining = windup.nextAttack - (now - windup.at) / 1000;
+    const progress = windupProgress(windup.nextIsSlam, remaining, windup.interval);
+    setEdge(edgeStrength(progress, windupSeconds(windup.interval), reducedMotion()));
+  });
 
   function buildParty(s: GameState): void {
     builtParty = loadoutKey(s);
@@ -265,6 +309,28 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const mods = collectModifiers(s, content);
     const dungeon = content.dungeonById.get(id);
     const r = stageReadout(s, content, mods);
+    const view = dungeon ? bossAttackView(s, content, mods) : null;
+    windup = view
+      ? {
+          at: performance.now(),
+          nextAttack: view.nextAttackSeconds,
+          nextIsSlam: view.nextIsSlam,
+          interval: view.intervalSeconds,
+        }
+      : null;
+    const banner = dungeon ? fallBanner(r) : null;
+    fall.hidden = !banner;
+    if (banner) {
+      const fallText = formatDuration(banner.fallSeconds * 1000);
+      const earlyText = COPY.arena.fallEarly(formatDuration(banner.earlySeconds * 1000));
+      fallNow = banner.nowSeconds === null ? null : formatDuration(banner.nowSeconds * 1000);
+      if (fall.dataset['text'] !== fallText + earlyText) {
+        fall.dataset['text'] = fallText + earlyText;
+        const b = document.createElement('b');
+        b.textContent = fallText;
+        fall.replaceChildren(`${COPY.arena.fallIn} `, b, `, ${earlyText}`);
+      }
+    }
     setText(dpsOut, fmt(r.averageDps));
     setText(kpmOut, formatRate(r.killsPerMinute));
     setText(ttkOut, r.secondsPerKill === null ? '—' : formatDuration(r.secondsPerKill * 1000));
@@ -390,24 +456,49 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     play('signature');
   });
 
+  // A hit's piece of the health bar comes away pale where the fill closed over it, holds a moment
+  // like a trailing segment, then falls off (DESIGN.md §6). The fill itself closes at once.
+  function dropChunk(span: ChunkSpan, slam: boolean): void {
+    const track = healthBar.el.querySelector<HTMLElement>('.bi-hpstack__track');
+    if (!track || span.from <= span.to) return;
+    const chunk = document.createElement('i');
+    chunk.className = `ar-chunk${slam ? ' ar-chunk--slam' : ''}`;
+    chunk.style.setProperty('--to', (span.to * 100).toFixed(3));
+    chunk.style.setProperty('--size', ((span.from - span.to) * 100).toFixed(3));
+    track.append(chunk);
+    for (const old of Array.from(track.querySelectorAll('.ar-chunk')).slice(0, -12)) old.remove();
+    window.setTimeout(() => chunk.remove(), slam ? 1200 : 700);
+  }
+
   ctx.director.on('bossAttack', (e) => {
     if (!live()) return;
+    dropChunk(e.span, e.slam);
+    if (e.slam && !reducedMotion()) {
+      replay(slamFlash, 'is-hit', 460);
+      shake(el, true);
+    }
     const slot = slots[e.target];
-    if (!slot?.card) return;
-    replay(boss, 'is-attacking', 420);
-    window.setTimeout(() => {
-      replay(slot.wrap, 'is-hurt', 400);
-      const a = el.getBoundingClientRect();
-      const b = slot.wrap.getBoundingClientRect();
-      if (a.width === 0) return;
-      popNumber(el, {
-        kind: 'hurt',
-        text: `-${popText(e.damage)}`,
-        x: (b.left + b.width / 2 - a.left) / a.width,
-        y: (b.top + b.height * 0.3 - a.top) / a.height,
-      });
-      play('bossHit');
-    }, 160);
+    replay(boss, e.slam ? 'is-slamming' : 'is-attacking', 480);
+    window.setTimeout(
+      () => {
+        // a slam hits the whole party; a light hit one card
+        const hurt = e.slam ? slots.filter((x) => x.card) : slot?.card ? [slot] : [];
+        for (const x of hurt) replay(x.wrap, 'is-hurt', 400);
+        play('bossHit');
+        if (!slot?.card) return;
+        const a = el.getBoundingClientRect();
+        const b = slot.wrap.getBoundingClientRect();
+        if (a.width === 0) return;
+        popNumber(el, {
+          kind: 'hurt',
+          text: `-${popText(e.damage)}`,
+          x: (b.left + b.width / 2 - a.left) / a.width,
+          y: (b.top + b.height * 0.3 - a.top) / a.height,
+          scale: e.slam ? 1.9 : 1,
+        });
+      },
+      e.slam ? 200 : 160,
+    );
   });
 
   ctx.director.on('knockout', () => {

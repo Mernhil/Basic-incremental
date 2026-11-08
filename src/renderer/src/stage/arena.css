@@ -562,3 +562,144 @@
     }
   }
 }
+
+/* ---- boss hits (DESIGN.md §6, "Screen edge pulse") ---- */
+
+/* "You fall in": a red pill at the top, only while the loadout would fall before it kills the boss */
+.ar__fall {
+  align-self: flex-start;
+  flex: 0 1 auto;
+  min-width: 0;
+  padding: 7px 16px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--bi-hp-0) 25%, #fff);
+  background: color-mix(in srgb, var(--bi-hp-0) 22%, var(--bi-chrome-bg));
+  box-shadow: inset 0 0 0 2px var(--bi-hp-0);
+}
+.ar__fall[hidden] {
+  display: none;
+}
+.ar__fall b {
+  font-weight: 800;
+  color: var(--bi-hp-0);
+}
+.ar__fall:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+
+/* the wind-up: red edges whose strength the frame loop sets (stage/bossHitModel.ts); opacity only */
+.ar__edge {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    ellipse 78% 82% at 50% 50%,
+    transparent 52%,
+    color-mix(in srgb, var(--bi-hp-0) 55%, transparent) 100%
+  );
+  box-shadow: inset 0 0 90px 16px color-mix(in srgb, var(--bi-hp-0) 60%, transparent);
+}
+/* the slam lands: one soft red flash, rising from the party, no repeat */
+.ar__slam-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    75% 75% at 30% 85%,
+    color-mix(in srgb, var(--bi-hp-0) 35%, #fff),
+    color-mix(in srgb, var(--bi-hp-0) 55%, transparent) 55%,
+    transparent
+  );
+}
+.ar__slam-flash.is-hit {
+  animation: ar-slam-flash 0.46s ease-out;
+}
+@keyframes ar-slam-flash {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.ar-boss.is-slamming .ar-boss__bob {
+  animation: ar-boss-slam 0.48s ease-in-out;
+}
+@keyframes ar-boss-slam {
+  35% {
+    translate: 10px 6px;
+    rotate: 3deg;
+  }
+  65% {
+    translate: -48px 8px;
+    rotate: -7deg;
+  }
+}
+
+/* the health bar closes at once; the lost piece trails, then falls off the bar */
+.ar__health .bi-hpstack__fill {
+  transition: none;
+}
+.ar__health .bi-hpstack__track {
+  overflow: visible;
+}
+.ar-chunk {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--to) * 1%);
+  width: max(3px, calc(var(--size) * 1%));
+  z-index: 2;
+  border-radius: 3px;
+  background: color-mix(in srgb, #fff 88%, var(--bi-hp-0));
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: ar-chunk-fall 0.6s ease-in forwards;
+}
+.ar-chunk--slam {
+  --fall: 34px;
+  --spin: 16deg;
+  animation-duration: 1.1s;
+  box-shadow: 0 0 10px #fff;
+}
+@keyframes ar-chunk-fall {
+  0%,
+  35% {
+    opacity: 1;
+    translate: 0 0;
+    rotate: 0deg;
+  }
+  100% {
+    opacity: 0;
+    translate: 0 var(--fall, 20px);
+    rotate: var(--spin, 8deg);
+  }
+}
+@keyframes ar-chunk-fade {
+  0%,
+  35% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ar__slam-flash.is-hit,
+  .ar-boss.is-slamming .ar-boss__bob {
+    animation: none;
+  }
+  /* the lost piece just fades where it was */
+  .ar-chunk,
+  .ar-chunk--slam {
+    animation-name: ar-chunk-fade;
+  }
+}

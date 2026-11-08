@@ -49,10 +49,19 @@ def opt_a():
 def opt_b():
     img = coin_base("coin-round-gold", well=H("#151a3a"))
     # recolour the gold rim into night indigo, keep the gold sticker ring
+    # (by brightness, so it follows whatever the gold coin's rim is drawn with)
     nr = ramp("#4b4fb8")
-    rim = {(0xF2, 0xD7, 0x82): nr[4], (0xF4, 0xC1, 0x34): nr[3], (0xDA, 0x49, 0x06): nr[2],
-           (0xCF, 0x8E, 0x50): nr[2], (0x9D, 0x01, 0x02): nr[0], (0xF4, 0xEC, 0xCD): WHITE}
-    recolor(img, rim)
+    ring_c, ink = H("#ffd84a"), H("#1a1020")
+    rim = {}
+    for y in range(48):
+        for x in range(48):
+            p = img.getpixel((x, y))
+            if p[3] and math.hypot(x - C, y - C) > 14.6 and p[:3] not in (ring_c[:3], ink[:3], WHITE[:3]):
+                rim.setdefault(p[:3], []).append((x, y))
+    tones = sorted(rim, key=lambda c: 0.3 * c[0] + 0.59 * c[1] + 0.11 * c[2])
+    for i, c in enumerate(tones):
+        for x, y in rim[c]:
+            img.putpixel((x, y), nr[min(4, i * 5 // len(tones))])
     for x, y in ((14, 18), (31, 13), (34, 30), (16, 31)):
         put(img, x, y, H("#9aa6ff"))
     g = gem_layer(lambda g: star_gem(g, 5, 10.5, 4.6, PALE_GOLD, cy=C + 0.5))

@@ -44,7 +44,7 @@ Answered 2026-11-07 (two rounds).
 | A9 Prestige                 | **E** Portal gate                               |
 | A10 Achievements + shop     | **C** Sticker book                              |
 | A11 Welcome back            | **B** Card fan                                  |
-| A12 Medals + metal ladder   | **D** Faceted star                              |
+| A12 Medals + metal ladder   | Faceted star, from the user's concept sheet     |
 | A13 Tile growth             | Floating islands from the user's concept sheets |
 | A14 Forged edges            | **D** Ladder strip                              |
 | A15 ★6 evolutions           | **E** Beam + frame rebuild, existing art        |
