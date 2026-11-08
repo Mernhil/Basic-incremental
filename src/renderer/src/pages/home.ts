@@ -125,7 +125,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
       COPY.table.perSecond(`${fmt(v)} ${content.resourceById.get(res)?.name ?? res}`),
     );
     const total = list.filter(Boolean).length;
-    set(ui.where, job === 'logging' ? COPY.table.plots(total) : COPY.table.slots(total));
+    set(ui.where, job === 'logging' ? COPY.table.trees(total) : COPY.table.mines(total));
     set(ui.rate, rates.join(' · '));
     ui.btn.setAttribute(
       'aria-label',

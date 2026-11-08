@@ -111,7 +111,6 @@ export function mineLevelViews(
     const level = mineLevel(state, mine.id);
     const res = resName(content, p.resource);
     const m = milestoneInfo(mine.level.milestones, level);
-    const running = p.rateBefore.gt(0);
     return [
       {
         id: mine.id,
@@ -122,9 +121,7 @@ export function mineLevelViews(
         offer,
         label: buyLabel(offer, count),
         price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
-        preview: running
-          ? COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter))
-          : COPY.buy.perSlot(fmt(p.rateBefore), fmt(p.rateAfter)),
+        preview: COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
         gain: Decimal.max(p.rateAfter.sub(p.rateBefore), 0),
@@ -148,7 +145,6 @@ export function treeLevelViews(
     const level = treeLevel(state, tree.id);
     const res = resName(content, p.resource);
     const m = milestoneInfo(tree.level.milestones, level);
-    const running = p.rateBefore.gt(0);
     return [
       {
         id: tree.id,
@@ -159,9 +155,7 @@ export function treeLevelViews(
         offer,
         label: buyLabel(offer, count),
         price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
-        preview: running
-          ? COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter))
-          : COPY.buy.perPlot(fmt(p.rateBefore), fmt(p.rateAfter)),
+        preview: COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
         gain: Decimal.max(p.rateAfter.sub(p.rateBefore), 0),

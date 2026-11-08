@@ -5,7 +5,6 @@ import {
   buyTreeLevels,
   canAfford,
   collectModifiers,
-  computeStat,
   defaultRng,
   isProducerUnlocked,
   jobProductionPerSecond,
@@ -27,8 +26,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { mineTile, svg, treeTile } from '../art/gems';
 import { h } from '../shell/shell';
-import { statTip } from '../shell/stats';
-import { attachTooltip, hide as hideTip } from '../shell/tooltip';
+import { hide as hideTip } from '../shell/tooltip';
 import type { CoinTarget } from '../stage/arena';
 import { createHarvestParty, type HarvestParty } from '../stage/harvestParty';
 import { playHit } from '../theme/effects';
@@ -53,8 +51,8 @@ import './production.css';
 
 /**
  * Production page (DESIGN.md §11, A2 A): the logging field above the mining field, each a wide
- * strip of faceted tiles at their growth stage; upgrade lines (tree kinds, mine levels, plots
- * and slots) in a side rail. Every tick floats a "+n" off each tile and flies coins to the
+ * strip of faceted tiles at their growth stage; upgrade lines (tree and mine levels, locked kinds)
+ * in a side rail. One tile per unlocked kind. Every tick floats a "+n" off each tile and flies coins to the
  * header; a harvest burst runs a wave across the field with one big total.
  */
 
@@ -124,7 +122,7 @@ export function createProductionPage(
   const fieldEls: Partial<Record<ProductionJob, HTMLElement>> = {};
   const parties: Partial<Record<ProductionJob, HarvestParty>> = {};
   const flashes: Partial<Record<ProductionJob, HTMLElement>> = {};
-  /** Plot index -> tile button, per job. */
+  /** Kind index -> tile button, per job. */
   const tiles: Record<ProductionJob, Map<number, HTMLElement>> = {
     logging: new Map(),
     mining: new Map(),
@@ -142,7 +140,7 @@ export function createProductionPage(
     fields.replaceChildren(...PRODUCTION_JOBS.map((job) => field(job, state, mods)));
     rail.replaceChildren(
       railHead(),
-      ...PRODUCTION_JOBS.map((job) => railJob(job, state, mods)),
+      ...PRODUCTION_JOBS.map((job) => railJob(job, state)),
       shelf.el,
     );
     if (focusKey) page.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
@@ -172,11 +170,11 @@ export function createProductionPage(
     });
     head.append(h('h2', 'pp-field__title', t.title), summary);
     const strip = h('ul', 'pp-strip');
-    strip.setAttribute('aria-label', t.plotsLabel);
+    strip.setAttribute('aria-label', t.tilesLabel);
     tiles[job].clear();
     const all = producersOf(content, job);
     unlockedProducers(state, content, job).forEach((p) =>
-      strip.append(plotTile(job, all.indexOf(p), p.id, state, mods)),
+      strip.append(kindTile(job, all.indexOf(p), p, state, mods)),
     );
     const party = createHarvestParty(content, ctx.state, job);
     parties[job] = party;
@@ -190,44 +188,33 @@ export function createProductionPage(
     return section;
   }
 
-  function plotTile(
+  /** One tile for an unlocked kind: its art at its growth stage, its name and its rate. */
+  function kindTile(
     job: ProductionJob,
     index: number,
-    id: string | null,
+    p: Producer,
     state: GameState,
     mods: readonly Modifier[],
   ): HTMLElement {
-    const t = COPY.production[job];
     const li = h('li', 'pp-plot');
     li.append(h('span', 'pp-fx'));
-    const btn = h('button', 'pp-tile');
-    btn.type = 'button';
-    btn.dataset.key = `${job}-plot-${index}`;
-    btn.setAttribute('aria-haspopup', 'menu');
-    btn.setAttribute('aria-expanded', 'false');
-    const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
-    if (p) {
-      const art = h('span', 'pp-tile__art');
-      art.innerHTML = tileArt(job, p, tileStage(state, content, job, p.id));
-      art.style.setProperty('--d', `${((index * 0.37) % 3).toFixed(2)}s`);
-      const level = producerLevel(state, job, p.id);
-      btn.append(
-        art,
-        h('span', 'pp-tile__name', p.name),
-        h(
-          'span',
-          'pp-tile__rate bi-num',
-          COPY.production.rate(fmt(producerRate(p, job, mods, level))),
-        ),
-      );
-      btn.setAttribute('aria-label', t.plotLabel(index + 1, p.name));
-      tiles[job].set(index, btn);
-    } else {
-      btn.classList.add('pp-tile--empty');
-      btn.append(h('span', 'pp-tile__plus', '+'), h('span', 'pp-tile__name', t.empty));
-      btn.setAttribute('aria-label', t.plotLabel(index + 1, t.empty));
-    }
-    li.append(btn);
+    const tile = h('div', 'pp-tile');
+    tile.dataset.key = `${job}-tile-${p.id}`;
+    const art = h('span', 'pp-tile__art');
+    art.innerHTML = tileArt(job, p, tileStage(state, content, job, p.id));
+    art.style.setProperty('--d', `${((index * 0.37) % 3).toFixed(2)}s`);
+    const level = producerLevel(state, job, p.id);
+    tile.append(
+      art,
+      h('span', 'pp-tile__name', p.name),
+      h(
+        'span',
+        'pp-tile__rate bi-num',
+        COPY.production.rate(fmt(producerRate(p, job, mods, level))),
+      ),
+    );
+    tiles[job].set(index, tile);
+    li.append(tile);
     return li;
   }
 
@@ -257,7 +244,7 @@ export function createProductionPage(
     return li;
   }
 
-  function railJob(job: ProductionJob, state: GameState, mods: readonly Modifier[]): HTMLElement {
+  function railJob(job: ProductionJob, state: GameState): HTMLElement {
     const t = COPY.production[job];
     const section = h('section', 'pp-rail__group');
     section.append(h('h3', 'pp-rail__sub', t.title));
@@ -279,47 +266,23 @@ export function createProductionPage(
     const kinds = h('ul', 'pp-kinds');
     kinds.setAttribute('aria-label', t.kindsLabel);
     for (const p of producersOf(content, job)) {
-      const unlocked = isProducerUnlocked(state, content, job, p.id);
-      if (unlocked) continue; // unlocked kinds are shown as a level line above
-      kinds.append(kindRow(job, p, unlocked, state, mods));
+      if (isProducerUnlocked(state, content, job, p.id)) continue; // unlocked kinds have a tile and a level line
+      kinds.append(kindRow(job, p));
     }
     if (kinds.childElementCount > 0) section.append(kinds);
     return section;
   }
 
-  function kindRow(
-    job: ProductionJob,
-    p: Producer,
-    unlocked: boolean,
-    state: GameState,
-    mods: readonly Modifier[],
-  ): HTMLElement {
-    const t = COPY.production[job];
-    const li = h('li', `pp-kind${unlocked ? '' : ' pp-kind--locked'}`);
+  /** A kind that is not unlocked yet: its art, what it yields or what unlocks it, and a button for trees. */
+  function kindRow(job: ProductionJob, p: Producer): HTMLElement {
+    const li = h('li', 'pp-kind pp-kind--locked');
     const art = h('span', 'pp-kind__art');
     art.innerHTML = tileArt(job, p, 0);
     const info = h('div', 'pp-kind__info');
     const name = h('span', 'pp-kind__name', p.name);
     name.append(h('span', 'pp-tier', COPY.production.tier(p.tier)));
     const meta = h('span', 'pp-kind__meta bi-num');
-    if (unlocked) {
-      const rate = h(
-        'span',
-        'has-tip',
-        COPY.production.perPlot(fmt(producerRate(p, job, mods, 0)), resName(p.resource), t.unit),
-      );
-      rate.tabIndex = 0;
-      attachTooltip(rate, () => {
-        const m = collectModifiers(ctx.state(), content);
-        const result = computeStat('production.rate', producerRate(p, job, [], 0), m, {
-          job,
-          producer: p.id,
-          resource: p.resource,
-        });
-        return statTip(content, t.rateTip(p.name, 0), result, '/s');
-      });
-      meta.append(rate);
-    } else if (job === 'logging') {
+    if (job === 'logging') {
       meta.textContent = COPY.production.yields(resName(p.resource));
     } else {
       const dungeon =
@@ -330,7 +293,7 @@ export function createProductionPage(
     }
     info.append(name, meta);
     li.append(art, info);
-    if (job === 'logging' && !unlocked) {
+    if (job === 'logging') {
       const btn = h('button', 'button pp-kind__action');
       btn.type = 'button';
       btn.dataset.key = `unlock-${p.id}`;
@@ -402,7 +365,7 @@ export function createProductionPage(
 
   // ---- show events ----
 
-  /** One strike: the main card lunges at the plot, the plot is hit, the yield pops on it. */
+  /** One strike: the main card lunges at the tile, the tile is hit, the yield pops on it. */
   function strike(job: ProductionJob, m: StrikeMoment): void {
     const area = fieldEls[job];
     const party = parties[job];
@@ -453,7 +416,7 @@ export function createProductionPage(
     }
   }
 
-  /** The burst: a wave across the plots, a flash, one big total. */
+  /** The burst: a wave across the tiles, a flash, one big total. */
   function burst(job: ProductionJob, b: BurstMoment): void {
     const area = fieldEls[job];
     if (!area) return;
