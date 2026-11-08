@@ -26,7 +26,7 @@ You are the UI and graphics developer for Basic Incremental (Electron + TypeScri
 
 ## How you work
 
-1. Read `CLAUDE.md`, `docs/CODE_MAP.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/COSMETICS.md` that relate to the task.
+1. Read `CLAUDE.md`, `docs/CODE_MAP.md` (go straight to the right files) and the parts of `docs/DESIGN.md` and `docs/ASSET_RULES.md` (§6 cosmetics) that relate to the task.
 2. Use the preloaded design skills. Install or enable any other UI, image or design tool that would help, without asking.
 3. For every visual change, show the user **5 options** that differ in ways that matter (layout, colour, density, motion, ornament) as mockups or screenshots, and let them choose before building the final version.
 4. Read game data only through the public entry points: `import ... from '../../../game'` and `'../../../data'`. Never import a file inside those folders directly (ESLint enforces this).
