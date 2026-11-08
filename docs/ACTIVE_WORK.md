@@ -14,3 +14,4 @@ One line per task in flight, so parallel sessions do not collide. Read this at t
 | Branch                     | Worktree    | Owner agent | Files / area                                       | Started    |
 | -------------------------- | ----------- | ----------- | -------------------------------------------------- | ---------- |
 | chore/session-coordination | C:/bi-coord | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md | 2026-11-08 |
+| feat/full-art-card         | C:/bi-fullart | ui          | src/renderer/src/ui/card.ts, theme/*.css (card layout), docs/DESIGN.md | 2026-11-08 |
