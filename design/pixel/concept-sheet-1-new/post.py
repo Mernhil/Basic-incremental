@@ -72,12 +72,46 @@ def hollow(a: np.ndarray, dark: int = 40) -> np.ndarray:
     return out
 
 
-def clean(a: np.ndarray, n: int, keep: int = 12, ink: bool = True, inner: bool = False) -> np.ndarray:
-    a = P.drop_specks(P.key_background(a), keep)
+def key_all_dark(a: np.ndarray, dark: int) -> np.ndarray:
+    """Effects are light only: every dark pixel goes, inside rings and between rays too."""
+    out = P.key_background(a)
+    out[out[..., :3].max(-1) < dark] = 0
+    return out
+
+
+def clean(a: np.ndarray, n: int, keep: int = 12, ink: bool = True, inner: bool = False,
+          dark: int = 0) -> np.ndarray:
+    a = P.drop_specks(key_all_dark(a, dark) if dark else P.key_background(a), keep)
     if inner:
         a = hollow(a)
     a = P.settle_orphans(P.sweep_orphans(P.clean_orphans(P.quantize(a, n))))
     return P.ring(a, P.INK) if ink else a
+
+
+RAMPS = {  # magic patterns: four tones per family, dark to bright, from the concept's lines
+    "gold": ["#8c6a36", "#c99a4e", "#f0d088", "#fff4cc"],
+    "purple": ["#6c4a8c", "#a274c8", "#d2b0f0", "#f6eaff"],
+    "silver": ["#767c8c", "#b0b6c4", "#dfe3ec", "#ffffff"],
+}
+
+
+# the concept's colour per pattern: 01 and 03 purple, 02 silver, every other one gold
+MAGIC_FAMILY = {"magic-01": "purple", "magic-02": "silver", "magic-03": "purple"}
+
+
+def glow_ramp(a: np.ndarray, fam: str) -> np.ndarray:
+    """Snaps a light-only pattern onto its family's four-tone ramp by brightness rank, so thin
+    dotted lines read as bright as on the concept (the conversion leaves them dim)."""
+    m = a[..., 3] > 0
+    if not m.any():
+        return a
+    rgb = a[m][:, :3].astype(float)
+    lum = rgb @ [0.3, 0.59, 0.11]
+    qs = np.quantile(lum, [0.25, 0.5, 0.8])
+    idx = np.searchsorted(qs, lum)
+    out = a.copy()
+    out[m, :3] = np.array([P.hexrgb(c) for c in RAMPS[fam]])[idx]
+    return out
 
 
 def save(a: np.ndarray, group: str, name: str) -> None:
@@ -132,7 +166,10 @@ def main() -> None:
 
     # attack frames and magic patterns: light, no outline, keep the sparks and dots
     for name in lay["fx"]:
-        a = clean(cut("fx", name), 16 if name.startswith("atk") else 8, keep=1, ink=False)
+        atk = name.startswith("atk")
+        a = clean(cut("fx", name), 16 if atk else 10, keep=1, ink=False, dark=48 if atk else 56)
+        if not atk:
+            a = glow_ramp(a, MAGIC_FAMILY.get(name, "gold"))
         save(a, "attacks/frames" if name.startswith("atk") else "magic", name)
     for f in sorted(PL.glob("gap-atk-*.png")):
         a = gap(f.stem)
