@@ -19,7 +19,7 @@ Run `scripts/pixel_check.py` first, then go through this by eye at 1× and at ga
 - [ ] No orphan pixels, doubled corners, jaggy runs or banding.
 - [ ] Ramps are hue-shifted; tones still distinct when desaturated.
 - [ ] Detail goes where the eye should go; nothing important is under 2 px.
-- [ ] Cosmetic upgrades (T1 to T6) add parts or trim, not only colour; T2 to T4 share one look; no light or animation below T5.
+- [ ] Cosmetic upgrades (T1 to T6) add parts or trim, not only colour; each tier adds one upgrade (0 to 5); no light or animation below T5.
 
 ## Motion
 

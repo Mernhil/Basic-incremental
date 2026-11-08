@@ -22,7 +22,7 @@ If a technique here conflicts with DESIGN.md (for example Brave Frontier's colou
 1. Read ASSET_RULES.md §5 and the asset's approval row. Note its fixed size if approved (card items 100 × 120, production tiles 58 × 64) and what has already been decided about its shapes.
 2. Look at `design/references/` if it has files. They are the user's local reference images (Brave Frontier sprites, Knights & Dragons, effect sheets). Study them for technique; never copy a sprite, never commit them (they are gitignored on purpose), never trace them.
    Online sources the user approved for study (open them in the browser when a task needs a reference; the pages block plain fetches, so use the browser tool and the sheet viewer's zoom): Brave Frontier sheets at https://www.spriters-resource.com/mobile/bravefrontier/ (units with their evolutions, part sheets and attack smears) and Brave Frontier Memories at https://www.spriters-resource.com/mobile/bravefrontiermemories/ (field sprites, portraits, backgrounds). Same rules: study technique, never copy, trace or download into the repo. What has been learned from them so far is in `references/technique.md` section 10 and `references/animation.md` section 10.
-3. Read `references/technique.md` for the drawing and shading craft, and `references/animation.md` when anything moves or any effect is involved. Read `references/checklist.md` before showing anything.
+3. Read `references/style/index.md` (the user's Keep + Learn picks, those marked both first: style examples to copy the feel of), then `references/technique.md` for the drawing and shading craft, and `references/animation.md` when anything moves or any effect is involved. Read `references/checklist.md` before showing anything.
 
 ## How art is built in this repo
 
@@ -33,7 +33,7 @@ If a technique here conflicts with DESIGN.md (for example Brave Frontier's colou
 
 ## Workflow for every change
 
-1. **Five options.** Project rule: every visual change shows the user 5 options that differ in ways that matter (silhouette, palette ramp, detail density, motion timing, effect style), as a mockup page or screenshots, at 1× and at the scale used in game. Put drafts under `design/pixel/<asset>/`, never into `main` as final art. Label each option with what makes it different in one line.
+1. **Five options.** Project rule: every visual change shows the user 5 options that differ in ways that matter (silhouette, palette ramp, detail density, motion timing, effect style), on the interactive picker page (`CLAUDE.md`, Workflow; `scripts/art/picker.mjs`), at 1× and at the scale used in game. Put drafts under `design/pixel/<asset>/`, never into `main` as final art. Label each option with what makes it different in one line.
 2. **Check before showing.** Export each sprite or frame to PNG and run:
    `python3 .claude/skills/pixel-art/scripts/pixel_check.py <png or folder> [--max-colors N] [--scale S]`
    It flags semi-transparent (anti-aliased) pixels, blurred scaling, orphan pixels, too many colours and outline gaps. Fix every error; warnings need a reason.
