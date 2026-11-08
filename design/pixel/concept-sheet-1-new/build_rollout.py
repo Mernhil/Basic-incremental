@@ -34,6 +34,7 @@ PILOT_RAW = {"coin-body-gold": HERE / "pixellab/restyle/pro-m-coin-round-gold-2.
 PILOT_DONE = {  # already cleaned in the pilot (same cleanup), copied as they are
     "item-katana-epic", "item-staff-epic", "item-book-epic", "item-maul-epic", "evo-bronze_hammer",
 }
+KEEP_LARGEST = {"item-maul-common"}
 SHAPES = ["round", "square", "hexagon", "pentagon", "star", "drop"]
 RING_TIER = {"stone": "stone", "bronze": "bronze", "silver": "silver", "gold": "gold", "prism": "prism",
              "locked": "locked"}
@@ -75,6 +76,12 @@ def main() -> None:
             Image.open(pilot / f"{name}.png").save(_mk(out, group) / f"{name}.png")
             continue
         raw = padded(Image.open(raw_for(name, pick)), old)
+        if name in KEEP_LARGEST:  # the candidate has loose fragments: keep only the weapon itself
+            from skimage import measure
+
+            lab = measure.label(raw[..., 3] > 0, connectivity=2)
+            biggest = np.bincount(lab[lab > 0]).argmax()
+            raw[(lab != biggest)] = 0
         if name.startswith("coin-body-"):
             tier = name.split("-")[2]
             for shape in SHAPES:

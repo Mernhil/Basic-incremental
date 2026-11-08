@@ -42,7 +42,7 @@
 | old mythic | 72x105 | 1821 | 45 | 2.0 |
 | old exotic | 77x105 | 1879 | 49 | 2.6 |
 | old void | 79x105 | 2065 | 56 | 2.6 |
-| new common | 62x92 | 2060 | 16 | 0.0 |
+| new common | 62x62 | 1798 | 16 | 0.0 |
 | new rare | 59x71 | 1502 | 16 | 0.0 |
 | new epic | 72x70 | 1676 | 13 | 0.1 |
 | new legendary | 72x97 | 2100 | 19 | 0.0 |
