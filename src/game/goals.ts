@@ -3,15 +3,14 @@ import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
 import { starUpCheck } from './cards';
 import {
   averageDps,
-  bossAttackDps,
   bossMaxHp,
   burstStats,
   damageLevel,
   effectiveDrops,
   isDungeonCleared,
   isDungeonUnlocked,
-  loadoutMaxHealth,
   secondsPerKill,
+  survivalSeconds,
   trialRewards,
 } from './combat';
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
@@ -76,9 +75,9 @@ function killSeconds(
   const dungeon = content.dungeonById.get(dungeonId);
   const spk = secondsPerKill(state, content, dungeonId, modifiers);
   if (!dungeon || spk === null || !(spk > 0) || !Number.isFinite(spk)) return null;
-  const health = loadoutMaxHealth(state, content, modifiers, dungeonId);
-  const incoming = bossAttackDps(dungeon, state.prestigeCount, modifiers);
-  if (health.gt(0) && incoming.gt(0) && health.div(incoming).toNumber() < spk) return null;
+  // The same "you fall in" figure the stage shows (DESIGN.md §6): the loadout falls first.
+  const survival = survivalSeconds(state, content, dungeonId, modifiers);
+  if (survival !== null && survival < spk) return null;
   return spk;
 }
 

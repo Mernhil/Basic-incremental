@@ -688,6 +688,25 @@ export const combatSchema = z.strictObject({
   }),
   /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md §6). */
   knockoutSeconds: z.number().gt(0),
+  /**
+   * How a boss's attacks are shaped (DESIGN.md §6). In every `attacksPerCycle` attacks all but
+   * the last are light (`lightMultiplier` of an attack's damage) and the last is a slam
+   * (`slamMultiplier`). A cycle must add up to `attacksPerCycle` normal attacks, so the damage
+   * per minute in dungeons.json holds.
+   */
+  bossPattern: z
+    .strictObject({
+      attacksPerCycle: z.number().int().min(2),
+      lightMultiplier: z.number().gt(0),
+      slamMultiplier: z.number().gt(0),
+    })
+    .refine(
+      (p) =>
+        Math.abs(
+          (p.attacksPerCycle - 1) * p.lightMultiplier + p.slamMultiplier - p.attacksPerCycle,
+        ) < 1e-9,
+      { message: 'one cycle of attacks must add up to attacksPerCycle normal attacks' },
+    ),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
     chance: z.number().min(0).max(1),

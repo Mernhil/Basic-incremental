@@ -316,3 +316,17 @@ export {
   type MinePreview,
   type TreePreview,
 } from './previews';
+
+// ---- Boss hits in chunks (DESIGN.md §6): the contract with the UI, one line each ----------
+
+export {
+  /** Damage of attack number k (1, 2, 3 ...) as a multiple of a normal attack: 0.4, ..., 4 (the slam). */
+  bossAttackMultiplier,
+  /** Whether attack number k is a slam (every sixth attack). */
+  isBossSlam,
+  /** Number of the last attack landed by a play-time in seconds (attack k lands at k x interval). */
+  bossAttacksBy,
+  /** Number of the first slam after attack k. */
+  nextBossSlam,
+  type BossPattern,
+} from './bossAttacks';
