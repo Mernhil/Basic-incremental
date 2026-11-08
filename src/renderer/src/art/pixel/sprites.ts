@@ -5,6 +5,7 @@
  * SVG art keep working unchanged.
  */
 import { MANIFEST } from './manifest';
+import { animatedHtml, animatedImage, framesIn, type StripInfo } from './animate';
 
 const URLS = import.meta.glob<string>('./sprites/*.png', {
   eager: true,
@@ -26,6 +27,41 @@ export function sprite(name: string): SpriteInfo | undefined {
   const url = URLS[`./sprites/${name}.png`];
   if (!m || !url) return undefined;
   return { name, url, ...m };
+}
+
+/**
+ * The palette-cycling strip of a sprite (hand strip `<name>-anim.png`, registered by the bake as
+ * `animated: { frames }` on the sprite), or undefined when it has none.
+ */
+export function strip(name: string): StripInfo | undefined {
+  const m = MANIFEST[name];
+  const url = URLS[`./sprites/${name}-anim.png`];
+  const sm = MANIFEST[`${name}-anim`];
+  if (!m?.animated || !url || !sm || framesIn(sm.w, m.w) !== m.animated.frames) return undefined;
+  return { name, url, w: m.w, h: m.h, frames: m.animated.frames };
+}
+
+/** Markup that plays a sprite's strip in an SVG box; the still sprite when it has no strip. */
+export function animatedSpriteImage(
+  name: string,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  cls = '',
+): string {
+  const s = strip(name);
+  return s ? animatedImage(s, x, y, w, h, cls) : spriteImage(name, x, y, w, h, cls);
+}
+
+/** HTML for a sprite on its own at a whole scale; the still sprite when it has no strip. */
+export function animatedSpriteHtml(name: string, scale = 1, cls = ''): string {
+  const s = strip(name);
+  if (s) return animatedHtml(s, scale, cls);
+  const i = sprite(name);
+  if (!i) return '';
+  const k = Math.max(1, Math.round(scale));
+  return `<img class="${cls}" src="${i.url}" width="${i.w * k}" height="${i.h * k}" style="${PIXELATED}" data-sprite="${name}" alt=""/>`;
 }
 
 /** Every baked sprite name (for tests and the gallery). */

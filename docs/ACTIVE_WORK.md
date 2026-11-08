@@ -11,6 +11,7 @@ One line per task in flight, so parallel sessions do not collide. Read this at t
 
 ## In flight
 
-| Branch                     | Worktree    | Owner agent | Files / area                                       | Started    |
-| -------------------------- | ----------- | ----------- | -------------------------------------------------- | ---------- |
-| chore/session-coordination | C:/bi-coord | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md | 2026-11-08 |
+| Branch                     | Worktree                                   | Owner agent | Files / area                                                                         | Started    |
+| -------------------------- | ------------------------------------------ | ----------- | ------------------------------------------------------------------------------------ | ---------- |
+| chore/session-coordination | C:/bi-coord                                | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md                                   | 2026-11-08 |
+| art/palette-cycling        | .claude/worktrees/art-palette-cycle-398866 | pixel-art   | src/renderer/src/art/** (pixel/animate.ts, hand strips), scripts/art/bake-pixels.mjs | 2026-11-08 |
