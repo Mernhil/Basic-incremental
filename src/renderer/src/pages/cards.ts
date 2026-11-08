@@ -5,8 +5,9 @@ import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
+import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
-import type { CardEntry, CardsModel, Job, ModelResult, UpgradeStep } from './cardsModel';
+import type { CardEntry, CardsModel, Job, ModelResult } from './cardsModel';
 import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './cards.css';
@@ -34,8 +35,41 @@ const TIER_NAMES: Record<string, string> = {
   prismatic: 'Prismatic',
   unique: 'Unique',
 };
-/** Card widths wanted (CSS px); ui/pixelFit.ts snaps each to a whole pixel scale (DESIGN.md §12). */
-const CARD_WANT = { tile: 105.6, detail: 151.4, slot: 88 } as const;
+/**
+ * Card widths wanted (CSS px); ui/pixelFit.ts snaps each to a whole pixel scale (DESIGN.md §12).
+ * The collection shows the full card (132 x 186 art pixels) four across at 1x and grows to 2x when
+ * four fit that big (a 1080p window); the detail card is 2x (264 x 372).
+ */
+const CARD_WANT = { tile: 264, detail: 264, slot: 132 } as const;
+/** Cards across the collection grid, and the gap between them (CSS px). */
+const GRID_COLUMNS = 4;
+const GRID_GAP = 10;
+type Fit = Parameters<typeof fitCard>[1];
+
+/**
+ * Gives `host` its whole card scale (ui/pixelFit.ts) and keeps it right as the host's width
+ * changes: its width is 0 while the page is hidden, and the scale it picks depends on it.
+ * `data-n` carries the scale to the CSS (the compact card drops its job label at 1x).
+ */
+function watchFit(host: HTMLElement, fit: Fit): void {
+  const apply = (): void => {
+    host.dataset['n'] = String(fitCard(host, fit));
+  };
+  apply();
+  let width = host.clientWidth;
+  new ResizeObserver(() => {
+    if (host.clientWidth === width) return;
+    width = host.clientWidth;
+    apply();
+  }).observe(host);
+}
+
+/** The width of a host's content box, for `fitCard`'s `max`. */
+function innerWidth(host: HTMLElement): number {
+  const style = getComputedStyle(host);
+  return host.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+}
+
 const cap1 = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 export interface CardsPageContext extends PageContext {
@@ -49,6 +83,7 @@ export function createCardsPage(
   ctx: CardsPageContext,
 ): { render(): void; show(tab: Tab, job?: Job): void } {
   const { content, model } = ctx;
+  page.classList.add('shell-page--cards');
 
   // ---- view state ----
   let tab: Tab = 'collection';
@@ -159,7 +194,13 @@ export function createCardsPage(
       tab === 'collection' ? collection(state, entries) : loadouts(state, entries),
     );
     status.textContent = message;
-    if (focusKey) panel.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+    if (focusKey) {
+      // a taken star leaves no Add star button: focus goes to the star line
+      const target =
+        panel.querySelector<HTMLElement>(`[data-key="${focusKey}"]`) ??
+        (focusKey.startsWith('wp-') ? panel.querySelector<HTMLElement>('.wp-stars') : null);
+      target?.focus();
+    }
   }
 
   // ---- collection ----
@@ -216,7 +257,11 @@ export function createCardsPage(
       entries.filter((e) => (!jobFilter || e.job === jobFilter) && (!readyOnly || isReady(e))),
     );
     const grid = h('ul', 'cp-grid');
-    fitCard(grid, { want: CARD_WANT.tile });
+    watchFit(grid, {
+      want: CARD_WANT.tile,
+      max: () => innerWidth(grid),
+      row: { count: GRID_COLUMNS, gap: GRID_GAP },
+    });
     grid.setAttribute('aria-label', COPY.cards.collectionTab);
     for (const e of shown) {
       const li = h('li', 'cp-cell');
@@ -271,21 +316,36 @@ export function createCardsPage(
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
     const { el, body } = frame(e.name, `${cap1(e.rarity)} · ${JOB_NAMES[e.job]}`);
     el.classList.add('cp-detail');
+    // the card at 2x; the weapon panel's level badge and XP bar lie on it, and its star line and
+    // tier-up tag sit under it (DESIGN.md §5, §11)
     const top = h('div', 'cp-detail__top');
-    fitCard(top, { want: CARD_WANT.detail });
-    top.append(cardEl(e, state));
-    const side = h('div', 'cp-detail__side');
+    watchFit(top, { want: CARD_WANT.detail, max: () => innerWidth(top) });
+    const face = cardEl(e, state);
+    top.append(face);
+    const under = h('div', 'cp-detail__under');
     if (!e.owned) {
-      side.append(h('p', 'frame__muted', COPY.cards.lockedDetail));
+      under.append(h('p', 'frame__muted', COPY.cards.lockedDetail));
     } else {
-      side.append(levelMeter(e.id));
       if (e.role) {
-        side.append(
+        under.append(
           h('p', 'cp-inrole', COPY.cards.inLoadout(COPY.cards.role[e.role.slot], JOB_NAMES[e.job])),
         );
       }
+      const panel = createWeaponPanel({
+        variant: 'card',
+        content,
+        state: ctx.state,
+        act: (kind) => act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`),
+      });
+      if (panel.overlay) face.append(panel.overlay);
+      under.append(panel.el);
+      const update = (): void => {
+        const entry = entryOf(e.id);
+        if (entry) panel.update(entry);
+      };
+      ticks.push(update);
+      update();
     }
-    top.append(side);
 
     const facts = h('dl', 'cp-facts');
     const fact = (label: string, value: string) => {
@@ -296,11 +356,9 @@ export function createCardsPage(
     fact(COPY.cards.mainAbility, e.mainAbility);
     fact(COPY.cards.supportEffect, e.supportEffect);
     fact(COPY.cards.cost, String(e.cost));
-    if (e.owned) fact(COPY.cards.duplicates, String(e.duplicates));
-    body.append(top, facts);
+    body.append(top, under, facts);
 
     if (e.owned) {
-      body.append(upgradeBox(e.id));
       const chart = model.chart(state, e.id);
       if (chart && chart.stars.length > 0) body.append(enhanceBox(e.id, chart));
       const actions = h('div', 'cp-actions');
@@ -332,83 +390,6 @@ export function createCardsPage(
 
   function entryOf(id: string): CardEntry | undefined {
     return model.entries(ctx.state()).find((x) => x.id === id);
-  }
-
-  function levelMeter(id: string): HTMLElement {
-    const box = h('div', 'cp-level');
-    const row = h('div', 'cp-level__row');
-    const value = h('span', 'bi-num');
-    row.append(h('span', '', COPY.cards.level), value);
-    const track = h('div', 'cp-level__track');
-    const fill = h('i');
-    track.append(fill);
-    track.setAttribute('role', 'meter');
-    track.setAttribute('aria-valuemin', '0');
-    track.setAttribute('aria-valuemax', '100');
-    const note = h('p', 'cp-level__note');
-    box.append(row, track, note);
-    const update = () => {
-      const e = entryOf(id);
-      if (!e) return;
-      const atCap = e.level >= e.cap;
-      const f = atCap ? 1 : e.xp;
-      fill.style.width = `${(f * 100).toFixed(1)}%`;
-      const v = COPY.cards.levelValue(e.level, e.cap);
-      if (value.textContent !== v) value.textContent = v;
-      track.setAttribute('aria-valuenow', String(Math.round(f * 100)));
-      track.setAttribute('aria-label', `${COPY.cards.level} ${v}`);
-      const n = atCap ? COPY.cards.atCap : COPY.cards.toCap(e.cap - e.level);
-      if (note.textContent !== n) note.textContent = n;
-    };
-    ticks.push(update);
-    update();
-    return box;
-  }
-
-  function upgradeBox(id: string): HTMLElement {
-    const box = h('section', 'cp-upgrade');
-    let shown = '';
-    const drawStep = (step: UpgradeStep, key: 'star' | 'tier'): HTMLElement => {
-      const part = h('div', 'cp-upgrade__step');
-      part.append(h('h3', 'cp-upgrade__title', step.title));
-      const list = h('ul', 'cp-reqs');
-      for (const r of step.requirements) {
-        const li = h('li', `cp-req${r.met ? ' cp-req--met' : ''}`);
-        const mark = h('span', 'cp-req__mark', r.met ? '✓' : '✗');
-        mark.setAttribute('aria-label', r.met ? COPY.cards.met : COPY.cards.missing);
-        li.append(mark, h('span', '', r.label), h('span', 'bi-num', r.value));
-        list.append(li);
-      }
-      const b = h('button', 'button cp-upgrade__btn', step.action);
-      b.type = 'button';
-      b.dataset.key = `upgrade-${key}`;
-      b.disabled = !step.ready;
-      b.addEventListener('click', () => act(model.upgrade(ctx.state(), id, key), `upgrade-${key}`));
-      part.append(list, h('p', 'cp-upgrade__note', step.note), b);
-      return part;
-    };
-    const draw = (star: UpgradeStep | null, tier: UpgradeStep | null) => {
-      const keep = document.activeElement?.closest('.cp-upgrade') === box;
-      const focused = (document.activeElement as HTMLElement | null)?.dataset['key'];
-      box.replaceChildren();
-      if (!star && !tier) {
-        box.append(h('p', 'frame__muted', COPY.cards.maxRank));
-        return;
-      }
-      if (star) box.append(drawStep(star, 'star'));
-      if (tier) box.append(drawStep(tier, 'tier'));
-      if (keep && focused) box.querySelector<HTMLElement>(`[data-key="${focused}"]`)?.focus();
-    };
-    const update = () => {
-      const entry = entryOf(id);
-      const key = JSON.stringify([entry?.next ?? null, entry?.tier ?? null]);
-      if (key === shown) return;
-      shown = key;
-      draw(entry?.next ?? null, entry?.tier ?? null);
-    };
-    ticks.push(update);
-    update();
-    return box;
   }
 
   /**
@@ -542,7 +523,7 @@ export function createCardsPage(
       meter.append(row, track);
 
       const slots = h('ol', 'cp-slots');
-      fitCard(slots, { want: CARD_WANT.slot });
+      watchFit(slots, { want: CARD_WANT.slot });
       lo.slots.forEach((id, i) => {
         const li = h('li', 'cp-slot');
         const label = i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);

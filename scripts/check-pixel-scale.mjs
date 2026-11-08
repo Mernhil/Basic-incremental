@@ -38,8 +38,8 @@ const KNOWN = [
   { where: /shell-details__land/ },
   // boss portraits in the floor list: the 160 px boss sprite in a 38 px box
   { where: /dp-floor__art/ },
-  // forged edges of the damage lines, going away with them (DESIGN.md §12 No forged edges)
-  { where: /dp-edge/ },
+  // the weapon panel's price chips: the 48 px gem coin in a 20 px box (needs a small coin)
+  { where: /wp-cost__art/ },
 ];
 const knownSeen = new Set();
 
@@ -64,7 +64,7 @@ const measure = async () => {
     const bits = [];
     for (let n = el.parentElement; n && bits.length < 3; n = n.parentElement) {
       const c = [...n.classList].find((x) =>
-        /^(bi-card|ar-|pp-|dp-|cards|wd-|prod|reveal|sk-|ach|table|shell|loadout|home|mini|card)/.test(
+        /^(bi-card|ar-|pp-|dp-|wp-|cards|wd-|prod|reveal|sk-|ach|table|shell|loadout|home|mini|card)/.test(
           x,
         ),
       );
