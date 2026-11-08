@@ -62,7 +62,7 @@ describe('weapon panel model', () => {
   it('max level, tier-up affordable: ready, with every price met', () => {
     const price = content.cardRules.tierUp.bronze.fighting;
     const extra = Object.fromEntries(price.map((p) => [p.resource, p.amount.toString()]));
-    const w = view('ember_squire', { tier: 'bronze', level: 20 }, '0', extra)!;
+    const w = view('ember_squire', { tier: 'bronze', stars: 6, level: 20 }, '0', extra)!;
     expect(w.atCap).toBe(true);
     expect(w.xp).toBe(1);
     expect(w.xpNow).toBe('');
