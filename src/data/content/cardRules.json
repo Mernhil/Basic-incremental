@@ -14,16 +14,17 @@
     "perLevel": 2
   },
   "levelCaps": {
-    "bronze": [20, 24, 28, 32, 36, 40],
-    "silver": [40, 44, 48, 52, 56, 60],
-    "gold": [60, 64, 68, 72, 76, 80],
-    "prismatic": [80, 84, 88, 92, 96, 100]
+    "bronze": 20,
+    "silver": 40,
+    "gold": 60,
+    "prismatic": 80
   },
   "xpCurve": {
     "base": "10",
     "growth": "1.12"
   },
   "xp": {
+    "perSecond": "1",
     "perKill": "50",
     "tierGrowth": "5",
     "perUnit": {
@@ -44,11 +45,6 @@
   },
   "mainGrowth": {
     "fighting": [
-      {
-        "stat": "combat.damage",
-        "kind": "percent",
-        "value": "100"
-      },
       {
         "stat": "burst.fill",
         "kind": "percent",
@@ -363,5 +359,14 @@
     "mythic": 15,
     "exotic": 25,
     "void": 40
+  },
+  "baseDamage": {
+    "common": "200",
+    "rare": "300",
+    "epic": "450",
+    "legendary": "700",
+    "mythic": "1000",
+    "exotic": "1400",
+    "void": "2000"
   }
 }

@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buyDamageLevels,
   buyMineLevels,
   cardItem,
   cardItemKind,
   Decimal,
-  edgeStage,
   newOwnedCard,
   resetProduction,
   simulateOffline,
@@ -55,29 +53,7 @@ describe('tile stages (DESIGN.md §12)', () => {
   });
 });
 
-describe('forged edges (DESIGN.md §12)', () => {
-  it('steps the blade at every damage line milestone, up to stage 4', () => {
-    const state = freshState();
-    expect(edgeStage(state, content, 'copper_edge')).toBe(0);
-    state.combat.damageLevels['copper_edge'] = 25;
-    expect(edgeStage(state, content, 'copper_edge')).toBe(1);
-    state.combat.damageLevels['copper_edge'] = 1000;
-    expect(edgeStage(state, content, 'copper_edge')).toBe(4);
-    expect(edgeStage(state, content, 'unknown_edge')).toBe(0);
-  });
-});
-
 describe('tier-ups from purchases (DESIGN.md §12)', () => {
-  it('reports damage line milestones crossed by a bulk buy', () => {
-    const state = freshState();
-    state.combat.damageLevels['copper_edge'] = 20;
-    state.resources['money'] = new Decimal('1e30');
-    const result = buyDamageLevels(state, content, 'copper_edge', 10);
-    expect(result.ok && result.tierUps).toEqual([
-      { kind: 'damage_milestone', id: 'copper_edge', from: 0, to: 1, metal: 'bronze' },
-    ]);
-  });
-
   it('reports mine milestones and nothing when none is crossed', () => {
     const state = freshState();
     state.resources['money'] = new Decimal('1e60');

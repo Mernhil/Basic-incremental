@@ -3,7 +3,7 @@ import { Decimal } from './num';
 
 /**
  * Level milestones (DESIGN.md §4): every `every` levels a line's output is multiplied by
- * `multiplier`. Used by the damage lines and mine levels; the UI marks the next one ("Lv 25: x2")
+ * `multiplier`. Used by the mine and tree levels; the UI marks the next one ("Lv 25: x2")
  * and celebrates each one reached.
  */
 

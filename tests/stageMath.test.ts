@@ -11,9 +11,7 @@ import {
   popupScale,
   rollToward,
 } from '../src/renderer/src/stage/math';
-import { bestLine, damageLineViews, formatRate } from '../src/renderer/src/pages/buyModel';
-import { collectModifiers } from '../src/game';
-import { content, freshState } from './helpers';
+import { bestLine, formatRate } from '../src/renderer/src/pages/buyModel';
 
 const d = (n: number) => new Decimal(n);
 
@@ -93,17 +91,6 @@ describe('buy lines', () => {
     const lines = [line(false, 5, 0.2), line(false, 1, 0.9, false), line(false, 1, 0.6)];
     expect(bestLine(lines)).toBe(lines[2]);
     expect(bestLine([line(false, 1, 1, false)])).toBeNull();
-  });
-
-  it('builds damage line views with previews and milestone tags', () => {
-    const state = freshState();
-    const views = damageLineViews(state, content, 10, collectModifiers(state, content));
-    expect(views).toHaveLength(content.combat.damageUpgrades.length);
-    for (const v of views) {
-      expect(v.label).toBe('Buy ×10');
-      expect(v.preview).toMatch(/^DPS /);
-      expect(v.milestone).toMatch(/^Lv \d+: ×/);
-    }
   });
 
   it('formats kills per minute', () => {

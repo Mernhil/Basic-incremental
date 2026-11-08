@@ -12,15 +12,16 @@ import {
   type Goal,
 } from '../src/game';
 import type { Content } from '../src/data';
-import { bareState, content as realContent, plainContent as content } from './helpers';
+import { bareState, content as realContent, plainContent as plain, withDps } from './helpers';
+
+/** The test content deals exactly 100 damage per second to anyone, cards or bare hands. */
+const content = withDps(100, plain);
 
 const find = (goals: Goal[], id: string): Goal | undefined => goals.find((g) => g.id === id);
 
-/** A loadout-free game with some damage, so ETAs are exact and there is no knockout wall. */
+/** A loadout-free game dealing 100 damage a second, so ETAs are exact and there is no knockout wall. */
 function fighter(): GameState {
-  const state = bareState();
-  state.combat.damageLevels = { copper_edge: 99 };
-  return state;
+  return bareState();
 }
 
 describe('incomePerSecond', () => {
@@ -48,10 +49,10 @@ describe('goal rules (DESIGN.md §10)', () => {
     const state = bareState();
     state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
     state.activeDungeonId = 'frostspire_vault';
-    state.combat.damageLevels = { crystal_edge: 10_000 };
-    const spk = secondsPerKill(state, content, 'frostspire_vault')!;
+    const strong = withDps(1e9, plain);
+    const spk = secondsPerKill(state, strong, 'frostspire_vault')!;
     const frost = content.dungeonById.get('frostspire_vault')!.drops.extraMaterials[0]!;
-    expect(incomePerSecond(state, content, 'frost_sigil').toNumber()).toBeCloseTo(
+    expect(incomePerSecond(state, strong, 'frost_sigil').toNumber()).toBeCloseTo(
       (frost.min + frost.max) / 2 / spk,
     );
   });
@@ -78,7 +79,6 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has no ETA while the boss knocks the loadout out first', () => {
     const state = fighter();
-    state.combat.damageLevels = {};
     state.cards.loadouts.fighting.main = 'ember_squire';
     state.cards.owned['ember_squire'] = newOwnedCard();
     // A tiny health pool against a boss that takes ages to kill.
@@ -118,13 +118,12 @@ describe('goal rules (DESIGN.md §10)', () => {
     ).toBeCloseTo(price / income, 3);
   });
 
-  it('has the next damage line milestone on the dungeons page', () => {
-    const state = bareState();
-    state.combat.damageLevels = { copper_edge: 10 };
-    expect(find(allGoals(state, content), 'damage_milestone:copper_edge')).toMatchObject({
-      page: 'dungeons',
-      progress: 0.4,
-    });
+  it('has no damage line goal any more (damage comes from cards)', () => {
+    const goals = allGoals(bareState(), content);
+    expect(goals.some((g) => g.id.startsWith('damage_milestone'))).toBe(false);
+    expect(
+      realContent.progression.goals.some((r) => (r.kind as string) === 'damage_milestone'),
+    ).toBe(false);
   });
 
   it('shows a gem mastery tier only once it is a quarter of the way', () => {

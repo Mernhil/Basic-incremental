@@ -68,7 +68,7 @@ describe('dev cheats (dev builds only)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const owned = result.state.cards.owned['dawnblade_regent']!;
-    expect([owned.tier, owned.stars, owned.level]).toEqual(['gold', 6, 80]);
+    expect([owned.tier, owned.stars, owned.level]).toEqual(['gold', 6, 60]);
     expect(devSetCardRank(freshState(), content, 'nobody', { tier: 'gold', stars: 1 }).ok).toBe(
       false,
     );

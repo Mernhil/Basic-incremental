@@ -16,7 +16,7 @@ const tier = z.number().int().min(1);
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
- * and pays for mine levels, plots / slots and damage lines; `crystal` (Summon / Glamour Crystal)
+ * and pays for tree and mine levels, the upgrade shelf and tier-ups; `crystal` (Summon / Glamour Crystal)
  * is the premium tier that pays for summons and is kept through an ascension; `prestige`
  * (Starlight) is the prestige currency, kept too.
  */
@@ -199,8 +199,6 @@ export const STATS = [
   'cost.growth',
   /** Percent output each mine level adds. Scope: job, producer, resource. */
   'production.levelBonus',
-  /** Damage per second each level of a damage upgrade line adds. Scope: job, resource. */
-  'combat.upgradeGain',
   /** Chance per kill of the material (Core) drop (clamped to 0..1). Scope: dungeon, resource. */
   'drops.materialChance',
   /** Material units per material drop (floored, at least 0). Scope: dungeon, resource. */
@@ -387,15 +385,18 @@ export const cardRulesSchema = z.strictObject({
   cost: perRarity(count),
   /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
   costCap: z.strictObject({ base: count, perLevel: count }),
-  /** Level cap at each star (★1..★6) of each tier. */
-  levelCaps: perTier(z.array(z.number().int().min(1)).length(MAX_STARS)),
+  /** Level cap of each tier; stars do not change it (DESIGN.md §5). */
+  levelCaps: perTier(z.number().int().min(1)),
   /** XP from level L to L + 1 = base × growth^(L − 1). */
   xpCurve: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
   /**
-   * Fighting cards: XP per boss kill = perKill × tierGrowth^(dungeon tier − 1). Production
-   * cards: XP per unit harvested, per job. Both then go through `xp.card` (scope: job).
+   * Fighting cards (DESIGN.md §5): XP per second fought (not while knocked out) = perSecond ×
+   * tierGrowth^(dungeon tier − 1), plus XP per boss kill = perKill × tierGrowth^(dungeon tier −
+   * 1). The special dungeon pays the tier 1 per-second rate. Production cards: XP per unit
+   * harvested, per job. All go through `xp.card` (scope: job).
    */
   xp: z.strictObject({
+    perSecond: positiveDecimal,
     perKill: positiveDecimal,
     tierGrowth: atLeastOne,
     perUnit: z.strictObject({ logging: decimal, mining: decimal }),
@@ -435,6 +436,11 @@ export const cardRulesSchema = z.strictObject({
   /** Base health of a card by rarity, multiplied by its power (DESIGN.md §6). The fighting
    *  loadout's health pool sums its cards. */
   health: perRarity(positiveDecimal),
+  /**
+   * Base damage per second of a card by rarity (DESIGN.md §5), with the same ratios as health.
+   * Fighting damage is the main card's base damage × its power, then the modifiers.
+   */
+  baseDamage: perRarity(positiveDecimal),
   /** Shards for a duplicate gained once the card is Prismatic ★6, by rarity. */
   shards: perRarity(count),
 });
@@ -575,7 +581,7 @@ export type GoalPage = (typeof GOAL_PAGES)[number];
  * - `clear_dungeon`: unlocked dungeons not cleared yet (with what the clear opens);
  * - `clear_trial`: unlocked special dungeons not cleared yet;
  * - `unlock_tree`: tree kinds not bought yet;
- * - `mine_milestone` / `damage_milestone`: the next level milestone of each mine type / line;
+ * - `mine_milestone`: the next level milestone of each mine type;
  * - `gem_mastery` / `boss_mastery`: the next mastery tier of each gem / boss;
  * - `star_up`: owned cards with the duplicate for their next star, missing level or materials.
  */
@@ -584,7 +590,6 @@ export const GOAL_KINDS = [
   'clear_trial',
   'unlock_tree',
   'mine_milestone',
-  'damage_milestone',
   'gem_mastery',
   'boss_mastery',
   'star_up',
@@ -662,25 +667,12 @@ const burstConfigSchema = z.strictObject({
 
 /** Global combat numbers (combat.json). */
 export const combatSchema = z.strictObject({
-  /** Damage per second before any upgrade. */
-  startingDamage: positiveDecimal,
-  /** Damage upgrade lines, one per ore (DESIGN.md §6). Levels are kept through prestige. */
-  damageUpgrades: z
-    .array(
-      z.strictObject({
-        id,
-        name,
-        /** The mine gem this line is forged from: its art and the `resource` scope of modifiers
-         *  (`combat.upgradeGain`). The price itself is in Money (DESIGN.md §3). */
-        gem: id,
-        cost: costCurveSchema,
-        /** Damage per second each level adds, read through `combat.upgradeGain`. */
-        damagePerLevel: positiveDecimal,
-        /** Output multiplier every N levels (kept through prestige with the levels). */
-        milestones: milestoneSchema,
-      }),
-    )
-    .min(1),
+  /**
+   * Damage per second with no fighting main card (bare hands, DESIGN.md §5). Fighting damage
+   * comes from the main card's base damage (`cardRules.baseDamage`); this only keeps a loadout
+   * with no leader from dealing nothing.
+   */
+  unarmedDamage: positiveDecimal,
   bursts: z.strictObject({
     fighting: burstConfigSchema,
     logging: burstConfigSchema,
@@ -989,7 +981,7 @@ export const prestigeSchema = z.strictObject({
  * unlocked (or `count` of them), a dungeon / trial cleared, portal pulls, pity hits, any card at
  * a tier or star count, a full loadout, a full non-starter set equipped, non-starter cosmetics
  * owned, skill points spent, ascensions, the longest offline session, any gem mastery / boss
- * medal tier, any mine or damage line level, any cosmetic at its max level.
+ * medal tier, any mine level, any cosmetic at its max level.
  */
 export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({
@@ -1211,7 +1203,6 @@ export const cosmeticSetSchema = z.strictObject({
 export const UPGRADE_UNLOCK_KINDS = [
   'treeLevel',
   'mineLevel',
-  'damageLevel',
   'gemMastery',
   'bossKills',
   'lifetimeMoney',
@@ -1219,7 +1210,6 @@ export const UPGRADE_UNLOCK_KINDS = [
 export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('treeLevel'), tree: id, level: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('mineLevel'), mine: id, level: z.number().int().min(1) }),
-  z.strictObject({ kind: z.literal('damageLevel'), line: id, level: z.number().int().min(1) }),
   z.strictObject({
     kind: z.literal('gemMastery'),
     gem: id,
@@ -1285,7 +1275,6 @@ export type RankTier = (typeof RANK_TIERS)[number];
 export type Dungeon = z.output<typeof dungeonSchema>;
 export type Trial = z.output<typeof trialSchema>;
 export type CombatConfig = z.output<typeof combatSchema>;
-export type DamageUpgrade = CombatConfig['damageUpgrades'][number];
 export type BurstConfig = z.output<typeof burstConfigSchema>;
 export type BurstJob = keyof CombatConfig['bursts'];
 export type Cosmetic = z.output<typeof cosmeticSchema>;

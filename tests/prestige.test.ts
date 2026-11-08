@@ -42,7 +42,6 @@ function progressedRun(): GameState {
   state.production.mineLevels = { copper_quarry: 30 };
   state.production.unlockedTrees = ['ironbark'];
   state.clearedDungeons = ['mossy_cellar'];
-  state.combat.damageLevels = { copper_edge: 40 };
   state.combat.kills = { mossy_cellar: 120 };
   state.combat.loadoutDamage = new Decimal(50);
   state.bursts.logging = { gauge: 12, timer: 0.5 };
@@ -100,7 +99,6 @@ describe('ascension preview', () => {
     );
     expect(preview.persists).toEqual(
       expect.arrayContaining([
-        'damage_lines',
         'cards',
         'cosmetics',
         'unlocks',
@@ -155,12 +153,11 @@ describe('ascend', () => {
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 
-  it('keeps damage lines, cards, cosmetics, unlocks, mastery, medals and pity', () => {
+  it('keeps cards, cosmetics, unlocks, mastery, medals and pity', () => {
     const before = progressedRun();
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.combat.damageLevels).toEqual({ copper_edge: 40 });
     expect(s.combat.kills).toEqual({ mossy_cellar: 120 });
     expect(s.cards.owned['ember_squire']!.level).toBe(15);
     expect(s.cards.loadouts).toEqual(before.cards.loadouts);

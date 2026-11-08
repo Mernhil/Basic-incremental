@@ -1,5 +1,11 @@
-import type { BurstJob, Content, DamageUpgrade, Dungeon, ProductionJob, Trial } from '../data';
-import { cardHealth, fightingXpPerKill, grantLoadoutXp } from './cards';
+import type { BurstJob, Content, Dungeon, ProductionJob, Trial } from '../data';
+import {
+  cardBaseDamage,
+  cardHealth,
+  fightingXpPerKill,
+  fightingXpPerSecond,
+  grantLoadoutXp,
+} from './cards';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
 import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
@@ -14,7 +20,6 @@ import {
   type BossPattern,
 } from './bossAttacks';
 import { recordBurst } from './harvest';
-import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import {
   collectModifiers,
   computeStat,
@@ -24,23 +29,15 @@ import {
   type StatResult,
 } from './modifiers';
 import { Decimal } from './num';
-import {
-  canAfford,
-  clearDungeon,
-  isProducerUnlocked,
-  curvePrice,
-  jobProductionPerSecond,
-  PRODUCTION_JOBS,
-  type Price,
-} from './production';
+import { clearDungeon, jobProductionPerSecond, PRODUCTION_JOBS, type Price } from './production';
 import type { TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type BurstGauge, type GameState } from './state';
 
 /**
  * Combat (DESIGN.md §6): bosses are HP walls auto-fought in parallel with production,
- * respawning for farming. Damage is bought with ore (one upgrade line per ore) and kept through
- * prestige. The first kill clears a dungeon, which unlocks the next dungeon and a mine type.
+ * respawning for farming. Damage comes from the main fighting card (DESIGN.md §5). The first kill
+ * clears a dungeon, which unlocks the next dungeon and a mine type.
  * The Glimmer Trial is a special dungeon fought in timed attempts for a score.
  * Burst gauges fill with each hit (fighting) or tick (logging, mining) and fire automatically.
  *
@@ -54,14 +51,10 @@ export const MAX_KILLS_PER_ADVANCE = 100_000;
 export const MAX_TRIAL_ATTEMPTS_PER_ADVANCE = 10_000;
 
 export type CombatFailure =
-  /** No dungeon / special dungeon / damage upgrade with that id. */
+  /** No dungeon / special dungeon with that id. */
   | 'unknown'
   /** The dungeon is not unlocked yet. */
-  | 'locked'
-  /** Not enough resources. */
-  | 'unaffordable'
-  /** A bulk buy count that is not a whole number from 1 to MAX_BULK_LEVELS. */
-  | 'invalid-count';
+  | 'locked';
 
 export type CombatResult = { ok: true; state: GameState } | { ok: false; reason: CombatFailure };
 
@@ -72,52 +65,16 @@ const EPSILON = 1e-9;
 
 // ---- damage ----------------------------------------------------------------------------------
 
-export function damageLevel(state: GameState, upgradeId: string): number {
-  return state.combat.damageLevels[upgradeId] ?? 0;
-}
-
-/** Damage per second one level of this line adds, through `combat.upgradeGain`. */
-export function damageUpgradeGain(
-  upgrade: DamageUpgrade,
-  modifiers: readonly Modifier[] = [],
-): Decimal {
-  const ctx = { ...FIGHTING, resource: upgrade.gem };
-  return Decimal.max(statValue('combat.upgradeGain', upgrade.damagePerLevel, modifiers, ctx), 0);
-}
-
-/** Damage per second one line adds at its level, milestones included (DESIGN.md §4). */
-export function damageLineDps(
-  upgrade: DamageUpgrade,
-  level: number,
-  modifiers: readonly Modifier[] = [],
-): Decimal {
-  if (level <= 0) return new Decimal(0);
-  return damageUpgradeGain(upgrade, modifiers)
-    .mul(level)
-    .mul(milestoneMultiplier(upgrade.milestones, level));
-}
-
-/** A damage line's milestones at its level ("Lv 25: x2"), or null for an unknown line. */
-export function damageLineMilestone(
-  state: GameState,
-  content: Content,
-  upgradeId: string,
-): MilestoneInfo | null {
-  const upgrade = content.combat.damageUpgrades.find((u) => u.id === upgradeId);
-  return upgrade ? milestoneInfo(upgrade.milestones, damageLevel(state, upgradeId)) : null;
-}
-
-/** Damage per second before `combat.damage` modifiers: start + every upgrade level bought. */
-export function baseDamage(
-  state: GameState,
-  content: Content,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Decimal {
-  let total = content.combat.startingDamage;
-  for (const upgrade of content.combat.damageUpgrades) {
-    total = total.add(damageLineDps(upgrade, damageLevel(state, upgrade.id), modifiers));
-  }
-  return total;
+/**
+ * Damage per second before `combat.damage` modifiers (DESIGN.md §5, §6): the main fighting
+ * card's base damage by rarity, grown by its level, tier and stars. With no card leading (or
+ * one that is not owned) it is the bare-hands damage. Supports add only through their bonuses.
+ */
+export function baseDamage(state: GameState, content: Content): Decimal {
+  const id = state.cards.loadouts.fighting.main;
+  const owned = id ? state.cards.owned[id] : undefined;
+  if (!id || !owned || !content.cardById.has(id)) return content.combat.unarmedDamage;
+  return cardBaseDamage(content, id, owned);
 }
 
 /** `combat.damage` with its breakdown (for tooltips), against a dungeon or special dungeon. */
@@ -128,7 +85,7 @@ export function damageStat(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): StatResult {
   const ctx: StatContext = dungeonId ? { ...FIGHTING, dungeon: dungeonId } : FIGHTING;
-  return computeStat('combat.damage', baseDamage(state, content, modifiers), modifiers, ctx);
+  return computeStat('combat.damage', baseDamage(state, content), modifiers, ctx);
 }
 
 /** Damage per second after modifiers. Never negative. */
@@ -139,49 +96,6 @@ export function effectiveDamage(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Decimal {
   return Decimal.max(damageStat(state, content, dungeonId, modifiers).value, 0);
-}
-
-/**
- * Whether a damage line can be bought: its gem's mine must be unlocked (Iron Edge once Iron Deeps
- * opens, Crystal Edge with the Crystal Grotto; DESIGN.md §6, §3). The price is in Money.
- */
-export function isDamageLineUnlocked(
-  state: GameState,
-  content: Content,
-  upgrade: DamageUpgrade,
-): boolean {
-  const mine = content.mines.find((m) => m.resource === upgrade.gem);
-  return !mine || isProducerUnlocked(state, content, 'mining', mine.id);
-}
-
-/** Price of the next level of a damage upgrade line, in Money. */
-export function damageUpgradeCost(
-  state: GameState,
-  content: Content,
-  upgradeId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): Price | null {
-  const upgrade = content.combat.damageUpgrades.find((u) => u.id === upgradeId);
-  if (!upgrade) return null;
-  return curvePrice(upgrade.cost, damageLevel(state, upgradeId), modifiers, FIGHTING);
-}
-
-/** Buys one level of a damage upgrade line. Kept through prestige. */
-export function buyDamageUpgrade(
-  state: GameState,
-  content: Content,
-  upgradeId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CombatResult {
-  const price = damageUpgradeCost(state, content, upgradeId, modifiers);
-  if (!price) return fail('unknown');
-  const line = content.combat.damageUpgrades.find((u) => u.id === upgradeId)!;
-  if (!isDamageLineUnlocked(state, content, line)) return fail('locked');
-  if (!canAfford(state, [price])) return fail('unaffordable');
-  const next = cloneState(state);
-  next.resources[price.resource] = next.resources[price.resource]!.sub(price.amount);
-  next.combat.damageLevels[upgradeId] = damageLevel(state, upgradeId) + 1;
-  return { ok: true, state: next };
 }
 
 // ---- dungeons --------------------------------------------------------------------------------
@@ -958,6 +872,13 @@ function fightDungeon(
     report.bursts.fighting += run.bursts;
     const dealt = dps.mul(t).add(signatureDamage(dps, stats).mul(run.bursts));
     fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
+    // Card XP for the time fought, never for a knockout (DESIGN.md §5).
+    grantLoadoutXp(
+      next,
+      content,
+      'fighting',
+      fightingXpPerSecond(content, dungeon, modifiers).mul(t),
+    );
     // The wage: Money for every second spent fighting, so the first levels can be bought before
     // the first kill (DESIGN.md §3).
     const wage = effectiveDrops(dungeon, modifiers, content).wage;
@@ -1143,6 +1064,13 @@ function fightTrial(
     state.bursts.fighting = run.gauge;
     report.bursts.fighting += run.bursts;
     dealt = dealt.add(dps.mul(step)).add(signatureDamage(dps, stats).mul(run.bursts));
+    // Card XP for the time fought (DESIGN.md §5), at the tier 1 rate.
+    grantLoadoutXp(
+      state,
+      content,
+      'fighting',
+      fightingXpPerSecond(content, trial, modifiers).mul(step),
+    );
     elapsedSeconds += step;
     remaining -= step;
     if (elapsedSeconds + EPSILON < trial.durationSeconds) break;

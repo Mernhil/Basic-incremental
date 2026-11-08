@@ -184,7 +184,7 @@
     {
       "id": "first_milestone",
       "name": "First Milestone",
-      "description": "Take a mine or damage line to level 25.",
+      "description": "Take a mine to level 25.",
       "condition": { "kind": "milestone", "level": 25 },
       "reward": { "resources": [{ "resource": "moss_core", "amount": "2" }] }
     },

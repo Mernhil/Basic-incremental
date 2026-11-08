@@ -1,52 +1,5 @@
 {
-  "startingDamage": "1",
-  "damageUpgrades": [
-    {
-      "id": "copper_edge",
-      "name": "Copper Edge",
-      "gem": "copper_gem",
-      "cost": {
-        "resource": "money",
-        "base": "10",
-        "growth": "1.11"
-      },
-      "damagePerLevel": "1",
-      "milestones": {
-        "every": 25,
-        "multiplier": "2"
-      }
-    },
-    {
-      "id": "iron_edge",
-      "name": "Iron Edge",
-      "gem": "iron_gem",
-      "cost": {
-        "resource": "money",
-        "base": "200",
-        "growth": "1.12"
-      },
-      "damagePerLevel": "10",
-      "milestones": {
-        "every": 25,
-        "multiplier": "2"
-      }
-    },
-    {
-      "id": "crystal_edge",
-      "name": "Crystal Edge",
-      "gem": "grotto_gem",
-      "cost": {
-        "resource": "money",
-        "base": "3000",
-        "growth": "1.13"
-      },
-      "damagePerLevel": "100",
-      "milestones": {
-        "every": 25,
-        "multiplier": "2"
-      }
-    }
-  ],
+  "unarmedDamage": "1",
   "bursts": {
     "fighting": {
       "intervalSeconds": 1,

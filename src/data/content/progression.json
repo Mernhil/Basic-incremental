@@ -90,10 +90,6 @@
       "page": "production"
     },
     {
-      "kind": "damage_milestone",
-      "page": "dungeons"
-    },
-    {
       "kind": "gem_mastery",
       "page": "production",
       "minProgress": 0.25

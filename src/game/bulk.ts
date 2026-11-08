@@ -1,5 +1,4 @@
 import type { Content, CostCurve } from '../data';
-import { damageLevel, isDamageLineUnlocked, type CombatFailure } from './combat';
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import {
@@ -19,7 +18,7 @@ import type { GameState } from './state';
 /**
  * Bulk buying (DESIGN.md §11, "Buy x1 / x10 / x100 / Max"): prices of several levels on an
  * exponential cost curve, the most a budget affords, and the buy offers and purchases of the
- * damage lines, mine levels and tree levels.
+ * mine levels and tree levels.
  *
  * Every level is priced exactly like a single buy (`curvePrice`, rounded up per level), so a
  * bulk buy costs the same as buying the levels one at a time.
@@ -52,7 +51,7 @@ export type BulkBuyResult<F extends string> =
       ok: true;
       state: GameState;
       bought: number;
-      /** Milestones crossed (damage line, mine level, tree level). */
+      /** Milestones crossed (mine level, tree level). */
       tierUps: TierUp[];
     }
   | { ok: false; reason: F };
@@ -143,55 +142,6 @@ export function curveOffer(
 const budgetOf = (state: GameState, resource: string): Decimal =>
   state.resources[resource] ?? new Decimal(0);
 
-// ---- damage lines ----------------------------------------------------------------------------
-
-const FIGHTING: StatContext = { job: 'fighting' };
-
-/** The buy offer of a damage line (null for an unknown line or an invalid count). */
-export function damageLineOffer(
-  state: GameState,
-  content: Content,
-  upgradeId: string,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BuyOffer | null {
-  const upgrade = content.combat.damageUpgrades.find((u) => u.id === upgradeId);
-  if (!upgrade) return null;
-  const owned = damageLevel(state, upgradeId);
-  const budget = budgetOf(state, upgrade.cost.resource);
-  const offer = curveOffer(upgrade.cost, owned, count, budget, modifiers, FIGHTING);
-  if (offer && !isDamageLineUnlocked(state, content, upgrade)) offer.affordable = false;
-  return offer;
-}
-
-/**
- * Buys damage line levels: xN buys exactly N or fails as unaffordable; Max buys as many as
- * affordable (at least 1). Kept through prestige.
- */
-export function buyDamageLevels(
-  state: GameState,
-  content: Content,
-  upgradeId: string,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BulkBuyResult<CombatFailure> {
-  const line = content.combat.damageUpgrades.find((u) => u.id === upgradeId);
-  if (!line) return { ok: false, reason: 'unknown' };
-  if (!isDamageLineUnlocked(state, content, line)) return { ok: false, reason: 'locked' };
-  const offer = damageLineOffer(state, content, upgradeId, count, modifiers);
-  if (!offer) return { ok: false, reason: 'invalid-count' };
-  if (!offer.affordable || !canAfford(state, [offer.price])) {
-    return { ok: false, reason: 'unaffordable' };
-  }
-  const next = pay(state, [offer.price]);
-  const from = damageLevel(state, upgradeId);
-  next.combat.damageLevels[upgradeId] = from + offer.count;
-  const milestones = content.combat.damageUpgrades.find((u) => u.id === upgradeId)!.milestones;
-  const to = from + offer.count;
-  const tierUps = milestoneTierUps('damage_milestone', upgradeId, milestones, from, to);
-  return { ok: true, state: next, bought: offer.count, tierUps };
-}
-
 // ---- mine levels -----------------------------------------------------------------------------
 
 /** The buy offer of a mine type's levels (null for an unknown mine or an invalid count). Not
@@ -219,7 +169,7 @@ export function mineLevelOffer(
   return offer;
 }
 
-/** Buys mine levels like `buyDamageLevels`. Only for unlocked mine types; reset on prestige. */
+/** Buys mine levels: xN buys exactly N or fails as unaffordable; Max buys as many as affordable (at least 1). Only for unlocked mine types; reset on prestige. */
 export function buyMineLevels(
   state: GameState,
   content: Content,

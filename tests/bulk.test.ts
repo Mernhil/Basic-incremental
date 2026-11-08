@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  buyDamageLevels,
-  buyDamageUpgrade,
   buyMineLevel,
   buyMineLevels,
   curveBulkPrice,
   curveMaxAffordable,
   curveOffer,
   curvePrice,
-  damageLineOffer,
   Decimal,
   MAX_BULK_LEVELS,
   mineLevelOffer,
@@ -108,43 +105,7 @@ describe('buy offers (x1 / x10 / x100 / Max)', () => {
   });
 });
 
-describe('bulk buys for damage lines and mine levels', () => {
-  it('buys exactly N damage levels for the same price as N single buys', () => {
-    const start = rich('money', 1e6);
-    const bulk = buyDamageLevels(start, content, 'copper_edge', 10);
-    if (!bulk.ok) throw new Error(bulk.reason);
-    expect(bulk.bought).toBe(10);
-    const ref = oneByOne(start, 10, (s) => buyDamageUpgrade(s, content, 'copper_edge'));
-    expect(bulk.state.combat.damageLevels['copper_edge']).toBe(10);
-    expect(bulk.state.resources['money']!.eq(ref.resources['money']!)).toBe(true);
-    expect(start.combat.damageLevels['copper_edge']).toBeUndefined(); // input untouched
-  });
-
-  it('fails an xN buy that is not fully affordable, without buying part of it', () => {
-    const start = rich('money', 15); // one level costs 10, two cost 10 + 11.5 -> 22
-    const r = buyDamageLevels(start, content, 'copper_edge', 2);
-    expect(r).toEqual({ ok: false, reason: 'unaffordable' });
-  });
-
-  it('Max buys every affordable damage level and fails when none is', () => {
-    const start = rich('money', 1000);
-    const offer = damageLineOffer(start, content, 'copper_edge', 'max')!;
-    const r = buyDamageLevels(start, content, 'copper_edge', 'max');
-    if (!r.ok) throw new Error(r.reason);
-    expect(r.bought).toBe(offer.count);
-    expect(r.bought).toBeGreaterThan(1);
-    expect(r.state.resources['money']!.eq(new Decimal(1000).sub(offer.price.amount))).toBe(true);
-    expect(buyDamageLevels(rich('money', 0), content, 'copper_edge', 'max')).toEqual({
-      ok: false,
-      reason: 'unaffordable',
-    });
-    expect(buyDamageLevels(start, content, 'nope', 1)).toEqual({ ok: false, reason: 'unknown' });
-    expect(buyDamageLevels(start, content, 'copper_edge', 0)).toEqual({
-      ok: false,
-      reason: 'invalid-count',
-    });
-  });
-
+describe('bulk buys for mine levels', () => {
   it('buys mine levels in bulk, only for unlocked mines', () => {
     const start = rich('money', 1e6);
     const r = buyMineLevels(start, content, 'copper_quarry', 5);

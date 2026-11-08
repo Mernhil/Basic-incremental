@@ -11,15 +11,12 @@ import {
   bossStatus,
   burstStats,
   burstView,
-  buyDamageUpgrade,
-  clearDungeon,
-  isDamageLineUnlocked,
   createSaveText,
   damageStat,
-  damageUpgradeCost,
   Decimal,
   effectiveDamage,
   effectiveDrops,
+  emptyCardLoadout,
   isDungeonUnlocked,
   isProducerUnlocked,
   readSave,
@@ -55,7 +52,7 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
-import { constantRng, bareState, plainContent as content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
 
 const rng = constantRng(0.5);
 const [mossy, ember, frost] = content.dungeons as [
@@ -64,7 +61,6 @@ const [mossy, ember, frost] = content.dungeons as [
   (typeof content.dungeons)[0],
 ];
 const trial = content.trials[0]!;
-const copper = content.combat.damageUpgrades.find((u) => u.gem === 'copper_gem')!;
 
 const mod = (
   stat: Modifier['stat'],
@@ -84,103 +80,34 @@ function ok(result: CombatResult): GameState {
   return result.state;
 }
 
-/** A fresh state dealing `dps` damage per second (through Copper Edge levels). */
-function withDps(dps: Decimal | number, state = freshState()): GameState {
-  const levels = new Decimal(dps)
-    .sub(content.combat.startingDamage)
-    .div(copper.damagePerLevel)
-    .toNumber();
-  state.combat.damageLevels = { [copper.id]: levels };
-  return state;
-}
-
 function cleared(...ids: string[]): GameState {
   const state = freshState();
   state.clearedDungeons = ids;
   return state;
 }
 
-describe('damage purchases (one line per ore, DESIGN.md §6)', () => {
-  it('has one upgrade line per ore, higher ores adding more', () => {
-    const ores = content.resources.filter((r) => r.kind === 'mine_gem').map((r) => r.id);
-    const lines = content.combat.damageUpgrades;
-    expect(lines.map((u) => u.gem).sort()).toEqual([...ores].sort());
-    // Damage is bought with Money, whichever gem the line is forged from.
-    expect(lines.every((u) => u.cost.resource === 'money')).toBe(true);
-    const byTier = [...lines].sort(
-      (a, b) => content.resourceById.get(a.gem)!.tier - content.resourceById.get(b.gem)!.tier,
-    );
-    for (let i = 1; i < byTier.length; i++) {
-      expect(byTier[i]!.damagePerLevel.gt(byTier[i - 1]!.damagePerLevel)).toBe(true);
-    }
-  });
+describe('damage from the main card (DESIGN.md §5, §6)', () => {
+  const common = content.cardRules.baseDamage.common;
 
-  it('starts at the starting damage and adds each level', () => {
+  it('is the main card base damage, with no purchase involved', () => {
     const state = freshState();
-    expect(baseDamage(state, content).eq(content.combat.startingDamage)).toBe(true);
-    state.combat.damageLevels = { [copper.id]: 3 };
-    const expected = content.combat.startingDamage.add(copper.damagePerLevel.mul(3));
-    expect(baseDamage(state, content).eq(expected)).toBe(true);
-  });
-
-  it('buys a level with Money on an exponential curve', () => {
-    const first = damageUpgradeCost(freshState(), content, copper.id)!;
-    expect(first.resource).toBe('money');
-    expect(first.amount.eq(copper.cost.base.ceil())).toBe(true);
-
-    const rich = freshState();
-    rich.resources['money'] = new Decimal(1000);
-    const after = ok(buyDamageUpgrade(rich, content, copper.id));
-    expect(after.combat.damageLevels[copper.id]).toBe(1);
-    expect(after.resources['money']!.eq(new Decimal(1000).sub(first.amount))).toBe(true);
-    const second = damageUpgradeCost(after, content, copper.id)!;
-    expect(second.amount.eq(copper.cost.base.mul(copper.cost.growth).ceil())).toBe(true);
-    expect(rich.combat.damageLevels[copper.id]).toBeUndefined(); // input untouched
-  });
-
-  it('unlocks the Iron and Crystal Edge with their mines, and refuses them before', () => {
-    const state = freshState();
-    state.resources['money'] = new Decimal(1e12);
-    const iron = content.combat.damageUpgrades.find((u) => u.gem === 'iron_gem')!;
-    const crystal = content.combat.damageUpgrades.find((u) => u.gem === 'grotto_gem')!;
-    expect(isDamageLineUnlocked(state, content, copper)).toBe(true);
-    expect(isDamageLineUnlocked(state, content, iron)).toBe(false);
-    expect(buyDamageUpgrade(state, content, iron.id)).toEqual({ ok: false, reason: 'locked' });
-    const cleared1 = clearDungeon(state, content, 'mossy_cellar').state;
-    expect(isDamageLineUnlocked(cleared1, content, iron)).toBe(true);
-    expect(isDamageLineUnlocked(cleared1, content, crystal)).toBe(false);
-    expect(buyDamageUpgrade(cleared1, content, iron.id).ok).toBe(true);
-    const cleared2 = clearDungeon(cleared1, content, 'ember_crypt').state;
-    expect(buyDamageUpgrade(cleared2, content, crystal.id).ok).toBe(true);
-  });
-
-  it('refuses unknown lines and unaffordable levels', () => {
-    expect(buyDamageUpgrade(freshState(), content, 'nope')).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
-    const broke = freshState();
-    broke.resources['money'] = new Decimal(0);
-    expect(buyDamageUpgrade(broke, content, copper.id)).toEqual({
-      ok: false,
-      reason: 'unaffordable',
-    });
+    expect(baseDamage(state, content).eq(common)).toBe(true);
+    expect(effectiveDamage(state, content).eq(common)).toBe(true);
   });
 
   it('runs every number through the modifier pipeline', () => {
     const state = freshState();
-    state.combat.damageLevels = { [copper.id]: 10 };
-    const gain = [mod('combat.upgradeGain', 'mult', '2', { resource: 'copper_gem' })];
-    expect(baseDamage(state, content, gain).eq(content.combat.startingDamage.add(20))).toBe(true);
-
     const double = [mod('combat.damage', 'mult', '2', { dungeon: 'mossy_cellar' })];
-    expect(effectiveDamage(state, content, 'mossy_cellar', double).eq(22)).toBe(true);
-    expect(effectiveDamage(state, content, 'ember_crypt', double).eq(11)).toBe(true);
+    expect(effectiveDamage(state, content, 'mossy_cellar', double).eq(common.mul(2))).toBe(true);
+    expect(effectiveDamage(state, content, 'ember_crypt', double).eq(common)).toBe(true);
     expect(damageStat(state, content, 'mossy_cellar', double).applied).toHaveLength(1);
+    const more = [mod('combat.damage', 'percent', '50')];
+    expect(effectiveDamage(state, content, 'mossy_cellar', more).eq(common.mul(1.5))).toBe(true);
+  });
 
-    const cheaper = [mod('cost.multiplier', 'mult', '0.5', { job: 'fighting' })];
-    const price = damageUpgradeCost(freshState(), content, copper.id, cheaper)!;
-    expect(price.amount.eq(copper.cost.base.mul(0.5).ceil())).toBe(true);
+  it('has no damage upgrade lines, price curves or gain stat any more', () => {
+    expect('damageUpgrades' in content.combat).toBe(false);
+    expect('damageLevels' in freshState().combat).toBe(false);
   });
 });
 
@@ -204,7 +131,8 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
 
   it('the first kill clears the dungeon and unlocks the next dungeon and a mine', () => {
     const maxHp = bossMaxHp(mossy, 0);
-    const start = withDps(maxHp);
+    const content = withDps(maxHp);
+    const start = freshState();
     expect(isProducerUnlocked(start, content, 'mining', 'iron_deeps')).toBe(false);
     const { state, report } = advance(start, content, 1000, rng);
     expect(report.bossKills).toBe(1);
@@ -243,7 +171,8 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     const boss = bossStatus(state, content)!;
     expect(boss.dungeon.id).toBe(mossy.id);
     expect(boss.maxHp.eq(mossy.boss.hp)).toBe(true);
-    expect(boss.hp.eq(mossy.boss.hp.sub(10))).toBe(true);
+    // 10 s of the Ember Squire's base damage.
+    expect(boss.hp.eq(mossy.boss.hp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(true);
     expect(boss.bars.remaining).toBe(mossy.boss.hpBars);
     expect(boss.kills).toBe(0);
     expect(bossStatus(ok(setActiveDungeon(state, content, null)), content)).toBeNull();
@@ -344,8 +273,8 @@ describe('drops', () => {
 
   it('drops a Core when the roll is under its chance', () => {
     const { state, report } = advance(
+      freshState(),
       withDps(bossMaxHp(mossy, 0)),
-      content,
       1000,
       constantRng(0.01),
     );
@@ -407,10 +336,12 @@ describe('burst gauges (DESIGN.md §6)', () => {
   });
 
   it('the signature attack deals 10x a hit on top of the normal damage', () => {
-    const start = freshState();
+    // Bare-handed, so no card levels up during the 20 s and the damage stays the same.
+    const start = bareState();
     const { state, report } = advance(start, content, 20_000, rng);
     expect(report.bursts.fighting).toBe(1);
-    const dealt = new Decimal(20).add(signatureDamage(new Decimal(1), fighting));
+    const dps = content.combat.unarmedDamage;
+    const dealt = dps.mul(20).add(signatureDamage(dps, fighting));
     expect(state.bossHp!.eq(mossy.boss.hp.sub(dealt))).toBe(true);
     expect(burstView(state, content, 'fighting').fraction).toBe(0);
     const later = advance(state, content, 5000, rng).state;
@@ -433,8 +364,12 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
       .flatMap((t) => t.rewards)
       .filter((r) => r.resource === id)
       .reduce((sum, r) => sum + r.amount.toNumber(), 0);
-  const open = (): GameState =>
-    ok(setActiveDungeon(cleared(mossy.id, ember.id), content, trial.id));
+  // Bare-handed, so no card levels up mid-attempt and the damage stays exactly what a test sets.
+  const open = (): GameState => {
+    const state = ok(setActiveDungeon(cleared(mossy.id, ember.id), content, trial.id));
+    state.cards.loadouts.fighting = emptyCardLoadout();
+    return state;
+  };
 
   it('scores the share of the fixed target HP, capped at 1', () => {
     expect(trialScore(trial, new Decimal(0))).toBe(0);
@@ -464,7 +399,8 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
   it('runs a 30 s attempt, pays by score and starts the next one', () => {
     // Half the target over an attempt, counting signature attacks: 30 hits + 1 burst of 10 = 40.
     const dps = trial.target.hp.div(2).div(40);
-    const start = withDps(dps, open());
+    const content = withDps(dps);
+    const start = open();
     const mid = advance(start, content, 10_000, rng).state;
     const status = trialStatus(mid, content)!;
     expect(status.elapsedSeconds).toBeCloseTo(10);
@@ -484,7 +420,8 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
   });
 
   it('a full score clears the trial', () => {
-    const start = withDps(trial.target.hp, open());
+    const content = withDps(trial.target.hp);
+    const start = open();
     const { state, report } = advance(start, content, 30_000, rng);
     expect(report.cleared).toEqual([trial.id]);
     expect(state.clearedDungeons).toContain(trial.id);
@@ -493,7 +430,8 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
   });
 
   it('long spans resolve many attempts the same as small steps', () => {
-    const start = withDps(trial.target.hp.div(30), open());
+    const content = withDps(trial.target.hp.div(30));
+    const start = open();
     const whole = advance(start, content, 300_000, rng);
     const steps = advanceChunked(start, content, 300_000, rng, 1000);
     expect(whole.report.trialAttempts).toBe(10);
@@ -514,10 +452,9 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
 describe('save format v4: combat', () => {
   const NOW = 1_700_000_000_000;
 
-  it('round-trips damage levels, kills, the trial attempt and burst gauges', () => {
+  it('round-trips kills, the trial attempt and burst gauges', () => {
     let state = ok(setActiveDungeon(cleared(mossy.id, ember.id), content, trial.id));
-    state = withDps(1234, state);
-    state = advance(state, content, 12_345, rng).state;
+    state = advance(state, withDps(1234), 12_345, rng).state;
     state.combat.kills = { mossy_cellar: 4 };
     const loaded = readSave(createSaveText(state, NOW), content).state;
     expect(loaded.combat).toEqual(state.combat);
@@ -531,7 +468,7 @@ describe('save format v4: combat', () => {
     expect(readSave(JSON.stringify(json), content).state.activeDungeonId).toBe(mossy.id);
   });
 
-  it('migrates a v3 save: damage becomes upgrade levels, earlier kills clear the Mossy Cellar', () => {
+  it('migrates a v3 save: earlier kills clear the Mossy Cellar', () => {
     const v3 = JSON.parse(createSaveText(freshState(), NOW));
     v3.version = 3;
     delete v3.state.combat;
@@ -540,7 +477,6 @@ describe('save format v4: combat', () => {
     v3.state.bossHp = '40';
     v3.state.stats.bossKills = 5;
     const { state } = readSave(JSON.stringify(v3), content);
-    expect(state.combat.damageLevels).toEqual({});
     expect(state.combat.kills).toEqual({ mossy_cellar: 5 });
     expect(state.clearedDungeons).toEqual(['mossy_cellar']);
     expect(state.bossHp).toBeNull();
@@ -604,22 +540,17 @@ describe('combat data is validated', () => {
     expect(found).toContain('trials.json › [0] › unlockedBy: unknown dungeon "nowhere"');
   });
 
-  it('catches wrong resource kinds for Cores, trial rewards and damage costs', () => {
+  it('catches wrong resource kinds for Cores and trial rewards', () => {
     const bad = raw();
     (bad.dungeons as { drops: { material: { resource: string } } }[])[0]!.drops.material.resource =
       'summon_crystal';
     const t = (bad.trials as { tiers: { rewards: { resource: string }[] }[] }[])[0]!;
     t.tiers[0]!.rewards[0]!.resource = 'oak_gem';
-    const c = bad.combat as { damageUpgrades: { cost: { resource: string } }[] };
-    c.damageUpgrades[0]!.cost.resource = 'oak_gem';
     const found = issues(bad).join('\n');
     expect(found).toContain(
       'drops › material › resource: "summon_crystal" is crystal, expected material',
     );
     expect(found).toContain('rewards › [0] › resource: "oak_gem" is tree_gem, expected material');
-    expect(found).toContain(
-      'damageUpgrades › [0] › cost › resource: "oak_gem" is tree_gem, expected currency',
-    );
   });
 
   it('requires trial tiers in increasing score order', () => {

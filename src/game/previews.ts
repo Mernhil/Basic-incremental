@@ -1,53 +1,15 @@
 import type { Content } from '../data';
-import { damageLineOffer, mineLevelOffer, treeLevelOffer, type BuyCount } from './bulk';
-import { averageDps, damageLevel, secondsPerKill } from './combat';
+import { mineLevelOffer, treeLevelOffer, type BuyCount } from './bulk';
 import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { jobProductionPerSecond, mineLevel, treeLevel } from './production';
 import { cloneState, type GameState } from './state';
 
 /**
- * Upgrade previews (DESIGN.md §11, "DPS 12 -> 13, time-to-kill 11h -> 2h", "Oak 4/s -> 5/s"):
+ * Upgrade previews (DESIGN.md §11, "Oak 4/s -> 5/s"):
  * what a purchase would change, worked out on a copy of the state without paying. Max previews
  * the levels Max would buy now (the next level when none is affordable).
  */
-
-/** A damage line purchase: average DPS and time-to-kill against the active dungeon. */
-export interface DamagePreview {
-  /** Levels the purchase buys. */
-  levels: number;
-  dpsBefore: Decimal;
-  dpsAfter: Decimal;
-  /** Seconds to kill the active dungeon's boss; null for a special dungeon or nothing active. */
-  ttkBefore: number | null;
-  ttkAfter: number | null;
-}
-
-function ttk(state: GameState, content: Content, modifiers: readonly Modifier[]): number | null {
-  const id = state.activeDungeonId;
-  return id && content.dungeonById.has(id) ? secondsPerKill(state, content, id, modifiers) : null;
-}
-
-/** Previews buying `count` levels of a damage line; null for an unknown line or bad count. */
-export function previewDamageLine(
-  state: GameState,
-  content: Content,
-  upgradeId: string,
-  count: BuyCount = 1,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): DamagePreview | null {
-  const offer = damageLineOffer(state, content, upgradeId, count, modifiers);
-  if (!offer) return null;
-  const after = cloneState(state);
-  after.combat.damageLevels[upgradeId] = damageLevel(state, upgradeId) + offer.count;
-  return {
-    levels: offer.count,
-    dpsBefore: averageDps(state, content, state.activeDungeonId, modifiers),
-    dpsAfter: averageDps(after, content, after.activeDungeonId, modifiers),
-    ttkBefore: ttk(state, content, modifiers),
-    ttkAfter: ttk(after, content, modifiers),
-  };
-}
 
 /** A tree or mine level purchase: the gem per second before and after (one of each, so one number). */
 export interface MinePreview {

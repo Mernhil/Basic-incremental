@@ -136,8 +136,6 @@ export interface ProductionState {
 }
 
 export interface CombatState {
-  /** Damage upgrade line id -> level bought with ore. Kept through prestige. */
-  damageLevels: Record<string, number>;
   /** Dungeon id -> boss kills, ever. */
   kills: Record<string, number>;
   /** The running special-dungeon attempt (only meaningful while a trial is active). */
@@ -165,7 +163,6 @@ export interface BurstGauge {
 
 export function initialCombat(): CombatState {
   return {
-    damageLevels: {},
     kills: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     trialBest: {},
@@ -274,7 +271,6 @@ export function cloneProduction(p: ProductionState): ProductionState {
 
 export function cloneCombat(c: CombatState): CombatState {
   return {
-    damageLevels: { ...c.damageLevels },
     kills: { ...c.kills },
     trialAttempt: { ...c.trialAttempt },
     trialBest: { ...c.trialBest },

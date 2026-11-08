@@ -3,7 +3,6 @@ import {
   averageDamage,
   averageDps,
   burstStats,
-  buyDamageLevels,
   buyMineLevels,
   critFactor,
   critStats,
@@ -11,13 +10,12 @@ import {
   effectiveDamage,
   jobProductionPerSecond,
   killsPerMinute,
-  previewDamageLine,
   previewMineLevel,
   secondsPerKill,
   stageReadout,
   type GameState,
 } from '../src/game';
-import { bareState, content, freshState } from './helpers';
+import { content, freshState } from './helpers';
 
 function rich(state: GameState = freshState()): GameState {
   for (const id of Object.keys(state.resources)) state.resources[id] = new Decimal(1e9);
@@ -66,37 +64,6 @@ describe('live stage readouts (DESIGN.md §11)', () => {
 });
 
 describe('upgrade previews (DESIGN.md §11)', () => {
-  it('previews a damage purchase without paying: DPS and time-to-kill before and after', () => {
-    const state = rich();
-    const p = previewDamageLine(state, content, 'copper_edge', 10)!;
-    const bought = buyDamageLevels(state, content, 'copper_edge', 10);
-    if (!bought.ok) throw new Error(bought.reason);
-    expect(p.levels).toBe(10);
-    expect(p.dpsBefore.eq(averageDps(state, content))).toBe(true);
-    expect(p.dpsAfter.eq(averageDps(bought.state, content))).toBe(true);
-    expect(p.ttkBefore).toBeCloseTo(secondsPerKill(state, content, 'mossy_cellar')!, 9);
-    expect(p.ttkAfter).toBeCloseTo(secondsPerKill(bought.state, content, 'mossy_cellar')!, 9);
-    expect(state.combat.damageLevels['copper_edge']).toBeUndefined();
-  });
-
-  it('shows the milestone jump when the purchase reaches level 25', () => {
-    const state = bareState();
-    state.combat.damageLevels = { copper_edge: 24 };
-    const p = previewDamageLine(state, content, 'copper_edge', 1)!;
-    // 1 start + 24 -> 1 start + 25 x 2: 25 -> 51 base damage.
-    expect(p.dpsAfter.div(p.dpsBefore).toNumber()).toBeCloseTo(51 / 25, 9);
-  });
-
-  it('previews Max with the affordable count, and has no time-to-kill without a dungeon', () => {
-    const state = rich();
-    state.activeDungeonId = null;
-    const p = previewDamageLine(state, content, 'copper_edge', 'max')!;
-    expect(p.levels).toBeGreaterThan(1);
-    expect(p.ttkBefore).toBeNull();
-    expect(p.ttkAfter).toBeNull();
-    expect(previewDamageLine(state, content, 'nope', 1)).toBeNull();
-  });
-
   it('previews a mine level purchase as its gem per second', () => {
     const state = rich();
     const p = previewMineLevel(state, content, 'copper_quarry', 5)!;

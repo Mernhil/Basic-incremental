@@ -1,5 +1,5 @@
 // Clicks through the Dungeons page in the running dev app (see shoot-app.mjs for how to start it):
-// fight another dungeon, check Home follows, buy a damage level, switch back.
+// fight another dungeon, check Home follows, switch back.
 import { chromium } from 'playwright';
 const browser = await chromium.connectOverCDP('http://localhost:9222');
 const page = browser

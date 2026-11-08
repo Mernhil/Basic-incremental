@@ -217,7 +217,7 @@ describe('card ranks and portals', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     rules['startCards'] = ['ember_squire', 'shield_warden', 'missing_card'];
-    rules['levelCaps'].gold = [60, 64, 68, 66, 76, 80];
+    rules['levelCaps'].gold = 30; // below Silver's 40
     const issues = issuesFor(bad);
     expect(issues.some((i) => i.includes('startCards › [1]: a start card already leads'))).toBe(
       true,
@@ -471,11 +471,10 @@ describe('the three loops (DESIGN.md §3)', () => {
     expect(c.resourceById.get('moss_sigil')).toBeUndefined();
   });
 
-  it('prices tree levels, mine levels and damage lines in Money, and unlocks in gems', () => {
+  it('prices tree levels and mine levels in Money, and unlocks in gems', () => {
     const c = loadContent();
     for (const t of c.trees) expect(t.level.cost.resource).toBe('money');
     for (const m of c.mines) expect(m.level.cost.resource).toBe('money');
-    for (const u of c.combat.damageUpgrades) expect(u.cost.resource).toBe('money');
     for (const t of c.trees) {
       for (const cost of t.unlockCost)
         expect(c.resourceById.get(cost.resource)!.kind).toBe('tree_gem');
@@ -524,11 +523,11 @@ describe('crit and milestone data (DESIGN.md §6, §4)', () => {
   });
 
   it('rejects milestones every 0 levels or with a multiplier below 1', () => {
-    const lines = combat.damageUpgrades.map((u) => ({
-      ...u,
-      milestones: { every: 0, multiplier: '0.5' },
+    const bad = mines.map((m) => ({
+      ...m,
+      level: { ...m.level, milestones: { every: 0, multiplier: '0.5' } },
     }));
-    const issues = issuesFor(raw({ combat: { ...combat, damageUpgrades: lines } }));
+    const issues = issuesFor(raw({ mines: bad }));
     expect(issues.some((i) => i.includes('milestones › every'))).toBe(true);
     expect(issues.some((i) => i.includes('milestones › multiplier'))).toBe(true);
   });

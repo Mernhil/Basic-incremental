@@ -379,13 +379,6 @@ function checkUpgrades(
         c.mines.some((m) => m.id === k.mine),
         k.mine,
       );
-    if (k.kind === 'damageLevel') {
-      missing(
-        'damage line',
-        c.combat.damageUpgrades.some((d) => d.id === k.line),
-        k.line,
-      );
-    }
     if (k.kind === 'bossKills') {
       missing(
         'dungeon',
@@ -705,11 +698,13 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
         used.map((l) => l.resource),
       );
     }
-    const caps = c.cardRules.levelCaps[tier];
-    if (caps.some((cap, i) => i > 0 && cap < caps[i - 1]!)) {
+  }
+  RANK_TIERS.forEach((tier, i) => {
+    const before = RANK_TIERS[i - 1];
+    if (before && c.cardRules.levelCaps[tier] < c.cardRules.levelCaps[before]) {
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
     }
-  }
+  });
   for (const tier of ['bronze', 'silver', 'gold'] as const) {
     for (const job of JOBS) {
       const costs = c.cardRules.tierUp[tier][job];
@@ -747,7 +742,7 @@ function checkProgression(c: Pick<Content, 'cards' | 'progression'>, issues: str
   });
 }
 
-/** Dungeons, trials and damage upgrades must point at existing things of the right kind. */
+/** Dungeons and trials must point at existing things of the right kind. */
 function checkCombat(
   c: Pick<Content, 'resources' | 'dungeons' | 'trials' | 'combat'>,
   issues: string[],
@@ -791,16 +786,6 @@ function checkCombat(
         ),
       ),
     );
-  });
-
-  // Damage is bought with Money (DESIGN.md §4, §3), one line per mine gem (11.8).
-  const seen = new Set<string>();
-  c.combat.damageUpgrades.forEach((u, i) => {
-    const where = `combat.json › damageUpgrades › [${i}]`;
-    if (seen.has(u.id)) issues.push(`${where} › id: duplicate id "${u.id}"`);
-    seen.add(u.id);
-    checkResource(`${where} › cost › resource`, u.cost.resource, 'currency');
-    checkResource(`${where} › gem`, u.gem, 'mine_gem');
   });
 }
 

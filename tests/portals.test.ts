@@ -12,7 +12,7 @@ import {
   type Modifier,
 } from '../src/game';
 import { RARITIES } from '../src/data';
-import { constantRng, content, freshState } from './helpers';
+import { constantRng, content, freshState, withDps } from './helpers';
 
 const PORTAL = 'card_portal';
 const withSigils = (n: number): GameState => {
@@ -141,8 +141,7 @@ describe('Card Portal (DESIGN.md §7, beta portals)', () => {
 describe('Card Portal replaces the boss card drop (DESIGN.md §5)', () => {
   it('boss kills no longer drop cards', () => {
     const state = freshState();
-    state.combat.damageLevels['copper_edge'] = 200;
-    const { state: after, report } = advance(state, content, 60_000, constantRng(0));
+    const { state: after, report } = advance(state, withDps(1e6, content), 60_000, constantRng(0));
     expect(report.bossKills).toBeGreaterThan(0);
     expect(report.cardDrops).toEqual([]);
     expect(Object.keys(after.cards.owned).sort()).toEqual(Object.keys(state.cards.owned).sort());

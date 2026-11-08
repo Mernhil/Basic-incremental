@@ -11,17 +11,16 @@ import {
   SaveError,
   serializeState,
 } from '../src/game';
-import { constantRng, bareState, plainContent as content, freshState } from './helpers';
+import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
 
-/** Damage levels that make the first boss fall twice in 25 s (about 5000 dps at 60,000 HP). */
-const STRONG_LEVELS = Math.round((4999 * content.dungeons[0]!.boss.hp.toNumber()) / 60_000);
+/** Damage that makes the first boss fall twice in 25 s (about 5000 dps at 60,000 HP). */
+const STRONG_DPS = 1 + Math.round((4999 * content.dungeons[0]!.boss.hp.toNumber()) / 60_000);
 
 /** A state with non-trivial values everywhere. */
 function busyState() {
   const strong = bareState();
-  strong.combat.damageLevels = { copper_edge: STRONG_LEVELS };
   // 25 s plus one signature attack: 2.9 times the first boss HP = 2 kills (2 rares).
-  let state = advance(strong, content, 25_000, constantRng(0.001)).state;
+  let state = advance(strong, withDps(STRONG_DPS), 25_000, constantRng(0.001)).state;
   state = {
     ...state,
     prestigeCount: 3,
@@ -54,7 +53,6 @@ describe('save round-trip', () => {
     expect(serializeState(loaded.state)).toEqual(serializeState(state));
     expect(loaded.state.resources['oak_gem']!.eq(new Decimal('1.5e500'))).toBe(true);
     expect(loaded.state.combat.trialAttempt.dealt.eq(new Decimal('3e400'))).toBe(true);
-    expect(loaded.state.combat.damageLevels).toEqual({ copper_edge: STRONG_LEVELS });
     expect(loaded.state.combat.kills).toEqual({ mossy_cellar: 2 });
     expect(loaded.state.inventory['holo_hex']).toBe(2);
     expect(loaded.state.pity['root_warden']).toBe(17);
@@ -277,7 +275,7 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     expect(state.resources['frost_sigil']!.toNumber()).toBe(5);
     expect('moss_sigil' in state.resources).toBe(false);
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
-    expect(state.combat.damageLevels).toEqual({ copper_edge: 1 });
+    expect('damageLevels' in state.combat).toBe(false);
     expect(state.account.skills).toEqual({ crystal_luck: 2 });
     // Start 100 + two copper levels (15 + 19.5) + a Copper Edge level (10) + the one plot (25),
     // which is paid back once, when plots go away (v16).
@@ -361,5 +359,44 @@ describe('save format v16: one of each (DESIGN.md §4)', () => {
     state.resources['money'] = new Decimal(321);
     const { state: back } = readSave(createSaveText(state, NOW), content);
     expect(back.resources['money']!.toNumber()).toBe(321);
+  });
+});
+
+describe('save format v17: damage comes from cards (DESIGN.md §5)', () => {
+  it('loads a v16 save: lines and Temper items are gone and their Money comes back', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.version = 16;
+    json.state.resources.money = '100';
+    json.state.combat.damageLevels = { copper_edge: 3, iron_edge: 1 };
+    json.state.upgrades.owned = ['copper_temper'];
+    const { state } = readSave(JSON.stringify(json), content);
+    expect('damageLevels' in state.combat).toBe(false);
+    expect(state.upgrades.owned).not.toContain('copper_temper');
+    // Copper Edge 10 + 12 + 13, Iron Edge 200, Copper Temper 5,000.
+    expect(state.resources['money']!.toNumber()).toBe(100 + 35 + 200 + 5000);
+  });
+
+  it('caps the level of a card above its new cap, so it can tier up at once', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.version = 16;
+    json.state.cards.owned.ember_squire = {
+      ...json.state.cards.owned.ember_squire,
+      stars: 6,
+      level: 40,
+      xp: '99',
+    };
+    const { state } = readSave(JSON.stringify(json), content);
+    const squire = state.cards.owned['ember_squire']!;
+    expect(squire.level).toBe(20);
+    expect(squire.stars).toBe(6);
+    expect(squire.xp.eq(0)).toBe(true);
+  });
+
+  it('writes the current version, so a v17 save never pays the refund twice', () => {
+    const state = freshState();
+    state.resources['money'] = new Decimal(321);
+    const { state: back } = readSave(createSaveText(state, NOW), content);
+    expect(back.resources['money']!.toNumber()).toBe(321);
+    expect(CURRENT_SAVE_VERSION).toBe(17);
   });
 });
