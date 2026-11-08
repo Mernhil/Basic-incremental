@@ -14,6 +14,7 @@ Craft notes for static sprites in the Brave Frontier-style cel look. DESIGN.md Â
 8. Common mistakes
 9. Learned from Brave Frontier sprites (Behance)
 10. Learned from The Spriters Resource sheets
+11. PixelLab output versus this game's look
 
 ## 1. What the Brave Frontier look is made of
 
@@ -129,3 +130,14 @@ Studied the extracted sheets of a fire blob creature and a goblin (base form and
 
 - Field sprites are tiny chibis (about 24 to 32 px) with oversized heads and weapons, a dark outline and three tones per material: useful as a model for very small icons and markers.
 - Its backgrounds are painted, not pixel art; the pixel sprites sit on top of painted scenery. Nothing to copy for this game's plain table, but it confirms that the sprite, not the scenery, carries the pixel look.
+
+## 11. PixelLab output versus this game's look
+
+Learned on the concept sheet 1 passes (2026-11-08), when the user found the first PixelLab sprites too big and "blended".
+
+- **`image_to_pixelart` copies the source's painting, not our rendering.** Faithful conversion of painted concept art keeps its mottled shading, dozens of near-identical tones, no ink line between parts and a pale halo where the dark outline should be. It is right for silhouettes and colours, wrong as finished art.
+- **For "this shape, that rendering", use `create_image_pro`** with two labelled `reference_images` (the concept crop: "the thing to draw, its shape, parts and colours"; an old in-game sprite: "rendering: dark ink outline, flat cel shading") and the old sprite as `style_image` with `style_copy` outline, shading and detail (not the palette, so the concept's colours stay). It returns crisp, ink-outlined, cel-shaded candidates. Pixflux with an init image, a forced palette, a black outline and flat shading keeps the shape but stays soft.
+- **Pro's canvas is its size control.** From 86 px up it returns 4 candidates that fill the canvas edge to edge; from 65 to 84 px it returns 9 with a margin, at about 70-80% of the canvas. So to match an old sprite's footprint, generate on a smaller canvas and pad (never rescale) to the game size, centred on the old sprite's centre. Measure bbox and opaque mass against the old counterpart (`design/pixel/concept-sheet-1-new/footprint.py`).
+- **Match mass, not only the box.** Concept weapons have heavy heads and thick shafts; at the old bounding box they read much bigger than our thin-shafted items. Matching opaque-pixel mass within about 10% is what makes them look the same size, even if the new sprite ends up a little shorter.
+- **Clean up gently.** Pro already draws a dark outline: snap its dark edge pixels to the ink `#1a1020` and add ink only where the edge is light. Never convert the outermost pixels to ink on top, which doubles the line and eats thin blades. Cut the palette only to about 24 tones: harder median-cut quantising wipes out small accents such as a gold guard. Fix only truly lone pixels. Pro's leftover single pixels are mostly deliberate texture (wood grain, grip wrap), not blending.
+- **`correct_pixelart` did not help here.** It returns more near-duplicate colours and no visible change on pro output.
