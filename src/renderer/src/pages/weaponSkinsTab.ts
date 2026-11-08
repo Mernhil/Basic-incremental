@@ -5,6 +5,7 @@ import { frame, h } from '../shell/shell';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
 import { weaponArtMarkup } from './loadoutCards';
+import { cardFaceFor } from './cardFaceModel';
 import type { PageContext } from './production';
 import {
   weaponSkinsSignature,
@@ -44,10 +45,8 @@ export function createWeaponSkinsTab(
       item: weaponArtMarkup(v.weapon, v.previewArt),
       element: card.element,
       rank,
-      stats: [
-        { label: t.level, value: '1' },
-        { label: t.hitsEvery, value: '1s' },
-      ],
+      rarity: card.rarity,
+      face: cardFaceFor(content, state, card.id) ?? undefined,
       theme: resolveCard(content, state.cosmetics.loadout, {
         id: card.id,
         rank,
