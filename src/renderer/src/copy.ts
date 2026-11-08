@@ -77,6 +77,20 @@ export const COPY = {
         dungeon ? `furthest dungeon ${dungeon}` : 'no dungeon cleared'
       }`,
   },
+  /** The full-art card face (DESIGN.md §5). */
+  card: {
+    hitsEvery: (seconds: string) => `hits every ${seconds}`,
+    level: (level: number, cap: number) => `Level ${level}/${cap}`,
+    rarity: {
+      common: 'Common',
+      rare: 'Rare',
+      epic: 'Epic',
+      legendary: 'Legendary',
+      mythic: 'Mythic',
+      exotic: 'Exotic',
+      void: 'Void',
+    },
+  },
   table: {
     boss: 'Boss',
     health: 'Loadout health',

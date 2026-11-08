@@ -1,6 +1,5 @@
 import type { Content } from '../../../data';
 import {
-  burstStats,
   cardInfo,
   cardItem,
   resolveCard,
@@ -12,6 +11,7 @@ import { COPY } from '../copy';
 import { evolutionArt, EVOLUTIONS, type Evolution } from '../art/evolutions';
 import { itemArt } from '../art/items';
 import type { CardProps } from '../ui/card';
+import { cardFaceOf } from './cardFaceModel';
 
 /**
  * A card's item art: its unique item at the Unique tier (DESIGN.md §5), otherwise its item drawn
@@ -41,14 +41,6 @@ export function loadoutProps(
   const info = cardInfo(state, content, cardId, mods);
   if (!info?.owned || !info.rank) return null;
   const { card, rank } = info;
-  const level = { label: 'Level', value: `${info.owned.level}/${info.levelCap}` };
-  const stats: CardProps['stats'] =
-    role === 'main'
-      ? [
-          level,
-          { label: 'Hits every', value: `${burstStats(content, 'fighting', mods).interval}s` },
-        ]
-      : [level, { label: 'Bonus', value: card.support.description }];
   return {
     name: card.name,
     label: role === 'main' ? COPY.table.main : COPY.table.support,
@@ -57,7 +49,8 @@ export function loadoutProps(
     item: cardItemArt(content, card.id, info.owned),
     element: card.element,
     rank,
-    stats,
+    rarity: card.rarity,
+    face: cardFaceOf(content, info, mods),
     theme: resolveCard(content, state.cosmetics.loadout, {
       id: card.id,
       rank,
