@@ -11,9 +11,9 @@ One line per task in flight, so parallel sessions do not collide. Read this at t
 
 ## In flight
 
-| Branch                     | Worktree    | Owner agent | Files / area                                       | Started    |
-| -------------------------- | ----------- | ----------- | -------------------------------------------------- | ---------- |
-| chore/session-coordination | C:/bi-coord | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md | 2026-11-08 |
-| art/sheet-1-clean          | C:/bi-s1    | pixel-art   | art/pixel/hand coins, medals, maul, bow, evo-*     | 2026-11-08 |
-| art/concept-sheet-1-new    | C:/bi-art   | pixel-art   | design/pixel/concept-sheet-1-new (drafts only)     | 2026-11-08 |
-| claude/summon-deck-table-ef24ec | (this worktree) | ui | src/renderer/src/pages/summon*, docs/DESIGN.md §7 and §10, docs/CODE_MAP.md | 2026-11-08 |
+| Branch                          | Worktree        | Owner agent | Files / area                                                                | Started    |
+| ------------------------------- | --------------- | ----------- | --------------------------------------------------------------------------- | ---------- |
+| chore/session-coordination      | C:/bi-coord     | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md                          | 2026-11-08 |
+| art/sheet-1-clean               | C:/bi-s1        | pixel-art   | art/pixel/hand coins, medals, maul, bow, evo-*                              | 2026-11-08 |
+| art/concept-sheet-1-new         | C:/bi-art       | pixel-art   | design/pixel/concept-sheet-1-new (drafts only)                              | 2026-11-08 |
+| claude/summon-deck-table-ef24ec | (this worktree) | ui          | src/renderer/src/pages/summon*, docs/DESIGN.md §7 and §10, docs/CODE_MAP.md | 2026-11-08 |
