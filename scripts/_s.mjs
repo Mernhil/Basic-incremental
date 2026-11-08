@@ -1,0 +1,12 @@
+import { chromium } from 'playwright';
+const b = await chromium.connectOverCDP('http://localhost:9412');
+const page = b.contexts().flatMap(c=>c.pages()).find(p=>!p.url().startsWith('devtools'));
+const out='design/screens-fullart/rebased/';
+await page.getByText('Cards',{exact:true}).first().click(); await page.waitForTimeout(800);
+await page.screenshot({path:out+'cards.png'});
+await page.locator('.card, [class*=card]').nth(0).click().catch(()=>{}); await page.waitForTimeout(500);
+await page.screenshot({path:out+'cards-click.png'});
+await page.keyboard.press('Escape');
+await page.getByText('Dungeons',{exact:true}).first().click(); await page.waitForTimeout(600);
+await page.getByText('Upgrades and floors').first().click().catch(()=>{}); await page.waitForTimeout(800);
+await page.screenshot({path:out+'drawer.png'});
