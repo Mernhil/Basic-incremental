@@ -138,7 +138,16 @@ for (const dpr of dprs) {
       writeFileSync(`${shots}/${id}-dpr${dpr}.png`, Buffer.from(data, 'base64'));
     }
     const styleTag = await page.addStyleTag({ content: still });
-    await page.evaluate(() => document.getAnimations().forEach((a) => a.cancel()));
+    // finish what can finish (a flying coin removes itself then), cancel what loops
+    await page.evaluate(() =>
+      document.getAnimations().forEach((a) => {
+        try {
+          a.finish();
+        } catch {
+          a.cancel();
+        }
+      }),
+    );
     const list = await page.evaluate(`(${measure})()`);
     await styleTag.evaluate((el) => el.remove());
     const real = await page.evaluate(() => window.devicePixelRatio);

@@ -176,6 +176,13 @@
   text-align: left;
   cursor: pointer;
 }
+/* the slot rows show a small window onto a sprite swatch, cropped, not shrunk: the 1x sprite is
+   bigger than the 38 px swatch (DESIGN.md §12 Clean pixels) */
+.wd-slot .cs[data-slot='starlight'],
+.wd-slot .cs[data-slot='sticker'],
+.wd-slot .cs[data-slot='nodes'] {
+  overflow: hidden;
+}
 .wd-slots--right .wd-slot {
   box-shadow:
     inset 0 0 0 1px var(--bi-frame-title-line),
