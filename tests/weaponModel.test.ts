@@ -38,7 +38,8 @@ describe('weapon panel model', () => {
     expect(w.atCap).toBe(false);
     expect(w.xp).toBeGreaterThan(0);
     expect(w.xp).toBeLessThan(1);
-    expect(w.xpText).toMatch(/^60 \/ [\d.]+ XP$/);
+    expect(w.xpNow).toBe('60');
+    expect(w.xpNeed).toMatch(/^[\d.]+$/);
     expect(w.tierUp?.phase).toBe('leveling');
     expect(w.tierUp?.lead).toBe(`Reach Lv ${w.cap} to tier up. It costs:`);
     expect(w.tierUp?.action).toBe('Tier up to Gold');
@@ -64,7 +65,7 @@ describe('weapon panel model', () => {
     const w = view('ember_squire', { tier: 'bronze', level: 20 }, '0', extra)!;
     expect(w.atCap).toBe(true);
     expect(w.xp).toBe(1);
-    expect(w.xpText).toBe('');
+    expect(w.xpNow).toBe('');
     expect(w.tierUp?.phase).toBe('ready');
     expect(w.tierUp?.ready).toBe(true);
     expect(w.tierUp?.costs.map((c) => c.id)).toEqual(price.map((p) => p.resource));

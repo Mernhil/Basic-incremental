@@ -53,8 +53,9 @@ export interface WeaponView {
   atCap: boolean;
   /** Progress to the next level, 0..1 (1 at the cap). */
   xp: number;
-  /** "121 / 190 XP", or empty at the cap. */
-  xpText: string;
+  /** XP held and XP the next level takes, as numbers to show ("121", "190"); empty at the cap. */
+  xpNow: string;
+  xpNeed: string;
   stars: number;
   /** The star bar towards the next star; null at ★6. */
   starBar: {
@@ -140,6 +141,8 @@ export type ModelResult =
 
 export interface CardsModel {
   entries(state: GameState): CardEntry[];
+  /** One card's entry (cheaper than `entries` when a panel follows a single card), or null. */
+  entry(state: GameState, id: string): CardEntry | null;
   loadout(state: GameState, job: Job): JobLoadout;
   shards(state: GameState): string;
   /** Changes in what the page shows structurally (not per-tick numbers). */
