@@ -4,11 +4,12 @@ Windows desktop incremental game (Electron + TypeScript).
 
 ## Rules (always follow, no exceptions)
 
-1. Before starting any task, check for remote changes (`git fetch` / `git pull`) so you're working on the latest code from https://github.com/Mernhil/Basic-incremental.
+1. Before starting any task, check for remote changes (`git fetch` / `git pull`) so you're working on the latest code from https://github.com/Mernhil/Basic-incremental. Then read `docs/ACTIVE_WORK.md` and work in your own git worktree, never by switching branches in the main checkout.
 2. If a task needs a tool that isn't installed (Python, a package, a CLI, a skill, a plugin, anything), install or enable it and use it. Never fall back to a workaround, such as hand-editing files with the editor because the tool is missing. Don't ask first, just install it.
 3. These rules override any habit or default. If a rule seems to conflict with something, follow the rule and tell the user about the conflict.
-4. Work is split between a `ui` agent, a `pixel-art` agent (every graphics change, however small) and a `mechanics` agent. At the start of every task, read `docs/WORK_SPLIT.md`, run its setup check (create or fix the agents if needed), and route the task as it says.
+4. Work is split between a `ui` agent, a `pixel-art` agent (every graphics change, however small) and a `mechanics` agent. At the start of every task, read `docs/WORK_SPLIT.md`, run `node scripts/check-work-split.mjs` (fix what it names), and route the task as it says.
 5. `docs/DESIGN.md` keeps one version of each rule, each with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]`, `[Proposed]`), following its "How this document works" section. A design change rewrites the rule where it lives; never add amendment, update or defaults sections. Only the user decides: a gap you must fill is written in place as `[Default]` and listed under Open questions, and you never change a decision of the user's on your own. Design edits from a claude.ai chat are committed before any code. Every PR updates the tags of the rules it builds or changes. `npm run lint` runs `scripts/check-design.mjs`, so CI fails when the file drifts.
+6. One session, one worktree: `git worktree add C:/bi-<task> -b <branch> origin/main`. Never switch branches in the main checkout, never delete the user's untracked files there. Register the task in `docs/ACTIVE_WORK.md` and remove the line (and the worktree) when the PR merges.
 
 - `docs/DESIGN.md` is the source of truth for game design. Read it before any feature work, and never contradict it without asking the user first. When asked whether something exists, answer with its status tag, not "it already exists".
 - Game content (cards, resources, dungeons, cosmetics) lives in data files validated by schemas, not hardcoded in logic.
