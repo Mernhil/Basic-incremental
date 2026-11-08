@@ -50,10 +50,13 @@ export interface SkinSelection {
 }
 
 export function weaponOptions(content: Content): WeaponOption[] {
-  return [...content.weaponSkinsByWeapon.keys()].map((kind) => ({
-    kind,
-    name: content.progression.evolutions.items.find((i) => i.kind === kind)?.name ?? kind,
-  }));
+  // Generic kinds with legacy skins only (no base art) wait for the Legacy group of the new tab (ui agent).
+  return [...content.weaponSkinsByWeapon.values()]
+    .filter((set) => set.baseArt !== undefined)
+    .map(({ weapon: kind }) => ({
+      kind,
+      name: content.progression.evolutions.items.find((i) => i.kind === kind)?.name ?? kind,
+    }));
 }
 
 export function weaponSkinsView(

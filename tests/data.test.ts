@@ -495,6 +495,7 @@ describe('the three loops (DESIGN.md §3)', () => {
     expect(c.allPortals.map((p) => [p.id, p.cost.resource])).toEqual([
       ['card_portal', 'summon_crystal'],
       ['wardrobe_gate', 'glamour_crystal'],
+      ['legacy_gate', 'glamour_crystal'],
     ]);
   });
 

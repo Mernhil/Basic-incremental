@@ -910,7 +910,12 @@ export const wearRulesSchema = z.strictObject({
   exclusive: rankSchema,
 });
 
-export const PORTAL_KINDS = ['cards', 'cosmetics'] as const;
+/** What a portal's pool holds: cards, cosmetics, or legacy weapon skins (the Legacy Gate). */
+/** Skin pools list skin ids, which may use hyphens (a plain snake_case id is a valid one too). */
+const skinArtId = z
+  .string()
+  .regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/, 'ids are lowercase letters, digits, "-" or "_"');
+export const PORTAL_KINDS = ['cards', 'cosmetics', 'skins'] as const;
 
 /**
  * A summon portal (DESIGN.md §7, "Beta portals"). Every portal offers a single pull and a
@@ -924,7 +929,13 @@ export const portalSchema = z.strictObject({
   cost: z.strictObject({ resource: id, single: positiveDecimal, ten: positiveDecimal }),
   /** The pool: one entry per item, picked by weight. Items must match the portal kind. */
   pool: z
-    .array(z.strictObject({ itemId: id, rarity: z.enum(RARITIES), weight: z.number().positive() }))
+    .array(
+      z.strictObject({
+        itemId: skinArtId,
+        rarity: z.enum(RARITIES),
+        weight: z.number().positive(),
+      }),
+    )
     .min(1),
   /** Hard pity: after `threshold - 1` pulls without this rarity or better, the next one is it
    *  (`summon.pityThreshold`, scope: portal). Counted per portal, kept through prestige. */
@@ -937,6 +948,9 @@ export const portalSchema = z.strictObject({
   /** False while the portal waits for its screen (the Wardrobe Gate ships with the Wardrobe):
    *  it is left out of `content.portals` (still in `content.allPortals`). */
   enabled: z.boolean().default(true),
+  /** Skin portals: a skin you already own pays back this fraction of a single pull's price (in the
+   *  portal resource). Ignored by other kinds. */
+  duplicatePayback: z.number().min(0).max(1).default(0.2),
 });
 
 /**
@@ -1236,10 +1250,6 @@ export const upgradesFileSchema = z.strictObject({
  * Weapon skins (weaponSkins.json): alternate art for a weapon, chosen per weapon kind (not per
  * card). `weapon` is a generic item kind or a unique item kind; `baseArt` is the unskinned art.
  */
-/** Skin and art ids may use hyphens (`skin-01`, `skin-scythe-01`). */
-const skinArtId = z
-  .string()
-  .regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/, 'ids are lowercase letters, digits, "-" or "_"');
 export const weaponSkinSchema = z.strictObject({
   id: skinArtId,
   name,
@@ -1247,10 +1257,16 @@ export const weaponSkinSchema = z.strictObject({
   art: skinArtId,
   /** Price in the skin's own currency later; 0 = free (all skins are free in the test). */
   cost: z.number().int().min(0),
+  /** A legacy skin (DESIGN.md §8): worn by the whole generic weapon kind, owned only after it is
+   *  pulled from the Legacy Gate. Needs a `rarity`; other skins must not have one. */
+  legacy: z.boolean().optional(),
+  /** Rarity of a legacy skin: the Legacy Gate rolls it at this rarity. */
+  rarity: z.enum(RARITIES).optional(),
 });
 export const weaponSkinSetSchema = z.strictObject({
   weapon: z.enum([...ITEM_KINDS, ...UNIQUE_ITEM_KINDS]),
-  baseArt: skinArtId,
+  /** The unskinned art. Absent for a generic kind (its art varies by rarity): unskinned = no art id. */
+  baseArt: skinArtId.optional(),
   skins: z.array(weaponSkinSchema).min(1),
 });
 

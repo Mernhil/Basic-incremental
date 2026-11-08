@@ -51,6 +51,8 @@ function progressedRun(): GameState {
   state.cosmetics.owned['holo_hex'] = { level: 1, copies: 0 };
   state.mastery.gemTiers = { oak_gem: 3 };
   state.mastery.bossTiers = { mossy_cellar: 2 };
+  state.legacySkins = ['legacy-staff-01'];
+  state.weaponSkins = { staff: 'legacy-staff-01' };
   return state;
 }
 
@@ -151,6 +153,13 @@ describe('ascend', () => {
     expect(s.resources['money']!.eq(content.resourceById.get('money')!.startAmount!)).toBe(true);
     expect(s.resources['moss_core']!.toNumber()).toBe(0);
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
+  });
+
+  it('keeps the owned legacy weapon skins and the one worn', () => {
+    const result = ascend(progressedRun(), content);
+    if (!result.ok) throw new Error(result.reason);
+    expect(result.state.legacySkins).toEqual(['legacy-staff-01']);
+    expect(result.state.weaponSkins).toEqual({ staff: 'legacy-staff-01' });
   });
 
   it('keeps cards, cosmetics, unlocks, mastery, medals and pity', () => {

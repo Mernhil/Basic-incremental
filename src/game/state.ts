@@ -34,6 +34,8 @@ export interface GameState {
   /** Weapon kind -> the chosen skin id (weaponSkins.json). Missing = the unskinned weapon. Kept through
    *  prestige. Not a cosmetic slot. */
   weaponSkins: Record<string, string>;
+  /** Owned legacy weapon skin ids (weaponSkins.json), earned from the Legacy Gate. Kept through prestige. */
+  legacySkins: string[];
   /** Owned cards, the loadout of each job and shards. See cards.ts. */
   cards: CardState;
   /** Gem mastery totals and settled mastery tiers (DESIGN.md §4, §6). Kept through prestige. */
@@ -213,6 +215,7 @@ export function createInitialState(content: Content): GameState {
     inventory: {},
     prestigeCount: 0,
     weaponSkins: {},
+    legacySkins: [],
     stats: { playTimeMs: 0, bossKills: 0, longestOfflineMs: 0 },
     achievements: {},
     shardShop: {},
@@ -244,6 +247,7 @@ export function cloneState(state: GameState): GameState {
     inventory: { ...state.inventory },
     stats: { ...state.stats },
     weaponSkins: { ...state.weaponSkins },
+    legacySkins: [...state.legacySkins],
     cards: cloneCards(state.cards),
     mastery: cloneMastery(state.mastery),
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),

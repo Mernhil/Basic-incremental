@@ -1,4 +1,5 @@
 import { RARITIES, type Content, type Portal, type Rarity } from '../data';
+import { Decimal } from './num';
 import { grantCard } from './cards';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { canAfford, finalPrice, pay, type Price } from './production';
@@ -23,6 +24,12 @@ export type PullCount = 1 | 10;
 /** What a cosmetic pulled turned into: a new item, or a copy that feeds its upgrade levels. */
 export type CosmeticGain = { kind: 'new' } | { kind: 'copy'; copies: number };
 
+/**
+ * What a legacy skin pulled turned into: a skin not owned before, or a repeat that paid part of
+ * the pull back in the portal's currency (`amount` of `resource`).
+ */
+export type SkinGain = { kind: 'new' } | { kind: 'payback'; resource: string; amount: Decimal };
+
 /** One pull, in order, ready for the reveal. */
 export interface PullResult {
   itemId: string;
@@ -34,7 +41,7 @@ export interface PullResult {
   /** Upgraded by the 10-pull guarantee. */
   guaranteed: boolean;
   /** What it became in the collection. */
-  gain: CardGain | CosmeticGain;
+  gain: CardGain | CosmeticGain | SkinGain;
 }
 
 export type PullFailure =
@@ -93,7 +100,20 @@ function grantItem(state: GameState, content: Content, portal: Portal, itemId: s
   if (portal.kind === 'cards') {
     return grantCard(state.cards, content, content.cardById.get(itemId)!);
   }
+  if (portal.kind === 'skins') return grantLegacySkin(state, portal, itemId);
   return grantCosmetic(state, itemId);
+}
+
+/** A new legacy skin becomes owned; one already owned pays back a fraction of a single pull. */
+function grantLegacySkin(state: GameState, portal: Portal, skinId: string): SkinGain {
+  if (!state.legacySkins.includes(skinId)) {
+    state.legacySkins.push(skinId);
+    return { kind: 'new' };
+  }
+  const resource = portal.cost.resource;
+  const amount = new Decimal(portal.cost.single).mul(portal.duplicatePayback).round();
+  state.resources[resource] = (state.resources[resource] ?? new Decimal(0)).add(amount);
+  return { kind: 'payback', resource, amount };
 }
 
 /**

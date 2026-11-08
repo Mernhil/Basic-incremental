@@ -24,7 +24,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 20;
+export const CURRENT_SAVE_VERSION = 21;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -60,6 +60,8 @@ export const serializedStateSchema = z.object({
   prestigeCount: z.number().int().min(0),
   /** v20: weapon kind -> chosen skin id. */
   weaponSkins: z.record(z.string(), z.string()),
+  /** v21: owned legacy weapon skin ids. */
+  legacySkins: z.array(z.string()),
   cosmetics: z.object({
     loadout: z.object({
       slots: z.record(z.string(), equippedSchema),
@@ -169,6 +171,7 @@ export function serializeState(state: GameState): SerializedState {
     inventory: { ...state.inventory },
     prestigeCount: state.prestigeCount,
     weaponSkins: { ...state.weaponSkins },
+    legacySkins: [...state.legacySkins],
     stats: { ...state.stats },
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
@@ -257,10 +260,14 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.pity = { ...saved.pity };
   state.inventory = { ...saved.inventory };
   state.prestigeCount = saved.prestigeCount;
-  // Skins that no longer exist (or are no longer available) are dropped.
+  // Unknown legacy skins and repeats are dropped; then worn skins that no longer exist or are
+  // no longer available (including legacy ones not owned) are dropped.
+  state.legacySkins = [...new Set(saved.legacySkins)].filter((id) =>
+    content.legacySkinById.has(id),
+  );
   state.weaponSkins = Object.fromEntries(
     Object.entries(saved.weaponSkins).filter(([weapon, skin]) =>
-      isWeaponSkinAvailable(content, weapon, skin),
+      isWeaponSkinAvailable(state, content, weapon, skin),
     ),
   );
   state.stats = { ...saved.stats };

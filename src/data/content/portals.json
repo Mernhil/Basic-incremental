@@ -479,5 +479,42 @@
     "reveal": {
       "upgradeFlashChance": 0.25
     }
+  },
+  {
+    "id": "legacy_gate",
+    "name": "Legacy Gate",
+    "kind": "skins",
+    "enabled": false,
+    "cost": {
+      "resource": "glamour_crystal",
+      "single": "10",
+      "ten": "100"
+    },
+    "pool": [
+      {
+        "itemId": "legacy-staff-01",
+        "rarity": "mythic",
+        "weight": 3
+      },
+      {
+        "itemId": "legacy-staff-02",
+        "rarity": "exotic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-staff-03",
+        "rarity": "void",
+        "weight": 1
+      }
+    ],
+    "pity": {
+      "rarity": "legendary",
+      "threshold": 90
+    },
+    "tenPullGuarantee": "rare",
+    "reveal": {
+      "upgradeFlashChance": 0.25
+    },
+    "duplicatePayback": 0.2
   }
 ]
