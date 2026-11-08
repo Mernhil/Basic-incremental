@@ -131,3 +131,121 @@
     animation: none;
   }
 }
+
+/* ---- the side stage (Production screen, DESIGN.md §4): a big card, a wide gauge, a support list ---- */
+.pp-party--side {
+  gap: 14px;
+  justify-items: center;
+  align-content: start;
+  width: 100%;
+}
+.pp-meta {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+.pp-gauge--side {
+  position: static;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: auto;
+  background: none;
+  box-shadow: none;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.pp-gauge--side[hidden] {
+  display: none;
+}
+.pp-gauge__track {
+  flex: 1;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+}
+.pp-gauge--side i {
+  border-radius: 0;
+}
+.pp-pattern {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--bi-chrome-ink-muted);
+}
+.pp-sups {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 5px;
+}
+.pp-sup {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 7px;
+  padding: 4px 9px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  color: var(--bi-chrome-ink-muted);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+}
+.pp-sup b {
+  font-size: 12.5px;
+  color: var(--bi-chrome-ink);
+}
+.pp-sup i {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 2px;
+  background: var(--pp-rarity, #9aa4b4);
+  box-shadow: inset 0 0 0 1px #0008;
+}
+.pp-sup i[data-rarity='rare'] {
+  --pp-rarity: #4f86e0;
+}
+.pp-sup i[data-rarity='epic'] {
+  --pp-rarity: #9a6ae0;
+}
+.pp-sup i[data-rarity='legendary'] {
+  --pp-rarity: #e0a43a;
+}
+.pp-sup i[data-rarity='mythic'] {
+  --pp-rarity: #ff3fb4;
+}
+.pp-sup i[data-rarity='exotic'] {
+  --pp-rarity: #ff8a1f;
+}
+.pp-sup i[data-rarity='void'] {
+  --pp-rarity: #6b7280;
+}
+.pp-sup--empty {
+  background: none;
+  box-shadow: none;
+  border: 1px dashed var(--bi-chrome-line);
+}
+.pp-sup.is-pulse {
+  animation: pp-sup-pulse 0.52s ease-out;
+}
+@keyframes pp-sup-pulse {
+  30% {
+    box-shadow:
+      inset 0 0 0 1px var(--pp-glow),
+      0 0 10px var(--pp-glow);
+    background: color-mix(in srgb, var(--pp-glow) 22%, transparent);
+  }
+}
+:root[data-motion='reduced'] .pp-sup.is-pulse {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .pp-sup.is-pulse {
+    animation: none;
+  }
+}
