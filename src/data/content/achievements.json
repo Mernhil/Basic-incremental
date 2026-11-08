@@ -239,12 +239,6 @@
       "stock": null
     },
     {
-      "id": "copy_shield_warden",
-      "reward": { "kind": "card", "card": "shield_warden" },
-      "price": 10,
-      "stock": null
-    },
-    {
       "id": "copy_grove_keeper",
       "reward": { "kind": "card", "card": "grove_keeper" },
       "price": 10,

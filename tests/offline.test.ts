@@ -42,7 +42,7 @@ describe('simulateOffline', () => {
     const main = start.cards.loadouts.fighting.main!;
     expect(summary!.cardXp[main]!.gt(0)).toBe(true);
     // Cards outside every loadout gain nothing and are left out.
-    expect(Object.keys(summary!.cardXp).every((id) => id !== 'shield_warden')).toBe(true);
+    expect(Object.keys(summary!.cardXp).every((id) => id !== 'storm_duelist')).toBe(true);
   });
 
   it('counts knockouts while away', () => {

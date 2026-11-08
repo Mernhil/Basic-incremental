@@ -915,73 +915,8 @@ const gauntlet: Draw = (ri, l) => {
   return g.join('');
 };
 
-/** Bulwark: a heater shield with a boss; trims, emblem, wings and cracks with rarity. */
-const shield: Draw = (ri, l) => {
-  const outer = 'M110 26 L172 46 L168 128 C162 176 136 202 110 218 C84 202 58 176 52 128 L48 46Z';
-  const inner = 'M110 40 L160 56 L156 128 C150 168 130 190 110 202 C90 190 70 168 64 128 L60 56Z';
-  const metal = ri === 6 ? ['#3a3f4a', '#22252e'] : ['#d8dee8', '#98a4b4'];
-  const rimC = ri === 6 ? '#4a4f5e' : l.acc;
-  const g: string[] = [];
-  if (ri >= 5)
-    g.push(
-      `<path d="M52 80 C26 66 12 80 8 104 C20 98 28 100 34 104 C22 112 20 126 22 138 C32 128 42 126 50 128Z M168 80 C194 66 208 80 212 104 C200 98 192 100 186 104 C198 112 200 126 198 138 C188 128 178 126 170 128Z" fill="${ri === 6 ? '#2a2e38' : '#f0f4ff'}" ${ink(3)}/>`,
-    );
-  g.push(
-    `<path d="${outer}" fill="${rimC}" ${ink(3.4)}/>`,
-    `<path d="${inner}" fill="${metal[0]}" ${ink(2.4)}/>`,
-  );
-  g.push(
-    `<path d="M110 40 L160 56 L156 128 C150 168 130 190 110 202Z" fill="${metal[1]}" opacity=".7"/>`,
-  );
-  g.push(
-    `<path d="M66 60 L106 46" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".8"/>`,
-  );
-  // rivets on the rim
-  for (const [x, y] of [
-    [60, 52],
-    [160, 52],
-    [56, 126],
-    [164, 126],
-    [110, 210],
-  ] as V[])
-    g.push(
-      `<circle cx="${x}" cy="${y}" r="3" fill="${ri === 6 ? '#8a92a4' : '#ffffff'}" ${ink(1.4)}/>`,
-    );
-  if (ri >= 3)
-    g.push(
-      `<path d="M110 50 L110 194 M70 110 L150 110" stroke="${INK}" stroke-width="9" stroke-linecap="round"/><path d="M110 50 L110 194 M70 110 L150 110" stroke="${l.acc}" stroke-width="5" stroke-linecap="round"/>`,
-    );
-  g.push(`<circle cx="110" cy="110" r="${15 + Math.min(ri, 3) * 2}" fill="${rimC}" ${ink(3)}/>`);
-  if (l.gem && ri >= 1) g.push(gem(110, 110, 7 + Math.min(ri, 3), l.gem));
-  g.push(
-    runes(
-      [
-        [82, 82],
-        [138, 82],
-        [82, 150],
-        [138, 150],
-      ],
-      ri,
-      l,
-    ),
-    cracks(
-      [
-        [86, 90],
-        [132, 150],
-        [100, 170],
-      ],
-      ri,
-      l,
-    ),
-    ribbon(104, 214, ri, l),
-  );
-  g.push(ring(110, 120, ri, l, 66, 16, -8), orbit(ri, l), twinkles(ri));
-  return g.join('');
-};
-
 const DRAW: Record<string, Draw> = {
   sword,
-  shield,
   twin_blades: twinBlades,
   greatsword,
   hatchet,
