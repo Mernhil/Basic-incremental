@@ -113,6 +113,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const base = freshState();
     const squire = base.cards.owned['ember_squire']!;
     squire.level = 20; // at the Bronze cap
+    squire.stars = 6; // a tier-up also needs every star
     base.clearedDungeons = ['mossy_cellar']; // Iron Deeps opens
     base.production.unlockedTrees = ['ironbark', 'moonwillow'];
     base.resources['moss_core'] = new Decimal(10);
@@ -153,8 +154,10 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const squire = state.cards.owned['ember_squire']!;
     squire.tier = 'silver';
     squire.level = 40; // at the Silver cap: Gold costs Money, Cinder Cores and gems
+    squire.stars = 6;
     const digger = state.cards.owned['cave_digger']!;
     digger.tier = 'gold';
+    digger.stars = 6;
     digger.level = 60; // further along, and its Prismatic step waits for Frost Cores
     state.resources['money'] = new Decimal(5e6);
     state.resources['cinder_core'] = new Decimal(10);
@@ -169,6 +172,8 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.production.unlockedTrees = ['ironbark'];
     state.activeDungeonId = 'mossy_cellar';
     state.cards.owned['ember_squire']!.level = 20; // Bronze cap: needs 24,000 Ironbark, has 14,000
+    state.cards.owned['ember_squire']!.stars = 6;
+    state.cards.owned['cave_digger']!.stars = 6;
     state.cards.owned['cave_digger']!.level = 20; // needs 12,000 Ironbark and 20,000 Iron
     state.resources['money'] = new Decimal(2e5);
     state.resources['moss_core'] = new Decimal(6);
@@ -185,7 +190,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     squire.level = 50; // Gold cap 60: not ready, but its tier-up will need Frost Cores and Sigils
     const digger = state.cards.owned['cave_digger']!;
     digger.tier = 'gold';
-    digger.stars = 1;
+    digger.stars = 6;
     digger.level = 60; // at the Gold cap: ready to tier up too
     const [, coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
     state.resources['frost_core'] = new Decimal(coreCost!.amount);
@@ -251,15 +256,20 @@ describe('balance sim: where to fight', () => {
     state.clearedDungeons = ['mossy_cellar'];
     const squire = state.cards.owned['ember_squire']!;
     squire.level = 20;
+    squire.stars = 6;
     squire.starFill = 1;
-    // Harmless boss, so only the kill time decides.
-    const attack = content.dungeonById.get('ember_crypt')!.boss.attack;
-    const damage = attack.damage;
-    attack.damage = new Decimal(0);
+    // Harmless boss, so only the kill time decides; a ★6 squire needs a sturdier one to take
+    // over ten minutes.
+    const boss = content.dungeonById.get('ember_crypt')!.boss;
+    const { damage } = boss.attack;
+    const { hp } = boss;
+    boss.attack.damage = new Decimal(0);
+    boss.hp = hp.mul(100);
     try {
       expect(chooseDungeon(state, content)).toBe('mossy_cellar');
     } finally {
-      attack.damage = damage;
+      boss.attack.damage = damage;
+      boss.hp = hp;
     }
   });
 

@@ -399,12 +399,13 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
 
   it('tiers up with Money, Cores and higher-tier gems, carrying level and XP over', () => {
     let state = freshState();
-    own(state, 'apprentice_feller', { level: 20 });
+    own(state, 'apprentice_feller', { level: 20, stars: 6 });
     own(state, 'ember_squire', { level: 19, xp: new Decimal(3) });
     const fighting = tierUpCheck(state, content, 'ember_squire')!;
     expect(fighting.to).toEqual({ tier: 'silver', stars: 1 });
     expect(fighting.requirements.map((r) => [r.kind, r.resource ?? null])).toEqual([
       ['level', null],
+      ['stars', null],
       ['resource', 'money'],
       ['resource', 'moss_core'],
       ['resource', 'iron_gem'],
@@ -412,6 +413,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     ]);
     const logging = tierUpCheck(state, content, 'apprentice_feller')!;
     expect(logging.requirements.map((r) => r.resource ?? null)).toEqual([
+      null,
       null,
       'money',
       'moss_core',
