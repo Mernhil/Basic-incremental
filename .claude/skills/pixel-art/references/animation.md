@@ -1,6 +1,6 @@
 # Animation and effects
 
-How to make pixel sprites and effects move with weight, in the Brave Frontier spirit, inside the game's clean-pixel rules (DESIGN.md 13: whole-pixel positions, no blur, no soft glows, slow and calm element effects, reduced motion respected).
+How to make pixel sprites and effects move with weight, in the Brave Frontier spirit, inside the game's clean-pixel rules (DESIGN.md §12: whole-pixel positions, no blur, no soft glows, slow and calm element effects, reduced motion respected).
 
 ## Contents
 
@@ -9,7 +9,7 @@ How to make pixel sprites and effects move with weight, in the Brave Frontier sp
 3. Loops: idle, shine, sparkle
 4. Action: attack, hit, hurt
 5. Cel effects: how to build them
-6. Element effects (DESIGN 13 table)
+6. Element effects (DESIGN §12 table)
 7. Reduced motion
 8. Frame budget
 9. Learned from Brave Frontier sprites (Behance)
@@ -43,7 +43,7 @@ Brave Frontier builds units from parts animated as layers (offset, rotation, sca
 
 ## 4. Action: attack, hit, hurt
 
-- **Slash (DESIGN 13):** a single brush stroke, straight with a slight curve, tapered, with dry-brush streaks, re-rolled every hit and centred on the target. Pixel construction: frame 1 a thin bright line (anticipation is the card's own wind-up), frame 2 the full thick arc with a near-white core and coloured edges, frame 3 hold with streaks breaking off, frames 4 to 5 the stroke thins from the back end and breaks into dashes, then gone. Colour follows the element.
+- **Slash (DESIGN §12):** a single brush stroke, straight with a slight curve, tapered, with dry-brush streaks, re-rolled every hit and centred on the target. Pixel construction: frame 1 a thin bright line (anticipation is the card's own wind-up), frame 2 the full thick arc with a near-white core and coloured edges, frame 3 hold with streaks breaking off, frames 4 to 5 the stroke thins from the back end and breaks into dashes, then gone. Colour follows the element.
 - **Impact hit (bows, pickaxes):** frame 1 a white star-shaped flash (4 or 8 points), frame 2 a coloured burst with an expanding ring, frames 3 to 4 the ring thins and breaks into segments while a few square particles fly out and shrink, then gone. The first frame can be held slightly longer for punch.
 - **Hurt / boss hit:** 1 frame where the whole sprite flashes to a light tone (or white), then a 1 to 2 px knockback away from the hit and a return over a few frames.
 - **Dissipation:** effects end by thinning and breaking into pieces (dashes, squares, dots) that shrink, never by fading opacity. Opacity fades blur pixel art.
@@ -58,11 +58,11 @@ Brave Frontier-style effects look rich because they are layered. Build each effe
 4. **Particles**: squares, diamonds and plus shapes, 1 to 3 px, that shrink over their life.
 5. **Speed lines / streaks** in the direction of motion, broken into dashes.
 
-Glow without blur: put a 1 px ring of a lighter-than-background tone around the effect, or a checkered half-dither ring that appears for one frame only. Use these sparingly; DESIGN 13 bans soft glows.
+Glow without blur: put a 1 px ring of a lighter-than-background tone around the effect, or a checkered half-dither ring that appears for one frame only. Use these sparingly; DESIGN §12 bans soft glows.
 
 Shape language: fire is teardrop blobs that rise and split; lightning is jagged lines with 1 px forks, redrawn every few frames; light is concentric outline copies of the item; nature is leaves (3 to 5 px) on a spiral path; earth/crystal/void is jagged cracks that flicker.
 
-## 6. Element effects (DESIGN 13 table)
+## 6. Element effects (DESIGN §12 table)
 
 Element effects appear from the Gold tier, stronger at Prismatic, and stay secondary: slow and calm, mostly behind the item, a smaller part in front, generated from the item's own shape (`fxGeometry.ts`).
 
@@ -76,7 +76,7 @@ Element effects appear from the Gold tier, stronger at Prismatic, and stay secon
 
 ## 7. Reduced motion
 
-Under `prefers-reduced-motion`, every loop stops on one chosen still frame (the most readable one: shine at rest, sparkles off, effect at a calm pose). Hits play a single frame or none. Gold and Prismatic frames are still (DESIGN 13).
+Under `prefers-reduced-motion`, every loop stops on one chosen still frame (the most readable one: shine at rest, sparkles off, effect at a calm pose). Hits play a single frame or none. Gold and Prismatic frames are still (DESIGN §12).
 
 ## 8. Frame budget
 
