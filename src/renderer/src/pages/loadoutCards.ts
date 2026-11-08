@@ -4,13 +4,15 @@ import {
   cardInfo,
   cardItem,
   resolveCard,
+  weaponSkinFor,
+  weaponSkinArt,
   type CardRole,
   type GameState,
   type Modifier,
 } from '../../../game';
 import { COPY } from '../copy';
 import { evolutionArt, EVOLUTIONS, type Evolution } from '../art/evolutions';
-import { itemArt } from '../art/items';
+import { itemArt, itemBoxSprite } from '../art/items';
 import type { CardProps } from '../ui/card';
 
 /**
@@ -21,12 +23,20 @@ export function cardItemArt(
   content: Content,
   cardId: string,
   owned: Parameters<typeof cardItem>[2],
+  state?: GameState,
 ): string {
   const card = content.cardById.get(cardId);
   if (!card) return '';
   const item = cardItem(content, cardId, owned);
-  if (item?.unique && (EVOLUTIONS as readonly string[]).includes(item.kind))
+  if (item?.unique && (EVOLUTIONS as readonly string[]).includes(item.kind)) {
+    // a worn weapon skin replaces the animated unique sprite
+    if (state && weaponSkinFor(state, item.kind) !== null) {
+      const skin = weaponSkinArt(state, content, item.kind);
+      const markup = skin ? itemBoxSprite(skin) : '';
+      if (markup) return markup;
+    }
     return evolutionArt(item.kind as Evolution);
+  }
   return itemArt(item?.kind ?? card.item.kind, item?.rarity ?? card.rarity);
 }
 
@@ -54,7 +64,7 @@ export function loadoutProps(
     label: role === 'main' ? COPY.table.main : COPY.table.support,
     job: card.job,
     emblem: role === 'main' ? 'blade' : 'gem',
-    item: cardItemArt(content, card.id, info.owned),
+    item: cardItemArt(content, card.id, info.owned, state),
     element: card.element,
     rank,
     stats,
@@ -81,10 +91,19 @@ export function cardFaceProps(
 /** Key that changes whenever the fighting loadout or one of its cards' rank / level does. */
 export function loadoutKey(state: GameState): string {
   const { main, supports } = state.cards.loadouts.fighting;
-  return JSON.stringify(
-    [main, ...supports].map((id) => {
+  return JSON.stringify([
+    state.weaponSkins,
+    ...[main, ...supports].map((id) => {
       const owned = id ? state.cards.owned[id] : undefined;
       return owned ? [id, owned.tier, owned.stars, owned.level] : null;
     }),
-  );
+  ]);
+}
+
+/** Markup of a weapon's art for the skin picker: a skin's sprite, or the animated original. */
+export function weaponArtMarkup(weaponKind: string, artId: string | null): string {
+  if (artId) return itemBoxSprite(artId);
+  return (EVOLUTIONS as readonly string[]).includes(weaponKind)
+    ? evolutionArt(weaponKind as Evolution)
+    : '';
 }

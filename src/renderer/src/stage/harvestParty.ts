@@ -146,7 +146,7 @@ export function createHarvestParty(
       label: role === 'main' ? COPY.table.main : COPY.table.support,
       job,
       emblem: role === 'main' ? 'blade' : 'gem',
-      ...(owned ? { item: cardItemArt(content, c.cardId, owned) } : {}),
+      ...(owned ? { item: cardItemArt(content, c.cardId, owned, state()) } : {}),
       element: c.element,
       rank: c.rank,
       stats:
@@ -240,7 +240,7 @@ export function createHarvestParty(
   function update(): ProductionStageView {
     const v = productionStageView(state(), content, job);
     last = v;
-    const k = stageKey(v);
+    const k = stageKey(v) + JSON.stringify(state().weaponSkins);
     if (k !== key) {
       key = k;
       byCard.clear();

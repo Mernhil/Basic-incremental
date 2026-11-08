@@ -115,7 +115,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   const artMarkup = (a: KeptArt, s: GameState): string => {
     switch (a.kind) {
       case 'card':
-        return svg(cardItemArt(content, a.cardId, s.cards.owned[a.cardId]), ITEM_VIEWBOX);
+        return svg(cardItemArt(content, a.cardId, s.cards.owned[a.cardId], s), ITEM_VIEWBOX);
       case 'coin': {
         const gem = content.resourceById.get(a.gem)?.gem;
         return gem ? svg(gemCoin(gem, a.tier)) : '';

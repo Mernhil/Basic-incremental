@@ -284,7 +284,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   });
   pages['cards'] = createCardsPage(shell.page('cards'), {
     content,
-    model: createCardsModel(content, (id, owned) => cardItemArt(content, id, owned)),
+    model: createCardsModel(content, (id, owned) => cardItemArt(content, id, owned, loop.state)),
     state: () => loop.state,
     apply: applyAndSave,
     onTierUps,

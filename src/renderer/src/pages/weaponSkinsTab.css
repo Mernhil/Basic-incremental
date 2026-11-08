@@ -1,0 +1,109 @@
+/* Wardrobe "Weapon skins" tab (a test). Pixel art is sized with the whole-scale round() pattern
+   from ui/pixelScale.css; the preview card gets --card-k from fitCard(). */
+.ws {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .ws {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.ws-badge {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bi-frame-title-line);
+  color: var(--bi-frame-ink);
+}
+.ws-weapon {
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+.ws-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 10px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ws-tile {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  width: 100%;
+  padding: 8px 6px 6px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+  color: var(--bi-frame-ink);
+  font: inherit;
+  cursor: pointer;
+}
+.ws-tile[aria-pressed='true'] {
+  box-shadow: inset 0 0 0 2px var(--bi-frame-ink);
+}
+.ws-tile:focus-visible,
+.ws-apply:focus-visible {
+  outline: 2px solid var(--bi-frame-ink);
+  outline-offset: 2px;
+}
+.ws-tile__name {
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.ws-tile__on {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  font-weight: 700;
+}
+.ws-thumb {
+  --one: calc(100px / var(--dpr));
+  display: block;
+  width: max(var(--one), round(nearest, 64px, var(--one)));
+  aspect-ratio: 100 / 120;
+}
+.ws-thumb svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ws-stage {
+  display: grid;
+  justify-items: center;
+  padding: 10px 0;
+}
+.ws-card {
+  position: relative;
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
+  margin: 16px;
+}
+.ws-card > .bi-card {
+  transform: scale(var(--card-k));
+  transform-origin: top left;
+}
+.ws-note {
+  margin: 6px 0 0;
+}
+.ws-apply {
+  margin-top: 12px;
+  width: 100%;
+}
+.ws-status {
+  grid-column: 1 / -1;
+  min-height: 1.2em;
+  margin: 0;
+}
+.wd-tabs {
+  margin-bottom: 14px;
+}
