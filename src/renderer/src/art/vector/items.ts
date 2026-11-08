@@ -1,5 +1,5 @@
 /**
- * The signature item inside a card (DESIGN.md 13): cel-shaded, drawn in a 200 x 240 box. Rarity
+ * The signature item inside a card (DESIGN.md §12): cel-shaded, drawn in a 200 x 240 box. Rarity
  * sets how intricate it is, adding parts rather than only colour: Common plain; Rare a fuller,
  * wrapped grip and gem; Epic a bigger guard and gem; Legendary a serrated or ornate shape, gold
  * inlay and a ribbon; Mythic neon runes and a crystal edge; Exotic forked shapes and floating rings;
@@ -1017,7 +1017,7 @@ export const RARITY_WINDOW: Record<Rarity, string> = {
   void: '#120d1c',
 };
 
-// ---- unique evolutions (DESIGN.md 13): approved in the batch review, 2026-11-07 ----
+// ---- unique evolutions (DESIGN.md §12): approved in the batch review, 2026-11-07 ----
 
 export const EVOLUTIONS = ['flameblade', 'soul_reaper', 'rootbloom_staff'] as const;
 export type Evolution = (typeof EVOLUTIONS)[number];

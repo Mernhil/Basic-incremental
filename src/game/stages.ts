@@ -7,8 +7,8 @@ import type { TierUp } from './report';
 import type { GameState } from './state';
 
 /**
- * Visual stages 0..4 (DESIGN.md 16, E4 and E5): growing tiles and forged edges, one step per
- * milestone. Tree and mine tiles follow their level milestones (DESIGN.md 11.14; progression.json
+ * Visual stages 0..4 (DESIGN.md §12): growing tiles and forged edges, one step per
+ * milestone. Tree and mine tiles follow their level milestones (DESIGN.md §4; progression.json
  * `tileStages`); forged edges follow their damage line milestones. Tiles reset on prestige with
  * the levels; edges are kept with the lines.
  */

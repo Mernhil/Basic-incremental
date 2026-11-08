@@ -20,7 +20,7 @@ const x2 = { every: 25, multiplier: new Decimal(2) };
 const copper = content.combat.damageUpgrades.find((u) => u.id === 'copper_edge')!;
 const quarry = content.mineById.get('copper_quarry')!;
 
-describe('level milestones (DESIGN.md 11.12)', () => {
+describe('level milestones (DESIGN.md §4)', () => {
   it('counts one milestone per 25 levels', () => {
     expect(milestonesReached(x2, 0)).toBe(0);
     expect(milestonesReached(x2, 24)).toBe(0);

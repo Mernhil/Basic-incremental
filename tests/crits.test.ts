@@ -19,7 +19,7 @@ const mod = (stat: Modifier['stat'], kind: Modifier['kind'], value: string): Mod
 });
 const rng = constantRng(0.5);
 
-describe('crits (DESIGN.md 11.11)', () => {
+describe('crits (DESIGN.md §6)', () => {
   it('starts at 5% chance and x2 damage, from data', () => {
     const crit = critStats(content);
     expect(crit.chance).toBeCloseTo(0.05);

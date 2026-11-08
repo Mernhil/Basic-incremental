@@ -30,7 +30,7 @@ import {
 import type { GameState } from './state';
 
 /**
- * The goal tracker (DESIGN.md 16, E8): the next few things to aim for, picked by the rules in
+ * The goal tracker (DESIGN.md §10): the next few things to aim for, picked by the rules in
  * progression.json (never a fixed script) and sorted by estimated time. Each goal carries a
  * progress bar (0..1), an ETA in seconds when one can be estimated from the current rates, and
  * the page to jump to.

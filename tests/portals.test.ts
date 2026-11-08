@@ -22,7 +22,7 @@ const withSigils = (n: number): GameState => {
 };
 const rank = (r: string) => RARITIES.indexOf(r as (typeof RARITIES)[number]);
 
-describe('Card Portal (DESIGN.md 6, beta portals)', () => {
+describe('Card Portal (DESIGN.md §7, beta portals)', () => {
   it('costs 10 Summon Crystals for one pull and 100 for ten', () => {
     const info = portalInfo(withSigils(50), content, PORTAL)!;
     expect(info.single.price).toEqual({ resource: 'summon_crystal', amount: new Decimal(10) });
@@ -138,7 +138,7 @@ describe('Card Portal (DESIGN.md 6, beta portals)', () => {
   });
 });
 
-describe('Card Portal replaces the boss card drop (DESIGN.md 11.9)', () => {
+describe('Card Portal replaces the boss card drop (DESIGN.md §5)', () => {
   it('boss kills no longer drop cards', () => {
     const state = freshState();
     state.combat.damageLevels['copper_edge'] = 200;

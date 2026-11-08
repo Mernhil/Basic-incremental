@@ -1,4 +1,4 @@
-/* Gentle idle motion for the gem art (DESIGN.md 13). Off under reduced motion. */
+/* Gentle idle motion for the gem art (DESIGN.md §12). Off under reduced motion. */
 .bi-art-sway {
   animation: bi-art-sway 4.5s ease-in-out infinite;
   transform-box: fill-box;

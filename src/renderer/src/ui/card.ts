@@ -40,7 +40,7 @@ export interface CardProps {
   emblem: keyof typeof EMBLEMS | string;
   /** The signature item (art/items.ts). Replaces the emblem when set. */
   item?: string;
-  /** The card's element: its effect plays from Gold (DESIGN.md 13). */
+  /** The card's element: its effect plays from Gold (DESIGN.md §12). */
   element?: CardElement;
   rank: Rank;
   stats: [CardStat, CardStat];
@@ -141,7 +141,7 @@ export function createCard(initial: CardProps): CardView {
     rankName.textContent = TIER_NAMES[p.rank.tier];
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
-    // the tier is the frame (DESIGN.md 5); bosses have no rank and so no frame
+    // the tier is the frame (DESIGN.md §5); bosses have no rank and so no frame
     const tier = p.boss ? '' : p.rank.tier;
     if (tier !== frameTier) {
       frameTier = tier;

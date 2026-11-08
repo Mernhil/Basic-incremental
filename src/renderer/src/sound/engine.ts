@@ -8,7 +8,7 @@ import {
 } from './settings';
 
 /**
- * Procedural SFX (DESIGN.md 15): plays registry sounds through Web Audio, throttled per sound,
+ * Procedural SFX (DESIGN.md §13): plays registry sounds through Web Audio, throttled per sound,
  * at the player's volume. The audio context starts on the first click or key press (browsers
  * keep audio locked until then).
  */

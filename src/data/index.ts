@@ -68,24 +68,24 @@ export interface Content {
   rarities: RarityStyle[];
   wearRules: WearRules;
   sets: CosmeticSet[];
-  /** Mastery, tile stages, evolutions and goal rules (DESIGN.md 16). */
+  /** Mastery, tile stages, evolutions and goal rules (DESIGN.md §4, §10, §12). */
   progression: Progression;
-  /** Ascension: Starlight gain, the Starlight shop and prestige cosmetics (DESIGN.md 3). */
+  /** Ascension: Starlight gain, the Starlight shop and prestige cosmetics (DESIGN.md §9). */
   prestige: PrestigeConfig;
-  /** Cosmetic upgrade levels: max level by rarity, ladders, costs (DESIGN.md 7, 11.1). */
+  /** Cosmetic upgrade levels: max level by rarity, ladders, costs (DESIGN.md §8). */
   cosmeticRules: CosmeticRules;
   /** Every portal, including those waiting for their screen (`enabled: false`); `portals`
    *  holds only the open ones. */
   allPortals: Portal[];
-  /** Achievements and their rewards (DESIGN.md 11.6). */
+  /** Achievements and their rewards (DESIGN.md §10). */
   achievements: Achievement[];
   /** Shard shop stock (card shards). */
   shardShop: ShardShopItem[];
-  /** Account XP, levels, reward track, account tree and respec (DESIGN.md 10a, 16 E7). */
+  /** Account XP, levels, reward track, account tree and respec (DESIGN.md §10a, 16 E7). */
   account: AccountConfig;
-  /** Card enhancements (DESIGN.md 10b). */
+  /** Card enhancements (DESIGN.md §10b). */
   enhancements: EnhancementsConfig;
-  /** The upgrade shelf: one-time Money multipliers that appear at a threshold (DESIGN.md 11.14). */
+  /** The upgrade shelf: one-time Money multipliers that appear at a threshold (DESIGN.md §4). */
   upgrades: UpgradesConfig;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
@@ -258,13 +258,13 @@ function checkProduction(
       issues.push(`${where}: "${resource}" is ${res.kind}, expected ${kind}`);
   };
 
-  // Tree kinds are unlocked with tree gems (DESIGN.md 2).
+  // Tree kinds are unlocked with tree gems (DESIGN.md §4).
   c.trees.forEach((tree, i) =>
     tree.unlockCost.forEach((cost, j) =>
       checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
     ),
   );
-  // Tree levels and mine levels are bought with Money (DESIGN.md 2, 11.13).
+  // Tree levels and mine levels are bought with Money (DESIGN.md §4, §3).
   c.trees.forEach((tree, i) =>
     checkCost(
       `trees.json › [${i}] › level › cost › resource`,
@@ -365,7 +365,7 @@ function checkSets(cosmetics: Cosmetic[], sets: CosmeticSet[], issues: string[])
   });
 }
 
-/** Upgrade shelf rules (DESIGN.md 11.14): unlock conditions and the cost name things that exist,
+/** Upgrade shelf rules (DESIGN.md §4): unlock conditions and the cost name things that exist,
  *  and a permanent upgrade is unlocked by progress that an ascension keeps. */
 function checkUpgrades(
   c: Pick<Content, 'resources' | 'trees' | 'mines' | 'dungeons' | 'combat' | 'upgrades'>,
@@ -539,7 +539,7 @@ function checkAccount(
 }
 
 /**
- * Every non-starter cosmetic has a source (DESIGN.md 7: dungeon drops, a cosmetics portal,
+ * Every non-starter cosmetic has a source (DESIGN.md §8: dungeon drops, a cosmetics portal,
  * prestige, achievements, the account reward track, the shard shop), and portal pools list items at their own rarity.
  */
 function checkCosmeticSources(
@@ -673,7 +673,7 @@ function checkPrestige(
   );
 }
 
-/** Resource kinds card upgrades may cost: gems and dungeon / trial materials (DESIGN.md 11.9). */
+/** Resource kinds card upgrades may cost: gems and dungeon / trial materials (DESIGN.md §5). */
 const UPGRADE_KINDS: readonly Resource['kind'][] = ['tree_gem', 'mine_gem', 'material'];
 
 /** Start cards, star-up and tier-up materials must exist; start cards lead distinct jobs. */
@@ -708,7 +708,7 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
     }
   };
   // Every card upgrade of every job mixes both production loops with a dungeon material
-  // (DESIGN.md 11.9): a tree gem, a mine gem and a Core.
+  // (DESIGN.md §5): a tree gem, a mine gem and a Core.
   const checkMix = (where: string, ids: string[]): void => {
     const kinds = new Set(ids.map((id) => resources.get(id)?.kind));
     for (const kind of ['tree_gem', 'mine_gem', 'material'] as const) {
@@ -814,7 +814,7 @@ function checkCombat(
     );
   });
 
-  // Damage is bought with Money (DESIGN.md 2, 11.13), one line per mine gem (11.8).
+  // Damage is bought with Money (DESIGN.md §4, §3), one line per mine gem (11.8).
   const seen = new Set<string>();
   c.combat.damageUpgrades.forEach((u, i) => {
     const where = `combat.json › damageUpgrades › [${i}]`;
@@ -847,7 +847,7 @@ function checkReferences(
   duplicates('cosmetics', c.cosmetics);
   duplicates('portals', c.portals);
 
-  // Tree and mine gems are drawn from their gem art (DESIGN.md 13); other resources have none.
+  // Tree and mine gems are drawn from their gem art (DESIGN.md §12); other resources have none.
   c.resources.forEach((r, i) => {
     const isGem = r.kind === 'tree_gem' || r.kind === 'mine_gem';
     if (isGem && !r.gem) issues.push(`resources.json › [${i}] › gem: a ${r.kind} needs gem art`);
@@ -887,7 +887,7 @@ function checkReferences(
   });
 
   c.dungeons.forEach((dungeon, i) => {
-    // Every dungeon drops Money and every crystal (DESIGN.md 6, 11.13).
+    // Every dungeon drops Money and every crystal (DESIGN.md §7, §3).
     const dropped = new Set<string>();
     dungeon.drops.currencies.forEach((drop, j) => {
       const where = `dungeons.json › [${i}] › drops › currencies › [${j}] › resource`;

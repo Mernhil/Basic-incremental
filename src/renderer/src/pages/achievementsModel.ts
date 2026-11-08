@@ -15,7 +15,7 @@ import type { BuyLineView } from './buyModel';
 import type { RevealView } from './summonModel';
 
 /**
- * Achievements view models (DESIGN.md 11.6, 12.20, 17 "sticker book", A10 C): the chapters of the
+ * Achievements view models (DESIGN.md §10, §11 "sticker book", A10 C): the chapters of the
  * sticker book, each sticker's progress, reward preview and art, the unlock toasts, and the shard
  * shop offers. Display logic only; conditions, rewards and prices come from game.
  */

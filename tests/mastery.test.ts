@@ -26,7 +26,7 @@ function settled(state: GameState): GameState {
   return advance(state, content, 1000, rng).state;
 }
 
-describe('gem mastery data (DESIGN.md 16, E2)', () => {
+describe('gem mastery data (DESIGN.md §4)', () => {
   it('has the decided thresholds and +10% per tier', () => {
     const m = content.progression.gemMastery;
     expect(m.thresholds.map((t) => t.toNumber())).toEqual([1e3, 1e5, 1e7, 1e9]);
@@ -162,7 +162,7 @@ describe('gem tier-ups', () => {
   });
 });
 
-describe('boss mastery (DESIGN.md 16, E3)', () => {
+describe('boss mastery (DESIGN.md §6)', () => {
   it('has the decided medal thresholds and bonuses in data', () => {
     const b = content.progression.bossMastery;
     expect(b.thresholds).toEqual([10, 100, 1000, 10_000]);

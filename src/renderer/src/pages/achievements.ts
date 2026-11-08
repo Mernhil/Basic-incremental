@@ -27,7 +27,7 @@ import type { PageContext } from './production';
 import './achievements.css';
 
 /**
- * Achievements page (DESIGN.md 11.6, 12.20, 17 "sticker book", A10 C). Two tabs: the sticker
+ * Achievements page (DESIGN.md §10, §11 "sticker book", A10 C). Two tabs: the sticker
  * book, a two-page spread with one chapter per area where every achievement is a sticker slot
  * (locked: a dashed outline with a faint print of the art and a progress bar; unlocked: the
  * sticker slapped in with a bounce), and the shard shop, where card shards buy card copies,

@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 /**
- * The baked pixel sprites (DESIGN.md 13) and the markup that shows them: an SVG `<image>` on its
+ * The baked pixel sprites (DESIGN.md §12) and the markup that shows them: an SVG `<image>` on its
  * native grid, scaled with nearest-neighbour (`image-rendering: pixelated`), so callers that place
  * SVG art keep working unchanged.
  */

@@ -262,7 +262,7 @@
   display: none !important;
 }
 
-/* fighting loadout health (DESIGN.md 11.10) */
+/* fighting loadout health (DESIGN.md §6) */
 .loadout-health {
   display: grid;
   gap: 4px;

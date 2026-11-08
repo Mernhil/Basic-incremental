@@ -5,7 +5,7 @@ import { jitter, reducedMotion, stageHidden } from './motion';
 import './numbers.css';
 
 /**
- * Floating numbers (DESIGN.md 14, A4 B sticker numerals). Every colour, size and font comes from
+ * Floating numbers (DESIGN.md §11, A4 B sticker numerals). Every colour, size and font comes from
  * the equipped number and tick cosmetic tokens (--bi-num-*, --bi-tick-*); the motion comes from
  * the equipped tick effect (see NUMBER_MOTION). At most MAX_POPUPS live at once, oldest first
  * out; rapid gains on the same spot merge into one number.
@@ -20,7 +20,7 @@ export const MERGE_WINDOW_MS = 450;
 
 /**
  * Tick effect id (cosmetic data) -> how numbers move. The starter tick ("rise") is drawn as the
- * decided sticker numerals, which bounce in place (DESIGN.md 14).
+ * decided sticker numerals, which bounce in place (DESIGN.md §11).
  */
 const NUMBER_MOTION: Record<string, string> = { rise: 'bounce' };
 let motion = 'bounce';

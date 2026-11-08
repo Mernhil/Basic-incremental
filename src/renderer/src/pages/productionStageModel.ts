@@ -7,7 +7,7 @@ import {
 import type { HarvestPattern } from '../../../data';
 
 /**
- * View model of the Production stage (DESIGN.md 11.15, 14): turns the report's harvest events into
+ * View model of the Production stage (DESIGN.md §4, §11): turns the report's harvest events into
  * the "moments" the stage plays (one strike per plot, one burst), and the strike pattern into
  * how the main card moves. Pure, no DOM, unit tested.
  */

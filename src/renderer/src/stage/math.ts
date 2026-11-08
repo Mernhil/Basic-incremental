@@ -2,7 +2,7 @@ import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 
 /**
- * Pure helpers behind the stage juice (DESIGN.md 14): popup sizes, a running average of hits,
+ * Pure helpers behind the stage juice (DESIGN.md §11): popup sizes, a running average of hits,
  * the rolling header counters, merging rapid tick numbers and throttling repeated effects.
  * No DOM here, so all of it is unit tested.
  */

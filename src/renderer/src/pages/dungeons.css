@@ -1,4 +1,4 @@
-/* Dungeons page (DESIGN.md 14, A1 D): the arena fills the page, the drawer slides up over its
+/* Dungeons page (DESIGN.md §11, A1 D): the arena fills the page, the drawer slides up over its
    bottom. Theme colours from the frame-* and chrome-* tokens; tier hues identify dungeons. */
 
 .shell-page--stage {
@@ -242,7 +242,7 @@
   display: grid;
   gap: 6px;
 }
-/* forged edge ladder (DESIGN.md 16 E5, A14 D): five steps, the current one lit */
+/* forged edge ladder (DESIGN.md §12, A14 D): five steps, the current one lit */
 .dp-ladder {
   grid-area: ladder;
   display: flex;
@@ -280,7 +280,7 @@
     filter: brightness(2.2) drop-shadow(0 0 10px #fff);
   }
 }
-/* boss mastery medal (DESIGN.md 16 E3, A12 D) */
+/* boss mastery medal (DESIGN.md §6, A12 D) */
 .dp-medal {
   display: grid;
   width: 48px;

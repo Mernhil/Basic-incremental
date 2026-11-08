@@ -1,5 +1,5 @@
 /**
- * The approved small pixel assets as vector sources (DESIGN.md 13, Pixel Art Round 2): gem coins
+ * The approved small pixel assets as vector sources (DESIGN.md §12, Pixel Art Round 2): gem coins
  * (48 x 48), mastery medals (48 x 48), navigation plaques (64 x 64) and the forged-edge ladder.
  * Drawn with Brave Frontier ramps: five tones per material, shadows leaning purple and highlights
  * leaning yellow-white, gold trim with a bright top edge, small gems with a white glint.
@@ -82,7 +82,7 @@ export function shapePoints(shape: GemArt['shape'], x: number, y: number, r: num
   }
 }
 
-// ---- the metal ladder (DESIGN.md 16, E1) ----
+// ---- the metal ladder (DESIGN.md §12) ----
 
 /** Coin, medal, plinth metals, lowest first. */
 export const METAL_LADDER = ['stone', 'bronze', 'silver', 'gold', 'prism'] as const;

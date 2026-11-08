@@ -6,7 +6,7 @@ import { reducedMotion } from './motion';
 import './reveal.css';
 
 /**
- * The summon reveal (DESIGN.md 6, A6 E): a modal over the shelf. The portal swirls, then the
+ * The summon reveal (DESIGN.md §7, A6 E): a modal over the shelf. The portal swirls, then the
  * pulls lie face down; each one glows its orb colour, upgrade-flashes to its real rarity when it
  * differs, and flips inside its frame. Click (or Space / Enter) reveals the next; Skip all
  * reveals the rest; Done closes.

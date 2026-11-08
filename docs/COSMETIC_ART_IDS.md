@@ -1,6 +1,6 @@
 # Cosmetic art ids (beta art batch B1–B10)
 
-Every id the pixel art of the beta batch implements, so `cosmetics.json` and `sets.json` can name them (DESIGN.md 7 "UI-skin slots" and "Every option is kept"; drawn under the pixel rules of section 13). The art is drawn by `scripts/art/cosmetics/*.py` and baked by `node scripts/art/bake-pixels.mjs`; the ids are registered automatically (`src/renderer/src/art/cosmeticIds.ts` from `art/pixel/cosmetics.gen.ts`), so a typo in data fails `assertVisualsImplemented` and the registry test.
+Every id the pixel art of the beta batch implements, so `cosmetics.json` and `sets.json` can name them (DESIGN.md §8 "UI-skin slots" and "Every option is kept"; drawn under the pixel rules of section 13). The art is drawn by `scripts/art/cosmetics/*.py` and baked by `node scripts/art/bake-pixels.mjs`; the ids are registered automatically (`src/renderer/src/art/cosmeticIds.ts` from `art/pixel/cosmetics.gen.ts`), so a typo in data fails `assertVisualsImplemented` and the registry test.
 
 ## How data names the art
 
@@ -17,7 +17,7 @@ Every id the pixel art of the beta batch implements, so `cosmetics.json` and `se
 
 ## Styles
 
-Level counts follow DESIGN 11.1 by the suggested rarity. Every set below is coherent across its seven slots.
+Level counts follow DESIGN §8 by the suggested rarity. Every set below is coherent across its seven slots.
 
 ### B2 garden sets (suggested Legendary, 5 levels, all seven slots)
 

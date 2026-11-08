@@ -1,5 +1,5 @@
 /**
- * Sound registry (DESIGN.md 15): every sound effect is data, synthesized with Web Audio at play
+ * Sound registry (DESIGN.md §13): every sound effect is data, synthesized with Web Audio at play
  * time; no asset files. A future "sound pack" cosmetic can swap this table.
  *
  * A sound is a few layers. A tone layer is an oscillator gliding from `from` Hz to `to` Hz; a
@@ -34,7 +34,7 @@ export type SoundLayer = ToneLayer | NoiseLayer;
 
 export interface SoundDef {
   layers: SoundLayer[];
-  /** At most `max` plays per `windowMs` (DESIGN.md 15, throttle). */
+  /** At most `max` plays per `windowMs` (DESIGN.md §13, throttle). */
   max: number;
   windowMs: number;
 }

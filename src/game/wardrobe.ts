@@ -26,7 +26,7 @@ import {
 } from './theme';
 
 /**
- * The Wardrobe (DESIGN.md 7, 11.1): owning, equipping and upgrading cosmetics. Owning an item
+ * The Wardrobe (DESIGN.md §8): owning, equipping and upgrading cosmetics. Owning an item
  * gives its buff and fully equipped sets give their bonus (both through `collectModifiers`).
  * Items go in their slot globally, or on one card for card slots (card-exclusives only there);
  * a card wears a card-slot item only from its wear rank (theme.ts). Upgrade levels follow the
@@ -52,7 +52,7 @@ export function grantCosmetic(state: GameState, cosmeticId: string): CosmeticGai
 
 // ---- levels ------------------------------------------------------------------------------------
 
-/** What each level adds, level 1 first (DESIGN.md 7 ladder; length = the max level). */
+/** What each level adds, level 1 first (DESIGN.md §8 ladder; length = the max level). */
 export function cosmeticLadder(content: Content, cosmetic: Cosmetic): LadderStep[] {
   const max = cosmeticMaxLevel(content, cosmetic);
   return [...(content.cosmeticRules.ladders[String(max)] ?? [])];
@@ -269,7 +269,7 @@ export function resolveCardFor(
 // ---- views for the Wardrobe screen -------------------------------------------------------------
 
 /**
- * Where an item comes from (DESIGN.md 7 "Sources"): the first that applies. `track` = the account
+ * Where an item comes from (DESIGN.md §8 "Sources"): the first that applies. `track` = the account
  * reward track, `shop` = the shard shop.
  */
 export type CosmeticSource =

@@ -1,5 +1,5 @@
 /**
- * Display and save preferences of the Settings page (DESIGN.md 9, 12.23): reduced motion, number
+ * Display and save preferences of the Settings page (DESIGN.md §11): reduced motion, number
  * format and the autosave interval. Stored per player in localStorage next to the sound settings.
  */
 

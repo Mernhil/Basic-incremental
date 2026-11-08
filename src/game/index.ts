@@ -16,7 +16,7 @@ export * from './save';
 export * from './theme';
 export * from './modifiers';
 export * from './production';
-// ---- Production cards in play (DESIGN.md 11.15): the contract with the UI ----------------------
+// ---- Production cards in play (DESIGN.md §4): the contract with the UI ----------------------
 export {
   /** The harvest pattern (style, interval, strikes, targeting) the job's main card strikes with. */
   mainHarvestPattern,
@@ -46,7 +46,7 @@ export * from './account';
 export * from './upgrades';
 export { METALS, type Metal } from '../data';
 
-// ---- Ascension (DESIGN.md 3, 16): the contract with the UI, one line each ---------------------
+// ---- Ascension (DESIGN.md §9): the contract with the UI, one line each ---------------------
 
 export {
   /** The Ascension gate: Starlight gain, minimum, can ascend, rewards, what resets / persists. */
@@ -73,7 +73,7 @@ export {
   type AscensionResetPart,
   type AscensionPersistPart,
 } from './prestige';
-// ---- Account, skill tree, card enhancements (DESIGN.md 10, 16 E7): the contract with the UI ----
+// ---- Account, skill tree, card enhancements (DESIGN.md §10): the contract with the UI ----
 
 export {
   /** Header: account level, XP toward the next level, bar 0..1, skill points (total/spent/free). */
@@ -109,7 +109,7 @@ export {
   type EnhanceResult,
 } from './account';
 
-// ---- Achievements and shard shop (DESIGN.md 11.6, 17): the contract with the UI ---------------
+// ---- Achievements and shard shop (DESIGN.md §10, §11): the contract with the UI ---------------
 
 export {
   /** The sticker book: every achievement with unlocked, when, value / target and progress 0..1. */
@@ -125,7 +125,7 @@ export {
   type ShardBuyResult,
 } from './achievements';
 
-// ---- Wardrobe (DESIGN.md 7, 11.1): the contract with the UI, one line each --------------------
+// ---- Wardrobe (DESIGN.md §8): the contract with the UI, one line each --------------------
 
 export {
   /** Adds one copy of a cosmetic: new at level 1, or a copy for its upgrade levels. */
@@ -159,11 +159,11 @@ export {
   type SetBonusInfo,
 } from './wardrobe';
 export {
-  /** Highest upgrade level of an item: by rarity (DESIGN.md 11.1); starters keep theirs. */
+  /** Highest upgrade level of an item: by rarity (DESIGN.md §8); starters keep theirs. */
   cosmeticMaxLevel,
 } from './theme';
 
-// ---- Summon portals (DESIGN.md 6): the contract with the UI, one line each --------------------
+// ---- Summon portals (DESIGN.md §7): the contract with the UI, one line each --------------------
 
 export {
   /** Pulls 1 or 10 times from a portal: pays, rolls with pity and the 10-pull guarantee, grants. */
@@ -182,7 +182,7 @@ export {
   type CosmeticGain,
 } from './portals';
 
-// ---- Progression layer (DESIGN.md 16): the contract with the UI, one line each ---------------
+// ---- Progression layer (DESIGN.md §4, §6, §10, §12): the contract with the UI, one line each ---------------
 
 export {
   /** A production gem's mastery: settled tier 0..4, metal, lifetime total, next threshold, bar 0..1. */
@@ -227,7 +227,7 @@ export {
   type TierUpKind,
 } from './report';
 
-// ---- Juice pass (DESIGN.md 11.11, 11.12, 14): the contract with the UI, one line each ----------
+// ---- Juice pass (DESIGN.md §6, §4, §11): the contract with the UI, one line each ----------
 
 export {
   /** Crit chance (0..1) and damage multiplier after modifiers, for a dungeon. */

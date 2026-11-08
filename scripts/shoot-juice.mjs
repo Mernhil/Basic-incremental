@@ -1,4 +1,4 @@
-// Screenshots a page of the running app (juice pass, DESIGN.md 14) through its DevTools port.
+// Screenshots a page of the running app (juice pass, DESIGN.md §11) through its DevTools port.
 // Start the app with: npx electron-vite dev -- --remote-debugging-port=9333
 // Usage: node scripts/shoot-juice.mjs <page> <outFile> [port] [--drawer] [--fight]
 //   --fight   starts the first open dungeon when nothing is being fought

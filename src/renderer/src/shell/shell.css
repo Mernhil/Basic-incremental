@@ -1,8 +1,8 @@
-/* Screen shell (DESIGN.md 9, "Night rail"): dark header across the top, dark rail on the left,
+/* Screen shell (DESIGN.md §11, "Night rail"): dark header across the top, dark rail on the left,
    framed pages on the table. Every colour comes from the equipped table item's chrome-*, frame-*
    and tip-* tokens, so a table cosmetic re-skins the whole shell. */
 
-/* pixel navigation plaques (DESIGN.md 13): drawn at half their 64 px grid */
+/* pixel navigation plaques (DESIGN.md §12): drawn at half their 64 px grid */
 .shell-rail__plaque {
   display: grid;
   flex: none;
@@ -22,7 +22,7 @@
   filter: none;
 }
 
-/* quest scroll (DESIGN.md 16, E8 / A16 B): a parchment strip under the header */
+/* quest scroll (DESIGN.md §10 / A16 B): a parchment strip under the header */
 .shell-quest {
   position: sticky;
   top: -20px;
@@ -116,7 +116,7 @@
   background: #4f8a3a;
 }
 
-/* reward track (DESIGN.md 16 E7 / A16 B): the quest scroll unrolls under the header with the
+/* reward track (DESIGN.md §10 / A16 B): the quest scroll unrolls under the header with the
    levels as waypoints on a path; plain levels are small stones, reward levels are signposts */
 .shell-track {
   position: fixed;
@@ -573,7 +573,7 @@ body {
   height: 16px;
   color: var(--bi-chrome-accent);
 }
-/* gem coins (DESIGN.md 13): full colour, a little larger than the line icons */
+/* gem coins (DESIGN.md §12): full colour, a little larger than the line icons */
 .shell-currency__art {
   display: inline-grid;
   place-items: center;

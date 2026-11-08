@@ -1,5 +1,5 @@
 /**
- * The signature item inside a card (DESIGN.md 13), as approved pixel art: a 100 x 120 sprite with
+ * The signature item inside a card (DESIGN.md §12), as approved pixel art: a 100 x 120 sprite with
  * the black one-pixel ink, light extra shading, plus sparkles and a light rim (treatment 'E+'),
  * baked from the approved vector drawings in `vector/items.ts`. Rarity sets how intricate it is.
  *

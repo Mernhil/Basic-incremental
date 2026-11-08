@@ -1,4 +1,4 @@
-/* Buy controls (DESIGN.md 14). Colours from the frame-* and chrome-* table tokens. */
+/* Buy controls (DESIGN.md §11). Colours from the frame-* and chrome-* table tokens. */
 
 .buy-toggle {
   display: inline-flex;

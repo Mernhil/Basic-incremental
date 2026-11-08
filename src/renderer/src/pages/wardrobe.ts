@@ -44,7 +44,7 @@ import {
 import './wardrobe.css';
 
 /**
- * Wardrobe page (DESIGN.md 7, 11.1; 17 mannequin card, A7 A): a large preview card in the
+ * Wardrobe page (DESIGN.md §8; 17 mannequin card, A7 A): a large preview card in the
  * centre wearing the selection, the seven slots around it like an equipment screen, the item
  * grid below filtered by slot, and the selected item's panel (owned buff, wear rank, level
  * ladder, upgrade checklist, equip globally or on the preview card). All rules come from game.

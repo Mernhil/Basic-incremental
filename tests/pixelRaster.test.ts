@@ -30,7 +30,7 @@ function grid(rows: string[], keys: Record<string, string>): Grid {
 }
 const at = (g: Grid, x: number, y: number) => g.px[y * g.w + x];
 
-describe('pixel treatment (DESIGN.md 13)', () => {
+describe('pixel treatment (DESIGN.md §12)', () => {
   it('snaps anti-aliased colours to the palette and makes alpha hard', () => {
     const rgba = [250, 10, 10, 255, 200, 200, 200, 100, 30, 20, 40, 200];
     const g = quantize(rgba, 3, 1, ['#ff0000', INK]);
@@ -93,7 +93,7 @@ describe('pixel treatment (DESIGN.md 13)', () => {
   });
 });
 
-describe('part lines and orphan sweep (DESIGN.md 13, Brave Frontier)', () => {
+describe('part lines and orphan sweep (DESIGN.md §12, Brave Frontier)', () => {
   it('keeps ink on the silhouette and tints ink inside the shape toward the part', () => {
     const keys = { k: INK, a: '#3366cc', b: '#cc6633' };
     const g = partLines(grid(['kkkkk', 'kaaak', 'kkkkk', 'kbbbk', 'kkkkk'], keys));

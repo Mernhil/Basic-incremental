@@ -9,7 +9,7 @@ import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 
 /**
- * Summon portals (DESIGN.md 6, "Beta portals"): one engine for every portal (the Card Portal now,
+ * Summon portals (DESIGN.md §7, "Beta portals"): one engine for every portal (the Card Portal now,
  * the Wardrobe Gate with the Wardrobe). A single pull costs `cost.single`, a 10-pull `cost.ten`;
  * every 10-pull holds at least one item of `tenPullGuarantee` or better; hard pity gives the pity
  * rarity or better once `threshold - 1` pulls in a row missed it. Counters are per portal, saved,

@@ -1,5 +1,5 @@
 /* Rank layer. Separate from cosmetics: it draws only on the stars and OUTSIDE the card edge.
-   The tier itself is the card's frame (DESIGN.md 5 and 13): the Knight plate ornaments are drawn
+   The tier itself is the card's frame (DESIGN.md §5, §12): the Knight plate ornaments are drawn
    by art/frame.ts. This file keeps the stars, the ★6 shine and one-time flash, and the Prismatic
    extras (rainbow tier name, a glint hopping between stars, rising motes at ★6). No rings. */
 

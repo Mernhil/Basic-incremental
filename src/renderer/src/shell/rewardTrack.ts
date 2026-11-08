@@ -6,7 +6,7 @@ import { icon } from './icons';
 import { h } from './shell';
 
 /**
- * The reward track (DESIGN.md 16 E7, A16 B): the quest scroll unrolls under the header with every
+ * The reward track (DESIGN.md §10, A16 B): the quest scroll unrolls under the header with every
  * account level as a stop on a path. Plain levels (a skill point) are small stones; levels with
  * crystals, a cosmetic or a cost cap bump are signposts. Opens from the account level badge.
  */

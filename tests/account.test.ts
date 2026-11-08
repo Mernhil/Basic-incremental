@@ -35,7 +35,7 @@ function withPoints(points: number): GameState {
   return state;
 }
 
-describe('account XP (DESIGN.md 10a, 12.4)', () => {
+describe('account XP (DESIGN.md §10a, 12.4)', () => {
   it('a new game is level 1 with no XP or skill points', () => {
     const info = accountInfo(newGame(), content);
     expect(info).toMatchObject({ level: 1, maxLevel: A.levels.maxLevel, progress: 0 });
@@ -94,7 +94,7 @@ describe('account XP (DESIGN.md 10a, 12.4)', () => {
   });
 });
 
-describe('account levels and the reward track (DESIGN.md 16 E7, 11.9)', () => {
+describe('account levels and the reward track (DESIGN.md §10, §5)', () => {
   it('levels up on the whole-second grid and reports it with the rewards', () => {
     const state = freshState();
     state.account.xp = xpToNextAccountLevel(content, 1).add(xpToNextAccountLevel(content, 2));
@@ -157,7 +157,7 @@ describe('account levels and the reward track (DESIGN.md 16 E7, 11.9)', () => {
   });
 });
 
-describe('account tree (DESIGN.md 10a)', () => {
+describe('account tree (DESIGN.md §10a)', () => {
   it('has the six branches', () => {
     const branches = new Set(skillTree(freshState(), content).map((n) => n.node.branch));
     expect([...branches].sort()).toEqual(
@@ -195,7 +195,7 @@ describe('account tree (DESIGN.md 10a)', () => {
     expect(tree.find((n) => n.node.id === 'keen_eye')).toMatchObject({ requiresMet: true });
   });
 
-  it('crit nodes raise crit chance and damage (DESIGN.md 11.11)', () => {
+  it('crit nodes raise crit chance and damage (DESIGN.md §6)', () => {
     const state = withPoints(10);
     state.account.skills = { might: 1, keen_eye: 2, brutal: 1 };
     const mods = collectModifiers(state, content).filter((m) => m.source.kind === 'skill');
@@ -204,7 +204,7 @@ describe('account tree (DESIGN.md 10a)', () => {
     );
   });
 
-  it('respecs for free once per ascension, then for Starlight (DESIGN.md 12.1)', () => {
+  it('respecs for free once per ascension, then for Starlight (DESIGN.md §10)', () => {
     const state = withPoints(4);
     state.account.skills = { might: 2 };
     expect(respecInfo(state, content)).toEqual({ free: true, price: null, refund: 2 });
@@ -243,7 +243,7 @@ describe('account tree (DESIGN.md 10a)', () => {
   });
 });
 
-describe('card enhancements (DESIGN.md 10b, 12.2, 12.3)', () => {
+describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
   const silver = (): GameState => {
     const state = freshState();
     state.cards.owned['ember_squire']!.tier = 'silver';

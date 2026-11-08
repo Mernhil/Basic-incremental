@@ -189,7 +189,7 @@ describe('save format v2: cosmetics', () => {
     json.state.cosmetics.loadout.slots.border = { id: 'removed_item', level: 1 };
     const loaded = readSave(JSON.stringify(json), content);
     expect(loaded.state.cosmetics.owned['removed_item']).toBeUndefined();
-    // Epic: max level 4 (DESIGN.md 11.1).
+    // Epic: max level 4 (DESIGN.md §8).
     expect(loaded.state.cosmetics.owned['aurora_veil']!.level).toBe(4);
     expect(loaded.state.cosmetics.loadout.slots.border).toBeUndefined();
   });
@@ -264,7 +264,7 @@ describe('save format v3: production', () => {
   });
 });
 
-describe('save format v14: the three loops (DESIGN.md 11.13)', () => {
+describe('save format v14: the three loops (DESIGN.md §3)', () => {
   it('loads a v13 save: sigils become crystals, levels stay, Money pays them back', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
     json.version = 13;

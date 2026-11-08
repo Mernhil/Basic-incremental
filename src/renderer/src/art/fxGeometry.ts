@@ -1,5 +1,5 @@
 /**
- * Pure geometry for the element effects (DESIGN.md 13): no DOM, so it can be unit tested.
+ * Pure geometry for the element effects (DESIGN.md §12): no DOM, so it can be unit tested.
  * Points are in canvas pixels.
  */
 
@@ -74,7 +74,7 @@ export function zigzag(a: Pt, b: Pt, n: number, amp: number, rnd: () => number):
   return out;
 }
 
-/** How strong an element effect is for a rank tier: none below Gold (DESIGN.md 13). */
+/** How strong an element effect is for a rank tier: none below Gold (DESIGN.md §12). */
 export function effectStrength(tier: string): 0 | 1 | 2 {
   return tier === 'prismatic' ? 2 : tier === 'gold' ? 1 : 0;
 }

@@ -2,7 +2,7 @@ import { jitter, reducedMotion, stageHidden } from './motion';
 import './fly.css';
 
 /**
- * Coins flying to the header counters (DESIGN.md 14): production coins fly straight up; the loot
+ * Coins flying to the header counters (DESIGN.md §11): production coins fly straight up; the loot
  * shower (A5 B) spills them out with small bounces, rests a beat, then vacuums them in. The coin
  * is a copy of the header chip's own glyph, so it always matches the counter it lands on.
  */

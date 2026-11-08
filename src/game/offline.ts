@@ -41,7 +41,7 @@ export interface OfflineSummary {
   cardDrops: CardDrop[];
   /** Card id -> levels before and after, for cards that levelled up while away. */
   cardLevels: Record<string, { from: number; to: number }>;
-  /** Times the fighting loadout was knocked out while away (DESIGN.md 11.10). */
+  /** Times the fighting loadout was knocked out while away (DESIGN.md §6). */
   knockouts: number;
   /** Material id (Cores, Glimmer Dust, Facet Shards) -> units gained while away. */
   materials: Record<string, number>;

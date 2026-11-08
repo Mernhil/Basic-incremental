@@ -28,7 +28,7 @@ import {
 } from './state';
 
 /**
- * Cards (DESIGN.md 5, 11.2, 11.4, 11.9): a collection of owned cards with tier, stars, level and
+ * Cards (DESIGN.md §5): a collection of owned cards with tier, stars, level and
  * XP; one loadout per job (1 main + 3 supports) under a cost cap; star-ups, tier-ups, shards and
  * card drops. Card effects reach the game only as modifiers (source kind `card`) through
  * `collectModifiers`. Every progression number is in cardRules.json.
@@ -81,7 +81,7 @@ export function rankAtLeast(rank: Rank, min: Rank): boolean {
   return t > 0 || (t === 0 && rank.stars >= min.stars);
 }
 
-/** The item drawn inside a card (DESIGN.md 13, 16 E6). */
+/** The item drawn inside a card (DESIGN.md §12, §5). */
 export interface CardItem {
   kind: ItemKind | UniqueItemKind;
   name: string;
@@ -172,7 +172,7 @@ export function cardPower(content: Content, owned: OwnedCard): number {
 }
 
 /**
- * A card's health (DESIGN.md 11.10): its rarity's base health × its power, so it grows with
+ * A card's health (DESIGN.md §6): its rarity's base health × its power, so it grows with
  * level, stars and tier like its bonuses. 0 for unknown ids. The fight side sums the loadout.
  */
 export function cardHealth(content: Content, cardId: string, owned: OwnedCard): Decimal {
@@ -393,7 +393,7 @@ export function cardModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
   for (const job of JOBS) {
     const loadout = state.cards.loadouts[job];
-    // Upgrades make a job's support effects stronger (DESIGN.md 11.14).
+    // Upgrades make a job's support effects stronger (DESIGN.md §4).
     const power = supportPower(state, content, job);
     const add = (id: string | null, role: CardRole): void => {
       if (id === null) return;
@@ -460,7 +460,7 @@ function resourceRequirements(state: GameState, prices: Price[]): Requirement[] 
 }
 
 /**
- * Star-up materials of the next star (DESIGN.md 11.9): the tier's Core, tree gems and mine gems,
+ * Star-up materials of the next star (DESIGN.md §5): the tier's Core, tree gems and mine gems,
  * each line scaled by the card's job share (rounded up, at least 1; a share of 0 leaves it out),
  * then through `cost.multiplier` (scope: job, resource).
  */

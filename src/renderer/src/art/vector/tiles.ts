@@ -1,5 +1,5 @@
 /**
- * Production tiles (DESIGN.md 13 and 16 E4), the approved drawings the pixel tiles are baked from:
+ * Production tiles (DESIGN.md §12), the approved drawings the pixel tiles are baked from:
  * the in-game tree grown over five stages (leaves in the gem's colour) and the crystal-cluster
  * mine, both on a hexagonal ground that sits on a rising metal plinth (stone, bronze, silver, gold,
  * prismatic). Drawn in a 100 x 100 box, baked on the -8 -14 116 128 box at 0.5 px per unit (58 x 64).

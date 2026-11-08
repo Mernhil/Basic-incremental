@@ -397,7 +397,7 @@ export function createCardsPage(
   }
 
   /**
-   * Card enhancements (DESIGN.md 10b, 17; A8 A): a small star chart of the card's options over a
+   * Card enhancements (DESIGN.md §10b, 17; A8 A): a small star chart of the card's options over a
    * point budget bar. A lit star is chosen; clicking an open one chooses it; reset is free.
    */
   const pixelState = (st: StarView['state']): 'owned' | 'open' | 'locked' =>

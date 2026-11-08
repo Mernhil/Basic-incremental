@@ -28,7 +28,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
 /**
- * Buy-line view models (DESIGN.md 14, "Header, numbers and buying"): the offer for the chosen
+ * Buy-line view models (DESIGN.md §11, "Header, numbers and buying"): the offer for the chosen
  * ×1 / ×10 / ×100 / Max, its preview ("DPS 12 → 13, time-to-kill 11h → 2h") and the next
  * milestone ("Lv 25: ×2"). Display logic only; prices, previews and milestones come from game.
  */

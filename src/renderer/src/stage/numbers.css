@@ -1,4 +1,4 @@
-/* Floating numbers, "sticker numerals" (DESIGN.md 14, A4 B): chunky digits with a thick light
+/* Floating numbers, "sticker numerals" (DESIGN.md §11, A4 B): chunky digits with a thick light
    outline, a hard drop shadow and a slight tilt. Colours, size and font come from the equipped
    tick and number cosmetics. --bi-tick-outline / -hurt / -gain are requested tick tokens; until
    the data sets them they fall back to the number colour and the HP palette. */

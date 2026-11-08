@@ -12,7 +12,7 @@ import type { CosmeticGain } from './portals';
 import type { CardGain } from './report';
 
 /**
- * Achievements (DESIGN.md 11.6, 17 sticker book) and the shard shop. Each achievement's
+ * Achievements (DESIGN.md §10, §11 sticker book) and the shard shop. Each achievement's
  * condition (achievements.json) reads the state; it unlocks once, records the play time, and
  * grants its reward (cosmetics, a copy when owned; resources). The game tick checks them on the
  * whole-second grid (tick.ts), offline progress checks them after the session, and actions can

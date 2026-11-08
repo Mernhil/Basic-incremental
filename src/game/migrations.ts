@@ -21,17 +21,17 @@ export const MIGRATIONS: MigrationTable = {
   5: v5ToV6,
   6: v6ToV7,
   7: v7ToV8,
-  /** v8 -> v9: summon portals (DESIGN.md 6). No pulls have been made yet, so every pity counter
+  /** v8 -> v9: summon portals (DESIGN.md §7). No pulls have been made yet, so every pity counter
    *  starts at 0. */
   8: (state) => ({ ...state, portals: {} }),
-  /** v9 -> v10: Ascension (DESIGN.md 3). Nobody has ascended yet, so the run started with the
+  /** v9 -> v10: Ascension (DESIGN.md §9). Nobody has ascended yet, so the run started with the
    *  save: every gem harvested so far counts toward the first Starlight. */
   9: (state) => ({
     ...state,
     prestige: { runStart: {}, shop: {}, starlightEarned: '0' },
   }),
   10: v10ToV11,
-  /** v11 -> v12: achievements and the shard shop (DESIGN.md 11.6). Nothing is unlocked yet; the
+  /** v11 -> v12: achievements and the shard shop (DESIGN.md §10). Nothing is unlocked yet; the
    *  next tick unlocks whatever the save already earned. No offline session was recorded. */
   11: (state) => ({
     ...state,
@@ -45,7 +45,7 @@ export const MIGRATIONS: MigrationTable = {
 };
 
 /**
- * v14 -> v15: tree levels and the upgrade shelf (DESIGN.md 2, 11.14). Trees get a level line like
+ * v14 -> v15: tree levels and the upgrade shelf (DESIGN.md §4). Trees get a level line like
  * the mines; every existing tree starts at level 0 and the plots are kept. No upgrade is owned,
  * and the lifetime Money earned starts at the Money held (the best known lower bound).
  */
@@ -61,7 +61,7 @@ function v14ToV15(state: Record<string, unknown>): Record<string, unknown> {
   };
 }
 
-/** The Money curves of save format 14 (a snapshot of the prices of DESIGN.md 11.13): base and growth. */
+/** The Money curves of save format 14 (a snapshot of the prices of DESIGN.md §3): base and growth. */
 const V14_MONEY_CURVES = {
   mines: {
     copper_quarry: { base: 15, growth: 1.3 },
@@ -92,7 +92,7 @@ const levelOf = (value: unknown): number => {
 };
 
 /**
- * v13 -> v14: the three loops (DESIGN.md 11.13). Money buys mine levels, plots / slots and damage
+ * v13 -> v14: the three loops (DESIGN.md §3). Money buys mine levels, plots / slots and damage
  * lines (they cost gems before); the Moss and Ember Sigils became the Summon and Glamour
  * Crystal; the Frost Sigil is a material with the same id. Levels and expansions are kept, and
  * the Money they would cost now is paid back on top of the starting Money, so nothing feels lost.
@@ -151,7 +151,7 @@ function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
 }
 
 /**
- * v12 -> v13: the account (DESIGN.md 10a) and card enhancements (10b). Accounts start at level
+ * v12 -> v13: the account (DESIGN.md §10a) and card enhancements (10b). Accounts start at level
  * 1 with no XP and no skills (XP is earned from now on); no card has enhancements yet.
  */
 function v12ToV13(state: Record<string, unknown>): Record<string, unknown> {
@@ -173,7 +173,7 @@ function v12ToV13(state: Record<string, unknown>): Record<string, unknown> {
 const V10_DROPPED_COSMETICS = ['holo_hex', 'holo_waves', 'prism_pointer'] as const;
 
 /**
- * v10 -> v11: the Wardrobe (DESIGN.md 7). Rare drops that are cosmetics used to sit in the
+ * v10 -> v11: the Wardrobe (DESIGN.md §8). Rare drops that are cosmetics used to sit in the
  * inventory; now they are owned. The first copy owns the item, the rest are duplicates for its
  * upgrade levels. The inventory counts stay (they are the drop history).
  */
@@ -205,7 +205,7 @@ const V7_GEMS = [
 ] as const;
 
 /**
- * v7 -> v8: gem mastery (DESIGN.md 16, E2). Each gem's lifetime total starts at the amount owned.
+ * v7 -> v8: gem mastery (DESIGN.md §4). Each gem's lifetime total starts at the amount owned.
  * Settled tiers are left out: loading fills them in from the totals and kills (they need the
  * thresholds from the content).
  */
@@ -219,14 +219,14 @@ function v7ToV8(state: Record<string, unknown>): Record<string, unknown> {
   return { ...state, mastery: { harvested } };
 }
 
-/** v6 -> v7: card health (DESIGN.md 11.10). Loadouts start at full health and not knocked out. */
+/** v6 -> v7: card health (DESIGN.md §6). Loadouts start at full health and not knocked out. */
 function v6ToV7(state: Record<string, unknown>): Record<string, unknown> {
   const combat = isRecord(state['combat']) ? state['combat'] : {};
   return { ...state, combat: { ...combat, loadoutDamage: '0', knockoutSeconds: 0 } };
 }
 
 /**
- * v5 -> v6: the woods and ores became gems (DESIGN.md 13, "Resources are carved gems"). Only the
+ * v5 -> v6: the woods and ores became gems (DESIGN.md §12, "Resources are carved gems"). Only the
  * ids changed; amounts carry over one to one. Ids are a snapshot of the v0.3 data.
  */
 function v5ToV6(state: Record<string, unknown>): Record<string, unknown> {

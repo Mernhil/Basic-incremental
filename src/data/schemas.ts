@@ -14,7 +14,7 @@ const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
 /**
- * Resource kinds (DESIGN.md 2, 6). Three loops: `tree_gem` / `mine_gem` / `material` come from
+ * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
  * and pays for mine levels, plots / slots and damage lines; `crystal` (Summon / Glamour Crystal)
  * is the premium tier that pays for summons and is kept through an ascension; `prestige`
@@ -31,7 +31,7 @@ export const RESOURCE_KINDS = [
 
 /** A colour as #rrggbb. */
 const hexColor = z.string().regex(/^#[0-9a-f]{6}$/, 'colours are #rrggbb in lowercase');
-/** Four tones, light to dark (DESIGN.md 13, cel and facet shading). */
+/** Four tones, light to dark (DESIGN.md §12, cel and facet shading). */
 const tones = z.tuple([hexColor, hexColor, hexColor, hexColor]);
 
 export const GEM_SHAPES = ['round', 'pentagon', 'star', 'square', 'hexagon', 'drop'] as const;
@@ -51,7 +51,7 @@ export const resourceSchema = z.strictObject({
   /** Art for tree and mine gems (required for those kinds, not allowed for others). */
   gem: gemArtSchema.optional(),
   /** Amount a brand-new game starts with (default 0). Money starts with enough for the first
-   *  damage levels (DESIGN.md 11.13). */
+   *  damage levels (DESIGN.md §3). */
   startAmount: decimal.optional(),
 });
 
@@ -79,7 +79,7 @@ const producerFields = {
 };
 
 /**
- * Level milestones (DESIGN.md 11.12): every `every` levels the line's output is multiplied by
+ * Level milestones (DESIGN.md §4): every `every` levels the line's output is multiplied by
  * `multiplier` (x2 every 25 levels to start). Per line, so milestones can differ later.
  */
 export const milestoneSchema = z.strictObject({
@@ -90,7 +90,7 @@ export type Milestones = z.output<typeof milestoneSchema>;
 
 /**
  * Levels of a tree kind or mine type, bought with Money and reset on prestige. Each level adds
- * `ratePercent`% output and every `milestones.every` levels multiplies it (DESIGN.md 2, 11.12).
+ * `ratePercent`% output and every `milestones.every` levels multiplies it (DESIGN.md §4).
  */
 export const producerLevelSchema = z.strictObject({
   cost: costCurveSchema,
@@ -104,7 +104,7 @@ export const treeSchema = z.strictObject({
   ...producerFields,
   /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
   unlockCost: z.array(costSchema),
-  /** Tree levels (DESIGN.md 2, 11.14), bought with Money and reset on prestige. */
+  /** Tree levels (DESIGN.md §4), bought with Money and reset on prestige. */
   level: producerLevelSchema,
   /** Tree colours, themed to its gem: canopy and bark, light to dark. */
   art: z.strictObject({ leaf: tones, bark: tones }),
@@ -128,7 +128,7 @@ const jobProductionSchema = z.strictObject({
   expansion: costCurveSchema,
 });
 
-/** How a production main card strikes (DESIGN.md 11.15): a look and a rhythm, never extra output. */
+/** How a production main card strikes (DESIGN.md §4): a look and a rhythm, never extra output. */
 export const HARVEST_STYLES = ['steady', 'chop', 'flurry', 'volley'] as const;
 export type HarvestStyle = (typeof HARVEST_STYLES)[number];
 /** Which plots / slots a strike lands on: the next one in turn, a random one, or every one. */
@@ -235,7 +235,7 @@ export const STATS = [
   'harvest.critDamage',
   /** Special dungeon reward units per score tier reached (floored). Scope: dungeon, resource. */
   'trial.reward',
-  /** Fighting loadout health pool (DESIGN.md 11.10): the sum of the cards' health. Scope: dungeon. */
+  /** Fighting loadout health pool (DESIGN.md §6): the sum of the cards' health. Scope: dungeon. */
   'combat.health',
   /** Percent of boss damage blocked (0 by default, clamped to 0..90). Scope: dungeon. */
   'combat.defence',
@@ -244,15 +244,15 @@ export const STATS = [
   /** Damage multiplier of a crit (at least 1). Scope: dungeon. */
   'combat.critDamage',
   /** Multiplier on the crystals (Summon and Glamour) of each kill, base 1; a fraction is rounded
-   *  up with that chance, so the average is exact (DESIGN.md 16, E3). Scope: dungeon, resource. */
+   *  up with that chance, so the average is exact (DESIGN.md §6). Scope: dungeon, resource. */
   'drops.crystalMultiplier',
   /** Multiplier on the Money of each kill, base 1 (fraction rounded like the crystals).
    *  Scope: dungeon, resource. */
   'drops.moneyMultiplier',
-  /** Starlight an ascension grants, before rounding down (DESIGN.md 3). */
+  /** Starlight an ascension grants, before rounding down (DESIGN.md §9). */
   'prestige.gain',
   /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
-   *  their modifiers (DESIGN.md 11.14). Only read from upgrades. Scope: job. */
+   *  their modifiers (DESIGN.md §4). Only read from upgrades. Scope: job. */
   'card.supportPower',
 ] as const;
 export type Stat = (typeof STATS)[number];
@@ -316,13 +316,13 @@ const cardEffectSchema = z.strictObject({
 export type CardEffect = z.output<typeof cardEffectSchema>;
 
 /**
- * A collectible card (DESIGN.md 5, 11.9). Every card can lead its job (`main`) or sit in one of
+ * A collectible card (DESIGN.md §5). Every card can lead its job (`main`) or sit in one of
  * its 3 support slots (`support`); only the effect of the slot it is in applies.
  */
-/** Card elements (DESIGN.md 13): each picks the card's element effect. */
+/** Card elements (DESIGN.md §12): each picks the card's element effect. */
 export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
-/** The signature item drawn inside a card (DESIGN.md 13); its detail grows with the card's rarity. */
+/** The signature item drawn inside a card (DESIGN.md §12); its detail grows with the card's rarity. */
 export const ITEM_KINDS = [
   'sword',
   'shield',
@@ -338,7 +338,7 @@ export const ITEM_KINDS = [
   'gauntlet',
 ] as const;
 
-/** Unique ★6 evolutions (DESIGN.md 13, 16 E6): drawn in place of a card's generic item. */
+/** Unique ★6 evolutions (DESIGN.md §12, §5): drawn in place of a card's generic item. */
 export const UNIQUE_ITEM_KINDS = ['flameblade', 'rootbloom_staff', 'soul_reaper'] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
 export type UniqueItemKind = (typeof UNIQUE_ITEM_KINDS)[number];
@@ -354,7 +354,7 @@ export const cardSchema = z.strictObject({
    *  card keeps its generic item. */
   evolution: z.enum(UNIQUE_ITEM_KINDS).optional(),
   /** Used when the card leads its job's loadout. Logging and mining mains also set how it
-   *  strikes (`harvest`, DESIGN.md 11.15). */
+   *  strikes (`harvest`, DESIGN.md §4). */
   main: cardEffectSchema.extend({ harvest: harvestPatternSchema.optional() }),
   /** Used when the card is in one of the 3 support slots. */
   support: cardEffectSchema,
@@ -378,7 +378,7 @@ const perJob = <T extends z.ZodType>(schema: T) =>
   z.strictObject({ mining: schema, logging: schema, fighting: schema });
 
 /**
- * One material of a star-up (DESIGN.md 11.9): `amounts` for the 5 steps (★1→2 … ★5→6), times the
+ * One material of a star-up (DESIGN.md §5): `amounts` for the 5 steps (★1→2 … ★5→6), times the
  * card's job share. A mix of the tier's Core with tree and mine gems makes every job use both
  * production loops; a share of 0 leaves the line out for that job, a missing share is 1.
  */
@@ -394,7 +394,7 @@ export const starUpLineSchema = z.strictObject({
     .optional(),
 });
 
-/** Card progression numbers (cardRules.json; DESIGN.md 11.2, 11.4, 11.9). All tunable. */
+/** Card progression numbers (cardRules.json; DESIGN.md §5). All tunable. */
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
   startCards: z.array(id),
@@ -447,14 +447,14 @@ export const cardRulesSchema = z.strictObject({
     silver: perJob(z.array(costSchema).min(1)),
     gold: perJob(z.array(costSchema).min(1)),
   }),
-  /** Base health of a card by rarity, multiplied by its power (DESIGN.md 11.10). The fighting
+  /** Base health of a card by rarity, multiplied by its power (DESIGN.md §6). The fighting
    *  loadout's health pool sums its cards. */
   health: perRarity(positiveDecimal),
   /** Shards for a duplicate gained once the card is Prismatic ★6, by rarity. */
   shards: perRarity(count),
 });
 
-/** Boss drawings (DESIGN.md 13: sticker style, a distinct body shape each). */
+/** Boss drawings (DESIGN.md §12: sticker style, a distinct body shape each). */
 export const BOSS_ARTS = [
   'root_warden',
   'cinder_lich',
@@ -468,7 +468,7 @@ export const dungeonSchema = z.strictObject({
   tier,
   /** Dungeon whose clear unlocks this one; null = open from the start. */
   unlockedBy: id.nullable(),
-  /** Boss kills needed to clear the dungeon (DESIGN.md 11.8: the first kill). */
+  /** Boss kills needed to clear the dungeon (DESIGN.md §6: the first kill). */
   killsToClear: z.number().int().min(1).default(1),
   boss: z.strictObject({
     id,
@@ -480,7 +480,7 @@ export const dungeonSchema = z.strictObject({
     hpScalingPerPrestige: z.number().min(0).max(1),
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
-    /** The boss hits the fighting loadout back (DESIGN.md 11.10). Damage grows with prestige
+    /** The boss hits the fighting loadout back (DESIGN.md §6). Damage grows with prestige
      *  like the HP (hpScalingPerPrestige). */
     attack: z.strictObject({
       damage: positiveDecimal,
@@ -497,7 +497,7 @@ export const dungeonSchema = z.strictObject({
       pityThreshold: z.number().int().min(1),
     }),
     /** Currencies granted on every kill, each a range (inclusive): Money and both crystals
-     *  (DESIGN.md 6, 11.13). Deeper dungeons pay more. */
+     *  (DESIGN.md §7, §3). Deeper dungeons pay more. */
     currencies: z
       .array(
         z
@@ -510,11 +510,11 @@ export const dungeonSchema = z.strictObject({
       )
       .min(1),
     /** Money paid for every second of fighting this dungeon's boss (not while knocked out), so
-     *  the very first levels can be bought before the first kill (DESIGN.md 11.13). Only the
+     *  the very first levels can be bought before the first kill (DESIGN.md §3). Only the
      *  first dungeon has one: later dungeons pay by the kill, so a wall cannot be farmed idle. */
     wage: z.strictObject({ resource: id, perSecond: positiveDecimal }).optional(),
     /** Further materials dropped on every kill, each a range like the currencies (the Frostspire
-     *  Vault drops Frost Sigils for the Prismatic card upgrades; DESIGN.md 11.9). */
+     *  Vault drops Frost Sigils for the Prismatic card upgrades; DESIGN.md §5). */
     extraMaterials: z
       .array(
         z
@@ -536,7 +536,7 @@ export const dungeonSchema = z.strictObject({
 });
 
 /**
- * A special dungeon (DESIGN.md 4, 11.8): a strength test. Each attempt lasts `durationSeconds`
+ * A special dungeon (DESIGN.md §6): a strength test. Each attempt lasts `durationSeconds`
  * against a target with a fixed HP; the score is the share of that HP dealt (capped at 1).
  * Every tier whose `score` was reached pays its rewards; a score of 1 clears it.
  */
@@ -563,7 +563,7 @@ export const trialSchema = z
     path: ['tiers'],
   });
 
-// ---- Progression (DESIGN.md 16) ----------------------------------------------------------------
+// ---- Progression (DESIGN.md §4, §6, §10, §12) ----------------------------------------------------------------
 
 /** The metal ladder (E1): tier 0..4 of anything with tiers. */
 export const METALS = ['stone', 'bronze', 'silver', 'gold', 'prismatic'] as const;
@@ -603,7 +603,7 @@ export const GOAL_KINDS = [
   'gem_mastery',
   'boss_mastery',
   'star_up',
-  /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md 3). */
+  /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md §9). */
   'ascension',
 ] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
@@ -663,7 +663,7 @@ export type Progression = z.output<typeof progressionSchema>;
 export type MasteryBonus = z.output<typeof masteryBonusSchema>;
 export type GoalRule = Progression['goals'][number];
 
-/** One job's burst gauge (DESIGN.md 11.3, 11.8). Each value is read through its `burst.*` stat. */
+/** One job's burst gauge (DESIGN.md §6). Each value is read through its `burst.*` stat. */
 const burstConfigSchema = z.strictObject({
   /** Seconds between hits (fighting) or ticks (production). */
   intervalSeconds: z.number().positive(),
@@ -679,14 +679,14 @@ const burstConfigSchema = z.strictObject({
 export const combatSchema = z.strictObject({
   /** Damage per second before any upgrade. */
   startingDamage: positiveDecimal,
-  /** Damage upgrade lines, one per ore (DESIGN.md 11.8). Levels are kept through prestige. */
+  /** Damage upgrade lines, one per ore (DESIGN.md §6). Levels are kept through prestige. */
   damageUpgrades: z
     .array(
       z.strictObject({
         id,
         name,
         /** The mine gem this line is forged from: its art and the `resource` scope of modifiers
-         *  (`combat.upgradeGain`). The price itself is in Money (DESIGN.md 11.13). */
+         *  (`combat.upgradeGain`). The price itself is in Money (DESIGN.md §3). */
         gem: id,
         cost: costCurveSchema,
         /** Damage per second each level adds, read through `combat.upgradeGain`. */
@@ -701,9 +701,9 @@ export const combatSchema = z.strictObject({
     logging: burstConfigSchema,
     mining: burstConfigSchema,
   }),
-  /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md 11.10). */
+  /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md §6). */
   knockoutSeconds: z.number().gt(0),
-  /** Crits (DESIGN.md 11.11): base chance (0..1) and damage multiplier of a critical hit. */
+  /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
     chance: z.number().min(0).max(1),
     damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
@@ -723,7 +723,7 @@ export const COSMETIC_SLOTS = [
   'number',
   'table',
   'cursor',
-  /* UI-skin slots (DESIGN.md 7): art-driven, so they set no tokens; the item's `ui-<slot>-<style>`
+  /* UI-skin slots (DESIGN.md §8): art-driven, so they set no tokens; the item's `ui-<slot>-<style>`
      recipe names the style the pages draw. */
   'starlight',
   'sticker',
@@ -766,7 +766,7 @@ export const SLOT_TOKENS = {
     'tick-gain',
   ],
   number: ['num-font', 'num-weight', 'num-color'],
-  /* The table item also skins the screen shell around it (DESIGN.md 9): header and sidebar
+  /* The table item also skins the screen shell around it (DESIGN.md §11): header and sidebar
      (chrome-*), framed panels (frame-*) and tooltips (tip-*). */
   table: [
     'table-bg',
@@ -920,7 +920,7 @@ export const wearRulesSchema = z.strictObject({
 export const PORTAL_KINDS = ['cards', 'cosmetics'] as const;
 
 /**
- * A summon portal (DESIGN.md 6, "Beta portals"). Every portal offers a single pull and a
+ * A summon portal (DESIGN.md §7, "Beta portals"). Every portal offers a single pull and a
  * 10-pull; prices go through `cost.multiplier` (scope: portal, resource).
  */
 export const portalSchema = z.strictObject({
@@ -947,7 +947,7 @@ export const portalSchema = z.strictObject({
 });
 
 /**
- * Prestige, Ascension (DESIGN.md 3, 11.6; prestige.json). Starlight gained =
+ * Prestige, Ascension (DESIGN.md §9; prestige.json). Starlight gained =
  * floor(((Σ gems harvested this run × the weight of the gem's tier) / divisor) ^ exponent),
  * through `prestige.gain`. An ascension needs at least `minimum`.
  */
@@ -980,7 +980,7 @@ export const prestigeSchema = z.strictObject({
 });
 
 /**
- * What unlocks an achievement (DESIGN.md 11.6). Each kind reads one thing from the state:
+ * What unlocks an achievement (DESIGN.md §10). Each kind reads one thing from the state:
  * lifetime gems harvested (optionally one job), total boss kills, every producer of a job
  * unlocked (or `count` of them), a dungeon / trial cleared, portal pulls, pity hits, any card at
  * a tier or star count, a full loadout, a full non-starter set equipped, non-starter cosmetics
@@ -1030,7 +1030,7 @@ export const achievementSchema = z.strictObject({
 });
 export type Achievement = z.output<typeof achievementSchema>;
 
-/** One shard shop item (DESIGN.md 5: duplicates past max rank become shards for a shop). */
+/** One shard shop item (DESIGN.md §5: duplicates past max rank become shards for a shop). */
 export const shardShopItemSchema = z.strictObject({
   id,
   reward: z.discriminatedUnion('kind', [
@@ -1050,7 +1050,7 @@ export const achievementsFileSchema = z.strictObject({
   shardShop: z.array(shardShopItemSchema),
 });
 
-// ---- Account (DESIGN.md 10, 16 E7) -------------------------------------------------------------
+// ---- Account (DESIGN.md §10) -------------------------------------------------------------
 
 export const SKILL_BRANCHES = [
   'logging',
@@ -1108,7 +1108,7 @@ export const accountSchema = z.strictObject({
       perRank: z.array(modifierSchema).min(1),
     }),
   ),
-  /** Respec (DESIGN.md 12.1): `freePerAscension` free ones each run, then `cost` Starlight. */
+  /** Respec (DESIGN.md §10): `freePerAscension` free ones each run, then `cost` Starlight. */
   respec: z.strictObject({ cost: positiveDecimal, freePerAscension: z.number().int().min(0) }),
 });
 export type AccountConfig = z.output<typeof accountSchema>;
@@ -1116,7 +1116,7 @@ export type SkillNode = AccountConfig['tree'][number];
 export type RewardTrackEntry = AccountConfig['rewardTrack'][number];
 
 /**
- * Card enhancements (DESIGN.md 10b, 12.2, 12.3; enhancements.json): from `unlockRank`, each card
+ * Card enhancements (DESIGN.md §10b, 12.2, 12.3; enhancements.json): from `unlockRank`, each card
  * picks options from its own list within its tier's point budget. An option's modifiers apply
  * while the card is in a loadout (source `enhancement`). Respec is free.
  */
@@ -1140,12 +1140,12 @@ export const enhancementsSchema = z.strictObject({
 export type EnhancementsConfig = z.output<typeof enhancementsSchema>;
 export type EnhancementOption = EnhancementsConfig['cards'][string][number];
 
-/** The steps of the cosmetic upgrade ladder, in order (DESIGN.md 7). */
+/** The steps of the cosmetic upgrade ladder, in order (DESIGN.md §8). */
 export const LADDER_STEPS = ['shape', 'accent', 'gems', 'glow', 'ambient'] as const;
 export type LadderStep = (typeof LADDER_STEPS)[number];
 
 /**
- * Cosmetic upgrade levels (cosmeticRules.json; DESIGN.md 7, 11.1). A non-starter item's max
+ * Cosmetic upgrade levels (cosmeticRules.json; DESIGN.md §8). A non-starter item's max
  * level comes from its rarity; `ladders[max]` says what each level adds (level 1 first, which
  * owning the item gives). Level L + 1 costs `copiesPerLevel` duplicates and the step's material
  * × the rarity's cost factor (through `cost.multiplier`, scope: resource).
@@ -1200,7 +1200,7 @@ export const cosmeticSetSchema = z.strictObject({
 });
 
 /**
- * The upgrade shelf (DESIGN.md 11.14): one-time multipliers bought with Money that appear when
+ * The upgrade shelf (DESIGN.md §4): one-time multipliers bought with Money that appear when
  * their unlock condition is met. `permanent` ones are kept through an ascension, the rest are
  * bought again each run. Effects are ordinary modifiers (source `upgrade`).
  */

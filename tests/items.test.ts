@@ -6,7 +6,7 @@ import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
 const content = loadContent();
 
-describe('signature items (DESIGN.md 13)', () => {
+describe('signature items (DESIGN.md §12)', () => {
   it('draws every item kind the data allows, and every beta card names one', () => {
     expect([...ITEM_KINDS].sort()).toEqual([...ITEM_KINDS_DRAWN].sort());
     for (const card of content.cards) expect(itemArt(card.item.kind, card.rarity)).not.toBe('');

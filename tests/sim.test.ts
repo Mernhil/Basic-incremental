@@ -301,7 +301,7 @@ describe('balance sim: several seeds', () => {
 });
 
 describe('balance sim: run', () => {
-  it('lists the DESIGN 11.7 milestones with their targets', () => {
+  it('lists the DESIGN §14 milestones with their targets', () => {
     const first = MILESTONES.find((m) => m.id === 'clear_d1');
     expect(first?.targetHours).toBe(0.5);
     expect(MILESTONES.map((m) => m.targetHours)).toContain(40);

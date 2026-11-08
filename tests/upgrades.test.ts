@@ -25,7 +25,7 @@ function withMoney(state: GameState, amount: number | string): GameState {
   return state;
 }
 
-describe('upgrade shelf content (DESIGN.md 11.14)', () => {
+describe('upgrade shelf content (DESIGN.md §4)', () => {
   it('has about 30 upgrades with unique ids, paid in Money', () => {
     const list = content.upgrades.upgrades;
     expect(list.length).toBeGreaterThanOrEqual(30);

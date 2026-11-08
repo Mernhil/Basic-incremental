@@ -25,7 +25,7 @@ import {
 import { nextAverage, popupScale } from './math';
 
 /**
- * The stage director (DESIGN.md 14): turns the game loop's reports and the cards' rhythm into
+ * The stage director (DESIGN.md §11): turns the game loop's reports and the cards' rhythm into
  * show events (hits, signature attacks, boss attacks, knockouts, kills with loot, harvest ticks
  * and bursts). Pages and Home listen and draw them. Show only: it never changes the state.
  */
@@ -49,7 +49,7 @@ export interface ShowEvents {
     plots: Array<{ index: number; resource: string; amount: Decimal }>;
   };
   harvestBurst: { job: ProductionJob; totals: Loot[] };
-  /** The main cards' strikes and harvest bursts of one game step (DESIGN.md 11.15), as reported. */
+  /** The main cards' strikes and harvest bursts of one game step (DESIGN.md §4), as reported. */
   harvests: { events: HarvestEvent[] };
 }
 
@@ -84,7 +84,7 @@ export function createDirector(content: Content, state: () => GameState) {
     window.setTimeout(hitLoop, stats.interval * 1000);
   };
 
-  // the boss hits back on its own interval (DESIGN.md 11.10)
+  // the boss hits back on its own interval (DESIGN.md §6)
   const bossLoop = (): void => {
     const s = state();
     const dungeon = s.activeDungeonId ? content.dungeonById.get(s.activeDungeonId) : undefined;

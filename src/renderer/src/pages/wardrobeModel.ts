@@ -27,7 +27,7 @@ import { COPY } from '../copy';
 import { modifierText, sourceName } from '../shell/modifierText';
 
 /**
- * Wardrobe view models (DESIGN.md 7, 11.1, 17 mannequin card): the seven slots around the
+ * Wardrobe view models (DESIGN.md §8, §11 mannequin card): the seven slots around the
  * preview card, the item grid, the selected item's ladder and upgrade checklist, set bonuses and
  * the try-on loadout of the preview. Display logic only; every rule comes from game.
  */

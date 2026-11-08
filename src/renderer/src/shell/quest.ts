@@ -3,7 +3,7 @@ import type { GoalRow } from '../pages/progressionModel';
 import { h } from './shell';
 
 /**
- * The quest scroll (DESIGN.md 16, E8, A16 B): the next 1-3 goals with a check box, a progress bar
+ * The quest scroll (DESIGN.md §10, A16 B): the next 1-3 goals with a check box, a progress bar
  * and an estimate; clicking a goal opens its page.
  */
 export function createQuestScroll(

@@ -44,7 +44,7 @@ const BETA_25 = [
 ];
 const unlockedBy = (state: GameState): string[] => checkAchievements(state, content).unlocked;
 
-describe('achievements (DESIGN.md 11.6)', () => {
+describe('achievements (DESIGN.md §10)', () => {
   it('has the 25 beta achievements plus mastery and milestone ones', () => {
     const ids = content.achievements.map((a) => a.id);
     for (const id of BETA_25) expect(ids, id).toContain(id);
@@ -163,7 +163,7 @@ describe('achievements (DESIGN.md 11.6)', () => {
   });
 });
 
-describe('shard shop (DESIGN.md 5, 17)', () => {
+describe('shard shop (DESIGN.md §5, §11)', () => {
   const withShards = (n: number): GameState => {
     const state = newGame();
     state.cards.shards = n;

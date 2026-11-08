@@ -1,6 +1,6 @@
 /**
  * `npm run sim -- [--hours 40] [--seeds 5] [--seed 1] [--step 5]`: runs the balance sim for
- * several seeds in parallel (one child process each) and prints, per DESIGN.md 11.7 milestone,
+ * several seeds in parallel (one child process each) and prints, per DESIGN.md §14 milestone,
  * the target, the median sim time, the spread (min-max) and how many runs reached it, then the
  * end state of the median seed's run. `--seeds 1` prints the single-run table and summary.
  */

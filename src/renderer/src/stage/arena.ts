@@ -35,7 +35,7 @@ import { toast } from './toast';
 import './arena.css';
 
 /**
- * The dungeon arena (DESIGN.md 14, A1 D full-bleed stage): the boss large and centred with an
+ * The dungeon arena (DESIGN.md §11, A1 D full-bleed stage): the boss large and centred with an
  * idle bob and stacked HP bars, the fighting loadout facing it with its shared health bar, the
  * burst gauge on the main card and live readouts in the top-right corner. Reacts to the
  * director's show events while it is on screen.
@@ -77,7 +77,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   const name = document.createElement('h2');
   name.className = 'ar__name';
   const tags = div('ar__tags');
-  // the boss mastery medal next to the name (DESIGN.md 16 E3)
+  // the boss mastery medal next to the name (DESIGN.md §6)
   const medal = div('ar__medal');
   medal.tabIndex = 0;
   medal.setAttribute('role', 'img');

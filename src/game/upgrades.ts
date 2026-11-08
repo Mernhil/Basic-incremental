@@ -6,7 +6,7 @@ import { canAfford, mineLevel, pay, producerRate, treeLevel, type Price } from '
 import type { GameState } from './state';
 
 /**
- * The upgrade shelf (DESIGN.md 11.14): one-time multipliers bought with Money that appear when
+ * The upgrade shelf (DESIGN.md §4): one-time multipliers bought with Money that appear when
  * a threshold is reached (a level, a mastery tier, a boss kill count, lifetime Money earned).
  * Their effects are ordinary modifiers with the source kind `upgrade`. Upgrades marked
  * `permanent` survive an ascension; the rest are bought again each run.

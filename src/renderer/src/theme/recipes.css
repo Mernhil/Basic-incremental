@@ -316,7 +316,7 @@
   --bi-frame-family: knight-plate;
 }
 
-/* ===== max level: ambient animations and edge-breaking flourishes (DESIGN.md 7) ================
+/* ===== max level: ambient animations and edge-breaking flourishes (DESIGN.md §8) ================
    A card wearing a border or finish at its max level gets data-max-border / data-max-finish
    (theme/apply.ts). The ambient look is themed by the item's own recipe; data may also name an
    ambient recipe directly (r-ambient-*, r-flourish-corners) on the item's ambient level.
@@ -939,7 +939,7 @@
   transform: translateY(-40px);
 }
 
-/* ===== pixel borders and finishes (beta art batch, DESIGN.md 7 and 13) =========================
+/* ===== pixel borders and finishes (beta art batch, DESIGN.md §8, §12) =========================
    Each level of a pixel border or finish is one baked layer on the card's frame grid (183 x 237,
    the frame sprite's grid), placed exactly like the frame. Levels stack like every recipe: the
    highest level's rule comes last in the generated block below, so it wins. Borders sit above the

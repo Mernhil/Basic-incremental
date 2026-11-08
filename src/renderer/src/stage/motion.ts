@@ -1,5 +1,5 @@
 /**
- * Shared stage motion (DESIGN.md 14, Performance): one animation-frame loop for every rolling
+ * Shared stage motion (DESIGN.md §11, Performance): one animation-frame loop for every rolling
  * counter and stage tween, paused while the window is hidden; reduced-motion checks; restartable
  * CSS reactions (flash, squash, shake) and the brief slow-down.
  */

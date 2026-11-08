@@ -1,5 +1,5 @@
 /**
- * Small SVG kit for the cel / faceted art (DESIGN.md 13). Every function returns SVG markup as a
+ * Small SVG kit for the cel / faceted art (DESIGN.md §12). Every function returns SVG markup as a
  * string so tiles can be rebuilt cheaply. Shapes are drawn in a 100 x 100 box.
  */
 

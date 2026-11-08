@@ -5,7 +5,7 @@ import type { TickReport, TierUp } from './report';
 import type { GameState } from './state';
 
 /**
- * Mastery (DESIGN.md 16). Gem mastery (E2): each production gem's lifetime total harvested gives
+ * Mastery (DESIGN.md §4, §6). Gem mastery (E2): each production gem's lifetime total harvested gives
  * a tier on the metal ladder. Boss mastery (E3): kills per dungeon give medal tiers; special
  * dungeons take theirs from their best score. Both are kept through prestige, and each tier adds
  * the bonuses in progression.json through the modifier pipeline (source kind `mastery`).

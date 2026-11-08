@@ -1,5 +1,5 @@
 /**
- * Bosses and the Crystal Sentinel in pixel art (DESIGN.md 13, approved for the beta): 160 x 172
+ * Bosses and the Crystal Sentinel in pixel art (DESIGN.md §12, approved for the beta): 160 x 172
  * sprites drawn with the Brave Frontier technique, a soft aura in the boss colour instead of a white
  * sticker outline, and idle effects. The body barely moves (a one-pixel bob); the life is in the
  * effects, which loop on their own clocks:

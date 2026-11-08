@@ -1,7 +1,7 @@
 import type { Resource } from '../../../data';
 
 /**
- * Resource icons, in ONE place (DESIGN.md 9, 14). Every resource has a swappable icon id; the
+ * Resource icons, in ONE place (DESIGN.md §11). Every resource has a swappable icon id; the
  * markup behind an id is a placeholder the graphics pass replaces (pixel-art agent): change
  * `ICON_MARKUP` or point `ICON_BY_RESOURCE` at another id, nothing else needs to move.
  *

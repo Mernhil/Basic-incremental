@@ -3,7 +3,7 @@
  * boss idle effects). Art functions return plain markup; a moving part is a `<foreignObject>`
  * holding a `.bi-px-live` box whose canvases one shared loop redraws on the sprite's own grid, in
  * whole pixels, at a capped frame rate, only while on screen and with the window visible.
- * Under reduced motion each layer draws one chosen still frame and never ticks (DESIGN.md 13).
+ * Under reduced motion each layer draws one chosen still frame and never ticks (DESIGN.md §12).
  */
 import { rnd } from '../kit';
 import { rgbOf } from './raster';

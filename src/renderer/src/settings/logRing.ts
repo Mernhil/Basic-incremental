@@ -1,4 +1,4 @@
-/** A small ring of timestamped log lines (Report an issue, DESIGN.md 12.5). */
+/** A small ring of timestamped log lines (Report an issue, DESIGN.md §2). */
 
 export const LOG_KEEP = 200;
 

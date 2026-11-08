@@ -34,7 +34,7 @@ describe('dungeon page helpers', () => {
     const state = freshState();
     const mossy = content.dungeonById.get('mossy_cellar')!;
     const dps = effectiveDamage(state, content, mossy.id);
-    // Crits count at their expected value: 5% chance of x2 = 1.05 (DESIGN.md 11.11).
+    // Crits count at their expected value: 5% chance of x2 = 1.05 (DESIGN.md §6).
     const avg = averageDamage(dps, burstStats(content, 'fighting')).mul(1.05);
     const expected = bossMaxHp(mossy, 0).div(avg);
     expect(secondsPerKill(state, content, mossy.id)).toBeCloseTo(expected.toNumber());

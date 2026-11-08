@@ -63,7 +63,7 @@ function give(state: GameState, resource: string, amount: number): GameState {
   return state;
 }
 
-describe('a new game (DESIGN.md 11.9)', () => {
+describe('a new game (DESIGN.md §5)', () => {
   it('owns the three Common cards at Bronze ★1 Lv 1, each leading its job', () => {
     const state = freshState();
     expect(Object.keys(state.cards.owned).sort()).toEqual([
@@ -85,7 +85,7 @@ describe('a new game (DESIGN.md 11.9)', () => {
   });
 });
 
-describe('levels (DESIGN.md 11.2, 11.9)', () => {
+describe('levels (DESIGN.md §5)', () => {
   it('caps levels at 20 for Bronze ★1, +4 per star, up to 100 at Prismatic ★6', () => {
     expect(levelCap(content, { tier: 'bronze', stars: 1 })).toBe(20);
     expect(levelCap(content, { tier: 'bronze', stars: 6 })).toBe(40);
@@ -188,7 +188,7 @@ describe('levels (DESIGN.md 11.2, 11.9)', () => {
   });
 });
 
-describe('card effects through the modifier pipeline (DESIGN.md 11.5, 11.9)', () => {
+describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () => {
   const fighting = (state: GameState) =>
     burstStats(content, 'fighting', collectModifiers(state, content));
 
@@ -287,7 +287,7 @@ describe('card effects through the modifier pipeline (DESIGN.md 11.5, 11.9)', ()
   });
 });
 
-describe('loadouts (DESIGN.md 11.4, 11.9)', () => {
+describe('loadouts (DESIGN.md §5)', () => {
   it('has a cost cap of 6 at account level 1, read through loadout.costCap', () => {
     const state = freshState();
     expect(loadoutCostCap(state, content, 'fighting')).toBe(6);
@@ -353,7 +353,7 @@ describe('loadouts (DESIGN.md 11.4, 11.9)', () => {
   });
 });
 
-describe('star-up and tier-up (DESIGN.md 11.9)', () => {
+describe('star-up and tier-up (DESIGN.md §5)', () => {
   it('lists what a star-up needs, met or not, with have / need', () => {
     const state = own(freshState(), 'ember_squire', { level: 12 });
     const costs = starUpCost(
@@ -520,7 +520,7 @@ describe('star-up and tier-up (DESIGN.md 11.9)', () => {
   });
 });
 
-describe('gaining cards (DESIGN.md 11.9)', () => {
+describe('gaining cards (DESIGN.md §5)', () => {
   it('adds a new card, then duplicates, then shards at Prismatic ★6', () => {
     let result = addCard(freshState(), content, 'dawnblade_regent')!;
     expect(result.gain).toEqual({ kind: 'new' });
@@ -537,7 +537,7 @@ describe('gaining cards (DESIGN.md 11.9)', () => {
     expect(addCard(freshState(), content, 'nope')).toBeNull();
   });
 
-  it('gives shards by rarity as in DESIGN.md 11.9', () => {
+  it('gives shards by rarity as in DESIGN.md §5', () => {
     expect(content.cardRules.shards).toEqual({
       common: 1,
       rare: 2,

@@ -1,4 +1,4 @@
-/* Settings page (DESIGN.md 9, 12.23), option B: Display, Sound, Save and Help as framed panels
+/* Settings page (DESIGN.md §11), option B: Display, Sound, Save and Help as framed panels
    in two columns. Colours come from the equipped table item's frame-* and chrome-* tokens. */
 
 .set-grid {

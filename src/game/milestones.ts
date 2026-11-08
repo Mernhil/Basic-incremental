@@ -2,7 +2,7 @@ import type { Milestones } from '../data';
 import { Decimal } from './num';
 
 /**
- * Level milestones (DESIGN.md 11.12): every `every` levels a line's output is multiplied by
+ * Level milestones (DESIGN.md §4): every `every` levels a line's output is multiplied by
  * `multiplier`. Used by the damage lines and mine levels; the UI marks the next one ("Lv 25: x2")
  * and celebrates each one reached.
  */
@@ -65,7 +65,7 @@ export function milestonesCrossed(m: Milestones, from: number, to: number): numb
 
 /**
  * Visual growth stage 0..4 from a level: one step per milestone, capped at the top stage
- * (DESIGN.md 16, E4 and E5).
+ * (DESIGN.md §12).
  */
 export function growthStage(m: Milestones, level: number, top = 4): number {
   return Math.min(top, milestonesReached(m, level));

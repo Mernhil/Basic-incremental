@@ -116,7 +116,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();
-  // The header shows only Money and the two crystals (DESIGN.md 9); every other resource lives
+  // The header shows only Money and the two crystals (DESIGN.md §11); every other resource lives
   // behind the Details button, where its coins fly. Icons are swappable ids (ui/resourceIcons).
   const currencies: Currency[] = content.resources.map((r) => {
     const iconId = resourceIconId(r);
@@ -214,7 +214,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   });
   if (summary) showWelcomeBack(summary, content, shell, playSound);
 
-  // tier-up moments from the loop, purchases and card upgrades (DESIGN.md 16, E1)
+  // tier-up moments from the loop, purchases and card upgrades (DESIGN.md §12)
   const onTierUps = (list: TierUp[]): void =>
     playTierUps(list, {
       content,
@@ -232,7 +232,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     quest.update(goalRows(nextGoals(loop.state, content, 3)));
   };
 
-  // achievement unlocks (DESIGN.md 17): a toast and the sticker sound wherever they happen;
+  // achievement unlocks (DESIGN.md §11): a toast and the sticker sound wherever they happen;
   // the sticker itself is slapped into the book when the page next shows it
   const celebrateAchievements = (ids: readonly string[]): void => {
     if (ids.length === 0) return;
@@ -243,7 +243,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     }
   };
 
-  // account level-ups (DESIGN.md 16 E7): the badge rings, a fanfare, and a toast listing what
+  // account level-ups (DESIGN.md §10): the badge rings, a fanfare, and a toast listing what
   // the new levels gave (skill points, crystals, a cosmetic, cost cap)
   const celebrateLevel = (from: number, to: number): void => {
     if (to <= from) return;
@@ -295,7 +295,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     apply: applyAndSave,
     sound: playSound,
   });
-  // Ascension lives on the Shop page (DESIGN.md 12.19): the gate and the Starlight shop
+  // Ascension lives on the Shop page (DESIGN.md §11): the gate and the Starlight shop
   pages['shop'] = createAscensionPage(shell.page('shop'), {
     content,
     state: () => loop.state,
@@ -332,7 +332,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     onTierUps,
   });
 
-  // Settings (DESIGN.md 9, 12.23): display, sound, save, help
+  // Settings (DESIGN.md §11): display, sound, save, help
   let lastSavedAt: number | null = null;
   pages['settings'] = createSettingsPage(shell.page('settings'), {
     content,
