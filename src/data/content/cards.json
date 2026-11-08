@@ -35,49 +35,6 @@
     }
   },
   {
-    "id": "shield_warden",
-    "name": "Shield Warden",
-    "job": "fighting",
-    "rarity": "rare",
-    "element": "light",
-    "item": {
-      "kind": "shield",
-      "name": "Bulwark"
-    },
-    "main": {
-      "description": "Steady hits every 1 s, +10% damage",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "10"
-        }
-      ]
-    },
-    "support": {
-      "description": "+1 burst fill per hit",
-      "modifiers": [
-        {
-          "stat": "burst.fill",
-          "kind": "flat",
-          "value": "1",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        }
-      ]
-    }
-  },
-  {
     "id": "storm_duelist",
     "name": "Storm Duelist",
     "job": "fighting",

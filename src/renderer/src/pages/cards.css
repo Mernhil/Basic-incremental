@@ -172,7 +172,6 @@
 }
 
 .cp-badge,
-.cp-role,
 .cp-ready {
   position: absolute;
   z-index: 2;
@@ -189,13 +188,6 @@
   background: #7fc79a;
   color: #10251a;
   box-shadow: 0 0 0 2px var(--bi-frame-bg);
-}
-.cp-role {
-  top: -8px;
-  left: 8px;
-  padding: 3px 7px;
-  background: var(--bi-chrome-accent);
-  color: var(--bi-chrome-bg);
 }
 .cp-ready {
   bottom: -7px;
