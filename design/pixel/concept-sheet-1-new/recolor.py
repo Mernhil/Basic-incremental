@@ -33,6 +33,9 @@ SETS = {  # raw name prefix -> (count, canvas the old sprite sat on, window rari
     "item-bow-exotic-v2": 9, "item-bow-void-v2": 9,
 }
 MIN_S, MIN_V = 0.15, 0.15
+# Kept in their base colours (user, 2026-11-08): every scythe, and the purple void bow (candidate 6)
+# and the teal-and-gold exotic bow (candidate 7) the user pasted. The rest are recoloured.
+KEEP_BASE = {"evo-soul_reaper-v2a", "evo-soul_reaper-v2b", "item-bow-void-v2-6", "item-bow-exotic-v2-7"}
 
 
 def dominant_hue(a: np.ndarray) -> float:
@@ -73,12 +76,16 @@ def main() -> None:
     for prefix, n in SETS.items():
         for i in range(n):
             raw = np.array(Image.open(RAW / f"{prefix}-{i}.png").convert("RGBA"), dtype=np.uint8)
+            keep = prefix in KEEP_BASE or f"{prefix}-{i}" in KEEP_BASE
             name, deg = HUES[(k * 5) % 12]
-            k += 1
+            if not keep:
+                k += 1
             canvas = RS.pad_to(raw, (100, 120), centre) if raw.shape[:2] != (120, 100) else raw
             # No cleanup pass here: the halo removal and rim of RS.clean dulled the bright parts (review
             # 2026-11-08). The sprite keeps PixelLab's own outline and shading; only the alpha is made hard.
-            a = recolour(canvas, deg)
+            a = canvas.copy() if keep else recolour(canvas, deg)
+            if keep:
+                name = "base"
             a[..., 3] = np.where(a[..., 3] >= 128, 255, 0)
             a[a[..., 3] == 0] = 0
             stem = f"{prefix.replace('-v2a', '').replace('-v2b', '-b').replace('-v2', '')}-{i}-{name}"
