@@ -785,7 +785,8 @@ export interface LoadoutHealth {
   current: Decimal;
   /** Seconds of knockout left; 0 when fighting. */
   knockoutSeconds: number;
-  /** Damage per second the current boss deals (0 for special dungeons and when idle). */
+  /** Average damage per second the current boss deals; the hits land in chunks (0 for special
+   *  dungeons and when idle). */
   incoming: Decimal;
 }
 
