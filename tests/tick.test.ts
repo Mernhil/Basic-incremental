@@ -45,9 +45,17 @@ describe('advance (tick math)', () => {
     const { state, report } = advance(withDps(maxHp), content, 1000, rng);
     expect(report.bossKills).toBe(1);
     expect(state.stats.bossKills).toBe(1);
-    // rng 0.5 -> min + floor(0.5 * span) sigils; a Core drops only when 0.5 is under its chance.
-    const { min, max } = dungeon.drops.portalResource;
-    expect(state.resources['moss_sigil']!.eq(min + Math.floor(0.5 * (max - min + 1)))).toBe(true);
+    // rng 0.5 -> min + floor(0.5 * span) of every currency; a Core drops only when 0.5 is under
+    // its chance. Money also holds its start amount and the wage of that second.
+    for (const c of dungeon.drops.currencies) {
+      const rolled = c.min + Math.floor(0.5 * (c.max - c.min + 1));
+      const extra =
+        c.resource === 'money'
+          ? content.resourceById.get('money')!.startAmount!.toNumber() +
+            dungeon.drops.wage!.perSecond.toNumber()
+          : 0;
+      expect(state.resources[c.resource]!.toNumber()).toBeCloseTo(rolled + extra);
+    }
     const { chance, amount } = dungeon.drops.material;
     expect(state.resources['moss_core']!.eq(0.5 < chance ? amount : 0)).toBe(true);
     expect(state.bossHp!.eq(maxHp)).toBe(true);

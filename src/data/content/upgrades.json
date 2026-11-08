@@ -1,0 +1,906 @@
+{
+  "currency": "money",
+  "upgrades": [
+    {
+      "id": "keen_axes",
+      "name": "Keen Axes",
+      "description": "Oak output x2",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "oak",
+        "level": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "1500"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "producer": "oak"
+          }
+        }
+      ]
+    },
+    {
+      "id": "deep_roots",
+      "name": "Deep Roots",
+      "description": "Oak output x3",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "oak",
+        "level": 35
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "400000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "producer": "oak"
+          }
+        }
+      ]
+    },
+    {
+      "id": "iron_saws",
+      "name": "Iron Saws",
+      "description": "Ironbark output x2",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "ironbark",
+        "level": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "15000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "producer": "ironbark"
+          }
+        }
+      ]
+    },
+    {
+      "id": "heartwood_grain",
+      "name": "Heartwood Grain",
+      "description": "Ironbark output x3",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "ironbark",
+        "level": 35
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "15000000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "producer": "ironbark"
+          }
+        }
+      ]
+    },
+    {
+      "id": "moonlit_grove",
+      "name": "Moonlit Grove",
+      "description": "Moonwillow output x2",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "moonwillow",
+        "level": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "200000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "producer": "moonwillow"
+          }
+        }
+      ]
+    },
+    {
+      "id": "silver_boughs",
+      "name": "Silver Boughs",
+      "description": "Moonwillow output x3",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "moonwillow",
+        "level": 35
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "300000000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "producer": "moonwillow"
+          }
+        }
+      ]
+    },
+    {
+      "id": "lumber_union",
+      "name": "Lumber Union",
+      "description": "All trees +50% output",
+      "unlock": {
+        "kind": "lifetimeMoney",
+        "amount": "100000"
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "50000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "50",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "fertile_soil",
+      "name": "Fertile Soil",
+      "description": "Tree levels add 50% more output each",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "oak",
+        "level": 25
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "25000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.levelBonus",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "sharp_picks",
+      "name": "Sharp Picks",
+      "description": "Copper Quarry output x2",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "copper_quarry",
+        "level": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "1200"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "producer": "copper_quarry"
+          }
+        }
+      ]
+    },
+    {
+      "id": "copper_seams",
+      "name": "Copper Seams",
+      "description": "Copper Quarry output x3",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "copper_quarry",
+        "level": 35
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "400000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "producer": "copper_quarry"
+          }
+        }
+      ]
+    },
+    {
+      "id": "deep_shafts",
+      "name": "Deep Shafts",
+      "description": "Iron Deeps output x2",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "iron_deeps",
+        "level": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "15000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "producer": "iron_deeps"
+          }
+        }
+      ]
+    },
+    {
+      "id": "iron_veins",
+      "name": "Iron Veins",
+      "description": "Iron Deeps output x3",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "iron_deeps",
+        "level": 35
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "15000000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "producer": "iron_deeps"
+          }
+        }
+      ]
+    },
+    {
+      "id": "glittering_walls",
+      "name": "Glittering Walls",
+      "description": "Crystal Grotto output x2",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "crystal_grotto",
+        "level": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "200000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "producer": "crystal_grotto"
+          }
+        }
+      ]
+    },
+    {
+      "id": "prismatic_lode",
+      "name": "Prismatic Lode",
+      "description": "Crystal Grotto output x3",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "crystal_grotto",
+        "level": 35
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "300000000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "producer": "crystal_grotto"
+          }
+        }
+      ]
+    },
+    {
+      "id": "dynamite",
+      "name": "Dynamite",
+      "description": "All mines +50% output",
+      "unlock": {
+        "kind": "lifetimeMoney",
+        "amount": "200000"
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "100000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "50",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "rich_ore",
+      "name": "Rich Ore",
+      "description": "Mine levels add 50% more output each",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "copper_quarry",
+        "level": 25
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "30000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.levelBonus",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "copper_temper",
+      "name": "Copper Temper",
+      "description": "Copper Edge damage x2",
+      "unlock": {
+        "kind": "damageLevel",
+        "line": "copper_edge",
+        "level": 25
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "5000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.upgradeGain",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting",
+            "resource": "copper_gem"
+          }
+        }
+      ]
+    },
+    {
+      "id": "copper_hardening",
+      "name": "Copper Hardening",
+      "description": "Copper Edge damage x3",
+      "unlock": {
+        "kind": "damageLevel",
+        "line": "copper_edge",
+        "level": 75
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "1000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.upgradeGain",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "job": "fighting",
+            "resource": "copper_gem"
+          }
+        }
+      ]
+    },
+    {
+      "id": "iron_temper",
+      "name": "Iron Temper",
+      "description": "Iron Edge damage x2",
+      "unlock": {
+        "kind": "damageLevel",
+        "line": "iron_edge",
+        "level": 25
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "100000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.upgradeGain",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting",
+            "resource": "iron_gem"
+          }
+        }
+      ]
+    },
+    {
+      "id": "iron_hardening",
+      "name": "Iron Hardening",
+      "description": "Iron Edge damage x3",
+      "unlock": {
+        "kind": "damageLevel",
+        "line": "iron_edge",
+        "level": 75
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "30000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.upgradeGain",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "job": "fighting",
+            "resource": "iron_gem"
+          }
+        }
+      ]
+    },
+    {
+      "id": "crystal_temper",
+      "name": "Crystal Temper",
+      "description": "Crystal Edge damage x2",
+      "unlock": {
+        "kind": "damageLevel",
+        "line": "crystal_edge",
+        "level": 25
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "1500000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.upgradeGain",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting",
+            "resource": "grotto_gem"
+          }
+        }
+      ]
+    },
+    {
+      "id": "crystal_hardening",
+      "name": "Crystal Hardening",
+      "description": "Crystal Edge damage x3",
+      "unlock": {
+        "kind": "damageLevel",
+        "line": "crystal_edge",
+        "level": 75
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "1000000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.upgradeGain",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "job": "fighting",
+            "resource": "grotto_gem"
+          }
+        }
+      ]
+    },
+    {
+      "id": "battle_cry",
+      "name": "Battle Cry",
+      "description": "All damage +25%",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "mossy_cellar",
+        "kills": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "50000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tax_collector",
+      "name": "Tax Collector",
+      "description": "Mossy Cellar Money x3",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "mossy_cellar",
+        "kills": 20
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "150000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "drops.moneyMultiplier",
+          "kind": "mult",
+          "value": "3",
+          "scope": {
+            "dungeon": "mossy_cellar",
+            "resource": "money"
+          }
+        }
+      ]
+    },
+    {
+      "id": "cinder_tithe",
+      "name": "Cinder Tithe",
+      "description": "Ember Crypt Money x2",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "ember_crypt",
+        "kills": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "6000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "drops.moneyMultiplier",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "dungeon": "ember_crypt",
+            "resource": "money"
+          }
+        }
+      ]
+    },
+    {
+      "id": "frost_tithe",
+      "name": "Frost Tithe",
+      "description": "Frostspire Vault Money x2",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "frostspire_vault",
+        "kills": 10
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "60000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "drops.moneyMultiplier",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "dungeon": "frostspire_vault",
+            "resource": "money"
+          }
+        }
+      ]
+    },
+    {
+      "id": "crystal_lure",
+      "name": "Crystal Lure",
+      "description": "Crystal drops x1.5",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "mossy_cellar",
+        "kills": 50
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "250000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "drops.crystalMultiplier",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    },
+    {
+      "id": "gleaming_hoard",
+      "name": "Gleaming Hoard",
+      "description": "Crystal drops x1.5 more",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "ember_crypt",
+        "kills": 25
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "10000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "drops.crystalMultiplier",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    },
+    {
+      "id": "lumberjack_pact",
+      "name": "Lumberjack Pact",
+      "description": "Logging support cards +25% effect",
+      "unlock": {
+        "kind": "treeLevel",
+        "tree": "oak",
+        "level": 20
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "40000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "card.supportPower",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    {
+      "id": "miner_pact",
+      "name": "Miner Pact",
+      "description": "Mining support cards +25% effect",
+      "unlock": {
+        "kind": "mineLevel",
+        "mine": "copper_quarry",
+        "level": 20
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "40000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "card.supportPower",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "vanguard_pact",
+      "name": "Vanguard Pact",
+      "description": "Fighting support cards +25% effect",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "mossy_cellar",
+        "kills": 5
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "100000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "card.supportPower",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    {
+      "id": "quick_hands",
+      "name": "Quick Hands",
+      "description": "Fighting burst gauge fills 25% faster",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "mossy_cellar",
+        "kills": 15
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "80000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "burst.fill",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    {
+      "id": "harvest_rhythm",
+      "name": "Harvest Rhythm",
+      "description": "Logging and mining burst gauges fill 25% faster",
+      "unlock": {
+        "kind": "gemMastery",
+        "gem": "oak_gem",
+        "tier": 1
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "20000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "burst.fill",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "logging"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    {
+      "id": "finishing_blow",
+      "name": "Finishing Blow",
+      "description": "Signature attacks hit 1.5x harder",
+      "unlock": {
+        "kind": "bossKills",
+        "dungeon": "ember_crypt",
+        "kills": 5
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "4000000"
+      },
+      "permanent": true,
+      "effects": [
+        {
+          "stat": "burst.power",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    {
+      "id": "merchant_ledger",
+      "name": "Merchant Ledger",
+      "description": "All production +25%",
+      "unlock": {
+        "kind": "lifetimeMoney",
+        "amount": "10000000"
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "2000000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "25"
+        }
+      ]
+    },
+    {
+      "id": "golden_ledger",
+      "name": "Golden Ledger",
+      "description": "All production x1.5",
+      "unlock": {
+        "kind": "lifetimeMoney",
+        "amount": "1000000000"
+      },
+      "cost": {
+        "resource": "money",
+        "amount": "100000000"
+      },
+      "permanent": false,
+      "effects": [
+        {
+          "stat": "production.rate",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@
     "startPlots": 1,
     "startProducer": "oak",
     "expansion": {
-      "resource": "oak_gem",
+      "resource": "money",
       "base": "25",
       "growth": "1.4"
     }
@@ -12,7 +12,7 @@
     "startPlots": 1,
     "startProducer": "copper_quarry",
     "expansion": {
-      "resource": "copper_gem",
+      "resource": "money",
       "base": "25",
       "growth": "1.4"
     }

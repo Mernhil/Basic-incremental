@@ -23,6 +23,8 @@ import type {
   Resource,
   Tree,
   Trial,
+  Upgrade,
+  UpgradesConfig,
   WearRules,
 } from './schemas';
 import resourcesJson from './content/resources.json';
@@ -45,6 +47,7 @@ import cosmeticRulesJson from './content/cosmeticRules.json';
 import achievementsJson from './content/achievements.json';
 import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
+import upgradesJson from './content/upgrades.json';
 
 export * from './schemas';
 
@@ -82,9 +85,12 @@ export interface Content {
   account: AccountConfig;
   /** Card enhancements (DESIGN.md 10b). */
   enhancements: EnhancementsConfig;
+  /** The upgrade shelf: one-time Money multipliers that appear at a threshold (DESIGN.md 11.14). */
+  upgrades: UpgradesConfig;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
+  upgradeById: ReadonlyMap<string, Upgrade>;
   treeById: ReadonlyMap<string, Tree>;
   mineById: ReadonlyMap<string, Mine>;
   cardById: ReadonlyMap<string, Card>;
@@ -149,6 +155,7 @@ export function validateContent(raw: RawContent): Content {
     achievements: achievementsFile,
     account,
     enhancements,
+    upgrades,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -164,6 +171,7 @@ export function validateContent(raw: RawContent): Content {
     issues,
   );
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
+  checkUpgrades({ resources, trees, mines, dungeons, combat, upgrades }, issues);
   checkCosmeticSources(
     { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop, account },
     issues,
@@ -190,6 +198,7 @@ export function validateContent(raw: RawContent): Content {
       prestige,
       account,
       enhancements,
+      upgrades,
     },
     issues,
   );
@@ -222,9 +231,11 @@ export function validateContent(raw: RawContent): Content {
     shardShop,
     account,
     enhancements,
+    upgrades,
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
+    upgradeById: new Map(upgrades.upgrades.map((u) => [u.id, u])),
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
@@ -247,17 +258,25 @@ function checkProduction(
       issues.push(`${where}: "${resource}" is ${res.kind}, expected ${kind}`);
   };
 
-  // Logging is paid for with wood, mining with ore (DESIGN.md 2).
+  // Tree kinds are unlocked with tree gems (DESIGN.md 2).
   c.trees.forEach((tree, i) =>
     tree.unlockCost.forEach((cost, j) =>
       checkCost(`trees.json › [${i}] › unlockCost › [${j}] › resource`, cost.resource, 'tree_gem'),
+    ),
+  );
+  // Tree levels and mine levels are bought with Money (DESIGN.md 2, 11.13).
+  c.trees.forEach((tree, i) =>
+    checkCost(
+      `trees.json › [${i}] › level › cost › resource`,
+      tree.level.cost.resource,
+      'currency',
     ),
   );
   c.mines.forEach((mine, i) =>
     checkCost(
       `mines.json › [${i}] › level › cost › resource`,
       mine.level.cost.resource,
-      'mine_gem',
+      'currency',
     ),
   );
 
@@ -272,20 +291,22 @@ function checkProduction(
   const jobs = [
     {
       job: 'logging',
-      kind: 'tree_gem',
       starters: c.trees.filter((t) => t.unlockCost.length === 0),
       all: c.trees,
     },
     {
       job: 'mining',
-      kind: 'mine_gem',
       starters: c.mines.filter((m) => m.unlockedByDungeon === null),
       all: c.mines,
     },
   ] as const;
-  for (const { job, kind, starters, all } of jobs) {
+  for (const { job, starters, all } of jobs) {
     const config = c.production[job];
-    checkCost(`production.json › ${job} › expansion › resource`, config.expansion.resource, kind);
+    checkCost(
+      `production.json › ${job} › expansion › resource`,
+      config.expansion.resource,
+      'currency',
+    );
     const where = `production.json › ${job} › startProducer`;
     if (!all.some((p) => p.id === config.startProducer)) {
       issues.push(
@@ -344,6 +365,67 @@ function checkSets(cosmetics: Cosmetic[], sets: CosmeticSet[], issues: string[])
   });
 }
 
+/** Upgrade shelf rules (DESIGN.md 11.14): unlock conditions and the cost name things that exist,
+ *  and a permanent upgrade is unlocked by progress that an ascension keeps. */
+function checkUpgrades(
+  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'dungeons' | 'combat' | 'upgrades'>,
+  issues: string[],
+): void {
+  const resources = new Map(c.resources.map((r) => [r.id, r]));
+  const seen = new Set<string>();
+  const currency = resources.get(c.upgrades.currency);
+  if (currency?.kind !== 'currency') {
+    issues.push(`upgrades.json › currency: "${c.upgrades.currency}" must be a currency resource`);
+  }
+  c.upgrades.upgrades.forEach((u, i) => {
+    const where = `upgrades.json › upgrades › [${i}]`;
+    if (seen.has(u.id)) issues.push(`${where} › id: duplicate "${u.id}"`);
+    seen.add(u.id);
+    if (u.cost.resource !== c.upgrades.currency) {
+      issues.push(`${where} › cost › resource: must be "${c.upgrades.currency}"`);
+    }
+    const k = u.unlock;
+    const missing = (what: string, ok: boolean, value: string): void => {
+      if (!ok) issues.push(`${where} › unlock: unknown ${what} "${value}"`);
+    };
+    if (k.kind === 'treeLevel')
+      missing(
+        'tree',
+        c.trees.some((t) => t.id === k.tree),
+        k.tree,
+      );
+    if (k.kind === 'mineLevel')
+      missing(
+        'mine',
+        c.mines.some((m) => m.id === k.mine),
+        k.mine,
+      );
+    if (k.kind === 'damageLevel') {
+      missing(
+        'damage line',
+        c.combat.damageUpgrades.some((d) => d.id === k.line),
+        k.line,
+      );
+    }
+    if (k.kind === 'bossKills') {
+      missing(
+        'dungeon',
+        c.dungeons.some((d) => d.id === k.dungeon),
+        k.dungeon,
+      );
+    }
+    if (k.kind === 'gemMastery') {
+      const gem = resources.get(k.gem);
+      missing('gem', gem?.kind === 'tree_gem' || gem?.kind === 'mine_gem', k.gem);
+    }
+    if (u.permanent && (k.kind === 'treeLevel' || k.kind === 'mineLevel')) {
+      issues.push(
+        `${where} › permanent: tree and mine levels reset, so their upgrades cannot be permanent`,
+      );
+    }
+  });
+}
+
 /** Modifier scopes must name things that exist, so a typo never silently disables a buff. */
 function checkModifiers(
   c: Pick<
@@ -361,6 +443,7 @@ function checkModifiers(
     | 'prestige'
     | 'account'
     | 'enhancements'
+    | 'upgrades'
   >,
   issues: string[],
 ): void {
@@ -391,6 +474,9 @@ function checkModifiers(
   for (const job of JOBS) {
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
   }
+  c.upgrades.upgrades.forEach((x, i) =>
+    check(`upgrades.json › upgrades › [${i}] › effects`, x.effects),
+  );
   c.prestige.shop.forEach((x, i) => check(`prestige.json › shop › [${i}] › perLevel`, x.perLevel));
   c.account.tree.forEach((x, i) => check(`account.json › tree › [${i}] › perRank`, x.perRank));
   for (const [card, options] of Object.entries(c.enhancements.cards)) {
@@ -587,9 +673,12 @@ function checkPrestige(
   );
 }
 
+/** Resource kinds card upgrades may cost: gems and dungeon / trial materials (DESIGN.md 11.9). */
+const UPGRADE_KINDS: readonly Resource['kind'][] = ['tree_gem', 'mine_gem', 'material'];
+
 /** Start cards, star-up and tier-up materials must exist; start cards lead distinct jobs. */
 function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issues: string[]): void {
-  const resources = new Set(c.resources.map((r) => r.id));
+  const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
   c.cardRules.startCards.forEach((id, i) => {
@@ -600,11 +689,31 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
     jobs.add(card.job);
   });
   const checkResource = (where: string, id: string): void => {
-    if (!resources.has(id)) issues.push(`${where}: unknown resource "${id}"`);
+    const res = resources.get(id);
+    if (!res) issues.push(`${where}: unknown resource "${id}"`);
+    else if (!UPGRADE_KINDS.includes(res.kind)) {
+      issues.push(`${where}: "${id}" is ${res.kind}, card upgrades use gems and materials only`);
+    }
+  };
+  // Every card upgrade of every job mixes both production loops with a dungeon material
+  // (DESIGN.md 11.9): a tree gem, a mine gem and a Core.
+  const checkMix = (where: string, ids: string[]): void => {
+    const kinds = new Set(ids.map((id) => resources.get(id)?.kind));
+    for (const kind of ['tree_gem', 'mine_gem', 'material'] as const) {
+      if (!kinds.has(kind)) issues.push(`${where}: needs a ${kind} among its costs`);
+    }
   };
   for (const tier of RANK_TIERS) {
-    const step = c.cardRules.starUp.tiers[tier];
-    checkResource(`cardRules.json › starUp › tiers › ${tier} › resource`, step.resource);
+    c.cardRules.starUp.tiers[tier].forEach((line, i) =>
+      checkResource(`cardRules.json › starUp › tiers › ${tier} › [${i}] › resource`, line.resource),
+    );
+    for (const job of JOBS) {
+      const used = c.cardRules.starUp.tiers[tier].filter((l) => (l.jobShare?.[job] ?? 1) > 0);
+      checkMix(
+        `cardRules.json › starUp › tiers › ${tier} › ${job}`,
+        used.map((l) => l.resource),
+      );
+    }
     const caps = c.cardRules.levelCaps[tier];
     if (caps.some((cap, i) => i > 0 && cap < caps[i - 1]!)) {
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
@@ -612,11 +721,16 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   }
   for (const tier of ['bronze', 'silver', 'gold'] as const) {
     for (const job of JOBS) {
-      c.cardRules.tierUp[tier][job].forEach((cost, i) =>
+      const costs = c.cardRules.tierUp[tier][job];
+      costs.forEach((cost, i) =>
         checkResource(
           `cardRules.json › tierUp › ${tier} › ${job} › [${i}] › resource`,
           cost.resource,
         ),
+      );
+      checkMix(
+        `cardRules.json › tierUp › ${tier} › ${job}`,
+        costs.map((x) => x.resource),
       );
     }
   }
@@ -688,13 +802,14 @@ function checkCombat(
     );
   });
 
-  // Damage is bought with ore (DESIGN.md 2), one line per ore (11.8).
+  // Damage is bought with Money (DESIGN.md 2, 11.13), one line per mine gem (11.8).
   const seen = new Set<string>();
   c.combat.damageUpgrades.forEach((u, i) => {
     const where = `combat.json › damageUpgrades › [${i}]`;
     if (seen.has(u.id)) issues.push(`${where} › id: duplicate id "${u.id}"`);
     seen.add(u.id);
-    checkResource(`${where} › cost › resource`, u.cost.resource, 'mine_gem');
+    checkResource(`${where} › cost › resource`, u.cost.resource, 'currency');
+    checkResource(`${where} › gem`, u.gem, 'mine_gem');
   });
 }
 
@@ -760,16 +875,38 @@ function checkReferences(
   });
 
   c.dungeons.forEach((dungeon, i) => {
-    const portal = dungeon.drops.portalResource.resource;
-    const res = resources.get(portal);
-    if (!res) {
-      issues.push(
-        `dungeons.json › [${i}] › drops › portalResource › resource: unknown resource "${portal}"`,
-      );
-    } else if (res.kind !== 'portal') {
-      issues.push(
-        `dungeons.json › [${i}] › drops › portalResource › resource: "${portal}" is ${res.kind}, expected portal`,
-      );
+    // Every dungeon drops Money and every crystal (DESIGN.md 6, 11.13).
+    const dropped = new Set<string>();
+    dungeon.drops.currencies.forEach((drop, j) => {
+      const where = `dungeons.json › [${i}] › drops › currencies › [${j}] › resource`;
+      const res = resources.get(drop.resource);
+      if (!res) issues.push(`${where}: unknown resource "${drop.resource}"`);
+      else if (res.kind !== 'currency' && res.kind !== 'crystal') {
+        issues.push(`${where}: "${drop.resource}" is ${res.kind}, expected currency or crystal`);
+      }
+      if (dropped.has(drop.resource)) issues.push(`${where}: duplicate "${drop.resource}"`);
+      dropped.add(drop.resource);
+    });
+    dungeon.drops.extraMaterials.forEach((extra, j) => {
+      const res = resources.get(extra.resource);
+      const where = `dungeons.json › [${i}] › drops › extraMaterials › [${j}] › resource`;
+      if (!res) issues.push(`${where}: unknown resource "${extra.resource}"`);
+      else if (res.kind !== 'material') {
+        issues.push(`${where}: "${extra.resource}" is ${res.kind}, expected material`);
+      }
+    });
+    if (dungeon.drops.wage) {
+      const wage = resources.get(dungeon.drops.wage.resource);
+      if (wage?.kind !== 'currency') {
+        issues.push(
+          `dungeons.json › [${i}] › drops › wage › resource: "${dungeon.drops.wage.resource}" must be a currency`,
+        );
+      }
+    }
+    for (const r of c.resources) {
+      if ((r.kind === 'currency' || r.kind === 'crystal') && !dropped.has(r.id)) {
+        issues.push(`dungeons.json › [${i}] › drops › currencies: "${r.id}" is not dropped`);
+      }
     }
     const item = dungeon.drops.rare.itemId;
     if (!cardIds.has(item) && !cosmeticIds.has(item)) {
@@ -785,9 +922,9 @@ function checkReferences(
       issues.push(
         `portals.json › [${i}] › cost › resource: unknown resource "${portal.cost.resource}"`,
       );
-    } else if (res.kind !== 'portal') {
+    } else if (res.kind !== 'crystal') {
       issues.push(
-        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected portal`,
+        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected crystal`,
       );
     }
     // Pity and the 10-pull guarantee pick from the pool at or above their rarity.
@@ -845,5 +982,6 @@ export function loadContent(): Content {
     achievements: achievementsJson,
     account: accountJson,
     enhancements: enhancementsJson,
+    upgrades: upgradesJson,
   });
 }

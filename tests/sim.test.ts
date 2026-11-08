@@ -23,26 +23,31 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
 
 describe('balance sim: greedy buyer', () => {
   it('lists purchases with an ETA, 0 when affordable now', () => {
-    const state = rich(freshState(), 'copper_gem', 10);
+    const state = rich(freshState(), 'money', 10);
     const candidates = buyerCandidates(state, content);
     const copperEdge = candidates.find((c) => c.id === 'damage:copper_edge');
     expect(copperEdge?.eta).toBe(0);
-    const ironEdge = candidates.find((c) => c.id === 'damage:iron_edge');
-    // Nothing earns Iron Gems yet.
-    expect(ironEdge?.eta).toBeNull();
+    // Iron Edge waits for Iron Deeps; a plot (25 Money) is paid by the wage being earned.
+    expect(candidates.find((c) => c.id === 'damage:iron_edge')).toBeUndefined();
+    const plot = candidates.find((c) => c.id === 'expand:logging');
+    expect(plot?.eta).toBeGreaterThan(0);
+    expect(Number.isFinite(plot!.eta!)).toBe(true);
+    // Nothing earns Glamour Crystals before a kill, so a Wardrobe Gate pull is out of reach.
+    const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate');
+    expect(gate?.eta === null || gate!.eta! > 0).toBe(true);
   });
 
   it('buys the cheapest affordable purchase first, then keeps buying', () => {
-    // 10 copper buys Copper Edge (10); a mine level costs 15 and a slot 25.
-    const state = rich(freshState(), 'copper_gem', 10);
+    // 10 Money buys Copper Edge (10); a mine level costs 15 and a slot 25.
+    const state = rich(freshState(), 'money', 10);
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('damage:copper_edge');
     expect(damageLevel(after, 'copper_edge')).toBe(1);
-    expect(after.resources['copper_gem']!.toNumber()).toBe(0);
+    expect(after.resources['money']!.toNumber()).toBe(0);
   });
 
   it('summons from a portal once a pull is affordable', () => {
-    const state = rich(freshState(), 'moss_sigil', 10);
+    const state = rich(freshState(), 'summon_crystal', 10);
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('summon:card_portal');
     expect(after.portals['card_portal']?.pulls).toBe(1);
@@ -81,7 +86,7 @@ describe('balance sim: greedy buyer', () => {
   });
 
   it('does nothing when nothing is affordable', () => {
-    const { bought } = greedyBuy(freshState(), content);
+    const { bought } = greedyBuy(rich(freshState(), 'money', 0), content);
     expect(bought).toEqual([]);
   });
 
@@ -96,13 +101,13 @@ describe('balance sim: greedy buyer', () => {
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
   it('values an economy purchase by its gain: the first Copper Edge level doubles damage', () => {
-    const state = rich(freshState(), 'copper_gem', 10);
+    const state = rich(freshState(), 'money', 10);
     const edge = buyerCandidates(state, content).find((c) => c.id === 'damage:copper_edge');
     expect(edge?.gain).toBeCloseTo(1);
   });
 
   it('offers a bulk buy up to the next milestone, valued with the x2', () => {
-    const state = rich(freshState(), 'copper_gem', 1e6);
+    const state = rich(freshState(), 'money', 1e6);
     state.combat.damageLevels['copper_edge'] = 20;
     const bulk = buyerCandidates(state, content).find((c) => c.id === 'damage:copper_edge:x5');
     expect(bulk).toBeDefined();
@@ -110,17 +115,29 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(bulk!.gain).toBeCloseTo(30 / 21);
   });
 
-  it('keeps the gems a waiting tier-up needs instead of spending them on upgrades', () => {
+  it('spends Money on the economy and leaves the gems to the card upgrades waiting for them', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 6;
     squire.level = 40;
     state.resources['moss_core'] = new Decimal(10);
     state.resources['iron_gem'] = new Decimal(600);
+    state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought.some((id) => id.startsWith('damage:iron_edge'))).toBe(false);
+    expect(bought.some((id) => id.startsWith('damage:'))).toBe(true);
     expect(after.resources['iron_gem']!.toNumber()).toBe(600);
+    expect(after.resources['moss_core']!.toNumber()).toBe(10);
+  });
+
+  it('weighs a mine level or a plot against damage by the share of the production', () => {
+    const state = rich(freshState(), 'money', 1e9);
+    const candidates = buyerCandidates(state, content);
+    const gain = (id: string): number => candidates.find((c) => c.id === id)!.gain!;
+    // The first Copper Edge level doubles the damage; no production purchase beats that.
+    expect(gain('damage:copper_edge')).toBeGreaterThan(gain('mine:copper_quarry'));
+    expect(gain('damage:copper_edge')).toBeGreaterThan(gain('expand:logging'));
+    expect(gain('expand:logging')).toBeGreaterThan(0);
   });
 
   it('keeps Cores for the most advanced card instead of spreading them over weaker ones', () => {
@@ -151,6 +168,9 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const [coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
     state.resources['frost_core'] = new Decimal(coreCost!.amount);
     state.resources['frost_sigil'] = new Decimal(sigilCost!.amount);
+    state.resources['moonwillow_gem'] = new Decimal(1e6);
+    state.resources['grotto_gem'] = new Decimal(1e6);
+    state.resources['money'] = new Decimal(0);
     const { bought } = greedyBuy(state, content);
     expect(bought).not.toContain('star:cave_digger');
     state.resources['frost_core'] = new Decimal(coreCost!.amount).add(1);
@@ -220,14 +240,6 @@ describe('balance sim: where to fight', () => {
     } finally {
       attack.damage = damage;
     }
-  });
-
-  it('goes back to the first dungeon for Sigils while cards are missing, within a time share', () => {
-    const state = freshState();
-    state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'frostspire_vault', 'glimmer_trial'];
-    state.combat.damageLevels['crystal_edge'] = 300;
-    expect(chooseDungeon(state, content, { portalShare: 0 })).toBe('mossy_cellar');
-    expect(chooseDungeon(state, content, { portalShare: 0.5 })).not.toBe('mossy_cellar');
   });
 
   it('farms the cleared Glimmer Trial for cosmetic materials only within its time share', () => {

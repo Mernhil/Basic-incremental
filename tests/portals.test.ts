@@ -17,16 +17,16 @@ import { constantRng, content, freshState } from './helpers';
 const PORTAL = 'card_portal';
 const withSigils = (n: number): GameState => {
   const state = freshState();
-  state.resources['moss_sigil'] = new Decimal(n);
+  state.resources['summon_crystal'] = new Decimal(n);
   return state;
 };
 const rank = (r: string) => RARITIES.indexOf(r as (typeof RARITIES)[number]);
 
 describe('Card Portal (DESIGN.md 6, beta portals)', () => {
-  it('costs 10 Moss Sigils for one pull and 100 for ten', () => {
+  it('costs 10 Summon Crystals for one pull and 100 for ten', () => {
     const info = portalInfo(withSigils(50), content, PORTAL)!;
-    expect(info.single.price).toEqual({ resource: 'moss_sigil', amount: new Decimal(10) });
-    expect(info.ten.price).toEqual({ resource: 'moss_sigil', amount: new Decimal(100) });
+    expect(info.single.price).toEqual({ resource: 'summon_crystal', amount: new Decimal(10) });
+    expect(info.ten.price).toEqual({ resource: 'summon_crystal', amount: new Decimal(100) });
     expect(info.single.affordable).toBe(true);
     expect(info.ten.affordable).toBe(false);
   });
@@ -62,7 +62,7 @@ describe('Card Portal (DESIGN.md 6, beta portals)', () => {
   it('a single pull spends the cost, adds the card and counts toward pity', () => {
     const result = pull(withSigils(10), content, PORTAL, 1, constantRng(0));
     if (!result.ok) throw new Error(result.reason);
-    expect(result.state.resources['moss_sigil']!.toNumber()).toBe(0);
+    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(0);
     expect(result.results).toHaveLength(1);
     const [first] = result.results;
     expect(first).toMatchObject({ itemId: 'ember_squire', rarity: 'common', pity: false });

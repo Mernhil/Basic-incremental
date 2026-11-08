@@ -1,5 +1,11 @@
 import type { Content, ProductionJob } from '../data';
-import { damageLineOffer, expansionOffer, mineLevelOffer, type BuyCount } from './bulk';
+import {
+  damageLineOffer,
+  expansionOffer,
+  mineLevelOffer,
+  treeLevelOffer,
+  type BuyCount,
+} from './bulk';
 import { averageDps, damageLevel, secondsPerKill } from './combat';
 import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -7,7 +13,9 @@ import {
   jobProductionPerSecond,
   mineLevel,
   plotCapacity,
+  producerLevel,
   producerRate,
+  treeLevel,
   unlockedProducers,
 } from './production';
 import { cloneState, type GameState } from './state';
@@ -55,7 +63,7 @@ export function previewDamageLine(
   };
 }
 
-/** A mine level purchase: the mine's gem per second, in total and per slot. */
+/** A tree or mine level purchase: the gem per second, in total and per plot / slot. */
 export interface MinePreview {
   levels: number;
   /** The gem the mine produces. */
@@ -91,6 +99,35 @@ export function previewMineLevel(
     rateAfter: rate(after),
     perSlotBefore: producerRate(mine, 'mining', modifiers, level),
     perSlotAfter: producerRate(mine, 'mining', modifiers, level + offer.count),
+  };
+}
+
+/** A tree level purchase has the same shape as a mine's. */
+export type TreePreview = MinePreview;
+
+/** Previews buying `count` levels of a tree kind ("Oak 4/s -> 5/s"); null for an unknown tree or bad count. */
+export function previewTreeLevel(
+  state: GameState,
+  content: Content,
+  treeId: string,
+  count: BuyCount = 1,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): TreePreview | null {
+  const tree = content.treeById.get(treeId);
+  const offer = treeLevelOffer(state, content, treeId, count, modifiers);
+  if (!tree || !offer) return null;
+  const level = treeLevel(state, treeId);
+  const after = cloneState(state);
+  after.production.treeLevels[treeId] = level + offer.count;
+  const rate = (s: GameState): Decimal =>
+    jobProductionPerSecond(s, content, 'logging', modifiers)[tree.resource] ?? new Decimal(0);
+  return {
+    levels: offer.count,
+    resource: tree.resource,
+    rateBefore: rate(state),
+    rateAfter: rate(after),
+    perSlotBefore: producerRate(tree, 'logging', modifiers, level),
+    perSlotAfter: producerRate(tree, 'logging', modifiers, level + offer.count),
   };
 }
 
@@ -135,7 +172,7 @@ export function previewExpansion(
       rateAfter: zero,
     };
   }
-  const level = job === 'mining' ? mineLevel(state, best.id) : 0;
+  const level = producerLevel(state, job, best.id);
   const rateBefore =
     jobProductionPerSecond(state, content, job, modifiers)[best.resource] ?? new Decimal(0);
   const added = Math.max(0, capacityAfter - capacityBefore);

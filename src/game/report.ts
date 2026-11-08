@@ -9,6 +9,7 @@ export type TierUpKind =
   | 'gem_mastery'
   | 'boss_mastery'
   | 'mine_milestone'
+  | 'tree_milestone'
   | 'damage_milestone'
   | 'tile_stage'
   | 'card_tier'
@@ -37,6 +38,8 @@ export interface TickReport {
   drops: Record<string, number>;
   /** Material resource id (Cores, Glimmer Dust, Facet Shards) -> units gained. */
   materials: Record<string, number>;
+  /** Currency (Money, crystals) id -> units gained from boss kills and the fighting wage. */
+  currencies: Record<string, number>;
   /** Bursts fired per job: signature attacks (fighting) and bonus harvests (logging, mining). */
   bursts: Record<BurstJob, number>;
   /** Dungeons and special dungeons cleared for the first time. */
@@ -69,6 +72,7 @@ export function emptyReport(): TickReport {
     bossKills: 0,
     drops: {},
     materials: {},
+    currencies: {},
     bursts: { fighting: 0, logging: 0, mining: 0 },
     cleared: [],
     unlockedDungeons: [],
@@ -89,6 +93,9 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   for (const [id, n] of Object.entries(add.drops)) into.drops[id] = (into.drops[id] ?? 0) + n;
   for (const [id, n] of Object.entries(add.materials)) {
     into.materials[id] = (into.materials[id] ?? 0) + n;
+  }
+  for (const [id, n] of Object.entries(add.currencies)) {
+    into.currencies[id] = (into.currencies[id] ?? 0) + n;
   }
   for (const job of Object.keys(into.bursts) as BurstJob[]) into.bursts[job] += add.bursts[job];
   into.cleared.push(...add.cleared);

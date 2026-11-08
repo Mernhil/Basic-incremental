@@ -169,7 +169,7 @@ describe('boss mastery (DESIGN.md 16, E3)', () => {
     const values = Object.fromEntries(b.perTier.map((m) => [m.stat, m.value.toNumber()]));
     expect(values).toEqual({
       'combat.damage': 5,
-      'drops.portalMultiplier': 10,
+      'drops.crystalMultiplier': 10,
       'drops.materialChance': 10,
     });
     expect(content.progression.trialMastery.thresholds).toEqual([0.25, 0.5, 0.75, 1]);
@@ -212,26 +212,38 @@ describe('boss mastery (DESIGN.md 16, E3)', () => {
 
   it('raises that dungeon core chance by 10% per tier', () => {
     const state = freshState();
-    state.mastery.bossTiers['mossy_cellar'] = 3;
-    const dungeon = content.dungeonById.get('mossy_cellar')!;
-    const drops = effectiveDrops(dungeon, collectModifiers(state, content));
+    state.mastery.bossTiers['ember_crypt'] = 3;
+    const dungeon = content.dungeonById.get('ember_crypt')!;
+    const drops = effectiveDrops(dungeon, collectModifiers(state, content), content);
     expect(drops.material.chance).toBeCloseTo(dungeon.drops.material.chance * 1.3);
   });
 
-  it('raises sigils per kill by 10% per tier on average', () => {
-    const killOnce = (tier: number, roll: number): number => {
+  it('raises crystals per kill by 10% per tier on average, but not Money', () => {
+    const crystal = content.dungeonById
+      .get('mossy_cellar')!
+      .drops.currencies.find((c) => c.resource === 'summon_crystal')!;
+    const killOnce = (tier: number, roll: number, resource: string): number => {
       const state = bareState();
       state.mastery.bossTiers['mossy_cellar'] = tier;
       state.bossHp = new Decimal(1e-6);
-      const before = state.resources['moss_sigil']!.toNumber();
+      const before = state.resources[resource]!.toNumber();
       const after = advance(state, content, 1, constantRng(roll)).state;
-      return after.resources['moss_sigil']!.toNumber() - before;
+      return after.resources[resource]!.toNumber() - before;
     };
-    // Tier 0: exactly the rolled amount (min 2 at roll 0).
-    expect(killOnce(0, 0)).toBe(2);
-    // Tier 2 (x1.2): 2 x 1.2 = 2.4 rounds up when the roll is under the 0.4 fraction.
-    expect(killOnce(2, 0)).toBe(3);
-    expect(killOnce(2, 0.99)).toBe(4);
+    const rolled = (roll: number): number =>
+      crystal.min + Math.floor(roll * (crystal.max - crystal.min + 1));
+    // Tier 0: exactly the rolled amount (the minimum at roll 0).
+    expect(killOnce(0, 0, 'summon_crystal')).toBe(crystal.min);
+    // Tier 2 (x1.2): the rolled amount x 1.2 rounds its fraction up when the roll is under it.
+    const scaledLow = rolled(0) * 1.2;
+    expect(killOnce(2, 0, 'summon_crystal')).toBe(
+      Math.floor(scaledLow) + (scaledLow > Math.floor(scaledLow) ? 1 : 0),
+    );
+    // A roll of 0.99 is over any fraction, so the scaled amount rounds down.
+    const scaledHigh = rolled(0.99) * 1.2;
+    expect(killOnce(2, 0.99, 'summon_crystal')).toBe(Math.floor(scaledHigh));
+    // Money ignores the medal bonus: the same purse at tier 0 and tier 2.
+    expect(killOnce(2, 0, 'money')).toBeCloseTo(killOnce(0, 0, 'money'), 2);
   });
 
   it('settles medal tiers from kills on the grid and reports them', () => {

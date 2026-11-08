@@ -11,7 +11,7 @@ import {
   effectiveDamage,
   hitDamage,
   jobProductionPerSecond,
-  mineLevel,
+  producerLevel,
   plots,
   producerRate,
   producersOf,
@@ -108,7 +108,7 @@ export function createDirector(content: Content, state: () => GameState) {
         plots(s, content, job, mods).forEach((id, index) => {
           const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
           if (!p) return;
-          const level = job === 'mining' ? mineLevel(s, p.id) : 0;
+          const level = producerLevel(s, job, p.id);
           const amount = producerRate(p, job, mods, level).mul(HARVEST_TICK_S);
           if (amount.gt(0)) out.push({ index, resource: p.resource, amount });
         });
@@ -147,7 +147,7 @@ export function createDirector(content: Content, state: () => GameState) {
       if (report.bossKills > 0) {
         const loot: Loot[] = [];
         for (const r of content.resources) {
-          if (r.kind !== 'portal' && r.kind !== 'material') continue;
+          if (r.kind !== 'crystal' && r.kind !== 'currency' && r.kind !== 'material') continue;
           const gained = (after.resources[r.id] ?? new Decimal(0)).sub(
             before.resources[r.id] ?? new Decimal(0),
           );

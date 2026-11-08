@@ -97,6 +97,7 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
     'mastery',
     'medals',
     'portal_pity',
+    'crystals',
     'starlight',
   ]) {
     const label = t.keptParts[id as keyof typeof t.keptParts];
@@ -107,10 +108,10 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
         let best: { gem: string; step: number } | null = null;
         for (const u of content.combat.damageUpgrades) {
           levels += damageLevel(state, u.id);
-          const gem = content.resourceById.get(u.cost.resource)?.gem;
+          const gem = content.resourceById.get(u.gem)?.gem;
           if (!gem) continue;
           const step = edgeStage(state, content, u.id);
-          if (!best || step >= best.step) best = { gem: u.cost.resource, step };
+          if (!best || step >= best.step) best = { gem: u.gem, step };
         }
         if (best)
           views.push({
@@ -198,6 +199,16 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
           art: { kind: 'plaque', glyph: 'summon' },
         });
         break;
+      case 'crystals': {
+        const have = (id: string): string => fmt(state.resources[id] ?? new Decimal(0));
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.crystals(have('summon_crystal'), have('glamour_crystal')),
+          art: { kind: 'plaque', glyph: 'summon' },
+        });
+        break;
+      }
       case 'starlight': {
         const have = state.resources[content.prestige.currency] ?? new Decimal(0);
         views.push({

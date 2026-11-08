@@ -170,7 +170,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     const list = h('ul', 'dp-lines');
     for (const u of content.combat.damageUpgrades) {
       const li = h('li', 'dp-line');
-      li.dataset.ore = u.cost.resource;
+      li.dataset.ore = u.gem;
       const info = h('div', 'dp-line__info');
       const name = h('span', 'dp-line__name', u.name);
       const level = h('span', 'dp-line__level bi-num');
@@ -184,7 +184,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       // the forged edge ladder (DESIGN.md 16 E5, A14 D): five blade steps, the current one lit
       const ladder = h('span', 'dp-ladder');
       ladder.setAttribute('role', 'img');
-      const gem = content.resourceById.get(u.cost.resource)?.gem;
+      const gem = content.resourceById.get(u.gem)?.gem;
       const edges = [0, 1, 2, 3, 4].map((step) => {
         const edge = h('span', 'dp-edge');
         if (gem) edge.innerHTML = svg(forgedEdge(gem, step), EDGE_VIEWBOX);
@@ -320,7 +320,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     const t = id ? content.trialById.get(id) : undefined;
     const list = h('ul', 'dp-drops');
     if (d) {
-      const drops = effectiveDrops(d, collectModifiers(state, content));
+      const drops = effectiveDrops(d, collectModifiers(state, content), content);
       const rareName = content.cosmeticById.get(d.drops.rare.itemId)?.name ?? d.drops.rare.itemId;
       const resName = (r: string): string => content.resourceById.get(r)?.name ?? r;
       const row = (label: string, value: string, cls = ''): HTMLElement => {
@@ -335,11 +335,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
           pct(drops.rare.chance),
           'dp-drop--rare',
         ),
-        row(
-          resName(drops.portalResource.resource),
-          drops.portalResource.min === drops.portalResource.max
-            ? String(drops.portalResource.min)
-            : `${drops.portalResource.min}–${drops.portalResource.max}`,
+        ...drops.currencies.map((c) =>
+          row(resName(c.resource), c.min === c.max ? String(c.min) : `${c.min}–${c.max}`),
         ),
         row(
           resName(drops.material.resource),
@@ -359,7 +356,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         const s = ctx.state();
         const status = bossStatus(s, content);
         if (!status) return;
-        const threshold = effectiveDrops(d, collectModifiers(s, content)).rare.pityThreshold;
+        const threshold = effectiveDrops(d, collectModifiers(s, content), content).rare
+          .pityThreshold;
         value.textContent = COPY.dungeons.pityKills(Math.max(1, threshold - status.pity));
         fill.style.width = `${Math.min(100, (status.pity / threshold) * 100).toFixed(1)}%`;
       });

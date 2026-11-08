@@ -6,6 +6,7 @@ import { cardModifiers } from './cards';
 import { masteryModifiers } from './mastery';
 import { prestigeModifiers } from './prestige';
 import { accountModifiers } from './account';
+import { upgradeModifiers } from './upgrades';
 
 /**
  * The shared modifier pipeline (DESIGN.md 11.5). Every tunable number goes through
@@ -25,6 +26,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'mastery',
   /** Account level rewards: the reward track's cost cap bumps (DESIGN.md 16, E7). */
   'account',
+  /** Upgrade shelf purchases (DESIGN.md 11.14). */
+  'upgrade',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -149,6 +152,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Account tree ranks, reward track cost cap bumps, card enhancements.
   out.push(...accountModifiers(state, content));
+
+  // Upgrade shelf purchases.
+  out.push(...upgradeModifiers(state, content));
 
   return out;
 }

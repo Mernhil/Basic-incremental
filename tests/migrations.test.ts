@@ -201,3 +201,111 @@ describe('v7 -> v8 (gem mastery, DESIGN.md 16 E2)', () => {
     expect(input).toEqual({ resources: { oak_gem: '1' } });
   });
 });
+
+describe('v13 -> v14 (three loops: Money and crystals, DESIGN.md 11.13)', () => {
+  const step = MIGRATIONS[13]!;
+
+  it('turns the Moss and Ember Sigils into the Summon and Glamour Crystal', () => {
+    const out = step({
+      resources: { moss_sigil: '40', ember_sigil: '7', frost_sigil: '12', oak_gem: '5' },
+    }) as { resources: Record<string, string> };
+    expect(out.resources['summon_crystal']).toBe('40');
+    expect(out.resources['glamour_crystal']).toBe('7');
+    expect('moss_sigil' in out.resources).toBe(false);
+    expect('ember_sigil' in out.resources).toBe(false);
+    // The Frost Sigil is a material now, with the same id.
+    expect(out.resources['frost_sigil']).toBe('12');
+    expect(out.resources['oak_gem']).toBe('5');
+  });
+
+  it('renames the skill, Starlight shop item and shard shop bundles that were about sigils', () => {
+    const out = step({
+      resources: {},
+      account: { skills: { sigil_luck: 3, might: 1 } },
+      prestige: { shop: { constellation_sigils: 2, starlit_groves: 1 }, starlightEarned: '4' },
+      shardShop: { moss_sigils: 2, ember_sigils: 1, frost_cores: 3 },
+    }) as {
+      account: { skills: Record<string, number> };
+      prestige: { shop: Record<string, number>; starlightEarned: string };
+      shardShop: Record<string, number>;
+    };
+    expect(out.account.skills).toEqual({ crystal_luck: 3, might: 1 });
+    expect(out.prestige.shop).toEqual({ constellation_crystals: 2, starlit_groves: 1 });
+    expect(out.prestige.starlightEarned).toBe('4');
+    expect(out.shardShop).toEqual({ summon_crystals: 2, glamour_crystals: 1, frost_cores: 3 });
+  });
+
+  it('gives the starting Money to a save that bought nothing', () => {
+    const out = step({ resources: {} }) as { resources: Record<string, string> };
+    expect(out.resources['money']).toBe('100');
+  });
+
+  it('refunds the price of every mine level, plot, slot and damage line as Money', () => {
+    const out = step({
+      resources: { money: '0' },
+      production: {
+        logging: { expansions: 2, plots: [] },
+        mining: { expansions: 1, plots: [] },
+        mineLevels: { copper_quarry: 3 },
+      },
+      combat: { damageLevels: { copper_edge: 2, iron_edge: 1 } },
+    }) as { resources: Record<string, string> };
+    // Start 100 + copper levels 15 + 15 * 1.3 + 15 * 1.3^2 + logging plots 25 + 25 * 1.4
+    // + mining slot 25 + copper edge 10 + 10 * 1.11 + iron edge 200.
+    const expected =
+      100 + (15 + 15 * 1.3 + 15 * 1.69) + (25 + 25 * 1.4) + 25 + (10 + 10 * 1.11) + 200;
+    expect(Number(out.resources['money'])).toBeCloseTo(expected, 6);
+  });
+
+  it('adds the refund to Money already held and does not mutate its input', () => {
+    const input = {
+      resources: { money: '50' },
+      production: { logging: { expansions: 0, plots: [] }, mining: { expansions: 0, plots: [] } },
+    };
+    const out = step(input) as { resources: Record<string, string> };
+    expect(Number(out.resources['money'])).toBe(150);
+    expect(input.resources.money).toBe('50');
+  });
+
+  it('copes with missing or junk sections', () => {
+    expect(() => step({})).not.toThrow();
+    expect(() =>
+      step({ resources: 'x', production: 3, combat: { damageLevels: { copper_edge: 'many' } } }),
+    ).not.toThrow();
+  });
+});
+
+describe('v14 -> v15 (tree levels and the upgrade shelf, DESIGN.md 2, 11.14)', () => {
+  const step = MIGRATIONS[14]!;
+
+  it('adds empty tree levels and keeps the plots and mine levels', () => {
+    const out = step({
+      production: {
+        logging: { expansions: 4, plots: ['oak', 'oak'] },
+        mining: { expansions: 1, plots: [] },
+        unlockedTrees: ['ironbark'],
+        mineLevels: { copper_quarry: 7 },
+      },
+    }) as { production: Record<string, unknown> };
+    expect(out.production['treeLevels']).toEqual({});
+    expect(out.production['mineLevels']).toEqual({ copper_quarry: 7 });
+    expect(out.production['unlockedTrees']).toEqual(['ironbark']);
+    expect((out.production['logging'] as { expansions: number }).expansions).toBe(4);
+  });
+
+  it('owns no upgrade and starts the lifetime Money at the Money held', () => {
+    const out = step({ resources: { money: '4500' } }) as {
+      upgrades: { owned: string[]; moneyEarned: string };
+    };
+    expect(out.upgrades).toEqual({ owned: [], moneyEarned: '4500' });
+    const none = step({}) as { upgrades: { moneyEarned: string } };
+    expect(none.upgrades.moneyEarned).toBe('0');
+  });
+
+  it('does not mutate its input and copes with a missing production section', () => {
+    const input = { production: { logging: { expansions: 1, plots: [] } } };
+    step(input);
+    expect(input).toEqual({ production: { logging: { expansions: 1, plots: [] } } });
+    expect(() => step({})).not.toThrow();
+  });
+});

@@ -12,7 +12,7 @@
       "name": "First Kill",
       "description": "Defeat a boss.",
       "condition": { "kind": "kills", "amount": 1 },
-      "reward": { "resources": [{ "resource": "moss_sigil", "amount": "20" }] }
+      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "1" }] }
     },
     {
       "id": "lumberjack_1",
@@ -89,14 +89,14 @@
       "name": "First Summon",
       "description": "Pull from a portal.",
       "condition": { "kind": "pulls", "amount": 1 },
-      "reward": { "resources": [{ "resource": "moss_sigil", "amount": "10" }] }
+      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "10" }] }
     },
     {
       "id": "ten_pulls",
       "name": "Ten Pulls",
       "description": "Pull 10 times.",
       "condition": { "kind": "pulls", "amount": 10 },
-      "reward": { "resources": [{ "resource": "moss_sigil", "amount": "30" }] }
+      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "30" }] }
     },
     {
       "id": "pity_breaker",
@@ -138,7 +138,7 @@
       "name": "Full Loadout",
       "description": "Fill all four slots of a loadout.",
       "condition": { "kind": "full_loadout" },
-      "reward": { "resources": [{ "resource": "moss_sigil", "amount": "30" }] }
+      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "30" }] }
     },
     {
       "id": "dressed_up",
@@ -163,7 +163,7 @@
       "description": "Spend your first 10 skill points.",
       "condition": { "kind": "skill_points_spent", "amount": 10 },
       "reward": {
-        "resources": [{ "resource": "ember_sigil", "amount": "30" }],
+        "resources": [{ "resource": "glamour_crystal", "amount": "30" }],
         "cosmetics": ["nodes_b"]
       }
     },
@@ -172,7 +172,7 @@
       "name": "First Ascension",
       "description": "Ascend for the first time.",
       "condition": { "kind": "ascensions", "amount": 1 },
-      "reward": { "resources": [{ "resource": "ember_sigil", "amount": "30" }] }
+      "reward": { "resources": [{ "resource": "glamour_crystal", "amount": "30" }] }
     },
     {
       "id": "night_owl",
@@ -204,7 +204,7 @@
       "description": "Earn a Silver medal on a boss.",
       "condition": { "kind": "boss_mastery", "tier": 2 },
       "reward": {
-        "resources": [{ "resource": "ember_sigil", "amount": "20" }],
+        "resources": [{ "resource": "glamour_crystal", "amount": "20" }],
         "cosmetics": ["sticker_b"]
       }
     },
@@ -293,14 +293,14 @@
       "stock": null
     },
     {
-      "id": "moss_sigils",
-      "reward": { "kind": "resource", "resource": "moss_sigil", "amount": "100" },
+      "id": "summon_crystals",
+      "reward": { "kind": "resource", "resource": "summon_crystal", "amount": "100" },
       "price": 10,
       "stock": null
     },
     {
-      "id": "ember_sigils",
-      "reward": { "kind": "resource", "resource": "ember_sigil", "amount": "100" },
+      "id": "glamour_crystals",
+      "reward": { "kind": "resource", "resource": "glamour_crystal", "amount": "100" },
       "price": 15,
       "stock": null
     },

@@ -203,6 +203,7 @@ describe('save format v3: production', () => {
       mining: { expansions: 1, plots: ['copper_quarry', 'iron_deeps'] },
       unlockedTrees: ['ironbark'],
       mineLevels: { copper_quarry: 4, iron_deeps: 1 },
+      treeLevels: { oak: 6 },
     };
     state.clearedDungeons = ['mossy_cellar'];
     const loaded = readSave(createSaveText(state, NOW), content);
@@ -250,7 +251,7 @@ describe('save format v3: production', () => {
     };
     const { state } = readSave(JSON.stringify(v2), content);
     expect(state.resources['oak_gem']!.eq(1234.5)).toBe(true);
-    expect(state.resources['moss_sigil']!.eq(7)).toBe(true);
+    expect(state.resources['summon_crystal']!.eq(7)).toBe(true);
     expect(state.activeDungeonId).toBe('mossy_cellar');
     expect(state.pity).toEqual({ root_warden: 12 });
     expect(state.production.logging).toEqual({ expansions: 0, plots: ['oak'] });
@@ -260,6 +261,41 @@ describe('save format v3: production', () => {
     expect(state.combat.kills).toEqual({ mossy_cellar: 3 });
     expect(state.bossHp).toBeNull();
     expect(serializeState(state).production).toEqual(serializeState(freshState()).production);
+  });
+});
+
+describe('save format v14: the three loops (DESIGN.md 11.13)', () => {
+  it('loads a v13 save: sigils become crystals, levels stay, Money pays them back', () => {
+    const json = JSON.parse(createSaveText(freshState(), NOW));
+    json.version = 13;
+    delete json.state.resources.money;
+    delete json.state.resources.summon_crystal;
+    delete json.state.resources.glamour_crystal;
+    json.state.resources.moss_sigil = '42';
+    json.state.resources.ember_sigil = '9';
+    json.state.resources.frost_sigil = '5';
+    json.state.production.mineLevels = { copper_quarry: 2 };
+    json.state.production.logging.expansions = 1;
+    json.state.combat.damageLevels = { copper_edge: 1 };
+    json.state.account.skills = { sigil_luck: 2 };
+    const { state } = readSave(JSON.stringify(json), content);
+    expect(state.resources['summon_crystal']!.toNumber()).toBe(42);
+    expect(state.resources['glamour_crystal']!.toNumber()).toBe(9);
+    expect(state.resources['frost_sigil']!.toNumber()).toBe(5);
+    expect('moss_sigil' in state.resources).toBe(false);
+    expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
+    expect(state.production.logging.expansions).toBe(1);
+    expect(state.combat.damageLevels).toEqual({ copper_edge: 1 });
+    expect(state.account.skills).toEqual({ crystal_luck: 2 });
+    // Start 100 + two copper levels (15 + 19.5) + a plot (25) + a Copper Edge level (10).
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 25 + 10);
+  });
+
+  it('writes the current version, so a v14 save loads without the refund twice', () => {
+    const state = freshState();
+    state.resources['money'] = new Decimal(777);
+    const { state: back } = readSave(createSaveText(state, NOW), content);
+    expect(back.resources['money']!.toNumber()).toBe(777);
   });
 });
 
@@ -280,7 +316,7 @@ describe('save format v8: mastery', () => {
 
   it('drops totals of resources that are not production gems', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    json.state.mastery.harvested = { oak_gem: '5', moss_sigil: '9', removed_gem: '3' };
+    json.state.mastery.harvested = { oak_gem: '5', summon_crystal: '9', removed_gem: '3' };
     const { state } = readSave(JSON.stringify(json), content);
     expect(Object.keys(state.mastery.harvested)).toEqual(['oak_gem']);
   });

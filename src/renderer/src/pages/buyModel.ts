@@ -1,5 +1,6 @@
 import type { Content } from '../../../data';
 import {
+  isDamageLineUnlocked,
   Decimal,
   damageLevel,
   damageLineMilestone,
@@ -82,7 +83,7 @@ export function damageLineViews(
         name: u.name,
         resource: u.cost.resource,
         level,
-        available: level > 0 || have.gt(0),
+        available: isDamageLineUnlocked(state, content, u) && (level > 0 || have.gt(0)),
         offer,
         label: buyLabel(offer, count),
         price: `${fmt(offer.price.amount)} ${resName(content, u.cost.resource)}`,

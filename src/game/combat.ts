@@ -17,6 +17,7 @@ import { Decimal } from './num';
 import {
   canAfford,
   clearDungeon,
+  isProducerUnlocked,
   curvePrice,
   jobProductionPerSecond,
   PRODUCTION_JOBS,
@@ -70,7 +71,7 @@ export function damageUpgradeGain(
   upgrade: DamageUpgrade,
   modifiers: readonly Modifier[] = [],
 ): Decimal {
-  const ctx = { ...FIGHTING, resource: upgrade.cost.resource };
+  const ctx = { ...FIGHTING, resource: upgrade.gem };
   return Decimal.max(statValue('combat.upgradeGain', upgrade.damagePerLevel, modifiers, ctx), 0);
 }
 
@@ -130,7 +131,20 @@ export function effectiveDamage(
   return Decimal.max(damageStat(state, content, dungeonId, modifiers).value, 0);
 }
 
-/** Price of the next level of a damage upgrade line, in its ore. */
+/**
+ * Whether a damage line can be bought: its gem's mine must be unlocked (Iron Edge once Iron Deeps
+ * opens, Crystal Edge with the Crystal Grotto; DESIGN.md 11.8, 11.13). The price is in Money.
+ */
+export function isDamageLineUnlocked(
+  state: GameState,
+  content: Content,
+  upgrade: DamageUpgrade,
+): boolean {
+  const mine = content.mines.find((m) => m.resource === upgrade.gem);
+  return !mine || isProducerUnlocked(state, content, 'mining', mine.id);
+}
+
+/** Price of the next level of a damage upgrade line, in Money. */
 export function damageUpgradeCost(
   state: GameState,
   content: Content,
@@ -151,6 +165,8 @@ export function buyDamageUpgrade(
 ): CombatResult {
   const price = damageUpgradeCost(state, content, upgradeId, modifiers);
   if (!price) return fail('unknown');
+  const line = content.combat.damageUpgrades.find((u) => u.id === upgradeId)!;
+  if (!isDamageLineUnlocked(state, content, line)) return fail('locked');
   if (!canAfford(state, [price])) return fail('unaffordable');
   const next = cloneState(state);
   next.resources[price.resource] = next.resources[price.resource]!.sub(price.amount);
@@ -253,30 +269,73 @@ export function bossStatus(
   };
 }
 
+/** The multiplier stat a currency's drops use: Money or crystals (DESIGN.md 11.13). */
+function currencyMultiplierStat(
+  content: Content,
+  resource: string,
+): 'drops.moneyMultiplier' | 'drops.crystalMultiplier' {
+  return content.resourceById.get(resource)?.kind === 'crystal'
+    ? 'drops.crystalMultiplier'
+    : 'drops.moneyMultiplier';
+}
+
 /** The dungeon's drop table after modifiers (chances clamped to 0..1, pity at least 1). */
-export function effectiveDrops(dungeon: Dungeon, modifiers: readonly Modifier[]): DropTable {
+export function effectiveDrops(
+  dungeon: Dungeon,
+  modifiers: readonly Modifier[],
+  content: Content,
+): DropTable {
   const ctx = { ...FIGHTING, dungeon: dungeon.id };
-  const { rare, portalResource, material } = dungeon.drops;
+  const { rare, currencies, material, wage, extraMaterials } = dungeon.drops;
   const clamp01 = (d: Decimal): number => Math.min(1, Math.max(0, d.toNumber()));
   const chance = clamp01(statValue('drops.rareChance', rare.chance, modifiers, ctx));
   const pity = statValue('drops.pityThreshold', rare.pityThreshold, modifiers, ctx).toNumber();
-  const portalCtx = { ...ctx, resource: portalResource.resource };
-  const amount = (n: number): number =>
-    Math.max(0, Math.floor(statValue('drops.portalAmount', n, modifiers, portalCtx).toNumber()));
-  const min = amount(portalResource.min);
-  const multiplier = Math.max(
-    0,
-    statValue('drops.portalMultiplier', 1, modifiers, portalCtx).toNumber(),
-  );
   const materialCtx = { ...ctx, resource: material.resource };
   return {
     rare: { ...rare, chance, pityThreshold: Math.max(1, Math.round(pity)) },
-    portalResource: {
-      ...portalResource,
-      min,
-      max: Math.max(min, amount(portalResource.max)),
-      multiplier,
-    },
+    ...(wage
+      ? {
+          wage: {
+            ...wage,
+            perSecond: Decimal.max(
+              statValue(currencyMultiplierStat(content, wage.resource), wage.perSecond, modifiers, {
+                ...ctx,
+                resource: wage.resource,
+              }),
+              0,
+            ),
+          },
+        }
+      : {}),
+    currencies: currencies.map((currency) => {
+      const currencyCtx = { ...ctx, resource: currency.resource };
+      const amount = (n: number): number =>
+        Math.max(
+          0,
+          Math.floor(statValue('drops.currencyAmount', n, modifiers, currencyCtx).toNumber()),
+        );
+      const min = amount(currency.min);
+      const multiplier = Math.max(
+        0,
+        statValue(
+          currencyMultiplierStat(content, currency.resource),
+          1,
+          modifiers,
+          currencyCtx,
+        ).toNumber(),
+      );
+      return { ...currency, min, max: Math.max(min, amount(currency.max)), multiplier };
+    }),
+    extraMaterials: extraMaterials.map((extra) => {
+      const extraCtx = { ...ctx, resource: extra.resource };
+      const amount = (n: number): number =>
+        Math.max(
+          0,
+          Math.floor(statValue('drops.materialAmount', n, modifiers, extraCtx).toNumber()),
+        );
+      const min = amount(extra.min);
+      return { ...extra, min, max: Math.max(min, amount(extra.max)) };
+    }),
     material: {
       ...material,
       chance: clamp01(statValue('drops.materialChance', material.chance, modifiers, materialCtx)),
@@ -745,6 +804,14 @@ function fightDungeon(
     report.bursts.fighting += run.bursts;
     const dealt = dps.mul(t).add(signatureDamage(dps, stats).mul(run.bursts));
     fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
+    // The wage: Money for every second spent fighting, so the first levels can be bought before
+    // the first kill (DESIGN.md 11.13).
+    const wage = effectiveDrops(dungeon, modifiers, content).wage;
+    if (wage) {
+      const paid = wage.perSecond.mul(t);
+      addResource(next, wage.resource, paid);
+      report.currencies[wage.resource] = (report.currencies[wage.resource] ?? 0) + paid.toNumber();
+    }
   };
   const max = loadoutMaxHealth(next, content, modifiers, dungeon.id);
   const incoming = bossAttackDps(dungeon, next.prestigeCount, modifiers);
@@ -827,17 +894,21 @@ function fightBoss(
   state.bossHp = Decimal.max(maxHp.sub(overflow), maxHp.mul(1e-9));
 
   const bossId = dungeon.boss.id;
-  const drops = effectiveDrops(dungeon, modifiers);
+  const drops = effectiveDrops(dungeon, modifiers, content);
   let pity = state.pity[bossId] ?? 0;
-  let portal = 0;
+  const purse = drops.currencies.map(() => 0);
+  const extras = drops.extraMaterials.map(() => 0);
   let rares = 0;
   let material = 0;
   for (let i = 0; i < kills; i++) {
     const roll = rollBossDrop(drops, pity, rng);
     pity = roll.pity;
-    portal += roll.portal;
+    roll.currencies.forEach((units, j) => (purse[j]! += units));
     if (roll.rare) rares++;
     material += rollMaterialDrop(drops, rng);
+    drops.extraMaterials.forEach((extra, j) => {
+      extras[j]! += extra.min + Math.floor(rng() * (extra.max - extra.min + 1));
+    });
   }
 
   state.pity[bossId] = pity;
@@ -845,12 +916,23 @@ function fightBoss(
   report.bossKills += kills;
   const totalKills = dungeonKills(state, dungeon.id) + kills;
   state.combat.kills[dungeon.id] = totalKills;
-  if (portal > 0) addResource(state, drops.portalResource.resource, portal);
+  drops.currencies.forEach((currency, j) => {
+    const units = purse[j]!;
+    if (units <= 0) return;
+    addResource(state, currency.resource, units);
+    report.currencies[currency.resource] = (report.currencies[currency.resource] ?? 0) + units;
+  });
   if (material > 0) {
     const id = drops.material.resource;
     addResource(state, id, material);
     report.materials[id] = (report.materials[id] ?? 0) + material;
   }
+  drops.extraMaterials.forEach((extra, j) => {
+    const units = extras[j]!;
+    if (units <= 0) return;
+    addResource(state, extra.resource, units);
+    report.materials[extra.resource] = (report.materials[extra.resource] ?? 0) + units;
+  });
   if (rares > 0) {
     const item = dungeon.drops.rare.itemId;
     state.inventory[item] = (state.inventory[item] ?? 0) + rares;

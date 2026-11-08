@@ -34,6 +34,7 @@ export function tierUpText(u: TierUp, content: Content): { title: string; detail
       return { title: t.bossMastery(name, metal), detail: t.bossMasteryDetail };
     case 'damage_milestone':
       return { title: t.edge(name, metal), detail: t.milestone(u.to) };
+    case 'tree_milestone':
     case 'mine_milestone':
       return { title: t.mine(name, metal), detail: t.milestone(u.to) };
     case 'tile_stage':
