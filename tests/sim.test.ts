@@ -121,10 +121,10 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 5;
     squire.level = 36;
-    squire.duplicates = 1;
+    squire.starFill = 1;
     const feller = state.cards.owned['apprentice_feller']!;
     feller.level = 20;
-    feller.duplicates = 1;
+    feller.starFill = 1;
     state.resources['moss_core'] = new Decimal(3); // ★5 to ★6 needs 10; ★1 to ★2 needs 1
     const { bought } = greedyBuy(state, content);
     expect(bought).not.toContain('star:apprentice_feller');
@@ -135,22 +135,21 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const squire = state.cards.owned['ember_squire']!;
     squire.tier = 'gold';
     squire.stars = 6;
-    squire.level = 70; // Gold cap 80: not ready, but its tier-up will need Frost Cores and Sigils
+    squire.level = 50; // Gold cap 60: not ready, but its tier-up will need Frost Cores and Sigils
     const digger = state.cards.owned['cave_digger']!;
     digger.tier = 'gold';
     digger.stars = 1;
-    digger.level = 60; // at the Gold ★1 cap
-    digger.duplicates = 1;
-    const [coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
+    digger.level = 60; // at the Gold cap: ready to tier up too
+    const [, coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
     state.resources['frost_core'] = new Decimal(coreCost!.amount);
-    state.resources['frost_sigil'] = new Decimal(sigilCost!.amount);
+    state.resources['frost_sigil'] = new Decimal(sigilCost!.amount).mul(2);
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
-    state.resources['money'] = new Decimal(0);
+    state.resources['money'] = new Decimal(1e9);
     const { bought } = greedyBuy(state, content);
-    expect(bought).not.toContain('star:cave_digger');
-    state.resources['frost_core'] = new Decimal(coreCost!.amount).add(1);
-    expect(greedyBuy(state, content).bought).toContain('star:cave_digger');
+    expect(bought).not.toContain('tier:cave_digger');
+    state.resources['frost_core'] = new Decimal(coreCost!.amount).mul(2);
+    expect(greedyBuy(state, content).bought).toContain('tier:cave_digger');
   });
 
   it('saves the Glimmer Dust for the cosmetic closest to its top level', () => {
@@ -195,7 +194,7 @@ describe('balance sim: where to fight', () => {
     state.clearedDungeons = ['mossy_cellar'];
     const squire = state.cards.owned['ember_squire']!;
     squire.level = 20;
-    squire.duplicates = 1;
+    squire.starFill = 1;
     // Strong enough to kill the Cinder Lich in good time.
     expect(chooseDungeon(state, withDps(1e6, content))).toBe('ember_crypt');
   });
@@ -205,7 +204,7 @@ describe('balance sim: where to fight', () => {
     state.clearedDungeons = ['mossy_cellar'];
     const squire = state.cards.owned['ember_squire']!;
     squire.level = 20;
-    squire.duplicates = 1;
+    squire.starFill = 1;
     // Harmless boss, so only the kill time decides.
     const attack = content.dungeonById.get('ember_crypt')!.boss.attack;
     const damage = attack.damage;

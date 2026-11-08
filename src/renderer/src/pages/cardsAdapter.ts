@@ -9,6 +9,7 @@ import {
   collectModifiers,
   levelCap,
   loadoutInfo,
+  weaponLookRarity,
   setLoadoutSlot,
   starUp,
   tierUp,
@@ -40,6 +41,7 @@ const TIER_NAMES: Record<Rank['tier'], string> = {
   silver: 'Silver',
   gold: 'Gold',
   prismatic: 'Prismatic',
+  unique: 'Unique',
 };
 const BASE_RANK: Rank = { tier: 'bronze', stars: 1 };
 /** Placeholder emblems until the graphics overhaul brings per-card art (see ui/card.ts). */
@@ -70,8 +72,8 @@ export function createCardsModel(
         met: r.met,
         value: COPY.cards.req.levelValue(have, need),
       };
-    if (r.kind === 'duplicates')
-      return { label: COPY.cards.req.duplicate, met: r.met, value: COPY.cards.req.of(have, need) };
+    if (r.kind === 'starFill')
+      return { label: COPY.cards.req.starBar, met: r.met, value: COPY.cards.req.of(have, need) };
     return { label: resName(r.resource ?? ''), met: r.met, value: COPY.cards.req.of(have, need) };
   }
 
@@ -79,33 +81,28 @@ export function createCardsModel(
     return check.requirements
       .filter((r) => r.kind !== 'level')
       .map((r) =>
-        r.kind === 'duplicates'
-          ? COPY.cards.req.duplicates(r.need.toNumber())
+        r.kind === 'starFill'
+          ? COPY.cards.req.copies(r.need.toNumber())
           : `${fmt(r.need)} ${resName(r.resource ?? '')}`,
       )
       .join(', ');
   }
 
-  function step(info: CardInfo): UpgradeStep | null {
-    const star = info.starUp;
-    const tier = info.tierUp;
-    const check = star?.available ? star : tier?.available ? tier : null;
-    if (!check || !check.to) return null;
-    const kind = check === star ? 'star' : 'tier';
-    const cap = levelCap(content, check.to);
+  /** The star-up (fill only) or tier-up (level cap, Money, materials) of a card, if it has one. */
+  function step(kind: 'star' | 'tier', check: UpgradeCheck | null): UpgradeStep | null {
+    if (!check?.available || !check.to) return null;
     const tierName = TIER_NAMES[check.to.tier];
+    const multiplier = content.cardRules.power.starMultiplier[check.to.stars - 2] ?? 1;
     return {
       kind,
       title:
         kind === 'star'
           ? COPY.cards.nextStar(check.to.stars, tierName)
-          : COPY.cards.nextTier(tierName),
+          : COPY.cards.nextTier(tierName, check.to.stars),
       note:
         kind === 'star'
-          ? check.to.stars === 6
-            ? COPY.cards.starSixNote(cap)
-            : COPY.cards.starNote(cap)
-          : COPY.cards.tierNote(tierName, cap),
+          ? COPY.cards.starNote(multiplier)
+          : COPY.cards.tierNote(tierName, levelCap(content, check.to)),
       requirements: check.requirements.map(requirement),
       action: (kind === 'star' ? COPY.cards.addStar : COPY.cards.tierUp)(priceText(check)),
       ready: check.met,
@@ -129,14 +126,15 @@ export function createCardsModel(
       job: card.job,
       rarity: card.rarity,
       emblem: JOB_EMBLEM[card.job],
-      item: art?.(card.id, owned) ?? itemArt(card.item.kind, card.rarity),
+      item:
+        art?.(card.id, owned) ?? itemArt(card.item.kind, weaponLookRarity(card.rarity, rank.tier)),
       element: card.element,
       owned: owned !== null,
       rank,
       level,
       cap,
       xp,
-      duplicates: owned?.duplicates ?? 0,
+      duplicates: owned?.starFill ?? 0,
       cost: info.cost,
       mainAbility: card.main.description,
       supportEffect: card.support.description,
@@ -147,7 +145,8 @@ export function createCardsModel(
       role: info.slot
         ? { job: info.slot.job, slot: info.slot.slot === 'main' ? 'main' : 'support' }
         : null,
-      next: owned ? step(info) : null,
+      next: owned ? step('star', info.starUp) : null,
+      tier: owned ? step('tier', info.tierUp) : null,
     };
   }
 
@@ -168,13 +167,13 @@ export function createCardsModel(
           o.tier,
           o.stars,
           o.level,
-          o.duplicates,
+          o.starFill,
           o.enhancements,
         ]),
         state.cards.loadouts,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
-        all(state).map((i) => Boolean(i.starUp?.met || i.tierUp?.met)),
+        all(state).map((i) => [Boolean(i.starUp?.met), Boolean(i.tierUp?.met)]),
       ]);
     },
     setMain(state, id) {
@@ -195,12 +194,9 @@ export function createCardsModel(
       if (!info?.slot) return { ok: false, reason: reason('invalid-slot') };
       return wrap(setLoadoutSlot(state, content, info.slot.job, info.slot.slot, null));
     },
-    upgrade(state, id) {
-      const info = cardInfo(state, content, id);
-      if (!info) return { ok: false, reason: reason('unknown') };
-      if (info.starUp?.available) return wrap(starUp(state, content, id));
-      if (info.tierUp?.available) return wrap(tierUp(state, content, id));
-      return { ok: false, reason: reason('unavailable') };
+    upgrade(state, id, kind) {
+      if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
+      return wrap(kind === 'star' ? starUp(state, content, id) : tierUp(state, content, id));
     },
     chart(state, id) {
       const info = cardEnhancements(state, content, id);

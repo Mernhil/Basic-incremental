@@ -14,7 +14,7 @@ const goldCard = (cores: number, level = 80, stars = 6) => {
     stars,
     level,
     xp: new Decimal(0),
-    duplicates: 0,
+    starFill: 0,
     enhancements: [],
   };
   state.resources['frost_core'] = new Decimal(cores);
@@ -22,6 +22,7 @@ const goldCard = (cores: number, level = 80, stars = 6) => {
   // The gems of the step are in hand: only the slow dungeon materials decide the hold.
   state.resources['moonwillow_gem'] = new Decimal(1e6);
   state.resources['grotto_gem'] = new Decimal(1e6);
+  state.resources['money'] = new Decimal(1e9);
   return state;
 };
 
@@ -37,10 +38,9 @@ describe('balance sim: waiting for a Prismatic step before an ascension', () => 
     expect(holdAscension(state, content)).toBe(true);
   });
 
-  it('does not hold when the Cores are far off, the card is not ready, or the step is affordable', () => {
+  it('does not hold when the Cores are far off, the card is below its level cap, or the step is affordable', () => {
     expect(holdAscension(goldCard(10), content)).toBe(false);
     expect(holdAscension(goldCard(Math.ceil(coreNeed * 0.5), 40), content)).toBe(false);
-    expect(holdAscension(goldCard(Math.ceil(coreNeed * 0.5), 80, 5), content)).toBe(false);
     expect(holdAscension(goldCard(coreNeed + 10), content)).toBe(false);
   });
 });

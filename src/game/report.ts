@@ -221,9 +221,9 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
 export type CardGain =
   /** A card not owned before, now at Bronze ★1 Lv 1. */
   | { kind: 'new' }
-  /** Stored on the owned card as a duplicate; `duplicates` is the new count. */
+  /** Added to the card's star bar; `duplicates` is the fill held after it. */
   | { kind: 'duplicate'; duplicates: number }
-  /** The card is Prismatic ★6: the copy became this many shards. */
+  /** The copy was past ★6: it became this many shards. */
   | { kind: 'shards'; shards: number };
 
 export type CardDrop = CardGain & { cardId: string };

@@ -292,8 +292,8 @@ export interface OwnedCard {
   level: number;
   /** XP towards the next level (0 at the level cap). */
   xp: Decimal;
-  /** Extra copies held, spent on star-ups. */
-  duplicates: number;
+  /** The star bar (DESIGN.md §5): fill from duplicates, spent on star-ups. */
+  starFill: number;
   /** Chosen card enhancement option ids (DESIGN.md §10b). */
   enhancements: string[];
 }
@@ -324,7 +324,7 @@ export interface CardState {
   /** Card id -> the owned card. */
   owned: Record<string, OwnedCard>;
   loadouts: Record<Job, CardLoadout>;
-  /** From duplicates gained once a card is Prismatic ★6 (11.9). */
+  /** From duplicates gained past ★6 (DESIGN.md §5). */
   shards: number;
 }
 
@@ -334,14 +334,14 @@ export function emptyCardLoadout(): CardLoadout {
   return { main: null, supports: Array<string | null>(SUPPORT_SLOTS).fill(null) };
 }
 
-/** A card as first obtained: Bronze ★1, Lv 1, no XP or duplicates. */
+/** A card as first obtained: Bronze ★1, Lv 1, no XP, an empty star bar. */
 export function newOwnedCard(): OwnedCard {
   return {
     tier: 'bronze',
     stars: 1,
     level: 1,
     xp: new Decimal(0),
-    duplicates: 0,
+    starFill: 0,
     enhancements: [],
   };
 }

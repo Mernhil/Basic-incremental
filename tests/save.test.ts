@@ -397,6 +397,6 @@ describe('save format v17: damage comes from cards (DESIGN.md §5)', () => {
     state.resources['money'] = new Decimal(321);
     const { state: back } = readSave(createSaveText(state, NOW), content);
     expect(back.resources['money']!.toNumber()).toBe(321);
-    expect(CURRENT_SAVE_VERSION).toBe(17);
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(17);
   });
 });

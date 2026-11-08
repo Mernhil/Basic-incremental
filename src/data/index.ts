@@ -675,8 +675,10 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   const checkResource = (where: string, id: string): void => {
     const res = resources.get(id);
     if (!res) issues.push(`${where}: unknown resource "${id}"`);
-    else if (!UPGRADE_KINDS.includes(res.kind)) {
-      issues.push(`${where}: "${id}" is ${res.kind}, card upgrades use gems and materials only`);
+    else if (id !== 'money' && !UPGRADE_KINDS.includes(res.kind)) {
+      issues.push(
+        `${where}: "${id}" is ${res.kind}, card upgrades use Money, gems and materials only`,
+      );
     }
   };
   // Every card upgrade of every job mixes both production loops with a dungeon material
@@ -687,27 +689,18 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
       if (!kinds.has(kind)) issues.push(`${where}: needs a ${kind} among its costs`);
     }
   };
-  for (const tier of RANK_TIERS) {
-    c.cardRules.starUp.tiers[tier].forEach((line, i) =>
-      checkResource(`cardRules.json › starUp › tiers › ${tier} › [${i}] › resource`, line.resource),
-    );
-    for (const job of JOBS) {
-      const used = c.cardRules.starUp.tiers[tier].filter((l) => (l.jobShare?.[job] ?? 1) > 0);
-      checkMix(
-        `cardRules.json › starUp › tiers › ${tier} › ${job}`,
-        used.map((l) => l.resource),
-      );
-    }
-  }
   RANK_TIERS.forEach((tier, i) => {
     const before = RANK_TIERS[i - 1];
     if (before && c.cardRules.levelCaps[tier] < c.cardRules.levelCaps[before]) {
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
     }
   });
-  for (const tier of ['bronze', 'silver', 'gold'] as const) {
+  for (const tier of ['bronze', 'silver', 'gold', 'prismatic'] as const) {
     for (const job of JOBS) {
       const costs = c.cardRules.tierUp[tier][job];
+      if (!costs.some((x) => x.resource === 'money')) {
+        issues.push(`cardRules.json › tierUp › ${tier} › ${job}: needs a Money cost`);
+      }
       costs.forEach((cost, i) =>
         checkResource(
           `cardRules.json › tierUp › ${tier} › ${job} › [${i}] › resource`,

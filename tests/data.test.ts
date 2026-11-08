@@ -237,13 +237,9 @@ describe('card ranks and portals', () => {
   it('catches unknown materials and card modifier scopes', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['starUp'].tiers.bronze[0].resource = 'nope';
     rules['tierUp'].bronze.mining[0].resource = 'nope';
     (bad.cards as Record<string, any>[])[0]!['support'].modifiers[0].scope = { dungeon: 'nowhere' }; // eslint-disable-line @typescript-eslint/no-explicit-any
     const issues = issuesFor(bad);
-    expect(issues).toContain(
-      'cardRules.json › starUp › tiers › bronze › [0] › resource: unknown resource "nope"',
-    );
     expect(issues).toContain(
       'cardRules.json › tierUp › bronze › mining › [0] › resource: unknown resource "nope"',
     );
@@ -501,15 +497,19 @@ describe('the three loops (DESIGN.md §3)', () => {
     );
   });
 
-  it('refuses card upgrades paid in Money or without both production loops', () => {
+  it('refuses tier-ups paid in other currencies, without Money or without both production loops', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['starUp'].tiers.bronze[0].resource = 'money';
+    rules['tierUp'].bronze.logging[1].resource = 'summon_crystal';
+    rules['tierUp'].gold.fighting = rules['tierUp'].gold.fighting.filter(
+      (x: { resource: string }) => x.resource !== 'money',
+    );
     rules['tierUp'].silver.mining = rules['tierUp'].silver.mining.filter(
       (x: { resource: string }) => x.resource !== 'moonwillow_gem',
     );
     const issues = issuesFor(bad).join(String.fromCharCode(10));
-    expect(issues).toContain('card upgrades use gems and materials only');
+    expect(issues).toContain('card upgrades use Money, gems and materials only');
+    expect(issues).toContain('cardRules.json › tierUp › gold › fighting: needs a Money cost');
     expect(issues).toContain('cardRules.json › tierUp › silver › mining: needs a tree_gem');
   });
 });

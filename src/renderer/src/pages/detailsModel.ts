@@ -66,7 +66,6 @@ export function usedFor(content: Content, resource: Resource): string[] {
   const t = COPY.details.uses;
   const uses: string[] = [];
   const id = resource.id;
-  if (mentionsResource(content.cardRules.starUp, id)) uses.push(t.starUp);
   if (mentionsResource(content.cardRules.tierUp, id)) uses.push(t.tierUp);
   for (const tree of content.trees) {
     if (mentionsResource(tree.unlockCost, id)) uses.push(t.unlock(tree.name));

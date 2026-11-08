@@ -44,6 +44,7 @@ export const MIGRATIONS: MigrationTable = {
   14: v14ToV15,
   15: v15ToV16,
   16: v16ToV17,
+  17: v17ToV18,
 };
 
 /** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
@@ -108,6 +109,30 @@ const V16_DAMAGE_UPGRADES = {
 } as const;
 /** The level cap of each tier from format 17 on (cardRules.json `levelCaps`); stars do not count. */
 const V17_LEVEL_CAPS: Record<string, number> = { bronze: 20, silver: 40, gold: 60, prismatic: 80 };
+
+/**
+ * v17 -> v18: tiers, stars and the Unique tier (DESIGN.md §5). A card's `duplicates` became its
+ * star bar fill, which starts at 0; tier, stars and level are kept. A card that showed the unique
+ * item at Gold ★6 keeps its tier: the unique item now waits for the Unique tier.
+ */
+function v17ToV18(state: Record<string, unknown>): Record<string, unknown> {
+  if (!isRecord(state['cards']) || !isRecord(state['cards']['owned'])) return { ...state };
+  const cards = state['cards'];
+  return {
+    ...state,
+    cards: {
+      ...cards,
+      owned: Object.fromEntries(
+        Object.entries(cards['owned'] as Record<string, unknown>).map(([id, card]) => {
+          if (!isRecord(card)) return [id, card];
+          const rest: Record<string, unknown> = { ...card, starFill: 0 };
+          delete rest['duplicates'];
+          return [id, rest];
+        }),
+      ),
+    },
+  };
+}
 
 /**
  * v16 -> v17: damage comes from cards (DESIGN.md §5). The three damage lines (Copper, Iron and

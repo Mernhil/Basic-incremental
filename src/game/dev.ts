@@ -100,6 +100,8 @@ export function devSetCardRank(
 ): DevResult {
   if (!content.cardById.has(cardId)) return fail('unknown');
   if (!RANK_TIERS.includes(rank.tier)) return fail('invalid');
+  // Unique is open only to cards with a unique version.
+  if (rank.tier === 'unique' && !content.cardById.get(cardId)?.evolution) return fail('invalid');
   if (!Number.isInteger(rank.stars) || rank.stars < 1 || rank.stars > 6) return fail('invalid');
   const next = cloneState(state);
   const owned = { ...(next.cards.owned[cardId] ?? newOwnedCard()) };

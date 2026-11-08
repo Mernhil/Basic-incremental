@@ -11,8 +11,13 @@ describe('Cards page model', () => {
     expect(entries).toHaveLength(content.cards.length);
     const owned = entries.filter((e) => e.owned);
     expect(owned.map((e) => e.role?.slot)).toEqual(['main', 'main', 'main']);
-    for (const e of owned) expect(e.next?.kind).toBe('star');
-    expect(entries.filter((e) => !e.owned).every((e) => e.next === null)).toBe(true);
+    for (const e of owned) {
+      expect(e.next?.kind).toBe('star');
+      expect(e.tier?.kind).toBe('tier');
+    }
+    expect(entries.filter((e) => !e.owned).every((e) => e.next === null && e.tier === null)).toBe(
+      true,
+    );
   });
 
   it('adds, moves and removes supports through the loadout rules', () => {
@@ -32,7 +37,7 @@ describe('Cards page model', () => {
     const unowned = content.cards.find((c) => !state.cards.owned[c.id])!;
     const result = model.setMain(state, unowned.id);
     expect(result).toEqual({ ok: false, reason: "You don't own this card yet." });
-    expect(model.upgrade(state, content.cards[0]!.id).ok).toBe(false);
+    expect(model.upgrade(state, content.cards[0]!.id, 'star').ok).toBe(false);
   });
 
   it('changes its signature when a loadout changes', () => {

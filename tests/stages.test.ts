@@ -67,7 +67,7 @@ describe('tier-ups from purchases (DESIGN.md §12)', () => {
 });
 
 function cardAt(tier: OwnedCard['tier'], stars: number, level = 200): OwnedCard {
-  return { ...newOwnedCard(), tier, stars, level, duplicates: 5 };
+  return { ...newOwnedCard(), tier, stars, level, starFill: 5 };
 }
 
 describe('card tier and evolution tier-ups', () => {
@@ -81,19 +81,29 @@ describe('card tier and evolution tier-ups', () => {
     ]);
   });
 
-  it('reports the unique evolution when a star-up reaches Gold ★6', () => {
+  it('reports the unique evolution when a tier-up reaches the Unique tier', () => {
     const state = freshState();
-    state.cards.owned['ember_squire'] = cardAt('gold', 5, 76);
-    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e9');
-    const result = starUp(state, content, 'ember_squire');
+    state.cards.owned['ember_squire'] = cardAt('prismatic', 5, 80);
+    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
+    const result = tierUp(state, content, 'ember_squire');
     expect(result.ok && result.tierUps).toEqual([
-      { kind: 'evolution', id: 'ember_squire', from: 0, to: 1, metal: 'gold' },
+      { kind: 'card_tier', id: 'ember_squire', from: 4, to: 5, metal: 'prismatic' },
+      { kind: 'evolution', id: 'ember_squire', from: 0, to: 1, metal: 'prismatic' },
     ]);
+  });
+
+  it('reports no evolution when a card reaches Gold ★6', () => {
+    const state = freshState();
+    state.cards.owned['ember_squire'] = cardAt('silver', 6, 40);
+    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
+    const result = tierUp(state, content, 'ember_squire');
+    expect(result.ok && result.tierUps.map((t) => t.kind)).toEqual(['card_tier']);
   });
 
   it('reports nothing for an ordinary star-up', () => {
     const state = freshState();
     state.cards.owned['ember_squire'] = cardAt('bronze', 1, 20);
+    state.cards.owned['ember_squire']!.starFill = 5;
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e9');
     const result = starUp(state, content, 'ember_squire');
     expect(result.ok && result.tierUps).toEqual([]);
@@ -106,15 +116,15 @@ describe('unique evolutions (DESIGN.md §5)', () => {
     expect(content.cardById.get('grove_keeper')!.evolution).toBe('rootbloom_staff');
     expect(content.cards.filter((c) => c.evolution === 'soul_reaper')).toEqual([]);
     expect(content.progression.evolutions.items.map((i) => i.kind)).toContain('soul_reaper');
-    expect(content.progression.evolutions.from).toEqual({ tier: 'gold', stars: 6 });
   });
 
-  it('draws the generic item below Gold ★6 and the unique one from Gold ★6 on', () => {
+  it('draws the generic item below the Unique tier and the unique one at Unique', () => {
     expect(cardItemKind(content, 'ember_squire', null)).toBe('sword');
     expect(cardItemKind(content, 'ember_squire', cardAt('gold', 5))).toBe('sword');
-    expect(cardItemKind(content, 'ember_squire', cardAt('gold', 6))).toBe('flameblade');
-    expect(cardItemKind(content, 'ember_squire', cardAt('prismatic', 1))).toBe('flameblade');
-    expect(cardItemKind(content, 'grove_keeper', cardAt('prismatic', 3))).toBe('rootbloom_staff');
+    expect(cardItemKind(content, 'ember_squire', cardAt('gold', 6))).toBe('sword');
+    expect(cardItemKind(content, 'ember_squire', cardAt('prismatic', 6))).toBe('sword');
+    expect(cardItemKind(content, 'ember_squire', cardAt('unique', 1))).toBe('flameblade');
+    expect(cardItemKind(content, 'grove_keeper', cardAt('unique', 3))).toBe('rootbloom_staff');
   });
 
   it('keeps the generic item for cards without an evolution', () => {
@@ -123,15 +133,17 @@ describe('unique evolutions (DESIGN.md §5)', () => {
   });
 
   it('gives the item name and whether it is unique', () => {
-    expect(cardItem(content, 'ember_squire', cardAt('gold', 6))).toEqual({
+    expect(cardItem(content, 'ember_squire', cardAt('unique', 1))).toEqual({
       kind: 'flameblade',
       name: 'Flameblade',
       unique: true,
+      rarity: 'mythic',
     });
     expect(cardItem(content, 'ember_squire', null)).toEqual({
       kind: 'sword',
       name: 'Ember Blade',
       unique: false,
+      rarity: 'common',
     });
   });
 });

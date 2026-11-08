@@ -114,7 +114,7 @@ describe('dev cheats (dev builds only)', () => {
       'glimmer_trial',
     ]);
     expect(options.cards).toHaveLength(content.cards.length);
-    expect(options.tiers).toEqual(['bronze', 'silver', 'gold', 'prismatic']);
+    expect(options.tiers).toEqual(['bronze', 'silver', 'gold', 'prismatic', 'unique']);
     expect(options.cosmetics.length).toBeGreaterThan(0);
   });
 

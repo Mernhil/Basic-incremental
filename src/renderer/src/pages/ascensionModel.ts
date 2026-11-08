@@ -67,7 +67,7 @@ export interface GateView {
 }
 
 const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'];
-const TIER_ORDER = ['stone', 'bronze', 'silver', 'gold', 'prismatic'];
+const TIER_ORDER = ['stone', 'bronze', 'silver', 'gold', 'prismatic', 'unique'];
 
 /** The reward line of a prestige cosmetic. */
 export function rewardView(content: Content, id: string): RewardView {

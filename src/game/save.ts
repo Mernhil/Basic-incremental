@@ -23,7 +23,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 17;
+export const CURRENT_SAVE_VERSION = 18;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -75,7 +75,8 @@ export const serializedStateSchema = z.object({
         stars: z.number().int().min(1).max(MAX_STARS),
         level: z.number().int().min(1),
         xp: decimalText,
-        duplicates: z.number().int().min(0),
+        /** v18: the star bar fill (v17 and earlier held duplicates, spent on star-ups). */
+        starFill: z.number().min(0),
         /** v13. */
         enhancements: z.array(z.string()),
       }),
@@ -472,14 +473,16 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
   const owned: CardState['owned'] = {};
   for (const [id, c] of Object.entries(saved.owned)) {
     if (!content.cardById.has(id)) continue;
-    const cap = levelCap(content, { tier: c.tier, stars: c.stars });
+    // Unique is open only to cards with a unique version.
+    const tier = c.tier === 'unique' && !content.cardById.get(id)?.evolution ? 'prismatic' : c.tier;
+    const cap = levelCap(content, { tier, stars: c.stars });
     const level = Math.min(c.level, cap);
     owned[id] = {
-      tier: c.tier,
+      tier,
       stars: c.stars,
       level,
       xp: level >= cap ? new Decimal(0) : new Decimal(c.xp),
-      duplicates: c.duplicates,
+      starFill: c.starFill,
       // Unknown options are dropped (the budget is checked when choosing, not on load).
       enhancements: c.enhancements.filter((o) =>
         content.enhancements.cards[id]?.some((x) => x.id === o),

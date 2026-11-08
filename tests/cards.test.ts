@@ -34,7 +34,6 @@ import {
   simulateOffline,
   starUp,
   starUpCheck,
-  starUpCost,
   tierUpCost,
   tierUp,
   tierUpCheck,
@@ -72,7 +71,7 @@ describe('a new game (DESIGN.md §5)', () => {
       'ember_squire',
     ]);
     for (const owned of Object.values(state.cards.owned)) {
-      expect(owned).toMatchObject({ tier: 'bronze', stars: 1, level: 1, duplicates: 0 });
+      expect(owned).toMatchObject({ tier: 'bronze', stars: 1, level: 1, starFill: 0 });
       expect(owned.xp.eq(0)).toBe(true);
     }
     expect(state.cards.loadouts.fighting).toEqual({
@@ -86,12 +85,13 @@ describe('a new game (DESIGN.md §5)', () => {
 });
 
 describe('levels (DESIGN.md §5)', () => {
-  it('caps levels by tier only: 20 / 40 / 60 / 80, whatever the stars', () => {
+  it('caps levels by tier only: 20 / 40 / 60 / 80 / 100, whatever the stars', () => {
     expect(levelCap(content, { tier: 'bronze', stars: 1 })).toBe(20);
     expect(levelCap(content, { tier: 'bronze', stars: 6 })).toBe(20);
     expect(levelCap(content, { tier: 'silver', stars: 1 })).toBe(40);
     expect(levelCap(content, { tier: 'gold', stars: 3 })).toBe(60);
     expect(levelCap(content, { tier: 'prismatic', stars: 6 })).toBe(80);
+    expect(levelCap(content, { tier: 'unique', stars: 1 })).toBe(100);
   });
 
   it('follows the XP curve from data', () => {
@@ -353,13 +353,8 @@ describe('loadouts (DESIGN.md §5)', () => {
 });
 
 describe('star-up and tier-up (DESIGN.md §5)', () => {
-  it('lists what a star-up needs, met or not, with have / need', () => {
+  it('lists what a star-up needs: the star bar fill, nothing else', () => {
     const state = own(freshState(), 'ember_squire', { level: 12 });
-    const costs = starUpCost(
-      content,
-      content.cardById.get('ember_squire')!,
-      state.cards.owned['ember_squire']!,
-    );
     const check = starUpCheck(state, content, 'ember_squire')!;
     expect(check.available).toBe(true);
     expect(check.to).toEqual({ tier: 'bronze', stars: 2 });
@@ -372,70 +367,44 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
         r.need.toNumber(),
         r.met,
       ]),
-    ).toEqual([
-      ['duplicates', undefined, 0, 1, false],
-      ['level', undefined, 12, 20, false],
-      ...costs.map((c) => ['resource', c.resource, 0, c.amount.toNumber(), false]),
-    ]);
-    // Moss Cores plus Oak and Copper Gems (a fighting card uses both production loops).
-    expect(costs.map((c) => c.resource)).toEqual(['moss_core', 'oak_gem', 'copper_gem']);
+    ).toEqual([['starFill', undefined, 0, 2, false]]);
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
     expect(starUpCheck(state, content, 'storm_duelist')).toBeNull();
     expect(starUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'not-owned' });
     expect(starUp(state, content, 'nope')).toEqual({ ok: false, reason: 'unknown' });
   });
 
-  it('spends a duplicate, Cores and gems and keeps the level; the cap stays', () => {
-    const owned = own(freshState(), 'ember_squire', { level: 20, duplicates: 2 });
-    const costs = starUpCost(
-      content,
-      content.cardById.get('ember_squire')!,
-      owned.cards.owned['ember_squire']!,
-    );
-    let state = owned;
-    for (const c of costs) state = give(state, c.resource, c.amount.toNumber() + 3);
+  it('spends the fill and keeps the level; the cap stays', () => {
+    const state = own(freshState(), 'ember_squire', { level: 20, starFill: 3 });
     const after = ok(starUp(state, content, 'ember_squire'));
-    for (const c of costs) expect(after.resources[c.resource]!.eq(3)).toBe(true);
-    expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, duplicates: 1 });
+    expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, starFill: 1 });
     expect(cardInfo(after, content, 'ember_squire')!.levelCap).toBe(20); // stars do not raise it
     expect(state.cards.owned['ember_squire']!.stars).toBe(1); // pure
   });
 
-  it('makes the step to ★6 cost about three times the step before', () => {
-    for (const tier of ['bronze', 'silver', 'gold', 'prismatic'] as const) {
-      for (const line of content.cardRules.starUp.tiers[tier]) {
-        const amounts = line.amounts.map((a) => a.toNumber());
-        expect(amounts[4]! / amounts[3]!).toBeCloseTo(3, 0);
-        expect(amounts).toEqual([...amounts].sort((a, b) => a - b));
-      }
-    }
-    expect(content.cardRules.starUp.tiers.silver[0]!.resource).toBe('cinder_core');
-    expect(content.cardRules.starUp.tiers.prismatic[0]!.resource).toBe('frost_core');
-  });
-
-  it('has no star-up at ★6 and no tier-up below ★6 or at Prismatic', () => {
-    const state = own(own(freshState(), 'ember_squire', { stars: 6 }), 'shield_warden', {
-      stars: 5,
+  it("has no star-up at ★6 and no tier-up past the card's top tier", () => {
+    const state = own(own(freshState(), 'ember_squire', { stars: 6 }), 'storm_duelist', {
+      tier: 'prismatic',
+      stars: 6,
     });
-    own(state, 'storm_duelist', { tier: 'prismatic', stars: 6 });
     expect(starUpCheck(state, content, 'ember_squire')).toMatchObject({
       available: false,
       to: null,
     });
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'unavailable' });
-    expect(tierUpCheck(state, content, 'shield_warden')!.available).toBe(false);
     expect(tierUpCheck(state, content, 'storm_duelist')!.available).toBe(false);
     expect(tierUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'unavailable' });
   });
 
-  it('tiers up with Cores plus higher-tier tree and mine gems, carrying level and XP over', () => {
+  it('tiers up with Money, Cores and higher-tier gems, carrying level and XP over', () => {
     let state = freshState();
-    own(state, 'apprentice_feller', { stars: 6, level: 40 });
-    own(state, 'ember_squire', { stars: 6, level: 39, xp: new Decimal(3) });
+    own(state, 'apprentice_feller', { level: 20 });
+    own(state, 'ember_squire', { level: 19, xp: new Decimal(3) });
     const fighting = tierUpCheck(state, content, 'ember_squire')!;
     expect(fighting.to).toEqual({ tier: 'silver', stars: 1 });
     expect(fighting.requirements.map((r) => [r.kind, r.resource ?? null])).toEqual([
       ['level', null],
+      ['resource', 'money'],
       ['resource', 'moss_core'],
       ['resource', 'iron_gem'],
       ['resource', 'ironbark_gem'],
@@ -443,6 +412,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     const logging = tierUpCheck(state, content, 'apprentice_feller')!;
     expect(logging.requirements.map((r) => r.resource ?? null)).toEqual([
       null,
+      'money',
       'moss_core',
       'ironbark_gem',
       'iron_gem',
@@ -454,7 +424,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     expect(state.cards.owned['apprentice_feller']).toMatchObject({
       tier: 'silver',
       stars: 1,
-      level: 40,
+      level: 20,
     });
     for (const cost of content.cardRules.tierUp.bronze.logging) {
       expect(state.resources[cost.resource]!.eq(0)).toBe(true);
@@ -464,12 +434,18 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
 
   it('uses Cinder Cores + Moonwillow Gem / Grotto Gem, then Frost Cores + Frost Sigils', () => {
     const state = freshState();
-    own(state, 'cave_digger', { tier: 'silver', stars: 6, level: 60 });
-    own(state, 'ember_squire', { tier: 'gold', stars: 6, level: 80 });
+    own(state, 'cave_digger', { tier: 'silver', level: 40 });
+    own(state, 'ember_squire', { tier: 'gold', level: 60 });
     const resources = (id: string) =>
       tierUpCheck(state, content, id)!.requirements.flatMap((r) => r.resource ?? []);
-    expect(resources('cave_digger')).toEqual(['cinder_core', 'grotto_gem', 'moonwillow_gem']);
+    expect(resources('cave_digger')).toEqual([
+      'money',
+      'cinder_core',
+      'grotto_gem',
+      'moonwillow_gem',
+    ]);
     expect(resources('ember_squire')).toEqual([
+      'money',
       'frost_core',
       'frost_sigil',
       'grotto_gem',
@@ -477,50 +453,39 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     ]);
   });
 
-  it('mixes a Core, a tree gem and a mine gem into every star-up and tier-up of every job', () => {
+  it('mixes a Core, a tree gem and a mine gem into every tier-up of every job', () => {
     const kindOf = (id: string) => content.resourceById.get(id)!.kind;
     for (const card of ['ember_squire', 'apprentice_feller', 'cave_digger']) {
-      const job = content.cardById.get(card)!.job;
-      for (const tier of ['bronze', 'silver', 'gold', 'prismatic'] as const) {
-        const state = own(freshState(), card, { tier, stars: 2 });
-        const star = starUpCost(content, content.cardById.get(card)!, state.cards.owned[card]!);
-        const kinds = new Set(star.map((p) => kindOf(p.resource)));
-        expect(kinds, `${job} ${tier} star-up`).toEqual(
-          expect.objectContaining(new Set(['material', 'tree_gem', 'mine_gem'])),
-        );
-        if (tier === 'prismatic') continue;
-        const up = tierUpCost(
-          content,
-          content.cardById.get(card)!,
-          own(freshState(), card, { tier, stars: 6 }).cards.owned[card]!,
-        );
-        const upKinds = new Set(up.map((p) => kindOf(p.resource)));
-        for (const k of ['material', 'tree_gem', 'mine_gem'])
-          expect(upKinds.has(k as never)).toBe(true);
+      for (const tier of ['bronze', 'silver', 'gold'] as const) {
+        const state = own(freshState(), card, { tier });
+        const up = tierUpCost(content, content.cardById.get(card)!, state.cards.owned[card]!);
+        const kinds = new Set(up.map((p) => kindOf(p.resource)));
+        for (const k of ['currency', 'material', 'tree_gem', 'mine_gem'])
+          expect(kinds.has(k as never), `${card} ${tier} ${k}`).toBe(true);
       }
     }
   });
 
   it('leans on the job’s own loop: logging cards need more tree gems, mining cards more mine gems', () => {
     const amount = (card: string, resource: string): number => {
-      const state = own(freshState(), card, { tier: 'silver', stars: 2 });
-      const cost = starUpCost(content, content.cardById.get(card)!, state.cards.owned[card]!);
+      const state = own(freshState(), card, { tier: 'silver' });
+      const cost = tierUpCost(content, content.cardById.get(card)!, state.cards.owned[card]!);
       return cost.find((p) => p.resource === resource)!.amount.toNumber();
     };
-    expect(amount('apprentice_feller', 'ironbark_gem')).toBeGreaterThan(
-      amount('apprentice_feller', 'iron_gem'),
+    expect(amount('apprentice_feller', 'moonwillow_gem')).toBeGreaterThan(
+      amount('apprentice_feller', 'grotto_gem'),
     );
-    expect(amount('cave_digger', 'iron_gem')).toBeGreaterThan(
-      amount('cave_digger', 'ironbark_gem'),
+    expect(amount('cave_digger', 'grotto_gem')).toBeGreaterThan(
+      amount('cave_digger', 'moonwillow_gem'),
     );
-    // Fighting uses both, none of them above the job's own loop.
-    expect(amount('ember_squire', 'iron_gem')).toBeGreaterThan(0);
-    expect(amount('ember_squire', 'ironbark_gem')).toBeGreaterThan(0);
+    // Fighting uses both.
+    expect(amount('ember_squire', 'grotto_gem')).toBeGreaterThan(0);
+    expect(amount('ember_squire', 'moonwillow_gem')).toBeGreaterThan(0);
   });
 });
 
 describe('gaining cards (DESIGN.md §5)', () => {
-  it('adds a new card, then duplicates, then shards at Prismatic ★6', () => {
+  it('adds a new card, then duplicates into the star bar, then shards at ★6', () => {
     let result = addCard(freshState(), content, 'dawnblade_regent')!;
     expect(result.gain).toEqual({ kind: 'new' });
     expect(result.state.cards.owned['dawnblade_regent']).toMatchObject({
@@ -529,7 +494,7 @@ describe('gaining cards (DESIGN.md §5)', () => {
     });
     result = addCard(result.state, content, 'dawnblade_regent')!;
     expect(result.gain).toEqual({ kind: 'duplicate', duplicates: 1 });
-    const maxed = own(result.state, 'dawnblade_regent', { tier: 'prismatic', stars: 6 });
+    const maxed = own(result.state, 'dawnblade_regent', { stars: 6 });
     result = addCard(maxed, content, 'dawnblade_regent')!;
     expect(result.gain).toEqual({ kind: 'shards', shards: 8 }); // Legendary
     expect(result.state.cards.shards).toBe(8);
@@ -584,7 +549,7 @@ describe('saving cards (save format v5)', () => {
       stars: 3,
       level: 55,
       xp: new Decimal('123.5'),
-      duplicates: 4,
+      starFill: 4,
     });
     state.cards.loadouts.fighting.supports = [null, 'shield_warden', null];
     state.cards.shards = 17;
@@ -602,7 +567,7 @@ describe('saving cards (save format v5)', () => {
       stars: 1,
       level: 1,
       xp: '0',
-      duplicates: 0,
+      starFill: 0,
       enhancements: [],
     };
     cards.owned['ember_squire'].level = 99;

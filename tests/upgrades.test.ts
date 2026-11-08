@@ -122,7 +122,7 @@ describe('effects through the modifier pipeline', () => {
       stars: 1,
       level: 1,
       xp: new Decimal(0),
-      duplicates: 0,
+      starFill: 0,
       enhancements: [],
     };
     state.cards.loadouts.logging.supports[0] = card.id;

@@ -183,7 +183,7 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     const card = buyShardItem(withShards(100), content, 'copy_ember_squire');
     if (!card.ok) throw new Error(card.reason);
     expect(card.state.cards.shards).toBe(95);
-    expect(card.state.cards.owned['ember_squire']!.duplicates).toBe(1);
+    expect(card.state.cards.owned['ember_squire']!.starFill).toBe(1);
 
     const bundle = buyShardItem(withShards(100), content, 'summon_crystals');
     if (!bundle.ok) throw new Error(bundle.reason);

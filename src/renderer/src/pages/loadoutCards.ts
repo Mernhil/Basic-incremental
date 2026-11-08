@@ -14,8 +14,8 @@ import { itemArt } from '../art/items';
 import type { CardProps } from '../ui/card';
 
 /**
- * A card's item art: its unique ★6 evolution from the evolution rank on (DESIGN.md §5),
- * otherwise its item drawn for its rarity.
+ * A card's item art: its unique item at the Unique tier (DESIGN.md §5), otherwise its item drawn
+ * at the rarity its tier gives (weaponLookRarity).
  */
 export function cardItemArt(
   content: Content,
@@ -27,7 +27,7 @@ export function cardItemArt(
   const item = cardItem(content, cardId, owned);
   if (item?.unique && (EVOLUTIONS as readonly string[]).includes(item.kind))
     return evolutionArt(item.kind as Evolution);
-  return itemArt(item?.kind ?? card.item.kind, card.rarity);
+  return itemArt(item?.kind ?? card.item.kind, item?.rarity ?? card.rarity);
 }
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */

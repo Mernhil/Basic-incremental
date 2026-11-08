@@ -1,6 +1,6 @@
-import { MAX_STARS, type Content, type GoalKind, type GoalPage, type GoalRule } from '../data';
+import { type Content, type GoalKind, type GoalPage, type GoalRule } from '../data';
 import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
-import { starUpCheck } from './cards';
+import { starUpCheck, tierUpCheck } from './cards';
 import {
   averageDps,
   bossMaxHp,
@@ -26,6 +26,13 @@ import {
   type Price,
 } from './production';
 import type { GameState } from './state';
+
+const TIER_NAMES: Record<string, string> = {
+  silver: 'Silver',
+  gold: 'Gold',
+  prismatic: 'Prismatic',
+  unique: 'Unique',
+};
 
 /**
  * The goal tracker (DESIGN.md §10): the next few things to aim for, picked by the rules in
@@ -296,24 +303,48 @@ const bossMasteryRule: RuleFn = (state, content, modifiers) => {
   return out;
 };
 
-const starUpRule: RuleFn = (state, content, modifiers) =>
+/**
+ * Fill a card's star bar (DESIGN.md §5): cards that hold some fill but not enough for the next
+ * star. Copies come from summons and the shard shop, so there is no ETA.
+ */
+const starUpRule: RuleFn = (state, content) =>
   content.cards.flatMap((card) => {
     const owned = state.cards.owned[card.id];
-    if (!owned || owned.stars >= MAX_STARS) return [];
-    const check = starUpCheck(state, content, card.id, modifiers);
-    if (!check?.available || check.met) return [];
-    const dupes = check.requirements.find((r) => r.kind === 'duplicates');
-    if (dupes && !dupes.met) return [];
+    if (!owned) return [];
+    const check = starUpCheck(state, content, card.id);
+    const fill = check?.requirements[0];
+    if (!check?.available || check.met || !fill || fill.have.lte(0)) return [];
+    return [
+      {
+        targetId: card.id,
+        title: `Fill ${card.name}'s star bar for ★${owned.stars + 1}`,
+        progress: ratio(fill.have, fill.need),
+        etaSeconds: null,
+      },
+    ];
+  });
+
+/**
+ * Tier up a card that is at its level cap (DESIGN.md §5): progress is the scarcest of Money, Core
+ * and gems; the ETA is the time to earn what is missing.
+ */
+const tierUpRule: RuleFn = (state, content, modifiers) =>
+  content.cards.flatMap((card) => {
+    const owned = state.cards.owned[card.id];
+    if (!owned) return [];
+    const check = tierUpCheck(state, content, card.id, modifiers);
+    if (!check?.available || check.met || !check.to) return [];
     const level = check.requirements.find((r) => r.kind === 'level');
+    if (!level?.met) return [];
     const prices: Price[] = check.requirements
       .filter((r) => r.kind === 'resource' && r.resource)
       .map((r) => ({ resource: r.resource!, amount: r.need }));
     return [
       {
         targetId: card.id,
-        title: `Star up ${card.name} to ★${owned.stars + 1}`,
-        progress: check.requirements.reduce((min, r) => Math.min(min, ratio(r.have, r.need)), 1),
-        etaSeconds: level && !level.met ? null : secondsToAfford(state, content, prices, modifiers),
+        title: `Tier up ${card.name} to ${TIER_NAMES[check.to.tier]}`,
+        progress: priceProgress(state, prices),
+        etaSeconds: secondsToAfford(state, content, prices, modifiers),
       },
     ];
   });
@@ -358,6 +389,7 @@ const RULES: Record<GoalKind, RuleFn> = {
   gem_mastery: gemMasteryRule,
   boss_mastery: bossMasteryRule,
   star_up: starUpRule,
+  tier_up: tierUpRule,
   ascension: ascensionRule,
 };
 

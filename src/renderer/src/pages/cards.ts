@@ -26,12 +26,13 @@ const JOB_NAMES: Record<Job, string> = {
   mining: 'Mining',
 };
 const JOB_ORDER: Job[] = ['fighting', 'logging', 'mining'];
-const TIER_ORDER = ['bronze', 'silver', 'gold', 'prismatic'];
+const TIER_ORDER = ['bronze', 'silver', 'gold', 'prismatic', 'unique'];
 const TIER_NAMES: Record<string, string> = {
   bronze: 'Bronze',
   silver: 'Silver',
   gold: 'Gold',
   prismatic: 'Prismatic',
+  unique: 'Unique',
 };
 /** Card widths wanted (CSS px); ui/pixelFit.ts snaps each to a whole pixel scale (DESIGN.md §12). */
 const CARD_WANT = { tile: 105.6, detail: 151.4, slot: 88 } as const;
@@ -189,7 +190,7 @@ export function createCardsPage(
     for (const job of JOB_ORDER) {
       chips.append(chip(JOB_NAMES[job], jobFilter === job, `job-${job}`, () => (jobFilter = job)));
     }
-    const readyCount = entries.filter((e) => e.next?.ready).length;
+    const readyCount = entries.filter(isReady).length;
     chips.append(
       chip(COPY.cards.ready(readyCount), readyOnly, 'ready', () => (readyOnly = !readyOnly)),
     );
@@ -212,7 +213,7 @@ export function createCardsPage(
 
     // grid
     const shown = sorted(
-      entries.filter((e) => (!jobFilter || e.job === jobFilter) && (!readyOnly || e.next?.ready)),
+      entries.filter((e) => (!jobFilter || e.job === jobFilter) && (!readyOnly || isReady(e))),
     );
     const grid = h('ul', 'cp-grid');
     fitCard(grid, { want: CARD_WANT.tile });
@@ -230,7 +231,7 @@ export function createCardsPage(
       b.append(cardEl(e, state));
       if (e.owned && e.duplicates > 0) b.append(h('span', 'cp-badge bi-num', `+${e.duplicates}`));
       if (e.role) b.append(h('span', 'cp-role', COPY.cards.role[e.role.slot]));
-      if (e.next?.ready) b.append(h('span', 'cp-ready', '▲'));
+      if (isReady(e)) b.append(h('span', 'cp-ready', '▲'));
       b.addEventListener('click', () => {
         selected = e.id;
         message = '';
@@ -244,6 +245,9 @@ export function createCardsPage(
     wrap.append(el, pick ? detailPanel(state, pick) : h('div'));
     return wrap;
   }
+
+  /** A star-up or a tier-up can be taken now. */
+  const isReady = (e: CardEntry): boolean => Boolean(e.next?.ready || e.tier?.ready);
 
   function sorted(list: CardEntry[]): CardEntry[] {
     const rarity = (e: CardEntry) => RARITIES.indexOf(e.rarity);
@@ -364,14 +368,9 @@ export function createCardsPage(
   function upgradeBox(id: string): HTMLElement {
     const box = h('section', 'cp-upgrade');
     let shown = '';
-    const draw = (step: UpgradeStep | null) => {
-      const keep = document.activeElement?.closest('.cp-upgrade') === box;
-      box.replaceChildren();
-      if (!step) {
-        box.append(h('p', 'frame__muted', COPY.cards.maxRank));
-        return;
-      }
-      box.append(h('h3', 'cp-upgrade__title', step.title));
+    const drawStep = (step: UpgradeStep, key: 'star' | 'tier'): HTMLElement => {
+      const part = h('div', 'cp-upgrade__step');
+      part.append(h('h3', 'cp-upgrade__title', step.title));
       const list = h('ul', 'cp-reqs');
       for (const r of step.requirements) {
         const li = h('li', `cp-req${r.met ? ' cp-req--met' : ''}`);
@@ -382,18 +381,30 @@ export function createCardsPage(
       }
       const b = h('button', 'button cp-upgrade__btn', step.action);
       b.type = 'button';
-      b.dataset.key = 'upgrade';
+      b.dataset.key = `upgrade-${key}`;
       b.disabled = !step.ready;
-      b.addEventListener('click', () => act(model.upgrade(ctx.state(), id), 'upgrade'));
-      box.append(list, h('p', 'cp-upgrade__note', step.note), b);
-      if (keep) b.focus();
+      b.addEventListener('click', () => act(model.upgrade(ctx.state(), id, key), `upgrade-${key}`));
+      part.append(list, h('p', 'cp-upgrade__note', step.note), b);
+      return part;
+    };
+    const draw = (star: UpgradeStep | null, tier: UpgradeStep | null) => {
+      const keep = document.activeElement?.closest('.cp-upgrade') === box;
+      const focused = (document.activeElement as HTMLElement | null)?.dataset['key'];
+      box.replaceChildren();
+      if (!star && !tier) {
+        box.append(h('p', 'frame__muted', COPY.cards.maxRank));
+        return;
+      }
+      if (star) box.append(drawStep(star, 'star'));
+      if (tier) box.append(drawStep(tier, 'tier'));
+      if (keep && focused) box.querySelector<HTMLElement>(`[data-key="${focused}"]`)?.focus();
     };
     const update = () => {
-      const step = entryOf(id)?.next ?? null;
-      const key = JSON.stringify(step);
+      const entry = entryOf(id);
+      const key = JSON.stringify([entry?.next ?? null, entry?.tier ?? null]);
       if (key === shown) return;
       shown = key;
-      draw(step);
+      draw(entry?.next ?? null, entry?.tier ?? null);
     };
     ticks.push(update);
     update();
