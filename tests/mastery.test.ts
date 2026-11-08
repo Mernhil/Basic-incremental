@@ -227,7 +227,7 @@ describe('boss mastery (DESIGN.md §6)', () => {
       state.mastery.bossTiers['mossy_cellar'] = tier;
       state.bossHp = new Decimal(1e-6);
       const before = state.resources[resource]!.toNumber();
-      const after = advance(state, content, 1, constantRng(roll)).state;
+      const after = advance(state, content, 1000, constantRng(roll)).state;
       return after.resources[resource]!.toNumber() - before;
     };
     const rolled = (roll: number): number =>
