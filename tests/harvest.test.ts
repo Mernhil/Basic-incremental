@@ -13,7 +13,7 @@ import {
   type GameState,
   type TickReport,
 } from '../src/game';
-import { loadContent, type Content } from '../src/data';
+import type { Content } from '../src/data';
 import { bareState, constantRng, content } from './helpers';
 
 const rng = constantRng(0.5);
@@ -38,7 +38,7 @@ function logging(main: string | null, supports: string[] = [], kinds = 1): GameS
 
 /** The bundled content with a harvest crit rule, to check crits through the whole pipeline. */
 function withCrit(chance: number, damage: number): Content {
-  const base = loadContent();
+  const base = content;
   return {
     ...base,
     production: {

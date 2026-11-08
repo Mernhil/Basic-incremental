@@ -50,25 +50,30 @@ function fund(state: GameState, id: string): GameState {
   return state;
 }
 
+/** Copies a Common needs for the star after `stars` (cardRules.json). */
+const commonNeed = (stars: number): number => content.cardRules.starBar.needs.common[stars - 1]!;
+
 describe('the star bar (DESIGN.md §5)', () => {
   it('needs the copies of the table for ★2 to ★6, per rarity', () => {
-    const table: Record<string, number[]> = {
-      common: [2, 4, 7, 11, 16],
-      rare: [1, 2, 4, 5, 8],
-      epic: [1, 1, 2, 2, 4],
-      legendary: [1, 0, 1, 1, 2],
-      mythic: [1, 0, 1, 0, 2],
-      exotic: [1, 0, 0, 1, 0],
-      void: [1, 0, 0, 0, 1],
-    };
+    // The table itself is tuning (cardRules.json); the rules are its shape: every star takes at
+    // least as many copies as the one before for Commons, totals fall with rarity, and the top
+    // rarities need only a few copies.
+    const totals: Record<string, number> = {};
     for (const rarity of RARITIES) {
       const copies = [1, 2, 3, 4, 5].map(
         (stars) =>
           starFillNeeded(content, rarity, stars)! /
           content.cardRules.starBar.fillPerDuplicate[rarity],
       );
-      expect(copies, rarity).toEqual(table[rarity]);
+      expect(copies, rarity).toEqual(content.cardRules.starBar.needs[rarity]);
+      totals[rarity] = copies.reduce((x, y) => x + y, 0);
     }
+    const common = content.cardRules.starBar.needs.common;
+    expect(common.every((n, i) => i === 0 || n >= common[i - 1]!)).toBe(true);
+    expect(totals['common']).toBeGreaterThanOrEqual(10);
+    const order = RARITIES.map((r) => totals[r]!);
+    expect(order.every((n, i) => i === 0 || n <= order[i - 1]!)).toBe(true);
+    expect(totals['void']).toBeLessThanOrEqual(3);
     expect(starFillNeeded(content, 'common', 6)).toBeNull();
   });
 
@@ -78,16 +83,16 @@ describe('the star bar (DESIGN.md §5)', () => {
     result = addCard(result.state, content, 'ember_squire')!;
     expect(result.state.cards.owned['ember_squire']!.starFill).toBe(2);
     const view = cardInfo(result.state, content, 'ember_squire')!.starBar!;
-    expect(view).toMatchObject({ fill: 2, need: 2, ready: true });
+    expect(view).toMatchObject({ fill: 2, need: commonNeed(1), ready: true });
     expect(view.gauge).toBe(1);
   });
 
   it('shows a gauge between 0 and 1 and no bar at ★6 or for a card not owned', () => {
-    const state = own(freshState(), 'ember_squire', { starFill: 1 });
+    const state = own(freshState(), 'ember_squire', { stars: 3, starFill: 1 });
     expect(cardInfo(state, content, 'ember_squire')!.starBar).toMatchObject({
       fill: 1,
-      need: 2,
-      gauge: 0.5,
+      need: commonNeed(3),
+      gauge: 1 / commonNeed(3),
       ready: false,
     });
     own(state, 'shield_warden', { stars: 6 });
@@ -96,7 +101,7 @@ describe('the star bar (DESIGN.md §5)', () => {
   });
 
   it('makes a star-up cost only the fill: no level cap, no Core, gems or Money', () => {
-    const state = own(freshState(), 'ember_squire', { level: 1, starFill: 2 });
+    const state = own(freshState(), 'ember_squire', { level: 1, starFill: commonNeed(1) });
     const check = starUpCheck(state, content, 'ember_squire')!;
     expect(check.to).toEqual({ tier: 'bronze', stars: 2 });
     expect(check.requirements.map((r) => r.kind)).toEqual(['starFill']);
@@ -109,9 +114,9 @@ describe('the star bar (DESIGN.md §5)', () => {
   });
 
   it('refuses a star-up while the bar is short and carries the leftover over', () => {
-    const state = own(freshState(), 'ember_squire', { starFill: 1 });
+    const state = own(freshState(), 'ember_squire', { starFill: commonNeed(1) - 1 });
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
-    own(state, 'ember_squire', { starFill: 5 }); // Common ★1 -> ★2 needs 2, ★2 -> ★3 needs 4
+    own(state, 'ember_squire', { starFill: commonNeed(1) + 3 });
     const once = ok(starUp(state, content, 'ember_squire'));
     expect(once.cards.owned['ember_squire']).toMatchObject({ stars: 2, starFill: 3 });
   });
@@ -345,7 +350,7 @@ describe('weapon looks for now (DESIGN.md §5)', () => {
 
 describe('production cards use the same model', () => {
   it('star up from the bar and tier up at max level like a fighting card', () => {
-    const state = own(freshState(), 'apprentice_feller', { starFill: 2, level: 20 });
+    const state = own(freshState(), 'apprentice_feller', { starFill: commonNeed(1), level: 20 });
     fund(state, 'apprentice_feller');
     const starred = ok(starUp(state, content, 'apprentice_feller'));
     expect(starred.cards.owned['apprentice_feller']).toMatchObject({ stars: 2, starFill: 0 });

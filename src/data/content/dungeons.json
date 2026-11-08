@@ -9,11 +9,11 @@
       "id": "root_warden",
       "name": "Root Warden",
       "art": "root_warden",
-      "hp": "3.3e5",
+      "hp": "7.6e5",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 5,
       "attack": {
-        "damage": "1",
+        "damage": "0.6",
         "intervalSeconds": 10
       }
     },
@@ -62,7 +62,7 @@
       "id": "cinder_lich",
       "name": "Cinder Lich",
       "art": "cinder_lich",
-      "hp": "6e6",
+      "hp": "8e5",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 8,
       "attack": {
@@ -111,7 +111,7 @@
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "hp": "3e7",
+      "hp": "1.1e7",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 12,
       "attack": {

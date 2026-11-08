@@ -1,7 +1,34 @@
 import { JOBS, loadContent, type Content } from '../src/data';
 import { createInitialState, Decimal, emptyCardLoadout, type GameState } from '../src/game';
 
-export const content: Content = loadContent();
+/**
+ * The bundled content with the trees' and mines' base rates pinned to the round numbers the rule
+ * tests count in (Oak 1, Copper Quarry 0.5 a second ...). The shipped rates are tuning, retuned
+ * with the sim (DESIGN.md §14); the level, milestone and burst rules do not depend on them.
+ */
+function pinProductionRates(bundled: Content): Content {
+  const rates: Record<string, string> = {
+    oak: '1',
+    ironbark: '0.5',
+    moonwillow: '0.25',
+    copper_quarry: '0.5',
+    iron_deeps: '0.25',
+    crystal_grotto: '0.1',
+  };
+  const pin = <T extends { id: string; baseRate: Decimal }>(list: T[]): T[] =>
+    list.map((p) => ({ ...p, baseRate: new Decimal(rates[p.id] ?? p.baseRate) }));
+  const trees = pin(bundled.trees);
+  const mines = pin(bundled.mines);
+  return {
+    ...bundled,
+    trees,
+    treeById: new Map(trees.map((t) => [t.id, t])),
+    mines,
+    mineById: new Map(mines.map((m) => [m.id, m])),
+  };
+}
+
+export const content: Content = pinProductionRates(loadContent());
 
 const noMilestones = { every: 25, multiplier: new Decimal(1) };
 const plainMines = content.mines.map((m) => ({
@@ -79,3 +106,24 @@ export function bareState(): GameState {
 
 /** Always returns the same value; handy for forcing drop/no-drop. */
 export const constantRng = (value: number) => () => value;
+
+/**
+ * The same content with one dungeon's boss attack set to `damage` every `intervalSeconds`: rule
+ * tests that time knockouts pin the boss they use, so tuning the dungeon data does not move them.
+ */
+export function withBossAttack(
+  base: Content,
+  dungeonId: string,
+  damage: Decimal | number | string,
+  intervalSeconds: number,
+): Content {
+  const dungeons = base.dungeons.map((d) =>
+    d.id === dungeonId
+      ? {
+          ...d,
+          boss: { ...d.boss, attack: { damage: new Decimal(damage), intervalSeconds } },
+        }
+      : d,
+  );
+  return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
+}

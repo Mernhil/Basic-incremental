@@ -103,7 +103,7 @@
         },
         {
           "resource": "moss_core",
-          "amount": "6"
+          "amount": "3"
         },
         {
           "resource": "ironbark_gem",
@@ -121,7 +121,7 @@
         },
         {
           "resource": "moss_core",
-          "amount": "6"
+          "amount": "3"
         },
         {
           "resource": "iron_gem",
@@ -139,7 +139,7 @@
         },
         {
           "resource": "moss_core",
-          "amount": "6"
+          "amount": "3"
         },
         {
           "resource": "iron_gem",
@@ -215,11 +215,11 @@
         },
         {
           "resource": "frost_core",
-          "amount": "220"
+          "amount": "750"
         },
         {
           "resource": "frost_sigil",
-          "amount": "200"
+          "amount": "650"
         },
         {
           "resource": "moonwillow_gem",
@@ -237,11 +237,11 @@
         },
         {
           "resource": "frost_core",
-          "amount": "220"
+          "amount": "750"
         },
         {
           "resource": "frost_sigil",
-          "amount": "200"
+          "amount": "650"
         },
         {
           "resource": "grotto_gem",
@@ -259,11 +259,11 @@
         },
         {
           "resource": "frost_core",
-          "amount": "220"
+          "amount": "750"
         },
         {
           "resource": "frost_sigil",
-          "amount": "200"
+          "amount": "650"
         },
         {
           "resource": "grotto_gem",
@@ -283,11 +283,11 @@
         },
         {
           "resource": "frost_core",
-          "amount": "440"
+          "amount": "1100"
         },
         {
           "resource": "frost_sigil",
-          "amount": "400"
+          "amount": "900"
         },
         {
           "resource": "moonwillow_gem",
@@ -305,11 +305,11 @@
         },
         {
           "resource": "frost_core",
-          "amount": "440"
+          "amount": "1100"
         },
         {
           "resource": "frost_sigil",
-          "amount": "400"
+          "amount": "900"
         },
         {
           "resource": "grotto_gem",
@@ -327,11 +327,11 @@
         },
         {
           "resource": "frost_core",
-          "amount": "440"
+          "amount": "1100"
         },
         {
           "resource": "frost_sigil",
-          "amount": "400"
+          "amount": "900"
         },
         {
           "resource": "grotto_gem",
@@ -382,11 +382,11 @@
       "void": 1
     },
     "needs": {
-      "common": [2, 4, 7, 11, 16],
-      "rare": [1, 2, 4, 5, 8],
-      "epic": [1, 1, 2, 2, 4],
-      "legendary": [1, 0, 1, 1, 2],
-      "mythic": [1, 0, 1, 0, 2],
+      "common": [1, 2, 2, 4, 5],
+      "rare": [1, 1, 2, 2, 3],
+      "epic": [1, 1, 1, 1, 2],
+      "legendary": [1, 0, 1, 1, 1],
+      "mythic": [1, 0, 1, 0, 1],
       "exotic": [1, 0, 0, 1, 0],
       "void": [1, 0, 0, 0, 1]
     }

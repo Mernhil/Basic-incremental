@@ -1,8 +1,8 @@
 {
   "xp": {
     "perUnit": {
-      "logging": "0.02",
-      "mining": "0.04"
+      "logging": "0.0125",
+      "mining": "0.025"
     },
     "tierWeights": ["1", "5", "25"],
     "perKill": "10",
