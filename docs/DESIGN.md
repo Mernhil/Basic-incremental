@@ -115,13 +115,13 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Default · in game] **Level caps by tier only:** 20 / 40 / 60 / 80 / 100 for Bronze, Silver, Gold, Prismatic and Unique (`cardRules.json`). Stars no longer raise the cap. A saved card above its new cap was set to the cap (save format 17), so it can tier up at once.
 - [Built] **Small bump every level.** Each level adds a little to the card's power, support strength and gauge speed (`cardRules.json`).
 - [Proposed] **Moves.** Milestone levels unlock new nodes on the card's enhancement chart, picked with points, and each star gives enhancement points. Which moves and damage types each card learns needs a content pass with the user.
-- [Default · in game] **Star bar.** Each duplicate fills the card's star bar by an amount set by its rarity (1 copy for now), and each star needs more than the one before, so Commons need many copies and top rarities few. The fill is saved on the card and a star-up costs only the fill; what is left over carries to the next star. A star that needs 0 copies can be taken at once. Sized from the Card Portal rates and tuned with the sim (`cardRules.json` `starBar`):
+- [Default · in game] **Star bar.** Each duplicate fills the card's star bar by an amount set by its rarity (1 copy for now), and each star needs more than the one before, so Commons need many copies and top rarities few. The fill is saved on the card and a star-up costs only the fill; what is left over carries to the next star. A star that needs 0 copies can be taken at once. Every tier-up needs a full ★6 climb, so the counts were cut to keep the pacing targets; sized from the Card Portal rates and tuned with the sim (`cardRules.json` `starBar`):
 
   | Rarity    | Copies for ★2 → ★6 | Total | Rough pulls to ★6     |
   | --------- | ------------------ | ----- | --------------------- |
-  | Common    | 1, 2, 2, 4, 5      | 14    | ~60                   |
-  | Rare      | 1, 1, 2, 2, 3      | 9     | ~120                  |
-  | Epic      | 1, 1, 1, 1, 2      | 6     | ~200                  |
+  | Common    | 1, 1, 1, 2, 2      | 7     | ~30                   |
+  | Rare      | 1, 1, 1, 1, 1      | 5     | ~65                   |
+  | Epic      | 1, 0, 1, 1, 1      | 4     | ~130                  |
   | Legendary | 1, 0, 1, 1, 1      | 4     | ~350 (less with pity) |
   | Mythic    | 1, 0, 1, 0, 1      | 3     | ~660                  |
   | Exotic    | 1, 0, 0, 1, 0      | 2     | ~880                  |

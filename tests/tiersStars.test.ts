@@ -70,7 +70,7 @@ describe('the star bar (DESIGN.md §5)', () => {
     }
     const common = content.cardRules.starBar.needs.common;
     expect(common.every((n, i) => i === 0 || n >= common[i - 1]!)).toBe(true);
-    expect(totals['common']).toBeGreaterThanOrEqual(10);
+    expect(totals['common']).toBeGreaterThanOrEqual(6);
     const order = RARITIES.map((r) => totals[r]!);
     expect(order.every((n, i) => i === 0 || n <= order[i - 1]!)).toBe(true);
     expect(totals['void']).toBeLessThanOrEqual(3);
@@ -88,11 +88,11 @@ describe('the star bar (DESIGN.md §5)', () => {
   });
 
   it('shows a gauge between 0 and 1 and no bar at ★6 or for a card not owned', () => {
-    const state = own(freshState(), 'ember_squire', { stars: 3, starFill: 1 });
+    const state = own(freshState(), 'ember_squire', { stars: 4, starFill: 1 });
     expect(cardInfo(state, content, 'ember_squire')!.starBar).toMatchObject({
       fill: 1,
-      need: commonNeed(3),
-      gauge: 1 / commonNeed(3),
+      need: commonNeed(4),
+      gauge: 1 / commonNeed(4),
       ready: false,
     });
     own(state, 'shield_warden', { stars: 6 });
