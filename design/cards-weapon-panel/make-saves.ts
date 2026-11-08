@@ -41,7 +41,6 @@ function own(state: GameState, id: string, patch: Partial<OwnedCard>): void {
 function collection(): GameState {
   const state = base();
   own(state, 'ember_squire', { tier: 'silver', stars: 3, level: 27, xp: new Decimal(121), starFill: 4 });
-  own(state, 'shield_warden', { tier: 'gold', stars: 2, level: 33, starFill: 1 });
   own(state, 'storm_duelist', { tier: 'gold', stars: 4, level: 54 });
   own(state, 'dawnblade_regent', { tier: 'gold', stars: 3, level: 59, starFill: 1 });
   own(state, 'apprentice_feller', { tier: 'bronze', stars: 3, level: 11 });
@@ -89,7 +88,7 @@ const states: Record<string, GameState> = {
     { tier: 'prismatic', stars: 5, level: 80, starFill: 9 },
     { money: '30000000000', frost_core: '2000', frost_sigil: '2000', grotto_gem: '5000000', moonwillow_gem: '5000000' },
   ),
-  nouniq: weapon('shield_warden', { tier: 'prismatic', stars: 4, level: 80, starFill: 3 }),
+  nouniq: weapon('storm_duelist', { tier: 'prismatic', stars: 4, level: 80, starFill: 3 }),
   done: weapon('ember_squire', { tier: 'unique', stars: 6, level: 100 }),
   fresh: createInitialState(content),
 };

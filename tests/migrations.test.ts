@@ -503,3 +503,66 @@ describe('v17 -> v18 (tiers, stars and the Unique tier: the star bar, DESIGN.md 
     expect(() => step({ cards: { owned: { a: 1 } } })).not.toThrow();
   });
 });
+
+describe('v18 -> v19 (the Shield Warden card was removed, DESIGN.md §5)', () => {
+  const step = MIGRATIONS[18]!;
+  type Out = {
+    cards: {
+      owned: Record<string, unknown>;
+      shards: number;
+      loadouts: Record<string, { main: string | null; supports: (string | null)[] }>;
+    };
+    cosmetics: { loadout: { cards: Record<string, unknown> } };
+    shardShop: Record<string, number>;
+  };
+  const card = (stars: number) => ({ tier: 'gold', stars, level: 30, xp: '0', starFill: 0 });
+
+  it('pays an owned Shield Warden back in shards (2 per star) and empties its slots', () => {
+    const out = step({
+      cards: {
+        owned: { ember_squire: card(1), shield_warden: card(4) },
+        shards: 5,
+        loadouts: {
+          fighting: { main: 'ember_squire', supports: ['shield_warden', null, null] },
+          logging: { main: 'apprentice_feller', supports: [null, null, null] },
+        },
+      },
+      cosmetics: {
+        loadout: { slots: {}, cards: { shield_warden: { border: 'x' }, ember_squire: {} } },
+      },
+      shardShop: { copy_shield_warden: 2, copy_cave_digger: 1 },
+    }) as Out;
+    expect(Object.keys(out.cards.owned)).toEqual(['ember_squire']);
+    expect(out.cards.shards).toBe(5 + 2 * 4);
+    expect(out.cards.loadouts['fighting']).toEqual({
+      main: 'ember_squire',
+      supports: [null, null, null],
+    });
+    expect(Object.keys(out.cosmetics.loadout.cards)).toEqual(['ember_squire']);
+    expect(out.shardShop).toEqual({ copy_cave_digger: 1 });
+  });
+
+  it('empties the main slot too, and leaves a save without the card as it was', () => {
+    const lead = step({
+      cards: {
+        owned: { shield_warden: card(1) },
+        shards: 0,
+        loadouts: { fighting: { main: 'shield_warden', supports: [null, null, null] } },
+      },
+    }) as Out;
+    expect(lead.cards.loadouts['fighting']!.main).toBeNull();
+    expect(lead.cards.shards).toBe(2);
+    const plain = { cards: { owned: { ember_squire: card(2) }, shards: 3, loadouts: {} } };
+    expect(step(plain)).toMatchObject({ cards: { shards: 3 } });
+  });
+
+  it('does not mutate its input and copes with missing or junk sections', () => {
+    const input = { cards: { owned: { shield_warden: card(2) }, shards: 1 } };
+    const copy = JSON.parse(JSON.stringify(input));
+    step(input);
+    expect(input).toEqual(copy);
+    expect(() => step({})).not.toThrow();
+    expect(() => step({ cards: 3, cosmetics: 'x', shardShop: [] })).not.toThrow();
+    expect(() => step({ cards: { owned: 1, loadouts: { fighting: 4 } } })).not.toThrow();
+  });
+});

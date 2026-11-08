@@ -22,7 +22,8 @@ describe('Cards page model', () => {
 
   it('adds, moves and removes supports through the loadout rules', () => {
     let state = freshState();
-    const rare = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'rare')!;
+    const rare = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
+    state.account.level = 2; // cost cap 8: Squire 2 + an Epic 5
     state = addCard(state, content, rare.id)!.state;
     const added = model.addSupport(state, rare.id);
     expect(added.ok).toBe(true);

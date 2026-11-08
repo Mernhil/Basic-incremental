@@ -95,10 +95,10 @@ describe('weapon panel model', () => {
   });
 
   it('a weapon without a unique version stops at Prismatic and says so', () => {
-    const w = view('shield_warden', { tier: 'prismatic', level: 80 })!;
+    const w = view('storm_duelist', { tier: 'prismatic', level: 80 })!;
     expect(w.tierUp).toBeNull();
     expect(w.endNote).toBe(
-      'Prismatic is the top tier for Bulwark until its unique weapon is drawn.',
+      'Prismatic is the top tier for Twin Storm Blades until its unique weapon is drawn.',
     );
   });
 
