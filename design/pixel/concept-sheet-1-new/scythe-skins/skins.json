@@ -1,0 +1,93 @@
+{
+  "base": {
+    "file": "scythe-base.png",
+    "from": "evo-soul_reaper-b-3-base",
+    "scythe_number": 13
+  },
+  "skins": [
+    {
+      "file": "scythe-skin-01.png",
+      "from": "evo-soul_reaper-4-base",
+      "scythe_number": 5,
+      "mass": 1023,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-02.png",
+      "from": "evo-soul_reaper-3-base",
+      "scythe_number": 4,
+      "mass": 1083,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-03.png",
+      "from": "evo-soul_reaper-6-base",
+      "scythe_number": 7,
+      "mass": 1204,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-04.png",
+      "from": "evo-soul_reaper-1-base",
+      "scythe_number": 2,
+      "mass": 1261,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-05.png",
+      "from": "evo-soul_reaper-0-base",
+      "scythe_number": 1,
+      "mass": 1307,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-06.png",
+      "from": "evo-soul_reaper-2-base",
+      "scythe_number": 3,
+      "mass": 1382,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-07.png",
+      "from": "evo-soul_reaper-5-base",
+      "scythe_number": 6,
+      "mass": 1382,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-08.png",
+      "from": "evo-soul_reaper-8-base",
+      "scythe_number": 9,
+      "mass": 1386,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-09.png",
+      "from": "evo-soul_reaper-7-base",
+      "scythe_number": 8,
+      "mass": 1565,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-10.png",
+      "from": "evo-soul_reaper-b-1-base",
+      "scythe_number": 11,
+      "mass": 2047,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-11.png",
+      "from": "evo-soul_reaper-b-2-base",
+      "scythe_number": 12,
+      "mass": 2048,
+      "colours": 18
+    },
+    {
+      "file": "scythe-skin-12.png",
+      "from": "evo-soul_reaper-b-0-base",
+      "scythe_number": 10,
+      "mass": 2127,
+      "colours": 18
+    }
+  ]
+}
