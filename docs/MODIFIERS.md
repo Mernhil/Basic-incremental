@@ -8,7 +8,7 @@ Every tunable number in the game goes through one pipeline (DESIGN.md §14), so 
 { "stat": "production.rate", "kind": "percent", "value": "5", "scope": { "job": "logging" } }
 ```
 
-- **stat**: one of `STATS` (production rate, damage, damage upgrade gain, boss HP, drop chance, card drop chance, pity, portal amount, portal multiplier (base 1; a fraction rounds up with that chance so the average is exact), material chance and amount, burst interval / size / fill / power, special dungeon rewards, offline cap, XP, loadout cost cap, summon pity, cost multiplier, cost growth, mine level bonus).
+- **stat**: one of `STATS` (production rate, damage, boss HP, drop chance, card drop chance, pity, portal amount, portal multiplier (base 1; a fraction rounds up with that chance so the average is exact), material chance and amount, burst interval / size / fill / power, special dungeon rewards, offline cap, XP, loadout cost cap, summon pity, cost multiplier, cost growth, mine level bonus).
 - **kind** and the fixed order they apply in:
   1. `flat`: added (all flats summed)
   2. `percent`: all percents summed, then applied once (`"5"` = +5%)
@@ -34,7 +34,7 @@ New systems add their modifiers inside `collectModifiers`; callers never change.
 
 - `computeStat(stat, base, modifiers, context)` returns the value plus the modifiers that applied, in order, for tooltip breakdowns.
 - `statValue(...)` returns only the value.
-- Game helpers that already use it: `producerRate`, `curvePrice` (mine and tree levels), `treeUnlockCost`, `baseDamage`, `damageStat` / `effectiveDamage`, `damageUpgradeCost`, `bossMaxHp`, `effectiveDrops`, `burstStats`, `trialRewards`, `offlineCapMs`, `loadoutCostCap`, `cardDropChance`, `fightingXpPerKill` / `productionXpPerUnit` (`xp.card`), `starUpCost` / `tierUpCost` (`cost.multiplier`).
+- Game helpers that already use it: `producerRate`, `curvePrice` (mine and tree levels), `treeUnlockCost`, `baseDamage`, `damageStat` / `effectiveDamage`, `bossMaxHp`, `effectiveDrops`, `burstStats`, `trialRewards`, `offlineCapMs`, `loadoutCostCap`, `cardDropChance`, `fightingXpPerKill` / `fightingXpPerSecond` / `productionXpPerUnit` (`xp.card`), `starUpCost` / `tierUpCost` (`cost.multiplier`).
 - Prices: exponential prices read `cost.growth` for the growth factor (never below 1), then every price is scaled by `cost.multiplier` (base 1, never below 0) and rounded up. Both get the job, producer and resource in their context.
 
 ## Adding a stat
