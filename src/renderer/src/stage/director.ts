@@ -2,7 +2,6 @@ import type { Content } from '../../../data';
 import {
   Decimal,
   PRODUCTION_JOBS,
-  bossAttackDps,
   burstStats,
   collectModifiers,
   critFactor,
@@ -12,6 +11,7 @@ import {
   hitDamage,
   isProducerUnlocked,
   jobProductionPerSecond,
+  loadoutMaxHealth,
   producerLevel,
   producerRate,
   producersOf,
@@ -22,6 +22,7 @@ import {
   type ProductionJob,
   type TickReport,
 } from '../../../game';
+import { bossHitShows, type ChunkSpan } from './bossHitModel';
 import { nextAverage, popupScale } from './math';
 
 /**
@@ -38,8 +39,19 @@ export interface Loot {
 export interface ShowEvents {
   hit: { damage: Decimal; crit: boolean; scale: number; big: boolean };
   signature: { damage: Decimal; crit: boolean };
-  /** The boss hits the loadout: `target` is the loadout position (0 = main). */
-  bossAttack: { damage: Decimal; target: number };
+  /**
+   * The boss hits the loadout, as the game reported the attack (DESIGN.md §6): `target` is the
+   * loadout position that shows the number (0 = main), `span` where the chunk sat on the health
+   * bar. `attacks` is above 1 for a span of merged attacks; `knockout` for the hit that emptied it.
+   */
+  bossAttack: {
+    damage: Decimal;
+    target: number;
+    slam: boolean;
+    attacks: number;
+    knockout: boolean;
+    span: ChunkSpan;
+  };
   knockout: { seconds: number };
   /** A boss died: its resource drops, and the names of rare drops (items and cards). */
   kill: { loot: Loot[]; rare: string[] };
@@ -84,22 +96,34 @@ export function createDirector(content: Content, state: () => GameState) {
     window.setTimeout(hitLoop, stats.interval * 1000);
   };
 
-  // the boss hits back on its own interval (DESIGN.md §6)
-  const bossLoop = (): void => {
-    const s = state();
-    const dungeon = s.activeDungeonId ? content.dungeonById.get(s.activeDungeonId) : undefined;
-    const interval = dungeon?.boss.attack.intervalSeconds ?? 2;
-    if (!document.hidden && dungeon && fighting(s)) {
-      const mods = collectModifiers(s, content);
-      const l = s.cards.loadouts.fighting;
-      const filled = [l.main, ...l.supports].map((id, i) => (id ? i : -1)).filter((i) => i >= 0);
-      if (filled.length > 0) {
-        const damage = bossAttackDps(dungeon, s.prestigeCount, mods).mul(interval);
-        const target = filled[Math.floor(Math.random() * filled.length)]!;
-        emit('bossAttack', { damage, target });
-      }
+  // The boss's attacks come from the game's own schedule on the play-time clock (DESIGN.md §6),
+  // so what the stage shows is what was dealt; a knocked-out loadout takes none.
+  const emitBossAttacks = (
+    report: TickReport,
+    before: GameState,
+    after: GameState,
+    mods: ReturnType<typeof collectModifiers>,
+  ): void => {
+    const id = after.activeDungeonId;
+    if (!id) return;
+    const l = after.cards.loadouts.fighting;
+    const filled = [l.main, ...l.supports].map((c, i) => (c ? i : -1)).filter((i) => i >= 0);
+    if (filled.length === 0) return;
+    const max = loadoutMaxHealth(after, content, mods, id);
+    // a fight that resumes after a knockout starts from a full pool
+    const poolBefore =
+      before.combat.knockoutSeconds > 0 ? max : max.sub(before.combat.loadoutDamage);
+    for (const { event, span } of bossHitShows(report.bossAttacks, poolBefore, max)) {
+      const target = filled[Math.floor(Math.random() * filled.length)]!;
+      emit('bossAttack', {
+        damage: event.damage,
+        target,
+        slam: event.slam,
+        attacks: event.attacks,
+        knockout: event.knockout,
+        span,
+      });
     }
-    window.setTimeout(bossLoop, interval * 1000);
   };
 
   const harvestLoop = (): void => {
@@ -128,7 +152,6 @@ export function createDirector(content: Content, state: () => GameState) {
     },
     start(): void {
       hitLoop();
-      bossLoop();
       harvestLoop();
     },
     /** Reads one game-loop step: kills, drops, knockouts and bursts. */
@@ -146,6 +169,7 @@ export function createDirector(content: Content, state: () => GameState) {
         emit('signature', { damage: shown.damage, crit: shown.crit });
       }
       if (report.harvests.length > 0) emit('harvests', { events: report.harvests });
+      if (report.bossAttacks.length > 0) emitBossAttacks(report, before, after, mods);
       if (report.knockouts > 0) emit('knockout', { seconds: after.combat.knockoutSeconds });
       if (report.bossKills > 0) {
         const loot: Loot[] = [];

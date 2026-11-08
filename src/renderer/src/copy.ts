@@ -623,6 +623,10 @@ export const COPY = {
     idleTitle: 'No fight',
     idle: 'Nothing is being fought. Open the floors below and choose a dungeon.',
     knockedOut: 'Knocked out · back in',
+    fallIn: 'You fall in',
+    fallEarly: (gap: string) => `${gap} before the boss does`,
+    fallTip: (now: string | null) =>
+      `Your full health lasts this long against this boss, and you would fall before you kill it. ${now ? `With the health you have now: ${now}.` : ''}`.trim(),
     rareDrop: 'Rare drop!',
     drawer: 'Upgrades and floors',
     drawerOpen: 'Show upgrades and floors',
