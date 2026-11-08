@@ -24,6 +24,7 @@ import {
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { itemArt } from '../art/items';
+import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
 import type {
   CardEntry,
@@ -138,10 +139,7 @@ export function createCardsModel(
       cost: info.cost,
       mainAbility: card.main.description,
       supportEffect: card.support.description,
-      stats: [
-        { label: COPY.cards.level, value: `${level}/${cap}` },
-        { label: COPY.cards.cost, value: String(info.cost) },
-      ],
+      face: cardFaceOf(content, info),
       role: info.slot
         ? { job: info.slot.job, slot: info.slot.slot === 'main' ? 'main' : 'support' }
         : null,

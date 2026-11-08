@@ -1,10 +1,12 @@
-import type { Rank } from '../../../data';
+import type { Rank, Rarity } from '../../../data';
 import type { ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
 import { ITEM_VIEWBOX } from '../art/items';
 import { attachElementFx, type CardElement } from '../art/fx';
 import { effectStrength } from '../art/fxGeometry';
 import { applyCardTheme } from '../theme/apply';
+import { COPY } from '../copy';
+import type { CardFace } from './cardFace';
 
 /** Placeholder emblems until real card art exists. */
 const EMBLEMS: Record<string, string> = {
@@ -32,14 +34,11 @@ const TIER_NAMES: Record<Rank['tier'], string> = {
   unique: 'Unique',
 };
 
-export interface CardStat {
-  label: string;
-  value: string;
-}
+export type { CardFace };
 
 export interface CardProps {
   name: string;
-  /** Short role or job label shown on the name plate. */
+  /** Short role or job label: the aria label, and the boss card's name plate. */
   label: string;
   job: string;
   emblem: keyof typeof EMBLEMS | string;
@@ -48,7 +47,10 @@ export interface CardProps {
   /** The card's element: its effect plays from Gold (DESIGN.md §12). */
   element?: CardElement;
   rank: Rank;
-  stats: [CardStat, CardStat];
+  /** The card's rarity: the word on the bottom plate and the colour of its progress bar. */
+  rarity?: Rarity;
+  /** The bottom plate. Without it (bosses, placeholders) the plate stays empty. */
+  face?: CardFace;
   theme: ResolvedCard;
   boss?: boolean;
 }
@@ -89,15 +91,16 @@ export function createCard(initial: CardProps): CardView {
     <span class="bi-card__flourish" aria-hidden="true"></span>
     <span class="bi-amb bi-amb--finish" aria-hidden="true"><i></i><i></i><i></i></span>
     <span class="bi-amb bi-amb--border" aria-hidden="true"><i></i><i></i><i></i></span>
-    <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
-    <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span></header>
+    <span class="bi-card__backdrop" aria-hidden="true"></span>
     <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg><svg class="bi-card__item" viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false"></svg></div>
-    <dl class="bi-card__stats">
-      <div><dt></dt><dd class="bi-num"></dd></div>
-      <div><dt></dt><dd class="bi-num"></dd></div>
-    </dl>
+    <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
+    <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span><span class="bi-stars" role="img"></span></header>
     <div class="bi-card__hp"></div>
-    <footer class="bi-card__rank"><span class="bi-rank-name"></span><span class="bi-stars" role="img"></span></footer>`;
+    <footer class="bi-card__info">
+      <div class="bi-info__line"><span class="bi-info__ability"></span><span class="bi-info__speed"></span></div>
+      <div class="bi-info__line bi-info__line--meta"><span class="bi-info__level"></span><span class="bi-info__rarity"></span></div>
+      <div class="bi-info__bar" aria-hidden="true"><i></i></div>
+    </footer>`;
 
   const q = <T extends Element>(sel: string) => el.querySelector(sel) as T;
   const name = q<HTMLElement>('.bi-card__name');
@@ -106,9 +109,10 @@ export function createCard(initial: CardProps): CardView {
   const itemSvg = q<SVGElement>('.bi-card__item');
   const artBox = q<HTMLElement>('.bi-card__art');
   let itemMarkup: string | undefined;
-  const dts = el.querySelectorAll('dt');
-  const dds = el.querySelectorAll('dd');
-  const rankName = q<HTMLElement>('.bi-rank-name');
+  const ability = q<HTMLElement>('.bi-info__ability');
+  const speed = q<HTMLElement>('.bi-info__speed');
+  const levelText = q<HTMLElement>('.bi-info__level');
+  const rarityWord = q<HTMLElement>('.bi-info__rarity');
   const stars = q<HTMLElement>('.bi-stars');
   const frameSvg = q<SVGElement>('.bi-card__frame');
   let frameTier = '';
@@ -139,11 +143,16 @@ export function createCard(initial: CardProps): CardView {
       el.classList.toggle('bi-card--item', Boolean(p.item));
     }
     if (!p.item) emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
-    p.stats.forEach((s, i) => {
-      dts[i]!.textContent = s.label;
-      dds[i]!.textContent = s.value;
-    });
-    rankName.textContent = TIER_NAMES[p.rank.tier];
+    // the bottom plate (DESIGN.md §5 full-art layout): ability and speed, level and rarity, bar
+    const face = p.face;
+    ability.textContent = face?.ability ?? '';
+    speed.textContent = face?.speed ?? '';
+    levelText.textContent = face?.level ? COPY.card.level(face.level.value, face.level.cap) : '';
+    rarityWord.textContent = p.rarity ? COPY.card.rarity[p.rarity] : '';
+    if (p.rarity) el.dataset['rarity'] = p.rarity;
+    else delete el.dataset['rarity'];
+    el.classList.toggle('bi-card--face', Boolean(face) && !p.boss);
+    el.style.setProperty('--bi-xp', String(face ? Math.min(1, Math.max(0, face.progress)) : 0));
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
     // the tier is the frame (DESIGN.md §5); bosses have no rank and so no frame

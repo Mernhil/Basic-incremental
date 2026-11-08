@@ -120,12 +120,8 @@ export function createCardsPage(
       item: e.item,
       ...(e.owned ? { element: e.element } : {}),
       rank: e.rank,
-      stats: e.owned
-        ? e.stats
-        : [
-            { label: '', value: '' },
-            { label: '', value: '' },
-          ],
+      rarity: e.rarity,
+      face: e.face,
       theme: resolveCard(content, state.cosmetics.loadout, {
         id: e.id,
         rank: e.rank,
@@ -224,13 +220,14 @@ export function createCardsPage(
       b.type = 'button';
       b.dataset.key = `tile-${e.id}`;
       b.setAttribute('aria-pressed', String(e.id === selected));
+      // the loadout role is a word for screen readers only: the full-art card carries no chips
+      const role = e.role ? `, ${COPY.cards.role[e.role.slot]}` : '';
       const detail = e.owned
-        ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}`
+        ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}${role}`
         : COPY.cards.notFound;
       b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, detail));
       b.append(cardEl(e, state));
       if (e.owned && e.duplicates > 0) b.append(h('span', 'cp-badge bi-num', `+${e.duplicates}`));
-      if (e.role) b.append(h('span', 'cp-role', COPY.cards.role[e.role.slot]));
       if (isReady(e)) b.append(h('span', 'cp-ready', '▲'));
       b.addEventListener('click', () => {
         selected = e.id;
