@@ -20,6 +20,15 @@ export interface PortalView {
   guarantee: string;
   /** Lines of the rates tooltip, by rarity, lowest first. */
   rates: string[];
+  /** The same rates as rows for the odds panel. */
+  odds: { rarity: Rarity; name: string; chance: string }[];
+  /** Pulls since the last pity rarity, and the hard pity threshold. */
+  pityCount: number;
+  pityThreshold: number;
+  /** Name of the pity rarity ("Legendary"). */
+  pityRarityName: string;
+  /** Visible card layers of the deck (more edge = closer to the hard pity). */
+  deckLayers: number;
 }
 
 const rarityName = (content: Content, r: Rarity): string => content.rarityById.get(r)?.name ?? r;
@@ -50,7 +59,60 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
     pityProgress: Math.min(1, Math.max(0, info.pity.progress)),
     guarantee: t.guarantee(rarityName(content, info.tenPullGuarantee)),
     rates: info.rates.byRarity.map((r) => t.rate(rarityName(content, r.rarity), pct(r.chance))),
+    odds: info.rates.byRarity.map((r) => ({
+      rarity: r.rarity,
+      name: rarityName(content, r.rarity),
+      chance: pct(r.chance),
+    })),
+    pityCount: info.pity.count,
+    pityThreshold: info.pity.threshold,
+    pityRarityName: rarityName(content, info.pity.rarity),
+    deckLayers: deckLayers(info.pity.progress),
   };
+}
+
+/** Fewest and most card layers a deck shows. */
+export const DECK_MIN_LAYERS = 1;
+export const DECK_MAX_LAYERS = 9;
+
+/** Thickness of a deck in card layers: one when fresh, DECK_MAX_LAYERS at the hard pity. */
+export function deckLayers(progress: number): number {
+  const p = Math.min(1, Math.max(0, Number.isFinite(progress) ? progress : 0));
+  return DECK_MIN_LAYERS + Math.round(p * (DECK_MAX_LAYERS - DECK_MIN_LAYERS));
+}
+
+/** Most cards "Your last hand" shows. */
+export const HAND_MAX = 10;
+
+/** One card of "Your last hand". */
+export interface HandCardView {
+  itemId: string;
+  name: string;
+  rarity: Rarity;
+  rarityName: string;
+  isNew: boolean;
+  /** Spoken label: "Name, Rarity, New!". */
+  label: string;
+  /** Fan angle in degrees: a light spread around the middle of the row. */
+  tilt: number;
+}
+
+/** The last pull as a flat, lightly fanned row of up to HAND_MAX cards (the final ones if more). */
+export function lastHandView(views: readonly RevealView[]): HandCardView[] {
+  const shown = views.slice(-HAND_MAX);
+  const mid = (shown.length - 1) / 2;
+  return shown.map((v, i) => {
+    const isNew = v.tags.includes(COPY.summon.isNew);
+    return {
+      itemId: v.itemId,
+      name: v.name,
+      rarity: v.rarity,
+      rarityName: v.rarityName,
+      isNew,
+      label: COPY.summon.shown(v.name, v.rarityName, isNew ? COPY.summon.isNew : ''),
+      tilt: shown.length > 1 ? Math.round((i - mid) * 1.6 * 10) / 10 : 0,
+    };
+  });
 }
 
 /** One pull of a reveal. */
