@@ -31,6 +31,17 @@ RS = load(HERE / "restyle.py", "restyle")
 P = RS.P
 RAW = HERE / "pixellab/rollout"
 PILOT_RAW = {"coin-body-gold": HERE / "pixellab/restyle/pro-m-coin-round-gold-2.png"}
+REDO = HERE / "pixellab/redo"  # second round after the review: slimmer bows, lighter Soul Reaper, longer staffs
+PILOT_RAW.update({
+    "evo-soul_reaper": REDO / "evo-soul_reaper-b-1.png",
+    "item-bow-legendary": REDO / "item-bow-legendary-1.png",
+    "item-bow-mythic": REDO / "item-bow-mythic-0.png",
+    "item-bow-exotic": REDO / "item-bow-exotic-1.png",
+    "item-bow-void": REDO / "item-bow-void-1.png",
+    "item-staff-common": REDO / "item-staff-common-0.png",
+    "item-staff-rare": REDO / "item-staff-rare-0.png",
+    "item-staff-legendary": REDO / "item-staff-legendary-1.png",
+})
 PILOT_DONE: set[str] = set()  # the pilot sprites are rebuilt from their raw picks like the rest
 PILOT_RAW.update({
     "item-katana-epic": HERE / "pixellab/restyle/pro-o-item-katana-epic-0.png",
