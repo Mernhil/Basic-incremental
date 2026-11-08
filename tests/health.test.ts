@@ -8,6 +8,7 @@ import {
   defencePercent,
   loadoutHealth,
   loadoutMaxHealth,
+  secondsToKnockoutNow,
   readSave,
   setActiveDungeon,
   type CombatResult,
@@ -28,10 +29,8 @@ function inCellar(): GameState {
   return ok(setActiveDungeon(freshState(), content, 'mossy_cellar'));
 }
 const mods = (s: GameState) => collectModifiers(s, content);
-const secondsToDown = (s: GameState) =>
-  loadoutMaxHealth(s, content, mods(s), 'mossy_cellar')
-    .div(bossAttackDps(warden, s.prestigeCount, mods(s)))
-    .toNumber();
+/** When the hit that empties the pool lands (hits come in chunks, see bossHits.test.ts). */
+const secondsToDown = (s: GameState) => secondsToKnockoutNow(s, content)!;
 
 describe('card health (DESIGN.md §6)', () => {
   it('pools the fighting loadout cards health', () => {
@@ -81,11 +80,15 @@ describe('card health (DESIGN.md §6)', () => {
     const start = inCellar();
     const down = secondsToDown(start);
     const ko = content.combat.knockoutSeconds;
+    // The knockout ends on a hit's beat; the next hit (a light one, 0.4 of an attack) lands a
+    // whole interval later, on the rebuilt pool.
     const { state } = advance(start, content, (down + ko + 5) * 1000, rng);
     expect(state.combat.knockoutSeconds).toBe(0);
     const h = loadoutHealth(state, content);
-    expect(h.current.lt(h.max)).toBe(true);
-    expect(h.max.sub(h.current).toNumber()).toBeCloseTo(h.incoming.toNumber() * 5, 2);
+    expect(h.current.eq(h.max)).toBe(true);
+    const later = advance(start, content, (down + ko + 15) * 1000, rng).state;
+    const hl = loadoutHealth(later, content);
+    expect(hl.max.sub(hl.current).toNumber()).toBeCloseTo(hl.incoming.toNumber() * 10 * 0.4, 6);
   });
 
   it('gives the same result however the time is split (online and offline match)', () => {

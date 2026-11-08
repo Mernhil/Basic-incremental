@@ -68,6 +68,11 @@
     }
   },
   "knockoutSeconds": 30,
+  "bossPattern": {
+    "attacksPerCycle": 6,
+    "lightMultiplier": 0.4,
+    "slamMultiplier": 4
+  },
   "crit": {
     "chance": 0.05,
     "damage": "2"

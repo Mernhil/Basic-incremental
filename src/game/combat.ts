@@ -4,6 +4,15 @@ import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
 import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
 import { hpBarState, type HpBarState } from './hpBars';
+import {
+  bossAttacksBy,
+  bossDamageBetween,
+  lethalBossAttack,
+  meanAttacksToKnockout,
+  nextBossSlam,
+  recordBossAttacks,
+  type BossPattern,
+} from './bossAttacks';
 import { recordBurst } from './harvest';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import {
@@ -546,6 +555,17 @@ export interface StageReadout {
   secondsPerKill: number | null;
   /** Seconds to finish the current boss from its HP now; null like killsPerMinute. */
   secondsLeft: number | null;
+  /**
+   * "You fall in": seconds the full health pool lasts against the boss, averaged over the places in
+   * the attack cycle a fight can start from (the figure to set beside `secondsPerKill`); null when
+   * nothing attacks (special dungeon, idle, no loadout health).
+   */
+  secondsToKnockout: number | null;
+  /** Seconds until the knockout from the health left now, on the real attack schedule; null like
+   *  secondsToKnockout, and while already knocked out. */
+  secondsToKnockoutNow: number | null;
+  /** The loadout falls before it kills the boss (`secondsToKnockout` < `secondsPerKill`): show red. */
+  fallsFirst: boolean;
 }
 
 /**
@@ -562,12 +582,16 @@ export function stageReadout(
   const dungeon = id ? content.dungeonById.get(id) : undefined;
   const spk = dungeon ? secondsPerKill(state, content, dungeon.id, modifiers) : null;
   const boss = dungeon && spk !== null ? bossStatus(state, content, modifiers) : null;
+  const survival = dungeon ? survivalSeconds(state, content, dungeon.id, modifiers) : null;
   return {
     dps: effectiveDamage(state, content, id, modifiers),
     averageDps: avg,
     killsPerMinute: spk === null || spk <= 0 ? null : 60 / spk,
     secondsPerKill: spk,
     secondsLeft: boss ? boss.hp.div(avg).toNumber() : null,
+    secondsToKnockout: survival,
+    secondsToKnockoutNow: secondsToKnockoutNow(state, content, modifiers),
+    fallsFirst: survival !== null && spk !== null && survival < spk,
   };
 }
 
@@ -704,15 +728,56 @@ export function defencePercent(modifiers: readonly Modifier[], dungeonId: string
   return Math.max(0, Math.min(MAX_DEFENCE, v));
 }
 
-/** Damage per second a boss deals to the loadout: grows with prestige like its HP, less defence. */
+/** What one boss attack takes from the pool, after defence (DESIGN.md §6). */
+export interface BossAttackDamages {
+  /** A normal attack: the damage in dungeons.json, grown with prestige like the HP. */
+  normal: Decimal;
+  /** A light hit (five of every six attacks). */
+  light: Decimal;
+  /** A slam (every sixth attack). */
+  slam: Decimal;
+}
+
+/** Damage of a boss's normal attack: grows with prestige like its HP, less defence. */
+function bossNormalAttack(
+  dungeon: Dungeon,
+  prestigeCount: number,
+  modifiers: readonly Modifier[],
+): Decimal {
+  const grown = dungeon.boss.attack.damage.mul(
+    Decimal.pow(1 + dungeon.boss.hpScalingPerPrestige, prestigeCount),
+  );
+  return grown.mul(1 - defencePercent(modifiers, dungeon.id) / 100);
+}
+
+/** Damage of a boss's normal, light and slam attacks (the pattern is combat.json's `bossPattern`). */
+export function bossAttackDamages(
+  dungeon: Dungeon,
+  prestigeCount: number,
+  modifiers: readonly Modifier[],
+  pattern: BossPattern,
+): BossAttackDamages {
+  const normal = bossNormalAttack(dungeon, prestigeCount, modifiers);
+  return {
+    normal,
+    light: normal.mul(pattern.lightMultiplier),
+    slam: normal.mul(pattern.slamMultiplier),
+  };
+}
+
+/**
+ * Average damage per second a boss deals to the loadout: its attacks spread over their interval.
+ * The hits themselves land in chunks (bossAttackDamages); this is the same damage per minute as
+ * dungeons.json, for readouts and balance.
+ */
 export function bossAttackDps(
   dungeon: Dungeon,
   prestigeCount: number,
   modifiers: readonly Modifier[],
 ): Decimal {
-  const a = dungeon.boss.attack;
-  const grown = a.damage.mul(Decimal.pow(1 + dungeon.boss.hpScalingPerPrestige, prestigeCount));
-  return grown.div(a.intervalSeconds).mul(1 - defencePercent(modifiers, dungeon.id) / 100);
+  return bossNormalAttack(dungeon, prestigeCount, modifiers).div(
+    dungeon.boss.attack.intervalSeconds,
+  );
 }
 
 export interface LoadoutHealth {
@@ -720,7 +785,8 @@ export interface LoadoutHealth {
   current: Decimal;
   /** Seconds of knockout left; 0 when fighting. */
   knockoutSeconds: number;
-  /** Damage per second the current boss deals (0 for special dungeons and when idle). */
+  /** Average damage per second the current boss deals; the hits land in chunks (0 for special
+   *  dungeons and when idle). */
   incoming: Decimal;
 }
 
@@ -739,6 +805,92 @@ export function loadoutHealth(
     ? bossAttackDps(dungeon, state.prestigeCount, modifiers)
     : new Decimal(0);
   return { max, current, knockoutSeconds: ko, incoming };
+}
+
+/** The boss's attack rhythm right now, for the wind-up (DESIGN.md §6). */
+export interface BossAttackView {
+  /** Seconds between attacks. */
+  intervalSeconds: number;
+  /** What a light hit and a slam take from the pool, after defence. */
+  lightDamage: Decimal;
+  slamDamage: Decimal;
+  /** Seconds until the next attack lands, and whether it is the slam. */
+  nextAttackSeconds: number;
+  nextIsSlam: boolean;
+  /** Seconds until the next slam lands (a whole cycle right after one). */
+  nextSlamSeconds: number;
+  /** How far the wind-up has come, 0 right after a slam to 1 as the next one lands. */
+  slamProgress: number;
+}
+
+/** The boss attack the fighting loadout faces, or null with no boss, no health or a knockout. */
+export function bossAttackView(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): BossAttackView | null {
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  if (!dungeon || state.combat.knockoutSeconds > 0) return null;
+  if (loadoutMaxHealth(state, content, modifiers, dungeon.id).lte(0)) return null;
+  const pattern = content.combat.bossPattern;
+  const interval = dungeon.boss.attack.intervalSeconds;
+  const damages = bossAttackDamages(dungeon, state.prestigeCount, modifiers, pattern);
+  if (damages.normal.lte(0)) return null;
+  const clock = state.stats.playTimeMs / 1000;
+  const landed = bossAttacksBy(clock, interval);
+  const slam = nextBossSlam(landed, pattern);
+  const cycleSeconds = pattern.attacksPerCycle * interval;
+  const nextSlamSeconds = slam * interval - clock;
+  return {
+    intervalSeconds: interval,
+    lightDamage: damages.light,
+    slamDamage: damages.slam,
+    nextAttackSeconds: (landed + 1) * interval - clock,
+    nextIsSlam: slam === landed + 1,
+    nextSlamSeconds,
+    slamProgress: Math.min(1, Math.max(0, 1 - nextSlamSeconds / cycleSeconds)),
+  };
+}
+
+/** Seconds from now until the health left is emptied on the real attack schedule, or null. */
+export function secondsToKnockoutNow(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): number | null {
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  if (!dungeon || state.combat.knockoutSeconds > 0) return null;
+  const max = loadoutMaxHealth(state, content, modifiers, dungeon.id);
+  const pattern = content.combat.bossPattern;
+  const normal = bossAttackDamages(dungeon, state.prestigeCount, modifiers, pattern).normal;
+  if (max.lte(0) || normal.lte(0)) return null;
+  const interval = dungeon.boss.attack.intervalSeconds;
+  const clock = state.stats.playTimeMs / 1000;
+  const pool = Decimal.max(max.sub(state.combat.loadoutDamage), 0);
+  const lethal = lethalBossAttack(pool, normal, bossAttacksBy(clock, interval), pattern);
+  return Math.max(0, lethal * interval - clock);
+}
+
+/**
+ * Seconds the full health pool lasts against a dungeon's boss, averaged over the places in the
+ * attack cycle a fight can start from; null when nothing would attack (no health, no damage).
+ * This is the "you fall in" figure to set beside `secondsPerKill`.
+ */
+export function survivalSeconds(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): number | null {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return null;
+  const max = loadoutMaxHealth(state, content, modifiers, dungeonId);
+  const pattern = content.combat.bossPattern;
+  const normal = bossAttackDamages(dungeon, state.prestigeCount, modifiers, pattern).normal;
+  if (max.lte(0) || normal.lte(0)) return null;
+  // A fight starts between two hits: on average half an interval before the next one.
+  const attacks = meanAttacksToKnockout(max, normal, pattern) - 0.5;
+  return attacks * dungeon.boss.attack.intervalSeconds;
 }
 
 /** Fights whatever is active for `seconds`. Mutates `next` (a fresh clone owned by advance). */
@@ -816,30 +968,47 @@ function fightDungeon(
     }
   };
   const max = loadoutMaxHealth(next, content, modifiers, dungeon.id);
-  const incoming = bossAttackDps(dungeon, next.prestigeCount, modifiers);
+  const pattern = content.combat.bossPattern;
+  const interval = dungeon.boss.attack.intervalSeconds;
+  const normal = bossAttackDamages(dungeon, next.prestigeCount, modifiers, pattern).normal;
   const ko = content.combat.knockoutSeconds;
   let left = seconds;
   let knockouts = 0;
+  // The boss's attacks sit on the play-time clock (bossAttacks.ts): this fight is its last
+  // `seconds`, so any split of time lands the same hits.
+  let clock = next.stats.playTimeMs / 1000 - seconds;
+  let done = bossAttacksBy(clock, interval);
   while (left > EPSILON) {
-    if (max.lte(0) || incoming.lte(0)) {
+    if (max.lte(0) || normal.lte(0)) {
       fight(left);
       return;
     }
-    const hpLeft = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
-    const untilDown = hpLeft.div(incoming).toNumber();
-    if (untilDown >= left) {
+    const pool = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
+    const lethal = lethalBossAttack(pool, normal, done, pattern);
+    const last = bossAttacksBy(clock + left, interval);
+    if (lethal > last) {
+      // The pool holds through the attacks of this span.
       fight(left);
-      next.combat.loadoutDamage = next.combat.loadoutDamage.add(incoming.mul(left));
+      next.combat.loadoutDamage = next.combat.loadoutDamage.add(
+        bossDamageBetween(done, last, normal, pattern),
+      );
+      recordBossAttacks(report, dungeon.id, done, last, normal, interval, pattern, false);
       return;
     }
+    // The pool runs dry on the hit that lands at `lethal`: fight until then.
+    const untilDown = Math.min(left, Math.max(0, lethal * interval - clock));
     fight(untilDown);
+    recordBossAttacks(report, dungeon.id, done, lethal, normal, interval, pattern, true);
     left -= untilDown;
-    // Knocked out: the boss heals to full and the loadout sits out.
+    clock += untilDown;
+    // Knocked out: the boss heals to full and the loadout sits out; hits during it do not land.
     next.bossHp = null;
     report.knockouts++;
     knockouts++;
     const wait = Math.min(left, ko);
     left -= wait;
+    clock += wait;
+    done = Math.max(lethal, bossAttacksBy(clock, interval));
     if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
       next.combat.knockoutSeconds = ko - wait;
       next.combat.loadoutDamage = max;

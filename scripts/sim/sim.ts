@@ -25,7 +25,6 @@ import { JOBS, RANK_TIERS, RARITIES, type Content, type Job } from '../../src/da
 import {
   advance,
   type OwnedCard,
-  bossAttackDps,
   buyDamageLevels,
   buyMineLevel,
   cardPower,
@@ -44,7 +43,6 @@ import {
   isDungeonUnlocked,
   isProducerUnlocked,
   loadoutCostCap,
-  loadoutMaxHealth,
   mineLevel,
   upgradeShelf,
   buyUpgrade,
@@ -56,6 +54,7 @@ import {
   productionPerSecond,
   producerRate,
   secondsPerKill,
+  survivalSeconds,
   setActiveDungeon,
   setLoadout,
   starUp,
@@ -838,9 +837,8 @@ function canKill(state: GameState, content: Content, id: string, modifiers: Modi
   if (!dungeon || !isDungeonUnlocked(state, content, id)) return false;
   const spk = secondsPerKill(state, content, id, modifiers);
   if (spk === null || !Number.isFinite(spk)) return false;
-  const health = loadoutMaxHealth(state, content, modifiers, id);
-  const incoming = bossAttackDps(dungeon, state.prestigeCount, modifiers);
-  return !(health.gt(0) && incoming.gt(0) && health.div(incoming).toNumber() < spk);
+  const survival = survivalSeconds(state, content, id, modifiers);
+  return !(survival !== null && survival < spk);
 }
 
 /**
@@ -1129,9 +1127,7 @@ export function formatSummary(result: SimResult, content: Content): string {
   const walls = content.dungeons
     .map((d) => {
       const spk = secondsPerKill(s, content, d.id, modifiers);
-      const health = loadoutMaxHealth(s, content, modifiers, d.id);
-      const incoming = bossAttackDps(d, s.prestigeCount, modifiers);
-      const survive = incoming.gt(0) ? num(health.div(incoming)) : Infinity;
+      const survive = survivalSeconds(s, content, d.id, modifiers) ?? Infinity;
       return `${d.id} ${spk === null ? '-' : `${spk.toFixed(0)} s/kill`} (survives ${survive.toFixed(0)} s)`;
     })
     .join(', ');
