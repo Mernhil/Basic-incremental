@@ -57,3 +57,7 @@ From back to front: rarity body, panel backgrounds (plate, art window, stats), f
 - `assertVisualsImplemented` fails at startup if data names a recipe or effect that does not exist.
 - `npm test` covers equipping, card-exclusive overrides, wear rules, level merging, set detection and invalid data.
 - `node scripts/a11y-audit.mjs` (with `npm run dev` running) checks text contrast across every table x border x rarity, reduced motion and keyboard access.
+
+## Weapon skins (test)
+
+A weapon skin is not a cosmetic slot: it changes the look of one weapon and is saved per weapon (`GameState.weaponSkins`, keyed by weapon kind). Data: `src/data/content/weaponSkins.json` (weapon, base art, skins with an art id and a cost). Logic: `weaponSkinChoices`, `weaponSkinArt`, `equipWeaponSkin` in `src/game/wardrobe.ts`. UI: the Wardrobe "Weapon skins" tab (`pages/weaponSkinsTab.ts`); cards draw the worn skin with `cardItemArt`. To add a skin, drop a 100x120 sprite in `art/pixel/hand/skin-<weapon>-NN.png`, re-bake, and list it in `weaponSkins.json`.
