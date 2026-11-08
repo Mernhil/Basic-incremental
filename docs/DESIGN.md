@@ -110,7 +110,7 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [To build] Every card from Rare up can reach all five tiers (Unique only with a unique version, as in The Unique tier below); a Common's level cap ends at Gold's 60, and its copies past Gold ★6 become shards like any duplicate past the last star (user, 2026-11-08).
 - [Built] **Stars.** Duplicates fill the card's star bar and a full bar buys a star. Stars are the weapon's prestige: they raise its base damage and health (Star impact below). A star costs only copies of the card; stars no longer raise the level cap. A tier-up needs all six stars and resets them (Stars restart on tier-up below).
 - [Default · in game] **Stars balanced.** One duplicate per star was too easy and each star did too little (user). The copies per star are now tuned with the sim so the median run reaches a Gold ★6 near the 7 h target (Star bar below); the impact of each star is the Star impact step below, unchanged.
-- [Built] **Unique weapon.** The last upgrade, the Unique tier, swaps in the weapon's unique version, the most meaningful step of all. Eventually every base weapon (12 kinds) gets one. Drawn so far: Flameblade (sword) and Rootbloom Staff (staff); Soul Reaper (scythe) waits for a card that uses a scythe. A card has a unique version when `cards.json` names one (`evolution`); only those cards can reach the tier.
+- [Built] **Unique weapon.** The last upgrade, the Unique tier, swaps in the weapon's unique version, the most meaningful step of all. Eventually every base weapon (12 kinds) gets one. Drawn so far: Flameblade (sword) and Rootbloom Staff (staff); Soul Reaper (scythe) is reached only by the weapon-skins test card (§8), until a real scythe card exists. A card has a unique version when `cards.json` names one (`evolution`); only those cards can reach the tier.
 - [Default · in game] **XP from fighting time.** A fighting card in the loadout gains XP for every second it fights (not while knocked out) plus a bonus per kill, so a card stuck at a wall still levels. The per-second rate grows with the dungeon tier like the kill bonus; the special dungeon pays the tier 1 rate. It is derived from fight time, so online and offline give the same result. Production cards keep their XP per gem harvested. Rates live in `cardRules.json`.
 - [Default · in game] **Level caps by tier only:** 20 / 40 / 60 / 80 / 100 for Bronze, Silver, Gold, Prismatic and Unique (`cardRules.json`). Stars no longer raise the cap. A saved card above its new cap was set to the cap (save format 17), so it can tier up at once.
 - [Built] **Small bump every level.** Each level adds a little to the card's power, support strength and gauge speed (`cardRules.json`).
@@ -197,6 +197,7 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Built] **Maximum level by rarity:** Common 2, Rare 3, Epic 4, Legendary 5, Mythic 5, Exotic 6, Void 6.
 - [Built] **Ambient animations are small and cheap:** CSS only, animating `transform` and `opacity`, at most about 6 particles per card, paused off screen, a still frame under reduced motion.
 - [Built] **Breaking the edge.** High-level border flourishes may reach outside the card edge by at most about 8% of the card width, only in the corner zones (the outer fifth of each side). The sides and top belong to the tier ornaments, the star footer is a keep-clear band, and where they meet at a corner the tier spikes sit on top. Grids reserve a bleed margin.
+- [Built] **Weapon skins (test).** A weapon skin is a different look for one weapon, saved per weapon and chosen in the Wardrobe's "Weapon skins" tab: pick the weapon, preview a skin on the card, apply it. Skins are art only; the weapon's stats and colours do not change. The unskinned weapon keeps its own art and motion. For now only the Soul Reaper scythe has skins: the original and 12 skins (`weaponSkins.json`, art `skin-scythe-*`), all free, shown at the Unique tier of the test card Reaper Test Card (`cards.json`, in the Card Portal pool). How skins are unlocked and whether they cost Glamour Crystals is open (§16).
 - [Default · in game] **Wardrobe details.** Each level costs one duplicate plus the step's material × a rarity factor (Glimmer Dust for shape and accent, Facet Shards for gems, glow and ambient; `cosmeticRules.json`). The owned buff does not grow with the level. Equipping puts the item at its owned level and upgrading moves every worn copy. UI-skin items have one level. Garden set bonuses, exclusive buffs and gate weights are in `cosmetics.json` and `sets.json`.
 
 ## 9. Prestige: Ascension
@@ -366,6 +367,8 @@ Changed without asking (to confirm or undo):
 
 - The Frostspire Vault needs 90 kills to clear instead of the 50 the user confirmed (§6).
 
+Waiting since 2026-11-08 (weapon skins test, §8): how weapon skins are unlocked (Wardrobe Gate, Glamour Crystal cost, drops), whether skins exist for the other 11 weapons, and whether the Reaper Test Card stays or gets a real card and name.
+
 Defaults by Claude, never confirmed (`[Default]`):
 
 - §12 the concept ladder steps (L1-L5 = Bronze to Unique, L6 the Unique attack effect), the Common look, how concept images are stored and cut, and which image PixelLab converts (2026-11-08).
@@ -389,6 +392,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 
 ## 17. Changelog
 
+- 2026-11-08 — Built the weapon skins test: a Wardrobe tab, per-weapon skins saved in save format 20, the Soul Reaper scythe with 12 free skins and a test card (user). Unlock rules come later.
 - 2026-11-08 — Proposed the full-art card layout (artboard G) and wrote the concept-sheet pipeline defaults: ladder steps, Common look, concept image storage and PixelLab inputs (§5, §12; user).
 - 2026-11-08 — Our damage to bosses and the Glimmer Trial's target lands in hits every burst interval instead of draining the bar smoothly, and a tier-up now needs all six stars and resets them to ★1 (a Bronze ★6 becomes a Silver ★1); the old default that stars carry across tiers is dropped (user, §5, §6).
 - 2026-11-08 — Built the boss-hit visuals the user picked at the review gate (option C, "Screen edge pulse"): edge pulse before each slam, the pale chunk that falls off the health bar, red numbers from the game's reported attacks, and the "You fall in" pill (§6).

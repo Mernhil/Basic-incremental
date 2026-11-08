@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
+  createSaveText,
   CURRENT_SAVE_VERSION,
   MIGRATIONS,
   migrateState,
+  readSave,
   SaveError,
   type MigrationTable,
 } from '../src/game';
+import { content, freshState } from './helpers';
 
 // A made-up v1 -> v2 migration used only to exercise the pipeline:
 // v1 stored `coins`; v2 renames it to `gold` and adds a `gems` field.
@@ -564,5 +567,24 @@ describe('v18 -> v19 (the Shield Warden card was removed, DESIGN.md §5)', () =>
     expect(() => step({})).not.toThrow();
     expect(() => step({ cards: 3, cosmetics: 'x', shardShop: [] })).not.toThrow();
     expect(() => step({ cards: { owned: 1, loadouts: { fighting: 4 } } })).not.toThrow();
+  });
+});
+
+describe('v19 -> v20 (weapon skins: nothing equipped)', () => {
+  const step = MIGRATIONS[19]!;
+
+  it('adds an empty weaponSkins and keeps the rest', () => {
+    const out = step({ prestigeCount: 2, cosmetics: { owned: {} } }) as Record<string, unknown>;
+    expect(out['weaponSkins']).toEqual({});
+    expect(out['prestigeCount']).toBe(2);
+    expect(out['cosmetics']).toEqual({ owned: {} });
+  });
+
+  it('turns a whole v19 save into a v20 state with no skins', () => {
+    const v19 = JSON.parse(createSaveText(freshState(), 1));
+    delete v19.state.weaponSkins;
+    v19.version = 19;
+    const loaded = readSave(JSON.stringify(v19), content);
+    expect(loaded.state.weaponSkins).toEqual({});
   });
 });

@@ -150,6 +150,18 @@ export {
   cosmeticSource,
   /** Each set's progress (equipped / total) and whether its bonus applies. */
   setBonuses,
+  /** The skin id worn on a weapon kind (e.g. 'soul_reaper'), or null = unskinned. */
+  weaponSkinFor,
+  /** The art id to draw for a weapon kind: the worn skin's art, else its base art (null = no skins). */
+  weaponSkinArt,
+  /** Every skin of a weapon kind for the picker: name, art, cost, available, equipped. */
+  weaponSkinChoices,
+  /** Wears a skin on a weapon kind, or null for the unskinned weapon; does not touch cosmetic slots. */
+  equipWeaponSkin,
+  /** Whether a skin exists for that weapon and can be worn now. */
+  isWeaponSkinAvailable,
+  type WeaponSkinChoice,
+  type EquipWeaponSkinResult,
   type WardrobeItem,
   type CosmeticUpgradeCheck,
   type CosmeticUpgradeResult,

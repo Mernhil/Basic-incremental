@@ -275,7 +275,7 @@ export function createAchievementsPage(
   function offerArt(art: OfferArt, s: GameState): string {
     switch (art.kind) {
       case 'card':
-        return svg(cardItemArt(content, art.cardId, s.cards.owned[art.cardId]), ITEM_VIEWBOX);
+        return svg(cardItemArt(content, art.cardId, s.cards.owned[art.cardId], s), ITEM_VIEWBOX);
       case 'coin': {
         const gem = content.resourceById.get(art.resource)?.gem;
         return gem ? svg(gemCoin(gem, 1)) : '';

@@ -42,6 +42,7 @@ import {
   type SlotView,
 } from './wardrobeModel';
 import { fitCard } from '../ui/pixelFit';
+import { createWeaponSkinsTab } from './weaponSkinsTab';
 import './wardrobe.css';
 
 /**
@@ -71,7 +72,36 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
   const wrap = h('div', 'wd');
   const status = h('p', 'wd-status');
   status.setAttribute('role', 'status');
-  page.append(wrap, status);
+  // tabs: the cosmetics (everything below) and the weapon skins test
+  const tabs = h('div', 'cp-chips wd-tabs');
+  tabs.setAttribute('role', 'group');
+  tabs.setAttribute('aria-label', COPY.weaponSkins.tabsLabel);
+  const skinsRoot = h('div', 'ws');
+  const skinsTab = createWeaponSkinsTab(skinsRoot, ctx);
+  let tab: 'cosmetics' | 'skins' = 'cosmetics';
+  const tabButtons = new Map<string, HTMLElement>();
+  function showTab(next: 'cosmetics' | 'skins'): void {
+    tab = next;
+    for (const [k, b] of tabButtons) b.setAttribute('aria-pressed', String(k === tab));
+    wrap.hidden = status.hidden = tab !== 'cosmetics';
+    skinsRoot.hidden = tab !== 'skins';
+    if (tab === 'skins') skinsTab.reveal();
+  }
+  for (const [id, label] of [
+    ['cosmetics', COPY.weaponSkins.tabCosmetics],
+    ['skins', COPY.weaponSkins.tabSkins],
+  ] as const) {
+    const b = h('button', 'cp-chip', label);
+    b.type = 'button';
+    b.dataset.key = `tab-${id}`;
+    b.addEventListener('click', () => showTab(id));
+    tabButtons.set(id, b);
+    tabs.append(b);
+  }
+  skinsRoot.hidden = true;
+  page.append(tabs, wrap, status, skinsRoot);
+  tabButtons.get('cosmetics')?.setAttribute('aria-pressed', 'true');
+  tabButtons.get('skins')?.setAttribute('aria-pressed', 'false');
   // the equipped Wardrobe style draws the plates, tiles and ladder (wardrobeSkin.ts)
   const skinSheet = document.createElement('style');
   document.head.append(skinSheet);
@@ -525,6 +555,10 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
 
   return {
     render() {
+      if (tab === 'skins') {
+        skinsTab.render();
+        return;
+      }
       const state = ctx.state();
       if (signature(state) !== last || wrap.childElementCount === 0) {
         const active = (document.activeElement as HTMLElement | null)?.dataset?.key;

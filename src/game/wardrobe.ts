@@ -366,3 +366,88 @@ export function setBonuses(state: GameState, content: Content): SetBonusInfo[] {
     return set ? [{ set, equipped: s.equipped, total: s.total, complete: s.complete }] : [];
   });
 }
+
+// ---- weapon skins ------------------------------------------------------------------------------
+
+/** Whether a skin of that weapon exists and can be worn (cost 0 = free; nothing sells priced skins yet). */
+export function isWeaponSkinAvailable(
+  content: Content,
+  weaponKind: string,
+  skinId: string,
+): boolean {
+  const skin = content.weaponSkinsByWeapon.get(weaponKind)?.skins.find((s) => s.id === skinId);
+  return skin !== undefined && skin.cost === 0;
+}
+
+/** The skin id chosen for a weapon kind (for example `soul_reaper`), or null = the unskinned weapon. */
+export function weaponSkinFor(state: GameState, weaponKind: string): string | null {
+  return state.weaponSkins[weaponKind] ?? null;
+}
+
+/** The art id to draw for a weapon kind: its chosen skin's art, else the weapon's base art; null if it has no skins. */
+export function weaponSkinArt(
+  state: GameState,
+  content: Content,
+  weaponKind: string,
+): string | null {
+  const set = content.weaponSkinsByWeapon.get(weaponKind);
+  if (!set) return null;
+  const chosen = weaponSkinFor(state, weaponKind);
+  return set.skins.find((s) => s.id === chosen)?.art ?? set.baseArt;
+}
+
+/** One skin in the picker. */
+export interface WeaponSkinChoice {
+  id: string;
+  name: string;
+  /** Art id to draw this skin with. */
+  art: string;
+  cost: number;
+  /** Can be equipped now. */
+  available: boolean;
+  /** The one currently worn. */
+  equipped: boolean;
+}
+
+/** Every skin of a weapon kind, in order (empty if it has none). */
+export function weaponSkinChoices(
+  state: GameState,
+  content: Content,
+  weaponKind: string,
+): WeaponSkinChoice[] {
+  const chosen = weaponSkinFor(state, weaponKind);
+  return (content.weaponSkinsByWeapon.get(weaponKind)?.skins ?? []).map((s) => ({
+    id: s.id,
+    name: s.name,
+    art: s.art,
+    cost: s.cost,
+    available: isWeaponSkinAvailable(content, weaponKind, s.id),
+    equipped: s.id === chosen,
+  }));
+}
+
+export type EquipWeaponSkinResult =
+  | { ok: true; state: GameState }
+  | { ok: false; reason: 'unknown-weapon' | 'unknown-skin' | 'unavailable' };
+
+/** Wears a skin on a weapon kind, or `null` to go back to the unskinned weapon. Does not touch cosmetic slots. */
+export function equipWeaponSkin(
+  state: GameState,
+  content: Content,
+  weaponKind: string,
+  skinId: string | null,
+): EquipWeaponSkinResult {
+  const set = content.weaponSkinsByWeapon.get(weaponKind);
+  if (!set) return { ok: false, reason: 'unknown-weapon' };
+  const next = cloneState(state);
+  if (skinId === null) {
+    delete next.weaponSkins[weaponKind];
+    return { ok: true, state: next };
+  }
+  if (!set.skins.some((s) => s.id === skinId)) return { ok: false, reason: 'unknown-skin' };
+  if (!isWeaponSkinAvailable(content, weaponKind, skinId)) {
+    return { ok: false, reason: 'unavailable' };
+  }
+  next.weaponSkins[weaponKind] = skinId;
+  return { ok: true, state: next };
+}

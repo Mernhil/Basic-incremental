@@ -536,7 +536,7 @@ describe('views for the Cards page', () => {
     expect(regent).toMatchObject({ owned: null, rank: null, slot: null, cost: 8, starUp: null });
     expect(regent.mainModifiers.map((m) => m.stat)).toEqual(['burst.interval', 'burst.power']);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(11);
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(12);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',

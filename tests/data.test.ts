@@ -21,6 +21,7 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
+import weaponSkins from '../src/data/content/weaponSkins.json';
 
 type PortalRaw = {
   cost: { resource: string };
@@ -51,6 +52,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     cosmeticRules,
     prestige,
     upgrades,
+    weaponSkins,
     ...overrides,
   });
 }
@@ -75,7 +77,8 @@ describe('bundled content', () => {
       ['Iron Deeps', 'mossy_cellar'],
       ['Crystal Grotto', 'ember_crypt'],
     ]);
-    expect(content.cards).toHaveLength(11);
+    // 11 beta cards plus the weapon-skins test card (`reaper_test`).
+    expect(content.cards).toHaveLength(12);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -180,7 +183,10 @@ describe('content validation errors', () => {
 
 describe('card ranks and portals', () => {
   it('has the 11 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
-    const content = loadContent();
+    const loaded = loadContent();
+    // The weapon-skins test card (`reaper_test`) is not one of the beta cards.
+    const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
+    expect(loaded.cardById.get('reaper_test')?.name).toBe('Reaper Test Card');
     expect(content.cards).toHaveLength(11);
     // Fighting lost its Rare (the Shield Warden); logging and mining keep four cards each.
     for (const [job, n] of [

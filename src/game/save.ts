@@ -18,12 +18,13 @@ import {
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { levelCap } from './cards';
+import { isWeaponSkinAvailable } from './wardrobe';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 19;
+export const CURRENT_SAVE_VERSION = 20;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -57,6 +58,8 @@ export const serializedStateSchema = z.object({
   pity: counts,
   inventory: counts,
   prestigeCount: z.number().int().min(0),
+  /** v20: weapon kind -> chosen skin id. */
+  weaponSkins: z.record(z.string(), z.string()),
   cosmetics: z.object({
     loadout: z.object({
       slots: z.record(z.string(), equippedSchema),
@@ -165,6 +168,7 @@ export function serializeState(state: GameState): SerializedState {
     pity: { ...state.pity },
     inventory: { ...state.inventory },
     prestigeCount: state.prestigeCount,
+    weaponSkins: { ...state.weaponSkins },
     stats: { ...state.stats },
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
@@ -253,6 +257,12 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.pity = { ...saved.pity };
   state.inventory = { ...saved.inventory };
   state.prestigeCount = saved.prestigeCount;
+  // Skins that no longer exist (or are no longer available) are dropped.
+  state.weaponSkins = Object.fromEntries(
+    Object.entries(saved.weaponSkins).filter(([weapon, skin]) =>
+      isWeaponSkinAvailable(content, weapon, skin),
+    ),
+  );
   state.stats = { ...saved.stats };
   // Unknown achievements and shop items (removed from the game) are dropped.
   const achievementIds = new Set(content.achievements.map((a) => a.id));

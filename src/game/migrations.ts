@@ -46,6 +46,8 @@ export const MIGRATIONS: MigrationTable = {
   16: v16ToV17,
   17: v17ToV18,
   18: v18ToV19,
+  /** v19 -> v20: weapon skins (weaponSkins.json). Nothing is equipped: every weapon is unskinned. */
+  19: (state) => ({ ...state, weaponSkins: {} }),
 };
 
 /** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
