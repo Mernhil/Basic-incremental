@@ -3,8 +3,8 @@
 PixelLab draws; this only:
   1. keys out anything not fully opaque and the pale halo (light, low-saturation pixels on the
      silhouette edge that are not part of the art),
-  2. cuts the palette only when PixelLab used more than `TONES` colours (no dither), and gives a lone
-     pixel (no same-colour neighbour) the majority colour of its 3 x 3 neighbourhood,
+  2. applies the palette rule (cel_palette): per material at most 3 flat tones plus a white glint,
+     about 16 colours per sprite, then merges the 1-2 px specks the snapping leaves (islands),
   3. snaps PixelLab's own dark outline to the game ink (#1a1020), adds ink only where the edge has a
      gap (never a second line, which would eat thin blades), and puts the light rim outside it
      (card items: the rarity window colour mixed 30% to white, as the game's items, plus the old
@@ -13,7 +13,7 @@ PixelLab draws; this only:
   4. prints footprint / flatness numbers next to the old counterpart (footprint.py).
 
 Usage: py design/pixel/concept-sheet-1-new/restyle.py <raw.png> <out.png> <kind> [<old.png> [<gem shape>]]
-  kind: item-<rarity> | coin-<tier> | sticker. A generation smaller than the old sprite is padded to
+  kind: item-<rarity> | unique-<window rarity> | coin-<tier> | sticker. A generation smaller than the old sprite is padded to
   its canvas (drawn smaller on purpose to match the old footprint).
 """
 from __future__ import annotations
@@ -34,7 +34,11 @@ _fp = importlib.util.spec_from_file_location("footprint", HERE / "footprint.py")
 F = importlib.util.module_from_spec(_fp)
 _fp.loader.exec_module(F)
 
-TONES = {"item": 24, "coin": 20, "sticker": 20}  # kept high enough that small accents (a gold guard) survive
+# The palette rule (user, 2026-11-08): per material at most 3 flat tones (shadow, base, light) plus one
+# white glint; about 16 colours per sprite with ink and rim, about 20 for the busiest Uniques; hard
+# steps only (no blend tones, dithering, gradients or noise). MATERIALS is how many materials a sprite
+# may have: 3 tones each + ink + white glint + rim (+ sparkles, also white).
+MATERIALS = {"item": 4, "unique": 5, "coin": 3, "sticker": 4}
 
 
 def ink_edge(a: np.ndarray) -> np.ndarray:
@@ -100,6 +104,95 @@ def majority(a: np.ndarray, passes: int = 2) -> np.ndarray:
     return a
 
 
+def cel_palette(a: np.ndarray, materials: int) -> np.ndarray:
+    """Snaps every colour pixel (not ink, not the white glint) to at most 3 flat tones per material.
+
+    Materials are found by hue and chroma (k-means on Lab a*, b* and a little L*), so a gold guard
+    stays apart from a silver blade; inside a material the pixels are split by lightness into shadow,
+    base and light, each tone the mean colour of its pixels, and tones closer than 9 L* apart merge,
+    so the steps stay clearly separated. Near-white pixels become the one white glint, and near-black
+    neutral ones (L* under 14, chroma under 10) the ink, which keeps the lines between parts without
+    swallowing a dark coloured material (a deep purple grip)."""
+    from skimage.color import lab2rgb, rgb2lab
+    from sklearn.cluster import KMeans
+
+    out = a.copy()
+    rgb = a[..., :3]
+    op = a[..., 3] > 0
+    lab = rgb2lab(rgb.astype(float) / 255)
+    # near-black pixels inside are PixelLab's part lines: they become ink, so parts stay separated
+    out[op & (lab[..., 0] < 14) & (np.hypot(lab[..., 1], lab[..., 2]) < 10), :3] = P.INK
+    ink = (out[..., :3] == np.array(P.INK)).all(-1)
+    glint = op & ~ink & (lab[..., 0] > 92) & (np.hypot(lab[..., 1], lab[..., 2]) < 12)
+    out[glint, :3] = 255
+    m = op & ~ink & ~glint
+    if m.sum() < 8:
+        return out
+    X = lab[m]
+    feats = np.column_stack([X[:, 1], X[:, 2], X[:, 0] * 0.35])
+    k = min(materials, len(np.unique(feats.round(1), axis=0)))
+    mat = KMeans(n_clusters=k, n_init=4, random_state=0).fit_predict(feats)
+    tones = np.zeros_like(X)
+    for c in range(k):
+        sel = mat == c
+        L = X[sel, 0].reshape(-1, 1)
+        n = min(3, len(np.unique(L.round(0))))
+        lab_c = KMeans(n_clusters=n, n_init=4, random_state=0).fit(L)
+        order = np.argsort(lab_c.cluster_centers_[:, 0])
+        rank = np.empty(n, int)
+        rank[order] = np.arange(n)
+        groups = rank[lab_c.labels_]
+        means = [X[sel][groups == g].mean(0) for g in range(n)]
+        # merge steps closer than 9 L*, so every step reads
+        merged = [means[0]]
+        for t in means[1:]:
+            if t[0] - merged[-1][0] < 9:
+                merged[-1] = (merged[-1] + t) / 2
+            else:
+                merged.append(t)
+        cent = np.array(merged)
+        idx = np.abs(X[sel, 0][:, None] - cent[None, :, 0]).argmin(1)
+        tones[sel] = cent[idx]
+    out_rgb = (lab2rgb(tones[None])[0] * 255).round().clip(0, 255).astype(np.uint8)
+    out[m, :3] = out_rgb
+    return out
+
+
+def islands(a: np.ndarray, max_size: int = 2, passes: int = 3) -> np.ndarray:
+    """Specks of 1-2 pixels of one colour (left by the snapping) take the colour most of their
+    neighbours have. White glints and the ink stay as drawn."""
+    from skimage import measure
+
+    for _ in range(passes):
+        out = a.copy()
+        op = a[..., 3] > 0
+        key = (a[..., 0].astype(int) << 16) | (a[..., 1].astype(int) << 8) | a[..., 2]
+        key = np.where(op, key, -1)
+        changed = False
+        for k in np.unique(key[op]):
+            if k in (0xFFFFFF, (P.INK[0] << 16) | (P.INK[1] << 8) | P.INK[2]):
+                continue
+            lab = measure.label(key == k, connectivity=1)
+            for r in measure.regionprops(lab):
+                if r.area > max_size:
+                    continue
+                cnt: Counter = Counter()
+                for y, x in r.coords:
+                    for dx, dy in P.N8:
+                        yy, xx = y + dy, x + dx
+                        if 0 <= yy < key.shape[0] and 0 <= xx < key.shape[1] and key[yy, xx] not in (-1, k):
+                            cnt[key[yy, xx]] += 1
+                if cnt:
+                    best = cnt.most_common(1)[0][0]
+                    for y, x in r.coords:
+                        out[y, x, :3] = ((best >> 16) & 255, (best >> 8) & 255, best & 255)
+                    changed = True
+        a = out
+        if not changed:
+            break
+    return a
+
+
 def pad_to(a: np.ndarray, size: tuple[int, int], centre: tuple[float, float]) -> np.ndarray:
     """Places a smaller generation on the game canvas (transparent padding, never a rescale), with
     its content centred where the old sprite's content sits."""
@@ -121,22 +214,21 @@ def clean(raw: np.ndarray, kind: str, gem: str | None = None, old: np.ndarray | 
     a = unhalo(a)
     a = P.drop_specks(a, 6)
     base = kind.split("-")[0]
-    a = P.quantize(a, TONES[base])
-    a = majority(a, 2)
     if base == "coin":
-        # the round silhouette of the old coins (44 px with the ring), and the resource's gem back
-        # in the centre (DESIGN Ã‚Â§12 "Resources are carved gems")
+        # the round silhouette of the old coins (44 px with the ring)
         a = P.disc(a, 20.5)
-        a = ink_edge(a)
+    # the ink outline (PixelLab's own, snapped to the game ink, gaps filled), then the palette rule
+    a = ink_edge(a)
+    a = islands(cel_palette(a, MATERIALS[base]))
+    if base == "coin":
+        # the resource's gem back in the centre (DESIGN §12 "Resources are carved gems")
         if gem:
             a = P.over(a, P.gem_layer(gem, kind.endswith("locked")))
         return P.ring(a, P.hexrgb(P.COIN_RING["stone" if kind.endswith("locked") else kind.split("-", 1)[1]]))
-    # the ink outline (PixelLab's own, snapped to the game ink, gaps filled); then one rim pixel outside
-    a = ink_edge(a)
-    if base == "item" and old is not None and not kind.endswith("common"):
+    if base in ("item", "unique") and old is not None and not kind.endswith("common"):
         # the old counterpart's plus sparkles, where they float free of the new item
         a = P.add_sparkles(a, P.free_sparkles(old))
-    if base == "item":
+    if base in ("item", "unique"):
         return P.ring(a, P.mix(P.RARITY_WINDOW[kind.split("-", 1)[1]], "#ffffff", 0.3), skip_white=True)
     return P.ring(a, P.WHITE)
 
