@@ -65,7 +65,8 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 - [Built] **Harvest crits.** `harvest.critChance` (base 0) and `harvest.critDamage` (base ×2) per job, through the modifier pipeline. Nothing grants a chance yet.
 - [Built] **Gem mastery.** Each gem's lifetime harvest gives a mastery tier at 1e3 / 1e5 / 1e7 / 1e9 (bronze to prismatic), +10% to that gem per tier, kept through Ascension. The gem's coin shows the tier in its metal.
 - [Default · in game] Every gem from production counts as harvested, harvest bursts included; mastery tiers take effect on the next whole second so any split of time gives the same totals.
-- [Proposed] **Screen.** A short list per job with one row per tree kind or mine type: the tile (it grows with level), name, level, output per second, a bar to the next ×2 milestone and the buy button on the row. One ×1 / ×10 / ×100 / Max toggle at the top. A locked kind is a greyed row with its unlock price on the button. The production card heads each job and strikes the rows; the upgrade shelf sits below. Five mockups come before building (CLAUDE.md).
+- [Built] **Screen: side stage.** Rows on the left, one per tree kind or mine type, in a Logging and a Mining panel: the tile (it grows with level), name, level, output per second, a bar to the next ×2 milestone and the buy button on the row. A locked kind is a greyed row with its unlock price on the button (a locked mine names the dungeon to clear). One ×1 / ×10 / ×100 / Max toggle at the top right. A sticky stage on the right shows one job at a time (a Logging / Mining tab switch): the main card at about 2x inside its loadout fan (§11), its harvest gauge, the strike pattern in words and the support effects as a list. The main card lunges toward the row it strikes and "+n" pops on that row; a burst runs a wave down the rows. The upgrade shelf is a drawer over the bottom: closed it is one line (how many upgrades are ready to buy and how many are owned). Picked by the user from five mockups (option C).
+- [Default · in game] The shelf drawer starts open on a window at least 900 px tall and closed on a shorter one, then keeps the player's choice; the stage remembers its last job; "ready" counts the upgrades the player can afford now.
 
 ## 5. Cards and weapons
 
@@ -229,7 +230,9 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Built] **Stage first.** The Dungeons and Production pages are the focus of the game, so they are live stages, not menus; management goes below or in a side rail.
 - [Built] **Home** is a command centre: three live mini-stages (fight, logging, mining) with their rates, each opening its page, and the goal tracker on top.
 - [Built] **Dungeons** is a full-bleed arena. Floors, the damage readout and the upgrade shelf live in a drawer that slides up from the bottom; DPS, kills per minute and time-to-kill sit in the top-right corner.
-- [Differs] **Production** is a simple list per job where each tree kind and mine type is bought and upgraded on its own row, like a basic incremental (user, 2026-11-08; layout proposal in §4). Today it is two stage fields with one tile per unlocked kind and a separate upgrade rail.
+- [Built] **Production** is a side stage: one row per tree kind and mine type on the left, each bought and upgraded on its own row, a sticky stage with the main card on the right and the upgrade shelf in a drawer at the bottom (user, 2026-11-08; the rules are in §4).
+- [Built] **Loadout fan.** A loadout shows as a fan: the main card in front and up to three support cards behind it, each peeking out at the side. A click on a support (or on its line in the list beside it) pops it out in front as a full card with its effect written out; a click on it again, anywhere else or Escape puts it back. Cards keep whole device-pixel scales and nothing is rotated, so the art stays crisp (§12). Built for the Production stage (the user's sketch, 2026-11-08).
+- [To build] The same fan on the Dungeons fight screen, for the party beside the arena (the component is `ui/loadoutFan.ts`).
 - [Built] **Dungeon arena.** The boss is large and centred with an idle bob and its stacked HP bars. Every hit flashes and squashes it, big hits shake, and a finished HP bar shatters. The loadout faces the boss and lunges on its attacks, with its health bar visible. Boss attacks land on the cards with red numbers and a shake; a knockout is a visible moment with its countdown. The burst gauge sits on the main card; the signature attack gets a screen flash, a big number and a brief slow-down. On a kill the boss pops and its drops spill out as coins, rest a beat, then fly to the header; a rare drop gets a light beam, a slow-down and a toast.
 - [Built] **Production field.** Every strike shows "+n" off its tree or mine and the coins fly to the header; a harvest burst is a wave with one big total. The main card lunges by its pattern and its supports flash when they help. Reduced motion drops lunges, shakes and flashes.
 - [Built] **Numbers.** Header counters roll smoothly and pulse when coins land. Floating numbers use the number style, attack and tick cosmetics, never hardcoded looks; their size follows the hit against the current average, and crits and signature attacks look different. The starter style is sticker numerals: chunky digits with a white outline, a drop shadow and a tilt, bouncing in place.
@@ -347,7 +350,6 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user. Answer a 
 
 Waiting since 2026-11-08 (`[Proposed]`):
 
-- Production: the row layout, picked from five mockups at the review gate (§4, §11).
 - Weapons: the moves and damage types each card learns by level, and how they sit on the enhancement chart (§5).
 - Cards on screen: the compact collection card and real text, picked at the review gate; an optional re-bake at double detail (§11, §12).
 - Beta systems: replacing Bare Hands and Single Plot; the new autobuyer list (§15).
@@ -361,6 +363,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §2 dev tools and the Report an issue contents.
 - §4 what counts as harvested and when mastery tiers apply.
 - §5 the enhancement numbers (unlock at Silver ★1, five options, budgets).
+- §4 the shelf drawer's first-visit state, what "ready" counts and the stage remembering its job (Production screen, built).
 - §4 the balance after plots (base rates ×3) and the plot refund; a kind producing from level 0; the damage-line shelf upgrades going (built).
 - §5 (filled in 2026-11-08 to build the weapon decisions) everything is built: XP from fighting time, level caps by tier, base damage by rarity (Common 200), the damage-line refund, the star bar (with a Void row, 1 fill per copy and the retuned copies per star), star impact, stars carrying across tiers, tier-up costs (the Money prices and the Prismatic → Unique costs), the Unique tier (power ×5, enhancement budget 10), the interim weapon looks and production cards on the same model.
 - §6 (filled in 2026-11-08) the boss attack pattern and the "You fall in" readout, including how they are built: attacks on the play-time clock, no hits during a knockout, the readout's figure averaged over the cycle (built; how they look is the user's pick and is a `[Built]` rule in "Hits land in chunks").
@@ -377,6 +380,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 ## 17. Changelog
 
 - 2026-11-08 — Built the boss-hit visuals the user picked at the review gate (option C, "Screen edge pulse"): edge pulse before each slam, the pale chunk that falls off the health bar, red numbers from the game's reported attacks, and the "You fall in" pill (§6).
+- 2026-11-08 — Built the Production screen as the side stage the user picked at the review gate (rows on the left, a sticky stage with the main card, the shelf in a bottom drawer) and the loadout fan from the user's sketch, with its Dungeons use still to build (§4, §11).
 - 2026-11-08 — Confirmed the Commons-at-Gold details (Rare and up reach all five tiers, Common level cap 60, copies past Gold ★6 become shards); the element effect stays at Gold and Prismatic and is strongest at Unique (user).
 - 2026-11-08 — Common cards stop at Gold and are the starting blocks; Prismatic and Unique, with their glow, animations and final form, are for rarer cards (user).
 - 2026-11-08 — Tier looks: Bronze, Silver and Gold add parts and colour, Prismatic adds glow and small animations, Unique is the weapon's final form with its own animations, effects and colours (user).
