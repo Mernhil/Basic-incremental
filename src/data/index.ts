@@ -26,6 +26,7 @@ import type {
   Upgrade,
   UpgradesConfig,
   WearRules,
+  WeaponSkin,
   WeaponSkinSet,
 } from './schemas';
 import resourcesJson from './content/resources.json';
@@ -103,6 +104,8 @@ export interface Content {
   setById: ReadonlyMap<string, CosmeticSet>;
   /** Weapon kind -> its skins and base art. */
   weaponSkinsByWeapon: ReadonlyMap<string, WeaponSkinSet>;
+  /** Legacy skin id -> the weapon kind it is worn on and the skin (weaponSkins.json). */
+  legacySkinById: ReadonlyMap<string, { weapon: string; skin: WeaponSkin }>;
   /** The starter item of each slot (validated: exactly one per slot). */
   starterBySlot: Readonly<Record<CosmeticSlot, Cosmetic>>;
 }
@@ -191,6 +194,7 @@ export function validateContent(raw: RawContent): Content {
     }
   }
   checkWeaponSkins(weaponSkins, issues);
+  checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
     {
       resources,
@@ -252,6 +256,11 @@ export function validateContent(raw: RawContent): Content {
     rarityById: new Map(rarities.map((r) => [r.id, r])),
     setById: new Map(sets.map((x) => [x.id, x])),
     weaponSkinsByWeapon: new Map(weaponSkins.map((w) => [w.weapon, w])),
+    legacySkinById: new Map(
+      weaponSkins.flatMap((w) =>
+        w.skins.filter((k) => k.legacy).map((k) => [k.id, { weapon: w.weapon, skin: k }] as const),
+      ),
+    ),
     starterBySlot,
   };
 }
@@ -919,6 +928,7 @@ function checkReferences(
         `portals.json › [${i}] › tenPullGuarantee: no pool item is ${portal.tenPullGuarantee} or better`,
       );
     }
+    if (portal.kind === 'skins') return; // pools of skins are checked by checkLegacyGates
     const valid = portal.kind === 'cards' ? cardIds : cosmeticIds;
     portal.pool.forEach((entry, j) => {
       if (!valid.has(entry.itemId)) {
@@ -938,32 +948,66 @@ function checkReferences(
   });
 }
 
-/** Each weapon is listed once; skin ids and art ids are unique across the file. */
+/**
+ * Each weapon is listed once; skin ids are unique across the file and art ids across the file
+ * (with the base arts). A legacy skin has a rarity, any other skin has none; a weapon without
+ * base art (a generic kind) holds only legacy skins.
+ */
 function checkWeaponSkins(sets: WeaponSkinSet[], issues: string[]): void {
   const weapons = new Set<string>();
   const arts = new Set<string>();
+  const ids = new Set<string>();
   sets.forEach((set, i) => {
     if (weapons.has(set.weapon)) {
       issues.push(`weaponSkins.json › [${i}] › weapon: duplicate weapon "${set.weapon}"`);
     }
     weapons.add(set.weapon);
-    arts.add(set.baseArt);
-    const own = new Set<string>();
+    if (set.baseArt) arts.add(set.baseArt);
     set.skins.forEach((skin, j) => {
-      if (own.has(skin.id)) {
-        issues.push(
-          `weaponSkins.json › [${i}] › skins › [${j}] › id: duplicate skin id "${skin.id}"`,
-        );
-      }
-      own.add(skin.id);
-      if (arts.has(skin.art)) {
-        issues.push(
-          `weaponSkins.json › [${i}] › skins › [${j}] › art: duplicate art id "${skin.art}"`,
-        );
-      }
+      const where = `weaponSkins.json › [${i}] › skins › [${j}]`;
+      if (ids.has(skin.id)) issues.push(`${where} › id: duplicate skin id "${skin.id}"`);
+      ids.add(skin.id);
+      if (arts.has(skin.art)) issues.push(`${where} › art: duplicate art id "${skin.art}"`);
       arts.add(skin.art);
+      if (skin.legacy && !skin.rarity)
+        issues.push(`${where} › rarity: a legacy skin needs a rarity`);
+      if (!skin.legacy && skin.rarity) {
+        issues.push(`${where} › rarity: only a legacy skin has a rarity`);
+      }
+      if (!set.baseArt && !skin.legacy) {
+        issues.push(`${where} › legacy: a weapon without baseArt holds only legacy skins`);
+      }
     });
   });
+}
+
+/** Every legacy skin is in a skins portal's pool with its own rarity, and every such pool entry is a legacy skin. */
+function checkLegacyGates(sets: WeaponSkinSet[], portals: Portal[], issues: string[]): void {
+  const legacy = new Map(
+    sets.flatMap((w) => w.skins.filter((k) => k.legacy).map((k) => [k.id, k] as const)),
+  );
+  const pooled = new Set<string>();
+  portals.forEach((portal, i) => {
+    if (portal.kind !== 'skins') return;
+    portal.pool.forEach((entry, j) => {
+      const where = `portals.json › [${i}] › pool › [${j}]`;
+      const skin = legacy.get(entry.itemId);
+      if (!skin) {
+        issues.push(`${where} › itemId: "${entry.itemId}" is not a legacy skin`);
+        return;
+      }
+      if (pooled.has(entry.itemId))
+        issues.push(`${where} › itemId: "${entry.itemId}" is pooled twice`);
+      pooled.add(entry.itemId);
+      if (skin.rarity !== entry.rarity) {
+        issues.push(`${where} › rarity: "${entry.itemId}" is ${skin.rarity} in weaponSkins.json`);
+      }
+    });
+  });
+  for (const id of legacy.keys()) {
+    if (!pooled.has(id))
+      issues.push(`weaponSkins.json: legacy skin "${id}" is in no skins portal pool`);
+  }
 }
 
 /** The raw bundled JSON, before validation (tests use it to build broken variants). */

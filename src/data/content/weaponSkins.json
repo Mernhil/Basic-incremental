@@ -76,5 +76,34 @@
         "cost": 0
       }
     ]
+  },
+  {
+    "weapon": "staff",
+    "skins": [
+      {
+        "id": "legacy-staff-01",
+        "name": "Solar Sceptre",
+        "art": "skin-staff-01",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-staff-02",
+        "name": "Orbit Bloom",
+        "art": "skin-staff-02",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-staff-03",
+        "name": "Night Herald",
+        "art": "skin-staff-03",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      }
+    ]
   }
 ]
