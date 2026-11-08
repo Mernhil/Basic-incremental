@@ -3,8 +3,8 @@
 No PixelLab: the shapes and shading are PixelLab's, only the hue of the coloured materials moves.
 Each candidate gets a target hue (twelve hues, spread so neighbours differ); the sprite's dominant hue
 is moved there and every coloured pixel follows, so multi-colour weapons keep their colour relations.
-Ink, greys and white are untouched. The result goes through the same cleanup as the other drafts
-(pad to 100 x 120, game ink outline, rim, 1 px specks merged).
+Ink, greys and white are untouched. The result is only padded to 100 x 120 and given hard alpha: no halo removal, no re-outline, no rim,
+so no detail is lost (the rim and game ink can be added when a weapon is wired in).
 
 Usage: py design/pixel/concept-sheet-1-new/recolor.py
 Writes recolored/<name>.png and contact-recolored.png.
@@ -76,7 +76,11 @@ def main() -> None:
             name, deg = HUES[(k * 5) % 12]
             k += 1
             canvas = RS.pad_to(raw, (100, 120), centre) if raw.shape[:2] != (120, 100) else raw
-            a = RS.clean(recolour(canvas, deg), "unique-void", None, None)
+            # No cleanup pass here: the halo removal and rim of RS.clean dulled the bright parts (review
+            # 2026-11-08). The sprite keeps PixelLab's own outline and shading; only the alpha is made hard.
+            a = recolour(canvas, deg)
+            a[..., 3] = np.where(a[..., 3] >= 128, 255, 0)
+            a[a[..., 3] == 0] = 0
             stem = f"{prefix.replace('-v2a', '').replace('-v2b', '-b').replace('-v2', '')}-{i}-{name}"
             Image.fromarray(a, "RGBA").save(OUT / f"{stem}.png")
             items.append((stem, OUT / f"{stem}.png"))
