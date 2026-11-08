@@ -4,10 +4,13 @@ import '@fontsource/outfit/700.css';
 import '@fontsource/outfit/800.css';
 import { installLogCapture } from './settings/logBuffer';
 import { installMotionPref } from './settings/motion';
+import { installPixelScale } from './ui/pixelFit';
 
 // before anything else: recent log lines for Report an issue, and the reduced-motion override
 installLogCapture();
 installMotionPref();
+// Clean pixels (DESIGN.md §12): the screen scale decides every pixel-art size
+installPixelScale();
 
 const GALLERY_HASH = '#gallery';
 
