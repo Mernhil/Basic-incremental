@@ -11,7 +11,6 @@ One line per task in flight, so parallel sessions do not collide. Read this at t
 
 ## In flight
 
-| Branch                            | Worktree                                                          | Owner agent | Files / area                                               | Started    |
-| --------------------------------- | ----------------------------------------------------------------- | ----------- | ---------------------------------------------------------- | ---------- |
-| chore/session-coordination        | C:/bi-coord                                                       | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md         | 2026-11-08 |
-| claude/dungeon-loadout-fan-64cf09 | C:/Basic Incremental/.claude/worktrees/dungeon-loadout-fan-64cf09 | ui          | stage/arena.ts, arena.css, ui/loadoutFan.ts, DESIGN.md §11 | 2026-11-08 |
+| Branch                     | Worktree    | Owner agent | Files / area                                       | Started    |
+| -------------------------- | ----------- | ----------- | -------------------------------------------------- | ---------- |
+| chore/session-coordination | C:/bi-coord | mechanics   | CLAUDE.md, docs/WORK_SPLIT.md, docs/ACTIVE_WORK.md | 2026-11-08 |

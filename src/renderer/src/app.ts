@@ -282,9 +282,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     sound: playSound,
     onTierUps,
   });
+  // one card view model for the Cards page and the dungeon drawer's weapon panel
+  const cardsModel = createCardsModel(content, (id, owned) => cardItemArt(content, id, owned));
   pages['cards'] = createCardsPage(shell.page('cards'), {
     content,
-    model: createCardsModel(content, (id, owned) => cardItemArt(content, id, owned)),
+    model: cardsModel,
     state: () => loop.state,
     apply: applyAndSave,
     onTierUps,
@@ -323,6 +325,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   });
   pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
     content,
+    cards: cardsModel,
     state: () => loop.state,
     apply: applyAndSave,
     director,
