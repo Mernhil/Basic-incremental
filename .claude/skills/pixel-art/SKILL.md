@@ -3,6 +3,8 @@ name: pixel-art
 description: Pixel art, sprite animation and pixel effects for Basic Incremental, in the cel-shaded Brave Frontier style the game uses. Use this skill for EVERY graphics task, however small - drawing or redrawing any sprite (card items, weapons, frames, gems, coins, tiles, bosses, icons, unique evolutions), animating anything (idle loops, attacks, hits, frame shine, sparkles), element effects, palette or shading tweaks, and reviewing whether existing art follows the pixel rules. Use it even when the request only says "make it look better", "tweak the colour", "fix the sword" or "add an effect".
 ---
 
+> **First, read `docs/ASSET_RULES.md`** before generating or changing any weapon or tool art. It defines the tier ladder (T1-T6), uniques and skins, and what to reuse. It is the only rulebook for that structure.
+
 # Pixel art for Basic Incremental
 
 The game is switching from vector to pixel art (DESIGN.md §12). Your job is to make sprites and animations that look like they came from a polished mobile RPG of the Brave Frontier era: bold readable silhouettes, chunky cel shading, saturated metals, and effects with real weight and timing.
