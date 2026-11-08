@@ -35,6 +35,11 @@
         "weight": 10
       },
       {
+        "itemId": "reaper_test",
+        "rarity": "rare",
+        "weight": 1
+      },
+      {
         "itemId": "storm_duelist",
         "rarity": "epic",
         "weight": 4

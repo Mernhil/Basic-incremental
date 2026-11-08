@@ -177,6 +177,7 @@ export function createCardsModel(
           o.enhancements,
         ]),
         state.cards.loadouts,
+        state.weaponSkins,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
         all(state).map((i) => [Boolean(i.starUp?.met), Boolean(i.tierUp?.met)]),
