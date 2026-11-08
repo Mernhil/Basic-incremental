@@ -184,7 +184,7 @@ export function renderGallery(root: HTMLElement = document.body): void {
   for (const tier of RANK_TIERS) {
     add(
       `${cap(tier)}: star 1 to 6`,
-      [1, 2, 3, 4, 5, 6].map((stars) => ['shield_warden', { tier, stars }, 'Whetstone', 'gem']),
+      [1, 2, 3, 4, 5, 6].map((stars) => ['gem_cutter', { tier, stars }, 'Whetstone', 'gem']),
     );
   }
 
@@ -236,7 +236,7 @@ export function renderGallery(root: HTMLElement = document.body): void {
   const picks: Array<[string, string]> = [
     ['ember_squire', 'Fire'],
     ['storm_duelist', 'Storm'],
-    ['shield_warden', 'Light'],
+    ['moonwood_dryad', 'Light'],
     ['grove_keeper', 'Nature'],
     ['cave_digger', 'Earth'],
     ['gem_cutter', 'Crystal'],
@@ -331,7 +331,7 @@ function cardProps(
     label: 'Fighting',
     job: 'fighting',
     emblem,
-    item: itemArt(emblem === 'gem' ? 'shield' : 'sword', rarity),
+    item: itemArt(emblem === 'gem' ? 'staff' : 'sword', rarity),
     element: (emblem === 'gem' ? 'light' : 'fire') as CardElement,
     rank,
     rarity,

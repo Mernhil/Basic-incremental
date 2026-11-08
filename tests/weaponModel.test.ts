@@ -62,7 +62,7 @@ describe('weapon panel model', () => {
   it('max level, tier-up affordable: ready, with every price met', () => {
     const price = content.cardRules.tierUp.bronze.fighting;
     const extra = Object.fromEntries(price.map((p) => [p.resource, p.amount.toString()]));
-    const w = view('ember_squire', { tier: 'bronze', stars: 6, level: 20 }, '0', extra)!;
+    const w = view('ember_squire', { tier: 'bronze', level: 20, stars: 6 }, '0', extra)!;
     expect(w.atCap).toBe(true);
     expect(w.xp).toBe(1);
     expect(w.xpNow).toBe('');
@@ -95,10 +95,10 @@ describe('weapon panel model', () => {
   });
 
   it('a weapon without a unique version stops at Prismatic and says so', () => {
-    const w = view('shield_warden', { tier: 'prismatic', level: 80 })!;
+    const w = view('storm_duelist', { tier: 'prismatic', level: 80 })!;
     expect(w.tierUp).toBeNull();
     expect(w.endNote).toBe(
-      'Prismatic is the top tier for Bulwark until its unique weapon is drawn.',
+      'Prismatic is the top tier for Twin Storm Blades until its unique weapon is drawn.',
     );
   });
 

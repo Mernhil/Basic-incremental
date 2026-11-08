@@ -221,20 +221,21 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
   });
 
   it('applies a support effect only from a support slot of its job', () => {
-    let state = own(bareState(), 'shield_warden');
+    let state = own(bareState(), 'storm_duelist');
     state.cards.loadouts.fighting.main = 'ember_squire';
     const base = effectiveDamage(state, content);
-    state = ok(setLoadoutSlot(state, content, 'fighting', 0, 'shield_warden'));
-    expect(fighting(state).fill).toBe(2); // +1 burst fill per hit
-    expect(effectiveDamage(state, content).eq(base)).toBe(true);
-    state = ok(setLoadoutSlot(state, content, 'fighting', 'main', 'shield_warden')); // swap
+    state.account.level = 2; // cost cap 8: Squire 2 + Duelist 5 fit
+    state = ok(setLoadoutSlot(state, content, 'fighting', 0, 'storm_duelist'));
+    expect(fighting(state).interval).toBe(1); // a support leaves the main ability alone
+    expect(effectiveDamage(state, content).eq(base.mul(1.12))).toBe(true); // Duelist support +12%
+    state = ok(setLoadoutSlot(state, content, 'fighting', 'main', 'storm_duelist')); // swap
     expect(state.cards.loadouts.fighting).toEqual({
-      main: 'shield_warden',
+      main: 'storm_duelist',
       supports: ['ember_squire', null, null],
     });
-    // A Rare main deals 1.5x a Common's base damage, plus Warden main +10% and Squire support +5%.
-    expect(effectiveDamage(state, content).eq(base.mul(1.5).mul(1.15))).toBe(true);
-    expect(fighting(state).fill).toBe(1);
+    // An Epic main deals 2.25x a Common's base damage, plus the Squire support +5%.
+    expect(effectiveDamage(state, content).eq(base.mul(2.25).mul(1.05))).toBe(true);
+    expect(fighting(state).interval).toBe(0.5); // Duelist main: a hit every 0.5 s
   });
 
   it('scales bonuses with level, stars and tier, with a big step at ★6 and per tier', () => {
@@ -309,24 +310,23 @@ describe('loadouts (DESIGN.md §5)', () => {
   });
 
   it('checks job, ownership, duplicates, slots and the cost cap', () => {
-    const state = own(own(freshState(), 'shield_warden'), 'storm_duelist');
+    const state = own(freshState(), 'storm_duelist');
     const set = (slot: 'main' | number, id: string | null) =>
       setLoadoutSlot(state, content, 'fighting', slot, id);
     expect(set(0, 'nope')).toEqual({ ok: false, reason: 'unknown' });
     expect(set(0, 'dawnblade_regent')).toEqual({ ok: false, reason: 'not-owned' });
     expect(set(0, 'apprentice_feller')).toEqual({ ok: false, reason: 'wrong-job' });
-    expect(set(3, 'shield_warden')).toEqual({ ok: false, reason: 'invalid-slot' });
-    expect(set(-1, 'shield_warden')).toEqual({ ok: false, reason: 'invalid-slot' });
-    // Squire 2 + Warden 3 = 5 fits; + Duelist 5 = 10 does not.
-    const withWarden = ok(set(0, 'shield_warden'));
-    expect(setLoadoutSlot(withWarden, content, 'fighting', 1, 'storm_duelist')).toEqual({
-      ok: false,
-      reason: 'over-cost-cap',
-    });
+    expect(set(3, 'storm_duelist')).toEqual({ ok: false, reason: 'invalid-slot' });
+    expect(set(-1, 'storm_duelist')).toEqual({ ok: false, reason: 'invalid-slot' });
+    // Squire 2 + Duelist 5 = 7 does not fit the starting cap of 6; at account level 2 (cap 8) it does.
+    expect(set(0, 'storm_duelist')).toEqual({ ok: false, reason: 'over-cost-cap' });
+    const roomy = own(freshState(), 'storm_duelist');
+    roomy.account.level = 2;
+    ok(setLoadoutSlot(roomy, content, 'fighting', 0, 'storm_duelist'));
     expect(
       setLoadout(state, content, 'fighting', {
-        main: 'shield_warden',
-        supports: ['shield_warden', null, null],
+        main: 'storm_duelist',
+        supports: ['storm_duelist', null, null],
       }),
     ).toEqual({ ok: false, reason: 'duplicate' });
     expect(loadoutProblem(state, content, 'fighting', { main: null, supports: [null, null] })).toBe(
@@ -341,10 +341,11 @@ describe('loadouts (DESIGN.md §5)', () => {
   });
 
   it('moves a card already in the loadout and clears slots', () => {
-    let state = own(freshState(), 'shield_warden');
-    state = ok(setLoadoutSlot(state, content, 'fighting', 0, 'shield_warden'));
-    state = ok(setLoadoutSlot(state, content, 'fighting', 2, 'shield_warden'));
-    expect(state.cards.loadouts.fighting.supports).toEqual([null, null, 'shield_warden']);
+    let state = own(freshState(), 'storm_duelist');
+    state.account.level = 2; // room for Squire 2 + Duelist 5
+    state = ok(setLoadoutSlot(state, content, 'fighting', 0, 'storm_duelist'));
+    state = ok(setLoadoutSlot(state, content, 'fighting', 2, 'storm_duelist'));
+    expect(state.cards.loadouts.fighting.supports).toEqual([null, null, 'storm_duelist']);
     state = ok(setLoadoutSlot(state, content, 'fighting', 'main', null));
     expect(state.cards.loadouts.fighting.main).toBeNull();
     state = ok(setLoadout(state, content, 'fighting', emptyCardLoadout()));
@@ -535,7 +536,7 @@ describe('views for the Cards page', () => {
     expect(regent).toMatchObject({ owned: null, rank: null, slot: null, cost: 8, starUp: null });
     expect(regent.mainModifiers.map((m) => m.stat)).toEqual(['burst.interval', 'burst.power']);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(12);
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(11);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',
@@ -547,18 +548,18 @@ describe('views for the Cards page', () => {
 
 describe('saving cards (save format v5)', () => {
   it('round-trips the collection, loadouts and shards', () => {
-    const state = own(freshState(), 'shield_warden', {
+    const state = own(freshState(), 'storm_duelist', {
       tier: 'gold',
       stars: 3,
       level: 55,
       xp: new Decimal('123.5'),
       starFill: 4,
     });
-    state.cards.loadouts.fighting.supports = [null, 'shield_warden', null];
+    state.cards.loadouts.fighting.supports = [null, 'storm_duelist', null];
     state.cards.shards = 17;
     const loaded = readSave(createSaveText(state, 1), content).state;
     expect(serializeState(loaded)).toEqual(serializeState(state));
-    expect(loaded.cards.owned['shield_warden']!.xp.eq('123.5')).toBe(true);
+    expect(loaded.cards.owned['storm_duelist']!.xp.eq('123.5')).toBe(true);
   });
 
   it('drops unknown cards, clamps levels and empties invalid loadout slots', () => {
