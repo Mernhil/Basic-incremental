@@ -43,7 +43,7 @@ export interface ShowEvents {
   knockout: { seconds: number };
   /** A boss died: its resource drops, and the names of rare drops (items and cards). */
   kill: { loot: Loot[]; rare: string[] };
-  /** One production tick: what each plot / slot gave. */
+  /** One production tick: what each unlocked tree or mine gave. */
   harvest: {
     job: ProductionJob;
     plots: Array<{ index: number; resource: string; amount: Decimal }>;

@@ -120,9 +120,9 @@ export interface StrikeLook {
   ms: number;
   /** The stage shakes on this strike (big slow chops). */
   shake: boolean;
-  /** Number size relative to the plot's usual popup. */
+  /** Number size relative to the tile's usual popup. */
   numberScale: number;
-  /** Delay in ms between the plots of one report, so strikes read one after another. */
+  /** Delay in ms between the tiles of one report, so strikes read one after another. */
   staggerMs: number;
 }
 
@@ -174,7 +174,7 @@ export function strikeNumberKind(m: Pick<StrikeMoment, 'crit'>): 'crit' | 'gain'
   return m.crit ? 'crit' : 'gain';
 }
 
-/** Where to aim: a vector from the card centre to the plot centre, scaled by the look's reach. */
+/** Where to aim: a vector from the card centre to the tile centre, scaled by the look's reach. */
 export function lungeVector(
   from: { x: number; y: number },
   to: { x: number; y: number },

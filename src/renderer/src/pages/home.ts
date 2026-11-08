@@ -69,7 +69,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
 
   let fightKey = '';
   const tileKeys: Record<ProductionJob, string> = { logging: '', mining: '' };
-  /** Plot index -> tile element, per job (only the first MAX_TILES plots are drawn). */
+  /** Kind index -> tile element, per job (only the first MAX_TILES kinds are drawn). */
   const tileAt: Record<ProductionJob, Map<number, HTMLElement>> = {
     logging: new Map(),
     mining: new Map(),
