@@ -48,6 +48,8 @@ export const MIGRATIONS: MigrationTable = {
   18: v18ToV19,
   /** v19 -> v20: weapon skins (weaponSkins.json). Nothing is equipped: every weapon is unskinned. */
   19: (state) => ({ ...state, weaponSkins: {} }),
+  /** v20 -> v21: owned legacy weapon skins (Legacy Gate). None owned. */
+  20: (state) => ({ ...state, legacySkins: [] }),
 };
 
 /** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */

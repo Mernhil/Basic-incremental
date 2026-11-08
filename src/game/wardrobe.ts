@@ -6,6 +6,8 @@ import type {
   CosmeticSlot,
   LadderStep,
   Rank,
+  RankTier,
+  Rarity,
 } from '../data';
 import { CARD_SLOTS } from '../data';
 import { collectModifiers, type Modifier } from './modifiers';
@@ -369,14 +371,21 @@ export function setBonuses(state: GameState, content: Content): SetBonusInfo[] {
 
 // ---- weapon skins ------------------------------------------------------------------------------
 
-/** Whether a skin of that weapon exists and can be worn (cost 0 = free; nothing sells priced skins yet). */
+/** Whether a legacy skin is owned (pulled from the Legacy Gate). */
+export function ownsLegacySkin(state: GameState, skinId: string): boolean {
+  return state.legacySkins.includes(skinId);
+}
+
+/** Whether a skin of that weapon exists and can be worn: free skins (cost 0) always, legacy skins once owned. */
 export function isWeaponSkinAvailable(
+  state: GameState,
   content: Content,
   weaponKind: string,
   skinId: string,
 ): boolean {
   const skin = content.weaponSkinsByWeapon.get(weaponKind)?.skins.find((s) => s.id === skinId);
-  return skin !== undefined && skin.cost === 0;
+  if (!skin) return false;
+  return skin.legacy ? ownsLegacySkin(state, skin.id) : skin.cost === 0;
 }
 
 /** The skin id chosen for a weapon kind (for example `soul_reaper`), or null = the unskinned weapon. */
@@ -384,7 +393,10 @@ export function weaponSkinFor(state: GameState, weaponKind: string): string | nu
   return state.weaponSkins[weaponKind] ?? null;
 }
 
-/** The art id to draw for a weapon kind: its chosen skin's art, else the weapon's base art; null if it has no skins. */
+/**
+ * The art id to draw for a weapon kind: its chosen skin's art, else the weapon's base art. Null if
+ * it has no skins, or it is a generic kind (no single base art) with no skin worn.
+ */
 export function weaponSkinArt(
   state: GameState,
   content: Content,
@@ -393,7 +405,25 @@ export function weaponSkinArt(
   const set = content.weaponSkinsByWeapon.get(weaponKind);
   if (!set) return null;
   const chosen = weaponSkinFor(state, weaponKind);
-  return set.skins.find((s) => s.id === chosen)?.art ?? set.baseArt;
+  return set.skins.find((s) => s.id === chosen)?.art ?? set.baseArt ?? null;
+}
+
+/**
+ * The art a card's generic weapon (`itemKind`, e.g. 'staff') is drawn with at `tier` when a legacy
+ * skin is worn: it covers every rarity and every tier below Unique. Null when nothing legacy is
+ * worn for that kind, or at the Unique tier (the Unique keeps its own art and skins).
+ */
+export function legacyWeaponArt(
+  state: GameState,
+  content: Content,
+  itemKind: string,
+  tier: RankTier,
+): string | null {
+  if (tier === 'unique') return null;
+  const chosen = weaponSkinFor(state, itemKind);
+  const entry = chosen ? content.legacySkinById.get(chosen) : undefined;
+  if (!entry || entry.weapon !== itemKind || !ownsLegacySkin(state, entry.skin.id)) return null;
+  return entry.skin.art;
 }
 
 /** One skin in the picker. */
@@ -403,6 +433,12 @@ export interface WeaponSkinChoice {
   /** Art id to draw this skin with. */
   art: string;
   cost: number;
+  /** A legacy skin (shown in the "Legacy" group). */
+  legacy: boolean;
+  /** A legacy skin's rarity; null for other skins. */
+  rarity: Rarity | null;
+  /** Owned: a legacy skin pulled from the Legacy Gate, or any free skin. Locked when false. */
+  owned: boolean;
   /** Can be equipped now. */
   available: boolean;
   /** The one currently worn. */
@@ -416,14 +452,20 @@ export function weaponSkinChoices(
   weaponKind: string,
 ): WeaponSkinChoice[] {
   const chosen = weaponSkinFor(state, weaponKind);
-  return (content.weaponSkinsByWeapon.get(weaponKind)?.skins ?? []).map((s) => ({
-    id: s.id,
-    name: s.name,
-    art: s.art,
-    cost: s.cost,
-    available: isWeaponSkinAvailable(content, weaponKind, s.id),
-    equipped: s.id === chosen,
-  }));
+  return (content.weaponSkinsByWeapon.get(weaponKind)?.skins ?? []).map((s) => {
+    const available = isWeaponSkinAvailable(state, content, weaponKind, s.id);
+    return {
+      id: s.id,
+      name: s.name,
+      art: s.art,
+      cost: s.cost,
+      legacy: s.legacy === true,
+      rarity: s.rarity ?? null,
+      owned: s.legacy ? ownsLegacySkin(state, s.id) : s.cost === 0,
+      available,
+      equipped: s.id === chosen,
+    };
+  });
 }
 
 export type EquipWeaponSkinResult =
@@ -445,7 +487,7 @@ export function equipWeaponSkin(
     return { ok: true, state: next };
   }
   if (!set.skins.some((s) => s.id === skinId)) return { ok: false, reason: 'unknown-skin' };
-  if (!isWeaponSkinAvailable(content, weaponKind, skinId)) {
+  if (!isWeaponSkinAvailable(state, content, weaponKind, skinId)) {
     return { ok: false, reason: 'unavailable' };
   }
   next.weaponSkins[weaponKind] = skinId;

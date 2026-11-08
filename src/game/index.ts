@@ -158,8 +158,12 @@ export {
   weaponSkinChoices,
   /** Wears a skin on a weapon kind, or null for the unskinned weapon; does not touch cosmetic slots. */
   equipWeaponSkin,
-  /** Whether a skin exists for that weapon and can be worn now. */
+  /** Whether a skin exists for that weapon and can be worn now (legacy skins need to be owned). */
   isWeaponSkinAvailable,
+  /** Whether a legacy skin was pulled from the Legacy Gate. */
+  ownsLegacySkin,
+  /** The art a card's generic weapon kind draws with at a tier when a legacy skin is worn (null at Unique or when none). */
+  legacyWeaponArt,
   type WeaponSkinChoice,
   type EquipWeaponSkinResult,
   type WardrobeItem,
