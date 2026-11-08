@@ -1,11 +1,13 @@
 import type { Content } from '../../../data';
 import {
+  cardInfo,
   productionStageView,
   type GameState,
   type ProductionJob,
   type ProductionStageView,
   type StageCard,
 } from '../../../game';
+import { cardFaceOf, secondsText } from '../pages/cardFaceModel';
 import { cardItemArt } from '../pages/loadoutCards';
 import { gaugePercent, stageKey, type StrikeLook } from '../pages/productionStageModel';
 import { COPY } from '../copy';
@@ -140,7 +142,11 @@ export function createHarvestParty(
 
   const props = (c: StageCard, role: 'main' | 'support', v: ProductionStageView): CardProps => {
     const owned = state().cards.owned[c.cardId];
+    const info = cardInfo(state(), content, c.cardId);
+    const face = info ? cardFaceOf(content, info) : undefined;
+    // the leading card shows the live strike rhythm (upgrades and supports included)
     const every = v.pattern.intervalSeconds / v.pattern.strikes;
+    if (face && role === 'main') face.speed = COPY.card.hitsEvery(secondsText(every));
     return {
       name: c.name,
       label: role === 'main' ? COPY.table.main : COPY.table.support,
@@ -149,23 +155,8 @@ export function createHarvestParty(
       ...(owned ? { item: cardItemArt(content, c.cardId, owned, state()) } : {}),
       element: c.element,
       rank: c.rank,
-      stats:
-        role === 'main'
-          ? [
-              { label: 'Level', value: String(c.level) },
-              {
-                // the stage card is drawn large: a short label keeps the plate on one line
-                label: side ? COPY.production.every : COPY.production.strikesEvery,
-                value: `${Number(every.toFixed(2))}s`,
-              },
-            ]
-          : [
-              { label: 'Level', value: String(c.level) },
-              // in the fan the effect is read in the pop-out and in the list, not on the plate
-              side
-                ? { label: COPY.production.supportRole, value: COPY.table.support }
-                : { label: 'Bonus', value: c.abilityText },
-            ],
+      ...(info ? { rarity: info.card.rarity } : {}),
+      ...(face ? { face } : {}),
       theme: c.look,
     };
   };
