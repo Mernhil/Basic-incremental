@@ -194,7 +194,13 @@ export function createCardsPage(
       tab === 'collection' ? collection(state, entries) : loadouts(state, entries),
     );
     status.textContent = message;
-    if (focusKey) panel.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+    if (focusKey) {
+      // a taken star leaves no Add star button: focus goes to the star line
+      const target =
+        panel.querySelector<HTMLElement>(`[data-key="${focusKey}"]`) ??
+        (focusKey.startsWith('wp-') ? panel.querySelector<HTMLElement>('.wp-stars') : null);
+      target?.focus();
+    }
   }
 
   // ---- collection ----
