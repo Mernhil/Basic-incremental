@@ -4,6 +4,7 @@ import {
   assignPlot,
   buyExpansions,
   buyMineLevels,
+  buyTreeLevels,
   canAfford,
   collectModifiers,
   computeStat,
@@ -37,7 +38,8 @@ import { createThrottle, popText } from '../stage/math';
 import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
-import { expansionView, mineLevelViews, type BuyLineView } from './buyModel';
+import { createShelf, type Shelf } from '../ui/shelf';
+import { expansionView, mineLevelViews, treeLevelViews, type BuyLineView } from './buyModel';
 import './production.css';
 
 /**
@@ -97,6 +99,13 @@ export function createProductionPage(
   const layout = h('div', 'pp-layout');
   const fields = h('div', 'pp-fields');
   const rail = h('aside', 'pp-rail');
+  const shelf: Shelf = createShelf({
+    content,
+    state: ctx.state,
+    apply: ctx.apply,
+    scope: 'production',
+    sound: ctx.sound,
+  });
   layout.append(fields, rail);
   page.append(layout);
 
@@ -122,7 +131,11 @@ export function createProductionPage(
     priced = [];
     lines.clear();
     fields.replaceChildren(...PRODUCTION_JOBS.map((job) => field(job, state, mods)));
-    rail.replaceChildren(railHead(), ...PRODUCTION_JOBS.map((job) => railJob(job, state, mods)));
+    rail.replaceChildren(
+      railHead(),
+      ...PRODUCTION_JOBS.map((job) => railJob(job, state, mods)),
+      shelf.el,
+    );
     if (focusKey) page.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
     refresh();
   }
@@ -323,6 +336,12 @@ export function createProductionPage(
     section.append(h('h3', 'pp-rail__sub', t.title));
     const list = h('ul', 'pp-lines');
     list.append(buyLine(`${job}-expansion`, () => buyExpansion(job), false));
+    if (job === 'logging') {
+      for (const tree of content.trees) {
+        if (!isProducerUnlocked(state, content, 'logging', tree.id)) continue;
+        list.append(buyLine(`tree-${tree.id}`, () => buyTreeLevel(tree.id), true));
+      }
+    }
     if (job === 'mining') {
       for (const mine of content.mines) {
         if (!isProducerUnlocked(state, content, 'mining', mine.id)) continue;
@@ -335,7 +354,7 @@ export function createProductionPage(
     kinds.setAttribute('aria-label', t.kindsLabel);
     for (const p of producersOf(content, job)) {
       const unlocked = isProducerUnlocked(state, content, job, p.id);
-      if (unlocked && job === 'mining') continue; // shown as a level line above
+      if (unlocked) continue; // unlocked kinds are shown as a level line above
       kinds.append(kindRow(job, p, unlocked, state, mods));
     }
     if (kinds.childElementCount > 0) section.append(kinds);
@@ -406,7 +425,8 @@ export function createProductionPage(
     act(next, key);
     const line = lines.get(key);
     line?.btn.celebrate();
-    if (tierUps.some((u) => u.kind === 'mine_milestone')) replay(line?.li, 'is-milestone', 1100);
+    if (tierUps.some((u) => u.kind === 'mine_milestone' || u.kind === 'tree_milestone'))
+      replay(line?.li, 'is-milestone', 1100);
     if (tierUps.length > 0) ctx.onTierUps?.(tierUps);
     else ctx.sound?.('buy');
   }
@@ -421,6 +441,11 @@ export function createProductionPage(
     if (result.ok) bought('level-' + mineId, result.state, result.tierUps);
   }
 
+  function buyTreeLevel(treeId: string): void {
+    const result = buyTreeLevels(ctx.state(), content, treeId, buyCount());
+    if (result.ok) bought('tree-' + treeId, result.state, result.tierUps);
+  }
+
   function refresh(): void {
     const s = ctx.state();
     const mods = collectModifiers(s, content);
@@ -432,6 +457,9 @@ export function createProductionPage(
             string,
             BuyLineView | null,
           ],
+      ),
+      ...treeLevelViews(s, content, count, mods).map(
+        (v) => [`tree-${v.id}`, v] as [string, BuyLineView],
       ),
       ...mineLevelViews(s, content, count, mods).map(
         (v) => [`level-${v.id}`, v] as [string, BuyLineView],
@@ -457,6 +485,7 @@ export function createProductionPage(
       if (btn.disabled === ok) btn.disabled = !ok;
     }
     for (const note of notes) note();
+    shelf.update();
   }
 
   // ---- show events ----

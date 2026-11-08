@@ -81,7 +81,7 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   const resets = h('div', 'as-resets');
   const resetsHead = h('h3', 'as-col__head', t.resets);
   const resetList = h('ul', 'as-resets__list');
-  resets.append(resetsHead, resetList);
+  resets.append(resetsHead, resetList, h('p', 'as-hint as-resets__note', t.upgradesNote));
 
   // the gate and the kept tokens (centre)
   const stage = h('div', 'as-stage');

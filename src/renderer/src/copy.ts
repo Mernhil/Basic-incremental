@@ -281,6 +281,9 @@ export const COPY = {
     perKillTip:
       'Average time to defeat the boss from full HP at your damage, signature attacks included.',
     opens: (list: string) => `First clear opens ${list}`,
+    perKillDrop: (res: string) => `${res} per kill`,
+    wage: (res: string) => `${res} while fighting`,
+    unlocksWith: (mine: string) => `Unlocks with ${mine}`,
     opened: (list: string) => `Cleared: opened ${list}`,
     and: (items: string[]) =>
       items.length <= 1
@@ -338,6 +341,8 @@ export const COPY = {
       resources: ['Gems and materials', 'Every resource except Starlight'],
       tile_stages: ['Tile growth', 'Trees and mines back to the first stage'],
     },
+    upgradesNote:
+      'Tree levels and per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
     kept: 'Kept forever',
     keptParts: {
       damage_lines: 'Damage lines',
@@ -373,7 +378,7 @@ export const COPY = {
     ascendLocked: (min: number) => `Ascend at ${min} Starlight`,
     confirmTitle: 'Walk through the gate?',
     confirmBody: (gain: string) =>
-      `Plots, slots, mine levels, gems and tile growth start over. Everything around the gate comes with you, plus ${gain} Starlight.`,
+      `Plots, slots, tree and mine levels, per-run upgrades, gems and tile growth start over. Everything around the gate, permanent upgrades included, comes with you, plus ${gain} Starlight.`,
     confirm: 'Ascend now',
     cancel: 'Not yet',
     doneTitle: (n: number) => `Ascension ${n} complete`,
@@ -661,6 +666,7 @@ export const COPY = {
     rate: (res: string, from: string, to: string) => `${res} ${from}/s → ${to}/s`,
     rateTail: (res: string, from: string, to: string) => `, ${res} ${from}/s → ${to}/s`,
     perSlot: (from: string, to: string) => `Per slot ${from}/s → ${to}/s`,
+    perPlot: (from: string, to: string) => `Per plot ${from}/s → ${to}/s`,
     milestone: (level: number, mult: string) => `Lv ${level}: ×${mult}`,
     milestoneTip: (n: number) =>
       n === 1 ? '1 level to the next milestone' : `${n} levels to the next milestone`,
@@ -668,6 +674,19 @@ export const COPY = {
     reachedDetail: (what: string, mult: string) => `${what} ×${mult}`,
     damage: 'Damage',
     output: 'Output',
+  },
+  shelf: {
+    title: 'Upgrade shelf',
+    empty: 'Nothing new yet. Level up trees and mines to unlock more.',
+    counts: (available: number, owned: number) => `${available} to buy, ${owned} owned`,
+    ownedCount: (n: number) => `Owned (${n})`,
+    owned: 'Owned',
+    permanent: 'Permanent',
+    permanentTip: 'Kept when you ascend.',
+    unlocked: (what: string) => `Unlocked at ${what}`,
+    damage: (from: string, to: string) => `DPS ${from} → ${to}`,
+    rate: (res: string, from: string, to: string) => `${res} ${from}/s → ${to}/s each`,
+    fightingHint: 'Damage and drop upgrades',
   },
   hp: {
     bars: (n: number) => `×${n}`,
