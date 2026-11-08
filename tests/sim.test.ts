@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, cosmeticMaxLevel, type GameState } from '../src/game';
+import { Decimal, cloneState, cosmeticMaxLevel, type GameState } from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -108,6 +108,29 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
+  it('keeps buying levels while a tier-up still waits for gems, and saves its Money once the gems are close', () => {
+    const base = freshState();
+    const squire = base.cards.owned['ember_squire']!;
+    squire.level = 20; // at the Bronze cap
+    base.clearedDungeons = ['mossy_cellar']; // Iron Deeps opens
+    base.production.unlockedTrees = ['ironbark', 'moonwillow'];
+    base.resources['moss_core'] = new Decimal(10);
+    base.resources['money'] = new Decimal(1e5); // 150,000 needed, so affordable levels are on offer
+    // The gems are far off: Money goes into levels.
+    const far = greedyBuy(base, content);
+    expect(far.state.resources['money']!.toNumber()).toBeLessThan(1e5);
+    // The gems are in hand: Money is the only thing missing, so none of it is spent on levels.
+    const ready = cloneState(base);
+    for (const price of content.cardRules.tierUp.bronze.fighting) {
+      if (price.resource !== 'money' && price.resource !== 'moss_core') {
+        ready.resources[price.resource] = price.amount;
+      }
+    }
+    ready.resources['money'] = new Decimal(1e5);
+    const near = greedyBuy(ready, content);
+    expect(near.state.resources['money']!.toNumber()).toBe(1e5);
+  });
+
   it('weighs a mine or tree level by the share of the production', () => {
     const state = rich(freshState(), 'money', 1e9);
     const candidates = buyerCandidates(state, content);
@@ -128,6 +151,21 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['moss_core'] = new Decimal(3); // ★5 to ★6 needs 10; ★1 to ★2 needs 1
     const { bought } = greedyBuy(state, content);
     expect(bought).not.toContain('star:apprentice_feller');
+  });
+
+  it('finishes the fighting lead first: a more advanced production card does not starve its tier-up of gems', () => {
+    const state = freshState();
+    const squire = state.cards.owned['ember_squire']!;
+    squire.tier = 'silver';
+    squire.level = 40; // at the Silver cap: Gold costs Money, Cinder Cores and gems
+    const digger = state.cards.owned['cave_digger']!;
+    digger.tier = 'gold';
+    digger.level = 60; // further along, and its Prismatic step waits for Frost Cores
+    state.resources['money'] = new Decimal(5e6);
+    state.resources['cinder_core'] = new Decimal(10);
+    state.resources['moonwillow_gem'] = new Decimal(100000);
+    state.resources['grotto_gem'] = new Decimal(100000);
+    expect(greedyBuy(state, content).bought).toContain('tier:ember_squire');
   });
 
   it('saves the Frost Cores for the lead card still levelling toward its tier-up', () => {
@@ -336,5 +374,17 @@ describe('balance sim: run', () => {
     const table = formatTable(result);
     expect(table.split('\n').filter((l) => l.startsWith('| ')).length).toBe(MILESTONES.length + 1);
     expect(table).toContain('First dungeon cleared');
+  });
+
+  it('calls the probe every probeSeconds with the state and the sim time', () => {
+    const seen: number[] = [];
+    runSim(content, {
+      hours: 0.02,
+      seed: 1,
+      stepSeconds: 10,
+      probeSeconds: 20,
+      probe: (_state, t) => seen.push(t),
+    });
+    expect(seen).toEqual([20, 40, 60]);
   });
 });

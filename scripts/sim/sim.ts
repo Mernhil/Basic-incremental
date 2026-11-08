@@ -260,6 +260,11 @@ export interface Candidate {
   cardRank?: number;
   /** A tier-up still short of its level: never bought, but its resources are kept for it. */
   hold?: boolean;
+  /**
+   * A tier-up whose other resources (Cores, gems) are still further off than its Money: the
+   * player keeps spending Money on levels meanwhile and saves it only once Money is the laggard.
+   */
+  deferMoney?: boolean;
   buy: (state: GameState, content: Content, modifiers: Modifier[], rng: Rng) => GameState | null;
 }
 
@@ -278,6 +283,30 @@ function etaOf(
     worst = Math.max(worst, missing.div(income).toNumber());
   }
   return Number.isFinite(worst) ? worst : null;
+}
+
+/**
+ * Whether a tier-up's Money should not be saved yet: some other resource is still missing and
+ * is not due before the Money would be (or nothing earns either). Money is the laggard only
+ * when the Cores and gems come first.
+ */
+function defersMoney(
+  state: GameState,
+  content: Content,
+  prices: readonly Price[],
+  modifiers: readonly Modifier[],
+): boolean {
+  const money = prices.filter((p) => p.resource === 'money');
+  if (money.length === 0) return false;
+  const others = etaOf(
+    state,
+    content,
+    prices.filter((p) => p.resource !== 'money'),
+    modifiers,
+  );
+  if (others === 0) return false;
+  const own = etaOf(state, content, money, modifiers);
+  return others === null || own === null || others > own;
 }
 
 const okState = (r: { ok: boolean; state?: GameState }): GameState | null =>
@@ -401,16 +430,20 @@ export function buyerCandidates(
       const short = check.requirements.filter((r) => r.kind !== 'resource' && !r.met);
       const hold = kind === 'tier' && short.length > 0 && short.every((r) => r.kind === 'level');
       if (short.length > 0 && !hold) continue;
+      const prices = check.requirements
+        .filter((r) => r.kind === 'resource' && r.resource && !(hold && r.resource === 'money'))
+        .map((r) => ({ resource: r.resource!, amount: r.need }));
       out.push({
         id: `${kind}:${card.id}`,
         kind: 'card',
-        cardRank: cardProgress(content, state.cards.owned[card.id]!),
+        cardRank:
+          cardProgress(content, state.cards.owned[card.id]!) +
+          (state.cards.loadouts.fighting.main === card.id ? FIGHTING_LEAD_BONUS : 0),
         hold,
+        deferMoney: kind === 'tier' && defersMoney(state, content, prices, modifiers),
         // A held tier-up (level still short) keeps its Cores and gems but not its Money: the
         // player keeps buying levels with it until the card is at its cap.
-        prices: check.requirements
-          .filter((r) => r.kind === 'resource' && r.resource && !(hold && r.resource === 'money'))
-          .map((r) => ({ resource: r.resource!, amount: r.need })),
+        prices,
         buy: (s, c, m) =>
           okState(kind === 'star' ? starUp(s, c, card.id) : tierUp(s, c, card.id, m)),
       });
@@ -478,6 +511,12 @@ export function buyerCandidates(
   return out.map((c) => ({ ...c, eta: etaOf(state, content, c.prices, modifiers) }));
 }
 
+/**
+ * The fighting lead's upgrades go first whatever other cards have reached: its damage is what
+ * clears dungeons, earns Money and the Cores, so the player finishes it before the rest.
+ */
+const FIGHTING_LEAD_BONUS = 1e9;
+
 /** How far a card is along: tier, then stars, then level. */
 function cardProgress(content: Content, owned: OwnedCard): number {
   return (RANK_TIERS.indexOf(owned.tier) * 10 + owned.stars) * 1000 + owned.level;
@@ -493,6 +532,11 @@ function cosmeticProgress(state: GameState, content: Content, id: string): numbe
 const have = (state: GameState, resource: string): Decimal =>
   state.resources[resource] ?? new Decimal(0);
 
+/** The prices a waiting purchase keeps back (its Money too, unless that is deferred). */
+function keptPrices(c: Candidate): Price[] {
+  return c.deferMoney ? c.prices.filter((p) => p.resource !== 'money') : c.prices;
+}
+
 /**
  * Resources kept for what the buyer waits for: the cheapest waiting card upgrade per resource
  * set and the next tree kind. Economy purchases only spend what is left over.
@@ -505,8 +549,9 @@ function reservations(state: GameState, candidates: readonly Candidate[]): Map<s
   const claimed = new Set<string>();
   for (const c of waiting) {
     // One waiting purchase per resource: the soonest.
-    if (c.prices.some((p) => claimed.has(p.resource))) continue;
-    for (const p of c.prices) {
+    const kept = keptPrices(c);
+    if (kept.some((p) => claimed.has(p.resource))) continue;
+    for (const p of kept) {
       claimed.add(p.resource);
       reserved.set(p.resource, Decimal.min(p.amount, have(state, p.resource)));
     }
@@ -542,7 +587,7 @@ function focused(
   let holding = false;
   for (const c of cards) {
     // Weaker cards only get what the cards before them do not wait for.
-    const blocked = c.prices.some((p) => {
+    const blocked = keptPrices(c).some((p) => {
       const kept = claimed.get(p.resource);
       return kept !== undefined && have(state, p.resource).sub(p.amount).lt(kept);
     });
@@ -555,7 +600,7 @@ function focused(
       if (holding) continue; // only the lead card's tier-up is held
       holding = true;
     }
-    for (const p of c.prices)
+    for (const p of keptPrices(c))
       claimed.set(p.resource, (claimed.get(p.resource) ?? new Decimal(0)).add(p.amount));
   }
   return now;
@@ -770,7 +815,7 @@ export const HOLD_MAX_RUN_SECONDS = 12 * 3600;
 
 /**
  * Whether a tier-up is close: some card is at its level cap and ★6 and only resources are short,
- * and the slow ones (the Cores and Frost Sigils an ascension resets) are at least 40% in hand, or
+ * and the slow ones (the Money, Cores and Frost Sigils an ascension resets) are at least 40% in hand, or
  * all in hand with only gems to wait for (they come back within minutes). A player finishes that
  * step before ascending instead of throwing the Cores away.
  */
@@ -780,9 +825,11 @@ export function holdAscension(state: GameState, content: Content): boolean {
     if (!check || !check.available || check.met) continue;
     const missing = check.requirements.filter((r) => !r.met);
     if (missing.some((r) => r.kind !== 'resource')) continue;
-    const slow = missing.filter(
-      (r) => content.resourceById.get(r.resource ?? '')?.kind === 'material',
-    );
+    // Money resets on Ascension like the Cores do, so it counts as slow too.
+    const slow = missing.filter((r) => {
+      const kind = content.resourceById.get(r.resource ?? '')?.kind;
+      return kind === 'material' || kind === 'currency';
+    });
     // Only the Prismatic step is worth waiting for gems on: the lower steps' Cores are cheap.
     if (slow.length === 0) {
       if (state.cards.owned[id]?.tier === 'gold') return true;
@@ -883,6 +930,9 @@ export interface SimOptions {
   seed?: number;
   /** Seconds of play per step (the buyer acts between steps). */
   stepSeconds?: number;
+  /** Called every `probeSeconds` of sim time with the state (for timelines and tuning). */
+  probe?: (state: GameState, t: number) => void;
+  probeSeconds?: number;
   /** Open portals that wait for their screen (default true: the sim plays the whole beta). */
   openAllPortals?: boolean;
 }
@@ -978,6 +1028,9 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (t % DPS_SAMPLE_SECONDS < dt) {
       const first = content.dungeons[0]!.id;
       dpsSamples.push([t - (t % DPS_SAMPLE_SECONDS), num(averageDps(state, content, first))]);
+    }
+    if (options.probe && options.probeSeconds && t % options.probeSeconds < dt) {
+      options.probe(state, t - (t % options.probeSeconds));
     }
     for (const m of MILESTONES) {
       if (hits[m.id] === null && m.reached(state, content, log)) hits[m.id] = t;

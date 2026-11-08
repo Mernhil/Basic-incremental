@@ -38,6 +38,18 @@ describe('balance sim: waiting for a Prismatic step before an ascension', () => 
     expect(holdAscension(state, content)).toBe(true);
   });
 
+  it('treats Money like a slow material: it resets on Ascension, so it must be mostly in hand', () => {
+    const farOff = goldCard(coreNeed + 10);
+    farOff.resources['money'] = new Decimal(0);
+    expect(holdAscension(farOff, content)).toBe(false);
+    const goldMoney = content.cardRules.tierUp.gold.mining
+      .find((c) => c.resource === 'money')!
+      .amount.toNumber();
+    const close = goldCard(coreNeed + 10);
+    close.resources['money'] = new Decimal(goldMoney * 0.5);
+    expect(holdAscension(close, content)).toBe(true);
+  });
+
   it('does not hold when the Cores are far off, the card is below its level cap, or the step is affordable', () => {
     expect(holdAscension(goldCard(10), content)).toBe(false);
     expect(holdAscension(goldCard(Math.ceil(coreNeed * 0.5), 40), content)).toBe(false);
