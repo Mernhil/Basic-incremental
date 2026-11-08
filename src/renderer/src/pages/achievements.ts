@@ -1,105 +1,34 @@
-import { achievementList, buyShardItem, shardShop, type GameState } from '../../../game';
+import { achievementList, type GameState } from '../../../game';
 import { COPY } from '../copy';
-import { PLAQUE_VIEWBOX, gemCoin, navPlaque, svg } from '../art/gems';
+import { svg } from '../art/gems';
 import { STICKER_VIEWBOX, stickerArt } from '../art/cosmetics';
-import { shardSvg, skinStyle, starlightSvg } from '../ui/skins';
-import { ITEM_VIEWBOX } from '../art/items';
-import { frame, h } from '../shell/shell';
-import { icon, type IconName } from '../shell/icons';
-import { attachTooltip, hide as hideTip } from '../shell/tooltip';
+import { skinStyle } from '../ui/skins';
+import { h } from '../shell/shell';
+import { attachTooltip } from '../shell/tooltip';
 import { reducedMotion } from '../stage/motion';
-import { showReveal } from '../stage/reveal';
-import { toast } from '../stage/toast';
-import { createBuyButton, type BuyButton } from '../ui/buy';
-import {
-  SHARD_GROUPS,
-  bookView,
-  shardGainView,
-  shardOfferViews,
-  shardsText,
-  spread,
-  type ChapterView,
-  type OfferArt,
-  type StickerView,
-} from './achievementsModel';
-import { cardFaceProps, cardItemArt } from './loadoutCards';
+import { bookView, spread, type ChapterView, type StickerView } from './achievementsModel';
 import type { PageContext } from './production';
 import './achievements.css';
 
 /**
- * Achievements page (DESIGN.md §10, §11 "sticker book", A10 C). Two tabs: the sticker
- * book, a two-page spread with one chapter per area where every achievement is a sticker slot
+ * Achievements page (DESIGN.md §10, §11 "sticker book", A10 C). The sticker book, a two-page spread with one chapter per area where every achievement is a sticker slot
  * (locked: a dashed outline with a faint print of the art and a progress bar; unlocked: the
- * sticker slapped in with a bounce), and the shard shop, where card shards buy card copies,
- * bundles and one Ember Crown.
+ *  sticker slapped in with a bounce). The shard shop is a stall on the Shop page.
  */
 
 export interface AchievementsContext extends PageContext {
   sound?: (id: string) => void;
 }
 
-type Tab = 'book' | 'shop';
-
-const RESOURCE_ICON: Record<string, IconName> = {
-  tree_gem: 'wood',
-  mine_gem: 'ore',
-  material: 'material',
-  portal: 'portal',
-  prestige: 'starlight',
-};
-
 export function createAchievementsPage(
   page: HTMLElement,
   ctx: AchievementsContext,
-): { render(): void; show(tab: Tab): void } {
+): { render(): void } {
   const { content } = ctx;
   const t = COPY.achievements;
-  let tab: Tab = 'book';
 
-  // ---- tabs ----
-  const tabBar = h('div', 'ac-tabs');
-  tabBar.setAttribute('role', 'tablist');
-  tabBar.setAttribute('aria-label', t.tabs);
-  const tabs: Record<Tab, HTMLButtonElement> = {
-    book: h('button', 'ac-tab', t.bookTab),
-    shop: h('button', 'ac-tab', t.shopTab),
-  };
-  const panels: Record<Tab, HTMLElement> = {
-    book: h('div', 'ac-panel ac-panel--book'),
-    shop: h('div', 'ac-panel ac-panel--shop'),
-  };
-  (Object.keys(tabs) as Tab[]).forEach((id, i, all) => {
-    const b = tabs[id];
-    b.type = 'button';
-    b.id = `ac-tab-${id}`;
-    b.setAttribute('role', 'tab');
-    b.setAttribute('aria-controls', `ac-panel-${id}`);
-    panels[id].id = `ac-panel-${id}`;
-    panels[id].setAttribute('role', 'tabpanel');
-    panels[id].setAttribute('aria-labelledby', b.id);
-    b.addEventListener('click', () => show(id));
-    b.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      e.preventDefault();
-      const next = all[(i + (e.key === 'ArrowRight' ? 1 : all.length - 1)) % all.length]!;
-      show(next);
-      tabs[next].focus();
-    });
-    tabBar.append(b);
-  });
-  page.append(tabBar, panels.book, panels.shop);
-
-  function show(next: Tab): void {
-    tab = next;
-    for (const id of Object.keys(tabs) as Tab[]) {
-      const on = id === tab;
-      tabs[id].setAttribute('aria-selected', String(on));
-      tabs[id].tabIndex = on ? 0 : -1;
-      panels[id].hidden = !on;
-    }
-    hideTip();
-    render();
-  }
+  const panelBook = h('div', 'ac-panel ac-panel--book');
+  page.append(panelBook);
 
   // ---- sticker book ----
   const book = h('section', 'ac-book');
@@ -117,7 +46,7 @@ export function createAchievementsPage(
   const spreadEl = h('div', 'ac-spread');
   spreadEl.append(...pages);
   book.append(head, spreadEl);
-  panels.book.append(book);
+  panelBook.append(book);
 
   type SlotUi = {
     li: HTMLElement;
@@ -244,142 +173,12 @@ export function createAchievementsPage(
     if (ui.li.getAttribute('aria-label') !== label) ui.li.setAttribute('aria-label', label);
   }
 
-  // ---- shard shop ----
-  const shop = frame(t.shop);
-  shop.el.classList.add('ac-shop');
-  const balance = h('div', 'ac-balance');
-  const shard = h('span', 'ac-shard');
-  shard.setAttribute('aria-hidden', 'true');
-  shard.innerHTML = shardSvg();
-  const balanceValue = h('strong', 'ac-balance__value bi-num');
-  const balanceText = h('span', 'ac-balance__text');
-  balanceText.append(h('span', 'ac-balance__label', t.shardsLabel), balanceValue);
-  balance.append(shard, balanceText, h('p', 'ac-balance__hint', t.shardsHint));
-  shop.body.append(balance);
-
-  type OfferUi = { li: HTMLElement; btn: BuyButton; stock: HTMLElement };
-  const offerUis = new Map<string, OfferUi>();
-  const groupLists = new Map<string, HTMLElement>();
-  for (const g of SHARD_GROUPS) {
-    const sec = h('section', 'ac-group');
-    const heading = h('h3', 'ac-group__title', t.groups[g]);
-    heading.id = `ac-group-${g}`;
-    sec.setAttribute('aria-labelledby', heading.id);
-    const list = h('ul', `ac-offers ac-offers--${g}`);
-    sec.append(heading, list);
-    shop.body.append(sec);
-    groupLists.set(g, list);
-  }
-  panels.shop.append(shop.el);
-
-  function offerArt(art: OfferArt, s: GameState): string {
-    switch (art.kind) {
-      case 'card':
-        return svg(cardItemArt(content, art.cardId, s.cards.owned[art.cardId], s), ITEM_VIEWBOX);
-      case 'coin': {
-        const gem = content.resourceById.get(art.resource)?.gem;
-        return gem ? svg(gemCoin(gem, 1)) : '';
-      }
-      case 'resource': {
-        const kind = content.resourceById.get(art.resource)?.kind ?? 'material';
-        if (kind === 'prestige') return `<span class="ac-offer__icon">${starlightSvg()}</span>`;
-        return icon(RESOURCE_ICON[kind] ?? 'material', 'ac-offer__icon').outerHTML;
-      }
-      case 'cosmetic':
-        return svg(navPlaque('wardrobe'), PLAQUE_VIEWBOX);
-    }
-  }
-
-  function buildShop(s: GameState): void {
-    for (const v of shardOfferViews(shardShop(s, content), s, content)) {
-      const li = h('li', 'ac-offer');
-      li.dataset.item = v.id;
-      li.dataset.art = v.art.kind;
-      if (v.rarity) {
-        li.dataset.rarity = v.rarity;
-        const body = content.rarityById.get(v.rarity)?.tokens['body'];
-        if (body) li.style.setProperty('--ac-rarity', body);
-      }
-      const art = h('span', 'ac-offer__art');
-      art.setAttribute('aria-hidden', 'true');
-      art.innerHTML = offerArt(v.art, s);
-      const text = h('span', 'ac-offer__text');
-      text.append(h('span', 'ac-offer__name', v.name), h('span', 'ac-offer__detail', v.detail));
-      const stock = h('span', 'ac-offer__stock');
-      const btn = createBuyButton(() => buy(v.id), true);
-      li.append(art, text, stock, btn.el);
-      groupLists.get(v.group)?.append(li);
-      offerUis.set(v.id, { li, btn, stock });
-    }
-  }
-
-  let busy = false;
-  function buy(id: string): void {
-    if (busy) return;
-    const before = ctx.state();
-    const result = buyShardItem(before, content, id);
-    if (!result.ok) return;
-    hideTip();
-    ctx.apply(result.state);
-    offerUis.get(id)?.btn.celebrate();
-    const gain = shardGainView(content, id, result.gain);
-    if (!gain) return;
-    if (gain.kind === 'toast') {
-      ctx.sound?.('buy');
-      toast(gain.title, gain.detail, 'info');
-      return;
-    }
-    busy = true;
-    const after = ctx.state();
-    showReveal({
-      portalName: t.shop,
-      views: [gain.view],
-      face: (itemId) =>
-        content.cardById.has(itemId) ? cardFaceProps(content, after, itemId) : null,
-      ...(ctx.sound ? { sound: ctx.sound } : {}),
-      onClose: () => {
-        busy = false;
-        offerUis.get(id)?.btn.el.focus();
-      },
-    });
-  }
-
-  let artKey = '';
-  function renderShop(s: GameState): void {
-    if (offerUis.size === 0) buildShop(s);
-    set(balanceValue, shardsText(s));
-    // card art follows the owned card's evolution
-    const key = Object.entries(s.cards.owned)
-      .map(([id, c]) => `${id}:${c.tier}:${c.stars}`)
-      .join(',');
-    const refreshArt = key !== artKey;
-    artKey = key;
-    for (const v of shardOfferViews(shardShop(s, content), s, content)) {
-      const ui = offerUis.get(v.id);
-      if (!ui) continue;
-      ui.btn.update(v.buy);
-      ui.btn.el.setAttribute(
-        'aria-label',
-        v.soldOut ? `${v.name}: ${t.soldOut}` : t.buyLabel(v.name, v.buy.price, v.buy.preview),
-      );
-      ui.li.classList.toggle('is-soldout', v.soldOut);
-      set(ui.stock, v.stockText);
-      ui.stock.hidden = v.stockText === '';
-      if (refreshArt && v.art.kind === 'card') {
-        const art = ui.li.querySelector('.ac-offer__art');
-        if (art) art.innerHTML = offerArt(v.art, s);
-      }
-    }
-  }
-
   function render(): void {
-    const s = ctx.state();
-    if (tab === 'book') renderBook(s);
-    else renderShop(s);
+    renderBook(ctx.state());
   }
 
-  show('book');
-  return { render, show };
+  render();
+  return { render };
 }
 
 function set(node: HTMLElement, text: string): void {

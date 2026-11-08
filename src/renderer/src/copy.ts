@@ -339,6 +339,13 @@ export const COPY = {
     base: 'Base',
     total: 'Total',
   },
+  shop: {
+    shards: 'Shard shop',
+    kept: 'Kept',
+    reset: 'Reset',
+    no: (n: number) => `No. ${n}`,
+    gain: (gain: string) => `+${gain} Starlight`,
+  },
   ascension: {
     gate: 'Ascension',
     gateLabel: 'The Ascension gate, with everything you keep drifting into it',

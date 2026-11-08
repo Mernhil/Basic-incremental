@@ -31,7 +31,7 @@ import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
 import { createHomePage } from './pages/home';
 import { createSummonPage } from './pages/summon';
-import { createAscensionPage } from './pages/ascension';
+import { createShopPage } from './pages/shop';
 import { createWardrobePage } from './pages/wardrobe';
 import { createCardsPage } from './pages/cards';
 import { createAchievementsPage } from './pages/achievements';
@@ -299,8 +299,8 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     apply: applyAndSave,
     sound: playSound,
   });
-  // Ascension lives on the Shop page (DESIGN.md §11): the gate and the Starlight shop
-  pages['shop'] = createAscensionPage(shell.page('shop'), {
+  // The Shop page (DESIGN.md §11): market stalls for the Starlight shop, Shard shop and Ascension
+  pages['shop'] = createShopPage(shell.page('shop'), {
     content,
     state: () => loop.state,
     apply: applyAndSave,
