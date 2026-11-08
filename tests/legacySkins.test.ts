@@ -232,7 +232,9 @@ describe('Legacy Gate pulls', () => {
 
   it('lists every skin in the odds at its own rarity', () => {
     const info = portalInfo(freshState(), content, GATE)!;
-    expect(info.rates.byItem.map((i) => [i.itemId, i.rarity]).sort()).toEqual([
+    const staffOdds = info.rates.byItem.filter((i) => i.itemId.startsWith('legacy-staff-'));
+    expect(info.rates.byItem).toHaveLength(58);
+    expect(staffOdds.map((i) => [i.itemId, i.rarity]).sort()).toEqual([
       ['legacy-staff-01', 'mythic'],
       ['legacy-staff-02', 'exotic'],
       ['legacy-staff-03', 'void'],
@@ -259,5 +261,50 @@ describe('v20 -> v21 (owned legacy skins)', () => {
     delete v20.state.legacySkins;
     v20.version = 20;
     expect(readSave(JSON.stringify(v20), baseContent).state.legacySkins).toEqual([]);
+  });
+});
+
+describe('legacy bow skins content', () => {
+  const LADDER = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'] as const;
+  const FIRST_45 = ['epic', 'exotic', 'legendary', 'mythic', 'void'] as const;
+  const EXTRA_10 = [
+    'epic',
+    'common',
+    'rare',
+    'epic',
+    'legendary',
+    'mythic',
+    'exotic',
+    'void',
+    'exotic',
+    'void',
+  ] as const;
+  const set = baseContent.weaponSkinsByWeapon.get('bow')!;
+  const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
+
+  it('lists 55 distinct legacy bow skins: nine per rarity, then ten more', () => {
+    expect(set.baseArt).toBeUndefined();
+    expect(set.skins).toHaveLength(55);
+    expect(new Set(set.skins.map((s) => s.name)).size).toBe(55);
+    set.skins.forEach((s, i) => {
+      const n = String(i + 1).padStart(2, '0');
+      const rarity = i < 45 ? FIRST_45[Math.floor(i / 9)] : EXTRA_10[i - 45];
+      expect([s.id, s.art, s.legacy, s.rarity]).toEqual([
+        `legacy-bow-${n}`,
+        `skin-bow-${n}`,
+        true,
+        rarity,
+      ]);
+    });
+  });
+
+  it('puts all 55 bow skins in the Legacy Gate pool at their rarity, rarer ones lighter', () => {
+    const weights = new Map<string, number>();
+    for (const s of set.skins) {
+      const entry = gate.pool.find((p) => p.itemId === s.id)!;
+      expect(entry.rarity).toBe(s.rarity);
+      weights.set(s.rarity!, entry.weight);
+    }
+    expect(LADDER.map((r) => weights.get(r))).toEqual([7, 6, 5, 4, 3, 2, 1]);
   });
 });

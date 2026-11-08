@@ -105,5 +105,450 @@
         "rarity": "void"
       }
     ]
+  },
+  {
+    "weapon": "bow",
+    "skins": [
+      {
+        "id": "legacy-bow-01",
+        "name": "Ember Toll",
+        "art": "skin-bow-01",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-02",
+        "name": "Tidal Whisper",
+        "art": "skin-bow-02",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-03",
+        "name": "Orchid Shot",
+        "art": "skin-bow-03",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-04",
+        "name": "Verdant Snare",
+        "art": "skin-bow-04",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-05",
+        "name": "Dusk Longbow",
+        "art": "skin-bow-05",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-06",
+        "name": "Amber Hunt",
+        "art": "skin-bow-06",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-07",
+        "name": "Frost Reed",
+        "art": "skin-bow-07",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-08",
+        "name": "Petal Volley",
+        "art": "skin-bow-08",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-09",
+        "name": "Moss Warden",
+        "art": "skin-bow-09",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-10",
+        "name": "Lime Lash",
+        "art": "skin-bow-10",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-11",
+        "name": "Midnight Sting",
+        "art": "skin-bow-11",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-12",
+        "name": "Cinder Arc",
+        "art": "skin-bow-12",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-13",
+        "name": "Glacier Draw",
+        "art": "skin-bow-13",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-14",
+        "name": "Blush Thorn",
+        "art": "skin-bow-14",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-15",
+        "name": "Fern Cutter",
+        "art": "skin-bow-15",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-16",
+        "name": "Amethyst Hush",
+        "art": "skin-bow-16",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-17",
+        "name": "Plain Truth",
+        "art": "skin-bow-17",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-18",
+        "name": "Auric Sting",
+        "art": "skin-bow-18",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-19",
+        "name": "Violet Eclipse",
+        "art": "skin-bow-19",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-20",
+        "name": "Golden Hour",
+        "art": "skin-bow-20",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-21",
+        "name": "Skyward Pierce",
+        "art": "skin-bow-21",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-22",
+        "name": "Crimson Reach",
+        "art": "skin-bow-22",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-23",
+        "name": "Tidepool Bow",
+        "art": "skin-bow-23",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-24",
+        "name": "Rose Tempest",
+        "art": "skin-bow-24",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-25",
+        "name": "Spring Gale",
+        "art": "skin-bow-25",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-26",
+        "name": "Indigo Oath",
+        "art": "skin-bow-26",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-27",
+        "name": "Sunfire Bow",
+        "art": "skin-bow-27",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-28",
+        "name": "Aurora Arc",
+        "art": "skin-bow-28",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-29",
+        "name": "Blossom Fate",
+        "art": "skin-bow-29",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-30",
+        "name": "Evergreen Wrath",
+        "art": "skin-bow-30",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-31",
+        "name": "Twilight Reed",
+        "art": "skin-bow-31",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-32",
+        "name": "Crown of Dawn",
+        "art": "skin-bow-32",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-33",
+        "name": "Zenith Piercer",
+        "art": "skin-bow-33",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-34",
+        "name": "Bloodmoon Bow",
+        "art": "skin-bow-34",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-35",
+        "name": "Abyss Whisper",
+        "art": "skin-bow-35",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-36",
+        "name": "Nebula Thorn",
+        "art": "skin-bow-36",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-37",
+        "name": "Voidglass Bow",
+        "art": "skin-bow-37",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-38",
+        "name": "Redshift",
+        "art": "skin-bow-38",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-39",
+        "name": "Hollow Tide",
+        "art": "skin-bow-39",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-40",
+        "name": "Starless Rose",
+        "art": "skin-bow-40",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-41",
+        "name": "Pale Bloom",
+        "art": "skin-bow-41",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-42",
+        "name": "Eventide",
+        "art": "skin-bow-42",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-43",
+        "name": "Ashfall Bow",
+        "art": "skin-bow-43",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-44",
+        "name": "Cold Singularity",
+        "art": "skin-bow-44",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-45",
+        "name": "Last Petal",
+        "art": "skin-bow-45",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-46",
+        "name": "Gnarlwood Bow",
+        "art": "skin-bow-46",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-47",
+        "name": "Crescent Bow",
+        "art": "skin-bow-47",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "common"
+      },
+      {
+        "id": "legacy-bow-48",
+        "name": "Silvered Crescent",
+        "art": "skin-bow-48",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "rare"
+      },
+      {
+        "id": "legacy-bow-49",
+        "name": "Duskmoon Bow",
+        "art": "skin-bow-49",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-bow-50",
+        "name": "Gilded Crescent",
+        "art": "skin-bow-50",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-bow-51",
+        "name": "Starlit Crescent",
+        "art": "skin-bow-51",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-bow-52",
+        "name": "Eclipse Crescent",
+        "art": "skin-bow-52",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-53",
+        "name": "Blackmoon Bow",
+        "art": "skin-bow-53",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-bow-54",
+        "name": "Pale Pyre",
+        "art": "skin-bow-54",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-bow-55",
+        "name": "Violet Pyre",
+        "art": "skin-bow-55",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      }
+    ]
   }
 ]
