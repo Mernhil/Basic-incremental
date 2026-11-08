@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Summon option 2: Banner</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* S2 Banner: one big gacha banner at a time on the light table, tabs for portals, rates and pity written out */
+.s2 .wrap{padding:16px 24px 0}
+.s2 .tabs{display:flex;gap:6px;align-items:flex-end}
+.s2 .tab{border:0;padding:9px 18px;border-radius:10px 10px 0 0;font-weight:800;font-size:15px;background:rgba(22,27,38,.18);color:var(--on-table-muted);display:flex;gap:8px;align-items:center}
+.s2 .tab[aria-selected=true]{background:#241a4a;color:#f3ecff;box-shadow:inset 0 2px 0 #f1d27a}
+.s2 .tab small{font-weight:600;opacity:.75;font-size:12px}
+.s2 .tabs .sp{flex:1}.s2 .tabs .rt{font-size:12px;font-weight:700;color:var(--on-table-muted);padding-bottom:8px}
+.s2 .banner{position:relative;height:610px;border-radius:0 14px 14px 14px;overflow:hidden;color:#f3ecff;background:
+  radial-gradient(45% 60% at 28% 42%,rgba(255,214,120,.38),transparent 70%),radial-gradient(60% 80% at 80% 0,rgba(122,92,255,.4),transparent 70%),linear-gradient(135deg,#2a1d5c,#171235 60%,#241347);box-shadow:0 18px 40px rgba(20,16,50,.35),inset 0 0 0 1.5px rgba(241,210,122,.55)}
+.s2 .rays{position:absolute;left:22%;top:46%;width:900px;height:900px;margin:-450px 0 0 -450px;background:repeating-conic-gradient(rgba(255,226,150,.13) 0 5deg,transparent 5deg 18deg);mask:radial-gradient(closest-side,#000 8%,transparent);-webkit-mask:radial-gradient(closest-side,#000 8%,transparent);animation:s2spin 60s linear infinite}
+@keyframes s2spin{to{rotate:360deg}}
+@keyframes s2rise{from{translate:0 80px;opacity:0}}
+.s2 .fan{position:absolute;left:36px;top:40px;width:420px;height:420px}
+.s2 .fan .mk-card{position:absolute}
+.s2 .fan .c1{left:0;top:70px;rotate:-9deg}.s2 .fan .c2{left:200px;top:70px;rotate:8deg}.s2 .fan .c3{left:100px;top:0;z-index:2}
+.s2 .feat{position:absolute;left:36px;bottom:36px;width:410px}
+.s2 .feat b{font:800 26px/1.05 Outfit;display:block}.s2 .feat span{color:#cfc4ee;font-size:13px}
+.s2 .info{position:absolute;left:490px;right:30px;top:26px;bottom:26px;display:grid;grid-template-rows:auto auto auto 1fr auto;gap:16px}
+.s2 .info h2{margin:0;font:800 30px/1 Outfit}.s2 .info h2 small{display:block;font:600 14px Outfit;color:#cfc4ee;margin-top:6px}
+.s2 .panel{padding:12px 14px;border-radius:12px;background:rgba(10,8,28,.5);box-shadow:inset 0 0 0 1px rgba(241,210,122,.3)}
+.s2 .panel h3{margin:0 0 8px;font-size:13px;font-weight:700;color:#e6dcff;display:flex;justify-content:space-between}
+.s2 .rate{display:grid;grid-template-columns:78px 1fr 48px;gap:10px;align-items:center;margin:4px 0;font-size:13px;font-weight:700}
+.s2 .rate i{display:block;height:8px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}.s2 .rate i u{display:block;height:100%;background:var(--rc);text-decoration:none;border-radius:4px}
+.s2 .rate em{font-style:normal;text-align:right;color:#cfc4ee}.s2 .rate span{color:var(--rc)}
+.s2 .pity{position:relative;display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-top:8px}
+.s2 .pity i{height:16px;border-radius:4px;background:rgba(255,255,255,.1)}.s2 .pity i.on{background:linear-gradient(180deg,#ffe08a,#f2a93b)}.s2 .pity i.half{background:linear-gradient(90deg,#f2a93b 50%,rgba(255,255,255,.1) 50%)}
+.s2 .pity i:last-child{box-shadow:0 0 0 2px #f2a93b}
+.s2 .pitytxt{display:flex;justify-content:space-between;font-size:12.5px;margin-top:7px;color:#cfc4ee}.s2 .pitytxt b{color:#ffd98a;font-size:15px}
+.s2 .hist{display:flex;gap:6px;align-items:center;font-size:12px;color:#cfc4ee}
+.s2 .hist u{width:26px;height:26px;border-radius:7px;background:var(--rc);opacity:.9;box-shadow:inset 0 0 0 2px rgba(0,0,0,.3);text-decoration:none}
+.s2 .buy{display:grid;grid-template-columns:1fr 1.5fr;gap:12px;align-items:end}
+.s2 .go{border:0;border-radius:14px;padding:12px 16px;text-align:center;font-weight:800;font-size:18px;line-height:1.15;background:rgba(255,255,255,.1);color:#fff;box-shadow:inset 0 0 0 1.5px rgba(241,210,122,.5)}
+.s2 .go small{display:flex;gap:6px;justify-content:center;align-items:center;font-size:12.5px;font-weight:700;opacity:.9;margin-top:3px}
+.s2 .go.pri{background:linear-gradient(180deg,#ffe08a,#e0a12d);color:#2a1a05;box-shadow:0 0 26px rgba(255,200,80,.5),inset 0 0 0 1.5px #fff6}
+.s2 .go.pri span.ten{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:#2a1a05;color:#ffd98a;font-size:11px;vertical-align:middle}
+/* play: the pillar of light with the card rising, rarity star burst */
+.s2 .pull{display:none;position:absolute;inset:0;z-index:10;background:rgba(14,10,38,.94)}
+.s2.play .pull{display:block;animation:s2in .3s}@keyframes s2in{from{opacity:0}}
+.s2 .pillar{position:absolute;left:50%;top:0;bottom:0;width:260px;translate:-50% 0;background:linear-gradient(90deg,transparent,rgba(255,224,138,.55) 50%,transparent);filter:blur(3px)}
+.s2 .pillar::after{content:'';position:absolute;left:30%;right:30%;top:0;bottom:0;background:linear-gradient(90deg,transparent,#fff 50%,transparent);opacity:.7}
+.s2 .circle{position:absolute;left:50%;bottom:46px;width:520px;height:120px;translate:-50% 0;border-radius:50%;border:3px solid #f1d27a;box-shadow:0 0 40px #f2a93b,inset 0 0 40px #f2a93b;background:radial-gradient(#fff6,transparent 70%)}
+.s2 .rise{position:absolute;left:50%;top:44px;translate:-50% 0;animation:s2rise .8s both}
+.s2 .stars{position:absolute;left:0;right:0;top:360px;text-align:center;font-size:38px;color:#ffd98a;text-shadow:0 0 16px #f2a93b;letter-spacing:8px}
+.s2 .rn{position:absolute;left:0;right:0;top:420px;text-align:center;font:800 26px Outfit}.s2 .rn small{display:block;font:600 13px Outfit;color:#cfc4ee;margin-top:4px}
+.s2 .chips{position:absolute;right:24px;top:24px;display:grid;gap:6px;width:190px}
+.s2 .chips div{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:9px;background:rgba(255,255,255,.08);font-size:12px;font-weight:700}.s2 .chips b{width:30px;height:5px;border-radius:3px;background:var(--rc)}
+.s2 .pull .bot{position:absolute;left:0;right:0;bottom:12px;text-align:center;font-size:12.5px;color:#cfc4ee}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script>
+<script>
+const rates=[['common','Common',68.2],['rare','Rare',22.7],['epic','Epic',6.1],['legendary','Legendary',2.3],['mythic','Mythic',.5],['exotic','Exotic',.2]];
+MK.shell('summon',`<div class="wrap">
+ <div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true">Card Portal <small>Summon Crystals</small></button><button class="tab" role="tab" aria-selected="false">Wardrobe Gate <small>Glamour Crystals</small></button><span class="sp"></span><span class="rt">Dupes past the last star become shards</span></div>
+ <div class="banner"><div class="rays"></div>
+  <div class="fan">${MK.card('geode_golem',{k:.78,style:'',}).replace('mk-card','mk-card c1')}${MK.card('moonwood_dryad',{k:.78}).replace('mk-card','mk-card c2')}${MK.card('dawnblade_regent',{k:.95}).replace('mk-card','mk-card c3')}</div>
+  <div class="feat"><b>Legendary or better</b><span>Fifteen portal cards to find. The last Legendary is guaranteed by pull 90.</span></div>
+  <div class="info">
+   <h2>Card Portal<small>Fighting, Logging and Mining cards. Every ×10 holds a Rare or better.</small></h2>
+   <div class="panel"><h3>Rates per pull <span>hover a row for the cards</span></h3>${rates.map(([k,n,v])=>`<div class="rate rc-${k}"><span>${n}</span><i><u style="width:${Math.max(3,v*1.4)}%"></u></i><em class="num">${v}%</em></div>`).join('')}</div>
+   <div class="panel"><h3>Legendary pity <span class="num">70 / 90</span></h3><div class="pity">${'<i class="on"></i>'.repeat(7)}<i class="half"></i><i></i></div><div class="pitytxt"><span>Each block is 10 pulls</span><span><b class="num">20</b> pulls to Legendary</span></div></div>
+   <div class="hist">Last ×10 <u class="rc-common"></u><u class="rc-common"></u><u class="rc-rare"></u><u class="rc-common"></u><u class="rc-common"></u><u class="rc-common"></u><u class="rc-epic"></u><u class="rc-common"></u><u class="rc-rare"></u><u class="rc-common"></u></div>
+   <div class="buy"><button class="go">Pull ×1<small>${MK.img('coin-drop-silver',18)} 10 · 135 left 125</small></button><button class="go pri">Pull ×10 <span class="ten">Rare+ guaranteed</span><small>${MK.img('coin-drop-silver',18)} 100 · 135 left 35</small></button></div>
+  </div>
+  <div class="pull" role="dialog" aria-label="Card Portal reveal"><div class="pillar"></div><div class="circle"></div>
+   <div class="rise">${MK.card('dawnblade_regent',{k:1.1,tag:'New!'})}</div><div class="stars">&#9733;&#9733;&#9733;&#9733;</div>
+   <div class="rn">Legendary<small>Dawnblade Regent · pull 7 of 10 · by pity</small></div>
+   <div class="chips">${['common','common','common','rare','common','common','legendary'].map((r,i)=>`<div class="rc-${r}"><b></b>Pull ${i+1}</div>`).join('')}</div>
+   <div class="bot">Click or press Space for the next. Esc skips all.</div></div>
+ </div></div>`,{cls:'s2',play:'Play the reveal'});
+</script></body></html>

@@ -1,0 +1,428 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Production screen: 5 options</title>
+<link rel="stylesheet" href="assets/base.css">
+<style>
+/* ---------- shared row parts ---------- */
+.mock .tile { image-rendering: pixelated; display: block; flex: none; }
+.mock .lockedrow .tile { filter: grayscale(1) brightness(0.55); }
+.mock .tier { font-size: 11.5px; padding: 1px 8px; }
+.mock .rowname { font-weight: 800; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.mock .lv { font-weight: 700; color: var(--bi-frame-ink); }
+.mock .out { font-weight: 700; font-size: 15px; }
+.mock .out small { display: block; font-weight: 500; font-size: 12px; color: var(--bi-frame-ink-muted); }
+.mock .ms { display: grid; gap: 3px; font-size: 12px; color: var(--bi-frame-ink-muted); min-width: 0; }
+.mock .ms span { display: flex; justify-content: space-between; gap: 8px; }
+.mock .ms span b { color: var(--bi-frame-ink); font-weight: 700; }
+.mock .row { position: relative; display: grid; align-items: center; gap: 14px; border-radius: 10px; background: rgba(0, 0, 0, 0.26); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+.mock .row { color: var(--bi-frame-ink); }
+.mock .row.lockedrow { background: rgba(0, 0, 0, 0.16); color: #8d95a6; }
+.mock .row.lockedrow .rowname, .mock .row.lockedrow .lv { color: #8d95a6; }
+.mock .row.hit { box-shadow: inset 0 0 0 2px var(--bi-chrome-accent), 0 0 16px rgba(217, 179, 90, 0.35); }
+.mock .row .buy { width: 100%; }
+.mock .pop { position: absolute; z-index: 20; pointer-events: none; font: 800 20px 'Outfit'; color: #3ea84a; -webkit-text-stroke: 4px #fff; paint-order: stroke; text-shadow: 0 2px 0 #0006; transform: translate(-50%, -50%) rotate(-4deg); animation: popup 0.9s ease-out forwards; white-space: nowrap; }
+@keyframes popup { 0% { opacity: 0; margin-top: 8px; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -34px; } }
+.mock .gauge { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; }
+.mock .gauge .bar { flex: 1; height: 10px; }
+.mock .gauge .bar i { background: linear-gradient(90deg, #f5a623, #ffe27a); transition: width 0.4s linear; }
+.mock .sup { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 7px; border-radius: 8px; background: rgba(255, 255, 255, 0.07); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 12.5px; font-weight: 700; }
+.mock .sup small { font-weight: 500; color: var(--bi-frame-ink-muted); font-size: 11.5px; }
+.mock .sup i { width: 9px; height: 9px; border-radius: 2px; flex: none; background: var(--c); box-shadow: inset 0 0 0 1px #0008; }
+.mock .sup.empty { background: none; border: 1px dashed #ffffff40; box-shadow: none; color: var(--bi-frame-ink-muted); font-weight: 500; }
+.mock .up { display: grid; gap: 2px; padding: 8px 10px; border-radius: 9px; background: rgba(0, 0, 0, 0.28); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 12.5px; color: var(--bi-frame-ink-muted); text-align: left; border: 0; color: inherit; font-family: inherit; cursor: default; }
+.mock .up b { color: var(--bi-frame-ink); font-size: 13.5px; display: flex; justify-content: space-between; gap: 8px; }
+.mock .up .price { color: var(--bi-chrome-accent); font-weight: 700; }
+.mock .up.can { box-shadow: inset 0 0 0 2px var(--bi-chrome-accent), 0 0 12px rgba(217, 179, 90, 0.3); color: var(--bi-frame-ink); }
+.mock .up.owned { opacity: 0.55; }
+.mock .up.owned .price { color: var(--good); }
+.mock .up.poor .price { color: var(--bad); }
+.mock .ushelf { display: grid; gap: 8px; }
+.mock .ugroup { margin: 8px 0 2px; font-size: 12.5px; font-weight: 700; color: var(--bi-frame-ink-muted); }
+
+/* ======================== A: Ledger ======================== */
+#mA .jobhead { display: grid; grid-template-columns: 132px 1fr; gap: 22px; padding: 0 4px 12px 30px; align-items: start; margin-top: 40px; }
+#mA .jobhead .info { display: grid; gap: 10px; align-content: start; padding-top: 4px; }
+#mA .jobhead h3 { margin: 0; font-size: 15px; font-weight: 800; }
+#mA .jobhead p { margin: 0; font-size: 12.5px; color: var(--bi-frame-ink-muted); }
+#mA .sups { display: flex; flex-wrap: wrap; gap: 6px; }
+#mA .row { grid-template-columns: 58px 200px 150px 1fr 220px; padding: 10px 14px; margin-top: 8px; }
+#mA .panel + .panel { margin-top: 14px; }
+#mA .shelf { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+#mA .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+#mA .topbar .sum { color: var(--bi-on-table); font-weight: 600; margin-left: 4px; }
+#mA .topbar .seg { margin-left: auto; }
+#mA .buyhint { font-weight: 700; color: var(--bi-on-table); font-size: 13px; }
+
+/* ======================== B: Two-up ======================== */
+#mB .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+#mB .panel { padding: 10px; }
+#mB .jobbar { display: grid; gap: 6px; padding: 6px 10px 8px; margin: -2px 0 8px; border-radius: 9px; background: rgba(0, 0, 0, 0.35); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+#mB .jobbar .l1 { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+#mB .jobbar .l1 b { font-weight: 800; font-size: 14px; }
+#mB .jobbar .sups { display: flex; gap: 5px; flex-wrap: wrap; }
+#mB .jobbar .sup { font-size: 11.5px; padding: 2px 8px 2px 6px; }
+#mB .row { grid-template-columns: 58px minmax(0, 1fr) 112px; padding: 6px 10px 6px 8px; gap: 10px; }
+#mB .mid { display: grid; gap: 3px; min-width: 0; }
+#mB .mid .top { display: flex; align-items: baseline; gap: 8px; }
+#mB .mid .rowname { font-size: 15px; }
+#mB .mid .out { font-size: 13px; margin-left: auto; white-space: nowrap; }
+#mB .rowwrap { margin-top: 6px; }
+#mB .inl { display: flex; flex-wrap: wrap; gap: 5px; padding: 5px 4px 0 70px; }
+#mB .inl button { border: 0; font-family: inherit; cursor: default; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: rgba(255, 255, 255, 0.08); color: var(--bi-frame-ink-muted); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+#mB .inl button.can { background: var(--bi-chrome-accent); color: #161b26; box-shadow: 0 0 10px rgba(217, 179, 90, 0.35); }
+#mB .inl button.owned { opacity: 0.5; }
+#mB .row .buy { padding: 5px 8px; font-size: 13px; }
+#mB .row .buy small { font-size: 10.5px; }
+#mB .glob { margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 10px 12px; }
+#mB .glob h3 { margin: 0 8px 0 0; font-size: 13.5px; }
+#mB .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+#mB .topbar .seg { margin-left: auto; }
+
+/* ======================== C: Side stage + bottom drawer ======================== */
+#mC .sh { min-height: 1040px; }
+#mC .sh-main { padding-bottom: 230px; }
+#mC .split { display: grid; grid-template-columns: 1fr 330px; gap: 14px; align-items: start; }
+#mC .row { grid-template-columns: 58px 168px 1fr 150px; padding: 7px 12px; margin-top: 7px; }
+#mC .row .mid { min-width: 0; }
+#mC .panel + .panel { margin-top: 12px; }
+#mC .rowtxt { display: grid; gap: 1px; }
+#mC .rowtxt .out { font-size: 13.5px; }
+#mC .rowname { font-size: 16px; }
+#mC .row .buy { padding: 5px 8px; font-size: 13px; }
+#mC .stage { position: sticky; top: 8px; padding: 10px; background: #1e2a22; background-image: linear-gradient(#26382c, #1b2620); }
+#mC .stage[data-job='mining'] { background: #262230; background-image: linear-gradient(#332d42, #1f1b29); }
+#mC .stage .tabs2 { display: flex; gap: 4px; margin-bottom: 10px; }
+#mC .stage .tabs2 button { flex: 1; border: 0; border-radius: 8px; padding: 6px; font-weight: 700; color: var(--bi-frame-ink-muted); background: rgba(0, 0, 0, 0.35); cursor: pointer; }
+#mC .stage .tabs2 button[aria-pressed='true'] { background: var(--bi-chrome-accent); color: #161b26; }
+#mC .stage .cardwrap { display: grid; place-items: center; padding: 44px 0 10px; }
+#mC .stage .cardwrap .cd { transition: transform 0.12s; }
+#mC .stage .cardwrap.lunge .cd { transform: translateX(-14px) rotate(-2deg); }
+#mC .stage .meta { display: grid; gap: 8px; padding: 6px 4px 2px; }
+#mC .stage .meta .sups { display: grid; gap: 5px; }
+#mC .stage .meta p { margin: 0; font-size: 12px; color: var(--bi-frame-ink-muted); }
+#mC .drawer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--bi-chrome-bg); box-shadow: 0 -2px 0 var(--bi-chrome-line), 0 -12px 28px rgba(0, 0, 0, 0.35); color: var(--bi-chrome-ink); transform: translateY(0); transition: transform 0.3s; }
+#mC .drawer.closed { transform: translateY(calc(100% - 46px)); }
+#mC .drawer .dh { display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 26px; font-weight: 800; cursor: pointer; border: 0; width: 100%; background: transparent; color: inherit; font-family: inherit; font-size: 15px; text-align: left; }
+#mC .drawer .dh small { font-weight: 600; color: var(--bi-chrome-ink-muted); }
+#mC .drawer .dh .caret { margin-left: auto; transition: transform 0.3s; }
+#mC .drawer:not(.closed) .caret { transform: rotate(180deg); }
+#mC .drawer .db { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 26px 16px; }
+#mC .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+#mC .topbar .seg { margin-left: auto; }
+
+/* ======================== D: Tabs + pinned strip ======================== */
+#mD .strip { position: sticky; top: 0; display: grid; grid-template-columns: 112px 1fr 380px; gap: 18px; align-items: center; padding: 8px 14px 8px 8px; z-index: 5; }
+#mD .strip .art { width: 112px; height: 136px; display: grid; place-items: center; background: #0d121b; border-radius: 8px; box-shadow: inset 0 0 0 2px var(--edge); }
+#mD .strip .art img { width: 100px; height: 120px; image-rendering: pixelated; }
+#mD .strip h3 { margin: 0 0 2px; font-size: 18px; font-weight: 800; }
+#mD .strip .sub { font-size: 12.5px; color: var(--bi-frame-ink-muted); margin-bottom: 8px; }
+#mD .strip .side { display: grid; gap: 7px; }
+#mD .strip .sups { display: flex; flex-wrap: wrap; gap: 5px; }
+#mD .tabs3 { display: flex; align-items: center; gap: 6px; margin: 14px 0 10px; }
+#mD .tabs3 button.t { border: 0; padding: 8px 16px; border-radius: 9px; background: var(--bi-chrome-bg); color: var(--bi-chrome-ink-muted); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-weight: 700; font-size: 15px; cursor: pointer; }
+#mD .tabs3 button.t[aria-selected='true'] { color: var(--bi-chrome-ink); box-shadow: inset 0 0 0 2px var(--bi-chrome-accent); }
+#mD .tabs3 button.t .n { margin-left: 6px; background: var(--bi-chrome-accent); color: #161b26; border-radius: 999px; padding: 0 7px; font-size: 11.5px; }
+#mD .tabs3 .seg { margin-left: auto; }
+#mD .row { grid-template-columns: 116px 230px 160px 1fr 210px; padding: 10px 18px 10px 14px; margin-top: 10px; gap: 18px; min-height: 152px; background: var(--bi-frame-bg); }
+#mD .row.lockedrow { background: #232730; }
+#mD .rowname { font-size: 21px; }
+#mD .biglv { font-size: 30px; font-weight: 800; line-height: 1; }
+#mD .biglv small { font-size: 13px; font-weight: 600; color: var(--bi-frame-ink-muted); margin-left: 4px; }
+#mD .out { font-size: 20px; }
+#mD .stagedots { display: flex; gap: 5px; margin-top: 3px; }
+#mD .stagedots i { width: 18px; height: 6px; border-radius: 3px; background: #ffffff22; }
+#mD .stagedots i.on { background: var(--bi-chrome-accent); }
+#mD .row .buy { padding: 11px 12px; font-size: 15px; }
+#mD .shelfgrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+#mD .fly { position: absolute; z-index: 40; width: 48px; height: 48px; image-rendering: pixelated; pointer-events: none; transition: transform 0.8s cubic-bezier(0.5, -0.2, 0.9, 0.6), opacity 0.8s; }
+
+/* ======================== E: Tile board + right rail ======================== */
+#mE .wrap { display: grid; grid-template-columns: 1fr 268px; gap: 14px; align-items: start; }
+#mE .band { display: grid; grid-template-columns: 148px repeat(3, 1fr); gap: 10px; align-items: stretch; padding: 10px 10px 12px; }
+#mE .band + .band { margin-top: 12px; }
+#mE .band .head { grid-column: 1 / -1; }
+#mE .cardcell { display: grid; align-content: start; gap: 8px; justify-items: center; padding-top: 38px; }
+#mE .cardcell .gauge { width: 132px; }
+#mE .cardcell .gauge { flex-wrap: wrap; }
+#mE .cardcell small { font-size: 11px; color: var(--bi-frame-ink-muted); text-align: center; }
+#mE .kcell { display: grid; align-content: start; justify-items: stretch; gap: 6px; padding: 8px 10px 10px; text-align: center; position: relative; border-radius: 10px; background: rgba(0, 0, 0, 0.26); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+#mE .kcell.lockedrow { background: rgba(0, 0, 0, 0.16); color: #8d95a6; }
+#mE .kcell .tilebox { display: grid; place-items: center; height: 142px; }
+#mE .kcell .tile { transition: transform 0.15s; }
+#mE .kcell.hit .tile { transform: translateY(-9px); }
+#mE .kcell.hit { box-shadow: inset 0 0 0 2px var(--bi-chrome-accent), 0 0 16px rgba(217, 179, 90, 0.35); }
+#mE .kcell .rowname { justify-content: center; font-size: 16px; }
+#mE .kcell .out { font-size: 14px; }
+#mE .kcell .ms span { justify-content: center; }
+#mE .kcell .buy { padding: 6px 6px; font-size: 13px; }
+#mE .kcell .buy small { font-size: 10.5px; }
+#mE .kcell.lockedrow .rowname, #mE .kcell.lockedrow .lv { color: #8d95a6; }
+#mE .rail { position: sticky; top: 8px; }
+#mE .rail .up { margin-top: 6px; }
+#mE .topbar { display: flex; align-items: center; gap: 14px; margin-bottom: 12px; }
+#mE .topbar .seg { margin-left: auto; }
+</style></head>
+<body>
+<header class="page-head">
+  <h1>Production screen: 5 options</h1>
+  <p>One row per tree kind or mine type, with its tile, level, output, bar to the next x2 milestone and the buy button on the row (DESIGN.md section 4). One x1 / x10 / x100 / Max toggle. Locked kinds are greyed rows with their unlock price. The five differ in layout, density, where the production card stands, where the upgrade shelf sits and how a strike moves. Numbers are the real data (trees.json, mines.json, upgrades.json) at an invented mid-game save; sprites are the real baked tiles at whole-number scales. Click the toggle and the tabs: the mocks are live.</p>
+</header>
+<section class="picks" aria-label="How to pick">
+  <h2>Pick hint</h2>
+  <ul>
+    <li><b>A Ledger</b>Pick it if you want the card to feel like the boss of each job and the page to read top to bottom.</li>
+    <li><b>B Two-up</b>Pick it if you want every number on one screen with no scrolling and the card kept small.</li>
+    <li><b>C Side stage</b>Pick it if you want the card big and alive while you shop, and the shelf out of the way.</li>
+    <li><b>D Big tabs</b>Pick it if you want few things on screen at once, large growing tiles and the card always visible.</li>
+    <li><b>E Tile board</b>Pick it if you want it to feel like a field you tend, and are fine bending "one row per kind" into tiles.</li>
+  </ul>
+</section>
+<div class="tabs" role="tablist" aria-label="Options">
+  <button role="tab" aria-selected="true" data-t="A">A Ledger</button>
+  <button role="tab" aria-selected="false" data-t="B">B Two-up</button>
+  <button role="tab" aria-selected="false" data-t="C">C Side stage</button>
+  <button role="tab" aria-selected="false" data-t="D">D Big tabs</button>
+  <button role="tab" aria-selected="false" data-t="E">E Tile board</button>
+</div>
+<div id="captions"></div>
+<div class="mock" id="mA"></div>
+<div class="mock" id="mB" hidden></div>
+<div class="mock" id="mC" hidden></div>
+<div class="mock" id="mD" hidden></div>
+<div class="mock" id="mE" hidden></div>
+
+<script src="assets/lib.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { fmt, KINDS, rowModel, SHELF, cardBy, card, shell, SP, MONEY } = BI;
+  const STILL = /[?&]still/.test(location.search);
+  let mode = '1';
+  const state = { C: { job: 'logging', open: true }, D: { tab: 'logging' } };
+
+  const PC = {
+    logging: { main: 'apprentice_feller', sup: ['grove_keeper', 'moonwood_dryad', null], gauge: 17 },
+    mining: { main: 'cave_digger', sup: ['gem_cutter', 'geode_golem', null], gauge: 22 },
+  };
+  const JN = { logging: 'Logging', mining: 'Mining' };
+  const RC = { common: '#9aa4b4', rare: '#4f86e0', epic: '#9a6ae0', legendary: '#e0a43a', mythic: '#ff3fb4', exotic: '#ff8a1f', void: '#6b7280' };
+
+  const CAPTIONS = {
+    A: ['One column. Each job is a panel: the main card (full card at 1x) stands at its head, its three support slots beside it, then the rows under it.', 'Medium. 84 px rows, tile at 1x, everything on the row.', 'Head of each job, a full 132 x 186 card.', 'Below the jobs, a three-column grid of chips.', 'The strike sweeps down the rows in order: the row lights, "+n" pops off the tile.'],
+    B: ['Logging and Mining side by side, so no scrolling. The toggle sits top right.', 'High. 76 px rows, two columns, a thin line of upgrade chips under each row.', 'A one-line chip on each job title: name, level, gauge, supports as colour dots. No card art.', 'Inline: the upgrades for a kind sit under its row; global ones in one strip at the bottom.', 'Calm. The row quietly pulses and the gauge ticks; no floating numbers.'],
+    C: ['Rows on the left, a sticky stage on the right that shows the main card large (2x) with its supports and gauge. Logging / Mining tabs switch the stage.', 'Medium. 70 px rows, the stage takes a third of the width.', 'A side stage: the card at 2x (264 x 372), lunging while it strikes.', 'A bottom drawer, like the Dungeons floors drawer: closed it is a one-line bar with how many are ready.', 'The card lunges left at the rows; "+n" pops on the row it hits.'],
+    D: ['Three tabs: Logging, Mining, Upgrade shelf. One job at a time, big rows with tiles at 2x. A pinned strip with the main card stays on top.', 'Low. 152 px rows, large numbers, five growth dots under the bar.', 'A pinned strip on top: the weapon art at 1x, name, level, gauge, supports. Follows the tab.', 'Its own tab with a count badge.', 'Coins fly from the struck row up to the Money counter.'],
+    E: ['Each job is a band: the card at 1x in the first cell, then one tall tile card per kind (tile at 2x). This bends "one row per kind" into a board.', 'Low to medium. Three kinds across, about 400 px per job.', 'The first cell of each job band, a full card at 1x with its gauge.', 'A right rail that is always open.', 'The struck tile hops and "+n" pops above it.'],
+  };
+  const LABELS = ['Layout', 'Density', 'Production card', 'Shelf', 'Motion'];
+  const TRADE = {
+    A: 'Trade-off: the clearest read of the section 4 proposal and the card gets pride of place, but it is the tallest page and the shelf is a scroll away.',
+    B: 'Trade-off: the most information per screen and the shortest route to buy, but the production card shrinks to a text chip and the page is the least visual.',
+    C: 'Trade-off: the card is big and alive, the shelf never shares space with rows, but the stage only shows one job at a time and the page is two columns wide.',
+    D: 'Trade-off: big satisfying growing tiles and a calm page, but you see one job at a time and need a tab click to reach the shelf.',
+    E: 'Trade-off: the most like a field you tend and the card stands among its kinds, but it is no longer a row list and a fourth kind needs a new row of tiles.',
+  };
+
+  /* ---------- parts ---------- */
+  const toggle = () => '<div class="seg" role="group" aria-label="Buy amount">' + ['1', '10', '100', 'max'].map((v) => '<button data-mode="' + v + '" aria-pressed="' + (mode === v) + '">' + (v === 'max' ? 'Max' : '×' + v) + '</button>').join('') + '</div>';
+  const rm = (k) => rowModel(k, mode);
+  const outTxt = (m) => fmt(m.rate) + ' ' + m.gem + '/s';
+  const hitN = (m) => '+' + (m.rate >= 10 ? Math.round(m.rate) : fmt(m.rate));
+  function buyBtn(m) {
+    if (m.locked) {
+      if (m.dungeon) return '<button class="buy off" disabled>Locked<small>' + m.unlock + '</small></button>';
+      return '<button class="buy off" disabled>Unlock · ' + m.unlock + '<small>You have 1,150</small></button>';
+    }
+    return '<button class="buy ' + (m.afford ? 'glow' : 'off') + '" data-buy="' + m.id + '">Level up ' + (m.label ? m.label + ' ' : '') + '· ' + fmt(m.price) + '<small>' + fmt(m.rate) + '/s → ' + fmt(m.newRate) + '/s' + (m.crosses ? ' · ×2' : '') + '</small></button>';
+  }
+  const tileImg = (m, s) => '<img class="tile" alt="' + m.name + ' tile, growth stage ' + m.stage + '" width="' + 58 * s + '" height="' + 64 * s + '" src="' + m.tile + '">';
+  const msBlock = (m) => m.locked ? '<div class="ms"><span>Starts at ' + fmt(m.baseRate) + '/s at level 0</span></div>' :
+    '<div class="ms"><span><b>Lv ' + m.nextMs + ': ×2</b><em style="font-style:normal">' + m.toMs + ' to go</em></span><div class="bar" style="--p:' + m.msProg.toFixed(0) + '"><i></i></div></div>';
+  const tierChip = (m) => '<span class="chip tier">Tier ' + m.tier + '</span>';
+  function supChip(id, s) {
+    if (!id) return '<span class="sup empty">Empty support slot</span>';
+    const c = cardBy(id);
+    return '<span class="sup"><i style="--c:' + RC[c.rarity] + '"></i>' + c.name + (s === 'full' ? ' <small>' + c.support + '</small>' : '') + '</span>';
+  }
+  const gauge = (job) => '<div class="gauge" data-job="' + job + '"><div class="bar"><i style="--p:' + (PC[job].gauge / 30 * 100) + '"></i></div><span class="g">' + PC[job].gauge + '/30</span></div>';
+  const upBtn = (u, extra) => '<div class="up ' + (u.owned ? 'owned' : u.afford ? 'can' : 'poor') + '" title="' + u.d + '"><b><span>' + u.name + '</span><span class="price">' + (u.owned ? 'Owned' : fmt(u.cost)) + '</span></b><span>' + u.d + '</span></div>';
+  const kindRows = (j) => KINDS[j].map(rm);
+  const jobRate = (j) => kindRows(j).filter((m) => !m.locked).reduce((a, m) => a + m.rate, 0);
+  const totalRate = () => fmt(jobRate('logging') + jobRate('mining'));
+  const readyCount = () => SHELF.filter((u) => u.afford).length;
+
+  /* ---------- A: Ledger ---------- */
+  function rowA(m) {
+    return '<div class="row ' + (m.locked ? 'lockedrow' : '') + '" data-row="' + m.id + '" data-n="' + hitN(m) + '"><div data-anchor>' + tileImg(m, 1) + '</div>' +
+      '<div><div class="rowname">' + m.name + ' ' + tierChip(m) + '</div><div class="lv">' + (m.locked ? 'Locked' : 'Level <b class="num">' + m.lvl + '</b>') + '</div></div>' +
+      '<div class="out">' + (m.locked ? '<span class="muted">No output yet</span>' : outTxt(m)) + '</div>' + msBlock(m) + buyBtn(m) + '</div>';
+  }
+  function jobA(j) {
+    const p = PC[j], c = cardBy(p.main);
+    return '<section class="panel" data-job="' + j + '"><h3 class="panel__title">' + JN[j] + '<small>' + fmt(jobRate(j)) + ' gems/s</small></h3>' +
+      '<div class="jobhead"><div>' + card(c, 1) + '</div><div class="info"><h3>' + c.name + ' strikes the rows</h3><p>Steady · one strike every 1 s · sweeps every unlocked kind. Strikes are for show; the output is the same offline.</p>' +
+      gauge(j) + '<p>At 30 the gauge bursts: 10 s of output at once.</p><div class="sups">' + p.sup.map((s) => supChip(s, 'full')).join('') + '</div></div></div>' +
+      kindRows(j).map(rowA).join('') + '</section>';
+  }
+  function renderA() {
+    const groups = { logging: 'Logging', mining: 'Mining', all: 'Both jobs' };
+    let shelf = '';
+    for (const g of ['logging', 'mining', 'all']) shelf += '<div class="ugroup" style="grid-column:1/-1">' + groups[g] + '</div>' + SHELF.filter((u) => u.group === g).map(upBtn).join('');
+    return shell('Production', '<div class="topbar"><h2 class="pg" style="margin:0">Production</h2><span class="sum">' + totalRate() + ' gems/s</span><span class="buyhint">Buy</span>' + toggle() + '</div>' +
+      jobA('logging') + jobA('mining') +
+      '<section class="panel" style="margin-top:14px"><h3 class="panel__title">Upgrade shelf<small>' + readyCount() + ' ready to buy</small></h3><div class="shelf">' + shelf + '</div></section>');
+  }
+
+  /* ---------- B: Two-up ---------- */
+  function upChipsFor(id) {
+    const own = SHELF.filter((u) => u.kind === id);
+    if (!own.length) return '';
+    return '<div class="inl">' + own.map((u) => '<button class="' + (u.owned ? 'owned' : u.afford ? 'can' : '') + '" title="' + u.d + '">' + u.name + (u.owned ? ' ✓' : ' · ' + fmt(u.cost)) + '</button>').join('') + '</div>';
+  }
+  function rowB(m) {
+    return '<div class="rowwrap" data-row="' + m.id + '" data-n="' + hitN(m) + '"><div class="row ' + (m.locked ? 'lockedrow' : '') + '"><div data-anchor>' + tileImg(m, 1) + '</div><div class="mid"><div class="top"><span class="rowname">' + m.name + '</span><span class="lv">' + (m.locked ? '' : 'Lv <b class="num">' + m.lvl + '</b>') + '</span><span class="out">' + (m.locked ? '' : outTxt(m)) + '</span></div>' +
+      (m.locked ? '<div class="ms"><span>' + (m.dungeon ? 'Clear Ember Crypt to unlock' : 'Starts at ' + fmt(m.baseRate) + '/s') + '</span></div>' : msBlock(m)) + '</div>' + buyBtn(m).replace('Level up ', '') + '</div>' + (m.locked ? '' : upChipsFor(m.id)) + '</div>';
+  }
+  function jobB(j) {
+    const p = PC[j], c = cardBy(p.main);
+    return '<section class="panel" data-job="' + j + '"><h3 class="panel__title">' + JN[j] + '<small>' + fmt(jobRate(j)) + ' gems/s</small></h3>' +
+      '<div class="jobbar"><div class="l1"><b>' + c.name + '</b><span class="muted">Lv ' + c.lvl + '/' + c.cap + ' · ' + BI.TIERN[c.tier] + ' ★' + c.stars + '</span><span style="margin-left:auto" class="muted">strikes every 1 s</span></div>' + gauge(j) +
+      '<div class="sups">' + p.sup.map((s) => supChip(s, 'short')).join('') + '</div></div>' +
+      kindRows(j).map(rowB).join('') + '</section>';
+  }
+  function renderB() {
+    return shell('Production', '<div class="topbar"><h2 class="pg" style="margin:0">Production</h2><span style="font-weight:600">' + totalRate() + ' gems/s</span>' + toggle() + '</div>' +
+      '<div class="cols">' + jobB('logging') + jobB('mining') + '</div>' +
+      '<section class="panel glob"><h3>Upgrades for everything</h3>' + SHELF.filter((u) => u.kind === 'all').map((u) => '<div class="up ' + (u.owned ? 'owned' : u.afford ? 'can' : 'poor') + '" style="min-width:230px" title="' + u.d + '"><b><span>' + u.name + '</span><span class="price">' + (u.owned ? 'Owned' : fmt(u.cost)) + '</span></b><span>' + u.d + '</span></div>').join('') + '</section>');
+  }
+
+  /* ---------- C: Side stage + bottom drawer ---------- */
+  function rowC(m) {
+    return '<div class="row ' + (m.locked ? 'lockedrow' : '') + '" data-row="' + m.id + '" data-n="' + hitN(m) + '"><div data-anchor>' + tileImg(m, 1) + '</div><div class="rowtxt"><div class="rowname">' + m.name + '</div><div class="lv">' + (m.locked ? 'Locked' : 'Lv <b class="num">' + m.lvl + '</b>') + '</div>' + (m.locked ? '' : '<div class="out">' + outTxt(m) + '</div>') + '</div>' + (m.locked ? '<div class="ms"><span>' + (m.dungeon ? 'Clear Ember Crypt to unlock' : 'Level 0 output ' + fmt(m.baseRate) + '/s') + '</span></div>' : msBlock(m)) + buyBtn(m) + '</div>';
+  }
+  function jobC(j) {
+    return '<section class="panel" data-job="' + j + '"><h3 class="panel__title">' + JN[j] + '<small>' + fmt(jobRate(j)) + ' gems/s</small></h3>' + kindRows(j).map(rowC).join('') + '</section>';
+  }
+  function renderC() {
+    const j = state.C.job, p = PC[j], c = cardBy(p.main);
+    const stage = '<aside class="panel stage" data-job="' + j + '"><div class="tabs2"><button data-cjob="logging" aria-pressed="' + (j === 'logging') + '">Logging</button><button data-cjob="mining" aria-pressed="' + (j === 'mining') + '">Mining</button></div>' +
+      '<div class="cardwrap" data-cardwrap>' + card(c, 2) + '</div><div class="meta">' + gauge(j) + '<p>Steady · strikes every 1 s · bursts at 30 for 10 s of output.</p><div class="sups">' + p.sup.map((s) => supChip(s, 'full')).join('') + '</div></div></aside>';
+    const drawer = '<div class="drawer ' + (state.C.open ? '' : 'closed') + '"><button class="dh" data-drawer>Upgrade shelf <small>' + readyCount() + ' ready to buy · ' + SHELF.filter((u) => u.owned).length + ' owned</small><span class="caret">▲</span></button><div class="db">' + SHELF.filter((u) => !u.owned).slice(0, 8).map(upBtn).join('') + '</div></div>';
+    return shell('Production', '<div class="topbar"><h2 class="pg" style="margin:0">Production</h2><span style="font-weight:600">' + totalRate() + ' gems/s</span>' + toggle() + '</div><div class="split"><div>' + jobC('logging') + jobC('mining') + '</div>' + stage + '</div>' + drawer);
+  }
+
+  /* ---------- D: Big tabs + pinned strip ---------- */
+  function rowD(m) {
+    const dots = [0, 1, 2, 3, 4].map((i) => '<i class="' + (i <= m.stage ? 'on' : '') + '"></i>').join('');
+    return '<div class="row ' + (m.locked ? 'lockedrow' : '') + '" data-row="' + m.id + '" data-n="' + hitN(m) + '"><div data-anchor>' + tileImg(m, 2) + '</div>' +
+      '<div><div class="rowname">' + m.name + ' ' + tierChip(m) + '</div>' + (m.locked ? '<div class="lv" style="margin-top:6px">Locked</div>' : '<div class="biglv num">' + m.lvl + '<small>level</small></div>') + '</div>' +
+      '<div class="out">' + (m.locked ? '<span class="muted">No output yet</span>' : fmt(m.rate) + '<small>' + m.gem + ' per second</small>') + '</div>' +
+      (m.locked ? '<div class="ms"><span>' + (m.dungeon ? 'Clear Ember Crypt to unlock' : 'Starts at ' + fmt(m.baseRate) + '/s at level 0') + '</span></div>' : '<div class="ms"><span><b>Next ×2 at level ' + m.nextMs + '</b><em style="font-style:normal">' + m.toMs + ' levels to go</em></span><div class="bar" style="--p:' + m.msProg.toFixed(0) + ';height:10px"><i></i></div><div class="stagedots" title="Tile growth: one step per 25 levels">' + dots + '</div></div>') + buyBtn(m) + '</div>';
+  }
+  function renderD() {
+    const t = state.D.tab, jobKey = t === 'shelf' ? 'logging' : t;
+    const p = PC[jobKey], c = cardBy(p.main);
+    const strip = '<section class="panel strip" data-strip><div class="art r-' + c.rarity + '"><img alt="' + c.weapon + '" src="' + SP + 'item-' + c.item + '-' + c.rarity + '.png"></div>' +
+      '<div><h3>' + c.name + '</h3><div class="sub">' + BI.RARN[c.rarity] + ' · ' + BI.TIERN[c.tier] + ' ★' + c.stars + ' · Level ' + c.lvl + '/' + c.cap + ' · steady, one strike every 1 s</div>' + gauge(jobKey) + '</div>' +
+      '<div class="side"><div class="muted" style="font-size:12px;font-weight:600">Supports</div><div class="sups">' + p.sup.map((s) => supChip(s, 'short')).join('') + '</div></div></section>';
+    const tabs = '<div class="tabs3" role="tablist"><button class="t" role="tab" data-dtab="logging" aria-selected="' + (t === 'logging') + '">Logging</button><button class="t" role="tab" data-dtab="mining" aria-selected="' + (t === 'mining') + '">Mining</button><button class="t" role="tab" data-dtab="shelf" aria-selected="' + (t === 'shelf') + '">Upgrade shelf<span class="n">' + readyCount() + '</span></button>' + (t === 'shelf' ? '' : toggle()) + '</div>';
+    let body;
+    if (t === 'shelf') {
+      body = '<section class="panel"><h3 class="panel__title">Upgrade shelf<small>' + readyCount() + ' ready to buy</small></h3><div class="shelfgrid">' + SHELF.map(upBtn).join('') + '</div></section>';
+    } else body = kindRows(t).map(rowD).join('');
+    return shell('Production', '<h2 class="pg" style="margin-bottom:10px">Production</h2>' + strip + tabs + body);
+  }
+
+  /* ---------- E: Tile board + right rail ---------- */
+  function cellE(m) {
+    return '<div class="kcell ' + (m.locked ? 'lockedrow' : '') + '" data-row="' + m.id + '" data-n="' + hitN(m) + '"><div class="tilebox" data-anchor>' + tileImg(m, 2) + '</div>' +
+      '<div class="rowname">' + m.name + '</div><div class="lv">' + (m.locked ? 'Locked · Tier ' + m.tier : 'Level <b class="num">' + m.lvl + '</b> · Tier ' + m.tier) + '</div>' +
+      (m.locked ? '' : '<div class="out">' + outTxt(m) + '</div>') + (m.locked ? '<div class="ms"><span>' + (m.dungeon ? 'Clear Ember Crypt' : 'Starts at ' + fmt(m.baseRate) + '/s') + '</span></div>' : msBlock(m)) + buyBtn(m) + '</div>';
+  }
+  function bandE(j) {
+    const p = PC[j], c = cardBy(p.main);
+    return '<section class="panel band" data-job="' + j + '"><h3 class="panel__title head">' + JN[j] + '<small>' + fmt(jobRate(j)) + ' gems/s · supports: ' + p.sup.filter(Boolean).map((s) => cardBy(s).name).join(', ') + '</small></h3>' +
+      '<div class="cardcell" data-cardwrap>' + card(c, 1) + gauge(j) + '<small>Strikes every 1 s</small></div>' + kindRows(j).map(cellE).join('') + '</section>';
+  }
+  function renderE() {
+    const rail = '<aside class="panel rail"><h3 class="panel__title">Upgrade shelf<small>' + readyCount() + ' ready</small></h3>' + SHELF.map(upBtn).join('') + '</aside>';
+    return shell('Production', '<div class="topbar"><h2 class="pg" style="margin:0">Production</h2><span style="font-weight:600">' + totalRate() + ' gems/s</span>' + toggle() + '</div><div class="wrap"><div>' + bandE('logging') + bandE('mining') + '</div>' + rail + '</div>');
+  }
+
+  /* ---------- motion ---------- */
+  function pop(host, txt, anchor) {
+    const a = anchor || host.querySelector('[data-anchor]') || host;
+    const hb = host.getBoundingClientRect(), ab = a.getBoundingClientRect();
+    const el = document.createElement('div');
+    el.className = 'pop'; el.textContent = txt;
+    el.style.left = (ab.left - hb.left + ab.width / 2) + 'px';
+    el.style.top = (ab.top - hb.top + ab.height / 2) + 'px';
+    host.appendChild(el);
+    setTimeout(() => el.remove(), 950);
+  }
+  function lightRow(el, ms) { el.classList.add('hit'); setTimeout(() => el.classList.remove('hit'), ms || 520); }
+  const targets = (id) => Array.prototype.slice.call(document.querySelectorAll('#m' + id + ' [data-row]')).filter((r) => !r.querySelector('.buy:disabled') || r.querySelector('.buy.glow,.buy.off:not([disabled])'));
+  const STRIKE = {
+    A(rows, i) { const r = rows[i % rows.length]; lightRow(r); const host = r; r.style.position = 'relative'; pop(r, r.dataset.n); },
+    B(rows, i) { const r = rows[i % rows.length]; const row = r.querySelector('.row'); lightRow(row, 380); },
+    C(rows, i) {
+      const r = rows[i % rows.length]; const wrap = document.querySelector('#mC [data-cardwrap]'); wrap.classList.add('lunge'); setTimeout(() => wrap.classList.remove('lunge'), 160);
+      lightRow(r); pop(r, r.dataset.n);
+    },
+    D(rows, i) {
+      const r = rows[i % rows.length]; lightRow(r);
+      const mock = document.getElementById('mD'); const mb = mock.getBoundingClientRect(), rb = r.getBoundingClientRect();
+      const tile = r.querySelector('.tile'); const shape = (tile.getAttribute('src').match(/tile-(?:tree|mine)-(\w+)-/) || [0, 'round'])[1];
+      const coin = document.createElement('img'); coin.className = 'fly'; coin.src = SP + 'coin-' + shape + '-gold.png'; coin.alt = '';
+      coin.style.left = (rb.left - mb.left + 40) + 'px'; coin.style.top = (rb.top - mb.top + 30) + 'px'; mock.appendChild(coin);
+      const pill = mock.querySelector('.pill'); const pb = pill.getBoundingClientRect();
+      requestAnimationFrame(() => requestAnimationFrame(() => { coin.style.transform = 'translate(' + (pb.left - mb.left - (rb.left - mb.left + 40) + 40) + 'px,' + (pb.top - mb.top - (rb.top - mb.top + 30)) + 'px)'; coin.style.opacity = '0.1'; }));
+      setTimeout(() => coin.remove(), 900);
+    },
+    E(rows, i) { const r = rows[i % rows.length]; lightRow(r); pop(r, r.dataset.n); },
+  };
+  let step = 0, visible = 'A';
+  function strikeNow(id, i) { const rows = targets(id).filter((r) => !r.classList.contains('lockedrow')); if (rows.length) STRIKE[id](rows, i == null ? step : i); }
+  function tick() {
+    step++;
+    strikeNow(visible);
+    document.querySelectorAll('#m' + visible + ' .gauge').forEach((g) => {
+      const job = g.dataset.job; PC[job].gauge = PC[job].gauge >= 29 ? 0 : PC[job].gauge + 1;
+      g.querySelector('i').style.setProperty('--p', PC[job].gauge / 30 * 100); g.querySelector('.g').textContent = PC[job].gauge + '/30';
+    });
+  }
+  if (!STILL) setInterval(() => { if (!document.hidden) tick(); }, 1100);
+
+  /* ---------- wiring ---------- */
+  const R = { A: renderA, B: renderB, C: renderC, D: renderD, E: renderE };
+  function renderAll() { for (const id in R) document.getElementById('m' + id).innerHTML = R[id](); }
+  function renderCaption(id) {
+    document.getElementById('captions').innerHTML = '<div class="caption">' + CAPTIONS[id].map((t, i) => '<div><b>' + LABELS[i] + '</b><span>' + t + '</span></div>').join('') + '</div><div class="tradeoff">' + TRADE[id].replace('Trade-off:', '<b>Trade-off:</b>') + '</div>';
+  }
+  function show(id) {
+    visible = id;
+    for (const k in R) document.getElementById('m' + k).hidden = k !== id;
+    document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === id)));
+    renderCaption(id);
+    history.replaceState(null, '', '#' + id);
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-t],[data-mode],[data-cjob],[data-drawer],[data-dtab]');
+    if (!t) return;
+    if (t.dataset.t) return show(t.dataset.t);
+    if (t.dataset.mode) mode = t.dataset.mode;
+    if (t.dataset.cjob) state.C.job = t.dataset.cjob;
+    if (t.dataset.drawer !== undefined) state.C.open = !state.C.open;
+    if (t.dataset.dtab) state.D.tab = t.dataset.dtab;
+    renderAll();
+  });
+  renderAll();
+  show((location.hash || '#A').slice(1) in R ? (location.hash || '#A').slice(1) : 'A');
+  window.__strike = strikeNow;
+  window.__state = state;
+  window.__render = renderAll;
+  window.__show = show;
+  window.__setMode = (m) => { mode = m; renderAll(); };
+})();
+</script>
+</body></html>

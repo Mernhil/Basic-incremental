@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Summon 5 pixel option 1: Casino Baize</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+.s5p{font-family:Outfit}
+.s5p .mk-main{background:#000;color:#f2ecd6}
+.s5p .tbl{position:absolute;left:0;top:0;width:1044px;height:717px;image-rendering:pixelated}
+.s5p h2{font:800 26px Alegreya,serif;margin:0;color:#f2ecd6;text-shadow:0 2px 0 #000}
+.s5p .deck{position:absolute;top:40px;width:300px;display:grid;justify-items:center;gap:8px;text-align:center}
+.s5p .stack{margin:6px 0 4px}
+.s5p .sub{font-size:13px;color:#cfe3d3;font-weight:600;text-shadow:0 1px 0 #000}
+.s5p .btns{display:flex;gap:8px}
+.s5p .b{border:0;border-radius:0;padding:9px 16px;font:800 14px Outfit;background:#7a4a12;color:#f2ecd6;box-shadow:0 0 0 2px #1a1020,inset 0 2px 0 rgba(255,255,255,.25)}
+.s5p .b.pri{background:#e8b84a;color:#2a1d05;box-shadow:0 0 0 2px #1a1020,inset 0 2px 0 rgba(255,255,255,.5),inset 0 -2px 0 #7a4a12}
+.s5p .odds{position:absolute;left:438px;top:62px;width:168px;height:178px}
+.s5p .odds img{position:absolute;left:0;top:0;width:168px;height:178px}
+.s5p .odds .in{position:absolute;left:29px;top:30px;width:110px;height:118px;font-size:11px;font-weight:600;color:#f2ecd6;overflow:hidden}
+.s5p .odds h3{margin:0 0 3px;font:800 15px Alegreya;color:#e8b84a;text-align:center}
+.s5p .odds .in>div{display:flex;justify-content:space-between;line-height:1.3}.s5p .odds b{color:var(--rc)}
+.s5p .odds p{margin:3px 0 0;font-size:10.5px;color:#cfe3d3;text-align:center;line-height:1.2}
+.s5p .hand{position:absolute;left:0;right:0;top:450px;height:250px}
+.s5p .slot{position:absolute;width:132px;height:186px}
+.s5p .slot .mk-card{--k:.75}.s5p .slot .mk-card .fr{display:none}
+.s5p .lab{position:absolute;left:0;right:0;top:-34px;text-align:center;font:700 14px Outfit;color:#cfe3d3;text-shadow:0 1px 0 #000}
+.s5p .hand.new{display:none}.s5p.play .hand.new{display:block}.s5p.play .hand.old{display:none}
+@keyframes deal{from{translate:var(--fx,-200px) -300px;opacity:0}}
+.s5p .hand.new .slot{animation:deal .5s steps(6) both}
+.s5p .flipper{width:132px;height:186px;background:url(../../pixel/summon-deck-table/s1/flip_strip.png) -528px 0/1188px 186px;image-rendering:pixelated;animation:flp 1.4s steps(1) infinite}
+@keyframes flp{0.0%{background-position:-0px 0};11.11%{background-position:-132px 0};22.22%{background-position:-264px 0};33.33%{background-position:-396px 0};44.44%{background-position:-528px 0};55.56%{background-position:-660px 0};66.67%{background-position:-792px 0};77.78%{background-position:-924px 0};88.89%{background-position:-1056px 0}}
+.s5p .flip{width:132px}
+</style></head><body><div id="app"></div>
+<script src="../_shared/mock.js"></script><script>
+let body=`<img class="tbl" src="../../pixel/summon-deck-table/s1/table.png" alt=""><section class="deck" style="left:26px"><h2>Card Portal</h2><div class="stack"><img class="pix" src="../../pixel/summon-deck-table/s1/deck_portal_14.png" style="image-rendering:pixelated;width:146px;height:200px" alt=""></div><div class="sub">Legendary at 90: the deck is 70 pulls thick</div><div class="btns"><button class="b">Draw x1 &nbsp;10</button><button class="b pri">Deal x10 &nbsp;100</button></div></section><div class="odds"><img class="pix" src="../../pixel/summon-deck-table/s1/plate.png" alt=""><div class="in"><h3>Odds per pull</h3><div class="rc-common"><span>Common</span><b>68.2%</b></div><div class="rc-rare"><span>Rare</span><b>22.7%</b></div><div class="rc-epic"><span>Epic</span><b>6.1%</b></div><div class="rc-legendary"><span>Legendary</span><b>2.3%</b></div><div class="rc-mythic"><span>Mythic</span><b>0.5%</b></div><div class="rc-exotic"><span>Exotic</span><b>0.2%</b></div><p>Every x10 holds a Rare or better</p></div></div><section class="deck" style="left:718px"><h2>Wardrobe Gate</h2><div class="stack"><img class="pix" src="../../pixel/summon-deck-table/s1/deck_wardrobe_3.png" style="image-rendering:pixelated;width:135px;height:189px" alt=""></div><div class="sub">Glamour Crystals, same odds shape</div><div class="btns"><button class="b">Draw x1 &nbsp;10</button><button class="b pri">Deal x10 &nbsp;100</button></div></section><div class="hand old"><div class="lab">Your last hand</div><div class="slot" style="left:114px;top:18px;--fx:135px;animation-delay:0.00s">MKCARD:ember_squire</div><div class="slot" style="left:190px;top:11px;--fx:105px;animation-delay:0.07s">MKCARD:cave_digger</div><div class="slot" style="left:266px;top:5px;--fx:75px;animation-delay:0.14s">MKCARD:storm_duelist</div><div class="slot" style="left:342px;top:2px;--fx:45px;animation-delay:0.21s">MKCARD:apprentice_feller</div><div class="slot" style="left:418px;top:0px;--fx:15px;animation-delay:0.28s">MKCARD:gem_cutter</div><div class="slot" style="left:494px;top:0px;--fx:-15px;animation-delay:0.35s">MKCARD:dawnblade_regent</div><div class="slot" style="left:570px;top:2px;--fx:-45px;animation-delay:0.42s">MKCARD:ember_squire</div><div class="slot" style="left:646px;top:5px;--fx:-75px;animation-delay:0.49s">MKCARD:shield_warden</div><div class="slot" style="left:722px;top:11px;--fx:-105px;animation-delay:0.56s">MKCARD:cave_digger</div><div class="slot" style="left:798px;top:18px;--fx:-135px;animation-delay:0.63s">MKCARD:apprentice_feller</div></div><div class="hand new"><div class="lab">Dealing x10, flip each card or press Space</div><div class="slot" style="left:114px;top:18px;--fx:135px;animation-delay:0.00s">MKCARD:ember_squire</div><div class="slot" style="left:190px;top:11px;--fx:105px;animation-delay:0.07s">MKCARD:cave_digger</div><div class="slot" style="left:266px;top:5px;--fx:75px;animation-delay:0.14s">MKCARD:storm_duelist</div><div class="slot" style="left:342px;top:2px;--fx:45px;animation-delay:0.21s">MKCARD:apprentice_feller</div><div class="slot" style="left:418px;top:0px;--fx:15px;animation-delay:0.28s">MKCARD:gem_cutter</div><div class="slot" style="left:494px;top:0px;--fx:-15px;animation-delay:0.35s">MKCARD:dawnblade_regent</div><div class="slot flip" style="left:570px;top:2px;--fx:-45px;animation-delay:0.42s"><div class="flipper"></div></div><div class="slot" style="left:646px;top:5px;--fx:-75px;animation-delay:0.49s"><img class="pix" src="../../pixel/summon-deck-table/s1/back_portal.png" style="image-rendering:pixelated;width:132px;height:186px" alt=""></div><div class="slot" style="left:722px;top:11px;--fx:-105px;animation-delay:0.56s"><img class="pix" src="../../pixel/summon-deck-table/s1/back_portal.png" style="image-rendering:pixelated;width:132px;height:186px" alt=""></div><div class="slot" style="left:798px;top:18px;--fx:-135px;animation-delay:0.63s"><img class="pix" src="../../pixel/summon-deck-table/s1/back_portal.png" style="image-rendering:pixelated;width:132px;height:186px" alt=""></div></div>`;
+body=body.replace(/MKCARD:(\w+)/g,(m,id)=>MK.card(id,{k:.75}));
+MK.shell('summon',body,{cls:'s5p',play:'Play a x10 deal'});
+</script></body></html>

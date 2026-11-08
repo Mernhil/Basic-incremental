@@ -1,0 +1,84 @@
+/* Shared kit for the review mockups: the real game tokens (theme "Light Stone" / Gilded Nocturne,
+   src/data/content/cosmetics.json), the bundled Outfit font and a 132 x 186 card built from the real
+   baked frame and item sprites. Nothing here is game code. */
+@font-face{font-family:'Outfit';font-weight:400;src:url(assets/fonts/outfit-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-weight:500;src:url(assets/fonts/outfit-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-weight:600;src:url(assets/fonts/outfit-latin-600-normal.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-weight:700;src:url(assets/fonts/outfit-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'Outfit';font-weight:800;src:url(assets/fonts/outfit-latin-800-normal.woff2) format('woff2')}
+
+:root{
+  --bi-font-ui:'Outfit','Segoe UI',sans-serif;
+  --bi-table-bg:#cfd5dd; --bi-on-table:#1c2330; --bi-on-table-muted:#3d4757;
+  --bi-chrome-bg:#161b26; --bi-chrome-line:rgba(217,179,90,.55); --bi-chrome-ink:#e9eef7;
+  --bi-chrome-ink-muted:#b4c0d4; --bi-chrome-accent:#d9b35a; --bi-chrome-rail-bg:#1d2330;
+  --bi-chrome-active-bg:rgba(217,179,90,.14);
+  --bi-frame-bg:#2a2f38; --bi-frame-line:rgba(217,179,90,.6); --bi-frame-title-bg:rgba(0,0,0,.4);
+  --bi-frame-title-line:rgba(217,179,90,.3); --bi-frame-ink:#e9eef7; --bi-frame-ink-muted:#b4c0d4;
+  --bi-frame-title-ink:#e9eef7; --bi-frame-radius:12px;
+  --bi-hp-0:#e0606d; --bi-hp-1:#e3a548; --bi-hp-2:#d8cc57; --bi-hp-3:#5fc2a0; --bi-hp-4:#5fa6e0; --bi-hp-5:#b48cff;
+  --bi-tick-crit:#ffb02e; --bi-tick-color:#f3dc9a;
+  --good:#6fcf8a; --bad:#e0606d;
+  /* tier metals (rank.css / the frame ladder) */
+  --t-bronze:#c98a4b; --t-silver:#cdd5e2; --t-gold:#e8c05a; --t-prismatic:#9fd8ff; --t-unique:#ffb26b;
+  --prism:linear-gradient(90deg,#ff5f9e,#ffb347,#f4f46b,#5ff0a8,#5fc6ff,#b48cff,#ff5f9e);
+  /* dungeon tier hues = the three core colours */
+  --core-moss:#7fae68; --core-cinder:#e08a55; --core-frost:#8fc0e0;
+  /* review page chrome (not the game) */
+  --rv-bg:#0f1115; --rv-bg2:#181b22; --rv-line:#2a2f3a; --rv-ink:#e7eaf0; --rv-dim:#8d95a6; --rv-acc:#e8c05a;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--rv-bg);color:var(--rv-ink);font:500 14px/1.4 var(--bi-font-ui)}
+.bi-num{font-variant-numeric:tabular-nums lining-nums}
+.px{image-rendering:pixelated;display:block}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--bi-chrome-accent);outline-offset:2px}
+
+/* ---- the card, 132 x 186 art grid, frame sprite overhanging by (25,40) ---- */
+.mc{--k:1;position:relative;width:calc(132px*var(--k));height:calc(186px*var(--k));flex:none}
+.mc__in{position:absolute;left:0;top:0;width:132px;height:186px;transform:scale(var(--k));transform-origin:0 0;
+  border-radius:5px;background:var(--body);color:#e9eef7;overflow:visible}
+.mc__in::before{content:'';position:absolute;inset:0;border-radius:5px;background:linear-gradient(160deg,rgba(255,255,255,.07),transparent 45%)}
+.mc__plate{position:absolute;left:9px;right:9px;top:10px;height:19px;border-radius:4px;background:rgba(0,0,0,.34);
+  box-shadow:inset 0 0 0 1px rgba(217,179,90,.45);display:flex;align-items:center;justify-content:space-between;padding:0 6px;font-weight:700;font-size:10.5px;white-space:nowrap}
+.mc__plate span{color:#a3b0c6;font-weight:500;font-size:9px}
+.mc__art{position:absolute;left:9px;right:9px;top:32px;height:122px;border-radius:4px;overflow:hidden;
+  background:radial-gradient(circle at 50% 40%,rgba(147,166,187,.22),transparent 70%),#0d121b;box-shadow:inset 0 0 0 1px rgba(217,179,90,.4);display:grid;place-items:center}
+.mc__art img{width:100px;height:120px}
+.mc__foot{position:absolute;left:11px;right:11px;bottom:8px;height:20px;display:flex;align-items:center;justify-content:space-between;font-size:9.5px;font-weight:700}
+.mc__stars{letter-spacing:1px;font-size:10px;color:rgba(255,255,255,.22)}
+.mc__stars b{font-weight:400;color:var(--tier-c)}
+.mc__frame{position:absolute;left:-25px;top:-40px;width:183px;height:237px;pointer-events:none}
+.mc[data-tier=bronze]{--tier-c:var(--t-bronze)} .mc[data-tier=silver]{--tier-c:var(--t-silver)}
+.mc[data-tier=gold]{--tier-c:var(--t-gold)} .mc[data-tier=prismatic],.mc[data-tier=unique]{--tier-c:#b8e6ff}
+.mc[data-rarity=common]{--body:#2a2f38} .mc[data-rarity=rare]{--body:#16294d}
+.mc[data-rarity=epic]{--body:#2c1a4f} .mc[data-rarity=legendary]{--body:#4a2b0d}
+.mc__tier{color:var(--tier-c)}
+[data-tier=prismatic] .mc__tier,[data-tier=unique] .mc__tier{background:var(--prism);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* ---- panel vocabulary shared by all five options ---- */
+.fr{background:var(--bi-frame-bg);color:var(--bi-frame-ink);border-radius:12px;box-shadow:inset 0 0 0 1px var(--bi-frame-line)}
+.tt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 12px;border-radius:9px;background:var(--bi-frame-title-bg);
+  box-shadow:inset 0 0 0 1px var(--bi-frame-title-line);font-weight:700;font-size:14px;color:var(--bi-frame-title-ink)}
+.muted{color:var(--bi-frame-ink-muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:1px 9px;border-radius:99px;font-size:11.5px;font-weight:700;background:var(--bi-frame-title-bg);
+  box-shadow:inset 0 0 0 1px var(--bi-frame-title-line);color:var(--bi-frame-title-ink);white-space:nowrap}
+.pill.tier-bronze{color:var(--t-bronze)} .pill.tier-silver{color:var(--t-silver)} .pill.tier-gold{color:var(--t-gold)}
+.pill.tier-prismatic,.pill.tier-unique{background:linear-gradient(#0006,#0006),var(--prism);color:#fff;box-shadow:none;text-shadow:0 1px 0 #0008}
+.pill.tier-unique{background:linear-gradient(#0006,#0006),linear-gradient(90deg,#ff8a3c,#ffd86b,#ff8a3c)}
+.btn{padding:7px 14px;border:0;border-radius:8px;background:var(--bi-chrome-accent);color:var(--bi-chrome-bg);font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn:hover:not(:disabled){filter:brightness(1.1)}
+.btn:disabled{background:#6b655a;color:#2a2f38;cursor:not-allowed;opacity:.85}
+.btn.ghost{background:transparent;color:var(--bi-frame-ink);box-shadow:inset 0 0 0 1px var(--bi-frame-line)}
+.bar{position:relative;height:10px;border-radius:99px;background:rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(217,179,90,.25);overflow:hidden}
+.bar>i{position:absolute;inset:0 auto 0 0;width:calc(var(--p)*1%);border-radius:inherit;background:linear-gradient(90deg,#c79a35,#e8c05a)}
+.bar.xp>i{background:linear-gradient(90deg,#5fa6e0,#7fc6ff)}
+.bar.star>i{background:linear-gradient(90deg,#d9a42a,#ffe27a)}
+.bar.max>i{background:var(--prism)}
+.res{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.res img,.res svg{width:18px;height:18px;flex:none}
+.res.ok b{color:var(--good)} .res.no b{color:var(--bad)}
+.res small{color:var(--bi-frame-ink-muted);font-weight:500}
+.ok-t{color:var(--good)} .no-t{color:var(--bad)}
+.tag-max{font-weight:800;font-size:11px;padding:1px 7px;border-radius:5px;background:var(--prism);color:#10131a}

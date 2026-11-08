@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Header and Details options</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap');
+:root{--chrome:#0f1115;--chrome2:#181b22;--chrome-line:#2a2f3a;--chrome-ink:#e7eaf0;--chrome-dim:#8d95a6;--chrome-acc:#e8c05a}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--chrome);color:var(--chrome-ink);font:500 14px/1.4 'Outfit','Segoe UI',sans-serif}
+.page-head{max-width:1280px;margin:0 auto;padding:22px 0 10px}
+.page-head h1{margin:0 0 4px;font:800 26px 'Outfit';letter-spacing:-.01em}
+.page-head p{margin:0;color:var(--chrome-dim);max-width:78ch}
+.tabs{max-width:1280px;margin:10px auto 0;display:flex;gap:6px;border-bottom:1px solid var(--chrome-line)}
+.tabs button{all:unset;cursor:pointer;padding:9px 16px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;color:var(--chrome-dim);font-weight:600}
+.tabs button:hover{color:var(--chrome-ink)}
+.tabs button[aria-selected=true]{background:var(--chrome2);border-color:var(--chrome-line);color:var(--chrome-acc)}
+.tabs button:focus-visible{outline:2px solid var(--chrome-acc);outline-offset:1px}
+.caption{max-width:1280px;margin:0 auto;padding:12px 16px;background:var(--chrome2);border:1px solid var(--chrome-line);border-top:0;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;font-size:12.5px}
+.caption b{display:block;color:var(--chrome-acc);font-weight:700;margin-bottom:1px}
+.caption span{color:var(--chrome-dim)}
+.mock{width:1280px;margin:18px auto 60px;position:relative;overflow:hidden;border:1px solid var(--chrome-line);border-radius:6px}
+.mock[hidden]{display:none}
+.mock button{font-family:inherit}
+@media (prefers-reduced-motion:reduce){.mock *{animation:none!important;transition:none!important}}
+/* fake shell around the mocks */
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:560px}
+.shell nav{padding:10px;display:flex;flex-direction:column;gap:2px;font-weight:600}
+.shell nav div{padding:9px 12px;border-radius:8px;display:flex;gap:10px;align-items:center}
+.shell nav i{width:22px;height:22px;border-radius:6px;display:inline-block;background:linear-gradient(135deg,#d49a50,#7a4a1c);box-shadow:inset 0 0 0 2px #2a1a0a}
+.shell .fake{padding:22px 26px}
+.fake h2{margin:0 0 12px;font:700 26px 'Outfit'}
+.fake .ph{height:220px;border-radius:10px;opacity:.55}
+</style>
+<style>
+/* ---------- shared bits ---------- */
+.mock .ico{display:block;flex:none}
+.num{font-variant-numeric:tabular-nums lining-nums}
+.pulse{animation:pulse .5s ease-out}
+@keyframes pulse{0%{transform:scale(1)}30%{transform:scale(1.07)}100%{transform:scale(1)}}
+.bar{height:5px;border-radius:3px;overflow:hidden;background:rgba(255,255,255,.12)}
+.bar i{display:block;height:100%;border-radius:3px}
+.btn{cursor:pointer;border:0}
+.btn:focus-visible,.mock button:focus-visible{outline:2px solid #ffd76a;outline-offset:2px}
+.sim{position:absolute;z-index:30;right:12px;bottom:10px;padding:6px 12px;border-radius:8px;border:1px solid #fff4;background:#000a;color:#fff;font-weight:600;cursor:pointer;font-size:12px}
+.flycoin{position:absolute;z-index:40;pointer-events:none}
+
+/* ====================== H1 command bar ====================== */
+#opt-h1{background:#0e1424;color:#e9eef7}
+#opt-h1 .shell nav{background:#121a2e}
+#opt-h1 .shell nav .on{background:#2a2a33;box-shadow:inset 3px 0 #e0b24a}
+#opt-h1 .fake{background:#d3d8e1;color:#18202e;min-height:930px}
+#opt-h1 .fake .ph{background:#1b2436}
+#opt-h1 .top{height:64px;display:flex;align-items:center;gap:14px;padding:0 16px;background:#101830;border-bottom:1px solid #1d2745}
+#opt-h1 .brand{width:204px;font:800 18px Outfit}#opt-h1 .brand small{font-weight:500;color:#8a94ad;font-size:11px}
+#opt-h1 .lvl{display:flex;gap:10px;align-items:center;width:190px}
+#opt-h1 .lvl .ring{width:40px;height:40px;border-radius:50%;border:2px solid #4a4638;display:grid;place-items:center;font:700 17px Outfit;background:#0a0f1e}
+#opt-h1 .lvl small{display:block;font-size:11px;color:#aeb7cc}#opt-h1 .lvl b{font-size:12px}
+#opt-h1 .pills{display:flex;gap:10px;margin-left:auto}
+#opt-h1 .pill{display:flex;align-items:center;gap:9px;height:40px;padding:0 14px 0 6px;border-radius:20px;border:1.5px solid #3a456b;background:#0f1730}
+#opt-h1 .pill.sc{border-color:#4767d8}#opt-h1 .pill.gc{border-color:#c4467f}
+#opt-h1 .pill .v{font:700 17px Outfit;line-height:1}#opt-h1 .pill .r{font-size:10.5px;color:#7fe3a0;line-height:1.1}
+#opt-h1 .pill .l{font-size:12px;color:#aeb7cc;margin-left:12px}
+#opt-h1 .dbtn{height:38px;padding:0 16px;border-radius:19px;background:#0b1126;color:#fff;border:1.5px solid #6a7396;display:flex;gap:8px;align-items:center;font-weight:700}
+#opt-h1 .dbtn.glow{animation:dglow 2.4s ease-in-out infinite}
+@keyframes dglow{50%{box-shadow:0 0 0 4px #e0b24a55}}
+#opt-h1 .mute{width:38px;height:38px;border-radius:10px;background:#0b1126;border:1px solid #3a456b;color:#fff;display:grid;place-items:center}
+#opt-h1 .goals{height:44px;display:flex;align-items:center;gap:10px;padding:0 24px;background:#f0deb0;color:#3a2c0c;font-size:13px;font-weight:600}
+#opt-h1 .goals .g{padding:5px 12px;border-radius:8px;background:#fff8e2;border:1px solid #cdb36a;display:flex;gap:7px;align-items:center}
+#opt-h1 .goals .g em{font-style:normal;color:#8a6a1a;font-size:11.5px}
+#opt-h1 .scrim{position:absolute;inset:0;background:#050810cc;display:none;place-items:start center;padding-top:34px;z-index:5}
+#opt-h1 .scrim.open{display:grid}
+#opt-h1 .modal{width:820px;background:#1a2133;border:1px solid #3a456b;border-radius:14px;padding:18px 20px 22px;box-shadow:0 20px 60px #000a;animation:rise .25s ease-out}
+@keyframes rise{from{transform:translateY(14px);opacity:0}}
+#opt-h1 .modal h3{margin:0;font:700 20px Outfit;display:flex;justify-content:space-between;align-items:center}
+#opt-h1 .modal h3 button{background:#0b1126;color:#fff;border:1px solid #5a6488;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer}
+#opt-h1 .modal h4{margin:16px 0 8px;font:700 14px Outfit;color:#e0b24a}
+#opt-h1 .cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#opt-h1 .ent{display:grid;grid-template-columns:42px 1fr;gap:10px;padding:9px 11px;border-radius:10px;background:#111a2e;border:1px solid #2c3656}
+#opt-h1 .ent .t{display:flex;justify-content:space-between;align-items:baseline}
+#opt-h1 .ent .t b{font-size:14px}#opt-h1 .ent .t b span{font:700 15px Outfit;margin-left:8px}
+#opt-h1 .ent .rt{font-size:11.5px;color:#7fe3a0;font-weight:600}#opt-h1 .ent .rt.off{color:#8791ad;font-weight:500}
+#opt-h1 .ent .m{font-size:11.5px;color:#cbb988;margin:2px 0 3px;display:flex;gap:8px;align-items:center}
+#opt-h1 .ent .m .bar{flex:1;max-width:110px;height:4px}
+#opt-h1 .ent .u{font-size:11.5px;color:#9aa4bd}
+
+/* ====================== H2 crystal showcase ====================== */
+#opt-h2{background:#0d0919;color:#f1ecff}
+#opt-h2 .shell nav{background:#130d26}
+#opt-h2 .shell nav .on{background:#271a4a;box-shadow:inset 3px 0 #ffd36a}
+#opt-h2 .fake{background:#1b1433;min-height:640px}#opt-h2 .fake .ph{background:#271c47}
+#opt-h2 .top{height:104px;position:relative;display:flex;align-items:center;gap:22px;padding:0 22px;background:radial-gradient(60% 140% at 70% 0%,#3a2670 0%,#150f2c 70%);border-bottom:2px solid #4b377f}
+#opt-h2 .brand{width:180px;font:800 17px Outfit}#opt-h2 .brand small{display:block;color:#9a8cc4;font-size:11px;font-weight:500}
+#opt-h2 .ring{--p:7;position:relative;width:70px;height:70px;border-radius:50%;background:conic-gradient(#ffd36a calc(var(--p)*1%),#2a2050 0);display:grid;place-items:center;flex:none}
+#opt-h2 .ring::before{content:'';position:absolute;inset:6px;border-radius:50%;background:#150f2c}
+#opt-h2 .ring b{position:relative;font:800 26px Fraunces}
+#opt-h2 .lvt{font-size:12px;color:#b9acdf;line-height:1.3}#opt-h2 .lvt b{display:block;color:#fff;font-size:13px}
+#opt-h2 .money{display:flex;gap:10px;align-items:center;margin-left:8px;padding:6px 14px;border-radius:12px;background:#0a0716;border:1px solid #3e2f6e}
+#opt-h2 .money .v{font:700 20px Outfit;line-height:1}#opt-h2 .money small{font-size:11px;color:#8fe8b0;display:block}
+#opt-h2 .crys{display:flex;gap:26px;margin-left:auto;align-items:flex-end;padding-bottom:6px}
+#opt-h2 .cr{display:flex;align-items:center;gap:12px;position:relative}
+#opt-h2 .cr .gl{position:relative;width:74px;height:84px;display:grid;place-items:center}
+#opt-h2 .cr .gl::before{content:'';position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,var(--glow) 0%,transparent 65%);animation:breathe 4s ease-in-out infinite}
+#opt-h2 .cr .gl svg{position:relative;filter:drop-shadow(0 4px 6px #0008);animation:float 5s ease-in-out infinite}
+#opt-h2 .cr .gl::after{content:'';position:absolute;top:8%;left:-20%;width:40%;height:90%;background:linear-gradient(100deg,transparent,#fff8,transparent);transform:skewX(-18deg);animation:shimmer 6s ease-in-out infinite;mix-blend-mode:overlay;clip-path:polygon(40% 0,100% 0,60% 100%,0 100%)}
+@keyframes breathe{50%{opacity:.55;transform:scale(1.12)}}
+@keyframes float{50%{transform:translateY(-4px)}}
+@keyframes shimmer{0%,60%{left:-30%;opacity:0}70%{opacity:1}100%{left:90%;opacity:0}}
+#opt-h2 .cr .v{font:800 30px Fraunces;line-height:1}#opt-h2 .cr .n{font-size:12px;color:#b9acdf}#opt-h2 .cr .r{font-size:11.5px;color:#8fe8b0}
+#opt-h2 .tools{display:flex;gap:8px;margin-left:6px}
+#opt-h2 .tools button{height:40px;padding:0 14px;border-radius:12px;border:1px solid #6a58a6;background:#241a46;color:#fff;font-weight:700;display:flex;gap:8px;align-items:center;cursor:pointer}
+#opt-h2 .scroll{height:48px;padding:0 22px;display:flex;align-items:center;gap:12px;background:linear-gradient(#ecd9a6,#dcc487);color:#41300d;font-weight:600;font-size:13px;border-bottom:2px solid #8d6c2a;position:relative}
+#opt-h2 .scroll::before,#opt-h2 .scroll::after{content:'';position:absolute;top:0;bottom:0;width:10px;background:linear-gradient(90deg,#8d6c2a,#c9a45a)}
+#opt-h2 .scroll::before{left:0}#opt-h2 .scroll::after{right:0;transform:scaleX(-1)}
+#opt-h2 .scroll .g{display:flex;gap:8px;align-items:center;padding:4px 12px 5px;border-radius:6px;background:#fbf0cf;border:1px solid #b99447;position:relative;overflow:hidden}
+#opt-h2 .scroll .g::after{content:'';position:absolute;left:0;bottom:0;height:3px;width:var(--w);background:#3fa05a}
+#opt-h2 .scroll .g i{width:14px;height:14px;border:2px solid #6e5420;border-radius:3px;display:grid;place-items:center;font-style:normal;font-size:10px}
+#opt-h2 .drawer{position:absolute;top:152px;right:0;bottom:0;width:480px;background:#171030;border-left:2px solid #5a46a0;box-shadow:-20px 0 50px #000a;transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);overflow:auto;z-index:5;padding:16px 16px 24px}
+#opt-h2 .drawer.open{transform:none}
+#opt-h2 .drawer h3{margin:0 0 10px;font:800 20px Fraunces;display:flex;justify-content:space-between}
+#opt-h2 .drawer h3 button{background:none;border:0;color:#b9acdf;cursor:pointer;font-size:20px}
+#opt-h2 details{margin-bottom:8px;border:1px solid #382b66;border-radius:12px;background:#1d1540}
+#opt-h2 summary{cursor:pointer;padding:10px 14px;font:700 14px Outfit;display:flex;justify-content:space-between;list-style:none;color:#ffd36a}
+#opt-h2 summary::-webkit-details-marker{display:none}
+#opt-h2 summary span{color:#9a8cc4;font-weight:500;font-size:12px}
+#opt-h2 .row{display:grid;grid-template-columns:36px 1fr auto;gap:2px 10px;padding:8px 14px;border-top:1px solid #2d2352;align-items:center}
+#opt-h2 .row .ico{grid-row:span 2}
+#opt-h2 .row b{font-size:13.5px}#opt-h2 .row .a{font:700 14px Outfit;text-align:right}
+#opt-h2 .row .s{font-size:11px;color:#a094cc;grid-column:2/4;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#opt-h2 .pips{display:inline-flex;gap:3px}#opt-h2 .pips i{width:9px;height:9px;transform:rotate(45deg);background:#3a2d6a;border-radius:1px}
+#opt-h2 .pips i.on{background:var(--c)}
+#opt-h2 .rt{color:#8fe8b0}#opt-h2 .rt.off{color:#7c71a3}
+
+/* ====================== H3 slim HUD ====================== */
+#opt-h3{background:#101216;color:#e4e8ee;font-size:13px}
+#opt-h3 .shell nav{background:#14171d}#opt-h3 .shell nav .on{background:#1e2229;color:#3dd6c6}
+#opt-h3 .shell nav i{filter:grayscale(1) brightness(.8)}
+#opt-h3 .fake{background:#181b21;min-height:620px}#opt-h3 .fake .ph{background:#1f232b}
+#opt-h3 .top{height:44px;display:flex;align-items:center;gap:0;background:#0b0d10;border-bottom:1px solid #262b34;font-size:13px}
+#opt-h3 .top>div{height:100%;display:flex;align-items:center;gap:7px;padding:0 14px;border-right:1px solid #1f242c}
+#opt-h3 .brand{width:220px;font-weight:800;font-size:15px}
+#opt-h3 .lv b{color:#3dd6c6}#opt-h3 .lv .bar{width:90px;height:4px}#opt-h3 .lv .bar i{background:#3dd6c6}
+#opt-h3 .gl{flex:1;gap:8px!important;overflow:hidden}
+#opt-h3 .gl .c{flex:none;padding:2px 9px;border:1px solid #2f3641;border-radius:4px;font-size:12px;color:#c8ced8;display:flex;gap:6px;white-space:nowrap}
+#opt-h3 .gl .c i{color:#3dd6c6;font-style:normal}
+#opt-h3 .res{gap:6px!important}#opt-h3 .res b{font-weight:700}#opt-h3 .res small{color:#5fd49a;font-size:11.5px}
+#opt-h3 .dbtn{all:unset;cursor:pointer;display:flex;gap:6px;align-items:center;padding:0 14px;height:100%;color:#3dd6c6;font-weight:600}
+#opt-h3 .dbtn[aria-expanded=true]{background:#181b21}
+#opt-h3 .mute{all:unset;cursor:pointer;padding:0 14px;height:100%;display:grid;place-items:center;color:#9aa3b0}
+#opt-h3 .pop{position:absolute;top:44px;right:46px;width:820px;background:#14171d;border:1px solid #2f3641;box-shadow:0 16px 40px #000b;z-index:5;display:none}
+#opt-h3 .pop.open{display:block}
+#opt-h3 table{width:100%;border-collapse:collapse;font-size:12.5px}
+#opt-h3 th{text-align:left;font-weight:600;color:#7d8794;padding:7px 10px;border-bottom:1px solid #262b34;font-size:11.5px}
+#opt-h3 td{padding:5px 10px;border-bottom:1px solid #1c2027;white-space:nowrap}
+#opt-h3 td.u{white-space:normal;color:#9aa3b0;font-size:12px}
+#opt-h3 td.a{text-align:right;font-weight:700}
+#opt-h3 tr.grp td{background:#1a1e25;color:#3dd6c6;font-weight:700;padding:6px 10px}
+#opt-h3 td .cell{display:flex;gap:8px;align-items:center}
+#opt-h3 .pp{display:inline-flex;gap:2px}#opt-h3 .pp i{width:14px;height:5px;background:#2a303a}#opt-h3 .pp i.on{background:#3dd6c6}
+#opt-h3 .rt{color:#5fd49a}#opt-h3 .rt.off{color:#5d6672}
+
+/* ====================== H4 quest scroll + tile sheet ====================== */
+#opt-h4{background:#1d130c;color:#f6ead2}
+#opt-h4 .shell nav{background:#24170e}#opt-h4 .shell nav .on{background:#3a2616;box-shadow:inset 3px 0 #e8553a}
+#opt-h4 .fake{background:#2a1c12;min-height:640px}#opt-h4 .fake .ph{background:#3a281a}
+#opt-h4 .top{height:58px;display:flex;align-items:center;gap:14px;padding:0 16px;background:linear-gradient(#3b2415,#2a190d);border-bottom:3px solid #8d5a22}
+#opt-h4 .brand{width:204px;font:800 17px Outfit}
+#opt-h4 .lv{display:flex;gap:9px;align-items:center}#opt-h4 .lv .b{width:38px;height:38px;background:#e8553a;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);display:grid;place-items:center;font:800 17px Outfit;color:#fff}
+#opt-h4 .lv .bar{width:130px;height:8px;background:#0006}#opt-h4 .lv .bar i{background:#e8553a}
+#opt-h4 .lv small{font-size:11px;color:#d6bf93;display:block}
+#opt-h4 .chips{display:flex;gap:8px;margin-left:auto}
+#opt-h4 .chip{display:flex;gap:8px;align-items:center;padding:4px 14px 4px 5px;border-radius:8px;background:#150d07;border:2px solid #6a4620}
+#opt-h4 .chip .v{font:800 16px Outfit;line-height:1}#opt-h4 .chip small{display:block;font-size:10.5px;color:#9edba0}
+#opt-h4 .chip.sc{border-color:#4a68c8}#opt-h4 .chip.gc{border-color:#b83f78}
+#opt-h4 .dbtn{height:40px;padding:0 15px;border-radius:8px;background:#8d5a22;border:2px solid #d99a46;color:#fff;font-weight:800;display:flex;gap:8px;align-items:center;cursor:pointer;position:relative}
+#opt-h4 .dbtn .badge{position:absolute;top:-6px;right:-6px;background:#e8553a;border-radius:9px;font-size:10px;padding:1px 6px}
+#opt-h4 .mute{width:40px;height:40px;border-radius:8px;background:#150d07;border:2px solid #6a4620;color:#fff;display:grid;place-items:center}
+#opt-h4 .scrollbar{background:#ead8aa;color:#3f2f0d;padding:8px 20px 9px;border-bottom:3px solid #9b7a38;display:grid;grid-template-columns:1fr 1fr;gap:6px 30px;position:relative}
+#opt-h4 .scrollbar::before{content:'Goals';position:absolute;left:20px;top:-1px;display:none}
+#opt-h4 .gl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-weight:600;font-size:12.5px}
+#opt-h4 .gl .g{display:flex;gap:6px;align-items:center;padding:3px 10px;border-radius:5px;background:#f8eec9;border:1px solid #b99447}
+#opt-h4 .gl .g i{width:13px;height:13px;border:2px solid #6e5420;border-radius:2px;display:grid;place-items:center;font-size:9px;font-style:normal;background:#fff}
+#opt-h4 .track{display:flex;align-items:center;gap:0;font-size:12px;font-weight:600}
+#opt-h4 .track .n{display:flex;align-items:center;gap:5px;padding:3px 9px;border-radius:12px;background:#f8eec9;border:1px solid #b99447}
+#opt-h4 .track .n.cur{background:#e8553a;color:#fff;border-color:#a93822}
+#opt-h4 .track .ln{width:18px;height:3px;background:#b99447}
+#opt-h4 .sheet{position:absolute;left:0;right:0;top:138px;bottom:0;background:#1a110a;z-index:5;padding:14px 18px 20px;display:none;border-top:3px solid #8d5a22;box-shadow:0 20px 60px #000c}
+#opt-h4 .sheet.open{display:block;animation:rise .3s ease-out}
+@keyframes rise{from{transform:translateY(-12px);opacity:0}}
+#opt-h4 .sheet .hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+#opt-h4 .sheet .hd h3{margin:0;font:800 20px Outfit}
+#opt-h4 .sheet .hd button{background:#3a2616;border:2px solid #8d5a22;color:#fff;border-radius:8px;padding:5px 14px;font-weight:700;cursor:pointer}
+#opt-h4 .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;height:calc(100% - 44px)}
+#opt-h4 .col{background:#24170e;border:2px solid #5a3b1a;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px;overflow:hidden}
+#opt-h4 .col h4{margin:0 0 2px;font:800 13px Outfit;color:#e8b05a}
+#opt-h4 .tile{display:grid;grid-template-columns:48px 1fr;gap:9px;padding:7px;border-radius:8px;background:#150d07;border:1px solid #4a3017}
+#opt-h4 .tile.zero{opacity:.72}
+#opt-h4 .tile .tn{display:flex;justify-content:space-between;font-weight:700;font-size:12.5px}
+#opt-h4 .tile .tn span{font-family:Outfit;font-weight:800;font-size:13px}
+#opt-h4 .tile .ts{font-size:10.5px;color:#d6bf93}
+#opt-h4 .tile .tu{font-size:10.5px;color:#a58c63;line-height:1.25}
+#opt-h4 .tile .rt{color:#9edba0}
+#opt-h4 .col.few{justify-content:flex-start}
+
+/* ====================== H5 daylight ledger ====================== */
+#opt-h5{background:#eef1f6;color:#1d2535}
+#opt-h5 .shell nav{background:#dfe4ed;color:#27324a}#opt-h5 .shell nav .on{background:#fff;box-shadow:inset 3px 0 #f06a2a}
+#opt-h5 .fake{background:#e8ecf3;min-height:620px}#opt-h5 .fake .ph{background:#d5dbe7}
+#opt-h5 .top{height:72px;display:flex;align-items:center;gap:20px;padding:0 20px;background:#fff;border-bottom:1px solid #cfd6e4;position:relative}
+#opt-h5 .top .xp{position:absolute;left:0;right:0;bottom:-1px;height:4px;background:#e2e7f0}
+#opt-h5 .top .xp i{display:block;height:100%;width:7%;background:#f06a2a}
+#opt-h5 .brand{white-space:nowrap;width:190px;font:800 17px Outfit;color:#142038}
+#opt-h5 .lvb{white-space:nowrap;display:flex;gap:9px;align-items:center;font-size:12px;color:#5a667f}
+#opt-h5 .lvb b{display:grid;place-items:center;width:36px;height:36px;border-radius:9px;background:#142038;color:#fff;font:800 17px Outfit}
+#opt-h5 .blk{padding:0 18px;border-left:1px solid #dde3ee;display:flex;gap:10px;align-items:center;height:48px}
+#opt-h5 .blk .l{font-size:11px;color:#6b7791;font-weight:600}
+#opt-h5 .blk .v{font:800 22px Outfit;line-height:1.05;color:#142038}
+#opt-h5 .blk .r{font-size:11.5px;color:#14924a;font-weight:700}
+#opt-h5 .blk.big .v{font-size:30px}
+#opt-h5 .gcards{display:flex;gap:6px;margin-left:auto;min-width:0}#opt-h5 .gc{white-space:nowrap}
+#opt-h5 .gc{width:150px;padding:6px 10px;border-radius:8px;background:#f5f7fb;border:1px solid #d3dae8;font-size:11.5px;font-weight:600;line-height:1.25}
+#opt-h5 .gc i{display:block;height:3px;border-radius:2px;background:#d3dae8;margin-top:4px;overflow:hidden}#opt-h5 .gc i::after{content:'';display:block;height:100%;width:100%;background:#14924a}
+#opt-h5 .gc small{color:#14924a}
+#opt-h5 .dbtn{height:40px;padding:0 16px;border-radius:8px;background:#142038;color:#fff;border:0;font-weight:700;display:flex;gap:8px;align-items:center;cursor:pointer}
+#opt-h5 .mute{width:40px;height:40px;border-radius:8px;border:1px solid #cfd6e4;background:#fff;color:#142038;display:grid;place-items:center}
+#opt-h5 .scrim{position:absolute;inset:72px 0 0 0;background:#142038aa;display:none;place-items:center;z-index:5}
+#opt-h5 .scrim.open{display:grid}
+#opt-h5 .modal{width:900px;height:490px;background:#fff;border-radius:12px;display:grid;grid-template-columns:200px 1fr;overflow:hidden;box-shadow:0 24px 70px #0007;animation:pop .22s ease-out}
+@keyframes pop{from{transform:scale(.96);opacity:0}}
+#opt-h5 .side{background:#f1f4f9;border-right:1px solid #dde3ee;padding:16px 10px;display:flex;flex-direction:column;gap:4px}
+#opt-h5 .side h3{margin:0 8px 10px;font:800 17px Outfit}
+#opt-h5 .side button{all:unset;cursor:pointer;padding:9px 12px;border-radius:8px;font-weight:600;display:flex;justify-content:space-between;color:#3b4660}
+#opt-h5 .side button[aria-selected=true]{background:#142038;color:#fff}
+#opt-h5 .side button span{opacity:.6;font-size:12px}
+#opt-h5 .side .x{margin-top:auto;border:1px solid #cfd6e4;justify-content:center;background:#fff}
+#opt-h5 .main{padding:16px 22px;overflow:auto}
+#opt-h5 .main h4{margin:0 0 3px;font:800 20px Outfit}#opt-h5 .main .sub{font-size:12.5px;color:#6b7791;margin-bottom:12px}
+#opt-h5 .lrow{display:grid;grid-template-columns:44px 170px 100px 1fr;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #e3e8f1;animation:slide .25s ease-out both}
+@keyframes slide{from{transform:translateX(14px);opacity:0}}
+#opt-h5 .lrow .nm b{display:block;font-size:14px}#opt-h5 .lrow .nm span{font-size:12px;color:#6b7791}
+#opt-h5 .lrow .am{font:800 18px Outfit;text-align:right}#opt-h5 .lrow .am small{display:block;font:600 11.5px Outfit}
+#opt-h5 .rt{color:#14924a}#opt-h5 .rt.off{color:#8b95aa}
+#opt-h5 .rail{display:flex;gap:3px;margin-bottom:3px}
+#opt-h5 .rail i{flex:1;height:7px;border-radius:2px;background:#dde3ee}
+#opt-h5 .rail i.on{background:var(--c)}
+#opt-h5 .lrow .us{font-size:12px;color:#4a566f}#opt-h5 .lrow .nx{font-size:11px;color:#8b95aa}
+</style></head>
+<body>
+<div class="page-head"><h1>Header and Details panel: 5 options</h1><p>Money, Summon Crystal and Glamour Crystal with rates, account level and XP, goals, mute, and the Details button that opens Tree, Mine, Dungeon and Prestige materials (amount, rate, mastery tier, used for). Content is from the live screens and data files; the icons are the current placeholders. Click Details to toggle each panel.</p></div>
+<div class="tabs" role="tablist"></div><div class="caption"></div><div id="host"></div>
+<script>/* Shared data + placeholder icons for the economy UI mockups. Real content from src/data/content and the app screenshots. */
+const BI = {};
+BI.metals = {stone:['#8a90a0','#4c515e'],bronze:['#d58b4a','#7a4418'],silver:['#d3dae6','#6c7688'],gold:['#f3c64e','#8c6410'],prismatic:['#ff9bd0','#6ad7ff']};
+BI.shapes = {
+  round:'<circle cx="16" cy="16" r="7"/>',
+  pentagon:'<polygon points="16,8 23.5,13.5 20.6,22.5 11.4,22.5 8.5,13.5"/>',
+  star:'<polygon points="16,7.5 18.4,13.3 24.6,13.8 19.9,17.9 21.3,24 16,20.8 10.7,24 12.1,17.9 7.4,13.8 13.6,13.3"/>',
+  square:'<rect x="9.5" y="9.5" width="13" height="13" rx="1.5"/>',
+  hexagon:'<polygon points="16,8 22.6,11.8 22.6,19.8 16,23.6 9.4,19.8 9.4,11.8"/>',
+  drop:'<path d="M16 7.5 C19 12 23 15 23 18.6 A7 7 0 0 1 9 18.6 C9 15 13 12 16 7.5Z"/>'
+};
+BI.gems = {
+  oak:{name:'Oak Gem',shape:'round',c:['#f4c88e','#cf8e50','#9a5e2e','#5e3416']},
+  ironbark:{name:'Ironbark Gem',shape:'pentagon',c:['#c8b0a0','#8e7262','#5e4638','#34241a']},
+  moonwillow:{name:'Moonwillow Gem',shape:'star',c:['#f6f4ff','#cdc8f2','#9690d0','#5a5498']},
+  copper:{name:'Copper Gem',shape:'square',c:['#ffc78e','#f08a3c','#b8581a','#743210']},
+  iron:{name:'Iron Gem',shape:'hexagon',c:['#eef2f8','#aab4c2','#727c8c','#464e5a']},
+  grotto:{name:'Grotto Gem',shape:'drop',c:['#eafaff','#9adcf2','#58acd2','#2a7298']}
+};
+let _uid = 0;
+/* placeholder gem coin: notched coin in the mastery metal, dark well, faceted gem */
+BI.gem = (id, tier='stone', s=32) => {
+  const g = BI.gems[id], m = BI.metals[tier], u = 'g' + (++_uid);
+  const rim = tier === 'prismatic'
+    ? `<linearGradient id="${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9bd0"/><stop offset=".5" stop-color="#8fe3ff"/><stop offset="1" stop-color="#fff0a0"/></linearGradient>`
+    : '';
+  const fill = tier === 'prismatic' ? `url(#${u})` : m[0];
+  return `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true">${rim}
+  <circle cx="16" cy="16" r="14.5" fill="${fill}" stroke="#fff" stroke-width="1" stroke-opacity=".0"/>
+  <circle cx="16" cy="16" r="14.5" fill="none" stroke="${m[1]}" stroke-width="1.5" stroke-dasharray="3.6 2.2"/>
+  <circle cx="16" cy="16" r="11" fill="#15181f" stroke="${m[1]}" stroke-width="1"/>
+  <g fill="${g.c[1]}" stroke="${g.c[3]}" stroke-width="1.2" stroke-linejoin="round">${BI.shapes[g.shape]}</g>
+  <circle cx="13.6" cy="12.6" r="1.5" fill="#fff" opacity=".9"/></svg>`;
+};
+BI.core = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,3 28,16 16,29 4,16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><polygon points="16,9 22,16 16,23 10,16" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`;
+BI.starlight = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 L19 13 L30 16 L19 19 L16 30 L13 19 L2 16 L13 13Z" fill="#ffe27a" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+BI.coin = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="#d9a22e" stroke="#5a3a0a" stroke-width="1.5" stroke-dasharray="3.6 2.2"/><circle cx="16" cy="16" r="11" fill="#f5cc55" stroke="#8a5a10" stroke-width="1.3"/><circle cx="16" cy="16" r="6.5" fill="#d9a22e" stroke="#8a5a10" stroke-width="1.2"/><circle cx="12.6" cy="12.4" r="1.6" fill="#fff" opacity=".85"/></svg>`;
+BI.summon = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,1.5 24,10 22.5,28 16,31 9.5,28 8,10" fill="#4d7bf0" stroke="#17306e" stroke-width="1.6" stroke-linejoin="round"/><polygon points="16,1.5 16,31 9.5,28 8,10" fill="#8fb2ff"/><polygon points="16,1.5 24,10 16,12" fill="#cfe0ff"/><circle cx="12" cy="10" r="1.4" fill="#fff"/></svg>`;
+BI.glamour = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="5,12 11,4.5 21,4.5 27,12 16,29" fill="#e8468f" stroke="#6a1240" stroke-width="1.6" stroke-linejoin="round"/><polygon points="5,12 16,29 14,12" fill="#ff8cc0"/><polygon points="11,4.5 21,4.5 27,12 14,12" fill="#ff5da5"/><circle cx="11.5" cy="9" r="1.4" fill="#fff"/></svg>`;
+BI.gear = (s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h9"/></svg>`;
+BI.speaker = (s=18, off=false) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 8h3l4-3.5v11L6 12H3z"/>${off?'<path d="M13.5 7.5l4 5M17.5 7.5l-4 5"/>':'<path d="M13.5 7.5a3.5 3.5 0 0 1 0 5M15.6 5.2a6.5 6.5 0 0 1 0 9.6"/>'}</svg>`;
+
+BI.fmt = n => n >= 1e9 ? (n/1e9).toFixed(n>=1e10?0:1)+'B' : n >= 1e6 ? (n/1e6).toFixed(n>=1e7?0:1)+'M' : n.toLocaleString('en-US',{maximumFractionDigits:0});
+BI.fmtD = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+/* header / details data (screenshots header-details-*.png, resources.json, progression.json) */
+BI.account = {level:1, xp:76, next:1100};
+BI.money = {amount:28045, rate:50};
+BI.summonC = {amount:37, rate:0.4};
+BI.glamourC = {amount:4, rate:0.1};
+BI.goals = [
+  {text:'Unlock Ironbark', state:'ready', pct:1, page:'Production'},
+  {text:'Copper Edge Lv 25 (x2)', state:'ready', pct:1, page:'Dungeons'},
+  {text:'Iron Edge Lv 25 (x2)', state:'ready', pct:1, page:'Dungeons'}
+];
+BI.mastery = ['stone','bronze','silver','gold','prismatic'];
+BI.masteryAt = [0,1e3,1e5,1e7,1e9];
+BI.masteryOf = life => { let t = 0; BI.masteryAt.forEach((v,i) => { if (life >= v) t = i; }); return t; };
+BI.details = [
+ {group:'Tree materials', items:[
+  {id:'oak',amount:2757,rate:4.98,life:2757,use:'Card star-ups, unlocking Ironbark',kind:'gem'},
+  {id:'ironbark',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups, unlocking Moonwillow',kind:'gem'},
+  {id:'moonwillow',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'}]},
+ {group:'Mine materials', items:[
+  {id:'copper',amount:539.37,rate:0.93,life:539.37,use:'Card star-ups',kind:'gem'},
+  {id:'iron',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'},
+  {id:'grotto',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'}]},
+ {group:'Dungeon materials', items:[
+  {name:'Moss Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Cinder Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Frost Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Frost Sigil',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Glimmer Dust',amount:0,rate:0,use:'Cosmetic upgrades',kind:'core'},
+  {name:'Facet Shard',amount:0,rate:0,use:'Cosmetic upgrades',kind:'core'}]},
+ {group:'Prestige', items:[
+  {name:'Starlight',amount:0,rate:0,use:'The Starlight shop',kind:'star'}]}
+];
+BI.entry = e => {
+  if (e.kind === 'gem') { const g = BI.gems[e.id]; const t = BI.masteryOf(e.life); return {name:g.name, ico:s=>BI.gem(e.id,BI.mastery[t],s), tier:t, mastery:BI.mastery[t], next:BI.masteryAt[t+1]||null, life:e.life, ...e}; }
+  return {ico:s => e.kind==='star'?BI.starlight(s):BI.core(s), tier:null, mastery:null, ...e};
+};
+BI.rate = e => e.rate > 0 ? '+' + BI.fmtD(e.rate) + '/s' : 'Not produced right now';
+BI.amt = e => e.amount % 1 ? BI.fmtD(e.amount) : BI.fmt(e.amount);
+BI.cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+BI.shellNav = ['Home','Cards','Production','Dungeons','Summon','Skill Tree','Wardrobe','Achievements','Shop','Settings'];
+BI.shell = (inner, opts={}) => `<div class="shell" style="${opts.style||''}"><nav>${BI.shellNav.map(n=>`<div${n==='Production'?' class="on"':''}><i></i>${n}</div>`).join('')}</nav><div class="fake">${inner}</div></div>`;
+
+/* tab machinery: options = [{key,title,caption:{layout,density,colour,motion,ornament},html(),init(root)}] */
+BI.mountTabs = (options, tabsEl, capEl, hostEl) => {
+  const roots = [];
+  options.forEach((o,i) => {
+    const r = document.createElement('div'); r.className = 'mock'; r.hidden = i !== 0; r.id = 'opt-' + o.key;
+    r.innerHTML = o.html(); hostEl.appendChild(r); roots.push(r);
+    const b = document.createElement('button'); b.textContent = o.title; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i === 0);
+    b.onclick = () => show(i); tabsEl.appendChild(b);
+  });
+  function show(i){
+    [...tabsEl.children].forEach((b,j)=>b.setAttribute('aria-selected', j===i));
+    roots.forEach((r,j)=>r.hidden = j!==i);
+    const c = options[i].caption;
+    capEl.innerHTML = ['layout','density','colour','motion','ornament'].map(k=>`<div><b>${BI.cap(k)}</b><span>${c[k]}</span></div>`).join('');
+    history.replaceState(null,'','#'+options[i].key);
+  }
+  options.forEach((o,i)=>o.init && o.init(roots[i]));
+  const h = location.hash.slice(1), idx = options.findIndex(o=>o.key===h);
+  show(idx > 0 ? idx : 0);
+};
+</script>
+<script>
+const g1 = BI.goals;
+const lvlPct = () => Math.round(BI.account.xp / BI.account.next * 100);
+const tierColor = t => ({stone:'#8a90a0',bronze:'#d58b4a',silver:'#d3dae6',gold:'#f3c64e',prismatic:'#ff9bd0'})[t] || '#888';
+const money = () => BI.fmt(BI.money.amount);
+const nextTxt = e => e.next ? `${BI.fmt(e.life)} / ${BI.fmt(e.next)} to ${BI.mastery[e.tier+1]}` : 'Max tier';
+const mute = (cls='mute') => `<button class="${cls}" aria-label="Mute" data-mute>${BI.speaker(18)}</button>`;
+
+/* ---------- H1 ---------- */
+const h1 = {key:'h1',title:'1 Command bar',
+ caption:{layout:'One 64px bar, goals strip below, Details opens a centred modal in two columns.',density:'Medium: every entry gets a full card with a mastery bar.',colour:'Navy with gold, today\'s palette tightened.',motion:'Pill pulses when Money ticks; Details button breathes when coins fly to it.',ornament:'Rounded pills and a tan goals strip; the crystals stay modest.'},
+ html(){ return `
+ <div class="top"><div class="brand">Basic Incremental <small>v0.3.0</small></div>
+  <div class="lvl"><div class="ring">1</div><div><b>Account level 1</b><div class="bar"><i style="width:${lvlPct()}%;background:#e0b24a"></i></div><small class="num">76 / 1,100 XP</small></div></div>
+  <div class="pills">
+   <div class="pill" data-money>${BI.coin(30)}<div><div class="v num" data-v>${money()}</div><div class="r">+50/s</div></div><span class="l">Money</span></div>
+   <div class="pill sc">${BI.summon(30)}<div><div class="v num">${BI.summonC.amount}</div><div class="r">+${BI.summonC.rate}/s</div></div><span class="l">Summon Crystal</span></div>
+   <div class="pill gc">${BI.glamour(30)}<div><div class="v num">${BI.glamourC.amount}</div><div class="r">+${BI.glamourC.rate}/s</div></div><span class="l">Glamour Crystal</span></div></div>
+  <button class="dbtn btn glow" data-d>${BI.gear()} Details</button>${mute()}</div>
+ <div class="goals"><span>Goals</span>${g1.map(g=>`<div class="g"><span>&#9745;</span>${g.text}<em>ready</em></div>`).join('')}</div>
+ <div style="position:relative">${BI.shell('<h2>Production</h2><div class="ph"></div>')}
+ <div class="scrim open" data-s><div class="modal"><h3>Resource details <button data-d>Close</button></h3>
+ ${BI.details.map(gr=>`<h4>${gr.group}</h4><div class="cards">${gr.items.map(BI.entry).map(e=>`
+  <div class="ent">${e.ico(42)}<div><div class="t"><b>${e.name||e.id}<span class="num">${BI.amt(e)}</span></b><span class="rt ${e.rate?'':'off'}">${BI.rate(e)}</span></div>
+  ${e.mastery?`<div class="m">${BI.cap(e.mastery)} mastery <div class="bar"><i style="width:${e.next?Math.min(100,e.life/e.next*100):100}%;background:${tierColor(e.mastery)}"></i></div></div>`:''}
+  <div class="u">Used for ${e.use.charAt(0).toLowerCase()+e.use.slice(1)}</div></div></div>`).join('')}</div>`).join('')}</div></div></div>`},
+ init(r){ r.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>r.querySelector('[data-s]').classList.toggle('open')); }};
+
+/* ---------- H2 ---------- */
+const h2 = {key:'h2',title:'2 Crystal showcase',
+ caption:{layout:'Tall 104px header with a level ring; Details is a drawer sliding in from the right with collapsible groups.',density:'Low in the header, medium in the drawer (two-line rows).',colour:'Midnight violet and gold; crystals get their own blue and pink glow.',motion:'Crystals float, glow breathes, a shimmer sweeps every few seconds; drawer slides.',ornament:'Heavy: glowing standing crystals, parchment scroll with rolled ends, serif numerals.'},
+ html(){ const grp=(gr,open)=>`<details ${open?'open':''}><summary>${gr.group}<span>${gr.items.length} resources</span></summary>${gr.items.map(BI.entry).map(e=>`
+   <div class="row">${e.ico(36)}<b>${e.name||e.id}</b><span class="a num">${BI.amt(e)}</span>
+   <div class="s">${e.mastery?`<span class="pips" style="--c:${tierColor(e.mastery)}">${[0,1,2,3,4].map(i=>`<i class="${i<=e.tier?'on':''}"></i>`).join('')}</span><span>${BI.cap(e.mastery)}</span>`:''}<span class="rt ${e.rate?'':'off'}">${BI.rate(e)}</span><span>Used for ${e.use.charAt(0).toLowerCase()+e.use.slice(1)}</span></div></div>`).join('')}</details>`;
+ return `<div class="top"><div class="brand">Basic Incremental<small>v0.3.0</small></div>
+  <div class="ring" style="--p:${lvlPct()}"><b>1</b></div><div class="lvt"><b>Account level 1</b><span class="num">76 / 1,100 XP</span></div>
+  <div class="money" data-money>${BI.coin(30)}<div><div class="v num" data-v>${money()}</div><small>+50/s Money</small></div></div>
+  <div class="crys">
+   <div class="cr" style="--glow:#4d7bf080"><div class="gl">${BI.summon(64)}</div><div><div class="v num">${BI.summonC.amount}</div><div class="n">Summon Crystal</div><div class="r">+${BI.summonC.rate}/s</div></div></div>
+   <div class="cr" style="--glow:#ff5da580"><div class="gl">${BI.glamour(64)}</div><div><div class="v num">${BI.glamourC.amount}</div><div class="n">Glamour Crystal</div><div class="r">+${BI.glamourC.rate}/s</div></div></div></div>
+  <div class="tools"><button data-d>${BI.gear()} Details</button>${mute('x')}</div></div>
+  <div class="scroll"><b>Goals</b>${g1.map(g=>`<div class="g" style="--w:100%"><i>&#10003;</i>${g.text}</div>`).join('')}</div>
+  ${BI.shell('<h2>Production</h2><div class="ph"></div>')}
+  <aside class="drawer open" data-s><h3>Resource details <button data-d aria-label="Close">&times;</button></h3>${BI.details.map((gr,i)=>grp(gr,i<2)).join('')}</aside>`},
+ init(r){ r.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>r.querySelector('[data-s]').classList.toggle('open')); }};
+
+/* ---------- H3 ---------- */
+const h3 = {key:'h3',title:'3 Slim HUD',
+ caption:{layout:'A 44px strip; goals ride inside it as chips; Details is a wide dropdown table under the button.',density:'Highest: 13px text, one table row per resource, no cards.',colour:'Charcoal and one teal accent; only the crystals keep their own colour.',motion:'None except numbers rolling; the dropdown just appears.',ornament:'None. Flat rows, thin rules, pip rails for mastery.'},
+ html(){ return `<div class="top">
+  <div class="brand">Basic Incremental</div>
+  <div class="lv"><b>Lv 1</b><div class="bar"><i style="width:${lvlPct()}%"></i></div><span class="num" style="color:#8d95a6">76/1,100</span></div>
+  <div class="gl">${g1.map(g=>`<div class="c"><i>&#10003;</i>${g.text}</div>`).join('')}</div>
+  <div class="res" data-money>${BI.coin(20)}<b class="num" data-v>${money()}</b><small>+50/s</small></div>
+  <div class="res">${BI.summon(20)}<b class="num">${BI.summonC.amount}</b><small>+${BI.summonC.rate}/s</small></div>
+  <div class="res">${BI.glamour(20)}<b class="num">${BI.glamourC.amount}</b><small>+${BI.glamourC.rate}/s</small></div>
+  <button class="dbtn" data-d aria-expanded="true">${BI.gear(16)} Details</button>${mute()}</div>
+  ${BI.shell('<h2>Production</h2><div class="ph"></div>')}
+  <div class="pop open" data-s><table><thead><tr><th>Resource</th><th style="text-align:right">Amount</th><th>Rate</th><th>Mastery</th><th>Used for</th></tr></thead><tbody>
+  ${BI.details.map(gr=>`<tr class="grp"><td colspan="5">${gr.group}</td></tr>`+gr.items.map(BI.entry).map(e=>`<tr><td><div class="cell">${e.ico(22)}${e.name||e.id}</div></td><td class="a num">${BI.amt(e)}</td><td class="rt ${e.rate?'':'off'}">${e.rate?BI.rate(e):'none'}</td>
+  <td>${e.mastery?`<div class="cell"><span class="pp">${[0,1,2,3,4].map(i=>`<i class="${i<=e.tier?'on':''}"></i>`).join('')}</span>${BI.cap(e.mastery)}</div>`:'<span style="color:#5d6672">n/a</span>'}</td><td class="u">${e.use}</td></tr>`).join('')).join('')}</tbody></table></div>`},
+ init(r){ r.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const p=r.querySelector('[data-s]');p.classList.toggle('open');r.querySelector('.dbtn').setAttribute('aria-expanded',p.classList.contains('open'));}); }};
+
+/* ---------- H4 ---------- */
+const h4 = {key:'h4',title:'4 Quest scroll and tiles',
+ caption:{layout:'Two tiers: stat bar, then a scroll with goals and the next reward track; Details is a full-width sheet of four columns.',density:'Medium-high: four groups visible at once with no scrolling.',colour:'Leather brown, parchment and a red-orange level badge.',motion:'Simulate pickup flies a coin in an arc to Details, which pulses and counts a badge.',ornament:'Hex level badge, riveted bars, scroll rails; the reward path is shown (E7).'},
+ html(){ const rw=[['3','cost cap +1'],['5','10 Summon Crystals'],['8','cost cap +1'],['10','20 Crystals + cosmetic']];
+ return `<div class="top"><div class="brand">Basic Incremental</div>
+  <div class="lv"><div class="b">1</div><div><small>Account level 1</small><div class="bar"><i style="width:${lvlPct()}%"></i></div><small class="num">76 / 1,100 XP</small></div></div>
+  <div class="chips">
+   <div class="chip" data-money>${BI.coin(34)}<div><div class="v num" data-v>${money()}</div><small>+50/s Money</small></div></div>
+   <div class="chip sc">${BI.summon(34)}<div><div class="v num">${BI.summonC.amount}</div><small>+${BI.summonC.rate}/s Summon</small></div></div>
+   <div class="chip gc">${BI.glamour(34)}<div><div class="v num">${BI.glamourC.amount}</div><small>+${BI.glamourC.rate}/s Glamour</small></div></div></div>
+  <button class="dbtn" data-d id="d4">${BI.gear()} Details<span class="badge" data-badge hidden>0</span></button>${mute()}</div>
+  <div class="scrollbar"><div class="gl"><b>Goals</b>${g1.map(g=>`<div class="g"><i>&#10003;</i>${g.text}</div>`).join('')}</div>
+   <div class="track"><b style="margin-right:8px">Next rewards</b><div class="n cur">Lv 2</div><div class="ln"></div>${rw.map((x,i)=>`<div class="n" title="${x[1]}">Lv ${x[0]}: ${x[1]}</div>${i<rw.length-1?'<div class="ln"></div>':''}`).join('')}</div></div>
+  ${BI.shell('<h2>Production</h2><div class="ph"></div>')}
+  <button class="sim" data-fly>Simulate pickup</button>
+  <div class="sheet open" data-s><div class="hd"><h3>Resource details</h3><button data-d>Close</button></div>
+   <div class="cols">${BI.details.map(gr=>`<div class="col"><h4>${gr.group}</h4>${gr.items.map(BI.entry).map(e=>`<div class="tile ${e.amount?'':'zero'}">${e.ico(48)}<div><div class="tn">${e.name||e.id}<span class="num">${BI.amt(e)}</span></div>
+   <div class="ts">${e.mastery?BI.cap(e.mastery)+' mastery, ':''}<span class="rt">${e.rate?BI.rate(e):'idle'}</span></div><div class="tu">Used for ${e.use.charAt(0).toLowerCase()+e.use.slice(1)}</div></div></div>`).join('')}</div>`).join('')}</div></div>`},
+ init(r){ const s=r.querySelector('[data-s]'); r.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>s.classList.toggle('open'));
+  let n=0; r.querySelector('[data-fly]').onclick=()=>{ const d=r.querySelector('#d4').getBoundingClientRect(),m=r.getBoundingClientRect();
+   for(let i=0;i<6;i++) setTimeout(()=>{ const c=document.createElement('div'); c.className='flycoin'; c.innerHTML=BI.gem('ironbark','stone',26);
+    const x0=300+Math.random()*60,y0=420+Math.random()*50,x1=d.left-m.left+20,y1=d.top-m.top+10; c.style.cssText=`left:${x0}px;top:${y0}px`; r.appendChild(c);
+    const a=c.animate([{transform:'translate(0,0) scale(1)'},{transform:`translate(${(x1-x0)*.5}px,-120px) scale(1.2)`,offset:.45},{transform:`translate(${x1-x0}px,${y1-y0}px) scale(.5)`}],{duration:900,easing:'ease-in',fill:'forwards'});
+    a.onfinish=()=>{c.remove(); const b=r.querySelector('#d4'); b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse'); n++; const bd=r.querySelector('[data-badge]'); bd.hidden=false; bd.textContent=n;}; },i*110); }; }};
+
+/* ---------- H5 ---------- */
+const h5 = {key:'h5',title:'5 Daylight ledger',
+ caption:{layout:'Money-first header with an edge-to-edge XP line and goal cards; Details is a modal with a tab per group and a large detail list.',density:'Low per screen: one group at a time, big rows with a 5-step mastery rail.',colour:'Light paper UI with navy ink and an orange accent (a bright theme option).',motion:'Rows slide in when a tab changes; modal pops. The XP line is the only persistent bar.',ornament:'Minimal: square badges, thin rules, the mastery rail does the decoration.'},
+ html(){ return `<div class="top"><div class="xp"><i style="width:${lvlPct()}%"></i></div>
+  <div class="brand">Basic Incremental</div>
+  <div class="lvb"><b>1</b><div>Account level 1<br><span class="num">76 / 1,100 XP</span></div></div>
+  <div class="blk big" data-money>${BI.coin(34)}<div><div class="l">Money</div><div class="v num" data-v>${money()}</div><div class="r">+50/s</div></div></div>
+  <div class="blk">${BI.summon(28)}<div><div class="l">Summon Crystal</div><div class="v num">${BI.summonC.amount}</div><div class="r">+${BI.summonC.rate}/s</div></div></div>
+  <div class="blk">${BI.glamour(28)}<div><div class="l">Glamour Crystal</div><div class="v num">${BI.glamourC.amount}</div><div class="r">+${BI.glamourC.rate}/s</div></div></div>
+  <div class="gcards">${g1.slice(0,2).map(g=>`<div class="gc">${g.text}<br><small>ready</small><i></i></div>`).join('')}</div>
+  <button class="dbtn" data-d>${BI.gear()} Details</button>${mute()}</div>
+  ${BI.shell('<h2>Production</h2><div class="ph"></div>')}
+  <div class="scrim open" data-s><div class="modal"><div class="side"><h3>Details</h3>${BI.details.map((g,i)=>`<button data-t="${i}" aria-selected="${i===0}">${g.group.replace(' materials','')}<span>${g.items.length}</span></button>`).join('')}<button class="x" data-d>Close</button></div><div class="main" data-main></div></div></div>`},
+ init(r){ const main=r.querySelector('[data-main]');
+  const draw=i=>{ const gr=BI.details[i]; main.innerHTML=`<h4>${gr.group}</h4><div class="sub">${gr.items.length} resources. Mastery tiers come from lifetime harvested and add +10% output each.</div>`+gr.items.map(BI.entry).map((e,k)=>`
+   <div class="lrow" style="animation-delay:${k*40}ms">${e.ico(44)}<div class="nm"><b>${e.name||e.id}</b><span class="rt ${e.rate?'':'off'}">${BI.rate(e)}</span></div><div class="am num">${BI.amt(e)}</div>
+   <div>${e.mastery?`<div class="rail" style="--c:${tierColor(e.mastery)}">${[0,1,2,3,4].map(t=>`<i class="${t<=e.tier?'on':''}"></i>`).join('')}</div><div class="nx">${BI.cap(e.mastery)} mastery, ${nextTxt(e)}</div>`:''}<div class="us">Used for ${e.use.charAt(0).toLowerCase()+e.use.slice(1)}</div></div></div>`).join('');
+   r.querySelectorAll('[data-t]').forEach(b=>b.setAttribute('aria-selected',b.dataset.t==i)); };
+  r.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>draw(+b.dataset.t)); draw(0);
+  r.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>r.querySelector('[data-s]').classList.toggle('open')); }};
+
+/* shared Money tick: every second adds +50 and pulses */
+setInterval(()=>{ BI.money.amount += 50; document.querySelectorAll('[data-money]').forEach(el=>{ const v=el.querySelector('[data-v]'); if(v) v.textContent=BI.fmt(BI.money.amount); el.classList.remove('pulse'); void el.offsetWidth; el.classList.add('pulse'); }); },1000);
+BI.mountTabs([h1,h2,h3,h4,h5], document.querySelector('.tabs'), document.querySelector('.caption'), document.getElementById('host'));
+</script></body></html>

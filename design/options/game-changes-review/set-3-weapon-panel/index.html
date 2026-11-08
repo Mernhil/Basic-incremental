@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Weapon panel: 5 options</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+.page-head{max-width:1240px;margin:0 auto;padding:24px 0 6px}
+.page-head h1{margin:0 0 4px;font:800 28px var(--bi-font-ui);letter-spacing:-.01em}
+.page-head p{margin:0 0 10px;color:var(--rv-dim);max-width:92ch}
+.pick{max-width:1240px;margin:8px auto;padding:12px 16px;background:var(--rv-bg2);border:1px solid var(--rv-line);border-radius:8px}
+.pick h2{margin:0 0 6px;font:700 15px var(--bi-font-ui)}
+.pick ul{margin:0;padding-left:18px;display:grid;gap:3px;color:#c5cad6}
+.pick li b{color:var(--rv-acc)}
+.states{position:sticky;top:0;z-index:50;background:#0f1115ee;backdrop-filter:blur(4px);border-bottom:1px solid var(--rv-line);margin-top:10px}
+.states>div{max-width:1240px;margin:0 auto;padding:8px 0;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.states span.l{color:var(--rv-dim);margin-right:4px;font-size:13px}
+.chip{all:unset;cursor:pointer;padding:5px 12px;border-radius:99px;border:1px solid var(--rv-line);color:#c5cad6;font-weight:600;font-size:13px}
+.chip:hover{border-color:var(--rv-acc)}
+.chip[aria-pressed=true]{background:var(--rv-acc);color:#2a1c04;border-color:var(--rv-acc)}
+.chip:focus-visible{outline:2px solid var(--rv-acc);outline-offset:2px}
+.opt{max-width:1240px;margin:34px auto 0;padding-top:22px;border-top:1px solid var(--rv-line)}
+.opt h2{margin:0;font:800 22px var(--bi-font-ui);display:flex;gap:12px;align-items:baseline}
+.opt h2 i{font-style:normal;display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--rv-acc);color:#2a1c04;font-size:20px}
+.opt .why{margin:6px 0 4px;color:#c5cad6;max-width:100ch}
+.opt .facts{display:flex;gap:18px;flex-wrap:wrap;color:var(--rv-dim);font-size:13px;margin-bottom:12px}
+.opt .facts b{color:var(--rv-ink);font-weight:600}
+.surf{margin-top:12px}
+.surf>h3{margin:0 0 6px;font:700 13px var(--bi-font-ui);color:var(--rv-dim)}
+.surf-grid{display:grid;grid-template-columns:1fr;gap:16px}
+
+/* ---- dungeon drawer mock ---- */
+.dm{width:100%;border-radius:8px;overflow:hidden;border:1px solid var(--rv-line);background:var(--bi-chrome-bg);position:relative}
+.dm-arena{height:96px;position:relative;background:radial-gradient(60% 120% at 68% 0%,var(--bi-chrome-active-bg),transparent 75%),linear-gradient(180deg,var(--bi-chrome-bg),#1d2330)}
+.dm-arena h4{position:absolute;left:18px;top:14px;margin:0;font:800 24px var(--bi-font-ui);color:var(--bi-chrome-ink);text-shadow:0 2px 0 #0006}
+.dm-arena .ro{position:absolute;right:18px;top:12px;display:flex;gap:6px}
+.dm-arena .ro div{padding:5px 12px 6px;border-radius:10px;background:#2a2f38e0;box-shadow:inset 0 0 0 1px var(--bi-frame-line);min-width:74px}
+.dm-arena .ro dt{font-size:11px;color:var(--bi-frame-ink-muted);margin:0}.dm-arena .ro dd{margin:0;font-weight:800;font-size:19px;color:#fff}
+.dm-arena img{position:absolute;left:62%;top:6px;width:160px;height:172px;opacity:.9}
+.dm-drawer{background:var(--bi-frame-bg);color:var(--bi-frame-ink);border-radius:16px 16px 0 0;box-shadow:0 -1px 0 var(--bi-frame-line),0 -14px 30px #0006;position:relative}
+.dm-bar{height:56px;display:flex;align-items:center;padding:0 18px;gap:16px}
+.dm-handle{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:9px;background:var(--bi-frame-title-bg);box-shadow:inset 0 0 0 1px var(--bi-frame-title-line);font-weight:700;font-size:14px}
+.dm-handle i{width:9px;height:9px;border-left:2.5px solid currentColor;border-top:2.5px solid currentColor;rotate:225deg;translate:0 -2px}
+.dm-body{display:grid;grid-template-columns:290px minmax(0,1fr) 240px;gap:22px;padding:4px 18px 20px;align-items:start}
+.dm-col h5{margin:0 0 8px;font:700 15px var(--bi-font-ui)}
+.fl{display:grid;grid-template-columns:34px 1fr auto;gap:8px;align-items:center;padding:5px 8px 5px 6px;border-radius:9px;background:var(--bi-frame-title-bg);box-shadow:inset 0 0 0 1px var(--bi-frame-title-line),inset 3px 0 0 var(--h);margin-bottom:6px}
+.fl.on{box-shadow:inset 0 0 0 2px var(--bi-chrome-accent),inset 3px 0 0 var(--h)}
+.fl img{width:34px;height:34px;object-fit:contain;background:#0004;border-radius:7px;image-rendering:pixelated}
+.fl b{display:block;font-size:13px}.fl small{font-size:11px;color:var(--bi-frame-ink-muted)}
+.fl .btn{padding:4px 10px;font-size:12px}
+.fl .tg{padding:2px 8px;border-radius:99px;font-size:11px;font-weight:700;background:var(--bi-chrome-accent);color:var(--bi-chrome-bg)}
+.dr{display:flex;justify-content:space-between;padding:4px 8px;border-radius:7px;background:#0000002b;font-size:13px;margin-bottom:4px}
+.dr.rare{box-shadow:inset 2px 0 0 var(--bi-tick-crit)}
+
+/* ---- cards detail mock ---- */
+.cm{width:100%;border-radius:8px;border:1px solid var(--rv-line);background:var(--bi-table-bg);color:var(--bi-on-table);padding:16px 20px 20px}
+.cm h4{margin:0 0 10px;font:700 26px var(--bi-font-ui)}
+.cm-grid{display:grid;grid-template-columns:1fr 420px;gap:18px;align-items:start}
+.cm-coll{padding:10px;min-width:0}
+.cm-coll .cg{display:flex;gap:12px;flex-wrap:wrap;padding:12px 4px;opacity:.55;filter:saturate(.7)}
+.dt{padding:10px;min-width:0}
+.dt-top{display:flex;gap:14px;margin:10px 0}
+.dt-info{flex:1;display:grid;align-content:start;justify-items:start;gap:8px;min-width:0}
+.dt-tbl{display:grid;gap:4px;padding:8px 12px;border-radius:9px;background:#0000002e;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line);font-size:13px;margin-top:8px}
+.dt-tbl div{display:flex;justify-content:space-between;gap:10px}
+.dt-btns{display:flex;gap:8px;margin-top:10px}
+.cm .zoom{--k:1.5}
+
+/* ================= A: slim strip ================= */
+.A{display:grid;gap:7px}
+.A-box{display:grid;gap:7px;padding:9px 11px;border-radius:10px;background:#0000002e;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line)}
+.A-h{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center}
+.A-h img{width:50px;height:60px;margin:-4px 0}
+.A-h b{font-size:15px;display:block;line-height:1.15}
+.A-h .lv{font-weight:800;font-size:17px;text-align:right;line-height:1.1}.A-h .lv small{font-size:12px;color:var(--bi-frame-ink-muted);font-weight:600}
+.A-line{display:grid;grid-template-columns:62px 1fr auto;gap:9px;align-items:center;font-size:12.5px}
+.A-line label{color:var(--bi-frame-ink-muted);font-weight:600}
+.A-stars{font-size:13px;letter-spacing:1px}
+.A-act{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.A-act .btn{padding:6px 12px;font-size:13px}
+.A-chips{display:flex;gap:4px 12px;flex-wrap:wrap;font-size:12px}
+.A-note{font-size:12px;color:var(--bi-frame-ink-muted)}
+
+/* ================= B: weapon sheet ================= */
+.B{display:grid;gap:10px;padding:12px;border-radius:12px;background:linear-gradient(180deg,#323845,#262b34);box-shadow:inset 0 0 0 1px var(--bi-frame-line),inset 0 0 0 3px #0003}
+.B-top{display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px}
+.B-art{display:grid;justify-items:center;gap:6px;padding:8px 4px 6px;border-radius:9px;background:radial-gradient(circle at 50% 40%,#93a6bb38,transparent 70%),#0d121b;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line)}
+.B-art img{width:100px;height:120px}
+.B-lad{display:flex;gap:0;align-items:center}
+.B-lad i{width:20px;height:20px;border-radius:50%;display:block;border:2px solid #0008;background:#4a4f5a;position:relative;box-shadow:inset 0 0 0 1px #fff2}
+.B-lad i+i{margin-left:10px}
+.B-lad i+i::before{content:'';position:absolute;right:100%;top:50%;width:10px;height:3px;margin-top:-1.5px;background:#0006}
+.B-lad i.done{background:var(--c)} .B-lad i.cur{background:var(--c);box-shadow:0 0 0 2px #fff9,0 0 10px var(--c)}
+.B-lad i.nx{border-style:dashed;border-color:#fff6;background:transparent}
+.B-main{display:grid;gap:8px;align-content:start}
+.B-lv{display:flex;align-items:baseline;gap:8px}
+.B-lv b{font-size:36px;font-weight:800;line-height:1}
+.B-lv span{color:var(--bi-frame-ink-muted);font-size:14px}
+.B-sec{display:grid;gap:5px;padding:8px 10px;border-radius:9px;background:#0000002e;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line)}
+.B-sec h6{margin:0;display:flex;justify-content:space-between;font:700 13px var(--bi-font-ui)}
+.B-stars{display:flex;gap:4px}
+.B-stars s{display:block;width:30px;height:30px;text-decoration:none;position:relative;font-size:26px;line-height:30px;text-align:center;color:#ffffff24}
+.B-stars s.on{color:var(--tc)}
+.B-stars s.part{color:transparent;background:linear-gradient(90deg,var(--tc) calc(var(--f)*1%),#ffffff24 calc(var(--f)*1%));-webkit-background-clip:text;background-clip:text}
+.B-costs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px 12px;font-size:13px}.B-narrow .B-costs{grid-template-columns:1fr}.B-narrow .B-stars s{width:24px}
+.B-costs .res{justify-content:space-between;padding:2px 6px;border-radius:6px;background:#ffffff08}
+.B-costs .res span{display:flex;gap:6px;align-items:center}
+.B-go{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.B-go .btn{padding:8px 16px}
+
+/* ================= C: tabs ================= */
+.C{display:grid;gap:0;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line);background:#0000001f}
+.C-tabs{display:flex;background:#0000003a}
+.C-tabs button{all:unset;cursor:pointer;flex:1;text-align:center;padding:9px 8px 8px;font-weight:700;font-size:13.5px;color:var(--bi-frame-ink-muted);border-bottom:3px solid transparent;position:relative}
+.C-tabs button[aria-selected=true]{color:var(--bi-chrome-ink);background:#ffffff0c;border-bottom-color:var(--bi-chrome-accent)}
+.C-tabs button:focus-visible{outline:2px solid var(--bi-chrome-accent);outline-offset:-3px}
+.C-tabs button small{display:block;font-weight:500;font-size:11px;color:var(--bi-frame-ink-muted)}
+.C-tabs .dot{position:absolute;right:12px;top:8px;width:9px;height:9px;border-radius:50%;background:var(--bi-tick-crit);box-shadow:0 0 8px var(--bi-tick-crit);animation:pulse 1.4s ease-in-out infinite alternate}
+.C-body{padding:12px;display:grid;gap:9px;min-height:150px;align-content:start}
+.C-body .r{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px}
+.C-body .big{font-size:26px;font-weight:800;line-height:1}
+.C-rule{display:flex;gap:0;font-size:11.5px;color:var(--bi-frame-ink-muted)}
+.C-rule span{flex:1;text-align:center;padding:3px 0;border-top:3px solid #ffffff22}
+.C-rule span.on{border-top-color:var(--bi-chrome-accent);color:var(--bi-chrome-ink);font-weight:700}
+.C-tbl{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;font-size:12px;text-align:center}
+.C-tbl div{padding:3px 0;border-radius:5px;background:#ffffff0d}.C-tbl div.cur{background:var(--bi-chrome-accent);color:#161b26;font-weight:800}.C-tbl div.done{opacity:.45}
+
+/* ================= D: inline on the weapon ================= */
+.D{display:grid;grid-template-columns:270px minmax(0,1fr);gap:14px;align-items:center}
+.D-stage{position:relative;width:270px;height:262px}
+.D-stage svg{position:absolute;inset:0;overflow:visible}
+.D-stage img.w{position:absolute;left:50%;top:50%;width:100px;height:120px;translate:-50% -54%}
+.D-badge{position:absolute;left:14px;top:20px;display:grid;place-items:center;width:58px;height:62px;font-weight:800;font-size:22px;line-height:1;color:#161b26;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--tc);text-align:center}
+.D-badge small{display:block;font-size:9px;font-weight:700;opacity:.75;letter-spacing:.02em}
+.D-xp{position:absolute;right:6px;top:34px;font-size:11.5px;font-weight:700;color:#9fd4ff;text-align:right;line-height:1.2}
+.D-tier{position:absolute;left:50%;bottom:-2px;translate:-50% 0;padding:1px 12px;border-radius:99px;font-weight:800;font-size:12px;background:#10131a;box-shadow:inset 0 0 0 1.5px var(--tc);color:var(--tc);white-space:nowrap}
+.D-side{display:grid;gap:8px;min-width:0}
+.D-side .fine{font-size:12px;color:var(--bi-frame-ink-muted)}
+.D-tag{position:relative;display:grid;gap:6px;padding:9px 10px;border-radius:10px;background:#10131a;box-shadow:inset 0 0 0 2px var(--bi-chrome-accent)}
+.D-tag.dim{box-shadow:inset 0 0 0 1px #ffffff2a;opacity:.92}
+.D-tag::before{content:'';position:absolute;left:-8px;top:50%;width:14px;height:14px;rotate:45deg;translate:0 -50%;background:inherit;box-shadow:-1px 1px 0 var(--bi-chrome-accent)}
+.D-tag.dim::before{box-shadow:-1px 1px 0 #ffffff2a}
+.D-tag .btn{width:100%}
+.D-chips{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:12px}
+.D-card{position:relative}
+.D-card .lvb{position:absolute;left:-30px;top:-30px;z-index:5;display:grid;place-items:center;width:46px;height:50px;font-weight:800;font-size:18px;line-height:1;color:#161b26;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:var(--tc);text-align:center}
+.D-card .lvb small{display:block;font-size:8.5px;font-weight:700;opacity:.75}
+.D-card .xpr{position:absolute;left:calc(9px*var(--k));right:calc(9px*var(--k));top:calc(154px*var(--k));height:5px;border-radius:3px;background:#000a;overflow:hidden;z-index:4}
+.D-card .xpr i{display:block;height:100%;width:calc(var(--p)*1%);background:#7fc6ff}
+.D-card .glowup{position:absolute;inset:0;z-index:4;border-radius:6px;pointer-events:none;box-shadow:0 0 0 2px var(--bi-chrome-accent),0 0 18px var(--bi-tick-crit);animation:pulse 1.4s ease-in-out infinite alternate}
+
+/* ================= E: forge popover ================= */
+.E-sum{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:#0000002e;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line)}
+.E-sum img{width:50px;height:60px;margin:-4px 0}
+.E-sum b{font-size:14px}
+.E-sum .row{display:flex;gap:10px;align-items:center;font-size:12.5px;color:var(--bi-frame-ink-muted)}
+.E-sum .bar{height:6px;flex:1}
+.E-sum .btn{position:relative}
+.E-sum .btn .dot{position:absolute;right:-4px;top:-4px;width:11px;height:11px;border-radius:50%;background:var(--bi-tick-crit);box-shadow:0 0 8px var(--bi-tick-crit);animation:pulse 1.4s ease-in-out infinite alternate}
+.E-pop{position:relative;margin-top:10px;padding:12px;border-radius:12px;background:#161b26;box-shadow:inset 0 0 0 1px var(--bi-chrome-accent),0 12px 30px #000a;display:grid;gap:10px}
+.E-pop::before{content:'';position:absolute;left:46px;top:-7px;width:12px;height:12px;rotate:45deg;background:#161b26;box-shadow:-1px -1px 0 var(--bi-chrome-accent)}
+.E-pop h6{margin:0;display:flex;justify-content:space-between;align-items:center;font:800 16px var(--bi-font-ui)}
+.E-x{all:unset;cursor:pointer;padding:0 8px;color:var(--bi-frame-ink-muted);font-size:18px}
+.E-ba{display:grid;grid-template-columns:1fr 34px 1fr;gap:6px;align-items:center}
+.E-w{display:grid;justify-items:center;gap:4px;padding:8px;border-radius:9px;background:radial-gradient(circle at 50% 40%,#93a6bb2e,transparent 70%),#0d121b;box-shadow:inset 0 0 0 1px var(--bi-frame-title-line);text-align:center;font-size:12px}
+.E-w img{width:100px;height:120px}
+.E-w.nx{box-shadow:inset 0 0 0 1px var(--bi-chrome-accent)}
+.E-w.nx img{filter:drop-shadow(0 0 8px #ffd96866)}
+.E-w.lk img{opacity:.55}
+.E-arrow{font-size:24px;color:var(--bi-chrome-accent);text-align:center}
+.E-list{display:grid;gap:3px;font-size:13px}
+.E-list .res{display:flex;justify-content:space-between;padding:3px 8px;border-radius:6px;background:#ffffff08}
+.E-list .res span{display:flex;gap:6px;align-items:center}
+.E-steps{display:flex;gap:8px;font-size:12px;color:var(--bi-frame-ink-muted)}
+.E-steps span{padding:2px 8px;border-radius:6px;background:#ffffff0d}
+
+.affordable{box-shadow:0 0 0 2px var(--bi-chrome-accent),0 0 14px #ffb02e88;animation:glow 1.6s ease-in-out infinite alternate}
+@keyframes pulse{to{opacity:.45}}
+@keyframes glow{to{box-shadow:0 0 0 2px var(--bi-chrome-accent),0 0 4px #ffb02e55}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head>
+<body>
+<header class="page-head">
+  <h1>Weapon panel: 5 options</h1>
+  <p>Where the main card's level and XP, the tier-up (cost, max-level state) and the star bar live, once the damage lines are gone (DESIGN.md §5). Every option is shown in the two places the user asked for: the dungeon drawer (it takes the damage column) and the Cards page detail. Use the state chips to flip every mock between mid-level, max level with the tier-up affordable or not, the Frost Sigil step, a full star bar, a Unique available and a no-Unique weapon.</p>
+</header>
+
+<section class="pick" aria-label="Pick hints">
+  <h2>Pick hints</h2>
+  <ul>
+    <li><b>Want the drawer to stay light and fast to scan?</b> A (slim strip) or E (forge popover).</li>
+    <li><b>Want the next tier visible before you can pay for it, with every cost in plain sight?</b> B (weapon sheet).</li>
+    <li><b>Want one job per view and no wall of numbers?</b> C (tabs), with the cost of one extra click.</li>
+    <li><b>Want it to feel like the game, not a form?</b> D (on the weapon): gauge, level badge and pips sit on the art.</li>
+    <li><b>Want to preview the new weapon look (the interim rarity ladder, then the Unique)?</b> E shows before and after; B only shows the ladder as dots.</li>
+    <li><b>Safest to build and test:</b> A or B (static, no hidden state). D needs the most art work; E needs a popover that closes on Escape and outside click.</li>
+    <li>Whichever you pick, the Cards page and the drawer use the same component, so the choice is made once.</li>
+  </ul>
+</section>
+
+<nav class="states" aria-label="State"><div id="chips"><span class="l">State of the main card:</span></div></nav>
+<main id="opts"></main>
+<footer class="page-head" style="padding-bottom:60px">
+  <p>Notes on the numbers. Names, tiers, level caps (20 / 40 / 60 / 80 / 100), the XP curve (10 × 1.12 per level, `cardRules.json`), the star table (§5), star impact (x1.25 to x3.5), tier power (x1 / 1.5 / 2.25 / 3.5) and the tier-up materials come from the data. The Money price of each tier-up is new in §5 and not in the data yet, and so is any cost for the Unique tier: both are placeholders here. Weapon pictures are the real baked sprites on the interim rarity ladder (§5 Weapon looks): Ember Blade is Common, Rare, Epic, Legendary and then Flameblade; Bulwark starts Rare and tops out at Mythic.</p>
+</footer>
+
+<script>
+/* ---------- data (names and numbers from src/data/content) ---------- */
+const TIERS=['bronze','silver','gold','prismatic','unique'];
+const TNAME=['Bronze','Silver','Gold','Prismatic','Unique'];
+const CAPS=[20,40,60,80,100];
+const TPOW=[1,1.5,2.25,3.5,null];
+const SPOW=[1,1.25,1.6,2,2.6,3.5];                 /* star impact, star 1..6 */
+const LADDER=['common','rare','epic','legendary','mythic','exotic','void'];
+const CARDS={
+  ember:{name:'Ember Squire',rarity:'common',job:'Fighting',kind:'sword',weapon:'Ember Blade',unique:'Flameblade',table:[2,4,7,11,16],ability:'Steady hits every 1 s',support:'+5% damage',cost:2},
+  shield:{name:'Shield Warden',rarity:'rare',job:'Fighting',kind:'shield',weapon:'Bulwark',unique:null,table:[1,2,4,5,8],ability:'Steady hits every 1 s',support:'+5% health',cost:3}
+};
+const RES={
+  money:{n:'Money',i:'money'},moss_core:{n:'Moss Core',i:'core',c:'#7fae68'},cinder_core:{n:'Cinder Core',i:'core',c:'#e08a55'},frost_core:{n:'Frost Core',i:'core',c:'#8fc0e0'},
+  frost_sigil:{n:'Frost Sigil',i:'sigil'},iron_gem:{n:'Iron Gem',i:'coin-hexagon-silver'},ironbark_gem:{n:'Ironbark Gem',i:'coin-pentagon-silver'},
+  grotto_gem:{n:'Grotto Gem',i:'coin-drop-silver'},moonwillow_gem:{n:'Moonwillow Gem',i:'coin-star-gold'}
+};
+/* tier-up cost by target tier; Money and the Unique row are placeholders (see footer) */
+const COSTS={
+  1:{money:250000,moss_core:6,iron_gem:14000,ironbark_gem:24000},
+  2:{money:6000000,cinder_core:8,grotto_gem:28000,moonwillow_gem:60000},
+  3:{money:150000000,frost_core:220,frost_sigil:200,grotto_gem:180000,moonwillow_gem:240000},
+  4:{money:2000000000,frost_core:500,frost_sigil:400,grotto_gem:400000,moonwillow_gem:600000}
+};
+const HAVE_RICH={money:12500000,moss_core:12,cinder_core:12,frost_core:260,frost_sigil:210,iron_gem:90000,ironbark_gem:90000,grotto_gem:95000,moonwillow_gem:95000};
+const STATES=[
+  {id:'mid',label:'Mid level',card:'ember',tier:1,level:27,xp:121,stars:3,fill:4,have:{...HAVE_RICH}},
+  {id:'ok',label:'Max level, tier-up affordable',card:'ember',tier:0,level:20,xp:0,stars:2,fill:1,have:{...HAVE_RICH,money:1250000,moss_core:7,iron_gem:19000,ironbark_gem:31000}},
+  {id:'short',label:'Max level, can’t afford it',card:'ember',tier:1,level:40,xp:0,stars:3,fill:4,have:{...HAVE_RICH,money:4200000,cinder_core:6,grotto_gem:31000,moonwillow_gem:41000}},
+  {id:'sigil',label:'Gold → Prismatic (Frost Sigils)',card:'ember',tier:2,level:60,xp:0,stars:4,fill:3,have:{...HAVE_RICH,money:310000000,frost_core:240,frost_sigil:120,grotto_gem:200000,moonwillow_gem:260000}},
+  {id:'star',label:'Star bar full',card:'ember',tier:1,level:33,xp:60,stars:3,fill:7,have:{...HAVE_RICH}},
+  {id:'uniq',label:'Unique available',card:'ember',tier:3,level:80,xp:0,stars:5,fill:9,have:{...HAVE_RICH,money:3000000000,frost_core:620,frost_sigil:430,grotto_gem:450000,moonwillow_gem:640000}},
+  {id:'nouniq',label:'No Unique for this weapon',card:'shield',tier:3,level:80,xp:0,stars:4,fill:3,have:{...HAVE_RICH}},
+  {id:'done',label:'Fully upgraded',card:'ember',tier:4,level:100,xp:0,stars:6,fill:0,have:{...HAVE_RICH}}
+];
+let cur=STATES[0];
+
+/* ---------- derived values ---------- */
+const fmt=n=>Math.round(n).toLocaleString('en-US');
+function money(n){return n>=1e9?(n/1e9)+'B':n>=1e6?(n/1e6)+'M':n>=1e3?(n/1e3)+'K':String(n)}
+function look(s,t=s.tier){const c=CARDS[s.card];if(t===4)return 'evo-flameblade';const r=Math.min(LADDER.indexOf(c.rarity)+t,6);return `item-${c.kind}-${LADDER[r]}`}
+function D(s){
+  const c=CARDS[s.card],cap=CAPS[s.tier],atCap=s.level>=cap;
+  const next=s.tier<3?s.tier+1:(s.tier===3&&c.unique?4:null);
+  const need=s.stars<6?c.table[s.stars-1]:null;
+  const costs=next?Object.entries(COSTS[next]).map(([k,v])=>({k,need:v,have:s.have[k],ok:s.have[k]>=v})):[];
+  const afford=atCap&&next&&costs.every(x=>x.ok);
+  return {c,cap,atCap,next,need,costs,afford,xpNeed:Math.round(10*Math.pow(1.12,s.level-1)),starReady:need!==null&&s.fill>=need,
+    top:next===null,missing:costs.filter(x=>!x.ok)};
+}
+/* ---------- fragments ---------- */
+const img=(n,w,h,cls='px')=>`<img class="${cls}" src="assets/sprites/${n}.png" width="${w}" height="${h}" alt="">`;
+function icon(k){const r=RES[k];
+  if(r.i==='money')return `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#e8c05a" stroke="#6b4a0c" stroke-width="2"/><circle cx="12" cy="12" r="6" fill="none" stroke="#a87a1c" stroke-width="2"/></svg>`;
+  if(r.i==='core')return `<svg viewBox="0 0 24 24"><path d="M12 2l8 10-8 10L4 12z" fill="${r.c}" stroke="#10131a" stroke-width="2" stroke-linejoin="round"/><path d="M12 5l4 7-4 7" fill="#ffffff55"/></svg>`;
+  if(r.i==='sigil')return `<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#1e3a56" stroke="#9fd8ff" stroke-width="2"/><path d="M12 5v14M5.5 8.5l13 7M18.5 8.5l-13 7" stroke="#dff4ff" stroke-width="1.8"/></svg>`;
+  return img(r.i,24,24);}
+function chip(x,showHave){return `<span class="res ${x.ok?'ok':'no'}" title="${RES[x.k].n}">${icon(x.k)}<b>${showHave?fmt(x.have):fmt(x.need)}</b>${showHave?`<small>/ ${fmt(x.need)}</small>`:''}<small>${RES[x.k].n}</small></span>`}
+function chipC(x){return `<span class="res ${x.ok?'ok':'no'}" title="${RES[x.k].n}: have ${fmt(x.have)}">${icon(x.k)}<b>${x.k==='money'?money(x.need):fmt(x.need)}</b></span>`}
+function stars(s,n=6){let h='';for(let i=1;i<=n;i++)h+=i<=s.stars?'★':'☆';return `<span class="mc__stars" style="--tier-c:var(--t-${s.tier===4?'prismatic':TIERS[s.tier]})"><b>${h.slice(0,s.stars)}</b>${h.slice(s.stars)}</span>`}
+function tierPill(s,t=s.tier){return `<span class="pill tier-${TIERS[t]}">${TNAME[t]}</span>`}
+function mcard(s,k=1,over='',under=''){const c=CARDS[s.card];
+  return `<div class="mc" style="--k:${k}" data-tier="${TIERS[s.tier]}" data-rarity="${c.rarity}"><div class="mc__in">
+   <div class="mc__plate">${c.name}<span>${c.job}</span></div><div class="mc__art">${img(look(s),100,120)}</div>
+   <div class="mc__foot"><span class="mc__tier">${TNAME[s.tier]}</span>${stars(s)}</div>${over}
+   <img class="mc__frame px" src="assets/sprites/frame-${s.tier===4?'prismatic':TIERS[s.tier]}.png" alt=""></div></div>`}
+const tc=s=>`var(--t-${s.tier===4?'unique':TIERS[s.tier]})`;
+function goLabel(s,d){return d.next===4?`Reveal ${d.c.unique}`:`Tier up to ${TNAME[d.next]}`}
+function moneyChipTotal(d){return d.costs.map(chipC).join('')}
+function nextLine(s,d){
+  if(d.next===null)return s.tier===4?'Fully upgraded. Nothing left to unlock.':`Prismatic is the top tier for ${d.c.weapon} until its unique weapon is drawn.`;
+  if(!d.atCap)return `Tier up opens at Lv ${d.cap}. Costs below.`;
+  return d.afford?'Ready. Levels and stars carry over.':`Missing ${d.missing.map(m=>RES[m.k].n).join(', ')}.`;
+}
+function starNote(s,d){
+  if(s.stars>=6)return 'All six stars. Extra copies become shards.';
+  return `${s.fill} / ${d.need} copies to ★${s.stars+1} · x${SPOW[s.stars-1]} → x${SPOW[s.stars]} base stats`}
+function addStarBtn(s,d,cls=''){return d.starReady?`<button class="btn ${cls}">Add star ★${s.stars+1}</button>`:''}
+function goBtn(s,d,txt){
+  if(d.next===null)return '';
+  const dis=!d.afford;
+  return `<button class="btn ${d.afford?'affordable':''}" ${dis?'disabled':''}>${txt||goLabel(s,d)}</button>`}
+
+/* ---------- A: slim strip ---------- */
+function A(s,narrow){const d=D(s);
+  const act=d.next===null?`<div class="A-note">${nextLine(s,d)}</div>`:`<div class="A-act">${goBtn(s,d)}<div class="A-chips">${d.atCap?moneyChipTotal(d):'<span class="A-note">'+nextLine(s,d)+'</span>'}</div></div>`;
+  return `<div class="A"><div class="A-box">
+   <div class="A-h">${img(look(s),50,60)}<div><b>${d.c.weapon}</b>${tierPill(s)} <span class="muted" style="font-size:12px">power x${TPOW[s.tier]??'—'} · stars x${SPOW[s.stars-1]}</span></div>
+     <div class="lv bi-num">${s.level >= d.cap?'MAX':'Lv '+s.level}<br><small>cap ${d.cap}</small></div></div>
+   <div class="A-line"><label>XP</label><div class="bar xp ${d.atCap?'max':''}" style="--p:${d.atCap?100:s.xp/d.xpNeed*100}"><i></i></div><span class="bi-num muted">${d.atCap?'full':fmt(s.xp)+' / '+fmt(d.xpNeed)}</span></div>
+   <div class="A-line"><label>Stars</label><div class="bar star" style="--p:${s.stars>=6?100:s.fill/d.need*100}"><i></i></div><span class="bi-num muted">${s.stars>=6?'★ 6':s.fill+' / '+d.need}</span></div>
+   ${d.starReady?`<div class="A-act"><span class="A-stars">${stars(s)}</span>${addStarBtn(s,d)}</div>`:''}
+   ${act}
+  </div></div>`}
+
+/* ---------- B: weapon sheet ---------- */
+function B(s,narrow){const d=D(s);
+  const lad=TIERS.map((t,i)=>{const unq=i===4&&!d.c.unique;const cls=i<s.tier?'done':i===s.tier?'cur':(i===d.next?'nx':'');return `<i class="${cls}" style="--c:var(--t-${t==='prismatic'?'prismatic':t});${unq?'opacity:.25':''}" title="${TNAME[i]}${unq?' (no unique yet)':''}"></i>`}).join('');
+  let st='';for(let i=1;i<=6;i++){st+=i<=s.stars?`<s class="on">★</s>`:i===s.stars+1?`<s class="part" style="--f:${s.fill/(d.need||1)*100}">★</s>`:`<s>★</s>`}
+  const costs=d.next?`<div class="B-sec"><h6><span>${d.next===4?'Unique: '+d.c.unique:'Next tier: '+TNAME[d.next]}</span><span class="muted" style="font-weight:600">${d.atCap?'':'reach Lv '+d.cap+' first'}</span></h6>
+    <div class="B-costs">${d.costs.map(x=>`<div class="res ${x.ok?'ok':'no'}"><span>${icon(x.k)}${RES[x.k].n}</span><span class="bi-num"><b>${fmt(x.have)}</b> <small>/ ${fmt(x.need)}</small></span></div>`).join('')}</div>
+    <div class="B-go"><span class="A-note">${nextLine(s,d)}</span>${goBtn(s,d)}</div></div>`:`<div class="B-sec"><h6><span>${s.tier===4?'Fully upgraded':'Top tier for now'}</span></h6><div class="A-note">${nextLine(s,d)}</div></div>`;
+  return `<div class="B ${narrow?'B-narrow':''}" style="--tc:${tc(s)}"><div class="B-top" style="${narrow?'grid-template-columns:128px minmax(0,1fr)':''}">
+    <div class="B-art">${img(look(s),100,120)}<div class="B-lad">${lad}</div><div style="font-size:12px;font-weight:700">${d.c.weapon}</div></div>
+    <div class="B-main"><div class="B-lv"><b class="bi-num">${s.level}</b><span>/ ${d.cap} ${tierPill(s)}</span></div>
+      <div class="bar xp ${d.atCap?'max':''}" style="--p:${d.atCap?100:s.xp/d.xpNeed*100}"><i></i></div>
+      <div class="muted" style="font-size:12px">${d.atCap?'<span class="tag-max">MAX</span> level for '+TNAME[s.tier]:fmt(s.xp)+' / '+fmt(d.xpNeed)+' XP to Lv '+(s.level+1)}</div>
+      <div class="B-sec"><h6><span>Stars</span><span class="bi-num muted">${s.stars>=6?'x'+SPOW[5]:'x'+SPOW[s.stars-1]+' → x'+SPOW[s.stars]}</span></h6><div class="B-stars" style="--tc:${tc(s)}">${st}</div>
+        <div class="B-go"><span class="A-note">${s.stars>=6?'All six stars':s.fill+' / '+d.need+' copies to ★'+(s.stars+1)}</span>${addStarBtn(s,d)}</div></div>
+    </div></div>${costs}</div>`}
+
+/* ---------- C: tabs ---------- */
+const tabState={drawer:null,detail:null};
+function C(s,surf){const d=D(s);
+  const def=d.afford?'tier':d.starReady?'stars':(d.atCap&&d.next)?'tier':'level';
+  let t=tabState[surf]&&tabState[surf].for===s.id?tabState[surf].tab:def;
+  const dotTier=d.afford, dotStar=d.starReady;
+  const tabs=[['level','Level',`${s.level} / ${d.cap}`,false],['stars','Stars',`★ ${s.stars}${s.stars<6?' · '+s.fill+'/'+d.need:''}`,dotStar],['tier','Tier',TNAME[s.tier]+(d.next?' → '+TNAME[d.next]:''),dotTier]]
+   .map(([id,n,sub,dot])=>`<button role="tab" data-surf="${surf}" data-tab="${id}" aria-selected="${t===id}">${n}<small>${sub}</small>${dot?'<i class="dot"></i>':''}</button>`).join('');
+  let body='';
+  if(t==='level'){
+    body=`<div class="r"><span class="big bi-num">Lv ${s.level}</span><span class="muted">${d.atCap?'<span class="tag-max">MAX</span> for '+TNAME[s.tier]:fmt(s.xp)+' / '+fmt(d.xpNeed)+' XP'}</span></div>
+     <div class="bar xp ${d.atCap?'max':''}" style="--p:${d.atCap?100:s.xp/d.xpNeed*100}"><i></i></div>
+     <div class="C-rule">${TNAME.map((n,i)=>`<span class="${i===s.tier?'on':''}">${n} ${CAPS[i]}</span>`).join('')}</div>
+     <div class="A-note">XP comes from fighting time and kills. ${d.atCap?'Open the Tier tab to raise the cap.':'Tiers raise the cap, stars do not.'}</div>`}
+  if(t==='stars'){
+    body=`<div class="r"><span class="A-stars" style="font-size:22px">${stars(s)}</span><span class="bi-num muted">x${SPOW[s.stars-1]}${s.stars<6?' → x'+SPOW[s.stars]:''}</span></div>
+     <div class="bar star" style="--p:${s.stars>=6?100:s.fill/d.need*100}"><i></i></div>
+     <div class="r"><span class="muted">${s.stars>=6?'All six stars. Extra copies become shards.':s.fill+' / '+d.need+' copies to ★'+(s.stars+1)}</span>${addStarBtn(s,d)}</div>
+     <div class="C-tbl">${d.c.table.map((n,i)=>`<div class="${i===s.stars-1?'cur':i<s.stars-1?'done':''}">★${i+2}: ${n}</div>`).join('')}</div>
+     <div class="A-note">${d.c.rarity[0].toUpperCase()+d.c.rarity.slice(1)} copies needed per star.</div>`}
+  if(t==='tier'){
+    body=d.next?`<div class="r"><span>${tierPill(s)} → ${tierPill(s,d.next)}</span><span class="muted">cap ${d.cap} → ${CAPS[d.next]}${TPOW[d.next]?' · power x'+TPOW[s.tier]+' → x'+TPOW[d.next]:''}</span></div>
+      <div class="A-chips" style="gap:6px 14px">${d.costs.map(x=>chip(x,true)).join('')}</div>
+      <div class="r"><span class="A-note">${nextLine(s,d)}</span>${goBtn(s,d)}</div>`
+      :`<div class="r"><span>${tierPill(s)}</span></div><div class="A-note">${nextLine(s,d)}</div>`}
+  return `<div class="C"><div class="C-tabs" role="tablist">${tabs}</div><div class="C-body">${body}</div></div>`}
+
+/* ---------- D: inline on the weapon ---------- */
+function Dstage(s,d){
+  const p=d.atCap?1:Math.max(.02,s.xp/d.xpNeed), R=112, cx=135, cy=124;
+  const pt=(a,r=R)=>[cx+r*Math.cos(a*Math.PI/180),cy+r*Math.sin(a*Math.PI/180)];
+  const arc=(f,t,r=R)=>{const [x1,y1]=pt(f,r),[x2,y2]=pt(t,r);return `M${x1.toFixed(1)} ${y1.toFixed(1)} A${r} ${r} 0 ${(t-f)>180?1:0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`};
+  const end=135+270*p;
+  let pips='';
+  for(let i=0;i<6;i++){const a=90+(i-2.5)*17;const [x,y]=pt(a,R);const on=i<s.stars;const part=i===s.stars&&s.stars<6;
+    const f=part?s.fill/(d.need||1):0;
+    pips+=`<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${a-90})"><path d="M0 -9 L2.6 -3 L9 -2.6 L4 1.6 L5.6 8 L0 4.5 L-5.6 8 L-4 1.6 L-9 -2.6 L-2.6 -3z" fill="${on?'currentColor':part?'url(#sp'+i+')':'#2a2f38'}" stroke="#10131a" stroke-width="2" stroke-linejoin="round"/></g>`;
+    if(part)pips=`<defs><linearGradient id="sp${i}"><stop offset="${f*100}%" stop-color="currentColor"/><stop offset="${f*100}%" stop-color="#2a2f38"/></linearGradient></defs>`+pips}
+  return `<div class="D-stage" style="--tc:${tc(s)};color:${tc(s)}"><svg viewBox="0 0 270 262" aria-hidden="true"><defs><linearGradient id="pr" x1="0" x2="1"><stop offset="0" stop-color="#ff5f9e"/><stop offset=".3" stop-color="#ffd24a"/><stop offset=".6" stop-color="#5ff0a8"/><stop offset="1" stop-color="#5fc6ff"/></linearGradient>
+    <radialGradient id="pl"><stop offset="0" stop-color="#93a6bb" stop-opacity=".35"/><stop offset="1" stop-color="#0d121b" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="${cx}" cy="${cy}" r="96" fill="url(#pl)"/><ellipse cx="${cx}" cy="${cy+78}" rx="54" ry="9" fill="#0008"/>
+    <path d="${arc(135,405)}" fill="none" stroke="#0a0d13" stroke-width="12" stroke-linecap="round"/>
+    <path d="${arc(135,Math.max(end,138))}" fill="none" stroke="${d.atCap?'url(#pr)':'#7fc6ff'}" stroke-width="8" stroke-linecap="round"/>${pips}</svg>
+   ${img(look(s),100,120,'px w')}
+   <div class="D-badge bi-num"><div>${s.level}<small>${d.atCap?'MAX':'LV'}</small></div></div>
+   <div class="D-xp bi-num">${d.atCap?'XP full':fmt(s.xp)+'<br>/ '+fmt(d.xpNeed)+' XP'}</div>
+   <div class="D-tier">${TNAME[s.tier]}${d.next&&d.atCap?' ▲':''}</div></div>`}
+function Dside(s,d,compact){
+  const star=s.stars>=6?'All six stars':`${s.fill} / ${d.need} copies to ★${s.stars+1}`;
+  const tag=d.next?`<div class="D-tag ${d.afford?'':'dim'}">${d.atCap?`<div class="D-chips">${d.costs.map(x=>compact?chipC(x):chip(x,true)).join('')}</div>`:`<div class="fine">Reach Lv ${d.cap} to tier up. It costs:</div><div class="D-chips">${d.costs.map(chipC).join('')}</div>`}${goBtn(s,d)}</div>`:`<div class="fine">${nextLine(s,d)}</div>`;
+  return `<div class="D-side"><div class="fine bi-num"><b style="color:var(--bi-frame-ink)">${star}</b>${s.stars<6?'<br>x'+SPOW[s.stars-1]+' → x'+SPOW[s.stars]:''}</div>${addStarBtn(s,d)}${tag}</div>`}
+function Dd(s){const d=D(s);return `<div class="D">${Dstage(s,d)}${Dside(s,d)}</div>`}
+function Ddet(s){const d=D(s);const k=1.5;
+  const over=`<div class="lvb bi-num" style="--tc:${tc(s)}"><div>${s.level}<small>${d.atCap?'MAX':'LV'}</small></div></div><div class="xpr" style="--p:${d.atCap?100:s.xp/d.xpNeed*100};${d.atCap?'':''}"><i style="${d.atCap?'background:var(--prism)':''}"></i></div>${d.afford?'<div class="glowup"></div>':''}`;
+  return `<div style="display:flex;gap:16px;align-items:flex-start;--tc:${tc(s)}"><div class="D-card" style="--k:${k};padding:28px 0 24px 30px"><div style="position:relative;width:${132*k}px;height:${186*k}px">${mcard(s,k,'').replace('<div class="mc__stars"','<div class="mc__stars"')}<div style="position:absolute;inset:0;--k:${k}">${over}</div></div></div>
+   <div class="D-side" style="flex:1;padding-top:6px">${Dside(s,d,true)}</div></div>`}
+
+/* ---------- E: forge popover ---------- */
+const forge={drawer:true,detail:true};
+function E(s,surf){const d=D(s);
+  const dot=d.afford||d.starReady;
+  const sum=`<div class="E-sum">${img(look(s),50,60)}<div><b>${d.c.weapon}</b> ${tierPill(s)}<div class="row"><span class="bi-num">Lv ${s.level}/${d.cap}</span><div class="bar xp ${d.atCap?'max':''}" style="--p:${d.atCap?100:s.xp/d.xpNeed*100}"><i></i></div>${stars(s)}</div></div>
+     <button class="btn" data-forge="${surf}">Forge${dot?'<i class="dot"></i>':''}</button></div>`;
+  if(!forge[surf])return `<div>${sum}</div>`;
+  const nx=d.next;
+  const ba=nx?`<div class="E-ba"><div class="E-w">${img(look(s),100,120)}<b>${TNAME[s.tier]}</b><span class="muted">cap ${d.cap}${TPOW[s.tier]?' · power x'+TPOW[s.tier]:''}</span></div><div class="E-arrow">→</div>
+     <div class="E-w nx ${d.atCap?'':'lk'}">${img(look(s,nx),100,120)}<b>${nx===4?d.c.unique:TNAME[nx]}</b><span class="muted">cap ${CAPS[nx]}${TPOW[nx]?' · power x'+TPOW[nx]:' · new look'}</span></div></div>`
+    :`<div class="E-w" style="justify-self:center;min-width:220px">${img(look(s),100,120)}<b>${TNAME[s.tier]}</b><span class="muted">${nextLine(s,d)}</span></div>`;
+  const list=nx?`<div class="E-list">${d.costs.map(x=>`<div class="res ${x.ok?'ok':'no'}"><span>${icon(x.k)}${RES[x.k].n}</span><span class="bi-num"><b>${fmt(x.have)}</b> <small>/ ${fmt(x.need)}</small></span></div>`).join('')}</div>
+     <div class="B-go"><span class="A-note">${d.atCap?(d.afford?'Levels and stars carry over.':'Missing '+d.missing.map(m=>RES[m.k].n).join(', ')+'.'):'Reach Lv '+d.cap+' to tier up.'}</span>${goBtn(s,d)}</div>`:'';
+  return `<div>${sum}<div class="E-pop" role="dialog" aria-label="Weapon forge"><h6><span>Forge</span><button class="E-x" data-forge="${surf}" aria-label="Close">×</button></h6>${ba}${list}
+    <div class="E-steps"><span class="bi-num">★ ${s.stars}${s.stars<6?' · '+s.fill+'/'+d.need+' copies':''}</span>${addStarBtn(s,d,'')}</div></div></div>`}
+
+/* ---------- surfaces ---------- */
+const OPTS=[
+ {id:'A',name:'Slim strip',why:'One compact box with three lines: level and XP, star bar, one tier-up row. Costs show as small chips only once the weapon is at its cap.',
+  facts:['Footprint: <b>smallest</b>','Costs: <b>chips, only at cap</b>','Clicks to tier up: <b>1</b>','Feels like: a status line'],drawer:s=>A(s),detail:s=>A(s)},
+ {id:'B',name:'Weapon sheet',why:'A framed sheet with the weapon, the five-step tier ladder, level, a six-star bar with a partial star, and the next tier’s full cost table with what you have and what you need, always visible.',
+  facts:['Footprint: <b>largest</b>','Costs: <b>full table, always shown</b>','Clicks to tier up: <b>1</b>','Feels like: a character sheet'],drawer:s=>B(s),detail:s=>B(s,true)},
+ {id:'C',name:'Tabs: Level, Stars, Tier',why:'One job per tab, with a gold dot on a tab that has something to do. Opens on the tab that matters (Tier when it is affordable, then Stars, then Level).',
+  facts:['Footprint: <b>small</b>','Costs: <b>on the Tier tab</b>','Clicks to tier up: <b>1 (0 when it opens there)</b>','Feels like: a settings panel'],drawer:s=>C(s,'drawer'),detail:s=>C(s,'detail')},
+ {id:'D',name:'On the weapon',why:'No form at all. The XP ring wraps the weapon, a level badge sits on it, the stars are pips along the ring, and the tier is the plate under it. Only the action and its cost sit beside it.',
+  facts:['Footprint: <b>medium</b>','Costs: <b>chips on a tag beside the weapon</b>','Clicks to tier up: <b>1</b>','Feels like: the game. Needs the most art'],drawer:s=>Dd(s),detail:s=>Ddet(s)},
+ {id:'E',name:'Forge popover',why:'Surfaces carry one summary row and a Forge button (gold dot when there is something to do). The popover shows the current weapon next to the next tier’s new look, then costs and the action.',
+  facts:['Footprint: <b>one row closed</b>','Costs: <b>in the popover</b>','Clicks to tier up: <b>2</b>','Feels like: an anvil. Shows the new look'],drawer:s=>E(s,'drawer'),detail:s=>E(s,'detail')}
+];
+function floors(){return `<div class="dm-col"><h5>Floors</h5>
+ <div class="fl on" style="--h:var(--core-moss)">${img('boss-root_warden',34,34).replace('<img','<img style="object-fit:contain"')}<div><b>Mossy Cellar</b><small>Root Warden · 94 kills</small></div><span class="tg">Fighting</span></div>
+ <div class="fl" style="--h:var(--core-cinder)">${img('boss-cinder_lich',34,34)}<div><b>Ember Crypt</b><small>Cinder Lich · 0 kills</small></div><button class="btn">Fight</button></div>
+ <div class="fl" style="--h:var(--core-frost);opacity:.7">${img('boss-glacier_colossus',34,34).replace('<img','<img style="filter:grayscale(1) brightness(.6)"')}<div><b>Frostspire Vault</b><small>Clear Ember Crypt to unlock</small></div><span></span></div></div>`}
+function drops(){return `<div class="dm-col"><h5>Drops</h5><div class="dr rare"><span>Hex Lattice</span><b>0.5%</b></div><div class="dr"><span>Summon Crystal</span><b>2–4</b></div><div class="dr"><span>Moss Core</span><b>80%</b></div><div class="A-note" style="margin-top:6px">Hex Lattice guaranteed in <b style="color:#fff">106 kills</b></div></div>`}
+function drawerMock(o,s){return `<div class="dm"><div class="dm-arena"><h4>Mossy Cellar</h4>${img('boss-root_warden',160,172).replace('<img','<img style="position:absolute;left:58%;top:-20px"')}
+  <dl class="ro"><div><dt>DPS</dt><dd class="bi-num">316.57</dd></div><div><dt>Kills/min</dt><dd class="bi-num">0.06</dd></div><div><dt>Time to kill</dt><dd class="bi-num">17m 22s</dd></div></dl></div>
+  <div class="dm-drawer"><div class="dm-bar"><div class="dm-handle"><i></i>Upgrades and floors</div></div>
+  <div class="dm-body">${floors()}<div class="dm-col"><h5>Weapon</h5>${o.drawer(s)}</div>${drops()}</div></div></div>`}
+function detailMock(o,s){const c=CARDS[s.card];
+  const GN=[['Shield Warden','rare','item-shield-rare'],['Storm Duelist','epic','item-twin_blades-epic'],['Dawnblade Regent','legendary','item-greatsword-legendary'],['Apprentice Feller','common','item-hatchet-common'],['Cave Digger','common','item-pickaxe-common'],['Gem Cutter','rare','item-chisel-rare'],['Grove Keeper','rare','item-staff-rare'],['Elder Treant','epic','item-maul-epic']];
+  const ghost=GN.map((g,i)=>`<div class="mc" style="--k:.75" data-tier="bronze" data-rarity="${g[1]}"><div class="mc__in"><div class="mc__plate">${g[0]}</div><div class="mc__art">${img(g[2],100,120)}</div><div class="mc__foot"><span class="mc__tier">Bronze</span></div><img class="mc__frame px" src="assets/sprites/frame-bronze.png" alt=""></div></div>`).join('');
+  const main=(o.id==='D')?o.detail(s):`<div class="dt-top"><div>${mcard(s,1.5)}</div><div class="dt-info"><div class="muted" style="font-size:13px">Main of Fighting</div>${tierPill(s)}</div></div>${o.detail(s)}`;
+  return `<div class="cm"><h4>Cards</h4><div class="cm-grid"><div class="fr cm-coll"><div class="tt"><span>Collection</span><span class="muted" style="font-weight:600">3 of 12 found</span></div><div class="cg">${mcard(s,.75)}${ghost}</div></div>
+   <div class="fr dt"><div class="tt"><span>${c.name}</span><span class="muted" style="font-weight:600">${c.rarity[0].toUpperCase()+c.rarity.slice(1)} · ${c.job}</span></div>
+   ${o.id==='D'?'<div style="margin:12px 0">'+main+'</div>':main.replace('<div class="dt-top">','<div class="dt-top" style="margin-bottom:12px">')}
+   <div class="dt-tbl"><div><span class="muted">Main ability</span><span>${c.ability}</span></div><div><span class="muted">Support effect</span><span>${c.support}</span></div><div><span class="muted">Cost</span><span>${c.cost}</span></div></div>
+   <div class="dt-btns"><button class="btn ghost">Set as main</button><button class="btn ghost">Add as support</button></div></div></div></div>`}
+function render(){
+  document.getElementById('opts').innerHTML=OPTS.map(o=>`<section class="opt" id="opt-${o.id}"><h2><i>${o.id}</i>${o.name}</h2><p class="why">${o.why}</p>
+   <div class="facts">${o.facts.map(f=>`<span>${f}</span>`).join('')}</div>
+   <div class="surf-grid"><div class="surf"><h3>In the dungeon drawer, taking the place of the damage lines</h3>${drawerMock(o,cur)}</div>
+   <div class="surf"><h3>In the Cards page detail, taking the place of Level and Next star</h3>${detailMock(o,cur)}</div></div></section>`).join('');
+}
+function chips(){const box=document.getElementById('chips');
+  box.insertAdjacentHTML('beforeend',STATES.map(s=>`<button class="chip" data-s="${s.id}" aria-pressed="${s===cur}">${s.label}</button>`).join(''));
+  box.addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;cur=STATES.find(x=>x.id===b.dataset.s);
+    box.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x===b));render();location.hash=cur.id==='mid'?'':'s='+cur.id});}
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tab]');if(t){tabState[t.dataset.surf]={for:cur.id,tab:t.dataset.tab};render();return}
+  const f=e.target.closest('[data-forge]');if(f){forge[f.dataset.forge]=!forge[f.dataset.forge];render()}
+});
+chips();
+const h=/s=(\w+)/.exec(location.hash);if(h){const m=STATES.find(x=>x.id===h[1]);if(m){cur=m;document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',x.dataset.s===m.id))}}
+render();
+</script>
+</body></html>

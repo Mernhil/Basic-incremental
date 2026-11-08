@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Upgrade shelf options</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap');
+:root{--chrome:#0f1115;--chrome2:#181b22;--chrome-line:#2a2f3a;--chrome-ink:#e7eaf0;--chrome-dim:#8d95a6;--chrome-acc:#e8c05a}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--chrome);color:var(--chrome-ink);font:500 14px/1.4 'Outfit','Segoe UI',sans-serif}
+.page-head{max-width:1280px;margin:0 auto;padding:22px 0 10px}
+.page-head h1{margin:0 0 4px;font:800 26px 'Outfit';letter-spacing:-.01em}
+.page-head p{margin:0;color:var(--chrome-dim);max-width:78ch}
+.tabs{max-width:1280px;margin:10px auto 0;display:flex;gap:6px;border-bottom:1px solid var(--chrome-line)}
+.tabs button{all:unset;cursor:pointer;padding:9px 16px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;color:var(--chrome-dim);font-weight:600}
+.tabs button:hover{color:var(--chrome-ink)}
+.tabs button[aria-selected=true]{background:var(--chrome2);border-color:var(--chrome-line);color:var(--chrome-acc)}
+.tabs button:focus-visible{outline:2px solid var(--chrome-acc);outline-offset:1px}
+.caption{max-width:1280px;margin:0 auto;padding:12px 16px;background:var(--chrome2);border:1px solid var(--chrome-line);border-top:0;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;font-size:12.5px}
+.caption b{display:block;color:var(--chrome-acc);font-weight:700;margin-bottom:1px}
+.caption span{color:var(--chrome-dim)}
+.mock{width:1280px;margin:18px auto 60px;position:relative;overflow:hidden;border:1px solid var(--chrome-line);border-radius:6px}
+.mock[hidden]{display:none}
+.mock button{font-family:inherit}
+@media (prefers-reduced-motion:reduce){.mock *{animation:none!important;transition:none!important}}
+/* fake shell around the mocks */
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:560px}
+.shell nav{padding:10px;display:flex;flex-direction:column;gap:2px;font-weight:600}
+.shell nav div{padding:9px 12px;border-radius:8px;display:flex;gap:10px;align-items:center}
+.shell nav i{width:22px;height:22px;border-radius:6px;display:inline-block;background:linear-gradient(135deg,#d49a50,#7a4a1c);box-shadow:inset 0 0 0 2px #2a1a0a}
+.shell .fake{padding:22px 26px}
+.fake h2{margin:0 0 12px;font:700 26px 'Outfit'}
+.fake .ph{height:220px;border-radius:10px;opacity:.55}
+</style>
+<style>
+.mock .ico{display:block;flex:none}.fake h2{color:inherit}#opt-u1 .fake,#opt-u1 .fake h2{color:#18202e}
+.mock svg{display:block}
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.mhead h3{margin:0;font:800 19px Outfit}
+.mhead .sum{font-size:12.5px;opacity:.75}
+.mon{display:flex;gap:8px;align-items:center;font:800 15px Outfit}
+.rst{all:unset;cursor:pointer;font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:6px;border:1px solid currentColor;opacity:.7}
+.pstar{display:inline-grid;place-items:center;width:15px;height:15px;font-size:11px;line-height:1;color:#ffd76a}
+@keyframes flashrow{0%{background:#ffe27a}100%{background:transparent}}
+
+/* ============ U1 chip flow ============ */
+#opt-u1{background:#0e1118;color:#e9ecf3}
+#opt-u1 .shell nav{background:#141922}#opt-u1 .shell nav .on{background:#2a2a33;box-shadow:inset 3px 0 #e0b24a}
+#opt-u1 .fake{background:#d3d8e1}
+#opt-u1 .panel{background:#1b1e26;border:1px solid #2e333e;border-radius:12px;padding:14px;color:#fff;display:flex;flex-direction:column;gap:10px}
+#opt-u1 .flow{display:flex;flex-wrap:wrap;gap:7px}
+#opt-u1 .chip{position:relative;display:flex;align-items:center;gap:8px;padding:5px 11px 5px 7px;border-radius:9px;background:#151820;border:1.5px solid #343a47;cursor:default;overflow:hidden;font-size:12.5px;font-weight:700}
+#opt-u1 .chip .fill{position:absolute;left:0;bottom:0;height:3px;background:#6c7aa0;width:var(--f)}
+#opt-u1 .chip small{display:block;font-weight:500;color:#aab2c2;font-size:11px;line-height:1.1}
+#opt-u1 .chip .tag{font:800 12px Outfit;background:#262c3a;padding:1px 6px;border-radius:5px;color:#ffd76a}
+#opt-u1 .chip .pr{margin-left:6px;font-size:12px;color:#c9ced8;font-weight:700}
+#opt-u1 .chip.av{border-color:#e2b648;cursor:pointer;box-shadow:0 0 10px #e2b64855;animation:gl 2.2s ease-in-out infinite}
+#opt-u1 .chip.av:hover{background:#1f2430}
+@keyframes gl{50%{box-shadow:0 0 16px #e2b648aa}}
+#opt-u1 .chip.own{opacity:.55;border-style:dashed}
+#opt-u1 .chip .tip{position:absolute;z-index:5;left:0;top:calc(100% + 6px);width:230px;padding:9px 10px;border-radius:8px;background:#0b0d12;border:1px solid #4a5163;color:#dfe3ec;font-weight:500;font-size:12px;display:none;white-space:normal}
+#opt-u1 .chip:hover .tip{display:block}
+#opt-u1 .chip{overflow:visible}
+#opt-u1 .sep{font-size:11.5px;color:#9aa2b3;font-weight:700;width:100%;margin-top:4px}
+
+/* ============ U2 wooden shelf ============ */
+#opt-u2{background:#2a1a10;color:#f6e7cc}
+#opt-u2 .shell nav{background:#33200f}#opt-u2 .shell nav .on{background:#4a2d17;box-shadow:inset 3px 0 #ffb24a}
+#opt-u2 .fake{background:#3b2616}
+#opt-u2 .plank{margin:14px 0 4px;position:relative}
+#opt-u2 .plank h4{margin:0 0 4px;font:800 14px Outfit;color:#ffcf7a}
+#opt-u2 .items{display:flex;gap:6px;align-items:flex-end;min-height:128px;padding:0 12px;flex-wrap:nowrap}
+#opt-u2 .board{height:14px;border-radius:3px;background:linear-gradient(#8a5a30,#5a3820);box-shadow:0 6px 0 #1a0f08;margin-top:-2px}
+#opt-u2 .it{position:relative;width:118px;text-align:center;cursor:default;flex:none}
+#opt-u2 .jar{position:relative;margin:0 auto;width:62px;height:76px}
+#opt-u2 .jar svg{width:62px;height:76px}
+#opt-u2 .it .nm{font:800 11.5px Outfit;margin-top:2px;line-height:1.1}
+#opt-u2 .it .ef{font-size:10.5px;color:#d9c39b;line-height:1.15;min-height:24px}
+#opt-u2 .it .tg{display:inline-block;margin-top:2px;padding:1px 8px;border-radius:3px;background:#f0dfb4;color:#3a2a0c;font-weight:800;font-size:11px;position:relative}
+#opt-u2 .it .tg::before{content:'';position:absolute;left:50%;top:-6px;width:1px;height:6px;background:#f0dfb4}
+#opt-u2 .it.av{cursor:pointer}
+#opt-u2 .it.av .jar::before{content:'';position:absolute;inset:-14px;border-radius:50%;background:radial-gradient(#ffd76a99,transparent 65%);animation:halo 2.4s ease-in-out infinite}
+@keyframes halo{50%{opacity:.4;transform:scale(1.15)}}
+#opt-u2 .it.av .jar svg{animation:sway 3.2s ease-in-out infinite;transform-origin:50% 100%;position:relative}
+@keyframes sway{50%{transform:rotate(2.5deg)}}
+#opt-u2 .it.na .jar svg{filter:saturate(.5)}
+#opt-u2 .it.own{opacity:.5}#opt-u2 .it.own .tg{background:#6c5a3a;color:#d9c39b}
+#opt-u2 .it.hid .jar svg{filter:brightness(.25) contrast(1.2)}#opt-u2 .it.hid .jar::after{content:'?';position:absolute;inset:0;display:grid;place-items:center;font:900 26px Outfit;color:#ffffff55;padding-top:14px}
+#opt-u2 .it.hid{opacity:.8}
+#opt-u2 .it.hid .nm{opacity:.6}
+
+/* ============ U3 card tiles ============ */
+#opt-u3{background:#0f1020;color:#ecebff}
+#opt-u3 .shell nav{background:#161830}#opt-u3 .shell nav .on{background:#2c2f5e;box-shadow:inset 3px 0 #9fa8ff}
+#opt-u3 .fake{background:#181a38}
+#opt-u3 .filt{display:inline-flex;background:#0006;padding:3px;border-radius:9px;gap:2px}
+#opt-u3 .filt button{all:unset;cursor:pointer;padding:5px 13px;border-radius:6px;font-weight:700;font-size:12.5px}
+#opt-u3 .filt button[aria-pressed=true]{background:#9fa8ff;color:#0f1020}
+#opt-u3 .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:12px}
+#opt-u3 .kc{position:relative;height:176px;border-radius:10px;padding:6px;background:linear-gradient(#52433a,#33261f);border:2px solid #b97a3c;display:flex;flex-direction:column;gap:4px;transition:transform .2s;perspective:600px}
+#opt-u3 .kc.perm{border-color:#f3c64e;background:linear-gradient(#6a5522,#3a2d10);box-shadow:0 0 0 2px #8c6410 inset}
+#opt-u3 .kc .top{display:flex;justify-content:space-between;align-items:center;background:#1b120a;border-radius:5px;padding:3px 6px;font:800 11.5px Outfit}
+#opt-u3 .kc .win{flex:1;border-radius:6px;background:radial-gradient(#3a4a6a,#10162a);display:grid;place-items:center;text-align:center;position:relative}
+#opt-u3 .kc .win b{font:900 32px Outfit;color:#fff;text-shadow:0 2px 0 #000a;line-height:1}
+#opt-u3 .kc .win span{display:block;font-size:10.5px;color:#cfd6f0;padding:0 8px;line-height:1.15;margin-top:3px}
+#opt-u3 .kc .win .ico{position:absolute;left:5px;top:5px;opacity:.9}
+#opt-u3 .kc .bt{all:unset;box-sizing:border-box;text-align:center;border-radius:6px;padding:5px;font:800 12px Outfit;background:#1b120a;color:#ccd}
+#opt-u3 .kc.av{cursor:pointer;animation:glw 2s ease-in-out infinite}
+#opt-u3 .kc.av .bt{background:#f3c64e;color:#2a1c04}
+#opt-u3 .kc.av:hover{transform:translateY(-5px)}
+@keyframes glw{50%{box-shadow:0 0 18px #f3c64e99}}
+#opt-u3 .kc.own{filter:saturate(.35) brightness(.85)}
+#opt-u3 .kc.own::after{content:'OWNED';position:absolute;right:-6px;top:30px;transform:rotate(12deg);padding:2px 10px;background:#3fa05a;border:2px solid #fff;color:#fff;font:900 12px Outfit;letter-spacing:.06em}
+#opt-u3 .kc.flip{animation:flip .6s}
+@keyframes flip{50%{transform:rotateY(90deg)}}
+#opt-u3 .kc.back{background:repeating-linear-gradient(45deg,#2c2f5e 0 8px,#222549 8px 16px);border-color:#6a70c0;display:grid;place-items:center;opacity:.8}
+#opt-u3 .kc.back .win{background:none;display:grid;place-items:center;font:900 30px Outfit;color:#9fa8ff}
+#opt-u3 .kc.back .win span{color:#aab}
+
+/* ============ U4 table ============ */
+#opt-u4{background:#f3f4f7;color:#1b2030}
+#opt-u4 .shell nav{background:#e4e7ee;color:#27324a}#opt-u4 .shell nav .on{background:#fff;box-shadow:inset 3px 0 #2d6cdf}
+#opt-u4 .fake{background:#eceef3}
+#opt-u4 .t{width:100%;border-collapse:collapse;background:#fff;border-radius:8px;overflow:hidden;font-size:12.5px;box-shadow:0 1px 0 #d6dae4}
+#opt-u4 .t th{text-align:left;font-weight:600;font-size:11.5px;color:#6b7690;padding:7px 10px;background:#f7f8fb;border-bottom:1px solid #dde1ea}
+#opt-u4 .t td{padding:5px 10px;border-bottom:1px solid #eef0f5;vertical-align:middle}
+#opt-u4 .t tr.g td{background:#e9edf8;font-weight:800;color:#2d4a8f;padding:5px 10px}
+#opt-u4 .t .nm{display:flex;gap:8px;align-items:center;font-weight:700}
+#opt-u4 .t .st{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px}
+#opt-u4 .t .st.av{background:#1f9d55}#opt-u4 .t .st.na{background:#e0a020}#opt-u4 .t .st.own{background:#a0a8b8}
+#opt-u4 .t td.mu{color:#667089}
+#opt-u4 .t .buy{all:unset;cursor:pointer;display:inline-block;min-width:112px;text-align:center;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12px;background:#1f9d55;color:#fff}
+#opt-u4 .t .buy.na{background:#eef0f5;color:#8a93a8;cursor:default}
+#opt-u4 .t .buy.own{background:transparent;color:#8a93a8;cursor:default}
+#opt-u4 .t tr.fl{animation:flashrow .9s}
+#opt-u4 .t tr.own td{color:#8a93a8}
+#opt-u4 .t tr.hidden td{color:#8a93a8;font-style:italic;background:#fafbfc}
+#opt-u4 .leg{font-size:11.5px;color:#667089;display:flex;gap:14px;margin:0 0 8px}
+
+/* ============ U5 tech tracks ============ */
+#opt-u5{background:#0b1a1c;color:#e2f5f2}
+#opt-u5 .shell nav{background:#0f2326}#opt-u5 .shell nav .on{background:#16393d;box-shadow:inset 3px 0 #5ee6c8}
+#opt-u5 .fake{background:#12292c;padding:16px 18px}
+#opt-u5 .tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 26px;margin-top:8px}
+#opt-u5 .trk{display:grid;grid-template-columns:104px 1fr;align-items:center;height:56px}
+#opt-u5 .trk .lb{font-weight:700;font-size:12px;line-height:1.15}#opt-u5 .trk .lb small{display:block;font-weight:500;color:#8db8b4}
+#opt-u5 .line{position:relative;height:56px}
+#opt-u5 .line::before{content:'';position:absolute;left:0;right:0;top:21px;height:4px;border-radius:2px;background:#1d4045}
+#opt-u5 .line .fil{position:absolute;left:0;top:21px;height:4px;border-radius:2px;background:#5ee6c8;width:var(--w);transition:width 1s}
+#opt-u5 .nd{position:absolute;top:10px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;width:84px;cursor:default}
+#opt-u5 .nd i{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font:800 11px Outfit;font-style:normal;border:2px solid #3a6a6e;background:#0b1a1c;color:#8db8b4}
+#opt-u5 .nd em{font-style:normal;font-size:10px;color:#8db8b4;margin-top:1px;white-space:nowrap}
+#opt-u5 .nd.own i{background:#5ee6c8;border-color:#5ee6c8;color:#06201c}
+#opt-u5 .nd.av i{border-color:#ffd76a;color:#ffd76a;box-shadow:0 0 0 0 #ffd76a99;animation:rng 2s infinite;cursor:pointer}
+@keyframes rng{70%{box-shadow:0 0 0 8px #ffd76a00}0%{box-shadow:0 0 0 0 #ffd76a99}}
+#opt-u5 .nd.hid i{border-style:dashed;opacity:.55}
+#opt-u5 .nd.perm i::after{content:'';position:absolute;width:6px;height:6px;background:#ffd76a;border-radius:50%;margin:-26px -22px 0 0}
+#opt-u5 .nd.sel i{transform:scale(1.2)}
+#opt-u5 .dt{margin-top:12px;border-radius:12px;background:#0b1a1c;border:1px solid #2b5a5e;padding:12px 16px;display:grid;grid-template-columns:44px 1fr auto;gap:14px;align-items:center;min-height:74px}
+#opt-u5 .dt h4{margin:0;font:800 16px Outfit}#opt-u5 .dt p{margin:2px 0 0;color:#a9d6d0;font-size:12.5px}
+#opt-u5 .dt button{all:unset;cursor:pointer;padding:9px 18px;border-radius:9px;background:#ffd76a;color:#2a1c04;font-weight:800}
+#opt-u5 .dt button.off{background:#1d4045;color:#8db8b4;cursor:default}
+</style></head>
+<body>
+<div class="page-head"><h1>Upgrade shelf: 5 options</h1><p>One-time Money upgrades from upgrades.json (36 of them), shown with a sample game state: Oak level 26, Copper Quarry level 12, Copper Edge level 30, 12 Mossy Cellar kills, 120,000 lifetime Money, 61,000 Money held. Chip states: available and glowing when affordable, available but too expensive, owned, permanent (kept through ascension) and still hidden. Click a glowing upgrade to buy it. The game hides locked upgrades today; options 2, 3, 4 and 5 try different ways to hint at them.</p></div>
+<div class="tabs" role="tablist"></div><div class="caption"></div><div id="host"></div>
+<script>/* Shared data + placeholder icons for the economy UI mockups. Real content from src/data/content and the app screenshots. */
+const BI = {};
+BI.metals = {stone:['#8a90a0','#4c515e'],bronze:['#d58b4a','#7a4418'],silver:['#d3dae6','#6c7688'],gold:['#f3c64e','#8c6410'],prismatic:['#ff9bd0','#6ad7ff']};
+BI.shapes = {
+  round:'<circle cx="16" cy="16" r="7"/>',
+  pentagon:'<polygon points="16,8 23.5,13.5 20.6,22.5 11.4,22.5 8.5,13.5"/>',
+  star:'<polygon points="16,7.5 18.4,13.3 24.6,13.8 19.9,17.9 21.3,24 16,20.8 10.7,24 12.1,17.9 7.4,13.8 13.6,13.3"/>',
+  square:'<rect x="9.5" y="9.5" width="13" height="13" rx="1.5"/>',
+  hexagon:'<polygon points="16,8 22.6,11.8 22.6,19.8 16,23.6 9.4,19.8 9.4,11.8"/>',
+  drop:'<path d="M16 7.5 C19 12 23 15 23 18.6 A7 7 0 0 1 9 18.6 C9 15 13 12 16 7.5Z"/>'
+};
+BI.gems = {
+  oak:{name:'Oak Gem',shape:'round',c:['#f4c88e','#cf8e50','#9a5e2e','#5e3416']},
+  ironbark:{name:'Ironbark Gem',shape:'pentagon',c:['#c8b0a0','#8e7262','#5e4638','#34241a']},
+  moonwillow:{name:'Moonwillow Gem',shape:'star',c:['#f6f4ff','#cdc8f2','#9690d0','#5a5498']},
+  copper:{name:'Copper Gem',shape:'square',c:['#ffc78e','#f08a3c','#b8581a','#743210']},
+  iron:{name:'Iron Gem',shape:'hexagon',c:['#eef2f8','#aab4c2','#727c8c','#464e5a']},
+  grotto:{name:'Grotto Gem',shape:'drop',c:['#eafaff','#9adcf2','#58acd2','#2a7298']}
+};
+let _uid = 0;
+/* placeholder gem coin: notched coin in the mastery metal, dark well, faceted gem */
+BI.gem = (id, tier='stone', s=32) => {
+  const g = BI.gems[id], m = BI.metals[tier], u = 'g' + (++_uid);
+  const rim = tier === 'prismatic'
+    ? `<linearGradient id="${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9bd0"/><stop offset=".5" stop-color="#8fe3ff"/><stop offset="1" stop-color="#fff0a0"/></linearGradient>`
+    : '';
+  const fill = tier === 'prismatic' ? `url(#${u})` : m[0];
+  return `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true">${rim}
+  <circle cx="16" cy="16" r="14.5" fill="${fill}" stroke="#fff" stroke-width="1" stroke-opacity=".0"/>
+  <circle cx="16" cy="16" r="14.5" fill="none" stroke="${m[1]}" stroke-width="1.5" stroke-dasharray="3.6 2.2"/>
+  <circle cx="16" cy="16" r="11" fill="#15181f" stroke="${m[1]}" stroke-width="1"/>
+  <g fill="${g.c[1]}" stroke="${g.c[3]}" stroke-width="1.2" stroke-linejoin="round">${BI.shapes[g.shape]}</g>
+  <circle cx="13.6" cy="12.6" r="1.5" fill="#fff" opacity=".9"/></svg>`;
+};
+BI.core = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,3 28,16 16,29 4,16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><polygon points="16,9 22,16 16,23 10,16" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`;
+BI.starlight = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 L19 13 L30 16 L19 19 L16 30 L13 19 L2 16 L13 13Z" fill="#ffe27a" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+BI.coin = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="#d9a22e" stroke="#5a3a0a" stroke-width="1.5" stroke-dasharray="3.6 2.2"/><circle cx="16" cy="16" r="11" fill="#f5cc55" stroke="#8a5a10" stroke-width="1.3"/><circle cx="16" cy="16" r="6.5" fill="#d9a22e" stroke="#8a5a10" stroke-width="1.2"/><circle cx="12.6" cy="12.4" r="1.6" fill="#fff" opacity=".85"/></svg>`;
+BI.summon = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,1.5 24,10 22.5,28 16,31 9.5,28 8,10" fill="#4d7bf0" stroke="#17306e" stroke-width="1.6" stroke-linejoin="round"/><polygon points="16,1.5 16,31 9.5,28 8,10" fill="#8fb2ff"/><polygon points="16,1.5 24,10 16,12" fill="#cfe0ff"/><circle cx="12" cy="10" r="1.4" fill="#fff"/></svg>`;
+BI.glamour = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="5,12 11,4.5 21,4.5 27,12 16,29" fill="#e8468f" stroke="#6a1240" stroke-width="1.6" stroke-linejoin="round"/><polygon points="5,12 16,29 14,12" fill="#ff8cc0"/><polygon points="11,4.5 21,4.5 27,12 14,12" fill="#ff5da5"/><circle cx="11.5" cy="9" r="1.4" fill="#fff"/></svg>`;
+BI.gear = (s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h9"/></svg>`;
+BI.speaker = (s=18, off=false) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 8h3l4-3.5v11L6 12H3z"/>${off?'<path d="M13.5 7.5l4 5M17.5 7.5l-4 5"/>':'<path d="M13.5 7.5a3.5 3.5 0 0 1 0 5M15.6 5.2a6.5 6.5 0 0 1 0 9.6"/>'}</svg>`;
+
+BI.fmt = n => n >= 1e9 ? (n/1e9).toFixed(n>=1e10?0:1)+'B' : n >= 1e6 ? (n/1e6).toFixed(n>=1e7?0:1)+'M' : n.toLocaleString('en-US',{maximumFractionDigits:0});
+BI.fmtD = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+/* header / details data (screenshots header-details-*.png, resources.json, progression.json) */
+BI.account = {level:1, xp:76, next:1100};
+BI.money = {amount:28045, rate:50};
+BI.summonC = {amount:37, rate:0.4};
+BI.glamourC = {amount:4, rate:0.1};
+BI.goals = [
+  {text:'Unlock Ironbark', state:'ready', pct:1, page:'Production'},
+  {text:'Copper Edge Lv 25 (x2)', state:'ready', pct:1, page:'Dungeons'},
+  {text:'Iron Edge Lv 25 (x2)', state:'ready', pct:1, page:'Dungeons'}
+];
+BI.mastery = ['stone','bronze','silver','gold','prismatic'];
+BI.masteryAt = [0,1e3,1e5,1e7,1e9];
+BI.masteryOf = life => { let t = 0; BI.masteryAt.forEach((v,i) => { if (life >= v) t = i; }); return t; };
+BI.details = [
+ {group:'Tree materials', items:[
+  {id:'oak',amount:2757,rate:4.98,life:2757,use:'Card star-ups, unlocking Ironbark',kind:'gem'},
+  {id:'ironbark',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups, unlocking Moonwillow',kind:'gem'},
+  {id:'moonwillow',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'}]},
+ {group:'Mine materials', items:[
+  {id:'copper',amount:539.37,rate:0.93,life:539.37,use:'Card star-ups',kind:'gem'},
+  {id:'iron',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'},
+  {id:'grotto',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'}]},
+ {group:'Dungeon materials', items:[
+  {name:'Moss Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Cinder Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Frost Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Frost Sigil',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Glimmer Dust',amount:0,rate:0,use:'Cosmetic upgrades',kind:'core'},
+  {name:'Facet Shard',amount:0,rate:0,use:'Cosmetic upgrades',kind:'core'}]},
+ {group:'Prestige', items:[
+  {name:'Starlight',amount:0,rate:0,use:'The Starlight shop',kind:'star'}]}
+];
+BI.entry = e => {
+  if (e.kind === 'gem') { const g = BI.gems[e.id]; const t = BI.masteryOf(e.life); return {name:g.name, ico:s=>BI.gem(e.id,BI.mastery[t],s), tier:t, mastery:BI.mastery[t], next:BI.masteryAt[t+1]||null, life:e.life, ...e}; }
+  return {ico:s => e.kind==='star'?BI.starlight(s):BI.core(s), tier:null, mastery:null, ...e};
+};
+BI.rate = e => e.rate > 0 ? '+' + BI.fmtD(e.rate) + '/s' : 'Not produced right now';
+BI.amt = e => e.amount % 1 ? BI.fmtD(e.amount) : BI.fmt(e.amount);
+BI.cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+BI.shellNav = ['Home','Cards','Production','Dungeons','Summon','Skill Tree','Wardrobe','Achievements','Shop','Settings'];
+BI.shell = (inner, opts={}) => `<div class="shell" style="${opts.style||''}"><nav>${BI.shellNav.map(n=>`<div${n==='Production'?' class="on"':''}><i></i>${n}</div>`).join('')}</nav><div class="fake">${inner}</div></div>`;
+
+/* tab machinery: options = [{key,title,caption:{layout,density,colour,motion,ornament},html(),init(root)}] */
+BI.mountTabs = (options, tabsEl, capEl, hostEl) => {
+  const roots = [];
+  options.forEach((o,i) => {
+    const r = document.createElement('div'); r.className = 'mock'; r.hidden = i !== 0; r.id = 'opt-' + o.key;
+    r.innerHTML = o.html(); hostEl.appendChild(r); roots.push(r);
+    const b = document.createElement('button'); b.textContent = o.title; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i === 0);
+    b.onclick = () => show(i); tabsEl.appendChild(b);
+  });
+  function show(i){
+    [...tabsEl.children].forEach((b,j)=>b.setAttribute('aria-selected', j===i));
+    roots.forEach((r,j)=>r.hidden = j!==i);
+    const c = options[i].caption;
+    capEl.innerHTML = ['layout','density','colour','motion','ornament'].map(k=>`<div><b>${BI.cap(k)}</b><span>${c[k]}</span></div>`).join('');
+    history.replaceState(null,'','#'+options[i].key);
+  }
+  options.forEach((o,i)=>o.init && o.init(roots[i]));
+  const h = location.hash.slice(1), idx = options.findIndex(o=>o.key===h);
+  show(idx > 0 ? idx : 0);
+};
+</script>
+<script>
+/* ---------- data: real upgrades.json content, sample snapshot ---------- */
+const U = [
+['keen_axes','Keen Axes','Oak output x2',['tree','oak',10],1500,0],['deep_roots','Deep Roots','Oak output x3',['tree','oak',35],400000,0],
+['iron_saws','Iron Saws','Ironbark output x2',['tree','ironbark',10],15000,0],['heartwood_grain','Heartwood Grain','Ironbark output x3',['tree','ironbark',35],15000000,0],
+['moonlit_grove','Moonlit Grove','Moonwillow output x2',['tree','moonwillow',10],200000,0],['silver_boughs','Silver Boughs','Moonwillow output x3',['tree','moonwillow',35],300000000,0],
+['lumber_union','Lumber Union','All trees +50% output',['money',0,100000],50000,0],['fertile_soil','Fertile Soil','Tree levels add 50% more output each',['tree','oak',25],25000,0],
+['sharp_picks','Sharp Picks','Copper Quarry output x2',['mine','copper_quarry',10],1200,0],['copper_seams','Copper Seams','Copper Quarry output x3',['mine','copper_quarry',35],400000,0],
+['deep_shafts','Deep Shafts','Iron Deeps output x2',['mine','iron_deeps',10],15000,0],['iron_veins','Iron Veins','Iron Deeps output x3',['mine','iron_deeps',35],15000000,0],
+['glittering_walls','Glittering Walls','Crystal Grotto output x2',['mine','crystal_grotto',10],200000,0],['prismatic_lode','Prismatic Lode','Crystal Grotto output x3',['mine','crystal_grotto',35],300000000,0],
+['dynamite','Dynamite','All mines +50% output',['money',0,200000],100000,0],['rich_ore','Rich Ore','Mine levels add 50% more output each',['mine','copper_quarry',25],30000,0],
+['copper_temper','Copper Temper','Copper Edge damage x2',['dmg','copper_edge',25],5000,1],['copper_hardening','Copper Hardening','Copper Edge damage x3',['dmg','copper_edge',75],1000000,1],
+['iron_temper','Iron Temper','Iron Edge damage x2',['dmg','iron_edge',25],100000,1],['iron_hardening','Iron Hardening','Iron Edge damage x3',['dmg','iron_edge',75],30000000,1],
+['crystal_temper','Crystal Temper','Crystal Edge damage x2',['dmg','crystal_edge',25],1500000,1],['crystal_hardening','Crystal Hardening','Crystal Edge damage x3',['dmg','crystal_edge',75],1000000000,1],
+['battle_cry','Battle Cry','All damage +25%',['kills','mossy_cellar',10],50000,1],['tax_collector','Tax Collector','Mossy Cellar Money x3',['kills','mossy_cellar',20],150000,1],
+['cinder_tithe','Cinder Tithe','Ember Crypt Money x2',['kills','ember_crypt',10],6000000,1],['frost_tithe','Frost Tithe','Frostspire Vault Money x2',['kills','frostspire_vault',10],60000000,1],
+['crystal_lure','Crystal Lure','Crystal drops x1.5',['kills','mossy_cellar',50],250000,1],['gleaming_hoard','Gleaming Hoard','Crystal drops x1.5 more',['kills','ember_crypt',25],10000000,1],
+['lumberjack_pact','Lumberjack Pact','Logging support cards +25% effect',['tree','oak',20],40000,0],['miner_pact','Miner Pact','Mining support cards +25% effect',['mine','copper_quarry',20],40000,0],
+['vanguard_pact','Vanguard Pact','Fighting support cards +25% effect',['kills','mossy_cellar',5],100000,1],['quick_hands','Quick Hands','Fighting burst gauge fills 25% faster',['kills','mossy_cellar',15],80000,1],
+['harvest_rhythm','Harvest Rhythm','Logging and mining burst gauges fill 25% faster',['mastery','oak_gem',1],20000,0],['finishing_blow','Finishing Blow','Signature attacks hit 1.5x harder',['kills','ember_crypt',5],4000000,1],
+['merchant_ledger','Merchant Ledger','All production +25%',['money',0,10000000],2000000,0],['golden_ledger','Golden Ledger','All production x1.5',['money',0,1000000000],100000000,0]
+].map(a=>({id:a[0],name:a[1],desc:a[2],u:a[3],cost:a[4],perm:!!a[5]}));
+const SNAP = {tree:{oak:26,ironbark:0,moonwillow:0},mine:{copper_quarry:12,iron_deeps:0,crystal_grotto:0},dmg:{copper_edge:30,iron_edge:0,crystal_edge:0},kills:{mossy_cellar:12,ember_crypt:0,frostspire_vault:0},money:{0:120000},mastery:{oak_gem:1}};
+const NAMES = {oak:'Oak',ironbark:'Ironbark',moonwillow:'Moonwillow',copper_quarry:'Copper Quarry',iron_deeps:'Iron Deeps',crystal_grotto:'Crystal Grotto',copper_edge:'Copper Edge',iron_edge:'Iron Edge',crystal_edge:'Crystal Edge',mossy_cellar:'Mossy Cellar',ember_crypt:'Ember Crypt',frostspire_vault:'Frostspire Vault',oak_gem:'Oak Gem'};
+const cur = u => SNAP[u.u[0]][u.u[1]];
+const isMet = u => cur(u) >= u.u[2];
+const needTxt = u => ({tree:`${NAMES[u.u[1]]} level ${u.u[2]}`,mine:`${NAMES[u.u[1]]} level ${u.u[2]}`,dmg:`${NAMES[u.u[1]]} level ${u.u[2]}`,kills:`${u.u[2]} ${NAMES[u.u[1]]} kills`,money:`${BI.fmt(u.u[2])} lifetime Money`,mastery:`${NAMES[u.u[1]]} bronze mastery`})[u.u[0]];
+const catOf = u => u.u[0]==='tree' ? 'Logging' : u.u[0]==='mine' ? 'Mining' : (u.u[0]==='dmg'||u.u[0]==='kills') ? 'Fighting' : /Ledger|Union|Dynamite/.test(u.name) ? 'Everything' : 'Logging and mining';
+const tagOf = u => (u.desc.match(/x[\d.]+(?! more)|\+\d+%/)||[''])[0].replace('x','x').replace('1.5x','x1.5');
+const effTag = u => { let m=u.desc.match(/(\d+(?:\.\d+)?)x\b/); if(m) return 'x'+m[1]; m=u.desc.match(/\bx(\d+(?:\.\d+)?)/); if(m) return 'x'+m[1]; m=u.desc.match(/(\d+)%/); return m?'+'+m[1]+'%':'+'; };
+const RATE = {oak:3.7,copper_quarry:0.69};
+const prev = u => { const m=u.desc.match(/^(Oak|Copper Quarry) output x(\d)/); if(!m) return ''; const k=m[1]==='Oak'?'oak':'copper_quarry'; return `${m[1]==='Oak'?'Oak':'Copper'} Gem ${RATE[k]}/s → ${(RATE[k]*m[2]).toFixed(RATE[k]<1?2:1)}/s`; };
+const ico = u => { const c=catOf(u); return c==='Logging'?BI.gem('oak','bronze',24): c==='Mining'?BI.gem('copper','stone',24): c==='Fighting'?BI.core(24): BI.coin(24); };
+const S = {money:61000, owned:new Set(['keen_axes','sharp_picks','copper_temper'])};
+const stat = u => S.owned.has(u.id)?'own': !isMet(u)?'hid': S.money>=u.cost?'av':'na';
+const list = () => U.map(u=>({...u,st:stat(u),cat:catOf(u),tag:effTag(u),need:needTxt(u),pv:prev(u),price:BI.fmt(u.cost)}));
+const order = a => [...a].sort((x,y)=>({av:0,na:1,own:2,hid:3}[x.st]-{av:0,na:1,own:2,hid:3}[y.st]));
+const counts = () => { const l=list(); return {av:l.filter(x=>x.st==='av').length,na:l.filter(x=>x.st==='na').length,own:l.filter(x=>x.st==='own').length,hid:l.filter(x=>x.st==='hid').length}; };
+const nextHint = () => { const h=list().filter(x=>x.st==='hid'); h.sort((a,b)=>a.cost-b.cost); return h[0]; };
+const buy = id => { const u=U.find(x=>x.id===id); if(stat(u)!=='av') return; S.money-=u.cost; S.owned.add(id); window.dispatchEvent(new CustomEvent('shelf')); };
+const hdr = (title,sub) => { const c=counts(); return `<div class="mhead"><h3>${title}</h3><span class="sum">${c.av} to buy now, ${c.na} saving up, ${c.own} owned${sub||''}</span><span class="mon">${BI.coin(20)}<span data-money>${BI.fmt(S.money)}</span> Money <button class="rst" data-rst>Reset demo</button></span></div>`; };
+const wire = (r,draw) => { const d=()=>{ draw(); r.querySelectorAll('[data-buy]').forEach(e=>e.onclick=()=>buy(e.dataset.buy)); r.querySelectorAll('[data-rst]').forEach(b=>b.onclick=()=>{S.money=61000;S.owned=new Set(['keen_axes','sharp_picks','copper_temper']);window.dispatchEvent(new CustomEvent('shelf'));}); };
+  window.addEventListener('shelf',d); d(); };
+const PERM = '<span class="pstar" title="Kept through ascension">&#9733;</span>';
+
+/* ---------- U1 ---------- */
+const u1={key:'u1',title:'1 Chip flow',
+ caption:{layout:'One wrapping flow of pill chips, glowing first, then saving up, then owned; hover opens a detail tooltip.',density:'Highest: about 30 upgrades visible at once.',colour:'Dark panel with gold glow for affordable; blue progress line on the rest.',motion:'Affordable chips pulse; a thin fill under each other chip shows Money toward its price.',ornament:'None beyond a star on permanent upgrades. Locked ones stay hidden, as in the game now.'},
+ html(){ return BI.shell(`<h2>Production</h2><div class="panel" data-body></div>`)},
+ init(r){ wire(r,()=>{ const l=order(list().filter(x=>x.st!=='hid')); r.querySelector('[data-body]').innerHTML=hdr('Upgrade shelf')+`<div class="flow">${l.map(x=>`<div class="chip ${x.st}" ${x.st==='av'?`data-buy="${x.id}" tabindex="0"`:''} style="--f:${Math.min(100,S.money/x.cost*100)}%">${ico(x)}<div>${x.name}${x.perm?PERM:''}<small>${x.desc}</small></div><span class="tag">${x.tag}</span>${x.st==='own'?'<span class="pr">owned</span>':`<span class="pr">${x.price}</span>`}${x.st==='na'?'<span class="fill"></span>':''}
+   <div class="tip"><b>${x.name}</b><br>${x.desc}${x.pv?`<br><span style="color:#7fe3a0">${x.pv}</span>`:''}<br><span style="color:#9aa2b3">Unlocked by ${x.need}.${x.perm?' Kept when you ascend.':' Lost when you ascend.'}</span></div></div>`).join('')}</div>`; }); }};
+
+/* ---------- U2 ---------- */
+const jar = (x,c) => { const col={Logging:['#8af06a','#2e8e36'],Mining:['#ffb27a','#b8581a'],Fighting:['#ff7a7a','#8e1c1c'],Everything:['#ffe27a','#a07a10'],'Logging and mining':['#9ad8ff','#2a6a9a']}[x.cat];
+  return `<svg viewBox="0 0 62 76"><rect x="14" y="4" width="34" height="12" rx="3" fill="${x.perm?'#f3c64e':'#8a5a30'}" stroke="#1a0f08" stroke-width="2.5"/><path d="M14 16 C4 22 4 36 6 54 C7 68 16 72 31 72 C46 72 55 68 56 54 C58 36 58 22 48 16Z" fill="#dff2f4" fill-opacity=".28" stroke="#1a0f08" stroke-width="2.5"/><path d="M12 44 C12 40 50 40 50 44 L50 54 C50 66 40 69 31 69 C22 69 12 66 12 54Z" fill="${col[0]}" stroke="#1a0f08" stroke-width="1.5" opacity=".9"/><path d="M12 44 C12 40 50 40 50 44" fill="${col[1]}" opacity=".5"/><ellipse cx="18" cy="30" rx="3" ry="8" fill="#fff" opacity=".5"/>${x.st==='own'?'<path d="M22 54 L29 61 L42 46" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>':''}</svg>`; };
+const u2={key:'u2',title:'2 Wooden shelf',
+ caption:{layout:'Three wooden planks (Logging, Mining, Fighting and everything else); each upgrade is a jar with a hanging price tag; gaps for locked ones.',density:'Medium-low: about 8 jars per plank, text only under the jar.',colour:'Warm walnut with the category colour inside each jar; gold lids for permanent.',motion:'Affordable jars sway and glow; bought jars get a check mark and dim.',ornament:'High: planks with shadow, jars, tags on strings; locked jars are dark silhouettes with a question mark.'},
+ html(){ return BI.shell(`<h2>Production</h2><div data-body></div>`)},
+ init(r){ wire(r,()=>{ const l=list(); const cats=['Logging','Mining','Fighting','Logging and mining','Everything'];
+  r.querySelector('[data-body]').innerHTML=hdr('Upgrade shelf')+[['Logging',['Logging']],['Mining',['Mining']],['Fighting',['Fighting']],['Both jobs and everything',['Logging and mining','Everything']]].map(([t,cs])=>{ const xs=l.filter(x=>cs.includes(x.cat)).sort((a,b)=>a.cost-b.cost);
+   return `<div class="plank"><h4>${t}</h4>${[0,1,2].map(c=>xs.slice(c*8,c*8+8)).filter(ch=>ch.length).map(ch=>`<div class="items">${ch.map(x=>`<div class="it ${x.st} ${x.st==='na'?'na':''}" ${x.st==='av'?`data-buy="${x.id}" tabindex="0"`:''} title="${x.st==='hid'?'Unlocks at '+x.need:x.desc}"><div class="jar">${jar(x)}</div><div class="nm">${x.st==='hid'?'Locked':x.name}</div><div class="ef">${x.st==='hid'?x.need:x.desc}</div>${x.st==='own'?'<span class="tg">owned</span>':`<span class="tg">${x.st==='hid'?'?':x.price}</span>`}</div>`).join('')}</div><div class="board"></div>`).join('')}</div>`; }).join(''); });
+  r.querySelector('.fake').style.overflowX='auto'; }};
+
+/* ---------- U3 ---------- */
+const u3={key:'u3',title:'3 Upgrade cards',
+ caption:{layout:'A five-column grid of mini cards with a filter (Buy now, Owned, All); locked ones are face-down card backs.',density:'Medium: 10 cards fit at once; filters keep the list short.',colour:'Indigo night; Knight-frame bronze for one-run cards, gold frame for permanent.',motion:'Cards lift on hover, glow when affordable and flip when bought.',ornament:'Cards echo the game\'s card frame: nameplate, window with the big x2, price plate, owned stamp.'},
+ html(){ return BI.shell(`<h2>Production</h2><div data-body></div>`)},
+ init(r){ let f='buy'; wire(r,()=>{ const l=list(), c=counts(); const sel=f==='buy'?l.filter(x=>x.st==='av'||x.st==='na'):f==='own'?l.filter(x=>x.st==='own'):l.filter(x=>x.st!=='hid');
+  r.querySelector('[data-body]').innerHTML=hdr('Upgrade shelf')+`<div style="margin-top:10px" class="filt">${[['buy','Buy now'],['own','Owned'],['all','All']].map(([k,t])=>`<button data-f="${k}" aria-pressed="${f===k}">${t}</button>`).join('')}</div>
+   <div class="cards">${order(sel).map(x=>`<div class="kc ${x.st} ${x.perm?'perm':''}" ${x.st==='av'?`data-buy="${x.id}" tabindex="0"`:''}><div class="top"><span>${x.name}</span>${x.perm?PERM:''}</div><div class="win">${ico(x).replace('class="ico"','class="ico"')}<div><b>${x.tag}</b><span>${x.desc}</span></div></div><button class="bt">${x.st==='own'?'Owned':x.st==='na'?x.price+' Money':'Buy '+x.price}</button></div>`).join('')}
+   ${c.hid?`<div class="kc back" title="Unlocks later: ${nextHint().need}"><div class="win"><div>${c.hid}<span>face down<br>next: ${nextHint().need}</span></div></div></div>`:''}</div>`;
+  r.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{f=b.dataset.f;window.dispatchEvent(new CustomEvent('shelf'));}); }); }};
+
+/* ---------- U4 ---------- */
+const u4={key:'u4',title:'4 Grouped table',
+ caption:{layout:'A table grouped by target (Logging, Mining, Fighting...) with columns for effect, requirement, preview and a buy cell; locked ones collapse into one line per group.',density:'High but very scannable: one 30px row per upgrade.',colour:'Light paper UI; status is a dot (green buy now, amber saving up, grey owned) so colour stays quiet.',motion:'A bought row flashes yellow once; no idle animation.',ornament:'None. Typographic hierarchy only.'},
+ html(){ return BI.shell(`<h2>Production</h2><div data-body></div>`)},
+ init(r){ wire(r,()=>{ const l=list(); const groups=['Logging','Mining','Fighting','Logging and mining','Everything'];
+  r.querySelector('[data-body]').innerHTML=hdr('Upgrade shelf')+`<div class="leg" style="margin-top:6px"><span><i class="st av" style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#1f9d55;margin-right:5px"></i>Buy now</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#e0a020;margin-right:5px"></i>Saving up</span><span><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#a0a8b8;margin-right:5px"></i>Owned</span><span>&#9733; kept through ascension</span></div>
+  <table class="t"><thead><tr><th>Upgrade</th><th>Effect</th><th>Unlocked by</th><th>Result</th><th style="text-align:right">Cost</th></tr></thead><tbody>${groups.map(g=>{ const xs=l.filter(x=>x.cat===g); const vis=xs.filter(x=>x.st!=='hid').sort((a,b)=>({av:0,na:1,own:2}[a.st]-{av:0,na:1,own:2}[b.st])||a.cost-b.cost); const hid=xs.filter(x=>x.st==='hid').sort((a,b)=>a.cost-b.cost);
+   return `<tr class="g"><td colspan="5">${g==='Logging and mining'?'Support cards and burst gauges':g==='Everything'?'All production':g} <span style="font-weight:500;opacity:.7">${vis.length} shown</span></td></tr>`+vis.map(x=>`<tr class="${x.st}"><td><div class="nm"><span class="st ${x.st}"></span>${ico(x).replace('width="24" height="24"','width="20" height="20"')}${x.name}${x.perm?PERM:''}</div></td><td>${x.desc}</td><td class="mu">${x.need}</td><td class="mu">${x.pv}</td><td style="text-align:right">${x.st==='av'?`<button class="buy" data-buy="${x.id}">Buy · ${x.price}</button>`:x.st==='na'?`<span class="buy na">${x.price} Money</span>`:'<span class="buy own">Owned</span>'}</td></tr>`).join('')+(hid.length?`<tr class="hidden"><td colspan="5">${hid.length} more hidden. Next: ${hid[0].need}.</td></tr>`:''); }).join('')}</tbody></table>`; }); }};
+
+/* ---------- U5 ---------- */
+const u5={key:'u5',title:'5 Unlock tracks',
+ caption:{layout:'One track per source (Oak level, Copper Edge level, Mossy Cellar kills...) with the upgrades as nodes along it; click a node for details and the buy button below.',density:'Medium: 14 tracks in two columns, details in one fixed panel.',colour:'Deep teal with mint progress and gold for buyable nodes.',motion:'Progress lines fill on load; buyable nodes ping rings; selection scales the node.',ornament:'Tech-tree structure: you see how far you are from the next unlock, and locked nodes are dashed rings with their threshold.'},
+ html(){ return BI.shell(`<h2>Production</h2><div data-body></div>`)},
+ init(r){ let sel='lumber_union'; wire(r,()=>{ const l=list(); const tr={}; l.forEach(x=>{ const k=x.u[0]+':'+x.u[1]; (tr[k]=tr[k]||[]).push(x); });
+  const keys=Object.keys(tr); const lab=k=>{ const [t,n]=k.split(':'); return {tree:[NAMES[n],'tree level'],mine:[NAMES[n],'mine level'],dmg:[NAMES[n],'damage line level'],kills:[NAMES[n],'boss kills'],money:['Money earned','lifetime'],mastery:[NAMES[n],'mastery tier']}[t]; };
+  const s=l.find(x=>x.id===sel);
+  r.querySelector('[data-body]').innerHTML=hdr('Upgrade shelf')+`<div class="tr">${keys.map(k=>{ const xs=tr[k].sort((a,b)=>a.u[2]-b.u[2]); const n=xs.length; const c=cur(xs[0]); const max=xs[n-1].u[2]; let w=0; for(let i=0;i<n;i++){ const a=i===0?0:xs[i-1].u[2], b=xs[i].u[2]; const x0=(i+0.5)/n*100, p0=i===0?0:(i-0.5)/n*100; if(c>=b) w=x0; else { if(c>a) w=p0+(x0-p0)*(c-a)/(b-a); break; } }
+   const [t1,t2]=lab(k); return `<div class="trk"><div class="lb">${t1}<small>${t2} ${c>=1e5?BI.fmt(c):c}</small></div><div class="line"><div class="fil" style="--w:${Math.min(100,w)}%"></div>${xs.map((x,i)=>`<div class="nd ${x.st==='na'?'av':x.st} ${x.perm?'perm':''} ${x.id===sel?'sel':''}" style="left:${(i+0.5)/n*100}%" data-sel="${x.id}"><i>${x.st==='own'?'&#10003;':x.st==='hid'?'?':x.tag}</i><em>${x.u[0]==='money'?BI.fmt(x.u[2]):x.u[0]==='mastery'?'bronze':x.u[2]}</em></div>`).join('')}</div></div>`; }).join('')}</div>
+   <div class="dt">${ico(s).replace('width="24" height="24"','width="44" height="44"')}<div><h4>${s.st==='hid'?'Locked upgrade':s.name}${s.perm?' '+PERM:''}</h4><p>${s.st==='hid'?'Unlocks at '+s.need+'.':s.desc+(s.pv?' ('+s.pv+')':'')+'. Unlocked by '+s.need+'.'}</p></div>${s.st==='av'?`<button data-buy="${s.id}">Buy · ${s.price} Money</button>`:`<button class="off">${s.st==='own'?'Owned':s.st==='na'?s.price+' Money, saving up':'Locked'}</button>`}</div>`;
+  r.querySelectorAll('[data-sel]').forEach(n=>n.onclick=()=>{sel=n.dataset.sel;window.dispatchEvent(new CustomEvent('shelf'));}); }); }};
+BI.mountTabs([u1,u2,u3,u4,u5], document.querySelector('.tabs'), document.querySelector('.caption'), document.getElementById('host'));
+</script></body></html>

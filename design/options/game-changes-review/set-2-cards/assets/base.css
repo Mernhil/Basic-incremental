@@ -1,0 +1,143 @@
+/* Shared by the review mockups. Tokens are the game's real "Light Stone" table tokens
+   (src/data/content/cosmetics.json, gn_table) under their --bi-* names, rarity bodies come from
+   rarities.json, the font is Outfit (the game's UI font). Sprites are the baked pixel PNGs from
+   src/renderer/src/art/pixel/sprites, always shown at whole-number scales. */
+
+@font-face { font-family: 'Outfit'; font-weight: 400; src: url('fonts/outfit-latin-400-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 500; src: url('fonts/outfit-latin-500-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 600; src: url('fonts/outfit-latin-600-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 700; src: url('fonts/outfit-latin-700-normal.woff2') format('woff2'); }
+@font-face { font-family: 'Outfit'; font-weight: 800; src: url('fonts/outfit-latin-800-normal.woff2') format('woff2'); }
+
+:root {
+  --chrome: #0f1115;
+  --chrome2: #181b22;
+  --chrome-line: #2a2f3a;
+  --chrome-ink: #e7eaf0;
+  --chrome-dim: #8d95a6;
+  --chrome-acc: #e8c05a;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--chrome); color: var(--chrome-ink); font: 500 14px/1.4 'Outfit', 'Segoe UI', sans-serif; }
+button { font-family: inherit; }
+img.px, .px img { image-rendering: pixelated; display: block; }
+
+/* ---------- review page chrome (not the game) ---------- */
+.page-head { max-width: 1280px; margin: 0 auto; padding: 22px 0 6px; }
+.page-head h1 { margin: 0 0 4px; font: 800 26px 'Outfit'; letter-spacing: -0.01em; }
+.page-head p { margin: 0; color: var(--chrome-dim); max-width: 80ch; }
+.picks { max-width: 1280px; margin: 12px auto 0; padding: 12px 16px; background: var(--chrome2); border: 1px solid var(--chrome-line); border-radius: 8px; }
+.picks h2 { margin: 0 0 6px; font: 700 14px 'Outfit'; color: var(--chrome-acc); }
+.picks ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; font-size: 12.5px; color: var(--chrome-dim); }
+.picks li b { display: block; color: var(--chrome-ink); font-weight: 700; margin-bottom: 1px; }
+.tabs { max-width: 1280px; margin: 14px auto 0; display: flex; gap: 6px; border-bottom: 1px solid var(--chrome-line); }
+.tabs button { all: unset; cursor: pointer; padding: 9px 16px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0; color: var(--chrome-dim); font-weight: 600; }
+.tabs button:hover { color: var(--chrome-ink); }
+.tabs button[aria-selected='true'] { background: var(--chrome2); border-color: var(--chrome-line); color: var(--chrome-acc); }
+.tabs button:focus-visible { outline: 2px solid var(--chrome-acc); outline-offset: 1px; }
+.tabs .spacer { flex: 1; }
+.caption { max-width: 1280px; margin: 0 auto; padding: 12px 16px; background: var(--chrome2); border: 1px solid var(--chrome-line); border-top: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; font-size: 12.5px; }
+.caption b { display: block; color: var(--chrome-acc); font-weight: 700; margin-bottom: 1px; }
+.caption span { color: var(--chrome-dim); }
+.tradeoff { max-width: 1280px; margin: 0 auto; padding: 8px 16px; background: #14171d; border: 1px solid var(--chrome-line); border-top: 0; font-size: 13px; color: var(--chrome-ink); }
+.tradeoff b { color: var(--chrome-acc); }
+.mock { width: 1280px; margin: 18px auto 60px; position: relative; overflow: hidden; border: 1px solid var(--chrome-line); border-radius: 6px; }
+.mock[hidden] { display: none; }
+@media (prefers-reduced-motion: reduce) { .mock *, .mock *::before, .mock *::after { animation: none !important; transition: none !important; } }
+
+/* ---------- the game's tokens (Light Stone table) ---------- */
+.mock {
+  --bi-table-bg: #cfd5dd; --bi-on-table: #1c2330; --on-table-muted: #3d4757;
+  --bi-chrome-bg: #161b26; --bi-chrome-line: rgba(217, 179, 90, 0.55); --bi-chrome-ink: #e9eef7;
+  --bi-chrome-ink-muted: #b4c0d4; --bi-chrome-accent: #d9b35a; --bi-chrome-rail-bg: #1d2330;
+  --bi-chrome-active-bg: rgba(217, 179, 90, 0.14);
+  --bi-frame-bg: #2a2f38; --bi-frame-line: rgba(217, 179, 90, 0.6); --bi-frame-title-bg: rgba(0, 0, 0, 0.4);
+  --bi-frame-title-line: rgba(217, 179, 90, 0.3); --bi-frame-ink: #e9eef7; --bi-frame-ink-muted: #b4c0d4;
+  --bi-frame-radius: 12px;
+  --good: #7fd08a; --bad: #f08a7a;
+  background: var(--bi-table-bg);
+  color: var(--bi-on-table);
+  font-family: 'Outfit', 'Segoe UI', sans-serif;
+}
+
+/* shell: header 64, rail 220 */
+.sh { display: grid; grid-template-columns: 220px 1fr; grid-template-rows: 64px 1fr; min-height: 780px; }
+.sh-top { grid-column: 1 / -1; display: flex; align-items: center; gap: 18px; padding: 0 20px; background: var(--bi-chrome-bg); border-bottom: 1px solid var(--bi-chrome-line); color: var(--bi-chrome-ink); }
+.sh-brand { font-weight: 800; font-size: 17px; }
+.sh-brand small { font-weight: 500; font-size: 12px; color: var(--bi-chrome-ink-muted); margin-left: 6px; }
+.sh-level { display: flex; align-items: center; gap: 10px; }
+.sh-level i { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 800; box-shadow: inset 0 0 0 2px var(--bi-chrome-accent); }
+.sh-level span { display: block; font-size: 12px; font-weight: 600; }
+.sh-level em { display: block; margin-top: 3px; width: 150px; height: 5px; border-radius: 3px; background: #ffffff24; overflow: hidden; }
+.sh-level em::after { content: ''; display: block; width: 46%; height: 100%; background: var(--bi-chrome-accent); }
+.sh-res { margin-left: auto; display: flex; gap: 8px; }
+.pill { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: #ffffff0d; box-shadow: inset 0 0 0 1px var(--bi-chrome-line); font-weight: 700; }
+.pill small { font-size: 11px; font-weight: 500; color: var(--bi-chrome-ink-muted); }
+.pill .coin { width: 14px; height: 14px; border-radius: 50%; background: #e6bb52; box-shadow: inset 0 0 0 2px #8a6420; }
+.pill .cry { width: 13px; height: 13px; background: #7ad0f0; transform: rotate(45deg); box-shadow: inset 0 0 0 2px #2a6a88; }
+.pill .cry.g { background: #f08ad4; box-shadow: inset 0 0 0 2px #8a2a70; }
+.sh-rail { background: var(--bi-chrome-rail-bg); border-right: 1px solid var(--bi-chrome-line); padding: 12px 10px; display: grid; gap: 2px; align-content: start; }
+.sh-rail div { position: relative; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: var(--bi-chrome-ink-muted); font-size: 15px; }
+.sh-rail div[aria-current] { color: var(--bi-chrome-ink); background: var(--bi-chrome-active-bg); font-weight: 600; }
+.sh-rail div[aria-current]::before { content: ''; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 2px; background: var(--bi-chrome-accent); }
+.sh-rail img { width: 32px; height: 32px; margin: -6px 0; image-rendering: pixelated; }
+.sh-rail div:not([aria-current]) img { filter: saturate(0.6) brightness(0.85); }
+.sh-main { position: relative; padding: 20px 26px 28px; background-color: var(--bi-table-bg); background-image: radial-gradient(80% 55% at 50% 0%, rgba(255, 255, 255, 0.55), transparent 70%); min-width: 0; }
+.sh-main h2.pg { margin: 0 0 12px; font: 800 26px 'Outfit'; color: var(--bi-on-table); }
+
+/* panels (the game's frame component) */
+.panel { background: var(--bi-frame-bg); color: var(--bi-frame-ink); border-radius: var(--bi-frame-radius); box-shadow: inset 0 0 0 1px var(--bi-frame-line); padding: 12px; }
+.panel__title { display: flex; align-items: center; gap: 10px; margin: 0 0 10px; padding: 7px 12px; border-radius: 9px; background: var(--bi-frame-title-bg); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 15px; font-weight: 700; }
+.panel__title small { margin-left: auto; font-weight: 600; font-size: 12.5px; color: var(--bi-frame-ink-muted); }
+.muted { color: var(--bi-frame-ink-muted); }
+
+/* buttons */
+.buy { border: 0; border-radius: 9px; background: var(--bi-chrome-accent); color: #161b26; font-weight: 700; font-size: 14px; padding: 7px 12px; cursor: pointer; text-align: center; line-height: 1.2; }
+.buy small { display: block; font-size: 11px; font-weight: 600; opacity: 0.75; }
+.buy[disabled], .buy.off { background: #8e866f; color: #2a2f38; cursor: default; }
+.buy.glow { box-shadow: 0 0 0 2px rgba(217, 179, 90, 0.45), 0 0 14px rgba(217, 179, 90, 0.4); }
+.buy:focus-visible, .seg button:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.seg { display: inline-flex; gap: 3px; padding: 3px; border-radius: 10px; background: rgba(0, 0, 0, 0.4); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+.seg button { border: 0; background: transparent; color: var(--bi-frame-ink-muted); font-weight: 700; font-size: 13px; padding: 5px 11px; border-radius: 7px; cursor: pointer; }
+.seg button[aria-pressed='true'] { background: var(--bi-chrome-accent); color: #161b26; }
+.bar { height: 7px; border-radius: 4px; background: #00000066; box-shadow: inset 0 0 0 1px #ffffff1f; overflow: hidden; }
+.bar i { display: block; height: 100%; width: calc(var(--p, 0) * 1%); background: var(--bi-chrome-accent); }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border-radius: 999px; background: #ffffff12; box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 12px; font-weight: 600; color: var(--bi-frame-ink-muted); }
+.chip.good { color: #1a2a1a; background: var(--good); box-shadow: none; }
+.num { font-variant-numeric: tabular-nums lining-nums; }
+
+/* ---------- the card on the 132 x 186 grid ----------
+   Every dimension is a whole number of grid pixels times --u (1px, 2px, 3px): the art is drawn at
+   whole scales only. Text is real browser text, sized per scale, never scaled with the art. */
+.cd { --u: 1px; --fn: 11.5px; --fs: 11px; --fst: 10px; position: relative; width: calc(132 * var(--u)); height: calc(186 * var(--u)); flex: none; color: #e9eef7; font-family: 'Outfit', 'Segoe UI', sans-serif; }
+.cd.s2 { --u: 2px; --fn: 16px; --fs: 14px; --fst: 14px; }
+.cd.s3 { --u: 3px; --fn: 22px; --fs: 19px; --fst: 20px; }
+.cd .body { position: absolute; inset: 0; background: var(--body); border-radius: calc(4 * var(--u)); overflow: hidden; }
+.cd .neon { position: absolute; inset: calc(2 * var(--u)); border: var(--u) solid var(--neon); border-radius: calc(3 * var(--u)); opacity: 0.9; }
+.cd .plate { position: absolute; left: calc(7 * var(--u)); width: calc(118 * var(--u)); background: rgba(0, 0, 0, 0.42); display: flex; align-items: center; justify-content: space-between; padding: 0 calc(4 * var(--u)); white-space: nowrap; }
+.cd .name { top: calc(7 * var(--u)); height: calc(15 * var(--u)); font-size: var(--fn); font-weight: 700; }
+.cd .name span { overflow: hidden; text-overflow: ellipsis; }
+.cd .win { position: absolute; left: calc(8 * var(--u)); top: calc(24 * var(--u)); width: calc(116 * var(--u)); height: calc(122 * var(--u)); background: #0d121b; box-shadow: inset 0 0 0 var(--u) var(--edge); }
+.cd .item { position: absolute; left: calc(16 * var(--u)); top: calc(25 * var(--u)); width: calc(100 * var(--u)); height: calc(120 * var(--u)); image-rendering: pixelated; }
+.cd .stats { top: calc(149 * var(--u)); height: calc(14 * var(--u)); font-size: var(--fs); font-weight: 600; }
+.cd .stats b { font-weight: 800; }
+.cd .rank { position: absolute; left: calc(9 * var(--u)); width: calc(114 * var(--u)); top: calc(166 * var(--u)); height: calc(12 * var(--u)); display: flex; align-items: center; justify-content: space-between; font-size: var(--fs); font-weight: 700; }
+.cd .stars { letter-spacing: 0; font-size: var(--fst); line-height: 1; white-space: nowrap; }
+.cd .stars i { font-style: normal; color: #ffffff33; }
+.cd .stars i.on { color: #f4c542; }
+.cd .frame { position: absolute; left: calc(-26 * var(--u)); top: calc(-38 * var(--u)); width: calc(183 * var(--u)); height: calc(237 * var(--u)); image-rendering: pixelated; pointer-events: none; }
+.cd.locked .item { filter: brightness(0.18) saturate(0); }
+.cd.locked .frame { filter: saturate(0) brightness(0.55); }
+.cd.locked .body { background: #11151c; }
+.cd .lockmark { position: absolute; inset: 0; display: grid; place-items: center; font-weight: 800; font-size: var(--fn); color: #ffffff88; }
+/* rarity bodies (rarities.json) */
+.r-common { --body: #2a2f38; --edge: #4a5262; }
+.r-rare { --body: #16294d; --edge: #3a5a9a; }
+.r-epic { --body: #2c1a4f; --edge: #6a4aa8; }
+.r-legendary { --body: #4a2b0d; --edge: #a8742a; }
+.r-mythic { --body: #1d0d19; --edge: #5a2a4a; --neon: #ff3fb4; }
+.r-exotic { --body: #1f1108; --edge: #6a3a18; --neon: #ff8a1f; }
+.r-void { --body: #060708; --edge: #6b7280; }
+.rar-text-common { color: #b8c0cc; } .rar-text-rare { color: #7aa4f0; } .rar-text-epic { color: #b890f0; }
+.rar-text-legendary { color: #f0b050; } .rar-text-mythic { color: #ff6ac8; } .rar-text-exotic { color: #ff9f40; } .rar-text-void { color: #aab2c0; }

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Overhaul review capture harness</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: transparent !important;
+        background-image: none !important;
+      }
+      #stage {
+        position: absolute;
+        left: 0;
+        top: 0;
+        padding: 0;
+      }
+      [data-cap] {
+        display: inline-block;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage"></div>
+    <script type="module" src="./harness.ts"></script>
+  </body>
+</html>

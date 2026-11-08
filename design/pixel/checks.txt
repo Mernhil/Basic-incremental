@@ -1,0 +1,520 @@
+== summon-deck-table/s1/table.png
+[WARN] summon-deck-table\s1\table.png  native 1044x717 at 1x, 12 colours
+   warn:  2746 orphan pixels, e.g. [(17, 2), (1026, 2), (1033, 8), (1034, 9), (1018, 10), (12, 11)]
+   warn:  1 edge pixels not ink or light rim (outline gaps?), e.g. [(1043, 15)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/back_portal.png
+[WARN] summon-deck-table\s1\back_portal.png  native 132x186 at 1x, 17 colours
+   warn:  211 orphan pixels, e.g. [(52, 7), (82, 7), (63, 8), (76, 8), (78, 8), (81, 8)]
+   warn:  596 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/back_wardrobe.png
+[WARN] summon-deck-table\s1\back_wardrobe.png  native 132x186 at 1x, 12 colours
+   warn:  283 orphan pixels, e.g. [(53, 3), (105, 5), (23, 6), (125, 6), (13, 7), (19, 7)]
+   warn:  533 edge pixels not ink or light rim (outline gaps?), e.g. [(24, 3), (32, 3), (33, 3), (34, 3), (35, 3), (36, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/plate.png
+[WARN] summon-deck-table\s1\plate.png  native 168x178 at 1x, 7 colours
+   warn:  171 orphan pixels, e.g. [(24, 0), (41, 0), (69, 0), (88, 0), (90, 0), (14, 1)]
+   warn:  478 edge pixels not ink or light rim (outline gaps?), e.g. [(11, 0), (12, 0), (13, 0), (14, 0), (16, 0), (17, 0)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/deck_portal_14.png
+[WARN] summon-deck-table\s1\deck_portal_14.png  native 146x200 at 1x, 18 colours
+   warn:  219 orphan pixels, e.g. [(52, 7), (82, 7), (63, 8), (76, 8), (78, 8), (81, 8)]
+   warn:  299 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/deck_wardrobe_3.png
+[WARN] summon-deck-table\s1\deck_wardrobe_3.png  native 135x189 at 1x, 13 colours
+   warn:  285 orphan pixels, e.g. [(53, 3), (105, 5), (23, 6), (125, 6), (13, 7), (19, 7)]
+   warn:  384 edge pixels not ink or light rim (outline gaps?), e.g. [(24, 3), (32, 3), (33, 3), (34, 3), (35, 3), (36, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/deck_portal_8.png
+[WARN] summon-deck-table\s1\deck_portal_8.png  native 140x194 at 1x, 18 colours
+   warn:  215 orphan pixels, e.g. [(52, 7), (82, 7), (63, 8), (76, 8), (78, 8), (81, 8)]
+   warn:  295 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/deck_portal_20.png
+[WARN] summon-deck-table\s1\deck_portal_20.png  native 152x206 at 1x, 18 colours
+   warn:  223 orphan pixels, e.g. [(52, 7), (82, 7), (63, 8), (76, 8), (78, 8), (81, 8)]
+   warn:  303 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/deck_portal_3.png
+[WARN] summon-deck-table\s1\deck_portal_3.png  native 135x189 at 1x, 18 colours
+   warn:  213 orphan pixels, e.g. [(52, 7), (82, 7), (63, 8), (76, 8), (78, 8), (81, 8)]
+   warn:  590 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s1/flip_strip.png
+[WARN] summon-deck-table\s1\flip_strip.png  native 1320x186 at 1x, 18 colours
+   warn:  2090 orphan pixels, e.g. [(163, 2), (176, 2), (191, 2), (208, 2), (236, 2), (298, 2)]
+   warn:  2824 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 2), (10, 2), (11, 2), (12, 2), (13, 2), (14, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/table.png
+[WARN] summon-deck-table\s2\table.png  native 1044x717 at 1x, 13 colours
+   warn:  6423 orphan pixels, e.g. [(1032, 6), (20, 7), (24, 7), (20, 8), (24, 8), (1023, 8)]
+   warn:  3488 edge pixels not ink or light rim (outline gaps?), e.g. [(17, 0), (18, 0), (19, 0), (20, 0), (21, 0), (22, 0)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/back_portal.png
+[WARN] summon-deck-table\s2\back_portal.png  native 132x186 at 1x, 12 colours
+   warn:  321 orphan pixels, e.g. [(64, 4), (65, 4), (41, 5), (74, 5), (88, 5), (93, 5)]
+   warn:  586 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 2), (66, 2), (11, 3), (12, 3), (13, 3), (64, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/back_wardrobe.png
+[WARN] summon-deck-table\s2\back_wardrobe.png  native 132x186 at 1x, 11 colours
+   warn:  156 orphan pixels, e.g. [(3, 4), (6, 4), (58, 4), (60, 4), (128, 4), (7, 5)]
+   warn:  611 edge pixels not ink or light rim (outline gaps?), e.g. [(3, 3), (4, 3), (5, 3), (6, 3), (7, 3), (8, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/plate.png
+[WARN] summon-deck-table\s2\plate.png  native 170x186 at 1x, 13 colours
+   warn:  470 orphan pixels, e.g. [(55, 0), (33, 1), (38, 1), (39, 1), (81, 1), (82, 1)]
+   warn:  657 edge pixels not ink or light rim (outline gaps?), e.g. [(17, 0), (18, 0), (19, 0), (20, 0), (21, 0), (22, 0)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/deck_portal_14.png
+[WARN] summon-deck-table\s2\deck_portal_14.png  native 146x200 at 1x, 12 colours
+   warn:  329 orphan pixels, e.g. [(64, 4), (65, 4), (41, 5), (74, 5), (88, 5), (93, 5)]
+   warn:  176 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 2), (66, 2), (11, 3), (12, 3), (13, 3), (64, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/deck_wardrobe_3.png
+[WARN] summon-deck-table\s2\deck_wardrobe_3.png  native 135x189 at 1x, 11 colours
+   warn:  158 orphan pixels, e.g. [(3, 4), (6, 4), (58, 4), (60, 4), (128, 4), (7, 5)]
+   warn:  609 edge pixels not ink or light rim (outline gaps?), e.g. [(3, 3), (4, 3), (5, 3), (6, 3), (7, 3), (8, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/deck_portal_8.png
+[WARN] summon-deck-table\s2\deck_portal_8.png  native 140x194 at 1x, 12 colours
+   warn:  325 orphan pixels, e.g. [(64, 4), (65, 4), (41, 5), (74, 5), (88, 5), (93, 5)]
+   warn:  172 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 2), (66, 2), (11, 3), (12, 3), (13, 3), (64, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/deck_portal_20.png
+[WARN] summon-deck-table\s2\deck_portal_20.png  native 152x206 at 1x, 12 colours
+   warn:  333 orphan pixels, e.g. [(64, 4), (65, 4), (41, 5), (74, 5), (88, 5), (93, 5)]
+   warn:  180 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 2), (66, 2), (11, 3), (12, 3), (13, 3), (64, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/deck_portal_3.png
+[WARN] summon-deck-table\s2\deck_portal_3.png  native 135x189 at 1x, 12 colours
+   warn:  323 orphan pixels, e.g. [(64, 4), (65, 4), (41, 5), (74, 5), (88, 5), (93, 5)]
+   warn:  465 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 2), (66, 2), (11, 3), (12, 3), (13, 3), (64, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s2/flip_strip.png
+[WARN] summon-deck-table\s2\flip_strip.png  native 1320x186 at 1x, 14 colours
+   warn:  1689 orphan pixels, e.g. [(593, 2), (329, 3), (593, 3), (64, 4), (65, 4), (196, 4)]
+   warn:  2728 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 2), (66, 2), (197, 2), (198, 2), (329, 2), (593, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/table.png
+[WARN] summon-deck-table\s3\table.png  native 1044x717 at 1x, 14 colours
+   warn:  5287 orphan pixels, e.g. [(14, 2), (11, 12), (12, 12), (13, 12), (1030, 12), (1033, 12)]
+   warn:  3490 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 1), (15, 1), (16, 1), (17, 1), (18, 1), (19, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/back_portal.png
+[WARN] summon-deck-table\s3\back_portal.png  native 132x186 at 1x, 15 colours
+   warn:  1572 orphan pixels, e.g. [(7, 2), (124, 2), (49, 3), (53, 3), (95, 3), (97, 3)]
+   warn:  603 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/back_wardrobe.png
+[WARN] summon-deck-table\s3\back_wardrobe.png  native 132x186 at 1x, 6 colours
+   warn:  266 orphan pixels, e.g. [(32, 14), (36, 14), (40, 14), (70, 14), (88, 14), (91, 14)]
+   warn:  1523 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/plate.png
+[WARN] summon-deck-table\s3\plate.png  native 143x176 at 1x, 12 colours
+   warn:  323 orphan pixels, e.g. [(76, 0), (93, 0), (31, 1), (53, 1), (64, 1), (78, 1)]
+   warn:  622 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 0), (5, 0), (6, 0), (7, 0), (8, 0), (9, 0)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/deck_portal_14.png
+[WARN] summon-deck-table\s3\deck_portal_14.png  native 146x200 at 1x, 15 colours
+   warn:  1580 orphan pixels, e.g. [(7, 2), (124, 2), (49, 3), (53, 3), (95, 3), (97, 3)]
+   warn:  311 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/deck_wardrobe_3.png
+[WARN] summon-deck-table\s3\deck_wardrobe_3.png  native 135x189 at 1x, 6 colours
+   warn:  268 orphan pixels, e.g. [(32, 14), (36, 14), (40, 14), (70, 14), (88, 14), (91, 14)]
+   warn:  517 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 11), (15, 11), (16, 11), (17, 11), (18, 11), (19, 11)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/deck_portal_8.png
+[WARN] summon-deck-table\s3\deck_portal_8.png  native 140x194 at 1x, 15 colours
+   warn:  1576 orphan pixels, e.g. [(7, 2), (124, 2), (49, 3), (53, 3), (95, 3), (97, 3)]
+   warn:  307 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/deck_portal_20.png
+[WARN] summon-deck-table\s3\deck_portal_20.png  native 152x206 at 1x, 15 colours
+   warn:  1584 orphan pixels, e.g. [(7, 2), (124, 2), (49, 3), (53, 3), (95, 3), (97, 3)]
+   warn:  315 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/deck_portal_3.png
+[WARN] summon-deck-table\s3\deck_portal_3.png  native 135x189 at 1x, 15 colours
+   warn:  1574 orphan pixels, e.g. [(7, 2), (124, 2), (49, 3), (53, 3), (95, 3), (97, 3)]
+   warn:  602 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s3/flip_strip.png
+[WARN] summon-deck-table\s3\flip_strip.png  native 1320x186 at 1x, 17 colours
+   warn:  6329 orphan pixels, e.g. [(7, 2), (124, 2), (49, 3), (53, 3), (95, 3), (97, 3)]
+   warn:  2128 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 2), (8, 2), (9, 2), (10, 2), (11, 2), (12, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/table.png
+[WARN] summon-deck-table\s4\table.png  native 522x359 at 1x, 8 colours
+   warn:  1724 edge pixels not ink or light rim (outline gaps?), e.g. [(21, 0), (22, 0), (23, 0), (24, 0), (25, 0), (26, 0)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/back_portal.png
+[WARN] summon-deck-table\s4\back_portal.png  native 64x92 at 1x, 12 colours
+   warn:  88 orphan pixels, e.g. [(51, 9), (53, 9), (54, 9), (4, 11), (51, 11), (54, 11)]
+   warn:  288 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/back_wardrobe.png
+[WARN] summon-deck-table\s4\back_wardrobe.png  native 64x92 at 1x, 7 colours
+   warn:  2 orphan pixels, e.g. [(45, 24), (46, 24)]
+   warn:  288 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/plate.png
+[WARN] summon-deck-table\s4\plate.png  native 65x80 at 1x, 9 colours
+   warn:  21 orphan pixels, e.g. [(3, 10), (4, 10), (5, 10), (59, 10), (61, 11), (59, 13)]
+   warn:  135 edge pixels not ink or light rim (outline gaps?), e.g. [(1, 9), (0, 10), (0, 11), (0, 12), (0, 13), (0, 14)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/deck_portal_14.png
+[WARN] summon-deck-table\s4\deck_portal_14.png  native 78x106 at 1x, 12 colours
+   warn:  96 orphan pixels, e.g. [(64, 7), (51, 9), (53, 9), (54, 9), (67, 10), (4, 11)]
+   warn:  150 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/deck_wardrobe_3.png
+[WARN] summon-deck-table\s4\deck_wardrobe_3.png  native 67x95 at 1x, 8 colours
+   warn:  4 orphan pixels, e.g. [(64, 7), (45, 24), (46, 24), (7, 92)]
+   warn:  150 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/deck_portal_8.png
+[WARN] summon-deck-table\s4\deck_portal_8.png  native 72x100 at 1x, 12 colours
+   warn:  92 orphan pixels, e.g. [(64, 7), (51, 9), (53, 9), (54, 9), (67, 10), (4, 11)]
+   warn:  150 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/deck_portal_20.png
+[WARN] summon-deck-table\s4\deck_portal_20.png  native 84x112 at 1x, 12 colours
+   warn:  100 orphan pixels, e.g. [(64, 7), (51, 9), (53, 9), (54, 9), (67, 10), (4, 11)]
+   warn:  150 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/deck_portal_3.png
+[WARN] summon-deck-table\s4\deck_portal_3.png  native 67x95 at 1x, 12 colours
+   warn:  90 orphan pixels, e.g. [(64, 7), (51, 9), (53, 9), (54, 9), (4, 11), (51, 11)]
+   warn:  150 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s4/flip_strip.png
+[WARN] summon-deck-table\s4\flip_strip.png  native 640x92 at 1x, 13 colours
+   warn:  698 orphan pixels, e.g. [(91, 2), (110, 2), (145, 2), (156, 2), (158, 2), (165, 2)]
+   warn:  1190 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 1), (5, 1), (6, 1), (7, 1), (8, 1), (9, 1)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/table.png
+[WARN] summon-deck-table\s5\table.png  native 1044x717 at 1x, 15 colours
+   warn:  5676 orphan pixels, e.g. [(24, 3), (35, 3), (8, 8), (9, 8), (28, 8), (54, 8)]
+   warn:  3474 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 2), (15, 2), (16, 2), (17, 2), (18, 2), (19, 2)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/back_portal.png
+[WARN] summon-deck-table\s5\back_portal.png  native 132x186 at 1x, 18 colours
+   warn:  1106 orphan pixels, e.g. [(61, 7), (58, 8), (63, 8), (58, 9), (13, 10), (23, 10)]
+   warn:  931 edge pixels not ink or light rim (outline gaps?), e.g. [(59, 6), (60, 6), (61, 6), (62, 6), (69, 6), (70, 6)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/back_wardrobe.png
+[WARN] summon-deck-table\s5\back_wardrobe.png  native 132x186 at 1x, 13 colours
+   warn:  1265 orphan pixels, e.g. [(33, 7), (44, 7), (87, 7), (88, 7), (105, 7), (106, 7)]
+   warn:  1488 edge pixels not ink or light rim (outline gaps?), e.g. [(11, 7), (12, 7), (13, 7), (17, 7), (18, 7), (25, 7)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/plate.png
+[WARN] summon-deck-table\s5\plate.png  native 153x188 at 1x, 18 colours
+   warn:  1057 orphan pixels, e.g. [(78, 2), (74, 3), (74, 4), (71, 5), (72, 5), (75, 5)]
+   warn:  648 edge pixels not ink or light rim (outline gaps?), e.g. [(76, 0), (75, 1), (77, 1), (74, 2), (78, 2), (73, 3)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/deck_portal_14.png
+[WARN] summon-deck-table\s5\deck_portal_14.png  native 146x200 at 1x, 18 colours
+   warn:  1101 orphan pixels, e.g. [(63, 8), (58, 9), (13, 10), (23, 10), (66, 10), (118, 10)]
+   warn:  600 edge pixels not ink or light rim (outline gaps?), e.g. [(59, 6), (60, 6), (61, 6), (62, 6), (69, 6), (70, 6)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/deck_wardrobe_3.png
+[WARN] summon-deck-table\s5\deck_wardrobe_3.png  native 135x189 at 1x, 13 colours
+   warn:  1248 orphan pixels, e.g. [(33, 7), (44, 7), (87, 7), (88, 7), (105, 7), (106, 7)]
+   warn:  565 edge pixels not ink or light rim (outline gaps?), e.g. [(11, 7), (12, 7), (13, 7), (17, 7), (18, 7), (25, 7)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/deck_portal_8.png
+[WARN] summon-deck-table\s5\deck_portal_8.png  native 140x194 at 1x, 18 colours
+   warn:  1097 orphan pixels, e.g. [(63, 8), (58, 9), (13, 10), (23, 10), (66, 10), (118, 10)]
+   warn:  588 edge pixels not ink or light rim (outline gaps?), e.g. [(59, 6), (60, 6), (61, 6), (62, 6), (69, 6), (70, 6)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/deck_portal_20.png
+[WARN] summon-deck-table\s5\deck_portal_20.png  native 152x206 at 1x, 18 colours
+   warn:  1105 orphan pixels, e.g. [(63, 8), (58, 9), (13, 10), (23, 10), (66, 10), (118, 10)]
+   warn:  612 edge pixels not ink or light rim (outline gaps?), e.g. [(59, 6), (60, 6), (61, 6), (62, 6), (69, 6), (70, 6)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/deck_portal_3.png
+[WARN] summon-deck-table\s5\deck_portal_3.png  native 135x189 at 1x, 18 colours
+   warn:  1095 orphan pixels, e.g. [(63, 8), (58, 9), (13, 10), (23, 10), (66, 10), (118, 10)]
+   warn:  578 edge pixels not ink or light rim (outline gaps?), e.g. [(59, 6), (60, 6), (61, 6), (62, 6), (69, 6), (70, 6)]
+1 file(s), 0 with errors
+== summon-deck-table/s5/flip_strip.png
+[WARN] summon-deck-table\s5\flip_strip.png  native 1320x186 at 1x, 20 colours
+   warn:  3531 orphan pixels, e.g. [(460, 6), (463, 6), (61, 7), (194, 7), (200, 7), (331, 7)]
+   warn:  3965 edge pixels not ink or light rim (outline gaps?), e.g. [(59, 6), (60, 6), (61, 6), (62, 6), (69, 6), (70, 6)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/awn_a.png
+[WARN] shop-market-stalls\h1\awn_a.png  native 316x55 at 1x, 7 colours
+   warn:  3 orphan pixels, e.g. [(14, 38), (159, 38), (279, 38)]
+   warn:  718 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 0), (30, 0), (31, 0), (32, 0), (33, 0), (34, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/awn_b.png
+[WARN] shop-market-stalls\h1\awn_b.png  native 317x54 at 1x, 8 colours
+   warn:  38 orphan pixels, e.g. [(4, 24), (273, 42), (274, 42), (65, 45), (69, 45), (180, 45)]
+   warn:  516 edge pixels not ink or light rim (outline gaps?), e.g. [(8, 0), (9, 0), (10, 0), (11, 0), (12, 0), (13, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/awn_c.png
+[WARN] shop-market-stalls\h1\awn_c.png  native 317x55 at 1x, 7 colours
+   warn:  11 orphan pixels, e.g. [(263, 50), (15, 51), (187, 51), (264, 51), (25, 52), (274, 52)]
+   warn:  527 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/ring.png
+[WARN] shop-market-stalls\h1\ring.png  native 106x108 at 1x, 27 colours
+   warn:  104 orphan pixels, e.g. [(53, 3), (54, 3), (46, 5), (48, 6), (33, 8), (46, 8)]
+   warn:  466 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 0), (49, 0), (50, 0), (51, 0), (52, 0), (53, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/coin.png
+[WARN] shop-market-stalls\h1\coin.png  native 32x32 at 1x, 21 colours
+   warn:  31 orphan pixels, e.g. [(11, 1), (12, 1), (17, 1), (23, 3), (13, 4), (9, 5)]
+   warn:  86 edge pixels not ink or light rim (outline gaps?), e.g. [(11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/stamp.png
+[WARN] shop-market-stalls\h1\stamp.png  native 53x14 at 1x, 9 colours
+   warn:  63 orphan pixels, e.g. [(2, 1), (21, 1), (22, 1), (23, 1), (24, 1), (25, 1)]
+   warn:  365 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/sup1.png
+[WARN] shop-market-stalls\h1\sup1.png  native 24x28 at 1x, 8 colours
+   warn:  14 orphan pixels, e.g. [(11, 1), (8, 4), (14, 5), (20, 10), (4, 11), (5, 13)]
+   warn:  68 edge pixels not ink or light rim (outline gaps?), e.g. [(10, 0), (11, 0), (12, 0), (13, 0), (9, 1), (14, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/sup2.png
+[WARN] shop-market-stalls\h1\sup2.png  native 28x28 at 1x, 9 colours
+   warn:  29 orphan pixels, e.g. [(15, 1), (11, 2), (10, 4), (14, 4), (20, 4), (9, 5)]
+   warn:  152 edge pixels not ink or light rim (outline gaps?), e.g. [(11, 0), (12, 0), (13, 0), (14, 0), (15, 0), (16, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/sup3.png
+[WARN] shop-market-stalls\h1\sup3.png  native 32x32 at 1x, 9 colours
+   warn:  15 orphan pixels, e.g. [(11, 3), (6, 5), (24, 5), (21, 7), (8, 9), (20, 16)]
+   warn:  88 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (13, 0), (14, 0), (15, 0), (16, 0), (17, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/sup4.png
+[WARN] shop-market-stalls\h1\sup4.png  native 28x27 at 1x, 9 colours
+   warn:  47 orphan pixels, e.g. [(15, 1), (10, 2), (23, 2), (10, 3), (23, 3), (24, 4)]
+   warn:  83 edge pixels not ink or light rim (outline gaps?), e.g. [(4, 0), (15, 1), (20, 1), (13, 2), (14, 2), (16, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h1/sup5.png
+[WARN] shop-market-stalls\h1\sup5.png  native 30x28 at 1x, 9 colours
+   warn:  17 orphan pixels, e.g. [(15, 3), (10, 4), (5, 6), (4, 7), (22, 7), (26, 9)]
+   warn:  96 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (13, 0), (14, 0), (15, 0), (11, 1), (16, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/awn_a.png
+[WARN] shop-market-stalls\h2\awn_a.png  native 318x52 at 1x, 7 colours
+   warn:  63 orphan pixels, e.g. [(303, 40), (27, 41), (48, 41), (100, 41), (148, 42), (194, 42)]
+   warn:  627 edge pixels not ink or light rim (outline gaps?), e.g. [(17, 0), (18, 1), (19, 1), (20, 1), (21, 1), (22, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/awn_b.png
+[WARN] shop-market-stalls\h2\awn_b.png  native 320x50 at 1x, 6 colours
+   warn:  6 orphan pixels, e.g. [(116, 39), (144, 40), (143, 42), (111, 46), (314, 46), (221, 47)]
+   warn:  419 edge pixels not ink or light rim (outline gaps?), e.g. [(6, 40), (61, 40), (172, 40), (231, 40), (7, 41), (19, 41)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/awn_c.png
+[WARN] shop-market-stalls\h2\awn_c.png  native 318x52 at 1x, 6 colours
+   warn:  36 orphan pixels, e.g. [(166, 10), (166, 17), (21, 42), (166, 42), (312, 44), (20, 45)]
+   warn:  297 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 39), (264, 39), (265, 39), (266, 39), (267, 39), (268, 39)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/ring.png
+[WARN] shop-market-stalls\h2\ring.png  native 95x94 at 1x, 9 colours
+   warn:  3 orphan pixels, e.g. [(67, 18), (68, 18), (71, 26)]
+   warn:  437 edge pixels not ink or light rim (outline gaps?), e.g. [(39, 0), (40, 0), (41, 0), (42, 0), (43, 0), (44, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/coin.png
+[WARN] shop-market-stalls\h2\coin.png  native 28x28 at 1x, 14 colours
+   warn:  20 orphan pixels, e.g. [(11, 4), (11, 6), (16, 6), (23, 6), (15, 7), (10, 8)]
+   warn:  76 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (13, 0), (14, 0), (15, 0), (10, 1), (11, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/stamp.png
+[WARN] shop-market-stalls\h2\stamp.png  native 86x38 at 1x, 2 colours
+   warn:  4 orphan pixels, e.g. [(10, 9), (83, 20), (74, 30), (74, 31)]
+   warn:  974 edge pixels not ink or light rim (outline gaps?), e.g. [(75, 0), (76, 0), (77, 0), (78, 0), (67, 1), (68, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/sup1.png
+[WARN] shop-market-stalls\h2\sup1.png  native 28x28 at 1x, 7 colours
+   warn:  6 orphan pixels, e.g. [(5, 3), (22, 3), (9, 5), (12, 5), (25, 6), (13, 8)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/sup2.png
+[WARN] shop-market-stalls\h2\sup2.png  native 30x30 at 1x, 8 colours
+   warn:  44 orphan pixels, e.g. [(12, 0), (13, 0), (16, 0), (18, 1), (19, 2), (16, 3)]
+   warn:  55 edge pixels not ink or light rim (outline gaps?), e.g. [(13, 0), (14, 0), (15, 0), (11, 1), (17, 1), (10, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/sup3.png
+[WARN] shop-market-stalls\h2\sup3.png  native 32x32 at 1x, 11 colours
+   warn:  29 orphan pixels, e.g. [(22, 3), (6, 4), (25, 4), (5, 5), (7, 7), (23, 7)]
+   warn:  88 edge pixels not ink or light rim (outline gaps?), e.g. [(13, 0), (14, 0), (15, 0), (16, 0), (17, 0), (18, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/sup4.png
+[WARN] shop-market-stalls\h2\sup4.png  native 24x28 at 1x, 10 colours
+   warn:  21 orphan pixels, e.g. [(13, 2), (7, 3), (8, 5), (17, 5), (13, 6), (12, 9)]
+   warn:  83 edge pixels not ink or light rim (outline gaps?), e.g. [(10, 0), (11, 0), (12, 0), (13, 0), (14, 0), (15, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h2/sup5.png
+[WARN] shop-market-stalls\h2\sup5.png  native 32x32 at 1x, 10 colours
+   warn:  5 orphan pixels, e.g. [(17, 13), (18, 14), (28, 14), (18, 15), (24, 15)]
+   warn:  67 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 0), (15, 0), (16, 0), (17, 0), (13, 1), (17, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/awn_a.png
+[WARN] shop-market-stalls\h3\awn_a.png  native 320x56 at 1x, 8 colours
+   warn:  37 orphan pixels, e.g. [(211, 35), (266, 35), (157, 36), (174, 36), (247, 36), (284, 36)]
+   warn:  748 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/awn_b.png
+[WARN] shop-market-stalls\h3\awn_b.png  native 316x54 at 1x, 10 colours
+   warn:  136 orphan pixels, e.g. [(259, 3), (0, 21), (298, 22), (1, 23), (59, 23), (66, 24)]
+   warn:  1793 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (14, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/awn_c.png
+[WARN] shop-market-stalls\h3\awn_c.png  native 320x56 at 1x, 9 colours
+   warn:  71 orphan pixels, e.g. [(246, 6), (307, 10), (93, 11), (125, 11), (31, 18), (82, 18)]
+   warn:  748 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/ring.png
+[WARN] shop-market-stalls\h3\ring.png  native 100x102 at 1x, 15 colours
+   warn:  111 orphan pixels, e.g. [(39, 1), (41, 4), (25, 6), (23, 8), (74, 9), (19, 10)]
+   warn:  313 edge pixels not ink or light rim (outline gaps?), e.g. [(39, 0), (40, 0), (41, 0), (42, 0), (43, 0), (44, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/coin.png
+[WARN] shop-market-stalls\h3\coin.png  native 26x26 at 1x, 10 colours
+   warn:  34 orphan pixels, e.g. [(12, 1), (11, 2), (13, 2), (10, 3), (10, 6), (12, 6)]
+   warn:  54 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (13, 0), (11, 1), (14, 1), (10, 2), (15, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/stamp.png
+[WARN] shop-market-stalls\h3\stamp.png  native 86x31 at 1x, 14 colours
+   warn:  269 orphan pixels, e.g. [(14, 0), (15, 0), (31, 0), (35, 0), (56, 0), (57, 0)]
+   warn:  210 edge pixels not ink or light rim (outline gaps?), e.g. [(6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (11, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/sup1.png
+[WARN] shop-market-stalls\h3\sup1.png  native 23x30 at 1x, 8 colours
+   warn:  10 orphan pixels, e.g. [(15, 6), (12, 8), (17, 9), (13, 10), (14, 11), (18, 11)]
+   warn:  67 edge pixels not ink or light rim (outline gaps?), e.g. [(11, 0), (12, 0), (10, 1), (12, 1), (9, 2), (13, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/sup2.png
+[WARN] shop-market-stalls\h3\sup2.png  native 22x22 at 1x, 11 colours
+   warn:  11 orphan pixels, e.g. [(10, 4), (20, 6), (16, 7), (18, 7), (14, 8), (17, 8)]
+   warn:  80 edge pixels not ink or light rim (outline gaps?), e.g. [(10, 0), (11, 0), (9, 1), (12, 1), (9, 2), (12, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/sup3.png
+[WARN] shop-market-stalls\h3\sup3.png  native 26x28 at 1x, 8 colours
+   warn:  12 orphan pixels, e.g. [(6, 1), (20, 1), (4, 3), (7, 4), (18, 4), (23, 5)]
+   warn:  82 edge pixels not ink or light rim (outline gaps?), e.g. [(5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/sup4.png
+[WARN] shop-market-stalls\h3\sup4.png  native 20x25 at 1x, 7 colours
+   warn:  10 orphan pixels, e.g. [(4, 6), (15, 6), (3, 7), (16, 7), (5, 11), (12, 12)]
+   warn:  75 edge pixels not ink or light rim (outline gaps?), e.g. [(10, 0), (7, 1), (9, 1), (11, 1), (3, 2), (4, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h3/sup5.png
+[WARN] shop-market-stalls\h3\sup5.png  native 28x29 at 1x, 12 colours
+   warn:  36 orphan pixels, e.g. [(16, 4), (20, 4), (20, 5), (21, 5), (8, 6), (15, 6)]
+   warn:  90 edge pixels not ink or light rim (outline gaps?), e.g. [(25, 0), (26, 0), (27, 0), (22, 1), (23, 1), (24, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/awn_a.png
+[WARN] shop-market-stalls\h4\awn_a.png  native 150x26 at 1x, 4 colours
+   warn:  10 orphan pixels, e.g. [(114, 13), (70, 17), (20, 18), (50, 18), (80, 18), (140, 18)]
+   warn:  245 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (13, 0), (14, 0), (15, 0), (22, 0), (23, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/awn_b.png
+[WARN] shop-market-stalls\h4\awn_b.png  native 158x20 at 1x, 4 colours
+   warn:  268 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (17, 0), (18, 0), (19, 0), (20, 0), (21, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/awn_c.png
+[WARN] shop-market-stalls\h4\awn_c.png  native 160x25 at 1x, 6 colours
+   warn:  2 orphan pixels, e.g. [(10, 21), (126, 22)]
+   warn:  287 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/ring.png
+[WARN] shop-market-stalls\h4\ring.png  native 47x51 at 1x, 7 colours
+   warn:  9 orphan pixels, e.g. [(4, 9), (45, 16), (46, 20), (46, 21), (17, 25), (0, 31)]
+   warn:  159 edge pixels not ink or light rim (outline gaps?), e.g. [(14, 0), (15, 0), (16, 0), (17, 0), (18, 0), (19, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/coin.png
+[WARN] shop-market-stalls\h4\coin.png  native 20x20 at 1x, 9 colours
+   warn:  4 orphan pixels, e.g. [(13, 5), (5, 9), (8, 12), (12, 13)]
+   warn:  56 edge pixels not ink or light rim (outline gaps?), e.g. [(5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (10, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/stamp.png
+[WARN] shop-market-stalls\h4\stamp.png  native 54x18 at 1x, 1 colours
+   warn:  353 edge pixels not ink or light rim (outline gaps?), e.g. [(2, 0), (3, 0), (4, 0), (5, 0), (6, 0), (7, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/sup1.png
+[WARN] shop-market-stalls\h4\sup1.png  native 16x20 at 1x, 7 colours
+   warn:  11 orphan pixels, e.g. [(10, 4), (11, 5), (10, 8), (2, 11), (11, 11), (13, 11)]
+   warn:  46 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 0), (8, 0), (6, 1), (9, 1), (5, 2), (10, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/sup2.png
+[WARN] shop-market-stalls\h4\sup2.png  native 16x16 at 1x, 7 colours
+   warn:  7 orphan pixels, e.g. [(8, 7), (3, 8), (7, 8), (8, 8), (9, 8), (2, 10)]
+   warn:  43 edge pixels not ink or light rim (outline gaps?), e.g. [(6, 0), (7, 0), (8, 0), (9, 0), (10, 0), (5, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/sup3.png
+[WARN] shop-market-stalls\h4\sup3.png  native 16x16 at 1x, 4 colours
+   warn:  43 edge pixels not ink or light rim (outline gaps?), e.g. [(5, 0), (6, 0), (7, 0), (8, 0), (9, 0), (3, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/sup4.png
+[WARN] shop-market-stalls\h4\sup4.png  native 14x16 at 1x, 4 colours
+   warn:  1 orphan pixels, e.g. [(2, 12)]
+   warn:  49 edge pixels not ink or light rim (outline gaps?), e.g. [(3, 0), (4, 0), (1, 1), (2, 1), (5, 1), (6, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h4/sup5.png
+[WARN] shop-market-stalls\h4\sup5.png  native 16x20 at 1x, 5 colours
+   warn:  2 orphan pixels, e.g. [(12, 6), (3, 12)]
+   warn:  40 edge pixels not ink or light rim (outline gaps?), e.g. [(7, 0), (8, 0), (6, 1), (9, 1), (5, 2), (10, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/awn_a.png
+[WARN] shop-market-stalls\h5\awn_a.png  native 318x54 at 1x, 14 colours
+   warn:  357 orphan pixels, e.g. [(98, 0), (146, 0), (172, 0), (300, 0), (300, 1), (28, 5)]
+   warn:  1354 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/awn_b.png
+[WARN] shop-market-stalls\h5\awn_b.png  native 317x54 at 1x, 11 colours
+   warn:  356 orphan pixels, e.g. [(59, 0), (182, 0), (227, 0), (316, 0), (13, 2), (23, 2)]
+   warn:  691 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 0), (10, 0), (11, 0), (12, 0), (13, 0), (14, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/awn_c.png
+[WARN] shop-market-stalls\h5\awn_c.png  native 315x53 at 1x, 15 colours
+   warn:  303 orphan pixels, e.g. [(88, 5), (18, 6), (39, 8), (60, 9), (38, 10), (38, 11)]
+   warn:  977 edge pixels not ink or light rim (outline gaps?), e.g. [(23, 0), (24, 0), (25, 0), (26, 0), (27, 0), (28, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/ring.png
+[WARN] shop-market-stalls\h5\ring.png  native 110x111 at 1x, 27 colours
+   warn:  603 orphan pixels, e.g. [(52, 2), (57, 2), (58, 2), (40, 3), (41, 3), (44, 3)]
+   warn:  431 edge pixels not ink or light rim (outline gaps?), e.g. [(51, 0), (52, 0), (53, 0), (54, 0), (55, 0), (56, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/coin.png
+[WARN] shop-market-stalls\h5\coin.png  native 32x32 at 1x, 15 colours
+   warn:  70 orphan pixels, e.g. [(16, 1), (17, 3), (15, 4), (16, 4), (10, 5), (24, 5)]
+   warn:  88 edge pixels not ink or light rim (outline gaps?), e.g. [(15, 0), (16, 0), (14, 1), (17, 1), (12, 2), (13, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/stamp.png
+[WARN] shop-market-stalls\h5\stamp.png  native 96x27 at 1x, 9 colours
+   warn:  229 orphan pixels, e.g. [(7, 0), (20, 0), (22, 0), (23, 0), (25, 0), (35, 0)]
+   warn:  232 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/sup1.png
+[WARN] shop-market-stalls\h5\sup1.png  native 24x26 at 1x, 15 colours
+   warn:  50 orphan pixels, e.g. [(18, 1), (16, 3), (21, 3), (15, 4), (14, 5), (9, 6)]
+   warn:  82 edge pixels not ink or light rim (outline gaps?), e.g. [(15, 0), (16, 0), (17, 0), (18, 0), (14, 1), (19, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/sup2.png
+[WARN] shop-market-stalls\h5\sup2.png  native 27x30 at 1x, 16 colours
+   warn:  68 orphan pixels, e.g. [(14, 0), (11, 1), (15, 1), (9, 2), (11, 3), (12, 3)]
+   warn:  125 edge pixels not ink or light rim (outline gaps?), e.g. [(13, 0), (14, 0), (11, 1), (12, 1), (15, 1), (16, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/sup3.png
+[WARN] shop-market-stalls\h5\sup3.png  native 28x30 at 1x, 14 colours
+   warn:  69 orphan pixels, e.g. [(13, 1), (14, 2), (15, 3), (5, 5), (11, 5), (4, 6)]
+   warn:  74 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (13, 0), (14, 0), (11, 1), (15, 1), (9, 2)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/sup4.png
+[WARN] shop-market-stalls\h5\sup4.png  native 32x24 at 1x, 18 colours
+   warn:  59 orphan pixels, e.g. [(14, 2), (19, 2), (21, 3), (22, 4), (6, 5), (11, 5)]
+   warn:  106 edge pixels not ink or light rim (outline gaps?), e.g. [(23, 0), (24, 0), (25, 0), (26, 0), (16, 1), (17, 1)]
+1 file(s), 0 with errors
+== shop-market-stalls/h5/sup5.png
+[WARN] shop-market-stalls\h5\sup5.png  native 30x30 at 1x, 10 colours
+   warn:  31 orphan pixels, e.g. [(9, 1), (10, 1), (19, 1), (8, 2), (18, 2), (13, 7)]
+   warn:  95 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 0), (10, 0), (19, 0), (20, 0), (8, 1), (11, 1)]
+1 file(s), 0 with errors

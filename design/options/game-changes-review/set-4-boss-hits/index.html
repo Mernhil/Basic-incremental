@@ -1,0 +1,361 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Boss hits: 5 options</title>
+<link rel="stylesheet" href="kit.css">
+<style>
+.page-head{max-width:1240px;margin:0 auto;padding:24px 0 6px}
+.page-head h1{margin:0 0 4px;font:800 28px var(--bi-font-ui);letter-spacing:-.01em}
+.page-head p{margin:0 0 10px;color:var(--rv-dim);max-width:96ch}
+.pick{max-width:1240px;margin:8px auto;padding:12px 16px;background:var(--rv-bg2);border:1px solid var(--rv-line);border-radius:8px}
+.pick h2{margin:0 0 6px;font:700 15px var(--bi-font-ui)}
+.pick ul{margin:0;padding-left:18px;display:grid;gap:3px;color:#c5cad6}
+.pick li b{color:var(--rv-acc)}
+.ctl{position:sticky;top:0;z-index:60;background:#0f1115f2;backdrop-filter:blur(4px);border-bottom:1px solid var(--rv-line);margin-top:10px}
+.ctl>div{max-width:1240px;margin:0 auto;padding:8px 0;display:flex;gap:8px 18px;flex-wrap:wrap;align-items:center;font-size:13px}
+.ctl .g{display:flex;gap:5px;align-items:center}
+.ctl .l{color:var(--rv-dim);margin-right:2px}
+.chip{all:unset;cursor:pointer;padding:5px 12px;border-radius:99px;border:1px solid var(--rv-line);color:#c5cad6;font-weight:600;font-size:13px}
+.chip:hover{border-color:var(--rv-acc)}
+.chip[aria-pressed=true]{background:var(--rv-acc);color:#2a1c04;border-color:var(--rv-acc)}
+.chip:focus-visible{outline:2px solid var(--rv-acc);outline-offset:2px}
+.ctl input[type=range]{width:300px;accent-color:#e8c05a}
+.ctl .tm{font-variant-numeric:tabular-nums;color:var(--rv-ink);min-width:150px}
+.opt{max-width:1240px;margin:34px auto 0;padding-top:22px;border-top:1px solid var(--rv-line)}
+.opt h2{margin:0;font:800 22px var(--bi-font-ui);display:flex;gap:12px;align-items:baseline}
+.opt h2 i{font-style:normal;display:inline-grid;place-items:center;width:34px;height:34px;border-radius:8px;background:var(--rv-acc);color:#2a1c04;font-size:20px}
+.opt .why{margin:6px 0 4px;color:#c5cad6;max-width:104ch}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 18px;color:var(--rv-dim);font-size:13px;margin:6px 0 12px}
+.facts b{color:var(--rv-acc);font-weight:700;display:block}
+.facts span{color:#c5cad6}
+.rd-title{margin:14px 0 6px;font:700 13px var(--bi-font-ui);color:var(--rv-dim)}
+.rd-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.rd{border-radius:8px;border:1px solid var(--rv-line);overflow:hidden;background:var(--bi-chrome-bg);position:relative;min-height:120px;padding:10px 12px;display:grid;gap:8px;align-content:start}
+.rd small.cap{color:var(--rv-dim);font-size:12px}
+.rd .ro{justify-self:end}
+
+/* ============ the arena, copied from stage/arena.css (tokens only) ============ */
+.st{--w:0;--slam:0;--hit:0;--pulse:0;--fill:100;--trail:100;--heat:0;--fallk:1;--chipL:0;--chipW:0;
+  position:relative;width:100%;height:560px;overflow:hidden;border-radius:8px;border:1px solid var(--rv-line);isolation:isolate;color:var(--bi-chrome-ink);
+  background:radial-gradient(42% 20% at 56% 76%,color-mix(in srgb,var(--bi-chrome-accent) 22%,transparent),transparent 70%),
+   radial-gradient(70% 60% at 56% 30%,color-mix(in srgb,var(--bi-chrome-active-bg) 90%,transparent),transparent 75%),
+   linear-gradient(180deg,var(--bi-chrome-bg),color-mix(in srgb,var(--bi-chrome-rail-bg) 70%,var(--bi-chrome-bg)))}
+.st::before{content:'';position:absolute;left:-5%;right:-5%;top:70%;bottom:-20%;z-index:-1;border-radius:50% 50% 0 0/18% 18% 0 0;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bi-chrome-line) 35%,transparent),transparent 70%);box-shadow:inset 0 1px 0 var(--bi-chrome-line)}
+.st-top{position:absolute;inset:16px 18px auto;z-index:6;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
+.st-where h3{margin:0 0 6px;font:800 26px var(--bi-font-ui);text-shadow:0 2px 0 #0006}
+.st-tags{display:flex;gap:6px}
+.st-tag{padding:2px 8px;border-radius:99px;font-size:12px;font-weight:600;background:var(--bi-frame-title-bg);box-shadow:inset 0 0 0 1px var(--bi-frame-title-line)}
+.ro{margin:0;display:flex;gap:6px;align-items:flex-start}
+.ro>div{min-width:74px;padding:6px 12px 7px;border-radius:10px;background:color-mix(in srgb,var(--bi-frame-bg) 88%,transparent);box-shadow:inset 0 0 0 1px var(--bi-frame-line);color:var(--bi-frame-ink)}
+.ro dt{font-size:11px;color:var(--bi-frame-ink-muted);margin:0}
+.ro dd{margin:0;font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
+.ro>div.is-red{box-shadow:inset 0 0 0 2px var(--bi-hp-0);background:color-mix(in srgb,#3a1519 80%,var(--bi-frame-bg))}
+.ro>div.is-red dt{color:#ffb4bc}.ro>div.is-red dd{color:var(--bi-hp-0)}
+.st-boss{position:absolute;left:68%;top:20px;translate:-50% 0;z-index:2;display:grid;justify-items:center;gap:8px;width:420px;padding-top:56px}
+.st-hp{width:100%;z-index:3}
+.hp-row{display:flex;align-items:center;gap:8px}
+.hp-track{position:relative;flex:1;height:12px;overflow:hidden;border-radius:99px;background:rgba(0,0,0,.55);box-shadow:inset 0 0 0 1px rgba(217,179,90,.25)}
+.hp-track i{position:absolute;inset:0 auto 0 0;border-radius:inherit}
+.hp-under{width:100%;opacity:.55;background:var(--bi-hp-3)}
+.hp-fill{width:var(--bf,100%);background:var(--bi-hp-4);box-shadow:0 0 10px #ffffff40}
+.hp-cnt{min-width:2.6em;text-align:right;font-size:18px;font-weight:600;color:var(--bi-frame-ink)}
+.hp-txt{text-align:right;font-size:12.5px;color:var(--bi-chrome-ink-muted)}
+.boss{position:relative;width:320px;height:344px}
+.boss .aura{position:absolute;inset:6% 4% 4%;border-radius:50%;background:radial-gradient(closest-side,rgba(255,70,60,.75),transparent);opacity:0;pointer-events:none}
+.boss .body{position:absolute;inset:0;transform-origin:50% 92%;translate:calc(var(--hit)*-12px) 0}
+.boss img{width:320px;height:344px}
+.boss .shadow{position:absolute;left:18%;right:18%;bottom:2%;height:9%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.5),transparent)}
+.st-party{position:absolute;left:28px;bottom:26px;z-index:4;display:grid;gap:10px;width:436px}
+.st-slots{display:flex;gap:10px;align-items:flex-end;translate:calc(var(--hit)*-3px + var(--slam)*-12px) 0}
+.st-slots .mc{transition:none;filter:drop-shadow(0 0 calc(var(--slam)*14px) var(--bi-hp-0))}
+.st-slots .mc.main{order:4}
+.st-health{display:grid;gap:3px}
+.st-health label{font-size:11.5px;font-weight:600;color:var(--bi-chrome-ink-muted);display:flex;justify-content:space-between}
+.hb{display:flex;align-items:center;gap:8px;position:relative}
+.hb-wrap{position:relative;flex:1}.hb-track{position:relative;height:16px;border-radius:99px;background:rgba(0,0,0,.6);box-shadow:inset 0 0 0 1px rgba(217,179,90,.3);overflow:hidden}
+.hb-trail,.hb-fill{position:absolute;inset:0 auto 0 0;border-radius:inherit}
+.hb-fill{width:calc(var(--fill)*1%);background:linear-gradient(180deg,#f27b87,var(--bi-hp-0) 55%,#c24655);box-shadow:inset 0 1px 0 #fff5}
+.hb-trail{width:calc(var(--trail)*1%);background:#f5e9ea}
+.hb-num{min-width:84px;text-align:right;font-size:13px;color:var(--bi-chrome-ink-muted);font-variant-numeric:tabular-nums}
+.hb-edge{position:absolute;top:0;bottom:0;left:calc(var(--fill)*1%);width:2px;background:#fff;opacity:calc(var(--hit)*.9 + var(--slam))}
+.st-nums{position:absolute;inset:0;z-index:7;pointer-events:none}
+.num{position:absolute;font:900 24px var(--bi-font-ui);color:var(--bi-hp-0);-webkit-text-stroke:5px #fff;paint-order:stroke;text-shadow:0 2px 0 #0006;white-space:nowrap;opacity:0}
+.num.big{font-size:44px}
+.st-flash{position:absolute;inset:0;z-index:8;pointer-events:none;background:radial-gradient(70% 70% at 30% 85%,#fff,#ff8e8e88 60%,transparent);opacity:calc(var(--slam)*.55)}
+.sub{font-size:12px;color:var(--bi-chrome-ink-muted)}
+.st [data-o]{display:none}
+.st[data-opt=A] [data-o~=A],.st[data-opt=B] [data-o~=B],.st[data-opt=C] [data-o~=C],.st[data-opt=D] [data-o~=D],.st[data-opt=E] [data-o~=E]{display:block}
+.st[data-opt=A] .ro [data-o~=A],.st[data-opt=E] .ro [data-o~=E]{display:block}
+
+/* ---- A: the boss charges (wind-up) + pale trailing segment (chunk) + a fourth tile (readout) ---- */
+.st[data-opt=A] .boss .body{transform:translateY(calc(var(--w)*8px)) scale(calc(1 + var(--w)*.05),calc(1 - var(--w)*.08)) translateX(calc(var(--slam)*-140px));
+  filter:brightness(calc(1 + var(--w)*.22)) drop-shadow(0 0 calc(var(--w)*20px) rgba(255,64,48,.95))}
+.st[data-opt=A] .boss .aura{opacity:calc(var(--w)*.8)}
+.st[data-opt=A] .boss .bang{opacity:var(--w)}
+.bang{position:absolute;right:6%;top:2%;font:900 54px var(--bi-font-ui);color:#ff5148;-webkit-text-stroke:6px #fff;paint-order:stroke;opacity:0;rotate:8deg;text-shadow:0 3px 0 #0006}
+
+/* ---- B: ground marker (wind-up) + segmented bar, hatched crumbling chunk (chunk) + race bars (readout) ---- */
+.mk{position:absolute;left:6px;bottom:70px;width:470px;height:140px;z-index:3;border-radius:50%;opacity:calc(var(--mkv,0));pointer-events:none}
+.mk .ring{position:absolute;inset:0;border-radius:50%;border:3px dashed rgba(255,90,80,.9);background:rgba(255,60,50,.08)}
+.mk .fillm{position:absolute;inset:0;border-radius:50%;background:radial-gradient(closest-side,rgba(255,60,50,.8),rgba(255,60,50,.35));scale:var(--w);transform-origin:50% 50%}
+.mk .lab{position:absolute;left:calc(100% + 10px);top:50%;translate:0 -50%;font-weight:800;font-size:16px;color:#ffd2cf;text-shadow:0 2px 0 #000a;white-space:nowrap}
+.mk::after{content:'';position:absolute;inset:-8%;border-radius:50%;border:6px solid #fff;opacity:calc(var(--slam)*.9);scale:calc(1 + (1 - var(--slam))*.4)}
+.st[data-opt=B] .boss .body{transform:translateY(calc(var(--w)*3px)) translateX(calc(var(--slam)*-40px))}
+.st[data-opt=B] .hb-track{background:repeating-linear-gradient(90deg,transparent 0 calc(var(--sz)*1% - 2px),#000a calc(var(--sz)*1% - 2px) calc(var(--sz)*1%)),rgba(0,0,0,.6)}
+.st[data-opt=B] .hb-trail{background:repeating-linear-gradient(135deg,#fff 0 3px,#f27b87 3px 6px);opacity:.9}
+.st[data-opt=B] .hb-fill{background:repeating-linear-gradient(90deg,transparent 0 calc(var(--sz)*1% - 2px),#000a calc(var(--sz)*1% - 2px) calc(var(--sz)*1%)),linear-gradient(180deg,#f27b87,var(--bi-hp-0) 55%,#c24655)}
+.race{display:grid;gap:5px;margin-top:4px;font-size:12.5px}
+.race>div{display:grid;grid-template-columns:104px 1fr 74px;gap:8px;align-items:center}
+.race i{display:block;height:8px;border-radius:99px;background:var(--bi-hp-4);width:calc(var(--r)*1%);min-width:6px}
+.race i.red{background:var(--bi-hp-0)}
+.race b{text-align:right;font-variant-numeric:tabular-nums}
+.race .bad{color:var(--bi-hp-0)}
+.race .note{grid-template-columns:1fr;color:var(--bi-hp-0);font-weight:700}
+
+/* ---- C: screen edge pulse (wind-up) + the chunk falls off the bar (chunk) + quiet banner only when it matters (readout) ---- */
+.vig{position:absolute;inset:0;z-index:9;pointer-events:none;box-shadow:inset 0 0 calc(70px + var(--pulse)*110px) calc(10px + var(--pulse)*40px) rgba(224,60,70,calc(var(--pulse)*.8));border-radius:8px}
+.st[data-opt=C] .boss .body{transform:translateX(calc(var(--slam)*-30px));filter:brightness(calc(1 + var(--w)*.08))}
+.st[data-opt=C] .hb-trail{display:none}
+
+.st-chip{position:absolute;top:0;bottom:0;left:calc(var(--chipL)*1%);width:calc(var(--chipW)*1%);background:#f5e9ea;border-radius:3px;opacity:calc(1 - var(--fallk));
+  transform:translateY(calc(var(--fallk)*34px)) rotate(calc(var(--fallk)*16deg));box-shadow:0 0 8px #fff8}
+.hb-track.cc{overflow:visible;box-shadow:none;background:none}
+.hb-track.cc::before{content:'';position:absolute;inset:0;border-radius:99px;background:rgba(0,0,0,.6);box-shadow:inset 0 0 0 1px rgba(217,179,90,.3)}
+.hb-track.cc .hb-fill{z-index:1}.hb-track.cc .st-chip{z-index:2}
+.banner{position:absolute;left:50%;top:16px;translate:-50% 0;z-index:7;padding:7px 16px;border-radius:99px;background:#3a1519ee;box-shadow:inset 0 0 0 2px var(--bi-hp-0);color:#ffd2d6;font-weight:700;font-size:14px;white-space:nowrap}
+.banner b{color:var(--bi-hp-0);font-weight:800}
+.banner[hidden]{display:none!important}
+
+/* ---- D: bar pre-flash (wind-up) + ember trail (chunk) + a clock under the bar (readout) ---- */
+.danger{position:absolute;top:0;bottom:0;right:calc(100% - var(--fill)*1%);width:calc(var(--sz)*1%);z-index:2;border-radius:3px;opacity:calc(var(--w)*(.55 + var(--pulse)*.45));
+  background:repeating-linear-gradient(135deg,#ff3b30 0 4px,#7a0f0a 4px 8px);box-shadow:0 0 10px #ff3b30}
+.st[data-opt=D] .hb-trail{background:color-mix(in srgb,#ffb02e calc(var(--heat)*100%),#f5e9ea)}
+.st[data-opt=D] .hb-track{box-shadow:inset 0 0 0 1px rgba(217,179,90,.3),0 0 calc(var(--w)*14px) rgba(255,59,48,.9)}
+.st[data-opt=D] .boss .body{translate:calc(var(--hit)*-12px + var(--slam)*-30px) 0}
+.slamlab{position:absolute;left:calc(var(--fill)*1% - var(--sz)*.5%);top:-17px;translate:-50% 0;font-size:11.5px;font-weight:800;color:#ffd2cf;white-space:nowrap;opacity:calc(var(--w)*1.4);text-shadow:0 1px 0 #000}
+.clock{display:flex;justify-content:space-between;align-items:center;font-size:12.5px;color:var(--bi-chrome-ink-muted);margin-top:2px}
+.clock b{font-variant-numeric:tabular-nums}
+.clock.red b,.clock.red{color:var(--bi-hp-0)}
+.clock svg{width:14px;height:14px;vertical-align:-2px;margin-right:4px}
+
+/* ---- E: countdown ring (wind-up) + chunk flies out with its number (chunk) + stacked in the time-to-kill tile (readout) ---- */
+.cring{position:absolute;right:-92px;top:150px;width:92px;height:92px;z-index:5}
+.cring svg{width:92px;height:92px;overflow:visible;rotate:-90deg}
+.cring .c{position:absolute;inset:0;display:grid;place-items:center;text-align:center;font-weight:800;line-height:1}
+.cring .c b{font-size:30px}.cring .c small{display:block;font-size:10px;font-weight:600;color:var(--bi-chrome-ink-muted)}
+.cring.hot{filter:drop-shadow(0 0 calc(var(--w)*12px) #ff4a3d)}
+.st[data-opt=E] .boss .body{translate:calc(var(--hit)*-12px + var(--slam)*-20px) 0}
+.st[data-opt=E] .hb{translate:0 calc(var(--slam)*3px)}
+.st[data-opt=E] .hb-trail{background:#f5e9ea}
+.chunklab{position:absolute;top:-34px;left:calc(var(--fill)*1%);z-index:3;font:900 22px var(--bi-font-ui);color:#fff;-webkit-text-stroke:4px #1a0b0d;paint-order:stroke;white-space:nowrap;opacity:0;translate:-50% 0}
+.chunklab::after{content:'';position:absolute;left:50%;top:100%;height:12px;border-left:2px solid #fff8}
+.ro .two{display:grid;gap:1px}
+.ro .two .fall{font-size:12px;font-weight:700;color:var(--bi-frame-ink-muted)}
+.ro .two .fall.is-red{color:var(--bi-hp-0)}
+.ro>div.stack{min-width:150px}
+.ro>div.stack.is-red{box-shadow:inset 0 0 0 2px var(--bi-hp-0)}
+.ro>div.stack dd{font-size:19px}
+.ro>div.stack dd.fb{margin-top:2px;padding-top:3px;border-top:1px solid var(--bi-frame-title-line);font-size:13px;font-weight:700;color:var(--bi-frame-ink)}
+.ro>div.stack.is-red dd.fb{color:var(--bi-hp-0)}
+.ro>div.stack dd.fb small{font-size:11px;font-weight:600;color:var(--bi-frame-ink-muted);margin-right:4px}
+.ro>div.stack.is-red dd.fb small{color:#ffb4bc}
+@media (prefers-reduced-motion:reduce){.st *{transition:none!important}}
+</style></head>
+<body>
+<header class="page-head">
+  <h1>Boss hits: 5 options</h1>
+  <p>Every boss hits lightly at its rhythm and every sixth attack is a telegraphed heavy slam: five light hits at 0.4x and one slam at 4x (DESIGN.md §6), so the damage per minute stays what <code>dungeons.json</code> says. Each option below combines three choices: how the slam is telegraphed on screen, how the health bar shows the chunk it takes (the pale trailing segment is in every one, in a different form), and where "You fall in" sits next to time-to-kill. All five stages run the same fight on one clock, so you can compare timing by scrolling. Player hits are left out on purpose to keep the boss's rhythm readable.</p>
+</header>
+
+<section class="pick" aria-label="Pick hints">
+  <h2>Pick hints</h2>
+  <ul>
+    <li><b>Want the wind-up to be about the boss?</b> A (boss charges): it reads at a glance and costs no extra UI, but you must be looking at the boss, not at your cards.</li>
+    <li><b>Want to see where and how much it will hurt?</b> B (ground marker) points at the party, D (bar pre-flash) shows the exact chunk on the health bar.</li>
+    <li><b>Want it to work when you are looking elsewhere (cards, drawer, Home mini-stage)?</b> C (screen edge pulse). It is the loudest and the one most likely to annoy on a long idle session.</li>
+    <li><b>Want players to learn the pattern (5 light, then a slam)?</b> E (countdown ring) shows the count the whole time, not only the last second.</li>
+    <li><b>Want the readout to say "this fight cannot be won" without shouting?</b> C (banner only when red) is quietest; A (extra tile) and E (stacked in the tile) are always on; B (race bars) explains the gap; D (clock under the bar) sits next to the health it measures.</li>
+    <li><b>Reduced motion:</b> all five drop shake, pulse, lunge and falling chips; the wind-up becomes a static marker or a still glow, and the chunk simply drops with a short fade. The readout is text and does not change.</li>
+    <li>Wind-up lasts 1.5 s in the real game (the 6th attack is announced by the report, DESIGN.md Phase 3); the demo pace is faster so you do not wait 36 s per slam. Switch to Real pace to feel the real timing.</li>
+  </ul>
+</section>
+
+<nav class="ctl" aria-label="Controls"><div>
+  <span class="g"><span class="l">Boss</span><span id="bossChips"></span></span>
+  <span class="g"><span class="l">Pace</span><button class="chip" data-pace="demo" aria-pressed="true">Demo (1.4 s hits)</button><button class="chip" data-pace="real" aria-pressed="false">Real (boss rhythm)</button></span>
+  <span class="g"><button class="chip" id="play" aria-pressed="true">Pause</button><input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Timeline"><span class="tm" id="tm">0.0 s</span></span>
+</div></nav>
+<main id="opts"></main>
+<footer class="page-head" style="padding-bottom:60px">
+  <p>Numbers. Glacier Colossus: 30 damage every 6 s, so five 12-damage hits and one 120-damage slam. Root Warden: 1 damage every 10 s, so 0.4 and 4. The loadout is the four fighting cards at base health, 100 + 150 + 225 + 350 = 825 (`cardRules.json`, before levels, stars and defence). Root Warden: 100 health at 0.1 damage/s lasts 16 min 40 s and 3.3e5 health at 316.57 DPS takes 17 min 22 s, as in §6. The Glacier fight uses 190,000 DPS (3e7 health, 2 min 38 s) against 825 health lasting 2 min 45 s, so there the loadout wins. These are illustrations: the real values come from the sim.</p>
+</footer>
+
+<script>
+const BOSSES={
+  glacier:{label:'Glacier Colossus (you survive)',name:'Glacier Colossus',where:'Frostspire Vault',sprite:'boss-glacier_colossus',dmg:30,interval:6,bars:12,hp:'30,000,000',pool:825,ttk:'2m 38s',ttkS:158,fall:'2m 45s',fallS:165,dps:'190,000',kpm:'0.38',mode:'ok',tier:'3'},
+  root:{label:'Root Warden (you fall first)',name:'Root Warden',where:'Mossy Cellar',sprite:'boss-root_warden',dmg:1,interval:10,bars:5,hp:'330,000',pool:100,ttk:'17m 22s',ttkS:1042,fall:'16m 40s',fallS:1000,dps:'316.57',kpm:'0.06',mode:'red',tier:'1'},
+  trial:{label:'Glimmer Trial (never attacks)',name:'The Glimmer Trial',where:'Crystal Sentinel',sprite:'boss-crystal_sentinel',dmg:0,interval:6,bars:1,hp:'140,000',pool:825,ttk:'30 s',ttkS:30,fall:null,fallS:null,dps:'4,200',kpm:'—',mode:'trial',tier:'special'}
+};
+const PARTY=[['Ember Squire','common','silver','item-sword-rare','Fighting'],['Shield Warden','rare','silver','item-shield-epic','Fighting'],['Storm Duelist','epic','bronze','item-twin_blades-epic','Fighting'],['Dawnblade Regent','legendary','gold','item-greatsword-legendary','Fighting']];
+const S={boss:'glacier',pace:'demo',playing:true,t:0};
+const img=(n,w,h)=>`<img class="px" src="assets/sprites/${n}.png" width="${w}" height="${h}" alt="">`;
+const pct=(a,b)=>Math.max(0,Math.min(100,a/b*100));
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const ease=x=>1-Math.pow(1-clamp(x),3);
+const fmt1=n=>Number.isInteger(n)?String(n):n.toFixed(1);
+
+/* ---------- readouts (one renderer per option, used in the arena and in the small state frames) ---------- */
+const clockSvg='<svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M8 4.5V8l2.5 1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+function gapText(b){const d=b.ttkS-b.fallS;const m=Math.floor(Math.abs(d)/60),s=Math.abs(d)%60;return (m?m+' min ':'')+s+' s'}
+function tiles(b){return `<div><dt>DPS</dt><dd>${b.dps}</dd></div><div><dt>Kills/min</dt><dd>${b.kpm}</dd></div>`}
+const RO={
+ A(b){const red=b.mode==='red';
+   return {top:`${tiles(b)}<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>${b.mode==='trial'?'':`<div class="${red?'is-red':''}"><dt>You fall in</dt><dd>${b.fall}</dd></div>`}`,under:'',banner:''}},
+ B(b){if(b.mode==='trial')return {top:`${tiles(b)}<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>`,under:'',banner:''};
+   const red=b.mode==='red';const mx=Math.max(b.ttkS,b.fallS);
+   return {top:`${tiles(b)}<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>`,
+   under:`<div class="race"><div><span>Boss falls in</span><i style="--r:${b.ttkS/mx*100}"></i><b>${b.ttk}</b></div><div><span>You fall in</span><i class="${red?'red':''}" style="--r:${b.fallS/mx*100}"></i><b class="${red?'bad':''}">${b.fall}</b></div>${red?`<div class="note">${gapText(b)} short. This fight cannot be won with this loadout.</div>`:''}</div>`,banner:''}},
+ C(b){const red=b.mode==='red';
+   return {top:`${tiles(b)}<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>`,under:'',banner:red?`You fall in <b>${b.fall}</b>, ${gapText(b)} before the boss does`:''}},
+ D(b){if(b.mode==='trial')return {top:`${tiles(b)}<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>`,under:'',banner:''};
+   const red=b.mode==='red';
+   return {top:`${tiles(b)}<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>`,under:`<div class="clock ${red?'red':''}"><span>${clockSvg}Knocked out in <b>${b.fall}</b></span><span>${red?'before the boss ('+b.ttk+')':'boss falls first ('+b.ttk+')'}</span></div>`,banner:''}},
+ E(b){const red=b.mode==='red';
+   return {top:`${tiles(b)}${b.mode==='trial'?`<div><dt>Time to kill</dt><dd>${b.ttk}</dd></div>`:`<div class="stack ${red?'is-red':''}"><dt>Time to kill</dt><dd>${b.ttk}</dd><dd class="fb"><small>You fall in</small>${b.fall}</dd></div>`}`,under:'',banner:''}}
+};
+
+/* ---------- build one arena ---------- */
+function cardHtml(c,i){return `<div class="mc ${i===3?'main':''}" style="--k:.75" data-tier="${c[2]}" data-rarity="${c[1]}"><div class="mc__in"><div class="mc__plate">${c[0]}</div><div class="mc__art">${img(c[3],100,120)}</div><div class="mc__foot"><span class="mc__tier">${c[2][0].toUpperCase()+c[2].slice(1)}</span></div><img class="mc__frame px" src="assets/sprites/frame-${c[2]}.png" alt=""></div></div>`}
+function ringSvg(){const R=38,gap=6,S=120,L=(360-6*gap-S)/5;let a=0,h='';const pt=ang=>[46+R*Math.cos(ang*Math.PI/180),46+R*Math.sin(ang*Math.PI/180)];
+  for(let i=0;i<6;i++){const sp=i<5?L:S;const [x1,y1]=pt(a),[x2,y2]=pt(a+sp);const d=`M${x1.toFixed(2)} ${y1.toFixed(2)} A${R} ${R} 0 ${sp>180?1:0} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+    h+=`<path d="${d}" pathLength="100" fill="none" stroke="#000a" stroke-width="11" stroke-linecap="butt"/><path d="${d}" pathLength="100" fill="none" stroke="${i<5?'#e3a548':'#6b2a2e'}" stroke-width="7" stroke-opacity=".35"/><path class="seg" data-i="${i}" d="${d}" pathLength="100" fill="none" stroke="${i<5?'#ffd27a':'#ff4a3d'}" stroke-width="7" stroke-dasharray="0 100"/>`;a+=sp+gap}
+  return `<svg viewBox="0 0 92 92" aria-hidden="true">${h}</svg>`}
+function buildStage(id){
+  const el=document.createElement('div');el.className='st';el.dataset.opt=id;el.id='st-'+id;
+  el.innerHTML=`<div class="st-top"><div class="st-where"><h3 data-k="name"></h3><div class="st-tags"><span class="st-tag" data-k="tier"></span><span class="st-tag" data-k="kills"></span></div></div><dl class="ro" data-k="ro"></dl></div>
+  <div class="banner" data-k="banner" data-o="C" hidden></div>
+  <div class="st-boss"><div class="st-hp"><div class="hp-row"><div class="hp-track"><i class="hp-under"></i><i class="hp-fill" data-k="bfill"></i></div><span class="hp-cnt" data-k="bcnt"></span></div><div class="hp-txt" data-k="btxt"></div></div>
+    <div class="boss"><div class="aura"></div><div class="shadow"></div><div class="body"><img class="px" data-k="bimg" width="320" height="344" alt="">${id==='A'?'<div class="bang" data-o="A">!</div>':''}</div></div>
+    <div class="cring" data-o="E"><div class="c"><div><b data-k="rn">5</b><small data-k="rl">to slam</small></div></div>${ringSvg()}</div></div>
+  <div class="mk" data-o="B"><div class="ring"></div><div class="fillm"></div><div class="lab" data-k="mklab"></div></div>
+  <div class="st-party"><div class="st-slots">${PARTY.map(cardHtml).join('')}</div>
+    <div class="st-health"><label><span>Loadout health</span></label>
+      <div class="hb"><div class="hb-wrap"><div class="hb-track ${id==='C'?'cc':''}"><i class="hb-trail"></i><i class="hb-fill"></i><i class="st-chip" data-o="C"></i><i class="hb-edge"></i><i class="danger" data-o="D"></i></div><span class="slamlab" data-o="D" data-k="slamlab"></span><span class="chunklab" data-o="E" data-k="chunklab"></span></div><span class="hb-num" data-k="hnum"></span></div>
+      <div data-k="under"></div></div></div>
+  <div class="st-nums">${[1,2,3,4,5,6].map(i=>`<span class="num ${i===6?'big':''}" data-n="${i}"></span>`).join('')}</div>
+  <div class="vig" data-o="C"></div><div class="st-flash"></div>`;
+  return el}
+function q(el,k){return el.querySelector(`[data-k="${k}"]`)}
+function setBoss(el){const b=BOSSES[S.boss];
+  q(el,'name').textContent=b.where;q(el,'tier').textContent=b.tier==='special'?'Special':'Tier '+b.tier;q(el,'kills').textContent=S.boss==='root'?'94 kills':S.boss==='glacier'?'12 kills':'Best 62%';
+  q(el,'bimg').src=`assets/sprites/${b.sprite}.png`;q(el,'bcnt').textContent='×'+b.bars;q(el,'btxt').textContent=b.hp+' / '+b.hp;
+  const r=RO[el.dataset.opt](b);q(el,'ro').innerHTML=r.top;q(el,'under').innerHTML=r.under;
+  const bn=q(el,'banner');bn.innerHTML=r.banner;bn.hidden=!r.banner;
+  el.style.setProperty('--sz',pct(b.dmg*4,b.pool).toFixed(2));
+  el.classList.toggle('no-atk',!b.dmg)}
+
+/* ---------- the fight clock: pure function of time ---------- */
+function timing(b){const demo=S.pace==='demo';const I=demo?1400:b.interval*1000;return {I,W:demo?1200:1500,L:6*I+(demo?2600:5000)}}
+function frame(el,t){
+  const b=BOSSES[S.boss],tm=timing(b),pos=t%tm.L,id=el.dataset.opt;
+  const I=tm.I,W=tm.W,attacks=b.dmg>0;
+  let pool=b.pool,prev=b.pool,last=null,done=0;
+  if(attacks){for(let i=1;i<=6;i++){const ht=i*I;if(ht<=pos){const d=i<6?b.dmg*.4:b.dmg*4;prev=pool;pool-=d;last={t:ht,d,slam:i===6,i};done=i}}}
+  const age=last?pos-last.t:9999;
+  const hold=last&&last.slam?(id==='D'?650:420):240,catchT=last&&last.slam?(id==='D'?1100:600):380;
+  let trail=pool;if(last&&age<hold+catchT)trail=age<hold?prev:prev+(pool-prev)*ease((age-hold)/catchT);
+  const ws=6*I-W;const w=attacks&&pos>=ws&&pos<6*I?clamp((pos-ws)/W):0;
+  const slamAge=attacks&&pos>=6*I?pos-6*I:9999;const slam=slamAge<9999?clamp(1-slamAge/520):0;
+  const hit=last&&!last.slam?clamp(1-age/260):0;
+  const f=1.4+w*4;const pulse=id==='C'?w*(.3+.7*Math.pow(Math.sin(pos/1000*Math.PI*f),2)):id==='D'?(.5+.5*Math.sin(pos/110)):0;
+  const heat=last&&last.slam?clamp(1-(age-hold*.3)/(hold+catchT)):last?clamp(1-age/600):0;
+  const s=el.style;
+  s.setProperty('--w',w.toFixed(3));s.setProperty('--slam',slam.toFixed(3));s.setProperty('--hit',hit.toFixed(3));s.setProperty('--pulse',pulse.toFixed(3));s.setProperty('--heat',heat.toFixed(3));
+  s.setProperty('--fill',pct(pool,b.pool).toFixed(2));s.setProperty('--trail',pct(trail,b.pool).toFixed(2));
+  const fall=last?clamp((age-hold*.5)/(hold+catchT+400)):1;
+  s.setProperty('--fallk',last&&last.slam?fall.toFixed(3):'1');
+  s.setProperty('--chipL',pct(pool,b.pool).toFixed(2));s.setProperty('--chipW',last?pct(last.d,b.pool).toFixed(2):'0');
+  s.setProperty('--mkv',(w>0?Math.min(1,.35+w):slam>0?slam:0).toFixed(3));
+  s.setProperty('--bf',(100-((t/1000*5)%100)).toFixed(2)+'%');
+  q(el,'hnum').textContent=`${fmt1(Math.round(pool*10)/10)} / ${b.pool}`;
+  /* option-specific text */
+  if(id==='B')q(el,'mklab').textContent=w>0?`Slam in ${((W*(1-w))/1000).toFixed(1)} s`:'';
+  if(id==='D')q(el,'slamlab').textContent=w>0?`Slam ${fmt1(b.dmg*4)} in ${((W*(1-w))/1000).toFixed(1)} s`:'';
+  if(id==='E'){
+    const lab=q(el,'chunklab');const showL=last&&age<1300;lab.style.opacity=showL?String(clamp(1-(age-700)/600)):'0';
+    lab.textContent=last?'−'+fmt1(last.d):'';lab.style.translate=`-50% ${showL?-ease(age/500)*10:0}px`;
+    const left=attacks?Math.max(0,5-Math.min(done,5)):0;
+    q(el,'rn').textContent=attacks?(w>0||slamAge<9999?'!':String(left||'!')):'—';
+    q(el,'rl').textContent=attacks?(w>0?'slam':slamAge<9999?'hit':left===1?'to slam':'to slam'):'no attacks';
+    el.querySelector('.cring').classList.toggle('hot',w>0);
+    el.querySelectorAll('.seg').forEach(p=>{const i=+p.dataset.i;let v=0;if(attacks){if(i<5)v=done>i?1:0;else v=slamAge<9999?1:w}
+      p.setAttribute('stroke-dasharray',`${(v*100).toFixed(1)} 100`)})}
+  /* numbers */
+  el.querySelectorAll('.num').forEach(n=>{const i=+n.dataset.n;const a=attacks?pos-i*I:-1;const slamN=i===6;
+    if(a<0||a>1000){n.style.opacity='0';return}
+    const d=slamN?b.dmg*4:b.dmg*.4;n.textContent='−'+fmt1(d);
+    const cx=slamN?210:(28+((i-1)%4)*109+50);const cy=slamN?el.clientHeight-250:el.clientHeight-198;
+    n.style.left=cx+'px';n.style.top=(cy-a*.045)+'px';n.style.opacity=String(clamp(1-(a-500)/500));n.style.scale=slamN?String(1+clamp(1-a/200)*.5):'1'});
+}
+
+/* ---------- options ---------- */
+const OPTS=[
+ {id:'A',name:'The boss charges',
+  why:'The slam is announced by the boss itself. In the last 1.2 s it rears back, squashes, glows red and shows a "!", then lunges at the party. The health bar uses the plain pale trailing segment; the readout is a fourth tile in the corner, red when you fall first.',
+  facts:[['Wind-up','Boss rears, red glow, "!" mark. Lunges on the slam.'],['Chunk','Plain pale trailing segment: holds 0.4 s, then slides to the new edge.'],['Readout','Fourth tile after Time to kill: "You fall in 16m 40s". Red tile when it falls first.']],
+  trade:'Reads at a glance and costs no UI, but only if you are looking at the boss.'},
+ {id:'B',name:'Ground marker',
+  why:'A red zone grows on the floor under your party like an area attack in an action game, with a countdown. The health bar is cut into slam-sized blocks, so the chunk is a visible block that crumbles (hatched) before it vanishes. The readout is a pair of race bars under the health bar.',
+  facts:[['Wind-up','Red zone fills the floor under the party, "Slam in 0.8 s". Boss barely moves.'],['Chunk','Bar is notched in slam-sized blocks; the lost block turns hatched, then crumbles away.'],['Readout','Race bars: "Boss falls in" against "You fall in", with the gap written out when you lose.']],
+  trade:'Says where and how much, and teaches what a slam is worth. Takes space under the party.'},
+ {id:'C',name:'Screen edge pulse',
+  why:'The edges of the arena pulse red, faster as the slam nears, so you notice it without looking at the boss. The slam knocks a chip off the health bar that falls away. The readout stays out of sight until it matters: a red pill at the top, only when you would fall first.',
+  facts:[['Wind-up','Red vignette pulses at the screen edges, speeding up to the hit, then a flash.'],['Chunk','The lost piece detaches and falls off the bar. The fill closes instantly.'],['Readout','Banner at the top centre, only when red: "You fall in 16m 40s, 42 s before the boss does". Nothing otherwise.']],
+  trade:'Works from anywhere on the page, and the quiet readout never nags. Loudest wind-up; most likely to tire on long sessions.'},
+ {id:'D',name:'Bar pre-flash',
+  why:'The health bar shows the damage before it lands. The exact slice the slam will take lights up in hazard stripes with "Slam 120 in 0.8 s". After the hit the lost slice cools from ember orange to pale and slides off. The readout is one line under the bar, in the words "Knocked out in".',
+  facts:[['Wind-up','Hazard-striped block on the bar at the size of the slam, pulsing, with a countdown label.'],['Chunk','Ember trail: hot orange cooling to pale over about 1 s, a white edge at the impact.'],['Readout','Line under the bar: "Knocked out in 16m 40s, before the boss (17m 22s)". Red when it falls first.']],
+  trade:'The clearest about how much the slam costs, next to the thing it damages. Easy to miss if you are watching the boss.'},
+ {id:'E',name:'Countdown ring',
+  why:'A ring beside the boss shows the whole six-attack cycle all the time: five short segments fill one by one with the number of attacks left, and the long red slam segment fills during the wind-up. The chunk is labelled with its number as it leaves the bar. The readout is stacked inside the time-to-kill tile.',
+  facts:[['Wind-up','Ring with 5 light segments and one long red one; the red one fills in the last 1.2 s, the number becomes "!".'],['Chunk','Pale segment slides off fast; a "−120" label rises from the edge and the bar jolts.'],['Readout','Same tile as Time to kill, with "You fall in 16m 40s" as a second line. Red when it falls first.']],
+  trade:'Teaches the five-then-slam pattern and always shows the count. One more thing to look at next to the boss.'}
+];
+function readoutFrame(o,mode){
+  const b={...BOSSES[mode==='red'?'root':mode==='ok'?'glacier':'trial'],mode};
+  const r=RO[o.id](b);
+  const cap={red:'You would fall first',ok:'You win the race',trial:'Glimmer Trial: nothing to show'}[mode];
+  return `<div class="rd" style="--sz:${pct(b.dmg*4,b.pool).toFixed(2)};--fill:100;--trail:100;--hit:0;--slam:0;--w:0"><small class="cap">${cap}</small><dl class="ro">${r.top}</dl>
+   ${r.banner?`<div class="banner" style="position:static;translate:none;justify-self:start">${r.banner}</div>`:''}
+   ${(mode!=='trial'||r.under)?`<div class="st-health"><label><span>Loadout health</span></label><div class="hb"><div class="hb-wrap"><div class="hb-track"><i class="hb-fill"></i></div></div><span class="hb-num">${b.pool} / ${b.pool}</span></div>${r.under}</div>`:''}
+   ${o.id==='C'&&!r.banner?'<small class="cap" style="color:#c5cad6">(the top banner stays hidden)</small>':''}</div>`}
+function render(){
+  const root=document.getElementById('opts');root.innerHTML='';
+  OPTS.forEach(o=>{const sec=document.createElement('section');sec.className='opt';sec.id='opt-'+o.id;
+    sec.innerHTML=`<h2><i>${o.id}</i>${o.name}</h2><p class="why">${o.why}</p><p class="why" style="color:var(--rv-acc)"><b>Trade-off:</b> ${o.trade}</p>
+     <div class="facts">${o.facts.map(f=>`<div><b>${f[0]}</b><span>${f[1]}</span></div>`).join('')}</div><div class="stage-slot"></div>
+     <div class="rd-title">Readout in the three states (red: Root Warden, 100 health; neutral: Glacier Colossus; none: the Glimmer Trial, which never attacks)</div>
+     <div class="rd-row">${['red','ok','trial'].map(m=>readoutFrame(o,m)).join('')}</div>`;
+    const st=buildStage(o.id);sec.querySelector('.stage-slot').append(st);root.append(sec);});
+  document.querySelectorAll('.st').forEach(setBoss);
+}
+function chips(){
+  document.getElementById('bossChips').innerHTML=Object.entries(BOSSES).map(([k,b])=>`<button class="chip" data-boss="${k}" aria-pressed="${k===S.boss}">${b.label}</button>`).join(' ');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-boss]');if(b){S.boss=b.dataset.boss;S.t=0;chips();document.querySelectorAll('.st').forEach(setBoss);return}
+  const p=e.target.closest('[data-pace]');if(p){S.pace=p.dataset.pace;S.t=0;document.querySelectorAll('[data-pace]').forEach(x=>x.setAttribute('aria-pressed',x===p));return}
+  if(e.target.id==='play'){S.playing=!S.playing;e.target.textContent=S.playing?'Pause':'Play';e.target.setAttribute('aria-pressed',S.playing)}
+});
+const scrub=document.getElementById('scrub');
+scrub.addEventListener('input',()=>{S.playing=false;const pb=document.getElementById('play');pb.textContent='Play';pb.setAttribute('aria-pressed','false');S.t=scrub.value/1000*timing(BOSSES[S.boss]).L;draw()});
+function draw(){document.querySelectorAll('.st').forEach(el=>frame(el,S.t));
+  const tm=timing(BOSSES[S.boss]);const pos=S.t%tm.L;document.getElementById('tm').textContent=(pos/1000).toFixed(1)+' s of '+(tm.L/1000).toFixed(1)+' s';scrub.value=Math.round(pos/tm.L*1000)}
+let last=performance.now();
+function loop(now){const dt=now-last;last=now;if(S.playing){S.t+=Math.min(dt,100);draw()}requestAnimationFrame(loop)}
+chips();render();draw();
+if(!matchMedia('(prefers-reduced-motion:reduce)').matches)requestAnimationFrame(loop);else{S.playing=false;document.getElementById('play').textContent='Play'}
+/* hooks for the screenshot script */
+window.BI={seek(boss,pace,posMs){S.boss=boss;S.pace=pace;S.playing=false;chips();document.querySelectorAll('.st').forEach(setBoss);S.t=posMs;draw()},timing:()=>timing(BOSSES[S.boss])};
+</script>
+</body></html>

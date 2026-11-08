@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Shop option 2: Market Stalls</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* H2 Market Stalls: three striped-awning stalls side by side on the light table, every counter visible at once */
+.h2 .pg{position:absolute;inset:0;padding:18px 22px;display:grid;grid-template-columns:1fr 1.05fr .9fr;gap:16px}
+.h2 .stall{position:relative;border-radius:0 0 14px 14px;background:#232a38;color:#e9eef7;box-shadow:inset 0 0 0 1px var(--chrome-line),0 12px 26px rgba(20,30,50,.3);padding:64px 12px 12px;overflow:hidden}
+.h2 .awn{position:absolute;left:0;right:0;top:0;height:50px;background:repeating-linear-gradient(90deg,var(--a1) 0 28px,var(--a2) 28px 56px);border-radius:12px 12px 0 0;box-shadow:0 5px 0 rgba(0,0,0,.25)}
+.h2 .awn::after{content:'';position:absolute;left:0;right:0;bottom:-12px;height:12px;background:radial-gradient(circle at 14px 0,var(--a1) 13px,transparent 14px) 0 0/56px 12px,radial-gradient(circle at 42px 0,var(--a2) 13px,transparent 14px) 0 0/56px 12px}
+.h2 .sign{position:absolute;left:50%;top:10px;translate:-50% 0;z-index:2;padding:4px 18px;border-radius:8px;background:#15192a;box-shadow:inset 0 0 0 1.5px var(--chrome-accent);font-weight:800;font-size:17px;display:flex;gap:8px;align-items:center;white-space:nowrap}
+.h2 .sign em{font-style:normal;color:#ffe08a;font-size:15px}
+.h2 .s1{--a1:#5a3fc0;--a2:#e9e3ff}.h2 .s2{--a1:#1f9aa6;--a2:#dff7f8}.h2 .s3{--a1:#d96ba3;--a2:#fff3b8}
+.h2 .it{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:7px 9px;margin-bottom:6px;border-radius:10px;background:#2c3445;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07)}
+.h2 .it b{display:block;font-size:13.5px;line-height:1.15}.h2 .it span{font-size:11.5px;color:#a8b3c6}
+.h2 .it .pr{border:0;border-radius:8px;padding:6px 10px;font-weight:800;font-size:13px;background:#d9b35a;color:#14172a;display:flex;gap:5px;align-items:center}
+.h2 .it .pr.no{background:#3a4257;color:#8a95a8}
+.h2 .it.sold{position:relative}.h2.play .it.sold::after{content:'BOUGHT';position:absolute;right:64px;top:50%;translate:0 -50%;rotate:-9deg;padding:2px 12px;border:3px solid #ff6a6a;border-radius:6px;color:#ff6a6a;font:800 20px Outfit;background:rgba(35,42,56,.82);animation:h2st .3s cubic-bezier(.2,2,.4,1) both}
+@keyframes h2st{from{scale:2.4;opacity:0}}
+.h2 .lv{display:block;height:4px;border-radius:2px;background:#171c28;margin-top:4px;overflow:hidden}.h2 .lv u{display:block;height:100%;background:#d9b35a;text-decoration:none}
+.h2 .mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:8px}
+.h2 .mini .mk-card{--k:.5}
+.h2 .cd{position:relative;height:130px}.h2 .cd .mk-card{position:absolute;left:0;top:0;transform-origin:0 0}
+.h2 .tile{position:relative;border-radius:10px;padding:6px 6px 8px;background:#2c3445;box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);text-align:center;font-size:11.5px;font-weight:700}
+.h2 .tile .t{display:flex;justify-content:center;height:124px;overflow:hidden;border-radius:8px}
+.h2 .tile .t .mk-card{--k:.5;flex:none;margin-top:2px}
+.h2 .tile button{margin-top:6px;border:0;border-radius:999px;padding:4px 10px;background:#d9b35a;color:#14172a;font-weight:800;font-size:12px;display:inline-flex;gap:4px;align-items:center}
+.h2 .tile button.no{background:#3a4257;color:#8a95a8}
+.h2 .sup{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.h2 .sup div{flex:1 1 45%;display:flex;gap:6px;align-items:center;padding:5px 8px;border-radius:8px;background:#2c3445;font-size:11.5px;font-weight:700;line-height:1.1}
+.h2 .sup small{display:block;color:#ffe08a}
+.h2 .gate{display:grid;justify-items:center;gap:8px;text-align:center;padding-top:6px}
+.h2 .gate .ring{width:150px;height:150px;border-radius:50%;background:conic-gradient(from 0deg,#ff6fc8,#ffd76a,#6fe3ff,#a77bff,#ff6fc8);mask:radial-gradient(closest-side,transparent 58%,#000 60%);-webkit-mask:radial-gradient(closest-side,transparent 58%,#000 60%);box-shadow:0 0 40px rgba(167,123,255,.5);animation:h2s 10s linear infinite}
+@keyframes h2s{to{rotate:360deg}}
+.h2 .gate .wrap{position:relative;width:150px;height:150px}.h2 .gate .wrap img{position:absolute;left:43px;top:43px}
+.h2 .gate b{font-size:24px;color:#ffe08a}.h2 .gate small{display:block;color:#a8b3c6;font-size:12px;font-weight:600}
+.h2 .ascb{border:0;width:100%;border-radius:12px;padding:12px;font-weight:800;font-size:17px;color:#14172a;background:linear-gradient(90deg,#ffd0f0,#ffe9a8,#b8e8ff,#d3bfff);box-shadow:0 0 20px rgba(255,208,240,.4)}
+.h2 ul{margin:0;padding:0;list-style:none;font-size:12px;color:#a8b3c6;text-align:left;width:100%;display:grid;gap:3px}
+.h2 ul li::before{content:'';display:inline-block;width:7px;height:7px;margin-right:7px;border-radius:2px;background:#8fe3a0}.h2 ul.r li::before{background:#ff8f8f}
+.h2 h4{margin:6px 0 2px;font-size:12px;color:#ffe08a;width:100%;text-align:left}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script><script src="../_shared/shopdata.js"></script>
+<script>
+const ups=SHOP.ups.slice(0,6).map((u,i)=>`<div class="it ${i===1?'sold':''}">${MK.img('cos-starlight-a',32)}<div><b>${u.n}</b><span>${u.a} &rarr; ${u.b} &middot; Lv ${u.lv}/${u.max}</span><i class="lv"><u style="width:${u.lv/u.max*100}%"></u></i></div><button class="pr ${SHOP.starlight<u.p?'no':''}">${u.p}</button></div>`).join('')+
+ `<div class="it" style="opacity:.6">${MK.img('cos-starlight-a',32)}<div><b>Long Night</b><span>+4 h offline cap &middot; max</span></div><span>Max</span></div>`;
+const cards=SHOP.copies.slice(3,9).map(([id,p])=>`<div class="tile"><div class="t">${MK.card(id,{k:.5})}</div>${MK.CARDS[id][0]}<br><button class="${SHOP.shards<p?'no':''}">${MK.img('coin-hexagon-prism',14)}${p}</button></div>`).join('');
+const sup=SHOP.supplies.map(([n,a,p,s])=>`<div>${MK.img('coin-'+s+'-gold',22)}<span>${n}<small>${a} &middot; ${p}</small></span></div>`).join('');
+MK.shell('shop',`<div class="pg">
+ <section class="stall s1" aria-label="Starlight shop"><div class="awn"></div><div class="sign">Starlight shop <em class="num">23</em></div>${ups}</section>
+ <section class="stall s2" aria-label="Shard shop"><div class="awn"></div><div class="sign">Shard shop <em class="num">87</em></div><div class="mini" style="grid-template-columns:repeat(3,1fr)">${cards}</div><div class="sup">${sup}<div>${MK.img('coin-star-gold',22)}<span>Ember Crown<small>Once &middot; 150</small></span></div></div></section>
+ <section class="stall s3" aria-label="Ascension"><div class="awn"></div><div class="sign">Ascension <em>No. ${SHOP.ascNum}</em></div><div class="gate"><div class="wrap"><div class="ring"></div>${MK.img('cos-starlight-a',64)}</div><b class="num">+${SHOP.ascGain} Starlight</b><small>Needs 10. You are at 14.</small><button class="ascb">Ascend</button>
+  <h4>Kept</h4><ul>${SHOP.kept.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Reset</h4><ul class="r">${SHOP.reset.map(x=>`<li>${x}</li>`).join('')}</ul></div></section>
+</div>`,{cls:'h2',play:'Play a purchase'});
+</script></body></html>

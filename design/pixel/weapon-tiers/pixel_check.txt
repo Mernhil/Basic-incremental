@@ -1,0 +1,74 @@
+[OK] design\pixel\weapon-tiers\sprites\A\bow-bronze.png  native 100x120 at 1x, 10 colours
+[OK] design\pixel\weapon-tiers\sprites\A\bow-gold.png  native 100x120 at 1x, 12 colours
+[OK] design\pixel\weapon-tiers\sprites\A\bow-prismatic.png  native 100x120 at 1x, 17 colours
+[OK] design\pixel\weapon-tiers\sprites\A\bow-silver.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\A\maul-bronze.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\A\maul-gold.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\A\maul-prismatic.png  native 100x120 at 1x, 18 colours
+[OK] design\pixel\weapon-tiers\sprites\A\maul-silver.png  native 100x120 at 1x, 12 colours
+[OK] design\pixel\weapon-tiers\sprites\A\staff-bronze.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\A\staff-gold.png  native 100x120 at 1x, 12 colours
+[OK] design\pixel\weapon-tiers\sprites\A\staff-prismatic.png  native 100x120 at 1x, 19 colours
+[OK] design\pixel\weapon-tiers\sprites\A\staff-silver.png  native 100x120 at 1x, 15 colours
+[OK] design\pixel\weapon-tiers\sprites\A\sword-bronze.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\A\sword-gold.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\A\sword-prismatic.png  native 100x120 at 1x, 20 colours
+[OK] design\pixel\weapon-tiers\sprites\A\sword-silver.png  native 100x120 at 1x, 10 colours
+[OK] design\pixel\weapon-tiers\sprites\B\bow-bronze.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\B\bow-gold.png  native 100x120 at 1x, 15 colours
+[OK] design\pixel\weapon-tiers\sprites\B\bow-prismatic.png  native 100x120 at 1x, 21 colours
+[OK] design\pixel\weapon-tiers\sprites\B\bow-silver.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\B\maul-bronze.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\B\maul-gold.png  native 100x120 at 1x, 14 colours
+[OK] design\pixel\weapon-tiers\sprites\B\maul-prismatic.png  native 100x120 at 1x, 18 colours
+[OK] design\pixel\weapon-tiers\sprites\B\maul-silver.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\B\staff-bronze.png  native 100x120 at 1x, 12 colours
+[OK] design\pixel\weapon-tiers\sprites\B\staff-gold.png  native 100x120 at 1x, 15 colours
+[WARN] design\pixel\weapon-tiers\sprites\B\staff-prismatic.png  native 100x120 at 1x, 27 colours
+   warn:  4 edge pixels not ink or light rim (outline gaps?), e.g. [(35, 119), (36, 119), (37, 119), (38, 119)]
+[OK] design\pixel\weapon-tiers\sprites\B\staff-silver.png  native 100x120 at 1x, 15 colours
+[OK] design\pixel\weapon-tiers\sprites\B\sword-bronze.png  native 100x120 at 1x, 10 colours
+[OK] design\pixel\weapon-tiers\sprites\B\sword-gold.png  native 100x120 at 1x, 12 colours
+[OK] design\pixel\weapon-tiers\sprites\B\sword-prismatic.png  native 100x120 at 1x, 25 colours
+[OK] design\pixel\weapon-tiers\sprites\B\sword-silver.png  native 100x120 at 1x, 10 colours
+[OK] design\pixel\weapon-tiers\sprites\C\bow-bronze.png  native 100x120 at 1x, 13 colours
+[WARN] design\pixel\weapon-tiers\sprites\C\bow-gold.png  native 100x120 at 1x, 13 colours
+   warn:  46 edge pixels not ink or light rim (outline gaps?), e.g. [(43, 29), (42, 30), (41, 31), (42, 32), (40, 33), (42, 33)]
+[WARN] design\pixel\weapon-tiers\sprites\C\bow-prismatic.png  native 100x120 at 1x, 21 colours
+   warn:  151 edge pixels not ink or light rim (outline gaps?), e.g. [(47, 18), (48, 19), (48, 20), (49, 21), (50, 22), (40, 23)]
+[OK] design\pixel\weapon-tiers\sprites\C\bow-silver.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\C\maul-bronze.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\C\maul-gold.png  native 100x120 at 1x, 12 colours
+[WARN] design\pixel\weapon-tiers\sprites\C\maul-prismatic.png  native 100x120 at 1x, 19 colours
+   warn:  89 edge pixels not ink or light rim (outline gaps?), e.g. [(49, 16), (50, 17), (50, 18), (51, 19), (51, 20), (52, 21)]
+[OK] design\pixel\weapon-tiers\sprites\C\maul-silver.png  native 100x120 at 1x, 11 colours
+[OK] design\pixel\weapon-tiers\sprites\C\staff-bronze.png  native 100x120 at 1x, 14 colours
+[WARN] design\pixel\weapon-tiers\sprites\C\staff-gold.png  native 100x120 at 1x, 13 colours
+   warn:  20 edge pixels not ink or light rim (outline gaps?), e.g. [(60, 10), (65, 10), (58, 11), (59, 11), (66, 11), (67, 12)]
+[WARN] design\pixel\weapon-tiers\sprites\C\staff-prismatic.png  native 100x120 at 1x, 21 colours
+   warn:  98 edge pixels not ink or light rim (outline gaps?), e.g. [(61, 7), (62, 7), (63, 7), (64, 7), (65, 8), (66, 8)]
+[OK] design\pixel\weapon-tiers\sprites\C\staff-silver.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\C\sword-bronze.png  native 100x120 at 1x, 10 colours
+[WARN] design\pixel\weapon-tiers\sprites\C\sword-gold.png  native 100x120 at 1x, 13 colours
+   warn:  167 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 6), (79, 7), (81, 7), (80, 8), (82, 8), (76, 9)]
+[WARN] design\pixel\weapon-tiers\sprites\C\sword-prismatic.png  native 100x120 at 1x, 21 colours
+   warn:  195 edge pixels not ink or light rim (outline gaps?), e.g. [(81, 4), (80, 5), (82, 5), (79, 6), (82, 6), (78, 7)]
+[WARN] design\pixel\weapon-tiers\sprites\C\sword-silver.png  native 100x120 at 1x, 10 colours
+   warn:  180 edge pixels not ink or light rim (outline gaps?), e.g. [(79, 13), (83, 13), (78, 14), (84, 14), (77, 15), (76, 16)]
+[OK] design\pixel\weapon-tiers\sprites\E\bow-bronze.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\E\bow-gold.png  native 100x120 at 1x, 21 colours
+[OK] design\pixel\weapon-tiers\sprites\E\bow-prismatic.png  native 100x120 at 1x, 32 colours
+[OK] design\pixel\weapon-tiers\sprites\E\bow-silver.png  native 100x120 at 1x, 16 colours
+[OK] design\pixel\weapon-tiers\sprites\E\maul-bronze.png  native 100x120 at 1x, 12 colours
+[OK] design\pixel\weapon-tiers\sprites\E\maul-gold.png  native 100x120 at 1x, 18 colours
+[OK] design\pixel\weapon-tiers\sprites\E\maul-prismatic.png  native 100x120 at 1x, 27 colours
+[OK] design\pixel\weapon-tiers\sprites\E\maul-silver.png  native 100x120 at 1x, 14 colours
+[OK] design\pixel\weapon-tiers\sprites\E\staff-bronze.png  native 100x120 at 1x, 14 colours
+[OK] design\pixel\weapon-tiers\sprites\E\staff-gold.png  native 100x120 at 1x, 19 colours
+[OK] design\pixel\weapon-tiers\sprites\E\staff-prismatic.png  native 100x120 at 1x, 27 colours
+[OK] design\pixel\weapon-tiers\sprites\E\staff-silver.png  native 100x120 at 1x, 17 colours
+[OK] design\pixel\weapon-tiers\sprites\E\sword-bronze.png  native 100x120 at 1x, 13 colours
+[OK] design\pixel\weapon-tiers\sprites\E\sword-gold.png  native 100x120 at 1x, 20 colours
+[OK] design\pixel\weapon-tiers\sprites\E\sword-prismatic.png  native 100x120 at 1x, 29 colours
+[OK] design\pixel\weapon-tiers\sprites\E\sword-silver.png  native 100x120 at 1x, 16 colours
+64 file(s), 0 with errors

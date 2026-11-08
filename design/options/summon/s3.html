@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Summon option 3: Summoning Circle</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* S3 Summoning Circle: one focus. A floor circle whose 90 runes are the pity count; crystals are spent by flying into it */
+.s3{--cy:#5de0e6;--cy2:#2aa6b3;--ink:#dff7f8}
+.s3 .mk-main{background:radial-gradient(60% 50% at 50% 66%,#0f3a42 0,#08181d 55%,#050d10 100%);color:var(--ink);font-family:'Barlow Semi Condensed',Outfit,sans-serif}
+.s3 .top{position:absolute;left:0;right:0;top:20px;display:flex;justify-content:center;gap:4px}
+.s3 .seg{display:flex;padding:4px;border-radius:999px;background:rgba(93,224,230,.08);box-shadow:inset 0 0 0 1px rgba(93,224,230,.3)}
+.s3 .seg button{border:0;background:none;padding:7px 22px;border-radius:999px;font:700 16px 'Barlow Semi Condensed';color:#9fcfd2;letter-spacing:.02em}
+.s3 .seg button[aria-pressed=true]{background:var(--cy);color:#04181b}
+.s3 .rates{position:absolute;left:24px;top:24px;font-weight:600;font-size:14px;color:#9fcfd2;border:0;background:none;display:flex;gap:6px;align-items:center}
+.s3 .rates u{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;box-shadow:inset 0 0 0 1px #9fcfd2;text-decoration:none;font-size:12px}
+.s3 .floor{position:absolute;left:50%;top:410px;width:700px;height:250px;translate:-50% 0}
+.s3 .plate{position:absolute;inset:34px 34px;border-radius:50%;background:radial-gradient(closest-side,rgba(93,224,230,.34),rgba(93,224,230,.07) 70%,transparent);box-shadow:inset 0 0 0 1px rgba(93,224,230,.5),0 0 40px rgba(93,224,230,.25)}
+.s3 .plate::after{content:'';position:absolute;inset:26px 70px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(93,224,230,.35)}
+.s3 .rune{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:2px;rotate:45deg;background:#123a40;box-shadow:inset 0 0 0 1px rgba(93,224,230,.4)}
+.s3 .rune.on{background:var(--cy);box-shadow:0 0 8px var(--cy)}
+.s3 .rune.ms{width:12px;height:12px;margin:-6px}
+.s3 .rune.crown{width:20px;height:20px;margin:-10px;background:#0b2a30;box-shadow:inset 0 0 0 2px #f6d57a}
+.s3 .hero{position:absolute;left:50%;top:150px;translate:-50% 0;text-align:center}
+.s3 .gem{position:relative;width:170px;height:170px;margin:0 auto;display:grid;place-items:center;animation:s3bob 4s ease-in-out infinite}
+@keyframes s3bob{50%{translate:0 -10px}}
+.s3 .gem img{filter:drop-shadow(0 0 22px rgba(93,224,230,.8))}
+.s3 .orbit{position:absolute;inset:-26px;border-radius:50%;box-shadow:0 0 0 1px rgba(93,224,230,.25);animation:s3o 12s linear infinite}
+@keyframes s3o{to{rotate:360deg}}
+.s3 .orbit img{position:absolute;left:50%;top:-10px;margin-left:-12px;filter:drop-shadow(0 0 8px var(--cy))}
+.s3 .count{position:absolute;left:50%;top:462px;translate:-50% 0;text-align:center;line-height:1}
+.s3 .count b{font:700 64px 'Barlow Semi Condensed';color:#fff;text-shadow:0 0 20px var(--cy)}
+.s3 .count span{display:block;font-weight:600;font-size:15px;color:#9fcfd2;margin-top:2px}
+.s3 .bar{position:absolute;left:0;right:0;bottom:26px;display:flex;justify-content:center;align-items:center;gap:22px}
+.s3 .cost{text-align:right;font-weight:600;font-size:14px;color:#9fcfd2;line-height:1.2}.s3 .cost b{font-size:22px;color:#fff;display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.s3 .go{border:0;padding:14px 56px;border-radius:12px;font:700 22px 'Barlow Semi Condensed';letter-spacing:.03em;color:#04181b;background:linear-gradient(180deg,#8bf0f4,#37b9c4);box-shadow:0 0 30px rgba(93,224,230,.55),inset 0 0 0 1.5px #fff8}
+.s3 .guar{font-weight:600;font-size:14px;color:#9fcfd2}
+.s3 .side{position:absolute;right:26px;top:120px;display:grid;gap:8px;width:150px;font-weight:600;font-size:13px;color:#9fcfd2}
+.s3 .side div{display:flex;justify-content:space-between;padding:5px 10px;border-radius:8px;background:rgba(93,224,230,.07)}
+.s3 .side b{color:var(--rc)}
+/* play */
+.s3 .fx{display:none;position:absolute;inset:0;z-index:8;pointer-events:none}
+.s3.play .fx{display:block}
+.s3 .beam{position:absolute;left:50%;top:0;bottom:250px;width:200px;translate:-50% 0;background:linear-gradient(90deg,transparent,rgba(160,250,255,.45) 50%,transparent);mask:linear-gradient(180deg,transparent,#000 40%);-webkit-mask:linear-gradient(180deg,transparent,#000 40%)}
+.s3 .flare{position:absolute;left:50%;top:410px;width:700px;height:250px;translate:-50% 0;border-radius:50%;background:radial-gradient(closest-side,rgba(180,255,255,.7),transparent 70%)}
+.s3 .fx .mk-card{position:absolute;left:50%;top:124px;translate:-50% 0;box-shadow:0 0 0 2px var(--cy),0 0 50px var(--cy)}
+.s3 .trail{position:absolute;width:30px;height:30px;filter:drop-shadow(0 0 10px var(--cy))}
+.s3 .trail::after{content:'';position:absolute;right:20px;top:14px;width:90px;height:3px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--cy));rotate:var(--ang)}
+.s3 .dim{position:absolute;inset:0;background:radial-gradient(60% 60% at 50% 55%,transparent,rgba(2,8,10,.7))}
+.s3 .hint{position:absolute;left:0;right:0;top:88px;text-align:center;font-weight:600;font-size:15px;color:#bff3f6}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script>
+<script>
+let runes='';const cx=350,cy=125,rx=312,ry=88;
+for(let i=0;i<90;i++){const t=2*Math.PI*i/90-Math.PI/2;const x=cx+rx*Math.cos(t),y=cy+ry*Math.sin(t);
+  const cls=['rune',i<70?'on':'',(i+1)%10===0?'ms':'',i===89?'crown':''].join(' ');runes+=`<i class="${cls}" style="left:${x}px;top:${y}px"></i>`}
+const trails=[[-60,40,15],[40,120,25],[150,180,32],[270,230,40],[400,260,46]].map(([x,y,a],i)=>`<div class="trail" style="left:${210+x}px;top:${60+y*.6}px;--ang:${a}deg">${MK.img('coin-drop-silver',30)}</div>`).join('');
+MK.shell('summon',`
+ <button class="rates"><u>i</u>Rates and pity</button>
+ <div class="top"><div class="seg" role="group" aria-label="Portal"><button aria-pressed="true">Card Portal</button><button aria-pressed="false">Wardrobe Gate</button></div></div>
+ <div class="side"><div><span>Common</span><b class="num">68.2%</b></div><div><span>Rare</span><b class="num">22.7%</b></div><div><span>Epic</span><b class="num">6.1%</b></div><div><span>Legendary</span><b class="num">2.3%</b></div><div><span>Mythic</span><b class="num">0.5%</b></div><div><span>Exotic</span><b class="num">0.2%</b></div></div>
+ <div class="floor"><div class="plate"></div>${runes}</div>
+ <div class="hero"><div class="gem"><div class="orbit">${MK.img('coin-drop-silver',24)}</div>${MK.img('boss-crystal_sentinel',160,172,'')}</div></div>
+ <div class="count"><b class="num">20</b><span>pulls to Legendary</span></div>
+ <div class="bar"><div class="cost"><b class="num">${MK.img('coin-drop-silver',24)}100</b>135 Summon Crystals</div>
+  <div class="seg" role="group" aria-label="Pulls"><button aria-pressed="false">×1</button><button aria-pressed="true">×10</button></div>
+  <button class="go">Summon</button><div class="guar">Rare or better<br>in every ×10</div></div>
+ <div class="fx"><div class="dim"></div><div class="beam"></div><div class="flare"></div>${trails}
+  <div class="rc-epic">${MK.card('storm_duelist',{k:.95,back:true})}</div><div class="hint">Crystals sink into the circle, the beam takes the colour of the orb</div></div>
+`,{cls:'s3',play:'Play the spend'});
+</script></body></html>

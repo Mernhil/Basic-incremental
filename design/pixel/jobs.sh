@@ -1,0 +1,3 @@
+#!/bin/bash
+# usage: jobs.sh <dir> "name id" "name id" ...
+d=$1; shift; for p in "$@"; do set -- $p; "$(dirname "$0")/fetch.sh" "$d" $1 $2; done

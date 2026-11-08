@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Shop option 3: Ascension Hall</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* H3 Ascension Hall: the prismatic gate is the hero, Starlight upgrades are pillars that fill like a gauge, shards live in a side drawer */
+.h3 .mk-main{background:radial-gradient(80% 60% at 50% 22%,#33205f 0,#140f2c 55%,#0a0815 100%);color:#efe9ff}
+.h3 .mk-main::before{content:'';position:absolute;inset:0;background:radial-gradient(1.5px 1.5px at 10% 14%,#fff9,transparent),radial-gradient(2px 2px at 30% 30%,#ffd9f5,transparent),radial-gradient(1.5px 1.5px at 62% 10%,#fff9,transparent),radial-gradient(2px 2px at 88% 26%,#cfe3ff,transparent),radial-gradient(1.5px 1.5px at 47% 6%,#fff8,transparent)}
+.h3 .hero{position:absolute;left:0;right:0;top:0;height:330px;display:grid;grid-template-columns:1fr 300px 1fr;align-items:center;padding:0 34px}
+.h3 .gate{position:relative;width:260px;height:300px;justify-self:center}
+.h3 .gate .ar{position:absolute;inset:0;border-radius:130px 130px 6px 6px;background:conic-gradient(from 0deg,#ff6fc8,#ffd76a,#6fe3ff,#a77bff,#ff6fc8);animation:h3s 12s linear infinite;mask:radial-gradient(closest-side at 50% 130px,transparent 76%,#000 79%,#000 100%) ,linear-gradient(#000,#000);mask-composite:intersect}
+.h3 .gate .in{position:absolute;left:30px;right:30px;top:30px;bottom:0;border-radius:100px 100px 0 0;background:radial-gradient(circle at 50% 55%,#fff 0,#e8d8ff 12%,#7a5cff 45%,#160f36 85%);box-shadow:inset 0 0 40px rgba(0,0,0,.6),0 0 70px rgba(167,123,255,.6)}
+.h3 .gate img{position:absolute;left:50%;top:132px;translate:-50% 0;z-index:2;filter:drop-shadow(0 0 14px #fff)}
+@keyframes h3s{to{filter:hue-rotate(360deg)}}
+.h3 .left h1{margin:0;font:800 34px/1.05 Outfit}.h3 .left p{margin:8px 0 0;color:#cfc4ee;max-width:300px;font-size:13.5px}
+.h3 .gain{margin-top:14px;display:flex;align-items:baseline;gap:8px}.h3 .gain b{font:800 44px/1 Outfit;color:#ffe08a;text-shadow:0 0 22px rgba(255,208,100,.55)}.h3 .gain span{font-size:14px;color:#e6dcff;font-weight:700}
+.h3 .prog{margin-top:8px;width:290px;height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden}.h3 .prog i{display:block;height:100%;width:78%;background:linear-gradient(90deg,#ff8fd0,#ffe08a,#8fe3ff)}
+.h3 .prog + small{display:block;font-size:12px;color:#cfc4ee;margin-top:4px}
+.h3 .asc{margin-top:14px;border:0;border-radius:12px;padding:13px 40px;font-weight:800;font-size:18px;color:#1a1030;background:linear-gradient(90deg,#ffd0f0,#ffe9a8,#b8e8ff,#d3bfff);box-shadow:0 0 28px rgba(255,208,240,.5)}
+.h3 .right{justify-self:end;width:300px;display:grid;gap:10px;font-size:13px}
+.h3 .box{padding:10px 14px;border-radius:12px;background:rgba(10,8,28,.55);box-shadow:inset 0 0 0 1px rgba(207,196,238,.3)}
+.h3 .box h4{margin:0 0 5px;font-size:13px;color:#ffe08a}.h3 .box div{display:flex;gap:7px;align-items:center;line-height:1.5;color:#e6dcff}
+.h3 .box div::before{content:'';width:7px;height:7px;border-radius:2px;background:#8fe3a0;flex:none}.h3 .box.r div::before{background:#ff8f8f}
+.h3 .hall{position:absolute;left:0;right:0;top:340px;bottom:0;padding:0 34px;background:linear-gradient(180deg,transparent,rgba(10,8,21,.7))}
+.h3 .hall h2{margin:0 0 6px;font-size:18px;display:flex;justify-content:space-between;align-items:baseline}.h3 .hall h2 small{font-size:12.5px;font-weight:600;color:#cfc4ee}
+.h3 .pil{display:grid;grid-template-columns:repeat(7,1fr);gap:12px;height:310px}
+.h3 .p{position:relative;display:grid;grid-template-rows:1fr auto;gap:8px;text-align:center}
+.h3 .col{position:relative;border-radius:12px 12px 6px 6px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(207,196,238,.28);overflow:hidden;display:grid;align-content:end}
+.h3 .col .fill{position:absolute;left:0;right:0;bottom:0;height:var(--f);min-height:6px;background:linear-gradient(0deg,#b8841f,#ffe08a);box-shadow:0 0 18px rgba(255,208,100,.6)}
+.h3 .col.max .fill{background:linear-gradient(0deg,#ff8fd0,#ffe08a,#8fe3ff)}
+.h3 .col .lv{position:absolute;left:0;right:0;top:8px;font:800 20px Outfit;text-shadow:0 1px 6px #000}.h3 .col .lv small{display:block;font:600 11px Outfit;color:#cfc4ee}
+
+.h3 .p b{font-size:13.5px;line-height:1.1;display:block;min-height:30px}.h3 .p span{display:block;font-size:11.5px;color:#cfc4ee;min-height:28px;line-height:1.2}
+.h3 .p button{border:0;border-radius:9px;padding:7px 0;font-weight:800;font-size:14px;background:#ffe08a;color:#1a1030;display:flex;gap:5px;align-items:center;justify-content:center}
+.h3 .p button.no{background:rgba(255,255,255,.12);color:#9a90b8}
+.h3 .tab{position:absolute;right:0;top:130px;z-index:6;padding:14px 10px 14px 12px;border-radius:12px 0 0 12px;background:#161b26;box-shadow:inset 0 0 0 1.5px rgba(217,179,90,.6);display:grid;gap:6px;justify-items:center;font-weight:800;font-size:12px;writing-mode:horizontal-tb;color:#e9eef7}
+.h3 .tab b{color:#ffe08a;font-size:18px}
+.h3 .drawer{display:none;position:absolute;right:0;top:0;bottom:0;width:430px;z-index:8;background:#161b26;box-shadow:-20px 0 40px rgba(0,0,0,.6),inset 1.5px 0 0 rgba(217,179,90,.6);padding:18px;color:#e9eef7}
+.h3.play .drawer{display:block;animation:h3d .35s ease-out}.h3.play .tab{display:none}
+@keyframes h3d{from{translate:100% 0}}
+.h3 .drawer h3{margin:0 0 10px;font-size:20px;display:flex;justify-content:space-between}.h3 .drawer h3 b{color:#ffe08a}
+.h3 .dg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.h3 .dg .t{text-align:center;font-size:11.5px;font-weight:700}.h3 .dg .t>div{display:flex;justify-content:center;height:112px;overflow:hidden;border-radius:8px}
+.h3 .dg .t button{margin-top:5px;border:0;border-radius:999px;padding:3px 10px;background:#d9b35a;color:#14172a;font-weight:800;display:inline-flex;gap:4px;align-items:center}
+.h3 .dv{position:absolute;inset:0;z-index:7;display:none;background:rgba(5,3,14,.5)}.h3.play .dv{display:block}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script><script src="../_shared/shopdata.js"></script>
+<script>
+const pil=SHOP.ups.map(u=>{const f=Math.max(.04,u.lv/u.max);const max=u.lv>=u.max;return `<div class="p"><div class="col ${max?'max':''}" style="--f:${f*100}%"><div class="lv num">${u.lv}<small>of ${u.max}</small></div><i class="fill"></i></div>
+ <b>${u.n}</b><span>${u.d}</span><button class="${max?'no':(SHOP.starlight<u.p?'no':'')}">${max?'Max':`${MK.img('cos-starlight-a',16)} ${u.p}`}</button></div>`}).join('');
+const dg=SHOP.copies.slice(6,12).map(([id,p])=>`<div class="t"><div>${MK.card(id,{k:.45})}</div>${MK.CARDS[id][0]}<br><button>${MK.img('coin-hexagon-prism',14)}${p}</button></div>`).join('');
+MK.shell('shop',`
+ <div class="hero"><div class="left"><h1>Ascension ${SHOP.ascNum}</h1><p>Start the run over and keep what matters. Starlight is yours for good.</p>
+  <div class="gain"><b class="num">+${SHOP.ascGain}</b><span>Starlight if you ascend now</span></div><div class="prog"><i></i></div><small>Next Starlight in about 12 minutes</small><button class="asc">Ascend</button></div>
+  <div class="gate"><div class="ar"></div><div class="in"></div>${MK.img('cos-starlight-a',96)}</div>
+  <div class="right"><div class="box"><h4>You keep</h4>${SHOP.kept.map(x=>`<div>${x}</div>`).join('')}</div><div class="box r"><h4>Resets</h4>${SHOP.reset.map(x=>`<div>${x}</div>`).join('')}</div></div></div>
+ <section class="hall"><h2>Starlight shop <small>You have 23 Starlight. Levels stay through every ascension.</small></h2><div class="pil">${pil}</div></section>
+ <button class="tab"><span>${MK.img('coin-hexagon-prism',26)}</span>Shard shop<b class="num">87</b></button>
+ <div class="dv"></div><aside class="drawer" aria-label="Shard shop"><h3>Shard shop <b class="num">87 shards</b></h3><div class="dg">${dg}</div></aside>
+`,{cls:'h3',play:'Open the shard drawer'});
+</script></body></html>

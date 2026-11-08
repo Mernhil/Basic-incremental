@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Cards on screen: 5 options</title>
+<link rel="stylesheet" href="assets/base.css">
+<style>
+.statebar { max-width: 1280px; margin: 10px auto 0; display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--chrome-dim); }
+.statebar button { border: 1px solid var(--chrome-line); background: var(--chrome2); color: var(--chrome-ink); border-radius: 7px; padding: 5px 12px; font-weight: 600; cursor: pointer; }
+.statebar button[aria-pressed='true'] { border-color: var(--chrome-acc); color: var(--chrome-acc); }
+
+/* ---------- shared bits ---------- */
+.mock .ptabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.mock .ptab { padding: 8px 16px; border-radius: 9px; background: var(--bi-frame-bg); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); color: var(--bi-frame-ink-muted); font-weight: 600; }
+.mock .ptab.on { color: var(--bi-frame-ink); box-shadow: inset 0 0 0 2px var(--bi-chrome-accent); }
+.mock .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 12px; }
+.mock .fchip { padding: 4px 11px; border-radius: 999px; background: #ffffff12; box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 13px; font-weight: 600; color: var(--bi-frame-ink-muted); }
+.mock .fchip.on { background: var(--bi-chrome-accent); color: #161b26; box-shadow: none; }
+.mock .sortsel { margin-left: auto; font-size: 13px; color: var(--bi-frame-ink-muted); }
+.mock .sortsel b { color: var(--bi-frame-ink); padding: 3px 10px; border-radius: 6px; background: #00000055; box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+.mock .cell { position: relative; cursor: pointer; border: 0; background: none; padding: 0; text-align: left; color: inherit; font: inherit; }
+.mock .cell:focus-visible { outline: 2px solid var(--bi-chrome-accent); outline-offset: 6px; }
+.mock .sel::after { content: ''; position: absolute; inset: -5px; border: 2px solid var(--bi-chrome-accent); pointer-events: none; box-shadow: 0 0 14px rgba(217, 179, 90, 0.55); }
+.mock .mainpill { position: absolute; z-index: 6; left: 6px; top: -10px; padding: 0 9px; border-radius: 999px; background: var(--bi-chrome-accent); color: #161b26; font-size: 11.5px; font-weight: 800; line-height: 18px; }
+.mock .detail h3 { margin: 0; font-size: 20px; font-weight: 800; }
+.mock .detail .sub { font-size: 13px; color: var(--bi-frame-ink-muted); margin: 1px 0 10px; }
+.mock .lvl { display: grid; gap: 4px; font-size: 13px; margin-bottom: 8px; }
+.mock .lvl span { display: flex; justify-content: space-between; }
+.mock .dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; padding: 10px 12px; border-radius: 9px; background: #00000055; box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 13.5px; margin: 10px 0; }
+.mock .dl dt { color: var(--bi-frame-ink-muted); }
+.mock .dl dd { margin: 0; font-weight: 700; text-align: right; }
+.mock .next h4 { margin: 0 0 6px; padding: 6px 10px; border-radius: 8px; background: var(--bi-frame-title-bg); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); font-size: 14px; }
+.mock .next ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; font-size: 13px; }
+.mock .next li { display: flex; gap: 8px; }
+.mock .next li i { font-style: normal; width: 14px; font-weight: 800; }
+.mock .next li.ok i { color: var(--good); } .mock .next li.no i { color: var(--bad); }
+.mock .next li span:last-child { margin-left: auto; font-variant-numeric: tabular-nums; }
+.mock .next p { margin: 6px 0; font-size: 12px; color: var(--bi-frame-ink-muted); }
+.mock .btns { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.mock .btns .buy { padding: 8px 14px; }
+.mock .btns .buy.sec { background: #ffffff14; color: var(--bi-frame-ink); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+.mock .pips { display: inline-flex; gap: 1px; }
+.mock .pips i { width: 5px; height: 5px; background: #ffffff33; display: block; }
+.mock .pips i.on { background: #f4c542; }
+.mock .closex { border: 0; background: #ffffff14; color: var(--bi-frame-ink); width: 30px; height: 30px; border-radius: 8px; font-size: 16px; cursor: pointer; margin-left: auto; }
+
+/* ================= A: Full cards at 1x ================= */
+#mA .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 376px; gap: 14px; align-items: start; }
+#mA .wrap > * { min-width: 0; }
+#mA .grid { display: grid; grid-template-columns: repeat(4, 132px); gap: 44px 20px; justify-content: center; padding: 44px 0 20px; }
+#mA .detailcard { display: grid; place-items: center; padding: 46px 0 14px; }
+
+/* ================= B: Half-grid mini + name strip, modal 3x ================= */
+#mB .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 34px 8px; padding: 26px 0 10px; }
+#mB .cellB { display: grid; justify-items: center; gap: 5px; position: relative; }
+.mini { position: relative; width: 66px; height: 93px; flex: none; }
+.mini .body { position: absolute; inset: 0; background: var(--body); }
+.mini .win { position: absolute; left: 4px; top: 5px; width: 58px; height: 66px; background: #0d121b; box-shadow: inset 0 0 0 1px var(--edge); }
+.mini .item { position: absolute; left: 8px; top: 8px; width: 50px; height: 60px; image-rendering: pixelated; }
+.mini .pips { position: absolute; left: 4px; right: 4px; top: 76px; justify-content: center; gap: 2px; }
+.mini .pips i { width: 7px; height: 7px; }
+.mini .tl { position: absolute; left: 4px; right: 4px; top: 85px; text-align: center; font-size: 9.5px; font-weight: 700; line-height: 1; color: #e9eef7; opacity: 0.85; }
+.mini .frame { position: absolute; left: -13px; top: -19px; width: 92px; height: 119px; image-rendering: pixelated; pointer-events: none; }
+.mini.locked .item { filter: brightness(0.18) saturate(0); } .mini.locked .frame { filter: saturate(0) brightness(0.55); } .mini.locked .body { background: #11151c; }
+#mB .nm { font-size: 12.5px; font-weight: 700; text-align: center; line-height: 1.15; min-height: 29px; color: var(--bi-frame-ink); }
+#mB .nm small { display: block; font-weight: 600; color: var(--bi-frame-ink-muted); font-size: 11.5px; margin-top: 2px; }
+#mB .tip { position: absolute; z-index: 25; left: 50%; top: 40px; width: 230px; transform: translateX(-50%); padding: 10px 12px; border-radius: 10px; background: #161b26; box-shadow: inset 0 0 0 1px var(--bi-chrome-line), 0 8px 22px rgba(0, 0, 0, 0.5); font-size: 12.5px; display: none; text-align: left; pointer-events: none; }
+#mB .tip b { display: block; font-size: 14px; margin-bottom: 3px; }
+#mB .tip div { color: var(--bi-frame-ink-muted); } #mB .tip div span { color: var(--bi-frame-ink); font-weight: 600; }
+#mB .cellB:hover .tip, #mB .cellB.pin .tip { display: block; }
+.scrim { position: absolute; inset: 64px 0 0 0; background: rgba(8, 10, 16, 0.62); z-index: 40; display: grid; place-items: center; }
+#mB .modal { width: 820px; padding: 18px 22px 22px; display: grid; grid-template-columns: 420px 1fr; gap: 20px; align-items: start; box-shadow: inset 0 0 0 1px var(--bi-frame-line), 0 20px 60px rgba(0, 0, 0, 0.6); }
+#mB .modal .cc { padding: 44px 0 0 0; display: grid; justify-items: center; }
+#mB .modal .head { display: flex; align-items: flex-start; gap: 8px; }
+
+/* ================= C: List rows, full page detail 3x ================= */
+#mC .list { display: grid; gap: 6px; }
+#mC .rowC { display: grid; grid-template-columns: 62px 190px 168px 112px 1fr 56px; gap: 14px; align-items: center; padding: 6px 12px 6px 6px; border-radius: 10px; background: rgba(0, 0, 0, 0.26); box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); min-height: 72px; color: var(--bi-frame-ink); }
+#mC .rowC.sel { box-shadow: inset 0 0 0 2px var(--bi-chrome-accent), 0 0 12px rgba(217, 179, 90, 0.3); }
+#mC .rowC.lk { opacity: 0.55; }
+#mC .thumb { width: 54px; height: 64px; background: var(--body); border: 2px solid var(--tier); display: grid; place-items: center; position: relative; }
+#mC .thumb::before { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px #0008; }
+#mC .thumb img { width: 50px; height: 60px; image-rendering: pixelated; margin: -2px; }
+#mC .thumb.locked img { filter: brightness(0.18) saturate(0); }
+#mC .nmc { display: grid; gap: 2px; min-width: 0; }
+#mC .nmc b { font-size: 15.5px; font-weight: 800; }
+#mC .nmc b .chip { color: #1a2a1a; font-size: 11px; }
+#mC .nmc span { font-size: 12.5px; color: var(--bi-frame-ink-muted); }
+#mC .lvc { display: grid; gap: 3px; font-size: 13px; } #mC .lvc span { display: flex; justify-content: space-between; }
+#mC .trc { font-size: 13px; font-weight: 700; display: grid; gap: 3px; }
+#mC .efc { font-size: 12.5px; color: var(--bi-frame-ink-muted); display: grid; gap: 2px; }
+#mC .efc span b { color: var(--bi-frame-ink); font-weight: 700; }
+#mC .cstc { text-align: right; font-weight: 800; font-size: 16px; } #mC .cstc small { display: block; font-size: 11px; font-weight: 600; color: var(--bi-frame-ink-muted); }
+#mC .back { display: inline-flex; margin-bottom: 10px; padding: 6px 12px; border-radius: 8px; background: var(--bi-frame-bg); color: var(--bi-frame-ink); font-weight: 700; box-shadow: inset 0 0 0 1px var(--bi-frame-title-line); }
+#mC .page { display: grid; grid-template-columns: 450px 1fr; gap: 22px; align-items: start; }
+#mC .page .cc { padding: 44px 0 10px; display: grid; justify-items: center; }
+.tierc-bronze { --tier: #c0803c; } .tierc-silver { --tier: #cdd5e2; } .tierc-gold { --tier: #f0c040; } .tierc-prismatic { --tier: #c9b6ff; }
+
+/* ================= D: Window cards, drawer 2x ================= */
+#mD .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 20px 8px; padding: 6px 0 10px; }
+#mD .cellD { display: grid; justify-items: center; gap: 5px; position: relative; }
+#mD .wc { width: 116px; height: 132px; background: var(--body); border: 2px solid var(--tier); position: relative; display: grid; place-items: center; }
+#mD .wc::before { content: ''; position: absolute; inset: 0; box-shadow: inset 0 0 0 1px #000a; z-index: 1; pointer-events: none; }
+#mD .wc .in { width: 108px; height: 124px; background: #0d121b; display: grid; place-items: center; box-shadow: inset 0 0 0 1px var(--edge); }
+#mD .wc img { width: 100px; height: 120px; image-rendering: pixelated; }
+#mD .wc.locked img { filter: brightness(0.18) saturate(0); }
+#mD .wc .pips { position: absolute; right: 6px; top: 6px; z-index: 2; background: #000a; padding: 2px; }
+#mD .nmD { font-size: 13px; font-weight: 700; text-align: center; line-height: 1.15; color: var(--bi-frame-ink); }
+#mD .nmD small { display: block; font-size: 11.5px; font-weight: 600; color: var(--bi-frame-ink-muted); }
+#mD .tip { display: none; }
+#mD .sh { min-height: 1090px; }
+#mD .drawer { position: absolute; top: 64px; right: 0; bottom: 0; width: 440px; z-index: 40; background: var(--bi-frame-bg); box-shadow: -2px 0 0 var(--bi-chrome-line), -16px 0 40px rgba(0, 0, 0, 0.45); padding: 14px 18px 18px; overflow: hidden; display: grid; grid-template-columns: 290px 1fr; column-gap: 12px; align-content: start; color: var(--bi-frame-ink); }
+#mD .drawer .dhead { grid-column: 1 / -1; display: flex; align-items: center; margin-bottom: 4px; }
+#mD .drawer .cc { padding: 44px 0 6px; grid-column: 1 / -1; display: grid; justify-items: center; }
+#mD .drawer .txt { grid-column: 1 / -1; }
+#mD .drawer .dl { margin: 6px 0; padding: 8px 10px; gap: 4px 12px; font-size: 13px; }
+
+/* ================= E: 2x showcase, spotlight 3x ================= */
+#mE .grid { display: grid; grid-template-columns: repeat(3, 264px); gap: 50px 70px; justify-content: center; padding: 50px 0 20px; }
+#mE .cellE { display: grid; gap: 10px; }
+#mE .cap { display: grid; gap: 3px; font-size: 14px; }
+#mE .cap b { font-size: 17px; font-weight: 800; }
+#mE .cap span { color: var(--bi-frame-ink-muted); }
+#mE .cap em { font-style: normal; color: var(--bi-frame-ink); font-weight: 600; }
+#mE .spot { display: grid; grid-template-columns: 470px 1fr; gap: 20px; align-items: start; margin-bottom: 14px; }
+#mE .spot .cc { padding: 46px 0 6px; display: grid; justify-items: center; }
+#mE .spot .close { justify-self: end; }
+#mE .shelfnote { font-size: 13px; color: var(--bi-frame-ink-muted); margin: 0 0 10px; }
+</style></head>
+<body>
+<header class="page-head">
+  <h1>Cards on screen: 5 options</h1>
+  <p>DESIGN.md section 11 (Sharp cards) and section 12 (Clean pixels): the collection gets its own compact card, the detail card gets a size, and card text is real text. The card is one 132 x 186 pixel grid and is only ever drawn at whole scales (1x, 2x, 3x) with nearest-neighbour; the frame, the item and the body are the real baked sprites and rarity colours, and the card text is the real text of the 12 beta cards (cards.json). The collection state (tiers, stars, levels) is invented. Click a card to select or open it.</p>
+</header>
+<section class="picks" aria-label="How to pick">
+  <h2>Pick hint</h2>
+  <ul>
+    <li><b>A Full card, 1x</b>Pick it if the card is the thing and you want it the same everywhere, only bigger when there is room.</li>
+    <li><b>B Half-grid mini</b>Pick it if you want the whole collection at a glance and a big reveal when you open a card.</li>
+    <li><b>C List rows</b>Pick it if you manage the collection (levels, effects, cost) more than you admire it.</li>
+    <li><b>D Window card</b>Pick it if you want a fast item-first grid and the full card kept for the detail.</li>
+    <li><b>E 2x showcase</b>Pick it if you want the card to be the showpiece on a big screen and text to be roomy.</li>
+  </ul>
+</section>
+<div class="tabs" role="tablist" aria-label="Options">
+  <button role="tab" aria-selected="true" data-t="A">A Full card, 1x</button>
+  <button role="tab" aria-selected="false" data-t="B">B Half-grid mini</button>
+  <button role="tab" aria-selected="false" data-t="C">C List rows</button>
+  <button role="tab" aria-selected="false" data-t="D">D Window card</button>
+  <button role="tab" aria-selected="false" data-t="E">E 2x showcase</button>
+</div>
+<div id="captions"></div>
+<div class="statebar" id="statebar"></div>
+<div class="mock" id="mA"></div>
+<div class="mock" id="mB" hidden></div>
+<div class="mock" id="mC" hidden></div>
+<div class="mock" id="mD" hidden></div>
+<div class="mock" id="mE" hidden></div>
+
+<script src="assets/lib.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { fmt, CARDS, cardBy, card, shell, SP, TIERN, RARN, JOBN } = BI;
+  const STILL = /[?&]still/.test(location.search);
+  const st = { sel: 'dawnblade_regent', open: { B: true, C: false, D: true, E: true }, pin: null };
+  let visible = 'A';
+  const ORDER = { legendary: 0, mythic: 1, epic: 2, exotic: 3, rare: 4, common: 5, void: 6 };
+  const sorted = CARDS.slice().sort((a, b) => (a.locked ? 1 : 0) - (b.locked ? 1 : 0) || ORDER[a.rarity] - ORDER[b.rarity] || a.name.localeCompare(b.name));
+  const found = CARDS.filter((c) => !c.locked).length;
+  const GEM = { logging: ['Oak Gem', 'Ironbark Gem', 'Moonwillow Gem'], mining: ['Copper Gem', 'Iron Gem', 'Grotto Gem'], fighting: ['Oak Gem', 'Ironbark Gem', 'Moonwillow Gem'] };
+  const CORE = { bronze: 'Moss Core', silver: 'Cinder Core', gold: 'Frost Core', prismatic: 'Frost Core' };
+  const CORES = { bronze: [1, 2, 3, 5, 15], silver: [1, 2, 3, 4, 12], gold: [1, 1, 2, 2, 6], prismatic: [33, 39, 46, 55, 165] };
+  const GEMS = { bronze: [600, 1200, 1800, 3000, 9000], silver: [1200, 2400, 3600, 4800, 14400], gold: [2400, 2400, 4800, 4800, 14400], prismatic: [10000, 12000, 14000, 17000, 50000] };
+  const TIERIDX = ['bronze', 'silver', 'gold', 'prismatic'];
+
+  const CAPTIONS = {
+    A: ['The same card as everywhere else, at 1x (132 x 186), four across; the grid reflows. Text is 11 px real text on the plates.', 'A side panel on the same page: the card at 2x (264 x 372) with every number and the star-up checklist beside the grid.', 'On the card: level, cost, tier and stars.', 'Medium: 12 cards in three rows of four, nothing hidden.', 'Whole-number steps: 1x here, 2x in the panel; a 1080p window grows the grid to 2x.'],
+    B: ['A purpose-made mini on the half grid (66 x 93, item at 50 x 60) with a real-text name strip under it. Illustrative: a final mini needs its own pixel-art bake.', 'A modal: the card at 3x (396 x 558) beside the text. The grid stays put behind it.', 'Only on hover or focus: a small tooltip with name, level, main and support. The mini shows the star pips.', 'High: 12 cards in two rows of six, room for 24 more.', 'Text is 12.5 px under the card, so it stays readable even though the art is half size.'],
+    C: ['One row per card: a thumbnail, the name and job, a level bar, tier and stars, the main and support effect in words, the cost. No card art until you open one.', 'A full page: back link, the card at 3x on the left, everything else on the right.', 'In the row columns, all as real text, including both effects.', 'Highest for reading: 12 rows of 72 px, two dozen would scroll.', 'The thumbnail is the item at half scale in a tier-coloured border, the only art on the row.'],
+    D: ['A "window card": the item at 1x on its rarity colour in a flat tier-coloured border, name under it. No frame sprite in the grid; the frame is for the detail.', 'A drawer sliding over the right of the grid: the full card at 2x with the text below.', 'On the tile: star pips and name; level and effect in a line under it.', 'High: seven across, two rows.', 'The art is 100 x 120 at 1x, never shrunk; the grid is just the item plates.'],
+    E: ['The card as the showpiece: 2x (264 x 372), three across, real text beneath with the level, cost and both effects. Cards on the face show only name, item, tier and stars.', 'A spotlight band above the grid: the card at 3x with all the text beside it; the grid slides down.', 'Under each card as text, not on the face.', 'Low: four rows, so the page scrolls (the screenshot is long).', 'At 2x everything is crisp and the text is 16 px; it needs about 1000 px of content width.'],
+  };
+  const LABELS = ['Compact card', 'Detail card', 'Stats', 'Density', 'Scale and text'];
+  const TRADE = {
+    A: 'Trade-off: simplest and most consistent, and every stat is visible, but 11 px text on the card is small and only twelve cards fit per screen.',
+    B: 'Trade-off: the best overview and the biggest reveal, but the mini hides the stats until hover and its half-size art needs a new bake.',
+    C: 'Trade-off: the best for comparing and the most readable, but it drops the card from the collection and the page is plain.',
+    D: 'Trade-off: item-first and quick to scan with no new art, but the grid is not the card any more, so the tier frame appears only on open.',
+    E: 'Trade-off: the most beautiful and the most readable on a big screen, but only 6 cards fit at once and a small window cannot show it.',
+  };
+
+  /* ---------- text pieces ---------- */
+  const pips = (c) => '<span class="pips" aria-label="' + c.stars + ' of 6 stars">' + [1, 2, 3, 4, 5, 6].map((i) => '<i' + (i <= c.stars ? ' class="on"' : '') + '></i>').join('') + '</span>';
+  function nextStar(c) {
+    if (c.locked) return null;
+    const ti = TIERIDX.indexOf(c.tier), i = c.stars - 1;
+    const share = c.job === 'fighting' ? 0.6 : 1;
+    if (c.stars >= 6) {
+      const nt = TIERIDX[ti + 1];
+      return { title: nt ? 'Tier-up to ' + TIERN[nt] + ' ★1' : 'Top tier reached', reqs: [] };
+    }
+    const gem = GEM[c.job][Math.min(ti, 2)];
+    const needGem = Math.round(GEMS[c.tier][i] * share), needCore = CORES[c.tier][i];
+    const haveGem = c.id === 'dawnblade_regent' ? 1240 : Math.round(needGem * (0.4 + ((c.lvl * 7) % 10) / 12));
+    const haveCore = c.id === 'dawnblade_regent' ? 3 : ((c.lvl * 3) % 4);
+    return {
+      title: 'Next star: ' + TIERN[c.tier] + ' ★' + (c.stars + 1),
+      reqs: [
+        { t: 'Duplicate', have: Math.min(c.dupes, 1), need: 1 },
+        { t: 'At its level cap', have: 'Lv ' + c.lvl, need: 'Lv ' + c.cap, ok: c.lvl >= c.cap },
+        { t: CORE[c.tier], have: haveCore, need: needCore },
+        { t: gem, have: haveGem, need: needGem },
+      ],
+      note: 'Adds a little power and raises the level cap to ' + BI.CAPS[c.tier][c.stars] + '.',
+    };
+  }
+  function detailText(c, o) {
+    o = o || {};
+    if (c.locked) return '<div class="detail"><h3>???</h3><div class="sub">' + RARN[c.rarity] + ' · ' + JOBN[c.job] + '</div><p class="muted">Not found yet. Pull it from the Card Portal or find it as a boss drop.</p></div>';
+    const ns = nextStar(c);
+    const lv = Math.round((c.lvl / c.cap) * 100);
+    const reqs = ns.reqs.map((r) => {
+      const ok = r.ok !== undefined ? r.ok : r.have >= r.need;
+      return '<li class="' + (ok ? 'ok' : 'no') + '"><i>' + (ok ? '✓' : '✗') + '</i><span>' + r.t + '</span><span>' + (typeof r.have === 'number' ? fmt(r.have) + ' of ' + fmt(r.need) : r.have + ' / ' + r.need) + '</span></li>';
+    }).join('');
+    const ready = ns.reqs.length && ns.reqs.every((r) => (r.ok !== undefined ? r.ok : r.have >= r.need));
+    return '<div class="detail"><h3>' + c.name + '</h3><div class="sub">' + RARN[c.rarity] + ' · ' + JOBN[c.job] + ' · ' + c.element + ' · ' + c.weapon + '</div>' +
+      '<div class="lvl"><span><b>Level ' + c.lvl + '/' + c.cap + '</b><span class="muted">' + (c.cap - c.lvl) + ' levels to the cap</span></span><div class="bar" style="--p:' + lv + '"><i></i></div></div>' +
+      (c.isMain ? '<span class="chip">Main of ' + JOBN[c.job] + '</span>' : '') +
+      '<dl class="dl"><dt>Main ability</dt><dd>' + c.main + '</dd><dt>Support effect</dt><dd>' + c.support + '</dd><dt>Cost</dt><dd>' + c.cost + '</dd><dt>Duplicates</dt><dd>' + c.dupes + '</dd></dl>' +
+      '<div class="next"><h4>' + ns.title + '</h4>' + (ns.reqs.length ? '<ul>' + reqs + '</ul><p>' + ns.note + '</p>' : '') + (ns.reqs.length ? '<div class="btns"><button class="buy ' + (ready ? 'glow' : 'off') + '">Add star · 1 duplicate</button></div>' : '') + '</div>' +
+      (o.noBtns ? '' : '<div class="btns" style="margin-top:12px"><button class="buy sec">Set as main</button><button class="buy sec">Add as support</button></div>') + '</div>';
+  }
+  const cell = (c, inner, cls) => '<button class="cell ' + (cls || '') + (st.sel === c.id ? ' sel' : '') + '" data-card="' + c.id + '" aria-label="' + (c.locked ? 'Unfound card' : c.name) + '">' + (c.isMain ? '<span class="mainpill">Main</span>' : '') + inner + '</button>';
+  const filters = '<div class="chips"><span class="fchip on">All jobs</span><span class="fchip">Fighting</span><span class="fchip">Logging</span><span class="fchip">Mining</span><span class="fchip">Ready to upgrade · 2</span><span class="sortsel">Sort <b>Rarity</b></span></div>';
+  const head = (extra) => '<div class="ptabs"><span class="ptab on">Collection</span><span class="ptab">Loadouts</span></div>' + extra;
+  const title = (t) => '<h3 class="panel__title">Collection<small>' + found + ' of 12 found · Shards 214</small></h3>';
+  const sel = () => cardBy(st.sel);
+
+  /* ---------- A ---------- */
+  function renderA() {
+    const c = sel();
+    return shell('Cards', head('') + '<div class="wrap"><section class="panel">' + title() + filters + '<div class="grid">' + sorted.map((x) => cell(x, card(x, 1))).join('') + '</div></section>' +
+      '<aside class="panel detail"><div class="detailcard">' + card(c, 2) + '</div>' + detailText(c) + '</aside></div>');
+  }
+
+  /* ---------- B ---------- */
+  function mini(c) {
+    const neon = false;
+    return '<div class="mini r-' + c.rarity + (c.locked ? ' locked' : '') + '"><div class="body"></div><div class="win"></div><img class="item" alt="" src="' + SP + 'item-' + c.item + '-' + c.rarity + '.png">' +
+      (c.locked ? '' : pips(c)) + '<img class="frame" alt="" src="' + SP + 'frame-' + c.tier + '.png"></div>';
+  }
+  function renderB() {
+    const c = sel();
+    const grid = sorted.map((x) => '<div class="cellB' + (st.pin === x.id ? ' pin' : '') + '">' + cell(x, mini(x)) + '<div class="nm">' + (x.locked ? '???' : x.name) + '<small>' + (x.locked ? 'Not found' : 'Lv ' + x.lvl + ' · ★' + x.stars) + '</small></div>' +
+      (x.locked ? '' : '<div class="tip"><b>' + x.name + '</b><div>' + RARN[x.rarity] + ' · ' + JOBN[x.job] + ' · <span>Lv ' + x.lvl + '/' + x.cap + '</span> · Cost <span>' + x.cost + '</span></div><div>Main: <span>' + x.main + '</span></div><div>Support: <span>' + x.support + '</span></div></div>') + '</div>').join('');
+    const modal = st.open.B ? '<div class="scrim" data-close><div class="panel modal" role="dialog" aria-label="' + c.name + '"><div class="cc">' + card(c, 3) + '</div><div><div class="head"><span style="flex:1"></span><button class="closex" data-close aria-label="Close">×</button></div>' + detailText(c) + '</div></div></div>' : '';
+    return shell('Cards', head('') + '<section class="panel">' + title() + filters + '<div class="grid">' + grid + '</div><p class="muted" style="margin:6px 0 0;font-size:12.5px">Hover a card for its numbers. Click to open it.</p></section>' + modal);
+  }
+
+  /* ---------- C ---------- */
+  function renderC() {
+    const c = sel();
+    if (st.open.C) {
+      return shell('Cards', head('<a class="back" data-close href="#">← Back to collection</a>') + '<div class="page"><section class="panel"><div class="cc">' + card(c, 3) + '</div></section><section class="panel">' + detailText(c) + '</section></div>');
+    }
+    const rows = sorted.map((x) => '<button class="cell rowC tierc-' + x.tier + ' r-' + x.rarity + (x.locked ? ' lk' : '') + (st.sel === x.id ? ' sel' : '') + '" data-card="' + x.id + '">' +
+      '<span class="thumb ' + (x.locked ? 'locked' : '') + '"><img alt="" src="' + SP + 'item-' + x.item + '-' + x.rarity + '.png"></span>' +
+      '<span class="nmc"><b>' + (x.locked ? '???' : x.name) + (x.isMain ? ' <span class="chip good" style="vertical-align:2px">Main</span>' : '') + '</b><span><span class="rar-text-' + x.rarity + '">' + RARN[x.rarity] + '</span> · ' + JOBN[x.job] + ' · ' + x.element + '</span></span>' +
+      (x.locked ? '<span class="lvc muted">Not found</span><span></span><span class="efc">' + x.main + '</span><span class="cstc">' + x.cost + '<small>cost</small></span>' :
+        '<span class="lvc"><span><b>Lv ' + x.lvl + '/' + x.cap + '</b></span><span class="bar" style="--p:' + Math.round(x.lvl / x.cap * 100) + '"><i></i></span></span><span class="trc">' + TIERN[x.tier] + '<span>' + pips(x) + '</span></span><span class="efc"><span>Main: <b>' + x.main + '</b></span><span>Support: <b>' + x.support + '</b></span></span><span class="cstc">' + x.cost + '<small>cost</small></span>') + '</button>').join('');
+    return shell('Cards', head('') + '<section class="panel">' + title() + filters + '<div class="list">' + rows + '</div></section>');
+  }
+
+  /* ---------- D ---------- */
+  function renderD() {
+    const c = sel();
+    const grid = sorted.map((x) => '<div class="cellD">' + cell(x, '<div class="wc tierc-' + x.tier + ' r-' + x.rarity + (x.locked ? ' locked' : '') + '"><div class="in"><img alt="" src="' + SP + 'item-' + x.item + '-' + x.rarity + '.png"></div>' + (x.locked ? '' : '<span class="pips">' + [1, 2, 3, 4, 5, 6].map((i) => '<i' + (i <= x.stars ? ' class="on"' : '') + '></i>').join('') + '</span>') + '</div>') +
+      '<div class="nmD">' + (x.locked ? '???' : x.name) + '<small>' + (x.locked ? 'Not found' : 'Lv ' + x.lvl + '/' + x.cap + ' · ' + TIERN[x.tier]) + '</small></div></div>').join('');
+    const drawer = st.open.D ? '<aside class="drawer" role="dialog" aria-label="' + c.name + '"><div class="dhead"><b style="font-size:13px;color:var(--bi-frame-ink-muted)">Card</b><button class="closex" data-close aria-label="Close">×</button></div><div class="cc">' + card(c, 2) + '</div><div class="txt">' + detailText(c, { noBtns: false }) + '</div></aside>' : '';
+    return shell('Cards', head('') + '<section class="panel">' + title() + filters + '<div class="grid">' + grid + '</div></section>' + drawer);
+  }
+
+  /* ---------- E ---------- */
+  function renderE() {
+    const c = sel();
+    const spot = st.open.E ? '<section class="panel spot"><div class="cc">' + card(c, 3) + '</div><div><div style="display:flex"><span style="flex:1"></span><button class="closex" data-close aria-label="Close">×</button></div>' + detailText(c) + '</div></section>' : '';
+    const grid = sorted.map((x) => '<div class="cellE">' + cell(x, card(x, 2, { stats: false })) + '<div class="cap"><b>' + (x.locked ? '???' : x.name) + '</b>' + (x.locked ? '<span>Not found yet</span>' : '<span><em>Level ' + x.lvl + '/' + x.cap + '</em> · Cost ' + x.cost + ' · ' + JOBN[x.job] + '</span><span>Main: ' + x.main + '</span><span>Support: ' + x.support + '</span>') + '</div></div>').join('');
+    return shell('Cards', head('') + spot + '<section class="panel">' + title() + filters + '<div class="grid">' + grid + '</div></section>');
+  }
+
+  /* ---------- wiring ---------- */
+  const R = { A: renderA, B: renderB, C: renderC, D: renderD, E: renderE };
+  function renderAll() { for (const k in R) document.getElementById('m' + k).innerHTML = R[k](); stateBar(); }
+  function stateBar() {
+    const sb = document.getElementById('statebar');
+    if (visible === 'A') { sb.innerHTML = ''; return; }
+    const open = st.open[visible];
+    sb.innerHTML = 'Preview state: <button data-state="closed" aria-pressed="' + !open + '">Collection</button><button data-state="open" aria-pressed="' + !!open + '">' + ({ B: 'Detail modal open', C: 'Detail page open', D: 'Detail drawer open', E: 'Spotlight open' }[visible]) + '</button>';
+  }
+  function renderCaption(id) {
+    document.getElementById('captions').innerHTML = '<div class="caption">' + CAPTIONS[id].map((t, i) => '<div><b>' + LABELS[i] + '</b><span>' + t + '</span></div>').join('') + '</div><div class="tradeoff">' + TRADE[id].replace('Trade-off:', '<b>Trade-off:</b>') + '</div>';
+  }
+  function show(id) {
+    visible = id;
+    for (const k in R) document.getElementById('m' + k).hidden = k !== id;
+    document.querySelectorAll('.tabs button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.t === id)));
+    renderCaption(id); stateBar();
+    history.replaceState(null, '', '#' + id);
+  }
+  document.addEventListener('click', (e) => {
+    const t = e.target.closest('[data-t],[data-card],[data-close],[data-state]');
+    if (!t) return;
+    if (t.dataset.t) return show(t.dataset.t);
+    if (t.dataset.state) { st.open[visible] = t.dataset.state === 'open'; return renderAll(); }
+    if (t.dataset.close !== undefined) { if (e.target !== t && t.classList.contains('scrim') && e.target.closest('.modal')) return; e.preventDefault(); st.open[visible] = false; return renderAll(); }
+    if (t.dataset.card) {
+      st.sel = t.dataset.card;
+      if (visible !== 'A') st.open[visible] = true;
+      renderAll();
+    }
+  });
+  renderAll();
+  const h = (location.hash || '#A').slice(1);
+  show(h in R ? h : 'A');
+  window.__show = show; window.__st = st; window.__render = renderAll;
+  window.__state = (id, open) => { st.open[id] = open; renderAll(); };
+  window.__pin = (id) => { st.pin = id; renderAll(); };
+})();
+</script>
+</body></html>

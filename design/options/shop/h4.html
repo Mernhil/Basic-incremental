@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Shop option 4: Card Counter</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* H4 Card Counter: Gilded Tradition skin. Shard shop is the hero, cards hang on a rail with price tags; Starlight is a narrow rack, Ascension a banner */
+.h4{--table-bg:#111a35;--table-glow:rgba(140,170,255,.13);--chrome-bg:#0a1024;--chrome-line:#b98a2a;--chrome-accent:#f1d27a;--chrome-ink:#f4ead2;--chrome-muted:#c9b98f;--chrome-active:rgba(241,210,122,.14);
+  --ink:#3b1018;--paper:#f3e8c9;--paper2:#e8d9ae;--crim:#7d1c2b;--gold:#b98a2a}
+.h4 h2,.h4 h3,.h4 .serif{font-family:Marcellus,Georgia,serif;font-weight:400}
+.h4 .pg{position:absolute;inset:0;padding:16px 22px;display:grid;grid-template-columns:262px 1fr;grid-template-rows:auto 1fr;gap:14px 16px}
+.h4 .ban{grid-column:1/3;display:flex;align-items:center;gap:16px;padding:9px 18px;border-radius:10px;background:linear-gradient(90deg,#5a1220,#7d1c2b 60%,#5a1220);color:#fbe9bb;box-shadow:inset 0 0 0 2px #f1d27a,inset 0 0 0 4px #5a1220,0 8px 20px rgba(0,0,0,.4)}
+.h4 .ban h2{margin:0;font-size:22px}.h4 .ban span{font-size:12.5px;color:#f1d9a6}.h4 .ban .sp{flex:1}
+.h4 .ban b{font:400 24px Marcellus,serif;color:#ffe08a}.h4 .ban button{border:0;border-radius:8px;padding:9px 26px;font:400 18px Marcellus,serif;color:#2a1006;background:linear-gradient(180deg,#f6d57a,#c9962f);box-shadow:inset 0 0 0 2px #fff6}
+.h4 .sheet{position:relative;border-radius:10px;background:linear-gradient(180deg,var(--paper),var(--paper2));color:var(--ink);box-shadow:inset 0 0 0 2px var(--gold),inset 0 0 0 5px var(--paper),inset 0 0 0 6px rgba(185,138,42,.6),0 14px 30px rgba(0,0,0,.4)}
+.h4 .rack{padding:16px 14px;overflow:hidden}.h4 .rack h3{margin:0 0 2px;font-size:20px;color:var(--crim)}.h4 .rack>p{margin:0 0 10px;font-size:12px;color:#6a4a40}
+.h4 .ru{display:grid;grid-template-columns:1fr auto;gap:2px 8px;padding:7px 8px;margin-bottom:5px;border-radius:7px;background:rgba(255,255,255,.4);box-shadow:inset 0 0 0 1px rgba(59,16,24,.2);font-size:12.5px}
+.h4 .ru b{font-size:13.5px}.h4 .ru em{font-style:normal;font-weight:700;color:var(--crim);grid-row:span 2;align-self:center;background:var(--crim);color:#fbe9bb;border-radius:999px;padding:3px 10px;font-size:13px}
+.h4 .ru em.no{background:rgba(59,16,24,.25);color:#6a4a40}
+.h4 .ru span{color:#6a4a40}.h4 .ru i{grid-column:1/3;height:3px;border-radius:2px;background:rgba(59,16,24,.18);overflow:hidden;margin-top:2px;display:block}.h4 .ru i u{display:block;height:100%;background:var(--gold)}
+.h4 .counter{padding:14px 18px 12px;overflow:hidden}
+.h4 .counter .hd{display:flex;align-items:baseline;gap:12px}.h4 .counter h3{margin:0;font-size:22px;color:var(--crim)}.h4 .counter .bal{margin-left:auto;font:400 20px Marcellus,serif;color:var(--crim);display:flex;gap:6px;align-items:center}
+.h4 .chips{display:flex;gap:6px;margin:8px 0 12px}.h4 .chips button{border:0;border-radius:999px;padding:4px 12px;background:rgba(59,16,24,.12);font-weight:700;font-size:12px;color:var(--ink)}.h4 .chips button.on{background:var(--crim);color:#fbe9bb}
+.h4 .rail{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:22px 8px;padding-top:6px;justify-items:center}
+.h4 .rail::before{content:'';position:absolute;left:-6px;right:-6px;top:0;height:5px;border-radius:3px;background:linear-gradient(180deg,#d9b35a,#8a6a1e)}
+.h4 .hang{position:relative;transition:translate .3s}
+.h4 .hang .tg{position:absolute;right:-6px;bottom:-14px;z-index:6;display:flex;gap:4px;align-items:center;padding:3px 9px 3px 14px;font-weight:800;font-size:12.5px;color:#2a1006;background:#f1d27a;clip-path:polygon(0 50%,9px 0,100% 0,100% 100%,9px 100%);box-shadow:0 2px 4px #0006;rotate:4deg}
+.h4 .hang .tg.no{background:#bdb392;color:#6a4a40}
+.h4 .hang.lift{translate:0 -14px}.h4 .hang.lift .mk-card{box-shadow:0 0 0 2px var(--rc),0 0 30px #f1d27a,0 18px 26px rgba(0,0,0,.5)}
+.h4 .hang .tag-off{display:none}.h4.play .hang.lift .tg{translate:30px 48px;rotate:38deg;opacity:.8}
+.h4 .hang .got{display:none;position:absolute;left:50%;top:-10px;translate:-50% -100%;z-index:7;padding:3px 12px;border-radius:999px;background:var(--crim);color:#fbe9bb;font-weight:800;font-size:12.5px;white-space:nowrap}
+.h4.play .hang.lift .got{display:block}
+.h4 .strip{display:flex;gap:8px;margin-top:20px;flex-wrap:wrap}.h4 .strip div{display:flex;gap:7px;align-items:center;padding:5px 10px 5px 6px;border-radius:8px;background:rgba(255,255,255,.4);box-shadow:inset 0 0 0 1px rgba(59,16,24,.22);font-size:12px;font-weight:700;line-height:1.15}.h4 .strip small{display:block;font-weight:700;color:var(--crim)}
+.h4 .ghost{display:none;position:absolute;right:130px;top:18px;z-index:9;animation:h4g .9s ease-in both}
+.h4.play .ghost{display:block}@keyframes h4g{from{opacity:0;scale:1.4;translate:-120px 200px}}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script><script src="../_shared/shopdata.js"></script>
+<script>
+const copies=SHOP.copies.slice(2,12).map(([id,p],i)=>`<div class="hang ${id==='dawnblade_regent'?'lift':''}">${MK.card(id,{k:.6})}<span class="tg ${SHOP.shards<p?'no':''}">${MK.img('coin-hexagon-prism',14)}${p}</span><span class="got">+1 copy, star bar 2 of 6</span></div>`).join('');
+const rack=SHOP.ups.map(u=>{const m=u.lv>=u.max;return `<div class="ru"><b>${u.n}</b>${m?'<em class="no">Max</em>':`<em class="${SHOP.starlight<u.p?'no':''}">${u.p}</em>`}<span>${u.a} &rarr; ${m?'max':u.b} &middot; Lv ${u.lv}/${u.max}</span><i><u style="width:${u.lv/u.max*100}%"></u></i></div>`}).join('');
+const sup=SHOP.supplies.slice(0,3).map(([n,a,p,s])=>`<div>${MK.img('coin-'+s+'-gold',22)}<span>${n} ${a}<small>${p} shards</small></span></div>`).join('')+SHOP.cosmetics.slice(0,3).map(([n,p,k])=>`<div>${MK.img('coin-star-prism',22)}<span>${n}<small>${p} shards, once</small></span></div>`).join('');
+MK.shell('shop',`<div class="pg">
+ <div class="ban"><div>${MK.img('cos-starlight-a',40)}</div><div><h2>Ascension ${SHOP.ascNum} is ready</h2><span>Resets this run, keeps cards, cosmetics and crystals</span></div><div class="sp"></div><b class="num">+${SHOP.ascGain} Starlight</b><button>Ascend</button></div>
+ <aside class="sheet rack" aria-label="Starlight shop"><h3>Starlight shop</h3><p>23 Starlight to spend. Levels stay forever.</p>${rack}</aside>
+ <section class="sheet counter" aria-label="Shard shop"><div class="hd"><h3>Shard shop</h3><span style="font-size:12.5px;color:#6a4a40">Copies add a star. Past ★6 they become shards again.</span><div class="bal">${MK.img('coin-hexagon-prism',24)}<span class="num">87</span></div></div>
+  <div class="chips"><button class="on">Card copies</button><button>Supplies</button><button>Exclusive</button></div>
+  <div class="rail">${copies}</div><div class="strip">${sup}</div><div class="ghost">${MK.card('dawnblade_regent',{k:.4})}</div></section>
+</div>`,{cls:'h4',play:'Play a purchase'});
+</script></body></html>

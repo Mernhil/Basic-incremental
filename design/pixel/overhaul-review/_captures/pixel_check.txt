@@ -1,0 +1,1320 @@
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\boss-cinder_lich.png  native 160x172 at 1x, 52 colours
+   warn:  4 orphan pixels, e.g. [(87, 25), (81, 34), (85, 42), (132, 123)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\boss-crystal_sentinel.png  native 160x172 at 1x, 32 colours
+   warn:  2 orphan pixels, e.g. [(83, 92), (76, 97)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\boss-glacier_colossus.png  native 160x172 at 1x, 31 colours
+   warn:  1 orphan pixels, e.g. [(69, 61)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\boss-root_warden.png  native 160x172 at 1x, 28 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\boss-shard-dim.png  native 18x28 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\boss-shard-lit.png  native 18x28 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-drop-bronze.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-drop-gold.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-drop-locked.png  native 48x48 at 1x, 20 colours
+   warn:  128 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-drop-prism.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-drop-silver.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-drop-stone.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-hexagon-bronze.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-hexagon-gold.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-hexagon-locked.png  native 48x48 at 1x, 21 colours
+   warn:  2 orphan pixels, e.g. [(31, 32), (27, 35)]
+   warn:  128 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-hexagon-prism.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-hexagon-silver.png  native 48x48 at 1x, 13 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-hexagon-stone.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-pentagon-bronze.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-pentagon-gold.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-pentagon-locked.png  native 48x48 at 1x, 20 colours
+   warn:  128 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-pentagon-prism.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-pentagon-silver.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-pentagon-stone.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-round-bronze.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-round-gold.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-round-locked.png  native 48x48 at 1x, 20 colours
+   warn:  128 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-round-prism.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-round-silver.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-round-stone.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-square-bronze.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-square-gold.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-square-locked.png  native 48x48 at 1x, 20 colours
+   warn:  128 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-square-prism.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-square-silver.png  native 48x48 at 1x, 14 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-square-stone.png  native 48x48 at 1x, 14 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-star-bronze.png  native 48x48 at 1x, 15 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-star-gold.png  native 48x48 at 1x, 15 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-star-locked.png  native 48x48 at 1x, 21 colours
+   warn:  128 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-star-prism.png  native 48x48 at 1x, 15 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-star-silver.png  native 48x48 at 1x, 15 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\coin-star-stone.png  native 48x48 at 1x, 15 colours
+   warn:  124 edge pixels not ink or light rim (outline gaps?), e.g. [(18, 2), (19, 2), (20, 2), (21, 2), (22, 2), (23, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-deep_delver-grey.png  native 52x52 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-deep_delver.png  native 52x52 at 1x, 11 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-dressed_up-grey.png  native 52x52 at 1x, 19 colours
+   warn:  2 orphan pixels, e.g. [(17, 37), (37, 37)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-dressed_up.png  native 52x52 at 1x, 20 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-fashionista-grey.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-fashionista.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_ascension-grey.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_ascension.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_harvest-grey.png  native 52x52 at 1x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_harvest.png  native 52x52 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_kill-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_kill.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_milestone-grey.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_milestone.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_summon-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-first_summon.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-full_loadout-grey.png  native 52x52 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-full_loadout.png  native 52x52 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-gem_adept-grey.png  native 52x52 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-gem_adept.png  native 52x52 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-giant_slayer_1-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-giant_slayer_1.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-giant_slayer_2-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-giant_slayer_2.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-giant_slayer_3-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-giant_slayer_3.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-glimmer_seeker-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-glimmer_seeker.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-golden_hour-grey.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-golden_hour.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-lumberjack_1-grey.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-lumberjack_1.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-lumberjack_2-grey.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-lumberjack_2.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-masterwork-grey.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-masterwork.png  native 52x52 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-medalist-grey.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-medalist.png  native 52x52 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-night_owl-grey.png  native 52x52 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-night_owl.png  native 52x52 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-pity_breaker-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-pity_breaker.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-prismatic_dawn-grey.png  native 52x52 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-prismatic_dawn.png  native 52x52 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-prospector_1-grey.png  native 52x52 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-prospector_1.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-prospector_2-grey.png  native 52x52 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-prospector_2.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-silver_lining-grey.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-silver_lining.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-six_stars-grey.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-six_stars.png  native 52x52 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-skilled-grey.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-skilled.png  native 52x52 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-ten_pulls-grey.png  native 52x52 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-ten_pulls.png  native 52x52 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-tree_hugger-grey.png  native 52x52 at 1x, 13 colours
+   warn:  3 orphan pixels, e.g. [(33, 17), (20, 22), (29, 28)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-ach-tree_hugger.png  native 52x52 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-antler.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-blossom.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-candy.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-corepulse.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-fern.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-forge.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-heartwood.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-hexcore.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-luna.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-moss.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-rings.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-rune.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-starburst.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-starmap.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-strata.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-veins.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-verdant.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-vine.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-woodcraft.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-amb-wreath.png  native 5x5 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-blossom-1.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-blossom-2.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-blossom-3.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-blossom-4.png  native 256x64 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-blossom-5.png  native 256x64 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-candy-1.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-candy-2.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-candy-3.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-candy-4.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-fern-1.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-fern-2.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-fern-3.png  native 256x64 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-fern-4.png  native 256x64 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-fern-5.png  native 256x64 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-forge-1.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-forge-2.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-forge-3.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-forge-4.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-moss-1.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-moss-2.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-moss-3.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-moss-4.png  native 256x64 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-moss-5.png  native 256x64 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-rune-1.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-rune-2.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-rune-3.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-rune-4.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-starmap-1.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-starmap-2.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-starmap-3.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-starmap-4.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-verdant-1.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-verdant-2.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-verdant-3.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-verdant-4.png  native 256x64 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-verdant-5.png  native 256x64 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-vine-1.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-vine-2.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-vine-3.png  native 256x64 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-vine-4.png  native 256x64 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-vine-5.png  native 256x64 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-woodcraft-1.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-woodcraft-2.png  native 256x64 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-woodcraft-3.png  native 256x64 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-atk-woodcraft-4.png  native 256x64 at 1x, 8 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-antler-1.png  native 183x237 at 1x, 2 colours
+   warn:  18 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (38, 39), (145, 39), (155, 39), (156, 40), (27, 50)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-antler-2.png  native 183x237 at 1x, 4 colours
+   warn:  18 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (38, 39), (145, 39), (155, 39), (156, 40), (27, 50)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-antler-3.png  native 183x237 at 1x, 10 colours
+   warn:  18 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (38, 39), (145, 39), (155, 39), (156, 40), (157, 49)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-antler-4.png  native 183x237 at 1x, 11 colours
+   warn:  18 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (38, 39), (145, 39), (155, 39), (156, 40), (157, 49)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-antler-5.png  native 183x237 at 1x, 11 colours
+   warn:  18 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (38, 39), (145, 39), (155, 39), (156, 40), (157, 49)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-blossom-1.png  native 183x237 at 1x, 6 colours
+   warn:  42 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (155, 39), (38, 40), (145, 40), (156, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-blossom-2.png  native 183x237 at 1x, 10 colours
+   warn:  42 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (155, 39), (38, 40), (145, 40), (156, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-blossom-3.png  native 183x237 at 1x, 10 colours
+   warn:  42 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (155, 39), (38, 40), (145, 40), (156, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-blossom-4.png  native 183x237 at 1x, 12 colours
+   warn:  42 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (155, 39), (38, 40), (145, 40), (156, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-blossom-5.png  native 183x237 at 1x, 12 colours
+   warn:  42 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (155, 39), (38, 40), (145, 40), (156, 40), (38, 41)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-candy-1.png  native 183x237 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-candy-2.png  native 183x237 at 1x, 4 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-fern-1.png  native 183x237 at 1x, 4 colours
+   warn:  52 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (34, 37), (35, 37), (36, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-fern-2.png  native 183x237 at 1x, 5 colours
+   warn:  52 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (34, 37), (35, 37), (36, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-fern-3.png  native 183x237 at 1x, 10 colours
+   warn:  66 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (34, 37), (35, 37), (36, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-fern-4.png  native 183x237 at 1x, 11 colours
+   warn:  66 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (34, 37), (35, 37), (36, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-fern-5.png  native 183x237 at 1x, 11 colours
+   warn:  66 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (34, 37), (35, 37), (36, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-forge-1.png  native 183x237 at 1x, 4 colours
+   warn:  34 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (33, 37), (34, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-forge-2.png  native 183x237 at 1x, 5 colours
+   warn:  34 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (33, 37), (34, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-heartwood-1.png  native 183x237 at 1x, 3 colours
+   warn:  50 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 38), (145, 38), (38, 39), (145, 39), (38, 40), (145, 40)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-heartwood-2.png  native 183x237 at 1x, 4 colours
+   warn:  48 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 38), (145, 38), (38, 39), (145, 39), (38, 40), (145, 40)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-heartwood-3.png  native 183x237 at 1x, 13 colours
+   warn:  48 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 38), (145, 38), (38, 39), (145, 39), (38, 40), (145, 40)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-heartwood-4.png  native 183x237 at 1x, 14 colours
+   warn:  48 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 38), (145, 38), (38, 39), (145, 39), (38, 40), (145, 40)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-heartwood-5.png  native 183x237 at 1x, 14 colours
+   warn:  48 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 38), (145, 38), (38, 39), (145, 39), (38, 40), (145, 40)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-luna-1.png  native 183x237 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-luna-2.png  native 183x237 at 1x, 5 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-luna-3.png  native 183x237 at 1x, 12 colours
+   warn:  2 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (156, 220)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-luna-4.png  native 183x237 at 1x, 13 colours
+   warn:  2 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (156, 220)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-luna-5.png  native 183x237 at 1x, 13 colours
+   warn:  2 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (156, 220)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-moss-1.png  native 183x237 at 1x, 4 colours
+   warn:  89 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-moss-2.png  native 183x237 at 1x, 9 colours
+   warn:  89 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-moss-3.png  native 183x237 at 1x, 14 colours
+   warn:  1 orphan pixels, e.g. [(28, 38)]
+   warn:  88 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-moss-4.png  native 183x237 at 1x, 15 colours
+   warn:  1 orphan pixels, e.g. [(28, 38)]
+   warn:  88 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-moss-5.png  native 183x237 at 1x, 15 colours
+   warn:  1 orphan pixels, e.g. [(28, 38)]
+   warn:  88 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (37, 37), (146, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rings-1.png  native 183x237 at 1x, 4 colours
+   warn:  1 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rings-2.png  native 183x237 at 1x, 5 colours
+   warn:  1 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rings-3.png  native 183x237 at 1x, 10 colours
+   warn:  1 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rings-4.png  native 183x237 at 1x, 11 colours
+   warn:  1 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rings-5.png  native 183x237 at 1x, 11 colours
+   warn:  1 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rune-1.png  native 183x237 at 1x, 4 colours
+   warn:  56 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (33, 37), (34, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-rune-2.png  native 183x237 at 1x, 5 colours
+   warn:  56 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (33, 37), (34, 37)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-starmap-1.png  native 183x237 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-starmap-2.png  native 183x237 at 1x, 5 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-verdant-1.png  native 183x237 at 1x, 4 colours
+   warn:  46 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (38, 38), (145, 38), (154, 38), (27, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-verdant-2.png  native 183x237 at 1x, 11 colours
+   warn:  61 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (33, 37), (36, 37), (147, 37), (150, 37), (28, 38)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-verdant-3.png  native 183x237 at 1x, 18 colours
+   warn:  61 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (33, 37), (36, 37), (147, 37), (150, 37), (28, 38)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-verdant-4.png  native 183x237 at 1x, 19 colours
+   warn:  61 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (33, 37), (36, 37), (147, 37), (150, 37), (28, 38)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-verdant-5.png  native 183x237 at 1x, 19 colours
+   warn:  61 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (33, 37), (36, 37), (147, 37), (150, 37), (28, 38)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-vine-1.png  native 183x237 at 1x, 4 colours
+   warn:  40 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (154, 38), (38, 40), (145, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-vine-2.png  native 183x237 at 1x, 5 colours
+   warn:  40 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (154, 38), (38, 40), (145, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-vine-3.png  native 183x237 at 1x, 8 colours
+   warn:  40 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (154, 38), (38, 40), (145, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-vine-4.png  native 183x237 at 1x, 9 colours
+   warn:  40 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (154, 38), (38, 40), (145, 40), (38, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-vine-5.png  native 183x237 at 1x, 9 colours
+   warn:  40 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (154, 38), (38, 40), (145, 40), (38, 41)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-woodcraft-1.png  native 183x237 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-woodcraft-2.png  native 183x237 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-wreath-1.png  native 183x237 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-wreath-2.png  native 183x237 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-wreath-3.png  native 183x237 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-wreath-4.png  native 183x237 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-bd-wreath-5.png  native 183x237 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-card-shard.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-a-locked.png  native 18x18 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-a-open.png  native 18x18 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-a-owned.png  native 18x18 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-b-locked.png  native 18x18 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-b-open.png  native 18x18 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-b-owned.png  native 18x18 at 1x, 12 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-c-locked.png  native 18x18 at 1x, 6 colours
+   warn:  35 edge pixels not ink or light rim (outline gaps?), e.g. [(8, 0), (7, 1), (9, 1), (6, 2), (10, 2), (5, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-c-open.png  native 18x18 at 1x, 6 colours
+   warn:  35 edge pixels not ink or light rim (outline gaps?), e.g. [(8, 0), (7, 1), (9, 1), (6, 2), (10, 2), (5, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-c-owned.png  native 18x18 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-d-locked.png  native 18x18 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-d-open.png  native 18x18 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-d-owned.png  native 18x18 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-e-locked.png  native 18x18 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-e-open.png  native 18x18 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chart-e-owned.png  native 18x18 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-a-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-a-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-a-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-b-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-b-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-b-owned.png  native 24x24 at 1x, 12 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-c-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-c-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-c-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-d-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-d-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-d-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-e-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-e-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartmajor-e-owned.png  native 24x24 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartsky-a.png  native 200x120 at 1x, 5 colours
+   warn:  50 orphan pixels, e.g. [(18, 7), (106, 8), (108, 9), (152, 9), (155, 11), (9, 16)]
+   warn:  636 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartsky-b.png  native 200x120 at 1x, 5 colours
+   warn:  50 orphan pixels, e.g. [(18, 7), (106, 8), (108, 9), (152, 9), (155, 11), (9, 16)]
+   warn:  636 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartsky-c.png  native 200x120 at 1x, 5 colours
+   warn:  50 orphan pixels, e.g. [(18, 7), (106, 8), (108, 9), (152, 9), (155, 11), (9, 16)]
+   warn:  636 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartsky-d.png  native 200x120 at 1x, 5 colours
+   warn:  50 orphan pixels, e.g. [(18, 7), (106, 8), (108, 9), (152, 9), (155, 11), (9, 16)]
+   warn:  636 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-chartsky-e.png  native 200x120 at 1x, 5 colours
+   warn:  50 orphan pixels, e.g. [(18, 7), (106, 8), (108, 9), (152, 9), (155, 11), (9, 16)]
+   warn:  636 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-corner-acanthus.png  native 183x237 at 1x, 7 colours
+   warn:  2 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 39), (155, 221)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-corner-knot.png  native 183x237 at 1x, 9 colours
+   warn:  11 edge pixels not ink or light rim (outline gaps?), e.g. [(28, 38), (27, 39), (26, 40), (157, 42), (157, 43), (157, 218)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-corner-pauldron.png  native 183x237 at 1x, 11 colours
+   warn:  19 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (28, 38), (154, 38), (27, 39), (155, 39), (26, 40)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-corner-shards.png  native 183x237 at 1x, 5 colours
+   warn:  60 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (31, 37), (32, 37), (33, 37), (34, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-corner-wings.png  native 183x237 at 1x, 10 colours
+   warn:  20 edge pixels not ink or light rim (outline gaps?), e.g. [(29, 37), (30, 37), (153, 37), (154, 38), (27, 39), (25, 41)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-blossom-1.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-blossom-2.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-blossom-3.png  native 22x24 at 2x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-blossom-4.png  native 22x24 at 2x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-blossom-5.png  native 22x24 at 2x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-fern-1.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-fern-2.png  native 22x24 at 2x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-fern-3.png  native 22x24 at 2x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-fern-4.png  native 22x24 at 2x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-fern-5.png  native 22x24 at 2x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-moss-1.png  native 22x24 at 2x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-moss-2.png  native 22x24 at 2x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-moss-3.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-moss-4.png  native 22x24 at 2x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-moss-5.png  native 22x24 at 2x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-verdant-1.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-verdant-2.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-verdant-3.png  native 22x24 at 2x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-verdant-4.png  native 22x24 at 2x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-verdant-5.png  native 22x24 at 2x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-vine-1.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-vine-2.png  native 22x24 at 2x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-vine-3.png  native 22x24 at 2x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-vine-4.png  native 22x24 at 2x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-cur-vine-5.png  native 22x24 at 2x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-blossom.png  native 14x12 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-candy.png  native 10x10 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-dew.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-fern.png  native 14x12 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-forge.png  native 10x10 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-moss.png  native 14x12 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-rune.png  native 10x10 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-starmap.png  native 10x10 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-verdant.png  native 14x12 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-vine.png  native 14x12 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-deco-woodcraft.png  native 10x10 at 1x, 5 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-blossom-1.png  native 183x237 at 1x, 1 colours
+   warn:  135 edge pixels not ink or light rim (outline gaps?), e.g. [(53, 72), (73, 72), (93, 72), (113, 72), (133, 72), (51, 73)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-blossom-2.png  native 183x237 at 1x, 1 colours
+   warn:  135 edge pixels not ink or light rim (outline gaps?), e.g. [(53, 72), (73, 72), (93, 72), (113, 72), (133, 72), (51, 73)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-blossom-3.png  native 183x237 at 1x, 2 colours
+   warn:  162 edge pixels not ink or light rim (outline gaps?), e.g. [(53, 72), (73, 72), (93, 72), (113, 72), (133, 72), (51, 73)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-blossom-4.png  native 183x237 at 1x, 2 colours
+   warn:  135 edge pixels not ink or light rim (outline gaps?), e.g. [(53, 72), (73, 72), (93, 72), (113, 72), (133, 72), (51, 73)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-blossom-5.png  native 183x237 at 1x, 2 colours
+   warn:  135 edge pixels not ink or light rim (outline gaps?), e.g. [(53, 72), (73, 72), (93, 72), (113, 72), (133, 72), (51, 73)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-corepulse-1.png  native 183x237 at 1x, 2 colours
+   warn:  268 edge pixels not ink or light rim (outline gaps?), e.g. [(86, 82), (87, 82), (88, 82), (89, 82), (90, 82), (91, 82)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-corepulse-2.png  native 183x237 at 1x, 2 colours
+   warn:  1188 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 67), (81, 67), (82, 67), (83, 67), (84, 67), (98, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-corepulse-3.png  native 183x237 at 1x, 3 colours
+   warn:  1188 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 67), (81, 67), (82, 67), (83, 67), (84, 67), (98, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-corepulse-4.png  native 183x237 at 1x, 8 colours
+   warn:  1172 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 67), (81, 67), (82, 67), (83, 67), (84, 67), (98, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-corepulse-5.png  native 183x237 at 1x, 8 colours
+   warn:  1172 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 67), (81, 67), (82, 67), (83, 67), (84, 67), (98, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-corepulse-6.png  native 183x237 at 1x, 8 colours
+   warn:  1172 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 67), (81, 67), (82, 67), (83, 67), (84, 67), (98, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-fern-1.png  native 183x237 at 1x, 2 colours
+   warn:  168 edge pixels not ink or light rim (outline gaps?), e.g. [(119, 71), (120, 71), (121, 71), (122, 71), (123, 71), (118, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-fern-2.png  native 183x237 at 1x, 2 colours
+   warn:  168 edge pixels not ink or light rim (outline gaps?), e.g. [(119, 71), (120, 71), (121, 71), (122, 71), (123, 71), (118, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-fern-3.png  native 183x237 at 1x, 3 colours
+   warn:  168 edge pixels not ink or light rim (outline gaps?), e.g. [(119, 71), (120, 71), (121, 71), (122, 71), (123, 71), (118, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-fern-4.png  native 183x237 at 1x, 3 colours
+   warn:  168 edge pixels not ink or light rim (outline gaps?), e.g. [(119, 71), (120, 71), (121, 71), (122, 71), (123, 71), (118, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-fern-5.png  native 183x237 at 1x, 3 colours
+   warn:  168 edge pixels not ink or light rim (outline gaps?), e.g. [(119, 71), (120, 71), (121, 71), (122, 71), (123, 71), (118, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-hexcore-1.png  native 183x237 at 1x, 1 colours
+   warn:  933 edge pixels not ink or light rim (outline gaps?), e.g. [(87, 67), (96, 67), (86, 68), (96, 68), (86, 69), (97, 69)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-hexcore-2.png  native 183x237 at 1x, 1 colours
+   warn:  2272 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (53, 67), (54, 67), (66, 67), (74, 67), (75, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-hexcore-3.png  native 183x237 at 1x, 2 colours
+   warn:  2272 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (53, 67), (54, 67), (66, 67), (74, 67), (75, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-hexcore-4.png  native 183x237 at 1x, 8 colours
+   warn:  2249 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (53, 67), (54, 67), (66, 67), (74, 67), (75, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-hexcore-5.png  native 183x237 at 1x, 10 colours
+   warn:  2283 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (53, 67), (54, 67), (66, 67), (74, 67), (75, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-hexcore-6.png  native 183x237 at 1x, 10 colours
+   warn:  2283 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (53, 67), (54, 67), (66, 67), (74, 67), (75, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-moss-1.png  native 183x237 at 1x, 3 colours
+   warn:  246 edge pixels not ink or light rim (outline gaps?), e.g. [(144, 132), (145, 132), (146, 132), (147, 132), (143, 133), (147, 133)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-moss-2.png  native 183x237 at 1x, 3 colours
+   warn:  246 edge pixels not ink or light rim (outline gaps?), e.g. [(144, 132), (145, 132), (146, 132), (147, 132), (143, 133), (147, 133)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-moss-3.png  native 183x237 at 1x, 5 colours
+   warn:  240 edge pixels not ink or light rim (outline gaps?), e.g. [(144, 132), (145, 132), (146, 132), (147, 132), (143, 133), (147, 133)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-moss-4.png  native 183x237 at 1x, 5 colours
+   warn:  240 edge pixels not ink or light rim (outline gaps?), e.g. [(144, 132), (145, 132), (146, 132), (147, 132), (143, 133), (147, 133)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-moss-5.png  native 183x237 at 1x, 5 colours
+   warn:  240 edge pixels not ink or light rim (outline gaps?), e.g. [(144, 132), (145, 132), (146, 132), (147, 132), (143, 133), (147, 133)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-starburst-1.png  native 183x237 at 1x, 2 colours
+   warn:  204 edge pixels not ink or light rim (outline gaps?), e.g. [(65, 67), (117, 67), (91, 69), (66, 70), (116, 70), (68, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-starburst-2.png  native 183x237 at 1x, 2 colours
+   warn:  605 edge pixels not ink or light rim (outline gaps?), e.g. [(46, 67), (65, 67), (117, 67), (136, 67), (47, 68), (79, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-starburst-3.png  native 183x237 at 1x, 3 colours
+   warn:  605 edge pixels not ink or light rim (outline gaps?), e.g. [(46, 67), (65, 67), (117, 67), (136, 67), (47, 68), (79, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-starburst-4.png  native 183x237 at 1x, 9 colours
+   warn:  601 edge pixels not ink or light rim (outline gaps?), e.g. [(46, 67), (65, 67), (117, 67), (136, 67), (47, 68), (79, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-starburst-5.png  native 183x237 at 1x, 12 colours
+   warn:  653 edge pixels not ink or light rim (outline gaps?), e.g. [(46, 67), (65, 67), (117, 67), (136, 67), (47, 68), (79, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-starburst-6.png  native 183x237 at 1x, 12 colours
+   warn:  653 edge pixels not ink or light rim (outline gaps?), e.g. [(46, 67), (65, 67), (117, 67), (136, 67), (47, 68), (79, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-strata-1.png  native 183x237 at 1x, 2 colours
+   warn:  560 edge pixels not ink or light rim (outline gaps?), e.g. [(57, 119), (58, 119), (59, 119), (60, 119), (61, 119), (62, 119)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-strata-2.png  native 183x237 at 1x, 2 colours
+   warn:  1008 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 95), (37, 95), (38, 95), (39, 95), (40, 95), (41, 95)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-strata-3.png  native 183x237 at 1x, 3 colours
+   warn:  1008 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 95), (37, 95), (38, 95), (39, 95), (40, 95), (41, 95)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-strata-4.png  native 183x237 at 1x, 6 colours
+   warn:  993 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 95), (37, 95), (38, 95), (39, 95), (40, 95), (41, 95)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-strata-5.png  native 183x237 at 1x, 8 colours
+   warn:  993 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 95), (37, 95), (38, 95), (39, 95), (40, 95), (41, 95)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-strata-6.png  native 183x237 at 1x, 8 colours
+   warn:  993 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 95), (37, 95), (38, 95), (39, 95), (40, 95), (41, 95)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-veins-1.png  native 183x237 at 1x, 1 colours
+   warn:  225 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (79, 68), (79, 69), (80, 70), (80, 71), (81, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-veins-2.png  native 183x237 at 1x, 1 colours
+   warn:  384 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (79, 68), (79, 69), (80, 70), (80, 71), (81, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-veins-3.png  native 183x237 at 1x, 2 colours
+   warn:  384 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (79, 68), (79, 69), (80, 70), (80, 71), (81, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-veins-4.png  native 183x237 at 1x, 4 colours
+   warn:  362 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (79, 68), (79, 69), (80, 70), (80, 71), (81, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-veins-5.png  native 183x237 at 1x, 5 colours
+   warn:  361 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (79, 68), (79, 69), (80, 70), (80, 71), (81, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-veins-6.png  native 183x237 at 1x, 5 colours
+   warn:  361 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (79, 68), (79, 69), (80, 70), (80, 71), (81, 72)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-verdant-1.png  native 183x237 at 1x, 1 colours
+   warn:  1504 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (46, 67), (49, 67), (50, 67), (69, 67), (70, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-verdant-2.png  native 183x237 at 1x, 1 colours
+   warn:  1504 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (46, 67), (49, 67), (50, 67), (69, 67), (70, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-verdant-3.png  native 183x237 at 1x, 3 colours
+   warn:  1500 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (46, 67), (49, 67), (50, 67), (69, 67), (70, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-verdant-4.png  native 183x237 at 1x, 3 colours
+   warn:  1500 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (46, 67), (49, 67), (50, 67), (69, 67), (70, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-verdant-5.png  native 183x237 at 1x, 3 colours
+   warn:  1500 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (46, 67), (49, 67), (50, 67), (69, 67), (70, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-vine-1.png  native 183x237 at 1x, 1 colours
+   warn:  220 edge pixels not ink or light rim (outline gaps?), e.g. [(44, 67), (70, 67), (118, 67), (138, 67), (44, 68), (70, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-vine-2.png  native 183x237 at 1x, 1 colours
+   warn:  220 edge pixels not ink or light rim (outline gaps?), e.g. [(44, 67), (70, 67), (118, 67), (138, 67), (44, 68), (70, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-vine-3.png  native 183x237 at 1x, 3 colours
+   warn:  220 edge pixels not ink or light rim (outline gaps?), e.g. [(44, 67), (70, 67), (118, 67), (138, 67), (44, 68), (70, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-vine-4.png  native 183x237 at 1x, 3 colours
+   warn:  220 edge pixels not ink or light rim (outline gaps?), e.g. [(44, 67), (70, 67), (118, 67), (138, 67), (44, 68), (70, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fn-vine-5.png  native 183x237 at 1x, 3 colours
+   warn:  220 edge pixels not ink or light rim (outline gaps?), e.g. [(44, 67), (70, 67), (118, 67), (138, 67), (44, 68), (70, 68)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fnp-corepulse.png  native 549x237 at 1x, 9 colours
+   warn:  3516 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 67), (81, 67), (82, 67), (83, 67), (84, 67), (98, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fnp-hexcore.png  native 549x237 at 1x, 12 colours
+   warn:  6849 edge pixels not ink or light rim (outline gaps?), e.g. [(45, 67), (53, 67), (54, 67), (66, 67), (74, 67), (75, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fnp-starburst.png  native 549x237 at 1x, 12 colours
+   warn:  1962 edge pixels not ink or light rim (outline gaps?), e.g. [(46, 67), (65, 67), (117, 67), (136, 67), (412, 67), (431, 67)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fnp-strata.png  native 549x237 at 1x, 11 colours
+   warn:  16 orphan pixels, e.g. [(282, 106), (113, 109), (437, 110), (268, 113), (99, 116), (423, 117)]
+   warn:  2993 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 95), (37, 95), (38, 95), (39, 95), (40, 95), (41, 95)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-fnp-veins.png  native 549x237 at 1x, 7 colours
+   warn:  1079 edge pixels not ink or light rim (outline gaps?), e.g. [(78, 67), (261, 67), (444, 67), (79, 68), (262, 68), (445, 68)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-automation-locked.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-automation-open.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-automation-owned.png  native 32x32 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-collection-locked.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-collection-open.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-collection-owned.png  native 32x32 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-combat-locked.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-combat-open.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-combat-owned.png  native 32x32 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-logging-locked.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-logging-open.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-logging-owned.png  native 32x32 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-luck-locked.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-luck-open.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-luck-owned.png  native 32x32 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-mining-locked.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-mining-open.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-a-mining-owned.png  native 32x32 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-automation-locked.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-automation-open.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-automation-owned.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-collection-locked.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-collection-open.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-collection-owned.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-combat-locked.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-combat-open.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-combat-owned.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-logging-locked.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-logging-open.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-logging-owned.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-luck-locked.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-luck-open.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-luck-owned.png  native 32x32 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-mining-locked.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-mining-open.png  native 32x32 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-b-mining-owned.png  native 32x32 at 1x, 12 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-automation-locked.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-automation-open.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-automation-owned.png  native 32x32 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-collection-locked.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-collection-open.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-collection-owned.png  native 32x32 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-combat-locked.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-combat-open.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-combat-owned.png  native 32x32 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-logging-locked.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-logging-open.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-logging-owned.png  native 32x32 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-luck-locked.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-luck-open.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-luck-owned.png  native 32x32 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-mining-locked.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-mining-open.png  native 32x32 at 1x, 6 colours
+   warn:  63 edge pixels not ink or light rim (outline gaps?), e.g. [(16, 0), (15, 1), (17, 1), (14, 2), (18, 2), (13, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-c-mining-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-automation-locked.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-automation-open.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-automation-owned.png  native 32x32 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-collection-locked.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-collection-open.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-collection-owned.png  native 32x32 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-combat-locked.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-combat-open.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-combat-owned.png  native 32x32 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-logging-locked.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-logging-open.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-logging-owned.png  native 32x32 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-luck-locked.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-luck-open.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-luck-owned.png  native 32x32 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-mining-locked.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-mining-open.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-d-mining-owned.png  native 32x32 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-automation-locked.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-automation-open.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-automation-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-collection-locked.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-collection-open.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-collection-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-combat-locked.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-combat-open.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-combat-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-logging-locked.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-logging-open.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-logging-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-luck-locked.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-luck-open.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-luck-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-mining-locked.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-mining-open.png  native 32x32 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-key-e-mining-owned.png  native 32x32 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-automation-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-automation-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-automation-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-collection-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-collection-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-collection-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-combat-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-combat-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-combat-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-logging-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-logging-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-logging-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-luck-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-luck-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-luck-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-mining-locked.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-mining-open.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-a-mining-owned.png  native 24x24 at 1x, 13 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-automation-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-automation-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-automation-owned.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-collection-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-collection-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-collection-owned.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-combat-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-combat-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-combat-owned.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-logging-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-logging-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-logging-owned.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-luck-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-luck-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-luck-owned.png  native 24x24 at 1x, 12 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-mining-locked.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-mining-open.png  native 24x24 at 1x, 11 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-b-mining-owned.png  native 24x24 at 1x, 12 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-automation-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-automation-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-automation-owned.png  native 24x24 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-collection-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-collection-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-collection-owned.png  native 24x24 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-combat-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-combat-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-combat-owned.png  native 24x24 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-logging-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-logging-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-logging-owned.png  native 24x24 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-luck-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-luck-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-luck-owned.png  native 24x24 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-mining-locked.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-mining-open.png  native 24x24 at 1x, 6 colours
+   warn:  47 edge pixels not ink or light rim (outline gaps?), e.g. [(12, 0), (11, 1), (13, 1), (10, 2), (14, 2), (9, 3)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-c-mining-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-automation-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-automation-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-automation-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-collection-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-collection-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-collection-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-combat-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-combat-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-combat-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-logging-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-logging-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-logging-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-luck-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-luck-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-luck-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-mining-locked.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-mining-open.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-d-mining-owned.png  native 24x24 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-automation-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-automation-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-automation-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-collection-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-collection-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-collection-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-combat-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-combat-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-combat-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-logging-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-logging-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-logging-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-luck-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-luck-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-luck-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-mining-locked.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-mining-open.png  native 24x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-node-e-mining-owned.png  native 24x24 at 1x, 6 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-pt-bubble.png  native 9x9 at 1x, 2 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-pt-ember.png  native 7x9 at 1x, 4 colours
+   warn:  7 edge pixels not ink or light rim (outline gaps?), e.g. [(3, 0), (0, 5), (6, 5), (0, 6), (6, 6), (1, 8)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-pt-glint.png  native 9x9 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-pt-mote.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-pt-star.png  native 7x7 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-starlight-a.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-starlight-b.png  native 48x48 at 1x, 15 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-starlight-c.png  native 48x48 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-starlight-d.png  native 48x48 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-starlight-e.png  native 48x48 at 1x, 14 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-a-battle.png  native 74x74 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-a-cards.png  native 74x74 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-a-gathering.png  native 74x74 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-a-journey.png  native 74x74 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-a-locked.png  native 74x74 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-a-wardrobe.png  native 74x74 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-b-battle.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-b-cards.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-b-gathering.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-b-journey.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-b-locked.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-b-wardrobe.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-c-battle.png  native 74x74 at 1x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-c-cards.png  native 74x74 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-c-gathering.png  native 74x74 at 1x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-c-journey.png  native 74x74 at 1x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-c-locked.png  native 74x74 at 1x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-c-wardrobe.png  native 74x74 at 1x, 9 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-d-battle.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-d-cards.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-d-gathering.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-d-journey.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-d-locked.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-d-wardrobe.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-e-battle.png  native 74x74 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-e-cards.png  native 74x74 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-e-gathering.png  native 74x74 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-e-journey.png  native 74x74 at 1x, 10 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-e-locked.png  native 74x74 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-sticker-e-wardrobe.png  native 74x74 at 1x, 10 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-blossom-1.png  native 6x3 at 16x, 1 colours
+   warn:  14 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-blossom-2.png  native 96x48 at 1x, 3 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-blossom-3.png  native 96x48 at 1x, 5 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-blossom-4.png  native 96x48 at 1x, 6 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-blossom-5.png  native 96x48 at 1x, 6 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-fern-1.png  native 96x48 at 1x, 3 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-fern-2.png  native 96x48 at 1x, 7 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-fern-3.png  native 96x48 at 1x, 9 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-fern-4.png  native 96x48 at 1x, 10 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-fern-5.png  native 96x48 at 1x, 10 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-moss-1.png  native 96x48 at 1x, 2 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-moss-2.png  native 96x48 at 1x, 4 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-moss-3.png  native 96x48 at 1x, 6 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-moss-4.png  native 96x48 at 1x, 7 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-moss-5.png  native 96x48 at 1x, 7 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-verdant-1.png  native 96x48 at 1x, 2 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-verdant-2.png  native 96x48 at 1x, 5 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-verdant-3.png  native 96x48 at 1x, 7 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-verdant-4.png  native 96x48 at 1x, 8 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-verdant-5.png  native 96x48 at 1x, 8 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-vine-1.png  native 96x48 at 1x, 2 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-vine-2.png  native 96x48 at 1x, 4 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-vine-3.png  native 96x48 at 1x, 6 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-vine-4.png  native 96x48 at 1x, 7 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-tb-vine-5.png  native 96x48 at 1x, 7 colours
+   warn:  284 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 0), (1, 0), (2, 0), (3, 0), (4, 0), (5, 0)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-link-done.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-link.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-plate-on.png  native 48x24 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-plate.png  native 48x24 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-rung-done.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-rung-next.png  native 16x16 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-rung-off.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-socket.png  native 28x28 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-tile-on.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-a-tile.png  native 40x48 at 1x, 4 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-link-done.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-link.png  native 8x4 at 1x, 1 colours
+   warn:  8 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (0, 2), (1, 2)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-plate-on.png  native 48x24 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-plate.png  native 48x24 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-rung-done.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-rung-next.png  native 16x16 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-rung-off.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-socket.png  native 28x28 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-tile-on.png  native 40x48 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-b-tile.png  native 40x48 at 1x, 6 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-link-done.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-link.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-plate-on.png  native 48x24 at 1x, 2 colours
+   warn:  100 edge pixels not ink or light rim (outline gaps?), e.g. [(1, 17), (46, 17), (1, 18), (46, 18), (1, 19), (46, 19)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-plate.png  native 48x24 at 1x, 1 colours
+   warn:  54 edge pixels not ink or light rim (outline gaps?), e.g. [(1, 17), (46, 17), (1, 18), (46, 18), (1, 19), (46, 19)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-rung-done.png  native 16x16 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-rung-next.png  native 16x16 at 1x, 3 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-rung-off.png  native 16x16 at 1x, 1 colours
+   warn:  32 edge pixels not ink or light rim (outline gaps?), e.g. [(1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-socket.png  native 28x28 at 1x, 2 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-tile-on.png  native 40x48 at 1x, 1 colours
+   warn:  28 edge pixels not ink or light rim (outline gaps?), e.g. [(1, 1), (2, 1), (3, 1), (4, 1), (35, 1), (36, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-c-tile.png  native 40x48 at 1x, 1 colours
+   warn:  28 edge pixels not ink or light rim (outline gaps?), e.g. [(1, 1), (2, 1), (3, 1), (4, 1), (35, 1), (36, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-link-done.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-link.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-plate-on.png  native 48x24 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-plate.png  native 48x24 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-rung-done.png  native 16x16 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-rung-next.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-rung-off.png  native 16x16 at 1x, 2 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-socket.png  native 28x28 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-tile-on.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-d-tile.png  native 40x48 at 1x, 4 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-link-done.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-link.png  native 8x4 at 1x, 1 colours
+   warn:  16 edge pixels not ink or light rim (outline gaps?), e.g. [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-common.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-epic.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-exotic.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-legendary.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-mythic.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-common.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-epic.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-exotic.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-legendary.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-mythic.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-rare.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-on-void.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-rare.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-plate-void.png  native 48x24 at 1x, 5 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-common.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-epic.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-exotic.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-legendary.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-mythic.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-rare.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-done-void.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-common.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-epic.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-exotic.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-legendary.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-mythic.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-rare.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-next-void.png  native 16x16 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-common.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-epic.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-exotic.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-legendary.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-mythic.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-rare.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-rung-off-void.png  native 16x16 at 1x, 3 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-socket.png  native 28x28 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-common.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-epic.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-exotic.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-legendary.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-mythic.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-common.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-epic.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-exotic.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-legendary.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-mythic.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-rare.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-on-void.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-rare.png  native 40x48 at 1x, 4 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\cos-wd-e-tile-void.png  native 40x48 at 1x, 4 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-drop-0.png  native 71x61 at 1x, 19 colours
+   warn:  3 orphan pixels, e.g. [(43, 22), (20, 54), (20, 55)]
+   warn:  133 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-drop-1.png  native 71x61 at 1x, 21 colours
+   warn:  3 orphan pixels, e.g. [(43, 22), (39, 28), (24, 49)]
+   warn:  139 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-drop-2.png  native 71x61 at 1x, 27 colours
+   warn:  7 orphan pixels, e.g. [(43, 22), (39, 28), (26, 42), (27, 46), (23, 47), (23, 48)]
+   warn:  146 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-drop-3.png  native 71x61 at 1x, 29 colours
+   warn:  25 orphan pixels, e.g. [(39, 23), (40, 25), (35, 28), (35, 29), (37, 29), (38, 30)]
+   warn:  156 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-drop-4.png  native 71x61 at 1x, 30 colours
+   warn:  30 orphan pixels, e.g. [(38, 22), (38, 23), (39, 23), (37, 24), (40, 25), (35, 28)]
+   warn:  156 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-hexagon-0.png  native 71x61 at 1x, 20 colours
+   warn:  5 orphan pixels, e.g. [(51, 8), (50, 9), (45, 18), (20, 54), (20, 55)]
+   warn:  133 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-hexagon-1.png  native 71x61 at 1x, 21 colours
+   warn:  3 orphan pixels, e.g. [(43, 22), (39, 28), (24, 49)]
+   warn:  139 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-hexagon-2.png  native 71x61 at 1x, 27 colours
+   warn:  7 orphan pixels, e.g. [(43, 22), (39, 28), (26, 42), (27, 46), (23, 47), (23, 48)]
+   warn:  146 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-hexagon-3.png  native 71x61 at 1x, 30 colours
+   warn:  25 orphan pixels, e.g. [(39, 23), (40, 25), (35, 28), (35, 29), (37, 29), (38, 30)]
+   warn:  156 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-hexagon-4.png  native 71x61 at 1x, 30 colours
+   warn:  30 orphan pixels, e.g. [(38, 22), (38, 23), (39, 23), (37, 24), (40, 25), (35, 28)]
+   warn:  156 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-square-0.png  native 71x61 at 1x, 19 colours
+   warn:  3 orphan pixels, e.g. [(43, 22), (20, 54), (20, 55)]
+   warn:  133 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-square-1.png  native 71x61 at 1x, 21 colours
+   warn:  7 orphan pixels, e.g. [(42, 22), (43, 22), (39, 27), (39, 28), (28, 39), (27, 44)]
+   warn:  139 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-square-2.png  native 71x61 at 1x, 27 colours
+   warn:  11 orphan pixels, e.g. [(42, 22), (43, 22), (39, 27), (39, 28), (28, 39), (27, 41)]
+   warn:  146 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-square-3.png  native 71x61 at 1x, 30 colours
+   warn:  30 orphan pixels, e.g. [(38, 22), (38, 23), (39, 23), (37, 24), (40, 25), (35, 28)]
+   warn:  156 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\edge-square-4.png  native 71x61 at 1x, 30 colours
+   warn:  30 orphan pixels, e.g. [(38, 22), (38, 23), (39, 23), (37, 24), (40, 25), (35, 28)]
+   warn:  156 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 1), (53, 1), (51, 2), (54, 2), (50, 3), (54, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-flameblade.png  native 100x120 at 1x, 46 colours
+   warn:  36 orphan pixels, e.g. [(76, 17), (76, 18), (74, 23), (74, 24), (64, 28), (64, 29)]
+   warn:  273 edge pixels not ink or light rim (outline gaps?), e.g. [(81, 5), (80, 6), (82, 6), (80, 7), (82, 7), (79, 8)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-rootbloom_staff-crystal0.png  native 16x16 at 1x, 15 colours
+   warn:  2 orphan pixels, e.g. [(8, 8), (9, 11)]
+   warn:  34 edge pixels not ink or light rim (outline gaps?), e.g. [(5, 1), (6, 1), (7, 1), (4, 2), (8, 2), (4, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-rootbloom_staff-crystal1.png  native 16x16 at 1x, 15 colours
+   warn:  4 orphan pixels, e.g. [(8, 5), (7, 7), (7, 9), (7, 10)]
+   warn:  31 edge pixels not ink or light rim (outline gaps?), e.g. [(9, 1), (10, 1), (7, 2), (8, 2), (11, 2), (6, 3)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-rootbloom_staff-crystal2.png  native 16x16 at 1x, 12 colours
+   warn:  3 orphan pixels, e.g. [(8, 5), (6, 8), (7, 8)]
+   warn:  24 edge pixels not ink or light rim (outline gaps?), e.g. [(8, 2), (7, 3), (9, 3), (6, 4), (10, 4), (5, 5)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-rootbloom_staff-crystal3.png  native 16x16 at 1x, 12 colours
+   warn:  6 orphan pixels, e.g. [(7, 5), (6, 7), (8, 7), (9, 7), (7, 8), (7, 9)]
+   warn:  26 edge pixels not ink or light rim (outline gaps?), e.g. [(6, 2), (7, 2), (5, 3), (8, 3), (5, 4), (9, 4)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-rootbloom_staff.png  native 100x120 at 1x, 103 colours
+   warn:  137 orphan pixels, e.g. [(63, 18), (63, 19), (42, 20), (41, 21), (42, 21), (42, 22)]
+   warn:  399 edge pixels not ink or light rim (outline gaps?), e.g. [(62, 13), (63, 13), (40, 14), (41, 14), (61, 14), (64, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\evo-soul_reaper.png  native 100x120 at 1x, 34 colours
+   warn:  21 orphan pixels, e.g. [(56, 15), (59, 15), (72, 23), (75, 24), (80, 25), (80, 26)]
+   warn:  349 edge pixels not ink or light rim (outline gaps?), e.g. [(58, 6), (59, 6), (60, 6), (61, 6), (62, 6), (55, 7)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\frame-bronze.png  native 183x237 at 1x, 21 colours
+   warn:  26 orphan pixels, e.g. [(32, 39), (33, 39), (35, 39), (139, 39), (149, 39), (137, 40)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\frame-gold.png  native 183x237 at 1x, 42 colours
+   warn:  182 orphan pixels, e.g. [(92, 29), (94, 33), (32, 39), (35, 39), (45, 39), (46, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\frame-prismatic.png  native 183x237 at 1x, 62 colours
+   warn:  121 orphan pixels, e.g. [(92, 35), (93, 35), (78, 38), (104, 38), (32, 39), (43, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\frame-silver.png  native 183x237 at 1x, 27 colours
+   warn:  47 orphan pixels, e.g. [(32, 39), (35, 39), (36, 39), (97, 39), (98, 39), (149, 39)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-common.png  native 100x120 at 1x, 28 colours
+   warn:  36 orphan pixels, e.g. [(82, 37), (83, 37), (83, 38), (83, 39), (84, 39), (84, 40)]
+   warn:  464 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-epic.png  native 100x120 at 1x, 32 colours
+   warn:  42 orphan pixels, e.g. [(58, 11), (58, 12), (73, 26), (74, 27), (82, 37), (83, 37)]
+   warn:  463 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-exotic.png  native 100x120 at 1x, 30 colours
+   warn:  31 orphan pixels, e.g. [(58, 11), (58, 12), (73, 26), (74, 26), (76, 26), (74, 27)]
+   warn:  478 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-legendary.png  native 100x120 at 1x, 27 colours
+   warn:  36 orphan pixels, e.g. [(58, 11), (58, 12), (73, 26), (75, 29), (82, 37), (83, 37)]
+   warn:  477 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-mythic.png  native 100x120 at 1x, 29 colours
+   warn:  36 orphan pixels, e.g. [(58, 11), (58, 12), (73, 26), (74, 26), (76, 26), (74, 27)]
+   warn:  476 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-rare.png  native 100x120 at 1x, 28 colours
+   warn:  36 orphan pixels, e.g. [(82, 37), (83, 37), (83, 38), (83, 39), (84, 39), (84, 40)]
+   warn:  464 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-bow-void.png  native 100x120 at 1x, 45 colours
+   warn:  45 orphan pixels, e.g. [(58, 11), (58, 12), (73, 26), (74, 26), (74, 27), (76, 29)]
+   warn:  529 edge pixels not ink or light rim (outline gaps?), e.g. [(56, 7), (55, 8), (57, 8), (58, 8), (55, 9), (59, 9)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-common.png  native 100x120 at 1x, 29 colours
+   warn:  13 orphan pixels, e.g. [(56, 65), (46, 67), (47, 67), (77, 69), (82, 69), (77, 70)]
+   warn:  209 edge pixels not ink or light rim (outline gaps?), e.g. [(67, 25), (66, 26), (68, 26), (69, 26), (65, 27), (70, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-epic.png  native 100x120 at 1x, 35 colours
+   warn:  17 orphan pixels, e.g. [(52, 62), (52, 63), (53, 63), (53, 64), (54, 64), (54, 65)]
+   warn:  209 edge pixels not ink or light rim (outline gaps?), e.g. [(67, 25), (66, 26), (68, 26), (69, 26), (65, 27), (70, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-exotic.png  native 100x120 at 1x, 45 colours
+   warn:  29 orphan pixels, e.g. [(76, 26), (77, 32), (66, 41), (65, 44), (64, 45), (62, 48)]
+   warn:  283 edge pixels not ink or light rim (outline gaps?), e.g. [(72, 22), (73, 22), (70, 23), (71, 23), (74, 23), (69, 24)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-legendary.png  native 100x120 at 1x, 39 colours
+   warn:  16 orphan pixels, e.g. [(52, 62), (52, 63), (54, 64), (54, 65), (46, 67), (77, 69)]
+   warn:  236 edge pixels not ink or light rim (outline gaps?), e.g. [(67, 25), (66, 26), (68, 26), (69, 26), (65, 27), (70, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-mythic.png  native 100x120 at 1x, 41 colours
+   warn:  24 orphan pixels, e.g. [(66, 41), (65, 44), (64, 45), (62, 48), (60, 52), (57, 56)]
+   warn:  236 edge pixels not ink or light rim (outline gaps?), e.g. [(67, 25), (66, 26), (68, 26), (69, 26), (65, 27), (70, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-rare.png  native 100x120 at 1x, 29 colours
+   warn:  13 orphan pixels, e.g. [(56, 65), (46, 67), (47, 67), (77, 69), (82, 69), (77, 70)]
+   warn:  209 edge pixels not ink or light rim (outline gaps?), e.g. [(67, 25), (66, 26), (68, 26), (69, 26), (65, 27), (70, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-chisel-void.png  native 100x120 at 1x, 40 colours
+   warn:  43 orphan pixels, e.g. [(67, 25), (67, 26), (68, 26), (69, 26), (71, 26), (76, 26)]
+   warn:  314 edge pixels not ink or light rim (outline gaps?), e.g. [(66, 20), (65, 21), (67, 21), (64, 22), (68, 22), (72, 22)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-common.png  native 100x120 at 1x, 28 colours
+   warn:  23 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  235 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 37), (37, 37), (38, 37), (39, 37), (40, 37), (46, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-epic.png  native 100x120 at 1x, 29 colours
+   warn:  18 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  233 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 37), (37, 37), (38, 37), (39, 37), (40, 37), (46, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-exotic.png  native 100x120 at 1x, 34 colours
+   warn:  43 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  302 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 27), (57, 27), (37, 28), (39, 28), (47, 28), (48, 28)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-legendary.png  native 100x120 at 1x, 34 colours
+   warn:  38 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  278 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 30), (57, 30), (37, 31), (39, 31), (47, 31), (48, 31)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-mythic.png  native 100x120 at 1x, 33 colours
+   warn:  21 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  278 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 30), (57, 30), (37, 31), (39, 31), (47, 31), (48, 31)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-rare.png  native 100x120 at 1x, 30 colours
+   warn:  33 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  235 edge pixels not ink or light rim (outline gaps?), e.g. [(36, 37), (37, 37), (38, 37), (39, 37), (40, 37), (46, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-gauntlet-void.png  native 100x120 at 1x, 31 colours
+   warn:  38 orphan pixels, e.g. [(50, 42), (69, 42), (41, 43), (60, 43), (51, 44), (52, 44)]
+   warn:  352 edge pixels not ink or light rim (outline gaps?), e.g. [(66, 20), (65, 21), (67, 21), (64, 22), (68, 22), (63, 23)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-common.png  native 100x120 at 1x, 28 colours
+   warn:  20 orphan pixels, e.g. [(57, 10), (55, 14), (51, 15), (56, 15), (51, 16), (84, 19)]
+   warn:  260 edge pixels not ink or light rim (outline gaps?), e.g. [(58, 5), (56, 6), (57, 6), (59, 6), (55, 7), (59, 7)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-epic.png  native 100x120 at 1x, 36 colours
+   warn:  42 orphan pixels, e.g. [(57, 10), (68, 10), (65, 12), (78, 13), (55, 14), (64, 14)]
+   warn:  296 edge pixels not ink or light rim (outline gaps?), e.g. [(58, 5), (69, 5), (56, 6), (57, 6), (59, 6), (67, 6)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-exotic.png  native 100x120 at 1x, 45 colours
+   warn:  84 orphan pixels, e.g. [(61, 9), (57, 10), (57, 11), (58, 11), (59, 11), (60, 11)]
+   warn:  286 edge pixels not ink or light rim (outline gaps?), e.g. [(64, 3), (65, 3), (62, 4), (63, 4), (66, 4), (70, 4)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-legendary.png  native 100x120 at 1x, 43 colours
+   warn:  53 orphan pixels, e.g. [(66, 9), (57, 10), (65, 11), (73, 11), (64, 13), (55, 14)]
+   warn:  323 edge pixels not ink or light rim (outline gaps?), e.g. [(67, 4), (58, 5), (65, 5), (66, 5), (68, 5), (56, 6)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-mythic.png  native 100x120 at 1x, 44 colours
+   warn:  71 orphan pixels, e.g. [(71, 9), (57, 10), (57, 11), (61, 11), (70, 11), (57, 12)]
+   warn:  296 edge pixels not ink or light rim (outline gaps?), e.g. [(66, 3), (64, 4), (65, 4), (67, 4), (58, 5), (63, 5)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-rare.png  native 100x120 at 1x, 30 colours
+   warn:  29 orphan pixels, e.g. [(57, 10), (55, 14), (51, 15), (56, 15), (69, 15), (51, 16)]
+   warn:  279 edge pixels not ink or light rim (outline gaps?), e.g. [(58, 5), (56, 6), (57, 6), (59, 6), (55, 7), (59, 7)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-geode_hammer-void.png  native 100x120 at 1x, 42 colours
+   warn:  78 orphan pixels, e.g. [(61, 9), (57, 11), (58, 11), (59, 11), (60, 11), (65, 11)]
+   warn:  360 edge pixels not ink or light rim (outline gaps?), e.g. [(64, 3), (65, 3), (62, 4), (63, 4), (66, 4), (70, 4)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-common.png  native 100x120 at 1x, 22 colours
+   warn:  4 orphan pixels, e.g. [(35, 83), (36, 83), (36, 84), (37, 84)]
+   warn:  228 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-epic.png  native 100x120 at 1x, 35 colours
+   warn:  22 orphan pixels, e.g. [(74, 24), (36, 74), (37, 78), (36, 79), (37, 79), (33, 82)]
+   warn:  240 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-exotic.png  native 100x120 at 1x, 37 colours
+   warn:  35 orphan pixels, e.g. [(66, 19), (74, 24), (62, 25), (60, 29), (68, 30), (54, 38)]
+   warn:  295 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-legendary.png  native 100x120 at 1x, 38 colours
+   warn:  35 orphan pixels, e.g. [(66, 19), (74, 24), (62, 25), (60, 29), (68, 30), (54, 38)]
+   warn:  285 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-mythic.png  native 100x120 at 1x, 38 colours
+   warn:  34 orphan pixels, e.g. [(66, 19), (74, 24), (62, 25), (60, 29), (68, 30), (54, 38)]
+   warn:  296 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-rare.png  native 100x120 at 1x, 30 colours
+   warn:  16 orphan pixels, e.g. [(36, 83), (32, 84), (36, 84), (37, 84), (30, 88), (29, 92)]
+   warn:  229 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-greatsword-void.png  native 100x120 at 1x, 42 colours
+   warn:  44 orphan pixels, e.g. [(66, 21), (67, 21), (68, 24), (74, 24), (64, 25), (67, 25)]
+   warn:  354 edge pixels not ink or light rim (outline gaps?), e.g. [(74, 11), (75, 11), (76, 11), (77, 11), (78, 11), (79, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-common.png  native 100x120 at 1x, 26 colours
+   warn:  10 orphan pixels, e.g. [(66, 30), (58, 36), (59, 36), (60, 36), (59, 37), (60, 37)]
+   warn:  223 edge pixels not ink or light rim (outline gaps?), e.g. [(82, 24), (83, 24), (84, 24), (85, 24), (86, 24), (68, 25)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-epic.png  native 100x120 at 1x, 31 colours
+   warn:  17 orphan pixels, e.g. [(66, 30), (66, 31), (66, 32), (64, 33), (66, 33), (65, 35)]
+   warn:  227 edge pixels not ink or light rim (outline gaps?), e.g. [(82, 24), (83, 24), (84, 24), (85, 24), (86, 24), (68, 25)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-exotic.png  native 100x120 at 1x, 38 colours
+   warn:  27 orphan pixels, e.g. [(61, 28), (68, 30), (57, 32), (66, 32), (64, 33), (66, 33)]
+   warn:  283 edge pixels not ink or light rim (outline gaps?), e.g. [(54, 15), (53, 16), (55, 16), (53, 17), (56, 17), (52, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-legendary.png  native 100x120 at 1x, 33 colours
+   warn:  21 orphan pixels, e.g. [(66, 30), (66, 31), (66, 32), (64, 33), (66, 33), (71, 34)]
+   warn:  256 edge pixels not ink or light rim (outline gaps?), e.g. [(82, 24), (83, 24), (84, 24), (85, 24), (86, 24), (68, 25)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-mythic.png  native 100x120 at 1x, 36 colours
+   warn:  25 orphan pixels, e.g. [(61, 28), (58, 30), (66, 30), (58, 31), (66, 31), (57, 32)]
+   warn:  286 edge pixels not ink or light rim (outline gaps?), e.g. [(54, 15), (53, 16), (55, 16), (53, 17), (56, 17), (52, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-rare.png  native 100x120 at 1x, 28 colours
+   warn:  7 orphan pixels, e.g. [(66, 30), (58, 36), (59, 36), (60, 36), (59, 37), (60, 37)]
+   warn:  223 edge pixels not ink or light rim (outline gaps?), e.g. [(82, 24), (83, 24), (84, 24), (85, 24), (86, 24), (68, 25)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-hatchet-void.png  native 100x120 at 1x, 37 colours
+   warn:  29 orphan pixels, e.g. [(67, 25), (67, 26), (61, 28), (66, 30), (66, 31), (57, 32)]
+   warn:  356 edge pixels not ink or light rim (outline gaps?), e.g. [(54, 15), (53, 16), (55, 16), (53, 17), (56, 17), (52, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-common.png  native 100x120 at 1x, 33 colours
+   warn:  21 orphan pixels, e.g. [(47, 19), (48, 19), (46, 21), (47, 22), (47, 23), (41, 25)]
+   warn:  234 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-epic.png  native 100x120 at 1x, 46 colours
+   warn:  25 orphan pixels, e.g. [(47, 19), (48, 19), (46, 21), (47, 22), (46, 24), (41, 25)]
+   warn:  238 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-exotic.png  native 100x120 at 1x, 49 colours
+   warn:  48 orphan pixels, e.g. [(56, 19), (57, 19), (44, 20), (46, 20), (48, 21), (54, 21)]
+   warn:  274 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-legendary.png  native 100x120 at 1x, 44 colours
+   warn:  34 orphan pixels, e.g. [(47, 19), (48, 19), (46, 21), (47, 22), (46, 24), (41, 25)]
+   warn:  263 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-mythic.png  native 100x120 at 1x, 45 colours
+   warn:  37 orphan pixels, e.g. [(47, 19), (48, 19), (46, 21), (47, 22), (55, 22), (46, 24)]
+   warn:  263 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-rare.png  native 100x120 at 1x, 39 colours
+   warn:  23 orphan pixels, e.g. [(47, 19), (48, 19), (46, 21), (47, 22), (46, 24), (41, 25)]
+   warn:  234 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-maul-void.png  native 100x120 at 1x, 56 colours
+   warn:  54 orphan pixels, e.g. [(51, 16), (47, 19), (48, 19), (49, 19), (44, 20), (46, 20)]
+   warn:  348 edge pixels not ink or light rim (outline gaps?), e.g. [(48, 13), (49, 13), (50, 13), (47, 14), (51, 14), (52, 14)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-common.png  native 100x120 at 1x, 28 colours
+   warn:  20 orphan pixels, e.g. [(62, 25), (61, 26), (62, 26), (59, 28), (67, 28), (68, 29)]
+   warn:  278 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 19), (39, 19), (40, 19), (41, 19), (42, 19), (43, 19)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-epic.png  native 100x120 at 1x, 33 colours
+   warn:  20 orphan pixels, e.g. [(62, 25), (64, 26), (64, 27), (65, 27), (66, 27), (67, 28)]
+   warn:  282 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 19), (39, 19), (40, 19), (41, 19), (42, 19), (43, 19)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-exotic.png  native 100x120 at 1x, 40 colours
+   warn:  34 orphan pixels, e.g. [(40, 22), (53, 22), (41, 23), (41, 24), (64, 27), (59, 28)]
+   warn:  319 edge pixels not ink or light rim (outline gaps?), e.g. [(40, 17), (41, 17), (48, 17), (39, 18), (42, 18), (46, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-legendary.png  native 100x120 at 1x, 34 colours
+   warn:  30 orphan pixels, e.g. [(62, 25), (64, 26), (64, 27), (65, 27), (66, 27), (59, 28)]
+   warn:  315 edge pixels not ink or light rim (outline gaps?), e.g. [(40, 17), (41, 17), (48, 17), (39, 18), (42, 18), (46, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-mythic.png  native 100x120 at 1x, 37 colours
+   warn:  33 orphan pixels, e.g. [(40, 22), (41, 23), (51, 23), (41, 24), (51, 24), (64, 26)]
+   warn:  319 edge pixels not ink or light rim (outline gaps?), e.g. [(40, 17), (41, 17), (48, 17), (39, 18), (42, 18), (46, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-rare.png  native 100x120 at 1x, 30 colours
+   warn:  19 orphan pixels, e.g. [(62, 25), (61, 26), (62, 26), (59, 28), (67, 28), (68, 29)]
+   warn:  278 edge pixels not ink or light rim (outline gaps?), e.g. [(38, 19), (39, 19), (40, 19), (41, 19), (42, 19), (43, 19)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-pickaxe-void.png  native 100x120 at 1x, 37 colours
+   warn:  43 orphan pixels, e.g. [(48, 19), (39, 21), (43, 21), (49, 21), (51, 21), (35, 22)]
+   warn:  380 edge pixels not ink or light rim (outline gaps?), e.g. [(40, 17), (41, 17), (48, 17), (39, 18), (42, 18), (46, 18)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-common.png  native 100x120 at 1x, 23 colours
+   warn:  37 orphan pixels, e.g. [(58, 20), (61, 21), (64, 22), (47, 23), (68, 23), (69, 23)]
+   warn:  244 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-epic.png  native 100x120 at 1x, 27 colours
+   warn:  40 orphan pixels, e.g. [(58, 20), (61, 21), (64, 22), (47, 23), (68, 23), (69, 23)]
+   warn:  243 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-exotic.png  native 100x120 at 1x, 44 colours
+   warn:  70 orphan pixels, e.g. [(58, 20), (59, 20), (61, 21), (62, 21), (64, 22), (65, 22)]
+   warn:  317 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-legendary.png  native 100x120 at 1x, 32 colours
+   warn:  42 orphan pixels, e.g. [(58, 20), (59, 20), (61, 21), (62, 21), (64, 22), (65, 22)]
+   warn:  266 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-mythic.png  native 100x120 at 1x, 32 colours
+   warn:  45 orphan pixels, e.g. [(58, 20), (59, 20), (61, 21), (62, 21), (64, 22), (65, 22)]
+   warn:  265 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-rare.png  native 100x120 at 1x, 28 colours
+   warn:  37 orphan pixels, e.g. [(58, 20), (61, 21), (64, 22), (47, 23), (68, 23), (69, 23)]
+   warn:  244 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-shield-void.png  native 100x120 at 1x, 40 colours
+   warn:  72 orphan pixels, e.g. [(57, 20), (58, 20), (59, 20), (60, 21), (61, 21), (62, 21)]
+   warn:  338 edge pixels not ink or light rim (outline gaps?), e.g. [(52, 12), (53, 12), (54, 12), (55, 12), (56, 12), (57, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-common.png  native 100x120 at 1x, 29 colours
+   warn:  40 orphan pixels, e.g. [(50, 31), (53, 31), (53, 32), (51, 33), (53, 33), (58, 33)]
+   warn:  208 edge pixels not ink or light rim (outline gaps?), e.g. [(50, 27), (54, 27), (55, 27), (56, 27), (57, 27), (58, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-epic.png  native 100x120 at 1x, 35 colours
+   warn:  49 orphan pixels, e.g. [(51, 30), (45, 32), (46, 32), (52, 32), (54, 35), (58, 35)]
+   warn:  220 edge pixels not ink or light rim (outline gaps?), e.g. [(55, 25), (56, 25), (57, 25), (58, 25), (53, 26), (54, 26)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-exotic.png  native 100x120 at 1x, 44 colours
+   warn:  65 orphan pixels, e.g. [(56, 27), (56, 28), (51, 30), (46, 32), (52, 32), (46, 33)]
+   warn:  254 edge pixels not ink or light rim (outline gaps?), e.g. [(55, 25), (56, 25), (57, 25), (58, 25), (59, 25), (60, 25)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-legendary.png  native 100x120 at 1x, 41 colours
+   warn:  54 orphan pixels, e.g. [(51, 30), (45, 32), (46, 32), (52, 32), (54, 35), (58, 35)]
+   warn:  222 edge pixels not ink or light rim (outline gaps?), e.g. [(55, 25), (56, 25), (57, 25), (58, 25), (53, 26), (54, 26)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-mythic.png  native 100x120 at 1x, 42 colours
+   warn:  55 orphan pixels, e.g. [(51, 30), (45, 32), (46, 32), (52, 32), (54, 35), (54, 36)]
+   warn:  226 edge pixels not ink or light rim (outline gaps?), e.g. [(55, 25), (56, 25), (57, 25), (58, 25), (53, 26), (54, 26)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-rare.png  native 100x120 at 1x, 33 colours
+   warn:  51 orphan pixels, e.g. [(50, 31), (53, 31), (53, 32), (51, 33), (53, 33), (58, 33)]
+   warn:  221 edge pixels not ink or light rim (outline gaps?), e.g. [(50, 27), (54, 27), (55, 27), (56, 27), (57, 27), (58, 27)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-staff-void.png  native 100x120 at 1x, 35 colours
+   warn:  63 orphan pixels, e.g. [(45, 32), (46, 32), (52, 33), (53, 36), (53, 37), (53, 38)]
+   warn:  321 edge pixels not ink or light rim (outline gaps?), e.g. [(66, 20), (65, 21), (67, 21), (64, 22), (68, 22), (63, 23)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-common.png  native 100x120 at 1x, 24 colours
+   warn:  1 orphan pixels, e.g. [(78, 16)]
+   warn:  225 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 10), (78, 11), (79, 11), (81, 11), (77, 12), (81, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-epic.png  native 100x120 at 1x, 35 colours
+   warn:  17 orphan pixels, e.g. [(76, 23), (74, 24), (76, 24), (53, 62), (36, 81), (39, 84)]
+   warn:  247 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 10), (78, 11), (79, 11), (81, 11), (77, 12), (81, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-exotic.png  native 100x120 at 1x, 42 colours
+   warn:  52 orphan pixels, e.g. [(64, 26), (77, 26), (59, 34), (64, 38), (56, 39), (64, 39)]
+   warn:  309 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 4), (78, 5), (79, 5), (81, 5), (77, 6), (81, 6)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-legendary.png  native 100x120 at 1x, 38 colours
+   warn:  19 orphan pixels, e.g. [(65, 25), (76, 26), (53, 44), (47, 54), (58, 56), (56, 59)]
+   warn:  281 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 10), (78, 11), (79, 11), (81, 11), (77, 12), (81, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-mythic.png  native 100x120 at 1x, 41 colours
+   warn:  33 orphan pixels, e.g. [(65, 25), (76, 26), (64, 38), (64, 39), (63, 40), (64, 40)]
+   warn:  288 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 10), (78, 11), (79, 11), (81, 11), (77, 12), (81, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-rare.png  native 100x120 at 1x, 28 colours
+   warn:  10 orphan pixels, e.g. [(53, 62), (27, 83), (35, 88), (43, 93), (23, 100), (24, 101)]
+   warn:  233 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 10), (78, 11), (79, 11), (81, 11), (77, 12), (81, 12)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-sword-void.png  native 100x120 at 1x, 41 colours
+   warn:  31 orphan pixels, e.g. [(77, 16), (68, 24), (67, 25), (76, 26), (65, 28), (64, 38)]
+   warn:  380 edge pixels not ink or light rim (outline gaps?), e.g. [(80, 4), (78, 5), (79, 5), (81, 5), (77, 6), (81, 6)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-common.png  native 100x120 at 1x, 27 colours
+   warn:  11 orphan pixels, e.g. [(60, 48), (61, 50), (62, 53), (34, 60), (33, 65), (65, 82)]
+   warn:  453 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-epic.png  native 100x120 at 1x, 31 colours
+   warn:  27 orphan pixels, e.g. [(74, 24), (59, 44), (60, 46), (61, 47), (61, 48), (61, 49)]
+   warn:  458 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-exotic.png  native 100x120 at 1x, 41 colours
+   warn:  61 orphan pixels, e.g. [(61, 18), (51, 22), (54, 24), (74, 24), (54, 32), (46, 33)]
+   warn:  554 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-legendary.png  native 100x120 at 1x, 35 colours
+   warn:  46 orphan pixels, e.g. [(61, 18), (51, 22), (54, 24), (74, 24), (46, 33), (43, 38)]
+   warn:  499 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-mythic.png  native 100x120 at 1x, 39 colours
+   warn:  58 orphan pixels, e.g. [(61, 18), (51, 22), (54, 24), (74, 24), (54, 32), (46, 33)]
+   warn:  507 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-rare.png  native 100x120 at 1x, 31 colours
+   warn:  19 orphan pixels, e.g. [(59, 44), (60, 46), (61, 47), (61, 48), (61, 49), (62, 50)]
+   warn:  457 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\item-twin_blades-void.png  native 100x120 at 1x, 48 colours
+   warn:  103 orphan pixels, e.g. [(30, 13), (66, 15), (69, 15), (66, 16), (51, 22), (68, 22)]
+   warn:  545 edge pixels not ink or light rim (outline gaps?), e.g. [(27, 11), (28, 11), (29, 11), (30, 11), (31, 11), (32, 11)]
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\medal-0.png  native 48x48 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\medal-1.png  native 48x48 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\medal-2.png  native 48x48 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\medal-3.png  native 48x48 at 1x, 7 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\medal-4.png  native 48x48 at 1x, 8 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-achievements.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-cards.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-dungeons.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-home.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-production.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-settings.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-shop.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-skills.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-summon.png  native 64x64 at 1x, 16 colours
+[OK] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\plaque-wardrobe.png  native 64x64 at 1x, 16 colours
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-drop-0.png  native 58x64 at 1x, 54 colours
+   warn:  15 orphan pixels, e.g. [(26, 35), (23, 40), (25, 40), (30, 40), (36, 40), (23, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-drop-1.png  native 58x64 at 1x, 65 colours
+   warn:  28 orphan pixels, e.g. [(23, 34), (23, 35), (25, 36), (26, 36), (26, 37), (41, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-drop-2.png  native 58x64 at 1x, 62 colours
+   warn:  22 orphan pixels, e.g. [(28, 21), (29, 21), (30, 29), (22, 30), (22, 31), (30, 32)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-drop-3.png  native 58x64 at 1x, 67 colours
+   warn:  18 orphan pixels, e.g. [(28, 17), (29, 17), (30, 25), (22, 26), (22, 27), (22, 28)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-drop-4.png  native 58x64 at 1x, 64 colours
+   warn:  38 orphan pixels, e.g. [(28, 11), (29, 11), (30, 19), (21, 21), (21, 22), (21, 23)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-hexagon-0.png  native 58x64 at 1x, 54 colours
+   warn:  15 orphan pixels, e.g. [(26, 35), (23, 40), (25, 40), (30, 40), (36, 40), (23, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-hexagon-1.png  native 58x64 at 1x, 65 colours
+   warn:  28 orphan pixels, e.g. [(23, 34), (23, 35), (25, 36), (26, 36), (26, 37), (41, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-hexagon-2.png  native 58x64 at 1x, 62 colours
+   warn:  23 orphan pixels, e.g. [(28, 21), (29, 21), (30, 29), (22, 30), (22, 31), (30, 32)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-hexagon-3.png  native 58x64 at 1x, 67 colours
+   warn:  18 orphan pixels, e.g. [(28, 17), (29, 17), (30, 25), (22, 26), (22, 27), (22, 28)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-hexagon-4.png  native 58x64 at 1x, 64 colours
+   warn:  38 orphan pixels, e.g. [(28, 11), (29, 11), (30, 19), (21, 21), (21, 22), (21, 23)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-square-0.png  native 58x64 at 1x, 54 colours
+   warn:  15 orphan pixels, e.g. [(26, 35), (23, 40), (25, 40), (30, 40), (36, 40), (23, 41)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-square-1.png  native 58x64 at 1x, 62 colours
+   warn:  28 orphan pixels, e.g. [(23, 34), (23, 35), (25, 36), (26, 36), (26, 37), (41, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-square-2.png  native 58x64 at 1x, 62 colours
+   warn:  22 orphan pixels, e.g. [(28, 21), (29, 21), (30, 29), (22, 30), (22, 31), (30, 32)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-square-3.png  native 58x64 at 1x, 66 colours
+   warn:  21 orphan pixels, e.g. [(28, 17), (29, 17), (30, 25), (22, 26), (22, 27), (22, 28)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-mine-square-4.png  native 58x64 at 1x, 64 colours
+   warn:  38 orphan pixels, e.g. [(28, 11), (29, 11), (30, 19), (21, 21), (21, 22), (21, 23)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-pentagon-0.png  native 58x64 at 1x, 34 colours
+   warn:  7 orphan pixels, e.g. [(34, 36), (25, 38), (20, 42), (25, 45), (14, 48), (34, 48)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-pentagon-1.png  native 58x64 at 1x, 55 colours
+   warn:  23 orphan pixels, e.g. [(35, 21), (34, 22), (35, 22), (34, 23), (30, 34), (31, 34)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-pentagon-2.png  native 58x64 at 1x, 56 colours
+   warn:  15 orphan pixels, e.g. [(29, 30), (30, 34), (31, 34), (34, 34), (18, 35), (29, 35)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-pentagon-3.png  native 58x64 at 1x, 59 colours
+   warn:  11 orphan pixels, e.g. [(37, 28), (30, 33), (33, 33), (29, 34), (35, 35), (17, 37)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-pentagon-4.png  native 58x64 at 1x, 56 colours
+   warn:  17 orphan pixels, e.g. [(38, 27), (44, 27), (13, 29), (35, 29), (43, 31), (22, 32)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-round-0.png  native 58x64 at 1x, 34 colours
+   warn:  7 orphan pixels, e.g. [(34, 36), (25, 38), (20, 42), (25, 45), (14, 48), (34, 48)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-round-1.png  native 58x64 at 1x, 55 colours
+   warn:  23 orphan pixels, e.g. [(35, 21), (34, 22), (35, 22), (34, 23), (37, 26), (30, 34)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-round-2.png  native 58x64 at 1x, 57 colours
+   warn:  17 orphan pixels, e.g. [(29, 30), (37, 32), (30, 34), (31, 34), (34, 34), (18, 35)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-round-3.png  native 58x64 at 1x, 59 colours
+   warn:  15 orphan pixels, e.g. [(30, 23), (40, 32), (41, 32), (27, 33), (30, 33), (32, 33)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-round-4.png  native 58x64 at 1x, 59 colours
+   warn:  26 orphan pixels, e.g. [(39, 17), (22, 19), (20, 21), (39, 27), (44, 27), (36, 28)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-star-0.png  native 58x64 at 1x, 34 colours
+   warn:  7 orphan pixels, e.g. [(34, 36), (25, 38), (20, 42), (25, 45), (14, 48), (34, 48)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-star-1.png  native 58x64 at 1x, 53 colours
+   warn:  22 orphan pixels, e.g. [(35, 21), (34, 22), (35, 22), (34, 23), (30, 34), (31, 34)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-star-2.png  native 58x64 at 1x, 53 colours
+   warn:  13 orphan pixels, e.g. [(29, 30), (19, 34), (30, 34), (31, 34), (20, 42), (23, 44)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-star-3.png  native 58x64 at 1x, 55 colours
+   warn:  9 orphan pixels, e.g. [(33, 24), (34, 24), (32, 26), (37, 28), (20, 42), (14, 48)]
+[WARN] C:\Basic Incremental\src\renderer\src\art\pixel\sprites\tile-tree-star-4.png  native 58x64 at 1x, 54 colours
+   warn:  15 orphan pixels, e.g. [(42, 17), (36, 21), (38, 27), (44, 27), (13, 29), (43, 31)]
+854 file(s), 0 with errors

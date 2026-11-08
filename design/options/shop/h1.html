@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Shop option 1: Ledger</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* H1 Ledger: dense table, tabs for the three counters, level pips and before/after in every row. Dark navy and gold */
+.h1{--table-bg:#10151f;--table-glow:rgba(217,179,90,.07);--on-table:#e9eef7}
+.h1 .pg{position:absolute;inset:0;padding:16px 22px;display:grid;grid-template-rows:auto auto 1fr;gap:12px;color:#e9eef7}
+.h1 .asc{display:flex;align-items:center;gap:16px;padding:10px 16px;border-radius:12px;background:linear-gradient(90deg,#241a4a,#1b2236 60%);box-shadow:inset 0 0 0 1px rgba(241,210,122,.5)}
+.h1 .asc .orb{width:38px;height:38px;border-radius:50%;background:conic-gradient(#ff6fc8,#ffd76a,#6fe3ff,#a77bff,#ff6fc8);box-shadow:0 0 18px rgba(167,123,255,.7);animation:h1s 8s linear infinite}
+@keyframes h1s{to{rotate:360deg}}
+.h1 .asc b{font-size:17px;display:block}.h1 .asc span{font-size:12.5px;color:#b4c0d4}
+.h1 .asc .sp{flex:1}.h1 .asc .gain{text-align:right;font-weight:800;font-size:22px;color:#ffe08a;line-height:1}.h1 .asc .gain small{display:block;font-size:11.5px;color:#b4c0d4;font-weight:600;margin-top:3px}
+.h1 .go{border:0;border-radius:10px;padding:10px 22px;font-weight:800;font-size:15px;color:#14172a;background:linear-gradient(90deg,#ffd0f0,#ffe9a8,#b8e8ff,#d3bfff)}
+.h1 .tabs{display:flex;gap:4px;border-bottom:1px solid rgba(217,179,90,.4)}
+.h1 .tab{border:0;background:none;padding:9px 18px;font-weight:700;font-size:15px;color:#b4c0d4;border-radius:9px 9px 0 0;display:flex;gap:8px;align-items:center}
+.h1 .tab[aria-selected=true]{background:#1d2330;color:#fff;box-shadow:inset 0 -2px 0 #d9b35a}
+.h1 .tab em{font-style:normal;padding:1px 8px;border-radius:999px;background:rgba(217,179,90,.18);color:#ffe08a;font-size:12px}
+.h1 .tabs .sp{flex:1}.h1 .tabs .hint{align-self:center;font-size:12.5px;color:#b4c0d4}
+.h1 table{width:100%;border-collapse:separate;border-spacing:0 6px;font-size:14px}
+.h1 th{font-weight:600;font-size:12px;color:#8d99ad;text-align:left;padding:0 12px}
+.h1 td{padding:8px 12px;background:#1d2330;vertical-align:middle}
+.h1 td:first-child{border-radius:10px 0 0 10px;box-shadow:inset 0 0 0 1px rgba(217,179,90,.18);width:300px}.h1 td:last-child{border-radius:0 10px 10px 0;text-align:right;width:250px}
+.h1 tr.max td{opacity:.6}
+.h1 tr.flash td{background:#2d2a1b;box-shadow:inset 0 1px 0 #d9b35a,inset 0 -1px 0 #d9b35a}
+.h1 .nm{display:flex;gap:10px;align-items:center}.h1 .nm b{display:block;font-size:15px}.h1 .nm span{font-size:12px;color:#9aa6ba}
+.h1 .pips{display:flex;gap:2px;flex-wrap:wrap;width:190px}.h1 .pips i{width:5.5px;height:11px;border-radius:1.5px;background:#2e3648}.h1 .pips i.on{background:#d9b35a}.h1 .lv{font-size:12px;color:#b4c0d4;margin-top:4px}
+.h1 .ba{font-weight:700}.h1 .ba s{text-decoration:none;color:#8d99ad;font-weight:600}.h1 .ba b{color:#8fe3a0}
+.h1 .buy{display:inline-flex;gap:6px;align-items:center}
+.h1 .buy button{border:0;border-radius:8px;padding:7px 12px;font-weight:800;font-size:13px;background:#2a3142;color:#b4c0d4}
+.h1 .buy button.p{background:#d9b35a;color:#14172a;display:flex;gap:6px;align-items:center;box-shadow:0 0 14px rgba(217,179,90,.4)}
+.h1 .buy button.no{opacity:.45}
+.h1 .float{display:none;position:absolute;font-weight:800;font-size:18px;color:#ffe08a;z-index:9;text-shadow:0 2px 6px #000}
+.h1.play .float{display:block;animation:h1f 1.4s ease-out both}
+@keyframes h1f{from{translate:0 14px;opacity:0}50%{opacity:1}}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script><script src="../_shared/shopdata.js"></script>
+<script>
+const rows=SHOP.ups.map((u,i)=>{const maxed=u.lv>=u.max,can=SHOP.starlight>=u.p&&!maxed;const flash=i===0;
+ return `<tr class="${maxed?'max':''} ${flash?'flash':''}"><td><div class="nm">${MK.img('cos-starlight-a',32)}<div><b>${u.n}</b><span>${u.d}</span></div></div></td>
+ <td><div class="pips">${Array.from({length:Math.min(u.max,25)},(_,k)=>`<i class="${k<u.lv?'on':''}"></i>`).join('')}</div><div class="lv num">Level ${u.lv} of ${u.max}</div></td>
+ <td class="ba num">${maxed?`<b>${u.a}</b> max`:`<s>${u.a}</s> &rarr; <b>${u.b}</b>`}</td>
+ <td><div class="buy">${maxed?'<button class="no">Max level</button>':`<button class="${can?'':'no'}">×5</button><button class="p ${can?'':'no'}">Buy ${MK.img('cos-starlight-a',16)}${u.p}</button>`}</div></td></tr>`}).join('');
+MK.shell('shop',`<div class="pg">
+ <div class="asc"><div class="orb"></div><div><b>Ascension ${SHOP.ascNum}</b><span>Resets Money, gems, tree and mine levels. Keeps cards, cosmetics, crystals and Starlight.</span></div><div class="sp"></div><div class="gain num">+${SHOP.ascGain} Starlight<small>if you ascend now</small></div><button class="go">Ascend</button></div>
+ <div class="tabs" role="tablist"><button class="tab" role="tab" aria-selected="true">Starlight shop <em class="num">23</em></button><button class="tab" role="tab" aria-selected="false">Shard shop <em class="num">87</em></button><span class="sp"></span><span class="hint">Levels stay through every ascension</span></div>
+ <div><table><thead><tr><th>Upgrade</th><th>Level</th><th>Effect</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+ <div class="float" style="left:820px;top:166px">&minus;7 ${MK.img('cos-starlight-a',20)}</div>
+</div>`,{cls:'h1',play:'Play a purchase'});
+</script></body></html>

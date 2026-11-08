@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1280">
+<title>Production stage options</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,600;9..144,800&display=swap');
+:root{--chrome:#0f1115;--chrome2:#181b22;--chrome-line:#2a2f3a;--chrome-ink:#e7eaf0;--chrome-dim:#8d95a6;--chrome-acc:#e8c05a}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--chrome);color:var(--chrome-ink);font:500 14px/1.4 'Outfit','Segoe UI',sans-serif}
+.page-head{max-width:1280px;margin:0 auto;padding:22px 0 10px}
+.page-head h1{margin:0 0 4px;font:800 26px 'Outfit';letter-spacing:-.01em}
+.page-head p{margin:0;color:var(--chrome-dim);max-width:78ch}
+.tabs{max-width:1280px;margin:10px auto 0;display:flex;gap:6px;border-bottom:1px solid var(--chrome-line)}
+.tabs button{all:unset;cursor:pointer;padding:9px 16px;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;color:var(--chrome-dim);font-weight:600}
+.tabs button:hover{color:var(--chrome-ink)}
+.tabs button[aria-selected=true]{background:var(--chrome2);border-color:var(--chrome-line);color:var(--chrome-acc)}
+.tabs button:focus-visible{outline:2px solid var(--chrome-acc);outline-offset:1px}
+.caption{max-width:1280px;margin:0 auto;padding:12px 16px;background:var(--chrome2);border:1px solid var(--chrome-line);border-top:0;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;font-size:12.5px}
+.caption b{display:block;color:var(--chrome-acc);font-weight:700;margin-bottom:1px}
+.caption span{color:var(--chrome-dim)}
+.mock{width:1280px;margin:18px auto 60px;position:relative;overflow:hidden;border:1px solid var(--chrome-line);border-radius:6px}
+.mock[hidden]{display:none}
+.mock button{font-family:inherit}
+@media (prefers-reduced-motion:reduce){.mock *{animation:none!important;transition:none!important}}
+/* fake shell around the mocks */
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:560px}
+.shell nav{padding:10px;display:flex;flex-direction:column;gap:2px;font-weight:600}
+.shell nav div{padding:9px 12px;border-radius:8px;display:flex;gap:10px;align-items:center}
+.shell nav i{width:22px;height:22px;border-radius:6px;display:inline-block;background:linear-gradient(135deg,#d49a50,#7a4a1c);box-shadow:inset 0 0 0 2px #2a1a0a}
+.shell .fake{padding:22px 26px}
+.fake h2{margin:0 0 12px;font:700 26px 'Outfit'}
+.fake .ph{height:220px;border-radius:10px;opacity:.55}
+</style>
+<style>
+.mock .ico{display:block}
+.mock svg{display:block}
+.shell nav{font-size:13.5px}
+.fld,.row[data-job]{position:relative}
+.pop{position:absolute;z-index:20;pointer-events:none;font:900 22px Outfit;color:#fff;-webkit-text-stroke:5px #fff;paint-order:stroke;text-shadow:0 2px 0 #0006;transform:translate(-50%,-50%) rotate(-4deg)}
+.pop b{position:absolute;inset:0;-webkit-text-stroke:0;color:#3ea84a;z-index:1}
+.pop span{-webkit-text-stroke:5px #fff;position:relative}
+.pop.big{font-size:44px}
+.pop.big b{color:#f5a623}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:15}
+.sp{transition:filter .2s,transform .2s}.sp.on{filter:brightness(1.5) drop-shadow(0 0 6px #ffe27a);transform:translateY(-4px)}
+/* mini card */
+.mc{position:relative;width:96px;height:132px;border-radius:7px;padding:5px;background:linear-gradient(#5a3a22,#35210f);border:2px solid #b97a3c;box-shadow:inset 0 0 0 1px #2a1808,0 3px 0 #0006;display:flex;flex-direction:column;gap:3px;color:#fff;font-size:10px;flex:none}
+.mc .nm{font:800 9.5px Outfit;background:#2a1808;border-radius:3px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;justify-content:space-between}
+.mc .nm{gap:4px}.mc .nm span{overflow:hidden;text-overflow:ellipsis}.mc .nm i{font-style:normal;color:#ffd76a;font-size:8.5px}
+.mc .win{flex:1;border-radius:4px;background:radial-gradient(#3a4a6a,#141a2a);display:grid;place-items:center}
+.mc .st{font-size:9px;display:flex;justify-content:space-between;color:#e3caa0}
+.mc.sm{width:64px;height:88px;padding:3px}.mc.sm .nm{font-size:8px}.mc.sm .st{display:none}
+.mc.empty{background:none;border:2px dashed #ffffff40;box-shadow:none}
+.mc.silver{border-color:#cdd5e2;background:linear-gradient(#58606e,#2f3540)}
+.sup-tag{font-size:9px;text-align:center;color:#d8e0f0;line-height:1.1;margin-top:2px}
+.gb{height:9px;border-radius:5px;background:#0008;border:1px solid #ffffff30;overflow:hidden;position:relative}
+.gb i{display:block;height:100%;width:calc(var(--p)*1%);background:linear-gradient(90deg,#f5a623,#ffe27a);transition:width .8s linear}
+.gb.full i{animation:fl .4s infinite alternate}
+@keyframes fl{to{filter:brightness(1.5)}}
+.plot{display:flex;flex-direction:column;align-items:center;gap:2px;position:relative;font-size:11px;font-weight:700;text-align:center}
+.plot small{font-weight:500;opacity:.75}
+.lock{opacity:.5;filter:grayscale(1)}
+.btns{display:inline-flex;border-radius:7px;background:#0007;padding:2px}
+.btns button{all:unset;cursor:pointer;padding:3px 9px;border-radius:5px;font-weight:700;font-size:11.5px}
+.btns .on{background:#e0b24a;color:#2a1c04}
+.buy{display:flex;justify-content:space-between;gap:8px;padding:6px 9px;border-radius:8px;background:#121418;border:2px solid #e2b648;font-size:11.5px;font-weight:700;cursor:pointer;color:#fff;width:100%;text-align:left}
+.buy small{display:block;font-weight:500;color:#c9ced8;font-size:10.5px}
+.buy.dim{border-color:#3a3f4a;opacity:.8}
+.chp{display:inline-flex;gap:6px;align-items:center;padding:4px 9px;border-radius:7px;font-size:11px;font-weight:700;background:#1a1d24;border:1px solid #3a3f4a;color:#e7eaf0;cursor:pointer}
+.chp.glow{border-color:#e2b648;box-shadow:0 0 8px #e2b64866}
+.chp.own{opacity:.6}
+.chp small{font-weight:500;color:#aab}
+.ln{border-radius:10px;padding:8px 10px;background:#1b1e26;border:1px solid #2e333e;color:#fff;display:flex;flex-direction:column;gap:5px}
+.ln .h{display:flex;gap:8px;align-items:baseline;font-weight:800;font-size:13px}.ln .h small{font-weight:500;color:#b4bac6;font-size:11px}
+.badge{font-size:10px;padding:1px 7px;border-radius:9px;background:#000a;border:1px solid #fff3;font-weight:700}
+
+/* ================= S1 strip + rail ================= */
+#opt-s1{background:#0e1118;color:#e9ecf3}
+#opt-s1 .shell nav{background:#141922}#opt-s1 .shell nav .on{background:#2a2a33;box-shadow:inset 3px 0 #e0b24a}
+#opt-s1 .fake{background:#d3d8e1;color:#18202e;display:grid;grid-template-columns:1fr 316px;gap:14px;padding:18px;align-items:start}
+#opt-s1 .fake h2{grid-column:1/3;margin:0}
+#opt-s1 .fld{height:312px;border-radius:12px;border:1px solid #3a4a3e;background:linear-gradient(#1d2a22,#12171c);padding:10px 14px;color:#fff;display:grid;grid-template-columns:206px 1fr;gap:0 16px;grid-template-rows:auto 1fr;margin-bottom:12px}
+#opt-s1 .fld.mine{background:linear-gradient(#1f1d2a,#12131a)}
+#opt-s1 .fld .hd{grid-column:1/3;display:flex;justify-content:space-between;align-items:baseline}
+#opt-s1 .fld .hd h3{margin:0;font:800 20px Outfit}#opt-s1 .fld .hd small{opacity:.7;margin-left:8px;font-weight:500}
+#opt-s1 .party{display:flex;flex-direction:column;gap:5px}
+#opt-s1 .sups{display:flex;gap:4px}
+#opt-s1 .plots{display:flex;gap:6px;align-items:flex-end;justify-content:space-around;padding-bottom:6px}
+#opt-s1 .rail{background:#1b1e26;border:1px solid #2e333e;border-radius:12px;padding:12px;color:#fff;display:flex;flex-direction:column;gap:8px}
+#opt-s1 .rail h3{margin:0;font:800 17px Outfit;display:flex;justify-content:space-between;align-items:center}
+#opt-s1 .rail h5{margin:6px 0 0;font:700 12px Outfit;color:#aab2c2}
+#opt-s1 .shelf{display:flex;flex-wrap:wrap;gap:5px}
+
+/* ================= S2 focus stage ================= */
+#opt-s2{background:#07161b;color:#e6f6f3}
+#opt-s2 .shell nav{background:#0a1d24}#opt-s2 .shell nav .on{background:#12353d;box-shadow:inset 3px 0 #4de3c6}
+#opt-s2 .fake{background:#0c2229;padding:16px}#opt-s2 .fake h2{display:none}
+#opt-s2 .stg{height:430px;border-radius:14px;position:relative;overflow:hidden;background:radial-gradient(90% 70% at 60% 0%,#1d6a63 0%,#0c3a40 45%,#081c24 100%);border:2px solid #1d6a63}
+#opt-s2 .tabsj{position:absolute;left:14px;top:12px;display:flex;gap:6px;z-index:5}
+#opt-s2 .tabsj button{all:unset;cursor:pointer;padding:6px 16px;border-radius:20px;font-weight:800;background:#0006;border:1px solid #4de3c640}
+#opt-s2 .tabsj button[aria-pressed=true]{background:#4de3c6;color:#04231f}
+#opt-s2 .rate{position:absolute;right:18px;top:12px;font:800 20px Outfit;color:#bff7ea;z-index:5}
+#opt-s2 .fld{position:absolute;inset:0}
+#opt-s2 .fld[hidden]{display:none}
+#opt-s2 .ground{position:absolute;left:0;right:0;bottom:0;height:56%;background:linear-gradient(#134a45,#0a2a2c);transform:perspective(500px) rotateX(35deg);transform-origin:bottom;border-radius:50% 50% 0 0/12% 12% 0 0}
+#opt-s2 .plots{position:absolute;left:300px;right:40px;top:80px;bottom:60px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr;align-items:center;justify-items:center}
+#opt-s2 .plots .plot:nth-child(n+5){transform:scale(1.12)}
+#opt-s2 .main{position:absolute;left:44px;top:96px;width:200px;display:grid;place-items:center}
+#opt-s2 .ring{--p:0;position:relative;width:196px;height:196px;border-radius:50%;background:conic-gradient(#ffd54a calc(var(--p)*1%),#ffffff1f 0);display:grid;place-items:center}
+#opt-s2 .ring::before{content:'';position:absolute;inset:9px;border-radius:50%;background:#0b2c33}
+#opt-s2 .ring .mc{position:relative;transform:scale(1.1)}
+#opt-s2 .ring.full{animation:glowr .5s infinite alternate}
+@keyframes glowr{to{box-shadow:0 0 30px #ffd54a}}
+#opt-s2 .mainlbl{position:absolute;left:44px;top:304px;width:200px;text-align:center;font-weight:700;font-size:12px;color:#bff7ea}
+#opt-s2 .bench{position:absolute;left:0;right:0;bottom:0;height:60px;background:linear-gradient(#0b2d33,#06181d);border-top:2px solid #1d6a63;display:flex;gap:22px;align-items:center;padding:0 24px}
+#opt-s2 .bench .benchsup{display:flex;gap:9px;align-items:center;font-size:11.5px;color:#bff7ea}
+#opt-s2 .bench .benchsup .av{width:40px;height:40px;border-radius:50%;background:#12353d;border:2px solid #4de3c6;display:grid;place-items:center;overflow:hidden}
+#opt-s2 .bench .benchsup b{display:block;font-size:12px;color:#fff}
+#opt-s2 .drawer{margin-top:12px;border-radius:14px;background:#0a1d24;border:1px solid #1d4a52;padding:12px 14px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+#opt-s2 .drawer .ln{background:#0f2c33;border-color:#1d4a52}
+#opt-s2 .drawer .top{grid-column:1/5;display:flex;justify-content:space-between;align-items:center;font:800 15px Outfit}
+
+/* ================= S3 split ================= */
+#opt-s3{background:#14171d;color:#e6e9ef}
+#opt-s3 .shell nav{background:#181c23}#opt-s3 .shell nav .on{background:#252a33;box-shadow:inset 3px 0 #f0a23a}
+#opt-s3 .fake{background:#1c2028;padding:14px 16px}#opt-s3 .fake h2{margin:0 0 10px;font-size:22px}
+#opt-s3 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#opt-s3 .fld{height:316px;border-radius:10px;background:#242a35;border:1px solid #384050;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+#opt-s3 .fld .hd{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #384050;padding-bottom:6px}
+#opt-s3 .fld .hd h3{margin:0;font:800 16px Outfit}#opt-s3 .fld .hd span{font-weight:700;color:#f0a23a}
+#opt-s3 .partyrow{display:flex;gap:8px;align-items:flex-end}
+#opt-s3 .mainbox{display:flex;gap:6px}
+#opt-s3 .vg{width:11px;height:132px;border-radius:6px;background:#0008;border:1px solid #ffffff30;display:flex;align-items:flex-end;overflow:hidden}
+#opt-s3 .vg i{display:block;width:100%;height:calc(var(--p)*1%);background:linear-gradient(0deg,#f0a23a,#ffe27a);transition:height .8s linear}
+#opt-s3 .sepl{width:1px;align-self:stretch;background:#384050;margin:0 6px}
+#opt-s3 .plots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:1;align-items:end;padding:4px;border-radius:8px;background:#1b2029}
+#opt-s3 .plots .plot{padding:4px 0;border-radius:6px;background:#242a35}
+#opt-s3 .bottom{margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#opt-s3 .bottom .col{background:#242a35;border:1px solid #384050;border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:6px}
+#opt-s3 .bottom h4{margin:0;font:800 13px Outfit;display:flex;justify-content:space-between;align-items:center;color:#f0a23a}
+#opt-s3 .lines{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#opt-s3 .lines .ln{padding:6px 8px;background:#1b2029}
+#opt-s3 .shelf{display:flex;flex-wrap:wrap;gap:5px}
+
+/* ================= S4 diorama ================= */
+#opt-s4{background:#1a1030;color:#fff}
+#opt-s4 .shell nav{background:#22143f}#opt-s4 .shell nav .on{background:#3c2466;box-shadow:inset 3px 0 #ff9a4a}
+#opt-s4 .fake{background:#1a1030;padding:0;position:relative;min-height:640px}#opt-s4 .fake h2{display:none}
+#opt-s4 .scene{position:absolute;inset:0;overflow:hidden}
+#opt-s4 .sky{position:absolute;left:0;right:0;top:0;height:300px;background:linear-gradient(#ff9a4a 0%,#e0568a 38%,#5a2f8c 75%,#2a1858 100%)}
+#opt-s4 .sun{position:absolute;left:640px;top:110px;width:140px;height:140px;border-radius:50%;background:radial-gradient(#fff1b0,#ffb24a 60%,transparent 72%);opacity:.9}
+#opt-s4 .hill{position:absolute;left:-10%;right:-10%;bottom:0;border-radius:50% 50% 0 0}
+#opt-s4 .h1{top:230px;background:#3a2468;height:100px}#opt-s4 .h2{top:262px;background:#2c1a52;height:100px}
+#opt-s4 .grass{position:absolute;left:0;right:0;top:300px;height:140px;background:linear-gradient(#3f9d5a,#1f6a46)}
+#opt-s4 .cave{position:absolute;left:0;right:0;top:440px;bottom:0;background:linear-gradient(#2b1f3a,#120c1d);border-top:5px solid #5a3c2a}
+#opt-s4 .cl{position:absolute;width:70px;height:26px;border-radius:20px;background:#ffffff66;animation:drift 40s linear infinite}
+@keyframes drift{from{transform:translateX(-120px)}to{transform:translateX(1100px)}}
+#opt-s4 .fld{position:absolute;left:0;right:0;height:300px}
+#opt-s4 .fld.log{top:60px}#opt-s4 .fld.mine{top:420px;height:200px}
+#opt-s4 .fld .main{position:absolute;left:28px;bottom:6px}
+#opt-s4 .fld .supp{position:absolute;left:150px;bottom:2px;display:flex;gap:6px;align-items:flex-end}
+#opt-s4 .fld .pl{position:absolute;left:290px;right:360px;bottom:0;top:0}
+#opt-s4 .fld .pl .plot{position:absolute}
+#opt-s4 .jt{position:absolute;left:28px;z-index:6;font:900 22px Outfit;text-shadow:0 2px 0 #0008}
+#opt-s4 .jt small{font:600 12px Outfit;opacity:.85;margin-left:8px}
+#opt-s4 .banner{position:absolute;left:28px;width:250px;height:22px;border-radius:4px;transform:skewX(-14deg);background:#0009;border:2px solid #ffd76a;overflow:hidden;z-index:6}
+#opt-s4 .banner i{display:block;height:100%;width:calc(var(--p)*1%);background:repeating-linear-gradient(100deg,#ffb24a 0 10px,#ffe27a 10px 20px);transition:width .8s linear}
+#opt-s4 .banner b{position:absolute;inset:0;display:grid;place-items:center;font:900 11px Outfit;letter-spacing:.12em;color:#fff;text-shadow:0 1px 2px #000}
+#opt-s4 .tray{position:absolute;right:0;top:0;bottom:0;width:330px;background:#1c1036ee;border-left:3px solid #ff9a4a;z-index:8;padding:12px;display:flex;flex-direction:column;gap:7px;overflow:auto;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#opt-s4 .tray.shut{transform:translateX(100%)}
+#opt-s4 .trayt{position:absolute;right:340px;top:12px;z-index:9;border:0;border-radius:8px;background:#ff9a4a;color:#2a1000;padding:6px 12px;font-weight:800;cursor:pointer}
+#opt-s4 .tray.shut~.trayt{right:12px}
+#opt-s4 .tray h4{margin:6px 0 0;font:800 13px Outfit;color:#ffb24a}
+#opt-s4 .lad{display:flex;align-items:center;gap:0;margin:2px 0 4px}
+#opt-s4 .lad i{width:100%;height:5px;background:#ffffff26}#opt-s4 .lad i.on{background:#ff9a4a}
+#opt-s4 .lad em{flex:none;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 10px Outfit;font-style:normal;background:#2c1a52;border:2px solid #ffffff40}
+#opt-s4 .lad em.on{background:#ff9a4a;color:#2a1000;border-color:#fff}
+#opt-s4 .lad em.nx{border-color:#ffd76a;box-shadow:0 0 8px #ffd76a}
+#opt-s4 .ln{background:#2a1850;border-color:#5a3c8c}
+
+/* ================= S5 command table ================= */
+#opt-s5{background:#24160c;color:#f6e7cc}
+#opt-s5 .shell nav{background:#2c1b0f}#opt-s5 .shell nav .on{background:#4a2d17;box-shadow:inset 3px 0 #d94f3a}
+#opt-s5 .fake{background:linear-gradient(#3a2414,#2a190c);padding:14px 18px}#opt-s5 .fake h2{margin:0 0 8px;font-size:22px}
+#opt-s5 .ruler{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+#opt-s5 .rl{background:#f0dfb4;color:#3a2a0c;border-radius:6px;padding:6px 10px;border:2px solid #9b7a38;font-size:11.5px;font-weight:700;display:flex;flex-direction:column;gap:4px}
+#opt-s5 .rl .t{display:flex;justify-content:space-between}
+#opt-s5 .rl .tk{position:relative;height:10px;border-radius:2px;background:repeating-linear-gradient(90deg,#9b7a38 0 1px,transparent 1px 8px),#e2cd96}
+#opt-s5 .rl .tk i{position:absolute;left:0;top:0;bottom:0;background:#d94f3a99;width:var(--w)}
+#opt-s5 .rl .tk b{position:absolute;left:var(--w);top:-3px;width:10px;height:16px;background:#d94f3a;border-radius:2px;transform:translateX(-5px)}
+#opt-s5 .rl .tk u{position:absolute;left:50%;top:-1px;width:2px;height:12px;background:#3a2a0c}
+#opt-s5 .rl button{all:unset;cursor:pointer;background:#3a2a0c;color:#ffe9a8;border-radius:4px;padding:3px 7px;text-align:center}
+#opt-s5 .rl button.dim{opacity:.55}
+#opt-s5 .table{border-radius:14px;padding:12px 16px;background:radial-gradient(90% 100% at 50% 0%,#5c3c22,#3a2514);border:3px solid #7a5230;box-shadow:inset 0 0 40px #0008}
+#opt-s5 .row{display:grid;grid-template-columns:300px 1fr;gap:14px;align-items:center;padding:8px 0;border-bottom:2px dashed #7a523066}
+#opt-s5 .row:last-child{border:0}
+#opt-s5 .hand{display:flex;position:relative;height:150px;align-items:flex-end}
+#opt-s5 .hand .mc{margin-right:-30px;transform-origin:bottom center}
+#opt-s5 .hand .mc:nth-child(1){margin-right:-26px;z-index:4;transform:scale(1.15) translateY(-4px)}
+#opt-s5 .hand .mc:nth-child(2){transform:rotate(-6deg) translateY(10px);z-index:3}
+#opt-s5 .hand .mc:nth-child(3){transform:rotate(2deg) translateY(14px);z-index:2}
+#opt-s5 .hand .mc:nth-child(4){transform:rotate(9deg) translateY(10px);z-index:1}
+#opt-s5 .grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+#opt-s5 .grid .plot{padding:6px 2px;background:#00000030;border-radius:10px;border:2px solid #7a523088}
+#opt-s5 .gwide{position:relative;margin:2px 0 4px}
+#opt-s5 .gwide .gb{height:14px;border-color:#d9b36a}
+#opt-s5 .gwide .tkm{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#0007 calc(10% - 2px) 10%);pointer-events:none}
+#opt-s5 .glbl{display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:#e6c885;margin-bottom:2px}
+#opt-s5 .shelfbar{margin-top:10px;padding:8px 10px;border-radius:8px;background:#5b3a20;border-bottom:5px solid #2a160a;display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#opt-s5 .shelfbar b{font:800 12px Outfit;margin-right:4px}
+#opt-s5 .chp{background:#f0dfb4;color:#3a2a0c;border-color:#9b7a38}
+#opt-s5 .chp.glow{border-color:#d94f3a;box-shadow:0 0 8px #d94f3a88}#opt-s5 .chp small{color:#6a5320}
+</style></head>
+<body>
+<div class="page-head"><h1>Production stage: 5 options</h1><p>The main logging or mining card and three supports stand on the field, strike the plots and tiles, and fill the harvest burst gauge. The level lines (Oak, More plots, Copper Quarry) and the upgrade shelf live in the rail or its replacement. Everything animates live: strikes, +n numbers and the gauge; the burst fires when the gauge is full. Icons and tiles are placeholders.</p></div>
+<div class="tabs" role="tablist"></div><div class="caption"></div><div id="host"></div>
+<script>/* Shared data + placeholder icons for the economy UI mockups. Real content from src/data/content and the app screenshots. */
+const BI = {};
+BI.metals = {stone:['#8a90a0','#4c515e'],bronze:['#d58b4a','#7a4418'],silver:['#d3dae6','#6c7688'],gold:['#f3c64e','#8c6410'],prismatic:['#ff9bd0','#6ad7ff']};
+BI.shapes = {
+  round:'<circle cx="16" cy="16" r="7"/>',
+  pentagon:'<polygon points="16,8 23.5,13.5 20.6,22.5 11.4,22.5 8.5,13.5"/>',
+  star:'<polygon points="16,7.5 18.4,13.3 24.6,13.8 19.9,17.9 21.3,24 16,20.8 10.7,24 12.1,17.9 7.4,13.8 13.6,13.3"/>',
+  square:'<rect x="9.5" y="9.5" width="13" height="13" rx="1.5"/>',
+  hexagon:'<polygon points="16,8 22.6,11.8 22.6,19.8 16,23.6 9.4,19.8 9.4,11.8"/>',
+  drop:'<path d="M16 7.5 C19 12 23 15 23 18.6 A7 7 0 0 1 9 18.6 C9 15 13 12 16 7.5Z"/>'
+};
+BI.gems = {
+  oak:{name:'Oak Gem',shape:'round',c:['#f4c88e','#cf8e50','#9a5e2e','#5e3416']},
+  ironbark:{name:'Ironbark Gem',shape:'pentagon',c:['#c8b0a0','#8e7262','#5e4638','#34241a']},
+  moonwillow:{name:'Moonwillow Gem',shape:'star',c:['#f6f4ff','#cdc8f2','#9690d0','#5a5498']},
+  copper:{name:'Copper Gem',shape:'square',c:['#ffc78e','#f08a3c','#b8581a','#743210']},
+  iron:{name:'Iron Gem',shape:'hexagon',c:['#eef2f8','#aab4c2','#727c8c','#464e5a']},
+  grotto:{name:'Grotto Gem',shape:'drop',c:['#eafaff','#9adcf2','#58acd2','#2a7298']}
+};
+let _uid = 0;
+/* placeholder gem coin: notched coin in the mastery metal, dark well, faceted gem */
+BI.gem = (id, tier='stone', s=32) => {
+  const g = BI.gems[id], m = BI.metals[tier], u = 'g' + (++_uid);
+  const rim = tier === 'prismatic'
+    ? `<linearGradient id="${u}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9bd0"/><stop offset=".5" stop-color="#8fe3ff"/><stop offset="1" stop-color="#fff0a0"/></linearGradient>`
+    : '';
+  const fill = tier === 'prismatic' ? `url(#${u})` : m[0];
+  return `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true">${rim}
+  <circle cx="16" cy="16" r="14.5" fill="${fill}" stroke="#fff" stroke-width="1" stroke-opacity=".0"/>
+  <circle cx="16" cy="16" r="14.5" fill="none" stroke="${m[1]}" stroke-width="1.5" stroke-dasharray="3.6 2.2"/>
+  <circle cx="16" cy="16" r="11" fill="#15181f" stroke="${m[1]}" stroke-width="1"/>
+  <g fill="${g.c[1]}" stroke="${g.c[3]}" stroke-width="1.2" stroke-linejoin="round">${BI.shapes[g.shape]}</g>
+  <circle cx="13.6" cy="12.6" r="1.5" fill="#fff" opacity=".9"/></svg>`;
+};
+BI.core = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,3 28,16 16,29 4,16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"/><polygon points="16,9 22,16 16,23 10,16" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>`;
+BI.starlight = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 L19 13 L30 16 L19 19 L16 30 L13 19 L2 16 L13 13Z" fill="#ffe27a" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+BI.coin = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="14.5" fill="#d9a22e" stroke="#5a3a0a" stroke-width="1.5" stroke-dasharray="3.6 2.2"/><circle cx="16" cy="16" r="11" fill="#f5cc55" stroke="#8a5a10" stroke-width="1.3"/><circle cx="16" cy="16" r="6.5" fill="#d9a22e" stroke="#8a5a10" stroke-width="1.2"/><circle cx="12.6" cy="12.4" r="1.6" fill="#fff" opacity=".85"/></svg>`;
+BI.summon = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="16,1.5 24,10 22.5,28 16,31 9.5,28 8,10" fill="#4d7bf0" stroke="#17306e" stroke-width="1.6" stroke-linejoin="round"/><polygon points="16,1.5 16,31 9.5,28 8,10" fill="#8fb2ff"/><polygon points="16,1.5 24,10 16,12" fill="#cfe0ff"/><circle cx="12" cy="10" r="1.4" fill="#fff"/></svg>`;
+BI.glamour = (s=32) => `<svg class="ico" width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><polygon points="5,12 11,4.5 21,4.5 27,12 16,29" fill="#e8468f" stroke="#6a1240" stroke-width="1.6" stroke-linejoin="round"/><polygon points="5,12 16,29 14,12" fill="#ff8cc0"/><polygon points="11,4.5 21,4.5 27,12 14,12" fill="#ff5da5"/><circle cx="11.5" cy="9" r="1.4" fill="#fff"/></svg>`;
+BI.gear = (s=18) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 5h14M3 10h14M3 15h9"/></svg>`;
+BI.speaker = (s=18, off=false) => `<svg width="${s}" height="${s}" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M3 8h3l4-3.5v11L6 12H3z"/>${off?'<path d="M13.5 7.5l4 5M17.5 7.5l-4 5"/>':'<path d="M13.5 7.5a3.5 3.5 0 0 1 0 5M15.6 5.2a6.5 6.5 0 0 1 0 9.6"/>'}</svg>`;
+
+BI.fmt = n => n >= 1e9 ? (n/1e9).toFixed(n>=1e10?0:1)+'B' : n >= 1e6 ? (n/1e6).toFixed(n>=1e7?0:1)+'M' : n.toLocaleString('en-US',{maximumFractionDigits:0});
+BI.fmtD = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+/* header / details data (screenshots header-details-*.png, resources.json, progression.json) */
+BI.account = {level:1, xp:76, next:1100};
+BI.money = {amount:28045, rate:50};
+BI.summonC = {amount:37, rate:0.4};
+BI.glamourC = {amount:4, rate:0.1};
+BI.goals = [
+  {text:'Unlock Ironbark', state:'ready', pct:1, page:'Production'},
+  {text:'Copper Edge Lv 25 (x2)', state:'ready', pct:1, page:'Dungeons'},
+  {text:'Iron Edge Lv 25 (x2)', state:'ready', pct:1, page:'Dungeons'}
+];
+BI.mastery = ['stone','bronze','silver','gold','prismatic'];
+BI.masteryAt = [0,1e3,1e5,1e7,1e9];
+BI.masteryOf = life => { let t = 0; BI.masteryAt.forEach((v,i) => { if (life >= v) t = i; }); return t; };
+BI.details = [
+ {group:'Tree materials', items:[
+  {id:'oak',amount:2757,rate:4.98,life:2757,use:'Card star-ups, unlocking Ironbark',kind:'gem'},
+  {id:'ironbark',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups, unlocking Moonwillow',kind:'gem'},
+  {id:'moonwillow',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'}]},
+ {group:'Mine materials', items:[
+  {id:'copper',amount:539.37,rate:0.93,life:539.37,use:'Card star-ups',kind:'gem'},
+  {id:'iron',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'},
+  {id:'grotto',amount:0,rate:0,life:0,use:'Card star-ups, card tier-ups',kind:'gem'}]},
+ {group:'Dungeon materials', items:[
+  {name:'Moss Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Cinder Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Frost Core',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Frost Sigil',amount:0,rate:0,use:'Card star-ups, card tier-ups',kind:'core'},
+  {name:'Glimmer Dust',amount:0,rate:0,use:'Cosmetic upgrades',kind:'core'},
+  {name:'Facet Shard',amount:0,rate:0,use:'Cosmetic upgrades',kind:'core'}]},
+ {group:'Prestige', items:[
+  {name:'Starlight',amount:0,rate:0,use:'The Starlight shop',kind:'star'}]}
+];
+BI.entry = e => {
+  if (e.kind === 'gem') { const g = BI.gems[e.id]; const t = BI.masteryOf(e.life); return {name:g.name, ico:s=>BI.gem(e.id,BI.mastery[t],s), tier:t, mastery:BI.mastery[t], next:BI.masteryAt[t+1]||null, life:e.life, ...e}; }
+  return {ico:s => e.kind==='star'?BI.starlight(s):BI.core(s), tier:null, mastery:null, ...e};
+};
+BI.rate = e => e.rate > 0 ? '+' + BI.fmtD(e.rate) + '/s' : 'Not produced right now';
+BI.amt = e => e.amount % 1 ? BI.fmtD(e.amount) : BI.fmt(e.amount);
+BI.cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+BI.shellNav = ['Home','Cards','Production','Dungeons','Summon','Skill Tree','Wardrobe','Achievements','Shop','Settings'];
+BI.shell = (inner, opts={}) => `<div class="shell" style="${opts.style||''}"><nav>${BI.shellNav.map(n=>`<div${n==='Production'?' class="on"':''}><i></i>${n}</div>`).join('')}</nav><div class="fake">${inner}</div></div>`;
+
+/* tab machinery: options = [{key,title,caption:{layout,density,colour,motion,ornament},html(),init(root)}] */
+BI.mountTabs = (options, tabsEl, capEl, hostEl) => {
+  const roots = [];
+  options.forEach((o,i) => {
+    const r = document.createElement('div'); r.className = 'mock'; r.hidden = i !== 0; r.id = 'opt-' + o.key;
+    r.innerHTML = o.html(); hostEl.appendChild(r); roots.push(r);
+    const b = document.createElement('button'); b.textContent = o.title; b.setAttribute('role','tab'); b.setAttribute('aria-selected', i === 0);
+    b.onclick = () => show(i); tabsEl.appendChild(b);
+  });
+  function show(i){
+    [...tabsEl.children].forEach((b,j)=>b.setAttribute('aria-selected', j===i));
+    roots.forEach((r,j)=>r.hidden = j!==i);
+    const c = options[i].caption;
+    capEl.innerHTML = ['layout','density','colour','motion','ornament'].map(k=>`<div><b>${BI.cap(k)}</b><span>${c[k]}</span></div>`).join('');
+    history.replaceState(null,'','#'+options[i].key);
+  }
+  options.forEach((o,i)=>o.init && o.init(roots[i]));
+  const h = location.hash.slice(1), idx = options.findIndex(o=>o.key===h);
+  show(idx > 0 ? idx : 0);
+};
+</script>
+<script>
+/* ---------- placeholder art ---------- */
+const itemSvg = (k,s=44)=> k==='axe'
+ ? `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M10 42 L30 12" stroke="#1a0f06" stroke-width="7" stroke-linecap="round"/><path d="M10 42 L30 12" stroke="#b9803f" stroke-width="4" stroke-linecap="round"/><path d="M26 8 C38 6 44 14 40 22 C36 20 32 18 28 16Z" fill="#dfe6f2" stroke="#1a0f06" stroke-width="2.5" stroke-linejoin="round"/><path d="M30 10 C36 10 40 13 40 17" stroke="#fff" stroke-width="2" fill="none"/></svg>`
+ : k==='pick'
+ ? `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M10 42 L32 14" stroke="#1a0f06" stroke-width="7" stroke-linecap="round"/><path d="M10 42 L32 14" stroke="#b9803f" stroke-width="4" stroke-linecap="round"/><path d="M12 14 C24 6 38 10 44 22 C36 16 26 16 22 20Z" fill="#dfe6f2" stroke="#1a0f06" stroke-width="2.5" stroke-linejoin="round"/></svg>`
+ : k==='staff'
+ ? `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M12 44 L34 12" stroke="#1a0f06" stroke-width="6" stroke-linecap="round"/><path d="M12 44 L34 12" stroke="#7aa650" stroke-width="3" stroke-linecap="round"/><circle cx="36" cy="10" r="7" fill="#8af06a" stroke="#1a0f06" stroke-width="2.5"/></svg>`
+ : k==='maul'
+ ? `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M10 44 L34 16" stroke="#1a0f06" stroke-width="7" stroke-linecap="round"/><path d="M10 44 L34 16" stroke="#9a6236" stroke-width="4" stroke-linecap="round"/><rect x="26" y="4" width="18" height="14" rx="3" transform="rotate(38 35 11)" fill="#a8734a" stroke="#1a0f06" stroke-width="2.5"/></svg>`
+ : k==='bow'
+ ? `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M16 6 C40 14 40 34 16 42" stroke="#1a0f06" stroke-width="6" fill="none" stroke-linecap="round"/><path d="M16 6 C40 14 40 34 16 42" stroke="#cdc8f2" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M16 6 L16 42" stroke="#fff" stroke-width="1.2"/></svg>`
+ : k==='chisel'
+ ? `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M12 42 L30 16" stroke="#1a0f06" stroke-width="7" stroke-linecap="round"/><path d="M12 42 L30 16" stroke="#6aa8d8" stroke-width="4" stroke-linecap="round"/><path d="M30 16 L38 6 L42 12 L34 20Z" fill="#eafaff" stroke="#1a0f06" stroke-width="2.5" stroke-linejoin="round"/></svg>`
+ : `<svg width="${s}" height="${s}" viewBox="0 0 48 48"><path d="M10 38 L28 20" stroke="#1a0f06" stroke-width="7" stroke-linecap="round"/><path d="M10 38 L28 20" stroke="#b86a2c" stroke-width="4" stroke-linecap="round"/><rect x="26" y="8" width="16" height="16" rx="3" transform="rotate(40 34 16)" fill="#d6dae2" stroke="#1a0f06" stroke-width="2.5"/></svg>`;
+const T = {
+  feller:{n:'Apprentice Feller',i:'axe',eff:'+5% logging'}, keeper:{n:'Grove Keeper',i:'staff',eff:'+1 burst fill per tick'},
+  treant:{n:'Elder Treant',i:'maul',eff:'+12% logging'}, dryad:{n:'Moonwood Dryad',i:'bow',eff:'+20% logging'},
+  digger:{n:'Cave Digger',i:'pick',eff:'+5% mining'}, cutter:{n:'Gem Cutter',i:'chisel',eff:'+1 burst fill per tick'}, golem:{n:'Geode Golem',i:'hammer',eff:'+15% mining'}};
+const card = (k,o={}) => { const t=T[k]; return `<div class="mc ${o.sm?'sm':''} ${o.cls||''}" ${o.sup?`data-sup`:''} title="${t.n}: ${t.eff}"><div class="nm"><span>${t.n}</span><i>${o.main?'Main':''}</i></div><div class="win">${itemSvg(t.i,o.sm?34:52)}</div><div class="st"><span>Lv 3</span><span>every 1s</span></div></div>`; };
+const emptyCard = (o={}) => `<div class="mc empty ${o.sm?'sm':''}"></div>`;
+const tile = (kind,stage=2,s=76) => {
+  const plinth = ['#6c7280','#a8683a','#bfc6d4','#e0b13c','#9ee8ff'][Math.min(4,stage)], ph = 6 + stage*2;
+  const base = `<ellipse cx="40" cy="${54}" rx="34" ry="12" fill="#2a2f3a"/><path d="M6 ${50-ph} L6 52 A34 11 0 0 0 74 52 L74 ${50-ph}Z" fill="${plinth}" stroke="#12141a" stroke-width="2"/><ellipse cx="40" cy="${50-ph}" rx="34" ry="11" fill="${kind==='tree'?'#5cc25a':'#5d6574'}" stroke="#12141a" stroke-width="2"/>`;
+  const y = 50-ph;
+  const tree = `<rect x="36" y="${y-18}" width="8" height="20" rx="2" fill="#9a6236" stroke="#12141a" stroke-width="2"/><circle cx="40" cy="${y-24}" r="${11+stage*1.5}" fill="#4fc246" stroke="#12141a" stroke-width="2"/><circle cx="31" cy="${y-20}" r="${7+stage}" fill="#2e8e36" stroke="#12141a" stroke-width="2"/>${[0,1,2,3,4].slice(0,stage+1).map(i=>`<circle cx="${28+i*6}" cy="${y-18+((i%2)*5)}" r="2.6" fill="#f4c88e" stroke="#5e3416" stroke-width="1"/>`).join('')}`;
+  const rock = `<polygon points="18,${y} 26,${y-22} 42,${y-30} 58,${y-20} 64,${y}" fill="#8a92a2" stroke="#12141a" stroke-width="2"/><polygon points="26,${y-22} 42,${y-30} 40,${y} 18,${y}" fill="#a9b0be"/>${[0,1,2,3,4].slice(0,stage+2).map(i=>`<rect x="${26+i*7}" y="${y-18+(i%2)*7}" width="6" height="6" rx="1" fill="#f08a3c" stroke="#743210" stroke-width="1"/>`).join('')}`;
+  return `<svg width="${s}" height="${s}" viewBox="0 0 80 80" style="overflow:visible">${base}${kind==='tree'?tree:rock}</svg>`;
+};
+const plot = (kind,name,rate,stage,s) => `<div class="plot" data-plot>${tile(kind,stage,s)}<span>${name}</span><small>${rate}</small></div>`;
+const lockPlot = (kind,name,cost,s) => `<div class="plot lock">${tile(kind,0,s)}<span>${name}</span><small>${cost}</small></div>`;
+const gauge = (cls='gb') => `<div class="${cls}" data-gauge style="--p:35"><i></i></div>`;
+const line = (n,lv,badge,buyTxt,price,prev,dim) => `<div class="ln"><div class="h">${n} <small>${lv}</small>${badge?`<span class="badge">${badge}</span>`:''}</div><button class="buy ${dim?'dim':''}"><span>${buyTxt}<small>${prev}</small></span><span>${price}</span></button></div>`;
+const chips = (arr) => arr.map(c=>`<span class="chp ${c[2]||''}">${c[0]}<small>${c[1]}</small></span>`).join('');
+const SH = [['Fertile Soil','25,000 Money','glow'],['Lumberjack Pact','40,000 Money','glow'],['Lumber Union','50,000 Money','glow'],['Keen Axes','owned','own'],['Harvest Rhythm','20,000 Money','glow'],['Sharp Picks','owned','own'],['Miner Pact','40,000 Money']];
+const BTNS = `<div class="btns"><button>x1</button><button>x10</button><button>x100</button><button class="on">Max</button></div>`;
+const stub = (h) => `<h2>Production</h2>`+h;
+
+/* ---------- S1 ---------- */
+const s1={key:'s1',title:'1 Strip and rail',
+ caption:{layout:'Logging above mining as wide strips, party on the left of each, level lines and shelf in a right rail.',density:'Medium; today\'s structure, but the party reads as a team and the gauge sits under the main card.',colour:'Dark forest and dark cave greens and plums on a light table, gold buy buttons.',motion:'Main card lunges at the struck plot, +n pops, a flash and wave on burst.',ornament:'Low: plain cards and tile plinths.'},
+ html(){ const fld=(job,t,sub,mainK,sups,plots,cls)=>`<div class="fld ${cls}" data-job="${job}"><div class="hd"><h3>${t}<small>${sub}</small></h3><span style="font:800 15px Outfit">${job==='log'?'3.7 Oak Gem/s':'0.69 Copper Gem/s'}</span></div>
+   <div class="party">${card(mainK,{main:1})}${gauge()}<div class="sups">${sups.map(s=>s?card(s,{sm:1,sup:1}):emptyCard({sm:1})).join('')}</div></div><div class="plots">${plots}</div><div class="flash"></div></div>`;
+ return BI.shell(`<h2>Production</h2>${fld('log','Logging','4 of 4 plots in use','feller',['keeper','treant','dryad'],[1,2,3,4].map(i=>plot('tree','Oak','3.7/s',[2,2,1,0][i-1],78)).join('')+lockPlot('tree','Ironbark','500 Oak Gem',78),'')}
+ ${fld('mine','Mining','2 of 2 slots in use','digger',['cutter','golem',null],[1,2].map(i=>plot('rock','Copper Quarry','0.69/s',1,78)).join('')+lockPlot('rock','Iron Deeps','Clear Mossy Cellar',78),'mine')}
+ <aside class="rail" style="position:absolute;right:18px;top:62px;width:316px"><h3>Upgrades ${BTNS}</h3><h5>Logging</h5>
+  ${line('More plots','4 owned','','Buy max (18)','26,626 Money','Plots 4 → 22, Oak Gem 3.7/s → 20.3/s')}${line('Oak','Level 15','Lv 25: x2','Buy max (8)','24,427 Money','Oak Gem 3.7/s → 4.88/s')}${line('Ironbark','Tier 2','','Unlock · 500 Oak Gem','','Yields Ironbark Gem',1)}
+  <h5>Mining</h5>${line('More slots','2 owned','','Buy max (18)','26,626 Money','Slots 2 → 20, Copper Gem 0.69/s → 6.2/s')}${line('Copper Quarry','Level 0','Lv 25: x2','Buy max (24)','27,100 Money','Copper Gem 0.69/s → 2.35/s')}
+  <h5>Upgrade shelf</h5><div class="shelf">${chips(SH)}</div></aside>`,{}) },
+ init(r){ r.querySelector('.fake').style.cssText+='position:relative;display:block;min-height:820px;padding-right:360px'; }};
+
+/* ---------- S2 ---------- */
+const s2={key:'s2',title:'2 Focus stage',
+ caption:{layout:'One large stage, Logging and Mining as tabs; plots in two rows on a ground plane; supports on a bench; upgrades in a drawer beneath.',density:'Low: one job at a time, big cards, few numbers.',colour:'Teal dusk with a gold burst ring.',motion:'The burst gauge is a ring around the main card that fills and pulses when ready; strikes lunge across the stage.',ornament:'Medium: perspective ground, soft glow, supports as portraits.'},
+ html(){ const f=(job,k,sups,plots,rate,hid)=>`<div class="fld" data-job="${job}" ${hid?'hidden':''}><div class="ground"></div><div class="rate">${rate}</div>
+   <div class="main"><div class="ring" data-gauge data-ring style="--p:35">${card(k,{main:1})}</div></div><div class="mainlbl">${T[k].n} · strikes every 1s<br>Harvest burst fills as it strikes</div>
+   <div class="plots">${plots}</div>
+   <div class="bench">${sups.map(s=>s?`<div class="benchsup sp" data-sup><div class="av">${itemSvg(T[s].i,28)}</div><div><b>${T[s].n}</b>${T[s].eff}</div></div>`:`<div class="benchsup" style="opacity:.45"><div class="av" style="border-style:dashed"></div>Empty slot</div>`).join('')}</div><div class="flash"></div></div>`;
+  return BI.shell(`<div class="stg"><div class="tabsj"><button aria-pressed="true" data-j="log">Logging</button><button aria-pressed="false" data-j="mine">Mining</button></div>
+   ${f('log','feller',['keeper','treant','dryad'],[0,1,2,3].map(i=>plot('tree','Oak','3.7/s',2,84)).join('')+[0,1].map(i=>plot('tree','Oak','3.7/s',[1,0][i],84)).join('')+lockPlot('tree','Ironbark','500 Oak Gem',84)+lockPlot('tree','New plot','25 Money',84),'3.7 Oak Gem/s')}
+   ${f('mine','digger',['cutter','golem',null],[0,1].map(i=>plot('rock','Copper Quarry','0.69/s',1,84)).join('')+lockPlot('rock','New slot','25 Money',84),'0.69 Copper Gem/s',1)}</div>
+   <div class="drawer"><div class="top"><span>Upgrades</span>${BTNS}</div>
+   ${line('More plots','4 owned','','Buy max (18)','26,626 Money','Oak Gem 3.7/s → 20.3/s')}${line('Oak','Level 15','Lv 25: x2','Buy max (8)','24,427 Money','Oak Gem 3.7/s → 4.88/s')}${line('Ironbark','Tier 2','','Unlock · 500 Oak Gem','','Yields Ironbark Gem',1)}
+   <div class="ln"><div class="h">Shelf <small>3 to buy, 2 owned</small></div><div class="shelf" style="display:flex;flex-wrap:wrap;gap:4px">${chips(SH.slice(0,3))}</div></div></div>`)},
+ init(r){ r.querySelectorAll('.fake').forEach(f=>f.style.cssText+='min-height:700px');
+  r.querySelectorAll('[data-j]').forEach(b=>b.onclick=()=>{ r.querySelectorAll('[data-j]').forEach(x=>x.setAttribute('aria-pressed',x===b)); r.querySelectorAll('.fld').forEach(f=>f.hidden=f.dataset.job!==b.dataset.j); }); }};
+
+/* ---------- S3 ---------- */
+const s3={key:'s3',title:'3 Split fields',
+ caption:{layout:'Logging and mining side by side; party as a row above the plot grid; level lines and shelf as one band below.',density:'High: everything for both jobs visible without scrolling.',colour:'Flat slate with one amber accent; no scenery.',motion:'Vertical gauge beside the main card; small lunge, +n numbers; the busiest field highlights.',ornament:'None: tiles and cards carry the colour.'},
+ html(){ const f=(job,t,rate,k,sups,plots,cnt)=>`<div class="fld" data-job="${job}"><div class="hd"><h3>${t} <small style="font-weight:500;opacity:.7">${cnt}</small></h3><span>${rate}</span></div>
+  <div class="partyrow"><div class="mainbox">${card(k,{main:1})}<div class="vg" data-gauge style="--p:35"><i></i></div></div><div class="sepl"></div>${sups.map(s=>s?`<div>${card(s,{sm:1,sup:1})}<div class="sup-tag">${T[s].eff}</div></div>`:`<div>${emptyCard({sm:1})}<div class="sup-tag">empty</div></div>`).join('')}</div>
+  <div class="plots">${plots}</div><div class="flash"></div></div>`;
+ return BI.shell(`<h2>Production</h2><div class="two">${f('log','Logging','3.7 Oak Gem/s','feller',['keeper','treant','dryad'],[2,2,1,0].map(s=>plot('tree','Oak','3.7/s',s,62)).join(''),'4 of 4 plots')}
+  ${f('mine','Mining','0.69 Copper Gem/s','digger',['cutter','golem',null],[1,1].map(s=>plot('rock','Copper','0.69/s',s,62)).join('')+lockPlot('rock','Iron Deeps','Clear Cellar',62)+lockPlot('rock','New slot','25 Money',62),'2 of 2 slots')}</div>
+  <div class="bottom"><div class="col"><h4>Logging levels ${BTNS}</h4><div class="lines">${line('More plots','4 owned','','Buy max (18)','26,626','Oak 3.7 → 20.3/s')}${line('Oak','Level 15','Lv 25: x2','Buy max (8)','24,427','Oak 3.7 → 4.88/s')}</div><div class="shelf">${chips(SH.filter((_,i)=>[0,1,2,3,4].includes(i)))}</div></div>
+  <div class="col"><h4>Mining levels</h4><div class="lines">${line('More slots','2 owned','','Buy max (18)','26,626','Copper 0.69 → 6.2/s')}${line('Copper Quarry','Level 0','Lv 25: x2','Buy max (24)','27,100','Copper 0.69 → 2.35/s')}</div><div class="shelf">${chips(SH.filter((_,i)=>[5,6].includes(i)))}</div></div></div>`)},
+ init(r){ r.querySelector('.fake').style.minHeight='720px'; }};
+
+/* ---------- S4 ---------- */
+const lad = (cur) => `<div class="lad">${[0,10,25,50,75].map((m,i)=>`<em class="${cur>=m?'on':''} ${cur<m&&(i===0||cur>=[0,10,25,50,75][i-1])?'nx':''}">${m===0?'Lv 0':m}</em>${i<4?`<i class="${cur>[0,10,25,50,75][i+1]-1||cur>=[0,10,25,50,75][i+1]?'on':''}"></i>`:''}`).join('')}</div>`;
+const s4={key:'s4',title:'4 Diorama',
+ caption:{layout:'Full-bleed scene: meadow above, cave below, party standing in front; the rail becomes a slide-in tray with milestone ladders.',density:'Low chrome: only a name, a rate and a gauge banner on the stage.',colour:'Saturated sunset sky, purple hills, green meadow, dark cave, orange accent.',motion:'Drifting clouds, a banner gauge that fills and flashes BURST, plots at depth scale as the party strikes.',ornament:'High: layered scenery with a sun and rows of plots in perspective.'},
+ html(){ const pl=(kind,items,s)=>items.map((p,i)=>`<div class="plot" data-plot style="left:${p[0]}px;bottom:${p[1]}px;transform:scale(${p[2]})">${tile(kind,p[3],s)}<span>${p[4]}</span></div>`).join('');
+ return BI.shell(`<div class="scene"><div class="sky"></div><div class="sun"></div><div class="cl" style="top:40px;animation-delay:-8s"></div><div class="cl" style="top:80px;width:100px;animation-delay:-24s"></div><div class="hill h2"></div><div class="hill h1"></div><div class="grass"></div><div class="cave"></div>
+  <div class="jt" style="top:14px">Logging<small>4 of 4 plots · 3.7 Oak Gem/s</small></div>
+  <div class="fld log" data-job="log"><div class="pl">${pl('tree',[[130,150,.8,2,'Oak'],[10,150,.8,2,'Oak'],[250,150,.8,1,'Oak'],[60,50,1,2,'Oak']],84)}</div>
+   <div class="main">${card('feller',{main:1})}</div><div class="supp">${['keeper','treant','dryad'].map(s=>card(s,{sm:1,sup:1})).join('')}</div>
+   <div class="banner" style="top:-30px;left:330px;--p:35" data-gauge><i></i><b>HARVEST BURST</b></div><div class="flash"></div></div>
+  <div class="jt" style="top:372px">Mining<small>2 of 2 slots · 0.69 Copper Gem/s</small></div>
+  <div class="fld mine" data-job="mine"><div class="pl">${pl('rock',[[110,50,.9,1,'Copper Quarry'],[10,40,.9,1,'Copper Quarry'],[230,40,.9,0,'Iron Deeps (locked)']],84)}</div>
+   <div class="main" style="bottom:0">${card('digger',{main:1})}</div><div class="supp" style="bottom:0">${['cutter','golem'].map(s=>card(s,{sm:1,sup:1})).join('')}${emptyCard({sm:1})}</div>
+   <div class="banner" style="top:-46px;left:330px;--p:20" data-gauge><i></i><b>HARVEST BURST</b></div><div class="flash"></div></div></div>
+  <aside class="tray" data-tray><h3 style="margin:0;font:800 17px Outfit">Upgrades</h3>${BTNS}<h4>Oak</h4>${lad(15)}${line('Oak','Level 15','Lv 25: x2','Buy max (8)','24,427 Money','Oak Gem 3.7/s → 4.88/s')}${line('More plots','4 owned','','Buy max (18)','26,626 Money','Plots 4 → 22')}
+  <h4>Copper Quarry</h4>${lad(0)}${line('Copper Quarry','Level 0','Lv 25: x2','Buy max (24)','27,100 Money','Copper Gem 0.69/s → 2.35/s')}<h4>Upgrade shelf</h4><div class="shelf" style="display:flex;flex-wrap:wrap;gap:5px">${chips(SH.slice(0,5))}</div></aside><button class="trayt" data-tt>Upgrades</button>`)},
+ init(r){ r.querySelector('.fake').style.minHeight='700px'; const t=r.querySelector('[data-tray]'); r.querySelector('[data-tt]').onclick=()=>t.classList.toggle('shut'); }};
+
+/* ---------- S5 ---------- */
+const s5={key:'s5',title:'5 Command table',
+ caption:{layout:'A ruler of level lines on top, then each job as a table row: a fan of cards (main in front, supports behind) and a grid of tall plot tiles.',density:'Medium-high; every plot is a large tile with its level.',colour:'Walnut table, parchment rulers, cinnabar red accent.',motion:'Cards deal into the fan and the front card lunges; a long gauge bar with ten ticks sweeps across the row.',ornament:'Medium: tabletop texture, fanned hand, wood shelf of upgrade chips.'},
+ html(){ const rl=(n,lv,w,txt,price,dim)=>`<div class="rl"><div class="t"><span>${n}</span><span>${lv}</span></div><div class="tk" style="--w:${w}%"><i></i><u></u><b></b></div><button class="${dim?'dim':''}">${txt} · ${price}</button></div>`;
+ const row=(job,k,sups,plots,rate)=>`<div class="row" data-job="${job}"><div><div class="hand">${card(k,{main:1})}${sups.map(s=>s?card(s,{sup:1,sm:0}).replace('class="mc ','class="mc silver '):emptyCard()).join('')}</div></div><div><div class="glbl"><span>${job==='log'?'Logging':'Mining'}</span><span>Harvest burst</span><span>${rate}</span></div><div class="gwide">${gauge()}<div class="tkm"></div></div><div class="grid">${plots}</div></div><div class="flash"></div></div>`;
+ return BI.shell(`<h2>Production</h2><div class="ruler">${rl('Oak','Level 15',60,'Buy max (8)','24,427 Money')}${rl('More plots','4 owned',16,'Buy max (18)','26,626 Money')}${rl('Copper Quarry','Level 0',0,'Buy max (24)','27,100 Money')}${rl('Ironbark','Tier 2',0,'Unlock','500 Oak Gem',1)}</div>
+  <div class="table">${row('log','feller',['keeper','treant','dryad'],[2,2,1,1,0].map(s=>plot('tree','Oak','3.7/s',s,62)).join('')+lockPlot('tree','Ironbark','500 Oak',62),'3.7 Oak Gem/s')}
+  ${row('mine','digger',['cutter','golem',null],[1,1].map(s=>plot('rock','Copper Quarry','0.69/s',s,62)).join('')+lockPlot('rock','New slot','25 Money',62)+lockPlot('rock','Iron Deeps','Clear Cellar',62),'0.69 Copper Gem/s')}</div>
+  <div class="shelfbar"><b>Upgrade shelf</b>${chips(SH)}</div>`)},
+ init(r){ r.querySelector('.fake').style.minHeight='740px'; }};
+
+/* ---------- live stage engine ---------- */
+const reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+function pop(field,el,txt,big){ const f=field.getBoundingClientRect(), p=el.getBoundingClientRect(); const d=document.createElement('div'); d.className='pop'+(big?' big':''); d.innerHTML=`<span>${txt}</span><b>${txt}</b>`;
+  d.style.left=(p.left-f.left+p.width/2)+'px'; d.style.top=(p.top-f.top+p.height*.15)+'px'; field.appendChild(d);
+  d.animate([{transform:'translate(-50%,-50%) rotate(-4deg) scale(.6)',opacity:0},{transform:'translate(-50%,-90%) rotate(-4deg) scale(1.1)',opacity:1,offset:.25},{transform:'translate(-50%,-200%) rotate(-4deg) scale(1)',opacity:0}],{duration:big?1400:900,easing:'ease-out'}).onfinish=()=>d.remove(); }
+function lunge(main,target){ if(reduce) return; const a=main.getBoundingClientRect(), b=target.getBoundingClientRect(); const dx=(b.left+b.width/2-a.left-a.width/2)*.3, dy=(b.top+b.height/2-a.top-a.height/2)*.3;
+  main.animate([{transform:'none'},{transform:`translate(${-dx*.12}px,${-dy*.12}px) rotate(-5deg)`,offset:.25},{transform:`translate(${dx}px,${dy}px) rotate(6deg)`,offset:.55},{transform:'none'}],{duration:480,easing:'ease-in-out'}); }
+function setP(field,p){ field.querySelectorAll('[data-gauge]').forEach(g=>{ g.style.setProperty('--p',p); g.classList.toggle('full',p>=100); }); }
+function runField(f){ let p=+(f.querySelector('[data-gauge]')?.style.getPropertyValue('--p')||30), n=0;
+  setInterval(()=>{ if(!f.offsetParent) return; const plots=[...f.querySelectorAll('[data-plot]')]; if(!plots.length) return;
+   const main=f.querySelector('.main .mc, .mainbox .mc, .hand .mc, .party .mc, [data-mainc]'); const pl=plots[n++%plots.length];
+   if(main) lunge(main,pl); setTimeout(()=>{ pop(f,pl,'+'+(f.dataset.job==='log'?(3.7).toFixed(1):(0.69*1.4).toFixed(1))); const s=f.querySelectorAll('[data-sup]'); if(s.length){ const x=s[n%s.length]; x.classList.add('on'); setTimeout(()=>x.classList.remove('on'),300);} },200);
+   p+=9; setP(f,Math.min(100,p));
+   if(p>=100){ p=0; setTimeout(()=>{ plots.forEach((pp,i)=>setTimeout(()=>pop(f,pp,'+'+(i+2)*3),i*90)); const fl=f.querySelector('.flash'); if(fl&&!reduce) fl.animate([{opacity:.65},{opacity:0}],{duration:420}); setTimeout(()=>{ pop(f,f.querySelector('[data-plot]'),'BURST +'+(plots.length*12),true); },plots.length*90); setP(f,0); },700); }
+  },1100); }
+BI.mountTabs([s1,s2,s3,s4,s5], document.querySelector('.tabs'), document.querySelector('.caption'), document.getElementById('host'));
+document.querySelectorAll('.fld, .row[data-job]').forEach(runField);
+</script></body></html>

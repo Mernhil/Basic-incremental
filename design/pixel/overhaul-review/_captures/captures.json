@@ -1,0 +1,2972 @@
+{
+  "tokens": {
+    "--bi-table-bg": "#cfd5dd",
+    "--bi-chrome-bg": "#161b26",
+    "--bi-chrome-active-bg": "rgba(217, 179, 90, 0.14)",
+    "--bi-chrome-accent": "#d9b35a",
+    "--bi-frame-bg": "#2a2f38",
+    "--bi-frame-title-bg": "rgba(0, 0, 0, 0.4)",
+    "--bi-art-bg": "",
+    "--bi-plate-bg": "",
+    "--bi-panel-bg": "",
+    "--bi-tip-bg": "#161b26",
+    "body-common": "rgb(42, 47, 56)",
+    "art-common": "rgb(13, 18, 27)",
+    "body-rare": "rgb(22, 41, 77)",
+    "art-rare": "rgb(13, 18, 27)",
+    "body-epic": "rgb(44, 26, 79)",
+    "art-epic": "rgb(13, 18, 27)",
+    "body-legendary": "rgb(74, 43, 13)",
+    "art-legendary": "rgb(13, 18, 27)",
+    "body-mythic": "rgb(29, 13, 25)",
+    "art-mythic": "rgb(13, 18, 27)",
+    "body-exotic": "rgb(31, 17, 8)",
+    "art-exotic": "rgb(13, 18, 27)",
+    "body-void": "rgb(6, 7, 8)",
+    "art-void": "rgb(13, 18, 27)"
+  },
+  "meta": {
+    "attacks": {
+      "blossom": {
+        "batch": "B2",
+        "edge": "#ffc5ce",
+        "frames": 4,
+        "levels": 5,
+        "option": "E",
+        "particle": "#fff7f7",
+        "size": 64
+      },
+      "candy": {
+        "batch": "B5",
+        "edge": "#ff9aa8",
+        "frames": 4,
+        "levels": 4,
+        "name": "Ribbon Swipe",
+        "option": "D",
+        "particle": "#bafff2",
+        "size": 64
+      },
+      "fern": {
+        "batch": "B2",
+        "edge": "#66da8d",
+        "frames": 4,
+        "levels": 5,
+        "option": "C",
+        "particle": "#d0ffd3",
+        "size": 64
+      },
+      "forge": {
+        "batch": "B5",
+        "edge": "#c3d1df",
+        "frames": 4,
+        "levels": 4,
+        "name": "Anvil Strike",
+        "option": "A",
+        "particle": "#fff0a2",
+        "size": 64
+      },
+      "moss": {
+        "batch": "B2",
+        "edge": "#c7d464",
+        "frames": 4,
+        "levels": 5,
+        "option": "D",
+        "particle": "#fff8d2",
+        "size": 64
+      },
+      "rune": {
+        "batch": "B5",
+        "edge": "#c2c1d2",
+        "frames": 4,
+        "levels": 4,
+        "name": "Rune Cleave",
+        "option": "E",
+        "particle": "#a9ffc8",
+        "size": 64
+      },
+      "starmap": {
+        "batch": "B5",
+        "edge": "#e4f1ff",
+        "frames": 4,
+        "levels": 4,
+        "name": "Comet Slash",
+        "option": "C",
+        "particle": "#b2f2ff",
+        "size": 64
+      },
+      "verdant": {
+        "batch": "B2",
+        "edge": "#9ae470",
+        "frames": 4,
+        "levels": 5,
+        "option": "A",
+        "particle": "#fff79f",
+        "size": 64
+      },
+      "vine": {
+        "batch": "B2",
+        "edge": "#a8cb62",
+        "frames": 4,
+        "levels": 5,
+        "option": "B",
+        "particle": "#fff79f",
+        "size": 64
+      },
+      "woodcraft": {
+        "batch": "B5",
+        "edge": "#e0c276",
+        "frames": 4,
+        "levels": 4,
+        "name": "Whittle Cut",
+        "option": "B",
+        "particle": "#fff9d9",
+        "size": 64
+      }
+    },
+    "borders": {
+      "antler": {
+        "amb": "amb-antler",
+        "batch": "B3",
+        "exclusive": "moonwood_dryad",
+        "levels": 5,
+        "name": "Moonwood antlers",
+        "option": "B"
+      },
+      "blossom": {
+        "amb": "amb-blossom",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Blossom branch",
+        "option": "E",
+        "tokens": {
+          "line": "#f29cc0",
+          "panel": "#1e1a1c",
+          "plate": "#3d6b34",
+          "window": "#151215"
+        }
+      },
+      "candy": {
+        "amb": "amb-candy",
+        "batch": "B5",
+        "levels": 2,
+        "name": "Gumdrop Corners",
+        "option": "D"
+      },
+      "fern": {
+        "amb": "amb-fern",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Fern fronds",
+        "option": "C",
+        "tokens": {
+          "line": "#5fd0a0",
+          "panel": "#0f2420",
+          "plate": "#1f5a4a",
+          "window": "#0b1816"
+        }
+      },
+      "forge": {
+        "amb": "amb-forge",
+        "batch": "B5",
+        "levels": 2,
+        "name": "Rivet Brackets",
+        "option": "A"
+      },
+      "heartwood": {
+        "amb": "amb-heartwood",
+        "batch": "B3",
+        "exclusive": "moonwood_dryad",
+        "levels": 5,
+        "name": "Crescent cradles",
+        "option": "A"
+      },
+      "luna": {
+        "amb": "amb-luna",
+        "batch": "B3",
+        "exclusive": "moonwood_dryad",
+        "levels": 5,
+        "name": "Luna moths",
+        "option": "D"
+      },
+      "moss": {
+        "amb": "amb-moss",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Moss and mushrooms",
+        "option": "D",
+        "tokens": {
+          "line": "#a8c24a",
+          "panel": "#1a1f0e",
+          "plate": "#4d5f20",
+          "window": "#12160b"
+        }
+      },
+      "rings": {
+        "amb": "amb-rings",
+        "batch": "B3",
+        "exclusive": "moonwood_dryad",
+        "levels": 5,
+        "name": "Growth rings",
+        "option": "C"
+      },
+      "rune": {
+        "amb": "amb-rune",
+        "batch": "B5",
+        "levels": 2,
+        "name": "Rune Corners",
+        "option": "E"
+      },
+      "starmap": {
+        "amb": "amb-starmap",
+        "batch": "B5",
+        "levels": 2,
+        "name": "Compass Corners",
+        "option": "C"
+      },
+      "verdant": {
+        "amb": "amb-verdant",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Leaf crown",
+        "option": "A",
+        "tokens": {
+          "line": "#7fc25a",
+          "panel": "#14261a",
+          "plate": "#2f6b2a",
+          "window": "#0e1a12"
+        }
+      },
+      "vine": {
+        "amb": "amb-vine",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Vine wrap",
+        "option": "B",
+        "tokens": {
+          "line": "#8fb04a",
+          "panel": "#1c1710",
+          "plate": "#5a3d24",
+          "window": "#11140e"
+        }
+      },
+      "woodcraft": {
+        "amb": "amb-woodcraft",
+        "batch": "B5",
+        "levels": 2,
+        "name": "Twine Corners",
+        "option": "B"
+      },
+      "wreath": {
+        "amb": "amb-wreath",
+        "batch": "B3",
+        "exclusive": "moonwood_dryad",
+        "levels": 5,
+        "name": "Moon wreath",
+        "option": "E"
+      }
+    },
+    "corners": [
+      "acanthus",
+      "pauldron",
+      "wings",
+      "shards",
+      "knot"
+    ],
+    "cursors": {
+      "blossom": {
+        "batch": "B2",
+        "hot": [
+          6,
+          4
+        ],
+        "levels": 5,
+        "option": "E"
+      },
+      "fern": {
+        "batch": "B2",
+        "hot": [
+          6,
+          4
+        ],
+        "levels": 5,
+        "option": "C"
+      },
+      "moss": {
+        "batch": "B2",
+        "hot": [
+          6,
+          4
+        ],
+        "levels": 5,
+        "option": "D"
+      },
+      "verdant": {
+        "batch": "B2",
+        "hot": [
+          6,
+          4
+        ],
+        "levels": 5,
+        "option": "A"
+      },
+      "vine": {
+        "batch": "B2",
+        "hot": [
+          6,
+          4
+        ],
+        "levels": 5,
+        "option": "B"
+      }
+    },
+    "finishes": {
+      "blossom": {
+        "amb": "amb-blossom",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Blossom branch",
+        "option": "E"
+      },
+      "corepulse": {
+        "amb": "amb-corepulse",
+        "batch": "B4",
+        "exclusive": "core_titan",
+        "levels": 6,
+        "name": "Pulse rings",
+        "option": "A",
+        "pulse": "fnp-corepulse"
+      },
+      "fern": {
+        "amb": "amb-fern",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Fern fronds",
+        "option": "C"
+      },
+      "hexcore": {
+        "amb": "amb-hexcore",
+        "batch": "B4",
+        "exclusive": "core_titan",
+        "levels": 6,
+        "name": "Hex core",
+        "option": "C",
+        "pulse": "fnp-hexcore"
+      },
+      "moss": {
+        "amb": "amb-moss",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Moss and mushrooms",
+        "option": "D"
+      },
+      "starburst": {
+        "amb": "amb-starburst",
+        "batch": "B4",
+        "exclusive": "core_titan",
+        "levels": 6,
+        "name": "Starburst",
+        "option": "E",
+        "pulse": "fnp-starburst"
+      },
+      "strata": {
+        "amb": "amb-strata",
+        "batch": "B4",
+        "exclusive": "core_titan",
+        "levels": 6,
+        "name": "Magma strata",
+        "option": "D",
+        "pulse": "fnp-strata"
+      },
+      "veins": {
+        "amb": "amb-veins",
+        "batch": "B4",
+        "exclusive": "core_titan",
+        "levels": 6,
+        "name": "Power veins",
+        "option": "B",
+        "pulse": "fnp-veins"
+      },
+      "verdant": {
+        "amb": "amb-verdant",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Leaf crown",
+        "option": "A"
+      },
+      "vine": {
+        "amb": "amb-vine",
+        "batch": "B2",
+        "levels": 5,
+        "name": "Vine wrap",
+        "option": "B"
+      }
+    },
+    "motions": {
+      "fountain": "Footer fountain",
+      "orbit": "Frame orbit",
+      "pair": "Slow pair",
+      "pop": "Cel pop",
+      "rail": "Rail drift"
+    },
+    "nodes": {
+      "branches": [
+        "logging",
+        "mining",
+        "combat",
+        "luck",
+        "collection",
+        "automation"
+      ],
+      "chart": {
+        "line": "#4a4470",
+        "lit": "#d8a8ff",
+        "major": 24,
+        "size": 18,
+        "sky": [
+          200,
+          120
+        ]
+      },
+      "keystone": 32,
+      "size": 24,
+      "states": [
+        "locked",
+        "open",
+        "owned"
+      ],
+      "styles": {
+        "a": "Brilliant in a bronze cup",
+        "b": "Hex cut in a silver bezel",
+        "c": "Bare rhombus, sticker ring",
+        "d": "Star cut, like the medals",
+        "e": "Kite cut with gold prongs"
+      }
+    },
+    "numbers": {
+      "blossom": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#73656b",
+        "levels": 5,
+        "option": "E",
+        "ramp": [
+          "#8a317c",
+          "#c45498",
+          "#ff7fae",
+          "#ff9ead",
+          "#ffc0bc"
+        ]
+      },
+      "candy": {
+        "acc": [
+          "#2f498a",
+          "#508dc4",
+          "#7ae0ff",
+          "#9afdff",
+          "#bafff2"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "levels": 2,
+        "name": "Candy Numerals",
+        "option": "D",
+        "ramp": [
+          "#8a2f7a",
+          "#c45094",
+          "#ff7aa8",
+          "#ff9aa8",
+          "#ffbfba"
+        ]
+      },
+      "fern": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#517365",
+        "levels": 5,
+        "option": "C",
+        "ramp": [
+          "#0e5354",
+          "#1c7864",
+          "#2f9c6a",
+          "#66da8d",
+          "#a2ffae"
+        ]
+      },
+      "forge": {
+        "acc": [
+          "#752413",
+          "#a75b26",
+          "#d9a441",
+          "#f9e474",
+          "#fff0a2"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "levels": 2,
+        "name": "Stamped Numerals",
+        "option": "A",
+        "ramp": [
+          "#433e5a",
+          "#616380",
+          "#8a92a6",
+          "#c3d1df",
+          "#e9f8ff"
+        ]
+      },
+      "moss": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#67734f",
+        "levels": 5,
+        "option": "D",
+        "ramp": [
+          "#4d430d",
+          "#676e1a",
+          "#6f8f2c",
+          "#c7d464",
+          "#fff6a3"
+        ]
+      },
+      "rune": {
+        "acc": [
+          "#1a6079",
+          "#31aaac",
+          "#4fe0c0",
+          "#80fcc7",
+          "#a9ffc8"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "levels": 2,
+        "name": "Rune Numerals",
+        "option": "E",
+        "ramp": [
+          "#3f394c",
+          "#5b596c",
+          "#7d7f8c",
+          "#c2c1d2",
+          "#f5f1ff"
+        ]
+      },
+      "starmap": {
+        "acc": [
+          "#2c268a",
+          "#445bc4",
+          "#6aa8ff",
+          "#8ed5ff",
+          "#b2f2ff"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "levels": 2,
+        "name": "Inked Numerals",
+        "option": "C",
+        "ramp": [
+          "#605a7c",
+          "#8c8eb1",
+          "#c6cfe6",
+          "#e4f1ff",
+          "#edf9ff"
+        ]
+      },
+      "verdant": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#5a7353",
+        "levels": 5,
+        "option": "A",
+        "ramp": [
+          "#125e2b",
+          "#23872c",
+          "#4caf3a",
+          "#9ae470",
+          "#d9ffa6"
+        ]
+      },
+      "vine": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#616f48",
+        "levels": 5,
+        "option": "B",
+        "ramp": [
+          "#0c440d",
+          "#286018",
+          "#4f7d28",
+          "#a8cb62",
+          "#f4ffa5"
+        ]
+      },
+      "woodcraft": {
+        "acc": [
+          "#754c43",
+          "#a7856b",
+          "#d9c49a",
+          "#f9f0c2",
+          "#fff9d9"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "levels": 2,
+        "name": "Carved Numerals",
+        "option": "B",
+        "ramp": [
+          "#5b1715",
+          "#813f27",
+          "#a8743f",
+          "#e0c276",
+          "#fff2ac"
+        ]
+      }
+    },
+    "particles": [
+      "mote",
+      "ember",
+      "glint",
+      "star",
+      "bubble"
+    ],
+    "skins": {
+      "nodes": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "starlight": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "sticker": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ],
+      "wardrobe": [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e"
+      ]
+    },
+    "starlight": [
+      "a",
+      "b",
+      "c",
+      "d",
+      "e"
+    ],
+    "stickers": {
+      "achievements": [
+        "deep_delver",
+        "dressed_up",
+        "fashionista",
+        "first_ascension",
+        "first_harvest",
+        "first_kill",
+        "first_milestone",
+        "first_summon",
+        "full_loadout",
+        "gem_adept",
+        "giant_slayer_1",
+        "giant_slayer_2",
+        "giant_slayer_3",
+        "glimmer_seeker",
+        "golden_hour",
+        "lumberjack_1",
+        "lumberjack_2",
+        "masterwork",
+        "medalist",
+        "night_owl",
+        "pity_breaker",
+        "prismatic_dawn",
+        "prospector_1",
+        "prospector_2",
+        "silver_lining",
+        "six_stars",
+        "skilled",
+        "ten_pulls",
+        "tree_hugger"
+      ],
+      "art": 50,
+      "chapters": [
+        "gathering",
+        "battle",
+        "cards",
+        "wardrobe",
+        "journey"
+      ],
+      "size": 74,
+      "styles": {
+        "a": "Paper die-cut",
+        "b": "Enamel pin",
+        "c": "Gold bezel",
+        "d": "Postage stamp",
+        "e": "Holo burst"
+      }
+    },
+    "tables": {
+      "blossom": {
+        "batch": "B2",
+        "h": 48,
+        "levels": 5,
+        "option": "E",
+        "w": 96
+      },
+      "fern": {
+        "batch": "B2",
+        "h": 48,
+        "levels": 5,
+        "option": "C",
+        "w": 96
+      },
+      "moss": {
+        "batch": "B2",
+        "h": 48,
+        "levels": 5,
+        "option": "D",
+        "w": 96
+      },
+      "verdant": {
+        "batch": "B2",
+        "h": 48,
+        "levels": 5,
+        "option": "A",
+        "w": 96
+      },
+      "vine": {
+        "batch": "B2",
+        "h": 48,
+        "levels": 5,
+        "option": "B",
+        "w": 96
+      }
+    },
+    "ticks": {
+      "blossom": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#ffe0ee",
+        "levels": 5,
+        "motif": "deco-blossom",
+        "option": "E",
+        "petal": "amb-blossom",
+        "ramp": [
+          "#8a317c",
+          "#c45498",
+          "#ff7fae",
+          "#ff9ead",
+          "#ffc0bc"
+        ]
+      },
+      "candy": {
+        "acc": [
+          "#2f498a",
+          "#508dc4",
+          "#7ae0ff",
+          "#9afdff",
+          "#bafff2"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "gem": "deco-candy",
+        "glow": "#d6fff7",
+        "levels": 4,
+        "name": "Pop Tick",
+        "option": "D",
+        "ramp": [
+          "#8a2f7a",
+          "#c45094",
+          "#ff7aa8",
+          "#ff9aa8",
+          "#ffbfba"
+        ]
+      },
+      "fern": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#b5ffe0",
+        "levels": 5,
+        "motif": "deco-fern",
+        "option": "C",
+        "petal": "amb-fern",
+        "ramp": [
+          "#0e5354",
+          "#1c7864",
+          "#2f9c6a",
+          "#66da8d",
+          "#a2ffae"
+        ]
+      },
+      "forge": {
+        "acc": [
+          "#752413",
+          "#a75b26",
+          "#d9a441",
+          "#f9e474",
+          "#fff0a2"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "gem": "deco-forge",
+        "glow": "#fff6c7",
+        "levels": 4,
+        "name": "Spark Tick",
+        "option": "A",
+        "ramp": [
+          "#433e5a",
+          "#616380",
+          "#8a92a6",
+          "#c3d1df",
+          "#e9f8ff"
+        ]
+      },
+      "moss": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#e6ffb0",
+        "levels": 5,
+        "motif": "deco-moss",
+        "option": "D",
+        "petal": "amb-moss",
+        "ramp": [
+          "#4d430d",
+          "#676e1a",
+          "#6f8f2c",
+          "#c7d464",
+          "#fff6a3"
+        ]
+      },
+      "rune": {
+        "acc": [
+          "#1a6079",
+          "#31aaac",
+          "#4fe0c0",
+          "#80fcc7",
+          "#a9ffc8"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "gem": "deco-rune",
+        "glow": "#cbffde",
+        "levels": 4,
+        "name": "Glyph Tick",
+        "option": "E",
+        "ramp": [
+          "#3f394c",
+          "#5b596c",
+          "#7d7f8c",
+          "#c2c1d2",
+          "#f5f1ff"
+        ]
+      },
+      "starmap": {
+        "acc": [
+          "#2c268a",
+          "#445bc4",
+          "#6aa8ff",
+          "#8ed5ff",
+          "#b2f2ff"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "gem": "deco-starmap",
+        "glow": "#d1f7ff",
+        "levels": 4,
+        "name": "Star Tick",
+        "option": "C",
+        "ramp": [
+          "#605a7c",
+          "#8c8eb1",
+          "#c6cfe6",
+          "#e4f1ff",
+          "#edf9ff"
+        ]
+      },
+      "verdant": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#c9ffb8",
+        "levels": 5,
+        "motif": "deco-verdant",
+        "option": "A",
+        "petal": "amb-verdant",
+        "ramp": [
+          "#125e2b",
+          "#23872c",
+          "#4caf3a",
+          "#9ae470",
+          "#d9ffa6"
+        ]
+      },
+      "vine": {
+        "batch": "B2",
+        "family": "garden",
+        "glow": "#d8f7a0",
+        "levels": 5,
+        "motif": "deco-vine",
+        "option": "B",
+        "petal": "amb-vine",
+        "ramp": [
+          "#0c440d",
+          "#286018",
+          "#4f7d28",
+          "#a8cb62",
+          "#f4ffa5"
+        ]
+      },
+      "woodcraft": {
+        "acc": [
+          "#754c43",
+          "#a7856b",
+          "#d9c49a",
+          "#f9f0c2",
+          "#fff9d9"
+        ],
+        "batch": "B5",
+        "family": "loose",
+        "gem": "deco-woodcraft",
+        "glow": "#fffbe8",
+        "levels": 4,
+        "name": "Woodchip Tick",
+        "option": "B",
+        "ramp": [
+          "#5b1715",
+          "#813f27",
+          "#a8743f",
+          "#e0c276",
+          "#fff2ac"
+        ]
+      }
+    },
+    "wardrobe": {
+      "parts": {
+        "link": [
+          8,
+          4,
+          0
+        ],
+        "link-done": [
+          8,
+          4,
+          0
+        ],
+        "plate": [
+          48,
+          24,
+          6
+        ],
+        "plate-on": [
+          48,
+          24,
+          6
+        ],
+        "rung-done": [
+          16,
+          16,
+          0
+        ],
+        "rung-next": [
+          16,
+          16,
+          0
+        ],
+        "rung-off": [
+          16,
+          16,
+          0
+        ],
+        "socket": [
+          28,
+          28,
+          0
+        ],
+        "tile": [
+          40,
+          48,
+          6
+        ],
+        "tile-on": [
+          40,
+          48,
+          6
+        ]
+      },
+      "perRarity": [
+        "e"
+      ],
+      "rarities": [
+        "common",
+        "rare",
+        "epic",
+        "legendary",
+        "mythic",
+        "exotic",
+        "void"
+      ],
+      "styles": {
+        "a": "Sockets",
+        "b": "Gilt plaques",
+        "c": "Quiet ink",
+        "d": "Banners",
+        "e": "Rarity glass"
+      }
+    }
+  },
+  "captures": {
+    "boss-root_warden": {
+      "dsf": 2,
+      "frames": [
+        400,
+        900,
+        1400,
+        1900
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "boss-cinder_lich": {
+      "dsf": 2,
+      "frames": [
+        400,
+        900,
+        1400,
+        1900
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "boss-glacier_colossus": {
+      "dsf": 2,
+      "frames": [
+        400,
+        900,
+        1400,
+        1900
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "boss-crystal_sentinel": {
+      "dsf": 2,
+      "frames": [
+        400,
+        900,
+        1400,
+        1900
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "sentinel-0": {
+      "dsf": 2,
+      "frames": [
+        1000
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "sentinel-1": {
+      "dsf": 2,
+      "frames": [
+        1000
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "sentinel-2": {
+      "dsf": 2,
+      "frames": [
+        1000
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "sentinel-3": {
+      "dsf": 2,
+      "frames": [
+        1000
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "sentinel-4": {
+      "dsf": 2,
+      "frames": [
+        1000
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "evo-flameblade": {
+      "dsf": 2,
+      "frames": [
+        300,
+        700,
+        1100,
+        1500
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "evo-soul_reaper": {
+      "dsf": 2,
+      "frames": [
+        300,
+        700,
+        1100,
+        1500
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "evo-rootbloom_staff": {
+      "dsf": 2,
+      "frames": [
+        300,
+        700,
+        1100,
+        1500
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "frame-gold": {
+      "dsf": 2,
+      "frames": [
+        400,
+        1800,
+        3200,
+        4600
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "frame-prismatic": {
+      "dsf": 2,
+      "frames": [
+        400,
+        1800,
+        3200,
+        4600
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "medal-3": {
+      "dsf": 3,
+      "frames": [
+        300,
+        900,
+        1500,
+        2100
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "medal-4": {
+      "dsf": 3,
+      "frames": [
+        300,
+        900,
+        1500,
+        2100
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-fire-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-storm-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-light-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-nature-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-earth-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-crystal-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-void-gold": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-fire-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-storm-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-light-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-nature-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-earth-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-crystal-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "fx-void-prismatic": {
+      "dsf": 2,
+      "frames": [
+        300,
+        600,
+        900,
+        1200
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3",
+        "rm"
+      ]
+    },
+    "hit-slash-sparks": {
+      "dsf": 1,
+      "frames": [
+        20,
+        120,
+        260,
+        380
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3"
+      ]
+    },
+    "hit-slash-chips": {
+      "dsf": 1,
+      "frames": [
+        20,
+        120,
+        260,
+        380
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3"
+      ]
+    },
+    "hit-heavy-hit": {
+      "dsf": 1,
+      "frames": [
+        50,
+        150,
+        300,
+        430
+      ],
+      "files": [
+        "f0",
+        "f1",
+        "f2",
+        "f3"
+      ]
+    },
+    "tick-text": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "tick-text-crit": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-tier-bronze": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-tier-silver": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-tier-gold": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-tier-prismatic": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-common": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-rare": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-epic": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-legendary": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-mythic": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-exotic": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-rarity-void": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-evo-flameblade": {
+      "dsf": 1.5,
+      "frames": [
+        700
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "card-evo-rootbloom_staff": {
+      "dsf": 1.5,
+      "frames": [
+        700
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gn_border-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_border-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_border-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_border-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_border-4": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_border-5": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_plate-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_plate-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_plate-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_filigree-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_filigree-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_filigree-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gilded_filigree-4": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gn_finish-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_finish-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_finish-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_finish-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_finish-4": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-gt_finish-5": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-aurora_veil-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-aurora_veil-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-aurora_veil-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-aurora_veil-4": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-holo_hex-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-holo_hex-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-holo_hex-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-holo_waves-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-holo_waves-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-holo_waves-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-ember_crown-1": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-ember_crown-2": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-ember_crown-3": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-ember_crown-4": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "css-ember_crown-5": {
+      "dsf": 1.5,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-blade": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-gem": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-shield": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-pick": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-axe": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-golem": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-rock": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "emblem-tree": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-home": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-cards": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-production": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-dungeons": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-summon": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-skills": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-wardrobe": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-achievements": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-shop": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-settings": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-wood": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-ore": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-material": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-portal": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "icon-starlight": {
+      "dsf": 3,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "centre-star": {
+      "dsf": 2,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ]
+    },
+    "tick-blossom-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-blossom-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-blossom-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-blossom-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-blossom-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-candy-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-candy-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-candy-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-candy-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-fern-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-fern-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-fern-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-fern-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-fern-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-forge-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-forge-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-forge-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-forge-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-moss-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-moss-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-moss-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-moss-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-moss-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-rune-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-rune-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-rune-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-rune-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-starmap-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-starmap-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-starmap-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-starmap-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-verdant-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-verdant-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-verdant-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-verdant-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-verdant-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-vine-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-vine-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-vine-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-vine-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-vine-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-woodcraft-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-woodcraft-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-woodcraft-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "tick-woodcraft-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-blossom-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-blossom-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-blossom-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-blossom-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-blossom-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-candy-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-candy-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-fern-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-fern-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-fern-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-fern-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-fern-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-forge-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-forge-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-moss-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-moss-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-moss-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-moss-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-moss-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-rune-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-rune-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-starmap-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-starmap-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-verdant-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-verdant-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-verdant-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-verdant-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-verdant-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-vine-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-vine-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-vine-3": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-vine-4": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-vine-5": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-woodcraft-1": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    },
+    "num-woodcraft-2": {
+      "dsf": 1,
+      "frames": [
+        0
+      ],
+      "files": [
+        "f0"
+      ],
+      "native": true
+    }
+  }
+}

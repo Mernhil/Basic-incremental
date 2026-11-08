@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Summon and Shop options</title>
+<link rel="stylesheet" href="_shared/mock.css">
+<style>
+body{background:#0f1115;color:#e9eef7;margin:0;padding:28px 32px 60px}
+h1{margin:0 0 4px;font-size:28px;font-weight:800}
+.lead{margin:0 0 24px;color:#9aa6ba;max-width:80ch}
+h2{margin:36px 0 12px;font-size:22px;font-weight:800;border-bottom:1px solid #2a2f3a;padding-bottom:6px}
+.row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+@media(max-width:1500px){.row{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.row{grid-template-columns:1fr}}
+.opt{background:#181b22;border-radius:12px;box-shadow:inset 0 0 0 1px #2a2f3a;padding:12px;display:grid;gap:8px;align-content:start}
+.opt h3{margin:0;font-size:16px;font-weight:800}.opt h3 span{color:#e8c05a;margin-right:6px}
+.opt p{margin:0;font-size:13px;line-height:1.4;color:#c4cddb}.opt p b{color:#e9eef7}
+.opt img{width:100%;display:block;border-radius:6px;box-shadow:0 0 0 1px #2a2f3a}
+.shots{display:grid;gap:6px}
+.links{display:flex;gap:10px;font-size:12px;flex-wrap:wrap}.links a{color:#e8c05a}
+.art{font-size:12px;color:#9aa6ba;border-top:1px solid #2a2f3a;padding-top:6px}.art b{color:#c4cddb}
+.cap{font-size:11px;color:#7d889a;margin:-2px 0 0}
+</style></head><body>
+<h1>Summon and Shop: five options each</h1>
+<p class="lead">Static mockups on the real Gilded Nocturne tokens, Outfit and the existing sprites; placeholders stand in where art is missing. Each card shows the idle screen and the motion moment (reveal, spend or purchase). Open the page for the live version: its button plays the motion. 2x screenshots (game scale) sit next to the 1x ones.</p>
+
+<h2>Summon screen</h2>
+<div class="row" id="summon"></div>
+<h2>Shop screen (Ascension, Starlight shop and Shard shop)</h2>
+<div class="row" id="shop"></div>
+
+<script>
+const S=[
+ ['s1','Gate Hall','Full-bleed night hall: two stone arches, pity as 18 gems set in each arch, hold-to-pull buttons.','Hold a button and the ring charges; on release an orb falls per pull, colour hints the rarity, the last orb can flash up a colour, then the card walks out of the doorway in a light pillar.','Arch frames (2 sets, violet and ember), gem pips lit/unlit, orb sprites (7 rarity colours), rays and light-pillar effect, swirl portal loop, door-open card entrance, hold-charge ring.'],
+ ['s2','Banner','One big banner at a time on the light table: featured cards, rates as bars, pity as ten-pull blocks, history strip, big pull buttons.','Gacha reveal: screen dims, a pillar of light and a glowing floor ring, the card rises with rarity stars bursting, a chip list tracks each pull of a ten.','Banner backdrops per portal (key art, 2), light-pillar and rarity star-burst effects, floor ring, star rating sparkle, rarity chips; featured card fan uses existing cards.'],
+ ['s3','Summoning Circle','Cyan-black, single focus: a floor circle of 90 runes is the pity meter, a crystal hovers above, one Summon button.','Crystal spend: crystals fly from the header into the circle with trails, runes ignite, the beam rises with a card back whose glow takes the orb colour.','Crystal prop (summon and glamour variants), ellipse rune circle with 90 lit/unlit runes plus 9 milestone and crown runes, crystal trail effect, beam and flare, card-back glow in 7 colours.'],
+ ['s4','Rarity Ladder','Gilded Tradition skin (parchment, crimson, gold): rates, pity and result share one ladder; seal in the middle; last ten and collection on the right.','The result climbs the ladder: each rung lights in turn until it stops on the rarity, then the card replaces the crimson seal.','Crimson wax seal medallion (2 portals), rung lamps (7 colours) and a gold pity thermometer, ladder-climb light effect, parchment panel frame, rarity mini card chips.'],
+ ['s5','Deck and Table','Felt table: each portal is a deck whose thickness is its pity, the odds sit on a brass plate, pulls are dealt as a hand.','Deal and flip: ten cards are dealt in an arc from the deck and flipped one by one; the deck stack visibly thins and thickens with the pity count.','Felt texture and brass rim, deck stack art (card backs per portal, edge thickness 90 steps or 9), card-back designs, deal-and-flip card animation, brass odds plate.'],
+];
+const H=[
+ ['h1','Ledger','Dense table, three counters as tabs: every upgrade row shows level pips, before and after, and a Buy button; Ascension is a slim banner on top.','Purchase: the row flashes gold, one pip fills, the price floats up toward the header Starlight counter.','Almost none: Starlight coin and level pip art, a small prismatic orb for the Ascend banner, row flash and coin-float effect.'],
+ ['h2','Market Stalls','Light table, three striped-awning stalls side by side: Starlight shop, Shard shop and Ascension, all visible at once.','Purchase: a red BOUGHT stamp slams onto the tile; Ascension is a spinning prismatic ring that speeds up before the confirm.','Awning (3 colourways with scalloped edge), stall counter frames, BOUGHT stamp, prismatic ring gate, supply bundle icons (5), shard coin.'],
+ ['h3','Ascension Hall','Dark cosmic: the prismatic gate is the hero with the Starlight gain, upgrades are seven pillars that fill like gauges, shards live in a side drawer.','Ascend: the gate charges, rings speed up, a white flood sweeps the hall; buying fills a pillar with gold light; the drawer slides in from the right.','Large prismatic gate (arch, swirl, charge and flood effect), seven pillar frames with fill glow, drawer tab, Starlight crystal for the gate centre.'],
+ ['h4','Card Counter','Gilded Tradition skin: the Shard shop is the hero, copies hang on a rail with price tags; Starlight is a narrow rack and Ascension a crimson banner.','Purchase: the card lifts, the tag tears off and falls, a ghost card flies to the collection and a "+1 copy, star bar 2 of 6" badge pops.','Brass hanging rail, price-tag sprite in 2 states, tear-off animation, shard coin, parchment panel frame, card lift glow; cards and cosmetics reuse existing sprites.'],
+ ['h5','Workbench','Teal-black master and detail: one list (Ascension, Starlight, Shards) at left, a big detail with before and after, quantity selector and slider, running bonus totals at right.','Spend: Starlight glyphs stream from the balance into the Buy button along trails, the slider and the totals tick up, the emblem ring spins faster.','Large brass emblem ring per upgrade (7 plus shard groups), Starlight glyph for the stream, slider thumb, trail effect, a small pictogram per upgrade.'],
+];
+function fill(id,list,dir){document.getElementById(id).innerHTML=list.map(([k,t,d,m,a],i)=>`<article class="opt"><h3><span>${i+1}</span>${t}</h3>
+ <div class="shots"><a href="${dir}/${k}.html"><img src="${dir}/${k}-idle.png" alt="${t}, idle" loading="lazy"></a><img src="${dir}/${k}-play.png" alt="${t}, motion moment" loading="lazy"></div>
+ <p class="cap">Top: idle. Bottom: motion moment.</p>
+ <p><b>Layout.</b> ${d}</p><p><b>Motion.</b> ${m}</p>
+ <div class="links"><a href="${dir}/${k}.html">Open live</a><a href="${dir}/${k}-idle@2x.png">Idle 2x</a><a href="${dir}/${k}-play@2x.png">Motion 2x</a></div>
+ <div class="art"><b>Pixel-art agent needs.</b> ${a}</div></article>`).join('')}
+fill('summon',S,'summon');fill('shop',H,'shop');
+</script></body></html>

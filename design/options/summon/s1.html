@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Summon option 1: Gate Hall</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* S1 Gate Hall: full-bleed night hall, two stone arches, pity as gems set into the arch, hold-to-pull */
+.s1{--v1:#7a5cff;--v2:#3ec6ff;--v3:#ff6fc8}
+.s1 .mk-main{background:radial-gradient(70% 55% at 50% 38%,#1c1840 0,#0c0f1e 62%,#07080f 100%);color:#e9eef7}
+.s1 .mk-main::before{content:'';position:absolute;inset:0;background:
+  radial-gradient(1.5px 1.5px at 12% 18%,#fff9,transparent),radial-gradient(1.5px 1.5px at 33% 8%,#fff8,transparent),radial-gradient(2px 2px at 71% 14%,#cfe3ff,transparent),
+  radial-gradient(1.5px 1.5px at 88% 30%,#fff9,transparent),radial-gradient(1.5px 1.5px at 52% 22%,#fff7,transparent),radial-gradient(2px 2px at 20% 44%,#ffd9a8,transparent)}
+.s1 .floor{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(180deg,transparent,#05060c 70%),repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 2px,transparent 2px 64px)}
+.s1 .title{position:absolute;left:28px;top:20px;font-weight:800;font-size:15px;color:#b4c0d4}
+.s1 .title b{color:#e9eef7;font-size:22px;display:block;letter-spacing:-.01em}
+.s1 .rates{position:absolute;right:26px;top:22px;display:flex;gap:8px}
+.s1 .rates button{border:0;border-radius:999px;padding:5px 14px;background:#161b26;box-shadow:inset 0 0 0 1px var(--chrome-line);font-weight:700;font-size:12px;color:#e9eef7}
+.s1 .gates{position:absolute;left:0;right:0;top:56px;display:flex;justify-content:center;gap:60px}
+.s1 .gate{position:relative;width:340px;height:470px}
+.s1 .arch{position:absolute;inset:0;border-radius:170px 170px 8px 8px;background:linear-gradient(180deg,#3a3f5c,#222640);box-shadow:inset 0 0 0 3px rgba(217,179,90,.55),inset 0 0 0 9px #14172a,inset 0 0 0 11px rgba(217,179,90,.3),0 30px 60px rgba(0,0,0,.6)}
+.s1 .door{position:absolute;left:34px;right:34px;top:34px;bottom:0;border-radius:136px 136px 0 0;overflow:hidden;background:#070816;box-shadow:inset 0 0 0 2px rgba(0,0,0,.8)}
+.s1 .swirl{position:absolute;left:50%;top:44%;width:420px;height:420px;margin:-210px 0 0 -210px;border-radius:50%;
+  background:conic-gradient(from 0deg,var(--v1),var(--v2),#0a0d20,var(--v3),var(--v1),#0a0d20,var(--v2),var(--v1));animation:s1spin 14s linear infinite;
+  mask:radial-gradient(closest-side,#000 0,#000 30%,rgba(0,0,0,.55) 60%,transparent 100%);-webkit-mask:radial-gradient(closest-side,#000 0,#000 30%,rgba(0,0,0,.55) 60%,transparent 100%)}
+.s1 .swirl.b{width:300px;height:300px;margin:-150px 0 0 -150px;animation-duration:9s;animation-direction:reverse;opacity:.9;filter:blur(2px)}
+.s1 .core{position:absolute;left:50%;top:44%;width:90px;height:90px;margin:-45px 0 0 -45px;border-radius:50%;background:radial-gradient(#fff,rgba(255,255,255,.2) 45%,transparent 70%);filter:blur(3px)}
+.s1 .rays{position:absolute;left:50%;top:44%;width:520px;height:520px;margin:-260px 0 0 -260px;background:repeating-conic-gradient(from 0deg,rgba(255,255,255,.14) 0 6deg,transparent 6deg 24deg);mask:radial-gradient(closest-side,#000,transparent);-webkit-mask:radial-gradient(closest-side,#000,transparent);opacity:0;animation:s1spin 30s linear infinite}
+.s1 .gem{position:absolute;width:13px;height:13px;margin:-6.5px;rotate:45deg;border-radius:3px;background:#1a1d33;box-shadow:inset 0 0 0 1.5px rgba(217,179,90,.55)}
+.s1 .gem.lit{background:linear-gradient(135deg,#ffe9a8,#f2a93b);box-shadow:0 0 10px #f2a93b,inset 0 0 0 1.5px #fff3}
+.s1 .gem.cap{width:22px;height:22px;margin:-11px;background:#1a1d33;box-shadow:inset 0 0 0 2px #f2a93b}
+.s1 .gem.cap.lit{background:linear-gradient(135deg,#fff3c4,#f2a93b)}
+.s1 .key{position:absolute;left:50%;top:-22px;translate:-50% 0;z-index:2}
+.s1 .name{position:absolute;left:0;right:0;bottom:-6px;text-align:center}
+.s1 .pity{position:absolute;left:50%;top:238px;translate:-50% 0;text-align:center;font-weight:700;font-size:13px;color:#e9eef7;text-shadow:0 1px 6px #000;z-index:2;width:200px}
+.s1 .pity b{display:block;font-size:34px;font-weight:800;line-height:1;color:#ffd98a}
+.s1 .pity small{display:block;color:#b4c0d4;font-weight:600;margin-top:3px}
+.s1 .under{position:absolute;left:0;right:0;top:538px;display:grid;justify-items:center;gap:8px}
+.s1 .under h2{margin:0;font-size:21px;font-weight:800}
+.s1 .btns{display:flex;gap:10px}
+.s1 .hold{min-width:150px;position:relative;overflow:hidden;border:0;border-radius:12px;padding:9px 18px 9px 12px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:15px;white-space:nowrap;background:#222640;color:#e9eef7;box-shadow:inset 0 0 0 1px var(--chrome-line);text-align:left;line-height:1.1}
+.s1 .hold small{display:block;font-weight:600;font-size:11.5px;color:#b4c0d4}
+.s1 .hold.main{background:linear-gradient(180deg,#f1d27a,#c99a3a);color:#14172a;box-shadow:0 0 22px rgba(242,169,59,.45)}
+.s1 .hold.main small{color:#4a3510}
+.s1 .hold i{position:absolute;left:0;bottom:0;height:4px;width:62%;background:#fff;opacity:.85}
+.s1 .gate.ember{--v1:#ff8a3d;--v2:#ffd08a;--v3:#d9404f}
+.s1 .gate.ember .gem.lit{background:linear-gradient(135deg,#ffd9b0,#ff8a3d);box-shadow:0 0 10px #ff8a3d}
+.s1 .gate.ember .arch{background:linear-gradient(180deg,#4a3329,#2a1d20)}
+.s1 .gate.ember .pity b{color:#ffb27a}
+/* play: the pull. dim hall, light pillar, orbs fall, flip */
+.s1 .over{position:absolute;inset:0;z-index:20;display:none;background:radial-gradient(60% 60% at 30% 45%,rgba(122,92,255,.28),rgba(4,5,12,.94) 70%)}
+.s1.play .over{display:block;animation:s1in .35s ease-out}
+@keyframes s1in{from{opacity:0}}
+@keyframes s1spin{to{rotate:360deg}}
+@keyframes s1drop{from{translate:0 -160px;opacity:0}}
+.s1 .over .beam{position:absolute;left:50%;top:0;width:300px;height:100%;translate:-50% 0;background:linear-gradient(90deg,transparent,rgba(255,226,150,.28) 50%,transparent);mask:linear-gradient(180deg,transparent,#000 40%,#000 80%,transparent);-webkit-mask:linear-gradient(180deg,transparent,#000 40%,#000 80%,transparent)}
+.s1 .over .rays2{position:absolute;left:50%;top:260px;width:700px;height:700px;margin:-350px 0 0 -350px;background:repeating-conic-gradient(rgba(255,226,150,.18) 0 5deg,transparent 5deg 20deg);mask:radial-gradient(closest-side,#000 10%,transparent);-webkit-mask:radial-gradient(closest-side,#000 10%,transparent);animation:s1spin 40s linear infinite}
+.s1 .over .big{position:absolute;left:50%;top:54px;translate:-50% 0}
+.s1 .over .cap{position:absolute;left:0;right:0;top:20px;text-align:center;font-weight:800;font-size:12px;color:#b4c0d4}
+.s1 .over .rar{position:absolute;left:0;right:0;top:352px;text-align:center;font-weight:800;font-size:30px;color:#ffd98a;text-shadow:0 0 20px #f2a93b}
+.s1 .over .rar small{display:block;font-size:13px;font-weight:600;color:#e9eef7;text-shadow:none}
+.s1 .slots{position:absolute;left:50%;bottom:62px;translate:-50% 0;display:flex;gap:14px;align-items:flex-end}
+.s1 .slot{width:56px;height:62px;display:grid;place-items:center;position:relative}
+.s1 .slot::before{content:'';position:absolute;inset:auto 4px 0;height:12px;border-radius:50%;background:rgba(0,0,0,.6);box-shadow:0 0 0 1px rgba(217,179,90,.3)}
+.s1 .orb{width:30px;height:30px;border-radius:50%;margin-bottom:10px;background:radial-gradient(circle at 35% 30%,#fff,var(--o) 55%,#0006);box-shadow:0 0 18px var(--o);animation:s1drop .5s ease-in both}
+.s1 .orb.big{width:42px;height:42px;--o:#ffc23a;box-shadow:0 0 30px #ffc23a,0 0 60px #f2a93b}
+.s1 .mini{position:absolute;bottom:0;left:50%;translate:-50% 0}
+.s1 .skip{position:absolute;left:0;right:0;bottom:20px;text-align:center;font-size:13px;font-weight:600;color:#b4c0d4}
+.s1 .skip b{display:inline-block;margin-left:10px;padding:5px 14px;border-radius:8px;background:var(--chrome-accent);color:#14172a}
+</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script>
+<script>
+function gems(lit,total){let s='';for(let i=0;i<total;i++){const t=Math.PI*(1+(i+.5)/total);const x=170+Math.cos(t)*150,y=170+Math.sin(t)*150;
+  const cap=i===total-1;s+=`<i class="gem ${i<lit?'lit':''} ${cap?'cap':''}" style="left:${x}px;top:${y}px"></i>`}return s}
+const gate=(cls,name,plaque,lit,left,rank,b1,b2,hint)=>`
+<section class="gate ${cls}" aria-label="${name}">
+  <div class="arch"></div>
+  <div class="door"><div class="rays"></div><div class="swirl"></div><div class="swirl b"></div><div class="core"></div></div>
+  ${gems(lit,18)}
+  <div class="key">${MK.img('plaque-'+plaque,56)}</div>
+  <div class="pity"><b class="num">${left}</b>pulls to ${rank}<small>${hint}</small></div>
+</section>`;
+const orbs=[['#e8edf5',0],['#e8edf5',1],['#e8edf5',2],['#4b8bf0',3],['#e8edf5',4],['#e8edf5',5],['#a76cf0',6],['#e8edf5',7],['#e8edf5',8]].map(([c,i])=>`<div class="slot"><div class="orb" style="--o:${c};animation-delay:${i*.12}s"></div></div>`).join('')+`<div class="slot"><div class="orb big" style="animation-delay:1.2s"></div></div>`;
+MK.shell('summon',`
+ <div class="floor"></div>
+ <div class="title"><b>Summon</b>Two portals, one crystal each</div>
+ <div class="rates"><button>Rates: Card Portal</button><button>Rates: Wardrobe Gate</button></div>
+ <div class="gates">
+  ${gate('', 'Card Portal','summon',14,20,'Legendary',0,0,'Every ×10 holds a Rare or better')}
+  ${gate('ember','Wardrobe Gate','wardrobe',3,78,'Legendary',0,0,'Glamour Crystals open this gate')}
+ </div>
+ <div class="under" style="left:152px;width:340px;right:auto"><h2>Card Portal</h2><div class="btns"><button class="hold">×1<small>10 Summon Crystals</small></button><button class="hold main">Hold ×10<small>100 Summon Crystals</small><i></i></button></div></div>
+ <div class="under" style="left:552px;width:340px;right:auto"><h2>Wardrobe Gate</h2><div class="btns"><button class="hold">×1<small>10 Glamour Crystals</small></button><button class="hold main">Hold ×10<small>100 Glamour Crystals</small></button></div></div>
+ <div class="over" role="dialog" aria-label="Card Portal reveal"><div class="cap">Card Portal · Pull ×10 · orb 10 of 10</div><div class="rays2"></div><div class="beam"></div>
+   <div class="big">${MK.card('dawnblade_regent',{k:1.1,tag:'New!'})}</div>
+   <div class="rar">Legendary<small>The gold orb was blue until the last second (upgrade flash)</small></div>
+   <div class="slots">${orbs}</div><div class="skip">Click or press Space to flip the next <b>Skip all</b></div></div>
+`,{cls:'s1',play:'Play a ×10 pull'});
+</script></body></html>
