@@ -242,13 +242,14 @@ export const COPY = {
     starNote: (multiplier: number) =>
       `Base damage and health ×${multiplier}. Costs only copies of the card.`,
     tierNote: (tier: string, cap: number) =>
-      `A big power step, a new frame, and the level cap rises to ${cap}. Stars and level carry over.`,
+      `A big power step, a new frame, and the level cap rises to ${cap}. The level carries over; the stars restart at ★1.`,
     addStar: (price: string) => `Add star · ${price}`,
     tierUp: (price: string) => `Tier up · ${price}`,
     req: {
       level: 'At its level cap',
       levelValue: (have: string, need: string) => `Lv ${have} / ${need}`,
       starBar: 'Star bar',
+      stars: 'All six stars',
       copies: (n: number) => (n === 0 ? 'free' : n === 1 ? '1 copy' : `${n} copies`),
       of: (have: string, need: string) => `${have} of ${need}`,
     },

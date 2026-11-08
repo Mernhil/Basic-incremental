@@ -467,8 +467,9 @@ export function cardModifiers(state: GameState, content: Content): Modifier[] {
 
 /** One line of a star-up / tier-up checklist. */
 export interface Requirement {
-  /** `level`: at the level cap; `starFill`: the star bar's fill; `resource`: Money, a material or gems. */
-  kind: 'level' | 'starFill' | 'resource';
+  /** `level`: at the level cap; `stars`: at ★6 (the tier-up needs them all); `starFill`: the star
+   *  bar's fill; `resource`: Money, a material or gems. */
+  kind: 'level' | 'stars' | 'starFill' | 'resource';
   /** Resource id, for `resource`. */
   resource?: string;
   have: Decimal;
@@ -586,8 +587,8 @@ export function starUpCheck(
   ]);
 }
 
-/** Tier-up checklist (to the next tier, stars kept): level cap, Money, Cores, tree and mine gems
- *  and Frost Sigils. Null if not owned. Unavailable at the card's top tier. */
+/** Tier-up checklist (to the next tier at ★1, the stars restart): level cap, ★6, Money, Cores, tree
+ *  and mine gems and Frost Sigils. Null if not owned. Unavailable at the card's top tier. */
 export function tierUpCheck(
   state: GameState,
   content: Content,
@@ -599,8 +600,9 @@ export function tierUpCheck(
   if (!card || !owned) return null;
   const nextTier = nextTierOf(content, cardId, owned.tier);
   if (!nextTier) return check(null, []);
-  return check({ tier: nextTier, stars: owned.stars }, [
+  return check({ tier: nextTier, stars: 1 }, [
     levelRequirement(content, owned),
+    requirement('stars', owned.stars, MAX_STARS),
     ...resourceRequirements(state, tierUpCost(content, card, owned, modifiers)),
   ]);
 }
@@ -620,8 +622,8 @@ export function starUp(state: GameState, content: Content, cardId: string): Card
   return { ok: true, state: next, tierUps: [] };
 }
 
-/** Pays the tier-up costs and moves the card to the next tier. Stars, star fill, level and XP
- *  carry over. */
+/** Pays the tier-up costs and moves the card to the next tier. The stars restart at ★1 with an
+ *  empty star bar; level and XP carry over. */
 export function tierUp(
   state: GameState,
   content: Content,
@@ -637,6 +639,8 @@ export function tierUp(
   const next = pay(state, tierUpCost(content, card, before, modifiers));
   const owned = next.cards.owned[cardId]!;
   owned.tier = result.to!.tier;
+  owned.stars = 1;
+  owned.starFill = 0;
   const from = tierMetalIndex(before.tier);
   const to = tierMetalIndex(owned.tier);
   const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];

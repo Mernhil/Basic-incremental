@@ -30,7 +30,7 @@ import {
 } from './modifiers';
 import { Decimal } from './num';
 import { clearDungeon, jobProductionPerSecond, PRODUCTION_JOBS, type Price } from './production';
-import type { TickReport } from './report';
+import { pushPlayerHit, type TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type BurstGauge, type GameState } from './state';
 
@@ -846,6 +846,29 @@ export function advanceCombat(
   if (trial) fightTrial(next, content, trial, dps, stats, left, report, modifiers);
 }
 
+/**
+ * The damage of a run of hits (`hits` normal hits of dps x interval plus `bursts` signature
+ * attacks), listed on the report for the stage. Returns the total dealt.
+ */
+function recordPlayerHits(
+  report: TickReport,
+  target: string,
+  dps: Decimal,
+  stats: BurstStats,
+  run: { hits: number; bursts: number },
+): Decimal {
+  const hit = hitDamage(dps, stats);
+  const signature = signatureDamage(dps, stats);
+  pushPlayerHit(report.playerHits, { target, damage: hit, hits: run.hits, signature: false });
+  pushPlayerHit(report.playerHits, {
+    target,
+    damage: signature,
+    hits: run.bursts,
+    signature: true,
+  });
+  return hit.mul(run.hits).add(signature.mul(run.bursts));
+}
+
 /** Most knockouts handled in one advance (each costs knockoutSeconds, so this is generous). */
 const MAX_KNOCKOUTS_PER_ADVANCE = 100_000;
 
@@ -870,7 +893,8 @@ function fightDungeon(
     const run = advanceGauge(next.bursts.fighting, t, stats);
     next.bursts.fighting = run.gauge;
     report.bursts.fighting += run.bursts;
-    const dealt = dps.mul(t).add(signatureDamage(dps, stats).mul(run.bursts));
+    // Damage lands in chunks: one hit per interval, held until it lands (DESIGN.md §6).
+    const dealt = recordPlayerHits(report, dungeon.id, dps, stats, run);
     fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
     // Card XP for the time fought, never for a knockout (DESIGN.md §5).
     grantLoadoutXp(
@@ -1063,7 +1087,7 @@ function fightTrial(
     const run = advanceGauge(state.bursts.fighting, step, stats);
     state.bursts.fighting = run.gauge;
     report.bursts.fighting += run.bursts;
-    dealt = dealt.add(dps.mul(step)).add(signatureDamage(dps, stats).mul(run.bursts));
+    dealt = dealt.add(recordPlayerHits(report, trial.id, dps, stats, run));
     // Card XP for the time fought (DESIGN.md §5), at the tier 1 rate.
     grantLoadoutXp(
       state,
