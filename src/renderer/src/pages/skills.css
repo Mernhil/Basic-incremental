@@ -137,18 +137,21 @@
   font: inherit;
   cursor: pointer;
 }
+/* Clean pixels (DESIGN.md §12): the node sprites are 24 px (keystones 32 px), shown at a whole
+   scale, at least 1x, and never scaled by a hover or a selection */
 .sk-node__gem {
+  --one: calc(24px / var(--dpr));
   display: block;
-  width: 48px;
-  height: 48px;
-  transition: transform 0.15s ease;
+  width: max(var(--one), round(nearest, 48px, var(--one)));
+  aspect-ratio: 1;
+  transition: filter 0.15s ease;
 }
 .sk-node.is-key .sk-node__gem {
-  width: 64px;
-  height: 64px;
+  --one: calc(32px / var(--dpr));
+  width: max(var(--one), round(nearest, 64px, var(--one)));
 }
 .sk-node:hover .sk-node__gem {
-  transform: scale(1.1);
+  filter: brightness(1.15);
 }
 .sk-node__rank {
   padding: 0 6px;
@@ -204,9 +207,7 @@
     transform: scale(1.04);
   }
 }
-.sk-node[aria-pressed='true'] .sk-node__gem {
-  transform: scale(1.14);
-}
+
 .sk-node[aria-pressed='true']::after {
   content: '';
   position: absolute;
@@ -229,7 +230,7 @@
 }
 @keyframes sk-flash {
   30% {
-    transform: scale(1.4);
+    /* no scale: the sprite stays at its whole pixel scale (DESIGN.md §12) */
     filter: drop-shadow(0 0 16px var(--gem)) brightness(1.5);
   }
 }
@@ -260,14 +261,16 @@
   gap: 14px;
 }
 .sk-detail__gem {
+  /* 24 px node sprite (32 px keystone) at a whole device scale, at least 1x (DESIGN.md §12) */
+  --one: calc(24px / var(--dpr));
   flex: none;
-  width: 48px;
-  height: 48px;
+  width: max(var(--one), round(nearest, 48px, var(--one)));
+  aspect-ratio: 1;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gem) 60%, transparent));
 }
 .sk-detail__gem.is-key {
-  width: 64px;
-  height: 64px;
+  --one: calc(32px / var(--dpr));
+  width: max(var(--one), round(nearest, 64px, var(--one)));
 }
 .sk-detail__gem.is-locked {
   filter: none;

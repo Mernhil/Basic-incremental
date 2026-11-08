@@ -101,9 +101,10 @@
   outline-offset: 2px;
 }
 .pp-tile__art {
-  /* 2 px per tile pixel (grid 58 x 64) */
-  width: 128px;
-  height: 128px;
+  /* 2 CSS px per tile pixel (grid 58 x 64), snapped to whole device pixels (DESIGN.md §12) */
+  --one: calc(64px / var(--dpr));
+  width: max(var(--one), round(nearest, 128px, var(--one)));
+  aspect-ratio: 1;
   transform-origin: 50% 90%;
   animation: pp-sway 4.2s ease-in-out var(--d, 0s) infinite;
 }
@@ -286,8 +287,10 @@
   filter: grayscale(1) brightness(0.7);
 }
 .pp-kind__art {
-  width: 64px;
-  height: 64px;
+  /* 1 CSS px per tile pixel at a whole device scale (DESIGN.md §12) */
+  --one: calc(64px / var(--dpr));
+  width: max(var(--one), round(nearest, 64px, var(--one)));
+  aspect-ratio: 1;
 }
 .pp-kind__art svg {
   width: 100%;

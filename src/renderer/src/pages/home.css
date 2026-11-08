@@ -65,8 +65,10 @@
 .hm-boss {
   position: relative;
   z-index: 1;
-  /* 2 px per boss pixel (grid 160 x 172) */
-  width: min(344px, 92%);
+  /* 2 CSS px per boss pixel (grid 160 x 172), snapped to whole device pixels and never shrunk
+     (DESIGN.md §12); the largest whole size that fits when the stage is narrow */
+  --one: calc(172px / var(--dpr));
+  width: max(var(--one), min(round(nearest, 344px, var(--one)), round(down, 92%, var(--one))));
   aspect-ratio: 1;
   animation: hm-bob 3.2s ease-in-out infinite;
 }
@@ -96,8 +98,9 @@
 }
 .hm-tile {
   flex: none;
-  /* 2 px per tile pixel (grid 58 x 64) */
-  width: 128px;
+  /* 2 CSS px per tile pixel (grid 58 x 64), snapped to whole device pixels (DESIGN.md §12) */
+  --one: calc(64px / var(--dpr));
+  width: max(var(--one), round(nearest, 128px, var(--one)));
   aspect-ratio: 1;
   animation: hm-sway 4s ease-in-out var(--d, 0s) infinite;
 }

@@ -134,11 +134,22 @@
 }
 
 /* UI-skin samples: the coin, sticker, node or plate the item draws */
+/* Clean pixels (DESIGN.md §12): these are baked sprites, shown at a whole number of device pixels
+   per art pixel and never shrunk. About 82 % of the swatch is wanted; the width snaps to the
+   nearest multiple of the sprite's native size (48, 74 and 24 art px), at least 1x. */
 .cs[data-slot='starlight'] > svg,
 .cs[data-slot='sticker'] > svg,
 .cs[data-slot='nodes'] > svg {
-  width: 82%;
+  --art: 48px;
+  --one: calc(var(--art) / var(--dpr));
+  width: max(var(--one), round(nearest, calc(var(--cs) * 0.82), var(--one)));
   overflow: visible;
+}
+.cs[data-slot='sticker'] > svg {
+  --art: 74px;
+}
+.cs[data-slot='nodes'] > svg {
+  --art: 24px;
 }
 .cs-plate {
   box-sizing: border-box;
