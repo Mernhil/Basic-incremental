@@ -643,6 +643,7 @@ export const COPY = {
     achievements: 'Achievements',
   },
   arena: {
+    partyLabel: 'Fighting cards',
     dps: 'DPS',
     dpsTip: 'Average damage per second, signature attacks and crits included.',
     kpm: 'Kills/min',

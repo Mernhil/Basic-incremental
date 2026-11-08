@@ -21,8 +21,8 @@ import { bossArt, sentinelLevel } from '../art/bosses';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { medalTip } from '../pages/progressionModel';
 import { playHit } from '../theme/effects';
-import { createCard } from '../ui/card';
-import { fitCard } from '../ui/pixelFit';
+import type { CardProps } from '../ui/card';
+import { createLoadoutFan, type FanCard } from '../ui/loadoutFan';
 import { isCrystal } from '../ui/resourceIcons';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
 import { formatRate } from '../pages/buyModel';
@@ -71,7 +71,8 @@ export interface ArenaContext {
 
 interface Slot {
   wrap: HTMLElement;
-  card: HTMLElement | null;
+  /** The card's props, null for an empty slot. */
+  card: object | null;
 }
 
 const SUPPORTS = 3;
@@ -141,14 +142,25 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
 
   // the party, facing the boss
   const party = div('ar__party');
-  const slotsRow = div('ar__slots');
+  // the party as a fan: the main card in front, the supports behind it (ui/loadoutFan.ts)
+  const fan = createLoadoutFan({
+    // a big fan (about 2x) when the window has the room, the grid size otherwise
+    want: () => (window.innerWidth >= 1200 && window.innerHeight >= 760 ? 264 : 132),
+    max: () => window.innerWidth * 0.34,
+    popWant: 264,
+    popMax: () => (window.innerHeight >= 700 ? 300 : 200),
+    label: COPY.arena.partyLabel,
+    popLabel: COPY.production.showCard,
+    emptyLabel: COPY.table.emptySlot,
+  });
+  fan.el.classList.add('ar__fan');
   const health = div('ar__health');
   const healthLabel = document.createElement('span');
   healthLabel.className = 'ar__health-label';
   healthLabel.textContent = COPY.table.health;
   const healthBar = createHpStack();
   health.append(healthLabel, healthBar.el);
-  party.append(slotsRow, health);
+  party.append(fan.el, health);
   const gauge = div('ar-gauge');
   const gaugeFill = document.createElement('i');
   const gaugeLabel = document.createElement('span');
@@ -207,23 +219,35 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     builtParty = loadoutKey(s);
     const mods = collectModifiers(s, content);
     const { main, supports } = s.cards.loadouts.fighting;
-    slots = [main, ...supports.slice(0, SUPPORTS)].map((id, i) => {
-      const wrap = div(`ar-slot${i === 0 ? ' ar-slot--main' : ''}`);
-      // narrow windows: supports step back so the boss stays clear (a whole scale either way)
-      fitCard(wrap, { want: () => (i > 0 && window.innerWidth <= 1400 ? 88 : 132) });
-      const props = id ? loadoutProps(content, s, id, i === 0 ? 'main' : 'support', mods) : null;
-      let card: HTMLElement | null = null;
-      if (props) {
-        card = createCard(props).el;
-        wrap.append(card);
-      } else {
-        wrap.classList.add('ar-slot--empty');
-        wrap.setAttribute('aria-label', i === 0 ? COPY.table.emptyMain : COPY.table.emptySlot);
-      }
-      if (i === 0) wrap.append(gauge);
-      return { wrap, card };
-    });
-    slotsRow.replaceChildren(...slots.map((x) => x.wrap));
+    const card = (id: string | null, role: 'main' | 'support'): FanCard | undefined => {
+      const base = id ? loadoutProps(content, s, id, role, mods) : null;
+      const def = id ? content.cardById.get(id) : undefined;
+      if (!id || !base || !def) return undefined;
+      // in the fan a support's effect is read in the pop-out, not on the plate (as on Production)
+      const props: CardProps =
+        role === 'support'
+          ? {
+              ...base,
+              stats: [
+                base.stats[0],
+                { label: COPY.production.supportRole, value: COPY.table.support },
+              ],
+            }
+          : base;
+      return { id, name: def.name, effect: def.support.description, props };
+    };
+    const cards = [
+      card(main, 'main'),
+      ...supports.slice(0, SUPPORTS).map((c) => card(c, 'support')),
+    ];
+    fan.setCards(cards[0] ?? null, cards.slice(1));
+    slots = cards.map((c, i) => ({
+      wrap: i === 0 ? fan.mainEl : ((c && fan.supportSlot(c.id)) ?? div('ar-slot--none')),
+      card: c ? c.props : null,
+    }));
+    // the burst gauge hangs under the main card (a rebuilt main slot drops it)
+    if (cards[0]) fan.mainEl.append(gauge);
+    gauge.hidden = !cards[0];
   }
 
   function setBossArt(s: GameState): void {
@@ -451,7 +475,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     shake(el, true);
     slowDown(el);
     replay(body, 'is-hit', 220);
-    for (const s of slots) replay(s.wrap, 'is-lunging', 420);
+    for (const s of slots) if (s.card) replay(s.wrap, 'is-lunging', 420);
     popNumber(el, { kind: 'signature', text: popText(e.damage), x: 0.66, y: 0.3, scale: 2.4 });
     play('signature');
   });

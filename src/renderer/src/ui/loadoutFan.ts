@@ -7,7 +7,7 @@ import './loadoutFan.css';
  * The loadout fan (DESIGN.md §11): the main card in front and up to three support cards behind it,
  * each peeking out at the side. A click on a support pops it out in front as a full card with its
  * effect written out; a click on it, anywhere else or Escape puts it back. One component for the
- * Production stage and, next, the Dungeons fight screen.
+ * Production stage and the Dungeons fight screen.
  *
  * Clean pixels (DESIGN.md §12): every card is a whole number of device pixels per art pixel
  * (`fitCard`), the peeks are whole art pixels, and nothing is rotated or scaled in between, so the
@@ -27,12 +27,12 @@ export interface FanCard {
 }
 
 export interface LoadoutFanOptions {
-  /** CSS px wide each card wants to be; the screen scale rounds it to whole pixels. */
-  want: number;
+  /** CSS px wide each card wants to be (a function when it depends on the window); the screen scale rounds it to whole pixels. */
+  want: number | (() => number);
   /** Most CSS px the whole fan (main card plus the peeks) may take. */
   max?: () => number;
   /** CSS px wide a popped-out card wants to be (default: the same as `want`). */
-  popWant?: number;
+  popWant?: number | (() => number);
   /** Most CSS px a popped-out card may take. */
   popMax?: () => number;
   /** Art pixels each support peeks out (default 16) and sits lower (default 0). Both count past the card frame, which bleeds about 11 art pixels around the card. */
