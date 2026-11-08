@@ -41,7 +41,7 @@ const STAT_NAMES: Partial<Record<Modifier['stat'], string>> = {
   'combat.critChance': 'crit chance',
   'combat.critDamage': 'crit damage',
   'drops.rareChance': 'rare drop chance',
-  'drops.crystalMultiplier': 'crystal drops',
+  'drops.crystalMultiplier': 'Summon and Glamour Crystal drops',
   'drops.moneyMultiplier': 'Money drops',
   'drops.currencyAmount': 'Money and crystals per kill',
   'drops.materialChance': 'Core drop chance',

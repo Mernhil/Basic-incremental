@@ -1,0 +1,150 @@
+/* Upgrade shelf (DESIGN.md 11.14): chips on the frame tokens. Every colour comes from --bi-frame-*
+   and --bi-chrome-* tokens; the graphics pass can restyle by overriding the --shelf-* ones. */
+
+.shelf {
+  --shelf-chip-bg: color-mix(in srgb, var(--bi-frame-title-bg) 55%, transparent);
+  --shelf-chip-line: var(--bi-frame-title-line);
+  --shelf-glow: var(--bi-chrome-accent);
+  --shelf-art-size: 34px;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.shelf__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.shelf__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+}
+.shelf__count,
+.shelf__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.shelf__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.shelf__owned-sum {
+  cursor: pointer;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--bi-frame-ink-muted);
+  padding: 4px 0;
+}
+.shelf__owned[open] > .shelf__owned-sum {
+  margin-bottom: 4px;
+}
+
+.shelf-chip__body {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--shelf-art-size) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 10px;
+  text-align: left;
+  font: inherit;
+  color: var(--bi-frame-ink-muted);
+  background: var(--shelf-chip-bg);
+  box-shadow: inset 0 0 0 1px var(--shelf-chip-line);
+}
+button.shelf-chip__body {
+  cursor: pointer;
+}
+button.shelf-chip__body[aria-disabled='true'] {
+  cursor: default;
+}
+button.shelf-chip__body:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.shelf-chip__art {
+  width: var(--shelf-art-size);
+  height: var(--shelf-art-size);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--shelf-glow) 18%, var(--bi-frame-title-bg));
+  box-shadow: inset 0 0 0 1px var(--shelf-chip-line);
+}
+.shelf-chip__text {
+  display: grid;
+  min-width: 0;
+}
+.shelf-chip__name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--bi-frame-ink);
+}
+.shelf-chip__perm {
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: var(--bi-chrome-bg);
+  background: var(--bi-frame-ink-muted);
+}
+.shelf-chip__effect {
+  font-size: 12.5px;
+}
+.shelf-chip__preview,
+.shelf-chip__unlock {
+  font-size: 11.5px;
+  opacity: 0.85;
+}
+.shelf-chip__price,
+.shelf-chip__mark {
+  font-size: 12.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.shelf-chip--owned .shelf-chip__body {
+  opacity: 0.75;
+}
+.shelf-chip.is-affordable .shelf-chip__body {
+  color: var(--bi-frame-ink);
+  box-shadow:
+    inset 0 0 0 2px var(--shelf-glow),
+    0 0 14px color-mix(in srgb, var(--shelf-glow) 45%, transparent);
+  animation: shelf-glow 2.4s ease-in-out infinite;
+}
+.shelf-chip.is-affordable button.shelf-chip__body:hover {
+  background: color-mix(in srgb, var(--shelf-glow) 14%, var(--bi-frame-title-bg));
+}
+@keyframes shelf-glow {
+  50% {
+    box-shadow:
+      inset 0 0 0 2px var(--shelf-glow),
+      0 0 4px color-mix(in srgb, var(--shelf-glow) 25%, transparent);
+  }
+}
+.shelf-chip.is-bought .shelf-chip__body {
+  animation: shelf-pop 0.6s ease-out;
+}
+@keyframes shelf-pop {
+  40% {
+    transform: scale(1.03);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shelf-chip.is-affordable .shelf-chip__body,
+  .shelf-chip.is-bought .shelf-chip__body {
+    animation: none;
+  }
+}

@@ -1,6 +1,7 @@
 import type { Dungeon, Trial } from '../../../data';
 import {
   bossStatus,
+  Decimal,
   buyDamageLevels,
   clearUnlocks,
   collectModifiers,
@@ -28,6 +29,7 @@ import { replay } from '../stage/motion';
 import { bossArt } from '../art/bosses';
 import { EDGE_VIEWBOX, MEDAL_VIEWBOX, forgedEdge, masteryMedal, svg } from '../art/gems';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
+import { createShelf } from '../ui/shelf';
 import { bestLine, damageLineViews, type BuyLineView } from './buyModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
@@ -119,6 +121,14 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
   wrap.append(arena.el, drawer);
   page.append(wrap);
 
+  const shelf = createShelf({
+    content,
+    state: ctx.state,
+    apply: ctx.apply,
+    scope: 'fighting',
+    sound: ctx.sound,
+  });
+
   // ---- drawer columns ----
   const floorsCol = h('section', 'dp-col dp-col--floors');
   const damageCol = h('section', 'dp-col dp-col--damage');
@@ -130,6 +140,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     level: HTMLElement;
     tag: HTMLElement;
     btn: BuyButton;
+    lock: HTMLElement;
     edges: HTMLElement[];
     stage: number;
   };
@@ -180,7 +191,11 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         const v = views.find((x) => x.id === u.id);
         return v?.milestoneInfo ? COPY.buy.milestoneTip(v.milestoneInfo.levelsToNext) : '';
       });
-      info.append(name, level, tag);
+      const lockHint = h('span', 'dp-line__lock');
+      const mine = content.mines.find((m) => m.resource === u.gem);
+      lockHint.textContent = mine ? COPY.dungeons.unlocksWith(mine.name) : '';
+      lockHint.hidden = true;
+      info.append(name, level, tag, lockHint);
       // the forged edge ladder (DESIGN.md 16 E5, A14 D): five blade steps, the current one lit
       const ladder = h('span', 'dp-ladder');
       ladder.setAttribute('role', 'img');
@@ -195,9 +210,9 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       btn.el.dataset.key = `up-${u.id}`;
       li.append(info, ladder, btn.el);
       list.append(li);
-      lineUis.set(u.id, { li, level, tag, btn, edges, stage: -1 });
+      lineUis.set(u.id, { li, level, tag, btn, lock: lockHint, edges, stage: -1 });
     }
-    damageCol.append(head, total, list, h('p', 'dp-note', COPY.dungeons.damageKept));
+    damageCol.append(head, total, list, h('p', 'dp-note', COPY.dungeons.damageKept), shelf.el);
   }
 
   function buildFloors(state: GameState): void {
@@ -336,8 +351,21 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
           'dp-drop--rare',
         ),
         ...drops.currencies.map((c) =>
-          row(resName(c.resource), c.min === c.max ? String(c.min) : `${c.min}–${c.max}`),
+          row(
+            COPY.dungeons.perKillDrop(resName(c.resource)),
+            c.min === c.max
+              ? fmt(new Decimal(c.min))
+              : `${fmt(new Decimal(c.min))}–${fmt(new Decimal(c.max))}`,
+          ),
         ),
+        ...(drops.wage
+          ? [
+              row(
+                COPY.dungeons.wage(resName(drops.wage.resource)),
+                COPY.production.rate(fmt(drops.wage.perSecond)),
+              ),
+            ]
+          : []),
         row(
           resName(drops.material.resource),
           drops.material.amount > 1
@@ -400,6 +428,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       if (ui.tag.textContent !== v.milestone) ui.tag.textContent = v.milestone;
       ui.tag.style.setProperty('--p', String(v.milestoneInfo?.progress ?? 0));
       ui.li.classList.toggle('dp-line--locked', !v.available);
+      ui.lock.hidden = v.available;
+      ui.tag.hidden = !v.available;
       const stage = edgeStage(s, content, v.id);
       if (stage !== ui.stage) {
         ui.stage = stage;
@@ -418,6 +448,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       bestBtn.update(top);
     }
     for (const u of updates) u();
+    shelf.update();
   }
 
   function render(): void {

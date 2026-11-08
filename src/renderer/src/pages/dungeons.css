@@ -390,3 +390,9 @@
     transition: none;
   }
 }
+
+/* a line that waits for its mine: names the mine instead of showing a milestone */
+.dp-line__lock {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
