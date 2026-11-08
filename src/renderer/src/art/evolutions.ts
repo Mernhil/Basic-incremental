@@ -47,7 +47,7 @@ const SOUL = ['#5a1aa0', '#a64dff', '#e0a8ff', '#ffffff'] as const;
 const LEAVES = ['#5fd35a', '#8fe06a', '#3fa84a', '#c8e05a'] as const;
 const WIND = '#3fb8ff';
 const POLLEN = '#fff6a0';
-const FRONT_SHARE = 0.22;
+export const FRONT_SHARE = 0.22;
 
 /** Everything an evolution's effect may draw: the hardening pass snaps to these. */
 const PALETTE: Record<Evolution, readonly string[]> = {
@@ -176,13 +176,13 @@ function celLeaves(ctx: Ctx, ps: P[]): void {
 }
 
 /** One effect on an item-box geometry: steps in item units, draws onto back and front. */
-interface Effect {
+export interface Effect {
   step(back: Ctx, front: Ctx, dt: number): void;
   /** Hard-pixel extras drawn after hardening (embers, pollen specks, crystals). */
   specks?(plot: (x: number, y: number, c: string) => void, t: number): void;
 }
 
-function edgeFire(
+export function edgeFire(
   geo: Blade,
   R: () => number,
   pal: readonly string[] | null,
@@ -314,7 +314,7 @@ function spiralWrap(geo: Blade, R: () => number): Effect {
   };
 }
 
-function soulWisps(R: () => number): Effect {
+export function soulWisps(R: () => number): Effect {
   let ps: P[] = [];
   return {
     step(back, _front, dt) {
