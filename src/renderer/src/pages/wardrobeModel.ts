@@ -46,6 +46,7 @@ const TIER_NAMES: Record<Rank['tier'], string> = {
   silver: 'Silver',
   gold: 'Gold',
   prismatic: 'Prismatic',
+  unique: 'Unique',
 };
 
 export const rankText = (rank: Rank): string => `${TIER_NAMES[rank.tier]} ★${rank.stars}`;

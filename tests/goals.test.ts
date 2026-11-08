@@ -148,25 +148,39 @@ describe('goal rules (DESIGN.md §10)', () => {
     expect(goal.etaSeconds).toBeCloseTo(50 * secondsPerKill(state, content, 'mossy_cellar')!);
   });
 
-  it('has a star-up goal when only materials are missing', () => {
+  it('has a star bar goal once some copies are held, with no ETA', () => {
     const state = fighter();
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, duplicates: 1 };
-    const need = content.cardRules.starUp.tiers.bronze[0]!.amounts[0]!.toNumber();
-    state.resources['oak_gem'] = new Decimal(1e6); // the gems are in hand, only Cores are missing
-    state.resources['copper_gem'] = new Decimal(1e6);
-    state.resources['moss_core'] = new Decimal(need / 2); // half of the first star's Cores
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), starFill: 1 }; // 1 of the 2 copies
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
-    expect(goal).toMatchObject({ title: 'Star up Ember Squire to ★2', page: 'cards' });
+    expect(goal).toMatchObject({
+      title: "Fill Ember Squire's star bar for ★2",
+      page: 'cards',
+      etaSeconds: null,
+    });
     expect(goal.progress).toBeCloseTo(0.5);
-    expect(goal.etaSeconds).toBeCloseTo(
-      need / 2 / incomePerSecond(state, content, 'moss_core').toNumber(),
-    );
   });
 
-  it('has no star-up goal without the duplicate', () => {
+  it('has no star bar goal with an empty or a full bar', () => {
     const state = fighter();
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, duplicates: 0 };
     expect(find(allGoals(state, content), 'star_up:ember_squire')).toBeUndefined();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), starFill: 2 }; // ready: nothing to wait for
+    expect(find(allGoals(state, content), 'star_up:ember_squire')).toBeUndefined();
+  });
+
+  it('has a tier-up goal for a card at its level cap, from what Money and materials are missing', () => {
+    const state = fighter();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20 };
+    const costs = content.cardRules.tierUp.bronze.fighting;
+    for (const c of costs) state.resources[c.resource] = c.amount.div(2);
+    const goal = find(allGoals(state, content), 'tier_up:ember_squire')!;
+    expect(goal).toMatchObject({ title: 'Tier up Ember Squire to Silver', page: 'cards' });
+    expect(goal.progress).toBeCloseTo(0.5);
+  });
+
+  it('has no tier-up goal below the level cap', () => {
+    const state = fighter();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 19 };
+    expect(find(allGoals(state, content), 'tier_up:ember_squire')).toBeUndefined();
   });
 
   it('has the Glimmer Trial clear from its best score once it is open', () => {

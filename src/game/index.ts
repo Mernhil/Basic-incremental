@@ -200,10 +200,12 @@ export {
   tileStage,
 } from './stages';
 export {
-  /** The item to draw in a card: its unique evolution from Gold ★6 on, else its generic item. */
+  /** The item kind to draw in a card: its unique item at the Unique tier, else its generic item. */
   cardItemKind,
-  /** The item to draw with its name and whether it is a unique evolution. */
+  /** The item to draw with its name, whether it is unique and the rarity to draw it at. */
   cardItem,
+  /** The item rarity to draw for a card's rarity and tier: one step up the rarity ladder per tier, capped at Void. */
+  weaponLookRarity,
   /** Whether a rank is at least another (tier, then stars). */
   rankAtLeast,
   type CardItem,

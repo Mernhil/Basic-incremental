@@ -6,7 +6,7 @@ import {
   approxEq,
   baseDamage,
   cardBaseDamage,
-  cardPower,
+  cardStatPower,
   Decimal,
   effectiveDamage,
   fightingXpPerSecond,
@@ -75,10 +75,10 @@ describe('fighting damage comes from the main card', () => {
     expect(baseDamage(legendary, content).eq(rules.baseDamage.legendary)).toBe(true);
   });
 
-  it('grows with level, stars and tier through the card power', () => {
+  it('grows with level, stars and tier through the base-stat power', () => {
     const owned = { ...newOwnedCard(), level: 11, stars: 3, tier: 'silver' as const };
     const state = leadWith('ember_squire', owned);
-    const power = cardPower(content, owned);
+    const power = cardStatPower(content, owned);
     expect(power).toBeGreaterThan(1.5);
     expect(approxEq(baseDamage(state, content), rules.baseDamage.common.mul(power))).toBe(true);
     expect(

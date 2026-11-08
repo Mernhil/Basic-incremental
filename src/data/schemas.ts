@@ -267,7 +267,8 @@ export const modifierSchema = z.strictObject({
 });
 export type ModifierData = z.output<typeof modifierSchema>;
 
-export const RANK_TIERS = ['bronze', 'silver', 'gold', 'prismatic'] as const;
+/** Card tiers, lowest first. Unique is open only to cards with a unique version (DESIGN.md §5). */
+export const RANK_TIERS = ['bronze', 'silver', 'gold', 'prismatic', 'unique'] as const;
 export const MAX_STARS = 6;
 export const rankSchema = z.strictObject({
   tier: z.enum(RANK_TIERS),
@@ -321,7 +322,7 @@ export const ITEM_KINDS = [
   'gauntlet',
 ] as const;
 
-/** Unique ★6 evolutions (DESIGN.md §12, §5): drawn in place of a card's generic item. */
+/** Unique items (DESIGN.md §12, §5): drawn in place of a card's generic item at the Unique tier. */
 export const UNIQUE_ITEM_KINDS = ['flameblade', 'rootbloom_staff', 'soul_reaper'] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
 export type UniqueItemKind = (typeof UNIQUE_ITEM_KINDS)[number];
@@ -333,8 +334,8 @@ export const cardSchema = z.strictObject({
   rarity: z.enum(RARITIES),
   element: z.enum(ELEMENTS),
   item: z.strictObject({ kind: z.enum(ITEM_KINDS), name }),
-  /** Unique item that replaces `item` from the evolution rank on (progression.json); none = the
-   *  card keeps its generic item. */
+  /** Unique item that replaces `item` at the Unique tier (progression.json). Having one is what
+   *  opens the Unique tier for the card; none = the card stops at Prismatic. */
   evolution: z.enum(UNIQUE_ITEM_KINDS).optional(),
   /** Used when the card leads its job's loadout. Logging and mining mains also set how it
    *  strikes (`harvest`, DESIGN.md §4). */
@@ -346,7 +347,13 @@ export const cardSchema = z.strictObject({
 const count = z.number().int().min(0);
 const atLeastOne = decimal.refine((d) => d.gte(1), { message: 'must be at least 1' });
 const perTier = <T extends z.ZodType>(schema: T) =>
-  z.strictObject({ bronze: schema, silver: schema, gold: schema, prismatic: schema });
+  z.strictObject({
+    bronze: schema,
+    silver: schema,
+    gold: schema,
+    prismatic: schema,
+    unique: schema,
+  });
 const perRarity = <T extends z.ZodType>(schema: T) =>
   z.strictObject({
     common: schema,
@@ -360,23 +367,6 @@ const perRarity = <T extends z.ZodType>(schema: T) =>
 const perJob = <T extends z.ZodType>(schema: T) =>
   z.strictObject({ mining: schema, logging: schema, fighting: schema });
 
-/**
- * One material of a star-up (DESIGN.md §5): `amounts` for the 5 steps (★1→2 … ★5→6), times the
- * card's job share. A mix of the tier's Core with tree and mine gems makes every job use both
- * production loops; a share of 0 leaves the line out for that job, a missing share is 1.
- */
-export const starUpLineSchema = z.strictObject({
-  resource: id,
-  amounts: z.array(positiveDecimal).length(MAX_STARS - 1),
-  jobShare: z
-    .strictObject({
-      mining: z.number().min(0).optional(),
-      logging: z.number().min(0).optional(),
-      fighting: z.number().min(0).optional(),
-    })
-    .optional(),
-});
-
 /** Card progression numbers (cardRules.json; DESIGN.md §5). All tunable. */
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
@@ -385,7 +375,7 @@ export const cardRulesSchema = z.strictObject({
   cost: perRarity(count),
   /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
   costCap: z.strictObject({ base: count, perLevel: count }),
-  /** Level cap of each tier; stars do not change it (DESIGN.md §5). */
+  /** Level cap of each tier (Unique 100); stars do not change it (DESIGN.md §5). */
   levelCaps: perTier(z.number().int().min(1)),
   /** XP from level L to L + 1 = base × growth^(L − 1). */
   xpCurve: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
@@ -404,11 +394,15 @@ export const cardRulesSchema = z.strictObject({
   /**
    * Card power, which scales `full` card modifiers and the main growth:
    * (1 + perLevel × (level − 1)) × (1 + perStar × (stars − 1), + star6Bonus at ★6) × tier.
+   * Base damage and health use the star multiplier instead of the perStar part:
+   * (1 + perLevel × (level − 1)) × starMultiplier[stars − 2] (1 at ★1) × tier.
    */
   power: z.strictObject({
     perLevel: z.number().min(0),
     perStar: z.number().min(0),
     star6Bonus: z.number().min(0),
+    /** Multiplier of base damage and health at ★2 … ★6 (DESIGN.md §5 star impact). */
+    starMultiplier: z.array(z.number().positive()).length(MAX_STARS - 1),
     tier: perTier(z.number().positive()),
   }),
   /**
@@ -418,20 +412,22 @@ export const cardRulesSchema = z.strictObject({
    */
   mainGrowth: perJob(z.array(modifierSchema)),
   /**
-   * Star-up (★n → ★n+1): duplicates used, plus per tier the materials (Core, tree and mine gems,
-   * Frost Sigils) and their amounts for each of the 5 steps (★1→2 … ★5→6). The card must be at
-   * its level cap.
+   * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
+   * saved fill, and star n → n + 1 takes `needs[n - 1]` of it (5 steps, ★1→2 … ★5→6; 0 = free).
+   * A star-up costs only the fill.
    */
-  starUp: z.strictObject({
-    duplicates: z.number().int().min(0),
-    tiers: perTier(z.array(starUpLineSchema).min(1)),
+  starBar: z.strictObject({
+    fillPerDuplicate: perRarity(z.number().positive()),
+    needs: perRarity(z.array(z.number().min(0)).length(MAX_STARS - 1)),
   }),
-  /** Tier-up (★6 → next tier ★1), keyed by the tier being left, per job. The card must be at
-   *  its level cap. Prismatic is the top tier. */
+  /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
+   *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must
+   *  be at its level cap. Prismatic → Unique exists only for cards with a unique version. */
   tierUp: z.strictObject({
     bronze: perJob(z.array(costSchema).min(1)),
     silver: perJob(z.array(costSchema).min(1)),
     gold: perJob(z.array(costSchema).min(1)),
+    prismatic: perJob(z.array(costSchema).min(1)),
   }),
   /** Base health of a card by rarity, multiplied by its power (DESIGN.md §6). The fighting
    *  loadout's health pool sums its cards. */
@@ -441,7 +437,7 @@ export const cardRulesSchema = z.strictObject({
    * Fighting damage is the main card's base damage × its power, then the modifiers.
    */
   baseDamage: perRarity(positiveDecimal),
-  /** Shards for a duplicate gained once the card is Prismatic ★6, by rarity. */
+  /** Shards for a duplicate gained past ★6, by rarity. */
   shards: perRarity(count),
 });
 
@@ -592,7 +588,10 @@ export const GOAL_KINDS = [
   'mine_milestone',
   'gem_mastery',
   'boss_mastery',
+  /** A card's star bar is part full (DESIGN.md §5). */
   'star_up',
+  /** A card at its level cap is short of Money or materials for its tier-up. */
+  'tier_up',
   /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md §9). */
   'ascension',
 ] as const;
@@ -631,9 +630,8 @@ export const progressionSchema = z.strictObject({
     logging: z.strictObject({ source: z.literal('level') }),
     mining: z.strictObject({ source: z.literal('level') }),
   }),
-  /** E6: unique evolutions. Cards name theirs in cards.json; shown from rank `from` on. */
+  /** E6: unique items. Cards name theirs in cards.json; shown at the Unique tier. */
   evolutions: z.strictObject({
-    from: rankSchema,
     items: z.array(z.strictObject({ kind: z.enum(UNIQUE_ITEM_KINDS), name })).min(1),
   }),
   /** E8: the goal tracker's rules, in no particular order (goals are sorted by time left). */

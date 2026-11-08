@@ -53,10 +53,6 @@
     }
   },
   "evolutions": {
-    "from": {
-      "tier": "gold",
-      "stars": 6
-    },
     "items": [
       {
         "kind": "flameblade",
@@ -101,6 +97,10 @@
     },
     {
       "kind": "star_up",
+      "page": "cards"
+    },
+    {
+      "kind": "tier_up",
       "page": "cards"
     },
     {

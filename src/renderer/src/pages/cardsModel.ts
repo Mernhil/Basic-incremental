@@ -18,12 +18,12 @@ export interface Requirement {
 
 export interface UpgradeStep {
   kind: 'star' | 'tier';
-  /** "Next star: ★4", "Tier-up to Silver ★1" */
+  /** "Next star: ★4", "Tier-up to Silver ★3" */
   title: string;
   /** What it gives, e.g. "Adds power and raises the level cap to 32." */
   note: string;
   requirements: Requirement[];
-  /** Button text, e.g. "Add star · 1 duplicate, 3 Moss Core" */
+  /** Button text, e.g. "Add star · 2 copies", "Tier up · 150,000 Money, 6 Moss Core" */
   action: string;
   ready: boolean;
 }
@@ -49,6 +49,7 @@ export interface CardEntry {
   cap: number;
   /** Progress to the next level, 0..1. */
   xp: number;
+  /** The star bar's fill (copies waiting for the next star). */
   duplicates: number;
   cost: number;
   mainAbility: string;
@@ -56,8 +57,10 @@ export interface CardEntry {
   /** Short stat lines for the card face. */
   stats: [{ label: string; value: string }, { label: string; value: string }];
   role: LoadoutRole | null;
-  /** The next star-up or tier-up, or null at Prismatic ★6. */
+  /** The next star-up (the star bar), or null at ★6. */
   next: UpgradeStep | null;
+  /** The next tier-up (level cap, Money, materials), or null at the card's top tier. */
+  tier: UpgradeStep | null;
 }
 
 export interface JobLoadout {
@@ -81,7 +84,8 @@ export interface CardsModel {
   setMain(state: GameState, id: string): ModelResult;
   addSupport(state: GameState, id: string): ModelResult;
   remove(state: GameState, id: string): ModelResult;
-  upgrade(state: GameState, id: string): ModelResult;
+  /** Takes the card's next star (from the star bar) or its next tier. */
+  upgrade(state: GameState, id: string, kind: 'star' | 'tier'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

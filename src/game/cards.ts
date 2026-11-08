@@ -7,10 +7,12 @@ import type {
   Job,
   ModifierData,
   Rank,
+  RankTier,
+  Rarity,
   Trial,
   UniqueItemKind,
 } from '../data';
-import { JOBS, MAX_STARS, RANK_TIERS } from '../data/schemas';
+import { JOBS, MAX_STARS, RANK_TIERS, RARITIES } from '../data/schemas';
 import { accountLevel } from './account';
 import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
@@ -57,7 +59,7 @@ export type CardFailure =
   | 'over-cost-cap'
   /** Not a valid slot. */
   | 'invalid-slot'
-  /** No star-up (already ★6) or no tier-up (below ★6 or already Prismatic) from this rank. */
+  /** No star-up (already ★6) or no tier-up (already at the card's top tier) from this rank. */
   | 'unavailable'
   /** At least one requirement of the star-up / tier-up is not met. */
   | 'requirements';
@@ -86,12 +88,24 @@ export function rankAtLeast(rank: Rank, min: Rank): boolean {
 export interface CardItem {
   kind: ItemKind | UniqueItemKind;
   name: string;
-  /** True for a unique evolution. */
+  /** True for a unique item (the Unique tier). */
   unique: boolean;
+  /** The item rarity to draw: the card's rarity moved up the ladder by its tier (weaponLookRarity). */
+  rarity: Rarity;
 }
 
-/** The item to draw for a card at its rank: its unique evolution from the evolution rank (Gold
- *  ★6) on, else its generic item. Not owned = the generic item. Null for unknown ids. */
+/**
+ * The item rarity to draw for a card's rarity and tier (DESIGN.md §5 "Weapon looks, for now"):
+ * one step up the rarity ladder per tier (Bronze = the card's rarity, Silver +1, Gold +2,
+ * Prismatic +3, Unique +4), capped at Void. The unique item at the Unique tier has its own look.
+ */
+export function weaponLookRarity(rarity: Rarity, tier: RankTier): Rarity {
+  const at = RARITIES.indexOf(rarity) + RANK_TIERS.indexOf(tier);
+  return RARITIES[Math.min(at, RARITIES.length - 1)]!;
+}
+
+/** The item to draw for a card at its rank: its unique item at the Unique tier, else its generic
+ *  item at the rarity its tier gives. Not owned = Bronze. Null for unknown ids. */
 export function cardItem(
   content: Content,
   cardId: string,
@@ -99,12 +113,14 @@ export function cardItem(
 ): CardItem | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  const evo = content.progression.evolutions;
-  const unique = card.evolution ? evo.items.find((i) => i.kind === card.evolution) : undefined;
-  if (unique && owned && rankAtLeast(cardRank(owned), evo.from)) {
-    return { kind: unique.kind, name: unique.name, unique: true };
-  }
-  return { kind: card.item.kind, name: card.item.name, unique: false };
+  const tier = owned?.tier ?? 'bronze';
+  const rarity = weaponLookRarity(card.rarity, tier);
+  const unique =
+    tier === 'unique' && card.evolution
+      ? content.progression.evolutions.items.find((i) => i.kind === card.evolution)
+      : undefined;
+  if (unique) return { kind: unique.kind, name: unique.name, unique: true, rarity };
+  return { kind: card.item.kind, name: card.item.name, unique: false, rarity };
 }
 
 /** Just the item kind to draw (see cardItem). Null for unknown ids. */
@@ -116,12 +132,12 @@ export function cardItemKind(
   return cardItem(content, cardId, owned)?.kind ?? null;
 }
 
-/** A card tier as a metal index on the ladder (bronze 1 .. prismatic 4). */
+/** A card tier as a metal index on the ladder (bronze 1 .. prismatic 4, unique 5). */
 function tierMetalIndex(tier: OwnedCard['tier']): number {
   return RANK_TIERS.indexOf(tier) + 1;
 }
 
-/** The evolution moment if the card's item became unique between two ranks. */
+/** The unique-item moment if the card's item became unique between two ranks. */
 function evolutionTierUps(
   content: Content,
   cardId: string,
@@ -143,9 +159,23 @@ function evolutionTierUps(
     : [];
 }
 
-/** Prismatic ★6, the top rank for now. */
-export function isMaxRank(owned: OwnedCard): boolean {
-  return owned.tier === RANK_TIERS[RANK_TIERS.length - 1] && owned.stars >= MAX_STARS;
+/** The highest tier a card can reach: Unique when it has a unique version, else Prismatic. */
+export function cardTopTier(content: Content, cardId: string): RankTier {
+  return content.cardById.get(cardId)?.evolution ? 'unique' : 'prismatic';
+}
+
+/** The tier after `tier` for this card, or null at its top tier. */
+function nextTierOf(content: Content, cardId: string, tier: RankTier): RankTier | null {
+  const next = RANK_TIERS[RANK_TIERS.indexOf(tier) + 1];
+  if (!next || RANK_TIERS.indexOf(next) > RANK_TIERS.indexOf(cardTopTier(content, cardId))) {
+    return null;
+  }
+  return next;
+}
+
+/** The card's top tier at ★6: nothing left to rank up. */
+export function isMaxRank(content: Content, cardId: string, owned: OwnedCard): boolean {
+  return owned.tier === cardTopTier(content, cardId) && owned.stars >= MAX_STARS;
 }
 
 /** Level cap of a rank (cardRules.levelCaps): by tier only, stars do not raise it (DESIGN.md §5). */
@@ -172,24 +202,36 @@ export function cardPower(content: Content, owned: OwnedCard): number {
 }
 
 /**
- * A card's health (DESIGN.md §6): its rarity's base health × its power, so it grows with
- * level, stars and tier like its bonuses. 0 for unknown ids. The fight side sums the loadout.
+ * The power of a card's base stats (damage and health): (1 + perLevel × (level − 1)) × the star
+ * multiplier (×1 at ★1, then ×1.25 … ×3.5 at ★2 … ★6) × the tier's multiplier. Card effects use
+ * `cardPower` instead.
+ */
+export function cardStatPower(content: Content, owned: OwnedCard): number {
+  const p = content.cardRules.power;
+  const star = owned.stars <= 1 ? 1 : p.starMultiplier[owned.stars - 2]!;
+  return (1 + p.perLevel * (owned.level - 1)) * star * p.tier[owned.tier];
+}
+
+/**
+ * A card's health (DESIGN.md §6): its rarity's base health × its base-stat power, so it grows
+ * with level, stars and tier. 0 for unknown ids. The fight side sums the loadout.
  */
 export function cardHealth(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.health[card.rarity].mul(cardPower(content, owned));
+  return content.cardRules.health[card.rarity].mul(cardStatPower(content, owned));
 }
 
 /**
- * A card's base damage per second (DESIGN.md §5): its rarity's base damage × its power, so it
- * grows with level, stars and tier like its health. 0 for unknown ids. The fighting main's value
- * is the base of all fighting damage; the modifiers (supports, tree, mastery) come on top.
+ * A card's base damage per second (DESIGN.md §5): its rarity's base damage × its base-stat
+ * power, so it grows with level, stars and tier like its health. 0 for unknown ids. The fighting
+ * main's value is the base of all fighting damage; the modifiers (supports, tree, mastery) come
+ * on top.
  */
 export function cardBaseDamage(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.baseDamage[card.rarity].mul(cardPower(content, owned));
+  return content.cardRules.baseDamage[card.rarity].mul(cardStatPower(content, owned));
 }
 
 /**
@@ -425,8 +467,8 @@ export function cardModifiers(state: GameState, content: Content): Modifier[] {
 
 /** One line of a star-up / tier-up checklist. */
 export interface Requirement {
-  /** `level`: at the level cap; `duplicates`: copies held; `resource`: a material or resource. */
-  kind: 'level' | 'duplicates' | 'resource';
+  /** `level`: at the level cap; `starFill`: the star bar's fill; `resource`: Money, a material or gems. */
+  kind: 'level' | 'starFill' | 'resource';
   /** Resource id, for `resource`. */
   resource?: string;
   have: Decimal;
@@ -471,61 +513,81 @@ function resourceRequirements(state: GameState, prices: Price[]): Requirement[] 
 }
 
 /**
- * Star-up materials of the next star (DESIGN.md §5): the tier's Core, tree gems and mine gems,
- * each line scaled by the card's job share (rounded up, at least 1; a share of 0 leaves it out),
- * then through `cost.multiplier` (scope: job, resource).
+ * The star bar's fill a star-up from `stars` takes (DESIGN.md §5), by rarity: the copies of the
+ * table times the fill each duplicate gives. Null at ★6, where there is no next star.
  */
-export function starUpCost(
-  content: Content,
-  card: Card,
-  owned: OwnedCard,
-  modifiers: readonly Modifier[] = [],
-): Price[] {
-  if (owned.stars >= MAX_STARS) return [];
-  const prices: Price[] = [];
-  for (const line of content.cardRules.starUp.tiers[owned.tier]) {
-    const share = line.jobShare?.[card.job] ?? 1;
-    if (share <= 0) continue;
-    const base = line.amounts[owned.stars - 1]!;
-    const amount = share === 1 ? base : Decimal.max(base.mul(share).ceil(), 1);
-    prices.push(finalPrice(line.resource, amount, modifiers, { job: card.job }));
-  }
-  return prices;
+export function starFillNeeded(content: Content, rarity: Rarity, stars: number): number | null {
+  if (stars >= MAX_STARS) return null;
+  const { needs, fillPerDuplicate } = content.cardRules.starBar;
+  return needs[rarity][stars - 1]! * fillPerDuplicate[rarity];
 }
 
-/** Tier-up costs from the current tier (through `cost.multiplier`, scope: job, resource). */
+/** Fill still to collect from `stars` to ★6 (0 at ★6). */
+function starFillToMax(content: Content, rarity: Rarity, stars: number): number {
+  let total = 0;
+  for (let s = stars; s < MAX_STARS; s++) total += starFillNeeded(content, rarity, s)!;
+  return total;
+}
+
+/** The star bar as the Cards page shows it. */
+export interface StarBarView {
+  /** Fill held. */
+  fill: number;
+  /** Fill the next star takes. */
+  need: number;
+  /** fill / need, 0..1 (1 when the next star is free). */
+  gauge: number;
+  /** The next star can be taken now. */
+  ready: boolean;
+}
+
+/** The star bar of an owned card below ★6; null otherwise. */
+export function starBarView(content: Content, card: Card, owned: OwnedCard): StarBarView | null {
+  const need = starFillNeeded(content, card.rarity, owned.stars);
+  if (need === null) return null;
+  return {
+    fill: owned.starFill,
+    need,
+    gauge: need <= 0 ? 1 : Math.min(1, owned.starFill / need),
+    ready: owned.starFill >= need,
+  };
+}
+
+/**
+ * Tier-up costs from the current tier, per the card's job: Money plus the tier's Core and tree
+ * and mine gems (Frost Sigils at Gold and Prismatic), through `cost.multiplier` (scope: job,
+ * resource). Empty at the card's top tier.
+ */
 export function tierUpCost(
   content: Content,
   card: Card,
   owned: OwnedCard,
   modifiers: readonly Modifier[] = [],
 ): Price[] {
-  if (owned.tier === 'prismatic') return [];
+  if (owned.tier === 'unique' || nextTierOf(content, card.id, owned.tier) === null) return [];
   return content.cardRules.tierUp[owned.tier][card.job].map((c) =>
     finalPrice(c.resource, c.amount, modifiers, { job: card.job }),
   );
 }
 
-/** Star-up checklist (★n → ★n+1): duplicates, level cap, the tier's Core. Null if not owned. */
+/** Star-up checklist (★n → ★n+1): the star bar's fill and nothing else. Null if not owned. */
 export function starUpCheck(
   state: GameState,
   content: Content,
   cardId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): UpgradeCheck | null {
   const card = content.cardById.get(cardId);
   const owned = state.cards.owned[cardId];
   if (!card || !owned) return null;
-  if (owned.stars >= MAX_STARS) return check(null, []);
+  const need = starFillNeeded(content, card.rarity, owned.stars);
+  if (need === null) return check(null, []);
   return check({ tier: owned.tier, stars: owned.stars + 1 }, [
-    requirement('duplicates', owned.duplicates, content.cardRules.starUp.duplicates),
-    levelRequirement(content, owned),
-    ...resourceRequirements(state, starUpCost(content, card, owned, modifiers)),
+    requirement('starFill', owned.starFill, need),
   ]);
 }
 
-/** Tier-up checklist (★6 → next tier ★1): level cap, Cores, tree and mine gems and Frost Sigils. Null if not
- *  owned. Unavailable below ★6 and at Prismatic. */
+/** Tier-up checklist (to the next tier, stars kept): level cap, Money, Cores, tree and mine gems
+ *  and Frost Sigils. Null if not owned. Unavailable at the card's top tier. */
 export function tierUpCheck(
   state: GameState,
   content: Content,
@@ -535,35 +597,31 @@ export function tierUpCheck(
   const card = content.cardById.get(cardId);
   const owned = state.cards.owned[cardId];
   if (!card || !owned) return null;
-  const nextTier = RANK_TIERS[RANK_TIERS.indexOf(owned.tier) + 1];
-  if (owned.stars < MAX_STARS || !nextTier) return check(null, []);
-  return check({ tier: nextTier, stars: 1 }, [
+  const nextTier = nextTierOf(content, cardId, owned.tier);
+  if (!nextTier) return check(null, []);
+  return check({ tier: nextTier, stars: owned.stars }, [
     levelRequirement(content, owned),
     ...resourceRequirements(state, tierUpCost(content, card, owned, modifiers)),
   ]);
 }
 
-/** Spends a duplicate and the Core and adds a star. Level and XP stay (stars do not move the cap). */
-export function starUp(
-  state: GameState,
-  content: Content,
-  cardId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CardUpgradeResult {
-  const result = starUpCheck(state, content, cardId, modifiers);
+/** Spends the star bar's fill and adds a star. Level and XP stay. Left-over fill carries over. */
+export function starUp(state: GameState, content: Content, cardId: string): CardUpgradeResult {
+  const result = starUpCheck(state, content, cardId);
   if (!result) return fail(content.cardById.has(cardId) ? 'not-owned' : 'unknown');
   if (!result.available) return fail('unavailable');
   if (!result.met) return fail('requirements');
   const card = content.cardById.get(cardId)!;
-  const before = state.cards.owned[cardId]!;
-  const next = pay(state, starUpCost(content, card, before, modifiers));
+  const next = cloneState(state);
   const owned = next.cards.owned[cardId]!;
-  owned.duplicates -= content.cardRules.starUp.duplicates;
+  owned.starFill -= starFillNeeded(content, card.rarity, owned.stars)!;
   owned.stars += 1;
-  return { ok: true, state: next, tierUps: evolutionTierUps(content, cardId, before, owned) };
+  if (owned.stars >= MAX_STARS) owned.starFill = 0;
+  return { ok: true, state: next, tierUps: [] };
 }
 
-/** Pays the tier-up costs and moves the card to the next tier at ★1. Level and XP carry over. */
+/** Pays the tier-up costs and moves the card to the next tier. Stars, star fill, level and XP
+ *  carry over. */
 export function tierUp(
   state: GameState,
   content: Content,
@@ -579,7 +637,6 @@ export function tierUp(
   const next = pay(state, tierUpCost(content, card, before, modifiers));
   const owned = next.cards.owned[cardId]!;
   owned.tier = result.to!.tier;
-  owned.stars = 1;
   const from = tierMetalIndex(before.tier);
   const to = tierMetalIndex(owned.tier);
   const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];
@@ -592,21 +649,27 @@ export function tierUp(
 
 // ---- gaining cards ---------------------------------------------------------------------------
 
-/** Adds one copy to a card collection (mutates it): new card, duplicate, or shards at max rank.
- *  Used by `addCard` and the summon portals. */
+/**
+ * Adds one copy to a card collection (mutates it): a new card, a duplicate that fills the star
+ * bar, or shards when the copy is past ★6 (the card is ★6, or its bar already holds every star
+ * left). Used by `addCard`, the summon portals and the shard shop.
+ */
 export function grantCard(cards: CardState, content: Content, card: Card): CardGain {
   const owned = cards.owned[card.id];
   if (!owned) {
     cards.owned[card.id] = newOwnedCard();
     return { kind: 'new' };
   }
-  if (isMaxRank(owned)) {
+  if (
+    owned.stars >= MAX_STARS ||
+    owned.starFill >= starFillToMax(content, card.rarity, owned.stars)
+  ) {
     const shards = content.cardRules.shards[card.rarity];
     cards.shards += shards;
     return { kind: 'shards', shards };
   }
-  owned.duplicates += 1;
-  return { kind: 'duplicate', duplicates: owned.duplicates };
+  owned.starFill += content.cardRules.starBar.fillPerDuplicate[card.rarity];
+  return { kind: 'duplicate', duplicates: owned.starFill };
 }
 
 /** Adds one copy of a card (from a drop or a summon). Null for unknown ids. */
@@ -696,7 +759,10 @@ export interface CardInfo {
   cost: number;
   /** Where the card sits, or null. */
   slot: { job: Job; slot: LoadoutSlot } | null;
+  /** At its top tier and ★6 (Unique, or Prismatic without a unique version). */
   maxRank: boolean;
+  /** The star bar (fill, need, gauge 0..1); null when not owned or at ★6. */
+  starBar: StarBarView | null;
   starUp: UpgradeCheck | null;
   tierUp: UpgradeCheck | null;
   /** Its effect as main / as support at the current power (Bronze ★1 Lv 1 when not owned). */
@@ -727,8 +793,9 @@ export function cardInfo(
     power: cardPower(content, preview),
     cost: cardCost(content, cardId),
     slot: loadoutSlotOf(state, cardId),
-    maxRank: owned ? isMaxRank(owned) : false,
-    starUp: starUpCheck(state, content, cardId, modifiers),
+    maxRank: owned ? isMaxRank(content, cardId, owned) : false,
+    starBar: owned ? starBarView(content, card, owned) : null,
+    starUp: starUpCheck(state, content, cardId),
     tierUp: tierUpCheck(state, content, cardId, modifiers),
     mainModifiers: cardEffectModifiers(content, cardId, 'main', preview),
     supportModifiers: cardEffectModifiers(content, cardId, 'support', preview),

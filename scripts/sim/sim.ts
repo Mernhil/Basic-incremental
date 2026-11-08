@@ -10,8 +10,8 @@
  * - keeps the resources the next waiting card upgrade or tree kind needs (reservations);
  * - spends its Money on the economy purchase with the best gain per Money: a mine level (relative gain
  *   of the weighted production) or a tree level (the same), waiting for the
- *   best one unless a cheaper one costs a small share of it. Card upgrades use gems and Cores
- *   only, so they never compete with Money;
+ *   best one unless a cheaper one costs a small share of it. A card's tier-up also costs Money, so
+ *   it is kept for it once the card is at its level cap (a star-up costs only the star bar);
  * - fills loadouts with the rarest cards,
  *   equips complete cosmetic sets;
  * - fights: the Glimmer Trial once it can score 100%, else a newly killable dungeon, else the
@@ -139,7 +139,7 @@ export const MILESTONES: Milestone[] = [
     id: 'first_star6',
     label: 'First ★6 (Gold)',
     targetHours: 7,
-    // Gold ★6 is the first unique evolution (a lower-tier ★6 comes long before Gold).
+    // The target is a Gold card at ★6 (a lower-tier ★6 comes long before Gold).
     reached: (s) =>
       Object.values(s.cards.owned).some(
         (c) => c.stars >= 6 && tierRank(c.tier) >= tierRank('gold'),
@@ -393,10 +393,10 @@ export function buyerCandidates(
     for (const kind of ['tier', 'star'] as const) {
       const check =
         kind === 'star'
-          ? starUpCheck(state, content, card.id, modifiers)
+          ? starUpCheck(state, content, card.id)
           : tierUpCheck(state, content, card.id, modifiers);
       if (!check?.available) continue;
-      // Only worth waiting for when the duplicate and level are already there (a tier-up that
+      // Only worth waiting for when the star bar and level are already there (a tier-up that
       // only lacks levels is held: its resources are kept).
       const short = check.requirements.filter((r) => r.kind !== 'resource' && !r.met);
       const hold = kind === 'tier' && short.length > 0 && short.every((r) => r.kind === 'level');
@@ -406,11 +406,13 @@ export function buyerCandidates(
         kind: 'card',
         cardRank: cardProgress(content, state.cards.owned[card.id]!),
         hold,
+        // A held tier-up (level still short) keeps its Cores and gems but not its Money: the
+        // player keeps buying levels with it until the card is at its cap.
         prices: check.requirements
-          .filter((r) => r.kind === 'resource' && r.resource)
+          .filter((r) => r.kind === 'resource' && r.resource && !(hold && r.resource === 'money'))
           .map((r) => ({ resource: r.resource!, amount: r.need })),
         buy: (s, c, m) =>
-          okState(kind === 'star' ? starUp(s, c, card.id, m) : tierUp(s, c, card.id, m)),
+          okState(kind === 'star' ? starUp(s, c, card.id) : tierUp(s, c, card.id, m)),
       });
     }
   }

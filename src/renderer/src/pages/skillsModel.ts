@@ -324,6 +324,7 @@ const TIER_NAME: Record<Rank['tier'], string> = {
   silver: 'Silver',
   gold: 'Gold',
   prismatic: 'Prismatic',
+  unique: 'Unique',
 };
 
 export function starChartView(info: CardEnhancementInfo): StarChartView {

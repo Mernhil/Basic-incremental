@@ -14,7 +14,9 @@ import { INK, f } from '../kit';
 
 export const CARD_W = 176;
 export const CARD_H = 248;
-export const TIER_ORDER: readonly RankTier[] = ['bronze', 'silver', 'gold', 'prismatic'];
+/** The tiers that have their own frame: Unique keeps the Prismatic frame (DESIGN.md §5). */
+export type FrameTier = Exclude<RankTier, 'unique'>;
+export const TIER_ORDER: readonly FrameTier[] = ['bronze', 'silver', 'gold', 'prismatic'];
 
 export interface FrameMetal {
   base: string;
@@ -22,7 +24,7 @@ export interface FrameMetal {
   hi: string;
   dark: string;
 }
-export const FRAME_METALS: Record<RankTier, FrameMetal> = {
+export const FRAME_METALS: Record<FrameTier, FrameMetal> = {
   bronze: { base: '#c97c3c', shade: '#8a4a1e', hi: '#ffc987', dark: '#5e3214' },
   silver: { base: '#c9d3de', shade: '#7c8898', hi: '#ffffff', dark: '#4e5868' },
   gold: { base: '#f4c23b', shade: '#b0700e', hi: '#fff5b8', dark: '#7a4a08' },
@@ -78,7 +80,7 @@ function socketSet(fill: string, gems: readonly string[]): string {
 let clipN = 0;
 
 /** The vector frame for a tier (the pixel source; the game shows the baked pixel version). */
-export function frameVector(tier: RankTier): string {
+export function frameVector(tier: FrameTier): string {
   const lv = TIER_ORDER.indexOf(tier);
   const m = FRAME_METALS[tier];
   let s = '';

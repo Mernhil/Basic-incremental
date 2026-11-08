@@ -67,7 +67,7 @@ describe('Card Portal (DESIGN.md §7, beta portals)', () => {
     const [first] = result.results;
     expect(first).toMatchObject({ itemId: 'ember_squire', rarity: 'common', pity: false });
     expect(first!.gain).toEqual({ kind: 'duplicate', duplicates: 1 });
-    expect(result.state.cards.owned['ember_squire']!.duplicates).toBe(1);
+    expect(result.state.cards.owned['ember_squire']!.starFill).toBe(1);
     expect(result.state.portals[PORTAL]).toEqual({ pity: 1, pulls: 1, pityHits: 0 });
   });
 

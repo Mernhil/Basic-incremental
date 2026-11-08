@@ -465,3 +465,41 @@ describe('v16 -> v17 (damage comes from cards: no damage lines, Temper or Harden
     expect(() => step({ resources: 3, combat: 'x', upgrades: 7, cards: [] })).not.toThrow();
   });
 });
+
+describe('v17 -> v18 (tiers, stars and the Unique tier: the star bar, DESIGN.md §5)', () => {
+  const step = MIGRATIONS[17]!;
+
+  it('turns duplicates into an empty star bar and keeps tier, stars and level', () => {
+    const card = (tier: string, stars: number, duplicates: number) => ({
+      tier,
+      stars,
+      level: 30,
+      xp: '4',
+      duplicates,
+      enhancements: ['edge'],
+    });
+    const out = step({
+      cards: { owned: { a: card('gold', 6, 3), b: card('bronze', 2, 0) }, shards: 5 },
+    }) as { cards: { owned: Record<string, Record<string, unknown>>; shards: number } };
+    expect(out.cards.owned['a']).toEqual({
+      tier: 'gold',
+      stars: 6,
+      level: 30,
+      xp: '4',
+      starFill: 0,
+      enhancements: ['edge'],
+    });
+    expect(out.cards.owned['b']).toMatchObject({ tier: 'bronze', stars: 2, starFill: 0 });
+    expect(out.cards.shards).toBe(5);
+  });
+
+  it('does not mutate its input and copes with missing or junk sections', () => {
+    const input = { cards: { owned: { a: { tier: 'gold', stars: 6, duplicates: 2 } } } };
+    const copy = JSON.parse(JSON.stringify(input));
+    step(input);
+    expect(input).toEqual(copy);
+    expect(() => step({})).not.toThrow();
+    expect(() => step({ cards: 3 })).not.toThrow();
+    expect(() => step({ cards: { owned: { a: 1 } } })).not.toThrow();
+  });
+});

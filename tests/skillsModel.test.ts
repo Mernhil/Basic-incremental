@@ -152,7 +152,7 @@ describe('enhancement star chart', () => {
       stars: 1,
       level: 1,
       xp: new Decimal(0),
-      duplicates: 0,
+      starFill: 0,
       enhancements: chosen,
     };
   };

@@ -20,11 +20,16 @@ const EMBLEMS: Record<string, string> = {
   tree: '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>',
 };
 
+/** Unique keeps the Prismatic frame, look and effects (DESIGN.md §5). */
+const frameTierOf = (tier: Rank['tier']): Exclude<Rank['tier'], 'unique'> =>
+  tier === 'unique' ? 'prismatic' : tier;
+
 const TIER_NAMES: Record<Rank['tier'], string> = {
   bronze: 'Bronze',
   silver: 'Silver',
   gold: 'Gold',
   prismatic: 'Prismatic',
+  unique: 'Unique',
 };
 
 export interface CardStat {
@@ -115,7 +120,7 @@ export function createCard(initial: CardProps): CardView {
       delete el.dataset['tier'];
       delete el.dataset['stars'];
     } else {
-      el.dataset['tier'] = p.rank.tier;
+      el.dataset['tier'] = frameTierOf(p.rank.tier);
       el.dataset['stars'] = String(p.rank.stars);
     }
     el.dataset['job'] = p.job;
@@ -142,15 +147,15 @@ export function createCard(initial: CardProps): CardView {
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
     // the tier is the frame (DESIGN.md §5); bosses have no rank and so no frame
-    const tier = p.boss ? '' : p.rank.tier;
+    const tier = p.boss ? '' : frameTierOf(p.rank.tier);
     if (tier !== frameTier) {
       frameTier = tier;
-      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier);
+      frameSvg.innerHTML = p.boss ? '' : cardFrame(frameTierOf(p.rank.tier));
     }
     attachElementFx(
       artBox,
       p.boss || !p.item ? null : (p.element ?? null),
-      p.boss ? 0 : effectStrength(p.rank.tier),
+      p.boss ? 0 : effectStrength(frameTierOf(p.rank.tier)),
       itemChanged,
     );
     applyCardTheme(el, p.theme);
