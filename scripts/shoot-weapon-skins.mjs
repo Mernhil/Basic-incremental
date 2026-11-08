@@ -33,6 +33,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
+await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
 await page.click('.shell-rail__item[data-page="wardrobe"]');
 await page.click('[data-key="tab-skins"]');
 await page.waitForSelector('.ws-card .bi-card');
