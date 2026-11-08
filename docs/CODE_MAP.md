@@ -52,4 +52,4 @@ Where things live, so agents can go straight to the right file instead of explor
 
 ## Scripts and tests
 
-`scripts/check-design.mjs` (checks `docs/DESIGN.md` against its own rules; part of `npm run lint`), `scripts/sim/` balance sim (`npm run sim -- --hours 40`), `scripts/art/bake-pixels.mjs` (bake sprites), `scripts/shoot-*.mjs` (screenshots), `scripts/check-pixel-scale.mjs` (measures every pixel-art element in the running app at several screen scales), `tests/` (vitest; `helpers.ts` has `plainContent`, `freshState`, `newGame`).
+`scripts/check-design.mjs` (checks `docs/DESIGN.md` against its own rules; part of `npm run lint`), `scripts/sim/` balance sim (`npm run sim -- --hours 40`; `npx tsx scripts/sim/timeline.ts` prints one run row by row), `scripts/art/bake-pixels.mjs` (bake sprites), `scripts/shoot-*.mjs` (screenshots), `scripts/check-pixel-scale.mjs` (measures every pixel-art element in the running app at several screen scales), `tests/` (vitest; `helpers.ts` has `plainContent`, `freshState`, `newGame`).

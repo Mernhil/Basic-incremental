@@ -180,7 +180,7 @@ describe('ascend', () => {
     expect(ascensionPreview(first.state, content).gain.toNumber()).toBe(0);
 
     const second = first.state;
-    second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e8);
+    second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e9);
     const again = ascend(second, content);
     if (!again.ok) throw new Error(again.reason);
     expect(again.state.prestigeCount).toBe(2);

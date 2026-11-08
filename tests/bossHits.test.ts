@@ -24,7 +24,10 @@ import {
   type Modifier,
   type TickReport,
 } from '../src/game';
-import { constantRng, content, freshState } from './helpers';
+import { constantRng, content as bundled, freshState, withBossAttack } from './helpers';
+
+// The Root Warden is pinned to the numbers these tests document (1 damage every 10 s).
+const content = withBossAttack(bundled, 'mossy_cellar', 1, 10);
 
 /**
  * Boss hits in chunks (DESIGN.md §6): discrete attacks at the boss's interval, five light hits at

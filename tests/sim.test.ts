@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, cosmeticMaxLevel, type GameState } from '../src/game';
+import { Decimal, cloneState, cosmeticMaxLevel, type GameState } from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -13,6 +13,7 @@ import {
   summarizeRuns,
   formatSeedTable,
 } from '../scripts/sim/sim';
+import { loadContent } from '../src/data';
 import { content, freshState, withDps } from './helpers';
 
 const rich = (state: GameState, resource: string, amount: number): GameState => {
@@ -108,6 +109,29 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
+  it('keeps buying levels while a tier-up still waits for gems, and saves its Money once the gems are close', () => {
+    const base = freshState();
+    const squire = base.cards.owned['ember_squire']!;
+    squire.level = 20; // at the Bronze cap
+    base.clearedDungeons = ['mossy_cellar']; // Iron Deeps opens
+    base.production.unlockedTrees = ['ironbark', 'moonwillow'];
+    base.resources['moss_core'] = new Decimal(10);
+    base.resources['money'] = new Decimal(1e5); // 150,000 needed, so affordable levels are on offer
+    // The gems are far off: Money goes into levels.
+    const far = greedyBuy(base, content);
+    expect(far.state.resources['money']!.toNumber()).toBeLessThan(1e5);
+    // The gems are in hand: Money is the only thing missing, so none of it is spent on levels.
+    const ready = cloneState(base);
+    for (const price of content.cardRules.tierUp.bronze.fighting) {
+      if (price.resource !== 'money' && price.resource !== 'moss_core') {
+        ready.resources[price.resource] = price.amount;
+      }
+    }
+    ready.resources['money'] = new Decimal(1e5);
+    const near = greedyBuy(ready, content);
+    expect(near.state.resources['money']!.toNumber()).toBe(1e5);
+  });
+
   it('weighs a mine or tree level by the share of the production', () => {
     const state = rich(freshState(), 'money', 1e9);
     const candidates = buyerCandidates(state, content);
@@ -116,18 +140,41 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(gain('tree:oak')).toBeGreaterThan(0);
   });
 
-  it('keeps Cores for the most advanced card instead of spreading them over weaker ones', () => {
+  it('buys a star-up from the star bar alone: it needs no Cores to share', () => {
+    const state = freshState();
+    const feller = state.cards.owned['apprentice_feller']!;
+    feller.starFill = content.cardRules.starBar.needs.common[0]!;
+    const { bought } = greedyBuy(state, content);
+    expect(bought).toContain('star:apprentice_feller');
+  });
+
+  it('finishes the fighting lead first: a more advanced production card does not starve its tier-up of gems', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
-    squire.stars = 5;
-    squire.level = 36;
-    squire.starFill = 1;
-    const feller = state.cards.owned['apprentice_feller']!;
-    feller.level = 20;
-    feller.starFill = 1;
-    state.resources['moss_core'] = new Decimal(3); // ★5 to ★6 needs 10; ★1 to ★2 needs 1
-    const { bought } = greedyBuy(state, content);
-    expect(bought).not.toContain('star:apprentice_feller');
+    squire.tier = 'silver';
+    squire.level = 40; // at the Silver cap: Gold costs Money, Cinder Cores and gems
+    const digger = state.cards.owned['cave_digger']!;
+    digger.tier = 'gold';
+    digger.level = 60; // further along, and its Prismatic step waits for Frost Cores
+    state.resources['money'] = new Decimal(5e6);
+    state.resources['cinder_core'] = new Decimal(10);
+    state.resources['moonwillow_gem'] = new Decimal(100000);
+    state.resources['grotto_gem'] = new Decimal(100000);
+    expect(greedyBuy(state, content).bought).toContain('tier:ember_squire');
+  });
+
+  it('lets a weaker card take its step while the lead is hours from its gems', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar'];
+    state.production.unlockedTrees = ['ironbark'];
+    state.activeDungeonId = 'mossy_cellar';
+    state.cards.owned['ember_squire']!.level = 20; // Bronze cap: needs 24,000 Ironbark, has 14,000
+    state.cards.owned['cave_digger']!.level = 20; // needs 12,000 Ironbark and 20,000 Iron
+    state.resources['money'] = new Decimal(2e5);
+    state.resources['moss_core'] = new Decimal(6);
+    state.resources['iron_gem'] = new Decimal(20000);
+    state.resources['ironbark_gem'] = new Decimal(14000);
+    expect(greedyBuy(state, content).bought).toContain('tier:cave_digger');
   });
 
   it('saves the Frost Cores for the lead card still levelling toward its tier-up', () => {
@@ -234,6 +281,24 @@ describe('balance sim: ascension decision', () => {
     expect(ascendNow({ gain: 36, minimum: 10, runSeconds: 10800 }, tracker)).toBe(true);
   });
 
+  it('takes the first Ascension as soon as the minimum gain is there, without waiting for a peak', () => {
+    const tracker = { peakRate: 0 };
+    expect(ascendNow({ gain: 9, minimum: 10, runSeconds: 3600, earned: 0 }, tracker)).toBe(false);
+    expect(ascendNow({ gain: 10, minimum: 10, runSeconds: 7200, earned: 0 }, tracker)).toBe(true);
+    // Later Ascensions still wait for the rate to pass its peak.
+    const later = { peakRate: 0 };
+    expect(ascendNow({ gain: 10, minimum: 10, runSeconds: 3600, earned: 10 }, later)).toBe(false);
+  });
+
+  it('ascends again only once the gain at least matches all the Starlight earned so far', () => {
+    const tracker = { peakRate: 100 };
+    // The rate is long past its peak, but 30 would add less than the 50 already earned.
+    expect(ascendNow({ gain: 30, minimum: 10, runSeconds: 36000, earned: 50 }, tracker)).toBe(
+      false,
+    );
+    expect(ascendNow({ gain: 50, minimum: 10, runSeconds: 36000, earned: 50 }, tracker)).toBe(true);
+  });
+
   it('never ascends below the minimum gain', () => {
     const tracker = { peakRate: 100 };
     expect(ascendNow({ gain: 5, minimum: 10, runSeconds: 36000 }, tracker)).toBe(false);
@@ -292,7 +357,16 @@ describe('balance sim: run', () => {
     expect(star6.reached(state, content, log)).toBe(true);
   });
 
-  it('calls the content exhausted only with every card owned and a Prismatic ★6 card', () => {
+  it('does not count a one-level UI skin as a max-level cosmetic', () => {
+    const maxCosmetic = MILESTONES.find((m) => m.id === 'max_cosmetic')!;
+    const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
+    const state = freshState();
+    state.cosmetics.owned['nodes_b'] = { level: 1, copies: 0 };
+    expect(cosmeticMaxLevel(content, content.cosmeticById.get('nodes_b')!)).toBe(1);
+    expect(maxCosmetic.reached(state, content, log)).toBe(false);
+  });
+
+  it('calls the content exhausted only with every card owned and a card at the Unique tier', () => {
     const exhausted = MILESTONES.find((m) => m.id === 'exhausted')!;
     const log = { summons: 1, levelAt: {}, ascensions: [], fought: {} };
     const state = freshState();
@@ -301,16 +375,15 @@ describe('balance sim: run', () => {
     }
     state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
     state.prestigeCount = 1;
-    state.cards.owned['ember_squire']!.tier = 'gold';
-    state.cards.owned['ember_squire']!.stars = 6;
     state.cards.owned['apprentice_feller']!.tier = 'prismatic';
-    state.cards.owned['apprentice_feller']!.stars = 5;
+    state.cards.owned['apprentice_feller']!.stars = 6;
+    state.cards.owned['ember_squire']!.tier = 'prismatic';
     state.cosmetics.owned['holo_hex'] = {
       level: cosmeticMaxLevel(content, content.cosmeticById.get('holo_hex')!),
       copies: 0,
     };
     expect(exhausted.reached(state, content, log)).toBe(false);
-    state.cards.owned['apprentice_feller']!.stars = 6;
+    state.cards.owned['ember_squire']!.tier = 'unique';
     expect(exhausted.reached(state, content, log)).toBe(true);
   });
 
@@ -325,6 +398,18 @@ describe('balance sim: run', () => {
     // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
   }, 30_000);
 
+  it('keeps the first hour of the shipped content on its §14 pacing targets (within 25%)', () => {
+    // The shipped numbers, not the pinned test content: the first dungeon and the first summon.
+    const result = runSim(loadContent(), { hours: 1, seed: 1, stepSeconds: 10 });
+    for (const id of ['clear_d1', 'first_summon']) {
+      const target = MILESTONES.find((m) => m.id === id)!.targetHours * 3600;
+      const hit = result.hits[id];
+      expect(hit, id).not.toBeNull();
+      expect(hit! / target, id).toBeGreaterThan(0.75);
+      expect(hit! / target, id).toBeLessThan(1.25);
+    }
+  }, 30_000);
+
   it('samples the fighting DPS every half hour for the tuning report', () => {
     const result = runSim(content, { hours: 1.1, seed: 1, stepSeconds: 10 });
     expect(result.dpsSamples.map(([t]) => t)).toEqual([1800, 3600]);
@@ -336,5 +421,17 @@ describe('balance sim: run', () => {
     const table = formatTable(result);
     expect(table.split('\n').filter((l) => l.startsWith('| ')).length).toBe(MILESTONES.length + 1);
     expect(table).toContain('First dungeon cleared');
+  });
+
+  it('calls the probe every probeSeconds with the state and the sim time', () => {
+    const seen: number[] = [];
+    runSim(content, {
+      hours: 0.02,
+      seed: 1,
+      stepSeconds: 10,
+      probeSeconds: 20,
+      probe: (_state, t) => seen.push(t),
+    });
+    expect(seen).toEqual([20, 40, 60]);
   });
 });

@@ -367,7 +367,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
         r.need.toNumber(),
         r.met,
       ]),
-    ).toEqual([['starFill', undefined, 0, 2, false]]);
+    ).toEqual([['starFill', undefined, 0, content.cardRules.starBar.needs.common[0], false]]);
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
     expect(starUpCheck(state, content, 'storm_duelist')).toBeNull();
     expect(starUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'not-owned' });
@@ -375,9 +375,10 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
   });
 
   it('spends the fill and keeps the level; the cap stays', () => {
-    const state = own(freshState(), 'ember_squire', { level: 20, starFill: 3 });
+    const need = content.cardRules.starBar.needs.common[0]!;
+    const state = own(freshState(), 'ember_squire', { level: 20, starFill: need + 2 });
     const after = ok(starUp(state, content, 'ember_squire'));
-    expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, starFill: 1 });
+    expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, starFill: 2 });
     expect(cardInfo(after, content, 'ember_squire')!.levelCap).toBe(20); // stars do not raise it
     expect(state.cards.owned['ember_squire']!.stars).toBe(1); // pure
   });

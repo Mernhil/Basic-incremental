@@ -4,7 +4,7 @@
     "name": "Copper Quarry",
     "tier": 1,
     "resource": "copper_gem",
-    "baseRate": "0.5",
+    "baseRate": "1.5",
     "unlockedByDungeon": null,
     "level": {
       "cost": {
@@ -24,7 +24,7 @@
     "name": "Iron Deeps",
     "tier": 2,
     "resource": "iron_gem",
-    "baseRate": "0.25",
+    "baseRate": "0.75",
     "unlockedByDungeon": "mossy_cellar",
     "level": {
       "cost": {
@@ -44,7 +44,7 @@
     "name": "Crystal Grotto",
     "tier": 3,
     "resource": "grotto_gem",
-    "baseRate": "0.1",
+    "baseRate": "0.30000000000000004",
     "unlockedByDungeon": "ember_crypt",
     "level": {
       "cost": {
