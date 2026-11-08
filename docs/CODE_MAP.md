@@ -11,13 +11,13 @@ Where things live, so agents can go straight to the right file instead of explor
 | `loop.ts`, `offline.ts`           | Real-time loop clamp; offline progress and the welcome-back summary                                |
 | `report.ts`                       | `TickReport` (what happened in a step), `TierUp` events                                            |
 | `modifiers.ts`                    | The one modifier pipeline (DESIGN §14); `collectModifiers` gathers every source                    |
-| `production.ts`                   | Plots, slots, tree/mine unlocks, mine levels, prices (`curvePrice`, in Money), output              |
-| `harvest.ts`, `productionView.ts` | Production main-card strikes and burst events for the stage (DESIGN §4); `productionStageView`     |
+| `production.ts`                   | Tree/mine unlocks, tree and mine levels, prices (`curvePrice`, in Money), output (one of each)     |
+| `harvest.ts`, `productionView.ts` | Main-card strikes across the unlocked kinds, burst events (DESIGN §4); `productionStageView`       |
 | `combat.ts`                       | Damage lines (Money), bosses, wage and drops (`effectiveDrops`), bursts, crits, card health, trial |
 | `drops.ts`, `hpBars.ts`           | Boss kill rolls (rare item and pity, Money and crystal purses); stacked HP bar maths               |
 | `milestones.ts`, `stages.ts`      | x2-every-25-levels milestones; growth stages 0..4 for tiles (tree and mine levels) and edges       |
 | `upgrades.ts`                     | Upgrade shelf (DESIGN §4): hidden/available/owned items, buy, lifetime Money, support power        |
-| `bulk.ts`, `previews.ts`          | x1/x10/x100/Max buying (damage, mine, tree levels, plots); before/after previews                   |
+| `bulk.ts`, `previews.ts`          | x1/x10/x100/Max buying (damage, mine and tree levels); before/after previews                       |
 | `cards.ts`                        | Collection, loadouts, levels, star-ups and tier-ups (Core + tree and mine gems), evolutions        |
 | `mastery.ts`                      | Gem mastery and boss medals                                                                        |
 | `goals.ts`                        | Goal tracker rules (quest scroll)                                                                  |

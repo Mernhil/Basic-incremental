@@ -44,7 +44,7 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 ## 3. Economy: the three loops
 
 - [Built] **Money comes only from dungeons**: a wage per second while fighting the first dungeon's boss (not while knocked out) and a purse on every kill in every dungeon (`dungeons.json`). A new game starts with 100 Money. Its display name lives only in `resources.json`.
-- [Differs] **Money buys** tree and mine levels, the upgrade shelf (§4) and weapon tier-ups (§5). Today it also buys plots, mine slots and the three damage lines, which are being removed (§4, §5), and tier-ups do not cost Money yet.
+- [Differs] **Money buys** tree and mine levels, the upgrade shelf (§4) and weapon tier-ups (§5). Today it also buys the three damage lines, which are being removed (§5), and tier-ups do not cost Money yet.
 - [Built] Every Money price is a curve `base × growth^n` in the data files, read through `cost.multiplier` and `cost.growth`.
 - [Built] **Production pays materials only**: the six gems. Gems, Cores, Frost Sigils, Glimmer Dust and Facet Shards pay for card upgrades, cosmetic upgrades and tree unlocks. Nothing in production pays Money.
 - [Built] **Crystals are the premium tier.** The Summon Crystal pays for the Card Portal and the Glamour Crystal for the Wardrobe Gate. Every dungeon drops both on every kill, deeper dungeons more. Only the portals spend them, and Ascension keeps them.
@@ -52,14 +52,15 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 
 ## 4. Production
 
-- [Differs] **One of each.** Each tree kind and mine type exists once and is levelled up. There are no plots or slots, no copies of the same tree or mine, and no expansions to buy (user, 2026-11-08). Today logging has plots and mining has slots, bought with Money (`production.json`), and one kind can fill several of them.
-- [Default] **Balance after plots.** Every filled plot added a full copy of a tree's output, so tree and mine levels now carry that growth: the level bonus and milestones are retuned with the sim against the pacing targets (§14). Old saves get back the Money they spent on plots and slots.
+- [Built] **One of each.** Each tree kind and mine type exists once and is levelled up. There are no plots or slots, no copies of the same tree or mine, and no expansions to buy (user, 2026-11-08). Every unlocked kind produces once, at its level.
+- [Default · in game] A kind produces from level 0: unlocking it starts its output at its base rate, and levels and milestones add to that.
+- [Default] **Balance after plots.** Every filled plot added a full copy of a tree's output, so tree and mine levels now carry that growth: the level bonus and milestones are retuned with the sim against the pacing targets (§14). Old saves got back the Money they spent on plots and slots (save format 16, built): each expansion at its old price, 25 × 1.4ⁿ rounded up, before any modifier. The retune of the level bonus and milestones is not done yet.
 - [Built] **Trees.** Oak (start), Ironbark and Moonwillow, each yielding its own gem. A tree kind is unlocked once with gems of the tier below (`trees.json`).
 - [Built] **Mines.** Copper Quarry (start), Iron Deeps (unlocked by clearing the Mossy Cellar) and Crystal Grotto (unlocked by clearing the Ember Crypt), each yielding its own gem.
 - [Built] **Levels.** Each tree kind and mine type has a level bought with Money (`trees.json`, `mines.json`): +10% output per level and ×2 every 25 levels. The next milestone shows on the line ("Lv 25: ×2") and reaching it plays a small celebration. Levels reset on Ascension.
 - [Built] **Upgrade shelf.** One-time Money upgrades beside the level lines (`upgrades.json`). Each appears when its unlock is met, glows when affordable and is owned once bought; its effects are ordinary modifiers. Per-run items reset on Ascension; permanent ones stay. Lifetime Money earned is counted and kept.
 - [Default] The six shelf upgrades unlocked by damage-line levels (Copper, Iron and Crystal Temper and Hardening) go with the lines, and an owned one pays its Money back. No shelf item depends on plots.
-- [Differs] **The main card plays the field.** The main logging or mining card strikes with its pattern (`cards.json` `main.harvest`: steady, chop, flurry or volley; interval, strikes per cycle and targeting sweep, random or all) and shows "+n" per strike. Strikes are show: the economy uses the expected value, so online and offline give the same totals. The targets are the unlocked kinds; today they are plots.
+- [Built] **The main card plays the field.** The main logging or mining card strikes with its pattern (`cards.json` `main.harvest`: steady, chop, flurry or volley; interval, strikes per cycle and targeting sweep, random or all) and shows "+n" per strike. Strikes are show: the economy uses the expected value, so online and offline give the same totals. The targets are the unlocked kinds.
 - [Built] **Harvest burst.** Each job ticks once per second and each tick fills the main card's gauge by 1. At 30 it gives 10 s of the job's output at once, played as a wave with one big total.
 - [Built] **Harvest crits.** `harvest.critChance` (base 0) and `harvest.critDamage` (base ×2) per job, through the modifier pipeline. Nothing grants a chance yet.
 - [Built] **Gem mastery.** Each gem's lifetime harvest gives a mastery tier at 1e3 / 1e5 / 1e7 / 1e9 (bronze to prismatic), +10% to that gem per tier, kept through Ascension. The gem's coin shows the tier in its metal.
@@ -224,7 +225,7 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Built] **Stage first.** The Dungeons and Production pages are the focus of the game, so they are live stages, not menus; management goes below or in a side rail.
 - [Built] **Home** is a command centre: three live mini-stages (fight, logging, mining) with their rates, each opening its page, and the goal tracker on top.
 - [Built] **Dungeons** is a full-bleed arena. Floors and upgrades live in a drawer that slides up from the bottom; DPS, kills per minute and time-to-kill sit in the top-right corner.
-- [Differs] **Production** is a simple list per job where each tree kind and mine type is bought and upgraded on its own row, like a basic incremental (user, 2026-11-08; layout proposal in §4). Today it is two stage fields of plot tiles with a separate upgrade rail.
+- [Differs] **Production** is a simple list per job where each tree kind and mine type is bought and upgraded on its own row, like a basic incremental (user, 2026-11-08; layout proposal in §4). Today it is two stage fields with one tile per unlocked kind and a separate upgrade rail.
 - [Built] **Dungeon arena.** The boss is large and centred with an idle bob and its stacked HP bars. Every hit flashes and squashes it, big hits shake, and a finished HP bar shatters. The loadout faces the boss and lunges on its attacks, with its health bar visible. Boss attacks land on the cards with red numbers and a shake; a knockout is a visible moment with its countdown. The burst gauge sits on the main card; the signature attack gets a screen flash, a big number and a brief slow-down. On a kill the boss pops and its drops spill out as coins, rest a beat, then fly to the header; a rare drop gets a light beam, a slow-down and a toast.
 - [Built] **Production field.** Every strike shows "+n" off its tree or mine and the coins fly to the header; a harvest burst is a wave with one big total. The main card lunges by its pattern and its supports flash when they help. Reduced motion drops lunges, shakes and flashes.
 - [Built] **Numbers.** Header counters roll smoothly and pulse when coins land. Floating numbers use the number style, attack and tick cosmetics, never hardcoded looks; their size follows the hit against the current average, and crits and signature attacks look different. The starter style is sticker numerals: chunky digits with a white outline, a drop shadow and a tilt, bouncing in place.
@@ -354,7 +355,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §2 dev tools and the Report an issue contents.
 - §4 what counts as harvested and when mastery tiers apply.
 - §5 the enhancement numbers (unlock at Silver ★1, five options, budgets).
-- §4 the balance after plots and the plot refund; the damage-line shelf upgrades going.
+- §4 the balance after plots and the plot refund (the refund is built, the retune is not); a kind producing from level 0; the damage-line shelf upgrades going.
 - §5 (filled in 2026-11-08 to build the weapon decisions) XP from fighting time, level caps by tier, the star bar, star impact, stars carrying across tiers, tier-up costs, base damage by rarity, the Unique tier, the interim weapon looks, production cards on the same model, the damage-line refund.
 - §6 (filled in 2026-11-08) the boss attack pattern and the "You fall in" readout.
 - §6 expected-value damage and crits; medal bonus rounding and the trial medal.
