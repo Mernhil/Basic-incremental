@@ -368,7 +368,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §10 account XP and level curve, reward track details, account tree nodes and respec cost, goal rules, the four extra achievements and their rewards, shard prices.
 - §11 Buy Max, the Settings layout and options, the Shop page holding Ascension.
 - §12 brief motion (hit squash, breathing, sticker tilt) may scale or turn art for a moment while Clean pixels holds at rest.
-- §14 the sim player's choices, and the numbers retuned in 2026-11-08 (Phase 4a): tree and mine base rates ×3; Root Warden 760,000 HP and 0.6 damage, Cinder Lich 800,000 HP, Glacier Colossus 11,000,000 HP; Bronze → Silver needs 3 Moss Cores; Frost Cores and Sigils of the Prismatic and Unique steps; the star table; the Glimmer Trial's 1,400,000 HP; account XP per gem halved; the Starlight divisor 6e5; and the "mostly exhausted" definition (a Unique weapon).
+- §14 the sim player's choices, and the numbers retuned in 2026-11-08 (Phase 4a): tree and mine base rates ×3; Root Warden 760,000 HP and 0.6 damage, Cinder Lich 800,000 HP, Glacier Colossus 11,000,000 HP; Bronze → Silver needs 3 Moss Cores; Frost Cores and Sigils of the Prismatic and Unique steps; the star table; the Glimmer Trial's 2,000,000 HP; account XP per gem halved; the Starlight divisor 6e5; and the "mostly exhausted" definition (a Unique weapon).
 - §15 every detail of the beta systems (numbers, names, lists), and whether all of them are still wanted after the 2026-11-08 changes. Dungeon floors in particular would change how a dungeon is cleared (§6).
 
 ## 17. Changelog
