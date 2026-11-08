@@ -317,11 +317,12 @@ export const COPY = {
     resets: 'Starts over',
     resetParts: {
       mine_levels: ['Mine levels', 'Every mine back to level 0'],
+      tree_levels: ['Tree levels', 'Every tree back to level 0'],
       resources: ['Gems and materials', 'Every resource except Starlight'],
       tile_stages: ['Tile growth', 'Trees and mines back to the first stage'],
     },
     upgradesNote:
-      'Tree levels and per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
+      'Per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
     kept: 'Kept forever',
     keptParts: {
       damage_lines: 'Damage lines',

@@ -18,7 +18,7 @@ import { grantAccountXp } from './account';
  */
 
 /** What an ascension resets, as ids for the UI to label (DESIGN.md §9, §12). */
-export const ASCENSION_RESETS = ['mine_levels', 'resources', 'tile_stages'] as const;
+export const ASCENSION_RESETS = ['mine_levels', 'tree_levels', 'resources', 'tile_stages'] as const;
 /** What an ascension keeps. */
 export const ASCENSION_PERSISTS = [
   'damage_lines',

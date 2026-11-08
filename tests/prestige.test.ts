@@ -96,7 +96,7 @@ describe('ascension preview', () => {
     const preview = ascensionPreview(progressedRun(), content);
     expect(preview.canAscend).toBe(true);
     expect(preview.resets).toEqual(
-      expect.arrayContaining(['mine_levels', 'resources', 'tile_stages']),
+      expect.arrayContaining(['mine_levels', 'tree_levels', 'resources', 'tile_stages']),
     );
     expect(preview.persists).toEqual(
       expect.arrayContaining([
