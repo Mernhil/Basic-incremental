@@ -194,7 +194,7 @@ Decided with the user for the beta. Numbers live in data and will be tuned.
 
 Inspired by Brave Frontier (screen order, upgrades, the evolution / "skin" feel, the gacha), **adapted to a desktop app**: no characters, no turn-based combat, no energy or stamina timers.
 
-- **Header bar:** account level (with XP bar) and currencies (Starlight, Money, the crystals, gems and materials).
+- **Header bar:** account level (with XP bar), the mute toggle and **only three resources: Money, Summon Crystal and Glamour Crystal**, each with its per-second rate. Everything else (tree and mine gems, Cores, Frost Sigils, Glimmer Dust, Facet Shards, Starlight) lives behind a **Details** button that opens a panel grouped as Tree materials, Mine materials, Dungeon materials and Prestige, each entry with its amount, rate, mastery tier and what it is used for (derived from the content data). Coins of resources not in the header fly to the Details button, which pulses. The crystals are drawn larger than Money (a loose standing crystal, a soft glow, a slow shimmer, a different colour and shape each) and their pickups get a bigger moment (larger, brighter pieces and their own chime); Money is a plain coin. The icons are swappable ids in `ui/resourceIcons.ts`; the current drawings are placeholders for the graphics pass.
 - **Left sidebar navigation**, in this order: Home, Cards, Production, Dungeons, Summon, Skill Tree, Wardrobe, Achievements, Shop, Settings.
 - **Framed panels** and **wide, multi-panel screens** that use the desktop width.
 - **Hover tooltips** on stats, items, costs and modifiers.
@@ -431,7 +431,7 @@ Points the decisions above leave open. These defaults apply until changed.
     - **Dungeon drops.** A dungeon's rare drop that is a cosmetic is now owned (a copy when already owned).
     - **Wardrobe Gate pool.** It holds the items with no other source (the Gilded Tradition set, Ember Crown) plus the dungeon-drop items as a second way to get their duplicates, at the Card Portal's rarity weights. Prestige items stay prestige-only.
     - **Gate availability.** The gate is in `portals.json` with `enabled: false` until the Wardrobe screen ships; disabled portals are left out of `content.portals`.
-19. **Where Ascension lives.** Section 9 has no Ascension slot and the shard shop is a tab of the Achievements page (section 17), so the **Shop** page holds the Ascension gate (A9 E) with the **Starlight shop** under it; the sidebar order and labels stay as in section 9. Starlight leads the header's currency row, since it is the one currency kept forever.
+19. **Where Ascension lives.** Section 9 has no Ascension slot and the shard shop is a tab of the Achievements page (section 17), so the **Shop** page holds the Ascension gate (A9 E) with the **Starlight shop** under it; the sidebar order and labels stay as in section 9. Starlight sits in the Details panel under Prestige (the header shows only Money and the crystals).
 20. **Achievements and shard shop details.**
     - **Readings.** "Ten Pulls" counts 10 pulls in total. "Fashionista" counts cosmetics owned besides the starter set. "Dressed Up" needs a complete set other than the starter set. "Night Owl" needs 8 h of offline progress simulated in one session. "Skilled" waits for the account tree (Phase 8).
     - **Extra achievements.** First Milestone (a mine or damage line at Lv 25), Gem Adept (a gem at Gold mastery), Medalist (a Silver boss medal) and Masterwork (a cosmetic at its max level).
@@ -577,7 +577,7 @@ Decided with the user for the beta. The Dungeons and Production pages are the fo
 
 ### Header, numbers and buying
 
-- **Header counters** roll smoothly instead of jumping, show the per-second rate under them, and pulse when coins land.
+- **Header counters** (Money and the two crystals) roll smoothly instead of jumping, show the per-second rate under them, and pulse when coins land; crystal pickups pulse harder. Every other resource is shown in the **Details** panel (amount, rate, mastery, what it is used for) and its coins fly to the Details button.
 - **Floating numbers** go through the **number style** cosmetic slot and the attack / tick style slots; nothing is hardcoded. Sizes scale with the hit relative to the current average. Crits and signature attacks have distinct looks. The starter number style is **sticker numerals**: chunky digits with a thick white outline, a drop shadow and a slight tilt; hits bounce in place rather than rise; a crit adds a starburst behind the number.
 - **Hits reuse the existing attack effects** (`effects.ts`: brush-stroke slash, impact hit) and the item art already drawn (section 13).
 - **Upgrade previews.** Every buy button shows its effect before buying, e.g. "DPS 12 → 13, time-to-kill 11h → 2h" or "Oak 4/s → 5/s".
