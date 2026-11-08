@@ -42,20 +42,69 @@ export function advance(
   let remaining = dtMs;
   while (remaining > 0) {
     const toBoundary = CARD_LEVEL_STEP_MS - (current.stats.playTimeMs % CARD_LEVEL_STEP_MS);
-    // Without a level-up due on a boundary inside the span, it runs in one go. XP only grows,
-    // so nothing pending at the end means nothing was pending on any boundary before it.
-    if (remaining < toBoundary || !levelUpDue(current, content, remaining)) {
+    // Whole level-up boundaries inside the rest of the span (the first one is `toBoundary` away).
+    const boundaries =
+      remaining < toBoundary
+        ? 0
+        : 1 + Math.floor((remaining - toBoundary) / CARD_LEVEL_STEP_MS + EPSILON);
+    // XP only grows, so a level-up pending on a boundary stays pending on every later one. The
+    // span therefore runs in one go up to the first boundary where something is due.
+    // A frame covers one boundary at most, so looking ahead would just run the same span twice:
+    // go to the boundary and settle (a no-op when nothing is due) instead.
+    const first =
+      boundaries === 0
+        ? 0
+        : boundaries <= STEP_THROUGH_BOUNDARIES
+          ? 1
+          : firstDueBoundary(current, content, toBoundary, boundaries);
+    if (first === 0) {
       current = advanceSpan(current, content, remaining, rng, report);
       break;
     }
-    current = advanceSpan(current, content, toBoundary, rng, report);
+    const until = toBoundary + (first - 1) * CARD_LEVEL_STEP_MS;
+    current = advanceSpan(current, content, until, rng, report);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
     settleAccount(current, content, report);
     settleAchievements(current, content, report);
-    remaining -= toBoundary;
+    remaining -= until;
   }
   return { state: current, report };
+}
+
+/** Absorbs floating-point drift when counting the boundaries inside a span. */
+const EPSILON = 1e-9;
+/** Spans with this many boundaries or fewer are stepped through without a look-ahead. */
+const STEP_THROUGH_BOUNDARIES = 2;
+
+/**
+ * The first level-up boundary (1 = the one `toBoundary` ms ahead, then one every
+ * CARD_LEVEL_STEP_MS) at which something would be pending, or 0 when nothing is by the last of
+ * `boundaries`. Gallops outwards from the first boundary, then bisects, so the work follows the
+ * distance to that boundary rather than the length of the rest of the span: a span with many
+ * level-ups in it costs time in proportion to its length, not its square.
+ */
+function firstDueBoundary(
+  state: GameState,
+  content: Content,
+  toBoundary: number,
+  boundaries: number,
+): number {
+  const due = (k: number): boolean =>
+    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS);
+  let lo = 0; // known not due (0 = before the first boundary)
+  let hi = 1;
+  while (!due(hi)) {
+    if (hi >= boundaries) return 0;
+    lo = hi;
+    hi = Math.min(hi * 4, boundaries);
+  }
+  while (hi - lo > 1) {
+    const mid = lo + Math.floor((hi - lo) / 2);
+    if (due(mid)) hi = mid;
+    else lo = mid;
+  }
+  return hi;
 }
 
 /**

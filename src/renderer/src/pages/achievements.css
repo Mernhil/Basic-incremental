@@ -200,10 +200,12 @@
 /* the sticker is drawn whole by the equipped sticker style (art/cosmetics.ts stickerArt): the
    die-cut, its chapter colour and the picture on a 74 x 74 grid */
 .ac-sticker {
+  /* the 74 px sticker at a whole device scale (DESIGN.md §12) */
+  --one: calc(74px / var(--dpr));
   position: relative;
   display: block;
-  width: 74px;
-  height: 74px;
+  width: max(var(--one), round(nearest, 74px, var(--one)));
+  aspect-ratio: 1;
   margin-bottom: 2px;
 }
 .ac-sticker__art {
@@ -337,8 +339,10 @@
 }
 /* the card shard: pixel icon, 32 x 32 */
 .ac-shard {
-  width: 48px;
-  height: 48px;
+  /* the 32 px shard sprite at a whole device scale, about 48 CSS px (DESIGN.md §12) */
+  --one: calc(32px / var(--dpr));
+  width: max(var(--one), round(nearest, 48px, var(--one)));
+  aspect-ratio: 1;
 }
 .ac-shard svg {
   display: block;

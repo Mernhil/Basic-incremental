@@ -75,7 +75,7 @@
 }
 .st-evo__stage {
   position: relative;
-  scale: 1.5;
+  scale: var(--card-k); /* whole pixel scale, set by fitCard (DESIGN.md §12) */
 }
 .st-evo__beam {
   position: absolute;

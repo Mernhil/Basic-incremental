@@ -1,0 +1,25 @@
+/* Clean pixels (DESIGN.md §12). `--dpr` is window.devicePixelRatio, kept up to date by
+   `installPixelScale()` (ui/pixelFit.ts); `--px` is one device pixel in CSS px.
+
+   Cards: JS (`fitCard`) picks the whole scale and sets `--card-n` (device px per art px) and
+   `--card-k` (the factor that takes the 176 x 248 card box to that size) on a card's host.
+
+   Other art is sized in CSS with the same rounding as ui/pixelScale.ts `pickSpriteScale`. For a
+   sprite `NATIVE` art pixels wide that should be about `WANT` CSS px wide:
+
+     --one: calc(NATIVEpx / var(--dpr));                              one device pixel per art pixel
+     width: max(var(--one), round(nearest, WANTpx, var(--one)));      nearest whole scale, never below 1x
+
+   (`round(down, 100%, var(--one))` for "the largest whole size that fits".) Never size pixel art
+   with a plain px length, a percentage of an unknown parent, `zoom`, or a `transform: scale()`
+   other than a card's `--card-k`; `npm test` and `scripts/check-pixel-scale.mjs` catch those. */
+:root {
+  --dpr: 1;
+  --px: calc(1px / var(--dpr));
+  --card-n: 2;
+  --card-k: 1;
+  /* the 96 x 48 table background sprites: about 2 CSS px per pixel, whole device pixels */
+  --tb-n: max(1, round(calc(2 * var(--dpr)), 1));
+  --tb-w: calc(96px * var(--tb-n) / var(--dpr));
+  --tb-h: calc(48px * var(--tb-n) / var(--dpr));
+}

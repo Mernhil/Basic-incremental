@@ -1,4 +1,5 @@
 import { pixelNumberMarkup, preloadNumerals } from '../art/cosmetics';
+import { screenDpr } from './pixelFit';
 import './pixelNumbers.css';
 
 /**
@@ -40,7 +41,9 @@ function enhance(el: HTMLElement): void {
   }
   const fs = parseFloat(getComputedStyle(el).fontSize);
   if (!fs) return; // font-size 0 hides the number on purpose
-  const scale = Math.max(1, Math.floor(fs / 9));
+  // about fs/9 CSS px per numeral pixel, snapped to whole device pixels (DESIGN.md §12)
+  const dpr = screenDpr();
+  const scale = Math.max(1, Math.round(Math.max(1, Math.floor(fs / 9)) * dpr)) / dpr;
   const key = `${style}|${scale}|${text}`;
   if (ours && el.dataset['pxKey'] === key) return;
   el.dataset['pxKey'] = key;
@@ -56,6 +59,8 @@ function owner(node: Node): HTMLElement | null {
   const e = node instanceof HTMLElement ? node : node.parentElement;
   return e?.closest<HTMLElement>('.bi-num') ?? null;
 }
+
+let watching = false;
 
 /** Starts drawing the plain numbers under `container` (the app shell) as pixel numbers. */
 export function installPixelNumbers(container: HTMLElement): void {
@@ -77,6 +82,11 @@ export function installPixelNumbers(container: HTMLElement): void {
     for (const el of todo) enhance(el);
   });
   observer.observe(container, { childList: true, characterData: true, subtree: true });
+  // a new screen scale (zoom, another monitor) changes the whole-pixel size of every numeral
+  if (!watching) {
+    watching = true;
+    window.addEventListener('resize', () => refreshPixelNumbers());
+  }
   void preloadNumerals().then(refreshPixelNumbers, () => undefined);
   refreshPixelNumbers();
 }

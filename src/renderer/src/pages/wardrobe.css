@@ -105,22 +105,23 @@
   content: '';
   position: absolute;
   left: 50%;
-  top: calc(248px * 1.24 + 6px);
+  top: calc(248px * var(--card-k) + 6px);
   width: 250px;
   height: 34px;
   margin-left: -125px;
   border-radius: 50%;
   background: radial-gradient(closest-side, rgba(0, 0, 0, 0.32), transparent);
 }
-/* the card at 1.24x with a bleed margin for corner flourishes and rank rings */
+/* the card at a whole pixel scale (--card-k, set on .wd-centre by fitCard) with a bleed margin for
+   corner flourishes and rank rings */
 .wd-card {
   position: relative;
-  width: calc(176px * 1.24);
-  height: calc(248px * 1.24);
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
   margin: 16px;
 }
 .wd-card > .bi-card {
-  transform: scale(1.24);
+  transform: scale(var(--card-k));
   transform-origin: top left;
 }
 .wd-nocard {
@@ -174,6 +175,13 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+}
+/* the slot rows show a small window onto a sprite swatch, cropped, not shrunk: the 1x sprite is
+   bigger than the 38 px swatch (DESIGN.md §12 Clean pixels) */
+.wd-slot .cs[data-slot='starlight'],
+.wd-slot .cs[data-slot='sticker'],
+.wd-slot .cs[data-slot='nodes'] {
+  overflow: hidden;
 }
 .wd-slots--right .wd-slot {
   box-shadow:

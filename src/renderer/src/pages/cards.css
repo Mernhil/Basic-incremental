@@ -98,7 +98,7 @@
   padding: 10px 4px 4px;
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(calc(176px * 0.6 + 16px), 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(176px * var(--card-k) + 16px), 1fr));
   gap: 18px 8px;
   justify-items: center;
 }
@@ -126,15 +126,16 @@
   }
 }
 
+/* --card-k comes from the host (grid, detail or slot row) that fitCard() set, so every card is
+   a whole number of device pixels per art pixel (DESIGN.md §12 Clean pixels) */
 .cp-fit {
-  --s: 0.6;
   display: block;
-  width: calc(176px * var(--s));
-  height: calc(248px * var(--s));
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
   transition: transform 0.15s ease;
 }
 .cp-fit > .bi-card {
-  transform: scale(var(--s));
+  transform: scale(var(--card-k));
   transform-origin: top left;
 }
 .cp-fit--locked > .bi-card {
@@ -359,8 +360,8 @@
   padding: 4px 10px;
 }
 .cp-empty {
-  width: calc(176px * 0.5);
-  height: calc(248px * 0.5);
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
   border: 1.5px dashed var(--bi-frame-title-line);
   border-radius: 10px;
   background: transparent;
@@ -403,10 +404,12 @@
   font-weight: 700;
   color: #ffd968;
 }
+/* Clean pixels (DESIGN.md §12): the star chart is a 200 x 120 sprite grid, so its width is a whole
+   multiple of 200 device pixels (the largest that fits, up to 400 CSS px), never a fraction */
 .cp-chart {
+  --one: calc(200px / var(--dpr));
   position: relative;
-  width: 100%;
-  max-width: 400px;
+  width: max(var(--one), round(down, min(100%, 400px), var(--one)));
   justify-self: center;
 }
 .cp-star {
@@ -491,8 +494,10 @@
   outline-offset: 1px;
 }
 .cp-option__star {
-  width: 18px;
-  height: 18px;
+  /* the 18 px star sprite at a whole scale, at least 1x */
+  --one: calc(18px / var(--dpr));
+  width: max(var(--one), round(nearest, 18px, var(--one)));
+  aspect-ratio: 1;
 }
 .cp-option__name {
   font-weight: 700;

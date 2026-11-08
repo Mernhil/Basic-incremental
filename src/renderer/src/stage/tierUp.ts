@@ -2,6 +2,7 @@ import type { Content } from '../../../data';
 import type { TierUp } from '../../../game';
 import { tierUpText } from '../pages/progressionModel';
 import { createCard, type CardProps } from '../ui/card';
+import { fitCard } from '../ui/pixelFit';
 import { reducedMotion, replay } from './motion';
 import { toast } from './toast';
 import './tierUp.css';
@@ -77,6 +78,7 @@ export function showEvolution(props: CardProps): void {
   overlay.setAttribute('role', 'presentation');
   const stage = document.createElement('div');
   stage.className = 'st-evo__stage';
+  fitCard(stage, { want: 264 });
   const beam = document.createElement('i');
   beam.className = 'st-evo__beam';
   const flare = document.createElement('i');

@@ -1,7 +1,7 @@
 /* Cards of a production field (DESIGN.md §11). Reuses the arena slot (.ar-slot, the card scaled by
-   --k) and the arena burst meter (.ar-gauge); this file is the layout and the strike motions.
-   Restyle through the tokens: --pp-ease (motion curve), --pp-glow (pulse colour) and
-   --pp-support-k (size of the support cards). */
+   --card-k) and the arena burst meter (.ar-gauge); this file is the layout and the strike motions.
+   Restyle through the tokens: --pp-ease (motion curve) and --pp-glow (pulse colour). Card
+   sizes are whole pixel scales picked in harvestParty.ts (MAIN_WANT, SUPPORT_WANT). */
 
 .pp-party {
   --pp-ease: cubic-bezier(0.3, 0.8, 0.4, 1);
@@ -12,21 +12,15 @@
   gap: 30px;
   flex: none;
 }
-.pp-slot--main {
-  --k: 0.75;
-}
 .pp-supports {
   display: flex;
   gap: 8px;
-}
-.pp-slot--support {
-  --k: var(--pp-support-k, 0.42);
 }
 .pp-slot > .bi-card {
   position: absolute;
   left: 0;
   top: 0;
-  transform: scale(var(--k));
+  transform: scale(var(--card-k));
   transform-origin: 0 0;
 }
 .pp-gauge {

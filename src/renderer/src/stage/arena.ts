@@ -21,6 +21,7 @@ import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { medalTip } from '../pages/progressionModel';
 import { playHit } from '../theme/effects';
 import { createCard } from '../ui/card';
+import { fitCard } from '../ui/pixelFit';
 import { isCrystal } from '../ui/resourceIcons';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
 import { formatRate } from '../pages/buyModel';
@@ -164,6 +165,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const { main, supports } = s.cards.loadouts.fighting;
     slots = [main, ...supports.slice(0, SUPPORTS)].map((id, i) => {
       const wrap = div(`ar-slot${i === 0 ? ' ar-slot--main' : ''}`);
+      // narrow windows: supports step back so the boss stays clear (a whole scale either way)
+      fitCard(wrap, { want: () => (i > 0 && window.innerWidth <= 1400 ? 88 : 132) });
       const props = id ? loadoutProps(content, s, id, i === 0 ? 'main' : 'support', mods) : null;
       let card: HTMLElement | null = null;
       if (props) {
