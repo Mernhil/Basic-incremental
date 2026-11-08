@@ -282,9 +282,11 @@
 }
 /* boss mastery medal (DESIGN.md §6, A12 D) */
 .dp-medal {
+  /* the 48 px medal at a whole device scale (DESIGN.md §12) */
+  --one: calc(48px / var(--dpr));
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: max(var(--one), round(nearest, 48px, var(--one)));
+  aspect-ratio: 1;
   margin: -6px 0;
 }
 .dp-medal svg {

@@ -7,6 +7,9 @@ import './fly.css';
  * is a copy of the header chip's own glyph, so it always matches the counter it lands on.
  */
 
+/* Clean pixels (DESIGN.md §12): a coin never changes size in flight (a scale would break the whole
+   pixel scale), it fades in at the start instead. */
+
 /** Coins in flight at once; extra ones are skipped (the counter still rolls). */
 export const MAX_FLYING = 24;
 
@@ -73,21 +76,25 @@ export function flyCoins(opts: FlyOptions): void {
       const sx = jitter(-90, 90);
       const floor = jitter(28, 52);
       frames = [
-        { transform: 'translate(0, 0) scale(0.4)', offset: 0 },
-        { transform: `translate(${sx * 0.5}px, ${-floor * 1.6}px) scale(1)`, offset: 0.12 },
-        { transform: `translate(${sx * 0.85}px, ${floor}px) scale(1)`, offset: 0.24 },
-        { transform: `translate(${sx * 0.95}px, ${floor - 16}px) scale(1)`, offset: 0.31 },
-        { transform: `translate(${sx}px, ${floor}px) scale(1)`, offset: 0.37 },
-        { transform: `translate(${sx}px, ${floor}px) scale(1)`, offset: 0.62, easing: 'ease-in' },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.7)`, offset: 1 },
+        { transform: 'translate(0, 0)', opacity: 0, offset: 0 },
+        { transform: `translate(${sx * 0.5}px, ${-floor * 1.6}px)`, opacity: 1, offset: 0.12 },
+        { transform: `translate(${sx * 0.85}px, ${floor}px)`, offset: 0.24 },
+        { transform: `translate(${sx * 0.95}px, ${floor - 16}px)`, offset: 0.31 },
+        { transform: `translate(${sx}px, ${floor}px)`, offset: 0.37 },
+        { transform: `translate(${sx}px, ${floor}px)`, offset: 0.62, easing: 'ease-in' },
+        { transform: `translate(${dx}px, ${dy}px)`, offset: 1 },
       ];
       duration = 1500 + i * 45;
     } else {
       const arc = jitter(-40, 40);
       frames = [
-        { transform: 'translate(0, 0) scale(0.6)', offset: 0 },
-        { transform: `translate(${dx * 0.3 + arc}px, ${dy * 0.15 - 30}px) scale(1)`, offset: 0.3 },
-        { transform: `translate(${dx}px, ${dy}px) scale(0.7)`, offset: 1 },
+        { transform: 'translate(0, 0)', opacity: 0, offset: 0 },
+        {
+          transform: `translate(${dx * 0.3 + arc}px, ${dy * 0.15 - 30}px)`,
+          opacity: 1,
+          offset: 0.3,
+        },
+        { transform: `translate(${dx}px, ${dy}px)`, offset: 1 },
       ];
       duration = 700 + i * 40;
     }

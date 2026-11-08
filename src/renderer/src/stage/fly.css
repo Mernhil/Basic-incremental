@@ -6,10 +6,14 @@
   overflow: hidden;
 }
 .st-coin {
+  /* coin sprites are 48 px: about 24 CSS px wanted, snapped to a whole device scale, at least 1x
+     (DESIGN.md §12) */
+  --one: calc(48px / var(--dpr));
+  --size: max(var(--one), round(nearest, 24px, var(--one)));
   position: absolute;
-  width: 24px;
-  height: 24px;
-  margin: -12px 0 0 -12px;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2) 0 0 calc(var(--size) / -2);
   display: grid;
   place-items: center;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));

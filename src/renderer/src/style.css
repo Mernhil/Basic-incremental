@@ -79,64 +79,6 @@
   text-decoration: underline dotted;
   text-underline-offset: 3px;
 }
-.table__loadout .frame__body {
-  container-type: inline-size;
-}
-/* Four cards need 746px. In a narrower frame the row is scaled down as a whole (transform, not
-   zoom, so the rank star effects stay aligned) instead of wrapping one card alone. */
-.loadout-fit {
-  --s: 1;
-  height: calc(248px * var(--s));
-  /* the unscaled row is still 746px wide in layout; clip that, but leave room for rank rings */
-  overflow: clip;
-  overflow-clip-margin: 24px;
-}
-.loadout {
-  display: flex;
-  gap: 14px;
-  width: 746px;
-  transform: scale(var(--s));
-  transform-origin: top left;
-}
-@container (max-width: 745px) {
-  .loadout-fit {
-    --s: 0.92;
-  }
-}
-@container (max-width: 685px) {
-  .loadout-fit {
-    --s: 0.84;
-  }
-}
-@container (max-width: 626px) {
-  .loadout-fit {
-    --s: 0.76;
-  }
-}
-@container (max-width: 566px) {
-  .loadout-fit {
-    --s: 0.68;
-  }
-}
-@container (max-width: 507px) {
-  .loadout-fit {
-    --s: 0.6;
-  }
-}
-.slot-empty {
-  display: grid;
-  place-items: center;
-  box-sizing: border-box;
-  width: 176px;
-  height: 248px;
-  padding: 16px;
-  border-radius: 12px;
-  border: 2px dashed var(--bi-frame-title-line);
-  color: var(--bi-frame-ink-muted);
-  font-size: 13px;
-  text-align: center;
-}
-
 /* production tiles */
 .production__tiles {
   display: flex;

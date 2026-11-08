@@ -1,6 +1,7 @@
 import type { Rng } from '../../../game';
 import type { BASE_EFFECTS } from './registry';
 import { attackSheet, pixelTick, preloadNumerals } from '../art/cosmetics';
+import { pixelUnit } from '../ui/pixelFit';
 import './effects.css';
 
 /**
@@ -29,8 +30,11 @@ export interface HitOptions {
 const MAX_LIVE_HITS = 6;
 const MAX_LIVE_TICKS = 10;
 const INK = '#1a1020';
-/** CSS pixels per hit pixel: about the size of the card item's pixels. */
-const PX = 2;
+/**
+ * Rendered CSS pixels per hit pixel: about the size of the card item's pixels. `pixelUnit` turns it
+ * into stage units snapped to a whole number of device pixels (DESIGN.md §12 Clean pixels).
+ */
+const PX_WANT = 2;
 
 export function prefersReducedMotion(): boolean {
   return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
@@ -82,6 +86,7 @@ function spawnHit(stage: HTMLElement, frame: Frame): void {
     fx.querySelector('.bi-fx')?.remove();
   const box = document.createElement('div');
   box.className = 'bi-fx bi-fx--px';
+  const PX = pixelUnit(stage, PX_WANT);
   const w = Math.max(8, Math.ceil(stage.clientWidth / PX));
   const h = Math.max(8, Math.ceil(stage.clientHeight / PX));
   const mk = (style: string): HTMLCanvasElement => {
@@ -140,6 +145,7 @@ function disc(p: Painter, cx: number, cy: number, r: number, c: string): void {
 function slash(stage: HTMLElement, rng: Rng, chips: boolean): void {
   const edge = cssHex(stage, '--bi-attack-edge', '#ffd23a');
   const spark = cssHex(stage, '--bi-attack-particle', '#fff6d6');
+  const PX = pixelUnit(stage, PX_WANT);
   const W = stage.clientWidth / PX;
   const H = stage.clientHeight / PX;
   const a = between(rng, -0.95, -0.15);
@@ -208,6 +214,7 @@ function slash(stage: HTMLElement, rng: Rng, chips: boolean): void {
 function impact(stage: HTMLElement, rng: Rng): void {
   const edge = cssHex(stage, '--bi-attack-edge', '#ffd23a');
   const spark = cssHex(stage, '--bi-attack-particle', '#fff3d0');
+  const PX = pixelUnit(stage, PX_WANT);
   const W = stage.clientWidth / PX;
   const H = stage.clientHeight / PX;
   const cx = W / 2 + between(rng, -W * 0.08, W * 0.08);
@@ -288,6 +295,7 @@ function pixelSlash(stage: HTMLElement, effectId: string, rng: Rng): boolean {
   const fx = layer(stage);
   while (fx.querySelectorAll('.bi-fx').length >= MAX_LIVE_HITS)
     fx.querySelector('.bi-fx')?.remove();
+  const PX = pixelUnit(stage, PX_WANT);
   const size = sheet.size * PX;
   const box = document.createElement('div');
   box.className = 'bi-fx bi-fx--sheet';
@@ -352,8 +360,9 @@ export function showTick(
   const cv = px ? pixelTick(px, text) : undefined;
   if (cv) {
     tick.classList.add('bi-tick--px');
-    const scale = opts.crit ? 3 : 2;
-    cv.style.cssText = `display:block;width:${cv.width * scale}px;height:${cv.height * scale}px;image-rendering:pixelated`;
+    // whole device pixels per numeral pixel (DESIGN.md §12), 2 CSS px (3 for a crit) wanted
+    const unit = pixelUnit(stage, opts.crit ? 3 : 2);
+    cv.style.cssText = `display:block;width:${cv.width * unit}px;height:${cv.height * unit}px;image-rendering:pixelated`;
     tick.append(cv);
   } else tick.textContent = text;
   tick.setAttribute('aria-hidden', 'true');

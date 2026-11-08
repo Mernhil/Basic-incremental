@@ -2,13 +2,16 @@
    framed pages on the table. Every colour comes from the equipped table item's chrome-*, frame-*
    and tip-* tokens, so a table cosmetic re-skins the whole shell. */
 
-/* pixel navigation plaques (DESIGN.md §12): drawn at half their 64 px grid */
+/* pixel navigation plaques (DESIGN.md §12 Clean pixels): the 64 px sprite is never shrunk. About
+   32 CSS px wanted, snapped to a whole number of device pixels per art pixel (1x on a 100 % screen
+   is 64 CSS px, 1x on a 200 % screen is 32). Same rounding as ui/pixelScale.ts. */
 .shell-rail__plaque {
+  --plaque: calc(64px * max(1, round(calc(32 * var(--dpr) / 64), 1)) / var(--dpr));
   display: grid;
   flex: none;
-  width: 32px;
-  height: 32px;
-  margin: -6px 0;
+  width: var(--plaque);
+  height: var(--plaque);
+  margin: calc(-0.1875 * var(--plaque)) 0;
 }
 .shell-rail__plaque svg {
   width: 100%;

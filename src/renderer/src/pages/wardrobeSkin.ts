@@ -1,4 +1,5 @@
 import { chromeCss, wardrobeChrome, type WardrobePart } from '../art/cosmetics';
+import { screenDpr } from '../ui/pixelFit';
 
 /**
  * The Wardrobe style (DESIGN.md §8, UI-skin slot 11): the slot plates, item tiles and level ladder
@@ -8,8 +9,14 @@ import { chromeCss, wardrobeChrome, type WardrobePart } from '../art/cosmetics';
  */
 
 const RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'] as const;
-/** Css pixels per baked pixel (the card frames and every other pixel piece use 2). */
-const SCALE = 2;
+/**
+ * CSS pixels per baked pixel: about 2, snapped to a whole number of device pixels so the plates
+ * are never drawn at a fractional scale (DESIGN.md §12 Clean pixels).
+ */
+function skinScale(): number {
+  const d = screenDpr();
+  return Math.max(1, Math.round(2 * d)) / d;
+}
 
 /** Whether the style draws its plates and tiles per rarity (style E, rarity glass). */
 function perRarity(style: string): boolean {
@@ -21,6 +28,7 @@ function perRarity(style: string): boolean {
 /** The stylesheet of one Wardrobe style (empty when the style has no art). */
 export function wardrobeSkinCss(style: string): string {
   if (!wardrobeChrome(style, 'plate')) return '';
+  const SCALE = skinScale();
   const per = perRarity(style);
   const out: string[] = [];
   const rule = (selector: string, part: WardrobePart, rarity?: string): void => {

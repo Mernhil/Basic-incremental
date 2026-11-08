@@ -1,5 +1,6 @@
 import type { Decimal } from '../../../game';
 import { pixelTick, preloadNumerals } from '../art/cosmetics';
+import { pixelUnit } from '../ui/pixelFit';
 import { createMerger, overCap, popText } from './math';
 import { jitter, reducedMotion, stageHidden } from './motion';
 import './numbers.css';
@@ -46,12 +47,18 @@ export function setPixelTick(style: string): void {
 const SPELLABLE = /^[0-9.,+%\-xKMBTQSONDIVaceiop ]+$/;
 
 /** The drawn tick of a popup, or undefined when the equipped tick is not a pixel style. */
-function pixelTickFor(kind: PopKind, text: string, scale: number): HTMLCanvasElement | undefined {
+function pixelTickFor(
+  stage: HTMLElement,
+  kind: PopKind,
+  text: string,
+  scale: number,
+): HTMLCanvasElement | undefined {
   if (!pixelStyle || kind === 'hurt' || !SPELLABLE.test(text)) return undefined;
   const cv = pixelTick(pixelStyle, text);
   if (!cv) return undefined;
   const big = kind === 'crit' || kind === 'signature';
-  const k = Math.max(1, Math.round(2 * scale * (big ? 1.5 : 1)));
+  // a whole number of device pixels per numeral pixel (DESIGN.md §12 Clean pixels)
+  const k = pixelUnit(stage, Math.max(1, Math.round(2 * scale * (big ? 1.5 : 1))));
   cv.style.cssText = `display:block;width:${cv.width * k}px;height:${cv.height * k}px;image-rendering:pixelated`;
   return cv;
 }
@@ -105,7 +112,7 @@ export function popNumber(stage: HTMLElement, opts: PopOptions): HTMLElement | n
   el.style.setProperty('--s', (opts.scale ?? 1).toFixed(2));
   el.style.setProperty('--tilt', `${jitter(-9, 9).toFixed(1)}deg`);
   const text = document.createElement('b');
-  const px = pixelTickFor(opts.kind, opts.text, opts.scale ?? 1);
+  const px = pixelTickFor(stage, opts.kind, opts.text, opts.scale ?? 1);
   if (px) {
     el.classList.add('st-num--px');
     text.append(px);
@@ -140,7 +147,7 @@ export function popGain(
   if (result.merged && open?.isConnected) {
     const merged = `+${popText(result.value)}`;
     const box = open.querySelector('b')!;
-    const px = pixelTickFor('gain', merged, scale);
+    const px = pixelTickFor(stage, 'gain', merged, scale);
     if (px) box.replaceChildren(px);
     else box.textContent = merged;
     open.classList.remove('is-bumped');

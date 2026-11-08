@@ -10,6 +10,7 @@ import { cardItemArt } from '../pages/loadoutCards';
 import { gaugePercent, stageKey, type StrikeLook } from '../pages/productionStageModel';
 import { COPY } from '../copy';
 import { createCard, type CardProps } from '../ui/card';
+import { fitCard } from '../ui/pixelFit';
 import { reducedMotion, replay } from './motion';
 import './harvestParty.css';
 
@@ -21,6 +22,9 @@ import './harvestParty.css';
  */
 
 const SUPPORTS = 3;
+/** CSS px wide the main card and the supports want; the screen scale rounds each to whole pixels. */
+const MAIN_WANT = 132;
+const SUPPORT_WANT = 74;
 const STRIKE_CLASSES = [
   'is-strike-steady',
   'is-strike-chop',
@@ -56,6 +60,8 @@ export function createHarvestParty(
 
   const mainWrap = document.createElement('div');
   mainWrap.className = 'ar-slot pp-slot pp-slot--main';
+  // cards are always a whole number of device pixels per art pixel (DESIGN.md §12)
+  fitCard(mainWrap, { want: MAIN_WANT });
   const gauge = document.createElement('div');
   gauge.className = 'ar-gauge pp-gauge';
   gauge.setAttribute('role', 'meter');
@@ -71,6 +77,7 @@ export function createHarvestParty(
   for (let i = 0; i < SUPPORTS; i++) {
     const w = document.createElement('div');
     w.className = 'ar-slot pp-slot pp-slot--support';
+    fitCard(w, { want: SUPPORT_WANT });
     supportWraps.push(w);
     supportRow.append(w);
   }

@@ -68,9 +68,11 @@
   gap: 8px;
 }
 .ar__medal {
+  /* the 48 px medal at a whole device scale (DESIGN.md §12) */
+  --one: calc(48px / var(--dpr));
   display: grid;
-  width: 48px;
-  height: 48px;
+  width: max(var(--one), round(nearest, 48px, var(--one)));
+  aspect-ratio: 1;
 }
 .ar__medal svg {
   width: 100%;
@@ -149,9 +151,10 @@
 }
 .ar-boss {
   position: relative;
-  /* 2 px per boss pixel: the boss grid is 160 x 172 (DESIGN.md §12) */
-  width: 344px;
-  max-width: 100%;
+  /* 2 CSS px per boss pixel (grid 160 x 172), snapped to whole device pixels and never shrunk
+     (DESIGN.md §12); the largest whole size that fits when the stage is narrow */
+  --one: calc(172px / var(--dpr));
+  width: max(var(--one), min(round(nearest, 344px, var(--one)), round(down, 100%, var(--one))));
   aspect-ratio: 1;
 }
 .ar-boss__shadow {
@@ -338,18 +341,12 @@
   gap: 10px;
 }
 .ar-slot {
-  /* 0.75 puts the card art at 1 CSS px per art px (card grid 132 x 186) */
-  --k: 0.75;
+  /* --card-k is set by fitCard() (ui/pixelFit.ts): the card grid 132 x 186 at a whole number of
+     device pixels per art pixel, 1 CSS px per art px on a 100 % screen (DESIGN.md §12) */
   position: relative;
-  width: calc(176px * var(--k));
-  height: calc(248px * var(--k));
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
   flex: none;
-}
-@media (max-width: 1400px) {
-  /* narrow windows: supports step back to half size so the boss stays clear */
-  .ar-slot:not(.ar-slot--main) {
-    --k: 0.5;
-  }
 }
 .ar-slot--main {
   order: 4; /* the main card stands closest to the boss */
@@ -358,7 +355,7 @@
   position: absolute;
   left: 0;
   top: 0;
-  transform: scale(var(--k));
+  transform: scale(var(--card-k));
   transform-origin: 0 0;
 }
 .ar-slot--empty {
