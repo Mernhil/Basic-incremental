@@ -320,8 +320,9 @@ function soulWisps(R: () => number): Effect {
     step(back, _front, dt) {
       if (R() < 1.6 * dt)
         ps.push({
-          x: 30 + R() * 160,
-          y: 150 + R() * 70,
+          // wisps rise round the handle and its foot (the redrawn scythe's handle runs bottom left)
+          x: 40 + R() * 110,
+          y: 140 + R() * 70,
           vx: R() * 8 - 4,
           vy: -12 - R() * 10,
           r: 3.5 + R() * 2,

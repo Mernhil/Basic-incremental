@@ -83,7 +83,7 @@ describe('card tier and evolution tier-ups', () => {
 
   it('reports the unique evolution when a tier-up reaches the Unique tier', () => {
     const state = freshState();
-    state.cards.owned['ember_squire'] = cardAt('prismatic', 5, 80);
+    state.cards.owned['ember_squire'] = cardAt('prismatic', 6, 80);
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
     const result = tierUp(state, content, 'ember_squire');
     expect(result.ok && result.tierUps).toEqual([
