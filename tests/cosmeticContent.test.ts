@@ -373,3 +373,16 @@ describe('owned buffs and set bonuses stay small', () => {
     }
   });
 });
+
+describe('achievement sticker styles', () => {
+  it('are named after the card-frame art', () => {
+    const names = ['a', 'b', 'c', 'd', 'e'].map((k) => byId(`sticker_${k}`).name);
+    expect(names).toEqual([
+      'Mini Card',
+      'Silver Card',
+      'Gold Card',
+      'Legendary Card',
+      'Prismatic Card',
+    ]);
+  });
+});

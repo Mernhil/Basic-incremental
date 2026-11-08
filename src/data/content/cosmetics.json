@@ -183,7 +183,7 @@
   },
   {
     "id": "sticker_a",
-    "name": "Paper Die-Cut",
+    "name": "Mini Card",
     "slot": "sticker",
     "rarity": "common",
     "set": null,
@@ -4000,7 +4000,7 @@
   },
   {
     "id": "sticker_b",
-    "name": "Enamel Pin",
+    "name": "Silver Card",
     "slot": "sticker",
     "rarity": "rare",
     "set": null,
@@ -4020,7 +4020,7 @@
   },
   {
     "id": "sticker_c",
-    "name": "Gold Bezel",
+    "name": "Gold Card",
     "slot": "sticker",
     "rarity": "epic",
     "set": null,
@@ -4040,7 +4040,7 @@
   },
   {
     "id": "sticker_d",
-    "name": "Postage Stamp",
+    "name": "Legendary Card",
     "slot": "sticker",
     "rarity": "legendary",
     "set": null,
@@ -4060,7 +4060,7 @@
   },
   {
     "id": "sticker_e",
-    "name": "Holo Burst",
+    "name": "Prismatic Card",
     "slot": "sticker",
     "rarity": "mythic",
     "set": null,
