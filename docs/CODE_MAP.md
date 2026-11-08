@@ -9,11 +9,12 @@ Where things live, so agents can go straight to the right file instead of explor
 | `state.ts`                        | `GameState` shape, initial state, `cloneState`                                                     |
 | `tick.ts`                         | `advance()`: one step of production, bursts, card XP, combat, mastery                              |
 | `loop.ts`, `offline.ts`           | Real-time loop clamp; offline progress and the welcome-back summary                                |
-| `report.ts`                       | `TickReport` (what happened in a step), `TierUp` events                                            |
+| `report.ts`                       | `TickReport` (what happened in a step), `TierUp`, `HarvestEvent` and `BossAttackEvent` events      |
 | `modifiers.ts`                    | The one modifier pipeline (DESIGN §14); `collectModifiers` gathers every source                    |
 | `production.ts`                   | Tree/mine unlocks, tree and mine levels, prices (`curvePrice`, in Money), output (one of each)     |
 | `harvest.ts`, `productionView.ts` | Main-card strikes across the unlocked kinds, burst events (DESIGN §4); `productionStageView`       |
 | `combat.ts`                       | Damage lines (Money), bosses, wage and drops (`effectiveDrops`), bursts, crits, card health, trial |
+| `bossAttacks.ts`                  | Boss attack schedule on the play-time clock (light hits, a slam every sixth), lethal hit, events   |
 | `drops.ts`, `hpBars.ts`           | Boss kill rolls (rare item and pity, Money and crystal purses); stacked HP bar maths               |
 | `milestones.ts`, `stages.ts`      | x2-every-25-levels milestones; growth stages 0..4 for tiles (tree and mine levels) and edges       |
 | `upgrades.ts`                     | Upgrade shelf (DESIGN §4): hidden/available/owned items, buy, lifetime Money, support power        |
