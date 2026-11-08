@@ -1,0 +1,139 @@
+/* Cards of a production field (DESIGN.md 14). Reuses the arena slot (.ar-slot, the card scaled by
+   --k) and the arena burst meter (.ar-gauge); this file is the layout and the strike motions.
+   Restyle through the tokens: --pp-ease (motion curve), --pp-glow (pulse colour) and
+   --pp-support-k (size of the support cards). */
+
+.pp-party {
+  --pp-ease: cubic-bezier(0.3, 0.8, 0.4, 1);
+  --pp-glow: var(--bi-tick-crit, #ffb02e);
+  display: grid;
+  justify-items: start;
+  align-content: end;
+  gap: 30px;
+  flex: none;
+}
+.pp-slot--main {
+  --k: 0.75;
+}
+.pp-supports {
+  display: flex;
+  gap: 8px;
+}
+.pp-slot--support {
+  --k: var(--pp-support-k, 0.42);
+}
+.pp-slot > .bi-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: scale(var(--k));
+  transform-origin: 0 0;
+}
+.pp-gauge {
+  bottom: -16px;
+}
+
+/* the main card lunges toward the plot it struck: --lx / --ly are the vector in px */
+.pp-slot--main.is-strike-steady {
+  animation: pp-strike-steady 0.3s var(--pp-ease);
+}
+.pp-slot--main.is-strike-chop {
+  animation: pp-strike-chop 0.62s var(--pp-ease);
+}
+.pp-slot--main.is-strike-flurry {
+  animation: pp-strike-flurry 0.22s ease-out;
+}
+.pp-slot--main.is-strike-volley {
+  animation: pp-strike-volley 0.42s var(--pp-ease);
+}
+.pp-slot--main.is-bursting {
+  animation: pp-bursting 0.8s ease-out;
+}
+@keyframes pp-strike-steady {
+  40% {
+    translate: var(--lx, 0) var(--ly, 0);
+    rotate: 3deg;
+  }
+}
+@keyframes pp-strike-chop {
+  /* wind up away from the plot, then a heavy swing into it */
+  25% {
+    translate: calc(var(--lx, 0px) * -0.35) calc(var(--ly, 0px) * -0.35 - 8px);
+    rotate: -9deg;
+  }
+  45% {
+    translate: var(--lx, 0) var(--ly, 0);
+    rotate: 10deg;
+    scale: 1.07;
+  }
+  60% {
+    translate: var(--lx, 0) var(--ly, 0);
+    rotate: 8deg;
+    scale: 1.05;
+  }
+}
+@keyframes pp-strike-flurry {
+  35% {
+    translate: var(--lx, 0) var(--ly, 0);
+    rotate: -3deg;
+  }
+  70% {
+    translate: calc(var(--lx, 0px) * 0.4) calc(var(--ly, 0px) * 0.4);
+    rotate: 2deg;
+  }
+}
+@keyframes pp-strike-volley {
+  50% {
+    translate: var(--lx, 0) var(--ly, 0);
+    scale: 1.05;
+    filter: drop-shadow(0 0 10px var(--pp-glow));
+  }
+}
+@keyframes pp-bursting {
+  20% {
+    scale: 1.1;
+    rotate: -3deg;
+    filter: drop-shadow(0 0 16px var(--pp-glow)) brightness(1.15);
+  }
+  60% {
+    scale: 1.04;
+    filter: drop-shadow(0 0 10px var(--pp-glow));
+  }
+}
+
+/* a support that helped a strike flashes */
+.pp-slot.is-pulse > .bi-card {
+  animation: pp-pulse 0.52s ease-out;
+}
+@keyframes pp-pulse {
+  30% {
+    filter: drop-shadow(0 0 9px var(--pp-glow)) brightness(1.2);
+    scale: 1.08;
+  }
+}
+/* supports that help the harvest wear a small mark, so it is clear which ones can pulse */
+.pp-slot--helps::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  width: 7px;
+  height: 7px;
+  translate: -50% 0;
+  rotate: 45deg;
+  background: var(--pp-glow);
+  box-shadow: 0 0 0 1px var(--bi-chrome-line);
+}
+
+:root[data-motion='reduced'] .pp-slot.is-pulse > .bi-card,
+:root[data-motion='reduced'] .pp-slot--main[class*='is-strike'],
+:root[data-motion='reduced'] .pp-slot--main.is-bursting {
+  animation: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full']) .pp-slot.is-pulse > .bi-card,
+  :root:not([data-motion='full']) .pp-slot--main[class*='is-strike'],
+  :root:not([data-motion='full']) .pp-slot--main.is-bursting {
+    animation: none;
+  }
+}

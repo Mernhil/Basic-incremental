@@ -182,6 +182,9 @@ export const COPY = {
       expansion: 'More slots',
       capacityPreview: (from: number, to: number) => `Slots ${from} → ${to}`,
     },
+    partyLabel: (job: string) => `${job} cards`,
+    harvestBurst: 'Harvest burst',
+    strikesEvery: 'Strikes every',
     rate: (amount: string) => `${amount}/s`,
     perSecond: (amount: string, resource: string) => `${amount} ${resource}/s`,
     perPlot: (amount: string, resource: string, unit: string) =>

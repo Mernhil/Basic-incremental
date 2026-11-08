@@ -18,6 +18,7 @@ import {
   rollHitForShow,
   signatureDamage,
   type GameState,
+  type HarvestEvent,
   type ProductionJob,
   type TickReport,
 } from '../../../game';
@@ -48,6 +49,8 @@ export interface ShowEvents {
     plots: Array<{ index: number; resource: string; amount: Decimal }>;
   };
   harvestBurst: { job: ProductionJob; totals: Loot[] };
+  /** The main cards' strikes and harvest bursts of one game step (DESIGN.md 11.15), as reported. */
+  harvests: { events: HarvestEvent[] };
 }
 
 type Listener<K extends keyof ShowEvents> = (event: ShowEvents[K]) => void;
@@ -143,6 +146,7 @@ export function createDirector(content: Content, state: () => GameState) {
         );
         emit('signature', { damage: shown.damage, crit: shown.crit });
       }
+      if (report.harvests.length > 0) emit('harvests', { events: report.harvests });
       if (report.knockouts > 0) emit('knockout', { seconds: after.combat.knockoutSeconds });
       if (report.bossKills > 0) {
         const loot: Loot[] = [];
