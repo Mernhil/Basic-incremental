@@ -55,6 +55,12 @@ export interface Currency {
   icon: IconName;
   /** Full-colour SVG markup (a gem coin). Replaces the line icon when set. */
   art?: string;
+  /** Not in the header: its coins fly to the Details button instead (DESIGN.md 9, 14). */
+  inDetails?: boolean;
+  /** Swappable icon id (`ui/resourceIcons.ts`), set as `data-icon` for the graphics pass. */
+  iconId?: string;
+  /** A crystal: bigger glyph with a glow and a slow shimmer, and a bigger pickup moment. */
+  crystal?: boolean;
   tip: TipContent;
 }
 
@@ -93,6 +99,8 @@ export interface Shell {
    * collected). `null` releases it and the counter rolls up.
    */
   holdCurrency(id: string, amount: Decimal | null): void;
+  /** The Details button (opens the panel with every resource the header leaves out). */
+  detailsButton: HTMLButtonElement;
   /** Slot at the right end of the header for quick toggles (sound). */
   tools: HTMLElement;
   /** Replaces a resource chip's coin art (the gem's mastery metal, DESIGN.md 16 E2). */
@@ -148,10 +156,31 @@ export function createShell(opts: {
   const currencyRates = new Map<string, HTMLElement>();
   const currencyGlyphs = new Map<string, HTMLElement>();
   const glyphArt = new Map<string, string>();
+  const crystals = new Set<string>();
   /** Rolling counters (DESIGN.md 14): shown value, target and held-back part per resource. */
   const counters = new Map<string, { shown: Decimal; target: Decimal; held: Decimal }>();
+  // the Details button: resources the header leaves out land their coins here
+  const detailsBtn = h('button', 'shell-details');
+  detailsBtn.type = 'button';
+  detailsBtn.setAttribute('aria-haspopup', 'dialog');
+  detailsBtn.setAttribute('aria-expanded', 'false');
+  detailsBtn.setAttribute('aria-label', COPY.details.buttonLabel);
+  const detailsGlyph = h('span', 'shell-details__glyph');
+  detailsGlyph.append(icon('details', 'shell-icon'));
+  detailsBtn.append(detailsGlyph, h('span', 'shell-details__label', COPY.details.button));
   for (const c of opts.currencies) {
-    const item = h('li', 'shell-currency');
+    if (c.inDetails) {
+      // an invisible landing spot inside the button, drawn as the resource's own coin
+      const land = h('span', 'shell-details__land');
+      land.setAttribute('aria-hidden', 'true');
+      if (c.art) land.innerHTML = c.art;
+      detailsGlyph.append(land);
+      currencyGlyphs.set(c.id, land);
+      continue;
+    }
+    const item = h('li', `shell-currency${c.crystal ? ' shell-currency--crystal' : ''}`);
+    if (c.iconId) item.dataset.icon = c.iconId;
+    if (c.crystal) crystals.add(c.id);
     item.tabIndex = 0;
     const value = h('span', 'shell-currency__value bi-num', '0');
     const glyph = h('span', 'shell-currency__art');
@@ -166,13 +195,13 @@ export function createShell(opts: {
     currencyGlyphs.set(c.id, glyph);
     counters.set(c.id, { shown: new Decimal(0), target: new Decimal(0), held: new Decimal(0) });
     attachTooltip(item, c.tip);
-    item.hidden = true; // shown once the player has some
+    // header chips (Money and the crystals) are always shown
     currencyValues.set(c.id, value);
     currencyItems.set(c.id, item);
     currencyList.append(item);
   }
   const tools = h('div', 'shell-tools');
-  header.append(brand, level, currencyList, tools);
+  header.append(brand, level, currencyList, detailsBtn, tools);
 
   onFrame((dt) => {
     for (const [id, c] of counters) {
@@ -293,8 +322,6 @@ export function createShell(opts: {
     setCurrency(id, amount, perSecond) {
       const c = counters.get(id);
       if (c) c.target = amount;
-      const item = currencyItems.get(id);
-      if (item && amount.gt(0) && item.hidden) item.hidden = false;
       const rate = currencyRates.get(id);
       if (rate) {
         const show = perSecond !== null && perSecond.gt(0);
@@ -305,11 +332,15 @@ export function createShell(opts: {
     },
     currencyGlyph: (id) => {
       const item = currencyItems.get(id);
-      return item && !item.hidden ? (currencyGlyphs.get(id) ?? null) : null;
+      if (item) return item.hidden ? null : (currencyGlyphs.get(id) ?? null);
+      // not in the header: land on the Details button
+      return currencyGlyphs.get(id) ?? detailsGlyph;
     },
     pulseCurrency(id) {
-      replay(currencyItems.get(id), 'is-pulsing', 360);
+      const item = currencyItems.get(id);
+      replay(item ?? detailsBtn, crystals.has(id) ? 'is-pulsing-big' : 'is-pulsing', 560);
     },
+    detailsButton: detailsBtn,
     holdCurrency(id, amount) {
       const c = counters.get(id);
       if (c) c.held = amount ?? new Decimal(0);

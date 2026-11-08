@@ -112,6 +112,12 @@ export const SOUNDS = {
     max: 5,
     windowMs: 1000,
   },
+  // a crystal pickup: a brighter, longer chime than a coin
+  crystal: {
+    layers: arp('sine', [1047, 1568, 2093], 0.09, 0.4, 0.16),
+    max: 2,
+    windowMs: 1000,
+  },
   rare: {
     layers: arp('triangle', [784, 988, 1175, 1568, 1976], 0.07, 0.3, 0.2),
     max: 1,

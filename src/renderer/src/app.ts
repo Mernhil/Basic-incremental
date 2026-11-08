@@ -12,8 +12,8 @@ import {
   collectModifiers,
   rewardTrack,
   gemMastery,
+  incomePerSecond,
   nextGoals,
-  productionPerSecond,
   resolveGlobal,
   simulateOffline,
   type GameState,
@@ -24,6 +24,8 @@ import {
 import { fmt } from './settings/numberFormat';
 import { COPY } from './copy';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
+import { createDetailsPanel } from './shell/details';
+import { iconMarkup, isCrystal, isHeaderResource, resourceIconId } from './ui/resourceIcons';
 import { createShell, h, PAGES, placeholderPage, type Currency } from './shell/shell';
 import { createProductionPage } from './pages/production';
 import { createDungeonsPage } from './pages/dungeons';
@@ -109,25 +111,29 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     tree_gem: 'wood',
     mine_gem: 'ore',
     material: 'material',
-    currency: 'material', // placeholder until Money gets its own coin
+    currency: 'material',
     crystal: 'portal',
     prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();
-  // Starlight (the prestige currency) leads the header row: it is kept forever and would
-  // otherwise sit past the right edge behind every gem and material
-  const headerOrder = [
-    ...content.resources.filter((r) => r.kind === 'prestige'),
-    ...content.resources.filter((r) => r.kind !== 'prestige'),
-  ];
-  const currencies: Currency[] = headerOrder.map((r) => ({
-    id: r.id,
-    name: r.name,
-    icon: KIND_ICON[r.kind],
-    ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
-    ...(r.kind === 'prestige' ? { art: starlightSvg() } : {}),
-    tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
-  }));
+  // The header shows only Money and the two crystals (DESIGN.md 9); every other resource lives
+  // behind the Details button, where its coins fly. Icons are swappable ids (ui/resourceIcons).
+  const currencies: Currency[] = content.resources.map((r) => {
+    const iconId = resourceIconId(r);
+    const placeholder = iconMarkup(iconId);
+    return {
+      id: r.id,
+      name: r.name,
+      icon: KIND_ICON[r.kind],
+      iconId,
+      inDetails: !isHeaderResource(r),
+      crystal: isCrystal(r),
+      ...(r.gem ? { art: svg(gemCoin(r.gem, gemMastery(loop.state, content, r.id).tier)) } : {}),
+      ...(r.kind === 'prestige' ? { art: starlightSvg() } : {}),
+      ...(!r.gem && r.kind !== 'prestige' && placeholder ? { art: placeholder } : {}),
+      tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
+    };
+  });
   const pages: Partial<Record<string, { render(): void }>> = {};
   // the account level tooltip: XP, points to spend, and what the badge opens
   const levelTip = (): HTMLElement => {
@@ -345,18 +351,37 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     lastSavedAt: () => lastSavedAt,
   });
 
-  root.replaceChildren(shell.el);
+  const details = createDetailsPanel({
+    content,
+    state: () => loop.state,
+    masteryTier: (id) => gemMastery(loop.state, content, id).tier,
+    returnFocus: () => shell.detailsButton,
+    onToggle: (open) => shell.detailsButton.setAttribute('aria-expanded', String(open)),
+  });
+  shell.detailsButton.addEventListener('click', () => {
+    if (details.isOpen()) details.close();
+    else details.open();
+  });
+
+  root.replaceChildren(shell.el, details.el);
 
   // ---- behaviour ----
   const rendered = (): void => {
     const s = loop.state;
-    const rates = productionPerSecond(s, content);
+    const mods = collectModifiers(s, content);
     for (const r of content.resources) {
-      shell.setCurrency(r.id, s.resources[r.id] ?? new Decimal(0), rates[r.id] ?? null);
+      const header = isHeaderResource(r);
+      // only the header chips show a rate, worked out for Money and the crystals too
+      shell.setCurrency(
+        r.id,
+        s.resources[r.id] ?? new Decimal(0),
+        header ? incomePerSecond(s, content, r.id, mods) : null,
+      );
       // the coin shows the gem's mastery metal (E2)
       if (r.gem) shell.setCurrencyArt(r.id, svg(gemCoin(r.gem, gemMastery(s, content, r.id).tier)));
     }
     shell.setLevel(levelBadge(accountInfo(s, content)));
+    details.update();
     renderQuest(performance.now());
     pages[shell.current()]?.render();
   };

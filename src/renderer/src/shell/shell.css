@@ -788,3 +788,134 @@ body {
   color: var(--bi-tip-ink);
   font-weight: 700;
 }
+
+/* ---- header resources: Money, then the two crystals; the rest is behind Details ---- */
+.shell-details {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px 6px 9px;
+  border: 0;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--bi-chrome-ink);
+  background: var(--bi-chrome-active-bg);
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+  cursor: pointer;
+}
+.shell-details:hover {
+  box-shadow: inset 0 0 0 1px var(--bi-chrome-accent);
+}
+.shell-details:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.shell-details__glyph {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.shell-details__glyph .shell-icon {
+  width: 18px;
+  height: 18px;
+}
+/* where flying coins of resources inside Details land: an invisible, coin-sized spot */
+.shell-details__land {
+  position: absolute;
+  inset: -2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.shell-details__land svg {
+  width: 100%;
+  height: 100%;
+}
+.shell-details.is-pulsing {
+  animation: shell-pulse 0.36s ease-out;
+}
+.shell-details.is-pulsing-big {
+  animation: shell-pulse-big 0.56s ease-out;
+}
+.shell--narrow .shell-details__label {
+  display: none;
+}
+
+/* crystals: larger, a soft glow and a slow shimmer; a different colour and shape each.
+   Placeholder look: the pixel-art agent replaces the glyph, the tokens stay. */
+.shell-currency--crystal {
+  --crystal-glow: var(--res-summon-2, #5b7fe0);
+  padding-block: 7px;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--crystal-glow) 55%, var(--bi-chrome-line)),
+    0 0 14px color-mix(in srgb, var(--crystal-glow) 35%, transparent);
+}
+.shell-currency--crystal[data-icon='crystal-glamour'] {
+  --crystal-glow: var(--res-glamour-2, #e0609e);
+}
+.shell-currency--crystal .shell-currency__art {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  margin-block: -8px;
+  overflow: hidden;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--crystal-glow) 70%, transparent));
+}
+.shell-currency--crystal .shell-currency__art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.75) 50%,
+    transparent 62%
+  );
+  translate: -120% 0;
+  animation: shell-shimmer 6s ease-in-out 1.5s infinite;
+}
+.shell-currency--crystal .shell-currency__value {
+  font-size: 16px;
+}
+.shell-currency.is-pulsing-big {
+  animation: shell-pulse-big 0.56s ease-out;
+}
+.shell-currency.is-pulsing-big .shell-currency__art {
+  animation: shell-pulse-coin-big 0.56s ease-out;
+}
+@keyframes shell-shimmer {
+  0%,
+  70%,
+  100% {
+    translate: -120% 0;
+  }
+  85% {
+    translate: 120% 0;
+  }
+}
+@keyframes shell-pulse-big {
+  35% {
+    box-shadow:
+      inset 0 0 0 2px var(--crystal-glow, var(--bi-chrome-accent)),
+      0 0 26px var(--crystal-glow, var(--bi-chrome-accent));
+  }
+}
+@keyframes shell-pulse-coin-big {
+  35% {
+    transform: scale(1.55);
+    filter: brightness(1.6) drop-shadow(0 0 10px var(--crystal-glow, #fff));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-currency--crystal .shell-currency__art::after,
+  .shell-currency.is-pulsing-big,
+  .shell-currency.is-pulsing-big .shell-currency__art,
+  .shell-details.is-pulsing,
+  .shell-details.is-pulsing-big {
+    animation: none;
+  }
+}

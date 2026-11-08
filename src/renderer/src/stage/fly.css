@@ -22,3 +22,11 @@
 .st-coin--rare {
   filter: drop-shadow(0 0 8px var(--bi-tick-crit, #ffb02e));
 }
+/* crystal pickups: bigger and brighter than a coin (placeholder look) */
+.st-coin--crystal {
+  width: 38px;
+  height: 38px;
+  margin: -19px 0 0 -19px;
+  filter: brightness(1.25) drop-shadow(0 0 10px rgba(255, 255, 255, 0.85))
+    drop-shadow(0 2px 2px rgba(0, 0, 0, 0.5));
+}

@@ -1,0 +1,140 @@
+/* Details panel (DESIGN.md 9): a modal over the page. Colours come from the frame-* / chrome-*
+   tokens; override the --details-* ones to restyle it in the graphics pass. */
+
+.details {
+  --details-bg: var(--bi-frame-bg);
+  --details-ink: var(--bi-frame-ink);
+  --details-muted: var(--bi-frame-ink-muted);
+  --details-line: var(--bi-frame-line);
+  --details-row-bg: color-mix(in srgb, var(--bi-frame-title-bg) 55%, transparent);
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.details[hidden] {
+  display: none;
+}
+.details__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 10, 18, 0.62);
+}
+.details__panel {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  width: min(760px, 100%);
+  max-height: min(86vh, 860px);
+  border-radius: var(--bi-frame-radius, 14px);
+  background: var(--details-bg);
+  color: var(--details-ink);
+  box-shadow:
+    inset 0 0 0 1px var(--details-line),
+    0 18px 60px rgba(0, 0, 0, 0.55);
+}
+.details__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 10px;
+}
+.details__title {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+}
+.details__close {
+  padding: 6px 14px;
+  border: 0;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 700;
+  color: var(--details-ink);
+  background: var(--bi-frame-title-bg);
+  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+  cursor: pointer;
+}
+.details__close:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.details__body {
+  overflow-y: auto;
+  display: grid;
+  gap: 16px;
+  padding: 4px 18px 18px;
+}
+.details__group {
+  display: grid;
+  gap: 8px;
+}
+.details__group-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--details-muted);
+}
+.details__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+.details-row {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: var(--details-row-bg);
+  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+}
+.details-row__art {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+}
+.details-row__art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.details-row__text {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+.details-row__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+}
+.details-row__name {
+  font-size: 14px;
+  font-weight: 700;
+}
+.details-row__amount {
+  font-size: 14px;
+}
+.details-row__rate {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--details-muted);
+}
+.details-row__rate.is-idle {
+  opacity: 0.6;
+}
+.details-row__mastery,
+.details-row__use {
+  font-size: 12px;
+  color: var(--details-muted);
+}

@@ -21,6 +21,7 @@ import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { medalTip } from '../pages/progressionModel';
 import { playHit } from '../theme/effects';
 import { createCard } from '../ui/card';
+import { isCrystal } from '../ui/resourceIcons';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
 import { formatRate } from '../pages/buyModel';
 import { loadoutKey, loadoutProps } from '../pages/loadoutCards';
@@ -420,14 +421,17 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const from = centreOf(body);
     for (const loot of e.loot) {
       const n = Math.max(1, Math.min(6, Math.round(loot.amount.toNumber())));
+      // crystal pickups get a bigger moment: larger, brighter pieces and their own chime
+      const crystal = isCrystal(ctx.content.resourceById.get(loot.resource));
       flyCoins({
         from,
         target: ctx.coins.currencyGlyph(loot.resource),
-        count: n,
+        count: crystal ? Math.min(n, 3) : n,
         spill: true,
+        ...(crystal ? { cls: 'st-coin--crystal' } : {}),
         onLand: () => {
           ctx.coins.pulseCurrency(loot.resource);
-          play('coin');
+          play(crystal ? 'crystal' : 'coin');
         },
       });
     }
