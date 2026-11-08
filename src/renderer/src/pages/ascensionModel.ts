@@ -2,8 +2,6 @@ import type { Content, Rarity } from '../../../data';
 import {
   Decimal,
   bossMastery,
-  damageLevel,
-  edgeStage,
   gemMastery,
   type AscensionPreview,
   type GameState,
@@ -23,7 +21,6 @@ import type { BuyLineView } from './buyModel';
 
 /** What a kept token is drawn with. The page turns it into art. */
 export type KeptArt =
-  | { kind: 'edge'; gem: string; step: number }
   | { kind: 'card'; cardId: string }
   | { kind: 'coin'; gem: string; tier: number }
   | { kind: 'medal'; tier: number }
@@ -90,7 +87,6 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
   const t = COPY.ascension;
   const views: KeptView[] = [];
   for (const id of [
-    'damage_lines',
     'cards',
     'cosmetics',
     'unlocks',
@@ -102,26 +98,6 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
   ]) {
     const label = t.keptParts[id as keyof typeof t.keptParts];
     switch (id) {
-      case 'damage_lines': {
-        // the most forged edge, highest gem first on a tie
-        let levels = 0;
-        let best: { gem: string; step: number } | null = null;
-        for (const u of content.combat.damageUpgrades) {
-          levels += damageLevel(state, u.id);
-          const gem = content.resourceById.get(u.gem)?.gem;
-          if (!gem) continue;
-          const step = edgeStage(state, content, u.id);
-          if (!best || step >= best.step) best = { gem: u.gem, step };
-        }
-        if (best)
-          views.push({
-            id,
-            label,
-            detail: t.keptDetail.damage_lines(levels),
-            art: { kind: 'edge', ...best },
-          });
-        break;
-      }
       case 'cards': {
         const owned = Object.entries(state.cards.owned);
         // the rarest card, then the highest rank tier

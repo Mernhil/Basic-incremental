@@ -8,16 +8,7 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
-import {
-  EDGE_VIEWBOX,
-  MEDAL_VIEWBOX,
-  PLAQUE_VIEWBOX,
-  forgedEdge,
-  gemCoin,
-  masteryMedal,
-  navPlaque,
-  svg,
-} from '../art/gems';
+import { MEDAL_VIEWBOX, PLAQUE_VIEWBOX, gemCoin, masteryMedal, navPlaque, svg } from '../art/gems';
 import { ITEM_VIEWBOX } from '../art/items';
 import { frame, h } from '../shell/shell';
 import { skinStyle, starlightSvg } from '../ui/skins';
@@ -123,10 +114,6 @@ export function createAscensionPage(page: HTMLElement, ctx: AscensionContext): {
   const tokens = new Map<string, TokenUi>();
   const artMarkup = (a: KeptArt, s: GameState): string => {
     switch (a.kind) {
-      case 'edge': {
-        const gem = content.resourceById.get(a.gem)?.gem;
-        return gem ? svg(forgedEdge(gem, a.step), EDGE_VIEWBOX) : '';
-      }
       case 'card':
         return svg(cardItemArt(content, a.cardId, s.cards.owned[a.cardId]), ITEM_VIEWBOX);
       case 'coin': {

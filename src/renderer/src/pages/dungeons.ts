@@ -2,7 +2,6 @@ import type { Dungeon, Trial } from '../../../data';
 import {
   bossStatus,
   Decimal,
-  buyDamageLevels,
   clearUnlocks,
   collectModifiers,
   damageStat,
@@ -14,7 +13,6 @@ import {
   setActiveDungeon,
   trialRewards,
   bossMastery,
-  edgeStage,
   type GameState,
   type TierUp,
 } from '../../../game';
@@ -25,20 +23,17 @@ import { statTip } from '../shell/stats';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { createArena, type CoinTarget } from '../stage/arena';
 import type { Director } from '../stage/director';
-import { replay } from '../stage/motion';
 import { bossArt } from '../art/bosses';
-import { EDGE_VIEWBOX, MEDAL_VIEWBOX, forgedEdge, masteryMedal, svg } from '../art/gems';
-import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
+import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { createShelf } from '../ui/shelf';
-import { bestLine, damageLineViews, type BuyLineView } from './buyModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
 import './dungeons.css';
 
 /**
- * Dungeons page (DESIGN.md §11, A1 D): the arena fills the page; floors, damage lines and drops
- * live in a drawer that slides up from the bottom. Collapsed, the drawer shows one buy button for
- * the best damage line.
+ * Dungeons page (DESIGN.md §11, A1 D): the arena fills the page; floors, the damage readout, the
+ * upgrade shelf and drops live in a drawer that slides up from the bottom. (Damage comes from the
+ * main card now, DESIGN.md §5; the weapon panel is decided at the review gate.)
  */
 
 export interface StagePageContext extends PageContext {
@@ -85,14 +80,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
   handle.setAttribute('aria-controls', 'dp-drawer-body');
   const handleText = h('span', '', COPY.arena.drawer);
   handle.append(h('i', 'dp-drawer__chev'), handleText);
-  const best = h('div', 'dp-best');
-  const bestName = h('span', 'dp-best__name');
-  let bestId: string | null = null;
-  const bestBtn = createBuyButton(() => {
-    if (bestId) buy(bestId);
-  });
-  best.append(bestName, bestBtn.el);
-  bar.append(handle, best);
+  bar.append(handle);
   const body = h('div', 'dp-drawer__body');
   body.id = 'dp-drawer-body';
   drawer.append(bar, body);
@@ -135,40 +123,13 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
   const lootCol = h('section', 'dp-col dp-col--loot');
   body.append(floorsCol, damageCol, lootCol);
 
-  type LineUi = {
-    li: HTMLElement;
-    level: HTMLElement;
-    tag: HTMLElement;
-    btn: BuyButton;
-    lock: HTMLElement;
-    edges: HTMLElement[];
-    stage: number;
-  };
-  const lineUis = new Map<string, LineUi>();
-  let views: BuyLineView[] = [];
   let floorsSig = '';
   let updates: Array<() => void> = [];
 
-  function buy(id: string): void {
-    const result = buyDamageLevels(ctx.state(), content, id, buyCount());
-    if (!result.ok) return;
-    ctx.apply(result.state);
-    lineUis.get(id)?.btn.celebrate();
-    if (bestId === id) bestBtn.celebrate();
-    if (result.tierUps.some((u) => u.kind === 'damage_milestone')) {
-      replay(lineUis.get(id)?.li, 'is-milestone', 1100);
-      replay(best, 'is-milestone', 1100);
-    }
-    if (result.tierUps.length > 0) ctx.onTierUps?.(result.tierUps);
-    else ctx.sound?.('buy');
-    refresh();
-  }
-
   function buildDamage(): void {
     damageCol.replaceChildren();
-    lineUis.clear();
     const head = h('header', 'dp-col__head');
-    head.append(h('h3', 'dp-col__title', COPY.arena.damage), createBuyToggle());
+    head.append(h('h3', 'dp-col__title', COPY.arena.damage));
     const total = h('p', 'dp-dps bi-num has-tip');
     total.tabIndex = 0;
     attachTooltip(total, () =>
@@ -178,41 +139,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       const text = COPY.dungeons.damageNote(fmt(damageStat(ctx.state(), content).value));
       if (total.textContent !== text) total.textContent = text;
     });
-    const list = h('ul', 'dp-lines');
-    for (const u of content.combat.damageUpgrades) {
-      const li = h('li', 'dp-line');
-      li.dataset.ore = u.gem;
-      const info = h('div', 'dp-line__info');
-      const name = h('span', 'dp-line__name', u.name);
-      const level = h('span', 'dp-line__level bi-num');
-      const tag = h('span', 'ms-tag bi-num');
-      tag.tabIndex = 0;
-      attachTooltip(tag, () => {
-        const v = views.find((x) => x.id === u.id);
-        return v?.milestoneInfo ? COPY.buy.milestoneTip(v.milestoneInfo.levelsToNext) : '';
-      });
-      const lockHint = h('span', 'dp-line__lock');
-      const mine = content.mines.find((m) => m.resource === u.gem);
-      lockHint.textContent = mine ? COPY.dungeons.unlocksWith(mine.name) : '';
-      lockHint.hidden = true;
-      info.append(name, level, tag, lockHint);
-      // the forged edge ladder (DESIGN.md §12, A14 D): five blade steps, the current one lit
-      const ladder = h('span', 'dp-ladder');
-      ladder.setAttribute('role', 'img');
-      const gem = content.resourceById.get(u.gem)?.gem;
-      const edges = [0, 1, 2, 3, 4].map((step) => {
-        const edge = h('span', 'dp-edge');
-        if (gem) edge.innerHTML = svg(forgedEdge(gem, step), EDGE_VIEWBOX);
-        ladder.append(edge);
-        return edge;
-      });
-      const btn = createBuyButton(() => buy(u.id));
-      btn.el.dataset.key = `up-${u.id}`;
-      li.append(info, ladder, btn.el);
-      list.append(li);
-      lineUis.set(u.id, { li, level, tag, btn, lock: lockHint, edges, stage: -1 });
-    }
-    damageCol.append(head, total, list, h('p', 'dp-note', COPY.dungeons.damageKept), shelf.el);
+    damageCol.append(head, total, shelf.el);
   }
 
   function buildFloors(state: GameState): void {
@@ -416,37 +343,6 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
   }
 
   function refresh(): void {
-    const s = ctx.state();
-    const mods = collectModifiers(s, content);
-    views = damageLineViews(s, content, buyCount(), mods);
-    for (const v of views) {
-      const ui = lineUis.get(v.id);
-      if (!ui) continue;
-      ui.btn.update(v);
-      const lv = COPY.dungeons.upgradeLevel(v.level);
-      if (ui.level.textContent !== lv) ui.level.textContent = lv;
-      if (ui.tag.textContent !== v.milestone) ui.tag.textContent = v.milestone;
-      ui.tag.style.setProperty('--p', String(v.milestoneInfo?.progress ?? 0));
-      ui.li.classList.toggle('dp-line--locked', !v.available);
-      ui.lock.hidden = v.available;
-      ui.tag.hidden = !v.available;
-      const stage = edgeStage(s, content, v.id);
-      if (stage !== ui.stage) {
-        ui.stage = stage;
-        ui.edges.forEach((e, i) => {
-          e.classList.toggle('is-lit', i <= stage);
-          e.classList.toggle('is-current', i === stage);
-        });
-        ui.edges[0]?.parentElement?.setAttribute('aria-label', COPY.progress.edgeStep(stage));
-      }
-    }
-    const top = bestLine(views);
-    bestId = top?.id ?? null;
-    best.hidden = !top;
-    if (top) {
-      if (bestName.textContent !== top.name) bestName.textContent = top.name;
-      bestBtn.update(top);
-    }
     for (const u of updates) u();
     shelf.update();
   }
@@ -463,9 +359,6 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     refresh();
   }
 
-  onBuyCount(() => {
-    if (ctx.visible()) refresh();
-  });
   setOpen(open);
 
   return { render };
