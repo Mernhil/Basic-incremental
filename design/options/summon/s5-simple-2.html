@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=1264">
+<title>Summon 5 simple 2</title>
+<link rel="stylesheet" href="../_shared/mock.css">
+<style>
+/* S5 Deck and Table: felt table, each portal is a deck, thickness of the deck is the pity, pulls are dealt as a hand */
+.s5{--brass:#d3ab52;--felt:#1b4a38;font-family:Outfit}
+.s5 .mk-main{background:radial-gradient(75% 70% at 50% 45%,#2a6a50 0,#1b4a38 55%,#0d2a1f 100%);color:#f2ecd6}
+.s5 .mk-main::before{content:'';position:absolute;inset:0;background:repeating-radial-gradient(circle at 50% 50%,rgba(255,255,255,.012) 0 2px,transparent 2px 5px);opacity:.8}
+.s5 .rim{position:absolute;inset:14px;border-radius:26px;box-shadow:inset 0 0 0 2px rgba(211,171,82,.55),inset 0 0 0 7px rgba(0,0,0,.18)}
+.s5 h2{font:800 26px Alegreya,serif;margin:0}
+.s5 .deck{position:absolute;top:46px;width:300px;display:grid;justify-items:center;gap:6px;text-align:center}
+.s5 .stack{position:relative;width:150px;height:222px;margin:22px 0 8px}
+.s5 .stack .mk-card{position:absolute;left:0;top:0}
+.s5 .stack .mk-card:nth-child(n){box-shadow:0 0 0 2px var(--rc)}
+.s5 .stack .edge{position:absolute;left:5px;right:5px;bottom:-10px;height:14px;border-radius:0 0 10px 10px;background:repeating-linear-gradient(0deg,#e8dfc6 0 2px,#b9ad8c 2px 4px);box-shadow:0 12px 22px rgba(0,0,0,.5)}
+.s5 .stack .topc{position:absolute;inset:0;display:grid;place-items:center;z-index:5}
+.s5 .stack .crest{position:absolute;left:50%;top:50%;translate:-50% -50%;z-index:6;text-align:center;font:800 40px/1 Alegreya;text-shadow:0 2px 0 #000a,0 0 14px #000}
+.s5 .stack .crest small{display:block;font:700 12px Outfit;letter-spacing:.02em}
+.s5 .sub{font-size:13px;color:#cfe3d3;font-weight:600}
+.s5 .btns{display:flex;gap:8px;margin-top:4px}
+.s5 .b{border:0;border-radius:999px;padding:9px 18px;font:800 14px Outfit;background:rgba(0,0,0,.35);color:#f2ecd6;box-shadow:inset 0 0 0 1.5px var(--brass);display:flex;gap:6px;align-items:center;white-space:nowrap}
+.s5 .b.pri{background:linear-gradient(180deg,#f0cf7c,#b98a2a);color:#2a1d05;box-shadow:0 0 18px rgba(240,207,124,.4),inset 0 0 0 1.5px #fff6}
+.s5 .odds{position:absolute;left:50%;top:70px;translate:-50% 0;width:170px;padding:12px 14px;border-radius:12px;background:rgba(0,0,0,.32);box-shadow:inset 0 0 0 1.5px rgba(211,171,82,.6);font-size:13px;font-weight:600}
+.s5 .odds h3{margin:0 0 6px;font:800 16px Alegreya;color:var(--brass);text-align:center}
+.s5 .odds div{display:flex;justify-content:space-between;padding:2px 0}.s5 .odds b{color:var(--rc)}
+.s5 .odds hr{border:0;height:1px;background:rgba(211,171,82,.4);margin:6px 0}
+.s5 .odds p{margin:0;font-size:11.5px;color:#cfe3d3;text-align:center}
+.s5 .hand{position:absolute;left:0;right:0;top:458px;height:250px}
+.s5 .hand .mk-card{position:absolute;left:50%;top:0;margin-left:-88px;transform-origin:50% 640px}
+.s5 .hand .lab{position:absolute;left:0;right:0;top:-26px;text-align:center;font:700 14px Outfit;color:#cfe3d3}
+.s5 .hand.old{opacity:.5;filter:saturate(.6)}
+.s5 .hand.new{display:none}.s5.play .hand.new{display:block}.s5.play .hand.old{display:none}
+.s5 .deal{position:absolute;left:0;right:0;bottom:10px;text-align:center;font-size:13px;font-weight:600;color:#cfe3d3}
+@keyframes s5deal{from{translate:var(--fx,-200px) -280px;rotate:80deg;opacity:0}}
+.s5 .hand.new .mk-card{animation:s5deal .5s both}
+/* Nocturne panel: the game's own dark chrome, gold hairline, no felt */
+.s5 .mk-main{background:#161b26}.s5 .mk-main::before{display:none}.s5 .rim{border-radius:12px;inset:14px;box-shadow:inset 0 0 0 1px rgba(217,179,90,.45)}.s5 .odds{background:#1d2330;box-shadow:inset 0 0 0 1px rgba(217,179,90,.45)}.s5 .b{border-radius:8px}.s5 .b.pri{box-shadow:inset 0 0 0 1.5px #fff6}.s5 .stack .edge{box-shadow:none}</style></head><body>
+<div id="app"></div>
+<script src="../_shared/mock.js"></script>
+<script>
+function stackOf(rar,n,label,sub){let s='';for(let i=0;i<n;i++)s+=MK.card('dawnblade_regent',{k:.85,back:true,style:`left:${i*-0.0}px;top:${(n-1-i)*-2.5+ (n-1)*2.5}px;`}).replace('--k:.85;','--k:.85;');return s}
+const deck=(x,name,count,sub,sprite,pct)=>`<section class="deck" style="left:${x}px"><h2>${name}</h2><div class="stack" aria-label="${name} deck, ${sub}">
+  ${Array.from({length:7},(_,i)=>MK.card('dawnblade_regent',{k:.85,back:true,style:`top:${(6-i)*-3}px;left:${(i%2)*1}px`})).join('')}
+  <div class="edge"></div><div class="crest">${MK.img(sprite,64)}<small class="num">${count}</small></div></div>
+  <div class="sub">${sub}</div><div class="btns"><button class="b">Draw ×1 ${MK.img('coin-drop-silver',18)}10</button><button class="b pri">Deal ×10 ${MK.img('coin-drop-silver',18)}100</button></div></section>`;
+const ids=['ember_squire','cave_digger','storm_duelist','apprentice_feller','gem_cutter','dawnblade_regent','ember_squire','shield_warden','cave_digger','apprentice_feller'];
+const fan=(list,flipped,old)=>list.map((id,i)=>{const a=(i-4.5)*4.4;return MK.card(id,{k:.74,back:!flipped.includes(i),style:`rotate:${a}deg;--fx:${(i-4.5)*-30}px;animation-delay:${i*.08}s`,tag:id==='dawnblade_regent'&&flipped.includes(i)?'New!':''})}).join('');
+MK.shell('summon',`<div class="rim"></div>
+ ${deck(26,'Card Portal',70,'Legendary at 90: the deck is 70 pulls thick','plaque-summon',70)}
+ <div class="odds"><h3>Odds per pull</h3><div class="rc-common"><span>Common</span><b>68.2%</b></div><div class="rc-rare"><span>Rare</span><b>22.7%</b></div><div class="rc-epic"><span>Epic</span><b>6.1%</b></div><div class="rc-legendary"><span>Legendary</span><b>2.3%</b></div><div class="rc-mythic"><span>Mythic</span><b>0.5%</b></div><div class="rc-exotic"><span>Exotic</span><b>0.2%</b></div><hr><p>Every ×10 holds a Rare or better</p></div>
+ ${deck(718,'Wardrobe Gate',12,'Glamour Crystals, same odds shape','plaque-wardrobe',12)}
+ <div class="hand old"><div class="lab">Your last hand</div>${fan(ids,ids.map((_,i)=>i),true)}</div>
+ <div class="hand new"><div class="lab">Dealing ×10, flip each card or press Space</div>${fan(ids,[0,1,2,3,4,5],false)}</div>
+`,{cls:'s5',play:'Play a ×10 deal'});
+</script></body></html>
