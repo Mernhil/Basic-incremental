@@ -83,6 +83,7 @@ export function createCardsPage(
   ctx: CardsPageContext,
 ): { render(): void; show(tab: Tab, job?: Job): void } {
   const { content, model } = ctx;
+  page.classList.add('shell-page--cards');
 
   // ---- view state ----
   let tab: Tab = 'collection';

@@ -2,6 +2,12 @@
    Colours come from the chrome-*, frame-* and tip-* tokens; the cards themselves are the real
    card component, scaled down with a transform (zoom breaks the rank star rendering). */
 
+/* a wide window has room for the grid at 2x (DESIGN.md §11 Sharp cards): four cards at 2x, the
+   gaps, the frame and the detail panel take about 1,600 px */
+.shell-page--cards {
+  max-width: 1680px;
+}
+
 .cp-tabs {
   display: flex;
   gap: 8px;
@@ -147,7 +153,7 @@
 }
 /* Real text at a readable size on the small card (DESIGN.md §11): the card's own text scales
    with the card (--card-k), which leaves 9 to 10 px labels at 1x, so the small lines get a floor of
-   11 CSS px. The job label is on the filters, so the name plate drops it at 1x and the name gets
+   11 CSS px. The job label is on the filters, so the grid drops it (and loadout slots at 1x) and the name gets
    the room. At 2x everything is already larger and nothing changes. */
 .cp-fit > .bi-card {
   --cp-floor: calc(11px / var(--card-k));
@@ -160,7 +166,7 @@
 .cp-fit > .bi-card .bi-card__name {
   font-size: max(14px, var(--cp-floor));
 }
-.cp-grid[data-n='1'] .bi-card__job,
+.cp-grid .bi-card__job,
 .cp-slots[data-n='1'] .bi-card__job {
   display: none;
 }
