@@ -53,12 +53,12 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 ## 4. Production
 
 - [Differs] **One of each.** Each tree kind and mine type exists once and is levelled up. There are no plots or slots, no copies of the same tree or mine, and no expansions to buy (user, 2026-11-08). Today logging has plots and mining has slots, bought with Money (`production.json`), and one kind can fill several of them.
-- [Proposed] **Balance after plots.** Every filled plot added a full copy of a tree's output, so tree and mine levels must now carry that growth: retune the level bonus and milestones with the sim against the pacing targets (§14). Old saves get their plot and slot purchases back as Money.
+- [Default] **Balance after plots.** Every filled plot added a full copy of a tree's output, so tree and mine levels now carry that growth: the level bonus and milestones are retuned with the sim against the pacing targets (§14). Old saves get back the Money they spent on plots and slots.
 - [Built] **Trees.** Oak (start), Ironbark and Moonwillow, each yielding its own gem. A tree kind is unlocked once with gems of the tier below (`trees.json`).
 - [Built] **Mines.** Copper Quarry (start), Iron Deeps (unlocked by clearing the Mossy Cellar) and Crystal Grotto (unlocked by clearing the Ember Crypt), each yielding its own gem.
 - [Built] **Levels.** Each tree kind and mine type has a level bought with Money (`trees.json`, `mines.json`): +10% output per level and ×2 every 25 levels. The next milestone shows on the line ("Lv 25: ×2") and reaching it plays a small celebration. Levels reset on Ascension.
 - [Built] **Upgrade shelf.** One-time Money upgrades beside the level lines (`upgrades.json`). Each appears when its unlock is met, glows when affordable and is owned once bought; its effects are ordinary modifiers. Per-run items reset on Ascension; permanent ones stay. Lifetime Money earned is counted and kept.
-- [Proposed] Shelf items tied to plots or to the damage lines are replaced when those go (§4, §5).
+- [Default] The six shelf upgrades unlocked by damage-line levels (Copper, Iron and Crystal Temper and Hardening) go with the lines, and an owned one pays its Money back. No shelf item depends on plots.
 - [Differs] **The main card plays the field.** The main logging or mining card strikes with its pattern (`cards.json` `main.harvest`: steady, chop, flurry or volley; interval, strikes per cycle and targeting sweep, random or all) and shows "+n" per strike. Strikes are show: the economy uses the expected value, so online and offline give the same totals. The targets are the unlocked kinds; today they are plots.
 - [Built] **Harvest burst.** Each job ticks once per second and each tick fills the main card's gauge by 1. At 30 it gives 10 s of the job's output at once, played as a wave with one big total.
 - [Built] **Harvest crits.** `harvest.critChance` (base 0) and `harvest.critDamage` (base ×2) per job, through the modifier pipeline. Nothing grants a chance yet.
@@ -101,15 +101,16 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [To build] **Strength comes from cards.** The card's rarity sets its base stats, support cards are the passives, and the main card's weapon is the only fighting upgrade.
 - [Differs] **No damage lines.** Today Copper Edge, Iron Edge and Crystal Edge (`combat.json`: Money, +1 / +10 / +100 damage per level, ×2 every 25 levels, kept through Ascension) are where fighting damage comes from. They are removed when weapon progression is built.
 - [To build] **Base stats by rarity.** Each card has a base damage and a base health set by its rarity. Health already works this way (`cardRules.json`, Common 100 to Void 1,000); damage does not yet.
-- [Differs] **Level.** XP from fighting raises the weapon's level, up to its tier's cap. Levelling adds new moves or damage types. No resource buys a level. Today fighting cards gain XP only per boss kill (production cards per gem harvested), the cap also grows with stars, and a level adds only a little power.
+- [Differs] **Level.** XP from fighting raises the weapon's level, up to its tier's cap. Levelling adds new moves or damage types. No resource buys a level. Today fighting cards gain XP only per boss kill, the cap also grows with stars, and levels add no moves.
 - [Differs] **Tier.** At max level, Money plus materials upgrade the weapon to the next tier: Bronze → Silver → Gold → Prismatic → Unique. Each tier gives the weapon a new look within its own family (like a single Brave Frontier unit evolving), a new frame, a higher level cap and a power step. Today a tier-up also needs ★6, costs a Core plus tree and mine gems but no Money, resets the stars to ★1, and the weapon picture follows the card's rarity and never changes.
 - [Differs] **Stars.** Duplicates add stars. Stars are the weapon's prestige: they raise its base stats. Today a star needs one duplicate, the card at its level cap and a Core plus gems, and it raises the level cap by 4.
 - [To build] **Stars need balancing.** One duplicate per star is too easy and each star does too little (user): the copies needed and the impact of each star must be tuned.
 - [Differs] **Unique weapon.** The last upgrade swaps in the weapon's unique version, the most meaningful step of all. Eventually every base weapon (12 kinds) gets one. Drawn so far: Flameblade (sword) and Rootbloom Staff (staff); Soul Reaper (scythe) waits for a card that uses a scythe. Today the unique item replaces the weapon at Gold ★6.
-- [Proposed] **XP from fighting time.** XP per second fought or per hit, plus a bonus per kill, so a card stuck at a wall still levels.
-- [Proposed] **Level caps by tier only**, for example 20 / 40 / 60 / 80 / 100 for Bronze to Unique.
-- [Proposed] **Small bump every level.** Each level adds a few percent; milestone levels unlock new nodes on the card's enhancement chart, picked with points; each star gives enhancement points.
-- [Proposed] **Star bar.** Each duplicate fills the card's star bar by an amount set by its rarity, and each star needs more than the one before, so Commons need many copies and top rarities few. First pass from the Card Portal rates:
+- [Default] **XP from fighting time.** A fighting card in the loadout gains XP for every second it fights (not while knocked out) plus a bonus per kill, so a card stuck at a wall still levels. Production cards keep their XP per gem harvested. Rates live in `cardRules.json`.
+- [Default] **Level caps by tier only:** 20 / 40 / 60 / 80 / 100 for Bronze, Silver, Gold, Prismatic and Unique. Stars no longer raise the cap. A saved card above its new cap is set to the cap, so it can tier up at once.
+- [Built] **Small bump every level.** Each level adds a little to the card's power, support strength and gauge speed (`cardRules.json`).
+- [Proposed] **Moves.** Milestone levels unlock new nodes on the card's enhancement chart, picked with points, and each star gives enhancement points. Which moves and damage types each card learns needs a content pass with the user.
+- [Default] **Star bar.** Each duplicate fills the card's star bar by an amount set by its rarity, and each star needs more than the one before, so Commons need many copies and top rarities few. First pass from the Card Portal rates, tuned with the sim:
 
   | Rarity    | Copies for ★2 → ★6 | Total | Rough pulls to ★6     |
   | --------- | ------------------ | ----- | --------------------- |
@@ -120,12 +121,15 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
   | Mythic    | 1, 0, 1, 0, 2      | 4     | ~880                  |
   | Exotic    | 1, 0, 0, 1, 0      | 2     | ~880                  |
 
-- [Proposed] **Star impact.** About ×1.25, ×1.6, ×2, ×2.6 and ×3.5 base stats at ★2 to ★6, so a maxed Common (base 100) equals a fresh Legendary (base 350).
-- [Proposed] **Stars carry across tiers** (a Bronze ★3 becomes Silver ★3, the star colour following the tier) and a star costs only duplicates; Cores, gems and Money go to tier-ups.
-- [Proposed] **Star fill in the shard shop** for a chosen card, so a top-rarity card never stalls on luck.
-- [Proposed] **Weapon looks.** Each weapon's existing rarity ladder (for example the seven swords) is reused as its tier steps; every weapon needs four tier looks plus its unique. How rarity and tier combine in the picture is open.
-- [Proposed] **Production cards** follow the same level, tier and stars model, with XP from harvesting.
-- [Proposed] **Old saves.** A migration converts damage-line progress (into card XP or Money) so nothing feels lost.
+- [Default] **Star impact.** About ×1.25, ×1.6, ×2, ×2.6 and ×3.5 base stats at ★2 to ★6, so a maxed Common (base 100) equals a fresh Legendary (base 350).
+- [Default] **Stars carry across tiers** (a Bronze ★3 becomes Silver ★3, the star colour following the tier) and a star costs only duplicates; Cores, gems and Money go to tier-ups. Saved stars stay as they are.
+- [Default · in game] **Star fill in the shard shop.** The shard shop already sells copies of a chosen card, and a bought copy fills its star bar like any duplicate.
+- [Default] **Weapon looks, for now.** Until each weapon has its own tier art, every tier moves the weapon one step up its existing rarity ladder: a Common sword shows the common, rare, epic and legendary swords from Bronze to Prismatic, capped at Void. The proper tier looks go through the art review (§12).
+- [Default] **Production cards** follow the same level, tier and stars model, with XP from harvesting.
+- [Default] **Old saves.** Damage-line levels are removed and the Money they cost is paid back.
+- [Default] **Tier-up costs.** Each tier-up costs Money plus the tier's Core and its tree and mine gems, the gems scaled by the card's job as now; Gold → Prismatic also costs Frost Sigils (`cardRules.json`). The Money price is new, and every amount is tuned with the sim.
+- [Default] **Base damage.** Base damage follows the same rarity ratios as health: Common 1×, Rare 1.5×, Epic 2.25×, Legendary 3.5×, Mythic 5×, Exotic 7×, Void 10×. The Common value, the growth per level and the tier and star steps are tuned together with the sim, so the pacing targets hold without damage lines (§14).
+- [Default] **The Unique tier** is open only to weapons that have a unique version (today the sword and the staff); the others stop at Prismatic until theirs is drawn. A Unique weapon keeps the Prismatic frame, with the unique reveal (§12).
 
 ### Rank visuals
 
@@ -152,8 +156,8 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Default · in game] Damage and crits are dealt at their expected value, so online, offline and any split of time give the same totals; the stage rolls single crits only for show.
 - [Built] **Card health.** Bosses hit back at their own rhythm with their own damage. The fighting loadout has one shared health pool: the sum of its cards' health (rarity, level, rank). At 0 the loadout is knocked out for 30 s, the boss heals to full, then the fight starts again at full health. Health and defence come only through modifiers; there are no heal or shield effects. Offline follows the same rules.
 - [Differs] **Hits land in chunks.** Each boss attack takes its damage from the pool in one chunk at the boss's rhythm, like the player's hits, with the same damage per minute so the balance holds (user, 2026-11-08). Today the pool drains smoothly because `bossAttackDps` spreads each hit over its interval; the red numbers on the cards already appear per attack.
-- [Proposed] **Visible chunks.** The Root Warden hits for 1 every 10 s against 100 health, so honest chunks would be 1% each. Chunk size is the hit interval divided by the time until knockout, so bosses need light hits plus a telegraphed heavy slam, fewer and bigger hits, or shorter fights overall. The health bar drops with a pale trailing segment that catches up.
-- [Proposed] **"You fall in" readout** beside time-to-kill, red when the loadout would fall first. At 316.57 DPS the Root Warden takes 17 min 22 s, but 100 health lasts 16 min 40 s, so it can never die, and the screen does not say so.
+- [Default] **Boss attack pattern.** Every boss hits lightly at its rhythm, and every sixth attack is a telegraphed heavy slam: five light hits at 0.4× and one slam at 4× an attack, so the damage per minute in `dungeons.json` stays the same. A slam takes a visible chunk, and the health bar drops with a pale trailing segment that catches up. How the wind-up and the chunk look is picked at the review gate.
+- [Default] **"You fall in" readout** beside time-to-kill, red when the loadout would fall first. At 316.57 DPS the Root Warden takes 17 min 22 s, but 100 health lasts 16 min 40 s, so it can never die, and the screen does not say so.
 - [Built] **Boss mastery.** Kills per boss give medals at 10 / 100 / 1,000 / 10,000 kills, kept through Ascension: +5% damage against that boss and +10% to that dungeon's crystal and Core drops per tier. The Glimmer Trial's medal comes from its best score.
 - [Default · in game] Medal drop bonuses round fractions by chance so the average is exact; the trial medal gives +5% damage in the trial and +10% to its rewards per tier.
 
@@ -336,10 +340,9 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user. Answer a 
 
 Waiting since 2026-11-08 (`[Proposed]`):
 
-- Production: the row layout and its five mockups; how levels make up for the lost plots; the plot refund (§4, §11). Shelf items tied to plots and damage lines (§4).
-- Weapons: XP from fighting time; level caps by tier only; a small bump every level with milestone nodes on the enhancement chart; the star bar and its table; star impact and the "maxed Common equals a fresh Legendary" target; stars carrying across tiers; star fill in the shard shop; reusing the rarity ladders as tier looks; whether production cards follow the same model; converting damage-line progress in old saves (§5).
-- Combat: how boss hits become visible chunks (light hits plus a slam, fewer bigger hits, or shorter fights) and the "You fall in" readout (§6).
-- Cards on screen: the compact collection card, real text, whole-number growth and an optional re-bake at double detail (§11, §12).
+- Production: the row layout, picked from five mockups at the review gate (§4, §11).
+- Weapons: the moves and damage types each card learns by level, and how they sit on the enhancement chart (§5).
+- Cards on screen: the compact collection card, real text and whole-number growth, picked at the review gate; an optional re-bake at double detail (§11, §12).
 - Beta systems: replacing Bare Hands and Single Plot; the new autobuyer list (§15).
 
 Changed without asking (to confirm or undo):
@@ -351,6 +354,9 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §2 dev tools and the Report an issue contents.
 - §4 what counts as harvested and when mastery tiers apply.
 - §5 the enhancement numbers (unlock at Silver ★1, five options, budgets).
+- §4 the balance after plots and the plot refund; the damage-line shelf upgrades going.
+- §5 (filled in 2026-11-08 to build the weapon decisions) XP from fighting time, level caps by tier, the star bar, star impact, stars carrying across tiers, tier-up costs, base damage by rarity, the Unique tier, the interim weapon looks, production cards on the same model, the damage-line refund.
+- §6 (filled in 2026-11-08) the boss attack pattern and the "You fall in" readout.
 - §6 expected-value damage and crits; medal bonus rounding and the trial medal.
 - §7 the pull order, guarantee and upgrade flash details.
 - §8 the Wardrobe details (level costs, buffs, equipping, UI-skin levels, set and gate numbers).
@@ -367,4 +373,5 @@ Defaults by Claude, never confirmed (`[Default]`):
 - 2026-11-08 — Fighting strength comes from cards; the three damage lines are removed; a weapon has a level, a tier and stars; the unique weapon is the final tier instead of appearing at Gold ★6; forged-edge strips go with the damage lines (user).
 - 2026-11-08 — Boss hits take health in chunks instead of draining smoothly (user).
 - 2026-11-08 — Elements, presets, bonds, floors, expeditions, challenges, autobuyers, palette cycling and pixel workers (chosen 2026-11-07) were written in for the first time (§12, §15).
+- 2026-11-08 — Claude filled in defaults so the 2026-11-08 decisions can be built (§4, §5, §6), waiting for the user's confirmation: XP from fighting time, level caps by tier, the star bar and its impact, stars across tiers, tier-up costs, base damage, the Unique tier, interim weapon looks, the boss attack pattern and the "You fall in" readout.
 - 2026-11-07 and earlier — see git history.
