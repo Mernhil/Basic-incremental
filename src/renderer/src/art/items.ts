@@ -8,7 +8,7 @@
  * the real shape.
  */
 import type { Rarity } from '../../../data';
-import { spriteImage, sprite } from './pixel/sprites';
+import { animatedSpriteImage, sprite } from './pixel/sprites';
 import { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade } from './vector/items';
 
 export { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade };
@@ -20,11 +20,11 @@ export const ITEM_BOX = { w: 200, h: 240 } as const;
 export const outlinePath = (d: string | undefined): string =>
   d ? `<path class="bi-item__outline" d="${d}" fill="none" stroke="none"/>` : '';
 
-/** Markup for a baked item-box sprite (card items and evolutions), with its traced outline. */
+/** Markup for a baked item-box sprite (card items and weapon skins), with its traced outline; a sprite with a palette-cycling strip plays it (art/pixel/animate.ts). */
 export function itemBoxSprite(name: string, cls = ''): string {
   const s = sprite(name);
   if (!s) return '';
-  return `<g class="bi-item${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}${spriteImage(name, 0, 0, ITEM_BOX.w, ITEM_BOX.h)}</g>`;
+  return `<g class="bi-item${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}${animatedSpriteImage(name, 0, 0, ITEM_BOX.w, ITEM_BOX.h)}</g>`;
 }
 
 /** The item's pixel sprite for a card art window, in the 200 x 240 item box. */
