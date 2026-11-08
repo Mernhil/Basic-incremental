@@ -1,4 +1,4 @@
-import type { BurstJob, Content, Job, ProductionJob, RankTier } from '../data';
+import type { BurstJob, Content, Job, RankTier } from '../data';
 import { Decimal } from './num';
 import type { CosmeticLoadout } from './theme';
 
@@ -12,7 +12,7 @@ export interface GameStats {
 export interface GameState {
   /** Every resource id in the content has an entry. */
   resources: Record<string, Decimal>;
-  /** Plots, slots, unlocked tree kinds and mine levels. See production.ts. */
+  /** Unlocked tree kinds, tree and mine levels. See production.ts. */
   production: ProductionState;
   /** Dungeons cleared at least once. Kept through prestige; clearing one unlocks mine types. */
   clearedDungeons: string[];
@@ -125,18 +125,8 @@ export interface CosmeticState {
   owned: Record<string, OwnedCosmetic>;
 }
 
-/** One production job (logging plots or mining slots). */
-export interface JobProductionState {
-  /** Plots/slots bought on top of the job's start count. Reset on prestige. */
-  expansions: number;
-  /** What runs in each plot/slot, by index; null = empty. May be shorter than the capacity
-   *  (missing entries are empty); entries at or past the capacity are idle. */
-  plots: (string | null)[];
-}
-
+/** Production (DESIGN.md §4): every unlocked tree kind and mine type produces once, at its level. */
 export interface ProductionState {
-  logging: JobProductionState;
-  mining: JobProductionState;
   /** Tree kinds bought with wood (start kinds are always unlocked). Kept through prestige. */
   unlockedTrees: string[];
   /** Mine id -> level bought with Money. Reset on prestige. */
@@ -193,17 +183,8 @@ export function initialBursts(): Record<BurstJob, BurstGauge> {
 }
 
 /** Production as in a brand-new game (or right after a prestige, minus the kept unlocks). */
-export function initialProduction(content: Content): ProductionState {
-  const job = (key: ProductionJob): JobProductionState => {
-    const config = content.production[key];
-    return {
-      expansions: 0,
-      plots: Array<string | null>(config.startPlots).fill(config.startProducer),
-    };
-  };
+export function initialProduction(): ProductionState {
   return {
-    logging: job('logging'),
-    mining: job('mining'),
     unlockedTrees: [],
     mineLevels: {},
     treeLevels: {},
@@ -222,7 +203,7 @@ export function createInitialState(content: Content): GameState {
 
   return {
     resources,
-    production: initialProduction(content),
+    production: initialProduction(),
     clearedDungeons: [],
     combat: initialCombat(),
     bursts: initialBursts(),
@@ -285,8 +266,6 @@ export function cloneState(state: GameState): GameState {
 
 export function cloneProduction(p: ProductionState): ProductionState {
   return {
-    logging: { expansions: p.logging.expansions, plots: [...p.logging.plots] },
-    mining: { expansions: p.mining.expansions, plots: [...p.mining.plots] },
     unlockedTrees: [...p.unlockedTrees],
     mineLevels: { ...p.mineLevels },
     treeLevels: { ...p.treeLevels },

@@ -1,19 +1,14 @@
 import type { Content } from '../../../data';
 import {
   PRODUCTION_JOBS,
-  assignPlot,
-  buyExpansions,
   buyMineLevels,
   buyTreeLevels,
   canAfford,
   collectModifiers,
-  computeStat,
   defaultRng,
   isProducerUnlocked,
   jobProductionPerSecond,
   producerLevel,
-  plotCapacity,
-  plots,
   producerRate,
   producersOf,
   tileStage,
@@ -25,13 +20,13 @@ import {
   type Producer,
   type ProductionJob,
   type TierUp,
+  unlockedProducers,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { mineTile, svg, treeTile } from '../art/gems';
 import { h } from '../shell/shell';
-import { statTip } from '../shell/stats';
-import { attachTooltip, hide as hideTip } from '../shell/tooltip';
+import { hide as hideTip } from '../shell/tooltip';
 import type { CoinTarget } from '../stage/arena';
 import { createHarvestParty, type HarvestParty } from '../stage/harvestParty';
 import { playHit } from '../theme/effects';
@@ -51,13 +46,13 @@ import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
 import { createShelf, type Shelf } from '../ui/shelf';
-import { expansionView, mineLevelViews, treeLevelViews, type BuyLineView } from './buyModel';
+import { mineLevelViews, treeLevelViews, type BuyLineView } from './buyModel';
 import './production.css';
 
 /**
  * Production page (DESIGN.md §11, A2 A): the logging field above the mining field, each a wide
- * strip of faceted tiles at their growth stage; upgrade lines (tree kinds, mine levels, plots
- * and slots) in a side rail. Every tick floats a "+n" off each tile and flies coins to the
+ * strip of faceted tiles at their growth stage; upgrade lines (tree and mine levels, locked kinds)
+ * in a side rail. One tile per unlocked kind. Every tick floats a "+n" off each tile and flies coins to the
  * header; a harvest burst runs a wave across the field with one big total.
  */
 
@@ -80,9 +75,9 @@ export interface ProductionContext extends PageContext {
 /** Coins flown to the header per resource per second at most. */
 const COINS_PER_SECOND = 3;
 
-function signature(state: GameState, content: Content, mods: readonly Modifier[]): string {
+function signature(state: GameState, content: Content): string {
   return JSON.stringify([
-    PRODUCTION_JOBS.map((job) => plots(state, content, job, mods)),
+    PRODUCTION_JOBS.map((job) => unlockedProducers(state, content, job).map((p) => p.id)),
     PRODUCTION_JOBS.map((job) =>
       producersOf(content, job).map((p) => tileStage(state, content, job, p.id)),
     ),
@@ -122,13 +117,12 @@ export function createProductionPage(
   page.append(layout);
 
   let last = '';
-  let openMenu: { close(): void } | null = null;
   let notes: Array<() => void> = [];
   let priced: Array<{ btn: HTMLButtonElement; prices: () => Price[] }> = [];
   const fieldEls: Partial<Record<ProductionJob, HTMLElement>> = {};
   const parties: Partial<Record<ProductionJob, HarvestParty>> = {};
   const flashes: Partial<Record<ProductionJob, HTMLElement>> = {};
-  /** Plot index -> tile button, per job. */
+  /** Kind index -> tile button, per job. */
   const tiles: Record<ProductionJob, Map<number, HTMLElement>> = {
     logging: new Map(),
     mining: new Map(),
@@ -136,18 +130,17 @@ export function createProductionPage(
   const lines = new Map<string, { li: HTMLElement; btn: BuyButton; tag?: HTMLElement }>();
 
   function build(focusKey?: string): void {
-    openMenu?.close();
     hideTip();
     const state = ctx.state();
     const mods = collectModifiers(state, content);
-    last = signature(state, content, mods);
+    last = signature(state, content);
     notes = [];
     priced = [];
     lines.clear();
     fields.replaceChildren(...PRODUCTION_JOBS.map((job) => field(job, state, mods)));
     rail.replaceChildren(
       railHead(),
-      ...PRODUCTION_JOBS.map((job) => railJob(job, state, mods)),
+      ...PRODUCTION_JOBS.map((job) => railJob(job, state)),
       shelf.el,
     );
     if (focusKey) page.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
@@ -164,9 +157,6 @@ export function createProductionPage(
 
   function field(job: ProductionJob, state: GameState, mods: readonly Modifier[]): HTMLElement {
     const t = COPY.production[job];
-    const list = plots(state, content, job, mods);
-    const used = list.filter((id) => id !== null).length;
-    const capacity = plotCapacity(state, content, job, mods);
     const section = h('section', `pp-field pp-field--${job}`);
     section.setAttribute('aria-label', t.title);
     const head = h('header', 'pp-field__head');
@@ -178,15 +168,14 @@ export function createProductionPage(
       ).map(([res, v]) => COPY.production.perSecond(fmt(v), resName(res)));
       set(summary, rates.length ? rates.join(' · ') : t.idle);
     });
-    head.append(
-      h('h2', 'pp-field__title', t.title),
-      h('span', 'pp-field__cap', t.capacity(used, capacity)),
-      summary,
-    );
+    head.append(h('h2', 'pp-field__title', t.title), summary);
     const strip = h('ul', 'pp-strip');
-    strip.setAttribute('aria-label', t.plotsLabel);
+    strip.setAttribute('aria-label', t.tilesLabel);
     tiles[job].clear();
-    list.forEach((id, index) => strip.append(plotTile(job, index, id, state, mods)));
+    const all = producersOf(content, job);
+    unlockedProducers(state, content, job).forEach((p) =>
+      strip.append(kindTile(job, all.indexOf(p), p, state, mods)),
+    );
     const party = createHarvestParty(content, ctx.state, job);
     parties[job] = party;
     const stage = h('div', 'pp-stage');
@@ -199,131 +188,34 @@ export function createProductionPage(
     return section;
   }
 
-  function plotTile(
+  /** One tile for an unlocked kind: its art at its growth stage, its name and its rate. */
+  function kindTile(
     job: ProductionJob,
     index: number,
-    id: string | null,
+    p: Producer,
     state: GameState,
     mods: readonly Modifier[],
   ): HTMLElement {
-    const t = COPY.production[job];
     const li = h('li', 'pp-plot');
     li.append(h('span', 'pp-fx'));
-    const btn = h('button', 'pp-tile');
-    btn.type = 'button';
-    btn.dataset.key = `${job}-plot-${index}`;
-    btn.setAttribute('aria-haspopup', 'menu');
-    btn.setAttribute('aria-expanded', 'false');
-    const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
-    if (p) {
-      const art = h('span', 'pp-tile__art');
-      art.innerHTML = tileArt(job, p, tileStage(state, content, job, p.id));
-      art.style.setProperty('--d', `${((index * 0.37) % 3).toFixed(2)}s`);
-      const level = producerLevel(state, job, p.id);
-      btn.append(
-        art,
-        h('span', 'pp-tile__name', p.name),
-        h(
-          'span',
-          'pp-tile__rate bi-num',
-          COPY.production.rate(fmt(producerRate(p, job, mods, level))),
-        ),
-      );
-      btn.setAttribute('aria-label', t.plotLabel(index + 1, p.name));
-      tiles[job].set(index, btn);
-    } else {
-      btn.classList.add('pp-tile--empty');
-      btn.append(h('span', 'pp-tile__plus', '+'), h('span', 'pp-tile__name', t.empty));
-      btn.setAttribute('aria-label', t.plotLabel(index + 1, t.empty));
-    }
-    btn.addEventListener('click', () => openPicker(li, btn, job, index, id));
-    li.append(btn);
+    const tile = h('div', 'pp-tile');
+    tile.dataset.key = `${job}-tile-${p.id}`;
+    const art = h('span', 'pp-tile__art');
+    art.innerHTML = tileArt(job, p, tileStage(state, content, job, p.id));
+    art.style.setProperty('--d', `${((index * 0.37) % 3).toFixed(2)}s`);
+    const level = producerLevel(state, job, p.id);
+    tile.append(
+      art,
+      h('span', 'pp-tile__name', p.name),
+      h(
+        'span',
+        'pp-tile__rate bi-num',
+        COPY.production.rate(fmt(producerRate(p, job, mods, level))),
+      ),
+    );
+    tiles[job].set(index, tile);
+    li.append(tile);
     return li;
-  }
-
-  function openPicker(
-    li: HTMLElement,
-    btn: HTMLButtonElement,
-    job: ProductionJob,
-    index: number,
-    current: string | null,
-  ): void {
-    openMenu?.close();
-    hideTip();
-    const t = COPY.production[job];
-    const state = ctx.state();
-    const mods = collectModifiers(state, content);
-    const menu = h('div', 'pp-menu');
-    menu.setAttribute('role', 'menu');
-    menu.setAttribute('aria-label', t.plotLabel(index + 1, ''));
-    const items: HTMLButtonElement[] = [];
-    const choose = (pid: string | null): void => {
-      close();
-      const result = assignPlot(ctx.state(), content, job, index, pid);
-      act(result.ok ? result.state : null, `${job}-plot-${index}`);
-    };
-    for (const p of producersOf(content, job)) {
-      const unlocked = isProducerUnlocked(state, content, job, p.id);
-      const item = h('button', 'pp-menu__item');
-      item.type = 'button';
-      item.setAttribute('role', 'menuitemradio');
-      item.setAttribute('aria-checked', String(p.id === current));
-      const level = producerLevel(state, job, p.id);
-      item.append(
-        h('span', '', p.name),
-        h(
-          'span',
-          'pp-menu__meta bi-num',
-          unlocked
-            ? COPY.production.rate(fmt(producerRate(p, job, mods, level)))
-            : COPY.production.locked,
-        ),
-      );
-      if (!unlocked) item.disabled = true;
-      else item.addEventListener('click', () => choose(p.id));
-      items.push(item);
-      menu.append(item);
-    }
-    const empty = h('button', 'pp-menu__item');
-    empty.type = 'button';
-    empty.setAttribute('role', 'menuitemradio');
-    empty.setAttribute('aria-checked', String(current === null));
-    empty.append(h('span', '', t.emptyAction));
-    empty.addEventListener('click', () => choose(null));
-    items.push(empty);
-    menu.append(empty);
-
-    const enabled = items.filter((i) => !i.disabled);
-    const onKey = (e: KeyboardEvent): void => {
-      const at = enabled.indexOf(document.activeElement as HTMLButtonElement);
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        close();
-        btn.focus();
-      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-        e.preventDefault();
-        const step = e.key === 'ArrowDown' ? 1 : -1;
-        enabled[(at + step + enabled.length) % enabled.length]?.focus();
-      } else if (e.key === 'Tab') {
-        close();
-      }
-    };
-    const onOutside = (e: PointerEvent): void => {
-      if (!li.contains(e.target as Node)) close();
-    };
-    function close(): void {
-      menu.remove();
-      btn.setAttribute('aria-expanded', 'false');
-      menu.removeEventListener('keydown', onKey);
-      document.removeEventListener('pointerdown', onOutside, true);
-      openMenu = null;
-    }
-    menu.addEventListener('keydown', onKey);
-    document.addEventListener('pointerdown', onOutside, true);
-    li.append(menu);
-    btn.setAttribute('aria-expanded', 'true');
-    openMenu = { close };
-    (enabled.find((i) => i.getAttribute('aria-checked') === 'true') ?? enabled[0])?.focus();
   }
 
   // ---- rail ----
@@ -352,12 +244,11 @@ export function createProductionPage(
     return li;
   }
 
-  function railJob(job: ProductionJob, state: GameState, mods: readonly Modifier[]): HTMLElement {
+  function railJob(job: ProductionJob, state: GameState): HTMLElement {
     const t = COPY.production[job];
     const section = h('section', 'pp-rail__group');
     section.append(h('h3', 'pp-rail__sub', t.title));
     const list = h('ul', 'pp-lines');
-    list.append(buyLine(`${job}-expansion`, () => buyExpansion(job), false));
     if (job === 'logging') {
       for (const tree of content.trees) {
         if (!isProducerUnlocked(state, content, 'logging', tree.id)) continue;
@@ -375,47 +266,23 @@ export function createProductionPage(
     const kinds = h('ul', 'pp-kinds');
     kinds.setAttribute('aria-label', t.kindsLabel);
     for (const p of producersOf(content, job)) {
-      const unlocked = isProducerUnlocked(state, content, job, p.id);
-      if (unlocked) continue; // unlocked kinds are shown as a level line above
-      kinds.append(kindRow(job, p, unlocked, state, mods));
+      if (isProducerUnlocked(state, content, job, p.id)) continue; // unlocked kinds have a tile and a level line
+      kinds.append(kindRow(job, p));
     }
     if (kinds.childElementCount > 0) section.append(kinds);
     return section;
   }
 
-  function kindRow(
-    job: ProductionJob,
-    p: Producer,
-    unlocked: boolean,
-    state: GameState,
-    mods: readonly Modifier[],
-  ): HTMLElement {
-    const t = COPY.production[job];
-    const li = h('li', `pp-kind${unlocked ? '' : ' pp-kind--locked'}`);
+  /** A kind that is not unlocked yet: its art, what it yields or what unlocks it, and a button for trees. */
+  function kindRow(job: ProductionJob, p: Producer): HTMLElement {
+    const li = h('li', 'pp-kind pp-kind--locked');
     const art = h('span', 'pp-kind__art');
     art.innerHTML = tileArt(job, p, 0);
     const info = h('div', 'pp-kind__info');
     const name = h('span', 'pp-kind__name', p.name);
     name.append(h('span', 'pp-tier', COPY.production.tier(p.tier)));
     const meta = h('span', 'pp-kind__meta bi-num');
-    if (unlocked) {
-      const rate = h(
-        'span',
-        'has-tip',
-        COPY.production.perPlot(fmt(producerRate(p, job, mods, 0)), resName(p.resource), t.unit),
-      );
-      rate.tabIndex = 0;
-      attachTooltip(rate, () => {
-        const m = collectModifiers(ctx.state(), content);
-        const result = computeStat('production.rate', producerRate(p, job, [], 0), m, {
-          job,
-          producer: p.id,
-          resource: p.resource,
-        });
-        return statTip(content, t.rateTip(p.name, 0), result, '/s');
-      });
-      meta.append(rate);
-    } else if (job === 'logging') {
+    if (job === 'logging') {
       meta.textContent = COPY.production.yields(resName(p.resource));
     } else {
       const dungeon =
@@ -426,7 +293,7 @@ export function createProductionPage(
     }
     info.append(name, meta);
     li.append(art, info);
-    if (job === 'logging' && !unlocked) {
+    if (job === 'logging') {
       const btn = h('button', 'button pp-kind__action');
       btn.type = 'button';
       btn.dataset.key = `unlock-${p.id}`;
@@ -453,11 +320,6 @@ export function createProductionPage(
     else ctx.sound?.('buy');
   }
 
-  function buyExpansion(job: ProductionJob): void {
-    const result = buyExpansions(ctx.state(), content, job, buyCount());
-    if (result.ok) bought(job + '-expansion', result.state, result.tierUps);
-  }
-
   function buyLevels(mineId: string): void {
     const result = buyMineLevels(ctx.state(), content, mineId, buyCount());
     if (result.ok) bought('level-' + mineId, result.state, result.tierUps);
@@ -473,13 +335,6 @@ export function createProductionPage(
     const mods = collectModifiers(s, content);
     const count = buyCount();
     const views: Array<[string, BuyLineView | null]> = [
-      ...PRODUCTION_JOBS.map(
-        (job) =>
-          [`${job}-expansion`, expansionView(s, content, job, count, mods)] as [
-            string,
-            BuyLineView | null,
-          ],
-      ),
       ...treeLevelViews(s, content, count, mods).map(
         (v) => [`tree-${v.id}`, v] as [string, BuyLineView],
       ),
@@ -493,10 +348,7 @@ export function createProductionPage(
       line.btn.update(v);
       const [name, meta] = line.li.querySelectorAll<HTMLElement>('.pp-line__name, .pp-line__meta');
       set(name!, v.name);
-      set(
-        meta!,
-        key.endsWith('expansion') ? COPY.production.owned(v.level) : COPY.production.level(v.level),
-      );
+      set(meta!, COPY.production.level(v.level));
       if (line.tag) {
         set(line.tag, v.milestone);
         line.tag.style.setProperty('--p', String(v.milestoneInfo?.progress ?? 0));
@@ -513,11 +365,11 @@ export function createProductionPage(
 
   // ---- show events ----
 
-  /** One strike: the main card lunges at the plot, the plot is hit, the yield pops on it. */
+  /** One strike: the main card lunges at the tile, the tile is hit, the yield pops on it. */
   function strike(job: ProductionJob, m: StrikeMoment): void {
     const area = fieldEls[job];
     const party = parties[job];
-    const tile = tiles[job].get(m.plot);
+    const tile = tiles[job].get(m.kind);
     if (!area || !party || !tile) return;
     const box = area.getBoundingClientRect();
     if (box.width === 0) return;
@@ -552,7 +404,7 @@ export function createProductionPage(
         scale: look.numberScale * 1.25,
       });
     } else {
-      popGain(area, `pp-${job}-${m.plot}`, m.amount, x, y, look.numberScale);
+      popGain(area, `pp-${job}-${m.kind}`, m.amount, x, y, look.numberScale);
     }
     if (coinThrottle.allow(m.resource, performance.now())) {
       flyCoins({
@@ -564,7 +416,7 @@ export function createProductionPage(
     }
   }
 
-  /** The burst: a wave across the plots, a flash, one big total. */
+  /** The burst: a wave across the tiles, a flash, one big total. */
   function burst(job: ProductionJob, b: BurstMoment): void {
     const area = fieldEls[job];
     if (!area) return;
@@ -572,9 +424,9 @@ export function createProductionPage(
     parties[job]?.pulse(b.supports);
     flash(flashes[job]);
     slowDown(area, 450, 0.4);
-    for (const p of b.plots) {
-      const tile = tiles[job].get(p.plot);
-      if (tile) window.setTimeout(() => replay(tile, 'is-wave', 500), p.plot * 70);
+    for (const p of b.kinds) {
+      const tile = tiles[job].get(p.kind);
+      if (tile) window.setTimeout(() => replay(tile, 'is-wave', 500), p.kind * 70);
     }
     const text = b.totals.map((t) => `+${popText(t.amount)}`).join('  ');
     popNumber(area, { kind: 'total', text, x: 0.62, y: 0.45, scale: 1.9 });
@@ -612,7 +464,7 @@ export function createProductionPage(
   return {
     render() {
       const state = ctx.state();
-      if (signature(state, content, collectModifiers(state, content)) !== last) build();
+      if (signature(state, content) !== last) build();
       else refresh();
     },
   };

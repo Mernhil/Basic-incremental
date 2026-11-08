@@ -42,7 +42,48 @@ export const MIGRATIONS: MigrationTable = {
   12: v12ToV13,
   13: v13ToV14,
   14: v14ToV15,
+  15: v15ToV16,
 };
+
+/** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
+const V15_EXPANSION = { base: 25, growth: 1.4 };
+
+/** Money the first `count` expansions cost: each price `base * growth^n`, rounded up like a buy. */
+function expansionsPaid(count: number): Decimal {
+  let paid = new Decimal(0);
+  for (let n = 0; n < Math.max(0, Math.floor(count)); n++) {
+    const price = new Decimal(V15_EXPANSION.base).mul(new Decimal(V15_EXPANSION.growth).pow(n));
+    const near = price.round();
+    // Drop float noise first (25 x 1.4^2 is 49.00000000000001 and must cost 49, not 50).
+    paid = paid.add(price.sub(near).abs().lte(near.abs().mul(1e-9)) ? near : price.ceil());
+  }
+  return paid;
+}
+
+/**
+ * v15 -> v16: one of each (DESIGN.md §4). Plots, slots and expansions are gone: every unlocked
+ * tree kind and mine type produces once, at its level. The production part loses `logging` and
+ * `mining` (plots, slots, expansions) and keeps unlocks and levels; the Money spent on the
+ * expansions is paid back (each price of the old curve, rounded up).
+ */
+function v15ToV16(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const { logging, mining, ...kept } = production;
+  let refund = new Decimal(0);
+  for (const part of [logging, mining]) {
+    refund = refund.add(expansionsPaid(isRecord(part) ? levelOf(part['expansions']) : 0));
+  }
+  const out: Record<string, unknown> = { ...state, production: kept };
+  if (refund.gt(0)) {
+    const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+    const money = resources['money'];
+    const held =
+      typeof money === 'string' && isDecimalString(money) ? new Decimal(money) : new Decimal(0);
+    resources['money'] = held.add(refund).toString();
+    out['resources'] = resources;
+  }
+  return out;
+}
 
 /**
  * v14 -> v15: tree levels and the upgrade shelf (DESIGN.md §4). Trees get a level line like
@@ -68,7 +109,6 @@ const V14_MONEY_CURVES = {
     iron_deeps: { base: 200, growth: 1.32 },
     crystal_grotto: { base: 2500, growth: 1.34 },
   },
-  expansions: { logging: { base: 25, growth: 1.4 }, mining: { base: 25, growth: 1.4 } },
   damage: {
     copper_edge: { base: 10, growth: 1.11 },
     iron_edge: { base: 200, growth: 1.12 },
@@ -94,8 +134,9 @@ const levelOf = (value: unknown): number => {
 /**
  * v13 -> v14: the three loops (DESIGN.md §3). Money buys mine levels, plots / slots and damage
  * lines (they cost gems before); the Moss and Ember Sigils became the Summon and Glamour
- * Crystal; the Frost Sigil is a material with the same id. Levels and expansions are kept, and
- * the Money they would cost now is paid back on top of the starting Money, so nothing feels lost.
+ * Crystal; the Frost Sigil is a material with the same id. Levels are kept, and the Money they
+ * would cost now is paid back on top of the starting Money, so nothing feels lost. Plots and slots
+ * are kept too; their Money is paid back once, by v15 -> v16, when they go away.
  * Ids that were about sigils are renamed (skill, Starlight shop item, shard shop bundles).
  */
 function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
@@ -112,10 +153,6 @@ function v13ToV14(state: Record<string, unknown>): Record<string, unknown> {
   let refund = new Decimal(0);
   for (const [id, curve] of Object.entries(V14_MONEY_CURVES.mines)) {
     refund = refund.add(curveSum(curve, levelOf(mineLevels[id])));
-  }
-  for (const job of ['logging', 'mining'] as const) {
-    const part = isRecord(production[job]) ? production[job] : {};
-    refund = refund.add(curveSum(V14_MONEY_CURVES.expansions[job], levelOf(part['expansions'])));
   }
   for (const [id, curve] of Object.entries(V14_MONEY_CURVES.damage)) {
     refund = refund.add(curveSum(curve, levelOf(damageLevels[id])));

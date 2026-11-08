@@ -2,8 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   buyDamageLevels,
   buyDamageUpgrade,
-  buyExpansion,
-  buyExpansions,
   buyMineLevel,
   buyMineLevels,
   curveBulkPrice,
@@ -12,7 +10,6 @@ import {
   curvePrice,
   damageLineOffer,
   Decimal,
-  expansionOffer,
   MAX_BULK_LEVELS,
   mineLevelOffer,
   type GameState,
@@ -111,7 +108,7 @@ describe('buy offers (x1 / x10 / x100 / Max)', () => {
   });
 });
 
-describe('bulk buys for damage lines, mine levels and expansions', () => {
+describe('bulk buys for damage lines and mine levels', () => {
   it('buys exactly N damage levels for the same price as N single buys', () => {
     const start = rich('money', 1e6);
     const bulk = buyDamageLevels(start, content, 'copper_edge', 10);
@@ -159,18 +156,5 @@ describe('bulk buys for damage lines, mine levels and expansions', () => {
     expect(buyMineLevels(iron, content, 'iron_deeps', 1)).toEqual({ ok: false, reason: 'locked' });
     expect(mineLevelOffer(iron, content, 'iron_deeps', 1)!.affordable).toBe(false);
     expect(mineLevelOffer(iron, content, 'nope', 1)).toBeNull();
-  });
-
-  it('buys plots and slots in bulk', () => {
-    const start = rich('money', 1e6);
-    const r = buyExpansions(start, content, 'logging', 'max');
-    if (!r.ok) throw new Error(r.reason);
-    const ref = oneByOne(start, r.bought, (s) => buyExpansion(s, content, 'logging'));
-    expect(r.state.production.logging.expansions).toBe(r.bought);
-    expect(r.state.resources['money']!.eq(ref.resources['money']!)).toBe(true);
-    const offer = expansionOffer(rich('money', 0), content, 'mining', 1);
-    expect(offer!.price.resource).toBe('money');
-    expect(offer!.affordable).toBe(false);
-    expect(offer!.progress).toBe(0);
   });
 });

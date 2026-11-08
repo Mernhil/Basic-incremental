@@ -4,7 +4,6 @@ import {
   averageDps,
   burstStats,
   buyDamageLevels,
-  collectModifiers,
   buyMineLevels,
   critFactor,
   critStats,
@@ -13,9 +12,7 @@ import {
   jobProductionPerSecond,
   killsPerMinute,
   previewDamageLine,
-  previewExpansion,
   previewMineLevel,
-  producerRate,
   secondsPerKill,
   stageReadout,
   type GameState,
@@ -113,40 +110,9 @@ describe('upgrade previews (DESIGN.md §11)', () => {
       p.rateAfter.eq(jobProductionPerSecond(bought.state, content, 'mining')['copper_gem']!),
     ).toBe(true);
     const quarry = content.mineById.get('copper_quarry')!;
-    expect(p.perSlotAfter.gt(p.perSlotBefore)).toBe(true);
+    expect(p.rateAfter.gt(p.rateBefore)).toBe(true);
     expect(previewMineLevel(state, content, 'nope', 1)).toBeNull();
-    expect(p.perSlotBefore.gt(0)).toBe(true);
+    expect(p.rateBefore.gt(0)).toBe(true);
     expect(quarry.resource).toBe(p.resource);
-  });
-
-  it('previews a plot purchase filled with the best unlocked producer', () => {
-    const state = rich();
-    state.production.unlockedTrees = ['ironbark'];
-    const p = previewExpansion(state, content, 'logging', 2);
-    expect(p.capacityBefore).toBe(1);
-    expect(p.capacityAfter).toBe(3);
-    expect(p.producer).toBe('ironbark');
-    const ironbark = content.treeById.get('ironbark')!;
-    expect(p.resource).toBe(ironbark.resource);
-    expect(p.rateBefore.eq(0)).toBe(true);
-    const perPlot = producerRate(ironbark, 'logging', collectModifiers(state, content));
-    expect(p.rateAfter.eq(perPlot.mul(2))).toBe(true);
-    expect(state.production.logging.expansions).toBe(0); // nothing paid
-  });
-
-  it('previews a slot purchase as one more of the best mine on its gem', () => {
-    const state = rich();
-    const p = previewExpansion(state, content, 'mining', 1);
-    expect(p.producer).toBe('copper_quarry');
-    expect(p.capacityAfter).toBe(p.capacityBefore + 1);
-    // The new slot adds one more Copper Quarry to the current Copper output.
-    const before = jobProductionPerSecond(state, content, 'mining')['copper_gem']!;
-    const one = producerRate(
-      content.mineById.get('copper_quarry')!,
-      'mining',
-      collectModifiers(state, content),
-    );
-    expect(p.rateBefore.eq(before)).toBe(true);
-    expect(p.rateAfter.eq(before.add(one))).toBe(true);
   });
 });

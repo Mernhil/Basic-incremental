@@ -280,7 +280,7 @@ function checkProduction(
     ),
   );
 
-  // Producer ids are shared by modifier scopes and plot contents, so they must be unique.
+  // Producer ids are shared by modifier scopes and harvest targets, so they must be unique.
   const treeIds = new Set(c.trees.map((t) => t.id));
   c.mines.forEach((mine, i) => {
     if (treeIds.has(mine.id)) {
@@ -288,33 +288,12 @@ function checkProduction(
     }
   });
 
-  const jobs = [
-    {
-      job: 'logging',
-      starters: c.trees.filter((t) => t.unlockCost.length === 0),
-      all: c.trees,
-    },
-    {
-      job: 'mining',
-      starters: c.mines.filter((m) => m.unlockedByDungeon === null),
-      all: c.mines,
-    },
-  ] as const;
-  for (const { job, starters, all } of jobs) {
-    const config = c.production[job];
-    checkCost(
-      `production.json › ${job} › expansion › resource`,
-      config.expansion.resource,
-      'currency',
-    );
-    const where = `production.json › ${job} › startProducer`;
-    if (!all.some((p) => p.id === config.startProducer)) {
-      issues.push(
-        `${where}: unknown ${job === 'logging' ? 'tree' : 'mine'} "${config.startProducer}"`,
-      );
-    } else if (!starters.some((p) => p.id === config.startProducer)) {
-      issues.push(`${where}: "${config.startProducer}" is not available from the start`);
-    }
+  // Every kind produces once it is unlocked, so each job needs one from the start.
+  if (!c.trees.some((t) => t.unlockCost.length === 0)) {
+    issues.push('trees.json: at least one tree must be unlocked from the start (no unlockCost)');
+  }
+  if (!c.mines.some((m) => m.unlockedByDungeon === null)) {
+    issues.push('mines.json: at least one mine must be available from the start');
   }
 }
 

@@ -40,9 +40,8 @@ describe('ascension gate', () => {
     expect(v.rewards.map((r) => r.id)).toEqual(['gilded_plate']);
     expect(v.rewards[0]!.text).toMatch(/^Gilded Plate, \w+ border$/);
     expect(v.resets.map((r) => r.id)).toEqual([
-      'plots',
-      'slots',
       'mine_levels',
+      'tree_levels',
       'resources',
       'tile_stages',
     ]);

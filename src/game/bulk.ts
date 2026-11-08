@@ -1,4 +1,4 @@
-import type { Content, CostCurve, ProductionJob } from '../data';
+import type { Content, CostCurve } from '../data';
 import { damageLevel, isDamageLineUnlocked, type CombatFailure } from './combat';
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
@@ -19,7 +19,7 @@ import type { GameState } from './state';
 /**
  * Bulk buying (DESIGN.md §11, "Buy x1 / x10 / x100 / Max"): prices of several levels on an
  * exponential cost curve, the most a budget affords, and the buy offers and purchases of the
- * damage lines, mine levels and plot / slot expansions.
+ * damage lines, mine levels and tree levels.
  *
  * Every level is priced exactly like a single buy (`curvePrice`, rounded up per level), so a
  * bulk buy costs the same as buying the levels one at a time.
@@ -52,7 +52,7 @@ export type BulkBuyResult<F extends string> =
       ok: true;
       state: GameState;
       bought: number;
-      /** Milestones crossed (damage line, mine level) or tree tile stage reached (plots). */
+      /** Milestones crossed (damage line, mine level, tree level). */
       tierUps: TierUp[];
     }
   | { ok: false; reason: F };
@@ -292,37 +292,4 @@ export function buyTreeLevels(
   const milestones = content.treeById.get(treeId)!.level.milestones;
   const tierUps = milestoneTierUps('tree_milestone', treeId, milestones, from, from + offer.count);
   return { ok: true, state: next, bought: offer.count, tierUps };
-}
-
-// ---- plots and slots -------------------------------------------------------------------------
-
-/** The buy offer of plots (logging) or slots (mining); null for an invalid count. */
-export function expansionOffer(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BuyOffer | null {
-  const curve = content.production[job].expansion;
-  const owned = state.production[job].expansions;
-  return curveOffer(curve, owned, count, budgetOf(state, curve.resource), modifiers, { job });
-}
-
-/** Buys plots / slots like `buyDamageLevels`. The new ones start empty. */
-export function buyExpansions(
-  state: GameState,
-  content: Content,
-  job: ProductionJob,
-  count: BuyCount,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): BulkBuyResult<ProductionFailure> {
-  const offer = expansionOffer(state, content, job, count, modifiers);
-  if (!offer) return { ok: false, reason: 'invalid-count' };
-  if (!offer.affordable || !canAfford(state, [offer.price])) {
-    return { ok: false, reason: 'unaffordable' };
-  }
-  const next = pay(state, [offer.price]);
-  next.production[job].expansions += offer.count;
-  return { ok: true, state: next, bought: offer.count, tierUps: [] };
 }

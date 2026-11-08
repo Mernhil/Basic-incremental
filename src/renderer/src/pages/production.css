@@ -90,15 +90,6 @@
   background: transparent;
   color: inherit;
   font: inherit;
-  cursor: pointer;
-}
-.pp-tile:hover,
-.pp-tile[aria-expanded='true'] {
-  background: color-mix(in srgb, var(--bi-chrome-active-bg) 70%, transparent);
-}
-.pp-tile:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
 }
 .pp-tile__art {
   /* 2 px per tile pixel (grid 58 x 64) */
@@ -125,23 +116,6 @@
 .pp-tile__rate {
   font-size: 11.5px;
   color: var(--bi-chrome-ink-muted);
-}
-.pp-tile--empty {
-  height: 128px;
-  align-content: center;
-  color: var(--bi-chrome-ink-muted);
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bi-chrome-line) 90%, transparent);
-  border: 0;
-  background-image: repeating-linear-gradient(
-    135deg,
-    transparent 0 8px,
-    color-mix(in srgb, var(--bi-chrome-line) 30%, transparent) 8px 9px
-  );
-}
-.pp-tile__plus {
-  font-size: 30px;
-  font-weight: 300;
-  line-height: 1;
 }
 
 @keyframes pp-sway {

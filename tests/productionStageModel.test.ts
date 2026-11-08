@@ -10,7 +10,7 @@ import {
 
 const ev = (over: Partial<HarvestEvent>): HarvestEvent => ({
   job: 'logging',
-  plot: 0,
+  kind: 0,
   producer: 'oak',
   resource: 'wood_gem',
   amount: new Decimal(10),
@@ -23,11 +23,11 @@ const ev = (over: Partial<HarvestEvent>): HarvestEvent => ({
 
 describe('harvestMoments', () => {
   it('keeps only the asked job', () => {
-    const m = harvestMoments([ev({}), ev({ job: 'mining', plot: 1 })], 'logging');
-    expect(m.strikes.map((s) => s.plot)).toEqual([0]);
+    const m = harvestMoments([ev({}), ev({ job: 'mining', kind: 1 })], 'logging');
+    expect(m.strikes.map((s) => s.kind)).toEqual([0]);
   });
 
-  it('merges strikes on the same plot: amounts, strikes, crit and supports', () => {
+  it('merges strikes on the same kind: amounts, strikes, crit and supports', () => {
     const m = harvestMoments(
       [
         ev({ amount: new Decimal(5), supports: ['a'] }),
@@ -45,14 +45,14 @@ describe('harvestMoments', () => {
   it('turns burst events into one wave with totals per resource', () => {
     const m = harvestMoments(
       [
-        ev({ burst: true, plot: 2, amount: new Decimal(4) }),
-        ev({ burst: true, plot: 0, amount: new Decimal(6) }),
-        ev({ burst: true, plot: 1, resource: 'ore', amount: new Decimal(1) }),
+        ev({ burst: true, kind: 2, amount: new Decimal(4) }),
+        ev({ burst: true, kind: 0, amount: new Decimal(6) }),
+        ev({ burst: true, kind: 1, resource: 'ore', amount: new Decimal(1) }),
       ],
       'logging',
     );
     expect(m.strikes).toHaveLength(0);
-    expect(m.burst!.plots.map((p) => p.plot)).toEqual([0, 1, 2]);
+    expect(m.burst!.kinds.map((p) => p.kind)).toEqual([0, 1, 2]);
     expect(m.burst!.totals).toEqual([
       { resource: 'wood_gem', amount: new Decimal(10) },
       { resource: 'ore', amount: new Decimal(1) },
@@ -60,9 +60,9 @@ describe('harvestMoments', () => {
   });
 
   it('caps strike moments, dropping the smallest', () => {
-    const events = Array.from({ length: 6 }, (_, i) => ev({ plot: i, amount: new Decimal(i + 1) }));
+    const events = Array.from({ length: 6 }, (_, i) => ev({ kind: i, amount: new Decimal(i + 1) }));
     const m = harvestMoments(events, 'logging', 3);
-    expect(m.strikes.map((s) => s.plot)).toEqual([3, 4, 5]);
+    expect(m.strikes.map((s) => s.kind)).toEqual([3, 4, 5]);
   });
 
   it('ignores empty yields and returns nothing for no events', () => {

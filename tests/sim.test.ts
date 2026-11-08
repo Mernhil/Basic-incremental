@@ -6,7 +6,6 @@ import {
   MILESTONES,
   runSim,
   formatTable,
-  arrangePlots,
   shouldAscend,
   fillEnhancements,
   chooseDungeon,
@@ -27,18 +26,20 @@ describe('balance sim: greedy buyer', () => {
     const candidates = buyerCandidates(state, content);
     const copperEdge = candidates.find((c) => c.id === 'damage:copper_edge');
     expect(copperEdge?.eta).toBe(0);
-    // Iron Edge waits for Iron Deeps; a plot (25 Money) is paid by the wage being earned.
+    // Iron Edge waits for Iron Deeps; an Oak level (20 Money) is paid by the wage being earned.
     expect(candidates.find((c) => c.id === 'damage:iron_edge')).toBeUndefined();
-    const plot = candidates.find((c) => c.id === 'expand:logging');
-    expect(plot?.eta).toBeGreaterThan(0);
-    expect(Number.isFinite(plot!.eta!)).toBe(true);
+    const oak = candidates.find((c) => c.id === 'tree:oak');
+    expect(oak?.eta).toBeGreaterThan(0);
+    expect(Number.isFinite(oak!.eta!)).toBe(true);
+    // Plots, slots and expansions are gone.
+    expect(candidates.some((c) => c.id.startsWith('expand:'))).toBe(false);
     // Nothing earns Glamour Crystals before a kill, so a Wardrobe Gate pull is out of reach.
     const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate');
     expect(gate?.eta === null || gate!.eta! > 0).toBe(true);
   });
 
   it('buys the cheapest affordable purchase first, then keeps buying', () => {
-    // 10 Money buys Copper Edge (10); a mine level costs 15 and a slot 25.
+    // 10 Money buys Copper Edge (10); a mine level costs 15 and an Oak level 20.
     const state = rich(freshState(), 'money', 10);
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('damage:copper_edge');
@@ -89,14 +90,6 @@ describe('balance sim: greedy buyer', () => {
     const { bought } = greedyBuy(rich(freshState(), 'money', 0), content);
     expect(bought).toEqual([]);
   });
-
-  it('fills new plots, spreading them over the unlocked producers', () => {
-    const state = freshState();
-    state.production.logging.expansions = 2;
-    state.production.unlockedTrees = ['ironbark'];
-    const arranged = arrangePlots(state, content);
-    expect([...arranged.production.logging.plots].sort()).toEqual(['ironbark', 'oak', 'oak']);
-  });
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
@@ -130,14 +123,14 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
-  it('weighs a mine level or a plot against damage by the share of the production', () => {
+  it('weighs a mine or tree level against damage by the share of the production', () => {
     const state = rich(freshState(), 'money', 1e9);
     const candidates = buyerCandidates(state, content);
     const gain = (id: string): number => candidates.find((c) => c.id === id)!.gain!;
     // The first Copper Edge level doubles the damage; no production purchase beats that.
     expect(gain('damage:copper_edge')).toBeGreaterThan(gain('mine:copper_quarry'));
-    expect(gain('damage:copper_edge')).toBeGreaterThan(gain('expand:logging'));
-    expect(gain('expand:logging')).toBeGreaterThan(0);
+    expect(gain('damage:copper_edge')).toBeGreaterThan(gain('tree:oak'));
+    expect(gain('tree:oak')).toBeGreaterThan(0);
   });
 
   it('keeps Cores for the most advanced card instead of spreading them over weaker ones', () => {

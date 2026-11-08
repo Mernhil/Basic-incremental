@@ -10,10 +10,10 @@
  * - keeps the resources the next waiting card upgrade or tree kind needs (reservations);
  * - spends its Money on the economy purchase with the best gain per Money: a damage line
  *   (relative DPS gain, with bulk buys up to the next x2 milestone), a mine level (relative gain
- *   of the weighted production) or a plot / slot (the same for the job's share), waiting for the
+ *   of the weighted production) or a tree level (the same), waiting for the
  *   best one unless a cheaper one costs a small share of it. Card upgrades use gems and Cores
  *   only, so they never compete with Money;
- * - spreads plots / slots over the unlocked producers, fills loadouts with the rarest cards,
+ * - fills loadouts with the rarest cards,
  *   equips complete cosmetic sets;
  * - fights: the Glimmer Trial once it can score 100%, else a newly killable dungeon, else the
  *   cleared trial for cosmetic materials within a time share, else a dungeon whose Core a card
@@ -21,20 +21,12 @@
  * - ascends once the run's Starlight per hour has passed its peak.
  * Mastery, milestones, crits, achievements and account levels come from the real game rules.
  */
-import {
-  JOBS,
-  RANK_TIERS,
-  RARITIES,
-  type Content,
-  type Job,
-  type ProductionJob,
-} from '../../src/data';
+import { JOBS, RANK_TIERS, RARITIES, type Content, type Job } from '../../src/data';
 import {
   advance,
   type OwnedCard,
   bossAttackDps,
   buyDamageLevels,
-  buyExpansion,
   buyMineLevel,
   cardPower,
   collectModifiers,
@@ -46,7 +38,6 @@ import {
   damageUpgradeCost,
   Decimal,
   emptyCardLoadout,
-  expansionCost,
   incomePerSecond,
   isDamageLineUnlocked,
   isDungeonCleared,
@@ -63,7 +54,6 @@ import {
   mineLevelCost,
   nextMilestone,
   productionPerSecond,
-  plotCapacity,
   producerRate,
   secondsPerKill,
   setActiveDungeon,
@@ -74,10 +64,8 @@ import {
   tierUpCheck,
   treeUnlockCost,
   unlockTree,
-  unlockedProducers,
   averageDps,
   baseDamage,
-  cloneState,
   cardCost,
   pull,
   pullPrice,
@@ -269,7 +257,7 @@ export type CandidateKind =
   'card' | 'tree' | 'cosmetic' | 'summon' | 'skill' | 'starlight' | 'economy';
 
 export interface Candidate {
-  /** `damage:<line>[:x<n>]`, `mine:<mine>`, `expand:<job>`, `tree:<tree>`, `star:<card>`,
+  /** `damage:<line>[:x<n>]`, `mine:<mine>`, `tree:<tree>`, `star:<card>`,
    *  `tier:<card>`, `skill:<node>`, `starlight:<item>`, `cosmetic:<item>`, `summon:<portal>[:10]`. */
   id: string;
   kind: CandidateKind;
@@ -331,7 +319,7 @@ function weightedProduction(
   return total;
 }
 
-/** The economy purchases (damage lines, mine levels, plots / slots) with their gains. */
+/** The economy purchases (damage lines, mine and tree levels, shelf upgrades) with their gains. */
 function economyCandidates(
   state: GameState,
   content: Content,
@@ -418,21 +406,6 @@ function economyCandidates(
       prices: [item.cost],
       gain: (p?.kind === 'damage' ? 1 : PRODUCTION_VALUE) * rise * 0.5,
       buy: (s, c) => okState(buyUpgrade(s, c, item.id)),
-    });
-  }
-  for (const job of ['logging', 'mining'] as const) {
-    const capacity = plotCapacity(state, content, job, modifiers);
-    const gems = (job === 'logging' ? content.trees : content.mines).map((p) => p.resource);
-    const share =
-      totalProduction > 0
-        ? weightedProduction(state, content, modifiers, gems) / totalProduction
-        : 1;
-    out.push({
-      id: `expand:${job}`,
-      kind: 'economy',
-      prices: [expansionCost(state, content, job, modifiers)],
-      gain: PRODUCTION_VALUE * (share / Math.max(1, capacity)),
-      buy: (s, c, m) => okState(buyExpansion(s, c, job, m)),
     });
   }
   return out;
@@ -665,7 +638,7 @@ function pickPurchase(state: GameState, candidates: readonly Candidate[]): Candi
 const MAX_BUYS_PER_PASS = 500;
 
 /**
- * Buys while anything is worth buying now (see the file comment), then re-arranges plots,
+ * Buys while anything is worth buying now (see the file comment), then re-arranges
  * loadouts, enhancements and cosmetic sets.
  */
 export function greedyBuy(
@@ -692,7 +665,7 @@ export function greedyBuy(
       current = optimizeLoadouts(current, content);
     }
   }
-  if (bought.length > 0) current = optimizeLoadouts(arrangePlots(current, content), content);
+  if (bought.length > 0) current = optimizeLoadouts(current, content);
   current = fillEnhancements(current, content);
   current = equipSets(current, content);
   return { state: current, bought };
@@ -754,29 +727,6 @@ export function equipSets(state: GameState, content: Content): GameState {
     }
   }
   return current;
-}
-
-/**
- * Spreads each job's plots / slots evenly over its unlocked producers; the remainder goes to the
- * lowest tiers (their gems pay for expansions and the cheap upgrade lines).
- */
-export function arrangePlots(state: GameState, content: Content): GameState {
-  const next = cloneState(state);
-  for (const job of ['logging', 'mining'] as ProductionJob[]) {
-    const capacity = plotCapacity(state, content, job);
-    const producers = [...unlockedProducers(state, content, job)].sort((a, b) => a.tier - b.tier);
-    if (producers.length === 0) continue;
-    const per = Math.floor(capacity / producers.length);
-    let extra = capacity - per * producers.length;
-    const plots: string[] = [];
-    for (const p of producers) {
-      const n = per + (extra > 0 ? 1 : 0);
-      if (extra > 0) extra--;
-      for (let i = 0; i < n; i++) plots.push(p.id);
-    }
-    next.production[job].plots = plots;
-  }
-  return next;
 }
 
 /** Puts each job's strongest cards in its loadout (rarity, then power) within the cost cap. */
@@ -1169,6 +1119,9 @@ export function formatSummary(result: SimResult, content: Content): string {
   const mines = content.mines
     .map((m) => `${m.name} ${s.production.mineLevels[m.id] ?? 0}`)
     .join(', ');
+  const trees = content.trees
+    .map((t) => `${t.name} ${s.production.treeLevels[t.id] ?? 0}`)
+    .join(', ');
   const fought = Object.entries(result.log.fought)
     .map(([d, sec]) => `${d} ${hoursText(sec)}`)
     .join(', ');
@@ -1194,7 +1147,7 @@ export function formatSummary(result: SimResult, content: Content): string {
     `Time fought: ${fought || 'none'}`,
     `Summons: ${result.log.summons} pulls; Money in hand ${num(s.resources['money'] ?? new Decimal(0)).toExponential(1)}, crystals ${num(s.resources['summon_crystal'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_crystal'] ?? new Decimal(0)).toFixed(0)} glamour`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
-    `Plots: ${plotCapacity(s, content, 'logging')}, slots: ${plotCapacity(s, content, 'mining')}`,
+    `Tree levels: ${trees}`,
     `Damage lines: ${damage}`,
     `Mine levels: ${mines}`,
     `Cards: ${cards}`,

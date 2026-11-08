@@ -2,8 +2,8 @@ import type { Content } from '../../../data';
 import {
   PRODUCTION_JOBS,
   collectModifiers,
+  isProducerUnlocked,
   jobProductionPerSecond,
-  plots,
   producersOf,
   stageReadout,
   trialStatus,
@@ -69,7 +69,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
 
   let fightKey = '';
   const tileKeys: Record<ProductionJob, string> = { logging: '', mining: '' };
-  /** Plot index -> tile element, per job (only the first MAX_TILES plots are drawn). */
+  /** Kind index -> tile element, per job (only the first MAX_TILES kinds are drawn). */
   const tileAt: Record<ProductionJob, Map<number, HTMLElement>> = {
     logging: new Map(),
     mining: new Map(),
@@ -99,7 +99,9 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
   function renderJob(s: GameState, job: ProductionJob): void {
     const ui = jobs[job];
     const mods = collectModifiers(s, content);
-    const list = plots(s, content, job, mods);
+    const list = producersOf(content, job).map((p) =>
+      isProducerUnlocked(s, content, job, p.id) ? p.id : null,
+    );
     const key = JSON.stringify(list.slice(0, MAX_TILES));
     if (key !== tileKeys[job]) {
       tileKeys[job] = key;
@@ -123,7 +125,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
       COPY.table.perSecond(`${fmt(v)} ${content.resourceById.get(res)?.name ?? res}`),
     );
     const total = list.filter(Boolean).length;
-    set(ui.where, job === 'logging' ? COPY.table.plots(total) : COPY.table.slots(total));
+    set(ui.where, job === 'logging' ? COPY.table.trees(total) : COPY.table.mines(total));
     set(ui.rate, rates.join(' · '));
     ui.btn.setAttribute(
       'aria-label',

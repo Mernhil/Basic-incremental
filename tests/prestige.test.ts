@@ -39,9 +39,6 @@ function progressedRun(): GameState {
   state.resources['oak_gem'] = new Decimal(5000);
   state.resources['summon_crystal'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
-  state.production.logging.expansions = 6;
-  state.production.logging.plots = Array(7).fill('ironbark');
-  state.production.mining.expansions = 3;
   state.production.mineLevels = { copper_quarry: 30 };
   state.production.unlockedTrees = ['ironbark'];
   state.clearedDungeons = ['mossy_cellar'];
@@ -99,7 +96,7 @@ describe('ascension preview', () => {
     const preview = ascensionPreview(progressedRun(), content);
     expect(preview.canAscend).toBe(true);
     expect(preview.resets).toEqual(
-      expect.arrayContaining(['plots', 'slots', 'mine_levels', 'resources', 'tile_stages']),
+      expect.arrayContaining(['mine_levels', 'tree_levels', 'resources', 'tile_stages']),
     );
     expect(preview.persists).toEqual(
       expect.arrayContaining([
@@ -124,15 +121,13 @@ describe('ascend', () => {
     expect(ascend(runWith(10), content)).toEqual({ ok: false, reason: 'too-early' });
   });
 
-  it('resets plots, slots, mine levels, resources, gauges and the fight', () => {
+  it('resets mine and tree levels, resources, gauges and the fight', () => {
     const before = progressedRun();
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.production.logging.expansions).toBe(0);
-    expect(s.production.mining.expansions).toBe(0);
-    expect(s.production.logging.plots).toEqual(['oak']);
     expect(s.production.mineLevels).toEqual({});
+    expect(s.production.treeLevels).toEqual({});
     for (const [id, amount] of Object.entries(s.resources)) {
       const kind = content.resourceById.get(id)!.kind;
       if (kind === 'prestige' || kind === 'crystal') continue;

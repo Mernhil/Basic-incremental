@@ -2,19 +2,15 @@ import { describe, expect, it } from 'vitest';
 import type { ModifierData } from '../src/data';
 import {
   advance,
-  assignPlot,
-  buyExpansion,
   buyMineLevel,
+  buyTreeLevel,
   canAfford,
   clearDungeon,
+  collectModifiers,
   curvePrice,
   Decimal,
-  expansionCost,
   isProducerUnlocked,
   mineLevelCost,
-  plotCapacity,
-  plots,
-  producerCounts,
   producerRate,
   productionPerSecond,
   resetProduction,
@@ -53,13 +49,6 @@ const reason = (result: ProductionResult): string | undefined =>
   result.ok ? undefined : result.reason;
 
 describe('a new game', () => {
-  it('starts with one Oak plot and one Copper Quarry slot', () => {
-    const state = freshState();
-    expect(plots(state, content, 'logging')).toEqual(['oak']);
-    expect(plots(state, content, 'mining')).toEqual(['copper_quarry']);
-    expect(producerCounts(state, content)).toEqual({ oak: 1, copper_quarry: 1 });
-  });
-
   it('has only the start tree kind and mine type unlocked', () => {
     const state = freshState();
     expect(unlockedProducers(state, content, 'logging').map((p) => p.id)).toEqual(['oak']);
@@ -72,95 +61,52 @@ describe('a new game', () => {
     expect(rates['oak_gem']!.eq(1)).toBe(true);
     expect(rates['copper_gem']!.eq(0.5)).toBe(true);
   });
+
+  it('has no plots, slots or expansions in the state', () => {
+    expect(Object.keys(freshState().production).sort()).toEqual([
+      'mineLevels',
+      'treeLevels',
+      'unlockedTrees',
+    ]);
+  });
 });
 
-describe('plot and slot expansions', () => {
-  it('cost base * growth^owned in the job tier-1 resource, rounded up', () => {
-    const state = freshState();
-    expect(expansionCost(state, content, 'logging')).toEqual({
-      resource: 'money',
-      amount: new Decimal(25),
-    });
-    state.production.logging.expansions = 3;
-    const { base, growth } = content.production.logging.expansion;
-    const third = Math.ceil(base.toNumber() * growth.toNumber() ** 3); // base * growth^3, rounded up
-    expect(expansionCost(state, content, 'logging').amount.eq(third)).toBe(true);
-    expect(expansionCost(freshState(), content, 'mining').resource).toBe('money');
+describe('one of each (DESIGN.md §4)', () => {
+  it('an unlocked tree kind produces at once, with nothing to place', () => {
+    const state = ok(unlockTree(give(freshState(), 'oak_gem', 600), content, 'ironbark'));
+    const rates = productionPerSecond(state, content);
+    expect(rates['ironbark_gem']!.eq(0.5)).toBe(true);
+    expect(rates['oak_gem']!.eq(1)).toBe(true); // oak still counts once
   });
 
-  it('adds an empty plot and spends the price', () => {
-    const state = ok(buyExpansion(give(freshState(), 'money', 30), content, 'logging'));
-    expect(state.resources['money']!.eq(5)).toBe(true);
-    expect(plotCapacity(state, content, 'logging')).toBe(2);
-    expect(plots(state, content, 'logging')).toEqual(['oak', null]);
-    const { base, growth } = content.production.logging.expansion;
-    const second = Math.ceil(base.toNumber() * growth.toNumber());
-    expect(expansionCost(state, content, 'logging').amount.eq(second)).toBe(true);
+  it('a locked tree kind or mine type produces nothing', () => {
+    const rates = productionPerSecond(freshState(), content);
+    expect(rates['ironbark_gem']).toBeUndefined();
+    expect(rates['iron_gem']).toBeUndefined();
   });
 
-  it('refuses when unaffordable and leaves the state alone', () => {
-    const start = give(freshState(), 'money', 24);
-    expect(reason(buyExpansion(start, content, 'logging'))).toBe('unaffordable');
-    expect(start.production.logging.expansions).toBe(0);
-  });
-
-  it('reads cost.growth, cost.multiplier and production.capacity modifiers', () => {
-    const state = freshState();
-    state.production.mining.expansions = 2;
-    const mods = [
-      mod('cost.growth', 'set', '1'),
-      mod('cost.multiplier', 'mult', '0.5', { job: 'mining' }),
-      mod('production.capacity', 'flat', '2', { job: 'mining' }),
-    ];
-    expect(expansionCost(state, content, 'mining', mods).amount.eq(13)).toBe(true); // 25*0.5 -> 13
-    expect(expansionCost(state, content, 'logging', mods).amount.eq(25)).toBe(true); // 25 * 1^2
-    expect(plotCapacity(state, content, 'mining', mods)).toBe(5);
-    expect(plotCapacity(state, content, 'logging', mods)).toBe(1);
-  });
-
-  it('never prices below zero or grows below 1', () => {
-    const mods = [mod('cost.growth', 'set', '0.1'), mod('cost.multiplier', 'set', '-3')];
-    const state = freshState();
-    state.production.logging.expansions = 4;
-    expect(expansionCost(state, content, 'logging', mods).amount.eq(0)).toBe(true);
+  it('a mine type produces once its dungeon is cleared', () => {
+    const state = clearDungeon(freshState(), content, 'mossy_cellar').state;
+    const mine = content.mineById.get('iron_deeps')!;
+    const rates = productionPerSecond(state, content);
     expect(
-      expansionCost(state, content, 'logging', [mod('cost.growth', 'set', '0.1')]).amount.eq(25),
+      rates[mine.resource]!.eq(producerRate(mine, 'mining', collectModifiers(state, content))),
     ).toBe(true);
-  });
-});
-
-describe('assigning plots', () => {
-  it('is free and can empty a plot', () => {
-    const start = give(freshState(), 'oak_gem', 7);
-    const emptied = ok(assignPlot(start, content, 'logging', 0, null));
-    expect(plots(emptied, content, 'logging')).toEqual([null]);
-    expect(emptied.resources['oak_gem']!.eq(7)).toBe(true);
-    const back = ok(assignPlot(emptied, content, 'logging', 0, 'oak'));
-    expect(plots(back, content, 'logging')).toEqual(['oak']);
+    expect(rates[mine.resource]!.gt(0)).toBe(true);
   });
 
-  it('only accepts unlocked producers of the same job within the capacity', () => {
-    const state = freshState();
-    expect(reason(assignPlot(state, content, 'logging', 0, 'ironbark'))).toBe('locked');
-    expect(reason(assignPlot(state, content, 'logging', 0, 'copper_quarry'))).toBe('unknown');
-    expect(reason(assignPlot(state, content, 'mining', 0, 'iron_deeps'))).toBe('locked');
-    expect(reason(assignPlot(state, content, 'logging', 1, 'oak'))).toBe('invalid-plot');
-    expect(reason(assignPlot(state, content, 'logging', -1, 'oak'))).toBe('invalid-plot');
-    expect(reason(assignPlot(state, content, 'logging', 0.5, 'oak'))).toBe('invalid-plot');
-  });
-
-  it('fills a plot granted by a capacity modifier', () => {
-    const mods = [mod('production.capacity', 'flat', '2')];
-    const state = ok(assignPlot(freshState(), content, 'logging', 2, 'oak', mods));
-    expect(plots(state, content, 'logging', mods)).toEqual(['oak', null, 'oak']);
-    // Without the modifier those plots are idle and produce nothing.
-    expect(producerCounts(state, content)['oak']).toBe(1);
-  });
-
-  it('does not mutate the previous state', () => {
-    const start = freshState();
-    ok(assignPlot(start, content, 'logging', 0, null));
-    expect(start.production.logging.plots).toEqual(['oak']);
+  it('each kind yields once, at its own level', () => {
+    let state = ok(unlockTree(give(freshState(), 'oak_gem', 600), content, 'ironbark'));
+    state = give(state, 'money', '1e9');
+    state = ok(buyTreeLevel(state, content, 'ironbark'));
+    state = ok(buyTreeLevel(state, content, 'ironbark'));
+    const mods = collectModifiers(state, content);
+    const ironbark = content.treeById.get('ironbark')!;
+    const oak = content.treeById.get('oak')!;
+    const rates = productionPerSecond(state, content);
+    expect(rates['ironbark_gem']!.eq(producerRate(ironbark, 'logging', mods, 2))).toBe(true);
+    expect(rates['oak_gem']!.eq(producerRate(oak, 'logging', mods, 0))).toBe(true);
+    expect(rates['ironbark_gem']!.gt(producerRate(ironbark, 'logging', mods, 0))).toBe(true);
   });
 });
 
@@ -175,8 +121,7 @@ describe('tree kinds', () => {
     const state = ok(unlockTree(give(freshState(), 'oak_gem', 600), content, 'ironbark'));
     expect(state.resources['oak_gem']!.eq(100)).toBe(true);
     expect(isProducerUnlocked(state, content, 'logging', 'ironbark')).toBe(true);
-    const planted = ok(assignPlot(state, content, 'logging', 0, 'ironbark'));
-    expect(productionPerSecond(planted, content)['ironbark_gem']!.eq(0.5)).toBe(true);
+    expect(productionPerSecond(state, content)['ironbark_gem']!.eq(0.5)).toBe(true);
   });
 
   it('refuses unknown, already unlocked and unaffordable trees', () => {
@@ -251,15 +196,14 @@ describe('mine types and levels', () => {
 });
 
 describe('production in the tick', () => {
-  it('counts every active plot and ignores empty ones', () => {
-    let state = give(bareState(), 'money', 25);
-    state = ok(buyExpansion(state, content, 'logging'));
-    let { state: after } = advance(state, content, 10_000, constantRng(0.5));
-    expect(after.resources['oak_gem']!.eq(10)).toBe(true); // one Oak plot, one empty
-
-    state = ok(assignPlot(state, content, 'logging', 1, 'oak'));
-    ({ state: after } = advance(state, content, 10_000, constantRng(0.5)));
-    expect(after.resources['oak_gem']!.eq(20)).toBe(true);
+  it('every unlocked kind yields its rate per second, once', () => {
+    let state = ok(unlockTree(give(bareState(), 'oak_gem', 600), content, 'ironbark'));
+    state = clearDungeon(state, content, 'mossy_cellar').state;
+    const { state: after } = advance(state, content, 10_000, constantRng(0.5));
+    expect(after.resources['oak_gem']!.sub(100).eq(10)).toBe(true); // 600 held - 500 to unlock Ironbark
+    expect(after.resources['ironbark_gem']!.eq(5)).toBe(true);
+    expect(after.resources['copper_gem']!.eq(5)).toBe(true);
+    expect(after.resources[content.mineById.get('iron_deeps')!.resource]!.gt(0)).toBe(true);
   });
 });
 
@@ -276,22 +220,20 @@ describe('canAfford', () => {
 });
 
 describe('prestige reset', () => {
-  it('resets plots, slots and mine levels but keeps unlocked trees and cleared dungeons', () => {
+  it('resets mine and tree levels but keeps unlocked trees and cleared dungeons', () => {
     let state = give(give(freshState(), 'oak_gem', '1e6'), 'money', '1e6');
     state = ok(unlockTree(state, content, 'ironbark'));
-    state = ok(buyExpansion(state, content, 'logging'));
-    state = ok(assignPlot(state, content, 'logging', 1, 'ironbark'));
     state = ok(buyMineLevel(state, content, 'copper_quarry'));
+    state = ok(buyTreeLevel(state, content, 'oak'));
     state = clearDungeon(state, content, 'mossy_cellar').state;
 
-    const reset = resetProduction(state, content);
-    expect(reset.production.logging).toEqual({ expansions: 0, plots: ['oak'] });
-    expect(reset.production.mining).toEqual({ expansions: 0, plots: ['copper_quarry'] });
+    const reset = resetProduction(state);
     expect(reset.production.mineLevels).toEqual({});
+    expect(reset.production.treeLevels).toEqual({});
     expect(reset.production.unlockedTrees).toEqual(['ironbark']);
     expect(reset.clearedDungeons).toEqual(['mossy_cellar']);
     expect(isProducerUnlocked(reset, content, 'mining', 'iron_deeps')).toBe(true);
-    expect(state.production.logging.expansions).toBe(1); // input untouched
+    expect(state.production.mineLevels['copper_quarry']).toBe(1); // input untouched
   });
 });
 

@@ -63,12 +63,17 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
   it('comes from kills, more for harder dungeons', () => {
     const state = bareState();
-    state.production.logging.plots = [];
-    state.production.mining.plots = [];
     state.combat.damageLevels = { copper_edge: 250 }; // the first boss falls within the 3 s
     const { state: after, report } = advance(state, content, 3_000, constantRng(0.5));
     expect(report.bossKills).toBeGreaterThan(0);
-    expect(after.account.xp.toNumber()).toBeCloseTo(report.bossKills * A.xp.perKill.toNumber(), 6);
+    // The gems the one Oak and one Copper Quarry harvested in those seconds add their own XP.
+    const oak = after.mastery.harvested['oak_gem']!.toNumber();
+    const copper = after.mastery.harvested['copper_gem']!.toNumber();
+    const gems = oak * A.xp.perUnit.logging.toNumber() + copper * A.xp.perUnit.mining.toNumber();
+    expect(after.account.xp.toNumber()).toBeCloseTo(
+      report.bossKills * A.xp.perKill.toNumber() + gems,
+      6,
+    );
   });
 
   it('comes from pulls and ascensions', () => {

@@ -1,22 +1,4 @@
 {
-  "logging": {
-    "startPlots": 1,
-    "startProducer": "oak",
-    "expansion": {
-      "resource": "money",
-      "base": "25",
-      "growth": "1.4"
-    }
-  },
-  "mining": {
-    "startPlots": 1,
-    "startProducer": "copper_quarry",
-    "expansion": {
-      "resource": "money",
-      "base": "25",
-      "growth": "1.4"
-    }
-  },
   "harvest": {
     "default": {
       "logging": {

@@ -67,14 +67,14 @@ export const costCurveSchema = z.strictObject({
   growth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
 });
 
-/** Shared by trees (logging) and mines (mining). Producers run in plots/slots. */
+/** Shared by trees (logging) and mines (mining). Each unlocked one produces once. */
 const producerFields = {
   id,
   name,
   tier,
   /** Resource id this producer yields. */
   resource: id,
-  /** Output per second for each plot/slot running it. */
+  /** Output per second at level 0. */
   baseRate: positiveDecimal,
 };
 
@@ -118,20 +118,10 @@ export const mineSchema = z.strictObject({
   level: producerLevelSchema,
 });
 
-/** Plot (logging) / slot (mining) capacity for one production job. */
-const jobProductionSchema = z.strictObject({
-  /** Plots/slots in a brand-new game (and after a prestige). */
-  startPlots: z.number().int().min(0),
-  /** Tree/mine placed in every starting plot/slot. Must be available from the start. */
-  startProducer: id,
-  /** Price of each extra plot/slot. */
-  expansion: costCurveSchema,
-});
-
 /** How a production main card strikes (DESIGN.md §4): a look and a rhythm, never extra output. */
 export const HARVEST_STYLES = ['steady', 'chop', 'flurry', 'volley'] as const;
 export type HarvestStyle = (typeof HARVEST_STYLES)[number];
-/** Which plots / slots a strike lands on: the next one in turn, a random one, or every one. */
+/** Which unlocked kinds a strike lands on: the next one in turn, a random one, or every one. */
 export const HARVEST_TARGETING = ['sweep', 'random', 'all'] as const;
 export type HarvestTargeting = (typeof HARVEST_TARGETING)[number];
 
@@ -147,8 +137,6 @@ export const harvestPatternSchema = z.strictObject({
 export type HarvestPattern = z.output<typeof harvestPatternSchema>;
 
 export const productionSchema = z.strictObject({
-  logging: jobProductionSchema,
-  mining: jobProductionSchema,
   harvest: z.strictObject({
     /** Pattern of a job with no main card. */
     default: z.strictObject({ logging: harvestPatternSchema, mining: harvestPatternSchema }),
@@ -206,12 +194,9 @@ export const STATS = [
   'summon.pityThreshold',
   /** Multiplier on resource costs (1 = normal price). Scope: job, producer, resource. */
   'cost.multiplier',
-  /** Growth factor of exponential prices (plot/slot expansions, mine levels; at least 1).
+  /** Growth factor of exponential prices (tree and mine levels; at least 1).
    *  Scope: job, producer, resource. */
   'cost.growth',
-  /** Plots (logging) / slots (mining) available: start + bought expansions (floored, at least 0).
-   *  Scope: job. */
-  'production.capacity',
   /** Percent output each mine level adds. Scope: job, producer, resource. */
   'production.levelBonus',
   /** Damage per second each level of a damage upgrade line adds. Scope: job, resource. */
