@@ -289,7 +289,8 @@
   font-size: 12.5px;
   color: var(--bi-frame-ink-muted);
 }
-.wp .button:focus-visible {
+.wp .button:focus-visible,
+.wp-stars:focus-visible {
   outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 3px;
 }

@@ -77,6 +77,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   // ---- the side: star line, add star, tier-up tag ----
   const side = h('div', 'wp-side');
   const starLine = h('p', 'wp-stars bi-num');
+  starLine.tabIndex = -1; // where focus lands when the button it was on goes away (a star was taken)
   const starMain = h('b');
   const starImpact = h('span');
   starLine.append(starMain, starImpact);
@@ -276,7 +277,9 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       if (hint) tag.append(hint);
       tagHost.append(tag);
     }
-    if (keep && focused) side.querySelector<HTMLElement>(`[data-key="${focused}"]`)?.focus();
+    if (keep && focused) {
+      (side.querySelector<HTMLElement>(`[data-key="${focused}"]`) ?? starLine).focus();
+    }
   }
 
   let lastItem = '';

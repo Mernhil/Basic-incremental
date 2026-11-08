@@ -139,4 +139,22 @@ describe('Clean pixels: the scale choice (DESIGN.md §12)', () => {
     expect(cardsPerRow(700, 2, 2, 14)).toBe(4);
     expect(cardsPerRow(100, 2, 2, 14)).toBe(1);
   });
+
+  it('the Cards collection is the full card four across: 1x on a 1280 window, 2x on 1080p', () => {
+    // the grid asks for 2x (264 CSS px) four across with 10 px gaps (pages/cards.ts)
+    const fourAcross = (free: number, dpr: number): number => pickRowScale(4, 264, free, 10, dpr);
+    // 1280 x 820: about 569 px free in the grid frame
+    expect(fourAcross(569, 1)).toBe(1);
+    // 1920 x 1080: the page is wide enough for four at 2x (4 x 264 + 3 x 10 = 1086)
+    expect(fourAcross(1224, 1)).toBe(2);
+    expect(fourAcross(1085, 1)).toBe(1);
+    // a 150% screen: 1x there is 88 CSS px, and still four across
+    expect(cardCssSize(fourAcross(569, 1.5), 1.5).w * 4 + 30).toBeLessThanOrEqual(569);
+    // never fractional, never below 1x
+    for (const dpr of DPRS) {
+      const n = fourAcross(569, dpr);
+      expect(Number.isInteger(n)).toBe(true);
+      expect(n).toBeGreaterThanOrEqual(1);
+    }
+  });
 });
