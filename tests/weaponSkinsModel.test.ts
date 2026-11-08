@@ -12,10 +12,10 @@ describe('weapon skins tab model', () => {
     expect(weaponOptions(content)).toEqual([{ kind: 'soul_reaper', name: expect.any(String) }]);
   });
 
-  it('starts on Original with 12 skins plus Original, nothing to apply', () => {
+  it('starts on Original with 13 skins plus Original, nothing to apply', () => {
     const v = weaponSkinsView(freshState(), content, {}, 'Original');
     expect(v.weapon).toBe('soul_reaper');
-    expect(v.tiles).toHaveLength(13);
+    expect(v.tiles).toHaveLength(14);
     expect(v.tiles[0]).toMatchObject({ id: null, name: 'Original', worn: true, picked: true });
     expect(v.previewArt).toBeNull();
     expect(v.canApply).toBe(false);

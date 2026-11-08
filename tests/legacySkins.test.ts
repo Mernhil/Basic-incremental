@@ -233,7 +233,7 @@ describe('Legacy Gate pulls', () => {
   it('lists every skin in the odds at its own rarity', () => {
     const info = portalInfo(freshState(), content, GATE)!;
     const staffOdds = info.rates.byItem.filter((i) => i.itemId.startsWith('legacy-staff-'));
-    expect(info.rates.byItem).toHaveLength(58);
+    expect(info.rates.byItem).toHaveLength(71);
     expect(staffOdds.map((i) => [i.itemId, i.rarity]).sort()).toEqual([
       ['legacy-staff-01', 'mythic'],
       ['legacy-staff-02', 'exotic'],
@@ -306,5 +306,73 @@ describe('legacy bow skins content', () => {
       weights.set(s.rarity!, entry.weight);
     }
     expect(LADDER.map((r) => weights.get(r))).toEqual([7, 6, 5, 4, 3, 2, 1]);
+  });
+});
+
+describe('legacy maul and twin blades skins content', () => {
+  const maul = baseContent.weaponSkinsByWeapon.get('maul')!;
+  const twins = baseContent.weaponSkinsByWeapon.get('twin_blades')!;
+  const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
+  const MAUL_RARITIES = [
+    'common',
+    'rare',
+    'epic',
+    'legendary',
+    'mythic',
+    'exotic',
+    'void',
+    'void',
+    'epic',
+    'rare',
+    'rare',
+  ] as const;
+
+  it('lists 11 distinct legacy maul skins in order, the tenth named Bronze Hammer', () => {
+    expect(maul.baseArt).toBeUndefined();
+    expect(maul.skins).toHaveLength(11);
+    expect(new Set(maul.skins.map((s) => s.name)).size).toBe(11);
+    maul.skins.forEach((s, i) => {
+      const n = String(i + 1).padStart(2, '0');
+      expect([s.id, s.art, s.legacy, s.rarity]).toEqual([
+        `legacy-maul-${n}`,
+        `skin-maul-${n}`,
+        true,
+        MAUL_RARITIES[i],
+      ]);
+    });
+    expect(maul.skins[9]!.name).toBe('Bronze Hammer');
+  });
+
+  it('lists two Rare legacy twin blades skins, the first named Twin Daggers', () => {
+    expect(twins.baseArt).toBeUndefined();
+    expect(twins.skins.map((s) => [s.id, s.art, s.legacy, s.rarity])).toEqual([
+      ['legacy-twin_blades-01', 'skin-twin_blades-01', true, 'rare'],
+      ['legacy-twin_blades-02', 'skin-twin_blades-02', true, 'rare'],
+    ]);
+    expect(twins.skins[0]!.name).toBe('Twin Daggers');
+  });
+
+  it('gives every skin name in all sets once', () => {
+    const names = baseContent.weaponSkins.flatMap((w) => w.skins.map((s) => s.name));
+    const dupes = names.filter((n, i) => names.indexOf(n) !== i);
+    // "Ember Toll" is a pre-existing repeat (scythe 04 and bow 01 of the earlier sets).
+    expect(dupes.filter((n) => n !== 'Ember Toll')).toEqual([]);
+  });
+
+  it('pools the maul and twin blades skins in the Legacy Gate with the rarity weights', () => {
+    const W: Record<string, number> = {
+      common: 7,
+      rare: 6,
+      epic: 5,
+      legendary: 4,
+      mythic: 3,
+      exotic: 2,
+      void: 1,
+    };
+    for (const s of [...maul.skins, ...twins.skins]) {
+      const entry = gate.pool.find((p) => p.itemId === s.id)!;
+      expect([entry.rarity, entry.weight]).toEqual([s.rarity, W[s.rarity!]]);
+    }
+    expect(gate.pool).toHaveLength(71);
   });
 });

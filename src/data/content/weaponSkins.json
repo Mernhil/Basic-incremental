@@ -74,6 +74,12 @@
         "name": "Starfall",
         "art": "skin-scythe-12",
         "cost": 0
+      },
+      {
+        "id": "skin-13",
+        "name": "Bonehandle Reaper",
+        "art": "skin-scythe-13",
+        "cost": 0
       }
     ]
   },
@@ -548,6 +554,120 @@
         "cost": 0,
         "legacy": true,
         "rarity": "void"
+      }
+    ]
+  },
+  {
+    "weapon": "maul",
+    "skins": [
+      {
+        "id": "legacy-maul-01",
+        "name": "Oaken Mallet",
+        "art": "skin-maul-01",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "common"
+      },
+      {
+        "id": "legacy-maul-02",
+        "name": "Ironbound Mallet",
+        "art": "skin-maul-02",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "rare"
+      },
+      {
+        "id": "legacy-maul-03",
+        "name": "Gemhead Mallet",
+        "art": "skin-maul-03",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-maul-04",
+        "name": "Goldcap Maul",
+        "art": "skin-maul-04",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "legendary"
+      },
+      {
+        "id": "legacy-maul-05",
+        "name": "Rosecap Maul",
+        "art": "skin-maul-05",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "mythic"
+      },
+      {
+        "id": "legacy-maul-06",
+        "name": "Cinderspike Maul",
+        "art": "skin-maul-06",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "exotic"
+      },
+      {
+        "id": "legacy-maul-07",
+        "name": "Voidhead Maul",
+        "art": "skin-maul-07",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-maul-08",
+        "name": "Crystal Crown Hammer",
+        "art": "skin-maul-08",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "void"
+      },
+      {
+        "id": "legacy-maul-09",
+        "name": "Copperband Mallet",
+        "art": "skin-maul-09",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "epic"
+      },
+      {
+        "id": "legacy-maul-10",
+        "name": "Bronze Hammer",
+        "art": "skin-maul-10",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "rare"
+      },
+      {
+        "id": "legacy-maul-11",
+        "name": "Rough Bronze Hammer",
+        "art": "skin-maul-11",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "rare"
+      }
+    ]
+  },
+  {
+    "weapon": "twin_blades",
+    "skins": [
+      {
+        "id": "legacy-twin_blades-01",
+        "name": "Twin Daggers",
+        "art": "skin-twin_blades-01",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "rare"
+      },
+      {
+        "id": "legacy-twin_blades-02",
+        "name": "Voidglow Twins",
+        "art": "skin-twin_blades-02",
+        "cost": 0,
+        "legacy": true,
+        "rarity": "rare"
       }
     ]
   }

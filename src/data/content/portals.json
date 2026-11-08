@@ -780,6 +780,71 @@
         "itemId": "legacy-bow-55",
         "rarity": "void",
         "weight": 1
+      },
+      {
+        "itemId": "legacy-maul-01",
+        "rarity": "common",
+        "weight": 7
+      },
+      {
+        "itemId": "legacy-maul-02",
+        "rarity": "rare",
+        "weight": 6
+      },
+      {
+        "itemId": "legacy-maul-03",
+        "rarity": "epic",
+        "weight": 5
+      },
+      {
+        "itemId": "legacy-maul-04",
+        "rarity": "legendary",
+        "weight": 4
+      },
+      {
+        "itemId": "legacy-maul-05",
+        "rarity": "mythic",
+        "weight": 3
+      },
+      {
+        "itemId": "legacy-maul-06",
+        "rarity": "exotic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-maul-07",
+        "rarity": "void",
+        "weight": 1
+      },
+      {
+        "itemId": "legacy-maul-08",
+        "rarity": "void",
+        "weight": 1
+      },
+      {
+        "itemId": "legacy-maul-09",
+        "rarity": "epic",
+        "weight": 5
+      },
+      {
+        "itemId": "legacy-maul-10",
+        "rarity": "rare",
+        "weight": 6
+      },
+      {
+        "itemId": "legacy-maul-11",
+        "rarity": "rare",
+        "weight": 6
+      },
+      {
+        "itemId": "legacy-twin_blades-01",
+        "rarity": "rare",
+        "weight": 6
+      },
+      {
+        "itemId": "legacy-twin_blades-02",
+        "rarity": "rare",
+        "weight": 6
       }
     ],
     "pity": {
