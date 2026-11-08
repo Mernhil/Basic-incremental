@@ -301,7 +301,7 @@ describe('the Unique tier (DESIGN.md §5)', () => {
 
   it('is only a flag in the card data', () => {
     const withUnique = content.cards.filter((c) => c.evolution).map((c) => c.id);
-    expect(withUnique.sort()).toEqual(['ember_squire', 'grove_keeper']);
+    expect(withUnique.sort()).toEqual(['ember_squire', 'grove_keeper', 'reaper_test']);
   });
 
   it('counts as fully ranked at Unique ★6, and at Prismatic ★6 for a card without one', () => {

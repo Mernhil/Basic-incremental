@@ -75,7 +75,8 @@ describe('bundled content', () => {
       ['Iron Deeps', 'mossy_cellar'],
       ['Crystal Grotto', 'ember_crypt'],
     ]);
-    expect(content.cards).toHaveLength(12);
+    // 12 beta cards plus the weapon-skins test card (`reaper_test`).
+    expect(content.cards).toHaveLength(13);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -180,7 +181,10 @@ describe('content validation errors', () => {
 
 describe('card ranks and portals', () => {
   it('has the 12 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
-    const content = loadContent();
+    const loaded = loadContent();
+    // The weapon-skins test card (`reaper_test`) is not one of the beta cards.
+    const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
+    expect(loaded.cardById.get('reaper_test')?.name).toBe('Reaper Test Card');
     expect(content.cards).toHaveLength(12);
     for (const job of ['fighting', 'logging', 'mining'] as const) {
       expect(content.cards.filter((c) => c.job === job)).toHaveLength(4);

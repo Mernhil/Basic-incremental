@@ -898,6 +898,74 @@
           }
         ]
       }
+    ],
+    "reaper_test": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
     ]
   }
 }

@@ -111,10 +111,12 @@ describe('card tier and evolution tier-ups', () => {
 });
 
 describe('unique evolutions (DESIGN.md §5)', () => {
-  it('maps Flameblade and Rootbloom Staff, and defines Soul Reaper unassigned', () => {
+  it('maps Flameblade and Rootbloom Staff, and Soul Reaper only to the weapon-skins test card', () => {
     expect(content.cardById.get('ember_squire')!.evolution).toBe('flameblade');
     expect(content.cardById.get('grove_keeper')!.evolution).toBe('rootbloom_staff');
-    expect(content.cards.filter((c) => c.evolution === 'soul_reaper')).toEqual([]);
+    expect(content.cards.filter((c) => c.evolution === 'soul_reaper').map((c) => c.id)).toEqual([
+      'reaper_test',
+    ]);
     expect(content.progression.evolutions.items.map((i) => i.kind)).toContain('soul_reaper');
   });
 
@@ -125,6 +127,7 @@ describe('unique evolutions (DESIGN.md §5)', () => {
     expect(cardItemKind(content, 'ember_squire', cardAt('prismatic', 6))).toBe('sword');
     expect(cardItemKind(content, 'ember_squire', cardAt('unique', 1))).toBe('flameblade');
     expect(cardItemKind(content, 'grove_keeper', cardAt('unique', 3))).toBe('rootbloom_staff');
+    expect(cardItemKind(content, 'reaper_test', cardAt('unique', 1))).toBe('soul_reaper');
   });
 
   it('keeps the generic item for cards without an evolution', () => {
