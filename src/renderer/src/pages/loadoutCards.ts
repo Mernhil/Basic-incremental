@@ -38,7 +38,7 @@ export function cardItemArt(
     const markup = skin ? skinMarkup(skin) : '';
     if (markup) return markup;
   }
-  return itemArt(item?.kind ?? card.item.kind, item?.rarity ?? card.rarity);
+  return itemArt(item?.kind ?? card.item.kind, item?.rarity ?? card.rarity, owned?.tier ?? 'wood');
 }
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */
@@ -97,5 +97,5 @@ export function loadoutKey(state: GameState): string {
 /** Markup of a weapon's art for the skin picker: a skin's art, or the type's own (interim) art. */
 export function weaponArtMarkup(weaponKind: string, artId: string | null): string {
   if (artId) return skinMarkup(artId);
-  return itemArt(weaponKind as ItemKind, 'epic');
+  return itemArt(weaponKind as ItemKind, 'epic', 'wood');
 }

@@ -7,7 +7,7 @@
  * hidden copy of the item's outline rides along so the element effects (`fx.ts`) can still trace
  * the real shape.
  */
-import type { ItemKind, Rarity } from '../../../data';
+import type { ItemKind, Rarity, RankTier } from '../../../data';
 import { animatedSpriteImage, sprite } from './pixel/sprites';
 import { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade, type ArtRarity } from './vector/items';
 
@@ -62,8 +62,13 @@ function placeholder(kind: ItemKind): string {
   return `<g class="bi-item bi-item--placeholder"><rect x="40" y="70" width="120" height="100" fill="#2a303c" stroke="#0d0f14" stroke-width="4"/><text x="100" y="128" text-anchor="middle" font-family="monospace" font-size="16" font-weight="700" fill="#cfd5df">${label}</text></g>`;
 }
 
-/** The item's pixel sprite for a card art window, in the 200 x 240 item box. */
-export function itemArt(kind: ItemKind, rarity: Rarity): string {
+/**
+ * The item's pixel sprite for a card art window, in the 200 x 240 item box. At the Wood tier (T1)
+ * every type has its own approved picture (`item-<type>-t1`, hand-made); higher tiers still show the
+ * interim look until their tier is drawn.
+ */
+export function itemArt(kind: ItemKind, rarity: Rarity, tier?: RankTier): string {
+  if (tier === 'wood') return itemBoxSprite(`item-${kind}-t1`);
   const art = INTERIM_KIND[kind];
   if (!art) return placeholder(kind);
   return itemBoxSprite(`item-${art}-${INTERIM_RARITY[rarity]}`);

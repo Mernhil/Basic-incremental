@@ -7,7 +7,7 @@
 //   node scripts/art/picker.mjs <config.json> <out.html>
 //   node scripts/art/picker.mjs --folder <dir> <out.html> [--title "Title"]
 //
-// Config: { "title", "intro"?, "groups": [{ "title", "note"?, "items": [{ "src", "name"?, "sub"?,
+// Config: { "title", "intro"?, "scale"? (whole-number zoom of the pictures, default 1), "groups": [{ "title", "note"?, "items": [{ "src", "name"?, "sub"?,
 // "strip"? }] }] }. `src` is a PNG path (relative to the config file), `strip` an optional
 // pre-rendered animation strip (frames side by side, each as wide as the still, or 100 px when
 // there is no still). In folder mode every sub-folder is a group and every PNG an item; a file
@@ -89,7 +89,7 @@ h1{font-size:clamp(28px,4vw,42px);margin:0 0 10px}
 .grp h3{margin:0;font-size:18px;display:flex;align-items:baseline;gap:10px}
 .num{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 6px;border-radius:8px;background:var(--ink);color:var(--bg);font-weight:800}
 .grp p{margin:0;color:var(--muted);font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,max-content));gap:10px}
 .tile{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:30px 8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;text-align:center}
 .tile:focus-visible{outline:3px solid var(--gold);outline-offset:2px}.tile:hover{border-color:var(--gold)}
 .tile[aria-pressed="true"]{background:var(--keepbg);border:2px solid var(--keep);padding:29px 7px 9px}
@@ -146,18 +146,20 @@ const SCRIPT = `(function(){
   render();
 })();`;
 
-function tileHtml(label, item, baseDir) {
+function tileHtml(label, item, baseDir, scale = 1) {
   const still = item.src ? readFileSync(resolve(baseDir, item.src)) : null;
   const strip = item.strip ? readFileSync(resolve(baseDir, item.strip)) : null;
   const size = still ? pngSize(still) : { w: 100, h: strip ? pngSize(strip).h : 120 };
+  const dw = size.w * scale;
+  const dh = size.h * scale;
   let pic;
   if (strip) {
     const total = pngSize(strip);
     const frames = Math.max(1, Math.round(total.w / size.w));
     // the strip replaces the still on the tile: it plays frame by frame
-    pic = `<span class="pic sp" role="img" aria-label="${esc(item.name)}" style="width:${size.w}px;height:${size.h}px;background-image:url(${dataUri(strip)});background-size:${total.w}px ${total.h}px;--n:${frames};--end:-${total.w}px;--dur:${(frames * 0.11).toFixed(2)}s"></span>`;
+    pic = `<span class="pic sp" role="img" aria-label="${esc(item.name)}" style="width:${dw}px;height:${dh}px;background-image:url(${dataUri(strip)});background-size:${total.w * scale}px ${total.h * scale}px;--n:${frames};--end:-${total.w * scale}px;--dur:${(frames * 0.11).toFixed(2)}s"></span>`;
   } else {
-    pic = `<img class="pic" src="${dataUri(still)}" alt="${esc(item.name)}" width="${size.w}" height="${size.h}">`;
+    pic = `<img class="pic" src="${dataUri(still)}" alt="${esc(item.name)}" width="${dw}" height="${dh}">`;
   }
   return `<button class="tile" data-id="${label}" aria-pressed="false"><span class="lab">${label}</span>${pic}<span class="nm">${esc(item.name)}</span>${item.sub ? `<span class="sub">${esc(item.sub)}</span>` : ''}</button>`;
 }
@@ -168,7 +170,7 @@ export function buildPickerHtml(config, baseDir = '.') {
   const groups = config.groups
     .map((g, gi) => {
       const tiles = g.items
-        .map((item, ii) => tileHtml(labelFor(gi + 1, ii), item, baseDir))
+        .map((item, ii) => tileHtml(labelFor(gi + 1, ii), item, baseDir, config.scale ?? 1))
         .join('');
       return `<section class="grp" id="g${gi + 1}"><header><h3><span class="num">${gi + 1}</span>${esc(g.title)}</h3>${g.note ? `<p>${esc(g.note)}</p>` : ''}</header><div class="grid">${tiles}</div></section>`;
     })
