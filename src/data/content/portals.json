@@ -25,6 +25,21 @@
         "weight": 30
       },
       {
+        "itemId": "hollow_spearman",
+        "rarity": "uncommon",
+        "weight": 20
+      },
+      {
+        "itemId": "moss_forager",
+        "rarity": "uncommon",
+        "weight": 20
+      },
+      {
+        "itemId": "pebble_prospector",
+        "rarity": "uncommon",
+        "weight": 20
+      },
+      {
         "itemId": "grove_keeper",
         "rarity": "rare",
         "weight": 10
@@ -50,6 +65,11 @@
         "weight": 4
       },
       {
+        "itemId": "prism_delver",
+        "rarity": "epic",
+        "weight": 4
+      },
+      {
         "itemId": "dawnblade_regent",
         "rarity": "legendary",
         "weight": 1.5
@@ -60,12 +80,37 @@
         "weight": 1.5
       },
       {
+        "itemId": "heartwood_warden",
+        "rarity": "legendary",
+        "weight": 1.5
+      },
+      {
         "itemId": "moonwood_dryad",
         "rarity": "mythic",
         "weight": 0.6
       },
       {
+        "itemId": "seraph_lancer",
+        "rarity": "mythic",
+        "weight": 0.6
+      },
+      {
+        "itemId": "lodestone_seer",
+        "rarity": "mythic",
+        "weight": 0.6
+      },
+      {
         "itemId": "core_titan",
+        "rarity": "void",
+        "weight": 0.3
+      },
+      {
+        "itemId": "grave_hammerer",
+        "rarity": "void",
+        "weight": 0.3
+      },
+      {
+        "itemId": "rotwood_sovereign",
         "rarity": "void",
         "weight": 0.3
       }

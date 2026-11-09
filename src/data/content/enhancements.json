@@ -900,6 +900,672 @@
           }
         ]
       }
+    ],
+    "hollow_spearman": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "seraph_lancer": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "grave_hammerer": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "moss_forager": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "10",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "thrift",
+        "name": "Thrift",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "cost.multiplier",
+            "kind": "percent",
+            "value": "-5",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
+    ],
+    "heartwood_warden": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "14",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "4.2",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "thrift",
+        "name": "Thrift",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "cost.multiplier",
+            "kind": "percent",
+            "value": "-7",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
+    ],
+    "rotwood_sovereign": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "18",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "5.4",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "thrift",
+        "name": "Thrift",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "cost.multiplier",
+            "kind": "percent",
+            "value": "-9",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "36",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
+    ],
+    "pebble_prospector": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "thrift",
+        "name": "Thrift",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "cost.multiplier",
+            "kind": "percent",
+            "value": "-5",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "prism_delver": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "12",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "18",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "thrift",
+        "name": "Thrift",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "cost.multiplier",
+            "kind": "percent",
+            "value": "-6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "lodestone_seer": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "thrift",
+        "name": "Thrift",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "cost.multiplier",
+            "kind": "percent",
+            "value": "-10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "40",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
     ]
   }
 }

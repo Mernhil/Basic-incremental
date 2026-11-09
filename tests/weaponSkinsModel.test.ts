@@ -44,9 +44,11 @@ describe('weapon skins tab model', () => {
   it('previews a card of the type, else the first fighting card', () => {
     const sword = weaponSkinsView(freshState(), content, { weapon: 'sword' }, 'Original');
     expect(sword.previewCardId).toBe('ember_squire');
-    const hammer = weaponSkinsView(freshState(), content, { weapon: 'hammer' }, 'Original');
-    expect(content.cards.some((c) => c.item.kind === 'hammer')).toBe(false);
+    const hammer = weaponSkinsView(freshState(), content, { weapon: 'bow' }, 'Original');
+    expect(content.cards.some((c) => c.item.kind === 'bow')).toBe(false);
     expect(hammer.previewCardId).toBe(content.cards.find((c) => c.job === 'fighting')!.id);
+    const hammerCard = weaponSkinsView(freshState(), content, { weapon: 'hammer' }, 'Original');
+    expect(hammerCard.previewCardId).toBe('grave_hammerer');
   });
 
   it('previewing an owned skin does not change the save and can be applied', () => {

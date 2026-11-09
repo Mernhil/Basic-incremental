@@ -99,6 +99,7 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
   | Mining   | Geode Golem       | Legendary | Crystal | Pickaxe     | Harvest bursts give 15 s of output, +15% mining    | +15% mining                        |
   | Mining   | Core Titan        | Void      | Void    | Pickaxe     | +40% mining, harvest gauge fills faster            | +25% mining, +5% Core drop chance  |
 
+- [Default · in game] **Base roster: one card per rarity per job** (2026-11-09, so every tier cap has a base card to tier up to). Nine cards were added to the beta cards: fighting Hollow Spearman (Uncommon, Earth, spear; steady hits every 0.8 s; +8% damage), Seraph Lancer (Mythic, Light, lance; heavy hits every 1.5 s, signature attack ×20; +20% damage, +12% rare drop chance) and Grave Hammerer (Void, Void, hammer; slow hits every 3 s, signature attack ×30; same support); logging Moss Forager (Uncommon, Nature; +5% logging; +7% logging), Heartwood Warden (Legendary, Nature; bursts give 15 s of output, +15% logging; +15% logging) and Rotwood Sovereign (Void, Void; as Moonwood Dryad); mining Pebble Prospector (Uncommon, Earth; +5% mining; +7% mining), Prism Delver (Epic, Crystal; bursts give 15 s of output; +12% mining) and Lodestone Seer (Mythic, Light; as Core Titan). Logging and mining now hold a card of every rarity; fighting has all of them but the Rare, which is the weapon skin test card (`cards.json`, entries added to the Card Portal pool; names, elements and numbers are Claude's).
 - [Default · in game] **Cards that did not fit the new types.** Storm Duelist carries a dagger, the Reaper Test Card (the weapon skin test card, §8) carries a scythe, and Core Titan, an Exotic card before Exotic left the game, becomes Void.
 
 ### Weapon progression
@@ -318,6 +319,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §7 the Legacy Gate price, how its skins get a rarity and the payback for a skin you own; the Legacy Gate as the right-hand deck (2026-11-08).
 - §8 legacy skins below Heirloom only, their palette-cycling strips, "Original" always available, the skin names and the skin rarities (Exotic becoming Mythic, Flameblade Mythic, the Soul Reaper and its skins Void; 2026-11-09).
 - §5 (2026-11-09, weapon base) the Uncommon colour and every rarity-keyed number of Uncommon and Mythic/Void, the Uncommon and Mythic/Void costs, the cards that did not fit the new types (Storm Duelist a dagger, the Reaper Test Card a scythe, Core Titan Void), the star bar, the seven level caps, the tier-up costs of Wood and the Heirloom, the Heirloom tier (power ×7), the enhancement budgets and the interim weapon looks and frames.
+- §5 (2026-11-09) the nine base roster cards: names, elements, abilities, numbers and Card Portal weights; with them the sim has the first Silver card at about 22 h (target 1.5 h), so the pacing waits for a balancing pass.
 - §7 the Legacy Gate weights for Uncommon and Mythic/Void; §8 the maximum cosmetic level of Uncommon and Mythic/Void.
 - §14 tier names keep their milestones.
 
@@ -342,6 +344,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 
 ## 17. Changelog
 
+- 2026-11-09 — Base roster: nine cards so every job has a card of every rarity (§5; Claude defaults).
 - 2026-11-09 — Weapon base (user): 11 item types remade from scratch; rarities Common to Mythic/Void, Exotic gone, Uncommon new; tiers Wood to Mythic/Void with rarity caps; Unique renamed Heirloom, one Mythic and one Void per type; item names; old art kept only as the picked legacy skins and style references; picker page for every choice between pictures (§5, §7, §8).
 - 2026-11-08 — Moved the art rules (old §12, `COSMETICS.md`, `COSMETIC_ART_IDS.md`) into `docs/ASSET_RULES.md`; tier looks now follow its T1 to T6 ladder (§5, §12; user).
 - 2026-11-08 — Legacy skins (user): all weapon art made so far becomes curated legacy skins per weapon type, worn by every card of that type and earned from a new Legacy Gate; graphics are made one set at a time from now on. This drops the plan to put the redrawn bow, book, katana, maul and staff ladders into the card ladders and the summon pool (§7, §8, §12).

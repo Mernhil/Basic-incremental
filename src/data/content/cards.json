@@ -498,5 +498,411 @@
         }
       ]
     }
+  },
+  {
+    "id": "hollow_spearman",
+    "name": "Hollow Spearman",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "earth",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "seraph_lancer",
+    "name": "Seraph Lancer",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "grave_hammerer",
+    "name": "Grave Hammerer",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "moss_forager",
+    "name": "Moss Forager",
+    "job": "logging",
+    "rarity": "uncommon",
+    "element": "nature",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "main": {
+      "description": "+5% logging",
+      "harvest": {
+        "style": "steady",
+        "intervalSeconds": 0.8,
+        "strikes": 1,
+        "targeting": "sweep"
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "5",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+7% logging",
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "7",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "heartwood_warden",
+    "name": "Heartwood Warden",
+    "job": "logging",
+    "rarity": "legendary",
+    "element": "nature",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "main": {
+      "description": "Harvest bursts give 15 s of output, +15% logging",
+      "harvest": {
+        "style": "chop",
+        "intervalSeconds": 2,
+        "strikes": 1,
+        "targeting": "random"
+      },
+      "modifiers": [
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "logging"
+          }
+        },
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "15",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% logging",
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "15",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "rotwood_sovereign",
+    "name": "Rotwood Sovereign",
+    "job": "logging",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "main": {
+      "description": "+30% logging, harvest gauge fills faster",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2,
+        "targeting": "all"
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30",
+          "scope": {
+            "job": "logging"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% logging",
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "20",
+          "scope": {
+            "job": "logging"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "pebble_prospector",
+    "name": "Pebble Prospector",
+    "job": "mining",
+    "rarity": "uncommon",
+    "element": "earth",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "main": {
+      "description": "+5% mining",
+      "harvest": {
+        "style": "steady",
+        "intervalSeconds": 0.8,
+        "strikes": 1,
+        "targeting": "sweep"
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "5",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+7% mining",
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "7",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "prism_delver",
+    "name": "Prism Delver",
+    "job": "mining",
+    "rarity": "epic",
+    "element": "crystal",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "main": {
+      "description": "Harvest bursts give 15 s of output instead of 10 s",
+      "harvest": {
+        "style": "chop",
+        "intervalSeconds": 2,
+        "strikes": 1,
+        "targeting": "random"
+      },
+      "modifiers": [
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% mining",
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "12",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    }
+  },
+  {
+    "id": "lodestone_seer",
+    "name": "Lodestone Seer",
+    "job": "mining",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "main": {
+      "description": "+40% mining, harvest gauge fills faster",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2,
+        "targeting": "all"
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40",
+          "scope": {
+            "job": "mining"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "mining"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% mining, +5% Core drop chance",
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "25",
+          "scope": {
+            "job": "mining"
+          }
+        },
+        {
+          "stat": "drops.materialChance",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
   }
 ]
