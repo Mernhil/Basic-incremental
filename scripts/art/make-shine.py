@@ -282,8 +282,8 @@ RECIPES = {
                    P('pulse', 'cyan', amount=0.5)),
     'bow-hv': R(P('rise', 'violet', shape='smoke', col=C['shadow'], count=5, speed=1, sway=1, spread=8),
                 P('pulse', 'violet', amount=0.6), P('orbit', 'violet', shape='dot', col=C['lilac'], count=3, rx=28, ry=34)),
-    'staff-hv': R(P('orbit', 'cyan', shape='ghost', col=C['cyan'], count=4, rx=22, ry=14, eyes=True),
-                  P('flicker', 'cyan'), P('pulse', 'cyan', amount=0.45)),
+    # Soulwell: the ghosts drawn in its orb stay as drawn (no circling ghosts, the user's call); the flames flicker
+    'staff-hv': R(P('flicker', 'cyan'), P('pulse', 'cyan', amount=0.45)),
     'scythe-hv': R(P('pulse', 'red', amount=0.7), P('fall', 'red', shape='dot', col=C['ash'], count=6, speed=2, sway=1, spread=6),
                    P('twinkle', 'white', col=C['bone'], count=2)),
     'pickaxe-hv': R(P('rise', 'cyan', shape='bubble', col=C['teal'], count=6, speed=2, sway=1, spread=6),
