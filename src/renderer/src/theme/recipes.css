@@ -1474,7 +1474,7 @@
     url('../art/pixel/sprites/cos-tb-blossom-1.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-blossom-2 body {
@@ -1483,7 +1483,7 @@
     url('../art/pixel/sprites/cos-tb-blossom-2.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-blossom-3 body {
@@ -1492,7 +1492,7 @@
     url('../art/pixel/sprites/cos-tb-blossom-3.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-blossom-4 body {
@@ -1501,7 +1501,7 @@
     url('../art/pixel/sprites/cos-tb-blossom-4.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-blossom-5 body {
@@ -1510,7 +1510,7 @@
     url('../art/pixel/sprites/cos-tb-blossom-5.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-fern-1 body {
@@ -1519,7 +1519,7 @@
     url('../art/pixel/sprites/cos-tb-fern-1.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-fern-2 body {
@@ -1528,7 +1528,7 @@
     url('../art/pixel/sprites/cos-tb-fern-2.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-fern-3 body {
@@ -1537,7 +1537,7 @@
     url('../art/pixel/sprites/cos-tb-fern-3.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-fern-4 body {
@@ -1546,7 +1546,7 @@
     url('../art/pixel/sprites/cos-tb-fern-4.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-fern-5 body {
@@ -1555,7 +1555,7 @@
     url('../art/pixel/sprites/cos-tb-fern-5.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-moss-1 body {
@@ -1564,7 +1564,7 @@
     url('../art/pixel/sprites/cos-tb-moss-1.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-moss-2 body {
@@ -1573,7 +1573,7 @@
     url('../art/pixel/sprites/cos-tb-moss-2.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-moss-3 body {
@@ -1582,7 +1582,7 @@
     url('../art/pixel/sprites/cos-tb-moss-3.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-moss-4 body {
@@ -1591,7 +1591,7 @@
     url('../art/pixel/sprites/cos-tb-moss-4.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-moss-5 body {
@@ -1600,7 +1600,7 @@
     url('../art/pixel/sprites/cos-tb-moss-5.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-verdant-1 body {
@@ -1609,7 +1609,7 @@
     url('../art/pixel/sprites/cos-tb-verdant-1.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-verdant-2 body {
@@ -1618,7 +1618,7 @@
     url('../art/pixel/sprites/cos-tb-verdant-2.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-verdant-3 body {
@@ -1627,7 +1627,7 @@
     url('../art/pixel/sprites/cos-tb-verdant-3.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-verdant-4 body {
@@ -1636,7 +1636,7 @@
     url('../art/pixel/sprites/cos-tb-verdant-4.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-verdant-5 body {
@@ -1645,7 +1645,7 @@
     url('../art/pixel/sprites/cos-tb-verdant-5.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-vine-1 body {
@@ -1654,7 +1654,7 @@
     url('../art/pixel/sprites/cos-tb-vine-1.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-vine-2 body {
@@ -1663,7 +1663,7 @@
     url('../art/pixel/sprites/cos-tb-vine-2.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-vine-3 body {
@@ -1672,7 +1672,7 @@
     url('../art/pixel/sprites/cos-tb-vine-3.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-vine-4 body {
@@ -1681,7 +1681,7 @@
     url('../art/pixel/sprites/cos-tb-vine-4.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-tb-vine-5 body {
@@ -1690,7 +1690,7 @@
     url('../art/pixel/sprites/cos-tb-vine-5.png');
   background-size:
     auto,
-    var(--tb-w) var(--tb-h);
+    192px 96px;
   image-rendering: pixelated;
 }
 .r-cur-blossom-1,
