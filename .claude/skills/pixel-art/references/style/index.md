@@ -1,64 +1,97 @@
-# Style references (the user's picks)
+# Style references (the user's learning set)
 
-Pictures the user marked **Learn** on the weapon art catalogue (2026-11-09): pixel-art styles they like, kept as references. Study the shading, outline, material and silhouette feel and draw something new in that spirit; never copy a picture. A picture marked **Keep + Learn** is a stronger reference than one marked Learn only, so those come first. Labels are the catalogue's (group number and letter); a picture with a strip `<label>-anim.png` is animated (8 frames, palette cycling, DESIGN.md §12).
+The user's current pixel-art learning set (2026-11-09), replacing the earlier catalogue picks. Study the shading, outline, material, ornament and silhouette feel and draw something new in that spirit; never copy a picture. Everything here was marked Keep and Learn by the user and called perfect.
 
-The Keep picks of the same catalogue are the game's legacy skins (`src/data/content/weaponSkins.json`, DESIGN.md §8). The old group labels refer to the catalogue page, https://claude.ai/artifact/4uoyseanUf1bBK811xPx4J.
+- `6f.png` and `6g.png`: the two legacy maul pictures that set the direction (separate chunky crystal prisms with flat colour set in solid bodies, simple palettes; 6f mint and lilac crystal on teal with gold trim, 6g black with purple cracked crystals and gold).
+- `h-<type>-m<0-3>.png` and `h-<type>-v<0-3>.png`: the 88 Heirloom candidates (11 item types, a Mythic-side and a Void-side Heirloom each, four candidates per side). They show the target for the best items in the game: each its own colour identity, ornate, large and clearly above any ordinary tier, still a clean pixel picture with a bold dark outline.
 
-## Keep + Learn (stronger references)
-
-| Label | File           | What it is                                       | Group                        |
-| ----- | -------------- | ------------------------------------------------ | ---------------------------- |
-| 6f    | `6f.png`       | Maul, Exotic                                     | 6. Maul ladder               |
-| 6g    | `6g.png`       | Maul, Void                                       | 6. Maul ladder               |
-| 7b    | `7b.png`       | Bow, Rare                                        | 7. Bow ladder                |
-| 7e    | `7e.png`       | Bow, Mythic                                      | 7. Bow ladder                |
-| 7h    | `7h-anim.png`  | Flame bow (redrawn), Epic, unused (animated)     | 7. Bow ladder                |
-| 7i    | `7i-anim.png`  | Vine bow (redrawn), Mythic, unused (animated)    | 7. Bow ladder                |
-| 12a   | `12a.png`      | Flameblade, Sword unique                         | 12. Old uniques              |
-| 12d   | `12d-anim.png` | Soul Reaper, base skin, Scythe unique (animated) | 12. Old uniques              |
-| 13a   | `13a-anim.png` | Pale Harvest, Skin (animated)                    | 13. Soul Reaper skins        |
-| 13b   | `13b-anim.png` | Gravedigger, Skin (animated)                     | 13. Soul Reaper skins        |
-| 13c   | `13c-anim.png` | Moonlit Reap, Skin (animated)                    | 13. Soul Reaper skins        |
-| 13d   | `13d-anim.png` | Ember Toll, Skin (animated)                      | 13. Soul Reaper skins        |
-| 13e   | `13e-anim.png` | Frostbitten, Skin (animated)                     | 13. Soul Reaper skins        |
-| 13f   | `13f-anim.png` | Verdant Rot, Skin (animated)                     | 13. Soul Reaper skins        |
-| 13g   | `13g-anim.png` | Bone Orchard, Skin (animated)                    | 13. Soul Reaper skins        |
-| 13h   | `13h-anim.png` | Stormcaller, Skin (animated)                     | 13. Soul Reaper skins        |
-| 13i   | `13i-anim.png` | Gilded Dusk, Skin (animated)                     | 13. Soul Reaper skins        |
-| 13j   | `13j-anim.png` | Midnight Veil, Skin (animated)                   | 13. Soul Reaper skins        |
-| 13k   | `13k-anim.png` | Crimson Tithe, Skin (animated)                   | 13. Soul Reaper skins        |
-| 13l   | `13l-anim.png` | Starfall, Skin (animated)                        | 13. Soul Reaper skins        |
-| 18a   | `18a-anim.png` | Crimson Draw, Epic (animated)                    | 18. Legacy bow skins, Epic   |
-| 20c   | `20c-anim.png` | Evergreen Wrath, Mythic (animated)               | 20. Legacy bow skins, Mythic |
-| 20d   | `20d-anim.png` | Twilight Reed, Mythic (animated)                 | 20. Legacy bow skins, Mythic |
-| 20g   | `20g-anim.png` | Bloodmoon Bow, Mythic (animated)                 | 20. Legacy bow skins, Mythic |
-| 20i   | `20i-anim.png` | Nebula Thorn, Mythic (animated)                  | 20. Legacy bow skins, Mythic |
-| 21h   | `21h-anim.png` | Plain Truth, Exotic (animated)                   | 21. Legacy bow skins, Exotic |
-
-## Learn only
-
-| Label | File           | What it is                           | Group                           |
-| ----- | -------------- | ------------------------------------ | ------------------------------- |
-| 7d    | `7d.png`       | Bow, Legendary                       | 7. Bow ladder                   |
-| 7f    | `7f.png`       | Bow, Exotic                          | 7. Bow ladder                   |
-| 7g    | `7g.png`       | Bow, Void                            | 7. Bow ladder                   |
-| 15h   | `15h.png`      | Crystal Crown Hammer, Void           | 15. Legacy maul skins           |
-| 16a   | `16a.png`      | Twin Daggers, Rare                   | 16. Legacy twin blades skins    |
-| 19a   | `19a-anim.png` | Violet Eclipse, Legendary (animated) | 19. Legacy bow skins, Legendary |
-| 19b   | `19b-anim.png` | Golden Hour, Legendary (animated)    | 19. Legacy bow skins, Legendary |
-| 19c   | `19c-anim.png` | Skyward Pierce, Legendary (animated) | 19. Legacy bow skins, Legendary |
-| 19d   | `19d-anim.png` | Crimson Reach, Legendary (animated)  | 19. Legacy bow skins, Legendary |
-| 19f   | `19f-anim.png` | Rose Tempest, Legendary (animated)   | 19. Legacy bow skins, Legendary |
-| 19h   | `19h-anim.png` | Indigo Oath, Legendary (animated)    | 19. Legacy bow skins, Legendary |
-| 19i   | `19i-anim.png` | Sunfire Bow, Legendary (animated)    | 19. Legacy bow skins, Legendary |
-| 20a   | `20a-anim.png` | Aurora Arc, Mythic (animated)        | 20. Legacy bow skins, Mythic    |
-| 20b   | `20b-anim.png` | Blossom Fate, Mythic (animated)      | 20. Legacy bow skins, Mythic    |
-| 20e   | `20e-anim.png` | Crown of Dawn, Mythic (animated)     | 20. Legacy bow skins, Mythic    |
-| 20f   | `20f-anim.png` | Zenith Piercer, Mythic (animated)    | 20. Legacy bow skins, Mythic    |
-| 20h   | `20h-anim.png` | Abyss Whisper, Mythic (animated)     | 20. Legacy bow skins, Mythic    |
-| 21c   | `21c-anim.png` | Cinder Arc, Exotic (animated)        | 21. Legacy bow skins, Exotic    |
-| 21i   | `21i-anim.png` | Auric Sting, Exotic (animated)       | 21. Legacy bow skins, Exotic    |
-
-## T2 bronze pictures (2026-11-09)
-
-Marked in the T2 picker (labels are that picker's: group number = item type 1 sword, 2 greatsword, 3 spear, 6 hammer, 7 bow, 8 staff, 9 scythe, 10 pickaxe, 11 logging axe). They are the style target for T2 to T4: simple and plain, the base shape kept, one part redrawn per tier, no glow or ornament. Keep + Learn (stronger): `t2-1b` sword, `t2-2b` greatsword, `t2-3b` spear, `t2-6b` hammer, `t2-7b` bow, `t2-8b` staff, `t2-9b` scythe, `t2-10a` pickaxe, `t2-11a` logging axe. Learn only: `t2-3a` spear, `t2-9a` scythe.
+| File                   | What it is                             |
+| ---------------------- | -------------------------------------- |
+| `h-sword-m0.png`       | Solaris (sword, Mythic side)           |
+| `h-sword-m1.png`       | Solaris (sword, Mythic side)           |
+| `h-sword-m2.png`       | Solaris (sword, Mythic side)           |
+| `h-sword-m3.png`       | Solaris (sword, Mythic side)           |
+| `h-sword-v0.png`       | Nightfall (sword, Void side)           |
+| `h-sword-v1.png`       | Nightfall (sword, Void side)           |
+| `h-sword-v2.png`       | Nightfall (sword, Void side)           |
+| `h-sword-v3.png`       | Nightfall (sword, Void side)           |
+| `h-greatsword-m0.png`  | Kingsoath (greatsword, Mythic side)    |
+| `h-greatsword-m1.png`  | Kingsoath (greatsword, Mythic side)    |
+| `h-greatsword-m2.png`  | Kingsoath (greatsword, Mythic side)    |
+| `h-greatsword-m3.png`  | Kingsoath (greatsword, Mythic side)    |
+| `h-greatsword-v0.png`  | Grimhowl (greatsword, Void side)       |
+| `h-greatsword-v1.png`  | Grimhowl (greatsword, Void side)       |
+| `h-greatsword-v2.png`  | Grimhowl (greatsword, Void side)       |
+| `h-greatsword-v3.png`  | Grimhowl (greatsword, Void side)       |
+| `h-spear-m0.png`       | Skypiercer (spear, Mythic side)        |
+| `h-spear-m1.png`       | Skypiercer (spear, Mythic side)        |
+| `h-spear-m2.png`       | Skypiercer (spear, Mythic side)        |
+| `h-spear-m3.png`       | Skypiercer (spear, Mythic side)        |
+| `h-spear-v0.png`       | Abyss Thorn (spear, Void side)         |
+| `h-spear-v1.png`       | Abyss Thorn (spear, Void side)         |
+| `h-spear-v2.png`       | Abyss Thorn (spear, Void side)         |
+| `h-spear-v3.png`       | Abyss Thorn (spear, Void side)         |
+| `h-lance-m0.png`       | Sunrider (lance, Mythic side)          |
+| `h-lance-m1.png`       | Sunrider (lance, Mythic side)          |
+| `h-lance-m2.png`       | Sunrider (lance, Mythic side)          |
+| `h-lance-m3.png`       | Sunrider (lance, Mythic side)          |
+| `h-lance-v0.png`       | Doomrider (lance, Void side)           |
+| `h-lance-v1.png`       | Doomrider (lance, Void side)           |
+| `h-lance-v2.png`       | Doomrider (lance, Void side)           |
+| `h-lance-v3.png`       | Doomrider (lance, Void side)           |
+| `h-dagger-m0.png`      | Lumen Fang (dagger, Mythic side)       |
+| `h-dagger-m1.png`      | Lumen Fang (dagger, Mythic side)       |
+| `h-dagger-m2.png`      | Lumen Fang (dagger, Mythic side)       |
+| `h-dagger-m3.png`      | Lumen Fang (dagger, Mythic side)       |
+| `h-dagger-v0.png`      | Nightsting (dagger, Void side)         |
+| `h-dagger-v1.png`      | Nightsting (dagger, Void side)         |
+| `h-dagger-v2.png`      | Nightsting (dagger, Void side)         |
+| `h-dagger-v3.png`      | Nightsting (dagger, Void side)         |
+| `h-hammer-m0.png`      | Worldforge (hammer, Mythic side)       |
+| `h-hammer-m1.png`      | Worldforge (hammer, Mythic side)       |
+| `h-hammer-m2.png`      | Worldforge (hammer, Mythic side)       |
+| `h-hammer-m3.png`      | Worldforge (hammer, Mythic side)       |
+| `h-hammer-v0.png`      | Grave Anvil (hammer, Void side)        |
+| `h-hammer-v1.png`      | Grave Anvil (hammer, Void side)        |
+| `h-hammer-v2.png`      | Grave Anvil (hammer, Void side)        |
+| `h-hammer-v3.png`      | Grave Anvil (hammer, Void side)        |
+| `h-bow-m0.png`         | Starweaver (bow, Mythic side)          |
+| `h-bow-m1.png`         | Starweaver (bow, Mythic side)          |
+| `h-bow-m2.png`         | Starweaver (bow, Mythic side)          |
+| `h-bow-m3.png`         | Starweaver (bow, Mythic side)          |
+| `h-bow-v0.png`         | Umbral String (bow, Void side)         |
+| `h-bow-v1.png`         | Umbral String (bow, Void side)         |
+| `h-bow-v2.png`         | Umbral String (bow, Void side)         |
+| `h-bow-v3.png`         | Umbral String (bow, Void side)         |
+| `h-staff-m0.png`       | Lifebloom (staff, Mythic side)         |
+| `h-staff-m1.png`       | Lifebloom (staff, Mythic side)         |
+| `h-staff-m2.png`       | Lifebloom (staff, Mythic side)         |
+| `h-staff-m3.png`       | Lifebloom (staff, Mythic side)         |
+| `h-staff-v0.png`       | Soulwell (staff, Void side)            |
+| `h-staff-v1.png`       | Soulwell (staff, Void side)            |
+| `h-staff-v2.png`       | Soulwell (staff, Void side)            |
+| `h-staff-v3.png`       | Soulwell (staff, Void side)            |
+| `h-scythe-m0.png`      | Graceharvest (scythe, Mythic side)     |
+| `h-scythe-m1.png`      | Graceharvest (scythe, Mythic side)     |
+| `h-scythe-m2.png`      | Graceharvest (scythe, Mythic side)     |
+| `h-scythe-m3.png`      | Graceharvest (scythe, Mythic side)     |
+| `h-scythe-v0.png`      | Last Breath (scythe, Void side)        |
+| `h-scythe-v1.png`      | Last Breath (scythe, Void side)        |
+| `h-scythe-v2.png`      | Last Breath (scythe, Void side)        |
+| `h-scythe-v3.png`      | Last Breath (scythe, Void side)        |
+| `h-pickaxe-m0.png`     | Heartdelver (pickaxe, Mythic side)     |
+| `h-pickaxe-m1.png`     | Heartdelver (pickaxe, Mythic side)     |
+| `h-pickaxe-m2.png`     | Heartdelver (pickaxe, Mythic side)     |
+| `h-pickaxe-m3.png`     | Heartdelver (pickaxe, Mythic side)     |
+| `h-pickaxe-v0.png`     | Deepmaw (pickaxe, Void side)           |
+| `h-pickaxe-v1.png`     | Deepmaw (pickaxe, Void side)           |
+| `h-pickaxe-v2.png`     | Deepmaw (pickaxe, Void side)           |
+| `h-pickaxe-v3.png`     | Deepmaw (pickaxe, Void side)           |
+| `h-logging_axe-m0.png` | Elderwarden (logging axe, Mythic side) |
+| `h-logging_axe-m1.png` | Elderwarden (logging axe, Mythic side) |
+| `h-logging_axe-m2.png` | Elderwarden (logging axe, Mythic side) |
+| `h-logging_axe-m3.png` | Elderwarden (logging axe, Mythic side) |
+| `h-logging_axe-v0.png` | Rotfeller (logging axe, Void side)     |
+| `h-logging_axe-v1.png` | Rotfeller (logging axe, Void side)     |
+| `h-logging_axe-v2.png` | Rotfeller (logging axe, Void side)     |
+| `h-logging_axe-v3.png` | Rotfeller (logging axe, Void side)     |
