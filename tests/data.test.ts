@@ -80,7 +80,7 @@ describe('bundled content', () => {
       ['Crystal Grotto', 'ember_crypt'],
     ]);
     // 11 beta cards plus the weapon-skins test card (`reaper_test`).
-    expect(content.cards).toHaveLength(12);
+    expect(content.cards).toHaveLength(21);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -220,27 +220,32 @@ describe('content validation errors', () => {
 });
 
 describe('card ranks and portals', () => {
-  it('has the 11 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
+  it('has the 20 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
     const loaded = loadContent();
     // The weapon-skins test card (`reaper_test`) is not one of the beta cards.
     const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
     expect(loaded.cardById.get('reaper_test')?.name).toBe('Reaper Test Card');
-    expect(content.cards).toHaveLength(11);
+    expect(content.cards).toHaveLength(20);
     // Fighting lost its Rare (the Shield Warden); logging and mining keep four cards each.
     for (const [job, n] of [
-      ['fighting', 3],
-      ['logging', 4],
-      ['mining', 4],
+      ['fighting', 6],
+      ['logging', 7],
+      ['mining', 7],
     ] as const) {
       expect(content.cards.filter((c) => c.job === job)).toHaveLength(n);
     }
     const rarities = content.cards.map((c) => c.rarity);
     expect(rarities.filter((r) => r === 'common')).toHaveLength(3);
+    expect(rarities.filter((r) => r === 'uncommon')).toHaveLength(3);
     expect(rarities.filter((r) => r === 'rare')).toHaveLength(2);
-    expect(rarities.filter((r) => r === 'epic')).toHaveLength(2);
-    expect(rarities.filter((r) => r === 'legendary')).toHaveLength(2);
-    expect(rarities.filter((r) => r === 'mythic')).toHaveLength(1);
-    expect(rarities.filter((r) => r === 'void')).toHaveLength(1);
+    expect(rarities.filter((r) => r === 'epic')).toHaveLength(3);
+    expect(rarities.filter((r) => r === 'legendary')).toHaveLength(3);
+    expect(rarities.filter((r) => r === 'mythic')).toHaveLength(3);
+    expect(rarities.filter((r) => r === 'void')).toHaveLength(3);
+    // every job has a base card of every rarity (one per tier cap), except fighting's Rare, the skin test card
+    for (const job of ['logging', 'mining'] as const) {
+      expect(new Set(content.cards.filter((c) => c.job === job).map((c) => c.rarity)).size).toBe(7);
+    }
     for (const card of content.cards) {
       expect(card.main.description.length).toBeGreaterThan(0);
       expect(card.support.modifiers.length).toBeGreaterThan(0);
