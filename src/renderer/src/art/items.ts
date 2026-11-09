@@ -56,6 +56,9 @@ const INTERIM_RARITY: Record<Rarity, ArtRarity> = {
   void: 'void',
 };
 
+/** The tiers whose pictures are drawn for every item type (art suffix per tier). */
+const TIER_ART: Partial<Record<RankTier, string>> = { wood: 't1', bronze: 't2' };
+
 /** A plain labelled placeholder for a type with no pictures yet, in the 200 x 240 item box. */
 function placeholder(kind: ItemKind): string {
   const label = kind.replace('_', ' ').toUpperCase();
@@ -63,12 +66,13 @@ function placeholder(kind: ItemKind): string {
 }
 
 /**
- * The item's pixel sprite for a card art window, in the 200 x 240 item box. At the Wood tier (T1)
- * every type has its own approved picture (`item-<type>-t1`, hand-made); higher tiers still show the
- * interim look until their tier is drawn.
+ * The item's pixel sprite for a card art window, in the 200 x 240 item box. At the tiers drawn so
+ * far (Wood T1, Bronze T2) every type has its own approved picture (`item-<type>-t1`, `-t2`,
+ * hand-made); higher tiers still show the interim look until their tier is drawn.
  */
 export function itemArt(kind: ItemKind, rarity: Rarity, tier?: RankTier): string {
-  if (tier === 'wood') return itemBoxSprite(`item-${kind}-t1`);
+  const drawn = tier ? TIER_ART[tier] : undefined;
+  if (drawn) return itemBoxSprite(`item-${kind}-${drawn}`);
   const art = INTERIM_KIND[kind];
   if (!art) return placeholder(kind);
   return itemBoxSprite(`item-${art}-${INTERIM_RARITY[rarity]}`);
