@@ -129,7 +129,7 @@ describe('item types (items.json)', () => {
       t.heirloom.void,
     ]);
     expect(new Set(names).size).toBe(names.length);
-    for (const t of content.items.types) expect(t.heirloomOpen, t.kind).toBe(false);
+    for (const t of content.items.types) expect(t.heirloomOpen, t.kind).toBe(true);
   });
 });
 

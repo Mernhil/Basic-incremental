@@ -77,12 +77,12 @@ describe('dev cheats (dev builds only)', () => {
     ).toBe(false);
   });
 
-  it('refuses the closed Heirloom tier (no item type has its Heirloom open yet)', () => {
+  it('sets the Heirloom tier now that every item type has it open', () => {
     const heirloom = devSetCardRank(freshState(), content, 'core_titan', {
       tier: 'heirloom',
       stars: 1,
     });
-    expect(heirloom.ok).toBe(false);
+    expect(heirloom.ok).toBe(true);
     const mythic = devSetCardRank(freshState(), content, 'core_titan', {
       tier: 'mythic',
       stars: 1,

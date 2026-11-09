@@ -121,10 +121,10 @@ describe('weapon panel model', () => {
     expect(w.endNote).toBeNull();
   });
 
-  it('at Mythic the top is pending while the Heirloom stays closed', () => {
+  it('at Mythic the Heirloom is the next step', () => {
     const w = view('moonwood_dryad', { tier: 'mythic', level: 120 })!;
-    expect(w.tierUp).toBeNull();
-    expect(w.endNote).toBe(`Mythic is the top tier for ${w.weapon} until its Heirloom is drawn.`);
+    expect(w.tierUp?.heirloom).toBe(true);
+    expect(w.tierUp?.toTier).toBe('heirloom');
   });
 
   it('the Heirloom is the final form', () => {
