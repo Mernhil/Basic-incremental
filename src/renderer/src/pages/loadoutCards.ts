@@ -38,7 +38,12 @@ export function cardItemArt(
     const markup = skin ? skinMarkup(skin) : '';
     if (markup) return markup;
   }
-  return itemArt(item?.kind ?? card.item.kind, item?.rarity ?? card.rarity, owned?.tier ?? 'wood');
+  return itemArt(
+    item?.kind ?? card.item.kind,
+    item?.rarity ?? card.rarity,
+    owned?.tier ?? 'wood',
+    card.rarity,
+  );
 }
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */
