@@ -127,7 +127,7 @@ export function createCardsModel(
       emblem: JOB_EMBLEM[card.job],
       item:
         art?.(card.id, owned) ??
-        itemArt(card.item.kind, weaponLookRarity(card.rarity, rank.tier), rank.tier),
+        itemArt(card.item.kind, weaponLookRarity(card.rarity, rank.tier), rank.tier, card.rarity),
       element: card.element,
       owned: owned !== null,
       rank,

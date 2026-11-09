@@ -61,7 +61,11 @@ const TIER_ART: Partial<Record<RankTier, string>> = {
   wood: 't1',
   bronze: 't2',
   silver: 't3',
+  prismatic: 't5',
 };
+
+/** Mythic (T6) is drawn in a heroic Mythic and a villainous Void version, by the card's side. */
+const T6_ART = { mythic: 't6m', void: 't6v' } as const;
 
 /** A plain labelled placeholder for a type with no pictures yet, in the 200 x 240 item box. */
 function placeholder(kind: ItemKind): string {
@@ -71,11 +75,18 @@ function placeholder(kind: ItemKind): string {
 
 /**
  * The item's pixel sprite for a card art window, in the 200 x 240 item box. At the tiers drawn so
- * far (Wood T1, Bronze T2, Silver T3) every type has its own approved picture (`item-<type>-t1`, `-t2`, `-t3`,
- * hand-made); higher tiers still show the interim look until their tier is drawn.
+ * far (Wood T1, Bronze T2, Silver T3, Prismatic T5, Mythic or Void T6) every type has its own
+ * approved picture (`item-<type>-t1`, `-t2`, `-t3`, `-t5`, `-t6m`, `-t6v`, hand-made); Gold (T4)
+ * and the Heirloom still show the interim look until they are drawn. `side` is the card's own
+ * rarity, which picks the Mythic or Void version at T6.
  */
-export function itemArt(kind: ItemKind, rarity: Rarity, tier?: RankTier): string {
-  const drawn = tier ? TIER_ART[tier] : undefined;
+export function itemArt(kind: ItemKind, rarity: Rarity, tier?: RankTier, side?: Rarity): string {
+  const drawn =
+    tier === 'mythic'
+      ? T6_ART[side === 'void' ? 'void' : 'mythic']
+      : tier
+        ? TIER_ART[tier]
+        : undefined;
   if (drawn) return itemBoxSprite(`item-${kind}-${drawn}`);
   const art = INTERIM_KIND[kind];
   if (!art) return placeholder(kind);
