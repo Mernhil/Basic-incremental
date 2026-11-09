@@ -1,5 +1,5 @@
-import { RARITIES } from '../../../data';
-import { resolveCard, type GameState, type TierUp } from '../../../game';
+import { RANK_TIERS, RARITIES } from '../../../data';
+import { resolveCard, TIER_LABELS, type GameState, type TierUp } from '../../../game';
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
@@ -27,14 +27,8 @@ const JOB_NAMES: Record<Job, string> = {
   mining: 'Mining',
 };
 const JOB_ORDER: Job[] = ['fighting', 'logging', 'mining'];
-const TIER_ORDER = ['bronze', 'silver', 'gold', 'prismatic', 'unique'];
-const TIER_NAMES: Record<string, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  unique: 'Unique',
-};
+const TIER_ORDER: readonly string[] = RANK_TIERS;
+const TIER_NAMES: Record<string, string> = TIER_LABELS;
 /**
  * Card widths wanted (CSS px); ui/pixelFit.ts snaps each to a whole pixel scale (DESIGN.md §12).
  * The collection shows the full card (132 x 186 art pixels) four across at 1x and grows to 2x when

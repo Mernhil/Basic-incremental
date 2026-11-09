@@ -4,6 +4,7 @@ import {
   cardItem,
   cardItemKind,
   Decimal,
+  itemName,
   newOwnedCard,
   resetProduction,
   simulateOffline,
@@ -12,6 +13,7 @@ import {
   tileStage,
   type OwnedCard,
 } from '../src/game';
+import { RANK_TIERS, type Content } from '../src/data';
 import { bareState, constantRng, content, freshState } from './helpers';
 
 describe('tile stages (DESIGN.md §12)', () => {
@@ -70,39 +72,63 @@ function cardAt(tier: OwnedCard['tier'], stars: number, level = 200): OwnedCard 
   return { ...newOwnedCard(), tier, stars, level, starFill: 5 };
 }
 
-describe('card tier and evolution tier-ups', () => {
-  it('reports a card tier-up with the new tier metal', () => {
+/** The bundled content with the Heirloom opened for the given item types (items.json). */
+function withHeirloomOpen(...kinds: string[]): Content {
+  const types = content.items.types.map((t) =>
+    kinds.includes(t.kind) ? { ...t, heirloomOpen: true } : t,
+  );
+  return {
+    ...content,
+    items: { ...content.items, types },
+    itemTypeByKind: new Map(types.map((t) => [t.kind, t])),
+  };
+}
+
+describe('card tier and heirloom tier-ups', () => {
+  it('reports a card tier-up with the metal of its new tier index', () => {
     const state = freshState();
-    state.cards.owned['ember_squire'] = cardAt('bronze', 6, 40);
+    state.cards.owned['storm_duelist'] = cardAt('wood', 6, 20);
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e9');
-    const result = tierUp(state, content, 'ember_squire');
+    const result = tierUp(state, content, 'storm_duelist');
+    // The tier index runs wood 0 (stone), bronze 1 ... mythic 5; the flash metal is capped at prismatic.
     expect(result.ok && result.tierUps).toEqual([
-      { kind: 'card_tier', id: 'ember_squire', from: 1, to: 2, metal: 'silver' },
+      { kind: 'card_tier', id: 'storm_duelist', from: 0, to: 1, metal: 'bronze' },
     ]);
   });
 
-  it('reports the unique evolution when a tier-up reaches the Unique tier', () => {
+  it('reports the Mythic tier-up as an ordinary card tier-up, with no Heirloom moment', () => {
     const state = freshState();
-    state.cards.owned['ember_squire'] = cardAt('prismatic', 6, 80);
+    state.cards.owned['moonwood_dryad'] = cardAt('prismatic', 6, 100);
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
-    const result = tierUp(state, content, 'ember_squire');
+    const result = tierUp(state, content, 'moonwood_dryad');
     expect(result.ok && result.tierUps).toEqual([
-      { kind: 'card_tier', id: 'ember_squire', from: 4, to: 5, metal: 'prismatic' },
-      { kind: 'evolution', id: 'ember_squire', from: 0, to: 1, metal: 'prismatic' },
+      { kind: 'card_tier', id: 'moonwood_dryad', from: 4, to: 5, metal: 'prismatic' },
     ]);
   });
 
-  it('reports no evolution when a card reaches Gold ★6', () => {
+  it('reports the heirloom moment when a tier-up reaches the Heirloom tier', () => {
+    const open = withHeirloomOpen('pickaxe');
     const state = freshState();
-    state.cards.owned['ember_squire'] = cardAt('silver', 6, 40);
+    state.cards.owned['core_titan'] = cardAt('mythic', 6, 120);
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
-    const result = tierUp(state, content, 'ember_squire');
+    const result = tierUp(state, open, 'core_titan');
+    expect(result.ok && result.tierUps).toEqual([
+      { kind: 'card_tier', id: 'core_titan', from: 5, to: 6, metal: 'prismatic' },
+      { kind: 'heirloom', id: 'core_titan', from: 0, to: 1, metal: 'prismatic' },
+    ]);
+  });
+
+  it('reports no heirloom moment when a card reaches Gold ★6', () => {
+    const state = freshState();
+    state.cards.owned['dawnblade_regent'] = cardAt('silver', 6, 60);
+    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
+    const result = tierUp(state, content, 'dawnblade_regent');
     expect(result.ok && result.tierUps.map((t) => t.kind)).toEqual(['card_tier']);
   });
 
   it('reports nothing for an ordinary star-up', () => {
     const state = freshState();
-    state.cards.owned['ember_squire'] = cardAt('bronze', 1, 20);
+    state.cards.owned['ember_squire'] = cardAt('wood', 1, 20);
     state.cards.owned['ember_squire']!.starFill = 5;
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e9');
     const result = starUp(state, content, 'ember_squire');
@@ -110,44 +136,95 @@ describe('card tier and evolution tier-ups', () => {
   });
 });
 
-describe('unique evolutions (DESIGN.md §5)', () => {
-  it('maps Flameblade and Rootbloom Staff, and Soul Reaper only to the weapon-skins test card', () => {
-    expect(content.cardById.get('ember_squire')!.evolution).toBe('flameblade');
-    expect(content.cardById.get('grove_keeper')!.evolution).toBe('rootbloom_staff');
-    expect(content.cards.filter((c) => c.evolution === 'soul_reaper').map((c) => c.id)).toEqual([
-      'reaper_test',
-    ]);
-    expect(content.progression.evolutions.items.map((i) => i.kind)).toContain('soul_reaper');
+describe('item types per card (DESIGN.md §5)', () => {
+  it('gives every card one of the 11 item types, by its job and role', () => {
+    const kinds = new Set(content.items.types.map((t) => t.kind));
+    expect(kinds.size).toBe(11);
+    for (const card of content.cards) expect(kinds.has(card.item.kind), card.id).toBe(true);
+    for (const card of content.cards.filter((c) => c.job === 'logging'))
+      expect(card.item.kind, card.id).toBe('logging_axe');
+    for (const card of content.cards.filter((c) => c.job === 'mining'))
+      expect(card.item.kind, card.id).toBe('pickaxe');
   });
 
-  it('draws the generic item below the Unique tier and the unique one at Unique', () => {
+  it('draws the same item type at every tier of a card', () => {
     expect(cardItemKind(content, 'ember_squire', null)).toBe('sword');
-    expect(cardItemKind(content, 'ember_squire', cardAt('gold', 5))).toBe('sword');
-    expect(cardItemKind(content, 'ember_squire', cardAt('gold', 6))).toBe('sword');
-    expect(cardItemKind(content, 'ember_squire', cardAt('prismatic', 6))).toBe('sword');
-    expect(cardItemKind(content, 'ember_squire', cardAt('unique', 1))).toBe('flameblade');
-    expect(cardItemKind(content, 'grove_keeper', cardAt('unique', 3))).toBe('rootbloom_staff');
-    expect(cardItemKind(content, 'reaper_test', cardAt('unique', 1))).toBe('soul_reaper');
-  });
-
-  it('keeps the generic item for cards without an evolution', () => {
-    expect(cardItemKind(content, 'storm_duelist', cardAt('prismatic', 6))).toBe('twin_blades');
+    expect(cardItemKind(content, 'ember_squire', cardAt('wood', 6))).toBe('sword');
+    expect(cardItemKind(content, 'dawnblade_regent', cardAt('prismatic', 6))).toBe('greatsword');
+    expect(cardItemKind(content, 'storm_duelist', cardAt('gold', 6))).toBe('dagger');
+    expect(cardItemKind(content, 'reaper_test', cardAt('silver', 1))).toBe('scythe');
+    expect(cardItemKind(content, 'grove_keeper', cardAt('bronze', 3))).toBe('logging_axe');
+    expect(cardItemKind(content, 'gem_cutter', null)).toBe('pickaxe');
     expect(cardItemKind(content, 'nope', null)).toBeNull();
   });
 
-  it('gives the item name and whether it is unique', () => {
-    expect(cardItem(content, 'ember_squire', cardAt('unique', 1))).toEqual({
-      kind: 'flameblade',
-      name: 'Flameblade',
-      unique: true,
-      rarity: 'mythic',
-    });
+  it('gives the item name and whether it is an Heirloom', () => {
     expect(cardItem(content, 'ember_squire', null)).toEqual({
       kind: 'sword',
-      name: 'Ember Blade',
-      unique: false,
+      name: 'Wooden Sword',
+      heirloom: false,
       rarity: 'common',
     });
+    expect(cardItem(content, 'moonwood_dryad', cardAt('mythic', 1))).toEqual({
+      kind: 'logging_axe',
+      name: 'Mythic Grove Axe',
+      heirloom: false,
+      rarity: 'void',
+    });
+  });
+});
+
+describe('item names (DESIGN.md §5, items.json)', () => {
+  it('names T1 to T4 "<material> <type>": Wooden, Bronze, Silver, Golden', () => {
+    expect(itemName(content, 'sword', 'wood', 'common')).toBe('Wooden Sword');
+    expect(itemName(content, 'sword', 'bronze', 'uncommon')).toBe('Bronze Sword');
+    expect(itemName(content, 'sword', 'silver', 'rare')).toBe('Silver Sword');
+    expect(itemName(content, 'sword', 'gold', 'epic')).toBe('Golden Sword');
+    expect(itemName(content, 'greatsword', 'gold', 'epic')).toBe('Golden Greatsword');
+    expect(itemName(content, 'dagger', 'silver', 'rare')).toBe('Silver Dagger');
+  });
+
+  it('shows the logging axe as "Axe"', () => {
+    expect(itemName(content, 'logging_axe', 'wood', 'common')).toBe('Wooden Axe');
+    expect(itemName(content, 'logging_axe', 'gold', 'epic')).toBe('Golden Axe');
+    expect(itemName(content, 'logging_axe', 'prismatic', 'legendary')).toBe('Prismatic Glass Axe');
+  });
+
+  it('names T5 "Prismatic <name> <type>", the same for both sides', () => {
+    expect(itemName(content, 'sword', 'prismatic', 'legendary')).toBe('Prismatic Dancer Sword');
+    expect(itemName(content, 'sword', 'prismatic', 'void')).toBe('Prismatic Dancer Sword');
+    expect(itemName(content, 'bow', 'prismatic', 'legendary')).toBe('Prismatic Rainbow Bow');
+  });
+
+  it('names T6 by the card side: Mythic Light Sword for Mythic, Void Shadow Sword for Void', () => {
+    expect(itemName(content, 'sword', 'mythic', 'mythic')).toBe('Mythic Light Sword');
+    expect(itemName(content, 'sword', 'mythic', 'void')).toBe('Void Shadow Sword');
+    expect(itemName(content, 'scythe', 'mythic', 'mythic')).toBe('Mythic Mercy Scythe');
+    expect(itemName(content, 'scythe', 'mythic', 'void')).toBe('Void Grim Scythe');
+    expect(itemName(content, 'pickaxe', 'mythic', 'void')).toBe('Void Hollowdeep Pickaxe');
+  });
+
+  it('names the Heirloom by its own name and the card side: Solaris or Nightfall', () => {
+    expect(itemName(content, 'sword', 'heirloom', 'mythic')).toBe('Solaris');
+    expect(itemName(content, 'sword', 'heirloom', 'void')).toBe('Nightfall');
+    expect(itemName(content, 'logging_axe', 'heirloom', 'mythic')).toBe('Elderwarden');
+    expect(itemName(content, 'logging_axe', 'heirloom', 'void')).toBe('Rotfeller');
+  });
+
+  it('has a name at every tier and side for each of the 11 types', () => {
+    for (const type of content.items.types) {
+      for (const tier of RANK_TIERS) {
+        for (const rarity of ['mythic', 'void'] as const) {
+          const name = itemName(content, type.kind, tier, rarity);
+          expect(name.length, `${type.kind} ${tier} ${rarity}`).toBeGreaterThan(0);
+          expect(name, `${type.kind} ${tier} ${rarity}`).not.toBe(type.kind);
+        }
+      }
+    }
+  });
+
+  it('falls back to the kind for an unknown type', () => {
+    expect(itemName(content, 'nothing' as never, 'wood', 'common')).toBe('nothing');
   });
 });
 

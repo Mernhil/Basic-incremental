@@ -1,5 +1,5 @@
 import type { Content } from '../../../data';
-import { formatDuration, type Goal, type TierUp } from '../../../game';
+import { formatDuration, itemName, type Goal, type TierUp } from '../../../game';
 import { COPY } from '../copy';
 
 /**
@@ -38,12 +38,12 @@ export function tierUpText(u: TierUp, content: Content): { title: string; detail
       return { title: t.tile(name, metal), detail: t.tileDetail };
     case 'card_tier':
       return { title: t.cardTier(name, metal), detail: t.cardTierDetail };
-    case 'evolution': {
+    case 'heirloom': {
       const card = content.cardById.get(u.id);
-      const unique = card?.evolution
-        ? content.progression.evolutions.items.find((i) => i.kind === card.evolution)?.name
+      const heirloom = card
+        ? itemName(content, card.item.kind, 'heirloom', card.rarity)
         : undefined;
-      return { title: t.evolution(name), detail: unique ? t.evolutionDetail(unique) : '' };
+      return { title: t.heirloom(name), detail: heirloom ? t.heirloomDetail(heirloom) : '' };
     }
     default:
       return { title: name, detail: metal };

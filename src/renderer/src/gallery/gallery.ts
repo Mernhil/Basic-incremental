@@ -207,7 +207,7 @@ export function renderGallery(root: HTMLElement = document.body): void {
       label: cap(card.rarity),
     });
     const fig = el('figure', 'gallery__fig');
-    fig.append(view.el, el('figcaption', '', card.item.name));
+    fig.append(view.el, el('figcaption', '', card.item.kind));
     itemRow.append(fig);
   }
   items.append(itemRow, el('h2', 'gallery__h2', 'Ember Blade at every rarity'));

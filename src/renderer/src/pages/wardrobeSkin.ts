@@ -8,7 +8,9 @@ import { screenDpr } from '../ui/pixelFit';
  * lives in wardrobe.css under `.wd[data-skin='<style>']`.
  */
 
-const RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'] as const;
+/** The game's rarities; the baked chrome pieces were drawn on the older ladder, which has no Uncommon (it wears the Common pieces). */
+const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'void'] as const;
+const artRarity = (r: string | undefined): string | undefined => (r === 'uncommon' ? 'common' : r);
 /**
  * CSS pixels per baked pixel: about 2, snapped to a whole number of device pixels so the plates
  * are never drawn at a fractional scale (DESIGN.md §12 Clean pixels).
@@ -32,7 +34,7 @@ export function wardrobeSkinCss(style: string): string {
   const per = perRarity(style);
   const out: string[] = [];
   const rule = (selector: string, part: WardrobePart, rarity?: string): void => {
-    const piece = wardrobeChrome(style, part, rarity);
+    const piece = wardrobeChrome(style, part, artRarity(rarity));
     if (piece) out.push(`${selector}{${chromeCss(piece, SCALE)}}`);
   };
   const sets: Array<[string, WardrobePart, string, WardrobePart]> = [
@@ -61,7 +63,7 @@ export function wardrobeSkinCss(style: string): string {
     }
   }
   const flat = (selector: string, part: WardrobePart, rarity?: string): void => {
-    const piece = wardrobeChrome(style, part, rarity);
+    const piece = wardrobeChrome(style, part, artRarity(rarity));
     if (!piece) return;
     out.push(
       `${selector}{background:url('${piece.url}') 0 0/${piece.w * SCALE}px ${piece.h * SCALE}px no-repeat;` +

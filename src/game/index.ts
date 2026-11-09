@@ -162,7 +162,7 @@ export {
   isWeaponSkinAvailable,
   /** Whether a legacy skin was pulled from the Legacy Gate. */
   ownsLegacySkin,
-  /** The art a card's generic weapon kind draws with at a tier when a legacy skin is worn (null at Unique or when none). */
+  /** The art a card's generic weapon kind draws with at a tier when a legacy skin is worn (null at the Heirloom tier or when none). */
   legacyWeaponArt,
   type WeaponSkinChoice,
   type EquipWeaponSkinResult,
@@ -216,10 +216,22 @@ export {
   tileStage,
 } from './stages';
 export {
-  /** The item kind to draw in a card: its unique item at the Unique tier, else its generic item. */
+  /** The item type to draw in a card. */
   cardItemKind,
-  /** The item to draw with its name, whether it is unique and the rarity to draw it at. */
+  /** The item to draw with its name at the card's tier, whether it is an Heirloom and the look rarity. */
   cardItem,
+  /** The name of an item type at a tier for a card's rarity (Wooden Sword ... Solaris). */
+  itemName,
+  /** The highest tier a card can reach: its rarity's cap, or the Heirloom when open. */
+  cardTopTier,
+  /** The highest tier before an Heirloom, by rarity. */
+  RARITY_TIER_CAP,
+  /** On-screen name of each tier. */
+  TIER_LABELS,
+  /** A tier's name for a card of a rarity: Mythic or Void at T6. */
+  tierLabel,
+  /** The side of a card's T6 and Heirloom: 'mythic' or 'void'. */
+  cardSide,
   /** The item rarity to draw for a card's rarity and tier: one step up the rarity ladder per tier, capped at Void. */
   weaponLookRarity,
   /** Whether a rank is at least another (tier, then stars). */

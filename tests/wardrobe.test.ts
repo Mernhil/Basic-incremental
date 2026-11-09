@@ -45,15 +45,15 @@ describe('upgrade levels (DESIGN.md §8)', () => {
     expect(cosmeticMaxLevel(content, cosmetic('holo_hex'))).toBe(3); // rare
     expect(cosmeticMaxLevel(content, cosmetic('gilded_filigree'))).toBe(4); // epic
     expect(cosmeticMaxLevel(content, cosmetic('gt_border'))).toBe(5); // legendary
-    expect(cosmeticMaxLevel(content, cosmetic('ember_crown'))).toBe(5); // mythic
+    expect(cosmeticMaxLevel(content, cosmetic('ember_crown'))).toBe(6); // mythic (as void)
     expect(cosmeticMaxLevel(content, cosmetic('gn_border'))).toBe(1); // starter
     expect(rules.maxLevel).toEqual({
       common: 2,
+      uncommon: 3,
       rare: 3,
       epic: 4,
       legendary: 5,
-      mythic: 5,
-      exotic: 6,
+      mythic: 6,
       void: 6,
     });
   });
@@ -125,8 +125,10 @@ describe('drawn levels of borders and finishes (DESIGN.md §8)', () => {
     (c) => !c.starter && (c.slot === 'border' || c.slot === 'finish'),
   );
 
-  it('have a level for every level up to the max', () => {
-    for (const c of items) expect(c.levels.length, c.id).toBe(cosmeticMaxLevel(content, c));
+  it('have no more drawn levels than the max (higher ones show the top drawn level)', () => {
+    for (const c of items) {
+      expect(c.levels.length, c.id).toBeLessThanOrEqual(content.cosmeticRules.maxLevel[c.rarity]);
+    }
   });
 
   it('end on an ambient recipe; borders add the corner flourishes at the top', () => {

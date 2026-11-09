@@ -14,8 +14,9 @@ import { INK, f } from '../kit';
 
 export const CARD_W = 176;
 export const CARD_H = 248;
-/** The tiers that have their own frame: Unique keeps the Prismatic frame (DESIGN.md §5). */
-export type FrameTier = Exclude<RankTier, 'unique'>;
+/** The tiers that have their own frame. Wood shows the Bronze frame; Mythic, Void and the Heirloom
+ *  the Prismatic frame, until theirs are drawn (DESIGN.md §5). */
+export type FrameTier = Exclude<RankTier, 'wood' | 'mythic' | 'heirloom'>;
 export const TIER_ORDER: readonly FrameTier[] = ['bronze', 'silver', 'gold', 'prismatic'];
 
 export interface FrameMetal {

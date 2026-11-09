@@ -10,7 +10,6 @@ import type {
   RankTier,
   Rarity,
   Trial,
-  UniqueItemKind,
 } from '../data';
 import { JOBS, MAX_STARS, RANK_TIERS, RARITIES } from '../data/schemas';
 import { accountLevel } from './account';
@@ -66,7 +65,7 @@ export type CardFailure =
 
 export type CardResult = { ok: true; state: GameState } | { ok: false; reason: CardFailure };
 /** A star-up or tier-up: like CardResult, plus the tier-up moments it caused (a new card tier,
- *  the unique evolution). */
+ *  the Heirloom). */
 export type CardUpgradeResult =
   { ok: true; state: GameState; tierUps: TierUp[] } | { ok: false; reason: CardFailure };
 
@@ -86,26 +85,79 @@ export function rankAtLeast(rank: Rank, min: Rank): boolean {
 
 /** The item drawn inside a card (DESIGN.md §12, §5). */
 export interface CardItem {
-  kind: ItemKind | UniqueItemKind;
+  kind: ItemKind;
+  /** The item's name at the card's tier (items.json): "Wooden Sword", "Void Shadow Sword", "Nightfall". */
   name: string;
-  /** True for a unique item (the Unique tier). */
-  unique: boolean;
+  /** True at the Heirloom tier. */
+  heirloom: boolean;
   /** The item rarity to draw: the card's rarity moved up the ladder by its tier (weaponLookRarity). */
   rarity: Rarity;
 }
 
+/** The highest tier each rarity reaches before an Heirloom (DESIGN.md §5 "Rarity caps the tier"). */
+export const RARITY_TIER_CAP: Record<Rarity, RankTier> = {
+  common: 'wood',
+  uncommon: 'bronze',
+  rare: 'silver',
+  epic: 'gold',
+  legendary: 'prismatic',
+  mythic: 'mythic',
+  void: 'mythic',
+};
+
+/** On-screen name of each tier; the T6 tier reads "Void" for a Void card (see tierLabel). */
+export const TIER_LABELS: Record<RankTier, string> = {
+  wood: 'Wood',
+  bronze: 'Bronze',
+  silver: 'Silver',
+  gold: 'Gold',
+  prismatic: 'Prismatic',
+  mythic: 'Mythic',
+  heirloom: 'Heirloom',
+};
+
+/** A tier's on-screen name for a card of a rarity: T6 is Mythic or Void by the card's side. */
+export const tierLabel = (tier: RankTier, rarity?: Rarity): string =>
+  tier === 'mythic' && rarity === 'void' ? 'Void' : TIER_LABELS[tier];
+
+/** The side of a card's T6 and Heirloom: Mythic (heroic) or Void (villainous). */
+export const cardSide = (rarity: Rarity): 'mythic' | 'void' =>
+  rarity === 'void' ? 'void' : 'mythic';
+
+/**
+ * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T4
+ * "<material> <type>", T5 "Prismatic <name> <type>", T6 by the card's side, then the Heirloom.
+ */
+export function itemName(content: Content, kind: ItemKind, tier: RankTier, rarity: Rarity): string {
+  const type = content.itemTypeByKind.get(kind);
+  if (!type) return kind;
+  switch (tier) {
+    case 'wood':
+    case 'bronze':
+    case 'silver':
+    case 'gold':
+      return `${content.items.materials[tier]} ${type.noun}`;
+    case 'prismatic':
+      return type.prismatic;
+    case 'mythic':
+      return type[cardSide(rarity)];
+    case 'heirloom':
+      return type.heirloom[cardSide(rarity)];
+  }
+}
+
 /**
  * The item rarity to draw for a card's rarity and tier (DESIGN.md §5 "Weapon looks, for now"):
- * one step up the rarity ladder per tier (Bronze = the card's rarity, Silver +1, Gold +2,
- * Prismatic +3, Unique +4), capped at Void. The unique item at the Unique tier has its own look.
+ * one step up the rarity ladder per tier (Wood = the card's rarity, Bronze +1, ... Heirloom +6),
+ * capped at Void. The art for an item type that has no new pictures yet is interim.
  */
 export function weaponLookRarity(rarity: Rarity, tier: RankTier): Rarity {
   const at = RARITIES.indexOf(rarity) + RANK_TIERS.indexOf(tier);
   return RARITIES[Math.min(at, RARITIES.length - 1)]!;
 }
 
-/** The item to draw for a card at its rank: its unique item at the Unique tier, else its generic
- *  item at the rarity its tier gives. Not owned = Bronze. Null for unknown ids. */
+/** The item to draw for a card at its rank: its type's item named for the tier, at the rarity
+ *  its tier gives. Not owned = Wood. Null for unknown ids. */
 export function cardItem(
   content: Content,
   cardId: string,
@@ -113,14 +165,14 @@ export function cardItem(
 ): CardItem | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  const tier = owned?.tier ?? 'bronze';
+  const tier = owned?.tier ?? 'wood';
   const rarity = weaponLookRarity(card.rarity, tier);
-  const unique =
-    tier === 'unique' && card.evolution
-      ? content.progression.evolutions.items.find((i) => i.kind === card.evolution)
-      : undefined;
-  if (unique) return { kind: unique.kind, name: unique.name, unique: true, rarity };
-  return { kind: card.item.kind, name: card.item.name, unique: false, rarity };
+  return {
+    kind: card.item.kind,
+    name: itemName(content, card.item.kind, tier, card.rarity),
+    heirloom: tier === 'heirloom',
+    rarity,
+  };
 }
 
 /** Just the item kind to draw (see cardItem). Null for unknown ids. */
@@ -128,28 +180,28 @@ export function cardItemKind(
   content: Content,
   cardId: string,
   owned: OwnedCard | null | undefined,
-): ItemKind | UniqueItemKind | null {
+): ItemKind | null {
   return cardItem(content, cardId, owned)?.kind ?? null;
 }
 
-/** A card tier as a metal index on the ladder (bronze 1 .. prismatic 4, unique 5). */
+/** A card tier as a metal index on the ladder (wood 0 = stone, bronze 1 .. prismatic 4; mythic and heirloom cap at prismatic). */
 function tierMetalIndex(tier: OwnedCard['tier']): number {
-  return RANK_TIERS.indexOf(tier) + 1;
+  return RANK_TIERS.indexOf(tier);
 }
 
-/** The unique-item moment if the card's item became unique between two ranks. */
-function evolutionTierUps(
+/** The Heirloom moment if the card's item became its Heirloom between two ranks. */
+function heirloomTierUps(
   content: Content,
   cardId: string,
   before: OwnedCard,
   after: OwnedCard,
 ): TierUp[] {
-  const was = cardItem(content, cardId, before)?.unique ?? false;
-  const now = cardItem(content, cardId, after)?.unique ?? false;
+  const was = cardItem(content, cardId, before)?.heirloom ?? false;
+  const now = cardItem(content, cardId, after)?.heirloom ?? false;
   return !was && now
     ? [
         {
-          kind: 'evolution',
+          kind: 'heirloom',
           id: cardId,
           from: 0,
           to: 1,
@@ -159,9 +211,15 @@ function evolutionTierUps(
     : [];
 }
 
-/** The highest tier a card can reach: Unique when it has a unique version, else Prismatic. */
+/** The highest tier a card can reach: its rarity's cap, plus the Heirloom for a Mythic or Void
+ *  card whose item type has its Heirloom open (items.json). */
 export function cardTopTier(content: Content, cardId: string): RankTier {
-  return content.cardById.get(cardId)?.evolution ? 'unique' : 'prismatic';
+  const card = content.cardById.get(cardId);
+  if (!card) return 'wood';
+  const cap = RARITY_TIER_CAP[card.rarity];
+  return cap === 'mythic' && content.itemTypeByKind.get(card.item.kind)?.heirloomOpen
+    ? 'heirloom'
+    : cap;
 }
 
 /** The tier after `tier` for this card, or null at its top tier. */
@@ -556,7 +614,7 @@ export function starBarView(content: Content, card: Card, owned: OwnedCard): Sta
 
 /**
  * Tier-up costs from the current tier, per the card's job: Money plus the tier's Core and tree
- * and mine gems (Frost Sigils at Gold and Prismatic), through `cost.multiplier` (scope: job,
+ * and mine gems (Frost Sigils from Gold up), through `cost.multiplier` (scope: job,
  * resource). Empty at the card's top tier.
  */
 export function tierUpCost(
@@ -565,7 +623,7 @@ export function tierUpCost(
   owned: OwnedCard,
   modifiers: readonly Modifier[] = [],
 ): Price[] {
-  if (owned.tier === 'unique' || nextTierOf(content, card.id, owned.tier) === null) return [];
+  if (owned.tier === 'heirloom' || nextTierOf(content, card.id, owned.tier) === null) return [];
   return content.cardRules.tierUp[owned.tier][card.job].map((c) =>
     finalPrice(c.resource, c.amount, modifiers, { job: card.job }),
   );
@@ -647,7 +705,7 @@ export function tierUp(
   return {
     ok: true,
     state: next,
-    tierUps: [...tierUps, ...evolutionTierUps(content, cardId, before, owned)],
+    tierUps: [...tierUps, ...heirloomTierUps(content, cardId, before, owned)],
   };
 }
 
@@ -763,7 +821,7 @@ export interface CardInfo {
   cost: number;
   /** Where the card sits, or null. */
   slot: { job: Job; slot: LoadoutSlot } | null;
-  /** At its top tier and ★6 (Unique, or Prismatic without a unique version). */
+  /** At its top tier and ★6 (its rarity's cap, or the Heirloom when open). */
   maxRank: boolean;
   /** The star bar (fill, need, gauge 0..1); null when not owned or at ★6. */
   starBar: StarBarView | null;

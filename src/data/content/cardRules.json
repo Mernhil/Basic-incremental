@@ -2,23 +2,25 @@
   "startCards": ["ember_squire", "apprentice_feller", "cave_digger"],
   "cost": {
     "common": 2,
-    "rare": 3,
-    "epic": 5,
-    "legendary": 8,
-    "mythic": 12,
-    "exotic": 16,
-    "void": 20
+    "uncommon": 3,
+    "rare": 4,
+    "epic": 6,
+    "legendary": 9,
+    "mythic": 14,
+    "void": 14
   },
   "costCap": {
     "base": 6,
     "perLevel": 2
   },
   "levelCaps": {
-    "bronze": 20,
-    "silver": 40,
-    "gold": 60,
-    "prismatic": 80,
-    "unique": 100
+    "wood": 20,
+    "bronze": 40,
+    "silver": 60,
+    "gold": 80,
+    "prismatic": 100,
+    "mythic": 120,
+    "heirloom": 140
   },
   "xpCurve": {
     "base": "10",
@@ -38,11 +40,13 @@
     "perStar": 0.05,
     "star6Bonus": 0.25,
     "tier": {
-      "bronze": 1,
+      "wood": 1,
+      "bronze": 1.2,
       "silver": 1.5,
       "gold": 2.25,
       "prismatic": 3.5,
-      "unique": 5
+      "mythic": 5,
+      "heirloom": 7
     },
     "starMultiplier": [1.25, 1.6, 2, 2.6, 3.5]
   },
@@ -95,6 +99,62 @@
     ]
   },
   "tierUp": {
+    "wood": {
+      "logging": [
+        {
+          "resource": "money",
+          "amount": "50000"
+        },
+        {
+          "resource": "moss_core",
+          "amount": "1"
+        },
+        {
+          "resource": "ironbark_gem",
+          "amount": "13333"
+        },
+        {
+          "resource": "iron_gem",
+          "amount": "4000"
+        }
+      ],
+      "mining": [
+        {
+          "resource": "money",
+          "amount": "50000"
+        },
+        {
+          "resource": "moss_core",
+          "amount": "1"
+        },
+        {
+          "resource": "iron_gem",
+          "amount": "6667"
+        },
+        {
+          "resource": "ironbark_gem",
+          "amount": "4000"
+        }
+      ],
+      "fighting": [
+        {
+          "resource": "money",
+          "amount": "50000"
+        },
+        {
+          "resource": "moss_core",
+          "amount": "1"
+        },
+        {
+          "resource": "iron_gem",
+          "amount": "4667"
+        },
+        {
+          "resource": "ironbark_gem",
+          "amount": "8000"
+        }
+      ]
+    },
     "bronze": {
       "logging": [
         {
@@ -342,53 +402,121 @@
           "amount": "480000"
         }
       ]
+    },
+    "mythic": {
+      "logging": [
+        {
+          "resource": "money",
+          "amount": "300000000"
+        },
+        {
+          "resource": "frost_core",
+          "amount": "2200"
+        },
+        {
+          "resource": "frost_sigil",
+          "amount": "1800"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "1600000"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "480000"
+        }
+      ],
+      "mining": [
+        {
+          "resource": "money",
+          "amount": "300000000"
+        },
+        {
+          "resource": "frost_core",
+          "amount": "2200"
+        },
+        {
+          "resource": "frost_sigil",
+          "amount": "1800"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "960000"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "640000"
+        }
+      ],
+      "fighting": [
+        {
+          "resource": "money",
+          "amount": "300000000"
+        },
+        {
+          "resource": "frost_core",
+          "amount": "2200"
+        },
+        {
+          "resource": "frost_sigil",
+          "amount": "1800"
+        },
+        {
+          "resource": "grotto_gem",
+          "amount": "720000"
+        },
+        {
+          "resource": "moonwillow_gem",
+          "amount": "960000"
+        }
+      ]
     }
   },
   "health": {
     "common": "100",
+    "uncommon": "125",
     "rare": "150",
     "epic": "225",
     "legendary": "350",
-    "mythic": "500",
-    "exotic": "700",
-    "void": "1000"
+    "mythic": "700",
+    "void": "700"
   },
   "shards": {
     "common": 1,
+    "uncommon": 1,
     "rare": 2,
     "epic": 4,
     "legendary": 8,
-    "mythic": 15,
-    "exotic": 25,
-    "void": 40
+    "mythic": 25,
+    "void": 25
   },
   "baseDamage": {
     "common": "200",
+    "uncommon": "250",
     "rare": "300",
     "epic": "450",
     "legendary": "700",
-    "mythic": "1000",
-    "exotic": "1400",
-    "void": "2000"
+    "mythic": "1400",
+    "void": "1400"
   },
   "starBar": {
     "fillPerDuplicate": {
       "common": 1,
+      "uncommon": 1,
       "rare": 1,
       "epic": 1,
       "legendary": 1,
       "mythic": 1,
-      "exotic": 1,
       "void": 1
     },
     "needs": {
       "common": [1, 1, 1, 2, 2],
+      "uncommon": [1, 1, 1, 1, 2],
       "rare": [1, 1, 1, 1, 1],
       "epic": [1, 0, 1, 1, 1],
       "legendary": [1, 0, 1, 1, 1],
       "mythic": [1, 0, 1, 0, 1],
-      "exotic": [1, 0, 0, 1, 0],
-      "void": [1, 0, 0, 0, 1]
+      "void": [1, 0, 1, 0, 1]
     }
   }
 }

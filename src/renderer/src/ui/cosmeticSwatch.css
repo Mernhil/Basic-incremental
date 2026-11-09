@@ -9,6 +9,9 @@
   height: calc(var(--cs) * 1.4);
   flex: none;
 }
+.cs[data-rarity='uncommon'] {
+  --rar: #6fdc8c;
+}
 .cs[data-rarity='rare'] {
   --rar: #5aa8ff;
 }
@@ -20,9 +23,6 @@
 }
 .cs[data-rarity='mythic'] {
   --rar: #ff4fb8;
-}
-.cs[data-rarity='exotic'] {
-  --rar: #ff8a1f;
 }
 .cs[data-rarity='void'] {
   --rar: #8a5cff;

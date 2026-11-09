@@ -4,9 +4,9 @@
  * Drawn with Brave Frontier ramps: five tones per material, shadows leaning purple and highlights
  * leaning yellow-white, gold trim with a bright top edge, small gems with a white glint.
  */
-import type { GemArt, Rarity } from '../../../../data';
+import type { GemArt } from '../../../../data';
 import { INK, f, type Pt } from '../kit';
-import { ITEM_VIEWBOX, itemVector } from './items';
+import { ITEM_VIEWBOX, itemVector, type ArtRarity } from './items';
 
 const clamp01 = (v: number): number => Math.max(0, Math.min(1, v));
 export function hsl2hex(h: number, s: number, l: number): string {
@@ -274,7 +274,7 @@ export function plaqueVector(glyph: NavGlyph): string {
 // ---- forged edges: the in-game sword at five steps, in the line's gem ----
 
 /** Bare, inlaid, gem-set, glowing runes, prismatic: the sword rarity drawn at each step. */
-export const EDGE_STEPS: readonly Rarity[] = ['common', 'rare', 'epic', 'mythic', 'mythic'];
+export const EDGE_STEPS: readonly ArtRarity[] = ['common', 'rare', 'epic', 'mythic', 'mythic'];
 /** Blade steel per edge gem (approved); other gems take theirs from the gem's own colours. */
 const EDGE_STEEL: Record<string, readonly [string, string]> = {
   square: ['#ffc78e', '#e0823c'],

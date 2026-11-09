@@ -12,6 +12,10 @@
   --wp-prism: linear-gradient(90deg, #ff5f9e, #ffb347, #f4f46b, #5ff0a8, #5fc6ff, #b48cff);
   color: var(--bi-frame-ink);
 }
+.wp[data-tier='wood'],
+.wp-over[data-tier='wood'] {
+  --wp-tc: #b58a5a;
+}
 .wp[data-tier='bronze'],
 .wp-over[data-tier='bronze'] {
   --wp-tc: #c98a4b;
@@ -28,8 +32,12 @@
 .wp-over[data-tier='prismatic'] {
   --wp-tc: #9fd8ff;
 }
-.wp[data-tier='unique'],
-.wp-over[data-tier='unique'] {
+.wp[data-tier='mythic'],
+.wp-over[data-tier='mythic'] {
+  --wp-tc: #ff8fd0;
+}
+.wp[data-tier='heirloom'],
+.wp-over[data-tier='heirloom'] {
   --wp-tc: #ffb26b;
 }
 .wp[hidden],

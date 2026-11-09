@@ -9,7 +9,7 @@ const coreNeed = content.cardRules.tierUp.gold.mining
 
 const goldCard = (cores: number, level = 80, stars = 6) => {
   const state = freshState();
-  state.cards.owned['cave_digger'] = {
+  state.cards.owned['geode_golem'] = {
     tier: 'gold',
     stars,
     level,

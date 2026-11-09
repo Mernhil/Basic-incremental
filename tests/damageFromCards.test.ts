@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RARITIES } from '../src/data';
+import { RANK_TIERS, RARITIES } from '../src/data';
 import {
   advance,
   advanceChunked,
@@ -43,10 +43,10 @@ function leadWith(
 }
 
 describe('base damage by rarity (DESIGN.md §5)', () => {
-  it('follows the health ratios: 1, 1.5, 2.25, 3.5, 5, 7, 10 times the Common value', () => {
+  it('follows the health ratios: 1, 1.25, 1.5, 2.25, 3.5, 7, 7 times the Common value (Mythic = Void)', () => {
     const common = rules.baseDamage.common;
     expect(common.gt(0)).toBe(true);
-    const ratios = [1, 1.5, 2.25, 3.5, 5, 7, 10];
+    const ratios = [1, 1.25, 1.5, 2.25, 3.5, 7, 7];
     RARITIES.forEach((rarity, i) => {
       expect(approxEq(rules.baseDamage[rarity], common.mul(ratios[i]!))).toBe(true);
     });
@@ -204,15 +204,15 @@ describe('card XP from fighting time (DESIGN.md §5)', () => {
 });
 
 describe('level caps by tier only (DESIGN.md §5)', () => {
-  it('is 20 / 40 / 60 / 80 for Bronze, Silver, Gold and Prismatic', () => {
-    expect(levelCap(content, { tier: 'bronze', stars: 1 })).toBe(20);
-    expect(levelCap(content, { tier: 'silver', stars: 1 })).toBe(40);
-    expect(levelCap(content, { tier: 'gold', stars: 1 })).toBe(60);
-    expect(levelCap(content, { tier: 'prismatic', stars: 1 })).toBe(80);
+  it('is 20 / 40 / 60 / 80 / 100 / 120 / 140 from Wood to the Heirloom', () => {
+    const caps = [20, 40, 60, 80, 100, 120, 140];
+    RANK_TIERS.forEach((tier, i) => {
+      expect(levelCap(content, { tier, stars: 1 }), tier).toBe(caps[i]);
+    });
   });
 
   it('does not grow with stars', () => {
-    for (const tier of ['bronze', 'silver', 'gold', 'prismatic'] as const) {
+    for (const tier of RANK_TIERS) {
       const caps = [1, 2, 3, 4, 5, 6].map((stars) => levelCap(content, { tier, stars }));
       expect(new Set(caps).size).toBe(1);
     }

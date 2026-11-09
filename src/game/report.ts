@@ -4,7 +4,7 @@ import type { Decimal } from './num';
 /**
  * What tiered up (DESIGN.md §12): gem mastery, a boss medal (dungeon or special dungeon), a
  * mine level or tree level milestone, a tree tile stage, a card tier, or a card's unique
- * evolution.
+ * Heirloom.
  */
 export type TierUpKind =
   | 'gem_mastery'
@@ -13,7 +13,7 @@ export type TierUpKind =
   | 'tree_milestone'
   | 'tile_stage'
   | 'card_tier'
-  | 'evolution';
+  | 'heirloom';
 
 /**
  * One tier-up moment, the same shape for everything with tiers so the UI plays one kind of
@@ -24,10 +24,10 @@ export interface TierUp {
   /** Gem resource, dungeon, mine, producer or card id. */
   id: string;
   /** Tier before and after: mastery tier 0..4, milestones reached, tile stage 0..4, or the card
-   *  tier as a metal index (bronze 1 .. prismatic 4); for `evolution` 0 -> 1. */
+   *  tier as a metal index (bronze 1 .. prismatic 4); for `heirloom` 0 -> 1. */
   from: number;
   to: number;
-  /** The metal to flash: METALS[to] capped at prismatic (a card's own tier for `evolution`). */
+  /** The metal to flash: METALS[to] capped at prismatic (a card's own tier for `heirloom`). */
   metal: Metal;
 }
 

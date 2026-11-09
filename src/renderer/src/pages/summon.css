@@ -7,10 +7,10 @@
   --sm-panel: color-mix(in srgb, var(--bi-chrome-bg) 88%, #fff);
   --sm-common: #c9ced6;
   --sm-rare: #5aa8ff;
+  --sm-uncommon: #6fdc8c;
   --sm-epic: #b67bff;
   --sm-legendary: #ffc23a;
   --sm-mythic: #ff4fb8;
-  --sm-exotic: #ff8a1f;
   --sm-void: #8a5cff;
   display: grid;
   grid-template-columns: minmax(0, 1fr) 210px minmax(0, 1fr);
@@ -240,6 +240,9 @@
 [data-rarity='common'] {
   --rc: var(--sm-common);
 }
+[data-rarity='uncommon'] {
+  --rc: var(--sm-uncommon);
+}
 [data-rarity='rare'] {
   --rc: var(--sm-rare);
 }
@@ -251,9 +254,6 @@
 }
 [data-rarity='mythic'] {
   --rc: var(--sm-mythic);
-}
-[data-rarity='exotic'] {
-  --rc: var(--sm-exotic);
 }
 [data-rarity='void'] {
   --rc: var(--sm-void);

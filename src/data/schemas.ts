@@ -149,13 +149,14 @@ export const productionSchema = z.strictObject({
 });
 
 export const JOBS = ['mining', 'logging', 'fighting'] as const;
+/** Mythic and Void are one top rarity with two sides, equal in power (DESIGN.md §5). */
 export const RARITIES = [
   'common',
+  'uncommon',
   'rare',
   'epic',
   'legendary',
   'mythic',
-  'exotic',
   'void',
 ] as const;
 export type Rarity = (typeof RARITIES)[number];
@@ -267,8 +268,20 @@ export const modifierSchema = z.strictObject({
 });
 export type ModifierData = z.output<typeof modifierSchema>;
 
-/** Card tiers, lowest first. Unique is open only to cards with a unique version (DESIGN.md §5). */
-export const RANK_TIERS = ['bronze', 'silver', 'gold', 'prismatic', 'unique'] as const;
+/**
+ * Card tiers, lowest first (DESIGN.md §5): T1 Wood, T2 Bronze, T3 Silver, T4 Gold, T5 Prismatic,
+ * T6 `mythic` (shown as Mythic or Void by the card's side), then the Heirloom, which is open
+ * only for an item type whose Heirloom art is approved (items.json).
+ */
+export const RANK_TIERS = [
+  'wood',
+  'bronze',
+  'silver',
+  'gold',
+  'prismatic',
+  'mythic',
+  'heirloom',
+] as const;
 export const MAX_STARS = 6;
 export const rankSchema = z.strictObject({
   tier: z.enum(RANK_TIERS),
@@ -306,25 +319,45 @@ export type CardEffect = z.output<typeof cardEffectSchema>;
 /** Card elements (DESIGN.md §12): each picks the card's element effect. */
 export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
-/** The signature item drawn inside a card (DESIGN.md §12); its detail grows with the card's rarity. */
+/** The 11 item types a card can carry (DESIGN.md §5 "Item types"). */
 export const ITEM_KINDS = [
   'sword',
-  'twin_blades',
   'greatsword',
-  'hatchet',
-  'staff',
-  'maul',
+  'spear',
+  'lance',
+  'dagger',
+  'hammer',
   'bow',
+  'staff',
+  'scythe',
   'pickaxe',
-  'chisel',
-  'geode_hammer',
-  'gauntlet',
+  'logging_axe',
 ] as const;
-
-/** Unique items (DESIGN.md §12, §5): drawn in place of a card's generic item at the Unique tier. */
-export const UNIQUE_ITEM_KINDS = ['flameblade', 'rootbloom_staff', 'soul_reaper'] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
-export type UniqueItemKind = (typeof UNIQUE_ITEM_KINDS)[number];
+
+/** One item type's names and whether its Heirloom is open (items.json; DESIGN.md §5). */
+export const itemTypeSchema = z.strictObject({
+  kind: z.enum(ITEM_KINDS),
+  job: z.enum(['fighting', 'mining', 'logging']),
+  /** The type word in item names: "Sword", "Axe" for the logging axe. */
+  noun: name,
+  /** T5 name ("Prismatic Dancer Sword"). */
+  prismatic: name,
+  /** T6 names, by the card's side. */
+  mythic: name,
+  void: name,
+  /** Heirloom names, by the card's side. */
+  heirloom: z.strictObject({ mythic: name, void: name }),
+  /** The Heirloom tier opens for the type only once its Heirloom art is approved. */
+  heirloomOpen: z.boolean(),
+});
+export const itemsSchema = z.strictObject({
+  /** Material words for T1 to T4 names: "Wooden Sword", "Bronze Sword", "Silver Sword", "Golden Sword". */
+  materials: z.strictObject({ wood: name, bronze: name, silver: name, gold: name }),
+  types: z.array(itemTypeSchema).length(ITEM_KINDS.length),
+});
+export type ItemType = z.output<typeof itemTypeSchema>;
+export type ItemsData = z.output<typeof itemsSchema>;
 
 export const cardSchema = z.strictObject({
   id,
@@ -332,10 +365,8 @@ export const cardSchema = z.strictObject({
   job: z.enum(JOBS),
   rarity: z.enum(RARITIES),
   element: z.enum(ELEMENTS),
-  item: z.strictObject({ kind: z.enum(ITEM_KINDS), name }),
-  /** Unique item that replaces `item` at the Unique tier (progression.json). Having one is what
-   *  opens the Unique tier for the card; none = the card stops at Prismatic. */
-  evolution: z.enum(UNIQUE_ITEM_KINDS).optional(),
+  /** The item type the card carries (its names per tier come from items.json). */
+  item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
   /** Used when the card leads its job's loadout. Logging and mining mains also set how it
    *  strikes (`harvest`, DESIGN.md §4). */
   main: cardEffectSchema.extend({ harvest: harvestPatternSchema.optional() }),
@@ -347,20 +378,32 @@ const count = z.number().int().min(0);
 const atLeastOne = decimal.refine((d) => d.gte(1), { message: 'must be at least 1' });
 const perTier = <T extends z.ZodType>(schema: T) =>
   z.strictObject({
+    wood: schema,
     bronze: schema,
     silver: schema,
     gold: schema,
     prismatic: schema,
-    unique: schema,
+    mythic: schema,
+    heirloom: schema,
+  });
+/** One entry per tier that has a next tier: every tier but the Heirloom. */
+const perTierUp = <T extends z.ZodType>(schema: T) =>
+  z.strictObject({
+    wood: schema,
+    bronze: schema,
+    silver: schema,
+    gold: schema,
+    prismatic: schema,
+    mythic: schema,
   });
 const perRarity = <T extends z.ZodType>(schema: T) =>
   z.strictObject({
     common: schema,
+    uncommon: schema,
     rare: schema,
     epic: schema,
     legendary: schema,
     mythic: schema,
-    exotic: schema,
     void: schema,
   });
 const perJob = <T extends z.ZodType>(schema: T) =>
@@ -374,7 +417,7 @@ export const cardRulesSchema = z.strictObject({
   cost: perRarity(count),
   /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
   costCap: z.strictObject({ base: count, perLevel: count }),
-  /** Level cap of each tier (Unique 100); stars do not change it (DESIGN.md §5). */
+  /** Level cap of each tier (Heirloom 140); stars do not change it (DESIGN.md §5). */
   levelCaps: perTier(z.number().int().min(1)),
   /** XP from level L to L + 1 = base × growth^(L − 1). */
   xpCurve: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
@@ -421,13 +464,8 @@ export const cardRulesSchema = z.strictObject({
   }),
   /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
    *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must
-   *  be at its level cap. Prismatic → Unique exists only for cards with a unique version. */
-  tierUp: z.strictObject({
-    bronze: perJob(z.array(costSchema).min(1)),
-    silver: perJob(z.array(costSchema).min(1)),
-    gold: perJob(z.array(costSchema).min(1)),
-    prismatic: perJob(z.array(costSchema).min(1)),
-  }),
+   *  be at its level cap. Mythic → Heirloom exists only for item types whose Heirloom is open. */
+  tierUp: perTierUp(perJob(z.array(costSchema).min(1))),
   /** Base health of a card by rarity, multiplied by its power (DESIGN.md §6). The fighting
    *  loadout's health pool sums its cards. */
   health: perRarity(positiveDecimal),
@@ -628,10 +666,6 @@ export const progressionSchema = z.strictObject({
   tileStages: z.strictObject({
     logging: z.strictObject({ source: z.literal('level') }),
     mining: z.strictObject({ source: z.literal('level') }),
-  }),
-  /** E6: unique items. Cards name theirs in cards.json; shown at the Unique tier. */
-  evolutions: z.strictObject({
-    items: z.array(z.strictObject({ kind: z.enum(UNIQUE_ITEM_KINDS), name })).min(1),
   }),
   /** E8: the goal tracker's rules, in no particular order (goals are sorted by time left). */
   goals: z
@@ -1248,7 +1282,7 @@ export const upgradesFileSchema = z.strictObject({
 
 /**
  * Weapon skins (weaponSkins.json): alternate art for a weapon, chosen per weapon kind (not per
- * card). `weapon` is a generic item kind or a unique item kind; `baseArt` is the unskinned art.
+ * card). `weapon` is an item type; `baseArt` is the unskinned art.
  */
 export const weaponSkinSchema = z.strictObject({
   id: skinArtId,
@@ -1264,7 +1298,7 @@ export const weaponSkinSchema = z.strictObject({
   rarity: z.enum(RARITIES).optional(),
 });
 export const weaponSkinSetSchema = z.strictObject({
-  weapon: z.enum([...ITEM_KINDS, ...UNIQUE_ITEM_KINDS]),
+  weapon: z.enum(ITEM_KINDS),
   /** The unskinned art. Absent for a generic kind (its art varies by rarity): unskinned = no art id. */
   baseArt: skinArtId.optional(),
   skins: z.array(weaponSkinSchema).min(1),
@@ -1293,6 +1327,7 @@ export const contentSchemas = {
   enhancements: enhancementsSchema,
   upgrades: upgradesFileSchema,
   weaponSkins: z.array(weaponSkinSetSchema),
+  items: itemsSchema,
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;

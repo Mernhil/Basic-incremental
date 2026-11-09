@@ -22,6 +22,7 @@ import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
+import items from '../src/data/content/items.json';
 
 type PortalRaw = {
   cost: { resource: string };
@@ -53,6 +54,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     prestige,
     upgrades,
     weaponSkins,
+    items,
     ...overrides,
   });
 }
@@ -92,6 +94,42 @@ describe('bundled content', () => {
       'Glacier Colossus',
     ]);
     expect(content.trials.map((t) => t.name)).toEqual(['The Glimmer Trial']);
+  });
+});
+
+describe('item types (items.json)', () => {
+  it('lists all 11 item kinds, each card item matches its job, names are unique, no Heirloom is open', () => {
+    const content = loadContent();
+    expect(content.items.types.map((t) => t.kind).sort()).toEqual(
+      [
+        'sword',
+        'greatsword',
+        'spear',
+        'lance',
+        'dagger',
+        'hammer',
+        'bow',
+        'staff',
+        'scythe',
+        'pickaxe',
+        'logging_axe',
+      ].sort(),
+    );
+    for (const card of content.cards) {
+      const type = content.itemTypeByKind.get(card.item.kind);
+      expect(type, `${card.id} item ${card.item.kind}`).toBeDefined();
+      expect(type!.job, card.id).toBe(card.job);
+    }
+    const names = content.items.types.flatMap((t) => [
+      t.noun,
+      t.prismatic,
+      t.mythic,
+      t.void,
+      t.heirloom.mythic,
+      t.heirloom.void,
+    ]);
+    expect(new Set(names).size).toBe(names.length);
+    for (const t of content.items.types) expect(t.heirloomOpen, t.kind).toBe(false);
   });
 });
 
@@ -202,7 +240,7 @@ describe('card ranks and portals', () => {
     expect(rarities.filter((r) => r === 'epic')).toHaveLength(2);
     expect(rarities.filter((r) => r === 'legendary')).toHaveLength(2);
     expect(rarities.filter((r) => r === 'mythic')).toHaveLength(1);
-    expect(rarities.filter((r) => r === 'exotic')).toHaveLength(1);
+    expect(rarities.filter((r) => r === 'void')).toHaveLength(1);
     for (const card of content.cards) {
       expect(card.main.description.length).toBeGreaterThan(0);
       expect(card.support.modifiers.length).toBeGreaterThan(0);

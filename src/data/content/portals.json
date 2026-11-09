@@ -66,7 +66,7 @@
       },
       {
         "itemId": "core_titan",
-        "rarity": "exotic",
+        "rarity": "void",
         "weight": 0.3
       }
     ],
@@ -447,27 +447,27 @@
       },
       {
         "itemId": "core_pulse",
-        "rarity": "exotic",
+        "rarity": "mythic",
         "weight": 0.06
       },
       {
         "itemId": "power_veins",
-        "rarity": "exotic",
+        "rarity": "mythic",
         "weight": 0.06
       },
       {
         "itemId": "hex_core",
-        "rarity": "exotic",
+        "rarity": "mythic",
         "weight": 0.06
       },
       {
         "itemId": "magma_strata",
-        "rarity": "exotic",
+        "rarity": "mythic",
         "weight": 0.06
       },
       {
         "itemId": "starburst",
-        "rarity": "exotic",
+        "rarity": "mythic",
         "weight": 0.06
       }
     ],
@@ -492,359 +492,139 @@
     },
     "pool": [
       {
-        "itemId": "legacy-staff-01",
+        "itemId": "legacy-sword-01",
         "rarity": "mythic",
-        "weight": 3
+        "weight": 2
       },
       {
-        "itemId": "legacy-staff-02",
-        "rarity": "exotic",
+        "itemId": "legacy-hammer-01",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-hammer-02",
+        "rarity": "void",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-56",
+        "rarity": "rare",
+        "weight": 5
+      },
+      {
+        "itemId": "legacy-bow-57",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-58",
+        "rarity": "epic",
+        "weight": 4
+      },
+      {
+        "itemId": "legacy-bow-59",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-01",
+        "rarity": "epic",
+        "weight": 4
+      },
+      {
+        "itemId": "legacy-bow-30",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-31",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-34",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-36",
+        "rarity": "mythic",
+        "weight": 2
+      },
+      {
+        "itemId": "legacy-bow-17",
+        "rarity": "mythic",
         "weight": 2
       },
       {
         "itemId": "legacy-staff-03",
         "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-01",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-02",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-03",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-04",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-05",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-06",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-07",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-08",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-09",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-10",
-        "rarity": "exotic",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-11",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-01",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-12",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-02",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-13",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-03",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-14",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-04",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-15",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-05",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-16",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-06",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-17",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-07",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-18",
-        "rarity": "exotic",
+        "itemId": "legacy-scythe-08",
+        "rarity": "void",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-19",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-20",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-21",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-22",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-23",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-24",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-25",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-26",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-27",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-28",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-29",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-30",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-31",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-32",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-33",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-34",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-35",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-36",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-37",
+        "itemId": "legacy-scythe-09",
         "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-38",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-39",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-40",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-41",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-42",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-43",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-44",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-45",
-        "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-46",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-47",
-        "rarity": "common",
-        "weight": 7
-      },
-      {
-        "itemId": "legacy-bow-48",
-        "rarity": "rare",
-        "weight": 6
-      },
-      {
-        "itemId": "legacy-bow-49",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-bow-50",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-bow-51",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-bow-52",
-        "rarity": "exotic",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-53",
+        "itemId": "legacy-scythe-10",
         "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-bow-54",
-        "rarity": "exotic",
         "weight": 2
       },
       {
-        "itemId": "legacy-bow-55",
+        "itemId": "legacy-scythe-11",
         "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-maul-01",
-        "rarity": "common",
-        "weight": 7
-      },
-      {
-        "itemId": "legacy-maul-02",
-        "rarity": "rare",
-        "weight": 6
-      },
-      {
-        "itemId": "legacy-maul-03",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-maul-04",
-        "rarity": "legendary",
-        "weight": 4
-      },
-      {
-        "itemId": "legacy-maul-05",
-        "rarity": "mythic",
-        "weight": 3
-      },
-      {
-        "itemId": "legacy-maul-06",
-        "rarity": "exotic",
         "weight": 2
       },
       {
-        "itemId": "legacy-maul-07",
+        "itemId": "legacy-scythe-12",
         "rarity": "void",
-        "weight": 1
+        "weight": 2
       },
       {
-        "itemId": "legacy-maul-08",
+        "itemId": "legacy-scythe-13",
         "rarity": "void",
-        "weight": 1
-      },
-      {
-        "itemId": "legacy-maul-09",
-        "rarity": "epic",
-        "weight": 5
-      },
-      {
-        "itemId": "legacy-maul-10",
-        "rarity": "rare",
-        "weight": 6
-      },
-      {
-        "itemId": "legacy-maul-11",
-        "rarity": "rare",
-        "weight": 6
-      },
-      {
-        "itemId": "legacy-twin_blades-01",
-        "rarity": "rare",
-        "weight": 6
-      },
-      {
-        "itemId": "legacy-twin_blades-02",
-        "rarity": "rare",
-        "weight": 6
+        "weight": 2
       }
     ],
     "pity": {

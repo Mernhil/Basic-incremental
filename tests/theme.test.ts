@@ -39,6 +39,7 @@ import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
+import items from '../src/data/content/items.json';
 
 const MAIN = 'dawnblade_regent';
 const r = (tier: Rank['tier'], stars: number): Rank => ({ tier, stars });
@@ -242,6 +243,7 @@ describe('invalid cosmetic data is rejected', () => {
       prestige,
       upgrades,
       weaponSkins,
+      items,
     });
   const issues = (input: RawContent): string[] => {
     try {

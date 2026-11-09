@@ -10,7 +10,7 @@
  * (`design/pixel/concept-tiles/`) and, from sheet 1, the gem coins, the mastery medals, the maul and
  * bow ladders and the Flameblade and Soul Reaper (`design/pixel/concept-sheet-1/`).
  */
-import { RARITIES, loadContent, type GemArt } from '../../../../data';
+import { loadContent, type GemArt } from '../../../../data';
 import {
   COIN_METALS,
   COIN_RING,
@@ -26,6 +26,7 @@ import { BOSS_VB, bossVector, shardVector } from '../vector/bosses';
 import {
   EVOLUTIONS,
   EVOLUTION_WINDOW,
+  ART_RARITIES,
   ITEM_KINDS_DRAWN,
   RARITY_WINDOW,
   ROOTBLOOM_CRYSTALS,
@@ -161,7 +162,7 @@ const drawn = (name: string): boolean => !HAND.has(name);
 export async function bakeItems(): Promise<Baked[]> {
   const res: Baked[] = [];
   for (const kind of ITEM_KINDS_DRAWN)
-    for (const r of RARITIES) {
+    for (const r of ART_RARITIES) {
       if (!drawn(`item-${kind}-${r}`)) continue;
       const markup = itemVector(kind, r);
       res.push(

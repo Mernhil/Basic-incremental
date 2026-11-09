@@ -320,6 +320,9 @@ body {
 .bi-card[data-rarity='common'] {
   --rar: #c4ccd8;
 }
+.bi-card[data-rarity='uncommon'] {
+  --rar: #6fdc8c;
+}
 .bi-card[data-rarity='rare'] {
   --rar: #6db3ff;
 }
@@ -331,9 +334,6 @@ body {
 }
 .bi-card[data-rarity='mythic'] {
   --rar: #ff6fb8;
-}
-.bi-card[data-rarity='exotic'] {
-  --rar: #ff8f45;
 }
 .bi-card[data-rarity='void'] {
   --rar: #e4e0f5;

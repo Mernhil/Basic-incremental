@@ -13,7 +13,7 @@ describe('Cards page model', () => {
     expect(owned.map((e) => e.role?.slot)).toEqual(['main', 'main', 'main']);
     for (const e of owned) {
       expect(e.next?.kind).toBe('star');
-      expect(e.tier?.kind).toBe('tier');
+      expect(e.tier).toBeNull(); // commons stop at Wood (rarity caps the tier)
     }
     expect(entries.filter((e) => !e.owned).every((e) => e.next === null && e.tier === null)).toBe(
       true,

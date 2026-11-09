@@ -1,12 +1,13 @@
-// Screenshots the Wardrobe "Weapon skins" test tab and a card wearing a skin in the running dev app.
-// Replaces the dev save (use a BI_PROFILE). Start: `BI_PROFILE=x npx electron-vite dev -- --remote-debugging-port=9333`
+// Screenshots the Cards page (new tier names) and the Wardrobe "Weapon skins" tab (legacy skins) in
+// the running dev app. Replaces the dev save (use a BI_PROFILE).
+// Start: `BI_PROFILE=x npx electron-vite dev -- --remote-debugging-port=9333`
 // Run: `node scripts/shoot-weapon-skins.mjs [port] [outDir]`.
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
 
 const port = process.argv[2] ?? '9333';
-const out = process.argv[3] ?? 'design/app-screens/weapon-skins';
-const fsUrl = (p) => `/@fs/${resolve(p).replace(/\\/g, '/')}`;
+const out = process.argv[3] ?? 'design/app-screens/weapon-base';
+const fsUrl = (p) => `/@fs/${resolve(p).replaceAll('\\', '/')}`;
 const browser = await chromium.connectOverCDP(`http://localhost:${port}`);
 const page = browser
   .contexts()
@@ -15,46 +16,36 @@ const page = browser
 if (!page) throw new Error('No app window found');
 await page.setViewportSize({ width: 1440, height: 1000 }).catch(() => undefined);
 await page.waitForSelector('.shell');
-const owned = process.argv[5] !== 'fresh';
 await page.evaluate(
-  async ({ data, game, owned }) => {
+  async ({ data, game }) => {
     const d = await import(data);
     const g = await import(game);
     const content = d.loadContent();
     const s = g.createInitialState(content);
-    if (owned) {
-      s.cards.owned['reaper_test'] = { ...g.newOwnedCard(), tier: 'unique', stars: 6, level: 40 };
-      s.cards.loadouts.fighting.main = 'reaper_test';
-    }
+    const own = (id, tier, stars, level) => {
+      s.cards.owned[id] = { ...g.newOwnedCard(), tier, stars, level };
+    };
+    own('storm_duelist', 'silver', 3, 50);
+    own('dawnblade_regent', 'prismatic', 2, 90);
+    own('moonwood_dryad', 'mythic', 1, 110);
+    own('core_titan', 'mythic', 4, 115);
+    own('grove_keeper', 'bronze', 1, 30);
+    s.legacySkins = ['legacy-sword-01', 'legacy-scythe-01', 'legacy-scythe-02', 'legacy-bow-56'];
+    s.weaponSkins = { sword: 'legacy-sword-01' };
     await window.api.writeSave(g.createSaveText(s, Date.now()));
   },
-  { data: fsUrl('src/data/index.ts'), game: fsUrl('src/game/index.ts'), owned },
+  { data: fsUrl('src/data/index.ts'), game: fsUrl('src/game/index.ts') },
 );
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
 await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
+await page.click('.shell-rail__item[data-page="cards"]');
+await page.waitForTimeout(1500);
+await page.screenshot({ path: `${out}/cards.png` });
 await page.click('.shell-rail__item[data-page="wardrobe"]');
 await page.click('[data-key="tab-skins"]');
 await page.waitForSelector('.ws-card .bi-card');
 await page.waitForTimeout(1200);
-await page.screenshot({ path: `${out}/tab-original${owned ? '' : '-fresh'}.png` });
-if (owned) {
-  await page.click('[data-key="skin-skin-04"]');
-  await page.waitForTimeout(600);
-  await page.screenshot({ path: `${out}/tab-preview-04.png` });
-  await page.click('[data-key="apply"]');
-  await page.waitForTimeout(600);
-  await page.screenshot({ path: `${out}/tab-applied-04.png` });
-  await page.click('[data-key="skin-skin-09"]');
-  await page.click('[data-key="apply"]');
-  await page.waitForTimeout(600);
-  await page.screenshot({ path: `${out}/tab-applied-09.png` });
-  await page.locator('.ws-card').screenshot({ path: `${out}/card-skin-09.png` });
-  for (const id of ['cards', 'production']) {
-    await page.click(`.shell-rail__item[data-page="${id}"]`);
-    await page.waitForTimeout(1200);
-    await page.screenshot({ path: `${out}/${id}-skin-09.png` });
-  }
-}
+await page.screenshot({ path: `${out}/wardrobe-weapon-skins.png` });
 await browser.close();

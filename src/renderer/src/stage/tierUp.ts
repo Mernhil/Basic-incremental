@@ -44,7 +44,7 @@ export function playTierUps(list: readonly TierUp[], host: TierUpHost): void {
   metalFlash(top.metal);
   const masteries = list.some((u) => u.kind === 'gem_mastery' || u.kind === 'boss_mastery');
   host.sound?.(
-    masteries || list.some((u) => u.kind === 'evolution') ? 'masteryTierUp' : 'milestone',
+    masteries || list.some((u) => u.kind === 'heirloom') ? 'masteryTierUp' : 'milestone',
   );
   list.slice(0, MAX_TOASTS).forEach((u) => {
     const { title, detail } = tierUpText(u, host.content);
@@ -52,7 +52,7 @@ export function playTierUps(list: readonly TierUp[], host: TierUpHost): void {
   });
   if (list.length > MAX_TOASTS) toast(`+${list.length - MAX_TOASTS}`, '', 'milestone', top.metal);
   for (const u of list) {
-    if (u.kind !== 'evolution') continue;
+    if (u.kind !== 'heirloom') continue;
     const props = host.cardProps?.(u.id);
     if (props) showEvolution(props);
   }

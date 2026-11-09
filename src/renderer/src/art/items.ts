@@ -7,9 +7,9 @@
  * hidden copy of the item's outline rides along so the element effects (`fx.ts`) can still trace
  * the real shape.
  */
-import type { Rarity } from '../../../data';
+import type { ItemKind, Rarity } from '../../../data';
 import { animatedSpriteImage, sprite } from './pixel/sprites';
-import { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade } from './vector/items';
+import { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade, type ArtRarity } from './vector/items';
 
 export { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade };
 
@@ -27,7 +27,44 @@ export function itemBoxSprite(name: string, cls = ''): string {
   return `<g class="bi-item${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}${animatedSpriteImage(name, 0, 0, ITEM_BOX.w, ITEM_BOX.h)}</g>`;
 }
 
+/**
+ * Interim looks (DESIGN.md §5, "Weapon looks, for now"): until a type's new art is approved, it
+ * shows the nearest old ladder; null = a plain labelled placeholder. Old art is deleted type by
+ * type as the new art lands.
+ */
+const INTERIM_KIND: Record<ItemKind, string | null> = {
+  sword: 'sword',
+  greatsword: 'greatsword',
+  staff: 'staff',
+  hammer: 'maul',
+  bow: 'bow',
+  pickaxe: 'pickaxe',
+  logging_axe: 'hatchet',
+  dagger: 'twin_blades',
+  spear: null,
+  lance: null,
+  scythe: null,
+};
+/** The old art ladder has no Uncommon: it shows the Common look. */
+const INTERIM_RARITY: Record<Rarity, ArtRarity> = {
+  common: 'common',
+  uncommon: 'common',
+  rare: 'rare',
+  epic: 'epic',
+  legendary: 'legendary',
+  mythic: 'mythic',
+  void: 'void',
+};
+
+/** A plain labelled placeholder for a type with no pictures yet, in the 200 x 240 item box. */
+function placeholder(kind: ItemKind): string {
+  const label = kind.replace('_', ' ').toUpperCase();
+  return `<g class="bi-item bi-item--placeholder"><rect x="40" y="70" width="120" height="100" fill="#2a303c" stroke="#0d0f14" stroke-width="4"/><text x="100" y="128" text-anchor="middle" font-family="monospace" font-size="16" font-weight="700" fill="#cfd5df">${label}</text></g>`;
+}
+
 /** The item's pixel sprite for a card art window, in the 200 x 240 item box. */
-export function itemArt(kind: string, rarity: Rarity): string {
-  return itemBoxSprite(`item-${kind}-${rarity}`);
+export function itemArt(kind: ItemKind, rarity: Rarity): string {
+  const art = INTERIM_KIND[kind];
+  if (!art) return placeholder(kind);
+  return itemBoxSprite(`item-${art}-${INTERIM_RARITY[rarity]}`);
 }

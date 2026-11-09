@@ -28,6 +28,9 @@ import type {
   WearRules,
   WeaponSkin,
   WeaponSkinSet,
+  ItemsData,
+  ItemType,
+  RankTier,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
@@ -51,6 +54,7 @@ import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
 import upgradesJson from './content/upgrades.json';
 import weaponSkinsJson from './content/weaponSkins.json';
+import itemsJson from './content/items.json';
 
 export * from './schemas';
 
@@ -92,6 +96,10 @@ export interface Content {
   upgrades: UpgradesConfig;
   /** Weapon skins: alternate art per weapon kind (weaponSkins.json). */
   weaponSkins: WeaponSkinSet[];
+  /** Item types: names per tier and which Heirlooms are open (items.json). */
+  items: ItemsData;
+  /** Item type by kind. */
+  itemTypeByKind: ReadonlyMap<string, ItemType>;
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
@@ -166,6 +174,7 @@ export function validateContent(raw: RawContent): Content {
     enhancements,
     upgrades,
     weaponSkins,
+    items,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -174,7 +183,7 @@ export function validateContent(raw: RawContent): Content {
   checkCosmetics(cosmetics, rarities, issues);
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
-  checkProgression({ cards, progression }, issues);
+  checkItems({ cards, items }, issues);
   checkPrestige({ resources, cosmetics, prestige }, issues);
   checkAchievements(
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
@@ -245,6 +254,8 @@ export function validateContent(raw: RawContent): Content {
     enhancements,
     upgrades,
     weaponSkins,
+    items,
+    itemTypeByKind: new Map(items.types.map((t) => [t.kind, t])),
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
@@ -714,7 +725,7 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
     }
   });
-  for (const tier of ['bronze', 'silver', 'gold', 'prismatic'] as const) {
+  for (const tier of RANK_TIERS.slice(0, -1) as Exclude<RankTier, 'heirloom'>[]) {
     for (const job of JOBS) {
       const costs = c.cardRules.tierUp[tier][job];
       if (!costs.some((x) => x.resource === 'money')) {
@@ -734,21 +745,20 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   }
 }
 
-/** Each unique evolution is listed once, and cards only evolve into listed ones. */
-function checkProgression(c: Pick<Content, 'cards' | 'progression'>, issues: string[]): void {
-  const kinds = new Set<string>();
-  c.progression.evolutions.items.forEach((item, i) => {
-    if (kinds.has(item.kind)) {
-      issues.push(
-        `progression.json › evolutions › items › [${i}] › kind: duplicate "${item.kind}"`,
-      );
+/** Every item type is listed once and matches its job; every card carries a listed type of its own job. */
+function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void {
+  const kinds = new Map<string, ItemType>();
+  c.items.types.forEach((t, i) => {
+    if (kinds.has(t.kind)) {
+      issues.push(`items.json › types › [${i}] › kind: duplicate "${t.kind}"`);
     }
-    kinds.add(item.kind);
+    kinds.set(t.kind, t);
   });
   c.cards.forEach((card, i) => {
-    if (card.evolution && !kinds.has(card.evolution)) {
+    const t = kinds.get(card.item.kind);
+    if (t && t.job !== card.job) {
       issues.push(
-        `cards.json › [${i}] › evolution: "${card.evolution}" is not in progression.json evolutions`,
+        `cards.json › [${i}] › item › kind: "${card.item.kind}" is a ${t.job} item, the card is ${card.job}`,
       );
     }
   });
@@ -1035,6 +1045,7 @@ export function bundledRawContent(): RawContent {
     enhancements: enhancementsJson,
     upgrades: upgradesJson,
     weaponSkins: weaponSkinsJson,
+    items: itemsJson,
   };
 }
 

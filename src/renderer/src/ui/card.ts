@@ -1,6 +1,7 @@
 import type { Rank, Rarity } from '../../../data';
-import type { ResolvedCard } from '../../../game';
+import { TIER_LABELS, type ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
+import type { FrameTier } from '../art/vector/frame';
 import { ITEM_VIEWBOX } from '../art/items';
 import { attachElementFx, type CardElement } from '../art/fx';
 import { effectStrength } from '../art/fxGeometry';
@@ -21,17 +22,12 @@ const EMBLEMS: Record<string, string> = {
   tree: '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>',
 };
 
-/** Unique keeps the Prismatic frame, look and effects (DESIGN.md §5). */
-const frameTierOf = (tier: Rank['tier']): Exclude<Rank['tier'], 'unique'> =>
-  tier === 'unique' ? 'prismatic' : tier;
+/** The frame of each tier: Wood shows the Bronze frame; Mythic, Void and the Heirloom keep the
+ *  Prismatic frame, look and effects until their own are drawn (DESIGN.md §5). */
+const frameTierOf = (tier: Rank['tier']): FrameTier =>
+  tier === 'wood' ? 'bronze' : tier === 'mythic' || tier === 'heirloom' ? 'prismatic' : tier;
 
-const TIER_NAMES: Record<Rank['tier'], string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  unique: 'Unique',
-};
+const TIER_NAMES: Record<Rank['tier'], string> = TIER_LABELS;
 
 export type { CardFace };
 

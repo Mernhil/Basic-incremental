@@ -50,7 +50,68 @@ export const MIGRATIONS: MigrationTable = {
   19: (state) => ({ ...state, weaponSkins: {} }),
   /** v20 -> v21: owned legacy weapon skins (Legacy Gate). None owned. */
   20: (state) => ({ ...state, legacySkins: [] }),
+  /** v21 -> v22: the weapon base (DESIGN.md §5, §8): tiers Wood to Mythic/Void, Unique renamed
+   *  Heirloom, the 11 item types and the picked legacy skins. */
+  21: v21ToV22,
 };
+
+/** Old weapon kind -> its new item type (maul, twin blades and the Soul Reaper scythe). */
+const V22_WEAPONS: Record<string, string> = {
+  maul: 'hammer',
+  twin_blades: 'dagger',
+  soul_reaper: 'scythe',
+};
+/** Kept legacy skins whose id changed (maul 06 and 07 became hammer skins). */
+const V22_SKIN_IDS: Record<string, string> = {
+  'legacy-maul-06': 'legacy-hammer-01',
+  'legacy-maul-07': 'legacy-hammer-02',
+};
+
+/**
+ * v21 -> v22: a Unique card is at the Mythic/Void tier (T6, by the card's side, which the game
+ * knows from the card); Bronze to Prismatic keep their names (Bronze is T2 now, Wood is the new
+ * first tier). A worn Soul Reaper skin (free before) stays worn as an owned scythe legacy skin;
+ * weapon skins move to their new type; legacy skins that are not kept are dropped on load. Cards
+ * above their rarity's cap are clamped (and paid back) on load, where the cards are known.
+ */
+function v21ToV22(state: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = { ...state };
+  if (isRecord(state['cards']) && isRecord(state['cards']['owned'])) {
+    const owned = Object.fromEntries(
+      Object.entries(state['cards']['owned']).map(([id, card]) => [
+        id,
+        isRecord(card) && card['tier'] === 'unique' ? { ...card, tier: 'mythic' } : card,
+      ]),
+    );
+    out['cards'] = { ...state['cards'], owned };
+  }
+  const legacy = new Set<string>(
+    Array.isArray(state['legacySkins'])
+      ? state['legacySkins'].filter((x): x is string => typeof x === 'string')
+      : [],
+  );
+  const skins: Record<string, string> = {};
+  for (const [weapon, skin] of Object.entries(
+    isRecord(state['weaponSkins']) ? state['weaponSkins'] : {},
+  )) {
+    if (typeof skin !== 'string') continue;
+    const to = V22_WEAPONS[weapon] ?? weapon;
+    const scythe = /^skin-(\d\d)$/.exec(skin);
+    if (weapon === 'soul_reaper' && scythe) {
+      const n = Number(scythe[1]);
+      if (n >= 1 && n <= 12) {
+        const id = `legacy-scythe-${String(n + 1).padStart(2, '0')}`;
+        legacy.add(id);
+        skins[to] = id;
+      }
+      continue;
+    }
+    skins[to] = V22_SKIN_IDS[skin] ?? skin;
+  }
+  out['weaponSkins'] = skins;
+  out['legacySkins'] = [...legacy].map((id) => V22_SKIN_IDS[id] ?? id);
+  return out;
+}
 
 /** Price of the first plot / slot at save format 15 (production.json `expansion`): base and growth. */
 const V15_EXPANSION = { base: 25, growth: 1.4 };

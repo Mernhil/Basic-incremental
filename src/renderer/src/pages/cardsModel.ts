@@ -45,7 +45,7 @@ export interface CostChip {
  * the dungeon drawer and on the Cards detail.
  */
 export interface WeaponView {
-  /** The weapon's name (the unique weapon's name at the Unique tier). */
+  /** The weapon's name at its tier (items.json; the Heirloom's own name at the Heirloom tier). */
   weapon: string;
   tier: Rank['tier'];
   tierName: string;
@@ -74,8 +74,8 @@ export interface WeaponView {
   tierUp: {
     toTier: Rank['tier'];
     toName: string;
-    /** The step to the unique weapon (button "Reveal Flameblade"). */
-    unique: boolean;
+    /** The step to the Heirloom (button "Reveal <name>"). */
+    heirloom: boolean;
     /** leveling: below the cap; ready: at the cap and paid for; short: at the cap, missing prices. */
     phase: 'leveling' | 'ready' | 'short';
     /** "Reach Lv 40 to tier up. It costs:" below the cap, "It costs:" at it. */
@@ -87,7 +87,7 @@ export interface WeaponView {
     /** What is missing, for the tag's hint ("Missing Frost Sigil."), empty when nothing is. */
     missing: string;
   } | null;
-  /** Why there is no tier-up (top tier, or the unique weapon is not drawn yet); null otherwise. */
+  /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
   endNote: string | null;
 }
 

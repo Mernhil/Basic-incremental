@@ -21,6 +21,10 @@
 .wd-detail {
   --rar: #c9ced6;
 }
+.wd [data-rarity='uncommon'],
+.wd-detail[data-rarity='uncommon'] {
+  --rar: #6fdc8c;
+}
 .wd [data-rarity='rare'],
 .wd-detail[data-rarity='rare'] {
   --rar: #5aa8ff;
@@ -36,10 +40,6 @@
 .wd [data-rarity='mythic'],
 .wd-detail[data-rarity='mythic'] {
   --rar: #ff4fb8;
-}
-.wd [data-rarity='exotic'],
-.wd-detail[data-rarity='exotic'] {
-  --rar: #ff8a1f;
 }
 .wd [data-rarity='void'],
 .wd-detail[data-rarity='void'] {

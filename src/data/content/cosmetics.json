@@ -2797,7 +2797,7 @@
     "id": "core_pulse",
     "name": "Core Pulse",
     "slot": "finish",
-    "rarity": "exotic",
+    "rarity": "mythic",
     "set": null,
     "exclusiveCard": "core_titan",
     "ownedModifiers": [
@@ -2851,7 +2851,7 @@
     "id": "power_veins",
     "name": "Power Veins",
     "slot": "finish",
-    "rarity": "exotic",
+    "rarity": "mythic",
     "set": null,
     "exclusiveCard": "core_titan",
     "ownedModifiers": [
@@ -2905,7 +2905,7 @@
     "id": "hex_core",
     "name": "Hex Core",
     "slot": "finish",
-    "rarity": "exotic",
+    "rarity": "mythic",
     "set": null,
     "exclusiveCard": "core_titan",
     "ownedModifiers": [
@@ -2959,7 +2959,7 @@
     "id": "magma_strata",
     "name": "Magma Strata",
     "slot": "finish",
-    "rarity": "exotic",
+    "rarity": "mythic",
     "set": null,
     "exclusiveCard": "core_titan",
     "ownedModifiers": [
@@ -3013,7 +3013,7 @@
     "id": "starburst",
     "name": "Starburst",
     "slot": "finish",
-    "rarity": "exotic",
+    "rarity": "mythic",
     "set": null,
     "exclusiveCard": "core_titan",
     "ownedModifiers": [

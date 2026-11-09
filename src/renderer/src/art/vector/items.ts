@@ -5,7 +5,6 @@
  * inlay and a ribbon; Mythic neon runes and a crystal edge; Exotic forked shapes and floating rings;
  * Void black chrome, glowing cracks and orbiting shards. Twinkles get more frequent with rarity.
  */
-import type { Rarity } from '../../../../data';
 import { INK, f, ink } from '../kit';
 
 type V = [number, number];
@@ -19,16 +18,9 @@ interface RarityLook {
   grip: string;
 }
 
-const LOOK: Record<Rarity, RarityLook> = {
-  common: { acc: '#8d939c', acc2: '#5d636c', gem: null, grip: '#6b3a1f' },
-  rare: { acc: '#4f8fe0', acc2: '#2a5aa8', gem: '#7fd3ff', grip: '#3a2a5a' },
-  epic: { acc: '#a06ae8', acc2: '#6a3cb0', gem: '#d38bff', grip: '#3a1f4f' },
-  legendary: { acc: '#f4c23b', acc2: '#b0700e', gem: '#ff3d4e', grip: '#5a1f1f' },
-  mythic: { acc: '#ff3fb4', acc2: '#a01870', gem: '#ff9be0', grip: '#2a0f22' },
-  exotic: { acc: '#ff8a1f', acc2: '#b0500a', gem: '#ffe08a', grip: '#2a150a' },
-  void: { acc: '#9aa3b2', acc2: '#3a3f4a', gem: '#b47cff', grip: '#121418' },
-};
-const ORDER: readonly Rarity[] = [
+/** The rarity ladder the item art was drawn on (the game's rarities moved on; see art/items.ts). */
+export type ArtRarity = 'common' | 'rare' | 'epic' | 'legendary' | 'mythic' | 'exotic' | 'void';
+export const ART_RARITIES: readonly ArtRarity[] = [
   'common',
   'rare',
   'epic',
@@ -37,6 +29,17 @@ const ORDER: readonly Rarity[] = [
   'exotic',
   'void',
 ];
+
+const LOOK: Record<ArtRarity, RarityLook> = {
+  common: { acc: '#8d939c', acc2: '#5d636c', gem: null, grip: '#6b3a1f' },
+  rare: { acc: '#4f8fe0', acc2: '#2a5aa8', gem: '#7fd3ff', grip: '#3a2a5a' },
+  epic: { acc: '#a06ae8', acc2: '#6a3cb0', gem: '#d38bff', grip: '#3a1f4f' },
+  legendary: { acc: '#f4c23b', acc2: '#b0700e', gem: '#ff3d4e', grip: '#5a1f1f' },
+  mythic: { acc: '#ff3fb4', acc2: '#a01870', gem: '#ff9be0', grip: '#2a0f22' },
+  exotic: { acc: '#ff8a1f', acc2: '#b0500a', gem: '#ffe08a', grip: '#2a150a' },
+  void: { acc: '#9aa3b2', acc2: '#3a3f4a', gem: '#b47cff', grip: '#121418' },
+};
+const ORDER: readonly ArtRarity[] = ART_RARITIES;
 
 const PATH = (pts: readonly V[], close = true): string =>
   pts.map(([x, y], i) => `${i ? 'L' : 'M'}${f(x)} ${f(y)}`).join(' ') + (close ? 'Z' : '');
@@ -930,7 +933,7 @@ const DRAW: Record<string, Draw> = {
 };
 
 /** The item's SVG body for a card art window, in a box that fits the landscape window. */
-export function itemVector(kind: string, rarity: Rarity): string {
+export function itemVector(kind: string, rarity: ArtRarity): string {
   const draw = DRAW[kind];
   if (!draw) return '';
   const ri = ORDER.indexOf(rarity);
@@ -942,7 +945,7 @@ export const ITEM_VIEWBOX = '-18 16 236 204';
 export const ITEM_KINDS_DRAWN = Object.keys(DRAW);
 
 /** Rarity window colour behind each rarity (the approved weapons page); the light rim mixes from it. */
-export const RARITY_WINDOW: Record<Rarity, string> = {
+export const RARITY_WINDOW: Record<ArtRarity, string> = {
   common: '#2a303c',
   rare: '#16294d',
   epic: '#2c1a4f',
@@ -991,7 +994,7 @@ export const EVOLUTION_GEO: Record<Evolution, Blade> = {
   ),
 };
 /** The rarity window each evolution is shown on. */
-export const EVOLUTION_WINDOW: Record<Evolution, Rarity> = {
+export const EVOLUTION_WINDOW: Record<Evolution, ArtRarity> = {
   flameblade: 'legendary',
   soul_reaper: 'void',
   rootbloom_staff: 'epic',
