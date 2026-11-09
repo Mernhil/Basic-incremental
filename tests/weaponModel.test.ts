@@ -25,7 +25,7 @@ describe('weapon panel model', () => {
   });
 
   it('mid level: the ring fills with XP and the tier-up waits for the cap', () => {
-    const w = view('ember_squire', {
+    const w = view('dawnblade_regent', {
       tier: 'silver',
       stars: 3,
       level: 27,
@@ -59,10 +59,22 @@ describe('weapon panel model', () => {
     expect(view('ember_squire', { stars: 6 })!.starBar).toBeNull();
   });
 
+  it('a new card starts at Wood', () => {
+    const w = view('dawnblade_regent', {})!;
+    expect(w.tier).toBe('wood');
+    expect(w.tierName).toBe('Wood');
+    expect(w.tierUp?.toName).toBe('Bronze');
+  });
+
   it('max level, tier-up affordable: ready, with every price met', () => {
     const price = content.cardRules.tierUp.bronze.fighting;
     const extra = Object.fromEntries(price.map((p) => [p.resource, p.amount.toString()]));
-    const w = view('ember_squire', { tier: 'bronze', level: 20, stars: 6 }, '0', extra)!;
+    const w = view(
+      'dawnblade_regent',
+      { tier: 'bronze', level: content.cardRules.levelCaps.bronze, stars: 6 },
+      '0',
+      extra,
+    )!;
     expect(w.atCap).toBe(true);
     expect(w.xp).toBe(1);
     expect(w.xpNow).toBe('');
@@ -74,7 +86,11 @@ describe('weapon panel model', () => {
   });
 
   it('max level, not enough: short, and names what is missing', () => {
-    const w = view('ember_squire', { tier: 'silver', level: 40 }, '1')!;
+    const w = view(
+      'dawnblade_regent',
+      { tier: 'silver', level: content.cardRules.levelCaps.silver },
+      '1',
+    )!;
     expect(w.tierUp?.phase).toBe('short');
     expect(w.tierUp?.ready).toBe(false);
     expect(w.tierUp?.costs.some((c) => !c.met)).toBe(true);
@@ -82,29 +98,38 @@ describe('weapon panel model', () => {
   });
 
   it('Gold to Prismatic costs Frost Sigils', () => {
-    const w = view('ember_squire', { tier: 'gold', level: 60 })!;
+    const w = view('dawnblade_regent', { tier: 'gold', level: 80 })!;
     expect(w.tierUp?.toName).toBe('Prismatic');
+    expect(w.tierUp?.heirloom).toBe(false);
     expect(w.tierUp?.costs.map((c) => c.name)).toContain('Frost Sigil');
   });
 
-  it('Prismatic to Unique reveals the unique weapon', () => {
-    const w = view('ember_squire', { tier: 'prismatic', level: 80 })!;
-    expect(w.tierUp?.unique).toBe(true);
-    expect(w.tierUp?.action).toBe('Reveal Flameblade');
+  it('a card stops at the tier its rarity allows and says so: the end note', () => {
+    const common = view('ember_squire', { tier: 'wood', level: 20 })!;
+    expect(common.tierUp).toBeNull();
+    expect(common.endNote).toBe('Wood is as far as this weapon goes.');
+    const legendary = view('dawnblade_regent', { tier: 'prismatic', level: 100 })!;
+    expect(legendary.tierUp).toBeNull();
+    expect(legendary.endNote).toBe('Prismatic is as far as this weapon goes.');
+  });
+
+  it('Prismatic to Mythic (T6) is a normal tier-up for a mythic card, not a reveal', () => {
+    const w = view('moonwood_dryad', { tier: 'prismatic', level: 100 })!;
+    expect(w.tierUp?.toName).toBe('Mythic');
+    expect(w.tierUp?.heirloom).toBe(false);
+    expect(w.tierUp?.action).toBe('Tier up to Mythic');
     expect(w.endNote).toBeNull();
   });
 
-  it('a weapon without a unique version stops at Prismatic and says so', () => {
-    const w = view('storm_duelist', { tier: 'prismatic', level: 80 })!;
+  it('at Mythic the top is pending while the Heirloom stays closed', () => {
+    const w = view('moonwood_dryad', { tier: 'mythic', level: 120 })!;
     expect(w.tierUp).toBeNull();
-    expect(w.endNote).toBe(
-      'Prismatic is the top tier for Twin Storm Blades until its unique weapon is drawn.',
-    );
+    expect(w.endNote).toBe(`Mythic is the top tier for ${w.weapon} until its Heirloom is drawn.`);
   });
 
-  it('the unique weapon is the final form', () => {
-    const w = view('ember_squire', { tier: 'unique', level: 100, stars: 6 })!;
-    expect(w.weapon).toBe('Flameblade');
+  it('the Heirloom is the final form', () => {
+    const w = view('moonwood_dryad', { tier: 'heirloom', level: 140, stars: 6 })!;
+    expect(w.tier).toBe('heirloom');
     expect(w.tierUp).toBeNull();
     expect(w.endNote).toBe('Fully upgraded. Nothing left to unlock.');
   });

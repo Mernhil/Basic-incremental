@@ -21,6 +21,12 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
   return state;
 };
 
+/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and leads its job. */
+const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'mining'): void => {
+  state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
+  state.cards.loadouts[job]!.main = id;
+};
+
 describe('balance sim: greedy buyer', () => {
   it('lists purchases with an ETA, 0 when affordable now', () => {
     const state = rich(freshState(), 'money', 15);
@@ -111,26 +117,27 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
 
   it('keeps buying levels while a tier-up still waits for gems, and saves its Money once the gems are close', () => {
     const base = freshState();
-    const squire = base.cards.owned['ember_squire']!;
-    squire.level = 20; // at the Bronze cap
+    lead(base, 'storm_duelist', 'fighting'); // Epic: a card that can tier up
+    const squire = base.cards.owned['storm_duelist']!;
+    squire.level = 20; // at the Wood cap
     squire.stars = 6; // a tier-up also needs every star
     base.clearedDungeons = ['mossy_cellar']; // Iron Deeps opens
     base.production.unlockedTrees = ['ironbark', 'moonwillow'];
     base.resources['moss_core'] = new Decimal(10);
-    base.resources['money'] = new Decimal(1e5); // 150,000 needed, so affordable levels are on offer
+    base.resources['money'] = new Decimal(4e4); // 50,000 needed, so affordable levels are on offer
     // The gems are far off: Money goes into levels.
     const far = greedyBuy(base, content);
-    expect(far.state.resources['money']!.toNumber()).toBeLessThan(1e5);
+    expect(far.state.resources['money']!.toNumber()).toBeLessThan(4e4);
     // The gems are in hand: Money is the only thing missing, so none of it is spent on levels.
     const ready = cloneState(base);
-    for (const price of content.cardRules.tierUp.bronze.fighting) {
+    for (const price of content.cardRules.tierUp.wood.fighting) {
       if (price.resource !== 'money' && price.resource !== 'moss_core') {
         ready.resources[price.resource] = price.amount;
       }
     }
-    ready.resources['money'] = new Decimal(1e5);
+    ready.resources['money'] = new Decimal(4e4);
     const near = greedyBuy(ready, content);
-    expect(near.state.resources['money']!.toNumber()).toBe(1e5);
+    expect(near.state.resources['money']!.toNumber()).toBe(4e4);
   });
 
   it('weighs a mine or tree level by the share of the production', () => {
@@ -151,19 +158,21 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
 
   it('finishes the fighting lead first: a more advanced production card does not starve its tier-up of gems', () => {
     const state = freshState();
-    const squire = state.cards.owned['ember_squire']!;
+    lead(state, 'storm_duelist', 'fighting'); // Epic: it can reach Gold
+    lead(state, 'geode_golem', 'mining'); // Legendary: it can reach Prismatic
+    const squire = state.cards.owned['storm_duelist']!;
     squire.tier = 'silver';
-    squire.level = 40; // at the Silver cap: Gold costs Money, Cinder Cores and gems
+    squire.level = 60; // at the Silver cap: Gold costs Money, Cinder Cores and gems
     squire.stars = 6;
-    const digger = state.cards.owned['cave_digger']!;
+    const digger = state.cards.owned['geode_golem']!;
     digger.tier = 'gold';
     digger.stars = 6;
-    digger.level = 60; // further along, and its Prismatic step waits for Frost Cores
+    digger.level = 80; // further along, and its Prismatic step waits for Frost Cores
     state.resources['money'] = new Decimal(5e6);
     state.resources['cinder_core'] = new Decimal(10);
     state.resources['moonwillow_gem'] = new Decimal(100000);
     state.resources['grotto_gem'] = new Decimal(100000);
-    expect(greedyBuy(state, content).bought).toContain('tier:ember_squire');
+    expect(greedyBuy(state, content).bought).toContain('tier:storm_duelist');
   });
 
   it('lets a weaker card take its step while the lead is hours from its gems', () => {
@@ -171,27 +180,31 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.clearedDungeons = ['mossy_cellar'];
     state.production.unlockedTrees = ['ironbark'];
     state.activeDungeonId = 'mossy_cellar';
-    state.cards.owned['ember_squire']!.level = 20; // Bronze cap: needs 24,000 Ironbark, has 14,000
-    state.cards.owned['ember_squire']!.stars = 6;
-    state.cards.owned['cave_digger']!.stars = 6;
-    state.cards.owned['cave_digger']!.level = 20; // needs 12,000 Ironbark and 20,000 Iron
+    lead(state, 'storm_duelist', 'fighting'); // Epic: it can leave Wood
+    lead(state, 'gem_cutter', 'mining'); // Rare: it can leave Wood
+    state.cards.owned['storm_duelist']!.level = 20; // Wood cap: needs 8,000 Ironbark, has 4,000
+    state.cards.owned['storm_duelist']!.stars = 6;
+    state.cards.owned['gem_cutter']!.stars = 6;
+    state.cards.owned['gem_cutter']!.level = 20; // needs 4,000 Ironbark and 6,667 Iron
     state.resources['money'] = new Decimal(2e5);
     state.resources['moss_core'] = new Decimal(6);
     state.resources['iron_gem'] = new Decimal(20000);
-    state.resources['ironbark_gem'] = new Decimal(14000);
-    expect(greedyBuy(state, content).bought).toContain('tier:cave_digger');
+    state.resources['ironbark_gem'] = new Decimal(4000);
+    expect(greedyBuy(state, content).bought).toContain('tier:gem_cutter');
   });
 
   it('saves the Frost Cores for the lead card still levelling toward its tier-up', () => {
     const state = freshState();
-    const squire = state.cards.owned['ember_squire']!;
+    lead(state, 'dawnblade_regent', 'fighting'); // Legendary: it can reach Prismatic
+    lead(state, 'geode_golem', 'mining');
+    const squire = state.cards.owned['dawnblade_regent']!;
     squire.tier = 'gold';
     squire.stars = 6;
-    squire.level = 50; // Gold cap 60: not ready, but its tier-up will need Frost Cores and Sigils
-    const digger = state.cards.owned['cave_digger']!;
+    squire.level = 70; // Gold cap 80: not ready, but its tier-up will need Frost Cores and Sigils
+    const digger = state.cards.owned['geode_golem']!;
     digger.tier = 'gold';
     digger.stars = 6;
-    digger.level = 60; // at the Gold cap: ready to tier up too
+    digger.level = 80; // at the Gold cap: ready to tier up too
     const [, coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
     state.resources['frost_core'] = new Decimal(coreCost!.amount);
     state.resources['frost_sigil'] = new Decimal(sigilCost!.amount).mul(2);
@@ -199,9 +212,9 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['grotto_gem'] = new Decimal(1e6);
     state.resources['money'] = new Decimal(1e9);
     const { bought } = greedyBuy(state, content);
-    expect(bought).not.toContain('tier:cave_digger');
+    expect(bought).not.toContain('tier:geode_golem');
     state.resources['frost_core'] = new Decimal(coreCost!.amount).mul(2);
-    expect(greedyBuy(state, content).bought).toContain('tier:cave_digger');
+    expect(greedyBuy(state, content).bought).toContain('tier:geode_golem');
   });
 
   it('saves the Glimmer Dust for the cosmetic closest to its top level', () => {
@@ -254,7 +267,8 @@ describe('balance sim: where to fight', () => {
   it('keeps farming Cores while the next boss would take over ten minutes to kill', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar'];
-    const squire = state.cards.owned['ember_squire']!;
+    lead(state, 'storm_duelist', 'fighting'); // Epic: its Wood step is waiting for Moss Cores
+    const squire = state.cards.owned['storm_duelist']!;
     squire.level = 20;
     squire.stars = 6;
     squire.starFill = 1;
@@ -376,7 +390,7 @@ describe('balance sim: run', () => {
     expect(maxCosmetic.reached(state, content, log)).toBe(false);
   });
 
-  it('calls the content exhausted only with every card owned and a card at the Unique tier', () => {
+  it('calls the content exhausted only with every card owned and a card at the Mythic tier', () => {
     const exhausted = MILESTONES.find((m) => m.id === 'exhausted')!;
     const log = { summons: 1, levelAt: {}, ascensions: [], fought: {} };
     const state = freshState();
@@ -385,15 +399,14 @@ describe('balance sim: run', () => {
     }
     state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
     state.prestigeCount = 1;
-    state.cards.owned['apprentice_feller']!.tier = 'prismatic';
-    state.cards.owned['apprentice_feller']!.stars = 6;
-    state.cards.owned['ember_squire']!.tier = 'prismatic';
+    state.cards.owned['moonwood_dryad']!.tier = 'prismatic'; // Mythic: it can go on to T6
+    state.cards.owned['moonwood_dryad']!.stars = 6;
     state.cosmetics.owned['holo_hex'] = {
       level: cosmeticMaxLevel(content, content.cosmeticById.get('holo_hex')!),
       copies: 0,
     };
     expect(exhausted.reached(state, content, log)).toBe(false);
-    state.cards.owned['ember_squire']!.tier = 'unique';
+    state.cards.owned['moonwood_dryad']!.tier = 'mythic';
     expect(exhausted.reached(state, content, log)).toBe(true);
   });
 

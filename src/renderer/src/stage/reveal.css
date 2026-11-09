@@ -4,10 +4,10 @@
 .rv {
   --rv-common: #c9ced6;
   --rv-rare: #5aa8ff;
+  --rv-uncommon: #6fdc8c;
   --rv-epic: #b67bff;
   --rv-legendary: #ffc23a;
   --rv-mythic: #ff4fb8;
-  --rv-exotic: #ff8a1f;
   --rv-void: #8a5cff;
   position: fixed;
   inset: 0;
@@ -77,6 +77,9 @@
   animation: rv-deal 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
   animation-delay: calc(var(--i) * 0.06s + 0.7s);
 }
+.rv-slot[data-orb='uncommon'] {
+  --orb: var(--rv-uncommon);
+}
 .rv-slot[data-orb='rare'] {
   --orb: var(--rv-rare);
 }
@@ -88,9 +91,6 @@
 }
 .rv-slot[data-orb='mythic'] {
   --orb: var(--rv-mythic);
-}
-.rv-slot[data-orb='exotic'] {
-  --orb: var(--rv-exotic);
 }
 .rv-slot[data-orb='void'] {
   --orb: var(--rv-void);

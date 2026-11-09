@@ -188,10 +188,10 @@ export const MILESTONES: Milestone[] = [
     label: 'Beta content mostly exhausted',
     targetHours: 40,
     // Every other milestone reached, every card owned and a weapon taken to the last tier
-    // (Unique, DESIGN.md §5): the final upgrade of the beta.
+    // (T6, Mythic or Void, DESIGN.md §5): the final upgrade of the beta.
     reached: (s, c, log) =>
       c.cards.every((card) => s.cards.owned[card.id]) &&
-      Object.values(s.cards.owned).some((card) => card.tier === 'unique') &&
+      Object.values(s.cards.owned).some((card) => card.tier === 'mythic') &&
       MILESTONES.every((m) => m.id === 'exhausted' || m.reached(s, c, log)),
   },
 ];

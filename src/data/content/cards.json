@@ -6,10 +6,8 @@
     "rarity": "common",
     "element": "fire",
     "item": {
-      "kind": "sword",
-      "name": "Ember Blade"
+      "kind": "sword"
     },
-    "evolution": "flameblade",
     "main": {
       "description": "Steady hits every 1 s",
       "modifiers": [
@@ -41,8 +39,7 @@
     "rarity": "epic",
     "element": "storm",
     "item": {
-      "kind": "twin_blades",
-      "name": "Twin Storm Blades"
+      "kind": "dagger"
     },
     "main": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
@@ -83,8 +80,7 @@
     "rarity": "legendary",
     "element": "fire",
     "item": {
-      "kind": "greatsword",
-      "name": "Dawnblade"
+      "kind": "greatsword"
     },
     "main": {
       "description": "Heavy hits every 2 s, signature attack ×15",
@@ -130,8 +126,7 @@
     "rarity": "common",
     "element": "nature",
     "item": {
-      "kind": "hatchet",
-      "name": "Hatchet"
+      "kind": "logging_axe"
     },
     "main": {
       "description": "Steady output",
@@ -163,10 +158,8 @@
     "rarity": "rare",
     "element": "nature",
     "item": {
-      "kind": "staff",
-      "name": "Sapling Staff"
+      "kind": "logging_axe"
     },
-    "evolution": "rootbloom_staff",
     "main": {
       "description": "+10% logging",
       "harvest": {
@@ -208,8 +201,7 @@
     "rarity": "epic",
     "element": "nature",
     "item": {
-      "kind": "maul",
-      "name": "Heartwood Maul"
+      "kind": "logging_axe"
     },
     "main": {
       "description": "Harvest bursts give 15 s of output instead of 10 s",
@@ -251,8 +243,7 @@
     "rarity": "mythic",
     "element": "light",
     "item": {
-      "kind": "bow",
-      "name": "Moon Bow"
+      "kind": "logging_axe"
     },
     "main": {
       "description": "+30% logging, harvest gauge fills faster",
@@ -302,8 +293,7 @@
     "rarity": "common",
     "element": "earth",
     "item": {
-      "kind": "pickaxe",
-      "name": "Pickaxe"
+      "kind": "pickaxe"
     },
     "main": {
       "description": "Steady output",
@@ -335,8 +325,7 @@
     "rarity": "rare",
     "element": "crystal",
     "item": {
-      "kind": "chisel",
-      "name": "Cutting Chisel"
+      "kind": "pickaxe"
     },
     "main": {
       "description": "+10% mining",
@@ -379,8 +368,7 @@
     "rarity": "legendary",
     "element": "crystal",
     "item": {
-      "kind": "geode_hammer",
-      "name": "Geode Hammer"
+      "kind": "pickaxe"
     },
     "main": {
       "description": "Harvest bursts give 15 s of output, +15% mining",
@@ -427,11 +415,10 @@
     "id": "core_titan",
     "name": "Core Titan",
     "job": "mining",
-    "rarity": "exotic",
+    "rarity": "void",
     "element": "void",
     "item": {
-      "kind": "gauntlet",
-      "name": "Core Gauntlet"
+      "kind": "pickaxe"
     },
     "main": {
       "description": "+40% mining, harvest gauge fills faster",
@@ -486,10 +473,8 @@
     "rarity": "rare",
     "element": "void",
     "item": {
-      "kind": "maul",
-      "name": "Test Scythe"
+      "kind": "scythe"
     },
-    "evolution": "soul_reaper",
     "main": {
       "description": "TEST CARD (weapon skins). Steady hits every 1 s",
       "modifiers": [

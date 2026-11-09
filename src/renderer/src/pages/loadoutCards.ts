@@ -1,23 +1,28 @@
-import type { Content } from '../../../data';
+import type { Content, ItemKind } from '../../../data';
 import {
   cardInfo,
   cardItem,
+  legacyWeaponArt,
   resolveCard,
-  weaponSkinFor,
-  weaponSkinArt,
   type CardRole,
   type GameState,
   type Modifier,
 } from '../../../game';
 import { COPY } from '../copy';
-import { evolutionArt, EVOLUTIONS, type Evolution } from '../art/evolutions';
+import { evolutionArt } from '../art/evolutions';
 import { itemArt, itemBoxSprite } from '../art/items';
 import type { CardProps } from '../ui/card';
 import { cardFaceOf } from './cardFaceModel';
 
+/** Markup of a skin's art: a sprite (with its strip when it has one), or Flameblade's live motion. */
+export function skinMarkup(artId: string): string {
+  if (artId === 'evo-flameblade') return evolutionArt('flameblade');
+  return itemBoxSprite(artId);
+}
+
 /**
- * A card's item art: its unique item at the Unique tier (DESIGN.md §5), otherwise its item drawn
- * at the rarity its tier gives (weaponLookRarity).
+ * A card's item art: the legacy skin worn on its item type (DESIGN.md §8), otherwise its type's
+ * item drawn at the rarity its tier gives (weaponLookRarity; interim art until the new pictures).
  */
 export function cardItemArt(
   content: Content,
@@ -28,14 +33,10 @@ export function cardItemArt(
   const card = content.cardById.get(cardId);
   if (!card) return '';
   const item = cardItem(content, cardId, owned);
-  if (item?.unique && (EVOLUTIONS as readonly string[]).includes(item.kind)) {
-    // a worn weapon skin replaces the animated unique sprite
-    if (state && weaponSkinFor(state, item.kind) !== null) {
-      const skin = weaponSkinArt(state, content, item.kind);
-      const markup = skin ? itemBoxSprite(skin) : '';
-      if (markup) return markup;
-    }
-    return evolutionArt(item.kind as Evolution);
+  if (state && item && owned) {
+    const skin = legacyWeaponArt(state, content, item.kind, owned.tier);
+    const markup = skin ? skinMarkup(skin) : '';
+    if (markup) return markup;
   }
   return itemArt(item?.kind ?? card.item.kind, item?.rarity ?? card.rarity);
 }
@@ -93,10 +94,8 @@ export function loadoutKey(state: GameState): string {
   ]);
 }
 
-/** Markup of a weapon's art for the skin picker: a skin's sprite, or the animated original. */
+/** Markup of a weapon's art for the skin picker: a skin's art, or the type's own (interim) art. */
 export function weaponArtMarkup(weaponKind: string, artId: string | null): string {
-  if (artId) return itemBoxSprite(artId);
-  return (EVOLUTIONS as readonly string[]).includes(weaponKind)
-    ? evolutionArt(weaponKind as Evolution)
-    : '';
+  if (artId) return skinMarkup(artId);
+  return itemArt(weaponKind as ItemKind, 'epic');
 }

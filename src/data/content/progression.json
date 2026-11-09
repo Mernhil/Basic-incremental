@@ -52,22 +52,6 @@
       "source": "level"
     }
   },
-  "evolutions": {
-    "items": [
-      {
-        "kind": "flameblade",
-        "name": "Flameblade"
-      },
-      {
-        "kind": "rootbloom_staff",
-        "name": "Rootbloom Staff"
-      },
-      {
-        "kind": "soul_reaper",
-        "name": "Soul Reaper"
-      }
-    ]
-  },
   "goals": [
     {
       "kind": "clear_dungeon",

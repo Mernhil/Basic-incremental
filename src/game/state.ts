@@ -343,10 +343,10 @@ export function emptyCardLoadout(): CardLoadout {
   return { main: null, supports: Array<string | null>(SUPPORT_SLOTS).fill(null) };
 }
 
-/** A card as first obtained: Bronze ★1, Lv 1, no XP, an empty star bar. */
+/** A card as first obtained: Wood ★1, Lv 1, no XP, an empty star bar. */
 export function newOwnedCard(): OwnedCard {
   return {
-    tier: 'bronze',
+    tier: 'wood',
     stars: 1,
     level: 1,
     xp: new Decimal(0),

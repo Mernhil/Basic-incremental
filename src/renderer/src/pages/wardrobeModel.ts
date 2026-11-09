@@ -21,6 +21,7 @@ import {
   type GameState,
   type ResolvedCard,
   type WardrobeItem,
+  TIER_LABELS,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -41,13 +42,7 @@ const t = COPY.wardrobe;
 export const isCardSlot = (slot: CosmeticSlot): slot is CardSlot =>
   (CARD_SLOTS as readonly string[]).includes(slot);
 
-const TIER_NAMES: Record<Rank['tier'], string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  unique: 'Unique',
-};
+const TIER_NAMES: Record<Rank['tier'], string> = TIER_LABELS;
 
 export const rankText = (rank: Rank): string => `${TIER_NAMES[rank.tier]} ★${rank.stars}`;
 

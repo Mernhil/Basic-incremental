@@ -8,6 +8,7 @@ import {
   SaveError,
   type MigrationTable,
 } from '../src/game';
+import { Decimal } from '../src/game';
 import { content, freshState } from './helpers';
 
 // A made-up v1 -> v2 migration used only to exercise the pipeline:
@@ -586,5 +587,96 @@ describe('v19 -> v20 (weapon skins: nothing equipped)', () => {
     v19.version = 19;
     const loaded = readSave(JSON.stringify(v19), content);
     expect(loaded.state.weaponSkins).toEqual({});
+  });
+});
+
+describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item types)', () => {
+  const ownedCard = (tier: string) => ({
+    tier,
+    stars: 2,
+    level: 30,
+    xp: '0',
+    starFill: 0,
+    enhancements: [],
+  });
+
+  /** A v21 save text: a Common at Gold, a Legendary and a Mythic at Unique, a worn Soul Reaper skin and two kept-or-dropped Maul skins. */
+  function v21Save(): string {
+    const save = JSON.parse(createSaveText(freshState(), 1));
+    save.version = 21;
+    save.state.cards.owned['ember_squire'] = ownedCard('gold');
+    save.state.cards.owned['dawnblade_regent'] = ownedCard('unique');
+    save.state.cards.owned['moonwood_dryad'] = ownedCard('unique');
+    save.state.weaponSkins = { soul_reaper: 'skin-05', maul: 'legacy-maul-06' };
+    save.state.legacySkins = ['legacy-maul-06', 'legacy-maul-01'];
+    return JSON.stringify(save);
+  }
+
+  it('has a step at key 21 that renames the Unique tier Mythic', () => {
+    const out = MIGRATIONS[21]!({
+      cards: { owned: { a: { tier: 'unique' }, b: { tier: 'gold' } } },
+    }) as { cards: { owned: Record<string, { tier: string }> } };
+    expect(out.cards.owned['a']!.tier).toBe('mythic');
+    expect(out.cards.owned['b']!.tier).toBe('gold');
+  });
+
+  it('loads at format 22 with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(22);
+    const loaded = readSave(v21Save(), content);
+    // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
+    expect(loaded.state.weaponSkins).toEqual({
+      scythe: 'legacy-scythe-06',
+      hammer: 'legacy-hammer-01',
+    });
+    expect([...loaded.state.legacySkins].sort()).toEqual(['legacy-hammer-01', 'legacy-scythe-06']);
+  });
+
+  it('turns a Unique card into the Mythic tier and keeps its stars and level', () => {
+    const loaded = readSave(v21Save(), content);
+    expect(loaded.state.cards.owned['moonwood_dryad']).toMatchObject({
+      tier: 'mythic',
+      stars: 2,
+      level: 30,
+    });
+  });
+
+  it('clamps a Common saved at Gold to Wood and a Legendary saved at Unique to Prismatic', () => {
+    const loaded = readSave(v21Save(), content);
+    expect(loaded.state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 2 });
+    expect(loaded.state.cards.owned['dawnblade_regent']).toMatchObject({
+      tier: 'prismatic',
+      stars: 2,
+    });
+  });
+
+  it('pays back the base price of the tier-up steps beyond each cap, never the Wood step', () => {
+    const before = freshState();
+    const loaded = readSave(v21Save(), content);
+    // Both cards fight. The Common (Gold, cap Wood) paid the steps leaving Bronze and Silver; the
+    // Wood step was never paid. The Legendary (Unique -> Mythic, cap Prismatic) paid the step
+    // leaving Prismatic. The Mythic card is at its cap: nothing back.
+    const owed = new Map<string, Decimal>();
+    for (const step of ['bronze', 'silver', 'prismatic'] as const)
+      for (const cost of content.cardRules.tierUp[step]['fighting'])
+        owed.set(cost.resource, (owed.get(cost.resource) ?? new Decimal(0)).add(cost.amount));
+    for (const [resource, amount] of owed) {
+      const gained = (loaded.state.resources[resource] ?? new Decimal(0)).sub(
+        before.resources[resource] ?? new Decimal(0),
+      );
+      expect(gained.toString(), resource).toBe(amount.toString());
+    }
+    // Resources only the Wood step would have paid stay untouched.
+    for (const cost of content.cardRules.tierUp.wood['fighting']) {
+      if (owed.has(cost.resource)) continue;
+      expect(
+        (loaded.state.resources[cost.resource] ?? new Decimal(0)).toString(),
+        cost.resource,
+      ).toBe((before.resources[cost.resource] ?? new Decimal(0)).toString());
+    }
+  });
+
+  it('leaves a Mythic card at Mythic with no refund beyond the Common and Legendary ones', () => {
+    const loaded = readSave(v21Save(), content);
+    expect(loaded.state.cards.owned['moonwood_dryad']!.tier).toBe('mythic');
   });
 });

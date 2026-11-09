@@ -33,7 +33,7 @@ export interface WeaponSkinsView {
   pickedName: string;
   /** Art id to draw in the preview (null = the animated original). */
   previewArt: string | null;
-  /** Card the preview is drawn on (first card whose unique item is this weapon). */
+  /** Card the preview is drawn on (first card carrying this item type, else the first fighting card). */
   previewCardId: string | null;
   previewCardName: string;
   ownsPreviewCard: boolean;
@@ -50,13 +50,11 @@ export interface SkinSelection {
 }
 
 export function weaponOptions(content: Content): WeaponOption[] {
-  // Generic kinds with legacy skins only (no base art) wait for the Legacy group of the new tab (ui agent).
-  return [...content.weaponSkinsByWeapon.values()]
-    .filter((set) => set.baseArt !== undefined)
-    .map(({ weapon: kind }) => ({
-      kind,
-      name: content.progression.evolutions.items.find((i) => i.kind === kind)?.name ?? kind,
-    }));
+  // Every item type with legacy skins (the whole type wears the skin, DESIGN.md §8).
+  return [...content.weaponSkinsByWeapon.values()].map(({ weapon: kind }) => ({
+    kind,
+    name: content.itemTypeByKind.get(kind)?.noun ?? kind,
+  }));
 }
 
 export function weaponSkinsView(
@@ -92,7 +90,10 @@ export function weaponSkinsView(
     })),
   ];
   const picked = tiles.find((t) => t.picked) ?? tiles[0]!;
-  const card = weapon ? content.cards.find((c) => c.evolution === weapon) : undefined;
+  const card = weapon
+    ? (content.cards.find((c) => c.item.kind === weapon) ??
+      content.cards.find((c) => c.job === 'fighting'))
+    : undefined;
   return {
     weapons,
     weapon,

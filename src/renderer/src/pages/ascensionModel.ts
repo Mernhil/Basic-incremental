@@ -1,4 +1,4 @@
-import type { Content, Rarity } from '../../../data';
+import { RANK_TIERS, RARITIES, type Content, type Rarity } from '../../../data';
 import {
   Decimal,
   bossMastery,
@@ -66,8 +66,8 @@ export interface GateView {
   kept: KeptView[];
 }
 
-const RARITY_ORDER = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'];
-const TIER_ORDER = ['stone', 'bronze', 'silver', 'gold', 'prismatic', 'unique'];
+const RARITY_ORDER: readonly string[] = RARITIES;
+const TIER_ORDER = ['stone', ...RANK_TIERS];
 
 /** The reward line of a prestige cosmetic. */
 export function rewardView(content: Content, id: string): RewardView {

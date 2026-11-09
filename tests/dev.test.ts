@@ -68,13 +68,26 @@ describe('dev cheats (dev builds only)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const owned = result.state.cards.owned['dawnblade_regent']!;
-    expect([owned.tier, owned.stars, owned.level]).toEqual(['gold', 6, 60]);
+    expect([owned.tier, owned.stars, owned.level]).toEqual(['gold', 6, 80]);
     expect(devSetCardRank(freshState(), content, 'nobody', { tier: 'gold', stars: 1 }).ok).toBe(
       false,
     );
     expect(
       devSetCardRank(freshState(), content, 'ember_squire', { tier: 'gold', stars: 7 }).ok,
     ).toBe(false);
+  });
+
+  it('refuses the closed Heirloom tier (no item type has its Heirloom open yet)', () => {
+    const heirloom = devSetCardRank(freshState(), content, 'core_titan', {
+      tier: 'heirloom',
+      stars: 1,
+    });
+    expect(heirloom.ok).toBe(false);
+    const mythic = devSetCardRank(freshState(), content, 'core_titan', {
+      tier: 'mythic',
+      stars: 1,
+    });
+    expect(mythic.ok).toBe(true);
   });
 
   it('adds account XP and settles the level-ups with their track rewards', () => {
@@ -114,7 +127,15 @@ describe('dev cheats (dev builds only)', () => {
       'glimmer_trial',
     ]);
     expect(options.cards).toHaveLength(content.cards.length);
-    expect(options.tiers).toEqual(['bronze', 'silver', 'gold', 'prismatic', 'unique']);
+    expect(options.tiers).toEqual([
+      'wood',
+      'bronze',
+      'silver',
+      'gold',
+      'prismatic',
+      'mythic',
+      'heirloom',
+    ]);
     expect(options.cosmetics.length).toBeGreaterThan(0);
   });
 

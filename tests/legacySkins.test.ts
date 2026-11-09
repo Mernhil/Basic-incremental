@@ -39,21 +39,47 @@ const owning = (...ids: string[]): GameState => {
   return s;
 };
 
+const LEGACY_COUNTS: Record<string, number> = {
+  sword: 1,
+  hammer: 2,
+  bow: 10,
+  staff: 1,
+  scythe: 13,
+};
+
 describe('legacy skins content', () => {
-  it('lists the three staff skins in order, legacy and with their rarity', () => {
+  it('holds exactly the legacy skins: 27 across five item types, keyed by item type', () => {
+    expect(baseContent.weaponSkins.map((w) => [w.weapon, w.skins.length])).toEqual(
+      Object.entries(LEGACY_COUNTS),
+    );
+    const all = baseContent.weaponSkins.flatMap((w) => w.skins);
+    expect(all).toHaveLength(27);
+    for (const w of baseContent.weaponSkins) {
+      expect(w.baseArt).toBeUndefined();
+      expect(baseContent.itemTypeByKind.has(w.weapon)).toBe(true);
+      expect(w.skins.every((s) => s.legacy === true && s.rarity !== undefined)).toBe(true);
+    }
+    expect(new Set(all.map((s) => s.id)).size).toBe(27);
+    expect(new Set(all.map((s) => s.name)).size).toBe(27);
+  });
+
+  it('lists the staff skin: Night Herald, Void', () => {
     const set = baseContent.weaponSkinsByWeapon.get('staff')!;
-    expect(set.baseArt).toBeUndefined();
     expect(set.skins.map((s) => [s.id, s.art, s.rarity, s.name, s.legacy])).toEqual([
-      ['legacy-staff-01', 'skin-staff-01', 'mythic', 'Solar Sceptre', true],
-      ['legacy-staff-02', 'skin-staff-02', 'exotic', 'Orbit Bloom', true],
       ['legacy-staff-03', 'skin-staff-03', 'void', 'Night Herald', true],
     ]);
   });
 
-  it('keeps the Soul Reaper test skins non-legacy', () => {
-    const set = baseContent.weaponSkinsByWeapon.get('soul_reaper')!;
-    expect(set.baseArt).toBe('skin-scythe-base');
-    expect(set.skins.every((s) => !s.legacy && s.rarity === undefined)).toBe(true);
+  it('lists the sword and hammer skins with their rarity (Exotic became Mythic)', () => {
+    const sword = baseContent.weaponSkinsByWeapon.get('sword')!;
+    expect(sword.skins.map((s) => [s.id, s.art, s.rarity, s.name])).toEqual([
+      ['legacy-sword-01', 'evo-flameblade', 'mythic', 'Flameblade'],
+    ]);
+    const hammer = baseContent.weaponSkinsByWeapon.get('hammer')!;
+    expect(hammer.skins.map((s) => [s.id, s.art, s.rarity])).toEqual([
+      ['legacy-hammer-01', 'item-maul-exotic', 'mythic'],
+      ['legacy-hammer-02', 'item-maul-void', 'void'],
+    ]);
   });
 
   it('declares the Legacy Gate disabled, priced like the Wardrobe Gate', () => {
@@ -83,7 +109,7 @@ describe('legacy skins content', () => {
     expect(() => validateContent(wrong)).toThrow(/rarity/);
   });
 
-  it('rejects a legacy skin without a rarity, and a skin id used twice across weapons', () => {
+  it('rejects a legacy skin without a rarity, and a skin id used twice across item types', () => {
     const noRarity = structuredClone(bundledRawContent());
     delete (noRarity.weaponSkins as { skins: { rarity?: string }[] }[])[1]!.skins[0]!.rarity;
     expect(() => validateContent(noRarity)).toThrow(/rarity/);
@@ -99,84 +125,109 @@ describe('legacy skins content', () => {
     (raw.weaponSkins as { skins: { legacy: boolean }[] }[])[1]!.skins[0]!.legacy = false;
     expect(() => validateContent(raw)).toThrow(ContentValidationError);
   });
+
+  it('rejects a skin set for an item type that does not exist', () => {
+    const raw = structuredClone(bundledRawContent());
+    (raw.weaponSkins as { weapon: string }[])[0]!.weapon = 'soul_reaper';
+    expect(() => validateContent(raw)).toThrow(/weaponSkins/);
+  });
 });
 
 describe('legacy skin ownership', () => {
   it('starts owning nothing and refuses to wear a skin that is not owned', () => {
     const state = freshState();
     expect(state.legacySkins).toEqual([]);
-    expect(isWeaponSkinAvailable(state, baseContent, 'staff', 'legacy-staff-01')).toBe(false);
-    expect(equipWeaponSkin(state, baseContent, 'staff', 'legacy-staff-01')).toEqual({
+    expect(isWeaponSkinAvailable(state, baseContent, 'staff', 'legacy-staff-03')).toBe(false);
+    expect(equipWeaponSkin(state, baseContent, 'staff', 'legacy-staff-03')).toEqual({
       ok: false,
       reason: 'unavailable',
     });
   });
 
-  it('wears an owned legacy skin, and keeps free test skins free', () => {
-    const state = owning('legacy-staff-02');
-    const r = equipWeaponSkin(state, baseContent, 'staff', 'legacy-staff-02');
+  it('wears an owned legacy skin; nothing is free, scythe skins included', () => {
+    const r = equipWeaponSkin(owning('legacy-staff-03'), baseContent, 'staff', 'legacy-staff-03');
     if (!r.ok) throw new Error(r.reason);
-    expect(weaponSkinArt(r.state, baseContent, 'staff')).toBe('skin-staff-02');
-    expect(isWeaponSkinAvailable(freshState(), baseContent, 'soul_reaper', 'skin-01')).toBe(true);
+    expect(weaponSkinArt(r.state, baseContent, 'staff')).toBe('skin-staff-03');
+    for (const set of baseContent.weaponSkins) {
+      for (const s of set.skins) {
+        expect(isWeaponSkinAvailable(freshState(), baseContent, set.weapon, s.id)).toBe(false);
+      }
+    }
+    const scythe = owning('legacy-scythe-02');
+    expect(isWeaponSkinAvailable(scythe, baseContent, 'scythe', 'legacy-scythe-02')).toBe(true);
+    expect(equipWeaponSkin(freshState(), baseContent, 'scythe', 'legacy-scythe-02')).toEqual({
+      ok: false,
+      reason: 'unavailable',
+    });
   });
 
-  it('has no unskinned art for a generic kind: null until a skin is worn', () => {
+  it('has no unskinned art for a generic item type: null until a skin is worn', () => {
     expect(weaponSkinArt(freshState(), baseContent, 'staff')).toBeNull();
+    expect(weaponSkinArt(freshState(), baseContent, 'scythe')).toBeNull();
   });
 
   it('lists the choices with legacy, rarity, owned and available', () => {
-    const state = owning('legacy-staff-03');
-    const choices = weaponSkinChoices(state, baseContent, 'staff');
+    const state = owning('legacy-hammer-02');
+    const choices = weaponSkinChoices(state, baseContent, 'hammer');
     expect(choices.map((c) => [c.id, c.legacy, c.rarity, c.owned, c.available])).toEqual([
-      ['legacy-staff-01', true, 'mythic', false, false],
-      ['legacy-staff-02', true, 'exotic', false, false],
-      ['legacy-staff-03', true, 'void', true, true],
+      ['legacy-hammer-01', true, 'mythic', false, false],
+      ['legacy-hammer-02', true, 'void', true, true],
     ]);
-    const reaper = weaponSkinChoices(state, baseContent, 'soul_reaper');
-    expect(reaper.every((c) => !c.legacy && c.rarity === null && c.owned && c.available)).toBe(
+    const scythes = weaponSkinChoices(state, baseContent, 'scythe');
+    expect(scythes).toHaveLength(13);
+    expect(scythes.every((c) => c.legacy && c.rarity === 'void' && !c.owned && !c.available)).toBe(
       true,
     );
   });
 
   it('keeps an owned worn skin through save and load, and drops unowned or unknown ones', () => {
-    const owned = owning('legacy-staff-01');
-    const r = equipWeaponSkin(owned, baseContent, 'staff', 'legacy-staff-01');
+    const owned = owning('legacy-staff-03');
+    const r = equipWeaponSkin(owned, baseContent, 'staff', 'legacy-staff-03');
     if (!r.ok) throw new Error(r.reason);
     const loaded = readSave(createSaveText(r.state, 1), baseContent).state;
-    expect(loaded.legacySkins).toEqual(['legacy-staff-01']);
-    expect(loaded.weaponSkins['staff']).toBe('legacy-staff-01');
+    expect(loaded.legacySkins).toEqual(['legacy-staff-03']);
+    expect(loaded.weaponSkins['staff']).toBe('legacy-staff-03');
     const text = JSON.parse(createSaveText(r.state, 1));
-    text.state.legacySkins = ['nope', 'legacy-staff-01', 'legacy-staff-01'];
-    text.state.weaponSkins = { staff: 'legacy-staff-02' };
+    text.state.legacySkins = ['nope', 'legacy-staff-03', 'legacy-staff-03'];
+    text.state.weaponSkins = { scythe: 'legacy-scythe-02', soul_reaper: 'skin-01' };
     const l2 = readSave(JSON.stringify(text), baseContent).state;
-    expect(l2.legacySkins).toEqual(['legacy-staff-01']);
+    expect(l2.legacySkins).toEqual(['legacy-staff-03']);
     expect(l2.weaponSkins).toEqual({});
   });
 });
 
 describe('legacyWeaponArt (what a card draws)', () => {
-  const worn = (): GameState => {
-    const r = equipWeaponSkin(owning('legacy-staff-01'), baseContent, 'staff', 'legacy-staff-01');
+  const wear = (kind: string, skin: string): GameState => {
+    const r = equipWeaponSkin(owning(skin), baseContent, kind, skin);
     if (!r.ok) throw new Error(r.reason);
     return r.state;
   };
+  const worn = (): GameState => wear('staff', 'legacy-staff-03');
 
   it('is null when nothing is worn', () => {
     expect(legacyWeaponArt(freshState(), baseContent, 'staff', 'bronze')).toBeNull();
   });
 
-  it('applies to every tier below Unique, not to the Unique', () => {
-    for (const tier of ['bronze', 'silver', 'gold', 'prismatic'] as const) {
-      expect(legacyWeaponArt(worn(), baseContent, 'staff', tier)).toBe('skin-staff-01');
+  it('applies at every tier below Heirloom, not at the Heirloom', () => {
+    for (const tier of ['wood', 'bronze', 'silver', 'gold', 'prismatic', 'mythic'] as const) {
+      expect(legacyWeaponArt(worn(), baseContent, 'staff', tier)).toBe('skin-staff-03');
     }
-    expect(legacyWeaponArt(worn(), baseContent, 'staff', 'unique')).toBeNull();
+    expect(legacyWeaponArt(worn(), baseContent, 'staff', 'heirloom')).toBeNull();
   });
 
-  it('is null for another kind, and for a non-legacy skin', () => {
+  it('a worn hammer skin shows at every tier of the hammer, none at the heirloom tier', () => {
+    const state = wear('hammer', 'legacy-hammer-01');
+    expect(legacyWeaponArt(state, baseContent, 'hammer', 'wood')).toBe('item-maul-exotic');
+    expect(legacyWeaponArt(state, baseContent, 'hammer', 'mythic')).toBe('item-maul-exotic');
+    expect(legacyWeaponArt(state, baseContent, 'hammer', 'heirloom')).toBeNull();
+  });
+
+  it('is null for another item type, and when the worn skin is not owned', () => {
     expect(legacyWeaponArt(worn(), baseContent, 'bow', 'bronze')).toBeNull();
-    const r = equipWeaponSkin(freshState(), baseContent, 'soul_reaper', 'skin-01');
-    if (!r.ok) throw new Error(r.reason);
-    expect(legacyWeaponArt(r.state, baseContent, 'soul_reaper', 'bronze')).toBeNull();
+    expect(legacyWeaponArt(worn(), baseContent, 'scythe', 'bronze')).toBeNull();
+    const state = worn();
+    state.legacySkins = [];
+    expect(legacyWeaponArt(state, baseContent, 'staff', 'bronze')).toBeNull();
   });
 });
 
@@ -233,10 +284,8 @@ describe('Legacy Gate pulls', () => {
   it('lists every skin in the odds at its own rarity', () => {
     const info = portalInfo(freshState(), content, GATE)!;
     const staffOdds = info.rates.byItem.filter((i) => i.itemId.startsWith('legacy-staff-'));
-    expect(info.rates.byItem).toHaveLength(71);
+    expect(info.rates.byItem).toHaveLength(27);
     expect(staffOdds.map((i) => [i.itemId, i.rarity]).sort()).toEqual([
-      ['legacy-staff-01', 'mythic'],
-      ['legacy-staff-02', 'exotic'],
       ['legacy-staff-03', 'void'],
     ]);
   });
@@ -245,8 +294,8 @@ describe('Legacy Gate pulls', () => {
 describe('v20 -> v21 (owned legacy skins)', () => {
   const step = MIGRATIONS[20]!;
 
-  it('bumps the save version', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(21);
+  it('has the v20 step in the migration chain', () => {
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(21);
   });
 
   it('adds an empty legacySkins and keeps the rest', () => {
@@ -256,7 +305,7 @@ describe('v20 -> v21 (owned legacy skins)', () => {
     expect(out['weaponSkins']).toEqual({ x: 'y' });
   });
 
-  it('turns a whole v20 save into a v21 state owning nothing', () => {
+  it('turns a whole v20 save into a state owning nothing', () => {
     const v20 = JSON.parse(createSaveText(freshState(), 1));
     delete v20.state.legacySkins;
     v20.version = 20;
@@ -265,113 +314,61 @@ describe('v20 -> v21 (owned legacy skins)', () => {
 });
 
 describe('legacy bow skins content', () => {
-  const LADDER = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'] as const;
-  const FIRST_45 = ['epic', 'exotic', 'legendary', 'mythic', 'void'] as const;
-  const EXTRA_10 = [
-    'epic',
-    'common',
-    'rare',
-    'epic',
-    'legendary',
-    'mythic',
-    'exotic',
-    'void',
-    'exotic',
-    'void',
-  ] as const;
   const set = baseContent.weaponSkinsByWeapon.get('bow')!;
   const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
+  const BOWS = [
+    ['legacy-bow-56', 'item-bow-rare', 'rare'],
+    ['legacy-bow-57', 'item-bow-mythic', 'mythic'],
+    ['legacy-bow-58', 'item-bow-epic-0-red', 'epic'],
+    ['legacy-bow-59', 'item-bow-mythic-6-red', 'mythic'],
+    ['legacy-bow-01', 'skin-bow-01', 'epic'],
+    ['legacy-bow-30', 'skin-bow-30', 'mythic'],
+    ['legacy-bow-31', 'skin-bow-31', 'mythic'],
+    ['legacy-bow-34', 'skin-bow-34', 'mythic'],
+    ['legacy-bow-36', 'skin-bow-36', 'mythic'],
+    ['legacy-bow-17', 'skin-bow-17', 'mythic'],
+  ];
 
-  it('lists 55 distinct legacy bow skins: nine per rarity, then ten more', () => {
+  it('lists 10 distinct legacy bow skins at their rarity', () => {
     expect(set.baseArt).toBeUndefined();
-    expect(set.skins).toHaveLength(55);
-    expect(new Set(set.skins.map((s) => s.name)).size).toBe(55);
-    set.skins.forEach((s, i) => {
-      const n = String(i + 1).padStart(2, '0');
-      const rarity = i < 45 ? FIRST_45[Math.floor(i / 9)] : EXTRA_10[i - 45];
-      expect([s.id, s.art, s.legacy, s.rarity]).toEqual([
-        `legacy-bow-${n}`,
-        `skin-bow-${n}`,
-        true,
-        rarity,
-      ]);
-    });
+    expect(set.skins.map((s) => [s.id, s.art, s.rarity])).toEqual(BOWS);
+    expect(set.skins.every((s) => s.legacy === true)).toBe(true);
+    expect(new Set(set.skins.map((s) => s.name)).size).toBe(10);
   });
 
-  it('puts all 55 bow skins in the Legacy Gate pool at their rarity, rarer ones lighter', () => {
-    const weights = new Map<string, number>();
+  it('puts every bow skin in the Legacy Gate pool at its rarity', () => {
     for (const s of set.skins) {
-      const entry = gate.pool.find((p) => p.itemId === s.id)!;
-      expect(entry.rarity).toBe(s.rarity);
-      weights.set(s.rarity!, entry.weight);
+      expect(gate.pool.find((p) => p.itemId === s.id)!.rarity).toBe(s.rarity);
     }
-    expect(LADDER.map((r) => weights.get(r))).toEqual([7, 6, 5, 4, 3, 2, 1]);
   });
 });
 
-describe('legacy maul and twin blades skins content', () => {
-  const maul = baseContent.weaponSkinsByWeapon.get('maul')!;
-  const twins = baseContent.weaponSkinsByWeapon.get('twin_blades')!;
+describe('legacy scythe skins content', () => {
+  const set = baseContent.weaponSkinsByWeapon.get('scythe')!;
   const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
-  const MAUL_RARITIES = [
-    'common',
-    'rare',
-    'epic',
-    'legendary',
-    'mythic',
-    'exotic',
-    'void',
-    'void',
-    'epic',
-    'rare',
-    'rare',
-  ] as const;
 
-  it('lists 11 distinct legacy maul skins in order, the tenth named Bronze Hammer', () => {
-    expect(maul.baseArt).toBeUndefined();
-    expect(maul.skins).toHaveLength(11);
-    expect(new Set(maul.skins.map((s) => s.name)).size).toBe(11);
-    maul.skins.forEach((s, i) => {
-      const n = String(i + 1).padStart(2, '0');
-      expect([s.id, s.art, s.legacy, s.rarity]).toEqual([
-        `legacy-maul-${n}`,
-        `skin-maul-${n}`,
-        true,
-        MAUL_RARITIES[i],
-      ]);
+  it('lists 13 Void scythe skins, the Soul Reaper first with its own art', () => {
+    expect(set.baseArt).toBeUndefined();
+    expect(set.skins).toHaveLength(13);
+    expect(set.skins[0]).toMatchObject({
+      id: 'legacy-scythe-01',
+      name: 'Soul Reaper',
+      art: 'evo-soul_reaper-0-base',
+      rarity: 'void',
+      legacy: true,
     });
-    expect(maul.skins[9]!.name).toBe('Bronze Hammer');
+    expect(set.skins.slice(1).map((s) => s.art)).toEqual(
+      Array.from({ length: 12 }, (_, i) => `skin-scythe-${String(i + 1).padStart(2, '0')}`),
+    );
+    expect(set.skins.every((s) => s.rarity === 'void')).toBe(true);
   });
 
-  it('lists two Rare legacy twin blades skins, the first named Twin Daggers', () => {
-    expect(twins.baseArt).toBeUndefined();
-    expect(twins.skins.map((s) => [s.id, s.art, s.legacy, s.rarity])).toEqual([
-      ['legacy-twin_blades-01', 'skin-twin_blades-01', true, 'rare'],
-      ['legacy-twin_blades-02', 'skin-twin_blades-02', true, 'rare'],
-    ]);
-    expect(twins.skins[0]!.name).toBe('Twin Daggers');
-  });
-
-  it('gives every skin name in all sets once', () => {
-    const names = baseContent.weaponSkins.flatMap((w) => w.skins.map((s) => s.name));
-    const dupes = names.filter((n, i) => names.indexOf(n) !== i);
-    expect(dupes).toEqual([]);
-  });
-
-  it('pools the maul and twin blades skins in the Legacy Gate with the rarity weights', () => {
-    const W: Record<string, number> = {
-      common: 7,
-      rare: 6,
-      epic: 5,
-      legendary: 4,
-      mythic: 3,
-      exotic: 2,
-      void: 1,
-    };
-    for (const s of [...maul.skins, ...twins.skins]) {
-      const entry = gate.pool.find((p) => p.itemId === s.id)!;
-      expect([entry.rarity, entry.weight]).toEqual([s.rarity, W[s.rarity!]]);
-    }
-    expect(gate.pool).toHaveLength(71);
+  it('pools all 27 legacy skins in the Legacy Gate with the documented rarity counts', () => {
+    expect(gate.pool).toHaveLength(27);
+    const counts: Record<string, number> = {};
+    for (const p of gate.pool) counts[p.rarity] = (counts[p.rarity] ?? 0) + 1;
+    expect(counts).toEqual({ rare: 1, epic: 2, mythic: 9, void: 15 });
+    const skinIds = baseContent.weaponSkins.flatMap((w) => w.skins.map((s) => s.id)).sort();
+    expect(gate.pool.map((p) => p.itemId).sort()).toEqual(skinIds);
   });
 });

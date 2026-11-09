@@ -28,10 +28,12 @@ import {
 import type { GameState } from './state';
 
 const TIER_NAMES: Record<string, string> = {
+  bronze: 'Bronze',
   silver: 'Silver',
   gold: 'Gold',
   prismatic: 'Prismatic',
-  unique: 'Unique',
+  mythic: 'Mythic',
+  heirloom: 'Heirloom',
 };
 
 /**

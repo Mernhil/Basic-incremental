@@ -7,6 +7,7 @@ import {
   type RespecInfo,
   type SkillNodeInfo,
   type SkillPoints,
+  TIER_LABELS,
 } from '../../../game';
 import { COPY } from '../copy';
 import { effectText } from '../shell/modifierText';
@@ -319,13 +320,7 @@ export interface StarChartView {
   canReset: boolean;
 }
 
-const TIER_NAME: Record<Rank['tier'], string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  unique: 'Unique',
-};
+const TIER_NAME: Record<Rank['tier'], string> = TIER_LABELS;
 
 export function starChartView(info: CardEnhancementInfo): StarChartView {
   const stars = info.options.map((o, i): StarView => {

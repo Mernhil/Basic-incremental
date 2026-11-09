@@ -1,0 +1,153 @@
+{
+  "materials": {
+    "wood": "Wooden",
+    "bronze": "Bronze",
+    "silver": "Silver",
+    "gold": "Golden"
+  },
+  "types": [
+    {
+      "kind": "sword",
+      "job": "fighting",
+      "noun": "Sword",
+      "prismatic": "Prismatic Dancer Sword",
+      "mythic": "Mythic Light Sword",
+      "void": "Void Shadow Sword",
+      "heirloom": {
+        "mythic": "Solaris",
+        "void": "Nightfall"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "greatsword",
+      "job": "fighting",
+      "noun": "Greatsword",
+      "prismatic": "Prismatic Glacier Greatsword",
+      "mythic": "Mythic Sunbreaker Greatsword",
+      "void": "Void Ruin Greatsword",
+      "heirloom": {
+        "mythic": "Kingsoath",
+        "void": "Grimhowl"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "spear",
+      "job": "fighting",
+      "noun": "Spear",
+      "prismatic": "Prismatic Shard Spear",
+      "mythic": "Mythic Valor Spear",
+      "void": "Void Wraith Spear",
+      "heirloom": {
+        "mythic": "Skypiercer",
+        "void": "Abyss Thorn"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "lance",
+      "job": "fighting",
+      "noun": "Lance",
+      "prismatic": "Prismatic Mirror Lance",
+      "mythic": "Mythic Paladin Lance",
+      "void": "Void Dread Lance",
+      "heirloom": {
+        "mythic": "Sunrider",
+        "void": "Doomrider"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "dagger",
+      "job": "fighting",
+      "noun": "Dagger",
+      "prismatic": "Prismatic Whisper Dagger",
+      "mythic": "Mythic Gleam Dagger",
+      "void": "Void Venom Dagger",
+      "heirloom": {
+        "mythic": "Lumen Fang",
+        "void": "Nightsting"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "hammer",
+      "job": "fighting",
+      "noun": "Hammer",
+      "prismatic": "Prismatic Facet Hammer",
+      "mythic": "Mythic Thunder Hammer",
+      "void": "Void Quake Hammer",
+      "heirloom": {
+        "mythic": "Worldforge",
+        "void": "Grave Anvil"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "bow",
+      "job": "fighting",
+      "noun": "Bow",
+      "prismatic": "Prismatic Rainbow Bow",
+      "mythic": "Mythic Seraph Bow",
+      "void": "Void Wither Bow",
+      "heirloom": {
+        "mythic": "Starweaver",
+        "void": "Umbral String"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "staff",
+      "job": "fighting",
+      "noun": "Staff",
+      "prismatic": "Prismatic Kaleido Staff",
+      "mythic": "Mythic Sanctum Staff",
+      "void": "Void Hex Staff",
+      "heirloom": {
+        "mythic": "Lifebloom",
+        "void": "Soulwell"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "scythe",
+      "job": "fighting",
+      "noun": "Scythe",
+      "prismatic": "Prismatic Halfmoon Scythe",
+      "mythic": "Mythic Mercy Scythe",
+      "void": "Void Grim Scythe",
+      "heirloom": {
+        "mythic": "Graceharvest",
+        "void": "Last Breath"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "pickaxe",
+      "job": "mining",
+      "noun": "Pickaxe",
+      "prismatic": "Prismatic Vein Pickaxe",
+      "mythic": "Mythic Lodestar Pickaxe",
+      "void": "Void Hollowdeep Pickaxe",
+      "heirloom": {
+        "mythic": "Heartdelver",
+        "void": "Deepmaw"
+      },
+      "heirloomOpen": false
+    },
+    {
+      "kind": "logging_axe",
+      "job": "logging",
+      "noun": "Axe",
+      "prismatic": "Prismatic Glass Axe",
+      "mythic": "Mythic Grove Axe",
+      "void": "Void Blight Axe",
+      "heirloom": {
+        "mythic": "Elderwarden",
+        "void": "Rotfeller"
+      },
+      "heirloomOpen": false
+    }
+  ]
+}

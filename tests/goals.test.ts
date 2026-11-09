@@ -171,20 +171,39 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has a tier-up goal for a card at its level cap, from what Money and materials are missing', () => {
     const state = fighter();
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, stars: 6 };
-    const costs = content.cardRules.tierUp.bronze.fighting;
+    state.cards.owned['storm_duelist'] = { ...newOwnedCard(), level: 20, stars: 6 };
+    const costs = content.cardRules.tierUp.wood.fighting;
     for (const c of costs) state.resources[c.resource] = c.amount.div(2);
-    const goal = find(allGoals(state, content), 'tier_up:ember_squire')!;
-    expect(goal).toMatchObject({ title: 'Tier up Ember Squire to Silver', page: 'cards' });
+    const goal = find(allGoals(state, content), 'tier_up:storm_duelist')!;
+    expect(goal).toMatchObject({ title: 'Tier up Storm Duelist to Bronze', page: 'cards' });
     expect(goal.progress).toBeCloseTo(0.5);
+  });
+
+  it('has no tier-up goal for a card at its rarity cap (a Common card stops at Wood)', () => {
+    const state = fighter();
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, stars: 6 };
+    expect(find(allGoals(state, content), 'tier_up:ember_squire')).toBeUndefined();
+  });
+
+  it('names the Mythic tier for a card that moves up from Prismatic', () => {
+    const state = fighter();
+    state.cards.owned['moonwood_dryad'] = {
+      ...newOwnedCard(),
+      tier: 'prismatic',
+      level: 100,
+      stars: 4,
+    };
+    expect(find(allGoals(state, content), 'tier_up:moonwood_dryad')).toMatchObject({
+      title: 'Tier up Moonwood Dryad to Mythic: needs ★6',
+    });
   });
 
   it('shows the missing stars when the card is at its level cap but short of ★6', () => {
     const state = fighter();
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, stars: 4 };
-    const goal = find(allGoals(state, content), 'tier_up:ember_squire')!;
+    state.cards.owned['storm_duelist'] = { ...newOwnedCard(), level: 20, stars: 4 };
+    const goal = find(allGoals(state, content), 'tier_up:storm_duelist')!;
     expect(goal).toMatchObject({
-      title: 'Tier up Ember Squire to Silver: needs ★6',
+      title: 'Tier up Storm Duelist to Bronze: needs ★6',
       page: 'cards',
     });
     expect(goal.progress).toBeCloseTo(4 / 6);
@@ -193,8 +212,8 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has no tier-up goal below the level cap', () => {
     const state = fighter();
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 19 };
-    expect(find(allGoals(state, content), 'tier_up:ember_squire')).toBeUndefined();
+    state.cards.owned['storm_duelist'] = { ...newOwnedCard(), level: 19 };
+    expect(find(allGoals(state, content), 'tier_up:storm_duelist')).toBeUndefined();
   });
 
   it('has the Glimmer Trial clear from its best score once it is open', () => {

@@ -410,8 +410,8 @@ export function weaponSkinArt(
 
 /**
  * The art a card's generic weapon (`itemKind`, e.g. 'staff') is drawn with at `tier` when a legacy
- * skin is worn: it covers every rarity and every tier below Unique. Null when nothing legacy is
- * worn for that kind, or at the Unique tier (the Unique keeps its own art and skins).
+ * skin is worn: it covers every rarity and every tier below Heirloom. Null when nothing legacy is
+ * worn for that kind, or at the Heirloom tier (the Heirloom keeps its own art and skins).
  */
 export function legacyWeaponArt(
   state: GameState,
@@ -419,7 +419,7 @@ export function legacyWeaponArt(
   itemKind: string,
   tier: RankTier,
 ): string | null {
-  if (tier === 'unique') return null;
+  if (tier === 'heirloom') return null;
   const chosen = weaponSkinFor(state, itemKind);
   const entry = chosen ? content.legacySkinById.get(chosen) : undefined;
   if (!entry || entry.weapon !== itemKind || !ownsLegacySkin(state, entry.skin.id)) return null;

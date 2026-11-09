@@ -18,7 +18,7 @@ const t = COPY.weaponSkins;
 
 /**
  * The Wardrobe "Weapon skins" tab (a test): a weapon picker, a grid of its skins plus the
- * Original, a large preview on the weapon's card at the Unique tier, and Apply. Previewing never
+ * Original, a large preview on a card carrying the weapon, and Apply. Previewing never
  * changes the save; Apply goes through `ctx.apply` (which saves).
  */
 export function createWeaponSkinsTab(
@@ -35,7 +35,7 @@ export function createWeaponSkinsTab(
   function previewProps(state: GameState, v: WeaponSkinsView): CardProps | null {
     const card = v.previewCardId ? content.cardById.get(v.previewCardId) : undefined;
     if (!card || !v.weapon) return null;
-    const rank = { tier: 'unique', stars: 6 } as const;
+    const rank = { tier: 'mythic', stars: 6 } as const;
     return {
       name: card.name,
       label: card.job.charAt(0).toUpperCase() + card.job.slice(1),

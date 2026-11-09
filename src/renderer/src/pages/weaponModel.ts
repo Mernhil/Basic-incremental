@@ -1,6 +1,6 @@
-import type { Content, Rank } from '../../../data';
+import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
-import type { CardInfo } from '../../../game';
+import { itemName, tierLabel, type CardInfo } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import type { CostChip, WeaponView } from './cardsModel';
@@ -10,22 +10,6 @@ import type { CostChip, WeaponView } from './cardsModel';
  * bar, tier-up check) into the plain data the panel draws. No rules here: every number comes from
  * `cardInfo` and the content, and the order of the prices is the order of `cardRules.tierUp`.
  */
-
-const TIER_NAMES: Record<Rank['tier'], string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  unique: 'Unique',
-};
-
-/** The unique weapon's name when the card has one, else its own weapon's name. */
-function uniqueName(content: Content, info: CardInfo): string {
-  const kind = info.card.evolution;
-  return (
-    content.progression.evolutions.items.find((i) => i.kind === kind)?.name ?? info.card.item.name
-  );
-}
 
 /** The weapon panel's data for an owned card; null when the card is not owned. */
 export function weaponView(content: Content, info: CardInfo): WeaponView | null {
@@ -56,8 +40,8 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
   let tierUp: WeaponView['tierUp'] = null;
   let endNote: string | null = null;
   if (check?.available && check.to) {
-    const toName = TIER_NAMES[check.to.tier];
-    const unique = check.to.tier === 'unique';
+    const toName = tierLabel(check.to.tier, card.rarity);
+    const heirloom = check.to.tier === 'heirloom';
     const costs: CostChip[] = check.requirements
       .filter((r) => r.kind === 'resource')
       .map((r) => ({
@@ -73,26 +57,31 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
     tierUp = {
       toTier: check.to.tier,
       toName,
-      unique,
+      heirloom,
       phase,
       lead: atCap ? COPY.weapon.costs : COPY.weapon.reach(cap),
       costs,
-      action: unique ? COPY.weapon.reveal(uniqueName(content, info)) : COPY.weapon.tierUpTo(toName),
+      action: heirloom
+        ? COPY.weapon.reveal(itemName(content, card.item.kind, 'heirloom', card.rarity))
+        : COPY.weapon.tierUpTo(toName),
       ready: check.met,
       missing: phase === 'short' ? COPY.weapon.missing(missing.join(', ')) : '',
     };
-  } else if (rank.tier === 'unique') {
+  } else if (rank.tier === 'heirloom') {
     endNote = COPY.weapon.fullyUpgraded;
-  } else if (rank.tier === 'prismatic') {
-    endNote = COPY.weapon.topPending(TIER_NAMES[rank.tier], card.item.name);
+  } else if (rank.tier === 'mythic') {
+    endNote = COPY.weapon.topPending(
+      tierLabel(rank.tier, card.rarity),
+      itemName(content, card.item.kind, rank.tier, card.rarity),
+    );
   } else {
-    endNote = COPY.weapon.topEnd(TIER_NAMES[rank.tier]);
+    endNote = COPY.weapon.topEnd(tierLabel(rank.tier, card.rarity));
   }
 
   return {
-    weapon: rank.tier === 'unique' ? uniqueName(content, info) : card.item.name,
+    weapon: itemName(content, card.item.kind, rank.tier, card.rarity),
     tier: rank.tier,
-    tierName: TIER_NAMES[rank.tier],
+    tierName: tierLabel(rank.tier, card.rarity),
     level: owned.level,
     cap,
     atCap,

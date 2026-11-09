@@ -20,6 +20,7 @@ import {
   type TierUp,
   type Requirement as GameRequirement,
   type UpgradeCheck,
+  TIER_LABELS,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -38,14 +39,8 @@ import type {
 
 /** Maps the card logic (src/game/cards.ts) onto the Cards page's view model. */
 
-const TIER_NAMES: Record<Rank['tier'], string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  unique: 'Unique',
-};
-const BASE_RANK: Rank = { tier: 'bronze', stars: 1 };
+const TIER_NAMES: Record<Rank['tier'], string> = TIER_LABELS;
+const BASE_RANK: Rank = { tier: 'wood', stars: 1 };
 /** Placeholder emblems until the graphics overhaul brings per-card art (see ui/card.ts). */
 const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', mining: 'pick' };
 

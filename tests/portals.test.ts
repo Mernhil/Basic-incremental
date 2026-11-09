@@ -105,7 +105,7 @@ describe('Card Portal (DESIGN.md §7, beta portals)', () => {
     state.portals[PORTAL] = { pity: 30, pulls: 30, pityHits: 0 };
     const result = pull(state, content, PORTAL, 1, constantRng(0.999));
     if (!result.ok) throw new Error(result.reason);
-    expect(result.results[0]).toMatchObject({ rarity: 'exotic', pity: false });
+    expect(result.results[0]).toMatchObject({ rarity: 'void', pity: false });
     expect(result.state.portals[PORTAL]!.pity).toBe(0);
   });
 
@@ -129,8 +129,10 @@ describe('Card Portal (DESIGN.md §7, beta portals)', () => {
     // rng 0: every flash roll succeeds; commons cannot go lower.
     const ten = pull(withSigils(100), content, PORTAL, 10, constantRng(0));
     if (!ten.ok) throw new Error(ten.reason);
+    // The ladder has an Uncommon step now, so a Rare is revealed from an Uncommon orb.
     expect(ten.results[0]!.orb).toBe('common');
-    expect(ten.results[9]!.orb).toBe('common'); // a Rare revealed from a Common orb
+    expect(ten.results[9]!.rarity).toBe('rare');
+    expect(ten.results[9]!.orb).toBe('uncommon');
     // rng 0.999: no flash.
     const top = pull(withSigils(10), content, PORTAL, 1, constantRng(0.999));
     if (!top.ok) throw new Error(top.reason);

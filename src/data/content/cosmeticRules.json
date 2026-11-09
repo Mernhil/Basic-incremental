@@ -1,14 +1,19 @@
 {
   "maxLevel": {
     "common": 2,
+    "uncommon": 3,
     "rare": 3,
     "epic": 4,
     "legendary": 5,
-    "mythic": 5,
-    "exotic": 6,
+    "mythic": 6,
     "void": 6
   },
-  "slotMaxLevel": { "starlight": 1, "sticker": 1, "nodes": 1, "wardrobe": 1 },
+  "slotMaxLevel": {
+    "starlight": 1,
+    "sticker": 1,
+    "nodes": 1,
+    "wardrobe": 1
+  },
   "ladders": {
     "1": ["shape"],
     "2": ["shape", "ambient"],
@@ -42,11 +47,11 @@
   },
   "rarityCost": {
     "common": "1",
+    "uncommon": "1.25",
     "rare": "1.5",
     "epic": "2",
     "legendary": "3",
-    "mythic": "4",
-    "exotic": "6",
-    "void": "8"
+    "mythic": "6",
+    "void": "6"
   }
 }

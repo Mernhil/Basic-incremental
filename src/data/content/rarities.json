@@ -1,24 +1,56 @@
 [
-  { "id": "common", "name": "Common", "tokens": { "body": "#2a2f38" } },
-  { "id": "rare", "name": "Rare", "tokens": { "body": "#16294d" } },
-  { "id": "epic", "name": "Epic", "tokens": { "body": "#2c1a4f" } },
-  { "id": "legendary", "name": "Legendary", "tokens": { "body": "#4a2b0d" } },
+  {
+    "id": "common",
+    "name": "Common",
+    "tokens": {
+      "body": "#2a2f38"
+    }
+  },
+  {
+    "id": "uncommon",
+    "name": "Uncommon",
+    "tokens": {
+      "body": "#17361f"
+    }
+  },
+  {
+    "id": "rare",
+    "name": "Rare",
+    "tokens": {
+      "body": "#16294d"
+    }
+  },
+  {
+    "id": "epic",
+    "name": "Epic",
+    "tokens": {
+      "body": "#2c1a4f"
+    }
+  },
+  {
+    "id": "legendary",
+    "name": "Legendary",
+    "tokens": {
+      "body": "#4a2b0d"
+    }
+  },
   {
     "id": "mythic",
     "name": "Mythic",
-    "tokens": { "body": "#1d0d19", "neon": "#ff3fb4", "neon-soft": "rgba(255, 63, 180, 0.42)" },
-    "recipes": ["neon"]
-  },
-  {
-    "id": "exotic",
-    "name": "Exotic",
-    "tokens": { "body": "#1f1108", "neon": "#ff8a1f", "neon-soft": "rgba(255, 138, 31, 0.42)" },
+    "tokens": {
+      "body": "#1d0d19",
+      "neon": "#ff3fb4",
+      "neon-soft": "rgba(255, 63, 180, 0.42)"
+    },
     "recipes": ["neon"]
   },
   {
     "id": "void",
     "name": "Void",
-    "tokens": { "body": "#060708", "body-accent": "#6b7280" },
+    "tokens": {
+      "body": "#060708",
+      "body-accent": "#6b7280"
+    },
     "recipes": ["chrome"]
   }
 ]

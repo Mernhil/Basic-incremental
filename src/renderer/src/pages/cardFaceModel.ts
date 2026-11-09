@@ -1,5 +1,12 @@
 import type { Content } from '../../../data';
-import { burstStats, cardInfo, type CardInfo, type GameState, type Modifier } from '../../../game';
+import {
+  burstStats,
+  cardInfo,
+  itemName,
+  type CardInfo,
+  type GameState,
+  type Modifier,
+} from '../../../game';
 import { COPY } from '../copy';
 import type { CardFace } from '../ui/cardFace';
 
@@ -39,7 +46,7 @@ export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Mod
   }
   return {
     // The weapon's name stands in for the ability name until the card data has one.
-    ability: card.item.name,
+    ability: itemName(content, card.item.kind, info.rank?.tier ?? 'wood', card.rarity),
     speed: COPY.card.hitsEvery(secondsText(hitSeconds(content, info, mods))),
     level: owned && cap !== null ? { value: owned.level, cap } : null,
     progress,

@@ -249,12 +249,12 @@ describe('Moonwood Dryad borders (B3)', () => {
 
 describe('Core Titan finishes (B4)', () => {
   for (const [style, spec] of Object.entries(CORE)) {
-    it(`${spec.name}: Exotic, six levels, exclusive to the Titan`, () => {
+    it(`${spec.name}: Mythic, six levels, exclusive to the Titan`, () => {
       const c = byId(spec.id);
       expect(c.name).toBe(spec.name);
       expect([c.slot, c.rarity, c.exclusiveCard, c.set]).toEqual([
         'finish',
-        'exotic',
+        'mythic',
         'core_titan',
         null,
       ]);
@@ -334,12 +334,14 @@ describe('the B8 / B9 spread over the existing items', () => {
 describe('the Wardrobe Gate pool and sources', () => {
   const gate = content.allPortals.find((p) => p.id === 'wardrobe_gate')!;
 
-  it('now covers every rarity from Common to Exotic', () => {
+  it('covers the rarities its items use, from Common to Mythic', () => {
     const rarities = new Set(gate.pool.map((e) => e.rarity));
-    for (const r of ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic'] as const) {
+    for (const r of ['common', 'rare', 'epic', 'legendary', 'mythic'] as const) {
       expect(rarities.has(r), r).toBe(true);
     }
-    expect(RARITIES).toContain('exotic');
+    // Exotic is gone: Mythic and Void are the top two rarities.
+    expect(RARITIES).not.toContain('exotic');
+    expect(RARITIES.slice(-2)).toEqual(['mythic', 'void']);
   });
 
   it('holds every new portal item, and the rarity classes stay sensible', () => {
@@ -353,7 +355,6 @@ describe('the Wardrobe Gate pool and sources', () => {
     expect(share('common')).toBeGreaterThan(share('rare'));
     expect(share('rare')).toBeGreaterThan(share('epic'));
     expect(share('legendary')).toBeGreaterThan(share('mythic'));
-    expect(share('mythic')).toBeGreaterThan(share('exotic'));
   });
 
   it('gives every non-starter cosmetic a source', () => {

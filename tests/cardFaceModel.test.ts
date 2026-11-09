@@ -12,7 +12,7 @@ describe('Full-art card face model', () => {
 
   it('shows the ability, hit speed, level and progress of an owned card', () => {
     const face = cardFaceFor(content, freshState(), 'ember_squire')!;
-    expect(face.ability).toBe('Ember Blade');
+    expect(face.ability).toBe('Wooden Sword');
     expect(face.speed).toBe('hits every 1s');
     expect(face.level).toEqual({ value: 1, cap: expect.any(Number) });
     expect(face.progress).toBeGreaterThanOrEqual(0);

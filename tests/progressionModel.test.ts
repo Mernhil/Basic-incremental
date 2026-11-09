@@ -15,13 +15,13 @@ describe('tier-up moments', () => {
     for (const [u, title] of cases) expect(tierUpText(u, content).title).toMatch(title);
   });
 
-  it('names the unique item of an evolution', () => {
-    const card = content.cards.find((c) => c.evolution)!;
+  it('names the Heirloom of a card', () => {
+    const card = content.cardById.get('ember_squire')!;
     const text = tierUpText(
-      { kind: 'evolution', id: card.id, from: 0, to: 1, metal: 'gold' },
+      { kind: 'heirloom', id: card.id, from: 0, to: 1, metal: 'gold' },
       content,
     );
-    expect(text.title).toBe(`${card.name} evolved!`);
+    expect(text.title).toBe(`${card.name} claimed its Heirloom!`);
     expect(text.detail).toMatch(/^It now wields /);
   });
 });

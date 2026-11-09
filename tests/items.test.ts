@@ -1,31 +1,54 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_KINDS, RARITIES, loadContent } from '../src/data';
-import { ITEM_KINDS_DRAWN, itemArt } from '../src/renderer/src/art/items';
+import { itemArt } from '../src/renderer/src/art/items';
 import { EVOLUTIONS, evolutionVector, itemVector } from '../src/renderer/src/art/vector/items';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
 const content = loadContent();
 
 describe('signature items (DESIGN.md §12)', () => {
-  it('draws every item kind the data allows, and every beta card names one', () => {
-    expect([...ITEM_KINDS].sort()).toEqual([...ITEM_KINDS_DRAWN].sort());
-    for (const card of content.cards) expect(itemArt(card.item.kind, card.rarity)).not.toBe('');
-  });
-
-  it('matches the card table: element and item per card', () => {
-    const byId = Object.fromEntries(content.cards.map((c) => [c.id, [c.element, c.item.name]]));
-    expect(byId['ember_squire']).toEqual(['fire', 'Ember Blade']);
-    expect(byId['storm_duelist']).toEqual(['storm', 'Twin Storm Blades']);
-    expect(byId['core_titan']).toEqual(['void', 'Core Gauntlet']);
-  });
-
-  it('bakes every kind at every rarity as a 100 x 120 pixel sprite with a traced outline', () => {
+  it('draws something for every item kind the data allows at every rarity, and every beta card names one', () => {
     for (const kind of ITEM_KINDS)
+      for (const r of RARITIES) expect(itemArt(kind, r), `${kind} ${r}`).not.toBe('');
+    for (const card of content.cards) {
+      expect(ITEM_KINDS).toContain(card.item.kind);
+      expect(itemArt(card.item.kind, card.rarity)).not.toBe('');
+    }
+  });
+
+  it('matches the card table: element and item type per card', () => {
+    const byId = Object.fromEntries(content.cards.map((c) => [c.id, [c.element, c.item.kind]]));
+    expect(byId['ember_squire']).toEqual(['fire', 'sword']);
+    expect(byId['storm_duelist']).toEqual(['storm', 'dagger']);
+    expect(byId['core_titan']).toEqual(['void', 'pickaxe']);
+  });
+
+  it('shows the interim baked sprite for types with old art, at every rarity, with a traced outline', () => {
+    const drawn = [
+      'sword',
+      'greatsword',
+      'staff',
+      'hammer',
+      'bow',
+      'pickaxe',
+      'logging_axe',
+      'dagger',
+    ] as const;
+    for (const kind of drawn)
       for (const r of RARITIES) {
-        const s = sprite(`item-${kind}-${r}`);
-        expect(s, `${kind} ${r}`).toMatchObject({ w: 100, h: 120 });
-        expect(s!.outline?.length ?? 0).toBeGreaterThan(20);
+        const art = itemArt(kind, r);
+        expect(art, `${kind} ${r}`).toContain('<image');
+        expect(art, `${kind} ${r}`).toContain('class="bi-item__outline"');
       }
+    // The old ladder has no Uncommon: it shows the Common look.
+    expect(itemArt('sword', 'uncommon')).toBe(itemArt('sword', 'common'));
+  });
+
+  it('shows a labelled placeholder for the types with no pictures yet', () => {
+    for (const kind of ['spear', 'lance', 'scythe'] as const) {
+      expect(itemArt(kind, 'rare')).toContain('bi-item--placeholder');
+      expect(itemArt(kind, 'rare')).toContain(kind.toUpperCase());
+    }
   });
 
   it('shows the sprite in the 200 x 240 item box, pixelated, with the outline effects trace', () => {
@@ -46,10 +69,6 @@ describe('signature items (DESIGN.md §12)', () => {
     const tw = (s: string) => (s.match(/bi-art-tw/g) ?? []).length;
     expect(tw(common)).toBe(0);
     expect(tw(itemVector('sword', 'void'))).toBeGreaterThan(tw(itemVector('sword', 'legendary')));
-  });
-
-  it('returns nothing for an unknown kind', () => {
-    expect(itemArt('banana', 'common')).toBe('');
   });
 
   it('bakes the three unique evolutions in the card-item treatment', () => {
