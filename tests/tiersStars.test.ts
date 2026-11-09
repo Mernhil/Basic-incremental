@@ -327,8 +327,8 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
       rare: 'silver',
       epic: 'gold',
       legendary: 'prismatic',
-      mythic: 'mythic',
-      void: 'mythic',
+      mythic: 'heirloom',
+      void: 'heirloom',
     };
     for (const rarity of RARITIES) {
       expect(cardTopTier(withRarity('ember_squire', rarity), 'ember_squire'), rarity).toBe(
@@ -342,8 +342,8 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
     expect(cardTopTier(content, 'grove_keeper')).toBe('silver'); // Rare
     expect(cardTopTier(content, 'storm_duelist')).toBe('gold'); // Epic
     expect(cardTopTier(content, 'dawnblade_regent')).toBe('prismatic'); // Legendary
-    expect(cardTopTier(content, 'moonwood_dryad')).toBe('mythic'); // Mythic
-    expect(cardTopTier(content, 'core_titan')).toBe('mythic'); // Void
+    expect(cardTopTier(content, 'moonwood_dryad')).toBe('heirloom'); // Mythic
+    expect(cardTopTier(content, 'core_titan')).toBe('heirloom'); // Void
     expect(cardTopTier(content, 'nope')).toBe('wood');
   });
 
@@ -367,6 +367,8 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
     own(state, 'moonwood_dryad', { tier: 'mythic', stars: 5 });
     expect(isMaxRank(content, 'moonwood_dryad', state.cards.owned['moonwood_dryad']!)).toBe(false);
     own(state, 'moonwood_dryad', { tier: 'mythic', stars: 6 });
+    expect(isMaxRank(content, 'moonwood_dryad', state.cards.owned['moonwood_dryad']!)).toBe(false);
+    own(state, 'moonwood_dryad', { tier: 'heirloom', stars: 6 });
     expect(isMaxRank(content, 'moonwood_dryad', state.cards.owned['moonwood_dryad']!)).toBe(true);
   });
 
@@ -390,17 +392,28 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
 });
 
 describe('the Heirloom tier (DESIGN.md §5)', () => {
-  it('is closed for every item type for now: nobody tiers up past Mythic', () => {
-    for (const t of content.items.types) expect(t.heirloomOpen, t.kind).toBe(false);
+  it('is open for every item type (playtest, placeholder art)', () => {
+    for (const t of content.items.types) expect(t.heirloomOpen, t.kind).toBe(true);
     const state = own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 });
-    expect(tierUpCheck(state, content, 'core_titan')).toMatchObject({ available: false });
-    expect(tierUp(state, content, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
+    expect(tierUpCheck(state, content, 'core_titan')).toMatchObject({ available: true });
+  });
+
+  it('stays shut for an item type whose data closes it', () => {
+    const types = content.items.types.map((t) => ({ ...t, heirloomOpen: false }));
+    const shut: Content = {
+      ...content,
+      items: { ...content.items, types },
+      itemTypeByKind: new Map(types.map((t) => [t.kind, t])),
+    };
+    const state = own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 });
+    expect(tierUpCheck(state, shut, 'core_titan')).toMatchObject({ available: false });
+    expect(tierUp(state, shut, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
   });
 
   it('opens after Mythic only for a Mythic or Void card whose item type has it open', () => {
     const open = withHeirloomOpen('pickaxe');
     expect(cardTopTier(open, 'core_titan')).toBe('heirloom'); // Void pickaxe
-    expect(cardTopTier(open, 'moonwood_dryad')).toBe('mythic'); // logging axe: still closed
+    expect(cardTopTier(open, 'moonwood_dryad')).toBe('heirloom'); // logging axe
     expect(cardTopTier(open, 'geode_golem')).toBe('prismatic'); // Legendary pickaxe: no Heirloom
     const state = own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 });
     expect(tierUpCheck(state, open, 'core_titan')).toMatchObject({

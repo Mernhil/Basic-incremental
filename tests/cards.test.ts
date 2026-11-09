@@ -449,14 +449,14 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     expect(tierUpCost(content, squire, state.cards.owned['ember_squire']!)).toEqual([]);
   });
 
-  it('opens a tier-up past Prismatic only for a Mythic card; the Heirloom stays closed', () => {
+  it('opens a tier-up past Prismatic only for a Mythic card, then the Heirloom', () => {
     const state = freshState();
     own(state, 'dawnblade_regent', { tier: 'prismatic', stars: 6 }); // Legendary stops at Prismatic
     own(state, 'moonwood_dryad', { tier: 'prismatic', stars: 6 }); // Mythic goes on to Mythic
-    own(state, 'core_titan', { tier: 'mythic', stars: 6 }); // Void: Mythic is the top for now
+    own(state, 'core_titan', { tier: 'mythic', stars: 6 }); // Void: the Heirloom is next
     expect(tierUpCheck(state, content, 'dawnblade_regent')!.available).toBe(false);
     expect(tierUpCheck(state, content, 'moonwood_dryad')!.to).toEqual({ tier: 'mythic', stars: 1 });
-    expect(tierUpCheck(state, content, 'core_titan')!.available).toBe(false);
+    expect(tierUpCheck(state, content, 'core_titan')!.to).toEqual({ tier: 'heirloom', stars: 1 });
   });
 
   it('prices the six tier-ups in rising Money: Wood the cheap first step, Mythic the biggest', () => {

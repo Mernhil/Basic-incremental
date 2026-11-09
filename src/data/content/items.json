@@ -17,7 +17,7 @@
         "mythic": "Solaris",
         "void": "Nightfall"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "greatsword",
@@ -30,7 +30,7 @@
         "mythic": "Kingsoath",
         "void": "Grimhowl"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "spear",
@@ -43,7 +43,7 @@
         "mythic": "Skypiercer",
         "void": "Abyss Thorn"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "lance",
@@ -56,7 +56,7 @@
         "mythic": "Sunrider",
         "void": "Doomrider"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "dagger",
@@ -69,7 +69,7 @@
         "mythic": "Lumen Fang",
         "void": "Nightsting"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "hammer",
@@ -82,7 +82,7 @@
         "mythic": "Worldforge",
         "void": "Grave Anvil"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "bow",
@@ -95,7 +95,7 @@
         "mythic": "Starweaver",
         "void": "Umbral String"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "staff",
@@ -108,7 +108,7 @@
         "mythic": "Lifebloom",
         "void": "Soulwell"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "scythe",
@@ -121,7 +121,7 @@
         "mythic": "Graceharvest",
         "void": "Last Breath"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "pickaxe",
@@ -134,7 +134,7 @@
         "mythic": "Heartdelver",
         "void": "Deepmaw"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     },
     {
       "kind": "logging_axe",
@@ -147,7 +147,7 @@
         "mythic": "Elderwarden",
         "void": "Rotfeller"
       },
-      "heirloomOpen": false
+      "heirloomOpen": true
     }
   ]
 }
