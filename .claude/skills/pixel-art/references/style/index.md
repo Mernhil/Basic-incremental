@@ -58,3 +58,7 @@ The Keep picks of the same catalogue are the game's legacy skins (`src/data/cont
 | 20h   | `20h-anim.png` | Abyss Whisper, Mythic (animated)     | 20. Legacy bow skins, Mythic    |
 | 21c   | `21c-anim.png` | Cinder Arc, Exotic (animated)        | 21. Legacy bow skins, Exotic    |
 | 21i   | `21i-anim.png` | Auric Sting, Exotic (animated)       | 21. Legacy bow skins, Exotic    |
+
+## T2 bronze pictures (2026-11-09)
+
+Marked in the T2 picker (labels are that picker's: group number = item type 1 sword, 2 greatsword, 3 spear, 6 hammer, 7 bow, 8 staff, 9 scythe, 10 pickaxe, 11 logging axe). They are the style target for T2 to T4: simple and plain, the base shape kept, one part redrawn per tier, no glow or ornament. Keep + Learn (stronger): `t2-1b` sword, `t2-2b` greatsword, `t2-3b` spear, `t2-6b` hammer, `t2-7b` bow, `t2-8b` staff, `t2-9b` scythe, `t2-10a` pickaxe, `t2-11a` logging axe. Learn only: `t2-3a` spear, `t2-9a` scythe.
