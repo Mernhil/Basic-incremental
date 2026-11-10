@@ -35,6 +35,7 @@ const worker = process.argv.includes('--worker');
 interface WorkerOutput {
   seed: number;
   hits: SimResult['hits'];
+  dps: SimResult['dpsSamples'];
   simSeconds: number;
   summary: string;
 }
@@ -45,6 +46,7 @@ function runOne(seed: number): WorkerOutput {
   return {
     seed,
     hits: result.hits,
+    dps: result.dpsSamples,
     simSeconds: result.simSeconds,
     summary: `${formatTable(result)}\n\n${formatSummary(result, content)}`,
   };
@@ -94,6 +96,17 @@ async function main(): Promise<void> {
       (a, id) => a + Math.abs((o.hits[id] ?? simSeconds) - median(id)),
       0,
     );
+  // Median damage per second against the first dungeon, one column per sample hour.
+  const sampleHours = [0.25, 0.5, 1, 2, 4, 8, 12, 16, 20, 30, 40].filter((h) => h <= hours);
+  const medianDps = sampleHours.map((h) => {
+    const values = outputs
+      .map((o) => o.dps.find(([t]) => t === h * 3600)?.[1])
+      .filter((v): v is number => v !== undefined)
+      .sort((a, b) => a - b);
+    return `${h} h ${(values[Math.floor(values.length / 2)] ?? 0).toExponential(1)}`;
+  });
+  console.log(`
+Median DPS vs first dungeon: ${medianDps.join(', ')}`);
   const typical = [...outputs].sort((a, b) => distance(a) - distance(b))[0];
   if (typical) {
     console.log(`\nMost typical run (seed ${typical.seed}):\n`);

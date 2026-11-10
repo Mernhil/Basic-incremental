@@ -28,8 +28,8 @@
   },
   "xp": {
     "perSecond": "1",
-    "perKill": "50",
-    "tierGrowth": "5",
+    "perKill": "25",
+    "tierGrowth": "4.5",
     "perUnit": {
       "logging": "1",
       "mining": "2"
@@ -103,7 +103,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "50000"
+          "amount": "20000"
         },
         {
           "resource": "moss_core",
@@ -111,17 +111,17 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "13333"
+          "amount": "4667"
         },
         {
           "resource": "iron_gem",
-          "amount": "4000"
+          "amount": "1400"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "50000"
+          "amount": "20000"
         },
         {
           "resource": "moss_core",
@@ -129,17 +129,17 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "6667"
+          "amount": "2333"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "4000"
+          "amount": "1400"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "50000"
+          "amount": "20000"
         },
         {
           "resource": "moss_core",
@@ -147,11 +147,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "4667"
+          "amount": "1633"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "8000"
+          "amount": "2800"
         }
       ]
     },
@@ -159,7 +159,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "150000"
+          "amount": "60000"
         },
         {
           "resource": "moss_core",
@@ -167,17 +167,17 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "40000"
+          "amount": "14000"
         },
         {
           "resource": "iron_gem",
-          "amount": "12000"
+          "amount": "4200"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "150000"
+          "amount": "60000"
         },
         {
           "resource": "moss_core",
@@ -185,17 +185,17 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "20000"
+          "amount": "7000"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "12000"
+          "amount": "4200"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "150000"
+          "amount": "60000"
         },
         {
           "resource": "moss_core",
@@ -203,11 +203,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "14000"
+          "amount": "4900"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "24000"
+          "amount": "8400"
         }
       ]
     },
@@ -215,7 +215,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "3000000"
+          "amount": "2000000"
         },
         {
           "resource": "cinder_core",
@@ -233,7 +233,7 @@
       "mining": [
         {
           "resource": "money",
-          "amount": "3000000"
+          "amount": "2000000"
         },
         {
           "resource": "cinder_core",
@@ -251,7 +251,7 @@
       "fighting": [
         {
           "resource": "money",
-          "amount": "3000000"
+          "amount": "2000000"
         },
         {
           "resource": "cinder_core",
@@ -271,15 +271,15 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "30000000"
+          "amount": "10000000"
         },
         {
           "resource": "frost_core",
-          "amount": "750"
+          "amount": "525"
         },
         {
           "resource": "frost_sigil",
-          "amount": "650"
+          "amount": "455"
         },
         {
           "resource": "moonwillow_gem",
@@ -293,15 +293,15 @@
       "mining": [
         {
           "resource": "money",
-          "amount": "30000000"
+          "amount": "10000000"
         },
         {
           "resource": "frost_core",
-          "amount": "750"
+          "amount": "525"
         },
         {
           "resource": "frost_sigil",
-          "amount": "650"
+          "amount": "455"
         },
         {
           "resource": "grotto_gem",
@@ -315,15 +315,15 @@
       "fighting": [
         {
           "resource": "money",
-          "amount": "30000000"
+          "amount": "10000000"
         },
         {
           "resource": "frost_core",
-          "amount": "750"
+          "amount": "525"
         },
         {
           "resource": "frost_sigil",
-          "amount": "650"
+          "amount": "455"
         },
         {
           "resource": "grotto_gem",
@@ -339,15 +339,15 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "150000000"
+          "amount": "50000000"
         },
         {
           "resource": "frost_core",
-          "amount": "1100"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
-          "amount": "900"
+          "amount": "630"
         },
         {
           "resource": "moonwillow_gem",
@@ -361,15 +361,15 @@
       "mining": [
         {
           "resource": "money",
-          "amount": "150000000"
+          "amount": "50000000"
         },
         {
           "resource": "frost_core",
-          "amount": "1100"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
-          "amount": "900"
+          "amount": "630"
         },
         {
           "resource": "grotto_gem",
@@ -383,15 +383,15 @@
       "fighting": [
         {
           "resource": "money",
-          "amount": "150000000"
+          "amount": "50000000"
         },
         {
           "resource": "frost_core",
-          "amount": "1100"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
-          "amount": "900"
+          "amount": "630"
         },
         {
           "resource": "grotto_gem",
@@ -407,15 +407,15 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "300000000"
+          "amount": "100000000"
         },
         {
           "resource": "frost_core",
-          "amount": "2200"
+          "amount": "1540"
         },
         {
           "resource": "frost_sigil",
-          "amount": "1800"
+          "amount": "1260"
         },
         {
           "resource": "moonwillow_gem",
@@ -429,15 +429,15 @@
       "mining": [
         {
           "resource": "money",
-          "amount": "300000000"
+          "amount": "100000000"
         },
         {
           "resource": "frost_core",
-          "amount": "2200"
+          "amount": "1540"
         },
         {
           "resource": "frost_sigil",
-          "amount": "1800"
+          "amount": "1260"
         },
         {
           "resource": "grotto_gem",
@@ -451,15 +451,15 @@
       "fighting": [
         {
           "resource": "money",
-          "amount": "300000000"
+          "amount": "100000000"
         },
         {
           "resource": "frost_core",
-          "amount": "2200"
+          "amount": "1540"
         },
         {
           "resource": "frost_sigil",
-          "amount": "1800"
+          "amount": "1260"
         },
         {
           "resource": "grotto_gem",
@@ -510,13 +510,13 @@
       "void": 1
     },
     "needs": {
-      "common": [1, 1, 1, 2, 2],
-      "uncommon": [1, 1, 1, 1, 2],
-      "rare": [1, 1, 1, 1, 1],
-      "epic": [1, 0, 1, 1, 1],
-      "legendary": [1, 0, 1, 1, 1],
-      "mythic": [1, 0, 1, 0, 1],
-      "void": [1, 0, 1, 0, 1]
+      "common": [1, 1, 1, 1, 1],
+      "uncommon": [1, 1, 1, 1, 1],
+      "rare": [0, 0, 0, 0, 0],
+      "epic": [0, 0, 0, 0, 0],
+      "legendary": [0, 0, 0, 0, 0],
+      "mythic": [0, 0, 0, 0, 0],
+      "void": [0, 0, 0, 0, 0]
     }
   }
 }

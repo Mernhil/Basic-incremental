@@ -17,7 +17,12 @@ import {
   type Modifier,
 } from '../src/game';
 import { MIGRATIONS } from '../src/game/migrations';
-import { constantRng, content, freshState } from './helpers';
+import { constantRng, content as bundled, freshState, withBossAttack, withBossHp } from './helpers';
+
+/** The Root Warden pinned to an HP the loadout cannot finish, 0.6 damage every 10 s and a 30 s
+ *  knockout: the timings these tests count in (the shipped numbers are tuning, DESIGN.md §6). */
+const pinned = withBossAttack(withBossHp(bundled, 'mossy_cellar', 7.6e5), 'mossy_cellar', 0.6, 10);
+const content = { ...pinned, combat: { ...pinned.combat, knockoutSeconds: 30 } };
 
 const rng = constantRng(0.99);
 const warden = content.dungeonById.get('mossy_cellar')!;

@@ -23,7 +23,7 @@ import {
   type EquipResult,
   type GameState,
 } from '../src/game';
-import { constantRng, content, freshState, withDps } from './helpers';
+import { constantRng, content, CRYSTAL_UNIT, freshState, withDps } from './helpers';
 
 const rules = content.cosmeticRules;
 const cosmetic = (id: string) => content.cosmeticById.get(id)!;
@@ -261,7 +261,7 @@ describe('the Wardrobe Gate (DESIGN.md §7)', () => {
 
   it('costs Glamour Crystals with the same pull, pity and guarantee rules', () => {
     const state = freshState();
-    state.resources['glamour_crystal'] = new Decimal(100);
+    state.resources['glamour_crystal'] = new Decimal(100 * CRYSTAL_UNIT);
     const info = portalInfo(state, gateOpen, 'wardrobe_gate')!;
     expect(info.single.price.resource).toBe('glamour_crystal');
     expect(info.ten.affordable).toBe(true);
@@ -271,7 +271,7 @@ describe('the Wardrobe Gate (DESIGN.md §7)', () => {
 
   it('pulls cosmetics; a duplicate becomes a copy for upgrade levels', () => {
     const state = freshState();
-    state.resources['glamour_crystal'] = new Decimal(20);
+    state.resources['glamour_crystal'] = new Decimal(20 * CRYSTAL_UNIT);
     const once = pull(state, gateOpen, 'wardrobe_gate', 1, constantRng(0));
     if (!once.ok) throw new Error(once.reason);
     const id = once.results[0]!.itemId;

@@ -187,7 +187,9 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
 
     const bundle = buyShardItem(withShards(100), content, 'summon_crystals');
     if (!bundle.ok) throw new Error(bundle.reason);
-    expect(bundle.state.resources['summon_crystal']!.toNumber()).toBe(100);
+    const bundleItem = content.shardShop.find((i) => i.id === 'summon_crystals')!;
+    if (bundleItem.reward.kind !== 'resource') throw new Error('not a bundle');
+    expect(bundle.state.resources['summon_crystal']!.eq(bundleItem.reward.amount)).toBe(true);
 
     const crown = buyShardItem(withShards(200), content, 'ember_crown');
     if (!crown.ok) throw new Error(crown.reason);

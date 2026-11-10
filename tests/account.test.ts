@@ -24,7 +24,15 @@ import {
   xpToNextAccountLevel,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState, newGame, withDps } from './helpers';
+import {
+  bareState,
+  constantRng,
+  content,
+  CRYSTAL_UNIT,
+  freshState,
+  newGame,
+  withDps,
+} from './helpers';
 
 const A = content.account;
 
@@ -63,8 +71,14 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
   it('comes from kills, more for harder dungeons', () => {
     const state = bareState();
-    // The first boss falls within the 3 s.
-    const { state: after, report } = advance(state, withDps(1e6, content), 3_000, constantRng(0.5));
+    // The first boss falls within the 3 s (after 2 s), once.
+    const hp = content.dungeons[0]!.boss.hp.toNumber();
+    const { state: after, report } = advance(
+      state,
+      withDps(hp / 2, content),
+      3_000,
+      constantRng(0.5),
+    );
     expect(report.bossKills).toBeGreaterThan(0);
     // The gems the one Oak and one Copper Quarry harvested in those seconds add their own XP.
     const oak = after.mastery.harvested['oak_gem']!.toNumber();
@@ -78,7 +92,7 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
   it('comes from pulls and ascensions', () => {
     const state = freshState();
-    state.resources['summon_crystal'] = new Decimal(10);
+    state.resources['summon_crystal'] = new Decimal(10 * CRYSTAL_UNIT);
     const pulled = pull(state, content, 'card_portal', 1, constantRng(0.5));
     if (!pulled.ok) throw new Error(pulled.reason);
     expect(pulled.state.account.xp.eq(A.xp.perPull)).toBe(true);

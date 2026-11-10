@@ -53,7 +53,25 @@ export const MIGRATIONS: MigrationTable = {
   /** v21 -> v22: the weapon base (DESIGN.md §5, §8): tiers Wood to Mythic/Void, Unique renamed
    *  Heirloom, the 11 item types and the picked legacy skins. */
   21: v21ToV22,
+  /** v22 -> v23: crystals repriced (DESIGN.md §7 Rarer summons): a pull costs 30 times the crystals
+   *  it did, so the Summon and Glamour Crystals held are multiplied by 30 and keep their worth. */
+  22: v22ToV23,
 };
+
+/** The factor crystals were repriced by in save format 23. */
+export const V23_CRYSTAL_FACTOR = 30;
+
+/** v22 -> v23: Summon and Glamour Crystals held times 30 (junk amounts count as 0). */
+function v22ToV23(state: Record<string, unknown>): Record<string, unknown> {
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  for (const id of ['summon_crystal', 'glamour_crystal']) {
+    const held = resources[id];
+    if (typeof held === 'string' && isDecimalString(held)) {
+      resources[id] = new Decimal(held).mul(V23_CRYSTAL_FACTOR).toString();
+    }
+  }
+  return { ...state, resources };
+}
 
 /** Old weapon kind -> its new item type (maul, twin blades and the Soul Reaper scythe). */
 const V22_WEAPONS: Record<string, string> = {

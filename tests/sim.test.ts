@@ -12,9 +12,14 @@ import {
   ascendNow,
   summarizeRuns,
   formatSeedTable,
+  targetRatio,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
-import { content, freshState, withDps } from './helpers';
+import { content, CRYSTAL_UNIT, freshState, withDps } from './helpers';
+
+/** First level price of a mine or tree (the shipped numbers are tuning, DESIGN.md §4). */
+const firstLevel = (kind: 'mine' | 'tree', id: string): number =>
+  (kind === 'mine' ? content.mineById : content.treeById).get(id)!.level.cost.base.toNumber();
 
 const rich = (state: GameState, resource: string, amount: number): GameState => {
   state.resources[resource] = new Decimal(amount);
@@ -29,11 +34,11 @@ const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'minin
 
 describe('balance sim: greedy buyer', () => {
   it('lists purchases with an ETA, 0 when affordable now', () => {
-    const state = rich(freshState(), 'money', 15);
+    const state = rich(freshState(), 'money', firstLevel('mine', 'copper_quarry'));
     const candidates = buyerCandidates(state, content);
     // The damage lines are gone: damage comes from cards, so nothing on the list is a damage buy.
     expect(candidates.some((c) => c.id.startsWith('damage:'))).toBe(false);
-    // A Copper Quarry level (15 Money) is affordable now; an Oak level (20) is paid by the wage.
+    // A Copper Quarry level is affordable now; a dearer Oak level is paid by the wage.
     expect(candidates.find((c) => c.id === 'mine:copper_quarry')?.eta).toBe(0);
     const oak = candidates.find((c) => c.id === 'tree:oak');
     expect(oak?.eta).toBeGreaterThan(0);
@@ -46,8 +51,8 @@ describe('balance sim: greedy buyer', () => {
   });
 
   it('buys the cheapest affordable purchase first, then keeps buying', () => {
-    // 20 Money buys an Oak level (20, the best gain per Money); a mine level costs 15.
-    const state = rich(freshState(), 'money', 20);
+    // The price of an Oak level buys it (the best gain per Money); a mine level costs less.
+    const state = rich(freshState(), 'money', firstLevel('tree', 'oak'));
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('tree:oak');
     expect(after.production.treeLevels['oak']).toBe(1);
@@ -55,7 +60,7 @@ describe('balance sim: greedy buyer', () => {
   });
 
   it('summons from a portal once a pull is affordable', () => {
-    const state = rich(freshState(), 'summon_crystal', 10);
+    const state = rich(freshState(), 'summon_crystal', 10 * CRYSTAL_UNIT);
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('summon:card_portal');
     expect(after.portals['card_portal']?.pulls).toBe(1);
@@ -124,10 +129,12 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     base.clearedDungeons = ['mossy_cellar']; // Iron Deeps opens
     base.production.unlockedTrees = ['ironbark', 'moonwillow'];
     base.resources['moss_core'] = new Decimal(10);
-    base.resources['money'] = new Decimal(4e4); // 50,000 needed, so affordable levels are on offer
+    const woodMoney = content.cardRules.tierUp.wood.fighting.find((p) => p.resource === 'money')!;
+    const short = woodMoney.amount.mul(0.8); // short of the tier-up, so affordable levels are on offer
+    base.resources['money'] = short;
     // The gems are far off: Money goes into levels.
     const far = greedyBuy(base, content);
-    expect(far.state.resources['money']!.toNumber()).toBeLessThan(4e4);
+    expect(far.state.resources['money']!.lt(short)).toBe(true);
     // The gems are in hand: Money is the only thing missing, so none of it is spent on levels.
     const ready = cloneState(base);
     for (const price of content.cardRules.tierUp.wood.fighting) {
@@ -135,9 +142,9 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
         ready.resources[price.resource] = price.amount;
       }
     }
-    ready.resources['money'] = new Decimal(4e4);
+    ready.resources['money'] = short;
     const near = greedyBuy(ready, content);
-    expect(near.state.resources['money']!.toNumber()).toBe(4e4);
+    expect(near.state.resources['money']!.eq(short)).toBe(true);
   });
 
   it('weighs a mine or tree level by the share of the production', () => {
@@ -178,18 +185,21 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
   it('lets a weaker card take its step while the lead is hours from its gems', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar'];
-    state.production.unlockedTrees = ['ironbark'];
+    state.production.unlockedTrees = []; // no Ironbark grows: the lead is hours (forever) away
     state.activeDungeonId = 'mossy_cellar';
     lead(state, 'storm_duelist', 'fighting'); // Epic: it can leave Wood
     lead(state, 'gem_cutter', 'mining'); // Rare: it can leave Wood
-    state.cards.owned['storm_duelist']!.level = 20; // Wood cap: needs 8,000 Ironbark, has 4,000
+    state.cards.owned['storm_duelist']!.level = 20; // Wood cap: needs more Ironbark than it has
     state.cards.owned['storm_duelist']!.stars = 6;
     state.cards.owned['gem_cutter']!.stars = 6;
-    state.cards.owned['gem_cutter']!.level = 20; // needs 4,000 Ironbark and 6,667 Iron
+    state.cards.owned['gem_cutter']!.level = 20; // needs less Ironbark, and Iron
+    const need = (job: 'fighting' | 'mining', gem: string) =>
+      content.cardRules.tierUp.wood[job].find((p) => p.resource === gem)!.amount;
+    expect(need('mining', 'ironbark_gem').lt(need('fighting', 'ironbark_gem'))).toBe(true);
     state.resources['money'] = new Decimal(2e5);
     state.resources['moss_core'] = new Decimal(6);
-    state.resources['iron_gem'] = new Decimal(20000);
-    state.resources['ironbark_gem'] = new Decimal(4000);
+    state.resources['iron_gem'] = need('mining', 'iron_gem').mul(3);
+    state.resources['ironbark_gem'] = need('mining', 'ironbark_gem');
     expect(greedyBuy(state, content).bought).toContain('tier:gem_cutter');
   });
 
@@ -355,30 +365,33 @@ describe('balance sim: several seeds', () => {
   });
 
   it('prints target, median, spread and the ratio to the target', () => {
-    const summary = summarizeRuns([{ clear_d1: 1800 }]);
+    const summary = summarizeRuns([{ clear_d1: 1800, first_summon: 540 }]);
     const table = formatSeedTable(summary, 3600);
-    expect(table).toContain('| First dungeon cleared | 0.5 h | 0.50 h |');
-    expect(table).toContain('100%');
+    expect(table).toContain('| First dungeon cleared | 0.25 h | 0.50 h |');
+    expect(table).toContain('200%');
+    // A target range reads 100% anywhere inside it.
+    expect(table).toMatch(/| First summon | 0.125-0.1d* h | 0.15 h |.*| 100% |/);
   });
 });
 
 describe('balance sim: run', () => {
   it('lists the DESIGN §14 milestones with their targets', () => {
     const first = MILESTONES.find((m) => m.id === 'clear_d1');
-    expect(first?.targetHours).toBe(0.5);
+    expect(first?.targetHours).toBe(0.25);
     expect(MILESTONES.map((m) => m.targetHours)).toContain(40);
   });
 
-  it('counts the first ★6 only once a Gold card reaches it (the unique evolution)', () => {
+  it('counts the first ★6 only for a card whose stars cost copies', () => {
     const star6 = MILESTONES.find((m) => m.id === 'first_star6')!;
     const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
+    const shipped = loadContent();
     const state = freshState();
-    const owned = state.cards.owned['ember_squire']!;
-    owned.stars = 6;
-    owned.tier = 'silver';
-    expect(star6.reached(state, content, log)).toBe(false);
-    owned.tier = 'gold';
-    expect(star6.reached(state, content, log)).toBe(true);
+    // A Rare star bar needs no copies in the shipped data, so its ★6 does not count.
+    expect(shipped.cardRules.starBar.needs.rare.every((n) => n === 0)).toBe(true);
+    state.cards.owned['gem_cutter'] = { ...state.cards.owned['ember_squire']!, stars: 6 };
+    expect(star6.reached(state, shipped, log)).toBe(false);
+    state.cards.owned['ember_squire']!.stars = 6; // a Common: its stars took copies
+    expect(star6.reached(state, shipped, log)).toBe(true);
   });
 
   it('does not count a one-level UI skin as a max-level cosmetic', () => {
@@ -425,18 +438,18 @@ describe('balance sim: run', () => {
     // The shipped numbers, not the pinned test content: the first dungeon and the first summon.
     const result = runSim(loadContent(), { hours: 1, seed: 1, stepSeconds: 10 });
     for (const id of ['clear_d1', 'first_summon']) {
-      const target = MILESTONES.find((m) => m.id === id)!.targetHours * 3600;
+      const milestone = MILESTONES.find((m) => m.id === id)!;
       const hit = result.hits[id];
       expect(hit, id).not.toBeNull();
-      expect(hit! / target, id).toBeGreaterThan(0.75);
-      expect(hit! / target, id).toBeLessThan(1.25);
+      expect(targetRatio(milestone, hit! / 3600), id).toBeGreaterThan(75);
+      expect(targetRatio(milestone, hit! / 3600), id).toBeLessThan(125);
     }
   }, 30_000);
 
-  it('samples the fighting DPS every half hour for the tuning report', () => {
+  it('samples the fighting DPS every quarter hour for the tuning report', () => {
     const result = runSim(content, { hours: 1.1, seed: 1, stepSeconds: 10 });
-    expect(result.dpsSamples.map(([t]) => t)).toEqual([1800, 3600]);
-    expect(result.dpsSamples[1]![1]).toBeGreaterThan(result.dpsSamples[0]![1]);
+    expect(result.dpsSamples.map(([t]) => t)).toEqual([900, 1800, 2700, 3600]);
+    expect(result.dpsSamples[3]![1]).toBeGreaterThan(result.dpsSamples[0]![1]);
   }, 30_000);
 
   it('prints a markdown table with one row per milestone', () => {

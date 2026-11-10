@@ -35,8 +35,12 @@ describe('incomePerSecond', () => {
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
     // Moss Cores: 10% of 1 per kill.
     expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
-    // Summon Crystals: 2..4 per kill, 3 on average.
-    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(3 / spk);
+    // Summon Crystals: the average of the kill's range.
+    const crystals = content.dungeonById
+      .get('mossy_cellar')!
+      .drops.currencies.find((c) => c.resource === 'summon_crystal')!;
+    const average = (crystals.min + crystals.max) / 2;
+    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(average / spk);
   });
 
   it('is 0 for a resource nothing gives', () => {

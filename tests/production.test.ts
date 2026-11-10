@@ -159,15 +159,17 @@ describe('mine types and levels', () => {
   });
 
   it('level up with Money and raise that mine only', () => {
-    let state = give(freshState(), 'money', 100);
+    const quarry = content.mineById.get('copper_quarry')!.level.cost;
+    const base = quarry.base.toNumber();
+    let state = give(freshState(), 'money', base * 10);
     expect(mineLevelCost(state, content, 'copper_quarry')).toEqual({
       resource: 'money',
-      amount: new Decimal(15),
+      amount: new Decimal(base),
     });
     state = ok(buyMineLevel(state, content, 'copper_quarry'));
-    state = ok(buyMineLevel(state, content, 'copper_quarry')); // 15 + ceil(15 * growth)
-    const growth = content.mineById.get('copper_quarry')!.level.cost.growth.toNumber();
-    expect(state.resources['money']!.eq(100 - 15 - Math.ceil(15 * growth))).toBe(true);
+    state = ok(buyMineLevel(state, content, 'copper_quarry')); // base + ceil(base * growth)
+    const growth = quarry.growth.toNumber();
+    expect(state.resources['money']!.eq(base * 10 - base - Math.ceil(base * growth))).toBe(true);
     expect(state.production.mineLevels['copper_quarry']).toBe(2);
     // 0.5 * (1 + 2 * 10%) = 0.6
     expect(productionPerSecond(state, content)['copper_gem']!.eq(0.6)).toBe(true);

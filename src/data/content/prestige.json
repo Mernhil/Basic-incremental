@@ -2,7 +2,7 @@
   "currency": "starlight",
   "gain": {
     "tierWeights": ["1", "10", "100"],
-    "divisor": "6e5",
+    "divisor": "3e6",
     "exponent": 0.4,
     "minimum": 10
   },

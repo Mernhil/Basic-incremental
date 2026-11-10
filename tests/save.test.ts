@@ -10,6 +10,7 @@ import {
   readSave,
   SaveError,
   serializeState,
+  V23_CRYSTAL_FACTOR,
 } from '../src/game';
 import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
 
@@ -243,7 +244,7 @@ describe('save format v3: production', () => {
     };
     const { state } = readSave(JSON.stringify(v2), content);
     expect(state.resources['oak_gem']!.eq(1234.5)).toBe(true);
-    expect(state.resources['summon_crystal']!.eq(7)).toBe(true);
+    expect(state.resources['summon_crystal']!.eq(7 * V23_CRYSTAL_FACTOR)).toBe(true); // repriced in format 23
     expect(state.activeDungeonId).toBe('mossy_cellar');
     expect(state.pity).toEqual({ root_warden: 12 });
     // v3 -> v4: the 3 earlier kills were in the Mossy Cellar, so it counts as cleared.
@@ -270,8 +271,8 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     json.state.combat.damageLevels = { copper_edge: 1 };
     json.state.account.skills = { sigil_luck: 2 };
     const { state } = readSave(JSON.stringify(json), content);
-    expect(state.resources['summon_crystal']!.toNumber()).toBe(42);
-    expect(state.resources['glamour_crystal']!.toNumber()).toBe(9);
+    expect(state.resources['summon_crystal']!.toNumber()).toBe(42 * V23_CRYSTAL_FACTOR); // format 23
+    expect(state.resources['glamour_crystal']!.toNumber()).toBe(9 * V23_CRYSTAL_FACTOR);
     expect(state.resources['frost_sigil']!.toNumber()).toBe(5);
     expect('moss_sigil' in state.resources).toBe(false);
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });

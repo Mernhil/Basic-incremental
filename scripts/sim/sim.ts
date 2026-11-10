@@ -85,6 +85,8 @@ export interface Milestone {
   id: string;
   label: string;
   targetHours: number;
+  /** Upper end of a target range (`targetHours` is its lower end); absent for a single target. */
+  toHours?: number;
   /** Whether the state has reached it. */
   reached: (state: GameState, content: Content, log: SimLog) => boolean;
   /** Set while the system the milestone needs is not built yet. */
@@ -106,20 +108,30 @@ const tierAtLeast = (state: GameState, tier: (typeof RANK_TIERS)[number]): boole
   Object.values(state.cards.owned).some(
     (c) => RANK_TIERS.indexOf(c.tier) >= RANK_TIERS.indexOf(tier),
   );
-const tierRank = (tier: (typeof RANK_TIERS)[number]): number => RANK_TIERS.indexOf(tier);
+/** Whether a card of the rarity or a rarer one is owned (RARITIES runs Common to Void). */
+const ownsRarityAtLeast = (
+  state: GameState,
+  content: Content,
+  rarity: (typeof RARITIES)[number],
+): boolean =>
+  content.cards.some(
+    (card) =>
+      state.cards.owned[card.id] && RARITIES.indexOf(card.rarity) >= RARITIES.indexOf(rarity),
+  );
 const cleared = (id: string) => (state: GameState) => isDungeonCleared(state, id);
 
 export const MILESTONES: Milestone[] = [
   {
     id: 'clear_d1',
     label: 'First dungeon cleared',
-    targetHours: 0.5,
+    targetHours: 0.25,
     reached: cleared('mossy_cellar'),
   },
   {
     id: 'first_summon',
     label: 'First summon',
-    targetHours: 0.75,
+    targetHours: 0.125,
+    toHours: 1 / 6,
     reached: (_s, _c, log) => log.summons > 0,
   },
   {
@@ -128,22 +140,39 @@ export const MILESTONES: Milestone[] = [
     targetHours: 1.5,
     reached: (s) => tierAtLeast(s, 'silver'),
   },
-  { id: 'clear_d2', label: 'Dungeon 2 cleared', targetHours: 3, reached: cleared('ember_crypt') },
+  {
+    id: 'first_epic',
+    label: 'First Epic',
+    targetHours: 1.5,
+    toHours: 2,
+    reached: (s, c) => ownsRarityAtLeast(s, c, 'epic'),
+  },
+  { id: 'clear_d2', label: 'Dungeon 2 cleared', targetHours: 2, reached: cleared('ember_crypt') },
   {
     id: 'first_gold',
     label: 'First Gold card',
-    targetHours: 5,
+    targetHours: 4,
     reached: (s) => tierAtLeast(s, 'gold'),
   },
   {
+    id: 'first_legendary',
+    label: 'First Legendary',
+    targetHours: 4,
+    toHours: 5,
+    reached: (s, c) => ownsRarityAtLeast(s, c, 'legendary'),
+  },
+  {
     id: 'first_star6',
-    label: 'First ★6 (Gold)',
+    label: 'First ★6 from copies',
     targetHours: 7,
-    // The target is a Gold card at ★6 (a lower-tier ★6 comes long before Gold).
-    reached: (s) =>
-      Object.values(s.cards.owned).some(
-        (c) => c.stars >= 6 && tierRank(c.tier) >= tierRank('gold'),
-      ),
+    // A ★6 earned with duplicates: a card whose rarity still needs copies per star (Common and
+    // Uncommon; Rare and up star up for free, DESIGN.md §5 Star bar).
+    reached: (s, c) =>
+      Object.entries(s.cards.owned).some(([id, owned]) => {
+        const rarity = c.cardById.get(id)?.rarity;
+        const needs = rarity ? c.cardRules.starBar.needs[rarity] : undefined;
+        return owned.stars >= 6 && (needs ?? []).some((n) => n > 0);
+      }),
   },
   {
     id: 'first_prestige',
@@ -987,7 +1016,7 @@ const RECHOOSE_SECONDS = 300;
 /** How often the ascension rule is checked, in seconds. */
 const ASCEND_CHECK_SECONDS = 60;
 /** How often the fighting DPS is sampled for the report, in seconds. */
-const DPS_SAMPLE_SECONDS = 1800;
+const DPS_SAMPLE_SECONDS = 900;
 
 export function runSim(bundled: Content, options: SimOptions): SimResult {
   // The sim plays the whole beta: portals waiting for their screen (the Wardrobe Gate) are open.
@@ -1084,6 +1113,17 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
 
 const hoursText = (seconds: number): string => `${(seconds / 3600).toFixed(2)} h`;
 
+/** A milestone's target as text: "4 h" or, for a range, "1.5-2 h". */
+export const targetText = (m: Milestone): string =>
+  m.toHours === undefined ? `${m.targetHours} h` : `${m.targetHours}-${m.toHours} h`;
+
+/** Sim time over target in percent; inside a target range it is 100%, outside the nearest end. */
+export function targetRatio(m: Milestone, hours: number): number {
+  const to = m.toHours ?? m.targetHours;
+  if (hours >= m.targetHours && hours <= to) return 100;
+  return Math.round((hours / (hours < m.targetHours ? m.targetHours : to)) * 100);
+}
+
 /** The result as a markdown table: milestone, sim time, DESIGN §14 target. */
 export function formatTable(result: SimResult): string {
   const lines = ['| Milestone | Sim time | Target |', '|---|---|---|'];
@@ -1095,7 +1135,7 @@ export function formatTable(result: SimResult): string {
         : m.pending
           ? `not built (${m.pending})`
           : `not reached in ${hoursText(result.simSeconds)}`;
-    lines.push(`| ${m.label} | ${time} | ${m.targetHours} h |`);
+    lines.push(`| ${m.label} | ${time} | ${targetText(m)} |`);
   }
   return lines.join('\n');
 }
@@ -1153,10 +1193,9 @@ export function formatSeedTable(
     const median = s.median === null ? `> ${hoursText(simSeconds)}` : hoursText(s.median);
     const spread =
       s.min === null || s.max === null ? '-' : `${shortHours(s.min)}-${shortHours(s.max)} h`;
-    const ratio =
-      s.median === null ? '-' : `${Math.round((s.median / 3600 / m.targetHours) * 100)}%`;
+    const ratio = s.median === null ? '-' : `${targetRatio(m, s.median / 3600)}%`;
     lines.push(
-      `| ${m.label} | ${m.targetHours} h | ${median} | ${spread} | ${s.reached}/${s.runs} | ${ratio} |`,
+      `| ${m.label} | ${targetText(m)} | ${median} | ${spread} | ${s.reached}/${s.runs} | ${ratio} |`,
     );
   }
   return lines.join('\n');

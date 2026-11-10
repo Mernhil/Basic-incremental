@@ -37,7 +37,8 @@ export interface Loot {
 }
 
 export interface ShowEvents {
-  hit: { damage: Decimal; crit: boolean; scale: number; big: boolean };
+  /** `interval`: seconds between the main card's hits; the attack animation follows it. */
+  hit: { damage: Decimal; crit: boolean; scale: number; big: boolean; interval: number };
   signature: { damage: Decimal; crit: boolean };
   /**
    * The boss hits the loadout, as the game reported the attack (DESIGN.md §6): `target` is the
@@ -91,7 +92,13 @@ export function createDirector(content: Content, state: () => GameState) {
       const shown = rollHitForShow(hit, crit, defaultRng);
       average = nextAverage(average, hit.mul(critFactor(crit)), 0.1);
       const scale = popupScale(shown.damage, average);
-      emit('hit', { damage: shown.damage, crit: shown.crit, scale, big: scale >= 1.3 });
+      emit('hit', {
+        damage: shown.damage,
+        crit: shown.crit,
+        scale,
+        big: scale >= 1.3,
+        interval: stats.interval,
+      });
     }
     window.setTimeout(hitLoop, stats.interval * 1000);
   };

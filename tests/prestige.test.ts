@@ -35,7 +35,7 @@ function expectedGain(points: number): number {
 
 /** A run far enough along to ascend, with things that reset and things that persist. */
 function progressedRun(): GameState {
-  const state = runWith(1e8, 1e6);
+  const state = runWith(1e9, 1e7);
   state.resources['oak_gem'] = new Decimal(5000);
   state.resources['summon_crystal'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
@@ -111,7 +111,7 @@ describe('ascension preview', () => {
         'starlight',
       ]),
     );
-    expect(preview.gain.toNumber()).toBe(expectedGain(1e8 + 1e6 * 100));
+    expect(preview.gain.toNumber()).toBe(expectedGain(1e9 + 1e7 * 100));
     expect(preview.rewards).toEqual(['gilded_plate']);
   });
 });
