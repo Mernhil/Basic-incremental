@@ -2,6 +2,9 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import type { Content } from '../src/data';
+import rawCombat from '../src/data/content/combat.json';
+import rawDungeons from '../src/data/content/dungeons.json';
+import { combatSchema, dungeonSchema } from '../src/data/schemas';
 import {
   advance,
   allGoals,
@@ -131,6 +134,29 @@ describe('what a floor holds', () => {
     expect(mini.name.startsWith(`${plain.combat.floors.miniBossPrefix} `)).toBe(true);
     const wave = floorSpec(plain, crypt, 'normal', 9);
     expect(mini.hp.gt(wave.hp)).toBe(true);
+  });
+});
+
+describe('floors data', () => {
+  it('needs at least one floor and one normal enemy per dungeon', () => {
+    const raw = rawDungeons[0]!;
+    expect(dungeonSchema.safeParse(raw).success).toBe(true);
+    expect(dungeonSchema.safeParse({ ...raw, floors: 0 }).success).toBe(false);
+    expect(dungeonSchema.safeParse({ ...raw, enemies: [] }).success).toBe(false);
+    // The old kill count is gone from the data.
+    expect(dungeonSchema.safeParse({ ...raw, killsToClear: 1 }).success).toBe(false);
+  });
+
+  it('keeps the floor ladder growing and the wave inside its size range', () => {
+    const floors = rawCombat.floors;
+    expect(combatSchema.safeParse(rawCombat).success).toBe(true);
+    expect(
+      combatSchema.safeParse({ ...rawCombat, floors: { ...floors, hpGrowth: 0.9 } }).success,
+    ).toBe(false);
+    expect(
+      combatSchema.safeParse({ ...rawCombat, floors: { ...floors, waveSize: { min: 5, max: 3 } } })
+        .success,
+    ).toBe(false);
   });
 });
 
