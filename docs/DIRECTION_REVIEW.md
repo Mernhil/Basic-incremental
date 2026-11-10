@@ -1,6 +1,6 @@
 # Direction review (2026-11-10)
 
-A snapshot of where Basic Incremental stands at version 0.5.1 (`main` at `72c8a75`) and what could come next, written by the direction engineer. Everything here is a proposal for the user to pick in the home chat. Nothing in this file is a rule: the rules stay in `DESIGN.md`, `UI_RULES.md` and `ASSET_RULES.md`. This file is deleted by the PR that writes the chosen direction into `DESIGN.md`.
+A snapshot of where Basic Incremental stands at version 0.5.1 (`main` at `72c8a75`) and what could come next, written by the direction engineer. Everything here is a proposal for the user to pick in the home chat. Nothing in this file is a rule: the rules stay in `DESIGN.md`, `UI_RULES.md` and `ASSET_RULES.md`. This file is deleted by the PR that writes the last of the chosen direction into `DESIGN.md` (Scope 1 is written in; Scope 3 still uses it).
 
 How it was made:
 
@@ -378,32 +378,34 @@ From smallest to biggest. Each is a possible "next release"; none is chosen here
 
 ## 9. Decision list
 
-| #   | Question                                                                                   | Recommendation                                            |
-| --- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------- |
-| 1   | Which release scope is next?                                                               | Scope 3, with Scope 1 shipped first as a patch.           |
-| 2   | Confirm all `[Default · in game]` rules in one pass (2.4)?                                 | Yes, except shard-shop copies and the Starlight formula.  |
-| 3   | First summon: starting crystals, a free first pull, or an easier first boss?               | Starting crystals for one pull.                           |
-| 4   | Crystals: per kill (today), a wage while fighting, or a kill-rate cap?                     | A wage now, chests with stage stars later.                |
-| 5   | Shard shop: remove copies of Rare+ cards, or sell something else for them?                 | Sell only Common and Uncommon copies, for all such cards. |
-| 6   | Legacy Gate: build its deck now, or hide the Weapon skins tab's locked skins until then?   | Hide now, build with the card release.                    |
-| 7   | Free stars: apply automatically for Rare and better?                                       | Yes.                                                      |
-| 8   | Enhancements for Common and Uncommon cards: never, or through levels (idea 6.3)?           | Through levels.                                           |
-| 9   | Wear rules: keep Gold ★1 and Prismatic ★1, lower them, or add a showcase slot (6.7)?       | Add the showcase slot; keep the rules.                    |
-| 10  | Full-art card layout: confirm as built?                                                    | Yes.                                                      |
-| 11  | Reaper Test Card: give it a real name and drop the "Test" badge?                           | Yes.                                                      |
-| 12  | Card names with tier words ("Silver Executioner"): rename?                                 | Yes, in a content pass before tier looks ship.            |
-| 13  | Account level cap (50 at 14.5 h): raise the cap, slow the curve, or leave it?              | Leave until floors retune kills; then recheck.            |
-| 14  | Ascension after the third: second Starlight source, new formula, or challenges?            | Second source (stage stars), with challenges later.       |
-| 15  | Pacing check: medians only, or medians plus worst seed over 20 seeds?                      | Medians plus worst seed.                                  |
-| 16  | Frost Cores and Sigils: add a second source so a Legendary lead cannot stall at Dungeon 3? | Yes: the Glimmer Trial's top tiers.                       |
-| 17  | Pixel workers: keep as a goal or cut?                                                      | Cut.                                                      |
-| 18  | Double-detail sprites: cut?                                                                | Cut.                                                      |
-| 19  | Awning sprites: delete?                                                                    | Delete.                                                   |
-| 20  | Effects from T5 only (today they start at Gold)?                                           | Decide with the Gold art in front of you.                 |
-| 21  | Frostspire Vault 90 kills: accept until floors?                                            | Yes.                                                      |
-| 22  | A dev cheats panel in dev builds?                                                          | Yes, small: it makes every later play-test faster.        |
-| 23  | Turn on `graphify claude install` (adds a section to `CLAUDE.md` and a Glob/Grep hook)?    | No. Keep it as an on-demand tool (see below).             |
-| 24  | Which ideas from §6 and §7 go to a "5 options" round?                                      | 6.3, 6.5, 7.4, 7.7.                                       |
+The Scope 1 decisions (2026-11-10) are written into `DESIGN.md`, `UI_RULES.md` and `ASSET_RULES.md` and built in the 0.5.3 patch (0.5.2 had already shipped the direction fixes); this file stays for Scope 3.
+
+| #   | Question                                                                                   | Recommendation                                            | Decided                                                                                                                     |
+| --- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Which release scope is next?                                                               | Scope 3, with Scope 1 shipped first as a patch.           | Scope 3 next, with Scope 1 shipped first as a patch (0.5.3) (user, 2026-11-10).                                             |
+| 2   | Confirm all `[Default · in game]` rules in one pass (2.4)?                                 | Yes, except shard-shop copies and the Starlight formula.  | Yes, except the shard-shop copies, the Starlight formula, the star bar and the dev tools (changed or kept for Scope 3).     |
+| 3   | First summon: starting crystals, a free first pull, or an easier first boss?               | Starting crystals for one pull.                           | Starting crystals for one pull; the first goal is the first summon.                                                         |
+| 4   | Crystals: per kill (today), a wage while fighting, or a kill-rate cap?                     | A wage now, chests with stage stars later.                | A wage per dungeon while fighting; purses only on first clears (chests with stage stars in Scope 3). The middle wage ships. |
+| 5   | Shard shop: remove copies of Rare+ cards, or sell something else for them?                 | Sell only Common and Uncommon copies, for all such cards. | Copies of every Common and Uncommon card only.                                                                              |
+| 6   | Legacy Gate: build its deck now, or hide the Weapon skins tab's locked skins until then?   | Hide now, build with the card release.                    | Gate closed until a later card release; locked legacy skins hidden.                                                         |
+| 7   | Free stars: apply automatically for Rare and better?                                       | Yes.                                                      | Yes: free stars apply themselves, the star flash plays once.                                                                |
+| 8   | Enhancements for Common and Uncommon cards: never, or through levels (idea 6.3)?           | Through levels.                                           | Open (Scope 3 or later).                                                                                                    |
+| 9   | Wear rules: keep Gold ★1 and Prismatic ★1, lower them, or add a showcase slot (6.7)?       | Add the showcase slot; keep the rules.                    | Open (Scope 3 or later).                                                                                                    |
+| 10  | Full-art card layout: confirm as built?                                                    | Yes.                                                      | Confirmed as built.                                                                                                         |
+| 11  | Reaper Test Card: give it a real name and drop the "Test" badge?                           | Yes.                                                      | Yes: Dusk Reaper (Claude's default name), no "Test" badge.                                                                  |
+| 12  | Card names with tier words ("Silver Executioner"): rename?                                 | Yes, in a content pass before tier looks ship.            | Open (Scope 3 or later).                                                                                                    |
+| 13  | Account level cap (50 at 14.5 h): raise the cap, slow the curve, or leave it?              | Leave until floors retune kills; then recheck.            | Open (Scope 3 or later).                                                                                                    |
+| 14  | Ascension after the third: second Starlight source, new formula, or challenges?            | Second source (stage stars), with challenges later.       | Open (Scope 3 or later).                                                                                                    |
+| 15  | Pacing check: medians only, or medians plus worst seed over 20 seeds?                      | Medians plus worst seed.                                  | Open (Scope 3 or later).                                                                                                    |
+| 16  | Frost Cores and Sigils: add a second source so a Legendary lead cannot stall at Dungeon 3? | Yes: the Glimmer Trial's top tiers.                       | Yes, but from the Ember Crypt at a low rate (the stalled run never reaches the Glimmer Trial).                              |
+| 17  | Pixel workers: keep as a goal or cut?                                                      | Cut.                                                      | Cut.                                                                                                                        |
+| 18  | Double-detail sprites: cut?                                                                | Cut.                                                      | Cut.                                                                                                                        |
+| 19  | Awning sprites: delete?                                                                    | Delete.                                                   | Deleted.                                                                                                                    |
+| 20  | Effects from T5 only (today they start at Gold)?                                           | Decide with the Gold art in front of you.                 | Open (Scope 3 or later).                                                                                                    |
+| 21  | Frostspire Vault 90 kills: accept until floors?                                            | Yes.                                                      | Yes, until floors.                                                                                                          |
+| 22  | A dev cheats panel in dev builds?                                                          | Yes, small: it makes every later play-test faster.        | Yes: a small dev-only panel.                                                                                                |
+| 23  | Turn on `graphify claude install` (adds a section to `CLAUDE.md` and a Glob/Grep hook)?    | No. Keep it as an on-demand tool (see below).             | Open (Scope 3 or later).                                                                                                    |
+| 24  | Which ideas from §6 and §7 go to a "5 options" round?                                      | 6.3, 6.5, 7.4, 7.7.                                       | Open (Scope 3 or later).                                                                                                    |
 
 **Graphify recommendation.** The graph was useful once, for orientation: it showed the hubs (`GameState`, `Content`, `collectModifiers`, `startGame`), 20 import cycles that all pass through `modifiers.ts`, and which tests cover which module. For day-to-day work in this repo it adds little over `PROJECT_OVERVIEW.md` plus search: the code is 25,000 lines with a clean folder contract, and the overview is kept equal to the code by CI. The always-on install would add a second "read this first" source to `CLAUDE.md` and a hook on every search, and a doc graph costs model time to keep fresh. Keep it installed, rebuild it on demand before a large refactor (floors), and do not turn on the always-on mode.
 

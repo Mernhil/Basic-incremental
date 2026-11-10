@@ -67,7 +67,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Built] **Settings** has reduced motion, number format, autosave interval, export / import, sound volumes and Report an issue.
 - [Built] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
 - [Built] **Sharp cards.** The Cards collection shows the full card, the same card as everywhere else, at a whole scale: 132 × 186 (1x) four across on a standard window, 2x (264 × 372) four across when they fit (a 1080p window), fewer across and reflowing when the window is narrow (Review gate pick "Full card, 1x", 2026-11-08). Card text is real text, with a floor of 11 CSS px on the small card; its job label is left to the filters. Next to the grid, the detail panel shows the card at 2x with the weapon panel on it (DESIGN §5), the card's abilities and cost, its enhancements and the loadout buttons.
-- [To build] **Owned cards first** (user, 2026-11-10). The Cards collection shows the owned cards first, then the unowned cards grouped by weapon type, each group with its collected count.
+- [Built] **Owned cards first** (user, 2026-11-10). The Cards collection shows the owned cards first, then the unowned cards grouped by weapon type, each group with its collected count ("Your cards (3)", then "Sword: 1 of 7 collected" and so on, in the `items.json` order).
 
 ## 3. Open questions
 
