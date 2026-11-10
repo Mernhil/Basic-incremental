@@ -302,6 +302,29 @@ export interface Candidate {
   buy: (state: GameState, content: Content, modifiers: Modifier[], rng: Rng) => GameState | null;
 }
 
+/**
+ * `incomePerSecond`, remembered per state and modifier list. The buyer asks for the same few
+ * resources for every candidate, and states are never changed in place, so the answer for one
+ * state, modifier list and resource is always the same.
+ */
+const incomes = new WeakMap<GameState, WeakMap<readonly Modifier[], Map<string, Decimal>>>();
+
+function incomeOf(
+  state: GameState,
+  content: Content,
+  resource: string,
+  modifiers: readonly Modifier[],
+): Decimal {
+  let byModifiers = incomes.get(state);
+  if (!byModifiers) incomes.set(state, (byModifiers = new WeakMap()));
+  let byResource = byModifiers.get(modifiers);
+  if (!byResource) byModifiers.set(modifiers, (byResource = new Map()));
+  let income = byResource.get(resource);
+  if (!income)
+    byResource.set(resource, (income = incomePerSecond(state, content, resource, modifiers)));
+  return income;
+}
+
 function etaOf(
   state: GameState,
   content: Content,
@@ -312,7 +335,7 @@ function etaOf(
   for (const p of prices) {
     const missing = p.amount.sub(state.resources[p.resource] ?? 0);
     if (missing.lte(0)) continue;
-    const income = incomePerSecond(state, content, p.resource, modifiers);
+    const income = incomeOf(state, content, p.resource, modifiers);
     if (income.lte(0)) return null;
     worst = Math.max(worst, missing.div(income).toNumber());
   }
@@ -1019,7 +1042,7 @@ const ASCEND_CHECK_SECONDS = 60;
 const DPS_SAMPLE_SECONDS = 900;
 
 export function runSim(bundled: Content, options: SimOptions): SimResult {
-  // The sim plays the whole beta: portals waiting for their screen (the Wardrobe Gate) are open.
+  // The sim plays the whole beta: portals waiting for their screen (the Legacy Gate) are open.
   const content: Content =
     options.openAllPortals === false ? bundled : { ...bundled, portals: bundled.allPortals };
   const rng: Rng = createSeededRng(options.seed ?? 1);
@@ -1113,9 +1136,13 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
 
 const hoursText = (seconds: number): string => `${(seconds / 3600).toFixed(2)} h`;
 
+/** A target in hours, rounded so a range like 5 to 10 minutes does not print sixteen digits. */
+const targetHours = (hours: number): string => String(Number(hours.toFixed(3)));
 /** A milestone's target as text: "4 h" or, for a range, "1.5-2 h". */
 export const targetText = (m: Milestone): string =>
-  m.toHours === undefined ? `${m.targetHours} h` : `${m.targetHours}-${m.toHours} h`;
+  m.toHours === undefined
+    ? `${targetHours(m.targetHours)} h`
+    : `${targetHours(m.targetHours)}-${targetHours(m.toHours)} h`;
 
 /** Sim time over target in percent; inside a target range it is 100%, outside the nearest end. */
 export function targetRatio(m: Milestone, hours: number): number {
