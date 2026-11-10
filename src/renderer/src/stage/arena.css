@@ -440,7 +440,8 @@
   color: var(--bi-frame-ink, #f4ecff);
   text-align: center;
 }
-.ar-enemy--miniboss {
+.ar-enemy--miniboss,
+.ar-enemy--boss {
   width: 80%;
   height: 70%;
   margin-top: 24%;

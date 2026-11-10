@@ -66,7 +66,11 @@ export interface Content {
   cards: Card[];
   /** Card progression numbers (levels, star-ups, tier-ups, costs, drops). */
   cardRules: CardRules;
+  /** The dungeons in the game. */
   dungeons: Dungeon[];
+  /** Every dungeon, including those waiting for their theme (`enabled: false`, placeholder
+   *  names and drops; DESIGN.md §6 Three new dungeons). */
+  allDungeons: Dungeon[];
   /** Special dungeons (strength tests). Their ids share the dungeon id space. */
   trials: Trial[];
   combat: CombatConfig;
@@ -132,7 +136,7 @@ export class ContentValidationError extends Error {
 }
 
 /** Validates raw content (schemas + cross-references) and returns typed content. */
-export function validateContent(raw: RawContent): Content {
+export function validateContent(raw: RawContent, options: ContentOptions = {}): Content {
   const issues: string[] = [];
   const parsed = {} as {
     [K in keyof typeof contentSchemas]: ReturnType<(typeof contentSchemas)[K]['parse']>;
@@ -225,6 +229,9 @@ export function validateContent(raw: RawContent): Content {
   );
   if (issues.length > 0) throw new ContentValidationError(issues);
 
+  // Dungeons without a theme yet stay out of the game unless asked for (dev builds).
+  const openDungeons = options.unreleased ? dungeons : dungeons.filter((d) => d.enabled);
+
   const starterBySlot = Object.fromEntries(
     COSMETIC_SLOTS.map((slot) => [slot, cosmetics.find((c) => c.starter && c.slot === slot)!]),
   ) as Record<CosmeticSlot, Cosmetic>;
@@ -236,7 +243,8 @@ export function validateContent(raw: RawContent): Content {
     production,
     cards,
     cardRules,
-    dungeons,
+    dungeons: openDungeons,
+    allDungeons: dungeons,
     trials,
     combat,
     cosmetics,
@@ -257,7 +265,7 @@ export function validateContent(raw: RawContent): Content {
     items,
     itemTypeByKind: new Map(items.types.map((t) => [t.kind, t])),
     resourceById: new Map(resources.map((r) => [r.id, r])),
-    dungeonById: new Map(dungeons.map((d) => [d.id, d])),
+    dungeonById: new Map(openDungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
     upgradeById: new Map(upgrades.upgrades.map((u) => [u.id, u])),
     treeById: new Map(trees.map((t) => [t.id, t])),
@@ -1058,7 +1066,14 @@ export function bundledRawContent(): RawContent {
   };
 }
 
+/** What `loadContent` may be asked for. */
+export interface ContentOptions {
+  /** Also open the dungeons that wait for their theme (`enabled: false`), with their
+   *  placeholder names and drops. For dev builds and the sim only. */
+  unreleased?: boolean;
+}
+
 /** Loads and validates the bundled game data. Call once at startup. */
-export function loadContent(): Content {
-  return validateContent(bundledRawContent());
+export function loadContent(options: ContentOptions = {}): Content {
+  return validateContent(bundledRawContent(), options);
 }

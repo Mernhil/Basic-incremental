@@ -28,7 +28,7 @@
       "name": "Root Warden",
       "art": "root_warden",
       "hp": "12900",
-      "hpScalingPerPrestige": 0.02,
+      "hpScalingPerPrestige": 0.1,
       "hpBars": 5,
       "attack": {
         "damage": "15",
@@ -109,7 +109,7 @@
       "name": "Cinder Lich",
       "art": "cinder_lich",
       "hp": "300000",
-      "hpScalingPerPrestige": 0.02,
+      "hpScalingPerPrestige": 0.1,
       "hpBars": 8,
       "attack": {
         "damage": "250",
@@ -199,7 +199,7 @@
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
       "hp": "7000000",
-      "hpScalingPerPrestige": 0.02,
+      "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
       "attack": {
         "damage": "6800",
@@ -237,6 +237,252 @@
           "resource": "money",
           "min": 560000,
           "max": 790000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_sigil",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "material": {
+        "resource": "frost_core",
+        "chance": 0.6,
+        "amount": 2
+      }
+    }
+  },
+  {
+    "id": "dungeon_4",
+    "name": "Dungeon 4",
+    "tier": 4,
+    "enabled": false,
+    "unlockedBy": "frostspire_vault",
+    "floors": 40,
+    "enemies": [
+      {
+        "id": "dungeon_4_enemy_a",
+        "name": "Dungeon 4 enemy A",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "dungeon_4_enemy_b",
+        "name": "Dungeon 4 enemy B",
+        "hpWeight": 1
+      },
+      {
+        "id": "dungeon_4_enemy_c",
+        "name": "Dungeon 4 enemy C",
+        "hpWeight": 1.5
+      }
+    ],
+    "boss": {
+      "id": "dungeon_4_boss",
+      "name": "Dungeon 4 boss",
+      "hp": "161000000",
+      "hpScalingPerPrestige": 0.1,
+      "hpBars": 12,
+      "attack": {
+        "damage": "156400",
+        "intervalSeconds": 2
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "prism_pointer",
+        "chance": 0.005,
+        "pityThreshold": 200
+      },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "1500"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "900"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 12880000,
+          "max": 18170000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_sigil",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "material": {
+        "resource": "frost_core",
+        "chance": 0.6,
+        "amount": 2
+      }
+    }
+  },
+  {
+    "id": "dungeon_5",
+    "name": "Dungeon 5",
+    "tier": 5,
+    "enabled": false,
+    "unlockedBy": "dungeon_4",
+    "floors": 50,
+    "enemies": [
+      {
+        "id": "dungeon_5_enemy_a",
+        "name": "Dungeon 5 enemy A",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "dungeon_5_enemy_b",
+        "name": "Dungeon 5 enemy B",
+        "hpWeight": 1
+      },
+      {
+        "id": "dungeon_5_enemy_c",
+        "name": "Dungeon 5 enemy C",
+        "hpWeight": 1.5
+      }
+    ],
+    "boss": {
+      "id": "dungeon_5_boss",
+      "name": "Dungeon 5 boss",
+      "hp": "3703000000",
+      "hpScalingPerPrestige": 0.1,
+      "hpBars": 12,
+      "attack": {
+        "damage": "3597200",
+        "intervalSeconds": 2
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "prism_pointer",
+        "chance": 0.005,
+        "pityThreshold": 200
+      },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "1500"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "900"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 296240000,
+          "max": 417910000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_sigil",
+          "min": 1,
+          "max": 1
+        }
+      ],
+      "material": {
+        "resource": "frost_core",
+        "chance": 0.6,
+        "amount": 2
+      }
+    }
+  },
+  {
+    "id": "dungeon_6",
+    "name": "Dungeon 6",
+    "tier": 6,
+    "enabled": false,
+    "unlockedBy": "dungeon_5",
+    "floors": 60,
+    "enemies": [
+      {
+        "id": "dungeon_6_enemy_a",
+        "name": "Dungeon 6 enemy A",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "dungeon_6_enemy_b",
+        "name": "Dungeon 6 enemy B",
+        "hpWeight": 1
+      },
+      {
+        "id": "dungeon_6_enemy_c",
+        "name": "Dungeon 6 enemy C",
+        "hpWeight": 1.5
+      }
+    ],
+    "boss": {
+      "id": "dungeon_6_boss",
+      "name": "Dungeon 6 boss",
+      "hp": "85169000000",
+      "hpScalingPerPrestige": 0.1,
+      "hpBars": 12,
+      "attack": {
+        "damage": "82735600",
+        "intervalSeconds": 2
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "prism_pointer",
+        "chance": 0.005,
+        "pityThreshold": 200
+      },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "1500"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "900"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 6813520000,
+          "max": 9611930000
         }
       ],
       "extraMaterials": [

@@ -89,17 +89,23 @@ export interface FloorReadoutInput {
 /** The parts of the floor line, in order: the floor, what stands on it, the best floor. */
 export type FloorPart =
   | { kind: 'floor'; floor: number; floors: number }
+  /** An endless depth: it has no last floor. */
+  | { kind: 'depth'; depth: number }
   | { kind: 'enemy'; index: number; size: number }
   | { kind: 'miniboss' }
   | { kind: 'boss' }
   | { kind: 'best'; best: number };
 
 /**
- * The floor line as parts: "Floor 3 / 10", then "Enemy 2 / 4" on a wave or the mini-boss / boss
- * mark, then "best 5" once a floor has been beaten.
+ * The floor line as parts: "Floor 3 / 10" (or "Depth 12" in the endless depths), then "Enemy 2 /
+ * 4" on a wave or the mini-boss / boss mark, then "best 5" once a floor has been beaten.
  */
 export function floorParts(input: FloorReadoutInput): FloorPart[] {
-  const parts: FloorPart[] = [{ kind: 'floor', floor: input.floor, floors: input.floors }];
+  const parts: FloorPart[] = [
+    Number.isFinite(input.floors)
+      ? { kind: 'floor', floor: input.floor, floors: input.floors }
+      : { kind: 'depth', depth: input.floor },
+  ];
   if (input.floorKind === 'wave') {
     parts.push({ kind: 'enemy', index: input.wave.index, size: input.wave.size });
   } else parts.push({ kind: input.floorKind });

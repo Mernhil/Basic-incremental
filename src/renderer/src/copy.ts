@@ -333,7 +333,17 @@ export const COPY = {
       endless: 'Endless',
     } as Record<string, string>,
     floorOf: (floor: number, floors: number) => `Floor ${floor} / ${floors}`,
+    depthOf: (depth: number) => `Depth ${depth}`,
     bestFloor: (best: number) => `best ${best}`,
+    difficultyLocked: (before: string) => `Beat the ${before} boss of this dungeon to unlock.`,
+    difficultyTip: {
+      normal: 'Normal: the dungeon as it is. Its boss clears the dungeon and opens Hard.',
+      hard: 'Hard: every enemy is far stronger and drops more. Its boss opens Nightmare.',
+      nightmare: 'Nightmare: stronger again. Its boss opens the endless depths.',
+      endless:
+        'Endless depths: floors without end below the Nightmare boss, each harder and richer.',
+    } as Record<string, string>,
+    endlessTip: 'The endless depths have no last floor.',
     enemyOf: (index: number, size: number) => `Enemy ${index} / ${size}`,
     miniBoss: 'Mini-boss',
     bossFloor: 'Boss',

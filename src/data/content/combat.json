@@ -39,6 +39,20 @@
     "miniBossAttackShare": 0.8,
     "miniBossPrefix": "Great"
   },
+  "difficulties": {
+    "hard": {
+      "hp": 1000,
+      "attack": 1000,
+      "purse": 1000,
+      "material": 2
+    },
+    "nightmare": {
+      "hp": 1000000,
+      "attack": 1000000,
+      "purse": 1000000,
+      "material": 4
+    }
+  },
   "crit": {
     "chance": 0.05,
     "damage": "2"

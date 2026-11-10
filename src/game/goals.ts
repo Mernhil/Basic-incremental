@@ -4,6 +4,7 @@ import { starUpCheck, tierUpCheck } from './cards';
 import {
   averageDps,
   burstStats,
+  difficultyDrops,
   effectiveDrops,
   fightStage,
   isDungeonCleared,
@@ -144,13 +145,15 @@ export function incomePerSecond(
   const active = state.activeDungeonId;
   const dungeon = active ? content.dungeonById.get(active) : undefined;
   if (dungeon) {
-    const drops = effectiveDrops(dungeon, modifiers, content);
+    const stage = fightStage(state, content, dungeon.id, modifiers);
+    const table = effectiveDrops(dungeon, modifiers, content);
+    // The floor's difficulty multiplies the purses and the material units.
+    const drops = stage ? difficultyDrops(table, stage.scale) : table;
     // The wages are paid for every second of fighting.
     for (const wage of drops.wages) {
       if (wage.resource === resourceId) total = total.add(wage.perSecond);
     }
     const spk = killSeconds(state, content, dungeon.id, modifiers);
-    const stage = fightStage(state, content, dungeon.id, modifiers);
     if (spk !== null && stage) {
       // A floor's enemies drop the boss's table at their share of the boss's HP.
       const worth = stage.enemies.reduce((sum, e) => sum + e.dropScale, 0);
@@ -237,14 +240,15 @@ const clearDungeon: RuleFn = (state, content, modifiers) =>
           .filter((x) => x.unlockedBy === d.id)
           .map((x) => x.name),
       ];
-      // The way down to the last-floor boss: the floors left, each at its own pace. A floor
-      // that would knock the loadout out first is a wall, and so is everything below it.
-      const position = floorPosition(state, d);
-      const fighting = state.activeDungeonId === d.id;
+      // The way down to the Normal last-floor boss: the floors left, each at its own pace. A
+      // floor that would knock the loadout out first is a wall, and so is everything below it.
+      const position = floorPosition(state, d, 'normal');
+      const fighting =
+        state.activeDungeonId === d.id && floorPosition(state, d).difficulty === 'normal';
       let eta: number | null = 0;
       let here = 0;
       for (let floor = position.floor; floor <= position.floors; floor++) {
-        const stage = fightStage(state, content, d.id, modifiers, floor);
+        const stage = fightStage(state, content, d.id, modifiers, floor, 'normal');
         const seconds = floorSeconds(state, content, d.id, modifiers, floor);
         const current = floor === position.floor;
         const left =
@@ -338,7 +342,7 @@ const bossMasteryRule: RuleFn = (state, content, modifiers) => {
     // The medal counts kills of the last-floor boss: an ETA only while that floor is fought.
     const position = floorPosition(state, d);
     const spk =
-      position.floor >= position.floors ? killSeconds(state, content, d.id, modifiers) : null;
+      position.floor === position.floors ? killSeconds(state, content, d.id, modifiers) : null;
     const left = Math.max(0, m.nextThreshold - m.value);
     out.push({
       targetId: d.id,

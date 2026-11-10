@@ -283,13 +283,15 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     }
 
     const r = stageReadout(s, content, mods);
-    set(fight.bigNumber, art ? fmt(r.averageDps) : '—');
+    // A boss without a drawing (a dungeon whose theme is not decided) is still a fight.
+    const fighting = Boolean(dungeon ?? trial);
+    set(fight.bigNumber, fighting ? fmt(r.averageDps) : '—');
     set(fight.bigLabel, COPY.home.damagePerSecond);
     set(kpmOut, formatRate(r.killsPerMinute));
     set(ttkOut, r.secondsPerKill === null ? '—' : formatDuration(r.secondsPerKill * 1000));
     const lh = loadoutHealth(s, content, mods);
     const pct = Math.round(lh.current.div(Decimal.max(lh.max, 1e-9)).toNumber() * 100);
-    set(healthOut, art ? `${Math.min(100, Math.max(0, pct))}%` : '—');
+    set(healthOut, fighting ? `${Math.min(100, Math.max(0, pct))}%` : '—');
 
     // the signature attack gauge with its count
     const gv = burstView(s, content, 'fighting', mods);
