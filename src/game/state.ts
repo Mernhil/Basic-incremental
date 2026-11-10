@@ -22,7 +22,8 @@ export interface GameState {
   bursts: Record<BurstJob, BurstGauge>;
   /** Dungeon (or special dungeon) being auto-fought, or null. */
   activeDungeonId: string | null;
-  /** Current boss HP; null means "spawn a fresh boss on the next tick". */
+  /** HP left of the floor being fought, all its enemies together (our damage reaches them in
+   *  order); null means "the floor starts fresh on the next tick". */
   bossHp: Decimal | null;
   /** Boss id -> consecutive kills without the rare drop (pity counter). */
   pity: Record<string, number>;
@@ -140,9 +141,37 @@ export interface ProductionState {
   treeLevels: Record<string, number>;
 }
 
+/**
+ * The difficulty tiers of a dungeon (DESIGN.md §6 Difficulty tiers), then its endless depths.
+ * Each has its own floors; `endless` counts depths below the Nightmare boss.
+ */
+export const DIFFICULTIES = ['normal', 'hard', 'nightmare', 'endless'] as const;
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/** Push moves down a floor on a win; farm stays on the floor (DESIGN.md §6 Dungeon floors). */
+export type FloorMode = 'push' | 'farm';
+
+/** Where the player is on one difficulty of a dungeon. */
+export interface TierProgress {
+  /** The floor being fought (1-based). Reset by Ascension to half of `best`. */
+  floor: number;
+  /** The deepest floor beaten (0 = none). Kept through Ascension. */
+  best: number;
+}
+
+/** A dungeon's floors: the difficulty chosen, push or farm, and the progress on each difficulty. */
+export interface DungeonProgress {
+  difficulty: Difficulty;
+  mode: FloorMode;
+  /** Missing = floor 1, nothing beaten. */
+  tiers: Partial<Record<Difficulty, TierProgress>>;
+}
+
 export interface CombatState {
-  /** Dungeon id -> boss kills, ever. */
+  /** Dungeon id -> kills of its last-floor boss, ever (the boss medals count them). */
   kills: Record<string, number>;
+  /** Dungeon id -> its floors (DESIGN.md §6). Missing = a dungeon never fought. */
+  floors: Record<string, DungeonProgress>;
   /** The running special-dungeon attempt (only meaningful while a trial is active). */
   trialAttempt: TrialAttempt;
   /** Special dungeon id -> best score, 0..1. */
@@ -169,6 +198,7 @@ export interface BurstGauge {
 export function initialCombat(): CombatState {
   return {
     kills: {},
+    floors: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     trialBest: {},
     loadoutDamage: new Decimal(0),
@@ -281,11 +311,26 @@ export function cloneProduction(p: ProductionState): ProductionState {
 export function cloneCombat(c: CombatState): CombatState {
   return {
     kills: { ...c.kills },
+    floors: cloneFloors(c.floors),
     trialAttempt: { ...c.trialAttempt },
     trialBest: { ...c.trialBest },
     loadoutDamage: c.loadoutDamage,
     knockoutSeconds: c.knockoutSeconds,
   };
+}
+
+export function cloneFloors(
+  floors: Record<string, DungeonProgress>,
+): Record<string, DungeonProgress> {
+  return Object.fromEntries(
+    Object.entries(floors).map(([id, p]) => [
+      id,
+      {
+        ...p,
+        tiers: Object.fromEntries(Object.entries(p.tiers).map(([d, t]) => [d, { ...t }])),
+      },
+    ]),
+  );
 }
 
 export function cloneBursts(b: Record<BurstJob, BurstGauge>): Record<BurstJob, BurstGauge> {

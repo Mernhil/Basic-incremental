@@ -56,7 +56,41 @@ export const MIGRATIONS: MigrationTable = {
   /** v22 -> v23: crystals repriced (DESIGN.md §7 Rarer summons): a pull costs 30 times the crystals
    *  it did, so the Summon and Glamour Crystals held are multiplied by 30 and keep their worth. */
   22: v22ToV23,
+  /** v23 -> v24: dungeon floors (DESIGN.md §6 Dungeon floors, Clearing, Difficulty tiers). */
+  23: v23ToV24,
 };
+
+/** Floors of each dungeon when save format 24 was made (a snapshot: migrations never read the
+ *  content, which may change later). */
+const V24_FLOORS: Record<string, number> = {
+  mossy_cellar: 10,
+  ember_crypt: 20,
+  frostspire_vault: 30,
+};
+
+/**
+ * v23 -> v24: dungeons became stacks of floors, with progress saved per dungeon and difficulty
+ * (current floor, best floor; the endless depths use the same shape). A dungeon already cleared
+ * stays cleared and stands on its Normal last floor, the boss it was farming, with that floor as
+ * its best, in farm mode; every other dungeon starts on floor 1 in push mode, which is what a
+ * missing entry means. The boss being fought is respawned, because the HP now belongs to a floor.
+ * Kill counts and boss medals stay as they are.
+ */
+function v23ToV24(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const cleared = Array.isArray(state['clearedDungeons']) ? state['clearedDungeons'] : [];
+  const floors: Record<string, unknown> = {};
+  for (const id of cleared) {
+    const count = typeof id === 'string' ? V24_FLOORS[id] : undefined;
+    if (typeof id !== 'string' || count === undefined) continue;
+    floors[id] = {
+      difficulty: 'normal',
+      mode: 'farm',
+      tiers: { normal: { floor: count, best: count } },
+    };
+  }
+  return { ...state, bossHp: null, combat: { ...combat, floors } };
+}
 
 /** The factor crystals were repriced by in save format 23. */
 export const V23_CRYSTAL_FACTOR = 30;

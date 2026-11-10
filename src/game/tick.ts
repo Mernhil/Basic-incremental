@@ -1,6 +1,6 @@
 import type { Content } from '../data';
 import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
-import { advanceCombat, advanceHarvestBursts } from './combat';
+import { advanceCombat, advanceHarvestBursts, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
 import { recordStrikes } from './harvest';
@@ -34,6 +34,7 @@ export function advance(
   content: Content,
   dtMs: number,
   rng: Rng,
+  options: FightOptions = {},
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   if (!Number.isFinite(dtMs) || dtMs <= 0) return { state, report };
@@ -56,13 +57,13 @@ export function advance(
         ? 0
         : boundaries <= STEP_THROUGH_BOUNDARIES
           ? 1
-          : firstDueBoundary(current, content, toBoundary, boundaries);
+          : firstDueBoundary(current, content, toBoundary, boundaries, options);
     if (first === 0) {
-      current = advanceSpan(current, content, remaining, rng, report);
+      current = advanceSpan(current, content, remaining, rng, report, options);
       break;
     }
     const until = toBoundary + (first - 1) * CARD_LEVEL_STEP_MS;
-    current = advanceSpan(current, content, until, rng, report);
+    current = advanceSpan(current, content, until, rng, report, options);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
     settleAccount(current, content, report);
@@ -89,9 +90,10 @@ function firstDueBoundary(
   content: Content,
   toBoundary: number,
   boundaries: number,
+  options: FightOptions,
 ): number {
   const due = (k: number): boolean =>
-    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS);
+    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS, options);
   let lo = 0; // known not due (0 = before the first boundary)
   let hi = 1;
   while (!due(hi)) {
@@ -111,8 +113,13 @@ function firstDueBoundary(
  * Whether a card level-up or a mastery tier would be pending after `dtMs`. Runs a throwaway
  * copy. Kills and harvests never depend on random drops, so the fixed lookahead rng is exact.
  */
-function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
-  const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport());
+function levelUpDue(
+  state: GameState,
+  content: Content,
+  dtMs: number,
+  options: FightOptions,
+): boolean {
+  const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport(), options);
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
@@ -128,6 +135,7 @@ function advanceSpan(
   dtMs: number,
   rng: Rng,
   report: TickReport,
+  options: FightOptions,
 ): GameState {
   const next = cloneState(state);
   const seconds = dtMs / 1000;
@@ -167,9 +175,9 @@ function advanceSpan(
     grantLoadoutXp(next, content, job, units.mul(productionXpPerUnit(content, job, modifiers)));
   }
 
-  // Combat: the boss is auto-fought in parallel and respawns for farming.
+  // Combat: the dungeon's floors are auto-fought in parallel.
   const moneyBefore = next.resources[content.upgrades.currency];
-  advanceCombat(next, content, seconds, rng, report, modifiers);
+  advanceCombat(next, content, seconds, rng, report, modifiers, options);
   countMoneyEarned(next, content, moneyBefore);
 
   return next;
@@ -182,13 +190,14 @@ export function advanceChunked(
   totalMs: number,
   rng: Rng,
   chunkMs: number,
+  options: FightOptions = {},
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   let current = state;
   let remaining = totalMs;
   while (remaining > 0) {
     const step = Math.min(chunkMs, remaining);
-    const result = advance(current, content, step, rng);
+    const result = advance(current, content, step, rng, options);
     current = result.state;
     mergeReports(report, result.report);
     remaining -= step;

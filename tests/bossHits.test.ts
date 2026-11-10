@@ -24,12 +24,13 @@ import {
   type Modifier,
   type TickReport,
 } from '../src/game';
-import { constantRng, content as bundled, freshState, withBossAttack } from './helpers';
+import { constantRng, content as bundled, freshState, withBossAttack, withBossHp } from './helpers';
 
 // The Root Warden is pinned to the numbers these tests document (1 damage every 10 s).
 /** The Root Warden pinned to 1 damage every 10 s and the knockout to 30 s, the timings these
  *  tests count in (the shipped numbers are tuning, DESIGN.md §6). */
-const attacked = withBossAttack(bundled, 'mossy_cellar', 1, 10);
+// Its HP is out of the loadout's reach, so no kill refills the health while a test counts hits.
+const attacked = withBossAttack(withBossHp(bundled, 'mossy_cellar', 1e12), 'mossy_cellar', 1, 10);
 const content = { ...attacked, combat: { ...attacked.combat, knockoutSeconds: 30 } };
 
 /**

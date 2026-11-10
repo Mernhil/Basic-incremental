@@ -7,6 +7,7 @@ import { initialBursts, startingAmount, type GameState } from './state';
 import { keepPermanentUpgrades } from './upgrades';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
+import { ascensionStartFloor } from './floors';
 
 /**
  * Prestige, Ascension (DESIGN.md §9). An ascension resets the run (tree and mine
@@ -129,6 +130,14 @@ export function ascend(
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);
   next.bursts = initialBursts();
   next.bossHp = null;
+  // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run starts at
+  // half of it, pushing again.
+  for (const progress of Object.values(next.combat.floors)) {
+    progress.mode = 'push';
+    for (const tier of Object.values(progress.tiers)) {
+      tier.floor = ascensionStartFloor(tier.best);
+    }
+  }
   next.combat = {
     ...next.combat,
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },

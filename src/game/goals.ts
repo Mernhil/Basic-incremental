@@ -3,15 +3,16 @@ import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
 import { starUpCheck, tierUpCheck } from './cards';
 import {
   averageDps,
-  bossMaxHp,
   burstStats,
   effectiveDrops,
+  fightStage,
   isDungeonCleared,
   isDungeonUnlocked,
   secondsPerKill,
   survivalSeconds,
   trialRewards,
 } from './combat';
+import { floorPosition } from './floors';
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
 import { milestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
@@ -90,6 +91,21 @@ function killSeconds(
   return spk;
 }
 
+/** Seconds to clear one floor of a dungeon, or null when it is a wall (like `killSeconds`). */
+function floorSeconds(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: readonly Modifier[],
+  floor: number,
+): number | null {
+  const seconds = secondsPerKill(state, content, dungeonId, modifiers, floor);
+  if (seconds === null || !(seconds > 0) || !Number.isFinite(seconds)) return null;
+  const survival = survivalSeconds(state, content, dungeonId, modifiers, floor);
+  if (survival !== null && survival < seconds) return null;
+  return seconds;
+}
+
 /** Score the loadout reaches in one special dungeon attempt at its average damage, 0..1. */
 function trialCapability(
   state: GameState,
@@ -134,7 +150,10 @@ export function incomePerSecond(
       if (wage.resource === resourceId) total = total.add(wage.perSecond);
     }
     const spk = killSeconds(state, content, dungeon.id, modifiers);
-    if (spk !== null) {
+    const stage = fightStage(state, content, dungeon.id, modifiers);
+    if (spk !== null && stage) {
+      // A floor's enemies drop the boss's table at their share of the boss's HP.
+      const worth = stage.enemies.reduce((sum, e) => sum + e.dropScale, 0);
       let perKill = 0;
       for (const currency of drops.currencies) {
         if (currency.resource !== resourceId) continue;
@@ -146,7 +165,7 @@ export function incomePerSecond(
       for (const extra of drops.extraMaterials) {
         if (extra.resource === resourceId) perKill += (extra.chance * (extra.min + extra.max)) / 2;
       }
-      total = total.add(perKill / spk);
+      total = total.add((perKill * worth) / spk);
     }
   }
   const trial = active ? content.trialById.get(active) : undefined;
@@ -218,19 +237,31 @@ const clearDungeon: RuleFn = (state, content, modifiers) =>
           .filter((x) => x.unlockedBy === d.id)
           .map((x) => x.name),
       ];
-      const maxHp = bossMaxHp(d, state.prestigeCount, modifiers);
+      // The way down to the last-floor boss: the floors left, each at its own pace. A floor
+      // that would knock the loadout out first is a wall, and so is everything below it.
+      const position = floorPosition(state, d);
       const fighting = state.activeDungeonId === d.id;
-      const hp = fighting && state.bossHp ? Decimal.min(state.bossHp, maxHp) : maxHp;
-      const kills = Math.max(1, d.killsToClear - (state.combat.kills[d.id] ?? 0));
-      const spk = killSeconds(state, content, d.id, modifiers);
-      const eta = spk === null ? null : (kills - 1) * spk + hp.div(maxHp).toNumber() * spk;
+      let eta: number | null = 0;
+      let here = 0;
+      for (let floor = position.floor; floor <= position.floors; floor++) {
+        const stage = fightStage(state, content, d.id, modifiers, floor);
+        const seconds = floorSeconds(state, content, d.id, modifiers, floor);
+        const current = floor === position.floor;
+        const left =
+          current && fighting && state.bossHp && stage
+            ? clamp01(Decimal.min(state.bossHp, stage.hp).div(stage.hp).toNumber())
+            : 1;
+        if (current) here = 1 - left;
+        if (seconds === null) {
+          eta = null;
+          break;
+        }
+        eta += seconds * left;
+      }
       return {
         targetId: d.id,
         title: opens.length ? `Clear ${d.name} → ${opens[0]}` : `Clear ${d.name}`,
-        progress:
-          d.killsToClear > 1
-            ? ratio(new Decimal(d.killsToClear - kills), new Decimal(d.killsToClear))
-            : clamp01(1 - hp.div(maxHp).toNumber()),
+        progress: clamp01((position.floor - 1 + here) / position.floors),
         etaSeconds: eta,
       };
     });
@@ -304,7 +335,10 @@ const bossMasteryRule: RuleFn = (state, content, modifiers) => {
     const m = bossMastery(state, content, d.id);
     if (!m || m.tier >= MAX_MASTERY_TIER || m.nextThreshold === null) continue;
     if (!isDungeonUnlocked(state, content, d.id) || m.value <= 0) continue;
-    const spk = killSeconds(state, content, d.id, modifiers);
+    // The medal counts kills of the last-floor boss: an ETA only while that floor is fought.
+    const position = floorPosition(state, d);
+    const spk =
+      position.floor >= position.floors ? killSeconds(state, content, d.id, modifiers) : null;
     const left = Math.max(0, m.nextThreshold - m.value);
     out.push({
       targetId: d.id,

@@ -9,6 +9,7 @@ export * from './drops';
 export * from './report';
 export * from './tick';
 export * from './combat';
+export * from './floors';
 export * from './loop';
 export * from './offline';
 export * from './migrations';
