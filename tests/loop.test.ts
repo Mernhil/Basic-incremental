@@ -57,4 +57,18 @@ describe('GameLoop', () => {
     loop.step(MAX_STEP_MS * 5);
     expect(loop.state.stats.playTimeMs).toBe(MAX_STEP_MS);
   });
+  it('catches up a long gap (the PC slept) to the same result as second-by-second steps', () => {
+    const gapMs = 20 * 60 * 1000;
+    const slept = new GameLoop(freshState(), content, constantRng(0.5), 0);
+    slept.step(gapMs); // one call: caught up in minute steps
+    const awake = run(1000, gapMs, freshState);
+    expect(slept.state.stats.playTimeMs).toBe(gapMs);
+    expect(slept.state.stats.bossKills).toBe(awake.state.stats.bossKills);
+    for (const id of ['oak_gem', 'copper_gem', 'money']) {
+      expect(approxEq(slept.state.resources[id]!, awake.state.resources[id]!)).toBe(true);
+    }
+    for (const [id, card] of Object.entries(awake.state.cards.owned)) {
+      expect(slept.state.cards.owned[id]!.level).toBe(card.level);
+    }
+  });
 });
