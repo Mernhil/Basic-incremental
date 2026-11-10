@@ -38,6 +38,9 @@ const CARD_WANT = { tile: 264, detail: 264, slot: 132 } as const;
 /** Cards across the collection grid, and the gap between them (CSS px). */
 const GRID_COLUMNS = 4;
 const GRID_GAP = 10;
+/** The weapon tiles beside the detail card: the narrowest they may get, and the gap to the card. */
+const DETAIL_SIDE_MIN = 150;
+const DETAIL_GAP = 12;
 type Fit = Parameters<typeof fitCard>[1];
 
 /**
@@ -78,6 +81,7 @@ export function createCardsPage(
 ): { render(): void; show(tab: Tab, job?: Job): void } {
   const { content, model } = ctx;
   page.classList.add('shell-page--cards');
+  page.querySelector('.shell-page__title')?.classList.add('sr-only');
 
   // ---- view state ----
   let tab: Tab = 'collection';
@@ -85,6 +89,8 @@ export function createCardsPage(
   let readyOnly = false;
   let sort: Sort = 'rarity';
   let selected: string | null = null;
+  /** The Enhancements star chart is open under the buttons of the selected card. */
+  let enhanceOpen = false;
   let last = '';
   let message = '';
   let ticks: Array<() => void> = [];
@@ -118,7 +124,8 @@ export function createCardsPage(
   });
   const status = h('p', 'cp-status');
   status.setAttribute('role', 'status');
-  page.append(tabBar, panel, status);
+  // the tab bar lives inside the panel's top row (Collection and Loadouts alike, UI rework 2.2)
+  page.append(panel, status);
 
   function switchTab(next: Tab, job?: Job): void {
     tab = next;
@@ -160,7 +167,7 @@ export function createCardsPage(
     const view = createCard(props);
     view.el.removeAttribute('aria-label');
     view.el.setAttribute('aria-hidden', 'true');
-    const fit = h('span', `cp-fit${e.owned ? '' : ' cp-fit--locked'}`);
+    const fit = h('span', `cp-fit${e.owned ? ' cp-fit--lv' : ' cp-fit--locked'}`);
     fit.append(view.el);
     return fit;
   }
@@ -197,11 +204,12 @@ export function createCardsPage(
   function collection(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-wrap');
     const owned = entries.filter((e) => e.owned).length;
-    const note = `${COPY.cards.found(owned, entries.length)} · ${COPY.cards.shards} ${model.shards(state)}`;
-    const { el, body } = frame(COPY.cards.collectionTab, note);
-    el.classList.add('cp-collection');
+    const el = h('section', 'frame cp-collection');
+    el.setAttribute('aria-label', COPY.cards.collectionTab);
 
-    // toolbar
+    // the top rows: the tabs and the shard count, then the filters, sort and found count
+    const head = h('div', 'cp-head');
+    head.append(tabBar, h('span', 'cp-shards bi-num', COPY.cards.shardsLabel(model.shards(state))));
     const bar = h('div', 'cp-toolbar');
     const chips = h('div', 'cp-chips');
     chips.setAttribute('role', 'group');
@@ -240,7 +248,10 @@ export function createCardsPage(
       build('sort');
     });
     sortLabel.append(select);
-    bar.append(chips, sortLabel);
+    const count = h('span', 'cp-count bi-num', COPY.cards.found(owned, entries.length));
+    const tools = h('div', 'cp-tools');
+    tools.append(sortLabel, count);
+    bar.append(chips, tools);
 
     // grid
     const shown = sorted(
@@ -262,13 +273,22 @@ export function createCardsPage(
       // the loadout role is a word for screen readers only: the full-art card carries no chips
       const role = e.role ? `, ${COPY.cards.role[e.role.slot]}` : '';
       const detail = e.owned
-        ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}${role}`
+        ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}${role}${isReady(e) ? `, ${COPY.cards.readyTag}` : ''}`
         : COPY.cards.notFound;
       b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, detail));
       b.append(cardEl(e, state));
-      if (e.owned && e.duplicates > 0) b.append(h('span', 'cp-badge bi-num', `+${e.duplicates}`));
-      if (isReady(e)) b.append(h('span', 'cp-ready', '▲'));
+      if (e.owned) {
+        const lv = h('span', 'cp-lv wp-chip bi-num', String(e.level));
+        lv.setAttribute('aria-hidden', 'true');
+        b.append(lv);
+      }
+      if (isReady(e)) {
+        const ready = h('span', 'cp-ready', '▲');
+        ready.setAttribute('aria-hidden', 'true');
+        b.append(ready);
+      }
       b.addEventListener('click', () => {
+        if (selected !== e.id) enhanceOpen = false;
         selected = e.id;
         message = '';
         build(`tile-${e.id}`);
@@ -276,7 +296,7 @@ export function createCardsPage(
       li.append(b);
       grid.append(li);
     }
-    body.append(bar, grid);
+    el.append(head, bar, grid);
     const pick = entries.find((e) => e.id === selected);
     wrap.append(el, pick ? detailPanel(state, pick) : h('div'));
     return wrap;
@@ -305,23 +325,24 @@ export function createCardsPage(
 
   // ---- detail panel ----
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
-    const { el, body } = frame(e.name, `${cap1(e.rarity)} · ${JOB_NAMES[e.job]}`);
+    // "rarity · job · role" on the right of the name
+    const parts = [cap1(e.rarity), JOB_NAMES[e.job]];
+    if (e.owned && e.role) parts.push(COPY.cards.role[e.role.slot]);
+    const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
-    // the card at 2x; the weapon panel's level badge and XP bar lie on it, and its star line and
-    // tier-up tag sit under it (DESIGN.md §5, §11)
-    const top = h('div', 'cp-detail__top');
-    watchFit(top, { want: CARD_WANT.detail, max: () => innerWidth(top) });
+
+    // the card at 2x with its large level badge, and the weapon panel's tiles beside it
+    // (DESIGN.md §5, §11); the card's whole scale is picked on this row
+    const main = h('div', 'cp-detail__main');
+    watchFit(main, {
+      want: CARD_WANT.detail,
+      max: () => innerWidth(main) - DETAIL_SIDE_MIN - DETAIL_GAP,
+    });
     const face = cardEl(e, state);
-    top.append(face);
-    const under = h('div', 'cp-detail__under');
+    const side = h('div', 'cp-detail__side');
     if (!e.owned) {
-      under.append(h('p', 'frame__muted', COPY.cards.lockedDetail));
+      side.append(h('p', 'frame__muted px-tile cp-locked', COPY.cards.lockedDetail));
     } else {
-      if (e.role) {
-        under.append(
-          h('p', 'cp-inrole', COPY.cards.inLoadout(COPY.cards.role[e.role.slot], JOB_NAMES[e.job])),
-        );
-      }
       const panel = createWeaponPanel({
         variant: 'card',
         content,
@@ -329,7 +350,7 @@ export function createCardsPage(
         act: (kind) => act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`),
       });
       if (panel.overlay) face.append(panel.overlay);
-      under.append(panel.el);
+      side.append(panel.el);
       const update = (): void => {
         const entry = entryOf(e.id);
         if (entry) panel.update(entry);
@@ -337,44 +358,53 @@ export function createCardsPage(
       ticks.push(update);
       update();
     }
+    main.append(face, side);
 
-    const facts = h('dl', 'cp-facts');
+    // main ability, support effect and cost as three tiles
+    const facts = h('dl', 'cp-facts3');
     const fact = (label: string, value: string) => {
-      const d = h('div');
+      const d = h('div', 'px-tile cp-fact');
       d.append(h('dt', '', label), h('dd', '', value));
       facts.append(d);
     };
     fact(COPY.cards.mainAbility, e.mainAbility);
     fact(COPY.cards.supportEffect, e.supportEffect);
     fact(COPY.cards.cost, String(e.cost));
-    body.append(top, under, facts);
+    body.append(main, facts);
 
     if (e.owned) {
       const chart = model.chart(state, e.id);
-      if (chart && chart.stars.length > 0) body.append(enhanceBox(e.id, chart));
+      const hasChart = Boolean(chart && chart.stars.length > 0);
       const actions = h('div', 'cp-actions');
-      const btn = (label: string, key: string, run: () => ModelResult, disabled = false) => {
-        const b = h('button', 'button button--ghost', label);
+      const btn = (label: string, key: string, run: () => ModelResult, gold = false) => {
+        const b = h('button', `button${gold ? '' : ' button--ghost'}`, label);
         b.type = 'button';
         b.dataset.key = key;
-        b.disabled = disabled;
         b.addEventListener('click', () => act(run(), key));
         actions.append(b);
       };
-      btn(
-        COPY.cards.setMain,
-        'set-main',
-        () => model.setMain(ctx.state(), e.id),
-        e.role?.slot === 'main',
-      );
-      btn(
-        COPY.cards.addSupport,
-        'add-support',
-        () => model.addSupport(ctx.state(), e.id),
-        e.role?.slot === 'support',
-      );
+      if (hasChart) {
+        const b = h('button', 'button cp-enh-btn', COPY.enhance.title);
+        b.type = 'button';
+        b.dataset.key = 'enh-toggle';
+        b.setAttribute('aria-expanded', String(enhanceOpen));
+        b.setAttribute('aria-controls', 'cp-enhance');
+        b.addEventListener('click', () => {
+          enhanceOpen = !enhanceOpen;
+          build('enh-toggle');
+        });
+        actions.append(b);
+      }
+      // a button for the role the card already has would do nothing: it is left out
+      if (e.role?.slot !== 'main') {
+        btn(COPY.cards.setMain, 'set-main', () => model.setMain(ctx.state(), e.id));
+      }
+      if (e.role?.slot !== 'support') {
+        btn(COPY.cards.addSupport, 'add-support', () => model.addSupport(ctx.state(), e.id));
+      }
       if (e.role) btn(COPY.cards.remove, 'remove', () => model.remove(ctx.state(), e.id));
       body.append(actions);
+      if (hasChart && enhanceOpen && chart) body.append(enhanceBox(e.id, chart));
     }
     return el;
   }
@@ -393,6 +423,7 @@ export function createCardsPage(
   function enhanceBox(id: string, v: StarChartView): HTMLElement {
     const t = COPY.enhance;
     const box = h('section', `cp-enhance${v.unlocked ? '' : ' is-locked'}`);
+    box.id = 'cp-enhance';
     box.setAttribute('aria-labelledby', 'cp-enhance-title');
     const head = h('div', 'cp-enhance__head');
     const title = h('h3', 'cp-upgrade__title', t.title);
@@ -488,6 +519,9 @@ export function createCardsPage(
   // ---- loadouts ----
   function loadouts(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-loadouts');
+    const head = h('div', 'cp-head');
+    head.append(tabBar);
+    wrap.append(head);
     const byId = new Map(entries.map((e) => [e.id, e]));
     for (const job of JOB_ORDER) {
       const lo = model.loadout(state, job);
@@ -527,6 +561,7 @@ export function createCardsPage(
           open.setAttribute('aria-label', `${label}: ${e.name}`);
           open.append(cardEl(e, state));
           open.addEventListener('click', () => {
+            if (selected !== e.id) enhanceOpen = false;
             selected = e.id;
             switchTab('collection');
             panel.querySelector<HTMLElement>(`[data-key="tile-${e.id}"]`)?.focus();

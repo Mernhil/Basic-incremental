@@ -52,6 +52,7 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
         met: r.met,
       }));
     const levelMet = check.requirements.every((r) => r.kind !== 'level' || r.met);
+    const starsMet = check.requirements.every((r) => r.kind !== 'stars' || r.met);
     const phase = !levelMet ? 'leveling' : check.met ? 'ready' : 'short';
     const missing = costs.filter((c) => !c.met).map((c) => c.name);
     tierUp = {
@@ -66,6 +67,17 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
         : COPY.weapon.tierUpTo(toName),
       ready: check.met,
       missing: phase === 'short' ? COPY.weapon.missing(missing.join(', ')) : '',
+      levelMet,
+      starsMet,
+      blocker: check.met
+        ? ''
+        : !starsMet
+          ? COPY.weapon.needsStars(MAX_STARS)
+          : !levelMet
+            ? COPY.weapon.needsLevel(cap)
+            : missing.length === 1
+              ? COPY.weapon.needsCosts(missing[0] ?? '')
+              : COPY.weapon.needsMany(missing.length),
     };
   } else if (rank.tier === 'heirloom') {
     endNote = COPY.weapon.fullyUpgraded;

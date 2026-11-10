@@ -494,6 +494,12 @@ export const dungeonSchema = z.strictObject({
   unlockedBy: id.nullable(),
   /** Boss kills needed to clear the dungeon (DESIGN.md §6: the first kill). */
   killsToClear: z.number().int().min(1).default(1),
+  /**
+   * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
+   * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
+   * room. The renderer maps ids to backgrounds (`stage/arenaBackground.ts`).
+   */
+  background: id.optional(),
   boss: z.strictObject({
     id,
     name,

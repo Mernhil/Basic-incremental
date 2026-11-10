@@ -83,6 +83,26 @@ describe('weapon panel model', () => {
     expect(w.tierUp?.costs.map((c) => c.id)).toEqual(price.map((p) => p.resource));
     expect(w.tierUp?.costs.every((c) => c.met)).toBe(true);
     expect(w.tierUp?.lead).toBe('It costs:');
+    expect(w.tierUp?.levelMet).toBe(true);
+    expect(w.tierUp?.starsMet).toBe(true);
+    expect(w.tierUp?.blocker).toBe('');
+  });
+
+  it('the tier-up button says why it cannot be taken: stars first, then level, then prices', () => {
+    const cap = content.cardRules.levelCaps.silver;
+    // below ★6: "Needs ★6", even at the level cap with the prices missing
+    const stars = view('dawnblade_regent', { tier: 'silver', level: cap, stars: 3 })!;
+    expect(stars.tierUp?.starsMet).toBe(false);
+    expect(stars.tierUp?.blocker).toBe('Needs ★6');
+    // ★6 but below the level cap
+    const level = view('dawnblade_regent', { tier: 'silver', level: cap - 1, stars: 6 })!;
+    expect(level.tierUp?.starsMet).toBe(true);
+    expect(level.tierUp?.levelMet).toBe(false);
+    expect(level.tierUp?.blocker).toBe(`Needs Lv ${cap}`);
+    // ★6 at the cap: it counts what is short (a single price is named instead)
+    const short = view('dawnblade_regent', { tier: 'silver', level: cap, stars: 6 }, '1')!;
+    expect(short.tierUp?.blocker).toBe('Missing 4 items');
+    expect(short.tierUp?.ready).toBe(false);
   });
 
   it('max level, not enough: short, and names what is missing', () => {
