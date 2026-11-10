@@ -26,7 +26,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 24;
+export const CURRENT_SAVE_VERSION = 25;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -61,6 +61,8 @@ export const serializedStateSchema = z.object({
         ),
       }),
     ),
+    /** v25: training levels (DESIGN.md §6 Training). */
+    training: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
     loadoutDamage: decimalText,
@@ -171,6 +173,7 @@ export function serializeState(state: GameState): SerializedState {
     combat: {
       kills: { ...state.combat.kills },
       floors: cloneFloors(state.combat.floors),
+      training: { ...state.combat.training },
       trialAttempt: {
         elapsedSeconds: state.combat.trialAttempt.elapsedSeconds,
         dealt: decimalToString(state.combat.trialAttempt.dealt),
@@ -261,6 +264,10 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       Object.fromEntries(
         Object.entries(saved.combat.floors).filter(([id]) => content.dungeonById.has(id)),
       ),
+    ),
+    // Training lines that left the game are dropped.
+    training: Object.fromEntries(
+      Object.entries(saved.combat.training).filter(([id]) => content.trainingById.has(id)),
     ),
     trialAttempt: {
       elapsedSeconds: saved.combat.trialAttempt.elapsedSeconds,

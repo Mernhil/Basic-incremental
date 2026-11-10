@@ -7,6 +7,7 @@ import { masteryModifiers } from './mastery';
 import { prestigeModifiers } from './prestige';
 import { accountModifiers } from './account';
 import { upgradeModifiers } from './upgrades';
+import { trainingModifiers } from './training';
 
 /**
  * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
@@ -211,6 +212,7 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Upgrade shelf purchases.
   out.push(...upgradeModifiers(state, content));
+  out.push(...trainingModifiers(state, content));
 
   return out;
 }

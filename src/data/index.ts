@@ -23,6 +23,7 @@ import type {
   Resource,
   Tree,
   Trial,
+  Training,
   Upgrade,
   UpgradesConfig,
   WearRules,
@@ -53,6 +54,7 @@ import achievementsJson from './content/achievements.json';
 import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
 import upgradesJson from './content/upgrades.json';
+import trainingJson from './content/training.json';
 import weaponSkinsJson from './content/weaponSkins.json';
 import itemsJson from './content/items.json';
 
@@ -108,6 +110,9 @@ export interface Content {
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
   upgradeById: ReadonlyMap<string, Upgrade>;
+  /** The training lines of the Dungeons drawer (DESIGN.md §6 Training). */
+  training: Training[];
+  trainingById: ReadonlyMap<string, Training>;
   treeById: ReadonlyMap<string, Tree>;
   mineById: ReadonlyMap<string, Mine>;
   cardById: ReadonlyMap<string, Card>;
@@ -177,6 +182,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     account,
     enhancements,
     upgrades,
+    training,
     weaponSkins,
     items,
   } = parsed;
@@ -268,6 +274,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     dungeonById: new Map(openDungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
     upgradeById: new Map(upgrades.upgrades.map((u) => [u.id, u])),
+    training,
+    trainingById: new Map(training.map((t) => [t.id, t])),
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
@@ -1061,6 +1069,7 @@ export function bundledRawContent(): RawContent {
     account: accountJson,
     enhancements: enhancementsJson,
     upgrades: upgradesJson,
+    training: trainingJson,
     weaponSkins: weaponSkinsJson,
     items: itemsJson,
   };

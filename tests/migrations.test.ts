@@ -634,7 +634,7 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
   });
 
   it('loads at the current format with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(24);
+    expect(CURRENT_SAVE_VERSION).toBe(25);
     const loaded = readSave(v21Save(), content);
     // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
     expect(loaded.state.weaponSkins).toEqual({

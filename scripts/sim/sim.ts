@@ -33,6 +33,8 @@ import {
   advance,
   type OwnedCard,
   buyMineLevel,
+  buyTraining,
+  trainingLines,
   cardPower,
   collectModifiers,
   createInitialState,
@@ -536,7 +538,15 @@ function weightedProduction(
   return total;
 }
 
-/** The economy purchases (mine and tree levels, shelf upgrades) with their gains. */
+/** How much the buyer values a relative rise of what a training line raises (damage is 1). */
+const TRAINING_VALUE: Record<string, number> = {
+  'combat.damage': 1,
+  'drops.moneyMultiplier': 0.7,
+  'combat.health': 0.5,
+  'burst.fill': 0.3,
+};
+
+/** The economy purchases (mine and tree levels, training, shelf upgrades) with their gains. */
 function economyCandidates(
   state: GameState,
   content: Content,
@@ -581,6 +591,17 @@ function economyCandidates(
       prices: [price],
       gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
       buy: (s, c, m) => okState(buyTreeLevel(s, c, tree.id, m)),
+    });
+  }
+  // Training (DESIGN.md §6): the repeatable fighting upgrades, valued by what they raise.
+  for (const t of trainingLines(state, content, 1, modifiers)) {
+    const rise = t.now.gt(0) ? t.after.div(t.now).toNumber() - 1 : 0;
+    out.push({
+      id: `train:${t.line.id}`,
+      kind: 'economy',
+      prices: [t.offer.price],
+      gain: (TRAINING_VALUE[t.line.stat] ?? 0.3) * rise,
+      buy: (s, c, m) => okState(buyTraining(s, c, t.line.id, 1, m)),
     });
   }
   // The upgrade shelf: one-time multipliers; the gain is the relative rise of what they touch.
