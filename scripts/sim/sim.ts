@@ -19,6 +19,10 @@
  *   waits for, else the hardest killable one (every dungeon pays Money and both crystals);
  * - ascends once the run's Starlight per hour has passed its peak.
  * Mastery, milestones, crits, achievements and account levels come from the real game rules.
+ *
+ * Profiles (DESIGN.md §14 Sim bands): `active` plays every step for the whole time; `idle` checks
+ * in every 30 minutes (the game stays open in between, nothing is bought or re-aimed) and is
+ * offline 8 hours a day, taking the game's own offline progress on return.
  */
 import { JOBS, RANK_TIERS, RARITIES, type Content, type Job } from '../../src/data';
 import {
@@ -47,6 +51,7 @@ import {
   producerRate,
   secondsPerKill,
   survivalSeconds,
+  simulateOffline,
   setActiveDungeon,
   setLoadout,
   starUp,
@@ -224,6 +229,92 @@ export const MILESTONES: Milestone[] = [
       MILESTONES.every((m) => m.id === 'exhausted' || m.reached(s, c, log)),
   },
 ];
+
+// ---- milestones of one run (the Ascension guard, DESIGN.md §6 Harder each Ascension) -----------
+
+/** What a run started from: the counters an Ascension keeps, as they stood at its start. */
+export interface RunBase {
+  /** Lifetime Money earned when the run started. */
+  moneyEarned: Decimal;
+}
+
+/** A checkpoint every run passes again after an Ascension. */
+export interface RunMilestone {
+  id: string;
+  label: string;
+  reached: (state: GameState, content: Content, base: RunBase) => boolean;
+}
+
+/** Money earned since the run started (it comes only from dungeons, DESIGN.md §3). */
+const runMoney =
+  (amount: number) =>
+  (state: GameState, _content: Content, base: RunBase): boolean =>
+    state.upgrades.moneyEarned.sub(base.moneyEarned).gte(amount);
+
+/**
+ * The first 5 milestones of a run, in the order a run meets them: Money earned since the
+ * Ascension, a decade apart. Money comes only from fighting and an Ascension resets it, so it
+ * measures how fast a run gets going whatever the player chooses to fight. The guard compares the
+ * time each run takes to reach them with the run before.
+ */
+export const RUN_MILESTONES: RunMilestone[] = [
+  { id: 'run_money_1e4', label: '10K Money', reached: runMoney(1e4) },
+  { id: 'run_money_1e5', label: '100K Money', reached: runMoney(1e5) },
+  { id: 'run_money_1e6', label: '1M Money', reached: runMoney(1e6) },
+  { id: 'run_money_1e7', label: '10M Money', reached: runMoney(1e7) },
+  { id: 'run_money_1e8', label: '100M Money', reached: runMoney(1e8) },
+];
+
+/** One run (the stretch between two Ascensions) and when it reached each run milestone. */
+export interface RunRecord {
+  /** Sim seconds when the run started. */
+  start: number;
+  /** Sim seconds when it ended (the next Ascension, or the end of the sim). */
+  end: number;
+  /** Run milestone id -> seconds since the run started, or null. */
+  hits: Record<string, number | null>;
+}
+
+/** A run milestone a run reached later than the run before it (or not at all, given the time). */
+export interface GuardMiss {
+  /** 1-based number of the slower run. */
+  run: number;
+  id: string;
+  /** Seconds the run before took. */
+  before: number;
+  /** Seconds this run took, or null when it had at least that long and never got there. */
+  after: number | null;
+}
+
+/**
+ * The Ascension guard: every run must reach its first 5 milestones sooner than the run before.
+ * A milestone the earlier run never reached, or that the later run had no time for, is skipped.
+ */
+export function ascensionGuard(runs: readonly RunRecord[]): {
+  compared: number;
+  misses: GuardMiss[];
+} {
+  const misses: GuardMiss[] = [];
+  let compared = 0;
+  for (let i = 1; i < runs.length; i++) {
+    const prev = runs[i - 1]!;
+    const run = runs[i]!;
+    for (const m of RUN_MILESTONES) {
+      const before = prev.hits[m.id] ?? null;
+      if (before === null) continue;
+      const after = run.hits[m.id] ?? null;
+      if (after === null) {
+        if (run.end - run.start <= before) continue; // it never had the time
+        compared++;
+        misses.push({ run: i + 1, id: m.id, before, after: null });
+        continue;
+      }
+      compared++;
+      if (after > before) misses.push({ run: i + 1, id: m.id, before, after });
+    }
+  }
+  return { compared, misses };
+}
 
 // ---- buyer priorities --------------------------------------------------------------------------
 
@@ -1035,7 +1126,20 @@ export interface SimOptions {
   /** Also open portals that wait for their screen, such as the Legacy Gate (default false: the
    *  sim plays the game as it ships). */
   openAllPortals?: boolean;
+  /** How the player plays (default `active`). */
+  profile?: SimProfile;
 }
+
+/** `active`: plays every step. `idle`: checks in every 30 min and is offline 8 h a day. */
+export type SimProfile = 'active' | 'idle';
+
+/** Idle profile: seconds between two check-ins while the game is open. */
+export const IDLE_CHECKIN_SECONDS = 30 * 60;
+/** Idle profile: each day is this long awake (game open), then offline for the rest. */
+export const IDLE_AWAKE_SECONDS = 16 * 3600;
+const DAY_SECONDS = 24 * 3600;
+/** Idle profile: seconds of play per step between check-ins (as offline progress chunks it). */
+const IDLE_STEP_SECONDS = 60;
 
 export interface SimResult {
   /** Milestone id -> sim seconds when reached, or null. */
@@ -1047,6 +1151,8 @@ export interface SimResult {
   dpsSamples: Array<[number, number]>;
   /** [sim seconds, Card Portal pulls, Wardrobe Gate pulls] so far, every quarter hour. */
   pullSamples: Array<[number, number, number]>;
+  /** Every run (the stretch between two Ascensions) with its run milestone times. */
+  runs: RunRecord[];
 }
 
 /** How often the fight target is re-chosen without a kill, in seconds. */
@@ -1081,11 +1187,39 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const countSummons = (bought: string[]): void => {
     for (const id of bought) if (id.startsWith('summon:')) log.summons++;
   };
+  // Run milestones (the Ascension guard): observed only, they never change what the player does.
+  const newRun = (start: number): RunRecord => ({
+    start,
+    end: start,
+    hits: Object.fromEntries(RUN_MILESTONES.map((m) => [m.id, null])),
+  });
+  const runs: RunRecord[] = [newRun(0)];
+  let runBase: RunBase = { moneyEarned: state.upgrades.moneyEarned };
+  const idle = options.profile === 'idle';
+  let sinceCheckin = Infinity;
   while (t < total) {
-    const buys = greedyBuy(state, content, rng);
-    state = buys.state;
-    countSummons(buys.bought);
-    if (sinceAscendCheck >= ASCEND_CHECK_SECONDS) {
+    // Idle profile: the night. The game is closed and its own offline progress is taken on return.
+    if (idle && t % DAY_SECONDS >= IDLE_AWAKE_SECONDS) {
+      const away = Math.min(DAY_SECONDS - (t % DAY_SECONDS), total - t);
+      state = simulateOffline(state, content, 0, away * 1000, rng).state;
+      if (state.activeDungeonId) {
+        log.fought[state.activeDungeonId] = (log.fought[state.activeDungeonId] ?? 0) + away;
+      }
+      t += away;
+      sinceAscendCheck += away;
+      sinceCheckin = Infinity;
+      recordProgress();
+      continue;
+    }
+    // Idle profile: between check-ins the game runs by itself.
+    const acting = !idle || sinceCheckin >= IDLE_CHECKIN_SECONDS;
+    if (acting) sinceCheckin = 0;
+    if (acting) {
+      const buys = greedyBuy(state, content, rng);
+      state = buys.state;
+      countSummons(buys.bought);
+    }
+    if (acting && sinceAscendCheck >= ASCEND_CHECK_SECONDS) {
       sinceAscendCheck = 0;
       const preview = ascensionPreview(state, content);
       const now = {
@@ -1102,13 +1236,16 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
           state = after.state;
           countSummons(after.bought);
           log.ascensions.push(t);
+          runs[runs.length - 1]!.end = t;
+          runs.push(newRun(t));
+          runBase = { moneyEarned: state.upgrades.moneyEarned };
           runStart = t;
           tracker = { peakRate: 0 };
           sinceChoose = RECHOOSE_SECONDS;
         }
       }
     }
-    if (sinceChoose >= RECHOOSE_SECONDS) {
+    if (idle ? acting : sinceChoose >= RECHOOSE_SECONDS) {
       if (trialClearedAt === null && isDungeonCleared(state, 'glimmer_trial')) trialClearedAt = t;
       const since = trialClearedAt === null ? 0 : t - trialClearedAt;
       const trialShare = since > 0 ? (log.fought['glimmer_trial'] ?? 0) / since : 0;
@@ -1119,7 +1256,14 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       }
       sinceChoose = 0;
     }
-    const dt = Math.min(step, total - t);
+    const dt = idle
+      ? Math.min(
+          IDLE_STEP_SECONDS,
+          total - t,
+          IDLE_CHECKIN_SECONDS - sinceCheckin,
+          IDLE_AWAKE_SECONDS - (t % DAY_SECONDS),
+        )
+      : Math.min(step, total - t);
     const { state: next, report } = advance(state, content, dt * 1000, rng);
     state = next;
     if (state.activeDungeonId) {
@@ -1131,6 +1275,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     t += dt;
     sinceChoose += dt;
     sinceAscendCheck += dt;
+    sinceCheckin += dt;
     if (report.bossKills > 0 || report.knockouts > 0 || report.trialAttempts > 0) {
       sinceChoose = RECHOOSE_SECONDS;
     }
@@ -1147,14 +1292,26 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (options.probe && options.probeSeconds && t % options.probeSeconds < dt) {
       options.probe(state, t - (t % options.probeSeconds));
     }
+    recordProgress();
+  }
+  return { hits, simSeconds: t, state, log, dpsSamples, pullSamples, runs };
+
+  /** Notes the milestones, run milestones and account levels the state has reached by now. */
+  function recordProgress(): void {
     for (const m of MILESTONES) {
       if (hits[m.id] === null && m.reached(state, content, log)) hits[m.id] = t;
+    }
+    const run = runs[runs.length - 1]!;
+    run.end = t;
+    for (const m of RUN_MILESTONES) {
+      if (run.hits[m.id] === null && m.reached(state, content, runBase)) {
+        run.hits[m.id] = t - run.start;
+      }
     }
     for (let level = 2; level <= state.account.level; level++) {
       log.levelAt[level] ??= t;
     }
   }
-  return { hits, simSeconds: t, state, log, dpsSamples, pullSamples };
 }
 
 const hoursText = (seconds: number): string => `${(seconds / 3600).toFixed(2)} h`;
@@ -1201,6 +1358,10 @@ export interface MilestoneSpread {
   max: number | null;
   reached: number;
   runs: number;
+  /** The slowest run: its time, or null when it never reached the milestone. */
+  worst: number | null;
+  /** Index of that run in the list given (the first of the runs that never reached it). */
+  worstRun: number;
 }
 
 /** Median and spread of every milestone over runs (milestone id -> seconds or null). */
@@ -1221,6 +1382,11 @@ export function summarizeRuns(
       max: hit[hit.length - 1] ?? null,
       reached: hit.length,
       runs: runs.length,
+      worst: hit.length === runs.length ? (hit[hit.length - 1] ?? null) : null,
+      worstRun:
+        hit.length === runs.length
+          ? times.indexOf(hit[hit.length - 1] ?? null)
+          : times.indexOf(null),
     };
   }
   return out;
@@ -1228,15 +1394,47 @@ export function summarizeRuns(
 
 const shortHours = (seconds: number): string => (seconds / 3600).toFixed(2);
 
-/** Markdown table: milestone, target, median, spread, runs reaching it, median / target. */
+/** How far the median may sit from its target (DESIGN.md §14 Sim bands): within 25%. */
+export const BAND_MEDIAN_PERCENT = 25;
+/** How late the worst seed may be: at most this many times the target. */
+export const BAND_WORST_FACTOR = 2;
+
+/**
+ * The band check of one milestone: the median within 25% of its target and the worst seed
+ * within 2x (a seed that never reaches it fails), so a stalled run cannot hide behind the median.
+ */
+export function bandCheck(m: Milestone, s: MilestoneSpread): { median: boolean; worst: boolean } {
+  const ratio = s.median === null ? Infinity : targetRatio(m, s.median / 3600);
+  const limit = (m.toHours ?? m.targetHours) * 3600 * BAND_WORST_FACTOR;
+  return {
+    median: Math.abs(ratio - 100) <= BAND_MEDIAN_PERCENT,
+    worst: s.worst !== null && s.worst <= limit,
+  };
+}
+
+/** The slowest run of a milestone as text: "19.27 h (seed 3)" or "never (seed 2)". */
+function worstText(s: MilestoneSpread, seeds?: readonly number[]): string {
+  const seed = seeds?.[s.worstRun];
+  const who = seed === undefined ? '' : ` (seed ${seed})`;
+  return `${s.worst === null ? 'never' : hoursText(s.worst)}${who}`;
+}
+
+/**
+ * Markdown table: milestone, target, median, spread, worst seed, runs reaching it, median /
+ * target and the band check; with `idle`, the idle profile's median and worst seed beside it.
+ */
 export function formatSeedTable(
   summary: Record<string, MilestoneSpread>,
   simSeconds: number,
+  options: { seeds?: readonly number[]; idle?: Record<string, MilestoneSpread> } = {},
 ): string {
+  const idleHead = options.idle ? ' Idle median | Idle worst seed |' : '';
   const lines = [
-    '| Milestone | Target | Sim median | Spread (min-max) | Reached | Median / target |',
-    '|---|---|---|---|---|---|',
+    `| Milestone | Target | Sim median | Spread (min-max) | Worst seed | Reached | Median / target | Check |${idleHead}`,
+    `|---|---|---|---|---|---|---|---|${options.idle ? '---|---|' : ''}`,
   ];
+  let passed = 0;
+  let rows = 0;
   for (const m of MILESTONES) {
     const s = summary[m.id];
     if (!s) continue;
@@ -1244,11 +1442,82 @@ export function formatSeedTable(
     const spread =
       s.min === null || s.max === null ? '-' : `${shortHours(s.min)}-${shortHours(s.max)} h`;
     const ratio = s.median === null ? '-' : `${targetRatio(m, s.median / 3600)}%`;
+    const check = bandCheck(m, s);
+    const failed = [check.median ? '' : 'median', check.worst ? '' : 'worst'].filter(Boolean);
+    rows++;
+    if (failed.length === 0) passed++;
+    let idle = '';
+    if (options.idle) {
+      const i = options.idle[m.id];
+      const idleMedian = !i
+        ? '-'
+        : i.median === null
+          ? `> ${hoursText(simSeconds)}`
+          : hoursText(i.median);
+      idle = ` ${idleMedian} | ${i ? worstText(i, options.seeds) : '-'} |`;
+    }
     lines.push(
-      `| ${m.label} | ${targetText(m)} | ${median} | ${spread} | ${s.reached}/${s.runs} | ${ratio} |`,
+      `| ${m.label} | ${targetText(m)} | ${median} | ${spread} | ${worstText(s, options.seeds)} | ${s.reached}/${s.runs} | ${ratio} | ${failed.length === 0 ? 'ok' : `FAIL ${failed.join(', ')}`} |${idle}`,
     );
   }
+  lines.push(
+    '',
+    `Bands: ${passed} of ${rows} milestones pass (median within ${BAND_MEDIAN_PERCENT}% of the target, worst seed within ${BAND_WORST_FACTOR}x).`,
+  );
   return lines.join('\n');
+}
+
+/** Whether every milestone of the summary passes its band check. */
+export function bandsPass(summary: Record<string, MilestoneSpread>): boolean {
+  return MILESTONES.every((m) => {
+    const s = summary[m.id];
+    if (!s) return true;
+    const check = bandCheck(m, s);
+    return check.median && check.worst;
+  });
+}
+
+const minutesText = (seconds: number | null | undefined): string =>
+  seconds === null || seconds === undefined ? '-' : `${(seconds / 60).toFixed(1)} min`;
+
+/** Markdown table: one row per run with the time it took to reach each run milestone. */
+export function formatRunTable(runs: readonly RunRecord[]): string {
+  const lines = [
+    `| Run | Started | Length | ${RUN_MILESTONES.map((m) => m.label).join(' | ')} |`,
+    `|---|---|---|${RUN_MILESTONES.map(() => '---|').join('')}`,
+  ];
+  runs.forEach((run, i) => {
+    lines.push(
+      `| ${i + 1} | ${hoursText(run.start)} | ${hoursText(run.end - run.start)} | ${RUN_MILESTONES.map((m) => minutesText(run.hits[m.id])).join(' | ')} |`,
+    );
+  });
+  return lines.join('\n');
+}
+
+/** The Ascension guard over several seeds as one line (and the misses, if any). */
+export function formatGuard(
+  runsBySeed: ReadonlyArray<{ seed: number; runs: readonly RunRecord[] }>,
+): string {
+  let compared = 0;
+  const lines: string[] = [];
+  for (const { seed, runs } of runsBySeed) {
+    const guard = ascensionGuard(runs);
+    compared += guard.compared;
+    for (const miss of guard.misses) {
+      const label = RUN_MILESTONES.find((m) => m.id === miss.id)?.label ?? miss.id;
+      lines.push(
+        `- seed ${seed}, run ${miss.run}: ${label} took ${miss.after === null ? 'longer than the run lasted' : minutesText(miss.after)} (the run before: ${minutesText(miss.before)})`,
+      );
+    }
+  }
+  const head = `Ascension guard (every run reaches its first ${RUN_MILESTONES.length} milestones sooner than the run before): ${
+    compared === 0
+      ? 'nothing to compare'
+      : lines.length === 0
+        ? `ok, ${compared} comparisons`
+        : `${lines.length} of ${compared} comparisons slower`
+  }`;
+  return [head, ...lines].join('\n');
 }
 
 /** One line per job and a few totals, to read alongside the table. */
