@@ -135,6 +135,6 @@ Vector sources (`vector/`: items, frame, gems, bosses, tiles; the item art keeps
 - `scripts/check-workflow.mjs`: a PR that changes `src/` must change this file or say `no overview change` in its description; nothing but a README may remain in `docs/plans/` on main (`CLAUDE.md`, Workflow).
 - `scripts/check-cards.mjs`, `check-dungeons.mjs`, `check-pixel-scale.mjs`, `check-release-bundle.mjs`, `a11y-*.mjs`: content, pixel-scale, bundle and accessibility checks.
 - `scripts/sim/`: balance sim playing the real game logic against the pacing targets (DESIGN §14), with target ranges and the median DPS per quarter hour; `rarity.ts` prints the rarity gaps (base, fresh, free stars, top tier) and fails when a higher rarity does not beat a lower one (DESIGN §5).
-- `scripts/shoot-*.mjs`, `probe-app.mjs`, `demo-progression.mjs`: screenshots and probes of the running app.
+- `scripts/shoot-*.mjs`, `probe-app.mjs`, `probe-attack-speed.mjs` (measures the attack animation for a dagger and a hammer lead), `demo-progression.mjs`: screenshots and probes of the running app.
 - `scripts/art/picker.mjs`: writes the interactive picker page (labelled pictures, Keep, Learn, Copy list) for every choice between pictures (`CLAUDE.md`, Workflow).
 - `.github/workflows/ci.yml` runs `npm run lint`, `npm test` and `npm run build` on every PR and on pushes to main; `release.yml` publishes a GitHub Release when a `vX.Y.Z` tag is pushed (`RELEASING.md`).
