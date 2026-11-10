@@ -63,7 +63,8 @@ describe('achievements (DESIGN.md §10)', () => {
     expect(first.unlocked).toEqual(['first_kill']);
     expect(first.state.achievements['first_kill']).toBe(5000);
     const reward = content.achievements.find((a) => a.id === 'first_kill')!.reward.resources[0]!;
-    expect(first.state.resources[reward.resource]!.eq(reward.amount)).toBe(true);
+    const before = state.resources[reward.resource]!;
+    expect(first.state.resources[reward.resource]!.eq(before.add(reward.amount))).toBe(true);
     expect(checkAchievements(first.state, content).unlocked).toEqual([]);
   });
 
@@ -179,17 +180,31 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     expect(copy).toMatchObject({ affordable: true, left: null });
   });
 
+  it('sells a copy of every Common and Uncommon card and of no Rare or better card', () => {
+    // Only the rarities that use copies for stars (DESIGN.md §5, Star fill in the shard shop).
+    const sold = content.shardShop.flatMap((i) =>
+      i.reward.kind === 'card' ? [i.reward.card] : [],
+    );
+    const wanted = content.cards
+      .filter((c) => c.rarity === 'common' || c.rarity === 'uncommon')
+      .map((c) => c.id);
+    expect([...sold].sort()).toEqual([...wanted].sort());
+  });
+
   it('spends shards for a card copy, a resource bundle or a cosmetic', () => {
     const card = buyShardItem(withShards(100), content, 'copy_ember_squire');
     if (!card.ok) throw new Error(card.reason);
     expect(card.state.cards.shards).toBe(95);
     expect(card.state.cards.owned['ember_squire']!.starFill).toBe(1);
 
+    const start = withShards(100).resources['summon_crystal']!;
     const bundle = buyShardItem(withShards(100), content, 'summon_crystals');
     if (!bundle.ok) throw new Error(bundle.reason);
     const bundleItem = content.shardShop.find((i) => i.id === 'summon_crystals')!;
     if (bundleItem.reward.kind !== 'resource') throw new Error('not a bundle');
-    expect(bundle.state.resources['summon_crystal']!.eq(bundleItem.reward.amount)).toBe(true);
+    expect(bundle.state.resources['summon_crystal']!.eq(start.add(bundleItem.reward.amount))).toBe(
+      true,
+    );
 
     const crown = buyShardItem(withShards(200), content, 'ember_crown');
     if (!crown.ok) throw new Error(crown.reason);
@@ -206,7 +221,7 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
       ok: false,
       reason: 'unknown',
     });
-    expect(buyShardItem(withShards(1), content, 'copy_core_titan')).toEqual({
+    expect(buyShardItem(withShards(1), content, 'copy_ember_squire')).toEqual({
       ok: false,
       reason: 'unaffordable',
     });

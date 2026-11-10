@@ -54,6 +54,10 @@
   },
   "goals": [
     {
+      "kind": "first_summon",
+      "page": "summon"
+    },
+    {
       "kind": "clear_dungeon",
       "page": "dungeons"
     },

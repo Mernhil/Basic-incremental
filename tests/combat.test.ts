@@ -196,26 +196,105 @@ describe('drops', () => {
     ]);
   });
 
-  it('every dungeon drops Money and both crystals, and deeper ones drop more', () => {
-    const ids = ['money', 'summon_crystal', 'glamour_crystal'];
+  it('pays Money by the kill and both crystals as a wage, and deeper dungeons pay more', () => {
     for (const d of content.dungeons) {
-      expect(d.drops.currencies.map((c) => c.resource)).toEqual(ids);
+      expect(d.drops.currencies.map((c) => c.resource)).toEqual(['money']);
+      expect(d.drops.firstClear.map((p) => p.resource)).toEqual([
+        'summon_crystal',
+        'glamour_crystal',
+      ]);
     }
-    for (const id of ids) {
-      const average = content.dungeons.map((d) => {
-        const c = d.drops.currencies.find((x) => x.resource === id)!;
-        return (c.min + c.max) / 2;
-      });
-      expect(average[1]!).toBeGreaterThan(average[0]!);
-      expect(average[2]!).toBeGreaterThan(average[1]!);
+    const money = content.dungeons.map(
+      (d) => (d.drops.currencies[0]!.min + d.drops.currencies[0]!.max) / 2,
+    );
+    expect(money[1]!).toBeGreaterThan(money[0]!);
+    expect(money[2]!).toBeGreaterThan(money[1]!);
+    for (const id of ['summon_crystal', 'glamour_crystal']) {
+      const wage = content.dungeons.map((d) =>
+        d.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber(),
+      );
+      expect(wage[1]!).toBeGreaterThan(wage[0]!);
+      expect(wage[2]!).toBeGreaterThan(wage[1]!);
     }
-    // Only the first dungeon pays a wage: a wall cannot be farmed idle.
-    expect(content.dungeons.map((d) => d.drops.wage !== undefined)).toEqual([true, false, false]);
+    // Only the first dungeon pays a Money wage: Money still comes by the kill.
+    expect(content.dungeons.map((d) => d.drops.wages.some((w) => w.resource === 'money'))).toEqual([
+      true,
+      false,
+      false,
+    ]);
   });
 
-  it('only the Frostspire Vault drops Frost Sigils, a material used for Prismatic card upgrades', () => {
+  it('pays the crystal wage for every second of fighting, never per kill', () => {
+    const dungeon = content.dungeons[0]!;
+    const wage = (id: string): number =>
+      dungeon.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber();
+    const state = bareState();
+    state.clearedDungeons = [dungeon.id]; // no first-clear purse
+    state.combat.kills[dungeon.id] = 1;
+    const before = state.resources['summon_crystal']!.toNumber();
+    const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
+    expect(after.resources['summon_crystal']!.toNumber()).toBeCloseTo(
+      before + wage('summon_crystal') * 10,
+    );
+    expect(report.currencies['glamour_crystal']).toBeCloseTo(wage('glamour_crystal') * 10);
+    // A kill adds no crystals on top of the wage.
+    const kill = bareState();
+    kill.clearedDungeons = [dungeon.id];
+    kill.combat.kills[dungeon.id] = 1;
+    kill.bossHp = new Decimal(1e-6);
+    const killed = advance(kill, content, 1000, constantRng(0.5));
+    expect(killed.report.bossKills).toBe(1);
+    expect(killed.report.currencies['summon_crystal']).toBeCloseTo(wage('summon_crystal'));
+    // Knocked out: no wage.
+    const knocked = bareState();
+    knocked.combat.knockoutSeconds = 30;
+    const out = advance(knocked, content, 10_000, constantRng(0.5));
+    expect(out.report.currencies['summon_crystal'] ?? 0).toBe(0);
+  });
+
+  it('pays the first-clear purse once, on the clear', () => {
+    const dungeon = content.dungeons[0]!;
+    const purse = dungeon.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
+    const wage = dungeon.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
+    const state = bareState();
+    state.bossHp = new Decimal(1e-6);
+    const first = advance(state, content, 1000, constantRng(0.5));
+    expect(first.report.cleared).toContain(dungeon.id);
+    expect(first.report.currencies['summon_crystal']).toBeCloseTo(purse.add(wage).toNumber());
+    const again = advance(
+      { ...first.state, bossHp: new Decimal(1e-6) },
+      content,
+      1000,
+      constantRng(0.5),
+    );
+    expect(again.report.cleared).toEqual([]);
+    expect(again.report.currencies['summon_crystal']).toBeCloseTo(wage.toNumber());
+  });
+
+  it('drops Frost Sigils on every Frostspire Vault kill and, rarely, in the Ember Crypt', () => {
     const extras = content.dungeons.map((d) => d.drops.extraMaterials.map((e) => e.resource));
-    expect(extras).toEqual([[], [], ['frost_sigil']]);
+    expect(extras).toEqual([[], ['frost_core', 'frost_sigil'], ['frost_sigil']]);
+    // The Ember Crypt's Frost drops are rare (DESIGN.md §3); the Vault's Sigil comes every kill.
+    for (const e of content.dungeonById.get('ember_crypt')!.drops.extraMaterials) {
+      expect(e.chance).toBeGreaterThan(0);
+      expect(e.chance).toBeLessThan(0.1);
+    }
+    const crypt = bareState();
+    crypt.clearedDungeons = ['mossy_cellar'];
+    crypt.activeDungeonId = 'ember_crypt';
+    crypt.bossHp = new Decimal(1e-6);
+    // a roll under the chance drops both, a roll over it drops none
+    const lucky = advance(crypt, content, 1000, constantRng(0)).state;
+    expect(lucky.resources['frost_core']!.toNumber()).toBe(1);
+    expect(lucky.resources['frost_sigil']!.toNumber()).toBe(1);
+    const unlucky = advance(
+      { ...crypt, bossHp: new Decimal(1e-6) },
+      content,
+      1000,
+      constantRng(0.999),
+    ).state;
+    expect(unlucky.resources['frost_core']!.toNumber()).toBe(0);
+    expect(unlucky.resources['frost_sigil']!.toNumber()).toBe(0);
     const frost = content.dungeonById.get('frostspire_vault')!;
     const { min, max } = frost.drops.extraMaterials[0]!;
     expect(min).toBeGreaterThan(0);
@@ -243,10 +322,9 @@ describe('drops', () => {
     state.resources['money'] = new Decimal(0);
     const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
     expect(report.bossKills).toBe(0);
-    expect(after.resources['money']!.toNumber()).toBeCloseTo(
-      dungeon.drops.wage!.perSecond.toNumber() * 10,
-    );
-    expect(report.currencies['money']).toBeCloseTo(dungeon.drops.wage!.perSecond.toNumber() * 10);
+    const wage = dungeon.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber();
+    expect(after.resources['money']!.toNumber()).toBeCloseTo(wage * 10);
+    expect(report.currencies['money']).toBeCloseTo(wage * 10);
   });
 
   it('pays no wage in the later dungeons, only by the kill', () => {

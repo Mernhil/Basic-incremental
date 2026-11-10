@@ -15,6 +15,7 @@ import {
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
 import { milestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
+import { pullPrice } from './portals';
 import { runPoints, starlightGain } from './prestige';
 import { Decimal } from './num';
 import {
@@ -128,8 +129,10 @@ export function incomePerSecond(
   const dungeon = active ? content.dungeonById.get(active) : undefined;
   if (dungeon) {
     const drops = effectiveDrops(dungeon, modifiers, content);
-    // The wage is paid for every second of fighting.
-    if (drops.wage?.resource === resourceId) total = total.add(drops.wage.perSecond);
+    // The wages are paid for every second of fighting.
+    for (const wage of drops.wages) {
+      if (wage.resource === resourceId) total = total.add(wage.perSecond);
+    }
     const spk = killSeconds(state, content, dungeon.id, modifiers);
     if (spk !== null) {
       let perKill = 0;
@@ -141,7 +144,7 @@ export function incomePerSecond(
         perKill += drops.material.chance * drops.material.amount;
       }
       for (const extra of drops.extraMaterials) {
-        if (extra.resource === resourceId) perKill += (extra.min + extra.max) / 2;
+        if (extra.resource === resourceId) perKill += (extra.chance * (extra.min + extra.max)) / 2;
       }
       total = total.add(perKill / spk);
     }
@@ -184,6 +187,26 @@ function priceProgress(state: GameState, prices: readonly Price[]): number {
 
 type Candidate = Omit<Goal, 'id' | 'kind' | 'page'>;
 type RuleFn = (state: GameState, content: Content, modifiers: readonly Modifier[]) => Candidate[];
+
+/** The first summon (DESIGN.md §3): a new game holds the crystals for one Card Portal pull. Shown
+ *  until any card has been pulled from a card portal. */
+const firstSummon: RuleFn = (state, content, modifiers) => {
+  const portal = content.portals.find((p) => p.kind === 'cards');
+  if (!portal) return [];
+  const pulled = content.portals.some(
+    (p) => p.kind === 'cards' && (state.portals[p.id]?.pulls ?? 0) > 0,
+  );
+  if (pulled) return [];
+  const price = pullPrice(portal, 1, modifiers);
+  return [
+    {
+      targetId: portal.id,
+      title: 'Summon your first card',
+      progress: priceProgress(state, [price]),
+      etaSeconds: secondsToAfford(state, content, [price], modifiers),
+    },
+  ];
+};
 
 const clearDungeon: RuleFn = (state, content, modifiers) =>
   content.dungeons
@@ -397,6 +420,7 @@ const ascensionRule: RuleFn = (state, content, modifiers) => {
 };
 
 const RULES: Record<GoalKind, RuleFn> = {
+  first_summon: firstSummon,
   clear_dungeon: clearDungeon,
   clear_trial: clearTrial,
   unlock_tree: unlockTree,

@@ -76,7 +76,8 @@
     "id": "summon_crystal",
     "name": "Summon Crystal",
     "kind": "crystal",
-    "tier": 1
+    "tier": 1,
+    "startAmount": "300"
   },
   {
     "id": "glamour_crystal",

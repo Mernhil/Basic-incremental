@@ -873,7 +873,8 @@ function checkReferences(
   });
 
   c.dungeons.forEach((dungeon, i) => {
-    // Every dungeon drops Money and every crystal (DESIGN.md §7, §3).
+    // Every dungeon pays Money and every crystal: Money by the kill, crystals as a wage
+    // (DESIGN.md §3, §7).
     const dropped = new Set<string>();
     dungeon.drops.currencies.forEach((drop, j) => {
       const where = `dungeons.json › [${i}] › drops › currencies › [${j}] › resource`;
@@ -893,14 +894,22 @@ function checkReferences(
         issues.push(`${where}: "${extra.resource}" is ${res.kind}, expected material`);
       }
     });
-    if (dungeon.drops.wage) {
-      const wage = resources.get(dungeon.drops.wage.resource);
-      if (wage?.kind !== 'currency') {
-        issues.push(
-          `dungeons.json › [${i}] › drops › wage › resource: "${dungeon.drops.wage.resource}" must be a currency`,
-        );
-      }
+    const paid = (list: { resource: string }[], field: string): void =>
+      list.forEach((entry, j) => {
+        const res = resources.get(entry.resource);
+        const where = `dungeons.json › [${i}] › drops › ${field} › [${j}] › resource`;
+        if (!res) issues.push(`${where}: unknown resource "${entry.resource}"`);
+        else if (res.kind !== 'currency' && res.kind !== 'crystal') {
+          issues.push(`${where}: "${entry.resource}" is ${res.kind}, expected currency or crystal`);
+        }
+      });
+    paid(dungeon.drops.wages, 'wages');
+    paid(dungeon.drops.firstClear, 'firstClear');
+    const waged = new Set(dungeon.drops.wages.map((w) => w.resource));
+    if (waged.size !== dungeon.drops.wages.length) {
+      issues.push(`dungeons.json › [${i}] › drops › wages: a resource is listed twice`);
     }
+    for (const w of waged) dropped.add(w);
     for (const r of c.resources) {
       if ((r.kind === 'currency' || r.kind === 'crystal') && !dropped.has(r.id)) {
         issues.push(`dungeons.json › [${i}] › drops › currencies: "${r.id}" is not dropped`);

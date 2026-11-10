@@ -12,7 +12,13 @@ import {
   type Goal,
 } from '../src/game';
 import type { Content } from '../src/data';
-import { bareState, content as realContent, plainContent as plain, withDps } from './helpers';
+import {
+  bareState,
+  content as realContent,
+  newGame,
+  plainContent as plain,
+  withDps,
+} from './helpers';
 
 /** The test content deals exactly 100 damage per second to anyone, cards or bare hands. */
 const content = withDps(100, plain);
@@ -30,17 +36,18 @@ describe('incomePerSecond', () => {
     expect(incomePerSecond(bareState(), content, 'oak_gem').toNumber()).toBeCloseTo(4 / 3);
   });
 
-  it('counts the active dungeon drops per kill', () => {
+  it('counts the active dungeon drops per kill and its wages per second', () => {
     const state = fighter();
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
     // Moss Cores: 10% of 1 per kill.
     expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
-    // Summon Crystals: the average of the kill's range.
-    const crystals = content.dungeonById
+    // Summon Crystals: the wage, paid every second of fighting (DESIGN.md §3).
+    const wage = content.dungeonById
       .get('mossy_cellar')!
-      .drops.currencies.find((c) => c.resource === 'summon_crystal')!;
-    const average = (crystals.min + crystals.max) / 2;
-    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(average / spk);
+      .drops.wages.find((w) => w.resource === 'summon_crystal')!;
+    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(
+      wage.perSecond.toNumber(),
+    );
   });
 
   it('is 0 for a resource nothing gives', () => {
@@ -276,9 +283,26 @@ describe('ascension goal', () => {
   });
 });
 
+describe('first summon (DESIGN.md §3)', () => {
+  it('starts a new game with one pull and puts the first summon first, until a card is pulled', () => {
+    const state = newGame();
+    const portal = realContent.portals.find((p) => p.kind === 'cards')!;
+    expect(state.resources[portal.cost.resource]!.gte(portal.cost.single)).toBe(true);
+    expect(nextGoals(state, realContent)[0]).toMatchObject({
+      id: 'first_summon:card_portal',
+      page: 'summon',
+      progress: 1,
+      etaSeconds: 0,
+    });
+    state.portals[portal.id] = { pity: 1, pulls: 1, pityHits: 0 };
+    expect(find(allGoals(state, realContent), 'first_summon:card_portal')).toBeUndefined();
+  });
+});
+
 describe('nextGoals', () => {
   it('gives the n nearest goals by estimated time, unknown times last', () => {
     const state = fighter();
+    state.portals['card_portal'] = { pity: 1, pulls: 1, pityHits: 0 }; // past the first summon
     state.resources['oak_gem'] = new Decimal(600);
     const goals = nextGoals(state, content);
     expect(goals).toHaveLength(3);
