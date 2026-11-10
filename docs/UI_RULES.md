@@ -34,7 +34,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Built] **Panels and tooltips.** Framed panels on wide, multi-panel screens that use the desktop width. Hover tooltips on stats, items, costs and modifiers, with a breakdown by source.
 - [Built] **Stage first.** The Dungeons and Production pages are the focus of the game, so they are live stages, not menus; management goes below or in a side rail.
 - [Built] **Home** is a command centre: three live mini-stages (fight, logging, mining) with their rates, each opening its page, and the goal tracker on top.
-- [Built] **Dungeons** is a full-bleed arena. Floors, the weapon panel (DESIGN §5) and the upgrade shelf live in a drawer that slides up from the bottom; DPS, kills per minute and time-to-kill sit in the top-right corner.
+- [Built] **Dungeons** is a full-bleed arena. Floors, the weapon panel (DESIGN §5) and the upgrade shelf live in a drawer that slides up from the bottom; DPS, floors per minute and time to clear the floor sit in the top-right corner.
 - [Built] **Production** is the pixel ledger: two bands, Logging and Mining. Each band has its own main card at 1x in its loadout fan on the left and its rows on the right. The upgrade shelf is a drawer at the bottom (user, 2026-11-10; the rules are in DESIGN.md §4).
 - [Built] **Loadout fan.** A loadout shows as a fan: the main card in front and up to three support cards behind it, each peeking out at the side. A click on a support (or on its line in the list beside it) pops it out in front as a full card with its effect written out; a click on it again, anywhere else or Escape puts it back. Cards keep whole device-pixel scales and nothing is rotated, so the art stays crisp (ASSET_RULES.md §5). Production shows one fan per job band, at 1x (user, 2026-11-10).
 - [Built] The same fan on the Dungeons fight screen, for the party beside the arena: the main card in front (2x on a window of at least 1280 × 720, the grid size on a smaller one; with the boss, the main card is the largest thing on the screen; user, 2026-11-10, option "Hero fan"), the supports behind it, the burst gauge under the main card and the shared health bar under the fan. A support plate reads "Support"; its effect is read in the pop-out. The lunge and knockout moves are slides only, nothing rotates.
@@ -64,6 +64,10 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
   - Damage per second, kills per minute and time to kill sit in the top-right corner.
   - Drops land on the floor.
   - The drawer handle runs along the bottom, with Dungeons, Weapon and Upgrades tabs.
+- [Default · in game] **Floors, interim** (Claude, 2026-11-10; DESIGN §6 Dungeon floors). Until the floors UI is designed in a 5-options round (the arena with waves, the floor strip, the tier picker, the depth readout), the Dungeons screen shows floors with the least that works:
+  - The line under the HP bar reads the dungeon, the difficulty, the floor ("Floor 3 / 10"), which enemy of the wave the hits are on ("Enemy 2 / 4") or "Mini-boss" / "Boss", and the best floor.
+  - The existing arena shows the wave one enemy at a time: its name and HP bar, and, until the enemy art exists, a plain labelled box in the boss's place. The boss keeps its drawing.
+  - The Dungeons tab of the drawer holds, for the dungeon being fought, the same line as plain text, a Push / Farm toggle with a one-line explanation, and the difficulty selector for the unlocked tiers. Each dungeon row shows its floor.
 - [Built] **Settings** has reduced motion, number format, autosave interval, export / import, sound volumes and Report an issue.
 - [Built] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
 - [Built] **Sharp cards.** The Cards collection shows the full card, the same card as everywhere else, at a whole scale: 132 × 186 (1x) four across on a standard window, 2x (264 × 372) four across when they fit (a 1080p window), fewer across and reflowing when the window is narrow (Review gate pick "Full card, 1x", 2026-11-08). Card text is real text, with a floor of 11 CSS px on the small card; its job label is left to the filters. Next to the grid, the detail panel shows the card at 2x with the weapon panel on it (DESIGN §5), the card's abilities and cost, its enhancements and the loadout buttons.
@@ -73,7 +77,9 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 
 Everything tagged `[Proposed]` or `[Default]` waits here for the user.
 
-Nothing is `[Proposed]` or `[Default]` at the moment.
+Defaults by Claude, 2026-11-10 (to be replaced by the floors UI, Scope 3 phase 4):
+
+- §2 Floors, interim: the plain-text floor line, the Push / Farm toggle, the difficulty selector and the labelled placeholder for enemies without art.
 
 Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
 
@@ -83,3 +89,4 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 - 2026-11-10 — Tag drift fixed after the direction review, no rule changed: Buying names the one buy toggle in the goals strip instead of one per level line (§2).
 - 2026-11-10 — UI rework (user, four rounds of mockups): the shell look, the sidebar as a plaque rail, Production as the pixel ledger with one fan per job, the Dungeons main card at 2x from 1280 × 720 and the Hero fan arena, the Shop under signboards instead of awnings, Achievements as a leather book.
 - 2026-11-10 — Scope 1 (user): Buy Max, the Settings layout and Sharp cards confirmed; the unused awning sprites and their rule deleted; the Cards collection shows owned cards first; double-detail sprites cut (§2, §3).
+- 2026-11-10 — Floors, interim (Claude default): a minimal floors readout and controls on the Dungeons screen until the floors UI is designed (§2, §3).
