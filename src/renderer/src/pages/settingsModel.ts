@@ -2,7 +2,7 @@ import type { Content } from '../../../data';
 import { CURRENT_SAVE_VERSION, Decimal, formatDuration, type GameState } from '../../../game';
 import { COPY } from '../copy';
 import { formatNumber } from '../settings/numberFormat';
-import type { MotionPref, NumberStyle } from '../settings/prefs';
+import type { NumberStyle } from '../settings/prefs';
 import type { SaveSummary } from '../settings/issueReport';
 
 /** Play time, ascensions, hardest dungeon cleared and save version of a game state. */
@@ -35,14 +35,6 @@ export interface Choice<T> {
 }
 
 const EXAMPLE = new Decimal(12_345_678);
-
-export function motionChoices(): Choice<MotionPref>[] {
-  return [
-    { value: 'system', label: COPY.settings.motionSystem },
-    { value: 'reduced', label: COPY.settings.motionReduced },
-    { value: 'full', label: COPY.settings.motionFull },
-  ];
-}
 
 export function numberChoices(): Choice<NumberStyle>[] {
   const choices: Choice<NumberStyle>[] = [

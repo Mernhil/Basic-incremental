@@ -1,4 +1,4 @@
-import type { Content, Rarity } from '../../../data';
+import { RARITIES, type Content, type Rarity } from '../../../data';
 import { type PortalInfo, type PullResult } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -11,8 +11,16 @@ import { COPY } from '../copy';
 export interface PortalView {
   id: string;
   name: string;
-  single: { label: string; price: string; affordable: boolean };
-  ten: { label: string; price: string; affordable: boolean };
+  /** The portal's kind (`cards`, `cosmetics`, ...): picks its card back and its one-line blurb. */
+  kind: string;
+  /** The one line under the deck's title ("Legendary or better within 90 pulls"). */
+  line: string;
+  /** The crystal a pull costs, for the button's icon. */
+  resourceId: string;
+  /** The pity bar's value, "62 / 90". */
+  pityText: string;
+  single: { label: string; price: string; amount: string; affordable: boolean };
+  ten: { label: string; price: string; amount: string; affordable: boolean };
   /** "Legendary or better in 56 pulls". */
   pity: string;
   pityProgress: number;
@@ -45,14 +53,20 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
   return {
     id: info.portal.id,
     name: info.portal.name,
+    kind: info.portal.kind,
+    line: deckLine(info.portal.kind, rarityName(content, info.pity.rarity), info.pity.threshold),
+    resourceId: info.single.price.resource,
+    pityText: t.pityOf(info.pity.count, info.pity.threshold),
     single: {
-      label: t.single,
+      label: t.pullOne,
       price: `${fmt(info.single.price.amount)} ${res(info.single.price.resource)}`,
+      amount: fmt(info.single.price.amount),
       affordable: info.single.affordable,
     },
     ten: {
-      label: t.ten,
+      label: t.pullTen,
       price: `${fmt(info.ten.price.amount)} ${res(info.ten.price.resource)}`,
+      amount: fmt(info.ten.price.amount),
       affordable: info.ten.affordable,
     },
     pity: t.pity(rarityName(content, info.pity.rarity), left),
@@ -69,6 +83,33 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
     pityRarityName: rarityName(content, info.pity.rarity),
     deckLayers: deckLayers(info.pity.progress),
   };
+}
+
+/** The line under a deck's title: the pity promise for cards, what the pool holds for the rest. */
+export function deckLine(kind: string, pityRarity: string, threshold: number): string {
+  const t = COPY.summon;
+  if (kind === 'cards') return t.lineCards(pityRarity, threshold);
+  if (kind === 'cosmetics') return t.lineCosmetics;
+  return t.lineOther(pityRarity, threshold);
+}
+
+/** The odds table: one row per rarity found in any portal, one column per portal. */
+export interface OddsTable {
+  columns: { id: string; name: string }[];
+  rows: { rarity: Rarity; name: string; cells: (string | null)[] }[];
+}
+
+export function oddsTable(views: readonly PortalView[]): OddsTable {
+  const column = (v: PortalView): string =>
+    (COPY.summon.oddsColumn as Record<string, string>)[v.kind] ?? v.name;
+  const rows = RARITIES.filter((r) => views.some((v) => v.odds.some((o) => o.rarity === r))).map(
+    (rarity) => ({
+      rarity,
+      name: views.flatMap((v) => v.odds).find((o) => o.rarity === rarity)?.name ?? rarity,
+      cells: views.map((v) => v.odds.find((o) => o.rarity === rarity)?.chance ?? null),
+    }),
+  );
+  return { columns: views.map((v) => ({ id: v.id, name: column(v) })), rows };
 }
 
 /** Fewest and most card layers a deck shows. */
@@ -91,28 +132,45 @@ export interface HandCardView {
   rarity: Rarity;
   rarityName: string;
   isNew: boolean;
+  /** What the pull became, under the card: "New card", "+1 copy", "+3 shards". */
+  note: string;
   /** Spoken label: "Name, Rarity, New!". */
   label: string;
-  /** Fan angle in degrees: a light spread around the middle of the row. */
-  tilt: number;
 }
 
-/** The last pull as a flat, lightly fanned row of up to HAND_MAX cards (the final ones if more). */
-export function lastHandView(views: readonly RevealView[]): HandCardView[] {
+/** The note under a card of the last hand, by what the pull became. */
+function handNote(v: RevealView, content?: Content): string {
+  const t = COPY.summon;
+  if (v.gain === 'new')
+    return content?.cardById.has(v.itemId) === false ? t.noteNewItem : t.noteNewCard;
+  if (v.gain === 'copy') return t.noteCopy;
+  return v.tags.find((x) => x !== t.isNew) ?? '';
+}
+
+/** The last pull as a flat row of up to HAND_MAX cards (the final ones if more). */
+export function lastHandView(views: readonly RevealView[], content?: Content): HandCardView[] {
   const shown = views.slice(-HAND_MAX);
-  const mid = (shown.length - 1) / 2;
-  return shown.map((v, i) => {
-    const isNew = v.tags.includes(COPY.summon.isNew);
+  return shown.map((v) => {
+    const isNew = v.gain === 'new' || v.tags.includes(COPY.summon.isNew);
     return {
       itemId: v.itemId,
       name: v.name,
       rarity: v.rarity,
       rarityName: v.rarityName,
       isNew,
+      note: handNote(v, content),
       label: COPY.summon.shown(v.name, v.rarityName, isNew ? COPY.summon.isNew : ''),
-      tilt: shown.length > 1 ? Math.round((i - mid) * 1.6 * 10) / 10 : 0,
     };
   });
+}
+
+/** The line beside "Your last hand": pulls, new cards or items, and copies. */
+export function handSummary(views: readonly RevealView[]): string {
+  const shown = views.slice(-HAND_MAX);
+  if (shown.length === 0) return '';
+  const news = shown.filter((v) => v.gain === 'new' || v.tags.includes(COPY.summon.isNew)).length;
+  const copies = shown.filter((v) => v.gain === 'copy').length;
+  return COPY.summon.handSummary(shown.length, news, copies);
 }
 
 /** One pull of a reveal. */
@@ -126,6 +184,8 @@ export interface RevealView {
   upgrade: boolean;
   /** "New!", "Duplicate ×2", "+3 shards", "Pity", ... */
   tags: string[];
+  /** What the pull became (a repeat of an owned item is `copy`); unset where it is not known. */
+  gain?: 'new' | 'copy' | 'shards' | 'other';
 }
 
 export function revealViews(results: readonly PullResult[], content: Content): RevealView[] {
@@ -137,6 +197,14 @@ export function revealViews(results: readonly PullResult[], content: Content): R
     else if (g.kind === 'duplicate') tags.push(t.duplicate(g.duplicates));
     else if (g.kind === 'shards') tags.push(t.shards(g.shards));
     else if (g.kind === 'copy') tags.push(t.copy(g.copies));
+    const gain =
+      g.kind === 'new'
+        ? 'new'
+        : g.kind === 'duplicate' || g.kind === 'copy'
+          ? 'copy'
+          : g.kind === 'shards'
+            ? 'shards'
+            : 'other';
     if (r.pity) tags.push(t.byPity);
     if (r.guaranteed) tags.push(t.byGuarantee);
     return {
@@ -150,6 +218,7 @@ export function revealViews(results: readonly PullResult[], content: Content): R
       orb: r.orb,
       upgrade: r.orb !== r.rarity,
       tags,
+      gain,
     };
   });
 }

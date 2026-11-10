@@ -1,37 +1,46 @@
-/* Summon page, "Deck and Table" (DESIGN.md §7): two decks, an odds panel between them, the last
-   hand below. Flat Nocturne panel on the game's chrome tokens; the only motion is the deck edge. */
+/* Summon page, "Deck and Table" (DESIGN.md §7; UI_RULES.md §2, "Shell look"): one pixel panel with
+   the Card Portal deck on the left, the odds table in the middle, the Wardrobe Gate deck on the
+   right and the last hand below. The frames, wells, tiles and buttons come from theme/frames.css
+   (.px-panel, .px-well, .px-tile, .px-btn); this file is the layout. The deck backs and the hand's
+   cards are at 1x: --u is one art pixel in CSS px, a whole number of device pixels (fitCard() sets
+   --card-n and --card-k on .sm-table). Pixelify Sans only at 18 px and up (.px-display). The page
+   has no motion of its own. */
+
+.shell-page:has(> .sm-table) {
+  max-width: none;
+}
 
 .sm-table {
-  --sm-line: var(--bi-chrome-line, rgba(217, 179, 90, 0.45));
-  --sm-gold: var(--bi-chrome-accent, #d9b35a);
-  --sm-panel: color-mix(in srgb, var(--bi-chrome-bg) 88%, #fff);
+  --u: calc(var(--card-n) / var(--dpr) * 1px);
   --sm-common: #c9ced6;
-  --sm-rare: #5aa8ff;
   --sm-uncommon: #6fdc8c;
+  --sm-rare: #5aa8ff;
   --sm-epic: #b67bff;
   --sm-legendary: #ffc23a;
   --sm-mythic: #ff4fb8;
   --sm-void: #8a5cff;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 210px minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  align-items: start;
-  gap: 24px 20px;
-  min-height: 100%;
-  padding: 28px 28px 24px;
+  gap: 4px;
+  /* the frame's outer edge bleeds one step outside the box */
+  margin: var(--fs);
+  padding: 8px 20px 8px;
   box-sizing: border-box;
-  border-radius: 12px;
-  color: var(--bi-chrome-ink);
-  background: var(--bi-chrome-bg);
-  box-shadow: inset 0 0 0 1px var(--sm-line);
 }
-
-/* decks */
-.sm-deck {
+.sm-top {
   display: grid;
-  justify-items: center;
-  gap: 8px;
-  text-align: center;
+  grid-template-columns: minmax(0, 1fr) minmax(250px, 330px) minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  /* on a wide window the decks stay near the odds table */
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+}
+@media (max-width: 1060px) {
+  .sm-top {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
 }
 .sm-deck--left {
   grid-column: 1;
@@ -39,301 +48,413 @@
 .sm-deck--right {
   grid-column: 3;
 }
-.sm-deck__name {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--bi-chrome-ink);
-}
-.sm-deck__pity {
-  margin: 0;
-  max-width: 290px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--bi-chrome-ink-muted);
-}
-.sm-deck__about {
-  margin: 0;
-  max-width: 260px;
-  font-size: 12.5px;
-  color: var(--bi-chrome-ink-muted);
-}
-.sm-deck__buttons {
-  display: grid;
-  gap: 8px;
-  margin-top: 4px;
-  min-width: 230px;
-}
-.sm-deck.is-odds .sm-deck__name::after {
-  content: '';
-  display: block;
-  height: 2px;
-  margin: 4px auto 0;
-  width: 36px;
-  border-radius: 1px;
-  background: var(--sm-gold);
+@media (max-width: 1060px) {
+  .sm-deck--left,
+  .sm-deck--right {
+    grid-column: 1;
+  }
 }
 
-/* the stack: a card back with a page edge whose height is the pity (--layers 1..9) */
-.sm-stack {
-  --layers: 1;
-  position: relative;
-  width: 150px;
-  height: 222px;
-  margin: 18px 0 30px;
-}
-.sm-stack__back {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  background:
-    repeating-linear-gradient(
-      135deg,
-      transparent 0 9px,
-      color-mix(in srgb, var(--sm-gold) 10%, transparent) 9px 18px
-    ),
-    var(--sm-panel);
-  box-shadow:
-    inset 0 0 0 1px var(--sm-gold),
-    inset 0 0 0 5px var(--bi-chrome-bg),
-    inset 0 0 0 6px var(--sm-line);
-}
-.sm-stack__edge {
-  position: absolute;
-  left: 5px;
-  right: 5px;
-  top: 100%;
-  z-index: 1;
-  height: calc(var(--layers) * 3px);
-  margin-top: -8px;
-  padding-top: 8px;
-  box-sizing: content-box;
-  border-radius: 0 0 8px 8px;
-  background: repeating-linear-gradient(0deg, #e8dfc6 0 2px, #b9ad8c 2px 4px);
-  transition: height 0.4s ease;
-}
-.sm-crest {
+/* ---- a deck ---- */
+.sm-deck {
+  --sm-back: #3a55c4;
+  --sm-back-lo: #1b2a73;
+  --sm-back-hi: #8fb0ff;
   display: grid;
   justify-items: center;
   gap: 2px;
+  min-width: 0;
+  text-align: center;
 }
-/* the 64 px plaque at a whole scale: the largest whole number of device pixels per art pixel that
-   fits 64 CSS px (ui/pixelScale.css) */
-.sm-crest__icon {
+.sm-deck[data-kind='cosmetics'] {
+  --sm-back: #b53a82;
+  --sm-back-lo: #5c1747;
+  --sm-back-hi: #ff9fd0;
+}
+.sm-deck__name {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1;
+}
+.sm-deck__line,
+.sm-deck__locked {
+  margin: 0;
+  max-width: 300px;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--px-muted);
+}
+
+/* the stack: a card back whose pile of cards below it grows with the pity (--layers 1..9) */
+.sm-stack {
+  --layers: 1;
+  --t: calc(var(--layers) * 2 * var(--u));
+  --left: calc((18 * var(--u) - var(--t)) / 2);
+  position: relative;
+  width: calc(150 * var(--u));
+  height: calc(204 * var(--u));
+  margin-top: 2px;
+}
+.sm-stack__back {
+  position: absolute;
+  left: var(--left);
+  top: 0;
+  z-index: 2;
+  width: calc(132 * var(--u));
+  height: calc(186 * var(--u));
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  background: var(--sm-back);
+  box-shadow:
+    inset 0 0 0 calc(3 * var(--u)) var(--px-gold),
+    inset 0 0 0 calc(4 * var(--u)) var(--px-edge),
+    0 0 0 var(--u) var(--px-edge);
+}
+/* the diamond lattice: one 8 x 8 art-pixel tile, drawn crisp at the card's whole scale */
+.sm-stack__back::before {
+  content: '';
+  position: absolute;
+  inset: calc(4 * var(--u));
+  background: var(--sm-back-lo);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath d='M3 0h2v1H3zM2 1h1v1H2zM5 1h1v1H5zM1 2h1v1H1zM6 2h1v1H6zM0 3h1v2H0zM7 3h1v2H7zM1 5h1v1H1zM6 5h1v1H6zM2 6h1v1H2zM5 6h1v1H5zM3 7h2v1H3z'/%3E%3C/svg%3E")
+    0 0 / calc(8 * var(--u)) calc(8 * var(--u)) repeat;
+}
+/* the pile: the edges of the cards under the top one, a pale line and a dark line per layer */
+.sm-stack__edge {
+  position: absolute;
+  z-index: 1;
+  display: block;
+  box-shadow: 0 0 0 var(--u) var(--px-edge);
+}
+.sm-stack__edge--right {
+  left: calc(var(--left) + 132 * var(--u));
+  top: calc(2 * var(--u));
+  width: var(--t);
+  height: calc(186 * var(--u) + var(--t) - 2 * var(--u));
+  background: repeating-linear-gradient(
+    90deg,
+    #efe6cc 0 var(--u),
+    #a99d7d var(--u) calc(2 * var(--u))
+  );
+}
+.sm-stack__edge--bottom {
+  left: calc(var(--left) + 2 * var(--u));
+  top: calc(186 * var(--u));
+  width: calc(132 * var(--u) + var(--t) - 2 * var(--u));
+  height: var(--t);
+  background: repeating-linear-gradient(
+    180deg,
+    #efe6cc 0 var(--u),
+    #a99d7d var(--u) calc(2 * var(--u))
+  );
+}
+/* the crest plate in the middle of the back: the portal's 64 px plaque at a whole scale */
+.sm-plate {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  padding: calc(4 * var(--u));
+  background: var(--sm-back);
+  box-shadow:
+    inset 0 0 0 calc(2 * var(--u)) var(--px-gold),
+    0 0 0 var(--u) var(--px-edge);
+}
+.sm-plate__icon {
   --pq-n: max(1, round(down, var(--dpr), 1));
   display: block;
   width: calc(64px * var(--pq-n) / var(--dpr));
   height: calc(64px * var(--pq-n) / var(--dpr));
 }
-.sm-crest__icon svg {
+.sm-plate__icon svg {
   display: block;
   width: 100%;
   height: 100%;
 }
-.sm-crest__count {
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 800;
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6);
+/* a gem on each corner of the back */
+.sm-stack__gem {
+  position: absolute;
+  z-index: 1;
+  width: calc(6 * var(--u));
+  height: calc(6 * var(--u));
+  background: #52d6c4;
+  box-shadow:
+    inset calc(var(--u) * 2) calc(var(--u) * 2) 0 0 #b4f5ea,
+    0 0 0 var(--u) var(--px-edge);
 }
-.sm-crest__of {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--bi-chrome-ink-muted);
+.sm-stack__gem--tl {
+  left: calc(-1 * var(--u));
+  top: calc(-1 * var(--u));
 }
-.sm-deck.is-locked {
-  color: var(--bi-chrome-ink-muted);
+.sm-stack__gem--tr {
+  right: calc(-1 * var(--u));
+  top: calc(-1 * var(--u));
 }
-.sm-deck.is-locked .sm-deck__name {
-  color: var(--bi-chrome-ink-muted);
+.sm-stack__gem--bl {
+  left: calc(-1 * var(--u));
+  bottom: calc(-1 * var(--u));
 }
-.sm-deck.is-locked .sm-stack__back {
-  filter: grayscale(0.7) brightness(0.75);
+.sm-stack__gem--br {
+  right: calc(-1 * var(--u));
+  bottom: calc(-1 * var(--u));
 }
-.sm-deck.is-locked .sm-stack__edge {
-  filter: grayscale(1) brightness(0.6);
+.sm-deck.is-locked .sm-stack {
+  filter: grayscale(0.85) brightness(0.7);
 }
 
-/* buttons: gold primary for the x10, outlined for the x1 */
-.sm-pull {
-  padding: 9px 16px;
-  border: 0;
-  border-radius: 8px;
-  font: inherit;
+/* ---- pity bar ---- */
+.sm-pity {
+  display: grid;
+  gap: 3px;
+  width: min(100%, 230px);
+  margin-top: 4px;
   font-size: 14px;
-  font-weight: 800;
-  white-space: nowrap;
-  cursor: pointer;
-  color: var(--bi-chrome-ink-muted);
-  background: transparent;
-  box-shadow: inset 0 0 0 1.5px var(--sm-line);
+  line-height: 1.25;
 }
-.sm-pull.is-affordable {
-  color: var(--bi-chrome-ink);
-  box-shadow: inset 0 0 0 1.5px var(--sm-gold);
-}
-.sm-pull--ten.is-affordable {
-  color: var(--bi-chrome-bg);
-  background: var(--sm-gold);
-  box-shadow: none;
-}
-.sm-pull:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-.sm-pull:not(:disabled):hover {
-  filter: brightness(1.12);
-}
-.sm-pull:focus-visible {
-  outline: 2px solid var(--bi-chrome-ink);
-  outline-offset: 2px;
-}
-
-/* odds panel */
-.sm-odds {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: start;
-  margin-top: 44px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 600;
-  background: var(--sm-panel);
-  box-shadow: inset 0 0 0 1px var(--sm-line);
-}
-.sm-odds__title {
-  margin: 0;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 800;
-  color: var(--sm-gold);
-}
-.sm-odds__for {
-  margin: 2px 0 8px;
-  text-align: center;
-  font-size: 12px;
-  color: var(--bi-chrome-ink-muted);
-}
-.sm-odds__list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.sm-odds__row {
+.sm-pity__top {
   display: flex;
   justify-content: space-between;
-  padding: 2px 0;
+  color: var(--px-muted);
 }
-.sm-odds__row b,
-.sm-hand__card[data-rarity] .sm-hand__rarity {
-  color: var(--rc);
+.sm-pity__top b {
+  color: var(--px-ink);
+}
+.sm-pity__track {
+  height: calc(var(--fs) * 3);
+  overflow: visible;
+}
+.sm-pity__track > i {
+  display: block;
+  height: 100%;
+  background: var(--sm-back-hi);
+  box-shadow: inset 0 var(--fs-sm) 0 0 color-mix(in srgb, var(--sm-back-hi) 55%, #fff);
+}
+
+/* ---- buttons ---- */
+.sm-deck__buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.sm-pull {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 104px;
+  min-height: 34px;
+  padding: 3px 12px;
+  box-sizing: border-box;
+  font-size: 15px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.sm-pull__cost {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.sm-pull__icon {
+  display: inline-grid;
+  width: 18px;
+  height: 18px;
+}
+.sm-pull__icon svg {
+  width: 100%;
+  height: 100%;
+}
+.sm-pull:disabled .sm-pull__icon {
+  opacity: 0.55;
+}
+
+/* ---- the odds table ---- */
+.sm-odds {
+  grid-column: 2;
+  align-self: start;
+  margin-top: 40px;
+  padding: 10px 16px 12px;
+  font-size: 14px;
+}
+@media (max-width: 1060px) {
+  .sm-odds {
+    grid-column: 1;
+    width: 100%;
+    max-width: 330px;
+    box-sizing: border-box;
+    margin-top: 0;
+    order: 3;
+  }
+}
+.sm-odds__title {
+  margin: 0 0 6px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 1.2;
+}
+.sm-odds__table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.sm-odds__col {
+  padding: 2px 0 4px 8px;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--px-muted);
+}
+.sm-odds__rarity,
+.sm-odds__cell {
+  padding: 5px 0;
+  border-top: var(--fs-sm) solid var(--px-edge);
+}
+.sm-odds__rarity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+  font-weight: 700;
+}
+.sm-odds__cell {
+  padding-left: 8px;
+  text-align: right;
+}
+.sm-odds__row[data-rarity='common'] {
+  --rc: var(--sm-common);
+}
+.sm-odds__row[data-rarity='uncommon'] {
+  --rc: var(--sm-uncommon);
+}
+.sm-odds__row[data-rarity='rare'] {
+  --rc: var(--sm-rare);
+}
+.sm-odds__row[data-rarity='epic'] {
+  --rc: var(--sm-epic);
+}
+.sm-odds__row[data-rarity='legendary'] {
+  --rc: var(--sm-legendary);
+}
+.sm-odds__row[data-rarity='mythic'] {
+  --rc: var(--sm-mythic);
+}
+.sm-odds__row[data-rarity='void'] {
+  --rc: var(--sm-void);
+}
+.sm-odds__swatch {
+  flex: none;
+  width: calc(var(--fs) * 3);
+  height: calc(var(--fs) * 3);
+  background: var(--rc);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
 .sm-odds__note {
+  display: grid;
+  gap: 2px;
   margin: 8px 0 0;
   padding-top: 8px;
   text-align: center;
-  font-size: 12px;
-  color: var(--bi-chrome-ink-muted);
-  border-top: 1px solid var(--sm-line);
-}
-[data-rarity='common'] {
-  --rc: var(--sm-common);
-}
-[data-rarity='uncommon'] {
-  --rc: var(--sm-uncommon);
-}
-[data-rarity='rare'] {
-  --rc: var(--sm-rare);
-}
-[data-rarity='epic'] {
-  --rc: var(--sm-epic);
-}
-[data-rarity='legendary'] {
-  --rc: var(--sm-legendary);
-}
-[data-rarity='mythic'] {
-  --rc: var(--sm-mythic);
-}
-[data-rarity='void'] {
-  --rc: var(--sm-void);
+  font-size: 13px;
+  color: var(--px-muted);
+  border-top: var(--fs-sm) solid var(--px-edge);
 }
 
-/* last hand */
+/* ---- the last hand ---- */
 .sm-hand {
-  grid-column: 1 / -1;
-  grid-row: 2;
   display: grid;
-  justify-items: center;
-  gap: 12px;
-  padding-top: 16px;
-  border-top: 1px solid var(--sm-line);
+  gap: 8px;
+  min-width: 0;
+}
+.sm-hand__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
 }
 .sm-hand__title {
   margin: 0;
+  font-size: 20px;
+  line-height: 1.1;
+}
+.sm-hand__summary {
+  margin: 0;
   font-size: 14px;
-  font-weight: 700;
-  color: var(--bi-chrome-ink-muted);
+  color: var(--px-muted);
+}
+.sm-hand__row {
+  /* the card at 1x and the tag over its top edge: no jump when the first hand arrives */
+  min-height: calc(186 * var(--u));
+  min-width: 0;
 }
 .sm-hand__empty {
-  margin: 0 0 24px;
-  font-size: 13.5px;
-  color: var(--bi-chrome-ink-muted);
+  margin: 0;
+  padding: 24px 0;
+  font-size: 14px;
+  color: var(--px-muted);
 }
 .sm-hand__list {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0 6px;
   margin: 0;
-  padding: 6px 0 14px;
+  padding: 0 var(--fs) 0 0;
   list-style: none;
 }
+.sm-hand__list[hidden],
+.sm-hand__empty[hidden] {
+  display: none;
+}
 .sm-hand__card {
-  --rc: var(--sm-common);
   position: relative;
-  display: grid;
-  align-content: space-between;
-  gap: 4px;
-  box-sizing: border-box;
-  width: 88px;
-  height: 118px;
-  padding: 8px 7px;
-  border-radius: 8px;
-  background: var(--sm-panel);
-  box-shadow:
-    inset 0 0 0 1.5px var(--rc),
-    0 3px 8px rgba(0, 0, 0, 0.35);
-  rotate: var(--tilt, 0deg);
-  transform-origin: 50% 160%;
+  flex: none;
+  width: calc(132 * var(--u));
 }
-.sm-hand__rarity {
-  font-size: 11px;
-  font-weight: 700;
+.sm-hand__card + .sm-hand__card {
+  margin-left: var(--sm-gap, 12px);
 }
-.sm-hand__name {
-  font-size: 12.5px;
-  line-height: 1.15;
-  font-weight: 800;
-  overflow-wrap: anywhere;
-}
-.sm-hand__new {
+/* the tag straddles the card's top edge, at its left so an overlapping neighbour never hides it */
+.sm-hand__tag {
   position: absolute;
+  left: calc(var(--fs-sm) * 2);
   top: -8px;
-  right: -6px;
-  padding: 1px 6px;
-  border-radius: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--bi-chrome-bg);
-  background: var(--sm-gold);
+  z-index: 3;
+  box-sizing: border-box;
+  height: 16px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .sm-stack__edge {
-    transition: none;
-  }
+.sm-hand__tag[hidden] {
+  display: block;
+  visibility: hidden;
+}
+html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
+  --px-bg: var(--px-gold);
+  --px-top: var(--px-gold-hi);
+  --px-bottom: var(--px-gold-lo);
+  color: var(--px-gold-ink);
+}
+/* the card's job label is not needed here; the name gets the room (as in the Cards grid) */
+.sm-hand .bi-card__job {
+  display: none;
+}
+/* an item with no card face (a cosmetic): a plain tile the size of a card */
+.sm-plain {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
+  box-sizing: border-box;
+  padding: 8px;
+  text-align: center;
+  background: var(--px-raised);
+  box-shadow:
+    inset 0 0 0 var(--fs-sm) var(--px-hi),
+    0 0 0 var(--fs-sm) var(--px-edge);
+}
+.sm-plain__name {
+  font-size: 14px;
+  line-height: 1.2;
 }

@@ -20,7 +20,9 @@
      .px-panel (+ .px-panel--raised)   a panel       .px-well   a dark inset well
      .px-tile                          a small raised box inside a panel
      .px-btn                           a plain button; .px-btn--gold the usable action,
-                                       .px-btn--dark the unusable one (also :disabled)
+                                       .px-btn--dark the unusable one (also :disabled; it wins
+                                       over every other state)
+                                       .px-btn--quiet the dark button that can be used (Pull 10, export)
    A selected button (.is-selected or aria-pressed / aria-selected / aria-checked "true") turns
    gold; a selected tile (same attributes, .is-on, .is-active, .is-chosen) gets a gold edge.
    Existing classes of the pages are listed below so every page is skinned without changing its
@@ -88,8 +90,6 @@ html
     .ar__readout,
     .wd-buff,
     .wd-trying,
-    .sm-odds,
-    .sm-hand__card,
     .shop-it,
     .shop-tile,
     .details-row,
@@ -161,8 +161,6 @@ html
     .ar__readout,
     .wd-buff,
     .wd-trying,
-    .sm-odds,
-    .sm-hand__card,
     .shop-it,
     .shop-tile,
     .details-row,
@@ -232,7 +230,7 @@ html
     .px-btn--gold,
     .button:not(.button--ghost):not(.button--danger),
     .buy-btn.is-affordable,
-    .sm-pull.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
     .shop-ascend:not(.is-no),
     .wp-go.is-ready,
     .px-btn.is-selected,
@@ -262,12 +260,20 @@ html
     .shop-ascend.is-no,
     .shop-price.is-no,
     .wp-go[aria-disabled='true']
-  ):not(#_px) {
+  ):not(#_px):not(#_px) {
   --px-bg: var(--px-dark);
   --px-top: var(--px-dark-hi);
   --px-bottom: var(--px-dark);
   color: var(--px-muted);
   cursor: default;
+}
+/* the dark button that can be used (Pull 10, export, import, an unchosen option): the dark body
+   with the normal ink. It is plain dark plum only when disabled, and gold when chosen. */
+html :is(.px-btn--quiet):not(#_px) {
+  --px-bg: var(--px-lo);
+  --px-top: var(--px-dark-hi);
+  --px-bottom: color-mix(in srgb, var(--px-lo) 55%, #000);
+  color: var(--px-ink);
 }
 /* the quiet button: plain raised, not gold */
 html :is(.button--ghost, .button--danger):not(#_px) {
@@ -366,8 +372,6 @@ html
     .prod,
     .prod__stage,
     .wd-stage,
-    .sm-stack__back,
-    .sm-stack__edge,
     .cp-empty,
     .ar-slot--empty,
     .lf-slot--empty,

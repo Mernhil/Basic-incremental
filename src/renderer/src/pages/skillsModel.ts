@@ -26,7 +26,7 @@ export const CENTRE = { x: 0, y: 0 } as const;
 /** Ring radius per depth (1 = the gems next to the centre star). */
 const RING = [0, 122, 206, 288] as const;
 /** Where the branch name sits, past the outer ring. */
-const LABEL_R = 330;
+const LABEL_R = 342;
 /** Angle between two neighbouring gems of a branch, in degrees... */
 const SLOT_DEG = 20;
 /** ...but never closer than this along the ring (SKY units), so inner gems keep apart. */
@@ -79,6 +79,8 @@ export interface EdgeView {
   colour: string;
   /** The gem at the far end has at least one rank. */
   lit: boolean;
+  /** learned: the far gem has a rank; open: it can be learned next; locked: not reachable yet. */
+  state: 'learned' | 'open' | 'locked';
 }
 
 export interface BranchView {
@@ -92,6 +94,9 @@ export interface BranchView {
   /** Ranks learned / all ranks in the branch. */
   ranks: number;
   maxRanks: number;
+  /** Gems of the branch with at least one rank, and all its gems. */
+  learned: number;
+  total: number;
 }
 
 export interface TreeView {
@@ -99,6 +104,9 @@ export interface TreeView {
   edges: EdgeView[];
   branches: BranchView[];
   points: SkillPoints;
+  /** Gems with at least one rank, and all gems of the tree. */
+  learned: number;
+  total: number;
 }
 
 const rad = (deg: number): number => (deg * Math.PI) / 180;
@@ -219,6 +227,8 @@ export function treeView(
       anchor: cos > 0.3 ? 'start' : cos < -0.3 ? 'end' : 'middle',
       ranks: list.reduce((a, i) => a + i.rank, 0),
       maxRanks: list.reduce((a, i) => a + i.maxRank, 0),
+      learned: list.filter((i) => i.rank > 0).length,
+      total: list.length,
     });
   }
   const pos = new Map(nodes.map((n) => [n.id, n]));
@@ -229,10 +239,26 @@ export function treeView(
     // a root gem hangs off the centre star; the line starts at the star's rim
     const from = parents.length > 0 ? parents : [at(branchAngle(n.branch), 40)];
     for (const p of from) {
-      edges.push({ x1: p.x, y1: p.y, x2: n.x, y2: n.y, colour: n.colour, lit: n.rank > 0 });
+      const parentLearned = !('rank' in p) || (p as NodeView).rank > 0;
+      edges.push({
+        x1: p.x,
+        y1: p.y,
+        x2: n.x,
+        y2: n.y,
+        colour: n.colour,
+        lit: n.rank > 0,
+        state: n.rank > 0 ? 'learned' : parentLearned ? 'open' : 'locked',
+      });
     }
   }
-  return { nodes, edges, branches, points };
+  return {
+    nodes,
+    edges,
+    branches,
+    points,
+    learned: nodes.filter((n) => n.rank > 0).length,
+    total: nodes.length,
+  };
 }
 
 // ---- respec -------------------------------------------------------------------------------------
