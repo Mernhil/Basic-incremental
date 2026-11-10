@@ -109,6 +109,9 @@ export interface CardEntry {
   job: Job;
   rarity: Rarity;
   emblem: string;
+  /** The item type the card carries (`items.json`) and its name, for the collection groups. */
+  itemKind: string;
+  itemType: string;
   /** Signature item markup (art/items.ts). */
   item: string;
   element: CardElement;

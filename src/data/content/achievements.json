@@ -239,51 +239,117 @@
       "stock": null
     },
     {
-      "id": "copy_grove_keeper",
-      "reward": { "kind": "card", "card": "grove_keeper" },
-      "price": 10,
+      "id": "copy_rusty_brute",
+      "reward": { "kind": "card", "card": "rusty_brute" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_gem_cutter",
-      "reward": { "kind": "card", "card": "gem_cutter" },
-      "price": 10,
+      "id": "copy_militia_picket",
+      "reward": { "kind": "card", "card": "militia_picket" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_storm_duelist",
-      "reward": { "kind": "card", "card": "storm_duelist" },
-      "price": 20,
+      "id": "copy_stable_squire",
+      "reward": { "kind": "card", "card": "stable_squire" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_elder_treant",
-      "reward": { "kind": "card", "card": "elder_treant" },
-      "price": 20,
+      "id": "copy_alley_cutpurse",
+      "reward": { "kind": "card", "card": "alley_cutpurse" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_dawnblade_regent",
-      "reward": { "kind": "card", "card": "dawnblade_regent" },
-      "price": 40,
+      "id": "copy_quarry_smasher",
+      "reward": { "kind": "card", "card": "quarry_smasher" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_geode_golem",
-      "reward": { "kind": "card", "card": "geode_golem" },
-      "price": 40,
+      "id": "copy_fieldhand_archer",
+      "reward": { "kind": "card", "card": "fieldhand_archer" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_moonwood_dryad",
-      "reward": { "kind": "card", "card": "moonwood_dryad" },
-      "price": 75,
+      "id": "copy_hedge_acolyte",
+      "reward": { "kind": "card", "card": "hedge_acolyte" },
+      "price": 5,
       "stock": null
     },
     {
-      "id": "copy_core_titan",
-      "reward": { "kind": "card", "card": "core_titan" },
-      "price": 120,
+      "id": "copy_field_reaper",
+      "reward": { "kind": "card", "card": "field_reaper" },
+      "price": 5,
+      "stock": null
+    },
+    {
+      "id": "copy_hollow_spearman",
+      "reward": { "kind": "card", "card": "hollow_spearman" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_moss_forager",
+      "reward": { "kind": "card", "card": "moss_forager" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_pebble_prospector",
+      "reward": { "kind": "card", "card": "pebble_prospector" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_brass_vanguard",
+      "reward": { "kind": "card", "card": "brass_vanguard" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_warden",
+      "reward": { "kind": "card", "card": "bronze_warden" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_jouster",
+      "reward": { "kind": "card", "card": "bronze_jouster" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_sneak",
+      "reward": { "kind": "card", "card": "bronze_sneak" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_forgehand",
+      "reward": { "kind": "card", "card": "bronze_forgehand" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_hunter",
+      "reward": { "kind": "card", "card": "bronze_hunter" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_mystic",
+      "reward": { "kind": "card", "card": "bronze_mystic" },
+      "price": 8,
+      "stock": null
+    },
+    {
+      "id": "copy_bronze_gleaner",
+      "reward": { "kind": "card", "card": "bronze_gleaner" },
+      "price": 8,
       "stock": null
     },
     {

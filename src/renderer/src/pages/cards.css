@@ -225,6 +225,23 @@ html .cp-sort .cp-select:not(#_px) {
   padding-left: calc(var(--lv-in) / var(--card-k) - 9px);
 }
 
+/* a group heading in the collection grid: owned cards, then one group per weapon type */
+.cp-group {
+  grid-column: 1 / -1;
+  margin: 4px 0 -12px;
+}
+.cp-group:first-child {
+  margin-top: -10px;
+}
+.cp-group__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--px-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
 /* the level badge (top-left) and the "upgrade ready" marker (bottom-right) of a grid card */
 .cp-lv,
 .cp-ready {

@@ -468,7 +468,7 @@
   },
   {
     "id": "reaper_test",
-    "name": "Reaper Test Card",
+    "name": "Dusk Reaper",
     "job": "fighting",
     "rarity": "rare",
     "element": "void",
@@ -476,7 +476,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "TEST CARD (weapon skins). Steady hits every 1 s",
+      "description": "Steady hits every 1 s",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -489,7 +489,7 @@
       ]
     },
     "support": {
-      "description": "TEST CARD (weapon skins). +5% damage",
+      "description": "+5% damage",
       "modifiers": [
         {
           "stat": "combat.damage",

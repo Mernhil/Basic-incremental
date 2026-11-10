@@ -42,7 +42,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Built] **Production field.** Every strike shows "+n" off its tree or mine and the coins fly to the header; a harvest burst is a wave with one big total. The main card lunges by its pattern and its supports flash when they help. Reduced motion drops lunges, shakes and flashes.
 - [Built] **Numbers.** Header counters roll smoothly and pulse when coins land. Floating numbers use the number style, attack and tick cosmetics, never hardcoded looks; their size follows the hit against the current average, and crits and signature attacks look different. The starter style is sticker numerals: chunky digits with a white outline, a drop shadow and a tilt, bouncing in place.
 - [Built] **Buying.** Every buy button previews its effect (for example "DPS 12 → 13, time-to-kill 11h → 2h"). One ×1 / ×10 / ×100 / Max toggle at the right end of the goals strip sets how many levels every level line buys (DESIGN.md §4); affordable buttons glow and a small bar fills toward the next affordable level.
-- [Default · in game] Max buys as many levels as are affordable (at least one) and otherwise shows the next level; a ×N buy buys exactly N or nothing.
+- [Built] Max buys as many levels as are affordable (at least one) and otherwise shows the next level; a ×N buy buys exactly N or nothing.
 - [Built] **Welcome back.** After offline progress, a card fan deals one small card per category (time away and the cap, resources, kills, knockouts, drops, card XP and levels, mastery tiers), then Collect sends the coins to the header.
 - [Built] **Performance.** At most about 30 popups at once, rapid numbers merged, animation paused when the page or window is hidden, one shared animation loop. Under reduced motion: no shake, flash or slow-down, and numbers fade in place.
 - [Built] **Screen picks.** Summon: Deck and Table, Nocturne panel (two card decks whose thickness is the pity, odds in the middle, last hand below). Wardrobe: a mannequin card with the seven slots around it and the item grid below. Skill tree: a radial constellation with gem nodes; card enhancements are a small star chart on the card. Ascension: a prismatic ring gate.
@@ -51,9 +51,8 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
   - Starlight: permanent levels, each line with its level bar and price. A buy slams a BOUGHT stamp on the line.
   - Shards: card copies as tiles, then supplies and exclusives.
   - Ascension: the pixel ring around the Starlight coin, the Starlight gain, the Ascend button with its confirm step, and the Kept and Reset lists.
-  - The stamp, ring and coin stay the candy pixel sprites (`art/pixel/hand/shop-*`). The awnings are no longer shown.
+  - The stamp, ring and coin stay the candy pixel sprites (`art/pixel/hand/shop-*`). There are no awnings, and their sprites are deleted (user, 2026-11-10).
   - Reduced motion drops the ring, coin and stamp motion.
-- [Default · in game] The awning sprites stay in the repo, unused, until the user decides whether to delete them.
 - [Built] **Achievements: a leather sticker book** (user, 2026-11-10).
   - The book has a stitched leather cover with gold corner caps, ruled parchment pages, a spine down the middle and ribbon bookmarks.
   - Each chapter has a coloured ribbon title with its count, and its stickers sit in a grid under it.
@@ -66,22 +65,15 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
   - Drops land on the floor.
   - The drawer handle runs along the bottom, with Dungeons, Weapon and Upgrades tabs.
 - [Built] **Settings** has reduced motion, number format, autosave interval, export / import, sound volumes and Report an issue.
-- [Default · in game] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
-- [Default · in game] **Sharp cards.** The Cards collection shows the full card, the same card as everywhere else, at a whole scale: 132 × 186 (1x) four across on a standard window, 2x (264 × 372) four across when they fit (a 1080p window), fewer across and reflowing when the window is narrow (Review gate pick "Full card, 1x", 2026-11-08). Card text is real text, with a floor of 11 CSS px on the small card; its job label is left to the filters. Next to the grid, the detail panel shows the card at 2x with the weapon panel on it (DESIGN §5), the card's abilities and cost, its enhancements and the loadout buttons.
+- [Built] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
+- [Built] **Sharp cards.** The Cards collection shows the full card, the same card as everywhere else, at a whole scale: 132 × 186 (1x) four across on a standard window, 2x (264 × 372) four across when they fit (a 1080p window), fewer across and reflowing when the window is narrow (Review gate pick "Full card, 1x", 2026-11-08). Card text is real text, with a floor of 11 CSS px on the small card; its job label is left to the filters. Next to the grid, the detail panel shows the card at 2x with the weapon panel on it (DESIGN §5), the card's abilities and cost, its enhancements and the loadout buttons.
+- [Built] **Owned cards first** (user, 2026-11-10). The Cards collection shows the owned cards first, then the unowned cards grouped by weapon type, each group with its collected count ("Your cards (3)", then "Sword: 1 of 7 collected" and so on, in the `items.json` order).
 
 ## 3. Open questions
 
 Everything tagged `[Proposed]` or `[Default]` waits here for the user.
 
-Waiting since 2026-11-08 (`[Proposed]`):
-
-- Double-detail sprites: an optional re-bake of the sprites at double detail for full screen (§2, ASSET_RULES.md §5).
-
-Defaults by Claude, never confirmed (`[Default]`):
-
-- §2 Buy Max, the Settings layout and options, the Shop page holding Ascension (2026-11-08).
-- §2 the Cards collection as the full card at 1x and 2x (Sharp cards), built from the review gate picks "Full card, 1x" and "On the weapon" as relayed to the ui agent; the user has not confirmed them in a chat of their own. Also the 11 px text floor on the small card and the job label left off grid cards (the weapon panel itself is DESIGN §5).
-- §2 the awning sprites staying in the repo, unused (2026-11-10).
+Nothing is `[Proposed]` or `[Default]` at the moment.
 
 Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
 
@@ -90,3 +82,4 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 - 2026-11-08 — Created this file: DESIGN section 11 "Interface and screens" and the UI conventions from the `ui` agent and `CLAUDE.md` moved here; no rule changed (user: exactly two graphics documents).
 - 2026-11-10 — Tag drift fixed after the direction review, no rule changed: Buying names the one buy toggle in the goals strip instead of one per level line (§2).
 - 2026-11-10 — UI rework (user, four rounds of mockups): the shell look, the sidebar as a plaque rail, Production as the pixel ledger with one fan per job, the Dungeons main card at 2x from 1280 × 720 and the Hero fan arena, the Shop under signboards instead of awnings, Achievements as a leather book.
+- 2026-11-10 — Scope 1 (user): Buy Max, the Settings layout and Sharp cards confirmed; the unused awning sprites and their rule deleted; the Cards collection shows owned cards first; double-detail sprites cut (§2, §3).

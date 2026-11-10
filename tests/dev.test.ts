@@ -18,8 +18,9 @@ describe('dev cheats (dev builds only)', () => {
     const result = devGrant(state, content, { resource: 'summon_crystal', amount: 250 });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(250);
-    expect(state.resources['summon_crystal']!.toNumber()).toBe(0);
+    // a new game starts with one pull of Summon Crystals (DESIGN.md §3)
+    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(550);
+    expect(state.resources['summon_crystal']!.toNumber()).toBe(300);
   });
 
   it('accepts a decimal string amount and refuses unknown resources or bad amounts', () => {

@@ -2,9 +2,10 @@ import type { Content } from '../../../data';
 import { weaponSkinChoices, weaponSkinFor, type GameState } from '../../../game';
 
 /**
- * View model of the Wardrobe "Weapon skins" tab (a test). Built generically over
- * `Content.weaponSkins`: any weapon kind with a skin set shows up as a weapon to pick. All rules
- * (what can be worn, what is worn) come from game; this only shapes them for the screen.
+ * View model of the Wardrobe "Weapon skins" tab. Built generically over `Content.weaponSkins`:
+ * any weapon kind with a skin the player can wear shows up as a weapon to pick. Locked skins are
+ * hidden until the Legacy Gate opens (DESIGN.md §8). All rules (what can be worn, what is worn)
+ * come from game; this only shapes them for the screen.
  */
 
 export interface SkinTileView {
@@ -49,12 +50,14 @@ export interface SkinSelection {
   skin?: string | null | undefined;
 }
 
-export function weaponOptions(content: Content): WeaponOption[] {
-  // Every item type with legacy skins (the whole type wears the skin, DESIGN.md §8).
-  return [...content.weaponSkinsByWeapon.values()].map(({ weapon: kind }) => ({
-    kind,
-    name: content.itemTypeByKind.get(kind)?.noun ?? kind,
-  }));
+export function weaponOptions(state: GameState, content: Content): WeaponOption[] {
+  // Every item type with a skin the player can wear (the whole type wears it, DESIGN.md §8).
+  return [...content.weaponSkinsByWeapon.values()]
+    .filter(({ weapon: kind }) => weaponSkinChoices(state, content, kind).some((c) => c.available))
+    .map(({ weapon: kind }) => ({
+      kind,
+      name: content.itemTypeByKind.get(kind)?.noun ?? kind,
+    }));
 }
 
 export function weaponSkinsView(
@@ -63,10 +66,13 @@ export function weaponSkinsView(
   selection: SkinSelection,
   originalName: string,
 ): WeaponSkinsView {
-  const weapons = weaponOptions(content);
+  const weapons = weaponOptions(state, content);
   const weapon = weapons.find((w) => w.kind === selection.weapon)?.kind ?? weapons[0]?.kind ?? null;
   const worn = weapon ? weaponSkinFor(state, weapon) : null;
-  const choices = weapon ? weaponSkinChoices(state, content, weapon) : [];
+  // Locked skins stay hidden until the Legacy Gate opens (DESIGN.md §8).
+  const choices = weapon
+    ? weaponSkinChoices(state, content, weapon).filter((c) => c.available)
+    : [];
   const wanted = selection.skin === undefined ? worn : selection.skin;
   const pickedId = choices.some((c) => c.id === wanted) ? wanted : null;
   const tiles: SkinTileView[] = [
@@ -111,5 +117,9 @@ export function weaponSkinsView(
 
 /** Changes whenever the tab has to be rebuilt. */
 export function weaponSkinsSignature(state: GameState): string {
-  return JSON.stringify([state.weaponSkins, Object.keys(state.cards.owned).length]);
+  return JSON.stringify([
+    state.weaponSkins,
+    state.legacySkins,
+    Object.keys(state.cards.owned).length,
+  ]);
 }

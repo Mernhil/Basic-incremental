@@ -211,27 +211,24 @@ export function effectiveDrops(
   content: Content,
 ): DropTable {
   const ctx = { ...FIGHTING, dungeon: dungeon.id };
-  const { rare, currencies, material, wage, extraMaterials } = dungeon.drops;
+  const { rare, currencies, material, wages, extraMaterials, firstClear } = dungeon.drops;
   const clamp01 = (d: Decimal): number => Math.min(1, Math.max(0, d.toNumber()));
   const chance = clamp01(statValue('drops.rareChance', rare.chance, modifiers, ctx));
   const pity = statValue('drops.pityThreshold', rare.pityThreshold, modifiers, ctx).toNumber();
   const materialCtx = { ...ctx, resource: material.resource };
   return {
     rare: { ...rare, chance, pityThreshold: Math.max(1, Math.round(pity)) },
-    ...(wage
-      ? {
-          wage: {
-            ...wage,
-            perSecond: Decimal.max(
-              statValue(currencyMultiplierStat(content, wage.resource), wage.perSecond, modifiers, {
-                ...ctx,
-                resource: wage.resource,
-              }),
-              0,
-            ),
-          },
-        }
-      : {}),
+    firstClear,
+    wages: wages.map((wage) => ({
+      ...wage,
+      perSecond: Decimal.max(
+        statValue(currencyMultiplierStat(content, wage.resource), wage.perSecond, modifiers, {
+          ...ctx,
+          resource: wage.resource,
+        }),
+        0,
+      ),
+    })),
     currencies: currencies.map((currency) => {
       const currencyCtx = { ...ctx, resource: currency.resource };
       const amount = (n: number): number =>
@@ -259,7 +256,8 @@ export function effectiveDrops(
           Math.floor(statValue('drops.materialAmount', n, modifiers, extraCtx).toNumber()),
         );
       const min = amount(extra.min);
-      return { ...extra, min, max: Math.max(min, amount(extra.max)) };
+      const chance = clamp01(statValue('drops.materialChance', extra.chance, modifiers, extraCtx));
+      return { ...extra, min, max: Math.max(min, amount(extra.max)), chance };
     }),
     material: {
       ...material,
@@ -904,10 +902,9 @@ function fightDungeon(
       'fighting',
       fightingXpPerSecond(content, dungeon, modifiers).mul(t),
     );
-    // The wage: Money for every second spent fighting, so the first levels can be bought before
-    // the first kill (DESIGN.md §3).
-    const wage = effectiveDrops(dungeon, modifiers, content).wage;
-    if (wage) {
+    // The wages: crystals (and, in the first dungeon, Money) for every second spent fighting,
+    // so pulls do not grow with kill speed (DESIGN.md §3).
+    for (const wage of effectiveDrops(dungeon, modifiers, content).wages) {
       const paid = wage.perSecond.mul(t);
       addResource(next, wage.resource, paid);
       report.currencies[wage.resource] = (report.currencies[wage.resource] ?? 0) + paid.toNumber();
@@ -971,10 +968,17 @@ function addResource(state: GameState, resource: string, amount: Decimal | numbe
 /** Records a first clear and what it unlocks. */
 function markCleared(next: GameState, content: Content, id: string, report: TickReport): void {
   if (isDungeonCleared(next, id)) return;
-  if (content.dungeonById.has(id)) {
+  const dungeon = content.dungeonById.get(id);
+  if (dungeon) {
     const result = clearDungeon(next, content, id);
     next.clearedDungeons = result.state.clearedDungeons;
     report.unlockedMines.push(...result.unlockedMines);
+    // The first-clear purse (DESIGN.md §3).
+    for (const purse of dungeon.drops.firstClear) {
+      addResource(next, purse.resource, purse.amount);
+      report.currencies[purse.resource] =
+        (report.currencies[purse.resource] ?? 0) + purse.amount.toNumber();
+    }
   } else {
     next.clearedDungeons.push(id);
   }
@@ -1024,6 +1028,7 @@ function fightBoss(
     if (roll.rare) rares++;
     material += rollMaterialDrop(drops, rng);
     drops.extraMaterials.forEach((extra, j) => {
+      if (extra.chance < 1 && rng() >= extra.chance) return;
       extras[j]! += extra.min + Math.floor(rng() * (extra.max - extra.min + 1));
     });
   }

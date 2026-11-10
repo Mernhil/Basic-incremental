@@ -126,6 +126,8 @@ export function createCardsModel(
       job: card.job,
       rarity: card.rarity,
       emblem: JOB_EMBLEM[card.job],
+      itemKind: card.item.kind,
+      itemType: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
       item:
         art?.(card.id, owned) ??
         itemArt(

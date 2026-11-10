@@ -968,7 +968,8 @@ export const TRIAL_FARM_SHARE = 0.25;
  * What to fight: the Glimmer Trial once it can be cleared; a killable dungeon not cleared yet
  * whose kill takes at most PUSH_MAX_SECONDS;
  * the cleared trial for cosmetic materials while its share of the time is under
- * TRIAL_FARM_SHARE; a dungeon whose Core is wanted (the crystals and Money drop everywhere); the hardest killable dungeon; else the first
+ * TRIAL_FARM_SHARE; a dungeon whose Core is wanted (or that drops a wanted material as an extra;
+ * crystals come as a wage everywhere); the hardest killable dungeon; else the first
  * open dungeon not cleared (a wall to push on).
  */
 export function chooseDungeon(
@@ -1001,6 +1002,17 @@ export function chooseDungeon(
   for (const resource of wantedList) {
     const farm = killable.find((d) => d.drops.material.resource === resource);
     if (farm) return farm.id;
+    // Else the dungeon that drops it as an extra fastest (the Ember Crypt's Frost Cores and
+    // Sigils, DESIGN.md §3).
+    let best: { id: string; rate: number } | null = null;
+    for (const d of killable) {
+      const extra = d.drops.extraMaterials.find((e) => e.resource === resource);
+      const spk = secondsPerKill(state, content, d.id, modifiers);
+      if (!extra || spk === null || spk <= 0) continue;
+      const rate = (extra.chance * (extra.min + extra.max)) / 2 / spk;
+      if (!best || rate > best.rate) best = { id: d.id, rate };
+    }
+    if (best) return best.id;
   }
   const hardest = killable[killable.length - 1];
   if (hardest) return hardest.id;
@@ -1020,7 +1032,8 @@ export interface SimOptions {
   /** Called every `probeSeconds` of sim time with the state (for timelines and tuning). */
   probe?: (state: GameState, t: number) => void;
   probeSeconds?: number;
-  /** Open portals that wait for their screen (default true: the sim plays the whole beta). */
+  /** Also open portals that wait for their screen, such as the Legacy Gate (default false: the
+   *  sim plays the game as it ships). */
   openAllPortals?: boolean;
 }
 
@@ -1032,6 +1045,8 @@ export interface SimResult {
   log: SimLog;
   /** [sim seconds, average fighting DPS against the first dungeon] every half hour. */
   dpsSamples: Array<[number, number]>;
+  /** [sim seconds, Card Portal pulls, Wardrobe Gate pulls] so far, every quarter hour. */
+  pullSamples: Array<[number, number, number]>;
 }
 
 /** How often the fight target is re-chosen without a kill, in seconds. */
@@ -1042,9 +1057,11 @@ const ASCEND_CHECK_SECONDS = 60;
 const DPS_SAMPLE_SECONDS = 900;
 
 export function runSim(bundled: Content, options: SimOptions): SimResult {
-  // The sim plays the whole beta: portals waiting for their screen (the Legacy Gate) are open.
-  const content: Content =
-    options.openAllPortals === false ? bundled : { ...bundled, portals: bundled.allPortals };
+  // The sim plays the game as it ships: portals waiting for their screen (the Legacy Gate) stay
+  // closed unless asked for.
+  const content: Content = options.openAllPortals
+    ? { ...bundled, portals: bundled.allPortals }
+    : bundled;
   const rng: Rng = createSeededRng(options.seed ?? 1);
   const step = options.stepSeconds ?? 5;
   const total = Math.round(options.hours * 3600);
@@ -1059,6 +1076,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   let tracker: AscendTracker = { peakRate: 0 };
   let trialClearedAt: number | null = null;
   const dpsSamples: Array<[number, number]> = [];
+  const pullSamples: Array<[number, number, number]> = [];
   let t = 0;
   const countSummons = (bought: string[]): void => {
     for (const id of bought) if (id.startsWith('summon:')) log.summons++;
@@ -1120,6 +1138,11 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (t % DPS_SAMPLE_SECONDS < dt) {
       const first = content.dungeons[0]!.id;
       dpsSamples.push([t - (t % DPS_SAMPLE_SECONDS), num(averageDps(state, content, first))]);
+      pullSamples.push([
+        t - (t % DPS_SAMPLE_SECONDS),
+        state.portals['card_portal']?.pulls ?? 0,
+        state.portals['wardrobe_gate']?.pulls ?? 0,
+      ]);
     }
     if (options.probe && options.probeSeconds && t % options.probeSeconds < dt) {
       options.probe(state, t - (t % options.probeSeconds));
@@ -1131,7 +1154,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       log.levelAt[level] ??= t;
     }
   }
-  return { hits, simSeconds: t, state, log, dpsSamples };
+  return { hits, simSeconds: t, state, log, dpsSamples, pullSamples };
 }
 
 const hoursText = (seconds: number): string => `${(seconds / 3600).toFixed(2)} h`;

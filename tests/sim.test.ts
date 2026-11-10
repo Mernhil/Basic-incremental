@@ -99,7 +99,10 @@ describe('balance sim: greedy buyer', () => {
   });
 
   it('does nothing when nothing is affordable', () => {
-    const { bought } = greedyBuy(rich(freshState(), 'money', 0), content);
+    // no Money and no crystals (a new game holds one pull)
+    const state = rich(freshState(), 'money', 0);
+    state.resources['summon_crystal'] = new Decimal(0);
+    const { bought } = greedyBuy(state, content);
     expect(bought).toEqual([]);
   });
 });
@@ -221,6 +224,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
     state.resources['money'] = new Decimal(1e9);
+    state.resources['summon_crystal'] = new Decimal(0); // no pull mixed in
     const { bought } = greedyBuy(state, content);
     expect(bought).not.toContain('tier:geode_golem');
     state.resources['frost_core'] = new Decimal(coreCost!.amount).mul(2);
@@ -434,16 +438,16 @@ describe('balance sim: run', () => {
     // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
   }, 30_000);
 
-  it('keeps the first hour of the shipped content on its §14 pacing targets (within 25%)', () => {
-    // The shipped numbers, not the pinned test content: the first dungeon and the first summon.
+  it('plays the shipped opening: the starter pull at once, the first clear by its target', () => {
+    // The shipped numbers, not the pinned test content. A new game holds one pull (DESIGN.md §3),
+    // so the first summon comes in the first step; the opening running ahead of its §14 targets
+    // is accepted until the Scope 3 retune (DESIGN.md §16), but never behind them.
     const result = runSim(loadContent(), { hours: 1, seed: 1, stepSeconds: 10 });
-    for (const id of ['clear_d1', 'first_summon']) {
-      const milestone = MILESTONES.find((m) => m.id === id)!;
-      const hit = result.hits[id];
-      expect(hit, id).not.toBeNull();
-      expect(targetRatio(milestone, hit! / 3600), id).toBeGreaterThan(75);
-      expect(targetRatio(milestone, hit! / 3600), id).toBeLessThan(125);
-    }
+    expect(result.hits['first_summon']).not.toBeNull();
+    expect(result.hits['first_summon']!).toBeLessThanOrEqual(60);
+    const clear = MILESTONES.find((m) => m.id === 'clear_d1')!;
+    expect(result.hits['clear_d1']).not.toBeNull();
+    expect(targetRatio(clear, result.hits['clear_d1']! / 3600)).toBeLessThan(125);
   }, 30_000);
 
   it('samples the fighting DPS every quarter hour for the tuning report', () => {

@@ -24,25 +24,35 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wage": {
-        "resource": "money",
-        "perSecond": "50"
-      },
+      "wages": [
+        {
+          "resource": "money",
+          "perSecond": "50"
+        },
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.5"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.4"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "300"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "150"
+        }
+      ],
       "currencies": [
         {
           "resource": "money",
           "min": 1000,
           "max": 1500
-        },
-        {
-          "resource": "summon_crystal",
-          "min": 2,
-          "max": 2
-        },
-        {
-          "resource": "glamour_crystal",
-          "min": 1,
-          "max": 1
         }
       ],
       "extraMaterials": [],
@@ -78,24 +88,47 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.6"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.45"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "900"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "600"
+        }
+      ],
       "currencies": [
         {
           "resource": "money",
           "min": 24000,
           "max": 34000
-        },
-        {
-          "resource": "summon_crystal",
-          "min": 2,
-          "max": 3
-        },
-        {
-          "resource": "glamour_crystal",
-          "min": 1,
-          "max": 2
         }
       ],
-      "extraMaterials": [],
+      "extraMaterials": [
+        {
+          "resource": "frost_core",
+          "min": 1,
+          "max": 1,
+          "chance": 0.02
+        },
+        {
+          "resource": "frost_sigil",
+          "min": 1,
+          "max": 1,
+          "chance": 0.02
+        }
+      ],
       "material": {
         "resource": "cinder_core",
         "chance": 0.4,
@@ -128,21 +161,31 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "1500"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "900"
+        }
+      ],
       "currencies": [
         {
           "resource": "money",
           "min": 560000,
           "max": 790000
-        },
-        {
-          "resource": "summon_crystal",
-          "min": 3,
-          "max": 3
-        },
-        {
-          "resource": "glamour_crystal",
-          "min": 3,
-          "max": 3
         }
       ],
       "extraMaterials": [

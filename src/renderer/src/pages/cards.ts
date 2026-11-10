@@ -80,6 +80,8 @@ export function createCardsPage(
   ctx: CardsPageContext,
 ): { render(): void; show(tab: Tab, job?: Job): void } {
   const { content, model } = ctx;
+  /** Weapon types in their `items.json` order, for the collection groups. */
+  const itemOrder: readonly string[] = content.items.types.map((type) => type.kind);
   page.classList.add('shell-page--cards');
   page.querySelector('.shell-page__title')?.classList.add('sr-only');
 
@@ -264,7 +266,39 @@ export function createCardsPage(
       row: { count: GRID_COLUMNS, gap: GRID_GAP },
     });
     grid.setAttribute('aria-label', COPY.cards.collectionTab);
-    for (const e of shown) {
+    // Owned cards first, then the unowned ones grouped by weapon type, each group with its
+    // collected count (UI_RULES §2, Owned cards first).
+    const heading = (text: string, key: string): void => {
+      const li = h('li', 'cp-group');
+      li.dataset.key = key;
+      li.append(h('h3', 'cp-group__title', text));
+      grid.append(li);
+    };
+    const mine = shown.filter((e) => e.owned);
+    const kinds = [...new Set(shown.map((e) => e.itemKind))].sort(
+      (a, b) => itemOrder.indexOf(a) - itemOrder.indexOf(b),
+    );
+    const groups: Array<{ title: string | null; key: string; list: CardEntry[] }> = [
+      {
+        title: mine.length > 0 ? COPY.cards.ownedGroup(mine.length) : null,
+        key: 'group-owned',
+        list: mine,
+      },
+      ...kinds.flatMap((kind) => {
+        const ofKind = shown.filter((e) => e.itemKind === kind);
+        const missing = ofKind.filter((e) => !e.owned);
+        if (missing.length === 0) return [];
+        const have = ofKind.length - missing.length;
+        return [
+          {
+            title: COPY.cards.typeGroup(missing[0]!.itemType, have, ofKind.length),
+            key: `group-${kind}`,
+            list: missing,
+          },
+        ];
+      }),
+    ];
+    const cell = (e: CardEntry): void => {
       const li = h('li', 'cp-cell');
       const b = h('button', 'cp-tile');
       b.type = 'button';
@@ -295,6 +329,10 @@ export function createCardsPage(
       });
       li.append(b);
       grid.append(li);
+    };
+    for (const g of groups) {
+      if (g.title) heading(g.title, g.key);
+      g.list.forEach(cell);
     }
     el.append(head, bar, grid);
     const pick = entries.find((e) => e.id === selected);
@@ -347,7 +385,15 @@ export function createCardsPage(
         variant: 'card',
         content,
         state: ctx.state,
-        act: (kind) => act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`),
+        act: (kind) => {
+          act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`);
+          // A tier-up of a card whose stars are free lands at ★6: the star flash plays once.
+          if (kind === 'tier' && model.entry(ctx.state(), e.id)?.rank.stars === 6) {
+            const card = page.querySelector<HTMLElement>('.cp-detail .bi-card');
+            card?.classList.add('is-levelup');
+            window.setTimeout(() => card?.classList.remove('is-levelup'), 1200);
+          }
+        },
       });
       if (panel.overlay) face.append(panel.overlay);
       side.append(panel.el);

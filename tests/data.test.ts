@@ -233,9 +233,9 @@ describe('content validation errors', () => {
 describe('card ranks and portals', () => {
   it('has the 76 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
     const loaded = loadContent();
-    // The weapon-skins test card (`reaper_test`) is not one of the beta cards.
+    // The Rare scythe (`reaper_test`, once the weapon-skins test card) is not a beta card.
     const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
-    expect(loaded.cardById.get('reaper_test')?.name).toBe('Reaper Test Card');
+    expect(loaded.cardById.get('reaper_test')?.name).toBe('Dusk Reaper');
     expect(content.cards).toHaveLength(76);
     // Fighting has every weapon type at every rarity (63, minus the test card); logging and mining keep seven each.
     for (const [job, n] of [
@@ -555,8 +555,9 @@ describe('the three loops (DESIGN.md §3)', () => {
 
   it('refuses a dungeon that leaves out a crystal or drops a gem', () => {
     const bad = raw();
-    const drops = (bad.dungeons as { drops: { currencies: { resource: string }[] } }[])[1]!.drops;
-    drops.currencies = drops.currencies.filter((x) => x.resource !== 'glamour_crystal');
+    type Drops = { currencies: { resource: string }[]; wages: { resource: string }[] };
+    const drops = (bad.dungeons as { drops: Drops }[])[1]!.drops;
+    drops.wages = drops.wages.filter((x) => x.resource !== 'glamour_crystal');
     drops.currencies.push({ resource: 'oak_gem', min: 1, max: 2 } as never);
     const issues = issuesFor(bad);
     expect(issues.join(String.fromCharCode(10))).toContain('"glamour_crystal" is not dropped');

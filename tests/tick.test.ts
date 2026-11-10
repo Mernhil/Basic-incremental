@@ -45,7 +45,7 @@ describe('advance (tick math)', () => {
       const extra =
         c.resource === 'money'
           ? content.resourceById.get('money')!.startAmount!.toNumber() +
-            dungeon.drops.wage!.perSecond.toNumber()
+            dungeon.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber()
           : 0;
       expect(state.resources[c.resource]!.toNumber()).toBeCloseTo(rolled + extra);
     }

@@ -675,6 +675,20 @@ export function tierUpCheck(
   ]);
 }
 
+/**
+ * Takes every star that costs nothing (DESIGN.md §5, Star bar): a Rare or better card climbs to ★6
+ * at once (mutates `owned`). Stars that need copies wait for them. Returns the stars gained.
+ */
+export function applyFreeStars(content: Content, rarity: Rarity, owned: OwnedCard): number {
+  let gained = 0;
+  while (owned.stars < MAX_STARS && starFillNeeded(content, rarity, owned.stars) === 0) {
+    owned.stars += 1;
+    gained += 1;
+  }
+  if (gained > 0 && owned.stars >= MAX_STARS) owned.starFill = 0;
+  return gained;
+}
+
 /** Spends the star bar's fill and adds a star. Level and XP stay. Left-over fill carries over. */
 export function starUp(state: GameState, content: Content, cardId: string): CardUpgradeResult {
   const result = starUpCheck(state, content, cardId);
@@ -709,6 +723,8 @@ export function tierUp(
   owned.tier = result.to!.tier;
   owned.stars = 1;
   owned.starFill = 0;
+  // Stars that cost nothing apply by themselves (DESIGN.md §5).
+  applyFreeStars(content, card.rarity, owned);
   const from = tierMetalIndex(before.tier);
   const to = tierMetalIndex(owned.tier);
   const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];
@@ -729,7 +745,10 @@ export function tierUp(
 export function grantCard(cards: CardState, content: Content, card: Card): CardGain {
   const owned = cards.owned[card.id];
   if (!owned) {
-    cards.owned[card.id] = newOwnedCard();
+    const fresh = newOwnedCard();
+    // Stars that cost nothing apply by themselves: a Rare or better card arrives at ★6.
+    applyFreeStars(content, card.rarity, fresh);
+    cards.owned[card.id] = fresh;
     return { kind: 'new' };
   }
   if (

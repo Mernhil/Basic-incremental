@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { portalInfo, type PullResult } from '../src/game';
+import { Decimal, portalInfo, type PullResult } from '../src/game';
 import {
   DECK_MAX_LAYERS,
   DECK_MIN_LAYERS,
@@ -35,7 +35,9 @@ describe('summon shelf', () => {
   });
 
   it('cannot pull without the portal resource', () => {
-    const v = portalView(portalInfo(freshState(), content, portal.id)!, content);
+    const state = freshState();
+    state.resources[portal.cost.resource] = new Decimal(0);
+    const v = portalView(portalInfo(state, content, portal.id)!, content);
     expect(v.single.affordable).toBe(false);
   });
 });

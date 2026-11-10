@@ -566,16 +566,17 @@ describe('save format 18, read through the whole migration chain', () => {
   });
 
   it('round-trips the star fill and a Mythic-tier card', () => {
+    // ★3 (the next star costs a copy in the tests' star bar, so nothing is free to take on load)
     const state = own(freshState(), 'core_titan', {
       tier: 'mythic',
-      stars: 4,
+      stars: 3,
       level: 120,
       starFill: 3,
     });
     const loaded = readSave(createSaveText(state, 1), content).state;
     expect(loaded.cards.owned['core_titan']).toMatchObject({
       tier: 'mythic',
-      stars: 4,
+      stars: 3,
       level: 120,
       starFill: 3,
     });

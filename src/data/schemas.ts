@@ -526,8 +526,8 @@ export const dungeonSchema = z.strictObject({
       /** Guaranteed after this many consecutive kills without the item. */
       pityThreshold: z.number().int().min(1),
     }),
-    /** Currencies granted on every kill, each a range (inclusive): Money and both crystals
-     *  (DESIGN.md §7, §3). Deeper dungeons pay more. */
+    /** Currencies granted on every kill, each a range (inclusive): Money (DESIGN.md §3).
+     *  Deeper dungeons pay more. Crystals come as a wage instead. */
     currencies: z
       .array(
         z
@@ -539,10 +539,12 @@ export const dungeonSchema = z.strictObject({
           .refine((p) => p.min <= p.max, { message: 'min must not exceed max' }),
       )
       .min(1),
-    /** Money paid for every second of fighting this dungeon's boss (not while knocked out), so
-     *  the very first levels can be bought before the first kill (DESIGN.md §3). Only the
-     *  first dungeon has one: later dungeons pay by the kill, so a wall cannot be farmed idle. */
-    wage: z.strictObject({ resource: id, perSecond: positiveDecimal }).optional(),
+    /** Currencies paid for every second of fighting this dungeon's boss (not while knocked out;
+     *  DESIGN.md §3): both crystals in every dungeon, so pulls do not grow with kill speed, and
+     *  Money in the first dungeon, so the very first levels can be bought before the first kill. */
+    wages: z.array(z.strictObject({ resource: id, perSecond: positiveDecimal })).default([]),
+    /** Paid once, on the dungeon's first clear (the crystal purses, DESIGN.md §3). */
+    firstClear: z.array(z.strictObject({ resource: id, amount: positiveDecimal })).default([]),
     /** Further materials dropped on every kill, each a range like the currencies (the Frostspire
      *  Vault drops Frost Sigils for the Prismatic card upgrades; DESIGN.md §5). */
     extraMaterials: z
@@ -552,6 +554,8 @@ export const dungeonSchema = z.strictObject({
             resource: id,
             min: z.number().int().min(0),
             max: z.number().int().min(0),
+            /** Chance per kill (1 = every kill); the Ember Crypt's Frost drops are rare. */
+            chance: z.number().gt(0).max(1).default(1),
           })
           .refine((p) => p.min <= p.max, { message: 'min must not exceed max' }),
       )
@@ -625,6 +629,8 @@ export type GoalPage = (typeof GOAL_PAGES)[number];
  * - `star_up`: owned cards with the duplicate for their next star, missing level or materials.
  */
 export const GOAL_KINDS = [
+  /** The first summon, while no card has been pulled (DESIGN.md §3). */
+  'first_summon',
   'clear_dungeon',
   'clear_trial',
   'unlock_tree',
