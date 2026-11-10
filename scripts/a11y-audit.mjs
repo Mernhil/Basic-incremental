@@ -9,13 +9,14 @@ import { measure } from './a11y-measure.mjs';
 const url = process.argv[2] ?? 'http://localhost:5173/#gallery';
 const TABLES = ['gn_table', 'gt_table'];
 const BORDERS = ['gn_border', 'gt_border', 'gilded_plate'];
-const RARITIES = ['common', 'rare', 'epic', 'legendary', 'mythic', 'exotic', 'void'];
+const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', 'void'];
 const CHECKS = [
   '.bi-card__name',
   '.bi-card__job',
-  '.bi-card__stats dt',
-  '.bi-card__stats dd',
-  '.bi-rank-name',
+  '.bi-info__ability',
+  '.bi-info__speed',
+  '.bi-info__level',
+  '.bi-info__rarity',
   '.gallery__h2',
   '.gallery__fig figcaption',
   '.gallery__field > span',
