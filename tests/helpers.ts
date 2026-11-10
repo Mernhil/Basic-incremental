@@ -28,7 +28,34 @@ function pinProductionRates(bundled: Content): Content {
   };
 }
 
-export const content: Content = pinProductionRates(loadContent());
+/**
+ * The star bar pinned to copies for every rarity (the shipped one lets Rare and up star up for free,
+ * DESIGN.md §5 Star bar), so the star bar, shard and tier-up rule tests have copies to count.
+ */
+function pinStarBar(bundled: Content): Content {
+  const needs = {
+    common: [1, 1, 1, 2, 2],
+    uncommon: [1, 1, 1, 1, 2],
+    rare: [1, 1, 1, 1, 1],
+    epic: [1, 0, 1, 1, 1],
+    legendary: [1, 0, 1, 1, 1],
+    mythic: [1, 0, 1, 0, 1],
+    void: [1, 0, 1, 0, 1],
+  };
+  return {
+    ...bundled,
+    cardRules: { ...bundled.cardRules, starBar: { ...bundled.cardRules.starBar, needs } },
+  };
+}
+
+export const content: Content = pinStarBar(pinProductionRates(loadContent()));
+
+/**
+ * Crystals per "pull unit": rule tests count crystals in units of a tenth of a Card Portal pull
+ * (10 a pull, 100 a 10-pull), so a retune of the crystal prices and drops does not move them.
+ */
+export const CRYSTAL_UNIT =
+  content.portals.find((p) => p.id === 'card_portal')!.cost.single.toNumber() / 10;
 
 const noMilestones = { every: 25, multiplier: new Decimal(1) };
 const plainMines = content.mines.map((m) => ({
@@ -124,6 +151,21 @@ export function withBossAttack(
           boss: { ...d.boss, attack: { damage: new Decimal(damage), intervalSeconds } },
         }
       : d,
+  );
+  return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
+}
+
+/**
+ * The same content with one dungeon's boss HP set to `hp`: rule tests that need a fight with no
+ * kill (or a kill at an exact time) pin the boss they use, so tuning the HP does not move them.
+ */
+export function withBossHp(
+  base: Content,
+  dungeonId: string,
+  hp: Decimal | number | string,
+): Content {
+  const dungeons = base.dungeons.map((d) =>
+    d.id === dungeonId ? { ...d, boss: { ...d.boss, hp: new Decimal(hp) } } : d,
   );
   return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
 }

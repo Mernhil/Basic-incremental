@@ -16,7 +16,7 @@ import {
   weaponSkinChoices,
   type GameState,
 } from '../src/game';
-import { constantRng, content as baseContent, freshState } from './helpers';
+import { constantRng, content as baseContent, CRYSTAL_UNIT, freshState } from './helpers';
 
 const GATE = 'legacy_gate';
 
@@ -30,7 +30,7 @@ function gateContent(): Content {
 const content = gateContent();
 
 const withGlamour = (n: number, base: GameState = freshState()): GameState => {
-  base.resources['glamour_crystal'] = new Decimal(n);
+  base.resources['glamour_crystal'] = new Decimal(n * CRYSTAL_UNIT);
   return base;
 };
 const owning = (...ids: string[]): GameState => {
@@ -258,16 +258,16 @@ describe('Legacy Gate pulls', () => {
     expect(gain.kind).toBe('payback');
     if (gain.kind !== 'payback') return;
     expect(gain.resource).toBe('glamour_crystal');
-    expect(gain.amount.toNumber()).toBe(2);
+    expect(gain.amount.toNumber()).toBe(2 * CRYSTAL_UNIT);
     expect(second.state.legacySkins).toEqual([id]);
-    expect(second.state.resources['glamour_crystal']!.toNumber()).toBe(2);
+    expect(second.state.resources['glamour_crystal']!.toNumber()).toBe(2 * CRYSTAL_UNIT);
   });
 
   it('a ten-pull of one skin is one new and nine paybacks', () => {
     const out = pull(withGlamour(100), content, GATE, 10, constantRng(0));
     if (!out.ok) throw new Error(out.reason);
     expect(out.results.map((r) => r.gain.kind)).toEqual(['new', ...Array(9).fill('payback')]);
-    expect(out.state.resources['glamour_crystal']!.toNumber()).toBe(18);
+    expect(out.state.resources['glamour_crystal']!.toNumber()).toBe(18 * CRYSTAL_UNIT);
   });
 
   it('counts pity on its own portal', () => {

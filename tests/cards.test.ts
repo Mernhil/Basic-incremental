@@ -152,10 +152,16 @@ describe('levels (DESIGN.md §5)', () => {
     const { state: after, report } = advance(state, withDps(hp / 12), 12_000, constantRng(0.9));
     expect(report.bossKills).toBe(1);
     const squire = after.cards.owned['ember_squire']!;
-    // 12 s fought (1 XP each) and 50 XP on the kill = 62: levels 1..5 cost 10 + 11.2 + 12.544 +
-    // 14.049 = 47.793; 14.207 is left, short of the 15.735 for level 6.
-    expect(squire.level).toBe(5);
-    expect(squire.xp.toNumber()).toBeCloseTo(62 - 47.79328, 6);
+    // 12 s fought at perSecond XP and perKill XP on the kill, spent level by level on the curve.
+    const xp = content.cardRules.xp;
+    let left = xp.perSecond.toNumber() * 12 + xp.perKill.toNumber();
+    let level = 1;
+    const cost = (l: number) =>
+      content.cardRules.xpCurve.base.toNumber() *
+      content.cardRules.xpCurve.growth.toNumber() ** (l - 1);
+    while (left >= cost(level)) left -= cost(level++);
+    expect(squire.level).toBe(level);
+    expect(squire.xp.toNumber()).toBeCloseTo(left, 6);
   });
 
   it('stops XP at the level cap until a tier-up raises it', () => {

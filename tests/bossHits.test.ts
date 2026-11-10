@@ -27,7 +27,10 @@ import {
 import { constantRng, content as bundled, freshState, withBossAttack } from './helpers';
 
 // The Root Warden is pinned to the numbers these tests document (1 damage every 10 s).
-const content = withBossAttack(bundled, 'mossy_cellar', 1, 10);
+/** The Root Warden pinned to 1 damage every 10 s and the knockout to 30 s, the timings these
+ *  tests count in (the shipped numbers are tuning, DESIGN.md §6). */
+const attacked = withBossAttack(bundled, 'mossy_cellar', 1, 10);
+const content = { ...attacked, combat: { ...attacked.combat, knockoutSeconds: 30 } };
 
 /**
  * Boss hits in chunks (DESIGN.md §6): discrete attacks at the boss's interval, five light hits at

@@ -20,7 +20,7 @@
       "power": "10"
     }
   },
-  "knockoutSeconds": 30,
+  "knockoutSeconds": 10,
   "bossPattern": {
     "attacksPerCycle": 6,
     "lightMultiplier": 0.4,

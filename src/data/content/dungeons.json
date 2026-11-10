@@ -9,12 +9,12 @@
       "id": "root_warden",
       "name": "Root Warden",
       "art": "root_warden",
-      "hp": "7.6e5",
+      "hp": "12900",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 5,
       "attack": {
-        "damage": "0.6",
-        "intervalSeconds": 10
+        "damage": "15",
+        "intervalSeconds": 3
       }
     },
     "drops": {
@@ -30,24 +30,24 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 12000,
-          "max": 18000
+          "min": 1000,
+          "max": 1500
         },
         {
           "resource": "summon_crystal",
           "min": 2,
-          "max": 4
+          "max": 2
         },
         {
           "resource": "glamour_crystal",
           "min": 1,
-          "max": 2
+          "max": 1
         }
       ],
       "extraMaterials": [],
       "material": {
         "resource": "moss_core",
-        "chance": 0.8,
+        "chance": 0.5,
         "amount": 1
       }
     }
@@ -62,12 +62,12 @@
       "id": "cinder_lich",
       "name": "Cinder Lich",
       "art": "cinder_lich",
-      "hp": "8e5",
+      "hp": "300000",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 8,
       "attack": {
-        "damage": "10",
-        "intervalSeconds": 8
+        "damage": "250",
+        "intervalSeconds": 2.5
       }
     },
     "drops": {
@@ -79,24 +79,24 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 260000,
-          "max": 390000
+          "min": 24000,
+          "max": 34000
         },
         {
           "resource": "summon_crystal",
-          "min": 4,
-          "max": 6
+          "min": 2,
+          "max": 3
         },
         {
           "resource": "glamour_crystal",
-          "min": 2,
-          "max": 4
+          "min": 1,
+          "max": 2
         }
       ],
       "extraMaterials": [],
       "material": {
         "resource": "cinder_core",
-        "chance": 0.5,
+        "chance": 0.4,
         "amount": 1
       }
     }
@@ -111,12 +111,12 @@
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "hp": "1.1e7",
+      "hp": "7000000",
       "hpScalingPerPrestige": 0.02,
       "hpBars": 12,
       "attack": {
-        "damage": "30",
-        "intervalSeconds": 6
+        "damage": "6800",
+        "intervalSeconds": 2
       }
     },
     "drops": {
@@ -128,30 +128,30 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 2400000,
-          "max": 3600000
+          "min": 560000,
+          "max": 790000
         },
         {
           "resource": "summon_crystal",
-          "min": 6,
-          "max": 10
+          "min": 3,
+          "max": 3
         },
         {
           "resource": "glamour_crystal",
-          "min": 5,
-          "max": 8
+          "min": 3,
+          "max": 3
         }
       ],
       "extraMaterials": [
         {
           "resource": "frost_sigil",
           "min": 1,
-          "max": 3
+          "max": 1
         }
       ],
       "material": {
         "resource": "frost_core",
-        "chance": 0.7,
+        "chance": 0.6,
         "amount": 2
       }
     }

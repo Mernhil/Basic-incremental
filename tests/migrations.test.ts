@@ -620,8 +620,21 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
     expect(out.cards.owned['b']!.tier).toBe('gold');
   });
 
-  it('loads at format 22 with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(22);
+  it('has a step at key 22 that multiplies the crystals held by 30 (the repricing)', () => {
+    const out = MIGRATIONS[22]!({
+      resources: { summon_crystal: '7', glamour_crystal: '2', money: '5', oak_gem: '1' },
+    }) as { resources: Record<string, string> };
+    expect(out.resources).toEqual({
+      summon_crystal: '210',
+      glamour_crystal: '60',
+      money: '5',
+      oak_gem: '1',
+    });
+    expect(MIGRATIONS[22]!({}) as unknown).toEqual({ resources: {} });
+  });
+
+  it('loads at format 23 with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(23);
     const loaded = readSave(v21Save(), content);
     // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
     expect(loaded.state.weaponSkins).toEqual({

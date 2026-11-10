@@ -16,7 +16,23 @@ import {
   type GameState,
   type OwnedCard,
 } from '../src/game';
-import { bareState, constantRng, freshState, plainContent as content, withDps } from './helpers';
+import {
+  bareState,
+  constantRng,
+  freshState,
+  plainContent,
+  withBossAttack,
+  withBossHp,
+  withDps,
+} from './helpers';
+
+/** The Root Warden pinned to an HP no test here finishes by accident. */
+const content = withBossAttack(
+  withBossHp(plainContent, 'mossy_cellar', 7.6e5),
+  'mossy_cellar',
+  0.6,
+  10,
+);
 
 const rng = constantRng(0.5);
 const rules = content.cardRules;
@@ -144,7 +160,7 @@ describe('card XP from fighting time (DESIGN.md §5)', () => {
 
   it('adds the per-kill bonus on top of the time', () => {
     // A kill every 3 s: three kills in 10 s, with the time still fought.
-    const strong = withDps(mossy.boss.hp.div(3));
+    const strong = withDps(mossy.boss.hp.div(3), content);
     const { state: after, report } = advance(freshState(), strong, 10_000, rng);
     expect(report.bossKills).toBe(3);
     const expected = rules.xp.perSecond.mul(10).add(rules.xp.perKill.mul(3));

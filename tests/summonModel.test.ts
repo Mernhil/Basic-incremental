@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, portalInfo, type PullResult } from '../src/game';
+import { portalInfo, type PullResult } from '../src/game';
 import {
   DECK_MAX_LAYERS,
   DECK_MIN_LAYERS,
@@ -17,7 +17,7 @@ const portal = content.portals[0]!;
 describe('summon shelf', () => {
   it('shows prices, pity and rates of a portal', () => {
     const state = freshState();
-    state.resources[portal.cost.resource] = new Decimal(1000);
+    state.resources[portal.cost.resource] = portal.cost.ten;
     const v = portalView(portalInfo(state, content, portal.id)!, content);
     expect(v.name).toBe(portal.name);
     expect(v.single.affordable && v.ten.affordable).toBe(true);

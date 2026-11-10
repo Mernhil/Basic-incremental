@@ -1,13 +1,13 @@
 {
   "xp": {
     "perUnit": {
-      "logging": "0.0125",
-      "mining": "0.025"
+      "logging": "0.004125",
+      "mining": "0.00825"
     },
     "tierWeights": ["1", "5", "25"],
-    "perKill": "10",
+    "perKill": "3",
     "killTierGrowth": "4",
-    "perPull": "20",
+    "perPull": "10",
     "perTrialAttempt": "2",
     "perAscension": "500"
   },
@@ -27,7 +27,7 @@
       "resources": [
         {
           "resource": "summon_crystal",
-          "amount": "10"
+          "amount": "300"
         }
       ]
     },
@@ -40,7 +40,7 @@
       "resources": [
         {
           "resource": "summon_crystal",
-          "amount": "20"
+          "amount": "600"
         }
       ],
       "cosmetics": ["holo_hex"]
@@ -50,7 +50,7 @@
       "resources": [
         {
           "resource": "summon_crystal",
-          "amount": "30"
+          "amount": "900"
         }
       ],
       "costCap": 1
@@ -60,7 +60,7 @@
       "resources": [
         {
           "resource": "glamour_crystal",
-          "amount": "40"
+          "amount": "1200"
         }
       ],
       "cosmetics": ["holo_waves", "wardrobe_c"]
@@ -70,7 +70,7 @@
       "resources": [
         {
           "resource": "glamour_crystal",
-          "amount": "50"
+          "amount": "1500"
         }
       ],
       "costCap": 1
@@ -80,7 +80,7 @@
       "resources": [
         {
           "resource": "glamour_crystal",
-          "amount": "60"
+          "amount": "1800"
         }
       ],
       "cosmetics": ["prism_pointer", "nodes_c"]
