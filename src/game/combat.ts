@@ -15,6 +15,8 @@ import {
   floorSpec,
   hasDeeperFloor,
   initialProgress,
+  isDifficultyUnlocked,
+  type DifficultyScale,
   type FloorEnemy,
   type FloorKind,
 } from './floors';
@@ -73,7 +75,7 @@ export const MAX_TRIAL_ATTEMPTS_PER_ADVANCE = 10_000;
 export type CombatFailure =
   /** No dungeon / special dungeon with that id. */
   | 'unknown'
-  /** The dungeon is not unlocked yet. */
+  /** The dungeon, or the difficulty asked for, is not unlocked yet. */
   | 'locked';
 
 export type CombatResult = { ok: true; state: GameState } | { ok: false; reason: CombatFailure };
@@ -185,6 +187,28 @@ export function setFloorMode(
   return { ok: true, state: next };
 }
 
+/**
+ * Chooses the difficulty a dungeon is fought on (DESIGN.md §6 Difficulty tiers): Normal, or a
+ * tier whose way in has been beaten, or the endless depths below Nightmare. Each difficulty keeps
+ * its own floor; the fight on the new one starts fresh.
+ */
+export function setDifficulty(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  difficulty: Difficulty,
+): CombatResult {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return fail('unknown');
+  if (!isDungeonUnlocked(state, content, dungeonId)) return fail('locked');
+  if (!isDifficultyUnlocked(state, dungeon, difficulty)) return fail('locked');
+  if (floorPosition(state, dungeon).difficulty === difficulty) return { ok: true, state };
+  const next = cloneState(state);
+  ensureProgress(next, dungeonId).difficulty = difficulty;
+  if (next.activeDungeonId === dungeonId) next.bossHp = null;
+  return { ok: true, state: next };
+}
+
 /** The dungeon's saved floors in a state being built (a fresh clone), created when missing. */
 function ensureProgress(next: GameState, dungeonId: string): DungeonProgress {
   return (next.combat.floors[dungeonId] ??= initialProgress());
@@ -252,11 +276,13 @@ export interface FightStage {
   /** What one normal attack of the floor takes from the health pool, after defence. */
   attack: Decimal;
   intervalSeconds: number;
+  /** What the difficulty multiplies the drops by (Money purses, material units). */
+  scale: DifficultyScale;
 }
 
 /**
- * The stage of a dungeon's floor: the one the player stands on, or `floor` on the chosen
- * difficulty when given. Null for an unknown dungeon.
+ * The stage of a dungeon's floor: the one the player stands on, or `floor` when given, on the
+ * chosen difficulty or on `difficulty` when given. Null for an unknown dungeon.
  */
 export function fightStage(
   state: GameState,
@@ -264,10 +290,11 @@ export function fightStage(
   dungeonId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
   floor?: number,
+  difficulty?: Difficulty,
 ): FightStage | null {
   const dungeon = content.dungeonById.get(dungeonId);
   if (!dungeon) return null;
-  const position = floorPosition(state, dungeon);
+  const position = floorPosition(state, dungeon, difficulty);
   const at = Math.min(position.floors, Math.max(1, Math.floor(floor ?? position.floor)));
   return stageOf(content, dungeon, position.difficulty, at, state.prestigeCount, modifiers);
 }
@@ -295,11 +322,12 @@ function stageOf(
     kind: spec.kind,
     difficulty,
     floor,
-    floors: floorCount(dungeon),
+    floors: floorCount(dungeon, difficulty),
     enemies,
     hp: upto,
     attack,
     intervalSeconds: spec.intervalSeconds,
+    scale: spec.scale,
   };
 }
 
@@ -597,8 +625,9 @@ export function secondsPerKill(
   dungeonId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
   floor?: number,
+  difficulty?: Difficulty,
 ): number | null {
-  const stage = fightStage(state, content, dungeonId, modifiers, floor);
+  const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
   if (!stage) return null;
   const avg = averageDps(state, content, dungeonId, modifiers);
   if (avg.lte(0)) return null;
@@ -980,8 +1009,9 @@ export function survivalSeconds(
   dungeonId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
   floor?: number,
+  difficulty?: Difficulty,
 ): number | null {
-  const stage = fightStage(state, content, dungeonId, modifiers, floor);
+  const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
   if (!stage) return null;
   const max = loadoutMaxHealth(state, content, modifiers, dungeonId);
   const pattern = content.combat.bossPattern;
@@ -1002,10 +1032,11 @@ export function winsFloor(
   dungeonId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
   floor?: number,
+  difficulty?: Difficulty,
 ): boolean {
-  const spk = secondsPerKill(state, content, dungeonId, modifiers, floor);
+  const spk = secondsPerKill(state, content, dungeonId, modifiers, floor, difficulty);
   if (spk === null || !Number.isFinite(spk)) return false;
-  const survival = survivalSeconds(state, content, dungeonId, modifiers, floor);
+  const survival = survivalSeconds(state, content, dungeonId, modifiers, floor, difficulty);
   return survival === null || survival >= spk;
 }
 
@@ -1395,11 +1426,33 @@ function damageFloor(
   const tier = ensureTier(state, stage.dungeon);
   tier.best = Math.max(tier.best, stage.floor);
   report.floorsCleared += clears;
-  // Clearing (DESIGN.md §6): the Normal last-floor boss died.
+  // Clearing (DESIGN.md §6): the Normal last-floor boss died. The last floor of a tier also
+  // opens the next one, which is read from the best floor (floors.ts `isDifficultyUnlocked`).
   if (stage.difficulty === 'normal' && stage.kind === 'boss') {
     markCleared(state, content, stage.dungeon.id, report);
   }
   return { cleared: true, overflow };
+}
+
+/**
+ * A dungeon's drop table on a difficulty (DESIGN.md §6 Difficulty tiers): Money purses times the
+ * difficulty's purse, material units times its material. Normal is the table itself.
+ */
+export function difficultyDrops(drops: DropTable, scale: DifficultyScale): DropTable {
+  if (scale.purse === 1 && scale.material === 1) return drops;
+  return {
+    ...drops,
+    currencies: drops.currencies.map((currency) => ({
+      ...currency,
+      multiplier: (currency.multiplier ?? 1) * scale.purse,
+    })),
+    material: { ...drops.material, amount: drops.material.amount * scale.material },
+    extraMaterials: drops.extraMaterials.map((extra) => ({
+      ...extra,
+      min: extra.min * scale.material,
+      max: extra.max * scale.material,
+    })),
+  };
 }
 
 /**
@@ -1419,6 +1472,7 @@ function killEnemies(
 ): void {
   const { dungeon } = stage;
   const bossId = dungeon.boss.id;
+  drops = difficultyDrops(drops, stage.scale);
   let pity = state.pity[bossId] ?? 0;
   const purse = drops.currencies.map(() => 0);
   const extras = drops.extraMaterials.map(() => 0);

@@ -490,6 +490,12 @@ export const dungeonSchema = z.strictObject({
   id,
   name,
   tier,
+  /**
+   * False keeps a dungeon out of the game until its theme is decided (DESIGN.md §6 Three new
+   * dungeons): it is left out of `content.dungeons` (still in `content.allDungeons`), and its
+   * names, enemies and drops are placeholders. Dev builds can open them (`loadContent`).
+   */
+  enabled: z.boolean().default(true),
   /** Dungeon whose clear unlocks this one; null = open from the start. */
   unlockedBy: id.nullable(),
   /**
@@ -512,10 +518,13 @@ export const dungeonSchema = z.strictObject({
   boss: z.strictObject({
     id,
     name,
-    /** Which boss drawing to use. */
-    art: z.enum(BOSS_ARTS),
+    /** Which boss drawing to use; a boss without one shows a plain labelled placeholder. */
+    art: z.enum(BOSS_ARTS).optional(),
     hp: positiveDecimal,
-    /** Boss HP is multiplied by (1 + this) for every prestige. Keep it small. */
+    /**
+     * Every enemy of the dungeon (waves, mini-bosses and the boss; HP and attack alike) is
+     * multiplied by (1 + this) for every Ascension (DESIGN.md §6 Harder each Ascension).
+     */
     hpScalingPerPrestige: z.number().min(0).max(1),
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
@@ -718,6 +727,13 @@ const burstConfigSchema = z.strictObject({
 });
 
 /** Global combat numbers (combat.json). */
+const difficultySchema = z.strictObject({
+  hp: z.number().min(1),
+  attack: z.number().min(1),
+  purse: z.number().min(1),
+  material: z.number().int().min(1),
+});
+
 export const combatSchema = z.strictObject({
   /**
    * Damage per second with no fighting main card (bare hands, DESIGN.md §5). Fighting damage
@@ -770,6 +786,16 @@ export const combatSchema = z.strictObject({
     miniBossHpShare: z.number().gt(0).max(1),
     miniBossAttackShare: z.number().gt(0),
     miniBossPrefix: z.string().min(1),
+  }),
+  /**
+   * Difficulty tiers (DESIGN.md §6 Difficulty tiers): what Hard and Nightmare multiply on top of
+   * Normal. `hp` and `attack` scale every enemy, `purse` every Money purse (purses follow HP,
+   * §3 Ladders) and `material` the units of every material drop. The endless depths below
+   * Nightmare use Nightmare's numbers and grow by `floors.hpGrowth` with every depth.
+   */
+  difficulties: z.strictObject({
+    hard: difficultySchema,
+    nightmare: difficultySchema,
   }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
