@@ -76,3 +76,33 @@ export function healthPercent(fraction: number): number {
   if (!(fraction > 0)) return 0;
   return Math.min(100, Math.max(1, Math.round(fraction * 100)));
 }
+
+/** What the interim floor readout needs (DESIGN.md §6 Dungeon floors). */
+export interface FloorReadoutInput {
+  floor: number;
+  floors: number;
+  floorKind: 'wave' | 'miniboss' | 'boss';
+  wave: { index: number; size: number };
+  bestFloor: number;
+}
+
+/** The parts of the floor line, in order: the floor, what stands on it, the best floor. */
+export type FloorPart =
+  | { kind: 'floor'; floor: number; floors: number }
+  | { kind: 'enemy'; index: number; size: number }
+  | { kind: 'miniboss' }
+  | { kind: 'boss' }
+  | { kind: 'best'; best: number };
+
+/**
+ * The floor line as parts: "Floor 3 / 10", then "Enemy 2 / 4" on a wave or the mini-boss / boss
+ * mark, then "best 5" once a floor has been beaten.
+ */
+export function floorParts(input: FloorReadoutInput): FloorPart[] {
+  const parts: FloorPart[] = [{ kind: 'floor', floor: input.floor, floors: input.floors }];
+  if (input.floorKind === 'wave') {
+    parts.push({ kind: 'enemy', index: input.wave.index, size: input.wave.size });
+  } else parts.push({ kind: input.floorKind });
+  if (input.bestFloor > 0) parts.push({ kind: 'best', best: input.bestFloor });
+  return parts;
+}

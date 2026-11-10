@@ -8,6 +8,8 @@ import { isDungeonUnlocked } from './combat';
 import {
   cloneBursts,
   cloneCards,
+  cloneFloors,
+  DIFFICULTIES,
   emptyCardLoadout,
   SUPPORT_SLOTS,
   type CardState,
@@ -24,7 +26,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 23;
+export const CURRENT_SAVE_VERSION = 24;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -47,6 +49,18 @@ export const serializedStateSchema = z.object({
   clearedDungeons: z.array(z.string()),
   combat: z.object({
     kills: counts,
+    /** v24: floors per dungeon and difficulty (DESIGN.md §6). */
+    floors: z.record(
+      z.string(),
+      z.object({
+        difficulty: z.enum(DIFFICULTIES),
+        mode: z.enum(['push', 'farm']),
+        tiers: z.partialRecord(
+          z.enum(DIFFICULTIES),
+          z.object({ floor: z.number().int().min(1), best: z.number().int().min(0) }),
+        ),
+      }),
+    ),
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
     loadoutDamage: decimalText,
@@ -156,6 +170,7 @@ export function serializeState(state: GameState): SerializedState {
     clearedDungeons: [...state.clearedDungeons],
     combat: {
       kills: { ...state.combat.kills },
+      floors: cloneFloors(state.combat.floors),
       trialAttempt: {
         elapsedSeconds: state.combat.trialAttempt.elapsedSeconds,
         dealt: decimalToString(state.combat.trialAttempt.dealt),
@@ -240,6 +255,13 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   };
   state.combat = {
     kills: { ...saved.combat.kills },
+    // Dungeons that left the game are dropped; a floor past a dungeon's last is read back inside
+    // its range (floors.ts `floorPosition`).
+    floors: cloneFloors(
+      Object.fromEntries(
+        Object.entries(saved.combat.floors).filter(([id]) => content.dungeonById.has(id)),
+      ),
+    ),
     trialAttempt: {
       elapsedSeconds: saved.combat.trialAttempt.elapsedSeconds,
       dealt: new Decimal(saved.combat.trialAttempt.dealt),

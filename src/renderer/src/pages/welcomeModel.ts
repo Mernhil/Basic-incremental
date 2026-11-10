@@ -64,13 +64,14 @@ export function welcomeCards(summary: OfflineSummary, content: Content): Welcome
     });
   }
 
-  if (summary.bossKills > 0 || summary.knockouts > 0) {
+  const kills = summary.bossKills + summary.enemyKills;
+  if (kills > 0 || summary.knockouts > 0) {
     const lines: WelcomeLine[] = [];
     if (summary.knockouts > 0) lines.push({ text: t.knockouts(summary.knockouts) });
     cards.push({
       kind: 'fights',
       title: t.fights,
-      headline: t.kills(summary.bossKills),
+      headline: t.kills(kills),
       lines,
     });
   }

@@ -35,7 +35,10 @@ export interface OfflineSummary {
   capped: boolean;
   /** Resource id -> amount gained while away (only positive gains). */
   gains: Record<string, Decimal>;
+  /** Mini-bosses and bosses killed while away. */
   bossKills: number;
+  /** Normal enemies killed while away. */
+  enemyKills: number;
   drops: Record<string, number>;
   /** Cards dropped while away. */
   cardDrops: CardDrop[];
@@ -77,7 +80,11 @@ export function simulateOffline(
 
   const capMs = offlineCapMs(state, content);
   const simulatedMs = Math.min(elapsedMs, capMs);
-  const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS);
+  // Offline progress fights the floor the player left it on and never pushes deeper
+  // (DESIGN.md §6 Offline on floors).
+  const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS, {
+    noPush: true,
+  });
   // The session itself counts (Night Owl), then whatever it earned unlocks.
   const recorded = cloneState(result.state);
   recorded.stats.longestOfflineMs = Math.max(recorded.stats.longestOfflineMs, simulatedMs);
@@ -104,6 +111,7 @@ export function simulateOffline(
       capped: elapsedMs > capMs,
       gains,
       bossKills: result.report.bossKills,
+      enemyKills: result.report.enemyKills,
       drops: result.report.drops,
       cardDrops: result.report.cardDrops,
       cardLevels: result.report.cardLevels,

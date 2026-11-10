@@ -16,6 +16,7 @@ import {
   devOptions,
   devSetCardRank,
   devSetDungeonCleared,
+  devSetFloor,
   type DevResult,
 } from '../../../game/dev';
 import { h } from '../shell/shell';
@@ -110,6 +111,11 @@ export function installDevPanel(ctx: DevPanelContext): void {
   const unclear = button('Unclear', () =>
     run('Unclear', (s) => devSetDungeonCleared(s, ctx.content, dungeon.value, false)),
   );
+  // floors: puts the chosen dungeon on a floor (DESIGN.md §6 Dungeon floors)
+  const floor = input('1', 'Floor');
+  const setFloor = button('Set floor', () =>
+    run('Floor', (s) => devSetFloor(s, ctx.content, dungeon.value, Number(floor.value))),
+  );
 
   // cards
   const card = select(options.cards);
@@ -150,6 +156,7 @@ export function installDevPanel(ctx: DevPanelContext): void {
     h('h2', 'dev-panel__title', 'Dev cheats'),
     row('Resource', resource, amount, grant),
     row('Dungeon', dungeon, clear, unclear),
+    row('Floor', floor, setFloor),
     row('Card', card, tier, stars, level, setRank),
     row('Account', xp, addXp),
     row('Cosmetic', cosmetic, giveCosmetic),

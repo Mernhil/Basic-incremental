@@ -48,7 +48,20 @@ function pinStarBar(bundled: Content): Content {
   };
 }
 
-export const content: Content = pinStarBar(pinProductionRates(loadContent()));
+/**
+ * Every dungeon pinned to one floor: its boss (DESIGN.md §6 Dungeon floors). The boss rule tests
+ * (damage, drops, knockouts, medals) then fight the boss from the first second, as they did
+ * before floors, and tuning the floor counts does not move them. Floor tests use `floorsContent`.
+ */
+function pinOneFloor(bundled: Content): Content {
+  const dungeons = bundled.dungeons.map((d) => ({ ...d, floors: 1 }));
+  return { ...bundled, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
+}
+
+/** The pinned content with the shipped floors of every dungeon back in. */
+export const floorsContent: Content = pinStarBar(pinProductionRates(loadContent()));
+
+export const content: Content = pinOneFloor(floorsContent);
 
 /**
  * Crystals per "pull unit": rule tests count crystals in units of a tenth of a Card Portal pull

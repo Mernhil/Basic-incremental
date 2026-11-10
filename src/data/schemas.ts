@@ -492,8 +492,17 @@ export const dungeonSchema = z.strictObject({
   tier,
   /** Dungeon whose clear unlocks this one; null = open from the start. */
   unlockedBy: id.nullable(),
-  /** Boss kills needed to clear the dungeon (DESIGN.md §6: the first kill). */
-  killsToClear: z.number().int().min(1).default(1),
+  /**
+   * How many floors the dungeon has (DESIGN.md §6 Dungeon floors). The last floor holds the boss
+   * below; the others hold waves of the `enemies`, with a mini-boss on every 10th floor
+   * (`combat.json` `floors`). The dungeon is cleared when its last-floor boss first dies.
+   */
+  floors: z.number().int().min(1),
+  /**
+   * The normal enemies of the dungeon's waves (DESIGN.md §6 Normal enemies). `hpWeight` sets how
+   * a wave's HP is shared among its enemies, so each type has its own HP and purse.
+   */
+  enemies: z.array(z.strictObject({ id, name, hpWeight: z.number().gt(0).default(1) })).min(1),
   /**
    * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
    * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
@@ -742,6 +751,26 @@ export const combatSchema = z.strictObject({
         ) < 1e-9,
       { message: 'one cycle of attacks must add up to attacksPerCycle normal attacks' },
     ),
+  /**
+   * Floors (DESIGN.md §6 Dungeon floors, §3 Ladders). A floor's strength is measured against the
+   * dungeon's boss: floor `f` of `n` is worth `hpGrowth^(f - n)` of the boss's HP and attack. A
+   * normal floor is a wave of `waveSize` enemies sharing `waveHpShare` of that HP and attacking
+   * for `waveAttackShare` of that attack; every `miniBossEvery`-th floor holds a mini-boss (one of
+   * the dungeon's enemies, named with `miniBossPrefix`) with the mini-boss shares; the last floor
+   * holds the boss itself. An enemy's drops are the boss's, scaled by its share of the boss's HP.
+   */
+  floors: z.strictObject({
+    hpGrowth: z.number().min(1),
+    waveHpShare: z.number().gt(0).max(1),
+    waveAttackShare: z.number().gt(0),
+    waveSize: z
+      .strictObject({ min: z.number().int().min(1), max: z.number().int().min(1) })
+      .refine((w) => w.min <= w.max, { message: 'min must not exceed max' }),
+    miniBossEvery: z.number().int().min(2),
+    miniBossHpShare: z.number().gt(0).max(1),
+    miniBossAttackShare: z.number().gt(0),
+    miniBossPrefix: z.string().min(1),
+  }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
     chance: z.number().min(0).max(1),

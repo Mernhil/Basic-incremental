@@ -426,6 +426,35 @@
   height: 100%;
   overflow: visible;
 }
+/* A normal enemy or mini-boss without art yet: a plain labelled placeholder (DESIGN.md §6). */
+.ar-enemy {
+  display: grid;
+  place-items: center;
+  width: 64%;
+  height: 56%;
+  margin: 38% auto 0;
+  padding: 6px;
+  box-sizing: border-box;
+  border: 2px dashed var(--bi-frame-ink-muted, #a79bb8);
+  background: rgb(0 0 0 / 0.55);
+  color: var(--bi-frame-ink, #f4ecff);
+  text-align: center;
+}
+.ar-enemy--miniboss {
+  width: 80%;
+  height: 70%;
+  margin-top: 24%;
+  border-style: solid;
+}
+.ar-enemy__name {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.ar-boss__body.is-hit .ar-enemy {
+  animation: ar-white 0.1s steps(1) 1;
+}
 .ar-boss__fx {
   position: absolute;
   inset: 12%;

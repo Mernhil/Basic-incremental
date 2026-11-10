@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, cloneState, cosmeticMaxLevel, type GameState } from '../src/game';
+import { Decimal, cloneState, cosmeticMaxLevel, floorPosition, type GameState } from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -20,10 +20,11 @@ import {
   formatRunTable,
   RUN_MILESTONES,
   IDLE_CHECKIN_SECONDS,
+  choosePush,
   type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
-import { content, CRYSTAL_UNIT, freshState, withDps } from './helpers';
+import { content, CRYSTAL_UNIT, floorsContent, freshState, withDps } from './helpers';
 
 /** First level price of a mine or tree (the shipped numbers are tuning, DESIGN.md §4). */
 const firstLevel = (kind: 'mine' | 'tree', id: string): number =>
@@ -607,4 +608,32 @@ describe('balance sim: idle profile', () => {
     const b = runSim(content, { hours: 2, seed: 5, profile: 'idle' });
     expect(a.hits).toEqual(b.hits);
   }, 60_000);
+});
+
+describe('balance sim: floors', () => {
+  it('pushes again once the next floor is one the loadout wins, and not into a wall', () => {
+    const floors = floorsContent;
+    const knocked = (): GameState => {
+      const state = freshState();
+      state.combat.floors['mossy_cellar'] = {
+        difficulty: 'normal',
+        mode: 'farm',
+        tiers: { normal: { floor: 3, best: 3 } },
+      };
+      return state;
+    };
+    // A strong loadout wins floor 4 with room to spare: back to pushing.
+    const strong = choosePush(knocked(), withDps(1e6, floors));
+    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).mode).toBe('push');
+    // A bare-handed one would fall first: it keeps farming.
+    const weak = choosePush(knocked(), withDps(0.01, floors));
+    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).mode).toBe('farm');
+  });
+
+  it('reaches the Ember Crypt through the ten floors of the Mossy Cellar', () => {
+    const result = runSim(loadContent(), { hours: 0.5, seed: 2, stepSeconds: 10 });
+    expect(result.hits['clear_d1']).not.toBeNull();
+    const cellar = floorPosition(result.state, loadContent().dungeonById.get('mossy_cellar')!);
+    expect(cellar.best).toBe(10);
+  }, 30_000);
 });

@@ -157,7 +157,12 @@ export function pushBossAttack(into: BossAttackEvent[], event: BossAttackEvent):
 
 /** What happened during one advance() call, for notifications, animations and the away summary. */
 export interface TickReport {
+  /** Kills of boss floors' enemies: mini-bosses and last-floor bosses. */
   bossKills: number;
+  /** Kills of normal enemies (the waves). */
+  enemyKills: number;
+  /** Floors cleared (a floor farmed again counts each time). */
+  floorsCleared: number;
   /** Rare item id -> times dropped. */
   drops: Record<string, number>;
   /** Material resource id (Cores, Glimmer Dust, Facet Shards) -> units gained. */
@@ -200,6 +205,8 @@ export interface TickReport {
 export function emptyReport(): TickReport {
   return {
     bossKills: 0,
+    enemyKills: 0,
+    floorsCleared: 0,
     drops: {},
     materials: {},
     currencies: {},
@@ -223,6 +230,8 @@ export function emptyReport(): TickReport {
 
 export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.bossKills += add.bossKills;
+  into.enemyKills += add.enemyKills;
+  into.floorsCleared += add.floorsCleared;
   for (const [id, n] of Object.entries(add.drops)) into.drops[id] = (into.drops[id] ?? 0) + n;
   for (const [id, n] of Object.entries(add.materials)) {
     into.materials[id] = (into.materials[id] ?? 0) + n;

@@ -26,6 +26,19 @@
     "lightMultiplier": 0.4,
     "slamMultiplier": 4
   },
+  "floors": {
+    "hpGrowth": 1.12,
+    "waveHpShare": 0.2,
+    "waveAttackShare": 0.5,
+    "waveSize": {
+      "min": 3,
+      "max": 5
+    },
+    "miniBossEvery": 10,
+    "miniBossHpShare": 0.6,
+    "miniBossAttackShare": 0.8,
+    "miniBossPrefix": "Great"
+  },
   "crit": {
     "chance": 0.05,
     "damage": "2"

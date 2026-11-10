@@ -4,7 +4,24 @@
     "name": "Mossy Cellar",
     "tier": 1,
     "unlockedBy": null,
-    "killsToClear": 1,
+    "floors": 10,
+    "enemies": [
+      {
+        "id": "moss_slime",
+        "name": "Moss Slime",
+        "hpWeight": 1
+      },
+      {
+        "id": "root_sprite",
+        "name": "Root Sprite",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "bramble_beast",
+        "name": "Bramble Beast",
+        "hpWeight": 1.5
+      }
+    ],
     "background": "mossy_cellar",
     "boss": {
       "id": "root_warden",
@@ -68,7 +85,24 @@
     "name": "Ember Crypt",
     "tier": 2,
     "unlockedBy": "mossy_cellar",
-    "killsToClear": 10,
+    "floors": 20,
+    "enemies": [
+      {
+        "id": "ember_bat",
+        "name": "Ember Bat",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "cinder_imp",
+        "name": "Cinder Imp",
+        "hpWeight": 1
+      },
+      {
+        "id": "magma_crawler",
+        "name": "Magma Crawler",
+        "hpWeight": 1.5
+      }
+    ],
     "background": "ember_crypt",
     "boss": {
       "id": "cinder_lich",
@@ -141,7 +175,24 @@
     "name": "Frostspire Vault",
     "tier": 3,
     "unlockedBy": "ember_crypt",
-    "killsToClear": 90,
+    "floors": 30,
+    "enemies": [
+      {
+        "id": "frost_imp",
+        "name": "Frost Imp",
+        "hpWeight": 1
+      },
+      {
+        "id": "ice_wisp",
+        "name": "Ice Wisp",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "snow_wolf",
+        "name": "Snow Wolf",
+        "hpWeight": 1.5
+      }
+    ],
     "background": "frostspire_vault",
     "boss": {
       "id": "glacier_colossus",
