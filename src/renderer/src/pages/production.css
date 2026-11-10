@@ -155,7 +155,10 @@
 .pp-tile__art {
   /* 1 CSS px per tile pixel at a whole device scale (ASSET_RULES.md §5): the 64 px box is the tile grid */
   --one: calc(64px / var(--dpr));
-  width: max(var(--one), round(nearest, 64px, var(--one)));
+  --tile: max(var(--one), round(nearest, 64px, var(--one)));
+  /* one art pixel of the 64 px tile: what the bob and the hop move by */
+  --art-px: calc(var(--tile) / 64);
+  width: var(--tile);
   aspect-ratio: 1;
   animation: pp-bob 4.2s steps(1, end) var(--d, 0s) infinite;
 }
@@ -321,13 +324,13 @@ html .pp-band .pp-buy {
 /* tiles bob and hop by whole art pixels: nothing is scaled or rotated */
 @keyframes pp-bob {
   50% {
-    translate: 0 calc(var(--one) * -1);
+    translate: 0 calc(var(--art-px) * -1);
   }
 }
 @keyframes pp-hop {
   30%,
   60% {
-    translate: 0 calc(var(--one) * -3);
+    translate: 0 calc(var(--art-px) * -3);
   }
 }
 @keyframes pp-wave {

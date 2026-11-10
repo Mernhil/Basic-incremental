@@ -146,6 +146,51 @@ export interface JobLoadout {
   cap: number;
 }
 
+/** One card a loadout slot could take (UI_RULES §2 Loadouts). */
+export interface SlotChoice {
+  id: string;
+  cost: number;
+  /** The slot the card sits in now (0 = main, 1..3 supports), or null. Picking it swaps. */
+  from: number | null;
+  /** It is the card already in the slot being filled. */
+  current: boolean;
+  /** The loadout's cost with this card in the slot, and whether that fits the cap. */
+  costAfter: number;
+  fits: boolean;
+}
+
+/**
+ * What a slot of a job's loadout could take: every owned card of the job with what picking it
+ * would cost. A card already in another slot swaps places with the slot's card, so the cost
+ * stays; any other card replaces the slot's card. Cards that fit come first, cheapest last, so
+ * the strongest (costliest) cards lead.
+ */
+export function slotChoices(
+  entries: readonly CardEntry[],
+  loadout: JobLoadout,
+  slot: number,
+): SlotChoice[] {
+  const costOf = new Map(entries.map((e) => [e.id, e.cost]));
+  const occupant = loadout.slots[slot] ?? null;
+  const occupantCost = occupant ? (costOf.get(occupant) ?? 0) : 0;
+  return entries
+    .filter((e) => e.owned && e.job === loadout.job)
+    .map((e): SlotChoice => {
+      const at = loadout.slots.indexOf(e.id);
+      const from = at >= 0 ? at : null;
+      const costAfter = from !== null ? loadout.cost : loadout.cost - occupantCost + e.cost;
+      return {
+        id: e.id,
+        cost: e.cost,
+        from,
+        current: from === slot,
+        costAfter,
+        fits: costAfter <= loadout.cap,
+      };
+    })
+    .sort((a, b) => Number(b.fits) - Number(a.fits) || b.cost - a.cost);
+}
+
 /** A card action's result; tier-ups (DESIGN.md §12) play their moment. */
 export type ModelResult =
   { ok: true; state: GameState; tierUps?: TierUp[] } | { ok: false; reason: string };
@@ -161,6 +206,9 @@ export interface CardsModel {
   setMain(state: GameState, id: string): ModelResult;
   addSupport(state: GameState, id: string): ModelResult;
   remove(state: GameState, id: string): ModelResult;
+  /** Puts a card in a slot of its job's loadout (0 = main, 1..3 supports); a card already in
+   *  another slot swaps with the slot's card. */
+  place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
   upgrade(state: GameState, id: string, kind: 'star' | 'tier'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
