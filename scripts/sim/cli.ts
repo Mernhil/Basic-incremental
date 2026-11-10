@@ -36,6 +36,7 @@ interface WorkerOutput {
   seed: number;
   hits: SimResult['hits'];
   dps: SimResult['dpsSamples'];
+  pulls: SimResult['pullSamples'];
   simSeconds: number;
   summary: string;
 }
@@ -47,6 +48,7 @@ function runOne(seed: number): WorkerOutput {
     seed,
     hits: result.hits,
     dps: result.dpsSamples,
+    pulls: result.pullSamples,
     simSeconds: result.simSeconds,
     summary: `${formatTable(result)}\n\n${formatSummary(result, content)}`,
   };
@@ -107,6 +109,21 @@ async function main(): Promise<void> {
   });
   console.log(`
 Median DPS vs first dungeon: ${medianDps.join(', ')}`);
+  // Median pulls in the hour before each sample hour (DESIGN §7: 12 to 15 an hour).
+  const pullHours = [1, 2, 4, 8, 10, 12, 16, 20, 30, 40].filter((h) => h <= hours);
+  const pullsAt = (o: WorkerOutput, seconds: number, j: 1 | 2): number =>
+    seconds <= 0 ? 0 : (o.pulls.find(([t]) => t === seconds)?.[j] ?? 0);
+  const medianPulls = (j: 1 | 2): string =>
+    pullHours
+      .map((h) => {
+        const values = outputs
+          .map((o) => pullsAt(o, h * 3600, j) - pullsAt(o, (h - 1) * 3600, j))
+          .sort((a, b) => a - b);
+        return `${h} h ${values[Math.floor(values.length / 2)] ?? 0}`;
+      })
+      .join(', ');
+  console.log(`Median Card Portal pulls in the hour before: ${medianPulls(1)}`);
+  console.log(`Median Wardrobe Gate pulls in the hour before: ${medianPulls(2)}`);
   const typical = [...outputs].sort((a, b) => distance(a) - distance(b))[0];
   if (typical) {
     console.log(`\nMost typical run (seed ${typical.seed}):\n`);
