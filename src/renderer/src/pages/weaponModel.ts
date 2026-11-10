@@ -1,6 +1,6 @@
 import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
-import { itemName, tierLabel, type CardInfo } from '../../../game';
+import { itemName, lookTier, tierLabel, type CardInfo } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import type { CostChip, WeaponView } from './cardsModel';
@@ -79,7 +79,7 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
   }
 
   return {
-    weapon: itemName(content, card.item.kind, rank.tier, card.rarity),
+    weapon: itemName(content, card.item.kind, lookTier(card.rarity, rank.tier), card.rarity),
     tier: rank.tier,
     tierName: tierLabel(rank.tier, card.rarity),
     level: owned.level,

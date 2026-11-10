@@ -9,6 +9,7 @@ import {
   collectModifiers,
   levelCap,
   loadoutInfo,
+  lookTier,
   weaponLookRarity,
   setLoadoutSlot,
   starUp,
@@ -127,7 +128,12 @@ export function createCardsModel(
       emblem: JOB_EMBLEM[card.job],
       item:
         art?.(card.id, owned) ??
-        itemArt(card.item.kind, weaponLookRarity(card.rarity, rank.tier), rank.tier, card.rarity),
+        itemArt(
+          card.item.kind,
+          weaponLookRarity(card.rarity, lookTier(card.rarity, rank.tier)),
+          lookTier(card.rarity, rank.tier),
+          card.rarity,
+        ),
       element: card.element,
       owned: owned !== null,
       rank,
