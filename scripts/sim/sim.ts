@@ -14,6 +14,8 @@
  *   it is kept for it once the card is at its level cap (a star-up costs only the star bar);
  * - fills loadouts with the rarest cards,
  *   equips complete cosmetic sets;
+ * - pushes down a dungeon's floors whenever the next floor is one it wins with room to spare (a
+ *   knockout drops it a floor and back to farming, by the game's own rule);
  * - fights: the Glimmer Trial once it can score 100%, else a newly killable dungeon, else the
  *   cleared trial for cosmetic materials within a time share, else a dungeon whose Core a card
  *   waits for, else the hardest killable one (every dungeon pays Money and both crystals);
@@ -52,6 +54,9 @@ import {
   secondsPerKill,
   survivalSeconds,
   simulateOffline,
+  floorPosition,
+  hasDeeperFloor,
+  setFloorMode,
   setActiveDungeon,
   setLoadout,
   starUp,
@@ -1057,7 +1062,8 @@ export const TRIAL_FARM_SHARE = 0.25;
 
 /**
  * What to fight: the Glimmer Trial once it can be cleared; a killable dungeon not cleared yet
- * whose kill takes at most PUSH_MAX_SECONDS;
+ * whose floors it can still get down (not one at a wall) and whose floor takes at most
+ * PUSH_MAX_SECONDS;
  * the cleared trial for cosmetic materials while its share of the time is under
  * TRIAL_FARM_SHARE; a dungeon whose Core is wanted (or that drops a wanted material as an extra;
  * crystals come as a wage everywhere); the hardest killable dungeon; else the first
@@ -1078,6 +1084,7 @@ export function chooseDungeon(
   const push = killable.find(
     (d) =>
       !isDungeonCleared(state, d.id) &&
+      advances(state, content, d.id, modifiers) &&
       (secondsPerKill(state, content, d.id, modifiers) ?? Infinity) <= PUSH_MAX_SECONDS,
   );
   if (push) return push.id;
@@ -1111,6 +1118,58 @@ export function chooseDungeon(
     (d) => isDungeonUnlocked(state, content, d.id) && !isDungeonCleared(state, d.id),
   );
   return open?.id ?? content.dungeons[0]?.id ?? null;
+}
+
+/** The sim player pushes on only when the next floor's "you fall in" is this many times its clear time. */
+export const PUSH_MARGIN = 1.2;
+
+/** Whether the floor below the one the player stands on is one the loadout wins with room to spare. */
+function winsNextFloor(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: readonly Modifier[],
+): boolean {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return false;
+  const position = floorPosition(state, dungeon);
+  if (!hasDeeperFloor(position)) return false;
+  const next = position.floor + 1;
+  const spk = secondsPerKill(state, content, dungeonId, modifiers, next);
+  if (spk === null || !Number.isFinite(spk)) return false;
+  const survival = survivalSeconds(state, content, dungeonId, modifiers, next);
+  return survival === null || survival >= spk * PUSH_MARGIN;
+}
+
+/**
+ * Whether fighting a dungeon gets the player nearer its clear: it is pushing down floors it
+ * wins, stands on a last floor it wins, or was knocked back to farming and now wins the floor
+ * below. A dungeon at a wall is only worth its drops.
+ */
+function advances(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: Modifier[],
+): boolean {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon || !canKill(state, content, dungeonId, modifiers)) return false;
+  const position = floorPosition(state, dungeon);
+  if (!hasDeeperFloor(position) || position.mode === 'push') return true;
+  return winsNextFloor(state, content, dungeonId, modifiers);
+}
+
+/**
+ * Push or farm (DESIGN.md §6 Dungeon floors): a player who was knocked back to farming pushes
+ * again once the next floor is one the loadout wins with room to spare.
+ */
+export function choosePush(state: GameState, content: Content): GameState {
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  if (!dungeon) return state;
+  if (floorPosition(state, dungeon).mode === 'push') return state;
+  if (!winsNextFloor(state, content, dungeon.id, collectModifiers(state, content))) return state;
+  const result = setFloorMode(state, content, dungeon.id, 'push');
+  return result.ok ? result.state : state;
 }
 
 // ---- running -----------------------------------------------------------------------------------
@@ -1254,6 +1313,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         const result = setActiveDungeon(state, content, target);
         if (result.ok) state = result.state;
       }
+      state = choosePush(state, content);
       sinceChoose = 0;
     }
     const dt = idle
@@ -1276,7 +1336,12 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     sinceChoose += dt;
     sinceAscendCheck += dt;
     sinceCheckin += dt;
-    if (report.bossKills > 0 || report.knockouts > 0 || report.trialAttempts > 0) {
+    if (
+      report.bossKills > 0 ||
+      report.knockouts > 0 ||
+      report.trialAttempts > 0 ||
+      report.cleared.length > 0
+    ) {
       sinceChoose = RECHOOSE_SECONDS;
     }
     if (report.cardDrops.length > 0) state = optimizeLoadouts(state, content);
@@ -1540,12 +1605,15 @@ export function formatSummary(result: SimResult, content: Content): string {
     .map((d) => {
       const spk = secondsPerKill(s, content, d.id, modifiers);
       const survive = survivalSeconds(s, content, d.id, modifiers) ?? Infinity;
-      return `${d.id} ${spk === null ? '-' : `${spk.toFixed(0)} s/kill`} (survives ${survive.toFixed(0)} s)`;
+      const at = floorPosition(s, d);
+      return `${d.id} floor ${at.floor}/${at.floors} (best ${at.best}, ${at.mode}) ${spk === null ? '-' : `${spk.toFixed(0)} s/floor`} (survives ${survive.toFixed(0)} s)`;
     })
     .join(', ');
   return [
     `Fights at the end: ${walls}`,
-    `Kills: ${s.stats.bossKills} (${Object.entries(s.combat.kills)
+    `Boss and mini-boss kills: ${s.stats.bossKills} (last-floor bosses: ${Object.entries(
+      s.combat.kills,
+    )
       .map(([d, k]) => `${d} ${k}`)
       .join(', ')})`,
     `DPS vs Mossy Cellar: ${result.dpsSamples
