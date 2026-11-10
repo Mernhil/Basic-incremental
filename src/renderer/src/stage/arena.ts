@@ -17,6 +17,7 @@ import {
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { bossArt, sentinelLevel } from '../art/bosses';
+import { floorParts, type FloorPart } from '../pages/dungeonsModel';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { medalTip } from '../pages/progressionModel';
 import { barsGone, healthPercent, signatureCount } from '../pages/dungeonsModel';
@@ -87,6 +88,22 @@ const BIG_FAN = { width: 1280, height: 720 } as const;
 const FAN_RESERVE = 170;
 /** Art pixels the whole fan is wide (the main card plus three peeks) and the card is tall. */
 const FAN_ART = { w: 180, h: 186 } as const;
+
+/** One part of the interim floor line as text ("Floor 3 / 10", "Enemy 2 / 4", "Boss", "best 5"). */
+export function floorPartText(part: FloorPart): string {
+  switch (part.kind) {
+    case 'floor':
+      return COPY.dungeons.floorOf(part.floor, part.floors);
+    case 'enemy':
+      return COPY.dungeons.enemyOf(part.index, part.size);
+    case 'miniboss':
+      return COPY.dungeons.miniBoss;
+    case 'boss':
+      return COPY.dungeons.bossFloor;
+    case 'best':
+      return COPY.dungeons.bestFloor(part.best);
+  }
+}
 
 export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): void } {
   const { content } = ctx;
@@ -319,6 +336,16 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     let key = '';
     let markup = '';
     if (dungeon) {
+      // The dungeon's boss has its drawing; normal enemies and mini-bosses show a plain labelled
+      // placeholder until their art is made (DESIGN.md §6 Normal enemies).
+      const enemy = bossStatus(s, content)?.enemy;
+      if (enemy && enemy.kind !== 'boss') {
+        const key_ = `enemy:${enemy.kind}:${enemy.id}`;
+        if (key_ === bossArtKey) return;
+        bossArtKey = key_;
+        body.replaceChildren(enemyPlaceholder(enemy.name, enemy.kind));
+        return;
+      }
       key = dungeon.boss.art;
       markup = bossArt(dungeon.boss.art);
     } else if (t) {
@@ -332,6 +359,16 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     body.innerHTML = markup
       ? `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${markup}</svg>`
       : '';
+  }
+
+  /** A normal enemy or mini-boss without art: a plain box with its name. */
+  function enemyPlaceholder(label: string, kind: string): HTMLElement {
+    const box = div(`ar-enemy ar-enemy--${kind}`);
+    const text = document.createElement('span');
+    text.className = 'ar-enemy__name';
+    text.textContent = label;
+    box.append(text);
+    return box;
   }
 
   function build(s: GameState): void {
@@ -354,12 +391,13 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     line.classList.toggle('ar__line--solo', !dungeon);
     empty.hidden = fighting;
     trial.hidden = !t;
-    name.textContent = dungeon?.boss.name ?? t?.target.name ?? COPY.arena.idleTitle;
+    const foe = dungeon ? bossStatus(s, content)?.enemy.name : undefined;
+    name.textContent = foe ?? dungeon?.boss.name ?? t?.target.name ?? COPY.arena.idleTitle;
     lineWhere.textContent = '';
     lineGone.textContent = '';
     medalTier = -1;
     el.setAttribute('aria-label', dungeon?.name ?? t?.name ?? COPY.arena.idleTitle);
-    boss.setAttribute('aria-label', dungeon?.boss.name ?? t?.target.name ?? '');
+    boss.setAttribute('aria-label', foe ?? dungeon?.boss.name ?? t?.target.name ?? '');
     boss.setAttribute('role', 'img');
     trial.replaceChildren();
     if (t) {
@@ -435,13 +473,27 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     }
 
     if (dungeon) {
-      const kills = s.combat.kills[id] ?? 0;
+      const status = bossStatus(s, content, mods);
+      // the interim floor readout (UI_RULES §2): dungeon, difficulty, floor, what stands on it
       setText(
         lineWhere,
-        [dungeon.name, COPY.dungeons.tier(dungeon.tier), COPY.dungeons.kills(kills)].join(' · '),
+        [
+          dungeon.name,
+          ...(status
+            ? [
+                COPY.dungeons.difficulty[status.difficulty] ?? status.difficulty,
+                ...floorParts(status).map(floorPartText),
+              ]
+            : []),
+        ].join(' · '),
       );
-      const status = bossStatus(s, content, mods);
       if (status) {
+        // the enemy our hits are on: its name and picture follow the wave
+        setText(name, status.enemy.name);
+        if (boss.getAttribute('aria-label') !== status.enemy.name) {
+          boss.setAttribute('aria-label', status.enemy.name);
+        }
+        setBossArt(s);
         const fraction = status.bars.fraction;
         hp.update(
           status.bars,
@@ -450,7 +502,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
           status.hp.div(status.maxHp).toNumber(),
         );
         hpTip = COPY.arena.bossTip(fmt(status.hp), fmt(status.maxHp));
-        const gone = barsGone(dungeon.boss.hpBars, status.bars.remaining);
+        const gone = barsGone(status.enemy.hpBars, status.bars.remaining);
         setText(lineGone, COPY.arena.barsGone(gone.gone, gone.total));
         // a hit took a piece of the bar: it comes away pale, holds, then falls off
         if (status.bars.index === lastBarIndex && fraction < lastFraction - 0.002) {

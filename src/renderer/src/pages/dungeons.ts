@@ -5,12 +5,14 @@ import {
   clearUnlocks,
   collectModifiers,
   effectiveDrops,
+  floorPosition,
   formatDuration,
   isDungeonCleared,
   isDungeonUnlocked,
   loadoutHealth,
   secondsPerKill,
   setActiveDungeon,
+  setFloorMode,
   trialRewards,
   bossMastery,
   type GameState,
@@ -20,7 +22,7 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
-import { createArena, type CoinTarget } from '../stage/arena';
+import { createArena, floorPartText, type CoinTarget } from '../stage/arena';
 import type { Director } from '../stage/director';
 import { bossArt } from '../art/bosses';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
@@ -30,6 +32,7 @@ import type { CardsModel } from './cardsModel';
 import {
   DRAWER_TABS,
   drawerStatus,
+  floorParts,
   parseTab,
   tabAfterKey,
   type DrawerTab,
@@ -89,7 +92,13 @@ function statusText(status: DrawerStatus): string {
 }
 
 function floorsSignature(state: GameState): string {
-  return JSON.stringify([state.activeDungeonId, state.clearedDungeons, state.prestigeCount]);
+  const active = state.activeDungeonId ? state.combat.floors[state.activeDungeonId] : undefined;
+  return JSON.stringify([
+    state.activeDungeonId,
+    state.clearedDungeons,
+    state.prestigeCount,
+    active?.difficulty,
+  ]);
 }
 
 export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { render(): void } {
@@ -287,8 +296,78 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     }
     for (const t of content.trials.filter((x) => !content.dungeonById.has(x.unlockedBy ?? '')))
       list.append(floor(t, true, state));
-    floorsCol.replaceChildren(head, list);
+    const active = state.activeDungeonId
+      ? content.dungeonById.get(state.activeDungeonId)
+      : undefined;
+    floorsCol.replaceChildren(head, ...(active ? [floorControls(active)] : []), list);
     buildLoot(state);
+  }
+
+  /**
+   * The interim floor controls of the dungeon being fought (UI_RULES §2, until the floors UI is
+   * designed): the floor and difficulty as plain text, the Push / Farm toggle and the difficulty
+   * selector for the unlocked tiers.
+   */
+  function floorControls(d: Dungeon): HTMLElement {
+    const box = h('section', 'dp-fl');
+    box.setAttribute('aria-label', COPY.dungeons.floorsTitle);
+    const where = h('p', 'dp-fl__where bi-num');
+    where.dataset.key = 'floor-readout';
+    const hint = h('p', 'dp-fl__hint');
+    const modes = h('div', 'dp-fl__row');
+    modes.setAttribute('role', 'group');
+    modes.setAttribute('aria-label', COPY.dungeons.modeLabel);
+    const modeButton = (mode: 'push' | 'farm'): HTMLButtonElement => {
+      const b = h('button', 'px-btn dp-fl__opt', COPY.dungeons[mode]) as HTMLButtonElement;
+      b.type = 'button';
+      b.dataset.key = `mode-${mode}`;
+      b.addEventListener('click', () => {
+        const result = setFloorMode(ctx.state(), content, d.id, mode);
+        if (!result.ok) return;
+        ctx.apply(result.state);
+        render();
+        floorsCol.querySelector<HTMLElement>(`[data-key="mode-${mode}"]`)?.focus();
+      });
+      return b;
+    };
+    const push = modeButton('push');
+    const farm = modeButton('farm');
+    modes.append(push, farm);
+    const tiers = h('div', 'dp-fl__row');
+    tiers.setAttribute('role', 'group');
+    tiers.setAttribute('aria-label', COPY.dungeons.difficultyLabel);
+    // Only Normal exists so far: it is the chosen and only tier.
+    const normal = h('button', 'px-btn dp-fl__opt', COPY.dungeons.difficulty['normal']);
+    (normal as HTMLButtonElement).type = 'button';
+    normal.dataset.key = 'difficulty-normal';
+    normal.setAttribute('aria-pressed', 'true');
+    tiers.append(h('span', 'dp-fl__label', COPY.dungeons.difficultyLabel), normal);
+    box.append(where, modes, hint, tiers);
+    updates.push(() => {
+      const s = ctx.state();
+      if (s.activeDungeonId !== d.id) return;
+      const status = bossStatus(s, content);
+      if (!status) return;
+      const text = [
+        d.name,
+        COPY.dungeons.difficulty[status.difficulty] ?? status.difficulty,
+        ...floorParts(status).map(floorPartText),
+      ].join(' · ');
+      if (where.textContent !== text) where.textContent = text;
+      const pushing = status.mode === 'push';
+      if (push.getAttribute('aria-pressed') !== String(pushing)) {
+        push.setAttribute('aria-pressed', String(pushing));
+        farm.setAttribute('aria-pressed', String(!pushing));
+      }
+      const tip =
+        status.floor >= status.floors
+          ? COPY.dungeons.lastFloorTip
+          : pushing
+            ? COPY.dungeons.pushTip
+            : COPY.dungeons.farmTip;
+      if (hint.textContent !== tip) hint.textContent = tip;
+    });
+    return box;
   }
 
   function floor(entry: Dungeon | Trial, special: boolean, state: GameState): HTMLElement {
@@ -321,7 +400,11 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       updates.push(() => {
         const s = ctx.state();
         const sec = secondsPerKill(s, content, d.id, collectModifiers(s, content));
-        const parts = [COPY.dungeons.kills(s.combat.kills[d.id] ?? 0)];
+        const at = floorPosition(s, d);
+        const parts = [
+          COPY.dungeons.floorOf(at.floor, at.floors),
+          COPY.dungeons.kills(s.combat.kills[d.id] ?? 0),
+        ];
         if (sec !== null) parts.push(COPY.dungeons.perKill(formatDuration(sec * 1000)));
         const text = parts.join(' · ');
         if (meta.textContent !== text) meta.textContent = text;
@@ -453,7 +536,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         value.textContent = COPY.dungeons.pityKills(Math.max(1, threshold - status.pity));
         fill.style.width = `${Math.min(100, (status.pity / threshold) * 100).toFixed(1)}%`;
       });
-      lootCol.append(list, pity);
+      lootCol.append(list, pity, h('p', 'dp-note', COPY.dungeons.dropsNote));
     } else if (t) {
       list.setAttribute('aria-label', COPY.dungeons.tiers);
       for (const tier of t.tiers) {

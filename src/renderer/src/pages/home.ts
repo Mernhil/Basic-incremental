@@ -248,7 +248,10 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     const trial = id ? content.trialById.get(id) : undefined;
     const level = trial ? sentinelLevel(Math.min(trialStatus(s, content)?.score ?? 0, 1)) : 0;
     const art = dungeon?.boss.art ?? trial?.target.art;
-    const bossName = dungeon?.boss.name ?? trial?.target.name ?? COPY.home.noBoss;
+    // On a dungeon floor the name is the enemy our hits are on; the picture stays the boss's
+    // until the normal enemies have art.
+    const foe = dungeon ? bossStatus(s, content, mods)?.enemy.name : undefined;
+    const bossName = foe ?? dungeon?.boss.name ?? trial?.target.name ?? COPY.home.noBoss;
     drawCard(fight, s, 'fighting', mods);
 
     const key = `${art ?? ''}:${level}`;

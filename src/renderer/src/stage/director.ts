@@ -178,7 +178,7 @@ export function createDirector(content: Content, state: () => GameState) {
       if (report.harvests.length > 0) emit('harvests', { events: report.harvests });
       if (report.bossAttacks.length > 0) emitBossAttacks(report, before, after, mods);
       if (report.knockouts > 0) emit('knockout', { seconds: after.combat.knockoutSeconds });
-      if (report.bossKills > 0) {
+      if (report.bossKills + report.enemyKills > 0) {
         const loot: Loot[] = [];
         for (const r of content.resources) {
           if (r.kind !== 'crystal' && r.kind !== 'currency' && r.kind !== 'material') continue;

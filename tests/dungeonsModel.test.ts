@@ -3,6 +3,7 @@ import {
   DRAWER_TABS,
   barsGone,
   drawerStatus,
+  floorParts,
   healthPercent,
   parseTab,
   signatureCount,
@@ -94,5 +95,25 @@ describe('arena counts', () => {
     expect(healthPercent(0)).toBe(0);
     expect(healthPercent(Number.NaN)).toBe(0);
     expect(healthPercent(1.4)).toBe(100);
+  });
+});
+
+describe('the interim floor line', () => {
+  const base = { floor: 3, floors: 10, wave: { index: 2, size: 4 }, bestFloor: 0 };
+
+  it('names the floor and the enemy of the wave our hits are on', () => {
+    expect(floorParts({ ...base, floorKind: 'wave' })).toEqual([
+      { kind: 'floor', floor: 3, floors: 10 },
+      { kind: 'enemy', index: 2, size: 4 },
+    ]);
+  });
+
+  it('marks a mini-boss or boss floor instead, and adds the best floor once one is beaten', () => {
+    expect(floorParts({ ...base, floor: 10, floorKind: 'boss', bestFloor: 9 })).toEqual([
+      { kind: 'floor', floor: 10, floors: 10 },
+      { kind: 'boss' },
+      { kind: 'best', best: 9 },
+    ]);
+    expect(floorParts({ ...base, floorKind: 'miniboss' })[1]).toEqual({ kind: 'miniboss' });
   });
 });
