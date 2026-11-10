@@ -16,6 +16,7 @@ import {
   type Modifier,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
 
 /**
@@ -77,7 +78,7 @@ export function mineLevelViews(
         available: true,
         offer,
         label: buyLabel(offer, count),
-        price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
+        price: amountText(content, offer.price.resource, offer.price.amount),
         preview: COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
@@ -111,7 +112,7 @@ export function treeLevelViews(
         available: true,
         offer,
         label: buyLabel(offer, count),
-        price: `${fmt(offer.price.amount)} ${resName(content, offer.price.resource)}`,
+        price: amountText(content, offer.price.resource, offer.price.amount),
         preview: COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,

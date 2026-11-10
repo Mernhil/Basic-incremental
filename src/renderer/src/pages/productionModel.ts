@@ -21,6 +21,7 @@ import {
   type ProductionJob,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
 import { mineLevelViews, treeLevelViews, type BuyLineView } from './buyModel';
 import type { ShelfChip } from './shelfModel';
@@ -91,8 +92,7 @@ export interface ProductionRow {
 
 const resName = (content: Content, id: string): string => content.resourceById.get(id)?.name ?? id;
 
-const priceText = (content: Content, p: Price): string =>
-  `${fmt(p.amount)} ${resName(content, p.resource)}`;
+const priceText = (content: Content, p: Price): string => amountText(content, p.resource, p.amount);
 
 /**
  * A wait in seconds as the Next buy column shows it (DESIGN.md §4): days and hours, hours and

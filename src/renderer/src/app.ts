@@ -23,6 +23,7 @@ import {
 } from '../../game';
 import { fmt } from './settings/numberFormat';
 import { COPY } from './copy';
+import { coinAmount, isMoney } from './settings/coins';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
 import { iconMarkup, isCrystal, isHeaderResource, resourceIconId } from './ui/resourceIcons';
@@ -155,6 +156,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const shell = createShell({
     version,
     currencies,
+    coins: (id, amount) => (isMoney(content, id) ? coinAmount(content.coins, amount) : null),
     levelTip,
     onShow: (id) => pages[id]?.render(),
     onLevel: () => {

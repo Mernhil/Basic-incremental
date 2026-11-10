@@ -25,6 +25,7 @@ import {
   type TierUp,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
 import { h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
@@ -533,8 +534,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
           ? fightStage(state, content, d.id, mods, stage.floors)?.enemies[0]
           : undefined;
       const bossPurse = boss?.purseScale ?? 1;
-      const purse = (n: number, multiplier = 1): string =>
-        fmt(new Decimal(n).mul(multiplier).mul(bossPurse));
+      const purseOf = (n: number, multiplier = 1): Decimal =>
+        new Decimal(n).mul(multiplier).mul(bossPurse);
       const rareName = content.cosmeticById.get(d.drops.rare.itemId)?.name ?? d.drops.rare.itemId;
       const resName = (r: string): string => content.resourceById.get(r)?.name ?? r;
       const row = (label: string, value: string, cls = ''): HTMLElement => {
@@ -553,8 +554,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
           row(
             COPY.dungeons.perKillDrop(resName(c.resource)),
             c.min === c.max
-              ? purse(c.min, c.multiplier)
-              : `${purse(c.min, c.multiplier)}–${purse(c.max, c.multiplier)}`,
+              ? amountText(content, c.resource, purseOf(c.min, c.multiplier))
+              : `${amountText(content, c.resource, purseOf(c.min, c.multiplier))} – ${amountText(content, c.resource, purseOf(c.max, c.multiplier))}`,
           ),
         ),
         ...drops.wages.map((w) =>

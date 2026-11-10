@@ -249,6 +249,46 @@ export function itemTiles(
     );
 }
 
+/** The filter chips of the inventory (UI_RULES §2 Wardrobe), in order. `skins` shows the weapon
+ *  skins instead of cosmetics. */
+export const INVENTORY_FILTERS = [
+  'all',
+  'worn',
+  'frames',
+  'effects',
+  'table',
+  'interface',
+  'upgrade',
+  'skins',
+] as const;
+export type InventoryFilter = (typeof INVENTORY_FILTERS)[number];
+
+const FILTER_SLOTS: Partial<Record<InventoryFilter, readonly string[]>> = {
+  frames: ['border', 'finish'],
+  effects: ['attack', 'tick', 'number'],
+  table: ['table', 'cursor'],
+};
+const CARD_AND_TABLE = new Set(Object.values(FILTER_SLOTS).flat());
+
+/** The tiles a filter chip lets through, in the order they came. */
+export function inventoryTiles(tiles: readonly ItemTile[], filter: InventoryFilter): ItemTile[] {
+  switch (filter) {
+    case 'all':
+      return [...tiles];
+    case 'worn':
+      return tiles.filter((t) => t.equipped);
+    case 'upgrade':
+      return tiles.filter((t) => t.upgradable);
+    case 'interface':
+      // the four interface styles: every slot that is not a card or table piece
+      return tiles.filter((t) => !CARD_AND_TABLE.has(t.slot));
+    case 'skins':
+      return [];
+    default:
+      return tiles.filter((t) => FILTER_SLOTS[filter]?.includes(t.slot));
+  }
+}
+
 // ---- selected item ---------------------------------------------------------------------------
 
 export interface LadderRung {

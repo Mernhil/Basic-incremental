@@ -23,6 +23,7 @@ import type {
   Resource,
   Tree,
   Trial,
+  Coin,
   Training,
   Upgrade,
   UpgradesConfig,
@@ -55,6 +56,7 @@ import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
 import upgradesJson from './content/upgrades.json';
 import trainingJson from './content/training.json';
+import coinsJson from './content/coins.json';
 import weaponSkinsJson from './content/weaponSkins.json';
 import itemsJson from './content/items.json';
 
@@ -113,6 +115,8 @@ export interface Content {
   /** The training lines of the Dungeons drawer (DESIGN.md §6 Training). */
   training: Training[];
   trainingById: ReadonlyMap<string, Training>;
+  /** The coins Money is shown in, smallest first (DESIGN.md §3 Coins). */
+  coins: Coin[];
   treeById: ReadonlyMap<string, Tree>;
   mineById: ReadonlyMap<string, Mine>;
   cardById: ReadonlyMap<string, Card>;
@@ -183,6 +187,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     enhancements,
     upgrades,
     training,
+    coins,
     weaponSkins,
     items,
   } = parsed;
@@ -276,6 +281,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     upgradeById: new Map(upgrades.upgrades.map((u) => [u.id, u])),
     training,
     trainingById: new Map(training.map((t) => [t.id, t])),
+    coins,
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
@@ -1070,6 +1076,7 @@ export function bundledRawContent(): RawContent {
     enhancements: enhancementsJson,
     upgrades: upgradesJson,
     training: trainingJson,
+    coins: coinsJson,
     weaponSkins: weaponSkinsJson,
     items: itemsJson,
   };

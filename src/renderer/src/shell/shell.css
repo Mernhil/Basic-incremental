@@ -872,3 +872,31 @@ html .shell-main .shell-quest {
   color: var(--bi-tip-ink);
   font-weight: 700;
 }
+
+/* Coins (DESIGN.md §3): the Money chip names the coin it counts in and tints its coin to match.
+   The tints are recolours of the one coin sprite, by filter. */
+.shell-currency.shell-currency--money .shell-currency__name {
+  display: inline;
+  font-weight: 700;
+}
+.shell-currency--money[data-coin='copper'] .shell-currency__art {
+  filter: hue-rotate(-22deg) saturate(0.85) brightness(0.82);
+}
+.shell-currency--money[data-coin='silver'] .shell-currency__art {
+  filter: grayscale(1) brightness(1.25);
+}
+.shell-currency--money[data-coin='diamond'] .shell-currency__art {
+  filter: hue-rotate(150deg) saturate(1.3) brightness(1.2);
+}
+.shell-currency--money[data-coin='star'] .shell-currency__art {
+  filter: hue-rotate(230deg) saturate(1.4) brightness(1.15);
+}
+.shell-currency--money[data-coin='moon'] .shell-currency__art {
+  filter: grayscale(0.6) hue-rotate(190deg) brightness(1.35);
+}
+.shell-currency--money[data-coin='sun'] .shell-currency__art {
+  filter: hue-rotate(-28deg) saturate(1.8) brightness(1.2);
+}
+.shell-currency--money[data-coin='crown'] .shell-currency__art {
+  filter: hue-rotate(280deg) saturate(1.5) brightness(1.1);
+}

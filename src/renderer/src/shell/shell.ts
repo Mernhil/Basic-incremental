@@ -1,3 +1,4 @@
+import type { CoinAmount } from '../settings/coins';
 import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -117,6 +118,8 @@ export interface Shell {
 }
 
 export function createShell(opts: {
+  /** How a currency counts in coins (Money), or null for a plain number (DESIGN.md §3 Coins). */
+  coins?: (id: string, amount: Decimal) => CoinAmount | null;
   version: string;
   currencies: Currency[];
   levelTip: TipContent;
@@ -218,9 +221,18 @@ export function createShell(opts: {
       if (c.shown.eq(goal)) continue;
       c.shown = rollToward(c.shown, goal, dt);
       // whole-number amounts (crystals, cores) roll through whole numbers only
-      const text = fmt(goal.eq(goal.floor()) ? c.shown.round() : c.shown);
+      const shown = goal.eq(goal.floor()) ? c.shown.round() : c.shown;
       const v = currencyValues.get(id)!;
+      // Money counts in coins (DESIGN.md §3 Coins): the chip shows the count and names the coin.
+      const coin = opts.coins?.(id, shown) ?? null;
+      const text = coin ? coin.value : fmt(shown);
       if (v.textContent !== text) v.textContent = text;
+      if (coin) {
+        const item = currencyItems.get(id);
+        const label = item?.querySelector<HTMLElement>('.shell-currency__name');
+        if (label && label.textContent !== coin.coin.name) label.textContent = coin.coin.name;
+        if (item && item.dataset['coin'] !== coin.coin.id) item.dataset['coin'] = coin.coin.id;
+      }
     }
   });
 

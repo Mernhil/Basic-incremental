@@ -29,7 +29,10 @@ import {
   defaultPreview,
   isCardSlot,
   itemDetail,
+  INVENTORY_FILTERS,
+  inventoryTiles,
   itemTiles,
+  type InventoryFilter,
   previewChoices,
   setViews,
   slotViews,
@@ -74,54 +77,37 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
   const wrap = h('div', 'wd');
   const status = h('p', 'wd-status');
   status.setAttribute('role', 'status');
-  // tabs: the cosmetics (everything below) and the weapon skins test; the bar moves into the top
-  // row of whichever panel is showing
-  const tabs = h('div', 'cp-tabs wd-tabs');
-  tabs.setAttribute('role', 'tablist');
-  tabs.setAttribute('aria-label', COPY.weaponSkins.tabsLabel);
+  // The inventory (UI_RULES §2 Wardrobe, the user's pick 1e): one row of filter chips over one
+  // grid of everything; "Weapon skins" is a chip like the others and shows the skin picker.
+  const tabs = h('div', 'wd-chips');
+  tabs.setAttribute('role', 'group');
+  tabs.setAttribute('aria-label', t.filters);
   const skinsRoot = h('div', 'ws');
-  skinsRoot.setAttribute('role', 'tabpanel');
-  skinsRoot.id = 'wd-panel-skins';
-  wrap.setAttribute('role', 'tabpanel');
-  wrap.id = 'wd-panel-cosmetics';
   const skinsTab = createWeaponSkinsTab(skinsRoot, ctx, tabs);
-  type Tab = 'cosmetics' | 'skins';
-  let tab: Tab = 'cosmetics';
-  const tabButtons = new Map<Tab, HTMLElement>();
-  function showTab(next: Tab): void {
-    tab = next;
-    for (const [k, b] of tabButtons) {
-      b.setAttribute('aria-selected', String(k === tab));
-      b.tabIndex = k === tab ? 0 : -1;
-    }
-    wrap.hidden = tab !== 'cosmetics';
-    skinsRoot.hidden = tab !== 'skins';
-    if (tab === 'skins') skinsTab.reveal();
+  let filter: InventoryFilter = 'all';
+  const chipButtons = new Map<InventoryFilter, HTMLElement>();
+  function showFilter(next: InventoryFilter): void {
+    filter = next;
+    for (const [k, b] of chipButtons) b.setAttribute('aria-pressed', String(k === filter));
+    const skins = filter === 'skins';
+    wrap.hidden = skins;
+    skinsRoot.hidden = !skins;
+    if (skins) skinsTab.reveal();
     else build();
-    tabButtons.get(tab)?.focus({ preventScroll: true });
+    chipButtons.get(filter)?.focus({ preventScroll: true });
   }
-  const tabIds: Tab[] = ['cosmetics', 'skins'];
-  for (const [i, id] of tabIds.entries()) {
-    const b = h('button', 'cp-tab', id === 'cosmetics' ? t.mannequin : COPY.weaponSkins.tabSkins);
+  for (const id of INVENTORY_FILTERS) {
+    const b = h('button', 'cp-chip wd-chip', t.inventoryFilters[id]);
     b.type = 'button';
-    b.dataset.key = `tab-${id}`;
-    b.id = `wd-tab-${id}`;
-    b.setAttribute('role', 'tab');
-    b.setAttribute('aria-controls', `wd-panel-${id}`);
-    b.addEventListener('click', () => showTab(id));
-    b.addEventListener('keydown', (e) => {
-      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
-      e.preventDefault();
-      showTab(tabIds[(i + 1) % tabIds.length]!);
-    });
-    tabButtons.set(id, b);
+    b.dataset.key = `filter-${id}`;
+    b.setAttribute('aria-pressed', String(id === filter));
+    b.addEventListener('click', () => showFilter(id));
+    chipButtons.set(id, b);
     tabs.append(b);
   }
   skinsRoot.hidden = true;
+  wrap.classList.add('wd--inv');
   page.append(wrap, status, skinsRoot);
-  tabButtons.get('cosmetics')?.setAttribute('aria-selected', 'true');
-  tabButtons.get('skins')?.setAttribute('aria-selected', 'false');
-  tabButtons.get('skins')!.tabIndex = -1;
   // the equipped Wardrobe style draws the plates, tiles and ladder (wardrobeSkin.ts)
   const skinSheet = document.createElement('style');
   document.head.append(skinSheet);
@@ -157,21 +143,27 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
     }
     const resolved = previewCard ? resolvedFor(state, previewCard) : null;
     const slots = slotViews(state, content, previewCard, resolved);
-    const inSlot = (id: string | null): boolean =>
-      id !== null && items.some((i) => i.cosmetic.id === id && i.cosmetic.slot === slot);
-    if (!inSlot(selected)) selected = slots.find((s) => s.slot === slot)?.itemId ?? null;
+    // The selected item names its slot; with nothing chosen it is what the slot wears.
+    const known = (id: string | null): boolean =>
+      id !== null && items.some((i) => i.cosmetic.id === id);
+    if (!known(selected)) selected = slots.find((s) => s.slot === slot)?.itemId ?? null;
     const item = items.find((i) => i.cosmetic.id === selected) ?? null;
+    if (item) slot = item.cosmetic.slot;
 
-    // the stage and the item row share one panel
-    const main = mannequin(state, slots, item);
-    main.querySelector('.frame__body')?.append(grid(items));
-    const side = item
-      ? detailPanel(
+    // Left: everything, filtered. Right: the selected item, then the card wearing it.
+    const main = inventory(items);
+    const side = h('div', 'wd-side');
+    // The item with its Equip and Upgrade buttons leads, so they are on screen at once.
+    if (item) {
+      side.append(
+        detailPanel(
           itemDetail(item, state, content, cosmeticLadder(content, item.cosmetic), previewCard),
           item,
           mods,
-        )
-      : h('div');
+        ),
+      );
+    }
+    side.append(mannequin(state, slots, item));
     wrap.replaceChildren(main, side);
     status.textContent = message;
     if (focusKey)
@@ -219,7 +211,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
       build('preview');
     });
     pick.append(select);
-    title.replaceChildren(tabs, pick);
+    title.replaceChildren(h('span', 'px-display wd-preview__title', t.preview), pick);
 
     // the stage: global slots of the try-on loadout apply only here
     const trying =
@@ -241,7 +233,8 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
     const centre = h('div', 'wd-centre');
     fitCard(centre, {
       want: 264,
-      max: () => (stage.clientWidth > 0 ? Math.max(132, stage.clientWidth - 2 * 196 - 64) : 1e6),
+      // the card stands alone in the side column (the slot plates are gone from the inventory)
+      max: () => (stage.clientWidth > 0 ? Math.max(132, stage.clientWidth - 40) : 1e6),
     });
     let art: HTMLElement | null = null;
     const props = previewCard ? cardFaceProps(content, state, previewCard) : null;
@@ -397,18 +390,22 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
   }
 
   // ---- item row --------------------------------------------------------------------------------
-  function grid(items: WardrobeItem[]): HTMLElement {
-    const inSlot = items.filter((i) => i.cosmetic.slot === slot);
-    const owned = inSlot.filter((i) => i.owned).length;
+  /** The inventory: the filter chips, then one grid of every item the filter lets through. */
+  function inventory(items: WardrobeItem[]): HTMLElement {
+    const { el: box, body } = frame(t.inventory);
+    box.classList.add('wd-inventory');
+    const tiles = inventoryTiles(itemTiles(items, content, 'all', previewCard), filter);
+    const owned = tiles.filter((i) => i.owned).length;
     const el = h('section', 'wd-items');
     const head = h('div', 'wd-items__head');
-    const heading = h('h3', 'px-display wd-items__title', t.slotItems[slot]);
+    const heading = h('h3', 'px-display wd-items__title', t.inventoryFilters[filter]);
     heading.id = 'wd-items-title';
-    head.append(heading, h('span', 'wd-items__count', t.ownedOf(owned, inSlot.length)));
+    head.append(heading, h('span', 'wd-items__count', t.ownedOf(owned, tiles.length)));
 
     const list = h('ul', 'wd-grid');
     list.setAttribute('aria-labelledby', heading.id);
-    for (const tile of itemTiles(items, content, slot, previewCard)) {
+    if (tiles.length === 0) el.append(h('p', 'frame__muted', t.inventoryEmpty));
+    for (const tile of tiles) {
       const li = h('li');
       const b = h(
         'button',
@@ -426,6 +423,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
       sw.style.setProperty('--cs-scale', '0.26');
       b.append(sw);
       b.append(h('span', 'wd-tile__name', tile.name));
+      b.append(h('span', 'wd-tile__slot', tile.slotLabel));
       b.append(h('span', 'wd-tile__meta bi-num', tile.levelText));
       if (tile.equipped) b.append(h('span', 'wd-tile__on', '✓'));
       if (tile.copies > 0 && !tile.maxed)
@@ -433,6 +431,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
       if (tile.upgradable) b.append(h('span', 'wd-tile__up', '▲'));
       b.addEventListener('click', () => {
         selected = tile.id;
+        slot = tile.slot;
         message = '';
         playOnBuild = tile.slot === 'attack' || tile.slot === 'tick' || tile.slot === 'number';
         build(`tile-${tile.id}`);
@@ -441,7 +440,8 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
       list.append(li);
     }
     el.append(head, list);
-    return el;
+    body.append(tabs, el);
+    return box;
   }
 
   // ---- selected item ---------------------------------------------------------------------------
@@ -631,7 +631,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
 
   return {
     render() {
-      if (tab === 'skins') {
+      if (filter === 'skins') {
         skinsTab.render();
         return;
       }
