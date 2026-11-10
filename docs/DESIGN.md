@@ -289,9 +289,9 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
   | ----------------------------- | -------- |
   | First summon                  | 5–10 min |
   | First dungeon cleared         | 15 min   |
-  | First Silver card             | 1 h      |
+  | First Silver card             | 1.5 h    |
   | First Epic                    | 1.5–2 h  |
-  | Dungeon 2 cleared             | 1.5 h    |
+  | Dungeon 2 cleared             | 2 h      |
   | First Gold card               | 4 h      |
   | First Legendary               | 4–5 h    |
   | First ★6 from copies          | 7 h      |
@@ -302,12 +302,12 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
   | First Prismatic card          | 25 h     |
   | Beta content mostly exhausted | 40 h     |
 
-  "First Epic" and "First Legendary" are new sim milestones. "First ★6 from copies" (a Common or Uncommon at ★6) replaces "First ★6 (a Gold ★6)": with free stars for Rare and up, every Gold card is already ★6, so the old milestone only repeated First Gold card. "First enemy killed in 2 s" waits for floors (plan 3).
+  "First Epic" and "First Legendary" are new sim milestones. First Silver card (1 h before) and Dungeon 2 cleared (1.5 h before) were moved later by the user on 2026-11-10: the first hour waits for the first Rare pull. "First ★6 from copies" (a Common or Uncommon at ★6) replaces "First ★6 (a Gold ★6)": with free stars for Rare and up, every Gold card is already ★6, so the old milestone only repeated First Gold card. "First enemy killed in 2 s" waits for floors (plan 3).
 
 - [Built] **Balance sim.** `npm run sim -- --hours 40 --seeds 5` plays the real game logic and prints each milestone's target, median, spread and runs that reached it. Mastery, milestones and growth are part of it and must not break the targets.
 - [Default · in game] The sim player's choices: what it buys first, which card it focuses, what it reserves, which dungeon it fights and when it ascends (`scripts/sim/`). The first Ascension is taken as soon as it pays the minimum, later ones when the gain at least matches all the Starlight earned and the run's Starlight per hour has passed its peak; the player finishes the fighting lead's upgrades first, saves a tier-up's Money only when it is the last thing missing, and holds an Ascension while a tier-up is three quarters funded. "Mostly exhausted" counts every other milestone, every card owned and a weapon at T6 (Mythic or Void).
 - [Default] **Tier names keep their milestones** (2026-11-09). First Silver card is T3, First Gold card T4 and First Prismatic card T5, with the same targets above. The sim result is reported in the PR; a target that cannot hold under the new rarity caps is a question for the user, not an edit.
-- [Default · in game] **On target.** The sim median of every milestone should sit within about 25% of its target (`npm run sim -- --hours 40 --seeds 5`). After the 2026-11-10 retune eleven of fourteen do; the first Silver card (about 1.8 h against 1 h), the Ember Crypt clear (about 1.9 h against 1.5 h) and "mostly exhausted" (not reached in 40 h, as before) do not (open question). The spread between seeds is wide, mostly pull luck: the first hour waits for the first Rare pull.
+- [Default · in game] **On target.** The sim median of every milestone should sit within about 25% of its target (`npm run sim -- --hours 40 --seeds 5`). After the 2026-11-10 retune thirteen of fourteen do; "mostly exhausted" (not reached in 40 h, as before) does not. The spread between seeds is wide, mostly pull luck: the first hour waits for the first Rare pull.
 
 ## 15. Systems chosen for the beta, not built
 
@@ -346,7 +346,7 @@ Changed without asking (to confirm or undo):
 
 Defaults by Claude, 2026-11-10 (pace and economy retune, to confirm):
 
-- §14 the pacing targets table (first summon 5–10 min, first dungeon 15 min, first Silver 1 h, first Epic 1.5–2 h, dungeon 2 at 1.5 h, first Gold 4 h, first Legendary 4–5 h; the rest unchanged).
+- §14 the pacing targets table (first summon 5–10 min, first dungeon 15 min, first Silver 1.5 h and dungeon 2 at 2 h (moved by the user), first Epic 1.5–2 h, first Gold 4 h, first Legendary 4–5 h; the rest unchanged).
 - §7 the Card Portal rates (Common 53.2%, Uncommon 28%, Rare 13%, Epic 4%, Legendary 1.5%, Mythic 0.2%, Void 0.1%).
 - §6 the knockout at 10 s.
 - §5 the weapon identity table.
@@ -356,7 +356,6 @@ Defaults by Claude, 2026-11-10 (pace and economy retune, to confirm):
 Open questions from the 2026-11-10 retune (need the user):
 
 - §3 Ladders: the steady boss ladder is ×23 per dungeon, not ×3. Keep it until floors, or accept later clears for a smaller ratio?
-- §14 the first Silver card (1.8 h) and the Ember Crypt clear (1.9 h) miss their targets. Move the targets, or give the first hour a surer Rare (for example a guaranteed early 10-pull)?
 - §7 pulls climb far above 12 to 15 an hour once a loadout outgrows the last dungeon (from about 30 h). Wait for floors (plan 3), or cap it now?
 - §4 more milestone multipliers are not built yet.
 
@@ -394,6 +393,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 
 ## 17. Changelog
 
+- 2026-11-10 — First Silver card moved to 1.5 h and Dungeon 2 cleared to 2 h (user: "Move the targets") (§14).
 - 2026-11-10 — Built the pace retune (Claude defaults, to confirm): Rare and up star up for free, crystals repriced ×30 (save format 23), boss HP and purses on a steady ×23 ladder, "First ★6 from copies" replaces the Gold ★6 milestone (§3 to §7, §10, §14).
 - 2026-11-10 — Pace and economy retune (user): short two-sided boss fights, floors pace, stage stars replacing boss medals, steady production and enemy ladders, rarer summons, rarity gaps kept, attack animation following hit speed, weapon identities and card stats display planned, elements moved from §15 to §6 (§3 to §7, §14, §15; Claude defaults for the pacing table, Card Portal rates, 10 s knockout and the identity table).
 - 2026-11-10 — UI rework picked by the user over four rounds of mockups: the pixel-frame shell for Gilded Nocturne (Pixelify Sans and Atkinson Hyperlegible replace Outfit), Production as the pixel ledger with both job cards on screen and no job switch, a background per dungeon (§4, §6, §8; UI_RULES.md §2).

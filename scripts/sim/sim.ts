@@ -137,7 +137,7 @@ export const MILESTONES: Milestone[] = [
   {
     id: 'first_silver',
     label: 'First Silver card',
-    targetHours: 1,
+    targetHours: 1.5,
     reached: (s) => tierAtLeast(s, 'silver'),
   },
   {
@@ -147,7 +147,7 @@ export const MILESTONES: Milestone[] = [
     toHours: 2,
     reached: (s, c) => ownsRarityAtLeast(s, c, 'epic'),
   },
-  { id: 'clear_d2', label: 'Dungeon 2 cleared', targetHours: 1.5, reached: cleared('ember_crypt') },
+  { id: 'clear_d2', label: 'Dungeon 2 cleared', targetHours: 2, reached: cleared('ember_crypt') },
   {
     id: 'first_gold',
     label: 'First Gold card',
