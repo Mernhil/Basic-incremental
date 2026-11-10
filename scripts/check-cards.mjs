@@ -32,10 +32,10 @@ out.lockedDetail = (await page.textContent('.cp-detail'))?.includes('Not found y
 await page.click('[data-key="tile-cave_digger"]');
 await page.click('[data-key="add-support"]');
 await page.waitForTimeout(200);
-out.afterSupport = await page.textContent('.cp-inrole');
+out.afterSupport = await page.textContent('.cp-detail .frame__note');
 await page.click('[data-key="set-main"]');
 await page.waitForTimeout(200);
-out.afterMain = await page.textContent('.cp-inrole');
+out.afterMain = await page.textContent('.cp-detail .frame__note');
 out.focus = await page.evaluate(() => document.activeElement?.dataset.key);
 await page.screenshot({ path: 'design/app-screens/cards-detail.png' });
 await page.click('#cards-tab-loadouts');

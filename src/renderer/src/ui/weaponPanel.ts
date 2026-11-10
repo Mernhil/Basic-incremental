@@ -15,8 +15,11 @@ import './weaponPanel.css';
  * - `drawer`: the dungeon drawer. The weapon sits in an XP ring with the level on a hex badge,
  *   the stars as pips along the ring's open end and the tier on a plate under it; the star line
  *   and the tier-up tag with its price sit beside it.
- * - `card`: the Cards detail. The level badge and a slim XP bar lie over the card at 2x (`overlay`,
- *   put inside the card's host) and the same star line and tier-up tag go under it (`el`).
+ * - `card`: the Cards detail (UI rework 2.2). A large level badge lies on the card at 2x
+ *   (`overlay`, put inside the card's host) and `el` is a column of pixel tiles to go beside it:
+ *   the tier with its star pips and star bar, the card XP with its bar, the tier-up price list
+ *   (missing amounts in red) and, under it, the tier-up button (dark, with the reason, when it
+ *   cannot be taken).
  *
  * All numbers come from the entry's `WeaponView`; this file only draws them and forwards the two
  * buttons (add star, tier up) to `act`.
@@ -31,9 +34,9 @@ export interface WeaponPanelOptions {
 }
 
 export interface WeaponPanel {
-  /** The panel (drawer: stage and side; card: just the side, to go under the card). */
+  /** The panel (drawer: stage and side; card: the column of tiles, to go beside the card). */
   el: HTMLElement;
-  /** Card variant: the level badge and XP bar to put on the card's host. Null in the drawer. */
+  /** Card variant: the level badge to put on the card's host. Null in the drawer. */
   overlay: HTMLElement | null;
   /** Re-reads the entry. Cheap every tick: the buttons and the price tag only rebuild on change. */
   update(entry: CardEntry): void;
@@ -46,6 +49,10 @@ const STAR_PATH = 'M0 -9 L2.6 -3 L9 -2.6 L4 1.6 L5.6 8 L0 4.5 L-5.6 8 L-4 1.6 L-
 const STARS = 6;
 /** The item sprite is 100 x 120 art pixels (a 200 x 240 box); the drawer shows it at 1x. */
 const ITEM_BOX = '0 0 200 240';
+
+/** A 7 x 7 pixel star, drawn as rows of whole art pixels (crisp at a whole scale). */
+const PIP_PATH =
+  'M3 0h1v1H3zM2 1h3v1H2zM0 2h7v1H0zM1 3h5v1H1zM2 4h3v1H2zM1 5h2v1H1zM4 5h2v1H4zM1 6h1v1H1zM5 6h1v1H5z';
 
 let uid = 0;
 
@@ -69,6 +76,18 @@ function el<K extends keyof SVGElementTagNameMap>(
   return node;
 }
 
+function pipArt(): SVGSVGElement {
+  const art = el('svg', {
+    viewBox: '0 0 7 7',
+    class: 'wp-pip-art',
+    'shape-rendering': 'crispEdges',
+  });
+  art.setAttribute('aria-hidden', 'true');
+  art.setAttribute('focusable', 'false');
+  art.append(el('path', { d: PIP_PATH }));
+  return art;
+}
+
 export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   const { content, variant } = opts;
   const id = `wp${++uid}`;
@@ -84,6 +103,22 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   const starHost = h('div', 'wp-starbtn');
   const tagHost = h('div', 'wp-taghost');
   side.append(starLine, starHost, tagHost);
+
+  // ---- card variant: the tiles (tier and stars, card XP) ----
+  const tierValue = h('b', 'wp-tile__value px-display');
+  const pipEls = Array.from({ length: STARS }, () => {
+    const cell = h('span', 'wp-pipcell');
+    cell.append(pipArt());
+    return cell;
+  });
+  const starGauge = h('i');
+  const xpTileValue = h('b', 'wp-tile__value wp-tile__value--xp px-display');
+  const xpBar = h('div', 'wp-xpbar');
+  const xpFill = h('i');
+  xpBar.append(xpFill);
+  xpBar.setAttribute('role', 'meter');
+  xpBar.setAttribute('aria-valuemin', '0');
+  xpBar.setAttribute('aria-valuemax', '100');
 
   // ---- drawer: the stage ----
   let stage: HTMLElement | null = null;
@@ -177,23 +212,34 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     });
     root.append(stage, side);
   } else {
-    root.append(side);
+    const tierTile = h('div', 'wp-tile px-tile wp-tile--tier');
+    const pipRow = h('span', 'wp-pips');
+    pipRow.setAttribute('aria-hidden', 'true');
+    pipRow.append(...pipEls);
+    const mini = h('div', 'wp-mini');
+    mini.setAttribute('aria-hidden', 'true');
+    mini.append(starGauge);
+    tierTile.append(
+      h('span', 'wp-tile__label', COPY.weapon.tierLabel),
+      tierValue,
+      pipRow,
+      starLine,
+      mini,
+      starHost,
+    );
+    const xpTile = h('div', 'wp-tile px-tile wp-tile--xp');
+    xpTile.append(h('span', 'wp-tile__label', COPY.weapon.xpLabelShort), xpTileValue, xpBar);
+    root.append(tierTile, xpTile, tagHost);
   }
 
-  // ---- card variant: the overlay (badge + XP bar) ----
+  // ---- card variant: the overlay (the large level badge) ----
   let overlay: HTMLElement | null = null;
-  let xpFill: HTMLElement | null = null;
   if (variant === 'card') {
     overlay = h('div', 'wp-over');
-    overlay.setAttribute('role', 'meter');
-    overlay.setAttribute('aria-valuemin', '0');
-    overlay.setAttribute('aria-valuemax', '100');
-    const xpBar = h('div', 'wp-xpbar');
-    xpFill = h('i');
-    xpBar.append(xpFill);
-    badge.setAttribute('aria-hidden', 'true');
-    xpBar.setAttribute('aria-hidden', 'true');
-    overlay.append(xpBar, badge);
+    overlay.setAttribute('aria-hidden', 'true');
+    badge.classList.add('wp-chip');
+    badgeNum.classList.add('px-display');
+    overlay.append(badge);
   }
 
   // ---- drawing ----
@@ -222,6 +268,75 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     return li;
   }
 
+  /** One row of the card variant's price list: art, name, then the amount (have / need if short). */
+  function priceRow(
+    art: Node,
+    name: string,
+    amounts: { have: string; need: string },
+    met: boolean,
+    plain: boolean,
+    title: string,
+  ): HTMLElement {
+    const li = h(
+      'li',
+      `wp-cost wp-cost--row ${met ? 'is-met' : 'is-missing'}${!met && plain ? ' is-plain' : ''}`,
+    );
+    li.title = title;
+    const slot = h('span', 'wp-cost__art');
+    slot.setAttribute('aria-hidden', 'true');
+    slot.append(art);
+    const amount = h('span', 'wp-cost__amount bi-num');
+    if (met || plain) amount.append(h('b', '', amounts.need));
+    else amount.append(h('b', '', amounts.have), h('small', '', `/ ${amounts.need}`));
+    li.append(slot, h('span', 'wp-cost__name', name), amount);
+    return li;
+  }
+
+  function cardPriceRows(w: WeaponView, t: NonNullable<WeaponView['tierUp']>): HTMLElement[] {
+    const rows: HTMLElement[] = [];
+    // while the card is still levelling, the prices are not scolded in red
+    const leveling = t.phase === 'leveling';
+    if (!t.levelMet) {
+      rows.push(
+        priceRow(
+          h('span', 'wp-cost__lv', 'Lv'),
+          COPY.weapon.levelRow,
+          { have: String(w.level), need: String(w.cap) },
+          false,
+          false,
+          COPY.weapon.levelLabel(w.level, w.cap),
+        ),
+      );
+    }
+    for (const c of t.costs) {
+      const markup = costArt(c.id);
+      const art = h('span', 'wp-cost__img');
+      if (markup) art.innerHTML = markup;
+      else art.append(icon('material', 'wp-cost__icon'));
+      rows.push(
+        priceRow(
+          art,
+          c.name,
+          { have: c.have, need: c.need },
+          c.met,
+          leveling,
+          COPY.weapon.costTitle(c.name, c.have, c.need),
+        ),
+      );
+    }
+    rows.push(
+      priceRow(
+        pipArt(),
+        COPY.weapon.starsRow,
+        { have: String(w.stars), need: String(STARS) },
+        t.starsMet,
+        false,
+        COPY.weapon.starOf(w.stars, STARS),
+      ),
+    );
+    return rows;
+  }
+
   let sideSig = '';
   function drawSide(w: WeaponView): void {
     // star line
@@ -239,7 +354,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     const sig = JSON.stringify([w.stars, w.starBar?.ready, w.tierUp, w.endNote]);
     if (sig === sideSig) return;
     sideSig = sig;
-    const keep = side.contains(document.activeElement);
+    const keep = root.contains(document.activeElement);
     const focused = (document.activeElement as HTMLElement | null)?.dataset['key'];
 
     starHost.replaceChildren();
@@ -254,31 +369,45 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     tagHost.replaceChildren();
     const t = w.tierUp;
     if (!t) {
-      tagHost.append(h('p', 'wp-end', w.endNote ?? ''));
+      const end = h('p', 'wp-end', w.endNote ?? '');
+      if (variant === 'card') end.classList.add('wp-tile', 'px-tile');
+      tagHost.append(end);
     } else {
+      const tiles = variant === 'card';
       const tag = h('div', `wp-tag is-${t.phase}`);
       tag.dataset.to = t.toTier;
-      const lead = h('p', 'wp-lead', t.lead);
+      const lead = h('p', 'wp-lead', tiles ? COPY.weapon.tierUpTo(t.toName) : t.lead);
       lead.id = `${id}-lead`;
       const list = h('ul', 'wp-costs');
       list.setAttribute('aria-labelledby', lead.id);
-      for (const c of t.costs) list.append(costItem(c, w.atCap));
-      const go = h('button', `button wp-go${t.ready ? ' is-ready' : ''}`, t.action);
+      if (tiles) list.append(...cardPriceRows(w, t));
+      else for (const c of t.costs) list.append(costItem(c, w.atCap));
+      const go = h(
+        'button',
+        `button wp-go${t.ready ? ' is-ready' : ''}`,
+        tiles && !t.ready ? t.blocker : t.action,
+      );
       go.type = 'button';
       go.dataset.key = 'wp-tier';
       go.setAttribute('aria-disabled', String(!t.ready));
-      const hint = t.missing ? h('p', 'wp-hint', t.missing) : null;
+      const hint = t.missing && !tiles ? h('p', 'wp-hint', t.missing) : null;
       if (hint) hint.id = `${id}-hint`;
       go.setAttribute('aria-describedby', hint ? `${id}-lead ${id}-hint` : `${id}-lead`);
       go.addEventListener('click', () => {
         if (go.getAttribute('aria-disabled') !== 'true') opts.act('tier');
       });
-      tag.append(lead, list, go);
-      if (hint) tag.append(hint);
-      tagHost.append(tag);
+      if (tiles) {
+        tag.classList.add('px-tile', 'wp-tile');
+        tag.append(lead, list);
+        tagHost.append(tag, go);
+      } else {
+        tag.append(lead, list, go);
+        if (hint) tag.append(hint);
+        tagHost.append(tag);
+      }
     }
     if (keep && focused) {
-      (side.querySelector<HTMLElement>(`[data-key="${focused}"]`) ?? starLine).focus();
+      (root.querySelector<HTMLElement>(`[data-key="${focused}"]`) ?? starLine).focus();
     }
   }
 
@@ -321,18 +450,21 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     );
   }
 
-  function drawOverlay(w: WeaponView): void {
-    if (!overlay || !xpFill) return;
-    overlay.dataset.tier = w.tier;
-    overlay.classList.toggle('is-max', w.atCap);
+  function drawTiles(w: WeaponView): void {
+    tierValue.textContent = w.tierName;
+    pipEls.forEach((p, i) => p.classList.toggle('is-on', i < w.stars));
+    starGauge.style.width = `${((w.starBar?.gauge ?? 1) * 100).toFixed(1)}%`;
+    xpTileValue.textContent = w.atCap ? COPY.weapon.xpFull : COPY.weapon.xpOf2(w.xpNow, w.xpNeed);
+    xpBar.classList.toggle('is-max', w.atCap);
     xpFill.style.width = `${(w.xp * 100).toFixed(1)}%`;
     const pct = Math.round(w.xp * 100);
-    overlay.setAttribute('aria-valuenow', String(pct));
-    overlay.setAttribute('aria-label', COPY.weapon.panel(w.weapon));
-    overlay.setAttribute(
+    xpBar.setAttribute('aria-valuenow', String(pct));
+    xpBar.setAttribute('aria-label', COPY.weapon.panel(w.weapon));
+    xpBar.setAttribute(
       'aria-valuetext',
       `${COPY.weapon.levelLabel(w.level, w.cap)}, ${w.atCap ? COPY.weapon.xpFull : COPY.weapon.xpLabel(pct)}`,
     );
+    if (overlay) overlay.dataset.tier = w.tier;
   }
 
   return {
@@ -347,7 +479,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       badgeNum.textContent = String(w.level);
       badgeSub.textContent = w.atCap ? COPY.weapon.max : COPY.weapon.level;
       drawStage(entry, w);
-      drawOverlay(w);
+      if (variant === 'card') drawTiles(w);
       drawSide(w);
     },
   };

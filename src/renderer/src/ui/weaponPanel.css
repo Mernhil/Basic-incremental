@@ -303,50 +303,209 @@
   outline-offset: 3px;
 }
 
-/* ---- the Cards detail: the card at 2x with the badge and the XP bar on it ---- */
+/* ---- the Cards detail: pixel tiles beside the card at 2x (UI rework 2.2) ----
+   Tiles and the tier-up button come from the shared pixel recipe (theme/frames.css). The gaps are
+   at least one frame step, because a frame's edge bleeds one step outside its box. */
 .wp--card {
   display: grid;
+  gap: calc(var(--fs) * 2);
+  align-content: start;
 }
 .wp--card .wp-side {
   flex: none;
 }
-/* --card-k is the card host's scale (fitCard): the box units of the 176 x 248 card */
+.wp-tile {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  min-width: 0;
+  padding: 8px 10px;
+}
+.wp-tile__label {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--bi-frame-ink-muted);
+}
+.wp-tile__value {
+  display: block;
+  font-size: 18px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  color: var(--bi-frame-ink);
+}
+.wp-pips {
+  display: flex;
+  gap: var(--fs-sm);
+}
+/* a 7 x 7 art pixel star at a whole device scale (ui/pixelScale.css pattern) */
+.wp-pipcell {
+  --one: calc(7px / var(--dpr));
+  display: block;
+  width: max(var(--one), round(nearest, 16px, var(--one)));
+  aspect-ratio: 1;
+}
+.wp-pip-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: color-mix(in srgb, var(--bi-frame-bg) 55%, var(--bi-frame-hi, #fff));
+}
+.wp-pipcell.is-on .wp-pip-art {
+  fill: var(--bi-chrome-accent);
+}
+.wp--card .wp-stars {
+  font-size: 12px;
+}
+.wp-mini,
+.wp-xpbar {
+  position: relative;
+  overflow: hidden;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  margin: var(--fs-sm);
+}
+.wp-mini {
+  height: calc(var(--fs-sm) * 2);
+}
+.wp-xpbar {
+  height: calc(var(--fs-sm) * 4);
+}
+.wp-mini i,
+.wp-xpbar i {
+  display: block;
+  height: 100%;
+  background: var(--bi-chrome-accent);
+}
+.wp-xpbar i {
+  background: var(--wp-xp);
+}
+.wp-xpbar.is-max i {
+  background: var(--wp-prism);
+}
+.wp--card .wp-add {
+  margin-top: 2px;
+  font-size: 12px;
+  padding: 3px 10px;
+}
+
+/* the price list: art, name, amount; a missing amount is red and reads "have / need" */
+.wp--card .wp-costs {
+  display: grid;
+  gap: 4px;
+  flex-wrap: nowrap;
+  font-size: 13px;
+}
+.wp--card .wp-lead {
+  font-size: 12px;
+}
+/* art, name and amount on one line; a long amount ("have / need") wraps under the name */
+.wp-cost--row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1px 6px;
+  width: 100%;
+}
+.wp-cost--row .wp-cost__art {
+  flex: none;
+}
+.wp-cost--row .wp-cost__name {
+  flex: 1 1 auto;
+  font-size: 13px;
+  color: var(--bi-frame-ink);
+  white-space: nowrap;
+}
+.wp-cost--row .wp-cost__amount {
+  flex: 0 0 auto;
+  margin-left: auto;
+  justify-content: flex-end;
+  white-space: nowrap;
+}
+.wp-cost__img {
+  display: grid;
+  width: 20px;
+  height: 20px;
+}
+.wp-cost__img svg {
+  width: 100%;
+  height: 100%;
+}
+.wp-cost__lv {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bi-frame-ink-muted);
+}
+.wp-cost--row .wp-pip-art {
+  width: 14px;
+  height: 14px;
+  fill: var(--bi-chrome-accent);
+}
+.wp--card .wp-cost--row.is-missing:not(.is-plain) b,
+.wp--card .wp-cost--row.is-missing:not(.is-plain) small {
+  color: var(--wp-bad);
+}
+.wp--card .wp-tag.is-ready {
+  --px-edge: var(--bi-chrome-accent);
+}
+.wp-taghost {
+  display: grid;
+  gap: calc(var(--fs) * 2);
+}
+.wp--card .wp-go {
+  width: 100%;
+  padding: 8px 10px;
+  animation: none;
+}
+/* a tier-up that cannot be taken is the dark plum with its reason (the gold rule of frames.css
+   would otherwise win over the disabled one for a .button) */
+html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
+  --px-bg: var(--px-dark);
+  --px-top: var(--px-dark-hi);
+  --px-bottom: var(--px-dark);
+  background: var(--px-dark);
+  color: var(--px-muted);
+  cursor: default;
+  opacity: 1;
+}
+.wp--card .wp-end {
+  font-size: 13px;
+}
+
+/* the large level badge on the card's corner (the shared gold chip) */
+.wp-chip {
+  display: grid;
+  place-items: center;
+  background: var(--px-gold);
+  color: var(--px-gold-ink);
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-gold-hi),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--px-gold-lo);
+}
+/* --card-k is the card host's scale (fitCard) */
 .wp-over {
   position: absolute;
   inset: 0;
   z-index: 6;
   pointer-events: none;
-  color: var(--wp-tc);
 }
 .wp-over .wp-badge {
-  left: -20px;
-  top: -24px;
-  width: 46px;
-  height: 50px;
+  left: calc(var(--fs) * -2);
+  top: calc(var(--fs) * -2);
+  width: calc(var(--fs-sm) * 20);
+  height: calc(var(--fs-sm) * 20);
+  clip-path: none;
 }
 .wp-over .wp-badge b {
-  font-size: 18px;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
 }
 .wp-over .wp-badge small {
-  font-size: 8.5px;
-}
-.wp-xpbar {
-  position: absolute;
-  left: calc(9px * var(--card-k));
-  width: calc(158px * var(--card-k));
-  top: calc(166px * var(--card-k));
-  height: max(3px, calc(5px * var(--card-k)));
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.66);
-  overflow: hidden;
-}
-.wp-xpbar i {
-  display: block;
-  height: 100%;
-  background: var(--wp-xp);
-}
-.wp-over.is-max .wp-xpbar i {
-  background: var(--wp-prism);
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
