@@ -259,7 +259,7 @@ export function xpToNextLevel(content: Content, level: number): Decimal {
 
 /**
  * The card's power: (1 + perLevel × (level − 1)) × (1 + perStar × (stars − 1), plus star6Bonus
- * at ★6) × the tier's multiplier. 1 for a Bronze ★1 Lv 1 card.
+ * at ★6) × the tier's multiplier. 1 for a Wood ★1 Lv 1 card.
  */
 export function cardPower(content: Content, owned: OwnedCard): number {
   const p = content.cardRules.power;
@@ -826,7 +826,7 @@ export interface CardInfo {
   levelCap: number | null;
   /** XP needed for the next level; null when not owned or at the level cap. */
   xpToNext: Decimal | null;
-  /** 1 for a Bronze ★1 Lv 1 card; scales its bonuses. */
+  /** 1 for a Wood ★1 Lv 1 card; scales its bonuses. */
   power: number;
   cost: number;
   /** Where the card sits, or null. */
@@ -837,7 +837,7 @@ export interface CardInfo {
   starBar: StarBarView | null;
   starUp: UpgradeCheck | null;
   tierUp: UpgradeCheck | null;
-  /** Its effect as main / as support at the current power (Bronze ★1 Lv 1 when not owned). */
+  /** Its effect as main / as support at the current power (Wood ★1 Lv 1 when not owned). */
   mainModifiers: Modifier[];
   supportModifiers: Modifier[];
 }

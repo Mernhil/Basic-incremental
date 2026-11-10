@@ -35,9 +35,10 @@ import type { Rng } from './rng';
 import { cloneState, type BurstGauge, type GameState } from './state';
 
 /**
- * Combat (DESIGN.md §6): bosses are HP walls auto-fought in parallel with production,
- * respawning for farming. Damage comes from the main fighting card (DESIGN.md §5). The first kill
- * clears a dungeon, which unlocks the next dungeon and a mine type.
+ * Combat (DESIGN.md §6): bosses are auto-fought in parallel with production and respawn for
+ * farming; they hit back, and a loadout that runs out of health is knocked out. Damage comes from
+ * the main fighting card (DESIGN.md §5). A dungeon is cleared after its `killsToClear` kills
+ * (dungeons.json), which unlocks the next dungeon and a mine type.
  * The Glimmer Trial is a special dungeon fought in timed attempts for a score.
  * Burst gauges fill with each hit (fighting) or tick (logging, mining) and fire automatically.
  *
