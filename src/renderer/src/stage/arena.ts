@@ -94,6 +94,8 @@ export function floorPartText(part: FloorPart): string {
   switch (part.kind) {
     case 'floor':
       return COPY.dungeons.floorOf(part.floor, part.floors);
+    case 'depth':
+      return COPY.dungeons.depthOf(part.depth);
     case 'enemy':
       return COPY.dungeons.enemyOf(part.index, part.size);
     case 'miniboss':
@@ -339,15 +341,19 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
       // The dungeon's boss has its drawing; normal enemies and mini-bosses show a plain labelled
       // placeholder until their art is made (DESIGN.md §6 Normal enemies).
       const enemy = bossStatus(s, content)?.enemy;
-      if (enemy && enemy.kind !== 'boss') {
+      // A boss without a drawing (a dungeon whose theme is not decided) gets the same box.
+      const art = dungeon.boss.art;
+      if (enemy && (enemy.kind !== 'boss' || !art)) {
         const key_ = `enemy:${enemy.kind}:${enemy.id}`;
         if (key_ === bossArtKey) return;
         bossArtKey = key_;
         body.replaceChildren(enemyPlaceholder(enemy.name, enemy.kind));
         return;
       }
-      key = dungeon.boss.art;
-      markup = bossArt(dungeon.boss.art);
+      if (art) {
+        key = art;
+        markup = bossArt(art);
+      }
     } else if (t) {
       const status = trialStatus(s, content);
       const level = sentinelLevel(Math.min(status?.score ?? 0, 1));

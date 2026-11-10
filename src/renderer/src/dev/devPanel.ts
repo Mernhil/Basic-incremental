@@ -19,7 +19,9 @@ import {
   devSetFloor,
   type DevResult,
 } from '../../../game/dev';
+import { DIFFICULTIES, type Difficulty } from '../../../game';
 import { h } from '../shell/shell';
+import { setUnreleasedDungeons, unreleasedDungeonsOn } from './unreleased';
 import './devPanel.css';
 
 export interface DevPanelContext {
@@ -113,9 +115,29 @@ export function installDevPanel(ctx: DevPanelContext): void {
   );
   // floors: puts the chosen dungeon on a floor (DESIGN.md §6 Dungeon floors)
   const floor = input('1', 'Floor');
-  const setFloor = button('Set floor', () =>
-    run('Floor', (s) => devSetFloor(s, ctx.content, dungeon.value, Number(floor.value))),
+  const difficulty = select(
+    DIFFICULTIES.map((d) => ({ id: d, name: d })),
+    ['', 'Current difficulty'],
   );
+  difficulty.setAttribute('aria-label', 'Difficulty');
+  const setFloor = button('Set floor', () =>
+    run('Floor', (s) =>
+      devSetFloor(
+        s,
+        ctx.content,
+        dungeon.value,
+        Number(floor.value),
+        difficulty.value === '' ? undefined : (difficulty.value as Difficulty),
+      ),
+    ),
+  );
+  // Dungeons 4 to 6 wait for their themes (DESIGN.md §6): dev builds can open them, with their
+  // placeholder names and drops. The choice is read when the app loads its content.
+  const unreleasedOn = unreleasedDungeonsOn();
+  const unreleased = button(unreleasedOn ? 'Hide Dungeons 4-6' : 'Open Dungeons 4-6', () => {
+    setUnreleasedDungeons(!unreleasedOn);
+    location.reload();
+  });
 
   // cards
   const card = select(options.cards);
@@ -156,7 +178,8 @@ export function installDevPanel(ctx: DevPanelContext): void {
     h('h2', 'dev-panel__title', 'Dev cheats'),
     row('Resource', resource, amount, grant),
     row('Dungeon', dungeon, clear, unclear),
-    row('Floor', floor, setFloor),
+    row('Floor', floor, difficulty, setFloor),
+    row('Unreleased', unreleased),
     row('Card', card, tier, stars, level, setRank),
     row('Account', xp, addXp),
     row('Cosmetic', cosmetic, giveCosmetic),

@@ -4,17 +4,23 @@ import {
   Decimal,
   clearUnlocks,
   collectModifiers,
+  DIFFICULTIES,
+  difficultyDrops,
   effectiveDrops,
+  fightStage,
   floorPosition,
   formatDuration,
+  isDifficultyUnlocked,
   isDungeonCleared,
   isDungeonUnlocked,
   loadoutHealth,
   secondsPerKill,
   setActiveDungeon,
+  setDifficulty,
   setFloorMode,
   trialRewards,
   bossMastery,
+  type Difficulty,
   type GameState,
   type TierUp,
 } from '../../../game';
@@ -336,12 +342,30 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     const tiers = h('div', 'dp-fl__row');
     tiers.setAttribute('role', 'group');
     tiers.setAttribute('aria-label', COPY.dungeons.difficultyLabel);
-    // Only Normal exists so far: it is the chosen and only tier.
-    const normal = h('button', 'px-btn dp-fl__opt', COPY.dungeons.difficulty['normal']);
-    (normal as HTMLButtonElement).type = 'button';
-    normal.dataset.key = 'difficulty-normal';
-    normal.setAttribute('aria-pressed', 'true');
-    tiers.append(h('span', 'dp-fl__label', COPY.dungeons.difficultyLabel), normal);
+    // Normal, Hard, Nightmare and the endless depths: a tier is locked until the boss of the one
+    // before it has been beaten (DESIGN.md §6 Difficulty tiers).
+    tiers.append(h('span', 'dp-fl__label', COPY.dungeons.difficultyLabel));
+    const name = (difficulty: Difficulty): string =>
+      COPY.dungeons.difficulty[difficulty] ?? difficulty;
+    const tierButtons = DIFFICULTIES.map((difficulty, i) => {
+      const b = h('button', 'px-btn dp-fl__opt', name(difficulty)) as HTMLButtonElement;
+      b.type = 'button';
+      b.dataset.key = `difficulty-${difficulty}`;
+      attachTooltip(b, () =>
+        b.disabled && i > 0
+          ? COPY.dungeons.difficultyLocked(name(DIFFICULTIES[i - 1]!))
+          : (COPY.dungeons.difficultyTip[difficulty] ?? ''),
+      );
+      b.addEventListener('click', () => {
+        const result = setDifficulty(ctx.state(), content, d.id, difficulty);
+        if (!result.ok) return;
+        ctx.apply(result.state);
+        render();
+        floorsCol.querySelector<HTMLElement>(`[data-key="difficulty-${difficulty}"]`)?.focus();
+      });
+      tiers.append(b);
+      return { difficulty, b };
+    });
     box.append(where, modes, hint, tiers);
     updates.push(() => {
       const s = ctx.state();
@@ -366,6 +390,12 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
             ? COPY.dungeons.pushTip
             : COPY.dungeons.farmTip;
       if (hint.textContent !== tip) hint.textContent = tip;
+      for (const { difficulty, b } of tierButtons) {
+        const open = isDifficultyUnlocked(s, d, difficulty);
+        if (b.disabled === open) b.disabled = !open;
+        const chosen = String(status.difficulty === difficulty);
+        if (b.getAttribute('aria-pressed') !== chosen) b.setAttribute('aria-pressed', chosen);
+      }
     });
     return box;
   }
@@ -381,7 +411,10 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     const portrait = h('span', 'dp-floor__art');
     if (unlocked) {
       const foe = special ? (entry as Trial).target : (entry as Dungeon).boss;
-      portrait.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(foe.art)}</svg>`;
+      // A boss without a drawing yet leaves its portrait empty.
+      if (foe.art) {
+        portrait.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(foe.art)}</svg>`;
+      }
     }
     const info = h('div', 'dp-floor__info');
     const title = h('span', 'dp-floor__name', entry.name);
@@ -402,7 +435,12 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         const sec = secondsPerKill(s, content, d.id, collectModifiers(s, content));
         const at = floorPosition(s, d);
         const parts = [
-          COPY.dungeons.floorOf(at.floor, at.floors),
+          ...(at.difficulty === 'normal'
+            ? []
+            : [COPY.dungeons.difficulty[at.difficulty] ?? at.difficulty]),
+          Number.isFinite(at.floors)
+            ? COPY.dungeons.floorOf(at.floor, at.floors)
+            : COPY.dungeons.depthOf(at.floor),
           COPY.dungeons.kills(s.combat.kills[d.id] ?? 0),
         ];
         if (sec !== null) parts.push(COPY.dungeons.perKill(formatDuration(sec * 1000)));
@@ -472,7 +510,12 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     const t = id ? content.trialById.get(id) : undefined;
     const list = h('ul', 'dp-drops');
     if (d) {
-      const drops = effectiveDrops(d, collectModifiers(state, content), content);
+      // The drops of the difficulty being fought: purses and material units grow with the tier.
+      const mods = collectModifiers(state, content);
+      const table = effectiveDrops(d, mods, content);
+      const stage = fightStage(state, content, d.id, mods);
+      const drops = stage ? difficultyDrops(table, stage.scale) : table;
+      const purse = (n: number, multiplier = 1): string => fmt(new Decimal(n).mul(multiplier));
       const rareName = content.cosmeticById.get(d.drops.rare.itemId)?.name ?? d.drops.rare.itemId;
       const resName = (r: string): string => content.resourceById.get(r)?.name ?? r;
       const row = (label: string, value: string, cls = ''): HTMLElement => {
@@ -491,8 +534,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
           row(
             COPY.dungeons.perKillDrop(resName(c.resource)),
             c.min === c.max
-              ? fmt(new Decimal(c.min))
-              : `${fmt(new Decimal(c.min))}–${fmt(new Decimal(c.max))}`,
+              ? purse(c.min, c.multiplier)
+              : `${purse(c.min, c.multiplier)}–${purse(c.max, c.multiplier)}`,
           ),
         ),
         ...drops.wages.map((w) =>

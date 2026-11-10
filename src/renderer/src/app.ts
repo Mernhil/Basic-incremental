@@ -23,6 +23,7 @@ import {
 } from '../../game';
 import { fmt } from './settings/numberFormat';
 import { COPY } from './copy';
+import { unreleasedDungeonsOn } from './dev/unreleased';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
 import { iconMarkup, isCrystal, isHeaderResource, resourceIconId } from './ui/resourceIcons';
@@ -75,7 +76,11 @@ function showFatal(root: HTMLElement, error: unknown): void {
 export async function startGame(root: HTMLElement, version: string): Promise<void> {
   let content: Content;
   try {
-    content = loadContent();
+    // Dev builds can open the dungeons that wait for their theme (DESIGN.md §6); a release build
+    // has no dev cheats and always loads the game as it ships.
+    const unreleased =
+      import.meta.env.DEV && unreleasedDungeonsOn() && (await window.api.devCheatsEnabled());
+    content = loadContent({ unreleased });
     assertVisualsImplemented(content);
     configureCardLevels(content);
   } catch (error) {
