@@ -247,8 +247,7 @@ export const MILESTONES: Milestone[] = [
     id: 'clear_d4',
     label: 'Dungeon 4 cleared',
     targetHours: 18,
-    reached: cleared('dungeon_4'),
-    pending: 'its theme is not picked',
+    reached: cleared('thunderpeak_aerie'),
   },
   {
     id: 'first_nightmare',
@@ -260,15 +259,13 @@ export const MILESTONES: Milestone[] = [
     id: 'clear_d5',
     label: 'Dungeon 5 cleared',
     targetHours: 28,
-    reached: cleared('dungeon_5'),
-    pending: 'its theme is not picked',
+    reached: cleared('sunken_sanctum'),
   },
   {
     id: 'clear_d6',
     label: 'Dungeon 6 cleared',
     targetHours: 36,
-    reached: cleared('dungeon_6'),
-    pending: 'its theme is not picked',
+    reached: cleared('void_hollow'),
   },
   {
     id: 'exhausted',

@@ -59,8 +59,8 @@ const run = (state: GameState, content: Content, seconds: number, r = rng()) =>
   advance(state, content, seconds * 1000, r);
 
 describe('what a floor holds', () => {
-  it('reads the floor counts from the data: 10, 20 and 30', () => {
-    expect(plain.dungeons.map((d) => d.floors)).toEqual([10, 20, 30]);
+  it('reads the floor counts from the data: 10, 20 and 30, then 40, 50 and 60', () => {
+    expect(plain.dungeons.map((d) => d.floors)).toEqual([10, 20, 30, 40, 50, 60]);
     expect(plain.dungeons.every((d) => d.enemies.length === 3)).toBe(true);
   });
 
@@ -381,7 +381,14 @@ describe('drops of normal enemies', () => {
     const { state, report } = run(start, content, 10, constantRng(0));
     const clears = report.floorsCleared;
     expect(clears).toBeGreaterThan(100);
-    const worth = stage.enemies.reduce((sum, e) => sum + e.dropScale, 0);
+    // Each enemy is paid its share of the purse: on floor 1 its plain share of the HP, and 2%
+    // more for every floor below (DESIGN.md §6 Deeper pays more).
+    const worth = stage.enemies.reduce((sum, e) => sum + e.purseScale, 0);
+    expect(worth).toBeCloseTo(
+      stage.enemies.reduce((sum, e) => sum + e.dropScale, 0) *
+        content.combat.floors.purseFloorBonus ** 0,
+      12,
+    );
     const { min, max } = cellar.drops.currencies[0]!;
     const gained =
       state.resources['money']!.sub(start.resources['money']!).toNumber() -

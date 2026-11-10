@@ -24,14 +24,7 @@ import {
   type GameState,
 } from '../src/game';
 import { devSetFloor } from '../src/game/dev';
-import {
-  bandCheck,
-  bandsPass,
-  chooseFight,
-  formatSeedTable,
-  MILESTONES,
-  summarizeRuns,
-} from '../scripts/sim/sim';
+import { chooseFight, MILESTONES } from '../scripts/sim/sim';
 import { floorParts } from '../src/renderer/src/pages/dungeonsModel';
 import { constantRng, floorsContent, freshState, withBossAttack, withDps } from './helpers';
 
@@ -151,7 +144,7 @@ describe('difficulty tiers', () => {
     expect(isDungeonCleared(state, 'mossy_cellar')).toBe(false);
   });
 
-  it('pays better on a harder tier: the purse follows the HP, materials come in more units', () => {
+  it('pays better on a harder tier: more Money for the same damage, materials in more units', () => {
     // On the boss floor, a hit that is just the boss's HP: one kill a second.
     const kill = (difficulty: string, dps: number) => {
       const content = harmless(withDps(dps, plain));
@@ -167,7 +160,11 @@ describe('difficulty tiers', () => {
     const hard = kill('hard', 13_000_000);
     expect(normal.kills).toBe(1);
     expect(hard.kills).toBe(1);
-    expect(hard.money / normal.money).toBeCloseTo(1000, 0);
+    // A thousand times the HP pays 1,500 times the purse: half as much again per damage.
+    expect(plain.combat.difficulties.hard.purse).toBe(1500);
+    expect(plain.combat.difficulties.nightmare.purse).toBe(1500 * 1500);
+    // (whole Money units, so within a few parts in a thousand)
+    expect(hard.money / normal.money).toBeCloseTo(1500, -1);
     expect(hard.cores).toBe(normal.cores * plain.combat.difficulties.hard.material);
   });
 
@@ -176,8 +173,42 @@ describe('difficulty tiers', () => {
     const normal = on(inCellar(content), content, 10, 'normal');
     const hard = on(inCellar(content), content, 10, 'hard');
     const perSecond = (s: GameState) => incomePerSecond(s, content, 'money').toNumber();
-    // Purses follow HP, so Money per second is the same on both tiers (bar the wage).
-    expect(perSecond(hard) / perSecond(normal)).toBeCloseTo(1, 1);
+    expect(perSecond(hard) / perSecond(normal)).toBeCloseTo(1.5, 1);
+  });
+
+  it('pays more Money per second the deeper the floor, and keeps the boss purse as the data has it', () => {
+    const content = harmless(withDps(1e9, plain));
+    const perSecond = (floor: number, difficulty = 'normal') =>
+      incomePerSecond(on(inCellar(content), content, floor, difficulty), content, 'money')
+        .sub(50) // the first dungeon's Money wage
+        .toNumber();
+    const bonus = plain.combat.floors.purseFloorBonus;
+    expect(bonus).toBeGreaterThan(1);
+    expect(perSecond(2) / perSecond(1)).toBeCloseTo(bonus, 6);
+    expect(perSecond(9) / perSecond(1)).toBeCloseTo(bonus ** 8, 6);
+    // Floor 1 pays its plain share of the HP; the boss, nine floors below, pays 1.02^9 of the
+    // purse in dungeons.json.
+    const first = floorSpec(plain, cellar, 'normal', 1).enemies[0]!;
+    expect(first.purseScale).toBe(first.dropScale);
+    expect(floorSpec(plain, cellar, 'normal', 10).enemies[0]!.purseScale).toBeCloseTo(
+      bonus ** 9,
+      12,
+    );
+    // ... and every endless depth pays more per second than the one above.
+    expect(perSecond(8, 'endless') / perSecond(7, 'endless')).toBeCloseTo(bonus, 6);
+  });
+
+  it('grows the purses with the Ascension exactly like the enemies, so the growth costs no Money', () => {
+    const content = harmless(withDps(1e9, plain));
+    const at = (prestigeCount: number) => {
+      const state = on(inCellar(content), content, 10, 'normal');
+      state.prestigeCount = prestigeCount;
+      return state;
+    };
+    const perSecond = (s: GameState) => incomePerSecond(s, content, 'money').sub(50).toNumber();
+    expect(perSecond(at(3)) / perSecond(at(0))).toBeCloseTo(1, 6);
+    const step = 1 + cellar.boss.hpScalingPerPrestige;
+    expect(fightStage(at(2), content, 'mossy_cellar')!.scale.purse).toBeCloseTo(step ** 2, 9);
   });
 
   it('keeps every tier through an Ascension and restarts each at half of its best floor', () => {
@@ -305,52 +336,59 @@ describe('harder each Ascension', () => {
 });
 
 describe('the three new dungeons', () => {
-  it('are in the data with placeholder names, 40, 50 and 60 floors, and out of the game', () => {
+  it('follow the Frostspire Vault, each after the one before, with 40, 50 and 60 floors', () => {
     const shipped = loadContent();
-    expect(shipped.dungeons.map((d) => d.id)).toEqual([
-      'mossy_cellar',
-      'ember_crypt',
-      'frostspire_vault',
+    const later = shipped.dungeons.slice(3);
+    expect(later.map((d) => [d.id, d.name, d.floors, d.unlockedBy])).toEqual([
+      ['thunderpeak_aerie', 'Thunderpeak Aerie', 40, 'frostspire_vault'],
+      ['sunken_sanctum', 'Sunken Sanctum', 50, 'thunderpeak_aerie'],
+      ['void_hollow', 'Hollow of the Void', 60, 'sunken_sanctum'],
     ]);
-    const waiting = shipped.allDungeons.filter((d) => !d.enabled);
-    expect(waiting.map((d) => [d.id, d.name, d.floors])).toEqual([
-      ['dungeon_4', 'Dungeon 4', 40],
-      ['dungeon_5', 'Dungeon 5', 50],
-      ['dungeon_6', 'Dungeon 6', 60],
+    expect(later.map((d) => [d.boss.name, ...d.enemies.map((e) => e.name)])).toEqual([
+      ['Storm Roc', 'Spark Wisp', 'Gale Harpy', 'Thunder Ram'],
+      ['Dawn Hierophant', 'Lantern Moth', 'Gilded Acolyte', 'Marble Sentinel'],
+      ['The Unmade King', 'Shade Mote', 'Hollow Stalker', 'Rift Maw'],
     ]);
-    for (const d of waiting) {
+    expect(later.map((d) => d.background)).toEqual(later.map((d) => d.id));
+    expect(shipped.allDungeons).toHaveLength(6);
+    expect(shipped.allDungeons.every((d) => d.enabled)).toBe(true);
+    for (const d of later) {
       expect(d.enemies).toHaveLength(3);
+      // No drawing yet: the labelled placeholder stands in.
       expect(d.boss.art).toBeUndefined();
-      expect(shipped.dungeonById.has(d.id)).toBe(false);
+      expect(shipped.cosmeticById.has(d.drops.rare.itemId)).toBe(true);
     }
-    // No mine waits on them: whether each opens one is not decided.
-    expect(shipped.mines.some((m) => waiting.some((d) => d.id === m.unlockedByDungeon))).toBe(
-      false,
-    );
+    // Their rare items are their own.
+    expect(new Set(shipped.dungeons.map((d) => d.drops.rare.itemId)).size).toBe(6);
   });
 
-  it('open behind the dev flag, each after the dungeon before it', () => {
-    const dev = loadContent({ unreleased: true });
-    expect(dev.dungeons.map((d) => d.id).slice(3)).toEqual(['dungeon_4', 'dungeon_5', 'dungeon_6']);
-    expect(dev.dungeonById.get('dungeon_4')!.unlockedBy).toBe('frostspire_vault');
-    expect(dev.dungeonById.get('dungeon_6')!.unlockedBy).toBe('dungeon_5');
-    // They follow the floor rules like any dungeon.
-    const d4 = dev.dungeonById.get('dungeon_4')!;
-    expect(floorKind(dev, d4, 40)).toBe('boss');
-    expect(floorKind(dev, d4, 30)).toBe('miniboss');
-    expect(floorSpec(dev, d4, 'hard', 1).hp.gt(floorSpec(dev, d4, 'normal', 1).hp)).toBe(true);
+  it('open no new mine and add no new material: they drop Frost Cores and Sigils in growing amounts', () => {
+    const shipped = loadContent();
+    const later = shipped.dungeons.slice(3);
+    expect(shipped.mines.some((m) => later.some((d) => d.id === m.unlockedByDungeon))).toBe(false);
+    expect(later.map((d) => [d.drops.material.resource, d.drops.material.amount])).toEqual([
+      ['frost_core', 3],
+      ['frost_core', 4],
+      ['frost_core', 5],
+    ]);
+    expect(later.map((d) => d.drops.extraMaterials.map((e) => [e.resource, e.min]))).toEqual([
+      [['frost_sigil', 2]],
+      [['frost_sigil', 3]],
+      [['frost_sigil', 4]],
+    ]);
   });
 
-  it('drops the floors of a dungeon that is not in the loaded content from a save', () => {
-    const dev = loadContent({ unreleased: true });
-    const state = freshState();
-    const result = devSetFloor(state, dev, 'dungeon_4', 7);
-    expect(result.ok).toBe(true);
-    // The released game does not know the dungeon.
-    expect(devSetFloor(state, loadContent(), 'dungeon_4', 7)).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
+  it('follow the floor rules like any dungeon', () => {
+    const shipped = loadContent();
+    const aerie = shipped.dungeonById.get('thunderpeak_aerie')!;
+    expect(floorKind(shipped, aerie, 40)).toBe('boss');
+    expect(floorKind(shipped, aerie, 30)).toBe('miniboss');
+    expect(
+      floorSpec(shipped, aerie, 'hard', 1).hp.gt(floorSpec(shipped, aerie, 'normal', 1).hp),
+    ).toBe(true);
+    expect(devSetFloor(freshState(), shipped, 'thunderpeak_aerie', 7).ok).toBe(true);
+    // A dungeon can still be kept out of the game by its data.
+    expect(loadContent({ unreleased: true }).dungeons).toHaveLength(6);
   });
 });
 
@@ -360,7 +398,7 @@ describe('balance sim: tiers', () => {
     expect(byId.get('first_hard')!.targetHours).toBe(14);
     expect(byId.get('first_nightmare')!.targetHours).toBe(24);
     expect([4, 5, 6].map((n) => byId.get(`clear_d${n}`)!.targetHours)).toEqual([18, 28, 36]);
-    expect(byId.get('clear_d4')!.pending).toBeDefined();
+    expect(byId.get('clear_d4')!.pending).toBeUndefined();
     expect(byId.get('exhausted')!.targetHours).toBe(40);
     const state = on(freshState(), plain, 1, 'nightmare');
     const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
@@ -368,29 +406,19 @@ describe('balance sim: tiers', () => {
     expect(byId.get('first_nightmare')!.reached(state, plain, log)).toBe(false);
   });
 
-  it('leaves a milestone that waits for its dungeon out of the band check', () => {
-    const d4 = MILESTONES.find((m) => m.id === 'clear_d4')!;
-    const summary = summarizeRuns([{ clear_d4: null }, { clear_d4: null }]);
-    expect(bandCheck(d4, summary['clear_d4']!)).toEqual({ median: false, worst: false });
-    expect(bandsPass(summary)).toBe(true);
-    const table = formatSeedTable(summary, 3600);
-    expect(table).toContain('not built (its theme is not picked)');
-    expect(table).toContain('Bands: 0 of 0 milestones pass');
-  });
-
   it('climbs a tier it can get down when nothing else is waiting, and fights Normal otherwise', () => {
     const content = harmless(withDps(1e40, plain));
     // Everything cleared on Normal and no card upgrade waiting on a Core.
     let state = freshState();
-    for (const id of ['mossy_cellar', 'ember_crypt', 'frostspire_vault']) {
-      const d = content.dungeonById.get(id)!;
+    for (const d of content.dungeons) {
+      const id = d.id;
       state.combat.floors[id] = {
         difficulty: 'normal',
         mode: 'farm',
         tiers: { normal: { floor: d.floors, best: d.floors } },
       };
     }
-    state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'frostspire_vault', 'glimmer_trial'];
+    state.clearedDungeons = [...content.dungeons.map((d) => d.id), 'glimmer_trial'];
     state.combat.trialBest['glimmer_trial'] = 1;
     for (const card of Object.values(state.cards.owned)) card.level = 1;
     const fight = chooseFight(state, content, { trialShare: 1 });

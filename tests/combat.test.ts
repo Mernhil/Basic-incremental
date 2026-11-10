@@ -188,10 +188,13 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
 });
 
 describe('drops', () => {
-  it('each dungeon drops its own Core', () => {
+  it('each of the first three dungeons drops its own Core, the later ones Frost Cores', () => {
     expect(content.dungeons.map((d) => d.drops.material.resource)).toEqual([
       'moss_core',
       'cinder_core',
+      'frost_core',
+      'frost_core',
+      'frost_core',
       'frost_core',
     ]);
   });
@@ -219,6 +222,9 @@ describe('drops', () => {
     // Only the first dungeon pays a Money wage: Money still comes by the kill.
     expect(content.dungeons.map((d) => d.drops.wages.some((w) => w.resource === 'money'))).toEqual([
       true,
+      false,
+      false,
+      false,
       false,
       false,
     ]);
@@ -273,7 +279,9 @@ describe('drops', () => {
 
   it('drops Frost Sigils on every Frostspire Vault kill and, rarely, in the Ember Crypt', () => {
     const extras = content.dungeons.map((d) => d.drops.extraMaterials.map((e) => e.resource));
-    expect(extras).toEqual([[], ['frost_core', 'frost_sigil'], ['frost_sigil']]);
+    expect(extras.slice(0, 3)).toEqual([[], ['frost_core', 'frost_sigil'], ['frost_sigil']]);
+    // The three later dungeons drop Sigils on every boss kill too.
+    expect(extras.slice(3)).toEqual([['frost_sigil'], ['frost_sigil'], ['frost_sigil']]);
     // The Ember Crypt's Frost drops are rare (DESIGN.md §3); the Vault's Sigil comes every kill.
     for (const e of content.dungeonById.get('ember_crypt')!.drops.extraMaterials) {
       expect(e.chance).toBeGreaterThan(0);

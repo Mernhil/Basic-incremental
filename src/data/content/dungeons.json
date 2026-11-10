@@ -254,32 +254,32 @@
     }
   },
   {
-    "id": "dungeon_4",
-    "name": "Dungeon 4",
+    "id": "thunderpeak_aerie",
+    "name": "Thunderpeak Aerie",
     "tier": 4,
-    "enabled": false,
     "unlockedBy": "frostspire_vault",
     "floors": 40,
     "enemies": [
       {
-        "id": "dungeon_4_enemy_a",
-        "name": "Dungeon 4 enemy A",
+        "id": "spark_wisp",
+        "name": "Spark Wisp",
         "hpWeight": 0.7
       },
       {
-        "id": "dungeon_4_enemy_b",
-        "name": "Dungeon 4 enemy B",
+        "id": "gale_harpy",
+        "name": "Gale Harpy",
         "hpWeight": 1
       },
       {
-        "id": "dungeon_4_enemy_c",
-        "name": "Dungeon 4 enemy C",
+        "id": "thunder_ram",
+        "name": "Thunder Ram",
         "hpWeight": 1.5
       }
     ],
+    "background": "thunderpeak_aerie",
     "boss": {
-      "id": "dungeon_4_boss",
-      "name": "Dungeon 4 boss",
+      "id": "storm_roc",
+      "name": "Storm Roc",
       "hp": "161000000",
       "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
@@ -290,7 +290,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "prism_pointer",
+        "itemId": "forge_tick",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -307,11 +307,11 @@
       "firstClear": [
         {
           "resource": "summon_crystal",
-          "amount": "1500"
+          "amount": "2100"
         },
         {
           "resource": "glamour_crystal",
-          "amount": "900"
+          "amount": "1200"
         }
       ],
       "currencies": [
@@ -324,44 +324,44 @@
       "extraMaterials": [
         {
           "resource": "frost_sigil",
-          "min": 1,
-          "max": 1
+          "min": 2,
+          "max": 2
         }
       ],
       "material": {
         "resource": "frost_core",
         "chance": 0.6,
-        "amount": 2
+        "amount": 3
       }
     }
   },
   {
-    "id": "dungeon_5",
-    "name": "Dungeon 5",
+    "id": "sunken_sanctum",
+    "name": "Sunken Sanctum",
     "tier": 5,
-    "enabled": false,
-    "unlockedBy": "dungeon_4",
+    "unlockedBy": "thunderpeak_aerie",
     "floors": 50,
     "enemies": [
       {
-        "id": "dungeon_5_enemy_a",
-        "name": "Dungeon 5 enemy A",
+        "id": "lantern_moth",
+        "name": "Lantern Moth",
         "hpWeight": 0.7
       },
       {
-        "id": "dungeon_5_enemy_b",
-        "name": "Dungeon 5 enemy B",
+        "id": "gilded_acolyte",
+        "name": "Gilded Acolyte",
         "hpWeight": 1
       },
       {
-        "id": "dungeon_5_enemy_c",
-        "name": "Dungeon 5 enemy C",
+        "id": "marble_sentinel",
+        "name": "Marble Sentinel",
         "hpWeight": 1.5
       }
     ],
+    "background": "sunken_sanctum",
     "boss": {
-      "id": "dungeon_5_boss",
-      "name": "Dungeon 5 boss",
+      "id": "dawn_hierophant",
+      "name": "Dawn Hierophant",
       "hp": "3703000000",
       "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
@@ -372,7 +372,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "prism_pointer",
+        "itemId": "starmap_attack",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -389,11 +389,11 @@
       "firstClear": [
         {
           "resource": "summon_crystal",
-          "amount": "1500"
+          "amount": "2700"
         },
         {
           "resource": "glamour_crystal",
-          "amount": "900"
+          "amount": "1500"
         }
       ],
       "currencies": [
@@ -406,44 +406,44 @@
       "extraMaterials": [
         {
           "resource": "frost_sigil",
-          "min": 1,
-          "max": 1
+          "min": 3,
+          "max": 3
         }
       ],
       "material": {
         "resource": "frost_core",
         "chance": 0.6,
-        "amount": 2
+        "amount": 4
       }
     }
   },
   {
-    "id": "dungeon_6",
-    "name": "Dungeon 6",
+    "id": "void_hollow",
+    "name": "Hollow of the Void",
     "tier": 6,
-    "enabled": false,
-    "unlockedBy": "dungeon_5",
+    "unlockedBy": "sunken_sanctum",
     "floors": 60,
     "enemies": [
       {
-        "id": "dungeon_6_enemy_a",
-        "name": "Dungeon 6 enemy A",
+        "id": "shade_mote",
+        "name": "Shade Mote",
         "hpWeight": 0.7
       },
       {
-        "id": "dungeon_6_enemy_b",
-        "name": "Dungeon 6 enemy B",
+        "id": "hollow_stalker",
+        "name": "Hollow Stalker",
         "hpWeight": 1
       },
       {
-        "id": "dungeon_6_enemy_c",
-        "name": "Dungeon 6 enemy C",
+        "id": "rift_maw",
+        "name": "Rift Maw",
         "hpWeight": 1.5
       }
     ],
+    "background": "void_hollow",
     "boss": {
-      "id": "dungeon_6_boss",
-      "name": "Dungeon 6 boss",
+      "id": "unmade_king",
+      "name": "The Unmade King",
       "hp": "85169000000",
       "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
@@ -454,7 +454,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "prism_pointer",
+        "itemId": "rune_attack",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -471,11 +471,11 @@
       "firstClear": [
         {
           "resource": "summon_crystal",
-          "amount": "1500"
+          "amount": "3300"
         },
         {
           "resource": "glamour_crystal",
-          "amount": "900"
+          "amount": "1800"
         }
       ],
       "currencies": [
@@ -488,14 +488,14 @@
       "extraMaterials": [
         {
           "resource": "frost_sigil",
-          "min": 1,
-          "max": 1
+          "min": 4,
+          "max": 4
         }
       ],
       "material": {
         "resource": "frost_core",
         "chance": 0.6,
-        "amount": 2
+        "amount": 5
       }
     }
   }

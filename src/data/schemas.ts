@@ -786,11 +786,18 @@ export const combatSchema = z.strictObject({
     miniBossHpShare: z.number().gt(0).max(1),
     miniBossAttackShare: z.number().gt(0),
     miniBossPrefix: z.string().min(1),
+    /**
+     * Deeper pays more (DESIGN.md §6): on top of following HP, an enemy's Money purse is
+     * multiplied by this for every floor it stands below the first (the boss on floor `n` pays
+     * this^(n - 1) of its purse in dungeons.json), and for every endless depth.
+     */
+    purseFloorBonus: z.number().min(1),
   }),
   /**
    * Difficulty tiers (DESIGN.md §6 Difficulty tiers): what Hard and Nightmare multiply on top of
    * Normal. `hp` and `attack` scale every enemy, `purse` every Money purse (purses follow HP,
-   * §3 Ladders) and `material` the units of every material drop. The endless depths below
+   * §3 Ladders, and a harder tier pays half as much again for the same damage, §6 Deeper pays
+   * more) and `material` the units of every material drop. The endless depths below
    * Nightmare use Nightmare's numbers and grow by `floors.hpGrowth` with every depth.
    */
   difficulties: z.strictObject({

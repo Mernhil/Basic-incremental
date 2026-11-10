@@ -85,6 +85,9 @@ describe('bundled content', () => {
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
       ['Frostspire Vault', 'Glacier Colossus'],
+      ['Thunderpeak Aerie', 'Storm Roc'],
+      ['Sunken Sanctum', 'Dawn Hierophant'],
+      ['Hollow of the Void', 'The Unmade King'],
     ]);
     expect(content.cosmetics.length).toBeGreaterThan(7);
     expect(content.portals).toHaveLength(2); // Card Portal and Wardrobe Gate (open with the Wardrobe)
@@ -92,6 +95,9 @@ describe('bundled content', () => {
       'Root Warden',
       'Cinder Lich',
       'Glacier Colossus',
+      'Storm Roc',
+      'Dawn Hierophant',
+      'The Unmade King',
     ]);
     expect(content.trials.map((t) => t.name)).toEqual(['The Glimmer Trial']);
   });

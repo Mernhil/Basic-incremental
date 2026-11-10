@@ -20,7 +20,11 @@ describe('dungeon page helpers', () => {
       dungeons: ['frostspire_vault', 'glimmer_trial'],
       mines: ['crystal_grotto'],
     });
-    expect(clearUnlocks(content, 'frostspire_vault')).toEqual({ dungeons: [], mines: [] });
+    expect(clearUnlocks(content, 'frostspire_vault')).toEqual({
+      dungeons: ['thunderpeak_aerie'],
+      mines: [],
+    });
+    expect(clearUnlocks(content, 'void_hollow')).toEqual({ dungeons: [], mines: [] });
   });
 
   it('averages signature attacks into damage', () => {

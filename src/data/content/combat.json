@@ -37,19 +37,20 @@
     "miniBossEvery": 10,
     "miniBossHpShare": 0.6,
     "miniBossAttackShare": 0.8,
-    "miniBossPrefix": "Great"
+    "miniBossPrefix": "Great",
+    "purseFloorBonus": 1.02
   },
   "difficulties": {
     "hard": {
       "hp": 1000,
       "attack": 1000,
-      "purse": 1000,
+      "purse": 1500,
       "material": 2
     },
     "nightmare": {
       "hp": 1000000,
       "attack": 1000000,
-      "purse": 1000000,
+      "purse": 2250000,
       "material": 4
     }
   },

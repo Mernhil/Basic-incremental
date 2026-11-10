@@ -276,7 +276,8 @@ export interface FightStage {
   /** What one normal attack of the floor takes from the health pool, after defence. */
   attack: Decimal;
   intervalSeconds: number;
-  /** What the difficulty multiplies the drops by (Money purses, material units). */
+  /** What the difficulty and the Ascensions multiply the drops by (Money purses, material
+   *  units). */
   scale: DifficultyScale;
 }
 
@@ -327,7 +328,12 @@ function stageOf(
     hp: upto,
     attack,
     intervalSeconds: spec.intervalSeconds,
-    scale: spec.scale,
+    // Purses grow with the Ascension like the enemies' HP, so a stronger enemy pays in
+    // proportion (DESIGN.md §6 Harder each Ascension).
+    scale: {
+      ...spec.scale,
+      purse: spec.scale.purse * ascensionGrowth(dungeon, prestigeCount).toNumber(),
+    },
   };
 }
 
@@ -1491,14 +1497,25 @@ function killEnemies(
     if (enemy.kind === 'enemy') enemyKills += count;
     else bossFloorKills += count;
     if (enemy.kind !== 'boss') {
-      const roll = rollEnemyDrops(drops, enemy.dropScale, count, rng);
+      const roll = rollEnemyDrops(drops, enemy.dropScale, count, rng, enemy.purseScale);
       roll.currencies.forEach((units, j) => (purse[j]! += units));
       material += roll.material;
       roll.extraMaterials.forEach((units, j) => (extras[j]! += units));
       return;
     }
+    // The boss's purse grows with the floor it stands on (DESIGN.md §6 Deeper pays more).
+    const table =
+      enemy.purseScale === 1
+        ? drops
+        : {
+            ...drops,
+            currencies: drops.currencies.map((currency) => ({
+              ...currency,
+              multiplier: (currency.multiplier ?? 1) * enemy.purseScale,
+            })),
+          };
     for (let i = 0; i < count; i++) {
-      const roll = rollBossDrop(drops, pity, rng);
+      const roll = rollBossDrop(table, pity, rng);
       pity = roll.pity;
       roll.currencies.forEach((units, j) => (purse[j]! += units));
       if (roll.rare) rares++;

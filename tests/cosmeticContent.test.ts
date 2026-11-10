@@ -281,7 +281,9 @@ describe('the 20 loose items (B5)', () => {
         expect(c.set).toBeNull();
         expect(c.exclusiveCard).toBeNull();
         expect(c.levels, c.id).toHaveLength(cosmeticMaxLevel(content, c));
-        expect(cosmeticSource(content, c.id)).toBe('portal');
+        // From the Wardrobe Gate; three of the Epic ones are also a dungeon's rare item
+        // (Thunderpeak Aerie, Sunken Sanctum, Hollow of the Void), which is the source named.
+        expect(['portal', 'dungeon']).toContain(cosmeticSource(content, c.id));
       }
       expect([border.slot, number.slot, attack.slot, tick.slot]).toEqual([
         'border',
