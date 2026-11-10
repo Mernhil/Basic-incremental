@@ -233,6 +233,7 @@ export {
   /** The side of a card's T6 and Heirloom: 'mythic' or 'void'. */
   cardSide,
   /** The item rarity to draw for a card's rarity and tier: one step up the rarity ladder per tier, capped at Void. */
+  lookTier,
   weaponLookRarity,
   /** Whether a rank is at least another (tier, then stars). */
   rankAtLeast,

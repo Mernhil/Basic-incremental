@@ -3,6 +3,7 @@ import {
   cardInfo,
   cardItem,
   legacyWeaponArt,
+  lookTier,
   resolveCard,
   type CardRole,
   type GameState,
@@ -41,7 +42,7 @@ export function cardItemArt(
   return itemArt(
     item?.kind ?? card.item.kind,
     item?.rarity ?? card.rarity,
-    owned?.tier ?? 'wood',
+    lookTier(card.rarity, owned?.tier ?? 'wood'),
     card.rarity,
   );
 }

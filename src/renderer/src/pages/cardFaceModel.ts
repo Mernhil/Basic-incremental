@@ -3,6 +3,7 @@ import {
   burstStats,
   cardInfo,
   itemName,
+  lookTier,
   type CardInfo,
   type GameState,
   type Modifier,
@@ -46,7 +47,12 @@ export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Mod
   }
   return {
     // The weapon's name stands in for the ability name until the card data has one.
-    ability: itemName(content, card.item.kind, info.rank?.tier ?? 'wood', card.rarity),
+    ability: itemName(
+      content,
+      card.item.kind,
+      lookTier(card.rarity, info.rank?.tier ?? 'wood'),
+      card.rarity,
+    ),
     speed: COPY.card.hitsEvery(secondsText(hitSeconds(content, info, mods))),
     level: owned && cap !== null ? { value: owned.level, cap } : null,
     progress,

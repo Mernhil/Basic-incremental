@@ -147,6 +147,16 @@ export function itemName(content: Content, kind: ItemKind, tier: RankTier, rarit
 }
 
 /**
+ * The tier whose weapon art and name a card shows (user, 2026-11-10): a card never shows less than
+ * its rarity's top tier (a Void card shows the Void T6 weapon, a Legendary the Prismatic one) while
+ * the tier-up looks are not in the game; a higher tier (the Heirloom) wins.
+ */
+export function lookTier(rarity: Rarity, tier: RankTier): RankTier {
+  const cap = RARITY_TIER_CAP[rarity];
+  return RANK_TIERS.indexOf(tier) >= RANK_TIERS.indexOf(cap) ? tier : cap;
+}
+
+/**
  * The item rarity to draw for a card's rarity and tier (DESIGN.md §5 "Weapon looks, for now"):
  * one step up the rarity ladder per tier (Wood = the card's rarity, Bronze +1, ... Heirloom +6),
  * capped at Void. The art for an item type that has no new pictures yet is interim.
@@ -165,7 +175,7 @@ export function cardItem(
 ): CardItem | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  const tier = owned?.tier ?? 'wood';
+  const tier = lookTier(card.rarity, owned?.tier ?? 'wood');
   const rarity = weaponLookRarity(card.rarity, tier);
   return {
     kind: card.item.kind,
