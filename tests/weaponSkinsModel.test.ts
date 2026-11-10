@@ -41,12 +41,11 @@ describe('weapon skins tab model', () => {
     expect(v.ownsPreviewCard).toBe(false);
   });
 
-  it('previews a card of the type, else the first fighting card', () => {
+  it('previews a card of the type', () => {
     const sword = weaponSkinsView(freshState(), content, { weapon: 'sword' }, 'Original');
     expect(sword.previewCardId).toBe('ember_squire');
-    const hammer = weaponSkinsView(freshState(), content, { weapon: 'bow' }, 'Original');
-    expect(content.cards.some((c) => c.item.kind === 'bow')).toBe(false);
-    expect(hammer.previewCardId).toBe(content.cards.find((c) => c.job === 'fighting')!.id);
+    const bow = weaponSkinsView(freshState(), content, { weapon: 'bow' }, 'Original');
+    expect(content.cardById.get(bow.previewCardId!)!.item.kind).toBe('bow');
     const hammerCard = weaponSkinsView(freshState(), content, { weapon: 'hammer' }, 'Original');
     expect(hammerCard.previewCardId).toBe('grave_hammerer');
   });
