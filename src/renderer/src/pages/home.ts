@@ -34,7 +34,7 @@ import './home.css';
 /**
  * Home (UI_RULES.md §2, "Home"): a command centre of three equal pixel panels side by side, Fight,
  * Logging and Mining. Each panel has its title with a short line on the right, an inset scene
- * with a floor strip (the job's main card at 1x with the boss, or with its three tiles), one big
+ * (the job's main card at 1x with the boss, or with its three tiles), one big
  * number, its gauge and its lines, and a gold button that opens the page. The goal tracker sits
  * above, in the shell.
  */
@@ -113,7 +113,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     const where = h('span', 'hm-panel__where');
     head.append(h('h2', 'hm-panel__title px-display', title), where);
 
-    // the scene: an inset well with the cards standing on a floor strip
+    // the scene: an inset well with the cards floating in it
     const scene = h('div', 'hm-scene px-well');
     const field = h('div', 'hm-field');
     field.setAttribute('role', 'img');
@@ -122,9 +122,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     fitCard(field, { want: 132 });
     const slot = h('div', 'hm-slot');
     field.append(slot);
-    const floor = h('i', 'hm-floor');
-    floor.setAttribute('aria-hidden', 'true');
-    scene.append(field, floor);
+    scene.append(field);
 
     const big = h('div', 'hm-big');
     const bigNumber = h('b', 'hm-big__n px-display bi-num');

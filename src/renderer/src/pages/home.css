@@ -49,7 +49,7 @@
   color: var(--px-muted);
 }
 
-/* ---- the scene: an inset well, the cards standing on the floor strip ---- */
+/* ---- the scene: an inset well, the cards floating in it ---- */
 .hm-scene {
   position: relative;
   overflow: hidden;
@@ -66,32 +66,16 @@
   gap: 8px;
   /* room above the card for the HP bar and the floating numbers */
   min-height: calc(var(--u) * 186 + 36px);
-  padding: 10px 12px 0;
+  padding: 10px 12px 14px;
 }
-.hm-floor {
-  display: block;
-  height: 30px;
-  /* stone slabs on the floor line */
-  background:
-    linear-gradient(var(--px-edge), var(--px-edge)) 0 0 / 100% var(--fs-sm) no-repeat,
-    repeating-linear-gradient(
-      90deg,
-      transparent 0,
-      transparent calc(32px - var(--fs-sm)),
-      var(--px-edge) calc(32px - var(--fs-sm)),
-      var(--px-edge) 32px
-    ),
-    var(--px-body);
-}
-
 /* the main card at 1x: the 176 x 248 box scaled to the whole device-pixel size */
 .hm-slot {
   position: relative;
   flex: none;
   width: calc(176px * var(--card-k));
   height: calc(248px * var(--card-k));
-  /* the card box has a margin around the art: pull the art onto the floor and into the corner */
-  margin-bottom: calc(-31px * var(--card-k));
+  /* the card box has a margin around the art: pull the art to the corner */
+  margin-bottom: calc(-20px * var(--card-k));
   margin-left: calc(-16px * var(--card-k));
 }
 .hm-slot > .bi-card {
@@ -175,7 +159,6 @@
   --one: calc(172px / var(--dpr));
   width: max(var(--one), round(nearest, 172px, var(--one)));
   aspect-ratio: 1;
-  /* the sprite stands on the floor line */
   margin-bottom: -8px;
   animation: hm-bob 3.2s ease-in-out infinite;
 }
