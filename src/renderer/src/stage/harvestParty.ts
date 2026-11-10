@@ -9,32 +9,32 @@ import {
 } from '../../../game';
 import { cardFaceOf, secondsText } from '../pages/cardFaceModel';
 import { cardItemArt } from '../pages/loadoutCards';
-import { gaugePercent, stageKey, type StrikeLook } from '../pages/productionStageModel';
+import {
+  burstCountText,
+  gaugePercent,
+  stageKey,
+  supportChips,
+  type StrikeLook,
+} from '../pages/productionStageModel';
 import { COPY } from '../copy';
-import { createCard, type CardProps } from '../ui/card';
+import type { CardProps } from '../ui/card';
 import { createLoadoutFan, type FanCard } from '../ui/loadoutFan';
-import { fitCard } from '../ui/pixelFit';
 import { reducedMotion, replay } from './motion';
 import './harvestParty.css';
 
 /**
- * The cards of a production field (DESIGN.md §4, §11): the main logging / mining card with its
- * harvest gauge (the same meter as Brave Burst in the arena) and its three supports, drawn with
- * the cosmetics of the fighting cards (`look`). The page tells it when to lunge and which
- * supports to pulse; it only owns the card DOM.
- *
- * `side` is the Production screen's stage (DESIGN.md §4): the main card large (about 2x), its gauge
- * as a wide bar with the count beside it, the strike pattern in words and the supports as a list
- * of lines instead of cards.
+ * The cards of one Production band (DESIGN.md §4, §11): the job's main card at 1x in its loadout
+ * fan with the supports peeking out behind it, the harvest gauge under the fan, and two small
+ * pieces the page places elsewhere in the band: the supports as one line of chips and the burst
+ * count. The cards use the cosmetics of the fighting cards (`look`). The page tells it when to
+ * lunge and which supports to pulse; it owns only this DOM.
  */
 
 const SUPPORTS = 3;
-/** The side stage's main card: about twice the grid; the whole fan fits the stage column. */
-const SIDE_MAIN_WANT = 264;
-const SIDE_FAN_MAX = 362;
-/** CSS px wide the main card and the supports want; the screen scale rounds each to whole pixels. */
+/** The main card at 1x (132 CSS px wide at a 100 % screen); the screen scale keeps it whole. */
 const MAIN_WANT = 132;
-const SUPPORT_WANT = 74;
+/** Most CSS px the whole fan (main card plus the peeks) may take. */
+const FAN_MAX = 214;
 const STRIKE_CLASSES = [
   'is-strike-steady',
   'is-strike-chop',
@@ -43,14 +43,19 @@ const STRIKE_CLASSES = [
 ];
 
 export interface HarvestParty {
+  /** The fan with its harvest gauge under it. */
   el: HTMLElement;
+  /** The supports as one line of chips. */
+  supportsEl: HTMLElement;
+  /** The "Burst 21 / 30" chip. */
+  burstEl: HTMLElement;
   /** Re-reads the stage view, redraws changed cards and the gauge. Returns the view. */
   update(): ProductionStageView;
   /** The last view `update` read. */
   view(): ProductionStageView;
   /** The main card's slot (null when there is no main card), for aiming strikes. */
   mainSlot(): HTMLElement | null;
-  /** Lunges the main card by (dx, dy) px with a strike look. */
+  /** Lunges the main card by (dx, dy) px with a strike look (a slide only). */
   lunge(look: StrikeLook, dx: number, dy: number): void;
   /** Pulses the listed support cards. */
   pulse(ids: readonly string[]): void;
@@ -58,82 +63,40 @@ export interface HarvestParty {
   burst(): void;
 }
 
-export interface HarvestPartyOptions {
-  /** The stage beside the Production rows: big card, gauge bar, supports as a list. */
-  side?: boolean;
-}
-
 export function createHarvestParty(
   content: Content,
   state: () => GameState,
   job: ProductionJob,
-  opts: HarvestPartyOptions = {},
 ): HarvestParty {
-  const side = Boolean(opts.side);
+  const label = COPY.production.partyLabel(COPY.production[job].title);
   const el = document.createElement('div');
-  el.className = `pp-party pp-party--${job}${side ? ' pp-party--side' : ''}`;
-  el.setAttribute('role', 'group');
-  el.setAttribute('aria-label', COPY.production.partyLabel(COPY.production[job].title));
+  el.className = `pp-party pp-party--${job}`;
 
-  // side stage: the main card with the supports fanned behind it (ui/loadoutFan.ts)
-  const fan = side
-    ? createLoadoutFan({
-        want: SIDE_MAIN_WANT,
-        max: () => SIDE_FAN_MAX,
-        label: COPY.production.partyLabel(COPY.production[job].title),
-        popLabel: COPY.production.showCard,
-        emptyLabel: COPY.table.emptySlot,
-      })
-    : null;
-  const mainWrap = fan ? fan.mainEl : document.createElement('div');
+  const fan = createLoadoutFan({
+    want: MAIN_WANT,
+    max: () => FAN_MAX,
+    label,
+    popLabel: COPY.production.showCard,
+    emptyLabel: COPY.table.emptySlot,
+  });
+  const mainWrap = fan.mainEl;
   mainWrap.classList.add('pp-slot', 'pp-slot--main');
-  if (!fan) mainWrap.classList.add('ar-slot');
-  // cards are always a whole number of device pixels per art pixel (DESIGN.md §12)
-  if (!fan) fitCard(mainWrap, { want: MAIN_WANT });
+
+  // the harvest gauge: a segmented bar under the fan, the same meter as Brave Burst in the arena
   const gauge = document.createElement('div');
-  gauge.className = 'ar-gauge pp-gauge';
+  gauge.className = 'pp-gauge';
   gauge.setAttribute('role', 'meter');
   gauge.setAttribute('aria-valuemin', '0');
   gauge.setAttribute('aria-valuemax', '100');
-  const gaugeLabel = document.createElement('span');
-  gaugeLabel.textContent = COPY.production.harvestBurst;
   const gaugeFill = document.createElement('i');
-  const gaugeCount = document.createElement('b');
-  if (side) {
-    // a wide bar with its count beside it (the arena meter has its label under the bar)
-    gauge.className = 'pp-gauge pp-gauge--side';
-    const track = document.createElement('div');
-    track.className = 'pp-gauge__track';
-    track.append(gaugeFill);
-    gaugeCount.className = 'bi-num';
-    gauge.append(track, gaugeCount);
-  } else {
-    gauge.append(gaugeLabel, gaugeFill);
-  }
-  const supportRow = document.createElement(side ? 'ul' : 'div');
-  supportRow.className = side ? 'pp-sups' : 'pp-supports';
-  const supportWraps: HTMLElement[] = [];
-  for (let i = 0; i < SUPPORTS; i++) {
-    const w = document.createElement(side ? 'li' : 'div');
-    if (side) {
-      w.className = 'pp-sup';
-    } else {
-      w.className = 'ar-slot pp-slot pp-slot--support';
-      fitCard(w, { want: SUPPORT_WANT });
-    }
-    supportWraps.push(w);
-    supportRow.append(w);
-  }
-  const pattern = document.createElement('p');
-  pattern.className = 'pp-pattern';
-  if (fan) {
-    const meta = document.createElement('div');
-    meta.className = 'pp-meta';
-    meta.append(gauge, pattern, supportRow);
-    el.append(fan.el, meta);
-  } else {
-    el.append(mainWrap, supportRow);
-  }
+  gauge.append(gaugeFill);
+  el.append(fan.el, gauge);
+
+  const burstEl = document.createElement('span');
+  burstEl.className = 'pp-burst bi-num';
+  const supportsEl = document.createElement('ul');
+  supportsEl.className = 'pp-chips';
+  supportsEl.setAttribute('aria-label', COPY.production.supportsLabel);
 
   let key = '';
   let last: ProductionStageView = productionStageView(state(), content, job);
@@ -161,71 +124,40 @@ export function createHarvestParty(
     };
   };
 
-  /**
-   * One support line of the side stage: a rarity swatch, its name and what it does. A click on it
-   * pops the same card out of the fan.
-   */
-  function fillLine(wrap: HTMLElement, card: StageCard | undefined): void {
-    wrap.replaceChildren();
-    wrap.classList.toggle('pp-sup--empty', !card);
-    wrap.classList.toggle('pp-sup--helps', Boolean(card?.helpsHarvest));
-    wrap.removeAttribute('role');
-    wrap.removeAttribute('tabindex');
-    wrap.removeAttribute('data-lf-toggle');
-    if (!card) {
-      wrap.textContent = COPY.production.emptySupport;
-      return;
-    }
-    wrap.dataset.lfToggle = '';
-    wrap.setAttribute('role', 'button');
-    wrap.tabIndex = 0;
-    wrap.onclick = () => fan?.pop(fan.popped() === card.cardId ? null : card.cardId);
-    wrap.onkeydown = (e) => {
-      if (e.key !== 'Enter' && e.key !== ' ') return;
-      e.preventDefault();
-      wrap.click();
-    };
-    const swatch = document.createElement('i');
-    swatch.dataset.rarity = card.rarity;
-    swatch.setAttribute('aria-hidden', 'true');
-    const name = document.createElement('b');
-    name.textContent = card.name;
-    const text = document.createElement('span');
-    text.textContent = card.abilityText;
-    wrap.append(swatch, name, text);
-    byCard.set(card.cardId, wrap);
-  }
-
-  function fill(
-    wrap: HTMLElement,
-    card: StageCard | undefined,
-    role: 'main' | 'support',
-    v: ProductionStageView,
-  ): void {
-    wrap.replaceChildren();
-    wrap.classList.toggle('ar-slot--empty', !card);
-    wrap.classList.toggle('pp-slot--helps', Boolean(card?.helpsHarvest));
-    if (!card) {
-      wrap.setAttribute(
-        'aria-label',
-        role === 'main' ? COPY.table.emptyMain : COPY.table.emptySlot,
-      );
-      return;
-    }
-    wrap.removeAttribute('aria-label');
-    wrap.append(createCard(props(card, role, v)).el);
-    byCard.set(card.cardId, wrap);
-  }
-
-  /** "Steady · strikes every 1 s", then what a full gauge does. */
-  function sidePattern(v: ProductionStageView): string {
-    const every = Number((v.pattern.intervalSeconds / v.pattern.strikes).toFixed(2));
-    const style = COPY.production.patterns[v.pattern.style];
-    const burst = COPY.production.stageBurst(
-      v.burst.size,
-      `${Number(v.burst.power.toNumber().toFixed(1))} s`,
+  /** The chips line: a rarity swatch, the name and what it does; a click pops the card out. */
+  function drawChips(v: ProductionStageView): void {
+    byCard.clear();
+    supportsEl.replaceChildren(
+      ...supportChips(v).map((c) => {
+        const li = document.createElement('li');
+        li.className = 'pp-chip';
+        li.classList.toggle('pp-chip--empty', !c);
+        li.classList.toggle('pp-chip--helps', Boolean(c?.helps));
+        const swatch = document.createElement('i');
+        swatch.setAttribute('aria-hidden', 'true');
+        if (!c) {
+          li.append(swatch, COPY.production.emptySupport);
+          return li;
+        }
+        swatch.dataset['rarity'] = c.rarity;
+        const name = document.createElement('b');
+        name.textContent = c.name;
+        const effect = document.createElement('span');
+        effect.textContent = c.effect;
+        li.append(swatch, name, effect);
+        li.dataset['lfToggle'] = '';
+        li.setAttribute('role', 'button');
+        li.tabIndex = 0;
+        li.onclick = () => fan.pop(fan.popped() === c.id ? null : c.id);
+        li.onkeydown = (e) => {
+          if (e.key !== 'Enter' && e.key !== ' ') return;
+          e.preventDefault();
+          li.click();
+        };
+        byCard.set(c.id, li);
+        return li;
+      }),
     );
-    return `${COPY.production.stageStrikes(style, `${every} s`)} · ${burst}`;
   }
 
   function update(): ProductionStageView {
@@ -234,34 +166,27 @@ export function createHarvestParty(
     const k = stageKey(v) + JSON.stringify(state().weaponSkins);
     if (k !== key) {
       key = k;
-      byCard.clear();
       mainHas = Boolean(v.main);
-      if (fan) {
-        const card = (c: StageCard, role: 'main' | 'support'): FanCard => ({
-          id: c.cardId,
-          name: c.name,
-          effect: c.abilityText,
-          props: props(c, role, v),
-          helps: c.helpsHarvest,
-        });
-        fan.setCards(
-          v.main ? card(v.main, 'main') : null,
-          v.supports.slice(0, SUPPORTS).map((c) => (c ? card(c, 'support') : undefined)),
-        );
-        v.supports.slice(0, SUPPORTS).forEach((c, i) => fillLine(supportWraps[i]!, c));
-        pattern.textContent = sidePattern(v);
-      } else {
-        fill(mainWrap, v.main ?? undefined, 'main', v);
-        v.supports.slice(0, SUPPORTS).forEach((c, i) => fill(supportWraps[i]!, c, 'support', v));
-        mainWrap.append(gauge);
-      }
+      const card = (c: StageCard, role: 'main' | 'support'): FanCard => ({
+        id: c.cardId,
+        name: c.name,
+        effect: c.abilityText,
+        props: props(c, role, v),
+        helps: c.helpsHarvest,
+      });
+      fan.setCards(
+        v.main ? card(v.main, 'main') : null,
+        v.supports.slice(0, SUPPORTS).map((c) => (c ? card(c, 'support') : undefined)),
+      );
+      drawChips(v);
     }
     const pct = gaugePercent(v.gauge);
     gaugeFill.style.width = `${pct}%`;
     gauge.classList.toggle('is-full', v.gauge > 0.92);
     gauge.setAttribute('aria-valuenow', String(pct));
     gauge.setAttribute('aria-label', `${COPY.production.harvestBurst}: ${pct}%`);
-    if (side) gaugeCount.textContent = `${Math.round(v.gauge * v.burst.size)}/${v.burst.size}`;
+    const text = burstCountText(v);
+    if (burstEl.textContent !== text) burstEl.textContent = text;
     gauge.hidden = !mainHas;
     return v;
   }
@@ -269,6 +194,8 @@ export function createHarvestParty(
 
   return {
     el,
+    supportsEl,
+    burstEl,
     update,
     view: () => last,
     mainSlot: () => (mainHas ? mainWrap : null),
@@ -282,7 +209,7 @@ export function createHarvestParty(
     pulse(ids) {
       if (reducedMotion()) return;
       for (const id of ids) replay(byCard.get(id), 'is-pulse', 520);
-      fan?.pulse(ids);
+      fan.pulse(ids);
     },
     burst() {
       if (mainHas && !reducedMotion()) replay(mainWrap, 'is-bursting', 800);

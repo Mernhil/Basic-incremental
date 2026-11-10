@@ -448,3 +448,16 @@ export function nextGoals(
 ): Goal[] {
   return allGoals(state, content, modifiers).slice(0, Math.max(0, n));
 }
+
+/**
+ * Seconds until one price (a tree or mine level cost) is affordable at the current income:
+ * 0 when affordable now, null when the resource earns nothing (the Production "Next buy" wait).
+ */
+export function timeToAfford(
+  state: GameState,
+  content: Content,
+  price: Price,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): number | null {
+  return secondsToAfford(state, content, [price], modifiers);
+}

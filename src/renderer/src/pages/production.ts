@@ -6,6 +6,7 @@ import {
   buyMineLevels,
   buyTreeLevels,
   unlockTree,
+  type Decimal,
   type GameState,
   type Modifier,
   type Producer,
@@ -38,22 +39,24 @@ import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton 
 import { createShelf, type Shelf } from '../ui/shelf';
 import { fmt } from '../settings/numberFormat';
 import {
-  allRateText,
-  jobRateText,
+  jobRateValue,
   productionRows,
   shelfSummary,
+  type MilestoneSegments,
   type ProductionRow,
 } from './productionModel';
 import { shelfChips } from './shelfModel';
 import './production.css';
 
 /**
- * Production page (DESIGN.md §4, §11), "side stage": one row per tree kind or mine type on the left
- * (tile, name, level, output, a bar to the next ×2 milestone, the buy button on the row; a locked
- * kind is a greyed row with its unlock), a sticky stage on the right with the main card of the
- * chosen job at about 2x, its gauge and supports, and the upgrade shelf in a drawer that slides up
- * from the bottom. Every strike lunges the card toward the row it hit and pops "+n" on that row;
- * a harvest burst runs a wave down the rows with one big total.
+ * Production page (DESIGN.md §4, §11), the pixel ledger: two stacked bands, Logging and Mining,
+ * each a pixel frame. On the left of a band the job's main card at 1x in its loadout fan with the
+ * harvest gauge under it; on the right the column headers, one row per tree kind or mine type (tile,
+ * name and level, output, a segmented bar to the next ×2, the next-buy wait, the buy button; a
+ * locked kind is a greyed row with its unlock), then the supports as one line of chips and the
+ * burst count. The ×1 / ×10 / ×100 / Max toggle lives in the goals strip (`setBuySlot`). The
+ * upgrade shelf is a drawer over the bottom: one line when closed. Every strike slides the band's
+ * card toward the row it hit and pops "+n" on that row; a harvest burst runs a wave down the band.
  */
 
 export interface PageContext {
@@ -70,12 +73,13 @@ export interface ProductionContext extends PageContext {
   sound?: (id: string) => void;
   /** Plays tier-up moments (milestones, tile stages). */
   onTierUps?: (list: TierUp[]) => void;
+  /** Puts the ×1 / ×10 / ×100 / Max toggle at the right end of the goals strip. */
+  setBuySlot?: (el: HTMLElement) => void;
 }
 
 /** Coins flown to the header per resource per second at most. */
 const COINS_PER_SECOND = 3;
 const DRAWER_KEY = 'bi.productionDrawer';
-const STAGE_KEY = 'bi.productionStage';
 
 /** What one row keeps so a refresh only touches text and state, not the DOM tree. */
 interface RowRef {
@@ -84,12 +88,24 @@ interface RowRef {
   tile: HTMLElement;
   art: HTMLElement;
   level: HTMLElement;
-  output: HTMLElement;
-  msLabel: HTMLElement;
-  msToGo: HTMLElement;
-  msFill: HTMLElement;
+  value: HTMLElement;
+  unit: HTMLElement;
+  pips: HTMLElement[];
+  track: HTMLElement;
+  x2: HTMLElement;
+  next: HTMLElement;
+  nextText: HTMLElement;
+  nextSub: HTMLElement;
   buy?: BuyButton;
   unlock?: { btn: HTMLButtonElement; label: HTMLElement; price: HTMLElement; have: HTMLElement };
+}
+
+interface BandRef {
+  el: HTMLElement;
+  rate: HTMLElement;
+  list: HTMLElement;
+  flash: HTMLElement;
+  party: HarvestParty;
 }
 
 function readStored(key: string): string | null {
@@ -127,20 +143,16 @@ export function createProductionPage(
     return svg(tree ? treeTile(tree, gem, stage) : mineTile(gem, stage));
   };
 
-  // ---- skeleton: a scrolling screen (title, rows, stage) with the shelf drawer over its bottom ----
+  // ---- skeleton: the two bands in a scrolling column with the shelf drawer over its bottom ----
   page.classList.add('shell-page--stage', 'pp-page');
   const screen = h('div', 'pp-screen');
   const scroll = h('div', 'pp-scroll');
-  const top = h('header', 'pp-top');
-  const title = page.querySelector<HTMLElement>('.shell-page__title');
-  if (title) top.append(title);
-  const total = h('span', 'pp-top__rate bi-num');
-  top.append(total, createBuyToggle());
-  const split = h('div', 'pp-split');
-  const rowsEl = h('div', 'pp-rows');
-  const stageEl = h('aside', 'pp-stage');
-  split.append(rowsEl, stageEl);
-  scroll.append(top, split);
+  // the page name stays for screen readers; the bands carry the sighted headings
+  page.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
+  const bandsEl = h('div', 'pp-bands');
+  scroll.append(bandsEl);
+  // the buy amount sits in the goals strip, not on the page
+  ctx.setBuySlot?.(createBuyToggle());
 
   const shelf: Shelf = createShelf({
     content,
@@ -160,7 +172,12 @@ export function createProductionPage(
   const readyDot = h('i', 'pp-drawer__ready');
   readyDot.setAttribute('aria-hidden', 'true');
   const summary = h('span', 'pp-drawer__sum bi-num');
-  handle.append(h('i', 'pp-drawer__chev'), h('b', '', COPY.shelf.title), summary, readyDot);
+  handle.append(
+    h('i', 'pp-drawer__chev'),
+    h('b', 'pp-drawer__title px-display', COPY.shelf.title),
+    summary,
+    readyDot,
+  );
   bar.append(handle);
   const drawerBody = h('div', 'pp-drawer__body');
   drawerBody.id = 'pp-drawer-body';
@@ -184,123 +201,125 @@ export function createProductionPage(
     writeStored(DRAWER_KEY, open ? 'open' : 'closed');
     padForDrawer();
   };
-  /** The rows scroll clear of the drawer: its bar when closed, the whole drawer when open. */
+  /** The bands scroll clear of the drawer: its bar when closed, the whole drawer when open. */
   function padForDrawer(): void {
-    const barH = bar.offsetHeight || 46;
+    const barH = bar.offsetHeight || 40;
     const shown = open ? drawer.offsetHeight || barH : barH;
-    scroll.style.setProperty('--pp-pad', `${shown + 18}px`);
+    scroll.style.setProperty('--pp-pad', `${shown + 12}px`);
   }
   handle.addEventListener('click', () => setOpen(!open));
   if (typeof ResizeObserver !== 'undefined') new ResizeObserver(padForDrawer).observe(drawer);
 
-  // ---- the stage: one job at a time, chosen by its tab ----
-  const parties: Record<ProductionJob, HarvestParty> = {
-    logging: createHarvestParty(content, ctx.state, 'logging', { side: true }),
-    mining: createHarvestParty(content, ctx.state, 'mining', { side: true }),
-  };
-  let stageJob: ProductionJob = readStored(STAGE_KEY) === 'mining' ? 'mining' : 'logging';
-  const tabs = h('div', 'pp-tabs');
-  tabs.setAttribute('role', 'tablist');
-  tabs.setAttribute('aria-label', COPY.production.stageTabs);
-  const tabEls = new Map<ProductionJob, HTMLButtonElement>();
-  for (const job of PRODUCTION_JOBS) {
-    const b = h('button', 'pp-tab', COPY.production[job].title);
-    b.type = 'button';
-    b.setAttribute('role', 'tab');
-    b.id = `pp-tab-${job}`;
-    b.setAttribute('aria-controls', `pp-panel-${job}`);
-    b.addEventListener('click', () => showStage(job));
-    b.addEventListener('keydown', (e) => {
-      const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
-      if (!step) return;
-      e.preventDefault();
-      const next = PRODUCTION_JOBS[(PRODUCTION_JOBS.indexOf(job) + step + 2) % 2]!;
-      showStage(next);
-      tabEls.get(next)?.focus();
-    });
-    tabEls.set(job, b);
-    tabs.append(b);
-  }
-  const flashEl = h('div', 'pp-flash');
-  flashEl.setAttribute('aria-hidden', 'true');
-  stageEl.append(tabs);
-  for (const job of PRODUCTION_JOBS) {
-    const panel = parties[job].el;
-    panel.id = `pp-panel-${job}`;
-    panel.setAttribute('role', 'tabpanel');
-    panel.setAttribute('aria-labelledby', `pp-tab-${job}`);
-    stageEl.append(panel);
-  }
-  stageEl.append(flashEl);
-  function showStage(job: ProductionJob): void {
-    stageJob = job;
-    writeStored(STAGE_KEY, job);
-    stageEl.dataset.job = job;
-    for (const j of PRODUCTION_JOBS) {
-      const on = j === job;
-      tabEls.get(j)!.setAttribute('aria-selected', String(on));
-      tabEls.get(j)!.tabIndex = on ? 0 : -1;
-      parties[j].el.hidden = !on;
-    }
-  }
-  showStage(stageJob);
-
-  // ---- rows ----
+  // ---- the bands: one per job, each with its own party, rows and supports ----
   let last = '';
   const refs = new Map<string, RowRef>();
-  const panels: Partial<Record<ProductionJob, { rate: HTMLElement }>> = {};
-
+  const bands = {} as Record<ProductionJob, BandRef>;
   const refKey = (job: ProductionJob, kind: number): string => `${job}:${kind}`;
 
-  function priceOf(v: {
-    offer: { price: { amount: import('../../../game').Decimal; resource: string } };
-  }): string {
+  function buildBand(job: ProductionJob): BandRef {
+    const t = COPY.production[job];
+    const party = createHarvestParty(content, ctx.state, job);
+    const el = h('section', `pp-band px-panel pp-band--${job}`);
+    el.dataset['job'] = job;
+    el.setAttribute('aria-label', COPY.production.bandLabel(t.title));
+    const title = h('h2', 'pp-band__title pp-panel__title px-display', t.title);
+    const head = h('div', 'pp-head');
+    head.setAttribute('aria-hidden', 'true');
+    const rate = h('span', 'pp-head__rate px-display');
+    const cost = h('span', 'pp-head__cost');
+    cost.append(h('span', '', COPY.production.columns.cost), rate);
+    head.append(
+      h('span', 'pp-head__who', COPY.production.columns.producer),
+      h('span', 'pp-head__mid', COPY.production.columns.output),
+      h('span', 'pp-head__next', COPY.production.columns.next),
+      cost,
+    );
+    const fanEl = h('div', 'pp-band__fan');
+    fanEl.append(party.el);
+    const list = h('ul', 'pp-list');
+    list.setAttribute('aria-label', t.tilesLabel);
+    const foot = h('div', 'pp-foot');
+    foot.append(party.supportsEl, party.burstEl);
+    const flashEl = h('div', 'pp-flash');
+    flashEl.setAttribute('aria-hidden', 'true');
+    el.append(title, head, fanEl, list, foot, flashEl);
+    return { el, rate, list, flash: flashEl, party };
+  }
+  for (const job of PRODUCTION_JOBS) {
+    bands[job] = buildBand(job);
+    bandsEl.append(bands[job].el);
+  }
+
+  // ---- rows ----
+  function priceOf(v: { offer: { price: { amount: Decimal; resource: string } } }): string {
     const p = v.offer.price;
     return p.resource === 'money' ? fmt(p.amount) : `${fmt(p.amount)} ${resName(p.resource)}`;
   }
 
   function buildRow(row: ProductionRow, p: Producer): RowRef {
     const locked = row.kind !== 'active';
-    const li = h('li', `pp-row${locked ? ' pp-row--locked' : ''}`);
-    li.dataset.key = row.key;
-    const tile = h('div', 'pp-row__tile');
+    const li = h('li', `pp-r${locked ? ' pp-r--locked' : ''}`);
+    li.dataset['key'] = row.key;
+    // tile, name and level
+    const who = h('div', 'pp-r__who');
+    const tile = h('div', 'pp-r__tile');
     const art = h('span', 'pp-tile__art');
     art.setAttribute('aria-hidden', 'true');
     art.innerHTML = tileArt(row.job, p, row.stage);
     art.style.setProperty('--d', `${((row.kindIndex * 0.37) % 3).toFixed(2)}s`);
     // the hit effect plays on the tile, so the fx layer is the tile's size
     tile.append(art, h('span', 'pp-fx'));
-    const id = h('div', 'pp-row__id');
+    const id = h('div', 'pp-r__id');
     const level = h('span', 'pp-row__lv', row.levelText);
-    const output = h('span', 'pp-row__out bi-num');
-    id.append(h('span', 'pp-row__name', row.name), level, output);
-    const mid = h('div', 'pp-row__ms');
-    const msLabel = h('span', 'bi-num');
-    const msToGo = h('span', 'bi-num');
-    const msFill = h('i');
+    id.append(h('span', 'pp-row__name', row.name), level);
+    who.append(tile, id);
+    // output and the bar to the next ×2 (a locked row says what it needs instead)
+    const mid = h('div', 'pp-r__mid');
+    const value = h('span', 'pp-r__value px-display');
+    const unit = h('span', 'pp-r__unit');
+    const track = h('div', 'pp-seg');
+    track.setAttribute('aria-hidden', 'true');
+    const x2 = h('span', 'pp-r__x2 bi-num');
     if (locked) {
-      mid.append(h('span', 'pp-row__note', row.note));
+      mid.append(h('span', 'pp-r__note', row.note));
     } else {
-      const line = h('span', 'pp-row__msline');
-      line.append(msLabel, msToGo);
-      const track = h('div', 'pp-bar');
-      track.setAttribute('aria-hidden', 'true');
-      track.append(msFill);
-      mid.append(line, track);
+      const line = h('div', 'pp-r__line');
+      line.append(value, unit);
+      mid.append(line, track, x2);
     }
-    const ref: RowRef = { row, li, tile, art, level, output, msLabel, msToGo, msFill };
-    const cell = h('div', 'pp-row__buy');
+    // next buy
+    const next = h('div', 'pp-r__next');
+    const nextText = h('span', 'pp-r__nextText px-display');
+    const nextSub = h('span', 'pp-r__nextSub bi-num');
+    if (!locked) next.append(nextText, nextSub);
+    const ref: RowRef = {
+      row,
+      li,
+      tile,
+      art,
+      level,
+      value,
+      unit,
+      pips: [],
+      track,
+      x2,
+      next,
+      nextText,
+      nextSub,
+    };
+    // buy
+    const cell = h('div', 'pp-r__buy');
     if (row.kind === 'active') {
       const isTree = row.job === 'logging';
       const btn = createBuyButton(() => (isTree ? buyTree(row.id) : buyMine(row.id)), true);
       btn.el.classList.add('pp-buy');
-      btn.el.dataset.key = isTree ? `tree-${row.id}` : `level-${row.id}`;
+      btn.el.dataset['key'] = isTree ? `tree-${row.id}` : `level-${row.id}`;
       ref.buy = btn;
       cell.append(btn.el);
     } else {
       const btn = h('button', 'buy-btn buy-btn--compact pp-buy pp-buy--locked');
       btn.type = 'button';
-      btn.dataset.key = `unlock-${row.id}`;
+      btn.dataset['key'] = `unlock-${row.id}`;
       const topLine = h('span', 'buy-btn__top');
       const label = h('span', 'buy-btn__label', COPY.production.lockedButton);
       const price = h('span', 'buy-btn__price bi-num');
@@ -320,35 +339,33 @@ export function createProductionPage(
       ref.unlock = { btn, label, price, have };
       cell.append(btn);
     }
-    li.append(tile, id, mid, cell);
+    li.append(who, mid, ...(locked ? [] : [next]), cell);
     return ref;
   }
 
   function build(rowsByJob: Record<ProductionJob, ProductionRow[]>, focusKey?: string): void {
     hideTip();
     refs.clear();
-    rowsEl.replaceChildren(
-      ...PRODUCTION_JOBS.map((job) => {
-        const t = COPY.production[job];
-        const panel = h('section', `pp-panel pp-panel--${job}`);
-        panel.setAttribute('aria-label', t.title);
-        const head = h('header', 'pp-panel__head');
-        const rate = h('span', 'pp-panel__rate bi-num');
-        head.append(h('h2', 'pp-panel__title', t.title), rate);
-        panels[job] = { rate };
-        const list = h('ul', 'pp-list');
-        list.setAttribute('aria-label', t.tilesLabel);
-        const all = producersOf(content, job);
-        for (const row of rowsByJob[job]) {
+    for (const job of PRODUCTION_JOBS) {
+      const all = producersOf(content, job);
+      bands[job].list.replaceChildren(
+        ...rowsByJob[job].map((row) => {
           const ref = buildRow(row, all[row.kindIndex]!);
           refs.set(refKey(job, row.kindIndex), ref);
-          list.append(ref.li);
-        }
-        panel.append(head, list);
-        return panel;
-      }),
-    );
+          return ref.li;
+        }),
+      );
+    }
     if (focusKey) page.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+  }
+
+  /** The bar to the next ×2: `total` segments, the first `filled` lit. */
+  function setSegments(ref: RowRef, seg: MilestoneSegments): void {
+    if (ref.pips.length !== seg.total) {
+      ref.pips = Array.from({ length: seg.total }, () => document.createElement('i'));
+      ref.track.replaceChildren(...ref.pips);
+    }
+    ref.pips.forEach((p, i) => p.classList.toggle('is-on', i < seg.filled));
   }
 
   function refreshRows(
@@ -358,18 +375,26 @@ export function createProductionPage(
     const s = ctx.state();
     const count = buyCount();
     for (const job of PRODUCTION_JOBS) {
-      set(panels[job]!.rate, jobRateText(s, content, job, mods));
+      const value = jobRateValue(s, content, job, mods);
+      set(bands[job].rate, COPY.production.rate(value));
+      bands[job].rate.setAttribute('aria-label', COPY.production.gemsPerSecond(value));
       for (const row of rowsByJob[job]) {
         const ref = refs.get(refKey(job, row.kindIndex));
         if (!ref) continue;
         ref.row = row;
         set(ref.level, row.levelText);
         if (row.kind === 'active') {
-          set(ref.output, row.output);
+          set(ref.value, row.outputValue);
+          set(ref.unit, row.outputUnit);
           if (row.milestone) {
-            set(ref.msLabel, row.milestone.label);
-            set(ref.msToGo, row.milestone.toGo);
-            ref.msFill.style.width = `${(row.milestone.progress * 100).toFixed(1)}%`;
+            setSegments(ref, row.milestone.segments);
+            set(ref.x2, row.milestone.toGo);
+            ref.track.title = row.milestone.label;
+          }
+          if (row.nextBuy) {
+            set(ref.nextText, row.nextBuy.text);
+            set(ref.nextSub, row.nextBuy.sub);
+            ref.next.classList.toggle('is-ready', row.nextBuy.ready);
           }
           if (row.buy && ref.buy) {
             const v = row.buy;
@@ -380,14 +405,16 @@ export function createProductionPage(
                   ? COPY.production.levelUpMax(v.offer.count)
                   : COPY.production.levelUpTimes(v.offer.count),
               price: priceOf(v),
+              preview: row.previewText || v.preview,
             });
           }
         } else if (ref.unlock) {
           const u = ref.unlock;
           if (row.kind === 'locked-tree' && row.unlock) {
             set(u.label, COPY.production.unlockLabel);
-            set(u.price, row.unlock.price);
-            set(u.have, row.unlock.have);
+            set(u.price, row.unlock.amount);
+            set(u.have, row.unlock.resources);
+            u.btn.title = row.unlock.have;
             u.btn.setAttribute('aria-disabled', String(!row.unlock.affordable));
             u.btn.classList.toggle('is-affordable', row.unlock.affordable);
           } else {
@@ -421,8 +448,7 @@ export function createProductionPage(
       build(rowsByJob, focusKey);
     }
     refreshRows(rowsByJob, mods);
-    set(total, allRateText(s, content, mods));
-    for (const job of PRODUCTION_JOBS) parties[job].update();
+    for (const job of PRODUCTION_JOBS) bands[job].party.update();
     shelf.update();
     const chips = shelfChips(s, content, mods, 'production');
     const sum = shelfSummary(chips);
@@ -453,23 +479,23 @@ export function createProductionPage(
     if (result.ok) bought('tree-' + treeId, treeId, 'logging', result.state, result.tierUps);
   }
 
-  // ---- show events ----
+  // ---- show events: all of it happens in the band of the job that made it ----
 
-  /** One strike: the card lunges toward the row, the row is hit, "+n" pops on it. */
+  /** One strike: the band's card slides toward the row, the row is hit, "+n" pops on it. */
   function strike(job: ProductionJob, m: StrikeMoment): void {
     const ref = refs.get(refKey(job, m.kind));
-    const party = parties[job];
+    const band = bands[job];
     if (!ref) return;
-    const box = rowsEl.getBoundingClientRect();
+    const box = band.el.getBoundingClientRect();
     if (box.width === 0) return;
-    const view = party.view();
+    const view = band.party.view();
     const look = strikeLook(view.pattern);
-    const slot = party.mainSlot();
-    if (slot && stageJob === job) {
+    const slot = band.party.mainSlot();
+    if (slot) {
       const v = lungeVector(centreOf(slot), centreOf(ref.tile), look, 56);
-      party.lunge(look, v.dx, v.dy);
+      band.party.lunge(look, v.dx, v.dy);
     }
-    party.pulse(m.supports);
+    band.party.pulse(m.supports);
     replay(ref.art, 'is-harvest', 400);
     replay(ref.li, 'is-hit', 420);
     const fx = ref.tile.querySelector<HTMLElement>('.pp-fx');
@@ -480,12 +506,12 @@ export function createProductionPage(
         /* an unknown effect id must not stop the harvest */
       }
     }
-    if ((look.shake || m.crit) && stageJob === job) shake(stageEl);
+    if (look.shake || m.crit) shake(band.el);
     const t = ref.tile.getBoundingClientRect();
     const x = (t.left + t.width / 2 - box.left) / box.width;
     const y = (t.top + 8 - box.top) / box.height;
     if (strikeNumberKind(m) === 'crit') {
-      popNumber(rowsEl, {
+      popNumber(band.el, {
         kind: 'crit',
         text: `+${popText(m.amount)}`,
         x,
@@ -493,7 +519,7 @@ export function createProductionPage(
         scale: look.numberScale * 1.25,
       });
     } else {
-      popGain(rowsEl, `pp-${job}-${m.kind}`, m.amount, x, y, look.numberScale);
+      popGain(band.el, `pp-${job}-${m.kind}`, m.amount, x, y, look.numberScale);
     }
     if (coinThrottle.allow(m.resource, performance.now())) {
       flyCoins({
@@ -505,24 +531,33 @@ export function createProductionPage(
     }
   }
 
-  /** The burst: a wave down the rows, a flash on the stage, one big total over the card. */
+  /** The burst: a wave down the band's rows, a flash on the band, one big total over its rows. */
   function burst(job: ProductionJob, b: BurstMoment): void {
-    parties[job].burst();
-    parties[job].pulse(b.supports);
+    const band = bands[job];
+    band.party.burst();
+    band.party.pulse(b.supports);
     for (const p of b.kinds) {
       const ref = refs.get(refKey(job, p.kind));
       if (ref) window.setTimeout(() => replay(ref.li, 'is-wave', 500), p.kind * 70);
     }
-    if (stageJob === job) {
-      flash(flashEl);
-      slowDown(stageEl, 450, 0.4);
+    flash(band.flash);
+    slowDown(band.el, 450, 0.4);
+    const box = band.el.getBoundingClientRect();
+    const rows = band.list.getBoundingClientRect();
+    if (box.width > 0) {
       const text = b.totals.map((t) => `+${popText(t.amount)}`).join('  ');
-      popNumber(stageEl, { kind: 'total', text, x: 0.5, y: 0.42, scale: 1.9 });
+      popNumber(band.el, {
+        kind: 'total',
+        text,
+        x: (rows.left + rows.width / 2 - box.left) / box.width,
+        y: (rows.top + rows.height / 2 - box.top) / box.height,
+        scale: 1.9,
+      });
     }
     ctx.sound?.('harvestBurst');
     for (const t of b.totals) {
       flyCoins({
-        from: centreOf(stageJob === job ? stageEl : rowsEl),
+        from: centreOf(band.el),
         target: ctx.coins?.currencyGlyph(t.resource) ?? null,
         count: 6,
         spill: true,
@@ -535,7 +570,7 @@ export function createProductionPage(
     if (!visible()) return;
     for (const job of PRODUCTION_JOBS) {
       const moments = harvestMoments(events, job);
-      const look = strikeLook(parties[job].view().pattern);
+      const look = strikeLook(bands[job].party.view().pattern);
       moments.strikes.forEach((m, i) =>
         window.setTimeout(() => strike(job, m), i * look.staggerMs),
       );

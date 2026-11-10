@@ -174,13 +174,14 @@ An item only lists what it changes: tokens it does not set are inherited from th
 
 The header, sidebar, framed panels and tooltips (DESIGN.md §11) are skinned by the **table** item, so equipping a table re-skins the whole screen. Token groups, each following the card's `<surface>-bg / -line / -ink / -ink-muted` pattern:
 
-| Group      | Tokens                                                                            | Used by                     |
-| ---------- | --------------------------------------------------------------------------------- | --------------------------- |
-| `chrome-*` | `bg`, `rail-bg`, `line`, `ink`, `ink-muted`, `accent`, `active-bg`                | Header and sidebar          |
-| `frame-*`  | `bg`, `radius`, `line`, `title-bg`, `title-line`, `title-ink`, `ink`, `ink-muted` | Framed panels on every page |
-| `tip-*`    | `bg`, `line`, `ink`, `ink-muted`                                                  | Hover and focus tooltips    |
+| Group      | Tokens                                                                                                              | Used by                        |
+| ---------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `chrome-*` | `bg`, `rail-bg`, `line`, `ink`, `ink-muted`, `accent`, `active-bg`, `accent-lo`, `xp`, `logging`, `mining`, `burst` | Header and sidebar             |
+| `frame-*`  | `bg`, `radius`, `line`, `title-bg`, `title-line`, `title-ink`, `ink`, `ink-muted`, `raised`, `edge`, `hi`, `lo`     | Framed panels on every page    |
+| `font-*`   | `ui`, `display`                                                                                                     | Body text and the display font |
+| `tip-*`    | `bg`, `line`, `ink`, `ink-muted`                                                                                    | Hover and focus tooltips       |
 
-The starter table must set every table token (a test checks this). Code: `src/renderer/src/shell/` (shell, tooltip, icons, stat breakdowns). `node scripts/a11y-shell.mjs` (with the app running on `--remote-debugging-port=9222`) checks contrast on every page for every table item, keyboard reach and focus rings.
+The starter table sets `frame-radius` to 0 and draws pixel frames whose step is a whole number of device pixels (UI_RULES.md §2, "Shell look"). The starter table must set every table token (a test checks this). Code: `src/renderer/src/shell/` (shell, tooltip, icons, stat breakdowns). `node scripts/a11y-shell.mjs` (with the app running on `--remote-debugging-port=9222`) checks contrast on every page for every table item, keyboard reach and focus rings.
 
 ### Layers on a card
 

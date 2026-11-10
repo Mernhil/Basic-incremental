@@ -247,6 +247,8 @@ export {
   allGoals,
   /** Units of a resource earned per second (production with bursts, plus drops being fought). */
   incomePerSecond,
+  /** Seconds until one price is affordable at the current income (0 now, null never): the Next buy wait. */
+  timeToAfford,
   type Goal,
 } from './goals';
 export {
@@ -331,6 +333,8 @@ export {
   previewMineLevel,
   /** Tree level purchase preview: gem per second before / after. */
   previewTreeLevel,
+  /** The output gain of a preview as a multiplier (1.03 for "x1.03 output"), null while the producer makes nothing. */
+  outputGainMultiplier,
   type MinePreview,
   type TreePreview,
 } from './previews';
