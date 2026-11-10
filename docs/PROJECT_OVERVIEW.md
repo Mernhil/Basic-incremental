@@ -1,6 +1,6 @@
 # Basic Incremental — Project Overview
 
-The project as it is built right now (version 0.5.0): one entry per system, screen and data area, with what it does today, where it lives and which rule in `docs/DESIGN.md` it implements ("DESIGN §n"; UI rules are in `docs/UI_RULES.md`, art rules in `docs/ASSET_RULES.md`). It describes only what exists in the code. Plans, targets and open questions live in DESIGN.md.
+The project as it is built right now (version 0.5.1): one entry per system, screen and data area, with what it does today, where it lives and which rule in `docs/DESIGN.md` it implements ("DESIGN §n"; UI rules are in `docs/UI_RULES.md`, art rules in `docs/ASSET_RULES.md`). It describes only what exists in the code. Plans, targets and open questions live in DESIGN.md.
 
 **This file is rewritten in place.** Every PR that changes `src/` updates the entries it touches (add, change or delete them) so the file always equals the code. No history and no "removed" notes: a deleted feature simply drops out. Exception: a tiny direct-in-Code job with no behaviour change (typo, comment, one-line fix) puts the line `no overview change` in its PR description.
 
