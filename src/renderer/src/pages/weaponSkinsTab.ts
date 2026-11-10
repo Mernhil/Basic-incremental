@@ -72,16 +72,19 @@ export function createWeaponSkinsTab(
     last = weaponSkinsSignature(state);
     const v = weaponSkinsView(state, content, selection, t.original);
     if (!v.weapon) {
-      root.replaceChildren(h('p', 'frame__muted', t.none));
+      // No skin the player can wear yet: keep the section tabs so the player can go back.
+      const { el, body } = frame(t.title, t.note);
+      el.classList.add('ws-picker');
+      if (tabs) el.prepend(tabs);
+      body.append(h('p', 'frame__muted', t.none));
+      root.replaceChildren(el);
       return;
     }
     const weapon = v.weapon;
 
     // picker side
-    const { el: pickEl, body: pickBody } = frame(t.title, t.testNote);
+    const { el: pickEl, body: pickBody } = frame(t.title, t.note);
     pickEl.classList.add('ws-picker');
-    const badge = h('span', 'ws-badge', t.testBadge);
-    pickEl.querySelector('.frame__heading')?.after(badge);
     if (tabs) pickEl.prepend(tabs);
 
     if (v.weapons.length > 1) {

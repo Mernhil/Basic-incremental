@@ -2,8 +2,8 @@
    a wooden signboard on two chains. A counter is a pixel-framed shelf (theme/frames.css .px-panel)
    with a wooden lip at the bottom; the lines on it are parchment cards. The boards, chains, lip,
    cards and chips are CSS from the shell tokens. The BOUGHT stamp, the ring and the shard coin
-   are the candy pixel sprites (art/pixel/hand/shop-*), drawn at whole device-pixel scales. The
-   awning sprites are no longer shown. Pixelify Sans only at 18 px and up (.px-display). */
+   are the candy pixel sprites (art/pixel/hand/shop-*), drawn at whole device-pixel scales. There
+   are no awnings. Pixelify Sans only at 18 px and up (.px-display). */
 
 /* the three counters use the whole width of the window, like Home */
 .shell-page:has(> .shop-table) {

@@ -455,6 +455,16 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     void save().finally(() => window.api.flushDone());
   });
 
+  // The dev cheats panel (DESIGN.md §2): dev builds only. Vite drops this import from a release
+  // build, and the main process says no in a packaged app.
+  if (import.meta.env.DEV) {
+    void window.api.devCheatsEnabled().then(async (enabled) => {
+      if (!enabled) return;
+      const { installDevPanel } = await import('./dev/devPanel');
+      installDevPanel({ content, state: () => loop.state, apply: applyAndSave });
+    });
+  }
+
   rendered();
   await save(); // a fresh game gets a save file right away
 }

@@ -1,0 +1,92 @@
+/* The dev cheats panel (dev builds only, src/renderer/src/dev/devPanel.ts). Plain and small: a
+   developer tool, drawn with the shell's tokens so it stays readable on every table. */
+.dev-toggle {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  z-index: 9000;
+  padding: 2px 8px;
+  font:
+    700 12px / 1.4 'Atkinson Hyperlegible',
+    sans-serif;
+  color: var(--px-ink);
+  background: var(--px-lo);
+  border: 2px solid var(--px-edge);
+  cursor: pointer;
+  opacity: 0.75;
+}
+.dev-toggle:hover,
+.dev-toggle:focus-visible,
+.dev-toggle[aria-expanded='true'] {
+  opacity: 1;
+}
+.dev-panel {
+  position: fixed;
+  right: 8px;
+  bottom: 40px;
+  z-index: 9000;
+  width: min(520px, calc(100vw - 16px));
+  max-height: calc(100vh - 56px);
+  overflow: auto;
+  padding: 10px 12px;
+  font:
+    13px / 1.4 'Atkinson Hyperlegible',
+    sans-serif;
+  color: var(--px-ink);
+  background: var(--px-body);
+  border: 4px solid var(--px-edge);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 45%);
+}
+.dev-panel[hidden] {
+  display: none;
+}
+.dev-panel__title {
+  margin: 0 0 8px;
+  font:
+    700 18px / 1.2 'Pixelify Sans',
+    sans-serif;
+  color: var(--px-gold);
+}
+.dev-panel__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 6px;
+}
+.dev-panel__label {
+  flex: 0 0 72px;
+  color: var(--px-muted);
+}
+.dev-panel__select,
+.dev-panel__input,
+.dev-panel__button {
+  font: inherit;
+  color: var(--px-ink);
+  background: var(--px-raised);
+  border: 2px solid var(--px-edge);
+  padding: 2px 6px;
+}
+.dev-panel__select {
+  max-width: 180px;
+}
+.dev-panel__input {
+  width: 90px;
+}
+.dev-panel__input--short {
+  width: 44px;
+}
+.dev-panel__button {
+  cursor: pointer;
+  color: var(--px-gold-ink);
+  background: var(--px-gold);
+}
+.dev-panel__button:hover,
+.dev-panel__button:focus-visible {
+  background: var(--px-gold-hi);
+}
+.dev-panel__status {
+  min-height: 1.4em;
+  margin: 4px 0 0;
+  color: var(--px-muted);
+}

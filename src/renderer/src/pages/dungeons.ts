@@ -412,19 +412,29 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
               : `${fmt(new Decimal(c.min))}–${fmt(new Decimal(c.max))}`,
           ),
         ),
-        ...(drops.wage
-          ? [
-              row(
-                COPY.dungeons.wage(resName(drops.wage.resource)),
-                COPY.production.rate(fmt(drops.wage.perSecond)),
-              ),
-            ]
-          : []),
+        ...drops.wages.map((w) =>
+          row(COPY.dungeons.wage(resName(w.resource)), COPY.production.rate(fmt(w.perSecond))),
+        ),
+        ...(isDungeonCleared(state, d.id)
+          ? []
+          : d.drops.firstClear.map((purse) =>
+              row(COPY.dungeons.firstClear(resName(purse.resource)), fmt(purse.amount)),
+            )),
         row(
           resName(drops.material.resource),
           drops.material.amount > 1
             ? `${pct(drops.material.chance)} ×${drops.material.amount}`
             : pct(drops.material.chance),
+        ),
+        ...drops.extraMaterials.map((extra) =>
+          row(
+            resName(extra.resource),
+            extra.chance < 1
+              ? pct(extra.chance)
+              : extra.min === extra.max
+                ? fmt(new Decimal(extra.min))
+                : `${fmt(new Decimal(extra.min))}–${fmt(new Decimal(extra.max))}`,
+          ),
         ),
       );
       const pity = h('div', 'dp-pity');
