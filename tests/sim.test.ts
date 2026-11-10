@@ -13,6 +13,14 @@ import {
   summarizeRuns,
   formatSeedTable,
   targetRatio,
+  bandCheck,
+  bandsPass,
+  ascensionGuard,
+  formatGuard,
+  formatRunTable,
+  RUN_MILESTONES,
+  IDLE_CHECKIN_SECONDS,
+  type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
 import { content, CRYSTAL_UNIT, freshState, withDps } from './helpers';
@@ -357,6 +365,8 @@ describe('balance sim: several seeds', () => {
       max: 3000,
       reached: 3,
       runs: 3,
+      worst: 3000,
+      worstRun: 2,
     });
     // Unreached counts as the end of the run for the median.
     expect(summary['clear_d2']).toEqual({
@@ -365,7 +375,45 @@ describe('balance sim: several seeds', () => {
       max: 9000,
       reached: 2,
       runs: 3,
+      // A run that never reached it is the worst one.
+      worst: null,
+      worstRun: 0,
     });
+  });
+
+  it('names the worst seed, and "never" for a seed that did not get there', () => {
+    const summary = summarizeRuns([
+      { clear_d1: 900, clear_d2: 7000 },
+      { clear_d1: 1200, clear_d2: null },
+    ]);
+    const table = formatSeedTable(summary, 36000, { seeds: [4, 5] });
+    expect(table).toContain('| 0.33 h (seed 5) |');
+    expect(table).toContain('| never (seed 5) |');
+  });
+
+  it('checks the bands: median within 25% of the target and the worst seed within 2x', () => {
+    const d1 = MILESTONES.find((m) => m.id === 'clear_d1')!; // target 0.25 h = 900 s
+    const spread = (times: (number | null)[]) =>
+      summarizeRuns(times.map((t) => ({ clear_d1: t })))['clear_d1']!;
+    expect(bandCheck(d1, spread([800, 900, 1000]))).toEqual({ median: true, worst: true });
+    // The median is fine but one seed takes more than twice the target.
+    expect(bandCheck(d1, spread([800, 900, 1900]))).toEqual({ median: true, worst: false });
+    // A stalled seed fails the worst check even when the median is on target.
+    expect(bandCheck(d1, spread([800, 900, null]))).toEqual({ median: true, worst: false });
+    expect(bandCheck(d1, spread([300, 320, 340]))).toEqual({ median: false, worst: true });
+    expect(bandsPass({ clear_d1: spread([800, 900, 1000]) })).toBe(true);
+    expect(bandsPass({ clear_d1: spread([800, 900, null]) })).toBe(false);
+    const table = formatSeedTable({ clear_d1: spread([800, 900, null]) }, 3600);
+    expect(table).toContain('| FAIL worst |');
+    expect(table).toContain('Bands: 0 of 1 milestones pass');
+  });
+
+  it('prints the idle profile beside the active one', () => {
+    const active = summarizeRuns([{ clear_d1: 900 }]);
+    const idle = summarizeRuns([{ clear_d1: 3600 }]);
+    const table = formatSeedTable(active, 7200, { seeds: [1], idle });
+    expect(table).toContain('| Idle median | Idle worst seed |');
+    expect(table).toContain('| ok | 1.00 h | 1.00 h (seed 1) |');
   });
 
   it('prints target, median, spread and the ratio to the target', () => {
@@ -474,4 +522,89 @@ describe('balance sim: run', () => {
     });
     expect(seen).toEqual([20, 40, 60]);
   });
+});
+
+describe('balance sim: runs and the Ascension guard', () => {
+  const run = (start: number, end: number, hits: Record<string, number | null>): RunRecord => ({
+    start,
+    end,
+    hits: { ...Object.fromEntries(RUN_MILESTONES.map((m) => [m.id, null])), ...hits },
+  });
+
+  it('has five run milestones', () => {
+    expect(RUN_MILESTONES).toHaveLength(5);
+  });
+
+  it('passes when every later run reaches each shared milestone sooner', () => {
+    const guard = ascensionGuard([
+      run(0, 20000, { run_money_1e4: 600, run_money_1e5: 3000 }),
+      run(20000, 30000, { run_money_1e4: 60, run_money_1e5: 900, run_money_1e6: 2000 }),
+    ]);
+    expect(guard).toEqual({ compared: 2, misses: [] });
+  });
+
+  it('reports a milestone that took longer than in the run before', () => {
+    const guard = ascensionGuard([
+      run(0, 20000, { run_money_1e4: 600 }),
+      run(20000, 30000, { run_money_1e4: 700 }),
+    ]);
+    expect(guard.misses).toEqual([{ run: 2, id: 'run_money_1e4', before: 600, after: 700 }]);
+    expect(
+      formatGuard([
+        {
+          seed: 3,
+          runs: [run(0, 1, { run_money_1e4: 600 }), run(1, 9000, { run_money_1e4: 700 })],
+        },
+      ]),
+    ).toContain('seed 3, run 2: 10K Money took 11.7 min (the run before: 10.0 min)');
+  });
+
+  it('counts a milestone never reached as slower only when the run had the time', () => {
+    const short = ascensionGuard([run(0, 20000, { run_money_1e4: 600 }), run(20000, 20300, {})]);
+    expect(short).toEqual({ compared: 0, misses: [] });
+    const long = ascensionGuard([run(0, 20000, { run_money_1e4: 600 }), run(20000, 30000, {})]);
+    expect(long.misses).toEqual([{ run: 2, id: 'run_money_1e4', before: 600, after: null }]);
+  });
+
+  it('records the first run from the start of the sim and prints one row per run', () => {
+    const result = runSim(content, { hours: 0.2, seed: 1, stepSeconds: 10 });
+    expect(result.runs).toHaveLength(1);
+    expect(result.runs[0]!.start).toBe(0);
+    expect(result.runs[0]!.end).toBe(720);
+    expect(Object.keys(result.runs[0]!.hits)).toEqual(RUN_MILESTONES.map((m) => m.id));
+    expect(formatRunTable(result.runs).split('\n')).toHaveLength(3);
+  });
+});
+
+describe('balance sim: idle profile', () => {
+  it('leaves the active profile untouched', () => {
+    const plain = runSim(content, { hours: 0.5, seed: 3, stepSeconds: 10 });
+    const active = runSim(content, { hours: 0.5, seed: 3, stepSeconds: 10, profile: 'active' });
+    expect(active.hits).toEqual(plain.hits);
+    expect(active.state.resources['money']!.eq(plain.state.resources['money']!)).toBe(true);
+  }, 30_000);
+
+  it('buys only at its check-ins, every 30 minutes', () => {
+    // The starter pull is spent at the first check-in (t = 0); crystals earned afterwards wait
+    // for the next one.
+    const before = runSim(loadContent(), { hours: 0.45, seed: 1, profile: 'idle' });
+    expect(before.simSeconds).toBe(0.45 * 3600);
+    expect(before.simSeconds).toBeLessThan(IDLE_CHECKIN_SECONDS);
+    expect(before.log.summons).toBe(1);
+    const after = runSim(loadContent(), { hours: 0.55, seed: 1, profile: 'idle' });
+    expect(after.log.summons).toBeGreaterThan(1);
+  }, 30_000);
+
+  it("is offline for 8 hours after 16 hours awake, on the game's own offline progress", () => {
+    const result = runSim(loadContent(), { hours: 24, seed: 1, profile: 'idle' });
+    expect(result.simSeconds).toBe(24 * 3600);
+    // The night was one offline session of the capped 8 hours.
+    expect(result.state.stats.longestOfflineMs).toBe(8 * 3600 * 1000);
+  }, 120_000);
+
+  it('is deterministic for a seed', () => {
+    const a = runSim(content, { hours: 2, seed: 5, profile: 'idle' });
+    const b = runSim(content, { hours: 2, seed: 5, profile: 'idle' });
+    expect(a.hits).toEqual(b.hits);
+  }, 60_000);
 });
