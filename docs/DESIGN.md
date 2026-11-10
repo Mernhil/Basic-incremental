@@ -65,8 +65,9 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 - [Built] **Harvest crits.** `harvest.critChance` (base 0) and `harvest.critDamage` (base ×2) per job, through the modifier pipeline. Nothing grants a chance yet.
 - [Built] **Gem mastery.** Each gem's lifetime harvest gives a mastery tier at 1e3 / 1e5 / 1e7 / 1e9 (bronze to prismatic), +10% to that gem per tier, kept through Ascension. The gem's coin shows the tier in its metal.
 - [Default · in game] Every gem from production counts as harvested, harvest bursts included; mastery tiers take effect on the next whole second so any split of time gives the same totals.
-- [Built] **Screen: side stage.** Rows on the left, one per tree kind or mine type, in a Logging and a Mining panel: the tile (it grows with level), name, level, output per second, a bar to the next ×2 milestone and the buy button on the row. A locked kind is a greyed row with its unlock price on the button (a locked mine names the dungeon to clear). One ×1 / ×10 / ×100 / Max toggle at the top right. A sticky stage on the right shows one job at a time (a Logging / Mining tab switch): the main card at about 2x inside its loadout fan (§11), its harvest gauge, the strike pattern in words and the support effects as a list. The main card lunges toward the row it strikes and "+n" pops on that row; a burst runs a wave down the rows. The upgrade shelf is a drawer over the bottom: closed it is one line (how many upgrades are ready to buy and how many are owned). Picked by the user from five mockups (option C).
-- [Default · in game] The shelf drawer starts open on a window at least 900 px tall and closed on a shorter one, then keeps the player's choice; the stage remembers its last job; "ready" counts the upgrades the player can afford now.
+- [To build] **Screen: pixel ledger** (user, 2026-11-10; replaces the side stage). Logging and Mining are two stacked bands, each in its own pixel frame (§11). On the left of each band is that job's main card at 1x inside its loadout fan, with its harvest gauge under it. On the right are the rows, one per tree kind or mine type: the tile (it grows with level), name, level, output per second, a segmented bar to the next ×2 milestone, a "next buy" column and the buy button with its preview. The "next buy" column shows the wait until the next level is affordable, or "ready" and the output gain when it is affordable now. Under the rows are the support effects as one line and the burst count. A locked kind is a greyed row with its unlock price on the button (a locked mine names the dungeon to clear). One ×1 / ×10 / ×100 / Max toggle sits at the right end of the goals strip. Each main card lunges toward the row it strikes in its own band and "+n" pops on that row; a burst runs a wave down that band. The upgrade shelf is a drawer over the bottom: closed it is one line (how many upgrades are ready to buy and how many are owned). Picked by the user from the round-2 mockups (option 1a, "Pixel ledger").
+- [Default · in game] The shelf drawer starts open on a window at least 900 px tall and closed on a shorter one, then keeps the player's choice; "ready" counts the upgrades the player can afford now.
+- [Default] **Next buy wording.** The wait shows as days and hours ("9d 3h"), hours and minutes ("1h 49m") or seconds ("40 s"); an affordable level shows "ready" and its output gain as a multiplier ("×1.03 output").
 
 ## 5. Cards and weapons
 
@@ -160,6 +161,8 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Built] **Bosses** are HP walls auto-fought in parallel with everything else, with no combat input. They respawn so they can be farmed. HP shows as stacked bars with a ×N count of bars left; the current bar drains over the colour of the next.
 - [Built] **Scaling.** Boss HP and attack grow slowly with the Ascension count; harder dungeons unlock with progress.
 - [Built] **Dungeons.** Mossy Cellar (Root Warden, drops Moss Core), Ember Crypt (Cinder Lich, Cinder Core) and Frostspire Vault (Glacier Colossus, Frost Core and Frost Sigils). Every kill drops Money and both crystals (`dungeons.json`).
+- [To build] **Arena backgrounds** (user, 2026-11-10). Each dungeon gets its own arena background, named in `dungeons.json`; the art comes later.
+- [Default] Until a dungeon's background art exists, every arena uses the same dark brick room with two torches, drawn in CSS.
 - [To build] **Dungeon floors** (user, 2026-11-09). A dungeon is a stack of floors. A normal floor is a wave of 3 to 5 small enemies auto-fought like a boss; every 10th floor holds a mini-boss and the last floor holds the dungeon's boss (today's boss: Root Warden, Cinder Lich, Glacier Colossus). The floor count is data in `dungeons.json`: 10 for the Mossy Cellar, 20 for the Ember Crypt and 30 for the Frostspire Vault. Push moves you down a floor when you win; farm stays. A knockout drops you one floor and switches to farm, so walls work on their own. Deeper floors pay more. Ascension resets the current floor, keeps the best one and lets a run start at half of it. The Glimmer Trial has no floors.
 - [To build] **Clearing** (user, 2026-11-09; replaces the 1 / 10 / 50 boss kills). A dungeon is cleared the first time its last-floor boss dies. Clearing a dungeon unlocks the next one and its mine. The old kill counts and the Frostspire Vault's 90-kill difference are gone.
 - [To build] **Normal enemies** (user, 2026-11-09): 3 types per dungeon, 9 in total, mixed in each wave, each with its own sprite, HP and small purse. Enemy HP and attack scale with the floor and, like bosses, slowly with Ascension. Normal enemies drop Money, crystals and Cores at lower rates than a boss; the boss floors keep today's boss drops (`dungeons.json`).
@@ -195,7 +198,7 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 ## 8. Cosmetics
 
 - [Built] **Nothing visual is hardcoded.** The UI is part of the customization system and the default look is the starter set.
-- [Built] **Starter set: Gilded Nocturne.** The night-table shell and the Outfit typeface; the cards use the Knight plate frame. Each layer of the card is a place where more extravagant cosmetics can add decoration.
+- [Differs] **Starter set: Gilded Nocturne.** The pixel-frame shell (user, 2026-11-10): dark plum panels with notched pixel frames, Pixelify Sans for headings and large numbers and Atkinson Hyperlegible for all other text (§11, "Shell look"); the cards use the Knight plate frame. Each layer of the card is a place where more extravagant cosmetics can add decoration. Today the game still shows the night-table shell and the Outfit typeface.
 - [Built] **First unlockable set: Gilded Tradition** (classic trading card: crimson frame, gold plate, rainbow foil). The richer "Medium" gilt variant of the starter is an unlockable border.
 - [Built] **Seven card and table slots**, global: card border (the frame family: Knight plate, Dragon horn, Celestial, Crystal, Royal crest), card finish (holo, foil), attack animation (one item holds a variant per job), tick damage style, number style, table background and cursor.
 - [Built] **Four UI-skin slots**, always worn: Starlight coin, sticker style, skill nodes and Wardrobe style.
@@ -308,6 +311,8 @@ Waiting since 2026-11-08 (`[Proposed]`):
 - Full-art card layout, artboard G of the "Full-art weapon card concepts" canvas (§5).
 - Weapons: the moves and damage types each card learns by level, and how they sit on the enhancement chart (§5).
 - Double-detail sprites and the other UI questions: `docs/UI_RULES.md`, Open questions.
+- §4 the "next buy" wording (2026-11-10).
+- §6 the brick-room arena until the dungeons have their own backgrounds (2026-11-10).
 - Beta systems: replacing Bare Hands and Single Plot; the new autobuyer list (§15).
 
 Changed without asking (to confirm or undo):
@@ -347,6 +352,8 @@ Defaults by Claude, never confirmed (`[Default]`):
 - §15 every detail of the beta systems (numbers, names, lists), and whether all of them are still wanted after the 2026-11-08 changes. Dungeon floors moved to §6 on 2026-11-09 (user).
 
 ## 17. Changelog
+
+- 2026-11-10 — UI rework picked by the user over four rounds of mockups: the pixel-frame shell for Gilded Nocturne (Pixelify Sans and Atkinson Hyperlegible replace Outfit), Production as the pixel ledger with both job cards on screen and no job switch, a background per dungeon (§4, §6, §8; UI_RULES.md §2).
 
 - 2026-11-09 — Dungeon floors (user): waves of 3 to 5 normal enemies, 3 types per dungeon, a mini-boss every 10th floor and the dungeon's boss on the last floor (10 / 20 / 30 floors); a dungeon is cleared by its last-floor boss, replacing the 1 / 10 / 50 boss kills; elements stay for later (§6, §15).
 - 2026-11-10 — Roster: every weapon type has a card of every rarity, 56 more fighting cards (§5; user, Claude defaults for the details).
