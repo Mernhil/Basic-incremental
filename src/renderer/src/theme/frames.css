@@ -1,0 +1,395 @@
+/* Pixel frames and buttons (UI_RULES.md §2, "Shell look"; ASSET_RULES.md §6, Screen shell).
+
+   One recipe for every framed panel, tile and button on every page, drawn from table tokens:
+     --bi-frame-edge  the dark outer edge        --bi-frame-hi  the light top edge
+     --bi-frame-lo    the dark bottom edge       --bi-frame-bg  the panel body
+     --bi-frame-raised  the raised body              --bi-chrome-accent / -accent-lo  the gold
+   A table item that does not set the edge, hi and lo tokens gets them derived from its own
+   frame-bg, so every table keeps working.
+
+   The shape: a dark edge outside the box on its four sides but not at the four corners (a notched
+   pixel corner, no rounded corners), a light line along the top inside, a dark one along the
+   bottom. The step is a whole number of device pixels (`--fs`, about 4 CSS px at 100 %; tiles and
+   buttons use `--fs-sm`, about 2), worked out from `--dpr` with `round()` exactly like
+   ui/pixelScale.css, so the frame is crisp at 100, 125, 150 and 200 %. The edge is drawn with
+   box-shadow, so it never clips what sits inside the panel (a card's flourishes, a tooltip, a
+   glow). It bleeds one step outside the box: keep a gap of at least one step between neighbouring
+   frames.
+
+   Classes for new markup:
+     .px-panel (+ .px-panel--raised)   a panel       .px-well   a dark inset well
+     .px-tile                          a small raised box inside a panel
+     .px-btn                           a plain button; .px-btn--gold the usable action,
+                                       .px-btn--dark the unusable one (also :disabled; it wins
+                                       over every other state)
+                                       .px-btn--quiet the dark button that can be used (Pull 10, export)
+   A selected button (.is-selected or aria-pressed / aria-selected / aria-checked "true") turns
+   gold; a selected tile (same attributes, .is-on, .is-active, .is-chosen) gets a gold edge.
+   Existing classes of the pages are listed below so every page is skinned without changing its
+   markup. The lists carry an id-weight `:not(#_px)` so the recipe beats the older page rules;
+   a state that needs its own look sets the variables (--px-bg, --px-edge, --px-top, --px-bottom).
+
+   Variables a page may use: --px-edge --px-hi --px-lo --px-body --px-raised --px-ink --px-muted
+   --px-gold --px-gold-hi --px-gold-lo --px-gold-ink --px-dark and the steps --fs / --fs-sm.
+
+   Pixelify Sans (`--bi-font-display`) only at 18 px and up: `.px-display`. */
+
+:root {
+  color-scheme: dark;
+  scrollbar-color: var(--px-hi) var(--px-lo);
+  --fn: max(1, round(calc(4 * var(--dpr)), 1));
+  --fs: calc(var(--fn) * var(--px));
+  --fn-sm: max(1, round(calc(2 * var(--dpr)), 1));
+  --fs-sm: calc(var(--fn-sm) * var(--px));
+
+  --px-edge: var(--bi-frame-edge, color-mix(in srgb, var(--bi-frame-bg) 22%, #000));
+  --px-hi: var(--bi-frame-hi, color-mix(in srgb, var(--bi-frame-bg) 80%, #fff));
+  --px-lo: var(--bi-frame-lo, color-mix(in srgb, var(--bi-frame-bg) 72%, #000));
+  --px-body: var(--bi-frame-bg);
+  --px-raised: var(--bi-frame-raised, color-mix(in srgb, var(--bi-frame-bg) 90%, #fff));
+  --px-ink: var(--bi-frame-ink);
+  --px-muted: var(--bi-frame-ink-muted);
+  --px-gold: var(--bi-chrome-accent);
+  --px-gold-hi: color-mix(in srgb, var(--bi-chrome-accent) 62%, #fff);
+  --px-gold-lo: var(--bi-chrome-accent-lo, color-mix(in srgb, var(--bi-chrome-accent) 68%, #000));
+  --px-gold-ink: var(--bi-chrome-bg);
+  /* the dark plum of an unusable button */
+  --px-dark: var(--px-lo);
+  --px-dark-hi: color-mix(in srgb, var(--px-lo) 70%, var(--px-hi));
+}
+
+/* ---- the drawing rule: panels, tiles and buttons share it --------------------------------- */
+html
+  :is(
+    .px-panel,
+    .px-well,
+    .px-tile,
+    .px-btn,
+    /* panels */ .frame,
+    .shell-track,
+    .shell-tip,
+    .details__panel,
+    .pp-panel,
+    .pp-drawer,
+    .dp-drawer,
+    .hm-stage,
+    .sm-table,
+    .rv__dialog,
+    .wb__dialog,
+    .set-confirm,
+    .sk-confirm,
+    .st-toast,
+    .update-notice,
+    /* tiles */ .cp-facts,
+    .cp-reqs,
+    .cp-option,
+    .cp-slot,
+    .dp-floor,
+    .dp-drop,
+    .dp-best,
+    .ar__readout,
+    .wd-buff,
+    .wd-trying,
+    .shop-it,
+    .shop-tile,
+    .details-row,
+    .lf-note,
+    .sk-effects > div,
+    .ws-tile,
+    .pp-row,
+    .set-error,
+    .wp-tag,
+    /* buttons */ .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_px) {
+  --px-s: var(--fs);
+  --px-bg: var(--px-body);
+  --px-top: var(--px-hi);
+  --px-bottom: var(--px-lo);
+  border: 0;
+  border-radius: 0;
+  background: var(--px-bg);
+  color: var(--px-ink);
+  box-shadow:
+    calc(var(--px-s) * -1) 0 0 0 var(--px-edge),
+    var(--px-s) 0 0 0 var(--px-edge),
+    0 calc(var(--px-s) * -1) 0 0 var(--px-edge),
+    0 var(--px-s) 0 0 var(--px-edge),
+    inset 0 var(--px-s) 0 0 var(--px-top),
+    inset 0 calc(var(--px-s) * -1) 0 0 var(--px-bottom);
+}
+
+/* variants of the recipe */
+html :is(.px-panel--raised, .shell-tip, .details__panel, .sm-table):not(#_px) {
+  --px-bg: var(--px-raised);
+}
+html :is(.px-well):not(#_px) {
+  --px-bg: var(--px-lo);
+  --px-top: var(--px-lo);
+}
+
+/* tiles and buttons: the small step, a raised body */
+html
+  :is(
+    .px-tile,
+    .px-btn,
+    .cp-facts,
+    .cp-reqs,
+    .cp-option,
+    .cp-slot,
+    .dp-floor,
+    .dp-drop,
+    .dp-best,
+    .ar__readout,
+    .wd-buff,
+    .wd-trying,
+    .shop-it,
+    .shop-tile,
+    .details-row,
+    .lf-note,
+    .sk-effects > div,
+    .ws-tile,
+    .pp-row,
+    .set-error,
+    .wp-tag,
+    .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_px) {
+  --px-s: var(--fs-sm);
+  --px-bg: var(--px-raised);
+}
+
+/* ---- buttons ------------------------------------------------------------------------------- */
+html
+  :is(
+    .px-btn,
+    .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_px) {
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+/* gold: the action that can be used, and the selected choice */
+html
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):not(#_px) {
+  --px-bg: var(--px-gold);
+  --px-top: var(--px-gold-hi);
+  --px-bottom: var(--px-gold-lo);
+  color: var(--px-gold-ink);
+}
+/* dark plum: not usable now */
+html
+  :is(
+    .px-btn--dark,
+    .px-btn:disabled,
+    .button:disabled,
+    .button[aria-disabled='true'],
+    .buy-btn[aria-disabled='true'],
+    .sm-pull:disabled,
+    .shop-ascend.is-no,
+    .shop-price.is-no,
+    .wp-go[aria-disabled='true']
+  ):not(#_px):not(#_px) {
+  --px-bg: var(--px-dark);
+  --px-top: var(--px-dark-hi);
+  --px-bottom: var(--px-dark);
+  color: var(--px-muted);
+  cursor: default;
+}
+/* the dark button that can be used (Pull 10, export, import, an unchosen option): the dark body
+   with the normal ink. It is plain dark plum only when disabled, and gold when chosen. */
+html :is(.px-btn--quiet):not(#_px) {
+  --px-bg: var(--px-lo);
+  --px-top: var(--px-dark-hi);
+  --px-bottom: color-mix(in srgb, var(--px-lo) 55%, #000);
+  color: var(--px-ink);
+}
+/* the quiet button: plain raised, not gold */
+html :is(.button--ghost, .button--danger):not(#_px) {
+  --px-bg: var(--px-raised);
+  color: var(--px-ink);
+}
+html :is(.button--danger):not(#_px) {
+  color: var(--bi-tick-hurt, var(--px-ink));
+}
+html
+  :is(.px-btn, .button, .buy-btn, .sm-pull, .shop-price, .shop-ascend, .wp-go):hover:not(
+    :disabled
+  ):not([aria-disabled='true']):not(#_px) {
+  filter: brightness(1.1);
+}
+html
+  :is(.px-btn, .button, .buy-btn, .sm-pull, .shop-price, .shop-ascend, .wp-go):active:not(
+    :disabled
+  ):not(#_px) {
+  translate: 0 var(--fs-sm);
+}
+html
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .shell-details,
+    .snd-mute,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):focus-visible:not(#_px) {
+  outline: 2px solid var(--px-gold);
+  outline-offset: calc(var(--fs-sm) + 2px);
+}
+
+/* ---- tiles: a selected tile gets a gold edge ---------------------------------------------- */
+html
+  :is(
+    .px-tile.is-selected,
+    .px-tile[aria-pressed='true'],
+    .px-tile[aria-selected='true'],
+    .dp-floor--active,
+    .ws-tile[aria-pressed='true'],
+    .cp-option.is-chosen,
+    .shelf-chip.is-affordable .shelf-chip__body
+  ):not(#_px) {
+  --px-edge: var(--px-gold);
+}
+
+/* ---- square corners and flat fills for bars, tracks, wells and the rest ---------------------- */
+html
+  :is(
+    .cp-tile,
+    .cp-level__track,
+    .cp-level__track i,
+    .cp-budget i,
+    .pp-bar,
+    .pp-bar i,
+    .dp-pity__track,
+    .dp-pity__track i,
+    .wp-xpbar,
+    .wp-xpbar i,
+    .ar-gauge,
+    .ar-gauge i,
+    .ar-meter__track,
+    .ar-meter__track i,
+    .ac-slot,
+    .ac-slot__bar,
+    .ac-slot__bar > i,
+    .ac-book__meter,
+    .ac-book__meter > i,
+    .sk-pips i,
+    .sk-node,
+    .cp-upgrade__title,
+    .pp-panel__head,
+    .set-seg,
+    .set-preview,
+    .dp-floor__art,
+    .shelf-chip__art,
+    .tools__text,
+    .notice,
+    .fatal,
+    .prod,
+    .prod__stage,
+    .wd-stage,
+    .cp-empty,
+    .ar-slot--empty,
+    .lf-slot--empty,
+    .ar__ko,
+    .ar-chunk,
+    .wb-card,
+    .pp-stage
+  ):not(#_px) {
+  border-radius: 0;
+}
+
+/* ---- text ---------------------------------------------------------------------------------- */
+/* Pixelify Sans, 18 px and up only: headings and large numbers. No ligatures: it joins "fi". */
+.px-display,
+.frame__heading,
+.shell-page__title {
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}

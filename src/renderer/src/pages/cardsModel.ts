@@ -86,6 +86,13 @@ export interface WeaponView {
     ready: boolean;
     /** What is missing, for the tag's hint ("Missing Frost Sigil."), empty when nothing is. */
     missing: string;
+    /** The level cap is reached. */
+    levelMet: boolean;
+    /** The card is at ★6, which a tier-up needs (DESIGN.md §5). */
+    starsMet: boolean;
+    /** Why the tier-up cannot be taken, as the dark button says it ("Needs ★6", "Needs Lv 40",
+     *  "Missing Money"); empty when it can. */
+    blocker: string;
   } | null;
   /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
   endNote: string | null;

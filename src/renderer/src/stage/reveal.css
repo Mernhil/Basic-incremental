@@ -1,5 +1,8 @@
-/* Summon reveal (DESIGN.md §7, A6 E). Orb colours are the rarity hues of the reveal; the card
-   faces carry their own rarity and theme tokens. */
+/* Summon reveal (DESIGN.md §7, A6 E), in the pixel-frame shell (UI_RULES.md §2): the dialog is a
+   pixel panel (theme/frames.css), the card backs match the decks on the Summon page, the orb and
+   the tags are square pixel shapes. Orb colours are the rarity hues of the reveal; the card faces
+   carry their own rarity and theme tokens. The deal, orb drop, upgrade flash and flip keep their
+   behaviour. */
 
 .rv {
   --rv-common: #c9ced6;
@@ -16,6 +19,10 @@
   place-items: center;
   background: color-mix(in srgb, var(--bi-chrome-bg) 86%, transparent);
   animation: rv-fade 0.2s ease-out both;
+}
+.rv[data-kind='cosmetics'] {
+  --rv-back: #b53a82;
+  --rv-back-lo: #5c1747;
 }
 .rv.is-leaving {
   opacity: 0;
@@ -39,7 +46,6 @@
   border-radius: 50%;
   background: conic-gradient(from 0deg, #7a5cff, #3ec6ff, #b67bff, #ff6fc8, #7a5cff);
   mask: radial-gradient(closest-side, transparent 52%, #000 56%, #000 70%, transparent 74%);
-  filter: blur(2px);
   opacity: 0.9;
   animation:
     rv-spin 1.2s linear infinite,
@@ -70,6 +76,8 @@
 .rv-slot {
   /* --card-k comes from fitCard() in reveal.ts: a whole number of device pixels per art pixel */
   --orb: var(--rv-common);
+  /* one art pixel in CSS px (whole device pixels) */
+  --u: calc(var(--card-n) / var(--dpr) * 1px);
   position: relative;
   width: calc(176px * var(--card-k));
   height: calc(248px * var(--card-k));
@@ -109,30 +117,64 @@
   position: absolute;
   inset: 0;
   backface-visibility: hidden;
-  border-radius: calc(12px * var(--card-k));
 }
+/* the back: the same card back as the decks (gold border, diamond lattice); the pixel rim in the
+   orb's colour hints the rarity */
 .rv-slot__back {
   display: grid;
   place-items: center;
-  background:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.05) 0 6px, transparent 6px 12px),
-    linear-gradient(160deg, var(--bi-chrome-active-bg), var(--bi-chrome-bg));
+  background: var(--rv-back, #3a55c4);
   box-shadow:
-    inset 0 0 0 2px var(--bi-chrome-accent),
-    0 0 18px color-mix(in srgb, var(--orb) 55%, transparent);
-  transition: box-shadow 0.3s;
+    inset 0 0 0 calc(3 * var(--u)) var(--px-gold),
+    inset 0 0 0 calc(4 * var(--u)) var(--px-edge),
+    0 0 0 calc(2 * var(--u)) var(--orb),
+    0 0 0 calc(3 * var(--u)) var(--px-edge);
 }
+.rv-slot__back::before {
+  content: '';
+  position: absolute;
+  inset: calc(4 * var(--u));
+  background: var(--rv-back-lo, #1b2a73);
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'%3E%3Cpath d='M3 0h2v1H3zM2 1h1v1H2zM5 1h1v1H5zM1 2h1v1H1zM6 2h1v1H6zM0 3h1v2H0zM7 3h1v2H7zM1 5h1v1H1zM6 5h1v1H6zM2 6h1v1H2zM5 6h1v1H5zM3 7h2v1H3z'/%3E%3C/svg%3E")
+    0 0 / calc(8 * var(--u)) calc(8 * var(--u)) repeat;
+}
+/* the orb: a stepped round gem in the rarity's colour */
 .rv-orb {
-  width: 38%;
+  position: relative;
+  z-index: 1;
+  width: calc(36 * var(--u));
   aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle at 35% 30%,
-    #fff,
-    var(--orb) 45%,
-    color-mix(in srgb, var(--orb) 50%, #000)
+  background:
+    linear-gradient(#fff, #fff) calc(8 * var(--u)) calc(8 * var(--u)) / calc(8 * var(--u))
+      calc(4 * var(--u)) no-repeat,
+    linear-gradient(
+        color-mix(in srgb, var(--orb) 55%, #000),
+        color-mix(in srgb, var(--orb) 55%, #000)
+      )
+      0 100% / 100% 40% no-repeat,
+    var(--orb);
+  clip-path: polygon(
+    25% 0,
+    75% 0,
+    75% 8%,
+    92% 8%,
+    92% 25%,
+    100% 25%,
+    100% 75%,
+    92% 75%,
+    92% 92%,
+    75% 92%,
+    75% 100%,
+    25% 100%,
+    25% 92%,
+    8% 92%,
+    8% 75%,
+    0 75%,
+    0 25%,
+    8% 25%,
+    8% 8%,
+    25% 8%
   );
-  box-shadow: 0 0 24px var(--orb);
   animation: rv-orb-drop 0.5s cubic-bezier(0.3, 0.8, 0.4, 1.3) both;
   animation-delay: calc(var(--i) * 0.06s + 0.85s);
 }
@@ -150,13 +192,14 @@
   transform-origin: 0 0;
 }
 .rv-slot.is-open .rv-slot__front {
-  box-shadow: 0 0 26px color-mix(in srgb, var(--orb) 60%, transparent);
+  box-shadow:
+    0 0 0 calc(2 * var(--u)) var(--orb),
+    0 0 0 calc(3 * var(--u)) var(--px-edge);
 }
 .rv-slot__plain {
   display: grid;
   place-items: center;
   height: 100%;
-  border-radius: inherit;
   background: var(--bi-frame-bg);
   color: var(--bi-frame-ink);
   font-weight: 700;
@@ -167,7 +210,7 @@
   align-content: center;
   gap: calc(10px * var(--card-k));
   padding: 8px;
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--orb) 70%, transparent);
+  box-shadow: inset 0 0 0 calc(2 * var(--u)) var(--orb);
   font-size: calc(15px * var(--card-k));
 }
 .rv-slot__plain--pic .cs {
@@ -190,11 +233,11 @@
 }
 .rv-slot__tags span {
   padding: 1px 7px;
-  border-radius: 999px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   background: var(--orb);
   color: #1a1020;
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
 .rv__status {
   min-height: 1.4em;

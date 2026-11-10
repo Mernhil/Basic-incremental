@@ -183,6 +183,17 @@ describe('content validation errors', () => {
     expect(issuesFor(bad).join('\n')).toContain('dungeons.json');
   });
 
+  it('keeps the arena background of a dungeon optional and checks its id (DESIGN.md §6)', () => {
+    const without = raw();
+    for (const d of without.dungeons as Record<string, unknown>[]) delete d['background'];
+    expect(issuesFor(without)).toEqual([]);
+    const bad = raw();
+    (bad.dungeons as Record<string, unknown>[])[0]!['background'] = 'Not An Id';
+    const issues = issuesFor(bad);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatch(/^dungeons\.json › \[0\] › background: /);
+  });
+
   it('reports every file with problems at once', () => {
     const bad = raw({ resources: [{ id: 'Bad Id' }], cards: [{}] });
     const issues = issuesFor(bad);

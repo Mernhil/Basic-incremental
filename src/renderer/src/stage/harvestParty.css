@@ -1,33 +1,143 @@
-/* Cards of a production field (DESIGN.md §11). Reuses the arena slot (.ar-slot, the card scaled by
-   --card-k) and the arena burst meter (.ar-gauge); this file is the layout and the strike motions.
-   Restyle through the tokens: --pp-ease (motion curve) and --pp-glow (pulse colour). Card
-   sizes are whole pixel scales picked in harvestParty.ts (MAIN_WANT, SUPPORT_WANT). */
+/* The cards of one Production band (DESIGN.md §4, §11): the fan (ui/loadoutFan.css) with its harvest
+   gauge under it, the supports as one line of chips and the burst count. This file is the layout of
+   those pieces and the strike motions. The motions are slides and glows only: nothing rotates or
+   scales, so the card art stays on whole pixels (ASSET_RULES.md §5).
+   Restyle through the tokens: --pp-ease (motion curve) and --pp-glow (pulse colour). */
 
 .pp-party {
   --pp-ease: cubic-bezier(0.3, 0.8, 0.4, 1);
   --pp-glow: var(--bi-tick-crit, #ffb02e);
   display: grid;
   justify-items: start;
-  align-content: end;
-  gap: 30px;
-  flex: none;
-}
-.pp-supports {
-  display: flex;
-  gap: 8px;
-}
-.pp-slot > .bi-card {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: scale(var(--card-k));
-  transform-origin: 0 0;
-}
-.pp-gauge {
-  bottom: -16px;
+  gap: 0;
 }
 
-/* the main card lunges toward the plot it struck: --lx / --ly are the vector in px */
+/* ---- the harvest gauge: a segmented bar under the fan, as wide as the main card ---- */
+.pp-gauge {
+  position: relative;
+  margin: calc(var(--lf-u, 1px) * 12) 0 0 calc(var(--lf-u, 1px) * 16);
+  width: calc(var(--lf-u, 1px) * 132);
+  height: calc(var(--fs-sm) * 4);
+  box-sizing: border-box;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.pp-gauge[hidden] {
+  display: none;
+}
+.pp-gauge i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--bi-chrome-burst, var(--bi-chrome-accent));
+  transition: width 0.25s linear;
+}
+/* the segment ticks sit over the fill */
+.pp-gauge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(10% - var(--fs-sm)),
+    var(--px-lo) calc(10% - var(--fs-sm)),
+    var(--px-lo) 10%
+  );
+}
+.pp-gauge.is-full i {
+  filter: brightness(1.25);
+}
+
+/* ---- the supports line and the burst count ---- */
+.pp-chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+.pp-chip,
+.pp-burst {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 3px 10px;
+  box-sizing: border-box;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--bi-frame-ink-muted);
+  background: var(--px-raised);
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge);
+}
+.pp-chip b {
+  color: var(--bi-frame-ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.pp-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pp-chip i {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  background: var(--pp-rarity, #9aa4b4);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.pp-chip i[data-rarity='uncommon'] {
+  --pp-rarity: #6fdc8c;
+}
+.pp-chip i[data-rarity='rare'] {
+  --pp-rarity: #4f86e0;
+}
+.pp-chip i[data-rarity='epic'] {
+  --pp-rarity: #9a6ae0;
+}
+.pp-chip i[data-rarity='legendary'] {
+  --pp-rarity: #e0a43a;
+}
+.pp-chip i[data-rarity='mythic'] {
+  --pp-rarity: #ff3fb4;
+}
+.pp-chip i[data-rarity='void'] {
+  --pp-rarity: #6b7280;
+}
+.pp-chip[role='button'] {
+  cursor: pointer;
+}
+.pp-chip[role='button']:hover {
+  color: var(--bi-frame-ink);
+}
+.pp-chip[role='button']:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: calc(var(--fs-sm) + 2px);
+}
+.pp-chip--empty {
+  background: none;
+  box-shadow: 0 0 0 1px var(--px-hi);
+}
+.pp-chip--empty i {
+  background: none;
+  box-shadow: 0 0 0 1px var(--px-hi);
+}
+.pp-burst {
+  flex: none;
+}
+.pp-burst {
+  color: var(--bi-frame-ink);
+}
+
+/* ---- the main card slides toward the row it struck: --lx / --ly are the vector in px ---- */
 .pp-slot--main.is-strike-steady {
   animation: pp-strike-steady 0.3s var(--pp-ease);
 }
@@ -46,210 +156,64 @@
 @keyframes pp-strike-steady {
   40% {
     translate: var(--lx, 0) var(--ly, 0);
-    rotate: 3deg;
   }
 }
 @keyframes pp-strike-chop {
-  /* wind up away from the plot, then a heavy swing into it */
+  /* wind up away from the row, then a heavy slide into it */
   25% {
-    translate: calc(var(--lx, 0px) * -0.35) calc(var(--ly, 0px) * -0.35 - 8px);
-    rotate: -9deg;
+    translate: calc(var(--lx, 0px) * -0.35) calc(var(--ly, 0px) * -0.35 - 6px);
   }
-  45% {
-    translate: var(--lx, 0) var(--ly, 0);
-    rotate: 10deg;
-    scale: 1.07;
-  }
+  45%,
   60% {
     translate: var(--lx, 0) var(--ly, 0);
-    rotate: 8deg;
-    scale: 1.05;
   }
 }
 @keyframes pp-strike-flurry {
   35% {
     translate: var(--lx, 0) var(--ly, 0);
-    rotate: -3deg;
   }
   70% {
     translate: calc(var(--lx, 0px) * 0.4) calc(var(--ly, 0px) * 0.4);
-    rotate: 2deg;
   }
 }
 @keyframes pp-strike-volley {
   50% {
     translate: var(--lx, 0) var(--ly, 0);
-    scale: 1.05;
     filter: drop-shadow(0 0 10px var(--pp-glow));
   }
 }
 @keyframes pp-bursting {
   20% {
-    scale: 1.1;
-    rotate: -3deg;
     filter: drop-shadow(0 0 16px var(--pp-glow)) brightness(1.15);
   }
   60% {
-    scale: 1.04;
     filter: drop-shadow(0 0 10px var(--pp-glow));
   }
 }
 
-/* a support that helped a strike flashes */
-.pp-slot.is-pulse > .bi-card {
-  animation: pp-pulse 0.52s ease-out;
+/* a support that helped a strike flashes: the fan's slot (ui/loadoutFan.css) or its chip */
+.pp-chip.is-pulse {
+  animation: pp-chip-pulse 0.52s ease-out;
 }
-@keyframes pp-pulse {
+@keyframes pp-chip-pulse {
   30% {
-    filter: drop-shadow(0 0 9px var(--pp-glow)) brightness(1.2);
-    scale: 1.08;
+    color: var(--bi-frame-ink);
+    background: color-mix(in srgb, var(--pp-glow) 28%, var(--px-raised));
   }
 }
-/* supports that help the harvest wear a small mark, so it is clear which ones can pulse */
-.pp-slot--helps::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -9px;
-  width: 7px;
-  height: 7px;
-  translate: -50% 0;
-  rotate: 45deg;
-  background: var(--pp-glow);
-  box-shadow: 0 0 0 1px var(--bi-chrome-line);
-}
 
-:root[data-motion='reduced'] .pp-slot.is-pulse > .bi-card,
 :root[data-motion='reduced'] .pp-slot--main[class*='is-strike'],
-:root[data-motion='reduced'] .pp-slot--main.is-bursting {
+:root[data-motion='reduced'] .pp-slot--main.is-bursting,
+:root[data-motion='reduced'] .pp-chip.is-pulse {
   animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .pp-slot.is-pulse > .bi-card,
   :root:not([data-motion='full']) .pp-slot--main[class*='is-strike'],
-  :root:not([data-motion='full']) .pp-slot--main.is-bursting {
+  :root:not([data-motion='full']) .pp-slot--main.is-bursting,
+  :root:not([data-motion='full']) .pp-chip.is-pulse {
     animation: none;
   }
-}
-
-/* ---- the side stage (Production screen, DESIGN.md §4): a big card, a wide gauge, a support list ---- */
-.pp-party--side {
-  gap: 14px;
-  justify-items: center;
-  align-content: start;
-  width: 100%;
-}
-/* the card frame bleeds about 11 art pixels past the card box: keep the gauge clear of it */
-.pp-party--side > .lf {
-  margin: 10px 0 14px;
-}
-.pp-meta {
-  display: grid;
-  gap: 8px;
-  width: 100%;
-  min-width: 0;
-}
-.pp-gauge--side {
-  position: static;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  height: auto;
-  background: none;
-  box-shadow: none;
-  font-size: 12.5px;
-  font-weight: 700;
-}
-.pp-gauge--side[hidden] {
-  display: none;
-}
-.pp-gauge__track {
-  flex: 1;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.5);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-}
-.pp-gauge--side i {
-  border-radius: 0;
-}
-.pp-pattern {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--bi-chrome-ink-muted);
-}
-.pp-sups {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 5px;
-}
-.pp-sup {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px 7px;
-  padding: 4px 9px;
-  border-radius: 8px;
-  font-size: 11.5px;
-  color: var(--bi-chrome-ink-muted);
-  background: rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-}
-.pp-sup b {
-  font-size: 12.5px;
-  color: var(--bi-chrome-ink);
-}
-.pp-sup i {
-  width: 9px;
-  height: 9px;
-  flex: none;
-  border-radius: 2px;
-  background: var(--pp-rarity, #9aa4b4);
-  box-shadow: inset 0 0 0 1px #0008;
-}
-.pp-sup i[data-rarity='uncommon'] {
-  --pp-rarity: #6fdc8c;
-}
-.pp-sup i[data-rarity='rare'] {
-  --pp-rarity: #4f86e0;
-}
-.pp-sup i[data-rarity='epic'] {
-  --pp-rarity: #9a6ae0;
-}
-.pp-sup i[data-rarity='legendary'] {
-  --pp-rarity: #e0a43a;
-}
-.pp-sup i[data-rarity='mythic'] {
-  --pp-rarity: #ff3fb4;
-}
-.pp-sup i[data-rarity='void'] {
-  --pp-rarity: #6b7280;
-}
-.pp-sup--empty {
-  background: none;
-  box-shadow: none;
-  border: 1px dashed var(--bi-chrome-line);
-}
-.pp-sup.is-pulse {
-  animation: pp-sup-pulse 0.52s ease-out;
-}
-@keyframes pp-sup-pulse {
-  30% {
-    box-shadow:
-      inset 0 0 0 1px var(--pp-glow),
-      0 0 10px var(--pp-glow);
-    background: color-mix(in srgb, var(--pp-glow) 22%, transparent);
-  }
-}
-:root[data-motion='reduced'] .pp-sup.is-pulse {
-  animation: none;
-}
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .pp-sup.is-pulse {
-    animation: none;
+  .pp-gauge i {
+    transition: none;
   }
 }

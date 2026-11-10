@@ -24,6 +24,8 @@ const t = COPY.weaponSkins;
 export function createWeaponSkinsTab(
   root: HTMLElement,
   ctx: PageContext,
+  /** The page's tab bar; it sits at the top of the picker panel while this tab shows. */
+  tabs?: HTMLElement,
 ): { render(): void; reveal(): void } {
   const { content } = ctx;
   const selection: SkinSelection = {};
@@ -80,6 +82,7 @@ export function createWeaponSkinsTab(
     pickEl.classList.add('ws-picker');
     const badge = h('span', 'ws-badge', t.testBadge);
     pickEl.querySelector('.frame__heading')?.after(badge);
+    if (tabs) pickEl.prepend(tabs);
 
     if (v.weapons.length > 1) {
       const chips = h('div', 'cp-chips');

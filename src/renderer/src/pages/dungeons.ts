@@ -8,6 +8,7 @@ import {
   formatDuration,
   isDungeonCleared,
   isDungeonUnlocked,
+  loadoutHealth,
   secondsPerKill,
   setActiveDungeon,
   trialRewards,
@@ -26,14 +27,24 @@ import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { createShelf } from '../ui/shelf';
 import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
 import type { CardsModel } from './cardsModel';
+import {
+  DRAWER_TABS,
+  drawerStatus,
+  parseTab,
+  tabAfterKey,
+  type DrawerTab,
+  type DrawerStatus,
+} from './dungeonsModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
 import './dungeons.css';
 
 /**
- * Dungeons page (DESIGN.md §11, A1 D): the arena fills the page; floors, the damage readout, the
- * weapon panel (the main card's level, XP, stars and tier-up, DESIGN.md §5), the upgrade shelf and
- * drops live in a drawer that slides up from the bottom. Damage comes from the main card.
+ * Dungeons page (DESIGN.md §11; UI_RULES.md §2 "Dungeons arena layout"): the arena fills the page
+ * under the goals strip. A drawer handle runs along the bottom ("▲ <current dungeon>", the
+ * Dungeons / Weapon / Upgrades tabs and a short status line); the drawer slides up from it with the
+ * floors and drops, the weapon panel (the main card's level, XP, stars and tier-up, DESIGN.md §5)
+ * and the upgrade shelf, one tab each. Damage comes from the main card.
  */
 
 export interface StagePageContext extends PageContext {
@@ -54,6 +65,28 @@ const pct = (x: number): string => {
 };
 
 const DRAWER_KEY = 'bi.dungeonDrawer';
+const TAB_KEY = 'bi.dungeonTab';
+
+const TAB_LABEL: Record<DrawerTab, string> = {
+  dungeons: COPY.arena.tabDungeons,
+  weapon: COPY.arena.tabWeapon,
+  upgrades: COPY.arena.tabUpgrades,
+};
+
+function statusText(status: DrawerStatus): string {
+  switch (status.kind) {
+    case 'idle':
+      return COPY.arena.statusIdle;
+    case 'trial':
+      return COPY.arena.statusTrial;
+    case 'knockout':
+      return COPY.arena.statusKnockout(status.seconds);
+    case 'pity':
+      return COPY.arena.statusPity(status.kills);
+    case 'fighting':
+      return COPY.arena.statusFighting;
+  }
+}
 
 function floorsSignature(state: GameState): string {
   return JSON.stringify([state.activeDungeonId, state.clearedDungeons, state.prestigeCount]);
@@ -73,31 +106,55 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     sound: ctx.sound,
   });
 
-  // ---- drawer ----
+  // ---- drawer: a handle bar along the bottom, the panes slide up above it ----
   const drawer = h('section', 'dp-drawer');
   drawer.setAttribute('aria-label', COPY.arena.drawer);
   const bar = h('div', 'dp-drawer__bar');
-  const handle = h('button', 'dp-drawer__handle');
+  const handle = h('button', 'dp-handle');
   handle.type = 'button';
   handle.setAttribute('aria-controls', 'dp-drawer-body');
-  const handleText = h('span', '', COPY.arena.drawer);
-  handle.append(h('i', 'dp-drawer__chev'), handleText);
-  bar.append(handle);
+  const handleText = h('span', 'dp-handle__name', COPY.arena.handleNone);
+  handle.append(h('i', 'dp-handle__chev'), handleText);
+  const tabs = h('div', 'dp-tabs');
+  tabs.setAttribute('role', 'tablist');
+  tabs.setAttribute('aria-label', COPY.arena.tabsLabel);
+  const tabButtons = new Map<DrawerTab, HTMLButtonElement>();
+  for (const id of DRAWER_TABS) {
+    const b = h('button', 'px-btn dp-tab', TAB_LABEL[id]);
+    b.type = 'button';
+    b.id = `dp-tab-${id}`;
+    b.setAttribute('role', 'tab');
+    b.setAttribute('aria-controls', `dp-pane-${id}`);
+    tabButtons.set(id, b);
+    tabs.append(b);
+  }
+  const statusLine = h('span', 'dp-status');
+  bar.append(handle, tabs, statusLine);
   const body = h('div', 'dp-drawer__body');
   body.id = 'dp-drawer-body';
   drawer.append(bar, body);
 
   let open = false;
+  let tab: DrawerTab = 'dungeons';
   try {
     open = localStorage.getItem(DRAWER_KEY) === 'open';
+    tab = parseTab(localStorage.getItem(TAB_KEY));
   } catch {
-    /* stays closed */
+    /* stays closed, on the first tab */
   }
+  let handleName = '';
+  const syncHandle = (): void => {
+    const label = open ? COPY.arena.handleClose(handleName) : COPY.arena.handleOpen(handleName);
+    handle.setAttribute(
+      'aria-label',
+      handleName ? label : open ? COPY.arena.drawerClose : COPY.arena.drawerOpen,
+    );
+  };
   const setOpen = (value: boolean): void => {
     open = value;
     drawer.classList.toggle('is-open', open);
     handle.setAttribute('aria-expanded', String(open));
-    handle.setAttribute('aria-label', open ? COPY.arena.drawerClose : COPY.arena.drawerOpen);
+    syncHandle();
     body.inert = !open;
     try {
       localStorage.setItem(DRAWER_KEY, open ? 'open' : 'closed');
@@ -106,6 +163,55 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     }
   };
   handle.addEventListener('click', () => setOpen(!open));
+
+  // ---- drawer panes: Dungeons (floors and drops), Weapon, Upgrades ----
+  const floorsCol = h('section', 'dp-col dp-col--floors');
+  const lootCol = h('section', 'dp-col dp-col--loot');
+  const weaponCol = h('section', 'dp-col dp-col--weapon');
+  const upgradesCol = h('section', 'dp-col dp-col--upgrades');
+  const panes = new Map<DrawerTab, HTMLElement>();
+  const addPane = (id: DrawerTab, ...cols: HTMLElement[]): void => {
+    const pane = h('div', `dp-pane dp-pane--${id}`);
+    pane.id = `dp-pane-${id}`;
+    pane.setAttribute('role', 'tabpanel');
+    pane.setAttribute('aria-labelledby', `dp-tab-${id}`);
+    pane.append(...cols);
+    panes.set(id, pane);
+    body.append(pane);
+  };
+  addPane('dungeons', floorsCol, lootCol);
+  addPane('weapon', weaponCol);
+  addPane('upgrades', upgradesCol);
+
+  const setTab = (id: DrawerTab, opts: { focus?: boolean; save?: boolean } = {}): void => {
+    tab = id;
+    for (const [key, b] of tabButtons) {
+      const on = key === id;
+      b.setAttribute('aria-selected', String(on));
+      b.tabIndex = on ? 0 : -1;
+      panes.get(key)!.hidden = !on;
+    }
+    if (opts.focus) tabButtons.get(id)?.focus();
+    if (opts.save === false) return;
+    try {
+      localStorage.setItem(TAB_KEY, id);
+    } catch {
+      /* not remembered */
+    }
+  };
+  for (const [id, b] of tabButtons) {
+    // a tab opens the drawer on its own pane
+    b.addEventListener('click', () => {
+      setTab(id);
+      if (!open) setOpen(true);
+    });
+    b.addEventListener('keydown', (e) => {
+      const next = tabAfterKey(id, e.key);
+      if (!next) return;
+      e.preventDefault();
+      setTab(next, { focus: true });
+    });
+  }
 
   const wrap = h('div', 'dp-stage');
   wrap.append(arena.el, drawer);
@@ -118,12 +224,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     scope: 'fighting',
     sound: ctx.sound,
   });
-
-  // ---- drawer columns ----
-  const floorsCol = h('section', 'dp-col dp-col--floors');
-  const weaponCol = h('section', 'dp-col dp-col--weapon');
-  const lootCol = h('section', 'dp-col dp-col--loot');
-  body.append(floorsCol, weaponCol, lootCol);
+  upgradesCol.append(shelf.el);
 
   let floorsSig = '';
   let updates: Array<() => void> = [];
@@ -141,7 +242,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     const head = h('header', 'dp-col__head');
     head.append(h('h3', 'dp-col__title', COPY.arena.weapon));
     if (!mainId) {
-      weaponCol.replaceChildren(head, h('p', 'dp-note', COPY.weapon.noMain), shelf.el);
+      weaponCol.replaceChildren(head, h('p', 'dp-note', COPY.weapon.noMain));
       return;
     }
     weapon = createWeaponPanel({
@@ -160,7 +261,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         render();
       },
     });
-    weaponCol.replaceChildren(head, weapon.el, weaponNote, shelf.el);
+    weaponCol.replaceChildren(head, weapon.el, weaponNote);
   }
 
   function updateWeapon(): void {
@@ -368,6 +469,30 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     }
   }
 
+  /** The handle bar: the dungeon being fought and the one line worth knowing right now. */
+  function updateBar(s: GameState): void {
+    const id = s.activeDungeonId;
+    const d = id ? content.dungeonById.get(id) : undefined;
+    const t = id ? content.trialById.get(id) : undefined;
+    const name = d?.name ?? t?.name ?? '';
+    if (name !== handleName) {
+      handleName = name;
+      handleText.textContent = name || COPY.arena.handleNone;
+      syncHandle();
+    }
+    const mods = collectModifiers(s, content);
+    const status = bossStatus(s, content, mods);
+    const threshold = d ? effectiveDrops(d, mods, content).rare.pityThreshold : 0;
+    const text = statusText(
+      drawerStatus({
+        fight: d ? 'dungeon' : t ? 'trial' : 'none',
+        knockoutSeconds: d || t ? loadoutHealth(s, content, mods).knockoutSeconds : 0,
+        rareKillsLeft: d && status ? threshold - status.pity : null,
+      }),
+    );
+    if (statusLine.textContent !== text) statusLine.textContent = text;
+  }
+
   function refresh(): void {
     for (const u of updates) u();
     updateWeapon();
@@ -384,9 +509,11 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       buildFloors(s);
     }
     arena.update();
+    updateBar(s);
     refresh();
   }
 
+  setTab(tab, { save: false });
   setOpen(open);
 
   return { render };

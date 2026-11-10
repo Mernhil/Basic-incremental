@@ -11,6 +11,7 @@ import { KNOWN_VISUALS } from './registry';
 import './base.css';
 import './rank.css';
 import './recipes.css';
+import './frames.css';
 
 const RECIPE_PREFIX = 'r-';
 

@@ -494,6 +494,12 @@ export const dungeonSchema = z.strictObject({
   unlockedBy: id.nullable(),
   /** Boss kills needed to clear the dungeon (DESIGN.md §6: the first kill). */
   killsToClear: z.number().int().min(1).default(1),
+  /**
+   * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
+   * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
+   * room. The renderer maps ids to backgrounds (`stage/arenaBackground.ts`).
+   */
+  background: id.optional(),
   boss: z.strictObject({
     id,
     name,
@@ -794,7 +800,10 @@ export const SLOT_TOKENS = {
   ],
   number: ['num-font', 'num-weight', 'num-color'],
   /* The table item also skins the screen shell around it (DESIGN.md §11): header and sidebar
-     (chrome-*), framed panels (frame-*) and tooltips (tip-*). */
+     (chrome-*), framed panels (frame-*, with the raised body and the pixel frame's edge, light top and dark bottom),
+     the two fonts (font-ui for text, font-display for headings and big numbers) and tooltips
+     (tip-*). chrome-accent-lo is the gold's shadow; chrome-xp, -logging, -mining and -burst are
+     the XP bar and the job colours. */
   table: [
     'table-bg',
     'table-glow',
@@ -806,7 +815,12 @@ export const SLOT_TOKENS = {
     'chrome-ink',
     'chrome-ink-muted',
     'chrome-accent',
+    'chrome-accent-lo',
     'chrome-active-bg',
+    'chrome-xp',
+    'chrome-logging',
+    'chrome-mining',
+    'chrome-burst',
     'frame-bg',
     'frame-radius',
     'frame-line',
@@ -815,6 +829,12 @@ export const SLOT_TOKENS = {
     'frame-title-ink',
     'frame-ink',
     'frame-ink-muted',
+    'frame-raised',
+    'frame-edge',
+    'frame-hi',
+    'frame-lo',
+    'font-ui',
+    'font-display',
     'tip-bg',
     'tip-line',
     'tip-ink',

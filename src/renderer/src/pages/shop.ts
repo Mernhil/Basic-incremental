@@ -10,9 +10,9 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
-import { PLAQUE_VIEWBOX, gemCoin, navPlaque, svg } from '../art/gems';
+import { gemCoin, svg } from '../art/gems';
 import { ITEM_VIEWBOX } from '../art/items';
-import { animatedSpriteHtml } from '../art/pixel/sprites';
+import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { h } from '../shell/shell';
 import { icon, type IconName } from '../shell/icons';
 import { starlightSvg } from '../ui/skins';
@@ -27,10 +27,11 @@ import type { PageContext } from './production';
 import './shop.css';
 
 /**
- * Shop page (DESIGN.md §11 "Market stalls"): three striped-awning stalls on a light table, every
- * counter visible at once. Starlight shop (permanent levels), Shard shop (card copies, supplies
- * and exclusives for card shards) and the Ascension gate. The Ascension rules and the shop
- * prices come from game; this file only draws them.
+ * Shop page (UI_RULES.md §2 "Shop page: Signboards"): three counters side by side, each under a
+ * wooden signboard on two chains, every counter visible at once. Starlight shop (permanent
+ * levels), Shard shop (card copies, supplies and exclusives for card shards) and the Ascension
+ * gate. The Ascension rules and the shop prices come from game; this file only draws them. The
+ * boards, shelves and chips are CSS (shop.css); the stamp, ring and coin are the candy pixel sprites.
  */
 
 export interface ShopContext extends PageContext {
@@ -59,52 +60,68 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   const table = h('div', 'shop-table');
   page.append(table);
 
-  /** One stall: the awning sprite, a body, a sign. */
+  /** One counter: a wooden signboard on two chains, and the shelf under it. */
   function stall(
     cls: string,
-    awning: string,
     label: string,
     signText: string,
   ): { el: HTMLElement; body: HTMLElement; sign: HTMLElement; count: HTMLElement } {
     const el = h('section', `shop-stall ${cls}`);
-    const awn = h('div', 'shop-awn');
-    awn.setAttribute('aria-hidden', 'true');
-    awn.innerHTML = animatedSpriteHtml(awning, 1, 'shop-awn__img');
-    const body = h('div', 'shop-body');
     const sign = h('h2', 'shop-sign');
-    const name = h('span', 'shop-sign__name', signText);
-    const count = h('em', 'shop-sign__count bi-num');
+    const name = h('span', 'shop-sign__name px-display', signText);
+    const count = h('em', 'shop-sign__count px-display bi-num');
     sign.id = `shop-sign-${cls}`;
     sign.append(name);
     el.setAttribute('aria-labelledby', sign.id);
     el.dataset.label = label;
-    body.append(sign);
-    el.append(awn, body);
+    const body = h('div', 'shop-body px-panel');
+    el.append(sign, body);
     table.append(el);
     sign.append(count);
     return { el, body, sign, count };
   }
 
-  const priceBtn = (onClick: () => void): HTMLButtonElement => {
+  /** A pixel sprite in a box that is a whole number of device pixels per art pixel (`want` x). */
+  const spriteBox = (name: string, want = 1): string => {
+    const s = sprite(name);
+    if (!s) return '';
+    return `<span class="shop-spr" style="--nw:${s.w};--nh:${s.h};--want:${want}">${animatedSpriteHtml(name, 1)}</span>`;
+  };
+
+  /** A price chip: a gold button with the currency icon and the price. */
+  const priceBtn = (onClick: () => void, coin: 'star' | 'shard'): HTMLButtonElement => {
     const b = h('button', 'shop-price bi-num');
     b.type = 'button';
+    const ico = h('span', coin === 'star' ? 'shop-price__ico' : 'shop-price__ico shop-gem');
+    ico.setAttribute('aria-hidden', 'true');
+    // a line icon: the coin art (48 px) would have to shrink to fit a chip
+    if (coin === 'star') ico.append(icon('starlight', 'shop-icon'));
+    b.append(ico, h('span', 'shop-price__txt'));
     b.addEventListener('click', () => {
       if (b.getAttribute('aria-disabled') === 'true') return;
       onClick();
     });
     return b;
   };
-  const setPrice = (b: HTMLButtonElement, price: string, affordable: boolean, label: string) => {
-    set(b, price);
+  /** `coin` false drops the icon, for a chip that says "Max" or "Sold out". */
+  const setPrice = (
+    b: HTMLButtonElement,
+    price: string,
+    affordable: boolean,
+    label: string,
+    coin = true,
+  ) => {
+    set(b.lastElementChild as HTMLElement, price);
+    b.classList.toggle('no-ico', !coin);
     b.setAttribute('aria-disabled', String(!affordable));
     b.classList.toggle('is-no', !affordable);
     b.setAttribute('aria-label', label);
   };
 
   // =====================================================================================
-  // Stall 1: Starlight shop
+  // Counter 1: Starlight shop
   // =====================================================================================
-  const star = stall('shop-stall--starlight', 'shop-awn-a', t.shop, t.shop);
+  const star = stall('shop-stall--starlight', t.shop, ts.boards.starlight);
   const offers = h('ul', 'shop-list');
   star.body.append(offers);
 
@@ -119,25 +136,20 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   };
   const offerUis = new Map<string, OfferUi>();
   for (const item of content.prestige.shop) {
-    const li = h('li', 'shop-it');
+    const li = h('li', 'shop-it shop-it--star');
     li.dataset.item = item.id;
-    const coin = h('span', 'shop-it__art');
-    coin.setAttribute('aria-hidden', 'true');
-    coin.innerHTML = starlightSvg();
-    const text = h('span', 'shop-it__text');
-    const level = h('span', 'shop-it__sub bi-num');
+    const level = h('span', 'shop-it__level bi-num');
     const effect = h('span', 'shop-it__sub');
     const track = h('i', 'shop-lv');
     track.setAttribute('aria-hidden', 'true');
     const fill = h('u');
     track.append(fill);
-    text.append(h('b', 'shop-it__name', item.name), effect, level, track);
-    const price = priceBtn(() => buyStarlight(item.id));
+    const price = priceBtn(() => buyStarlight(item.id), 'star');
     const stamp = h('span', 'shop-stamp');
     stamp.setAttribute('aria-hidden', 'true');
     stamp.hidden = true;
-    stamp.innerHTML = animatedSpriteHtml('shop-stamp', 1);
-    li.append(coin, text, price, stamp);
+    stamp.innerHTML = spriteBox('shop-stamp');
+    li.append(h('b', 'shop-it__name', item.name), level, effect, track, price, stamp);
     offers.append(li);
     offerUis.set(item.id, { li, level, fill, price, effect, stamp, timer: 0 });
   }
@@ -160,12 +172,12 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   }
 
   // =====================================================================================
-  // Stall 2: Shard shop
+  // Counter 2: Shard shop
   // =====================================================================================
-  const shard = stall('shop-stall--shards', 'shop-awn-b', COPY.achievements.shop, ts.shards);
+  const shard = stall('shop-stall--shards', COPY.achievements.shop, ts.boards.shards);
   const coinEl = h('span', 'shop-coin');
   coinEl.setAttribute('aria-hidden', 'true');
-  coinEl.innerHTML = animatedSpriteHtml('shop-coin', 1);
+  coinEl.innerHTML = spriteBox('shop-coin');
   shard.sign.insertBefore(coinEl, shard.count);
   const shardHint = h('p', 'shop-note', COPY.achievements.shardsHint);
   const tiles = h('ul', 'shop-tiles');
@@ -186,6 +198,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   function offerArt(art: OfferArt, s: GameState): string {
     switch (art.kind) {
       case 'card':
+        // a whole-scale weapon in a window that crops what does not fit (shop.css)
         return svg(cardItemArt(content, art.cardId, s.cards.owned[art.cardId], s), ITEM_VIEWBOX);
       case 'coin': {
         const gem = content.resourceById.get(art.resource)?.gem;
@@ -193,14 +206,14 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
       }
       case 'resource': {
         const sup = SUPPLY_SPRITES[art.resource];
-        const px = sup ? animatedSpriteHtml(sup, 1) : '';
+        const px = sup ? spriteBox(sup) : '';
         if (px) return px;
         const kind = content.resourceById.get(art.resource)?.kind ?? 'material';
-        if (kind === 'prestige') return starlightSvg();
+        if (kind === 'prestige') return icon('starlight', 'shop-icon').outerHTML;
         return icon(RESOURCE_ICON[kind] ?? 'material', 'shop-icon').outerHTML;
       }
       case 'cosmetic':
-        return svg(navPlaque('wardrobe'), PLAQUE_VIEWBOX);
+        return icon('wardrobe', 'shop-icon').outerHTML;
     }
   }
 
@@ -217,7 +230,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
       art.setAttribute('aria-hidden', 'true');
       art.innerHTML = offerArt(v.art, s);
       const stock = h('span', 'shop-it__sub shop-stock');
-      const price = priceBtn(() => buyShard(v.id));
+      const price = priceBtn(() => buyShard(v.id), 'shard');
       if (tile) {
         li.append(art, h('span', 'shop-tile__name', v.name), stock, price);
         tiles.append(li);
@@ -262,17 +275,23 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   }
 
   // =====================================================================================
-  // Stall 3: Ascension
+  // Counter 3: Ascension
   // =====================================================================================
-  const asc = stall('shop-stall--ascension', 'shop-awn-c', t.gate, t.gate);
-  const nth = h('em', 'shop-sign__count');
+  const asc = stall('shop-stall--ascension', t.gate, ts.boards.ascension);
+  const nth = h('em', 'shop-sign__count shop-sign__nth');
   asc.sign.append(nth);
   asc.count.remove();
   const gate = h('div', 'shop-gate');
   asc.body.append(gate);
 
+  // the ring at 2x around the Starlight coin
   const ringWrap = h('div', 'shop-ring');
   ringWrap.setAttribute('aria-hidden', 'true');
+  const ringSprite = sprite('shop-ring');
+  if (ringSprite) {
+    ringWrap.classList.add('shop-spr');
+    ringWrap.style.cssText = `--nw:${ringSprite.w};--nh:${ringSprite.h};--want:2`;
+  }
   const ring = h('span', 'shop-ring__sprite');
   ring.innerHTML = animatedSpriteHtml('shop-ring', 1);
   const ringCoin = h('span', 'shop-ring__coin');
@@ -280,10 +299,10 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   ringWrap.append(ring, ringCoin);
 
   const ready = h('div', 'shop-panel');
-  const gainValue = h('p', 'shop-gain bi-num');
+  const gainValue = h('p', 'shop-gain px-display bi-num');
   const needs = h('p', 'shop-needs');
   const rewardsNote = h('p', 'shop-needs');
-  const ascendBtn = h('button', 'shop-ascend');
+  const ascendBtn = h('button', 'shop-ascend px-display');
   ascendBtn.type = 'button';
   ascendBtn.addEventListener('click', () => {
     if (ascendBtn.getAttribute('aria-disabled') === 'true') return;
@@ -314,7 +333,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   const done = h('div', 'shop-panel');
   done.setAttribute('aria-live', 'polite');
   const doneTitle = h('h3', 'shop-head');
-  const doneGain = h('p', 'shop-gain bi-num');
+  const doneGain = h('p', 'shop-gain px-display bi-num');
   const doneLabel = h('p', 'shop-needs', t.doneGainLabel);
   const doneRewardsHead = h('h3', 'shop-head', t.doneRewards);
   const doneRewards = h('ul', 'shop-bullets');
@@ -323,11 +342,19 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   nextBtn.addEventListener('click', () => setMode('ready', true));
   done.append(doneTitle, doneGain, doneLabel, doneRewardsHead, doneRewards, nextBtn);
 
-  const keptHead = h('h3', 'shop-head', ts.kept);
+  // Kept and Reset: two tiles side by side
   const keptList = h('ul', 'shop-bullets shop-bullets--kept');
-  const resetHead = h('h3', 'shop-head', ts.reset);
   const resetList = h('ul', 'shop-bullets shop-bullets--reset');
-  gate.append(ringWrap, ready, confirm, done, keptHead, keptList, resetHead, resetList);
+  const lists = h('div', 'shop-lists');
+  for (const [head, list] of [
+    [ts.kept, keptList],
+    [ts.reset, resetList],
+  ] as const) {
+    const tile = h('section', 'shop-keep px-tile');
+    tile.append(h('h3', 'shop-head', head), list);
+    lists.append(tile);
+  }
+  gate.append(ringWrap, ready, confirm, done, lists);
 
   function setMode(next: Mode, focus = false): void {
     mode = next;
@@ -406,8 +433,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
       set(nth, ts.no(view.ascension));
       if (mode === 'ready' || mode === 'confirm') {
         set(gainValue, ts.gain(view.gain));
-        set(needs, view.needs);
-        needs.hidden = view.canAscend;
+        // the line under the gain: what is still needed, or what the gain grows with
+        set(needs, view.canAscend ? t.gainHint : view.needs);
         const extra = view.rewards.map((r) => r.text).join('; ');
         set(rewardsNote, extra ? `${t.rewardsLabel}: ${extra}` : '');
         rewardsNote.hidden = extra === '';
@@ -449,13 +476,12 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
       if (!ui) continue;
       set(ui.effect, v.buy.preview);
       set(ui.level, v.levelText);
+      ui.li.style.setProperty('--max', String(Math.max(1, v.maxLevel)));
       ui.fill.style.width = `${((v.level / Math.max(1, v.maxLevel)) * 100).toFixed(1)}%`;
       ui.li.classList.toggle('is-maxed', v.maxed);
       if (v.maxed) {
-        set(ui.price, t.maxed);
-        ui.price.setAttribute('aria-disabled', 'true');
-        ui.price.classList.add('is-no', 'is-max');
-        ui.price.setAttribute('aria-label', `${v.name}: ${t.maxed}`);
+        setPrice(ui.price, ts.max, false, `${v.name}: ${t.maxed}`, false);
+        ui.price.classList.add('is-max');
       } else {
         ui.price.classList.remove('is-max');
         setPrice(
@@ -478,7 +504,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     for (const v of shardOfferViews(shardShop(s, content), s, content)) {
       const ui = shardUis.get(v.id);
       if (!ui) continue;
-      if (v.soldOut) setPrice(ui.price, COPY.achievements.soldOut, false, `${v.name}: sold out`);
+      if (v.soldOut)
+        setPrice(ui.price, COPY.achievements.soldOut, false, `${v.name}: sold out`, false);
       else
         setPrice(
           ui.price,

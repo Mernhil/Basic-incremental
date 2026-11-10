@@ -5,6 +5,7 @@
     "tier": 1,
     "unlockedBy": null,
     "killsToClear": 1,
+    "background": "mossy_cellar",
     "boss": {
       "id": "root_warden",
       "name": "Root Warden",
@@ -58,6 +59,7 @@
     "tier": 2,
     "unlockedBy": "mossy_cellar",
     "killsToClear": 10,
+    "background": "ember_crypt",
     "boss": {
       "id": "cinder_lich",
       "name": "Cinder Lich",
@@ -107,6 +109,7 @@
     "tier": 3,
     "unlockedBy": "ember_crypt",
     "killsToClear": 90,
+    "background": "frostspire_vault",
     "boss": {
       "id": "glacier_colossus",
       "name": "Glacier Colossus",

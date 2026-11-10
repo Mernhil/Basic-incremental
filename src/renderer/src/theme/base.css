@@ -2,18 +2,19 @@
    Fallbacks here only cover the instant before the first theme is applied. */
 
 :root {
-  --bi-font-ui: 'Outfit', 'Segoe UI', sans-serif;
+  /* the table item's font-ui / font-display tokens replace these (applied on <html>) */
+  --bi-font-ui: 'Atkinson Hyperlegible', 'Segoe UI', sans-serif;
+  --bi-font-display: 'Pixelify Sans', 'Atkinson Hyperlegible', sans-serif;
   --bi-emblem: #f3dc9a;
-  color-scheme: light dark;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
   font-family: var(--bi-font-ui);
-  font-weight: 500;
-  color: var(--bi-on-table, #1c2330);
-  background-color: var(--bi-table-bg, #cfd5dd);
+  font-weight: 400;
+  color: var(--bi-on-table, #f1e8d6);
+  background-color: var(--bi-table-bg, #17131f);
   background-image: radial-gradient(
     80% 55% at 50% 0%,
     var(--bi-table-glow, transparent),
@@ -22,9 +23,11 @@ body {
   background-attachment: fixed;
 }
 
+/* UI numbers are text: Atkinson Hyperlegible (UI_RULES.md §2, Shell look). The number cosmetic's
+   font (--bi-num-font) is for the floating numbers only. */
 .bi-num {
-  font-family: var(--bi-num-font, var(--bi-font-ui));
-  font-weight: var(--bi-num-weight, 600);
+  font-family: var(--bi-font-ui);
+  font-weight: 700;
   font-variant-numeric: tabular-nums lining-nums;
 }
 

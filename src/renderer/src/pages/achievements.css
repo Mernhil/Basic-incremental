@@ -1,148 +1,233 @@
-/* Achievements (DESIGN.md §11 "sticker book", A10 C). The book is a bound two-page spread of
-   dotted album paper; each chapter is labelled with a strip of washi tape in its colour, and
-   every achievement is a sticker slot: a dashed outline with a faint print of the sticker while
-   locked, a die-cut sticker stuck in at a slight tilt once earned. */
+/* Achievements (UI_RULES.md §2, "Achievements: a leather sticker book"). One framed panel holds
+   the book: a leather cover (pixel-framed, a lighter inner edge, a stitched dashed line, a gold cap
+   on each corner), two ruled parchment pages with a spine between them and two ribbon bookmarks.
+   Each chapter has a ribbon title in its colour with "earned of total", and its stickers in a
+   grid. The book is drawn in CSS from the shell tokens (theme/frames.css); the stickers are the
+   equipped sticker style's art, unchanged. Pixelify Sans only at 18 px and up (.px-display). */
 
-/* ---- the book ---------------------------------------------------------------------------- */
+/* the panel uses the whole width of the window, like Home */
+.shell-page:has(> .ac-panel) {
+  max-width: none;
+}
+.ac-panel {
+  /* the frame's outer edge bleeds one step outside the box */
+  margin: var(--fs);
+  padding: 14px 18px 20px;
+}
+
+/* ---- the header over the book ------------------------------------------------------------- */
 .ac-book {
+  /* leather and parchment are the book's own materials; edges, gold and ink come from the table */
+  --ac-leather: #4a1c24;
+  --ac-leather-hi: #7c3a44;
+  --ac-leather-lo: #2f1017;
   --ac-paper: #efe3c6;
-  --ac-paper-edge: #e2d2ae;
+  --ac-paper-lo: #e3d3ad;
+  --ac-rule: rgba(120, 85, 40, 0.2);
   --ac-ink: #3a2a1a;
-  --ac-ink-muted: #6e5a40;
-  --ac-dot: rgba(110, 80, 40, 0.16);
-  --ac-binding: #5b2230;
-  --ac-binding-hi: #7d3343;
-  --ac-stitch: #d9b45a;
-  position: relative;
-  padding: 16px;
-  border-radius: 16px;
-  background:
-    repeating-linear-gradient(135deg, transparent 0 6px, rgba(255, 255, 255, 0.025) 6px 7px),
-    linear-gradient(180deg, var(--ac-binding-hi), var(--ac-binding));
-  box-shadow:
-    inset 0 0 0 1px rgba(0, 0, 0, 0.35),
-    inset 0 0 0 7px var(--ac-binding),
-    inset 0 0 0 8px color-mix(in srgb, var(--ac-stitch) 55%, transparent),
-    0 10px 24px rgba(0, 0, 0, 0.35);
+  --ac-ink-muted: #6a553a;
+  --ac-spine: #8b6633;
+  --ac-step: var(--fs);
+  display: grid;
+  gap: 14px;
 }
 .ac-book__head {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  margin: 0 6px 12px;
-  color: #f6e7c8;
+  align-items: baseline;
+  gap: 16px;
+  min-width: 0;
 }
 .ac-book__title {
   margin: 0;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
+  font-size: 24px;
+  line-height: 1.1;
 }
 .ac-book__summary {
   margin: 0;
   font-size: 14px;
   font-weight: 700;
-  color: color-mix(in srgb, #f6e7c8 78%, transparent);
+  color: var(--px-muted);
 }
 .ac-book__meter {
+  align-self: center;
   flex: 1;
-  max-width: 260px;
-  height: 6px;
+  max-width: 240px;
+  height: calc(var(--fs) * 2);
   margin-left: auto;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.35);
-  overflow: hidden;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
 .ac-book__meter > i {
   display: block;
   height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--ac-stitch), #fff0c2);
+  background: var(--px-gold);
 }
 
+/* ---- the leather cover -------------------------------------------------------------------- */
+.ac-cover {
+  --ac-cover-pad: calc(var(--fs) * 6);
+  position: relative;
+  margin: var(--fs);
+  padding: var(--ac-cover-pad);
+  background: var(--ac-leather);
+  /* the shell's notched pixel edge, a light top and dark bottom line, and the lighter inner edge */
+  box-shadow:
+    calc(var(--fs) * -1) 0 0 0 var(--px-edge),
+    var(--fs) 0 0 0 var(--px-edge),
+    0 calc(var(--fs) * -1) 0 0 var(--px-edge),
+    0 var(--fs) 0 0 var(--px-edge),
+    inset 0 var(--fs) 0 0 var(--ac-leather-hi),
+    inset 0 calc(var(--fs) * -1) 0 0 var(--ac-leather-lo),
+    inset 0 0 0 calc(var(--fs-sm) * 2) var(--ac-leather-hi);
+}
+/* the stitched line: a dashed gold thread inside the edge */
+.ac-cover::before {
+  content: '';
+  position: absolute;
+  inset: calc(var(--fs) * 2.5);
+  border: var(--fs-sm) dashed color-mix(in srgb, var(--px-gold) 70%, var(--ac-leather));
+  pointer-events: none;
+}
+.ac-cap {
+  position: absolute;
+  width: calc(var(--fs) * 7);
+  height: calc(var(--fs) * 7);
+  background: var(--px-gold);
+  box-shadow:
+    0 0 0 var(--fs-sm) var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-gold-hi),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--px-gold-lo);
+  pointer-events: none;
+}
+.ac-cap--tl {
+  top: calc(var(--fs) * -1);
+  left: calc(var(--fs) * -1);
+}
+.ac-cap--tr {
+  top: calc(var(--fs) * -1);
+  right: calc(var(--fs) * -1);
+}
+.ac-cap--bl {
+  bottom: calc(var(--fs) * -1);
+  left: calc(var(--fs) * -1);
+}
+.ac-cap--br {
+  right: calc(var(--fs) * -1);
+  bottom: calc(var(--fs) * -1);
+}
+
+/* ---- the spread: two ruled pages around a spine ------------------------------------------- */
 .ac-spread {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  border-radius: 6px;
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+  grid-template-columns: minmax(0, 1fr) calc(var(--fs) * 4) minmax(0, 1fr);
+  box-shadow:
+    0 0 0 var(--fs-sm) var(--ac-leather-lo),
+    0 var(--fs) 0 0 var(--ac-leather-lo);
 }
 .ac-sheet {
+  --ac-line: calc(var(--fs) * 7);
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 20px 22px 24px;
+  gap: calc(var(--fs) * 3);
+  min-width: 0;
+  padding: calc(var(--fs) * 4) calc(var(--fs) * 4) calc(var(--fs) * 5);
   color: var(--ac-ink);
+  /* ruled lines, faint */
   background:
-    radial-gradient(circle, var(--ac-dot) 1px, transparent 1.4px) 0 0 / 18px 18px,
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(var(--ac-line) - var(--px) * 2),
+      var(--ac-rule) calc(var(--ac-line) - var(--px) * 2) var(--ac-line)
+    ),
     var(--ac-paper);
 }
-/* the gutter: each page darkens toward the spine */
+/* the gutter: each page darkens toward the spine in two hard bands */
 .ac-sheet--left {
-  border-radius: 6px 0 0 6px;
-  box-shadow: inset -26px 0 26px -18px rgba(70, 40, 10, 0.35);
+  box-shadow:
+    inset calc(var(--fs) * -2) 0 0 0 rgba(70, 40, 10, 0.16),
+    inset calc(var(--fs) * -4) 0 0 0 rgba(70, 40, 10, 0.08);
 }
 .ac-sheet--right {
-  border-radius: 0 6px 6px 0;
-  box-shadow: inset 26px 0 26px -18px rgba(70, 40, 10, 0.35);
+  box-shadow:
+    inset calc(var(--fs) * 2) 0 0 0 rgba(70, 40, 10, 0.16),
+    inset calc(var(--fs) * 4) 0 0 0 rgba(70, 40, 10, 0.08);
+}
+.ac-spine {
+  display: block;
+  background: linear-gradient(
+    90deg,
+    var(--ac-leather-lo) 0 calc(var(--fs) * 0.5),
+    #6b4b24 calc(var(--fs) * 0.5) var(--fs),
+    var(--ac-spine) var(--fs) calc(var(--fs) * 3),
+    #6b4b24 calc(var(--fs) * 3) calc(var(--fs) * 3.5),
+    var(--ac-leather-lo) calc(var(--fs) * 3.5)
+  );
 }
 
-/* chapter colours */
-.ac-chapter {
-  --ac-c: #8a8a8a;
+/* the two ribbon bookmarks hang from the top edge */
+.ac-mark {
+  position: absolute;
+  top: calc(var(--fs) * -1);
+  z-index: 2;
+  width: calc(var(--fs) * 5);
+  height: calc(var(--fs) * 15);
+  box-shadow: inset calc(var(--fs-sm) * -1) 0 0 0 rgba(0, 0, 0, 0.28);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+  pointer-events: none;
 }
+/* hung clear of the ribbon titles: near the spine on the left page, near the edge on the right */
+.ac-mark--red {
+  left: 40%;
+  background: #c0392f;
+}
+.ac-mark--blue {
+  left: 90%;
+  background: #3566c8;
+}
+
+/* ---- chapters: a ribbon title and a grid of stickers -------------------------------------- */
+.ac-chapter {
+  --ac-c: #6b6b6b;
+}
+/* colours dark enough for white ribbon text (4.5 : 1 on the ribbon) */
 .ac-chapter[data-chapter='gathering'] {
-  --ac-c: #3f9a5a;
+  --ac-c: #2c7544;
 }
 .ac-chapter[data-chapter='battle'] {
-  --ac-c: #c8423a;
+  --ac-c: #b03a32;
 }
 .ac-chapter[data-chapter='cards'] {
-  --ac-c: #3b6fd0;
+  --ac-c: #2f5fc0;
 }
 .ac-chapter[data-chapter='wardrobe'] {
-  --ac-c: #a24bb0;
+  --ac-c: #94389f;
 }
 .ac-chapter[data-chapter='journey'] {
-  --ac-c: #c98a12;
+  --ac-c: #8e5a06;
 }
-
-/* the washi tape label */
 .ac-tape {
   display: inline-flex;
   align-items: baseline;
   gap: 10px;
-  margin: 0 0 12px -4px;
-  padding: 5px 18px 6px;
-  font-size: 15px;
-  font-weight: 800;
-  color: #fffaf0;
-  background:
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.12) 0 4px, transparent 4px 9px),
-    color-mix(in srgb, var(--ac-c) 86%, #fff);
-  opacity: 0.94;
-  rotate: -1.2deg;
-  clip-path: polygon(
-    0 8%,
-    3% 0,
-    6% 9%,
-    94% 0,
-    97% 10%,
-    100% 2%,
-    99% 50%,
-    100% 96%,
-    97% 90%,
-    94% 100%,
-    6% 92%,
-    3% 100%,
-    0 93%,
-    1% 50%
-  );
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.22);
+  max-width: 100%;
+  margin: 0 0 calc(var(--fs) * 3) var(--fs);
+  padding: 4px 12px 5px;
+  color: #fff;
+  background: var(--ac-c);
+  box-shadow:
+    0 0 0 var(--fs-sm) color-mix(in srgb, var(--ac-c) 40%, #000),
+    inset 0 var(--fs-sm) 0 0 color-mix(in srgb, var(--ac-c) 78%, #fff),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 color-mix(in srgb, var(--ac-c) 72%, #000);
+}
+.ac-tape__name {
+  font-size: 18px;
+  line-height: 1.15;
 }
 .ac-tape__count {
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 700;
-  opacity: 0.9;
 }
 .ac-chapter.is-done .ac-tape__count::after {
   content: ' ★';
@@ -150,8 +235,8 @@
 
 .ac-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  gap: 14px 10px;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: calc(var(--fs) * 3) calc(var(--fs) * 1.5);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -165,12 +250,12 @@
   align-content: start;
   gap: 4px;
   padding: 4px 2px 2px;
-  border-radius: 10px;
   text-align: center;
   outline: none;
 }
 .ac-slot:focus-visible {
-  box-shadow: 0 0 0 2px var(--ac-c);
+  outline: var(--fs-sm) solid var(--ac-c);
+  outline-offset: var(--fs-sm);
 }
 /* the sticker is drawn whole by the equipped sticker style (art/cosmetics.ts stickerArt): the
    die-cut, its chapter colour and the picture on a 74 x 74 grid */
@@ -198,38 +283,15 @@
   rotate: var(--tilt, 0deg);
   filter: drop-shadow(0 4px 5px rgba(60, 35, 10, 0.35));
 }
+/* names stay the small text they have always been; a locked name is quieter but still readable */
 .ac-slot__name {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.15;
   color: var(--ac-ink-muted);
 }
-.ac-slot__meta {
-  font-size: 11.5px;
-  font-weight: 600;
-  line-height: 1.2;
-  color: var(--ac-ink-muted);
-}
-.ac-slot__bar {
-  display: block;
-  width: 64px;
-  height: 4px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--ac-ink) 14%, transparent);
-  overflow: hidden;
-}
-.ac-slot__bar > i {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: var(--ac-c);
-}
-
 .ac-slot.is-unlocked .ac-slot__name {
   color: var(--ac-ink);
-}
-.ac-slot.is-unlocked .ac-slot__bar {
-  display: none;
 }
 
 /* the slap: the sticker drops onto the page, squashes and settles; a ring of dust puffs out */
@@ -254,7 +316,6 @@
     opacity: 0;
     scale: 1.9;
     rotate: calc(var(--tilt, 0deg) - 18deg);
-    box-shadow: 0 26px 30px -6px rgba(60, 35, 10, 0.25);
   }
   45% {
     opacity: 1;
@@ -303,30 +364,21 @@
   padding-left: 16px;
 }
 
-/* narrow window: the pages stack */
+/* narrow window: the pages stack, the spine and bookmarks go */
 @media (max-width: 1180px) {
   .ac-spread {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ac-spine,
+  .ac-mark {
+    display: none;
   }
   .ac-sheet--left,
   .ac-sheet--right {
-    border-radius: 6px;
     box-shadow: none;
   }
   .ac-sheet--left {
-    border-bottom: 1px dashed color-mix(in srgb, var(--ac-ink) 22%, transparent);
-    border-radius: 6px 6px 0 0;
-  }
-  .ac-sheet--right {
-    border-radius: 0 0 6px 6px;
-  }
-  .ac-balance {
-    grid-template-columns: auto 1fr;
-  }
-  .ac-balance__hint {
-    grid-column: 1 / -1;
-    justify-self: start;
-    text-align: left;
+    border-bottom: var(--fs-sm) dashed var(--ac-rule);
   }
 }
 
@@ -335,13 +387,4 @@
   .ac-slot.is-slapping::before {
     animation: none;
   }
-}
-
-span.ac-offer__icon {
-  display: block;
-}
-span.ac-offer__icon svg {
-  display: block;
-  width: 100%;
-  height: 100%;
 }

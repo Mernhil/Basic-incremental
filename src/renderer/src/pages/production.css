@@ -1,11 +1,16 @@
-/* Production page (DESIGN.md §4, §11), "side stage": rows on the left, a sticky stage on the right,
-   the upgrade shelf in a drawer over the bottom. Colours come from the frame-* and chrome-* tokens;
-   the stage mixes the chrome tokens with a job hue. Pixel art is sized with the --one / round()
-   pattern of ui/pixelScale.css (DESIGN.md §12), cards by fitCard (--card-k). */
+/* Production page (DESIGN.md §4, §11), the pixel ledger: two stacked pixel-frame bands, Logging and
+   Mining, with the upgrade shelf in a drawer over the bottom. Panels, buttons and the step
+   (--fs, --fs-sm) come from theme/frames.css; colours from the frame-* and chrome-* tokens (logging,
+   mining and burst have their own). Pixel art is sized with the --one / round() pattern of
+   ui/pixelScale.css (ASSET_RULES.md §5), cards by fitCard (--card-k). Display font (Pixelify Sans)
+   only at 18 px and up. */
 
 .pp-page {
   /* shell-page--stage (dungeons.css) makes the page full-bleed and as tall as the window */
-  --pp-bar-h: 46px;
+  --pp-bar-h: 40px;
+  /* the columns of the column headers and of every row */
+  --pp-cols: 236px minmax(0, 1fr) 112px 196px;
+  --pp-gap: 14px;
 }
 .pp-screen {
   position: relative;
@@ -14,109 +19,115 @@
   overflow: hidden;
 }
 .pp-scroll {
-  --pp-pad: 64px;
+  --pp-pad: 52px;
   height: 100%;
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 20px 26px var(--pp-pad);
+  padding: 10px 18px var(--pp-pad);
+  scrollbar-color: var(--px-hi) var(--px-lo);
 }
-.pp-top {
-  display: flex;
-  align-items: baseline;
-  gap: 14px;
-  margin-bottom: 14px;
-}
-.pp-top .shell-page__title {
-  margin: 0;
-}
-.pp-top__rate {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--bi-on-table);
-  opacity: 0.8;
-}
-.pp-top .buy-toggle {
-  align-self: center;
-  margin-left: auto;
-}
-.pp-split {
+.pp-bands {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 432px;
-  gap: 14px;
-  align-items: start;
-}
-@media (max-width: 1100px) {
-  .pp-split {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  gap: 16px;
+  /* on a tall window the bands share the height and the rows take the room */
+  min-height: 100%;
+  grid-auto-rows: minmax(min-content, 1fr);
 }
 
-/* ---- rows ---- */
-.pp-rows {
+/* ---- a band: title and column headers on top, the fan on the left, rows and supports on the right ---- */
+.pp-band {
+  --pp-job: var(--bi-chrome-logging, var(--bi-chrome-accent));
   position: relative;
   display: grid;
-  gap: 12px;
-  min-width: 0;
-  container-type: inline-size;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  grid-template-areas:
+    'title head'
+    'fan list'
+    'fan foot';
+  column-gap: var(--pp-gap);
+  padding: 6px 14px 10px;
 }
-.pp-panel {
-  padding: 12px;
-  border-radius: var(--bi-frame-radius, 14px);
-  background: var(--bi-frame-bg);
-  color: var(--bi-frame-ink);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-line);
+.pp-band--mining {
+  --pp-job: var(--bi-chrome-mining, var(--bi-chrome-accent));
 }
-.pp-panel__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 8px;
-  padding: 7px 12px;
-  border-radius: 9px;
-  background: var(--bi-frame-title-bg);
-  color: var(--bi-frame-title-ink);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-}
-.pp-panel__title {
+.pp-band__title {
+  grid-area: title;
+  align-self: center;
   margin: 0;
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.2;
+  color: var(--bi-frame-ink);
 }
-.pp-panel__rate {
-  margin-left: auto;
-  font-size: 12.5px;
-  font-weight: 600;
+.pp-band__fan {
+  grid-area: fan;
+  align-self: center;
+  /* the card frame bleeds about 11 art pixels past the card box */
+  padding-top: 14px;
+}
+.pp-head {
+  grid-area: head;
+  display: grid;
+  grid-template-columns: var(--pp-cols);
+  column-gap: var(--pp-gap);
+  align-items: end;
+  padding-bottom: 2px;
+  font-size: 11.5px;
   color: var(--bi-frame-ink-muted);
 }
+.pp-head__next {
+  text-align: right;
+}
+.pp-head__cost {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pp-head__rate {
+  font-size: 18px;
+  line-height: 1;
+  color: var(--pp-job);
+}
 .pp-list {
+  grid-area: list;
   margin: 0;
   padding: 0;
   list-style: none;
   display: grid;
-  gap: 7px;
+  grid-auto-rows: minmax(64px, 1fr);
+  min-width: 0;
 }
-.pp-row {
+.pp-foot {
+  grid-area: foot;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 8px;
+}
+
+/* ---- rows: no box of their own, a thin line between them ---- */
+.pp-r {
   position: relative;
   display: grid;
-  grid-template-columns: 64px minmax(120px, 176px) minmax(100px, 1fr) minmax(150px, 190px);
+  grid-template-columns: var(--pp-cols);
+  column-gap: var(--pp-gap);
   align-items: center;
-  gap: 14px;
-  padding: 7px 12px;
-  border-radius: 10px;
+  min-height: 64px;
   color: var(--bi-frame-ink);
-  background: rgba(0, 0, 0, 0.26);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
 }
-.pp-row--locked {
-  background: rgba(0, 0, 0, 0.16);
+.pp-r + .pp-r {
+  box-shadow: inset 0 var(--fs-sm) 0 0 var(--px-lo);
+}
+.pp-r--locked {
   color: var(--bi-frame-ink-muted);
 }
-.pp-row.is-hit {
-  box-shadow:
-    inset 0 0 0 2px var(--bi-chrome-accent),
-    0 0 16px color-mix(in srgb, var(--bi-chrome-accent) 35%, transparent);
+.pp-r.is-hit {
+  background: color-mix(in srgb, var(--pp-job) 16%, transparent);
 }
-.pp-row.is-wave {
+.pp-r.is-wave {
   animation: pp-wave 0.5s ease-out;
 }
 .pp-fx {
@@ -124,19 +135,26 @@
   inset: 0;
   pointer-events: none;
 }
-
-.pp-row__tile {
+.pp-r__who {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.pp-r__tile {
   position: relative;
+  flex: none;
   display: grid;
   place-items: center;
+  width: 64px;
+  height: 64px;
 }
 .pp-tile__art {
-  /* 1 CSS px per tile pixel at a whole device scale (DESIGN.md §12): the 64 px box is the tile grid */
+  /* 1 CSS px per tile pixel at a whole device scale (ASSET_RULES.md §5): the 64 px box is the tile grid */
   --one: calc(64px / var(--dpr));
   width: max(var(--one), round(nearest, 64px, var(--one)));
   aspect-ratio: 1;
-  transform-origin: 50% 90%;
-  animation: pp-sway 4.2s ease-in-out var(--d, 0s) infinite;
+  animation: pp-bob 4.2s steps(1, end) var(--d, 0s) infinite;
 }
 .pp-tile__art svg {
   display: block;
@@ -145,187 +163,142 @@
   overflow: visible;
 }
 .pp-tile__art.is-harvest {
-  animation: pp-harvest 0.4s ease-out;
+  animation: pp-hop 0.4s steps(1, end);
 }
-.pp-row--locked .pp-tile__art {
+.pp-r--locked .pp-tile__art {
   filter: grayscale(1) brightness(0.65);
   animation: none;
 }
-.pp-row__id {
+.pp-r__id {
   display: grid;
   gap: 1px;
   min-width: 0;
 }
 .pp-row__name {
   font-size: 16px;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.2;
 }
 .pp-row__lv {
   font-size: 13px;
   font-weight: 700;
+  color: var(--bi-frame-ink-muted);
 }
-.pp-row__out {
+.pp-r--locked .pp-row__name {
+  color: var(--bi-frame-ink-muted);
+}
+
+/* output, and the segmented bar to the next ×2 */
+.pp-r__mid {
+  display: grid;
+  gap: 4px;
+  align-content: center;
+  min-width: 0;
+}
+.pp-r--locked .pp-r__mid {
+  grid-column: 2 / 4;
+}
+.pp-r__line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+}
+.pp-r__value {
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--bi-frame-ink);
+}
+.pp-r__unit {
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+  white-space: nowrap;
+}
+.pp-r__note {
   font-size: 13px;
   color: var(--bi-frame-ink-muted);
 }
-.pp-row--locked .pp-row__name,
-.pp-row--locked .pp-row__lv {
-  color: var(--bi-frame-ink-muted);
-}
-.pp-row__ms {
-  display: grid;
-  gap: 4px;
-  min-width: 0;
-  font-size: 12px;
-  color: var(--bi-frame-ink-muted);
-}
-.pp-row__msline {
+.pp-seg {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
+  gap: var(--fs-sm);
+  height: calc(var(--fs-sm) * 4);
+  background: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
-.pp-row__msline > :first-child {
+.pp-seg i {
+  flex: 1;
+  background: var(--px-lo);
+}
+.pp-seg i.is-on {
+  background: var(--pp-job);
+}
+.pp-r__x2 {
+  justify-self: end;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+
+/* next buy: the wait, or "ready" and the gain */
+.pp-r__next {
+  display: grid;
+  justify-items: end;
+  gap: 1px;
+  text-align: right;
+}
+.pp-r__nextText {
+  font-size: 18px;
+  line-height: 1.15;
   color: var(--bi-frame-ink);
-  font-weight: 700;
 }
-.pp-bar {
-  height: 7px;
-  border-radius: 4px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.4);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+.pp-r__nextSub {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
 }
-.pp-bar i {
-  display: block;
-  height: 100%;
-  width: 0;
-  background: var(--bi-chrome-accent);
-  transition: width 0.25s linear;
+.pp-r__next.is-ready .pp-r__nextText {
+  color: var(--pp-job);
 }
-.pp-row__buy {
+
+/* the buy button: the shared recipe (gold when affordable, plum when not), this layout */
+.pp-r__buy {
   min-width: 0;
 }
 .pp-buy {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
-  padding: 5px 10px 8px;
+  padding: 6px 10px 9px;
+}
+html .pp-band .pp-buy {
+  /* the pixel frame replaces the glow of the older buy button */
+  animation: none;
 }
 .pp-buy .buy-btn__top {
+  flex-wrap: wrap;
+  align-items: center;
   font-size: 13px;
+}
+.pp-buy .buy-btn__price {
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: 0.01em;
+}
+.pp-buy .buy-btn__preview {
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+.pp-buy .buy-btn__fill {
+  height: var(--fs-sm);
 }
 .pp-buy--locked .buy-btn__top {
   min-height: 1.3em;
-  flex-wrap: wrap;
-  justify-content: center;
-  column-gap: 8px;
-  text-align: center;
-}
-.pp-buy--locked .buy-btn__preview {
-  text-align: center;
-}
-/* narrow rows column: the bar drops under the name, the buy button stays on the row */
-@container (max-width: 640px) {
-  .pp-row {
-    grid-template-columns: 64px minmax(0, 1fr) minmax(150px, 190px);
-    grid-template-areas:
-      'tile id buy'
-      'tile ms buy';
-    row-gap: 4px;
-  }
-  .pp-row__tile {
-    grid-area: tile;
-  }
-  .pp-row__id {
-    grid-area: id;
-  }
-  .pp-row__ms {
-    grid-area: ms;
-  }
-  .pp-row__buy {
-    grid-area: buy;
-  }
 }
 
-@keyframes pp-sway {
-  50% {
-    rotate: 1.2deg;
-  }
-}
-@keyframes pp-harvest {
-  40% {
-    scale: 1.08 0.93;
-  }
-}
-@keyframes pp-wave {
-  35% {
-    translate: 8px 0;
-    filter: brightness(1.3);
-  }
-}
-
-/* ---- the stage ---- */
-.pp-stage {
-  --hue: #5f9e5a;
-  position: sticky;
-  top: 0;
-  display: grid;
-  gap: 12px;
-  align-content: start;
-  padding: 12px;
-  border-radius: var(--bi-frame-radius, 14px);
-  color: var(--bi-chrome-ink);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--hue) 24%, var(--bi-chrome-bg)),
-    color-mix(in srgb, var(--hue) 8%, var(--bi-chrome-bg))
-  );
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-}
-.pp-stage[data-job='mining'] {
-  --hue: #8a7a9e;
-}
-@media (max-width: 1100px) {
-  .pp-stage {
-    position: relative;
-  }
-}
-.pp-tabs {
-  display: flex;
-  gap: 4px;
-}
-.pp-tab {
-  flex: 1;
-  padding: 6px;
-  border: 0;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.35);
-  color: var(--bi-chrome-ink-muted);
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-.pp-tab:hover {
-  color: var(--bi-chrome-ink);
-}
-.pp-tab[aria-selected='true'] {
-  background: var(--bi-chrome-accent);
-  color: var(--bi-chrome-bg);
-}
-.pp-tab:focus-visible,
-.pp-row .buy-btn:focus-visible,
-.pp-sup:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
-}
-.pp-party[hidden] {
-  display: none;
-}
+/* the whole band flashes on a burst */
 .pp-flash {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   pointer-events: none;
   background: #fff;
   opacity: 0;
@@ -335,11 +308,42 @@
 }
 @keyframes pp-flash {
   0% {
-    opacity: 0.5;
+    opacity: 0.4;
   }
   100% {
     opacity: 0;
   }
+}
+
+/* tiles bob and hop by whole art pixels: nothing is scaled or rotated */
+@keyframes pp-bob {
+  50% {
+    translate: 0 calc(var(--one) * -1);
+  }
+}
+@keyframes pp-hop {
+  30%,
+  60% {
+    translate: 0 calc(var(--one) * -3);
+  }
+}
+@keyframes pp-wave {
+  35% {
+    translate: 8px 0;
+    filter: brightness(1.25);
+  }
+}
+
+/* ---- the buy toggle in the goals strip (shell slot) ---- */
+.shell-quest__slot .buy-toggle {
+  gap: var(--fs-sm);
+  padding: 0;
+  background: none;
+  box-shadow: none;
+}
+.shell-quest__slot .buy-toggle__opt {
+  min-width: 44px;
+  padding: 3px 10px;
 }
 
 /* ---- the shelf drawer: a one-line bar when closed, like the Dungeons floors drawer ---- */
@@ -353,11 +357,6 @@
   grid-template-rows: var(--pp-bar-h) auto;
   translate: 0 calc(100% - var(--pp-bar-h));
   transition: translate 0.32s cubic-bezier(0.2, 0.8, 0.3, 1);
-  background: var(--bi-frame-bg);
-  color: var(--bi-frame-ink);
-  box-shadow:
-    0 -1px 0 var(--bi-frame-line),
-    0 -14px 30px rgba(0, 0, 0, 0.35);
 }
 .pp-drawer.is-open {
   translate: 0 0;
@@ -373,9 +372,7 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  padding: 6px 10px;
-  border: 0;
-  border-radius: 9px;
+  padding: 4px 10px;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -383,12 +380,14 @@
   text-align: left;
   cursor: pointer;
 }
-.pp-drawer__handle:hover {
-  background: color-mix(in srgb, var(--bi-frame-title-bg) 70%, transparent);
+html .pp-drawer .pp-drawer__handle {
+  /* the bar is the drawer's own edge, not a button inside it */
+  box-shadow: none;
+  background: transparent;
 }
-.pp-drawer__handle:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
+.pp-drawer__title {
+  font-size: 18px;
+  font-weight: 600;
 }
 .pp-drawer__sum {
   font-size: 12.5px;
@@ -397,9 +396,8 @@
 .pp-drawer__ready {
   width: 9px;
   height: 9px;
-  border-radius: 50%;
   background: var(--bi-chrome-accent);
-  box-shadow: 0 0 10px var(--bi-chrome-accent);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
   animation: buy-glow 2.4s ease-in-out infinite;
 }
 .pp-drawer__ready[hidden] {
@@ -433,23 +431,28 @@
   /* at most four a row, as many as fit below that */
   grid-template-columns: repeat(auto-fill, minmax(max(270px, calc((100% - 24px) / 4)), 1fr));
 }
-.pp-sup[role='button'] {
-  cursor: pointer;
-}
 
+/* ---- room: a narrower window trims the columns; a taller one gives the rows the extra height ---- */
+@media (max-width: 1100px) {
+  .pp-page {
+    --pp-cols: 200px minmax(0, 1fr) 96px 172px;
+    --pp-gap: 10px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .pp-tile__art,
   .pp-tile__art.is-harvest,
-  .pp-row.is-wave,
+  .pp-r.is-wave,
   .pp-drawer__ready {
     animation: none;
   }
   .pp-drawer,
-  .pp-drawer__chev,
-  .pp-bar i {
+  .pp-drawer__chev {
     transition: none;
   }
 }
-:root[data-motion='reduced'] .pp-flash.st-flash {
+:root[data-motion='reduced'] .pp-flash.st-flash,
+:root[data-motion='reduced'] .pp-r.is-wave,
+:root[data-motion='reduced'] .pp-tile__art {
   animation: none;
 }

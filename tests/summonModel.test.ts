@@ -5,7 +5,9 @@ import {
   DECK_MIN_LAYERS,
   HAND_MAX,
   deckLayers,
+  handSummary,
   lastHandView,
+  oddsTable,
   portalView,
   revealSound,
   revealViews,
@@ -21,7 +23,11 @@ describe('summon shelf', () => {
     const v = portalView(portalInfo(state, content, portal.id)!, content);
     expect(v.name).toBe(portal.name);
     expect(v.single.affordable && v.ten.affordable).toBe(true);
-    expect(v.ten.label).toBe('Pull ×10');
+    expect(v.ten.label).toBe('Pull 10');
+    expect(v.ten.amount).toBe(portal.cost.ten.toNumber().toLocaleString('en-US'));
+    expect(v.resourceId).toBe(portal.cost.resource);
+    expect(v.line).toMatch(/or better within \d+ pulls$/);
+    expect(v.pityText).toMatch(/^0 \/ \d+$/);
     expect(v.pity).toMatch(/or better within \d+ pulls$/);
     expect(v.pityProgress).toBe(0);
     expect(v.guarantee).toMatch(/^Every ×10 holds a /);
@@ -87,7 +93,30 @@ describe('summon deck and hand', () => {
     expect(v.odds[0]).toMatchObject({ rarity: 'common' });
   });
 
-  it('builds the last hand: new marks, a cap of ten, a light fan', () => {
+  it('builds the odds table: a row per rarity, a column per portal, from the real rates', () => {
+    const state = freshState();
+    const views = content.portals.map((p) =>
+      portalView(portalInfo(state, content, p.id)!, content),
+    );
+    const t = oddsTable(views);
+    expect(t.columns.map((c) => c.id)).toEqual(content.portals.map((p) => p.id));
+    expect(t.columns[0]!.name).toBe('Cards');
+    expect(t.rows[0]).toMatchObject({ rarity: 'common' });
+    expect(t.rows.every((r) => r.cells.length === views.length)).toBe(true);
+    // a rarity one portal does not hold shows as null, never as a made-up number
+    const missing = t.rows.find((r) => r.cells.includes(null));
+    if (missing) {
+      const at = missing.cells.indexOf(null);
+      expect(views[at]!.odds.some((o) => o.rarity === missing.rarity)).toBe(false);
+    }
+    for (const [i, v] of views.entries()) {
+      for (const o of v.odds) {
+        expect(t.rows.find((r) => r.rarity === o.rarity)!.cells[i]).toBe(o.chance);
+      }
+    }
+  });
+
+  it('builds the last hand: new marks, notes, a cap of ten, no tilt', () => {
     const card = content.cards[0]!;
     const results: PullResult[] = Array.from({ length: 12 }, (_, i) => ({
       itemId: card.id,
@@ -102,9 +131,25 @@ describe('summon deck and hand', () => {
     expect(hand[HAND_MAX - 1]).toMatchObject({ isNew: true });
     expect(hand[HAND_MAX - 1]!.label).toContain('New!');
     expect(hand[0]!.isNew).toBe(false);
-    expect(hand[0]!.tilt).toBeLessThan(0);
-    expect(hand[HAND_MAX - 1]!.tilt).toBeGreaterThan(0);
+    expect(hand[HAND_MAX - 1]!.note).toBe('New card');
+    expect(hand[0]!.note).toBe('+1 copy');
     expect(lastHandView([])).toEqual([]);
-    expect(lastHandView(revealViews(results.slice(0, 1), content))[0]!.tilt).toBe(0);
+  });
+
+  it('sums the last hand in one line', () => {
+    const card = content.cards[0]!;
+    const results: PullResult[] = Array.from({ length: 10 }, (_, i) => ({
+      itemId: card.id,
+      rarity: 'rare',
+      orb: 'rare',
+      pity: false,
+      guaranteed: false,
+      gain: i < 2 ? { kind: 'new' } : { kind: 'duplicate', duplicates: 1 },
+    }));
+    expect(handSummary(revealViews(results, content))).toBe('10 pulls · 2 new · 8 copies');
+    expect(handSummary(revealViews(results.slice(0, 1), content))).toBe(
+      '1 pull · 1 new · 0 copies',
+    );
+    expect(handSummary([])).toBe('');
   });
 });

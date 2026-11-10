@@ -15,6 +15,8 @@ import './reveal.css';
 
 export interface RevealOptions {
   portalName: string;
+  /** The portal's kind (`cards`, `cosmetics`): picks the colour of the card backs. */
+  kind?: string;
   views: RevealView[];
   /** The card face of an item (null for items without one, e.g. cosmetics). */
   face: (itemId: string) => CardProps | null;
@@ -28,6 +30,7 @@ export function showReveal(opts: RevealOptions): void {
   const { views } = opts;
   const overlay = document.createElement('div');
   overlay.className = 'rv';
+  if (opts.kind) overlay.dataset['kind'] = opts.kind;
   const dialog = document.createElement('section');
   dialog.className = `rv__dialog${views.length > 1 ? ' rv__dialog--ten' : ''}`;
   dialog.setAttribute('role', 'dialog');

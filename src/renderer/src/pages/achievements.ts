@@ -11,9 +11,11 @@ import type { PageContext } from './production';
 import './achievements.css';
 
 /**
- * Achievements page (DESIGN.md §10, §11 "sticker book", A10 C). The sticker book, a two-page spread with one chapter per area where every achievement is a sticker slot
- * (locked: a dashed outline with a faint print of the art and a progress bar; unlocked: the
- *  sticker slapped in with a bounce). The shard shop is a stall on the Shop page.
+ * Achievements page (DESIGN.md §10, UI_RULES.md §2 "Achievements: a leather sticker book"). A
+ * leather-bound two-page spread, one ribbon-titled chapter per area, every achievement a sticker
+ * (the equipped sticker style draws the earned and the locked art; a new one is slapped in with
+ * a bounce). The book is drawn in CSS from the shell tokens. The shard shop is a counter on the
+ * Shop page.
  */
 
 export interface AchievementsContext extends PageContext {
@@ -27,14 +29,14 @@ export function createAchievementsPage(
   const { content } = ctx;
   const t = COPY.achievements;
 
-  const panelBook = h('div', 'ac-panel ac-panel--book');
+  const panelBook = h('div', 'ac-panel px-panel');
   page.append(panelBook);
 
   // ---- sticker book ----
   const book = h('section', 'ac-book');
   book.setAttribute('aria-labelledby', 'ac-book-title');
   const head = h('header', 'ac-book__head');
-  const title = h('h2', 'ac-book__title', t.book);
+  const title = h('h2', 'ac-book__title px-display', t.book);
   title.id = 'ac-book-title';
   const summary = h('p', 'ac-book__summary bi-num');
   const meter = h('span', 'ac-book__meter');
@@ -44,8 +46,24 @@ export function createAchievementsPage(
   head.append(title, summary, meter);
   const pages = [h('div', 'ac-sheet ac-sheet--left'), h('div', 'ac-sheet ac-sheet--right')];
   const spreadEl = h('div', 'ac-spread');
-  spreadEl.append(...pages);
-  book.append(head, spreadEl);
+  const spine = h('i', 'ac-spine');
+  spine.setAttribute('aria-hidden', 'true');
+  // two ribbon bookmarks hang from the top edge, one over each page
+  const marks = ['red', 'blue'].map((c) => {
+    const m = h('i', `ac-mark ac-mark--${c}`);
+    m.setAttribute('aria-hidden', 'true');
+    return m;
+  });
+  spreadEl.append(pages[0]!, spine, pages[1]!, ...marks);
+  // the leather cover: stitched, with a gold cap on each corner
+  const cover = h('div', 'ac-cover');
+  cover.append(spreadEl);
+  for (const corner of ['tl', 'tr', 'bl', 'br']) {
+    const cap = h('i', `ac-cap ac-cap--${corner}`);
+    cap.setAttribute('aria-hidden', 'true');
+    cover.append(cap);
+  }
+  book.append(head, cover);
   panelBook.append(book);
 
   type SlotUi = {
@@ -54,8 +72,6 @@ export function createAchievementsPage(
     art: HTMLElement;
     /** Style and lock state the picture was drawn for. */
     artKey: string;
-    meta: HTMLElement;
-    fill: HTMLElement;
     view: StickerView;
     unlocked: boolean | null;
   };
@@ -79,7 +95,7 @@ export function createAchievementsPage(
         tape.id = `ac-chapter-${c.id}`;
         sec.setAttribute('aria-labelledby', tape.id);
         const count = h('span', 'ac-tape__count bi-num');
-        tape.append(h('span', 'ac-tape__name', c.title), count);
+        tape.append(h('span', 'ac-tape__name px-display', c.title), count);
         const grid = h('ul', 'ac-grid');
         for (const s of c.stickers) grid.append(slot(s));
         sec.append(tape, grid);
@@ -98,13 +114,8 @@ export function createAchievementsPage(
     sticker.setAttribute('aria-hidden', 'true');
     const art = h('span', 'ac-sticker__art');
     sticker.append(art);
-    const bar = h('i', 'ac-slot__bar');
-    bar.setAttribute('aria-hidden', 'true');
-    const fill = h('i');
-    bar.append(fill);
-    const meta = h('span', 'ac-slot__meta bi-num');
-    li.append(sticker, h('span', 'ac-slot__name', s.name), bar, meta);
-    const ui: SlotUi = { li, sticker, art, artKey: '', meta, fill, view: s, unlocked: null };
+    li.append(sticker, h('span', 'ac-slot__name', s.name));
+    const ui: SlotUi = { li, sticker, art, artKey: '', view: s, unlocked: null };
     attachTooltip(li, () => tip(ui.view));
     slots.set(s.id, ui);
     return li;
@@ -164,8 +175,6 @@ export function createAchievementsPage(
         }
       }
     }
-    set(ui.meta, s.unlocked ? s.dateText : s.progressText || t.locked);
-    ui.fill.style.width = `${(s.progress * 100).toFixed(1)}%`;
     const label = t.stickerLabel(
       s.name,
       s.unlocked ? t.unlockedLabel : t.lockedLabel(s.progressText),

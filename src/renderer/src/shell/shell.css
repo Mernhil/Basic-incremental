@@ -1,17 +1,77 @@
-/* Screen shell (DESIGN.md §11, "Night rail"): dark header across the top, dark rail on the left,
-   framed pages on the table. Every colour comes from the equipped table item's chrome-*, frame-*
-   and tip-* tokens, so a table cosmetic re-skins the whole shell. */
+/* Screen shell (UI_RULES.md §2, "Shell look"): the pixel-frame shell. A narrow rail of plaques on
+   the left, the header across the top, the goals strip under it, framed pages on the page colour.
+   Every colour and font comes from the equipped table item's chrome-*, frame-*, font-* and tip-*
+   tokens, so a table cosmetic re-skins the whole shell. The frame and button recipe is shared
+   (theme/frames.css). */
 
-/* pixel navigation plaques (DESIGN.md §12 Clean pixels): the 64 px sprite is never shrunk. About
-   32 CSS px wanted, snapped to a whole number of device pixels per art pixel (1x on a 100 % screen
-   is 64 CSS px, 1x on a 200 % screen is 32). Same rounding as ui/pixelScale.ts. */
+html,
+body {
+  height: 100%;
+}
+
+.shell {
+  --rail-w: 84px;
+  --header-h: 64px;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: var(--rail-w) minmax(0, 1fr);
+  grid-template-rows: var(--header-h) minmax(0, 1fr);
+  grid-template-areas:
+    'rail header'
+    'rail main';
+}
+
+.shell-icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---- sidebar rail: the ten navigation plaques, no text ---- */
+.shell-rail {
+  grid-area: rail;
+  position: relative;
+  z-index: 4;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background: var(--bi-chrome-rail-bg);
+  box-shadow: var(--fs) 0 0 0 var(--px-edge);
+}
+.shell-rail__list {
+  margin: 0;
+  padding: 10px 0 14px;
+  list-style: none;
+  display: grid;
+  gap: 0;
+}
+.shell-rail__item {
+  position: relative;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bi-chrome-ink);
+  font: inherit;
+  cursor: pointer;
+}
+/* the plaque sprite is 64 art pixels: the largest whole scale that fits the rail, never shrunk
+   below 1x (1x is 64 CSS px at 100 %, 2x is 64 CSS px at 200 %); ui/pixelScale.ts rounding */
 .shell-rail__plaque {
-  --plaque: calc(64px * max(1, round(calc(32 * var(--dpr) / 64), 1)) / var(--dpr));
+  --pq-n: max(1, round(down, calc(72 * var(--dpr) / 64), 1));
+  --plaque: calc(64px * var(--pq-n) / var(--dpr));
   display: grid;
   flex: none;
   width: var(--plaque);
   height: var(--plaque);
-  margin: calc(-0.1875 * var(--plaque)) 0;
+  margin: calc(-0.0625 * var(--plaque)) 0;
 }
 .shell-rail__plaque svg {
   width: 100%;
@@ -19,13 +79,386 @@
   image-rendering: pixelated;
 }
 .shell-rail__item:not([aria-current='page']) .shell-rail__plaque {
-  filter: saturate(0.6) brightness(0.85);
+  filter: saturate(0.7) brightness(0.8);
 }
-.shell-rail__item:hover .shell-rail__plaque {
+.shell-rail__item:hover .shell-rail__plaque,
+.shell-rail__item:focus-visible .shell-rail__plaque {
   filter: none;
 }
+/* the gold marker beside the current page */
+.shell-rail__item[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: calc(var(--fs-sm) * 3);
+  height: 32px;
+  translate: 0 -50%;
+  background: var(--bi-chrome-accent);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.shell-rail__item:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: -3px;
+}
+/* the page name is the accessible name and the tooltip; no visible text */
+.sr-only,
+.shell-rail__label,
+.shell-brand {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
 
-/* quest scroll (DESIGN.md §10 / A16 B): a parchment strip under the header */
+/* ---- header: level and XP, Money, the crystals, Details, mute ---- */
+.shell-header {
+  grid-area: header;
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 0 18px 0 22px;
+  min-width: 0;
+  background: var(--bi-chrome-bg);
+  color: var(--bi-chrome-ink);
+  box-shadow:
+    0 var(--fs) 0 0 var(--px-edge),
+    inset 0 calc(var(--fs) * -1) 0 0 var(--px-lo);
+}
+.shell-brand__name,
+.shell-brand__ver {
+  font-size: 12px;
+}
+
+.shell-level {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: none;
+  border: 0;
+  padding: 4px 6px 4px 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.shell-level:hover .shell-level__label,
+.shell-level[aria-expanded='true'] .shell-level__label {
+  color: var(--bi-chrome-accent);
+}
+.shell-level:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 4px;
+}
+.shell-level__badge-wrap {
+  position: relative;
+  flex: none;
+}
+/* the gold square with the account level in the display font */
+.shell-level__badge {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+  background: var(--px-gold);
+  color: var(--px-gold-ink);
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-gold-hi),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--px-gold-lo);
+}
+/* unspent skill points: a small counter on the badge */
+.shell-level__points {
+  position: absolute;
+  right: -10px;
+  top: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--bi-chrome-xp);
+  color: var(--bi-chrome-bg);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.shell-level__points[hidden] {
+  display: none;
+}
+/* level-up: the badge flashes bright */
+.shell-level.is-levelling .shell-level__badge {
+  animation: shell-levelup 1.4s ease-out;
+}
+.shell-level.is-levelling .shell-level__fill {
+  animation: shell-levelup-bar 1.4s ease-out;
+}
+@keyframes shell-levelup {
+  15% {
+    scale: 1.25;
+    filter: brightness(1.5);
+  }
+  60% {
+    scale: 1;
+    filter: brightness(1.2);
+  }
+}
+@keyframes shell-levelup-bar {
+  0%,
+  30% {
+    filter: brightness(1.8);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-level.is-levelling .shell-level__badge,
+  .shell-level.is-levelling .shell-level__fill {
+    animation: none;
+  }
+}
+.shell-level__meta {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+}
+.shell-level__label {
+  font-size: 14px;
+  font-weight: 700;
+}
+.shell-level__bar {
+  width: 150px;
+  height: calc(var(--fs-sm) * 3);
+  overflow: hidden;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.shell-level__fill {
+  display: block;
+  width: 0;
+  height: 100%;
+  background: var(--bi-chrome-xp, var(--bi-chrome-accent));
+}
+.shell-level__xp {
+  color: var(--bi-chrome-ink-muted);
+}
+
+.shell-currencies {
+  margin: 0 0 0 auto;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  min-width: 0;
+}
+.shell-currency {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.shell-currency__amounts {
+  display: grid;
+  line-height: 1.15;
+}
+.shell-currency__value {
+  min-width: 2.2em;
+  font-size: 18px;
+  font-weight: 700;
+}
+.shell-currency__rate {
+  font-size: 12px;
+  color: var(--bi-chrome-logging, var(--bi-chrome-ink-muted));
+}
+.shell-currency__name {
+  font-size: 12px;
+  color: var(--bi-chrome-ink-muted);
+}
+/* Money is the largest number in the header, in the display font */
+.shell-currency--money .shell-currency__value {
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--bi-chrome-accent);
+}
+.shell-currency--money .shell-currency__amounts {
+  gap: 3px;
+}
+.shell-currency--money .shell-currency__name {
+  display: none;
+}
+.shell-currency--money .shell-currency__art {
+  width: 36px;
+  height: 36px;
+}
+/* coins landing (stage/fly.ts) */
+.shell-currency.is-pulsing .shell-currency__art {
+  animation: shell-pulse-coin 0.36s ease-out;
+}
+.shell-currency.is-pulsing .shell-currency__value {
+  animation: shell-pulse-text 0.36s ease-out;
+}
+@keyframes shell-pulse-coin {
+  40% {
+    transform: scale(1.3);
+  }
+}
+@keyframes shell-pulse-text {
+  40% {
+    filter: brightness(1.5);
+  }
+}
+.shell-currency__icon {
+  width: 16px;
+  height: 16px;
+  color: var(--bi-chrome-accent);
+}
+/* gem coins (DESIGN.md §12): full colour, a little larger than the line icons */
+.shell-currency__art {
+  display: inline-grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+.shell-currency__art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.shell-tools {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+.shell-currency:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 4px;
+}
+
+/* ---- header: the Details button ---- */
+.shell-details {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.shell-details__glyph {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+}
+.shell-details__glyph .shell-icon {
+  width: 18px;
+  height: 18px;
+}
+/* where flying coins of resources inside Details land: an invisible, coin-sized spot */
+.shell-details__land {
+  position: absolute;
+  inset: -2px;
+  opacity: 0;
+  pointer-events: none;
+}
+.shell-details__land svg {
+  width: 100%;
+  height: 100%;
+}
+.shell-details.is-pulsing {
+  animation: shell-pulse-btn 0.36s ease-out;
+}
+.shell-details.is-pulsing-big {
+  animation: shell-pulse-btn 0.56s ease-out;
+}
+@keyframes shell-pulse-btn {
+  40% {
+    filter: brightness(1.5);
+  }
+}
+.shell--narrow .shell-details__label,
+.shell--narrow .shell-currency__name {
+  display: none;
+}
+
+/* crystals: a glow and a slow shimmer on the glyph; a different colour and shape each.
+   Placeholder look: the pixel-art agent replaces the glyph, the tokens stay. */
+.shell-currency--crystal {
+  --crystal-glow: var(--res-summon-2, #5b7fe0);
+}
+.shell-currency--crystal[data-icon='crystal-glamour'] {
+  --crystal-glow: var(--res-glamour-2, #e0609e);
+}
+.shell-currency--crystal .shell-currency__art {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--crystal-glow) 70%, transparent));
+}
+.shell-currency--crystal .shell-currency__art::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.75) 50%,
+    transparent 62%
+  );
+  translate: -120% 0;
+  animation: shell-shimmer 6s ease-in-out 1.5s infinite;
+}
+.shell-currency.is-pulsing-big .shell-currency__art {
+  animation: shell-pulse-coin-big 0.56s ease-out;
+}
+@keyframes shell-shimmer {
+  0%,
+  70%,
+  100% {
+    translate: -120% 0;
+  }
+  85% {
+    translate: 120% 0;
+  }
+}
+@keyframes shell-pulse-coin-big {
+  35% {
+    transform: scale(1.55);
+    filter: brightness(1.6) drop-shadow(0 0 10px var(--crystal-glow, #fff));
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .shell-currency--crystal .shell-currency__art::after,
+  .shell-currency.is-pulsing .shell-currency__art,
+  .shell-currency.is-pulsing .shell-currency__value,
+  .shell-currency.is-pulsing-big .shell-currency__art,
+  .shell-details.is-pulsing,
+  .shell-details.is-pulsing-big {
+    animation: none;
+  }
+}
+
+/* ---- goals strip (DESIGN.md §10): a pixel strip under the header; its right end is a slot a
+   page can fill (shell.setQuestSlot), for example Production's x1 / x10 / x100 / Max toggle ---- */
 .shell-quest {
   position: sticky;
   top: -20px;
@@ -36,17 +469,24 @@
   padding: 0 26px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: color-mix(in srgb, var(--bi-chrome-accent) 22%, #f3e6c4);
-  color: #3a2a12;
+  gap: 14px;
+}
+/* a full-width strip: its edge is the bottom line only (overrides the panel recipe) */
+html .shell-main .shell-quest {
+  background: var(--px-raised);
+  color: var(--bi-frame-ink);
   box-shadow:
-    inset 0 -1px 0 color-mix(in srgb, var(--bi-chrome-accent) 60%, #8a6a32),
-    0 3px 8px rgba(0, 0, 0, 0.18);
+    0 var(--fs) 0 0 var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-hi),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--px-lo);
 }
 .shell-quest__title {
-  font-size: 12px;
-  font-weight: 800;
-  opacity: 0.75;
+  flex: none;
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--bi-chrome-accent);
 }
 .shell-quest__list {
   margin: 0;
@@ -54,45 +494,49 @@
   list-style: none;
   display: flex;
   flex: 1;
-  gap: 8px;
+  gap: 16px;
   min-width: 0;
 }
 .shell-quest__goal {
-  flex: 1 1 0;
+  flex: 0 1 auto;
   min-width: 0;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-rows: auto 4px;
+  grid-template-rows: auto auto;
   align-items: center;
-  gap: 2px 7px;
-  padding: 4px 9px 5px;
+  gap: 2px 8px;
+  padding: 2px 4px 3px;
   border: 0;
-  border-radius: 7px;
-  background: rgba(255, 250, 235, 0.55);
-  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.25);
-  color: inherit;
+  background: none;
+  color: var(--bi-frame-ink);
   font: inherit;
-  font-size: 12.5px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-align: left;
   cursor: pointer;
 }
-.shell-quest__goal:hover {
-  background: rgba(255, 250, 235, 0.85);
+.shell-quest__goal:hover .shell-quest__text {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .shell-quest__goal:focus-visible {
-  outline: 2px solid #6a4a1a;
+  outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 2px;
 }
 .shell-quest__box {
-  width: 12px;
-  height: 12px;
-  border: 1.5px solid currentColor;
-  border-radius: 3px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
   display: grid;
   place-items: center;
-  font-size: 10px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  font-size: 11px;
   line-height: 1;
+  color: var(--px-gold-ink);
+}
+.shell-quest__goal.is-done .shell-quest__box {
+  background: var(--bi-chrome-logging, var(--bi-chrome-accent));
 }
 .shell-quest__text {
   overflow: hidden;
@@ -100,39 +544,46 @@
   text-overflow: ellipsis;
 }
 .shell-quest__eta {
-  font-size: 11.5px;
-  opacity: 0.75;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.shell-quest__goal.is-done .shell-quest__eta {
+  color: var(--bi-chrome-logging, var(--bi-frame-ink-muted));
 }
 .shell-quest__bar {
   grid-column: 1 / -1;
-  height: 4px;
-  border-radius: 2px;
-  background: rgba(90, 60, 20, 0.2);
+  height: var(--fs-sm);
   overflow: hidden;
+  background: var(--px-lo);
 }
 .shell-quest__bar i {
   display: block;
   height: 100%;
-  background: #b4612a;
+  background: var(--bi-chrome-accent);
 }
 .shell-quest__goal.is-done .shell-quest__bar i {
-  background: #4f8a3a;
+  background: var(--bi-chrome-logging, var(--bi-chrome-accent));
+}
+/* the slot at the right end, filled by the current page */
+.shell-quest__slot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+.shell-quest__slot:empty {
+  display: none;
 }
 
-/* reward track (DESIGN.md §10 / A16 B): the quest scroll unrolls under the header with the
-   levels as waypoints on a path; plain levels are small stones, reward levels are signposts */
+/* ---- reward track (DESIGN.md §10): drops down under the header with the levels as waypoints
+   on a path; plain levels are small stones, reward levels are signposts ---- */
 .shell-track {
   position: fixed;
   z-index: 25;
-  top: var(--header-h);
-  left: var(--rail-w);
-  right: 0;
-  padding: 12px 26px 16px;
-  background: color-mix(in srgb, var(--bi-chrome-accent) 22%, #f3e6c4);
-  color: #3a2a12;
-  box-shadow:
-    inset 0 -2px 0 color-mix(in srgb, var(--bi-chrome-accent) 60%, #8a6a32),
-    0 10px 24px rgba(0, 0, 0, 0.35);
+  top: calc(var(--header-h) + var(--fs) * 2);
+  left: calc(var(--rail-w) + var(--fs) * 2);
+  right: calc(var(--fs) * 2);
+  padding: 12px 22px 16px;
   animation: shell-unroll 0.22s ease-out;
   transform-origin: top;
 }
@@ -158,32 +609,22 @@
 }
 .shell-track__title {
   margin: 0;
-  font-size: 15px;
-  font-weight: 800;
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 20px;
+  font-weight: 600;
 }
 .shell-track__note {
   font-size: 13px;
-  opacity: 0.8;
+  color: var(--bi-frame-ink-muted);
 }
 .shell-track__close {
   margin-left: auto;
-  padding: 4px 12px;
-  border: 0;
-  border-radius: 7px;
-  background: rgba(255, 250, 235, 0.6);
-  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.3);
-  color: inherit;
-  font: inherit;
+  padding: 4px 14px;
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
 }
-.shell-track__close:hover {
-  background: rgba(255, 250, 235, 0.95);
-}
-.shell-track__close:focus-visible,
 .shell-track__row:focus-visible {
-  outline: 2px solid #6a4a1a;
+  outline: 2px solid var(--bi-chrome-accent);
   outline-offset: 2px;
 }
 .shell-track__row {
@@ -196,7 +637,7 @@
   gap: 10px;
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(90, 60, 20, 0.4) transparent;
+  scrollbar-color: var(--px-hi) transparent;
 }
 .shell-track__stop {
   position: relative;
@@ -205,19 +646,19 @@
   justify-items: center;
   gap: 6px;
 }
-/* the path: a dashed ink line through every stop's foot */
+/* the path: a dashed line through every stop's foot */
 .shell-track__stop::after {
   content: '';
   position: absolute;
   left: -6px;
   right: -6px;
   bottom: 9px;
-  border-bottom: 3px dashed rgba(90, 60, 20, 0.35);
+  border-bottom: var(--fs-sm) dashed var(--px-hi);
   z-index: 0;
 }
 .shell-track__stop.is-reached::after {
   border-bottom-style: solid;
-  border-color: #b4612a;
+  border-color: var(--bi-chrome-accent);
 }
 .shell-track__card {
   display: grid;
@@ -226,31 +667,29 @@
   gap: 3px;
   min-width: 46px;
   padding: 5px 7px 6px;
-  border-radius: 8px;
-  background: rgba(255, 250, 235, 0.55);
-  box-shadow: inset 0 0 0 1px rgba(90, 60, 20, 0.25);
+  background: var(--px-body);
+  box-shadow:
+    0 0 0 var(--fs-sm) var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-hi);
   font-size: 12px;
   font-weight: 700;
 }
 .shell-track__stop.is-milestone .shell-track__card {
   min-width: 78px;
   padding: 6px 9px 8px;
-  background: rgba(255, 250, 235, 0.9);
-  box-shadow:
-    inset 0 0 0 1px rgba(90, 60, 20, 0.35),
-    0 2px 0 rgba(90, 60, 20, 0.25);
+  background: var(--px-lo);
 }
 .shell-track__stop.is-next .shell-track__card {
   box-shadow:
-    inset 0 0 0 2px #b4612a,
-    0 0 0 3px rgba(180, 97, 42, 0.18);
+    0 0 0 var(--fs-sm) var(--bi-chrome-accent),
+    inset 0 var(--fs-sm) 0 0 var(--px-hi);
 }
 .shell-track__stop.is-reached .shell-track__card {
-  opacity: 0.62;
+  opacity: 0.68;
 }
 .shell-track__lv {
   font-size: 11px;
-  opacity: 0.8;
+  color: var(--bi-frame-ink-muted);
 }
 .shell-track__art {
   display: grid;
@@ -274,394 +713,44 @@
   place-items: center;
   width: 30px;
   height: 30px;
-  border-radius: 50%;
   font-size: 13px;
-  font-weight: 800;
-  background: #3a2a12;
-  color: #ffe7a0;
+  font-weight: 700;
+  background: var(--px-edge);
+  color: var(--bi-chrome-accent);
 }
 .shell-track__glyph--cap {
-  border-radius: 7px;
-  background: #4f6a8a;
-  color: #fff;
+  background: var(--bi-chrome-xp);
+  color: var(--bi-chrome-bg);
   font-size: 11px;
 }
 .shell-track__glyph--resource {
-  background: #6a3a8a;
+  color: var(--bi-chrome-bg);
 }
 .shell-track__extra {
   max-width: 96px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1.25;
   text-align: center;
 }
-/* the stone on the path: a filled dot once reached, a ring for the next one */
+/* the stone on the path: a filled square once reached, a gold one for the next */
 .shell-track__dot {
   position: relative;
   z-index: 1;
   width: 14px;
   height: 14px;
-  border-radius: 50%;
-  background: #f3e6c4;
-  box-shadow: inset 0 0 0 2px rgba(90, 60, 20, 0.45);
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
   display: grid;
   place-items: center;
   font-size: 10px;
-  color: #fff;
+  color: var(--px-gold-ink);
 }
 .shell-track__stop.is-reached .shell-track__dot {
-  background: #b4612a;
-  box-shadow: none;
+  background: var(--bi-chrome-logging, var(--bi-chrome-accent));
 }
 .shell-track__stop.is-next .shell-track__dot {
-  background: #ffd968;
-  box-shadow:
-    inset 0 0 0 2px #b4612a,
-    0 0 0 4px rgba(180, 97, 42, 0.2);
-}
-
-html,
-body {
-  height: 100%;
-}
-
-.shell {
-  --rail-w: 220px;
-  --header-h: 64px;
-  height: 100vh;
-  display: grid;
-  grid-template-columns: var(--rail-w) minmax(0, 1fr);
-  grid-template-rows: var(--header-h) minmax(0, 1fr);
-  grid-template-areas:
-    'header header'
-    'rail main';
-}
-.shell--narrow {
-  --rail-w: 68px;
-}
-
-.shell-icon {
-  width: 20px;
-  height: 20px;
-  flex: none;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* ---- header ---- */
-.shell-header {
-  grid-area: header;
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  padding: 0 20px;
-  min-width: 0;
-  background: var(--bi-chrome-bg);
-  color: var(--bi-chrome-ink);
-  border-bottom: 1px solid var(--bi-chrome-line);
-}
-.shell-brand {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  white-space: nowrap;
-}
-.shell-brand__name {
-  font-size: 17px;
-  font-weight: 700;
-}
-.shell-brand__ver {
-  font-size: 12px;
-  color: var(--bi-chrome-ink-muted);
-}
-.shell--narrow .shell-brand__ver {
-  display: none;
-}
-
-.shell-level {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  border: 0;
-  border-radius: 10px;
-  padding: 4px 8px 4px 6px;
-  background: none;
-  color: inherit;
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-}
-.shell-level:hover,
-.shell-level[aria-expanded='true'] {
-  background: var(--bi-chrome-active-bg);
-}
-.shell-level__badge-wrap {
-  position: relative;
-  flex: none;
-}
-/* unspent skill points: a small gem-coloured counter on the badge */
-.shell-level__points {
-  position: absolute;
-  right: -6px;
-  top: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 4px;
-  box-sizing: border-box;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 800;
-  background: #ffd968;
-  color: #3a2408;
-  box-shadow:
-    0 0 0 2px var(--bi-chrome-bg),
-    0 0 8px rgba(255, 217, 104, 0.6);
-}
-.shell-level__points[hidden] {
-  display: none;
-}
-/* level-up: the badge rings out in gold */
-.shell-level.is-levelling .shell-level__badge {
-  animation: shell-levelup 1.4s ease-out;
-}
-.shell-level.is-levelling .shell-level__fill {
-  animation: shell-levelup-bar 1.4s ease-out;
-}
-@keyframes shell-levelup {
-  15% {
-    transform: scale(1.25);
-    box-shadow:
-      inset 0 0 0 1px #ffd968,
-      0 0 0 3px #ffd968,
-      0 0 22px 6px rgba(255, 217, 104, 0.8);
-  }
-  60% {
-    transform: scale(1);
-    box-shadow:
-      inset 0 0 0 1px #ffd968,
-      0 0 0 3px #ffd968,
-      0 0 10px 2px rgba(255, 217, 104, 0.4);
-  }
-}
-@keyframes shell-levelup-bar {
-  0%,
-  30% {
-    background: #fff4d0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .shell-level.is-levelling .shell-level__badge,
-  .shell-level.is-levelling .shell-level__fill {
-    animation: none;
-  }
-}
-.shell-level__badge {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  font-weight: 700;
-  background: var(--bi-frame-bg);
-  color: var(--bi-frame-ink);
-  box-shadow:
-    inset 0 0 0 1px var(--bi-chrome-line),
-    0 0 0 3px var(--bi-chrome-active-bg);
-}
-.shell-level__meta {
-  display: grid;
-  gap: 4px;
-  font-size: 12px;
-}
-.shell-level__label {
-  font-weight: 600;
-}
-.shell-level__bar {
-  width: 150px;
-  height: 6px;
-  border-radius: 3px;
-  overflow: hidden;
-  background: var(--bi-chrome-active-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-}
-.shell-level__fill {
-  display: block;
-  width: 0;
-  height: 100%;
   background: var(--bi-chrome-accent);
-}
-.shell-level__xp {
-  color: var(--bi-chrome-ink-muted);
-}
-
-.shell-currencies {
-  margin: 0 0 0 auto;
-  padding: 0;
-  list-style: none;
-  display: flex;
-  gap: 8px;
-  min-width: 0;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.shell-currency {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 5px 12px 5px 8px;
-  border-radius: 999px;
-  white-space: nowrap;
-  font-size: 14px;
-  background: var(--bi-chrome-active-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-}
-.shell-currency__amounts {
-  display: grid;
-  line-height: 1.1;
-}
-.shell-currency__value {
-  min-width: 3.2em;
-}
-.shell-currency__rate {
-  font-size: 10.5px;
-  color: var(--bi-chrome-ink-muted);
-}
-/* coins landing (stage/fly.ts) */
-.shell-currency.is-pulsing {
-  animation: shell-pulse 0.36s ease-out;
-}
-.shell-currency.is-pulsing .shell-currency__art {
-  animation: shell-pulse-coin 0.36s ease-out;
-}
-@keyframes shell-pulse {
-  40% {
-    box-shadow:
-      inset 0 0 0 1px var(--bi-chrome-accent),
-      0 0 12px var(--bi-chrome-accent);
-  }
-}
-@keyframes shell-pulse-coin {
-  40% {
-    transform: scale(1.3);
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .shell-currency.is-pulsing,
-  .shell-currency.is-pulsing .shell-currency__art {
-    animation: none;
-  }
-}
-.shell-currency__art .shell-currency__icon {
-  width: 16px;
-  height: 16px;
-}
-.shell-tools {
-  display: flex;
-  gap: 6px;
-  flex: none;
-}
-.shell-currency__name {
-  font-size: 12px;
-  color: var(--bi-chrome-ink-muted);
-}
-.shell-currency__icon {
-  width: 16px;
-  height: 16px;
-  color: var(--bi-chrome-accent);
-}
-/* gem coins (DESIGN.md §12): full colour, a little larger than the line icons */
-.shell-currency__art {
-  display: inline-grid;
-  place-items: center;
-  width: 24px;
-  height: 24px;
-  margin-block: -4px;
-}
-.shell-currency__art svg {
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-}
-
-/* ---- sidebar ---- */
-.shell-rail {
-  grid-area: rail;
-  overflow-y: auto;
-  background: var(--bi-chrome-rail-bg);
-  border-right: 1px solid var(--bi-chrome-line);
-}
-.shell-rail__list {
-  margin: 0;
-  padding: 12px 10px;
-  list-style: none;
-  display: grid;
-  gap: 2px;
-}
-.shell-rail__item {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--bi-chrome-ink-muted);
-  font: inherit;
-  font-size: 15px;
-  text-align: left;
-  cursor: pointer;
-}
-.shell-rail__item:hover {
-  color: var(--bi-chrome-ink);
-  background: var(--bi-chrome-active-bg);
-}
-.shell-rail__item[aria-current='page'] {
-  color: var(--bi-chrome-ink);
-  background: var(--bi-chrome-active-bg);
-  font-weight: 600;
-}
-.shell-rail__item[aria-current='page']::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  top: 8px;
-  bottom: 8px;
-  width: 3px;
-  border-radius: 2px;
-  background: var(--bi-chrome-accent);
-}
-.shell-rail__item[aria-current='page'] .shell-icon {
-  color: var(--bi-chrome-accent);
-}
-.shell--narrow .shell-rail__item {
-  justify-content: center;
-  padding: 11px;
-}
-.sr-only,
-.shell--narrow .shell-currency__name,
-.shell--narrow .shell-rail__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
-}
-
-.shell-rail__item:focus-visible,
-.shell-level:focus-visible,
-.shell-currency:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
 }
 
 /* ---- main area ---- */
@@ -673,6 +762,7 @@ body {
   display: grid;
   align-content: start;
   gap: 16px;
+  scrollbar-color: var(--px-hi) var(--px-lo);
 }
 .shell-main:focus {
   outline: none;
@@ -692,48 +782,41 @@ body {
 }
 .shell-page__title {
   margin: 0;
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 26px;
   color: var(--bi-on-table);
 }
 
-/* ---- framed panel ---- */
+/* ---- framed panel: heading in the display font, body on the panel colour ---- */
 .frame {
   display: grid;
   gap: 12px;
   align-content: start;
   min-width: 0;
-  padding: 12px;
-  border-radius: var(--bi-frame-radius);
-  background: var(--bi-frame-bg);
-  color: var(--bi-frame-ink);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-line);
+  padding: 14px 16px 16px;
 }
 .frame__title {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 7px 12px;
-  border-radius: calc(var(--bi-frame-radius) - 4px);
-  background: var(--bi-frame-title-bg);
-  color: var(--bi-frame-title-ink);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+  padding: 0 2px;
+  background: none;
+  color: var(--bi-frame-ink);
 }
 .frame__heading {
   margin: 0;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 20px;
+  line-height: 1.2;
 }
 .frame__note {
   font-size: 13px;
-  opacity: 0.85;
+  color: var(--bi-frame-ink-muted);
 }
 .frame__body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: 12px;
-  padding: 0 4px 4px;
+  padding: 0 2px 2px;
   min-width: 0;
 }
 .frame__lead {
@@ -754,19 +837,17 @@ body {
   z-index: 30;
   max-width: 280px;
   padding: 9px 12px;
-  border-radius: 10px;
   font-size: 13px;
   line-height: 1.4;
   pointer-events: none;
-  background: var(--bi-tip-bg);
   color: var(--bi-tip-ink);
-  box-shadow:
-    inset 0 0 0 1px var(--bi-tip-line),
-    0 10px 28px rgba(0, 0, 0, 0.35);
+  --px-body: var(--bi-tip-bg);
+  --px-raised: var(--bi-tip-bg);
+  --px-hi: var(--bi-tip-line);
 }
 .shell-tip__title {
   margin: 0 0 6px;
-  font-weight: 600;
+  font-weight: 700;
 }
 .shell-tip__rows {
   margin: 0;
@@ -787,138 +868,7 @@ body {
 }
 .shell-tip__rows .shell-tip__total {
   padding-top: 5px;
-  border-top: 1px solid var(--bi-tip-line);
+  border-top: var(--fs-sm) solid var(--bi-tip-line);
   color: var(--bi-tip-ink);
   font-weight: 700;
-}
-
-/* ---- header resources: Money, then the two crystals; the rest is behind Details ---- */
-.shell-details {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 12px 6px 9px;
-  border: 0;
-  border-radius: 999px;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--bi-chrome-ink);
-  background: var(--bi-chrome-active-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
-  cursor: pointer;
-}
-.shell-details:hover {
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-accent);
-}
-.shell-details:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
-}
-.shell-details__glyph {
-  position: relative;
-  display: inline-grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-}
-.shell-details__glyph .shell-icon {
-  width: 18px;
-  height: 18px;
-}
-/* where flying coins of resources inside Details land: an invisible, coin-sized spot */
-.shell-details__land {
-  position: absolute;
-  inset: -2px;
-  opacity: 0;
-  pointer-events: none;
-}
-.shell-details__land svg {
-  width: 100%;
-  height: 100%;
-}
-.shell-details.is-pulsing {
-  animation: shell-pulse 0.36s ease-out;
-}
-.shell-details.is-pulsing-big {
-  animation: shell-pulse-big 0.56s ease-out;
-}
-.shell--narrow .shell-details__label {
-  display: none;
-}
-
-/* crystals: larger, a soft glow and a slow shimmer; a different colour and shape each.
-   Placeholder look: the pixel-art agent replaces the glyph, the tokens stay. */
-.shell-currency--crystal {
-  --crystal-glow: var(--res-summon-2, #5b7fe0);
-  padding-block: 7px;
-  box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, var(--crystal-glow) 55%, var(--bi-chrome-line)),
-    0 0 14px color-mix(in srgb, var(--crystal-glow) 35%, transparent);
-}
-.shell-currency--crystal[data-icon='crystal-glamour'] {
-  --crystal-glow: var(--res-glamour-2, #e0609e);
-}
-.shell-currency--crystal .shell-currency__art {
-  position: relative;
-  width: 30px;
-  height: 30px;
-  margin-block: -8px;
-  overflow: hidden;
-  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--crystal-glow) 70%, transparent));
-}
-.shell-currency--crystal .shell-currency__art::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    105deg,
-    transparent 38%,
-    rgba(255, 255, 255, 0.75) 50%,
-    transparent 62%
-  );
-  translate: -120% 0;
-  animation: shell-shimmer 6s ease-in-out 1.5s infinite;
-}
-.shell-currency--crystal .shell-currency__value {
-  font-size: 16px;
-}
-.shell-currency.is-pulsing-big {
-  animation: shell-pulse-big 0.56s ease-out;
-}
-.shell-currency.is-pulsing-big .shell-currency__art {
-  animation: shell-pulse-coin-big 0.56s ease-out;
-}
-@keyframes shell-shimmer {
-  0%,
-  70%,
-  100% {
-    translate: -120% 0;
-  }
-  85% {
-    translate: 120% 0;
-  }
-}
-@keyframes shell-pulse-big {
-  35% {
-    box-shadow:
-      inset 0 0 0 2px var(--crystal-glow, var(--bi-chrome-accent)),
-      0 0 26px var(--crystal-glow, var(--bi-chrome-accent));
-  }
-}
-@keyframes shell-pulse-coin-big {
-  35% {
-    transform: scale(1.55);
-    filter: brightness(1.6) drop-shadow(0 0 10px var(--crystal-glow, #fff));
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .shell-currency--crystal .shell-currency__art::after,
-  .shell-currency.is-pulsing-big,
-  .shell-currency.is-pulsing-big .shell-currency__art,
-  .shell-details.is-pulsing,
-  .shell-details.is-pulsing-big {
-    animation: none;
-  }
 }
