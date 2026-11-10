@@ -445,4 +445,43 @@ Late block (Scope 5):
 
 ## 11. Fixes made
 
-Filled in when the fixes PR merges.
+The fixes PR (`fix/direction-fixes`) changed no content data, pacing, save format, rule or look. The same-seed sim (`npm run sim -- --hours 40 --seeds 5`, seeds 1 to 5) prints the same milestones, kills, cards and levels before and after; the only differing lines are the reformatted First summon target and the run time.
+
+**Bugs fixed**
+
+- **Freeze after sleep.** After a long gap (the PC slept with the game open) the live loop replayed up to 8 h in 1-second steps in one go. A gap over 5 s is now caught up in 60 s steps, like offline progress, with the same result (new test in `tests/loop.test.ts`). An 8 h gap on the 9 h save: 7,957 ms before, 861 ms after.
+- **Shard hint.** The Shop said a duplicate "of a card at Prismatic ★6" turns into shards; it now reads "Extra copies a card cannot use for stars turn into shards."
+- **`scripts/a11y-audit.mjs` did not run** (it picked the removed Exotic rarity and old card selectors). It runs again, with Uncommon in the matrix.
+- **`scripts/a11y-shell.mjs` checked four selectors that no longer exist** (`.hm-stage__*`, `.pp-panel__title`, `.sk-detail__rank`); it now checks the Home panels, the Production band titles and the skill rows. It still passes: 70 table × page combinations, 0 failures.
+- **`scripts/demo-progression.mjs`** looked for a card `evolution` field and an `evolution` moment; it now plays the Heirloom reveal.
+- **Sim table.** The First summon target printed as "0.125-0.16666666666666666 h"; it prints "0.125-0.167 h".
+- **Stale comments** in `combat.ts` (bosses as "HP walls", "the first kill clears a dungeon"), `cards.ts` (power 1 "for a Bronze ★1 Lv 1 card") and `sim.ts` (which portal waits for its screen).
+
+**Tag drift fixed** (no rule changed)
+
+- DESIGN §5 Roster and §14 Tier names keep their milestones: `[Default]` to `[Default · in game]`.
+- DESIGN §5 Heirloom: `[Differs]` to `[Built]`, naming the 22 approved pictures instead of placeholders.
+- DESIGN §2 Dev tools: says the cheats have no panel yet.
+- DESIGN §10 shard prices: names today's rarities and the 11 cards sold.
+- DESIGN §7 and §16: pulls climb from about 2 h, not 30 h.
+- UI_RULES §2 Buying: one buy toggle in the goals strip.
+- ASSET_RULES §5 The signature item: `[To build]` to `[Differs]`, naming what is left (T4 Gold, tier looks).
+
+Left for the user (they need a decision, section 3): the Full-art layout tag, "Weapon looks, for now" and the ASSET_RULES "Heirloom weapons" text.
+
+**Optimizations** (behaviour unchanged)
+
+| What                                                                                             | Before   | After    |
+| ------------------------------------------------------------------------------------------------ | -------- | -------- |
+| Stat pipeline: one pass per read and a per-list index by stat (`modifiers.ts`), live 100 ms tick | 0.260 ms | 0.213 ms |
+| Header rates (three `incomePerSecond` reads every 100 ms)                                        | 0.406 ms | 0.287 ms |
+| Goal tracker (`nextGoals`, once a second)                                                        | 3.45 ms  | 2.48 ms  |
+| 8 h catch-up after sleep                                                                         | 7,957 ms | 861 ms   |
+| Balance sim, 40 h × 5 seeds (stat pipeline plus remembered income reads in the sim's buyer)      | 671 s    | 195 s    |
+
+**Found while fixing, not fixed** (each needs a look change or a decision)
+
+- The repaired `a11y-audit.mjs` fails on every card: the small text on the bottom plate is below 4.5:1 ("hits every 1s" 4.04:1, "LEVEL 3/20" 2.89:1), in all 42 table × border × rarity combinations. Fixing it changes card colours.
+- In the dev gallery, hit effects still spawn under reduced motion (129 in the audit) and 17 of 25 controls are reached by Tab.
+- A clean measurement (no sim running beside the app) puts the page costs at Cards 36%, Production 26%, Dungeons 19% and Home 15% of one core, lower than the figures in section 5. Script time is only 5 to 7% of that; the rest is painting the animated cards and effects. An attempt to cut the Cards page's per-frame work showed no measurable gain and was dropped. Lowering the paint cost means changing what animates, which is a look change.
+- The level badge over card names, truncated names, the Enhancements button on cards that can never use it, and the shard-shop copies of Rare+ cards are all proposals in sections 5 to 7.
