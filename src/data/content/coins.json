@@ -1,0 +1,42 @@
+[
+  {
+    "id": "copper",
+    "name": "Copper",
+    "power": 0
+  },
+  {
+    "id": "silver",
+    "name": "Silver",
+    "power": 3
+  },
+  {
+    "id": "gold",
+    "name": "Gold",
+    "power": 6
+  },
+  {
+    "id": "diamond",
+    "name": "Diamond",
+    "power": 9
+  },
+  {
+    "id": "star",
+    "name": "Star",
+    "power": 12
+  },
+  {
+    "id": "moon",
+    "name": "Moon",
+    "power": 15
+  },
+  {
+    "id": "sun",
+    "name": "Sun",
+    "power": 18
+  },
+  {
+    "id": "crown",
+    "name": "Crown",
+    "power": 21
+  }
+]

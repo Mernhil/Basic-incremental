@@ -24,6 +24,7 @@ import {
   TIER_LABELS,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
 import { itemArt } from '../art/items';
 import { cardFaceOf } from './cardFaceModel';
@@ -83,7 +84,7 @@ export function createCardsModel(
       .map((r) =>
         r.kind === 'starFill'
           ? COPY.cards.req.copies(r.need.toNumber())
-          : `${fmt(r.need)} ${resName(r.resource ?? '')}`,
+          : amountText(content, r.resource ?? '', r.need),
       )
       .join(', ');
   }

@@ -53,6 +53,7 @@ import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
 import training from '../src/data/content/training.json';
+import coins from '../src/data/content/coins.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
 import items from '../src/data/content/items.json';
 import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
@@ -604,6 +605,7 @@ describe('combat data is validated', () => {
       prestige,
       upgrades,
       training,
+      coins,
       weaponSkins,
       items,
     });

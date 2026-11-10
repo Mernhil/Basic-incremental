@@ -8,6 +8,7 @@ import {
 } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import { buyLabel, type BuyLineView } from './buyModel';
 
 /**
@@ -34,8 +35,6 @@ export interface TrainingRow {
 /** A multiplier as text: two decimals while small ("1.60"), the number format above that. */
 const times = (d: Decimal): string => (d.lt(100) ? d.toNumber().toFixed(2) : fmt(d));
 
-const resName = (content: Content, id: string): string => content.resourceById.get(id)?.name ?? id;
-
 /** The rows of the Training panel for the chosen buy amount. */
 export function trainingRows(
   state: GameState,
@@ -61,7 +60,7 @@ export function trainingRows(
         available: true,
         offer: t.offer,
         label: buyLabel(t.offer, count),
-        price: `${fmt(t.offer.price.amount)} ${resName(content, t.offer.price.resource)}`,
+        price: amountText(content, t.offer.price.resource, t.offer.price.amount),
         preview: COPY.training.preview(times(t.now), times(t.after)),
         milestone: COPY.buy.milestone(t.milestone.nextLevel, fmt(t.milestone.nextMultiplier)),
         milestoneInfo: t.milestone,

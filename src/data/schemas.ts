@@ -1410,6 +1410,17 @@ export const trainingSchema = z.strictObject({
 });
 export type Training = z.output<typeof trainingSchema>;
 
+/**
+ * A coin of the Money display (DESIGN.md §3 Coins): Money is shown in the biggest coin it fills,
+ * one coin being 10^power Money. The first coin has power 0 and the powers rise.
+ */
+export const coinSchema = z.strictObject({
+  id,
+  name,
+  power: z.number().int().min(0),
+});
+export type Coin = z.output<typeof coinSchema>;
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1433,6 +1444,16 @@ export const contentSchemas = {
   enhancements: enhancementsSchema,
   upgrades: upgradesFileSchema,
   training: z.array(trainingSchema).min(1),
+  coins: z
+    .array(coinSchema)
+    .min(1)
+    .refine(
+      (list) =>
+        list[0]!.power === 0 && list.every((c, i) => i === 0 || c.power > list[i - 1]!.power),
+      {
+        message: 'the first coin has power 0 and each coin is worth more than the one before',
+      },
+    ),
   weaponSkins: z.array(weaponSkinSetSchema),
   items: itemsSchema,
 } as const;

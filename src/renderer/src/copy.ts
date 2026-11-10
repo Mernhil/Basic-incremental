@@ -808,6 +808,7 @@ export const COPY = {
     capped: (cap: string) => `Capped at ${cap}`,
     resources: 'Gathered',
     gain: (amount: string, resource: string) => `+${amount} ${resource}`,
+    gainText: (amount: string) => `+${amount}`,
     fights: 'Fights',
     kills: (n: number) => (n === 1 ? '1 kill' : `${n.toLocaleString('en-US')} kills`),
     knockouts: (n: number) => (n === 1 ? 'Knocked out once' : `Knocked out ${n} times`),

@@ -37,7 +37,7 @@ import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
 import { createShelf, type Shelf } from '../ui/shelf';
-import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import {
   jobRateValue,
   productionRows,
@@ -132,7 +132,6 @@ export function createProductionPage(
   ctx: ProductionContext,
 ): { render(): void } {
   const { content } = ctx;
-  const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
   const visible = (): boolean => ctx.visible?.() ?? true;
   const coinThrottle = createThrottle(COINS_PER_SECOND, 1000);
 
@@ -253,7 +252,7 @@ export function createProductionPage(
   // ---- rows ----
   function priceOf(v: { offer: { price: { amount: Decimal; resource: string } } }): string {
     const p = v.offer.price;
-    return p.resource === 'money' ? fmt(p.amount) : `${fmt(p.amount)} ${resName(p.resource)}`;
+    return amountText(content, p.resource, p.amount);
   }
 
   function buildRow(row: ProductionRow, p: Producer): RowRef {
