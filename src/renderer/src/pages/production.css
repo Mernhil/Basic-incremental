@@ -124,8 +124,11 @@
 .pp-r--locked {
   color: var(--bi-frame-ink-muted);
 }
-.pp-r.is-hit {
-  background: color-mix(in srgb, var(--pp-job) 16%, transparent);
+/* A struck row shows the strike on its tile (the hop, the attack effect, the "+n"); the row
+   itself does not light up: a pale block behind the tile read as a glare. With reduced motion,
+   where nothing moves, a faint tint marks the row instead. */
+:root[data-motion='reduced'] .pp-r.is-hit {
+  background: color-mix(in srgb, var(--pp-job) 8%, transparent);
 }
 .pp-r.is-wave {
   animation: pp-wave 0.5s ease-out;

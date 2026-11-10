@@ -82,8 +82,6 @@ interface Slot {
 
 const SUPPORTS = 3;
 
-/** Window size from which the main card stands at 2x (UI_RULES.md §2, the fan on Dungeons). */
-const BIG_FAN = { width: 1280, height: 720 } as const;
 /** CSS px the arena keeps for the bars under the fan and the card frame's bleed. */
 const FAN_RESERVE = 170;
 /** Art pixels the whole fan is wide (the main card plus three peeks) and the card is tall. */
@@ -198,9 +196,9 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   // the party as a fan: the main card in front, the supports behind it (ui/loadoutFan.ts)
   const arenaHeight = (): number => el.clientHeight || window.innerHeight - 160;
   const fan = createLoadoutFan({
-    // 2x from a 1280 x 720 window, the grid size on a smaller one (UI_RULES.md §2)
-    want: () =>
-      window.innerWidth >= BIG_FAN.width && window.innerHeight >= BIG_FAN.height ? 264 : 132,
+    // 2x wherever the arena has room for it: the cards matter as much as the enemy
+    // (UI_RULES.md §2). `max` below steps it down to the grid size only on a window too small.
+    want: () => 264,
     // the fan may take a third of the window, and no more height than the arena has to give
     max: () =>
       Math.min(
