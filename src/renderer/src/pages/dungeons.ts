@@ -515,7 +515,14 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       const table = effectiveDrops(d, mods, content);
       const stage = fightStage(state, content, d.id, mods);
       const drops = stage ? difficultyDrops(table, stage.scale) : table;
-      const purse = (n: number, multiplier = 1): string => fmt(new Decimal(n).mul(multiplier));
+      // The boss stands on the last floor, where the purse has grown with the floors above it.
+      const boss =
+        stage && Number.isFinite(stage.floors)
+          ? fightStage(state, content, d.id, mods, stage.floors)?.enemies[0]
+          : undefined;
+      const bossPurse = boss?.purseScale ?? 1;
+      const purse = (n: number, multiplier = 1): string =>
+        fmt(new Decimal(n).mul(multiplier).mul(bossPurse));
       const rareName = content.cosmeticById.get(d.drops.rare.itemId)?.name ?? d.drops.rare.itemId;
       const resName = (r: string): string => content.resourceById.get(r)?.name ?? r;
       const row = (label: string, value: string, cls = ''): HTMLElement => {
