@@ -480,7 +480,7 @@ export const COPY = {
     // shard shop
     shop: 'Shard shop',
     shardsLabel: 'Shards',
-    shardsHint: 'A duplicate of a card at Prismatic ★6 turns into shards. Rarer cards give more.',
+    shardsHint: 'Extra copies a card cannot use for stars turn into shards. Rarer cards give more.',
     groups: {
       cards: 'Card copies',
       supplies: 'Supplies',
