@@ -120,10 +120,13 @@
   justify-items: center;
   gap: 2px;
 }
+/* the 64 px plaque at a whole scale: the largest whole number of device pixels per art pixel that
+   fits 64 CSS px (ui/pixelScale.css) */
 .sm-crest__icon {
+  --pq-n: max(1, round(down, var(--dpr), 1));
   display: block;
-  width: 64px;
-  height: 64px;
+  width: calc(64px * var(--pq-n) / var(--dpr));
+  height: calc(64px * var(--pq-n) / var(--dpr));
 }
 .sm-crest__icon svg {
   display: block;
