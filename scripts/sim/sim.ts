@@ -16,6 +16,8 @@
  *   equips complete cosmetic sets;
  * - pushes down a dungeon's floors whenever the next floor is one it wins with room to spare (a
  *   knockout drops it a floor and back to farming, by the game's own rule);
+ * - fights on Normal while a dungeon is not cleared or a Core is wanted, and climbs the Hard and
+ *   Nightmare tiers and the endless depths when nothing else is waiting;
  * - fights: the Glimmer Trial once it can score 100%, else a newly killable dungeon, else the
  *   cleared trial for cosmetic materials within a time share, else a dungeon whose Core a card
  *   waits for, else the hardest killable one (every dungeon pays Money and both crystals);
@@ -54,9 +56,15 @@ import {
   secondsPerKill,
   survivalSeconds,
   simulateOffline,
+  fightStage,
+  floorCount,
   floorPosition,
   hasDeeperFloor,
+  isDifficultyUnlocked,
+  setDifficulty,
   setFloorMode,
+  DIFFICULTIES,
+  type Difficulty,
   setActiveDungeon,
   setLoadout,
   starUp,
@@ -99,7 +107,8 @@ export interface Milestone {
   toHours?: number;
   /** Whether the state has reached it. */
   reached: (state: GameState, content: Content, log: SimLog) => boolean;
-  /** Set while the system the milestone needs is not built yet. */
+  /** Set while what the milestone needs is not in the game yet (the three new dungeons wait for
+   *  their themes): it is left out of the band check and of "mostly exhausted". */
   pending?: string;
 }
 
@@ -129,6 +138,12 @@ const ownsRarityAtLeast = (
       state.cards.owned[card.id] && RARITIES.indexOf(card.rarity) >= RARITIES.indexOf(rarity),
   );
 const cleared = (id: string) => (state: GameState) => isDungeonCleared(state, id);
+/** Whether the last-floor boss of a dungeon's difficulty tier has been beaten. */
+const tierBeaten = (
+  state: GameState,
+  dungeon: Content['dungeons'][number],
+  difficulty: Difficulty,
+): boolean => floorPosition(state, dungeon, difficulty).best >= floorCount(dungeon, difficulty);
 
 export const MILESTONES: Milestone[] = [
   {
@@ -223,6 +238,39 @@ export const MILESTONES: Milestone[] = [
       }),
   },
   {
+    id: 'first_hard',
+    label: 'First Hard clear',
+    targetHours: 14,
+    reached: (s, c) => c.dungeons.some((d) => tierBeaten(s, d, 'hard')),
+  },
+  {
+    id: 'clear_d4',
+    label: 'Dungeon 4 cleared',
+    targetHours: 18,
+    reached: cleared('dungeon_4'),
+    pending: 'its theme is not picked',
+  },
+  {
+    id: 'first_nightmare',
+    label: 'First Nightmare clear',
+    targetHours: 24,
+    reached: (s, c) => c.dungeons.some((d) => tierBeaten(s, d, 'nightmare')),
+  },
+  {
+    id: 'clear_d5',
+    label: 'Dungeon 5 cleared',
+    targetHours: 28,
+    reached: cleared('dungeon_5'),
+    pending: 'its theme is not picked',
+  },
+  {
+    id: 'clear_d6',
+    label: 'Dungeon 6 cleared',
+    targetHours: 36,
+    reached: cleared('dungeon_6'),
+    pending: 'its theme is not picked',
+  },
+  {
     id: 'exhausted',
     label: 'Beta content mostly exhausted',
     targetHours: 40,
@@ -231,7 +279,7 @@ export const MILESTONES: Milestone[] = [
     reached: (s, c, log) =>
       c.cards.every((card) => s.cards.owned[card.id]) &&
       Object.values(s.cards.owned).some((card) => card.tier === 'mythic') &&
-      MILESTONES.every((m) => m.id === 'exhausted' || m.reached(s, c, log)),
+      MILESTONES.every((m) => m.id === 'exhausted' || m.pending || m.reached(s, c, log)),
   },
 ];
 
@@ -1025,13 +1073,24 @@ export function holdAscension(state: GameState, content: Content): boolean {
 
 // ---- where to fight ----------------------------------------------------------------------------
 
-/** Whether the loadout kills the boss before the boss knocks it out. */
+/** Whether the loadout clears the floor it stands on, on Normal, before the floor knocks it out. */
 function canKill(state: GameState, content: Content, id: string, modifiers: Modifier[]): boolean {
   const dungeon = content.dungeonById.get(id);
   if (!dungeon || !isDungeonUnlocked(state, content, id)) return false;
-  const spk = secondsPerKill(state, content, id, modifiers);
+  return holds(state, content, id, modifiers, 'normal');
+}
+
+/** Whether the loadout clears the floor it stands on, on a difficulty, before it is knocked out. */
+function holds(
+  state: GameState,
+  content: Content,
+  id: string,
+  modifiers: readonly Modifier[],
+  difficulty: Difficulty,
+): boolean {
+  const spk = secondsPerKill(state, content, id, modifiers, undefined, difficulty);
   if (spk === null || !Number.isFinite(spk)) return false;
-  const survival = survivalSeconds(state, content, id, modifiers);
+  const survival = survivalSeconds(state, content, id, modifiers, undefined, difficulty);
   return !(survival !== null && survival < spk);
 }
 
@@ -1060,34 +1119,45 @@ export const PUSH_MAX_SECONDS = 600;
 /** Most of the time spent fighting the cleared Glimmer Trial for cosmetic materials. */
 export const TRIAL_FARM_SHARE = 0.25;
 
+/** What the sim player fights next: a dungeon or special dungeon, and the difficulty tier. */
+export interface FightChoice {
+  id: string | null;
+  difficulty: Difficulty;
+}
+
 /**
  * What to fight: the Glimmer Trial once it can be cleared; a killable dungeon not cleared yet
  * whose floors it can still get down (not one at a wall) and whose floor takes at most
  * PUSH_MAX_SECONDS;
  * the cleared trial for cosmetic materials while its share of the time is under
  * TRIAL_FARM_SHARE; a dungeon whose Core is wanted (or that drops a wanted material as an extra;
- * crystals come as a wage everywhere); the hardest killable dungeon; else the first
- * open dungeon not cleared (a wall to push on).
+ * crystals come as a wage everywhere); a Hard or Nightmare tier, or the endless depths, it can
+ * still get down; the hardest killable dungeon; else the first open dungeon not cleared (a wall
+ * to push on). Everything but the tier climb is fought on Normal: an enemy's drops follow its
+ * share of the boss's HP, so the Normal floors are where Cores come fastest.
  */
-export function chooseDungeon(
+export function chooseFight(
   state: GameState,
   content: Content,
   options: { trialShare?: number } = {},
-): string | null {
+): FightChoice {
+  const normal = (id: string | null): FightChoice => ({ id, difficulty: 'normal' });
   const modifiers = collectModifiers(state, content);
   for (const trial of content.trials) {
     if (!isDungeonUnlocked(state, content, trial.id) || isDungeonCleared(state, trial.id)) continue;
     const dealt = averageDps(state, content, trial.id, modifiers).mul(trial.durationSeconds);
-    if (dealt.gte(trial.target.hp)) return trial.id;
+    if (dealt.gte(trial.target.hp)) return normal(trial.id);
   }
+  const perFloor = (id: string): number | null =>
+    secondsPerKill(state, content, id, modifiers, undefined, 'normal');
   const killable = content.dungeons.filter((d) => canKill(state, content, d.id, modifiers));
   const push = killable.find(
     (d) =>
       !isDungeonCleared(state, d.id) &&
       advances(state, content, d.id, modifiers) &&
-      (secondsPerKill(state, content, d.id, modifiers) ?? Infinity) <= PUSH_MAX_SECONDS,
+      (perFloor(d.id) ?? Infinity) <= PUSH_MAX_SECONDS,
   );
-  if (push) return push.id;
+  if (push) return normal(push.id);
   const wantedList = wantedResources(state, content, modifiers);
   const wanted = new Set(wantedList);
   const trialFarm = content.trials.find(
@@ -1095,68 +1165,116 @@ export function chooseDungeon(
       isDungeonCleared(state, t.id) &&
       t.tiers.some((tier) => tier.rewards.some((r) => wanted.has(r.resource))),
   );
-  if (trialFarm && (options.trialShare ?? 0) < TRIAL_FARM_SHARE) return trialFarm.id;
+  if (trialFarm && (options.trialShare ?? 0) < TRIAL_FARM_SHARE) return normal(trialFarm.id);
   // The lead card's missing Core first (a Moss Core for a Bronze tier-up is farmed in Mossy Cellar).
   for (const resource of wantedList) {
     const farm = killable.find((d) => d.drops.material.resource === resource);
-    if (farm) return farm.id;
+    if (farm) return normal(farm.id);
     // Else the dungeon that drops it as an extra fastest (the Ember Crypt's Frost Cores and
     // Sigils, DESIGN.md §3).
     let best: { id: string; rate: number } | null = null;
     for (const d of killable) {
       const extra = d.drops.extraMaterials.find((e) => e.resource === resource);
-      const spk = secondsPerKill(state, content, d.id, modifiers);
+      const spk = perFloor(d.id);
       if (!extra || spk === null || spk <= 0) continue;
       const rate = (extra.chance * (extra.min + extra.max)) / 2 / spk;
       if (!best || rate > best.rate) best = { id: d.id, rate };
     }
-    if (best) return best.id;
+    if (best) return normal(best.id);
   }
+  // Nothing is waiting: climb the tiers and the endless depths.
+  const climb = climbTarget(state, content, modifiers);
+  if (climb) return climb;
   const hardest = killable[killable.length - 1];
-  if (hardest) return hardest.id;
+  if (hardest) return normal(hardest.id);
   const open = content.dungeons.find(
     (d) => isDungeonUnlocked(state, content, d.id) && !isDungeonCleared(state, d.id),
   );
-  return open?.id ?? content.dungeons[0]?.id ?? null;
+  return normal(open?.id ?? content.dungeons[0]?.id ?? null);
+}
+
+/** The dungeon or special dungeon `chooseFight` picks. */
+export function chooseDungeon(
+  state: GameState,
+  content: Content,
+  options: { trialShare?: number } = {},
+): string | null {
+  return chooseFight(state, content, options).id;
 }
 
 /** The sim player pushes on only when the next floor's "you fall in" is this many times its clear time. */
 export const PUSH_MARGIN = 1.2;
 
-/** Whether the floor below the one the player stands on is one the loadout wins with room to spare. */
+/**
+ * Whether the floor below the one the player stands on (on the dungeon's chosen difficulty, or
+ * on `difficulty`) is one the loadout wins with room to spare.
+ */
 function winsNextFloor(
   state: GameState,
   content: Content,
   dungeonId: string,
   modifiers: readonly Modifier[],
+  difficulty?: Difficulty,
 ): boolean {
   const dungeon = content.dungeonById.get(dungeonId);
   if (!dungeon) return false;
-  const position = floorPosition(state, dungeon);
+  const position = floorPosition(state, dungeon, difficulty);
   if (!hasDeeperFloor(position)) return false;
   const next = position.floor + 1;
-  const spk = secondsPerKill(state, content, dungeonId, modifiers, next);
+  const at = position.difficulty;
+  const spk = secondsPerKill(state, content, dungeonId, modifiers, next, at);
   if (spk === null || !Number.isFinite(spk)) return false;
-  const survival = survivalSeconds(state, content, dungeonId, modifiers, next);
+  const survival = survivalSeconds(state, content, dungeonId, modifiers, next, at);
   return survival === null || survival >= spk * PUSH_MARGIN;
 }
 
 /**
- * Whether fighting a dungeon gets the player nearer its clear: it is pushing down floors it
- * wins, stands on a last floor it wins, or was knocked back to farming and now wins the floor
- * below. A dungeon at a wall is only worth its drops.
+ * Whether fighting a dungeon on a difficulty gets the player nearer that tier's boss (or deeper,
+ * in the endless depths): it stands on a floor it wins and is pushing, or stands on a last floor
+ * it wins, or was knocked back to farming and now wins the floor below. A dungeon at a wall is
+ * only worth its drops.
  */
 function advances(
   state: GameState,
   content: Content,
   dungeonId: string,
   modifiers: Modifier[],
+  difficulty: Difficulty = 'normal',
 ): boolean {
   const dungeon = content.dungeonById.get(dungeonId);
-  if (!dungeon || !canKill(state, content, dungeonId, modifiers)) return false;
-  const position = floorPosition(state, dungeon);
-  if (!hasDeeperFloor(position) || position.mode === 'push') return true;
-  return winsNextFloor(state, content, dungeonId, modifiers);
+  if (!dungeon || !isDungeonUnlocked(state, content, dungeonId)) return false;
+  if (!holds(state, content, dungeonId, modifiers, difficulty)) return false;
+  const position = floorPosition(state, dungeon, difficulty);
+  // The mode is the dungeon's: it only says something about the difficulty being fought.
+  const chosen = floorPosition(state, dungeon).difficulty === difficulty;
+  if (!hasDeeperFloor(position) || (chosen && position.mode === 'push')) return true;
+  return winsNextFloor(state, content, dungeonId, modifiers, difficulty);
+}
+
+/**
+ * The tier to climb when nothing else is waiting (DESIGN.md §6 Difficulty tiers, Endless depths):
+ * among the open tiers above Normal whose boss is not beaten yet, and the endless depths, the
+ * weakest one the loadout can still get down. Null when every one of them is a wall.
+ */
+function climbTarget(
+  state: GameState,
+  content: Content,
+  modifiers: Modifier[],
+): { id: string; difficulty: Difficulty } | null {
+  let best: { id: string; difficulty: Difficulty; hp: number } | null = null;
+  for (const dungeon of content.dungeons) {
+    if (!isDungeonUnlocked(state, content, dungeon.id)) continue;
+    for (const difficulty of DIFFICULTIES) {
+      if (difficulty === 'normal' || !isDifficultyUnlocked(state, dungeon, difficulty)) continue;
+      const position = floorPosition(state, dungeon, difficulty);
+      if (position.best >= position.floors) continue; // its boss is beaten
+      if (!advances(state, content, dungeon.id, modifiers, difficulty)) continue;
+      const stage = fightStage(state, content, dungeon.id, modifiers, undefined, difficulty);
+      const hp = stage ? stage.hp.log10().toNumber() : Infinity;
+      if (!best || hp < best.hp) best = { id: dungeon.id, difficulty, hp };
+    }
+  }
+  return best && { id: best.id, difficulty: best.difficulty };
 }
 
 /**
@@ -1308,10 +1426,14 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       if (trialClearedAt === null && isDungeonCleared(state, 'glimmer_trial')) trialClearedAt = t;
       const since = trialClearedAt === null ? 0 : t - trialClearedAt;
       const trialShare = since > 0 ? (log.fought['glimmer_trial'] ?? 0) / since : 0;
-      const target = chooseDungeon(state, content, { trialShare });
-      if (target !== state.activeDungeonId) {
-        const result = setActiveDungeon(state, content, target);
+      const fight = chooseFight(state, content, { trialShare });
+      if (fight.id !== state.activeDungeonId) {
+        const result = setActiveDungeon(state, content, fight.id);
         if (result.ok) state = result.state;
+      }
+      if (fight.id !== null && content.dungeonById.has(fight.id)) {
+        const tier = setDifficulty(state, content, fight.id, fight.difficulty);
+        if (tier.ok) state = tier.state;
       }
       state = choosePush(state, content);
       sinceChoose = 0;
@@ -1509,8 +1631,10 @@ export function formatSeedTable(
     const ratio = s.median === null ? '-' : `${targetRatio(m, s.median / 3600)}%`;
     const check = bandCheck(m, s);
     const failed = [check.median ? '' : 'median', check.worst ? '' : 'worst'].filter(Boolean);
-    rows++;
-    if (failed.length === 0) passed++;
+    // What a milestone needs may not be in the game yet: it is not held against the bands.
+    const notBuilt = m.pending !== undefined && s.reached === 0;
+    if (!notBuilt) rows++;
+    if (!notBuilt && failed.length === 0) passed++;
     let idle = '';
     if (options.idle) {
       const i = options.idle[m.id];
@@ -1522,7 +1646,7 @@ export function formatSeedTable(
       idle = ` ${idleMedian} | ${i ? worstText(i, options.seeds) : '-'} |`;
     }
     lines.push(
-      `| ${m.label} | ${targetText(m)} | ${median} | ${spread} | ${worstText(s, options.seeds)} | ${s.reached}/${s.runs} | ${ratio} | ${failed.length === 0 ? 'ok' : `FAIL ${failed.join(', ')}`} |${idle}`,
+      `| ${m.label} | ${targetText(m)} | ${median} | ${spread} | ${worstText(s, options.seeds)} | ${s.reached}/${s.runs} | ${ratio} | ${notBuilt ? `not built (${m.pending})` : failed.length === 0 ? 'ok' : `FAIL ${failed.join(', ')}`} |${idle}`,
     );
   }
   lines.push(
@@ -1536,7 +1660,7 @@ export function formatSeedTable(
 export function bandsPass(summary: Record<string, MilestoneSpread>): boolean {
   return MILESTONES.every((m) => {
     const s = summary[m.id];
-    if (!s) return true;
+    if (!s || (m.pending !== undefined && s.reached === 0)) return true;
     const check = bandCheck(m, s);
     return check.median && check.worst;
   });
@@ -1606,11 +1730,22 @@ export function formatSummary(result: SimResult, content: Content): string {
       const spk = secondsPerKill(s, content, d.id, modifiers);
       const survive = survivalSeconds(s, content, d.id, modifiers) ?? Infinity;
       const at = floorPosition(s, d);
-      return `${d.id} floor ${at.floor}/${at.floors} (best ${at.best}, ${at.mode}) ${spk === null ? '-' : `${spk.toFixed(0)} s/floor`} (survives ${survive.toFixed(0)} s)`;
+      const where = Number.isFinite(at.floors)
+        ? `floor ${at.floor}/${at.floors}`
+        : `depth ${at.floor}`;
+      return `${d.id} ${at.difficulty} ${where} (best ${at.best}, ${at.mode}) ${spk === null ? '-' : `${spk.toFixed(0)} s/floor`} (survives ${survive.toFixed(0)} s)`;
     })
     .join(', ');
   return [
     `Fights at the end: ${walls}`,
+    `Best floors: ${content.dungeons
+      .map(
+        (d) =>
+          `${d.id} ${DIFFICULTIES.filter((x) => isDifficultyUnlocked(s, d, x))
+            .map((x) => `${x} ${floorPosition(s, d, x).best}`)
+            .join(', ')}`,
+      )
+      .join('; ')}`,
     `Boss and mini-boss kills: ${s.stats.bossKills} (last-floor bosses: ${Object.entries(
       s.combat.kills,
     )

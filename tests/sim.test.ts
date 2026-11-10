@@ -465,6 +465,18 @@ describe('balance sim: run', () => {
     }
     state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
     state.prestigeCount = 1;
+    // ... with a Hard and a Nightmare boss beaten somewhere (the three new dungeons wait for
+    // their themes and do not count).
+    const first = content.dungeons[0]!;
+    state.combat.floors[first.id] = {
+      difficulty: 'normal',
+      mode: 'farm',
+      tiers: {
+        normal: { floor: first.floors, best: first.floors },
+        hard: { floor: first.floors, best: first.floors },
+        nightmare: { floor: first.floors, best: first.floors },
+      },
+    };
     state.cards.owned['moonwood_dryad']!.tier = 'prismatic'; // Mythic: it can go on to T6
     state.cards.owned['moonwood_dryad']!.stars = 6;
     state.cosmetics.owned['holo_hex'] = {
