@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addCard } from '../src/game';
 import { createCardsModel } from '../src/renderer/src/pages/cardsAdapter';
+import { slotChoices } from '../src/renderer/src/pages/cardsModel';
 import { content, freshState } from './helpers';
 
 const model = createCardsModel(content);
@@ -46,5 +47,52 @@ describe('Cards page model', () => {
     const main = model.entries(state).find((e) => e.role?.slot === 'main')!;
     const result = model.remove(state, main.id);
     expect(result.ok && model.signature(result.state)).not.toBe(model.signature(state));
+  });
+
+  it('offers a slot the cards of its job with what picking each would cost', () => {
+    let state = freshState();
+    const epic = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
+    const mythic = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'mythic')!;
+    state.account.level = 2; // cost cap 8: the Squire costs 2, an Epic 6, a Mythic 14
+    state = addCard(state, content, epic.id)!.state;
+    state = addCard(state, content, mythic.id)!.state;
+    const lo = model.loadout(state, 'fighting');
+    const choices = slotChoices(model.entries(state), lo, 1);
+    // Only owned fighting cards; the ones that fit lead, the costliest first.
+    expect(choices.map((c) => c.id)).toEqual([epic.id, 'ember_squire', mythic.id]);
+    expect(choices[0]).toMatchObject({ from: null, current: false, costAfter: 8, fits: true });
+    // The main card would swap into the support slot: the cost stays.
+    expect(choices[1]).toMatchObject({ from: 0, costAfter: lo.cost, fits: true });
+    expect(choices[2]).toMatchObject({ costAfter: 16, fits: false });
+  });
+
+  it('places a card in a slot and swaps two cards of a loadout', () => {
+    let state = freshState();
+    const epic = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
+    state.account.level = 2;
+    state = addCard(state, content, epic.id)!.state;
+    const placed = model.place(state, 2, epic.id);
+    if (!placed.ok) throw new Error(placed.reason);
+    expect(model.loadout(placed.state, 'fighting').slots).toEqual([
+      'ember_squire',
+      null,
+      epic.id,
+      null,
+    ]);
+    // Picking the support for the main slot swaps it with the main card.
+    const swapped = model.place(placed.state, 0, epic.id);
+    if (!swapped.ok) throw new Error(swapped.reason);
+    expect(model.loadout(swapped.state, 'fighting').slots).toEqual([
+      epic.id,
+      null,
+      'ember_squire',
+      null,
+    ]);
+    const current = slotChoices(
+      model.entries(swapped.state),
+      model.loadout(swapped.state, 'fighting'),
+      0,
+    );
+    expect(current.find((c) => c.id === epic.id)!.current).toBe(true);
   });
 });

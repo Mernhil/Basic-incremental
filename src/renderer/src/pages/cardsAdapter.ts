@@ -200,6 +200,12 @@ export function createCardsModel(
       if (free < 0 || free >= SUPPORT_SLOTS) return { ok: false, reason: COPY.cards.reasons.full };
       return wrap(setLoadoutSlot(state, content, card.job, free as 0 | 1 | 2, id));
     },
+    place(state, slot, id) {
+      const card = content.cardById.get(id);
+      if (!card) return { ok: false, reason: reason('unknown') };
+      const target = slot === 0 ? 'main' : ((slot - 1) as 0 | 1 | 2);
+      return wrap(setLoadoutSlot(state, content, card.job, target, id));
+    },
     remove(state, id) {
       const info = cardInfo(state, content, id);
       if (!info?.slot) return { ok: false, reason: reason('invalid-slot') };

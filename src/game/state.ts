@@ -172,6 +172,8 @@ export interface CombatState {
   kills: Record<string, number>;
   /** Dungeon id -> its floors (DESIGN.md §6). Missing = a dungeon never fought. */
   floors: Record<string, DungeonProgress>;
+  /** Training line id -> levels bought this run (DESIGN.md §6 Training). Reset on Ascension. */
+  training: Record<string, number>;
   /** The running special-dungeon attempt (only meaningful while a trial is active). */
   trialAttempt: TrialAttempt;
   /** Special dungeon id -> best score, 0..1. */
@@ -199,6 +201,7 @@ export function initialCombat(): CombatState {
   return {
     kills: {},
     floors: {},
+    training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     trialBest: {},
     loadoutDamage: new Decimal(0),
@@ -312,6 +315,7 @@ export function cloneCombat(c: CombatState): CombatState {
   return {
     kills: { ...c.kills },
     floors: cloneFloors(c.floors),
+    training: { ...c.training },
     trialAttempt: { ...c.trialAttempt },
     trialBest: { ...c.trialBest },
     loadoutDamage: c.loadoutDamage,

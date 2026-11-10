@@ -33,6 +33,7 @@ import type { Director } from '../stage/director';
 import { bossArt } from '../art/bosses';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { createShelf } from '../ui/shelf';
+import { createTrainingPanel } from '../ui/training';
 import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
 import type { CardsModel } from './cardsModel';
 import {
@@ -239,7 +240,18 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     scope: 'fighting',
     sound: ctx.sound,
   });
-  upgradesCol.append(shelf.el);
+  // Training first: the repeatable fighting upgrades (DESIGN.md §6); the one-time shelf follows.
+  const training = createTrainingPanel({
+    content,
+    state: ctx.state,
+    apply: ctx.apply,
+    sound: ctx.sound,
+  });
+  upgradesCol.append(
+    training.el,
+    h('h3', 'dp-col__title dp-col__title--sub', COPY.training.oneTime),
+    shelf.el,
+  );
 
   let floorsSig = '';
   let updates: Array<() => void> = [];
@@ -640,6 +652,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     for (const u of updates) u();
     updateWeapon();
     shelf.update();
+    training.update();
   }
 
   function render(): void {

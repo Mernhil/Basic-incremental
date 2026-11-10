@@ -18,7 +18,9 @@ import {
   floorKind,
   floorPosition,
   floorSpec,
+  isDifficultyUnlocked,
   isDungeonCleared,
+  isDungeonUnlocked,
   loadoutHealth,
   MIGRATIONS,
   readSave,
@@ -499,7 +501,7 @@ describe('dev cheats', () => {
   });
 });
 
-describe('save format 24: floors', () => {
+describe('save formats 24 and 25: floors', () => {
   it('has a step at key 23 that puts cleared dungeons on their last floor, in farm mode', () => {
     const out = MIGRATIONS[23]!({
       clearedDungeons: ['mossy_cellar', 'ember_crypt', 'glimmer_trial', 'gone'],
@@ -524,33 +526,61 @@ describe('save format 24: floors', () => {
     expect((MIGRATIONS[23]!({}) as { combat: unknown }).combat).toEqual({ floors: {} });
   });
 
+  it('has a step at key 24 that sends every dungeon back to floor 1 of Normal (replay Normal first)', () => {
+    const out = MIGRATIONS[24]!({
+      clearedDungeons: ['mossy_cellar'],
+      bossHp: '55',
+      combat: {
+        kills: { mossy_cellar: 7 },
+        floors: {
+          mossy_cellar: {
+            difficulty: 'hard',
+            mode: 'farm',
+            tiers: { normal: { floor: 10, best: 10 }, hard: { floor: 3, best: 2 } },
+          },
+        },
+      },
+    }) as { bossHp: unknown; clearedDungeons: unknown; combat: Record<string, unknown> };
+    expect(out.bossHp).toBeNull();
+    // What the clear unlocked stays; the floors are played again.
+    expect(out.clearedDungeons).toEqual(['mossy_cellar']);
+    expect(out.combat).toEqual({ kills: { mossy_cellar: 7 }, floors: {}, training: {} });
+    expect((MIGRATIONS[24]!({}) as { combat: unknown }).combat).toEqual({
+      floors: {},
+      training: {},
+    });
+  });
+
   it('loads a format 23 save made with the 0.5.3 dev tools', () => {
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v23-dev-tools.save.txt'), 'utf8');
     expect(JSON.parse(text).version).toBe(23);
-    expect(CURRENT_SAVE_VERSION).toBe(24);
+    expect(CURRENT_SAVE_VERSION).toBe(25);
     const { state } = readSave(text, floorsContent);
-    // Both cleared dungeons stay cleared and stand on their Normal last floor, as their best.
+    // Both cleared dungeons stay cleared, with what they opened ...
     expect(state.clearedDungeons).toEqual(['mossy_cellar', 'ember_crypt']);
-    expect(floorPosition(state, cellar)).toEqual({
-      difficulty: 'normal',
-      mode: 'farm',
-      floor: 10,
-      best: 10,
-      floors: 10,
-    });
-    expect(floorPosition(state, crypt)).toMatchObject({ floor: 20, best: 20, mode: 'farm' });
-    // The third dungeon was open and not cleared: floor 1, pushing.
-    const vault = floorsContent.dungeonById.get('frostspire_vault')!;
-    expect(floorPosition(state, vault)).toMatchObject({ floor: 1, best: 0, mode: 'push' });
-    // Kills (and so the boss medals) are untouched; the boss respawns.
+    expect(isDungeonUnlocked(state, floorsContent, 'frostspire_vault')).toBe(true);
+    // ... but their floors were never played: every dungeon starts on floor 1 of Normal,
+    // pushing, and Hard stays locked until the Normal boss falls (replay Normal first).
+    for (const dungeon of [cellar, crypt, floorsContent.dungeonById.get('frostspire_vault')!]) {
+      expect(floorPosition(state, dungeon)).toMatchObject({
+        difficulty: 'normal',
+        mode: 'push',
+        floor: 1,
+        best: 0,
+      });
+      expect(isDifficultyUnlocked(state, dungeon, 'hard')).toBe(false);
+    }
+    // Kills (and so the boss medals) are untouched; the fight starts fresh; no training yet.
     expect(state.combat.kills).toEqual({ mossy_cellar: 70, ember_crypt: 1 });
     expect(state.mastery.bossTiers['mossy_cellar']).toBe(1);
     expect(state.bossHp).toBeNull();
+    expect(state.combat.training).toEqual({});
     expect(state.activeDungeonId).toBe('mossy_cellar');
-    expect(bossStatus(state, floorsContent)!.enemy.id).toBe('root_warden');
-    // ... and it plays on: the boss keeps dying on its floor.
+    expect(bossStatus(state, floorsContent)!.floor).toBe(1);
+    // ... and it plays on: down the floors to the boss, which opens Hard.
     const later = advance(state, floorsContent, 600_000, createSeededRng(2));
+    expect(floorPosition(later.state, cellar)).toMatchObject({ floor: 10, best: 10 });
     expect(later.state.combat.kills['mossy_cellar']).toBeGreaterThan(70);
-    expect(floorPosition(later.state, cellar).floor).toBe(10);
+    expect(isDifficultyUnlocked(later.state, cellar, 'hard')).toBe(true);
   });
 });

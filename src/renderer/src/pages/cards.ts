@@ -7,7 +7,14 @@ import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
-import type { CardEntry, CardsModel, Job, ModelResult } from './cardsModel';
+import {
+  slotChoices,
+  type CardEntry,
+  type CardsModel,
+  type Job,
+  type JobLoadout,
+  type ModelResult,
+} from './cardsModel';
 import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './cards.css';
@@ -93,6 +100,8 @@ export function createCardsPage(
   let selected: string | null = null;
   /** The Enhancements star chart is open under the buttons of the selected card. */
   let enhanceOpen = false;
+  /** The loadout slot being filled (0 = main, 1..3 supports): its job's cards show to pick from. */
+  let pick: { job: Job; slot: number } | null = null;
   let last = '';
   let message = '';
   let ticks: Array<() => void> = [];
@@ -562,6 +571,76 @@ export function createCardsPage(
     return box;
   }
 
+  // ---- the loadout picker: the cards a slot could take, under the slots of its job ----
+  function picker(
+    state: GameState,
+    entries: CardEntry[],
+    lo: JobLoadout,
+    slot: number,
+    slotName: (i: number) => string,
+  ): HTMLElement {
+    const box = h('section', 'cp-pick');
+    box.setAttribute('aria-label', COPY.cards.pickFor(slotName(slot)));
+    const head = h('div', 'cp-pick__head');
+    const done = h('button', 'button button--ghost', COPY.cards.pickCancel);
+    done.type = 'button';
+    done.dataset.key = `pick-done-${lo.job}`;
+    done.addEventListener('click', () => {
+      pick = null;
+      build(`slot-${lo.job}-${slot}`);
+    });
+    head.append(
+      h('h4', 'cp-pick__title', COPY.cards.pickFor(slotName(slot))),
+      h('span', 'cp-pick__hint', COPY.cards.pickHint),
+      done,
+    );
+    box.append(head);
+    const byId = new Map(entries.map((e) => [e.id, e]));
+    const choices = slotChoices(entries, lo, slot);
+    if (choices.length === 0) {
+      box.append(h('p', 'cp-pick__hint', COPY.cards.pickNone));
+      return box;
+    }
+    const list = h('ul', 'cp-pick__list');
+    watchFit(list, { want: CARD_WANT.slot });
+    for (const c of choices) {
+      const e = byId.get(c.id);
+      if (!e) continue;
+      const li = h('li', 'cp-pick__item');
+      const tag = c.current
+        ? COPY.cards.pickCurrent
+        : !c.fits
+          ? COPY.cards.pickOver(c.costAfter, lo.cap)
+          : c.from !== null
+            ? COPY.cards.pickSwap(slotName(c.from))
+            : '';
+      const b = h('button', 'cp-tile cp-pick__card');
+      b.type = 'button';
+      b.dataset.key = `pick-${lo.job}-${c.id}`;
+      const usable = c.fits && !c.current;
+      b.setAttribute('aria-disabled', String(!usable));
+      b.setAttribute(
+        'aria-label',
+        [e.name, COPY.cards.pickCost(c.cost), tag].filter(Boolean).join('. '),
+      );
+      if (c.current) b.setAttribute('aria-pressed', 'true');
+      b.append(cardEl(e, state));
+      b.addEventListener('click', () => {
+        if (!usable) return;
+        const key = `slot-${lo.job}-${slot}`;
+        pick = null;
+        act(model.place(ctx.state(), slot, c.id), key);
+      });
+      const note = h('span', 'cp-pick__note bi-num', COPY.cards.pickCost(c.cost));
+      li.append(b, note);
+      if (tag) li.append(h('span', `cp-pick__tag${c.fits ? '' : ' is-over'}`, tag));
+      if (!usable) li.classList.add('is-off');
+      list.append(li);
+    }
+    box.append(list);
+    return box;
+  }
+
   // ---- loadouts ----
   function loadouts(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-loadouts');
@@ -595,20 +674,36 @@ export function createCardsPage(
 
       const slots = h('ol', 'cp-slots');
       watchFit(slots, { want: CARD_WANT.slot });
+      const picking = pick && pick.job === job ? pick.slot : null;
+      const slotName = (i: number): string =>
+        i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);
       lo.slots.forEach((id, i) => {
-        const li = h('li', 'cp-slot');
-        const label = i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);
+        const li = h('li', `cp-slot${picking === i ? ' is-picking' : ''}`);
+        const label = slotName(i);
         li.append(h('span', 'cp-slot__label', label));
         const e = id ? byId.get(id) : undefined;
+        // Click a slot to fill or change it: the cards that fit show under the slots.
+        const choose = (): void => {
+          pick = picking === i ? null : { job, slot: i };
+          build(`slot-${job}-${i}`);
+        };
         if (e) {
           const open = h('button', 'cp-tile');
           open.type = 'button';
           open.dataset.key = `slot-${job}-${i}`;
-          open.setAttribute('aria-label', `${label}: ${e.name}`);
+          open.setAttribute('aria-label', COPY.cards.changeCard(label, e.name));
+          open.setAttribute('aria-pressed', String(picking === i));
           open.append(cardEl(e, state));
-          open.addEventListener('click', () => {
+          open.addEventListener('click', choose);
+          const buttons = h('div', 'cp-slot__buttons');
+          const details = h('button', 'button button--ghost cp-slot__remove', COPY.cards.openCard);
+          details.type = 'button';
+          details.dataset.key = `open-${job}-${i}`;
+          details.setAttribute('aria-label', `${COPY.cards.openCard}: ${e.name}`);
+          details.addEventListener('click', () => {
             if (selected !== e.id) enhanceOpen = false;
             selected = e.id;
+            pick = null;
             switchTab('collection');
             panel.querySelector<HTMLElement>(`[data-key="tile-${e.id}"]`)?.focus();
           });
@@ -617,9 +712,10 @@ export function createCardsPage(
           rm.dataset.key = `rm-${job}-${i}`;
           rm.setAttribute('aria-label', `${COPY.cards.remove}: ${e.name}`);
           rm.addEventListener('click', () =>
-            act(model.remove(ctx.state(), e.id), `rm-${job}-${i}`),
+            act(model.remove(ctx.state(), e.id), `slot-${job}-${i}`),
           );
-          li.append(open, rm);
+          buttons.append(details, rm);
+          li.append(open, buttons);
         } else {
           const empty = h('button', 'cp-empty', COPY.cards.chooseCard);
           empty.type = 'button';
@@ -628,16 +724,14 @@ export function createCardsPage(
             'aria-label',
             `${label}: ${COPY.cards.emptySlot}. ${COPY.cards.chooseCard}`,
           );
-          empty.addEventListener('click', () => {
-            jobFilter = job;
-            readyOnly = false;
-            switchTab('collection');
-          });
+          empty.setAttribute('aria-pressed', String(picking === i));
+          empty.addEventListener('click', choose);
           li.append(empty);
         }
         slots.append(li);
       });
       body.append(meter, slots);
+      if (picking !== null) body.append(picker(state, entries, lo, picking, slotName));
       wrap.append(el);
     }
     return wrap;

@@ -1392,6 +1392,24 @@ export const weaponSkinSetSchema = z.strictObject({
   skins: z.array(weaponSkinSchema).min(1),
 });
 
+/**
+ * A training line of the Dungeons drawer (DESIGN.md §6 Training): a fighting upgrade bought again
+ * and again with Money, like a tree or mine level. Level `n` multiplies `stat` (for the fighting
+ * job) by (1 + ratePercent% x n) x milestones.multiplier^(n / milestones.every, rounded down).
+ * Reset on Ascension.
+ */
+export const trainingSchema = z.strictObject({
+  id,
+  name,
+  /** What it raises, as the words after the amount ("+5% damage"). */
+  effect: z.string().min(1),
+  stat: z.enum(STATS),
+  cost: costCurveSchema,
+  ratePercent: decimal.refine((d) => d.gt(0), { message: 'must be above 0' }),
+  milestones: milestoneSchema,
+});
+export type Training = z.output<typeof trainingSchema>;
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1414,6 +1432,7 @@ export const contentSchemas = {
   account: accountSchema,
   enhancements: enhancementsSchema,
   upgrades: upgradesFileSchema,
+  training: z.array(trainingSchema).min(1),
   weaponSkins: z.array(weaponSkinSetSchema),
   items: itemsSchema,
 } as const;

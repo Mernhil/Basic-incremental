@@ -140,6 +140,8 @@ export function ascend(
   }
   next.combat = {
     ...next.combat,
+    // Training is bought again each run (DESIGN.md §6 Training).
+    training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     loadoutDamage: new Decimal(0),
     knockoutSeconds: 0,

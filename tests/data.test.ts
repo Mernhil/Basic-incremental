@@ -21,6 +21,7 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
+import training from '../src/data/content/training.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
 import items from '../src/data/content/items.json';
 
@@ -53,6 +54,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     cosmeticRules,
     prestige,
     upgrades,
+    training,
     weaponSkins,
     items,
     ...overrides,

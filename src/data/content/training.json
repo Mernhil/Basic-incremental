@@ -1,0 +1,66 @@
+[
+  {
+    "id": "sharpen",
+    "name": "Sharpen",
+    "effect": "damage",
+    "stat": "combat.damage",
+    "cost": {
+      "resource": "money",
+      "base": "500",
+      "growth": "1.6"
+    },
+    "ratePercent": "4",
+    "milestones": {
+      "every": 25,
+      "multiplier": "2"
+    }
+  },
+  {
+    "id": "toughen",
+    "name": "Toughen",
+    "effect": "health",
+    "stat": "combat.health",
+    "cost": {
+      "resource": "money",
+      "base": "500",
+      "growth": "1.6"
+    },
+    "ratePercent": "4",
+    "milestones": {
+      "every": 25,
+      "multiplier": "2"
+    }
+  },
+  {
+    "id": "plunder",
+    "name": "Plunder",
+    "effect": "Money per kill",
+    "stat": "drops.moneyMultiplier",
+    "cost": {
+      "resource": "money",
+      "base": "1000",
+      "growth": "1.7"
+    },
+    "ratePercent": "4",
+    "milestones": {
+      "every": 25,
+      "multiplier": "2"
+    }
+  },
+  {
+    "id": "tempo",
+    "name": "Tempo",
+    "effect": "signature gauge per hit",
+    "stat": "burst.fill",
+    "cost": {
+      "resource": "money",
+      "base": "2000",
+      "growth": "1.6"
+    },
+    "ratePercent": "2",
+    "milestones": {
+      "every": 25,
+      "multiplier": "1.25"
+    }
+  }
+]

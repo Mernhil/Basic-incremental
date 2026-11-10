@@ -58,7 +58,23 @@ export const MIGRATIONS: MigrationTable = {
   22: v22ToV23,
   /** v23 -> v24: dungeon floors (DESIGN.md §6 Dungeon floors, Clearing, Difficulty tiers). */
   23: v23ToV24,
+  /** v24 -> v25: replay Normal first, and training levels (DESIGN.md §6). */
+  24: v24ToV25,
 };
+
+/**
+ * v24 -> v25. Replay Normal first (user, 2026-11-10): format 24 put a dungeon that had been
+ * cleared by boss kills on its Normal last floor with Hard open, although its floors had never
+ * been played. Every dungeon now starts again on floor 1 of Normal, pushing, with nothing
+ * beaten, so Hard opens only by beating the Normal boss through the floors. What a clear
+ * unlocked stays: the cleared dungeons, the next dungeons and the mines, kills and medals.
+ * Format 24 was two days old, so floors played in it are replayed too. Training levels (the
+ * repeatable fighting upgrades) start at none.
+ */
+function v24ToV25(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  return { ...state, bossHp: null, combat: { ...combat, floors: {}, training: {} } };
+}
 
 /** Floors of each dungeon when save format 24 was made (a snapshot: migrations never read the
  *  content, which may change later). */

@@ -278,6 +278,17 @@ export const COPY = {
     supportSlot: (n: number) => `Support ${n}`,
     emptySlot: 'Empty',
     chooseCard: 'Choose a card',
+    /** The loadout picker (UI_RULES §2 Loadouts): click a slot, then a card. */
+    pickFor: (slot: string) => `Pick a card for ${slot}`,
+    pickHint: 'Click a card to put it in this slot. A card from another slot swaps places.',
+    pickCancel: 'Done',
+    pickCost: (cost: number) => `Cost ${cost}`,
+    pickCurrent: 'In this slot',
+    pickSwap: (slot: string) => `In ${slot}: swaps`,
+    pickOver: (after: number, cap: number) => `Too costly: ${after} / ${cap}`,
+    pickNone: 'You own no card of this job yet.',
+    openCard: 'Details',
+    changeCard: (slot: string, name: string) => `${slot}: ${name}. Click to change`,
     jobLoadout: (job: string) => `${job} loadout`,
     nextStar: (stars: number, tier: string) => `Next star: ${tier} ★${stars}`,
     nextTier: (tier: string, stars: number) => `Tier-up to ${tier} ★${stars}`,
@@ -881,6 +892,18 @@ export const COPY = {
     cardBadge: (lv: number, cap: number) => `Level ${lv} of ${cap}`,
     noMain:
       'No weapon is leading the fight. Put a fighting card in the main slot on the Cards page.',
+  },
+  /** Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer. */
+  training: {
+    title: 'Training',
+    note: 'Bought with Money, again and again. Resets on Ascension.',
+    level: (n: number) => `Lv ${n}`,
+    effect: (times: string, what: string) => `×${times} ${what}`,
+    toGo: (mult: string, levels: number) =>
+      levels === 1 ? `×${mult} in 1 level` : `×${mult} in ${levels} levels`,
+    preview: (from: string, to: string) => `×${from} → ×${to}`,
+    buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
+    oneTime: 'One-time upgrades',
   },
   buy: {
     countLabel: 'Buy amount',
