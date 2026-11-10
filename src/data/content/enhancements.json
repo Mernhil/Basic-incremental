@@ -1566,6 +1566,3814 @@
           }
         ]
       }
+    ],
+    "brass_vanguard": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_cavalier": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "gilded_knight": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "prism_paladin": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "dawn_champion": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "shadow_reaver": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "rusty_brute": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_warden": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_executioner": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "gold_warlord": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "sunbreaker_titan": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "ruin_tyrant": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "militia_picket": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_skirmisher": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "golden_hoplite": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "shard_strider": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "valor_pikeman": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "wraith_impaler": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "stable_squire": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_jouster": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_rider": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "golden_tilter": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "mirror_cavalier": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "dread_horseman": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "alley_cutpurse": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_sneak": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_shiv": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "whisper_assassin": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "gleam_phantom": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "venom_stalker": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "quarry_smasher": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_forgehand": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_sledger": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "golden_anvilmaster": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "facet_crusher": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "thunder_smith": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "fieldhand_archer": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_hunter": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_ranger": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "golden_sharpshot": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "rainbow_sniper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "seraph_archer": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "wither_huntress": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "hedge_acolyte": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_mystic": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "silver_mage": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "golden_sage": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "kaleido_weaver": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "sanctum_oracle": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "hex_warlock": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "field_reaper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "bronze_gleaner": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "10"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.02"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "15",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "15"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "golden_harvester": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "14"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "21",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "21"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "28",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "halfmoon_reaper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "mercy_harvester": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
+    ],
+    "grim_sovereign": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      }
     ]
   }
 }
