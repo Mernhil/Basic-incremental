@@ -1,21 +1,39 @@
-/* Shop (DESIGN.md §11 "Market stalls"): three striped-awning stalls on a light table. The stall
-   palette is the candy pick (user, 2026-11-08), drawn with hard 2px plum outlines; the awnings,
-   stamp, ring and coin are pixel sprites at 1x. */
+/* Shop (UI_RULES.md §2, "Shop page: Signboards"): three counters side by side, each hanging under
+   a wooden signboard on two chains. A counter is a pixel-framed shelf (theme/frames.css .px-panel)
+   with a wooden lip at the bottom; the lines on it are parchment cards. The boards, chains, lip,
+   cards and chips are CSS from the shell tokens. The BOUGHT stamp, the ring and the shard coin
+   are the candy pixel sprites (art/pixel/hand/shop-*), drawn at whole device-pixel scales. The
+   awning sprites are no longer shown. Pixelify Sans only at 18 px and up (.px-display). */
+
+/* the three counters use the whole width of the window, like Home */
+.shell-page:has(> .shop-table) {
+  max-width: none;
+}
 .shop-table {
-  --sh-ink: #4a3060;
-  --sh-soft: #8a6aa8;
-  --sh-pink: #e88ab0;
-  --sh-paper: #fff0f6;
-  --sh-row: #ffd9e8;
-  min-height: 100%;
-  padding: 18px 10px 28px;
+  /* wood, parchment and ink are the shop's own materials; edges and gold come from the table */
+  --sh-wood: #86582a;
+  --sh-wood-hi: #b8834a;
+  --sh-wood-lo: #5a3818;
+  --sh-wood-edge: #2a190b;
+  --sh-pale: #f6e7c8;
+  --sh-paper: #eedfba;
+  --sh-paper-hi: #f8edd2;
+  --sh-paper-lo: #cdb98e;
+  --sh-paper-edge: #a97f3f;
+  --sh-ink: #3a2a1a;
+  --sh-ink-soft: #5e4a30;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  justify-content: center;
-  align-content: start;
-  gap: 12px;
-  background: #d0d6df;
-  color: var(--sh-ink);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: start;
+  /* the frames bleed one step outside their box; the chains hang above the boards */
+  gap: 28px;
+  padding: calc(var(--fs) * 9) var(--fs) var(--fs);
+}
+@media (max-width: 1100px) {
+  .shop-table {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 480px;
+  }
 }
 .shop-stall {
   position: relative;
@@ -23,58 +41,121 @@
   display: flex;
   flex-direction: column;
 }
-.shop-awn {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  justify-content: center;
-  height: 52px;
-  overflow: hidden;
-  align-items: flex-end;
-}
-.shop-awn__img {
-  display: block;
-  image-rendering: pixelated;
-}
-.shop-body {
-  position: relative;
-  margin-top: -10px;
-  background: var(--sh-paper);
-  box-shadow: 0 0 0 3px var(--sh-ink);
-  padding: 34px 12px 12px;
-  min-height: 600px;
-  flex: 1;
-}
+
+/* ---- the signboard: a plank on two chains ----------------------------------------------- */
 .shop-sign {
+  position: relative;
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 8px;
-  margin: 0 0 10px;
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--sh-ink);
+  justify-content: center;
+  gap: 12px;
+  width: min(100%, 270px);
+  margin: 0 auto calc(var(--fs) * 3);
+  padding: 8px 16px 10px;
+  font-size: 22px;
+  line-height: 1.1;
+  color: var(--sh-pale);
+  text-shadow: 0 var(--fs-sm) 0 var(--sh-wood-lo);
+  /* faint plank grain, then the wood */
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(var(--fs) * 3),
+      rgba(0, 0, 0, 0.09) calc(var(--fs) * 3) calc(var(--fs) * 3 + var(--px) * 2)
+    ),
+    var(--sh-wood);
+  /* the shell's notched edge in dark wood, a light top edge and a dark bottom edge */
+  box-shadow:
+    calc(var(--fs) * -1) 0 0 0 var(--sh-wood-edge),
+    var(--fs) 0 0 0 var(--sh-wood-edge),
+    0 calc(var(--fs) * -1) 0 0 var(--sh-wood-edge),
+    0 var(--fs) 0 0 var(--sh-wood-edge),
+    inset 0 var(--fs) 0 0 var(--sh-wood-hi),
+    inset 0 calc(var(--fs) * -1) 0 0 var(--sh-wood-lo);
 }
-.shop-sign__count,
-.shop-sign em {
+.shop-sign::before,
+.shop-sign::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% + var(--fs));
+  width: calc(var(--fs) * 2);
+  height: calc(var(--fs) * 8);
+  /* chain links: dark with a paler link every other step */
+  background: repeating-linear-gradient(
+    180deg,
+    #2b2733 0 calc(var(--fs) * 2),
+    #5a566a calc(var(--fs) * 2) calc(var(--fs) * 3),
+    #2b2733 calc(var(--fs) * 3) calc(var(--fs) * 4)
+  );
+}
+.shop-sign::before {
+  left: 18%;
+}
+.shop-sign::after {
+  right: 18%;
+}
+.shop-sign__count {
+  font-size: 18px;
   font-style: normal;
-  color: var(--sh-pink);
+  color: #ffd98a;
+}
+.shop-sign__nth {
+  color: var(--sh-pale);
 }
 .shop-coin {
   display: inline-block;
   line-height: 0;
 }
+
+/* ---- a pixel sprite at a whole device scale (`--want` times its own size) --------------------- */
+.shop-spr {
+  --one: calc(var(--nw) * 1px / var(--dpr));
+  display: block;
+  width: max(var(--one), round(nearest, calc(var(--nw) * var(--want, 1) * 1px), var(--one)));
+  aspect-ratio: calc(var(--nw) / var(--nh));
+  line-height: 0;
+}
+.shop-spr :is(img, .bi-px-anim) {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ---- the shelf and its wooden lip ----------------------------------------------------------- */
+.shop-body {
+  position: relative;
+  display: grid;
+  gap: 0;
+  align-content: start;
+  min-width: 0;
+  margin: 0 var(--fs);
+  padding: 14px 14px calc(var(--fs) * 4 + 14px);
+}
+.shop-body::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: calc(var(--fs) * 4);
+  background: var(--sh-wood);
+  box-shadow:
+    inset 0 var(--fs-sm) 0 0 var(--sh-wood-hi),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--sh-wood-lo);
+  pointer-events: none;
+}
 .shop-note {
-  margin: 0 0 8px;
-  font-size: 11.5px;
-  color: var(--sh-soft);
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--px-muted);
   text-align: center;
 }
 .shop-head {
-  margin: 8px 0 4px;
-  font-size: 12px;
+  margin: 12px 0 8px;
+  font-size: 15px;
   font-weight: 800;
-  color: var(--sh-pink);
+  color: var(--px-gold);
   text-align: left;
 }
 .shop-list,
@@ -85,29 +166,45 @@
   list-style: none;
 }
 
-/* ---- lines ---- */
+/* ---- parchment cards: Starlight lines, supplies, exclusives and card tiles ---------------------- */
+html .shop-body :is(.shop-it, .shop-tile):not(#_px) {
+  --px-bg: var(--sh-paper);
+  --px-top: var(--sh-paper-hi);
+  --px-bottom: var(--sh-paper-lo);
+  --px-edge: var(--sh-paper-edge);
+  color: var(--sh-ink);
+}
 .shop-it {
   position: relative;
   display: grid;
-  grid-template-columns: 34px 1fr auto;
-  gap: 10px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 4px 10px;
   align-items: center;
-  padding: 7px 9px;
-  margin-bottom: 6px;
-  background: var(--sh-row);
-  box-shadow: 0 0 0 2px var(--sh-ink);
+  margin-bottom: calc(var(--fs) * 2);
+  padding: 8px 10px;
 }
 .shop-it__art {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 34px;
-  height: 34px;
+  min-width: 32px;
   line-height: 0;
 }
 .shop-it__art svg {
   width: 32px;
   height: 32px;
+}
+/* line icons (a supply without a sprite, an exclusive, the Starlight chip) */
+.shop-icon {
+  flex: none;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.shop-it__art .shop-icon {
+  color: var(--sh-ink-soft);
 }
 .shop-it__text {
   display: grid;
@@ -115,81 +212,137 @@
   min-width: 0;
 }
 .shop-it__name {
-  font-size: 13.5px;
+  font-size: 15px;
   line-height: 1.15;
 }
 .shop-it__sub {
-  font-size: 11.5px;
-  color: var(--sh-soft);
-}
-.shop-it.is-maxed {
-  opacity: 0.6;
-}
-.shop-lv {
-  display: block;
-  height: 4px;
-  background: var(--sh-ink);
-  margin-top: 4px;
-}
-.shop-lv u {
-  display: block;
-  height: 100%;
-  background: var(--sh-pink);
-  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--sh-ink-soft);
 }
 .shop-it--supply .shop-it__sub:last-child:empty {
   display: none;
 }
-.shop-it.is-soldout {
-  opacity: 0.55;
+.shop-it.is-soldout,
+.shop-tile.is-soldout {
+  filter: saturate(0.5);
 }
 
-/* the price chip: a plum-outlined button, dark when it cannot be afforded yet */
-.shop-price {
-  border: 0;
-  border-radius: 0;
-  padding: 6px 10px;
-  font: inherit;
-  font-weight: 800;
+/* a Starlight line: name and level, the effect, the level bar, the price chip on the right */
+.shop-it--star {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'name level'
+    'effect chip'
+    'bar chip';
+}
+.shop-it--star .shop-it__name {
+  grid-area: name;
+}
+.shop-it__level {
+  grid-area: level;
+  justify-self: end;
   font-size: 13px;
-  cursor: pointer;
-  background: var(--sh-pink);
-  color: var(--sh-ink);
-  box-shadow:
-    0 0 0 2px var(--sh-ink),
-    inset 0 2px 0 rgb(255 255 255 / 0.4);
+  font-weight: 700;
+  color: var(--sh-ink-soft);
 }
-.shop-price.is-no {
-  background: var(--sh-ink);
-  color: #b79bd0;
-  cursor: default;
+.shop-it--star .shop-it__sub {
+  grid-area: effect;
 }
-.shop-price.is-max {
-  background: transparent;
-  box-shadow: none;
-  color: var(--sh-soft);
+.shop-it--star .shop-price {
+  grid-area: chip;
+  align-self: center;
 }
-.shop-price:focus-visible,
-.shop-ascend:focus-visible,
-.shop-cancel:focus-visible {
-  outline: 3px solid #1b6fe0;
-  outline-offset: 2px;
+/* the level bar: one notch per level */
+.shop-lv {
+  --lv-n: var(--max, 10);
+  position: relative;
+  grid-area: bar;
+  display: block;
+  height: calc(var(--fs) * 2);
+  background: var(--sh-paper-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--sh-paper-edge);
+}
+.shop-lv u {
+  display: block;
+  height: 100%;
+  background: #7a4605;
+  text-decoration: none;
+}
+.shop-lv::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 calc(100% / var(--lv-n) - var(--fs-sm)),
+    var(--sh-paper) calc(100% / var(--lv-n) - var(--fs-sm)) calc(100% / var(--lv-n))
+  );
+}
+
+/* the price chip: gold with the currency icon, dark plum when it cannot be afforded */
+.shop-price {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 52px;
+  padding: 4px 9px;
+  font-size: 14px;
+  line-height: 1.2;
+}
+html .shop-body .shop-price:not(.is-no):not(#_px) {
+  --px-bg: var(--px-gold);
+  --px-top: var(--px-gold-hi);
+  --px-bottom: var(--px-gold-lo);
+  color: var(--px-gold-ink);
+}
+.shop-price__ico {
+  display: inline-block;
+  line-height: 0;
+}
+.shop-price__ico svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.shop-price__ico .shop-icon {
+  fill: currentColor;
+  stroke-width: 1;
+}
+/* the shard icon: a small cut gem */
+.shop-gem {
+  width: 12px;
+  height: 14px;
+  background: #b24fd8;
+  clip-path: polygon(50% 0, 100% 36%, 50% 100%, 0 36%);
+}
+.shop-price.no-ico .shop-price__ico {
+  display: none;
+}
+/* focus on parchment: a dark ring (the table's gold would vanish on it) */
+html .shop-body :is(.shop-it, .shop-tile) .shop-price:focus-visible:not(#_px) {
+  outline-color: var(--sh-ink);
 }
 
 /* the BOUGHT stamp slams onto the line */
 .shop-stamp {
   position: absolute;
-  right: 54px;
-  top: 50%;
-  margin-top: -19px;
+  inset: 0;
   z-index: 5;
-  line-height: 0;
+  display: grid;
+  align-items: center;
+  justify-items: end;
+  padding-right: 78px;
   pointer-events: none;
 }
 .shop-stamp[hidden] {
   display: none;
 }
-.shop-stamp.is-slam {
+.shop-stamp .shop-spr {
+  --want: 1;
+}
+.shop-stamp.is-slam .shop-spr {
   animation: shop-slam 0.3s steps(3) both;
 }
 @keyframes shop-slam {
@@ -199,70 +352,83 @@
   }
 }
 
-/* ---- shard tiles ---- */
+/* ---- shard tiles: the card copies, the weapon cropped to a window ----------------------------- */
 .shop-tiles {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
 }
 .shop-tile {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  padding: 6px 4px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 0 0 8px;
   text-align: center;
-  font-size: 11.5px;
+  font-size: 13px;
   font-weight: 700;
-  background: var(--sh-row);
-  box-shadow: 0 0 0 2px var(--sh-ink);
 }
+/* the weapon (the item box, 118 x 102 art pixels with its margin) at a whole scale in a square
+   window: the window crops the empty margin, the art is never squeezed */
 .shop-tile__art {
-  display: block;
-  width: 64px;
-  height: 78px;
+  --one: calc(118px / var(--dpr));
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
   line-height: 0;
+  background: var(--sh-paper-lo);
 }
 .shop-tile__art svg {
-  width: 100%;
-  height: 100%;
+  display: block;
+  width: max(var(--one), round(down, 100%, var(--one)));
+  aspect-ratio: 236 / 204;
+  height: auto;
 }
 .shop-tile__name {
-  line-height: 1.1;
+  padding: 0 6px;
+  line-height: 1.15;
 }
-.shop-tile.is-soldout {
-  opacity: 0.55;
+.shop-tile .shop-stock:empty {
+  display: none;
+}
+.shop-tile .shop-price {
+  margin-top: auto;
 }
 
-/* ---- Ascension ---- */
+/* ---- Ascension ------------------------------------------------------------------------------ */
 .shop-gate {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 12px;
   text-align: center;
-  padding-top: 6px;
 }
+/* the ring at 2x (the box is the sprite at a whole scale), the Starlight coin in its hole */
 .shop-ring {
   position: relative;
-  width: 95px;
-  height: 94px;
+  margin-top: 4px;
 }
 .shop-ring__sprite {
   position: absolute;
   inset: 0;
+  display: block;
   line-height: 0;
 }
+/* the 48 px coin on the ring's own pixel grid: 23 art pixels in, 48 across */
 .shop-ring__coin {
   position: absolute;
-  left: 23px;
-  top: 23px;
-  width: 48px;
-  height: 48px;
+  top: calc(100% * 23 / 94);
+  left: calc(100% * 23 / 95);
+  width: calc(100% * 48 / 95);
+  height: calc(100% * 48 / 94);
   line-height: 0;
 }
 .shop-ring__coin svg {
-  width: 48px;
-  height: 48px;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 .shop-table[data-ready='false'] .shop-ring__sprite {
   filter: grayscale(0.6);
@@ -279,58 +445,54 @@
 }
 .shop-gain {
   margin: 0;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--sh-pink);
+  font-size: 32px;
+  line-height: 1.05;
+  color: var(--px-gold);
 }
 .shop-needs {
   margin: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--sh-soft);
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--px-muted);
 }
 .shop-needs--left {
   text-align: left;
 }
-.shop-ascend {
+html .shop-body :is(.shop-ascend, .shop-cancel):not(#_px) {
   width: 100%;
-  border: 0;
-  border-radius: 0;
-  padding: 12px;
-  font: inherit;
-  font-weight: 800;
-  font-size: 17px;
-  cursor: pointer;
-  color: var(--sh-ink);
-  background: var(--sh-pink);
-  box-shadow:
-    0 0 0 2px var(--sh-ink),
-    inset 0 3px 0 rgb(255 255 255 / 0.45),
-    inset 0 -3px 0 rgb(0 0 0 / 0.2);
+  padding: 10px 12px;
+  font-size: 15px;
 }
-.shop-ascend.is-no {
-  background: var(--sh-ink);
-  color: #b79bd0;
-  cursor: default;
-  box-shadow: 0 0 0 2px var(--sh-ink);
+html .shop-body .shop-ascend.px-display:not(#_px) {
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 22px;
+  font-weight: 600;
 }
-.shop-cancel {
+
+/* Kept and Reset: two tiles side by side */
+.shop-lists {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   width: 100%;
-  border: 0;
-  padding: 8px;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-  background: var(--sh-row);
-  color: var(--sh-ink);
-  box-shadow: 0 0 0 2px var(--sh-ink);
+  text-align: left;
+}
+.shop-keep {
+  min-width: 0;
+  padding: 8px 10px 10px;
+}
+.shop-keep .shop-head {
+  margin: 0 0 6px;
+  color: var(--px-ink);
 }
 .shop-bullets {
   display: grid;
   gap: 3px;
   width: 100%;
-  font-size: 12px;
-  color: var(--sh-soft);
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--px-muted);
   text-align: left;
 }
 .shop-bullets li::before {
@@ -339,13 +501,10 @@
   width: 6px;
   height: 6px;
   margin-right: 7px;
-  background: #3f9a58;
+  background: #4fb36c;
 }
 .shop-bullets--reset li::before {
-  background: #d04a4a;
-}
-.shop-gate > .shop-head {
-  width: 100%;
+  background: #e0605a;
 }
 
 .shop-sweep {
@@ -390,9 +549,11 @@
     opacity: 0.4;
   }
 }
+/* reduced motion: no sweep, no ring pulse, no stamp slam (the sprites' palette cycling stops on
+   its first frame, art/art.css) */
 @media (prefers-reduced-motion: reduce) {
   .shop-sweep,
-  .shop-stamp.is-slam,
+  .shop-stamp.is-slam .shop-spr,
   .shop-table.is-walking .shop-ring {
     animation: none;
   }

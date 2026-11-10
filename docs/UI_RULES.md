@@ -46,15 +46,15 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Built] **Welcome back.** After offline progress, a card fan deals one small card per category (time away and the cap, resources, kills, knockouts, drops, card XP and levels, mastery tiers), then Collect sends the coins to the header.
 - [Built] **Performance.** At most about 30 popups at once, rapid numbers merged, animation paused when the page or window is hidden, one shared animation loop. Under reduced motion: no shake, flash or slow-down, and numbers fade in place.
 - [Built] **Screen picks.** Summon: Deck and Table, Nocturne panel (two card decks whose thickness is the pity, odds in the middle, last hand below). Wardrobe: a mannequin card with the seven slots around it and the item grid below. Skill tree: a radial constellation with gem nodes; card enhancements are a small star chart on the card. Ascension: a prismatic ring gate.
-- [To build] **Shop page: Signboards** (user, 2026-11-10; replaces the awnings of the Market Stalls). Three counters side by side, each hanging under a wooden signboard on two chains: Starlight, Shards and Ascension.
+- [Built] **Shop page: Signboards** (user, 2026-11-10; replaces the awnings of the Market Stalls). Three counters side by side, each hanging under a wooden signboard on two chains: Starlight, Shards and Ascension.
   - The counters are pixel-framed shelves, and every counter is visible at once.
   - Starlight: permanent levels, each line with its level bar and price. A buy slams a BOUGHT stamp on the line.
   - Shards: card copies as tiles, then supplies and exclusives.
   - Ascension: the pixel ring around the Starlight coin, the Starlight gain, the Ascend button with its confirm step, and the Kept and Reset lists.
   - The stamp, ring and coin stay the candy pixel sprites (`art/pixel/hand/shop-*`). The awnings are no longer shown.
   - Reduced motion drops the ring, coin and stamp motion.
-- [Default] The awning sprites stay in the repo, unused, until the user decides whether to delete them.
-- [To build] **Achievements: a leather sticker book** (user, 2026-11-10).
+- [Default · in game] The awning sprites stay in the repo, unused, until the user decides whether to delete them.
+- [Built] **Achievements: a leather sticker book** (user, 2026-11-10).
   - The book has a stitched leather cover with gold corner caps, ruled parchment pages, a spine down the middle and ribbon bookmarks.
   - Each chapter has a coloured ribbon title with its count, and its stickers sit in a grid under it.
   - A locked sticker shows the locked sticker art.

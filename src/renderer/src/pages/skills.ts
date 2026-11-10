@@ -17,10 +17,12 @@ import { CENTRE, SKY, respecView, treeView, type NodeView, type TreeView } from 
 import './skills.css';
 
 /**
- * Skill Tree page (DESIGN.md §11, §10a, 17; A8 A "radial constellation"): six branches radiate from
- * a centre star that holds the points to spend; each node is a faceted gem lit in its branch
- * colour. Choosing a gem shows its current and next bonus in the side panel, with the buy
- * button; the respec sits under it with an in-page confirm.
+ * Skill Tree page (DESIGN.md §11, §10a, 17; UI_RULES.md §2, the Skill tree screen pick): six
+ * branches radiate from a centre star that holds the points to spend; each node is a pixel gem of
+ * the equipped skill-node style in its branch colour, at a whole scale. Links are solid when
+ * learned, dashed when open and dim when locked. Choosing a gem shows its current and next bonus in
+ * the side panel, with the Learn button; the respec sits at the bottom of that panel with an
+ * in-page confirm.
  */
 
 export interface SkillsContext extends PageContext {
@@ -63,6 +65,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   let last = '';
   let message = '';
 
+  page.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
   const wrap = h('div', 'sk-wrap');
   const status = h('p', 'sk-status');
   status.setAttribute('role', 'status');
@@ -125,13 +128,10 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
 
   // ---- the constellation ----
   function sky(v: TreeView): HTMLElement {
-    const { el, body } = frame(
-      t.tree,
-      `${t.pointsAvailable(v.points.available)} · ${t.pointsOf(v.points.spent, v.points.total)}`,
-    );
+    const { el, body } = frame(t.tree, t.learnedOf(v.learned, v.total));
     el.classList.add('sk-frame');
+    const stage = h('div', 'sk-stage');
     const box = h('div', 'sk-sky');
-    box.style.aspectRatio = `${SKY.w} / ${SKY.h}`;
     const art = svgEl('svg', {
       class: 'sk-lines',
       viewBox: `${SKY.x} ${SKY.y} ${SKY.w} ${SKY.h}`,
@@ -151,34 +151,32 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
         }),
       );
     }
+    // links: learned solid in the branch colour, open dashed, locked dim
     for (const e of v.edges) {
       art.append(
         svgEl('line', {
-          class: `sk-edge${e.lit ? ' is-lit' : ''}`,
+          class: `sk-edge is-${e.state}`,
           x1: e.x1,
           y1: e.y1,
           x2: e.x2,
           y2: e.y2,
-          ...(e.lit ? { stroke: e.colour } : {}),
+          ...(e.state === 'locked' ? {} : { stroke: e.colour }),
         }),
       );
     }
-    for (const b of v.branches) {
-      const label = svgEl('text', {
-        class: 'sk-branch',
-        x: b.x,
-        y: b.y,
-        'text-anchor': b.anchor,
-        'dominant-baseline': 'middle',
-        fill: b.colour,
-      });
-      label.textContent = b.name;
-      const count = svgEl('tspan', { class: 'sk-branch__count', dx: 6 });
-      count.textContent = `${b.ranks}/${b.maxRanks}`;
-      label.append(count);
-      art.append(label);
-    }
     box.append(art);
+
+    // branch labels with learned / total (HTML, so the text stays sharp at every size)
+    for (const b of v.branches) {
+      const label = h('span', `sk-branch sk-branch--${b.anchor}`);
+      label.style.left = px(b.x);
+      label.style.top = py(b.y);
+      label.style.color = b.colour;
+      label.append(b.name, ' ', h('span', 'sk-branch__count bi-num', `${b.learned}/${b.total}`));
+      label.setAttribute('role', 'img');
+      label.setAttribute('aria-label', t.branchLearned(b.name, b.learned, b.total));
+      box.append(label);
+    }
 
     // centre star: the points to spend
     const centre = h('div', 'sk-centre');
@@ -198,7 +196,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     list.setAttribute('aria-label', t.tree);
     for (const n of v.nodes) list.append(nodeEl(n));
     box.append(list);
-    body.append(box);
+    stage.append(box);
+    body.append(stage);
     return el;
   }
 
@@ -221,8 +220,9 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       n.keystone,
     );
     b.classList.toggle('is-key', n.keystone);
-    const rank = h('span', 'sk-node__rank bi-num', n.rankText);
-    b.append(gem, rank);
+    b.append(gem);
+    // the rank sits on the gem's corner once it has one
+    if (n.rank > 0) b.append(h('span', 'sk-node__rank bi-num', n.rankText));
     attachTooltip(b, () => tip(n));
     b.addEventListener('click', () => {
       selected = n.id;
@@ -252,18 +252,27 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     return box;
   }
 
-  // ---- the side panel ----
-  function detail(v: TreeView): HTMLElement {
+  // ---- the side panel: points, the gem, now / after / cost, Learn, then the respec ----
+  function sidePanel(v: TreeView): HTMLElement {
     const n = v.nodes.find((x) => x.id === selected);
+    const { el, body } = frame(
+      n ? n.name : t.tree,
+      n ? t.branchRank(t.branchShort[n.branch], n.rank, n.maxRank) : undefined,
+    );
+    el.classList.add('sk-detail');
+    const points = h('div', 'sk-points');
+    points.append(
+      h('span', 'sk-points__label', t.pointsHeading),
+      h('span', 'sk-points__num px-display bi-num', String(v.points.available)),
+    );
+    points.setAttribute('aria-label', t.pointsAvailable(v.points.available));
+    el.prepend(points);
     if (!n) {
-      const { el, body } = frame(t.tree);
-      body.append(h('p', 'frame__muted', t.pickNode));
+      body.append(h('p', 'frame__muted', t.pickNode), respecBlock());
       return el;
     }
-    const { el, body } = frame(n.name, COPY.skills.branches[n.branch]);
-    el.classList.add('sk-detail');
     el.style.setProperty('--gem', n.colour);
-    const head = h('div', 'sk-detail__head');
+    const art = h('div', 'sk-art');
     const gem = h('span', `sk-detail__gem is-${n.state}`);
     gem.innerHTML = skillGem(
       nodeStyle(content, ctx.state()),
@@ -272,52 +281,43 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       n.keystone,
     );
     gem.classList.toggle('is-key', n.keystone);
-    const meta = h('div', 'sk-detail__meta');
-    const pips = h('span', 'sk-pips');
-    pips.setAttribute('role', 'img');
-    pips.setAttribute('aria-label', t.rank(n.rank, n.maxRank));
-    for (let i = 0; i < n.maxRank; i++) pips.append(h('i', i < n.rank ? 'is-on' : ''));
-    meta.append(
-      h('span', 'sk-detail__rank', `${t.rank(n.rank, n.maxRank)} · ${t.state[n.state]}`),
-      pips,
-      h('span', 'sk-detail__cost', t.cost(n.cost)),
-    );
-    head.append(gem, meta);
+    const text = h('div', 'sk-art__text');
+    const effect = n.state === 'maxed' ? n.now : n.next;
+    for (const l of effect.length ? effect : [t.none]) text.append(h('b', 'bi-num', l));
+    text.append(h('span', 'sk-art__note', n.needs || t.state[n.state]));
+    art.append(gem, text);
 
-    const effects = h('dl', 'sk-effects');
-    const fx = (label: string, lines: string[], empty: string, cls: string) => {
-      const d = h('div', cls);
-      const dd = h('dd');
-      if (lines.length === 0) dd.textContent = empty;
-      else for (const l of lines) dd.append(h('span', 'bi-num', l));
-      d.append(h('dt', '', label), dd);
-      effects.append(d);
+    const rows = h('dl', 'sk-rows');
+    const row = (label: string, value: string): void => {
+      const r = h('div', 'sk-row');
+      r.append(h('dt', '', label), h('dd', 'bi-num', value));
+      rows.append(r);
     };
-    fx(t.now, n.now, t.none, 'sk-effects__now');
-    if (n.state !== 'maxed') fx(t.next, n.next, t.maxed, 'sk-effects__next');
-    body.append(head, effects);
-    if (n.needs) body.append(h('p', 'sk-needs', n.needs));
-    if (n.state !== 'maxed') {
-      const b = h('button', 'button sk-buy', t.buy(n.cost));
-      b.type = 'button';
-      b.dataset.key = 'buy';
-      b.disabled = !n.canBuy;
-      b.addEventListener('click', () => buy(n.id));
-      body.append(b);
-      if (!n.canBuy && !n.needs && v.points.available < n.cost) {
-        body.append(h('p', 'frame__muted', t.noPoints));
-      }
+    row(t.now, n.now.join(', ') || t.none);
+    row(t.afterLine, n.next.join(', ') || t.maxed);
+    row(t.costLine, n.state === 'maxed' ? t.maxed : t.pointCost(n.cost));
+    body.append(art, rows);
+
+    const b = h('button', 'button sk-buy', n.state === 'maxed' ? t.maxed : t.learn(n.cost));
+    b.type = 'button';
+    b.dataset.key = 'buy';
+    b.disabled = !n.canBuy;
+    b.addEventListener('click', () => buy(n.id));
+    body.append(b);
+    if (n.state !== 'maxed' && !n.canBuy && !n.needs && v.points.available < n.cost) {
+      body.append(h('p', 'frame__muted sk-hint', t.noPoints));
     }
+    body.append(respecBlock());
     return el;
   }
 
-  function respecPanel(): HTMLElement {
+  function respecBlock(): HTMLElement {
     const r = respec();
-    const { el, body } = frame(t.respec);
-    el.classList.add('sk-respec');
+    const box = h('section', 'sk-respec');
+    box.setAttribute('aria-label', t.respec);
     if (!confirming) {
-      body.append(h('p', 'frame__muted', `${t.respecNote} ${r.note}`));
-      const b = h('button', 'button button--ghost', r.button);
+      box.append(h('p', 'frame__muted', `${t.respecNote} ${r.note}`));
+      const b = h('button', 'button button--ghost sk-respec__btn', r.button);
       b.type = 'button';
       b.dataset.key = 'respec';
       b.disabled = !r.enabled;
@@ -326,14 +326,14 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
         say('');
         build('respec-go');
       });
-      body.append(b);
-      return el;
+      box.append(b);
+      return box;
     }
-    const box = h('div', 'sk-confirm');
-    box.setAttribute('role', 'group');
+    const conf = h('div', 'sk-confirm');
+    conf.setAttribute('role', 'group');
     const title = h('h3', 'sk-confirm__title', r.confirmTitle);
     title.id = 'sk-confirm-title';
-    box.setAttribute('aria-labelledby', title.id);
+    conf.setAttribute('aria-labelledby', title.id);
     const go = h('button', 'button sk-confirm__go', t.respecGo);
     go.type = 'button';
     go.dataset.key = 'respec-go';
@@ -345,7 +345,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       confirming = false;
       build('respec');
     });
-    box.addEventListener('keydown', (e) => {
+    conf.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         confirming = false;
         build('respec');
@@ -353,9 +353,9 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     });
     const buttons = h('div', 'sk-confirm__buttons');
     buttons.append(go, cancel);
-    box.append(title, h('p', 'sk-confirm__body', r.confirmBody), buttons);
-    body.append(box);
-    return el;
+    conf.append(title, h('p', 'sk-confirm__body', r.confirmBody), buttons);
+    box.append(conf);
+    return box;
   }
 
   function build(focusKey?: string): void {
@@ -365,9 +365,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     if (!selected || !v.nodes.some((n) => n.id === selected)) {
       selected = (v.nodes.find((n) => n.canBuy) ?? v.nodes[0])?.id ?? null;
     }
-    const side = h('div', 'sk-side');
-    side.append(detail(v), respecPanel());
-    wrap.replaceChildren(sky(v), side);
+    wrap.replaceChildren(sky(v), sidePanel(v));
     status.textContent = message;
     if (focusKey) {
       const target =

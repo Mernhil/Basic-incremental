@@ -87,6 +87,13 @@ describe('node states and effects', () => {
     expect(node('grove_yield').rankText).toBe('2/5');
     expect(node('grove_rhythm').state).toBe('open');
     expect(v.edges.filter((e) => e.lit)).toHaveLength(1);
+    // the link from the centre to a learned root is learned, the next link is open, the rest locked
+    expect(v.edges.filter((e) => e.state === 'learned')).toHaveLength(1);
+    expect(v.edges.filter((e) => e.state === 'open').length).toBeGreaterThan(1);
+    expect(v.edges.filter((e) => e.state === 'locked').length).toBeGreaterThan(0);
+    expect(v.learned).toBe(1);
+    expect(v.total).toBe(content.account.tree.length);
+    expect(v.branches.find((b) => b.id === 'logging')!.learned).toBe(1);
 
     s.account.skills = { grove_yield: 5 };
     v = view(s);
