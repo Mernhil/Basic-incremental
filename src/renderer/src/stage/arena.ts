@@ -446,7 +446,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     if (!live()) return;
     const effect = resolveGlobal(content, ctx.state().cosmetics.loadout).attack.visual.effects
       ?.fighting;
-    if (effect) playHit(effect, fxBox, { rng: defaultRng, target: null });
+    if (effect)
+      playHit(effect, fxBox, { rng: defaultRng, target: null, intervalSeconds: e.interval });
     replay(body, 'is-hit', 220);
     replay(slots[0]?.wrap, 'is-lunging', 360);
     if (e.big) shake(el);

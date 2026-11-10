@@ -1,6 +1,7 @@
 import type { Rng } from '../../../game';
 import type { BASE_EFFECTS } from './registry';
 import { attackSheet, pixelTick, preloadNumerals } from '../art/cosmetics';
+import { attackSpeed } from './attackSpeed';
 import { pixelUnit } from '../ui/pixelFit';
 import './effects.css';
 
@@ -25,8 +26,13 @@ export interface HitOptions {
   rng: Rng;
   /** Element that flinches or thuds when hit (the boss emblem). */
   target?: Element | null;
+  /** The main card's hit interval in seconds; the animation plays over a share of it. */
+  intervalSeconds?: number;
 }
 
+/** Drawn lengths of the two coded hits, in ms (the speed of a hit is measured against them). */
+const SLASH_MS = 420;
+const IMPACT_MS = 480;
 const MAX_LIVE_HITS = 6;
 const MAX_LIVE_TICKS = 10;
 const INK = '#1a1020';
@@ -79,8 +85,11 @@ interface Painter {
 /** One frame of a hit: paints on the grid; returns false when the hit is over. */
 type Frame = (p: Painter, ms: number) => boolean;
 
-/** Spawns a pixel hit: a glow canvas and a hard-pixel canvas, ticked until the frame says done. */
-function spawnHit(stage: HTMLElement, frame: Frame): void {
+/**
+ * Spawns a pixel hit: a glow canvas and a hard-pixel canvas, ticked until the frame says done.
+ * `speed` plays the frames faster (above 1) or slower than drawn.
+ */
+function spawnHit(stage: HTMLElement, frame: Frame, speed = 1): void {
   const fx = layer(stage);
   while (fx.querySelectorAll('.bi-fx').length >= MAX_LIVE_HITS)
     fx.querySelector('.bi-fx')?.remove();
@@ -121,7 +130,7 @@ function spawnHit(stage: HTMLElement, frame: Frame): void {
         d[i + 3] = 255;
       },
     };
-    const alive = frame(painter, now - start);
+    const alive = frame(painter, (now - start) * speed);
     ctx.putImageData(img, 0, 0);
     gctx.clearRect(0, 0, w, h);
     gctx.drawImage(hard, 0, 0);
@@ -142,7 +151,7 @@ function disc(p: Painter, cx: number, cy: number, r: number, c: string): void {
  * The thin slash: frames by time. 0-40 ms a thin bright line (the snap), 40-200 ms the full stroke
  * (held), then it thins from the back end and breaks into dashes until 420 ms.
  */
-function slash(stage: HTMLElement, rng: Rng, chips: boolean): void {
+function slash(stage: HTMLElement, rng: Rng, chips: boolean, intervalSeconds?: number): void {
   const edge = cssHex(stage, '--bi-attack-edge', '#ffd23a');
   const spark = cssHex(stage, '--bi-attack-particle', '#fff6d6');
   const PX = pixelUnit(stage, PX_WANT);
@@ -164,54 +173,58 @@ function slash(stage: HTMLElement, rng: Rng, chips: boolean): void {
     v: between(rng, 10, 18),
     s: chips ? 2 : 1,
   }));
-  spawnHit(stage, (p, ms) => {
-    if (ms > 420) return false;
-    const grow = Math.min(1, ms / 40);
-    // after the hold, the back end eats forward and gaps open: dry-brush dashes
-    const eat = ms < 200 ? 0 : (ms - 200) / 220;
-    for (let i = 0; i <= N; i++) {
-      const s = i / N;
-      if (s > grow || s < eat * 0.9) continue;
-      if (eat > 0.15 && Math.floor(s * 22 + eat * 7) % 3 === 0) continue;
-      const taper = Math.sin(Math.PI * s);
-      const w = ms < 40 ? 0.5 : th * taper * (1 - eat * 0.6);
-      const off = Math.sin(Math.PI * s) * bend;
-      const x = cx + ux * len * (s - 0.5) + nx * off;
-      const y = cy + uy * len * (s - 0.5) + ny * off;
-      // ink edge, coloured body, white core (one-pixel layers)
-      for (let k = -Math.ceil(w) - 1; k <= Math.ceil(w) + 1; k++) {
-        const ak = Math.abs(k);
-        const c =
-          w >= 1 && ak <= w * 0.45
-            ? '#ffffff'
-            : ak <= Math.max(w, 0.5)
-              ? edge
-              : ak <= w + 1
-                ? INK
-                : '';
-        if (c) p.set(x + nx * k, y + ny * k, c);
+  spawnHit(
+    stage,
+    (p, ms) => {
+      if (ms > 420) return false;
+      const grow = Math.min(1, ms / 40);
+      // after the hold, the back end eats forward and gaps open: dry-brush dashes
+      const eat = ms < 200 ? 0 : (ms - 200) / 220;
+      for (let i = 0; i <= N; i++) {
+        const s = i / N;
+        if (s > grow || s < eat * 0.9) continue;
+        if (eat > 0.15 && Math.floor(s * 22 + eat * 7) % 3 === 0) continue;
+        const taper = Math.sin(Math.PI * s);
+        const w = ms < 40 ? 0.5 : th * taper * (1 - eat * 0.6);
+        const off = Math.sin(Math.PI * s) * bend;
+        const x = cx + ux * len * (s - 0.5) + nx * off;
+        const y = cy + uy * len * (s - 0.5) + ny * off;
+        // ink edge, coloured body, white core (one-pixel layers)
+        for (let k = -Math.ceil(w) - 1; k <= Math.ceil(w) + 1; k++) {
+          const ak = Math.abs(k);
+          const c =
+            w >= 1 && ak <= w * 0.45
+              ? '#ffffff'
+              : ak <= Math.max(w, 0.5)
+                ? edge
+                : ak <= w + 1
+                  ? INK
+                  : '';
+          if (c) p.set(x + nx * k, y + ny * k, c);
+        }
       }
-    }
-    // sparks or chips fly off the middle and shrink
-    if (ms > 60)
-      for (const b of bits) {
-        const t = (ms - 60) / 360;
-        const r = b.v * t * 2.2;
-        const x = cx + Math.cos(b.a) * r;
-        const y = cy + Math.sin(b.a) * r;
-        const size = t < 0.5 ? b.s : b.s - 1;
-        if (size >= 1) disc(p, x, y, size * 0.6, chips ? '#a08060' : spark);
-        else p.set(x, y, spark);
-      }
-    return true;
-  });
+      // sparks or chips fly off the middle and shrink
+      if (ms > 60)
+        for (const b of bits) {
+          const t = (ms - 60) / 360;
+          const r = b.v * t * 2.2;
+          const x = cx + Math.cos(b.a) * r;
+          const y = cy + Math.sin(b.a) * r;
+          const size = t < 0.5 ? b.s : b.s - 1;
+          if (size >= 1) disc(p, x, y, size * 0.6, chips ? '#a08060' : spark);
+          else p.set(x, y, spark);
+        }
+      return true;
+    },
+    attackSpeed(SLASH_MS, intervalSeconds),
+  );
 }
 
 /**
  * The impact hit: a white 8-point star (held a little longer for punch), a coloured burst and ring,
  * the ring thins and breaks into segments, square chips fly out and shrink.
  */
-function impact(stage: HTMLElement, rng: Rng): void {
+function impact(stage: HTMLElement, rng: Rng, intervalSeconds?: number): void {
   const edge = cssHex(stage, '--bi-attack-edge', '#ffd23a');
   const spark = cssHex(stage, '--bi-attack-particle', '#fff3d0');
   const PX = pixelUnit(stage, PX_WANT);
@@ -225,58 +238,62 @@ function impact(stage: HTMLElement, rng: Rng): void {
     a: (i / 6) * Math.PI * 2 + rng(),
     v: between(rng, 0.7, 1.1),
   }));
-  spawnHit(stage, (p, ms) => {
-    if (ms > 480) return false;
-    if (ms < 90) {
-      // frame 1: the star flash
-      for (let k = 0; k < 8; k++) {
-        const a = rot + (k * Math.PI) / 4;
-        const L = R * (k % 2 ? 0.45 : 0.8);
-        for (let s = 0; s <= L; s++) p.set(cx + Math.cos(a) * s, cy + Math.sin(a) * s, '#ffffff');
+  spawnHit(
+    stage,
+    (p, ms) => {
+      if (ms > 480) return false;
+      if (ms < 90) {
+        // frame 1: the star flash
+        for (let k = 0; k < 8; k++) {
+          const a = rot + (k * Math.PI) / 4;
+          const L = R * (k % 2 ? 0.45 : 0.8);
+          for (let s = 0; s <= L; s++) p.set(cx + Math.cos(a) * s, cy + Math.sin(a) * s, '#ffffff');
+        }
+        disc(p, cx, cy, 2, '#ffffff');
+        return true;
       }
-      disc(p, cx, cy, 2, '#ffffff');
+      const t = (ms - 90) / 390;
+      // burst core shrinks away
+      if (t < 0.35) {
+        disc(p, cx, cy, R * 0.45 * (1 - t * 2), edge);
+        disc(p, cx, cy, R * 0.25 * (1 - t * 2.5), '#ffffff');
+      }
+      // the ring grows, thins and breaks into segments
+      const rr = R * (0.5 + t * 0.9);
+      const thick = t < 0.4 ? 2 : 1;
+      const steps = Math.ceil(rr * 7);
+      for (let i = 0; i < steps; i++) {
+        const a = (i / steps) * Math.PI * 2;
+        if (t > 0.35 && Math.floor((a / (Math.PI * 2)) * 12) % 2 === 0) continue;
+        if (t > 0.7 && Math.floor((a / (Math.PI * 2)) * 24) % 2 === 0) continue;
+        for (let k = 0; k < thick; k++)
+          p.set(cx + Math.cos(a) * (rr + k), cy + Math.sin(a) * (rr + k), edge);
+      }
+      // square chips fly and shrink
+      for (const c of chips) {
+        const d = R * (0.4 + t * 1.6 * c.v);
+        const size = t < 0.4 ? 2 : t < 0.75 ? 1 : 0;
+        const x = cx + Math.cos(c.a) * d;
+        const y = cy + Math.sin(c.a) * d;
+        for (let j = 0; j <= size; j++) for (let i = 0; i <= size; i++) p.set(x + i, y + j, spark);
+      }
       return true;
-    }
-    const t = (ms - 90) / 390;
-    // burst core shrinks away
-    if (t < 0.35) {
-      disc(p, cx, cy, R * 0.45 * (1 - t * 2), edge);
-      disc(p, cx, cy, R * 0.25 * (1 - t * 2.5), '#ffffff');
-    }
-    // the ring grows, thins and breaks into segments
-    const rr = R * (0.5 + t * 0.9);
-    const thick = t < 0.4 ? 2 : 1;
-    const steps = Math.ceil(rr * 7);
-    for (let i = 0; i < steps; i++) {
-      const a = (i / steps) * Math.PI * 2;
-      if (t > 0.35 && Math.floor((a / (Math.PI * 2)) * 12) % 2 === 0) continue;
-      if (t > 0.7 && Math.floor((a / (Math.PI * 2)) * 24) % 2 === 0) continue;
-      for (let k = 0; k < thick; k++)
-        p.set(cx + Math.cos(a) * (rr + k), cy + Math.sin(a) * (rr + k), edge);
-    }
-    // square chips fly and shrink
-    for (const c of chips) {
-      const d = R * (0.4 + t * 1.6 * c.v);
-      const size = t < 0.4 ? 2 : t < 0.75 ? 1 : 0;
-      const x = cx + Math.cos(c.a) * d;
-      const y = cy + Math.sin(c.a) * d;
-      for (let j = 0; j <= size; j++) for (let i = 0; i <= size; i++) p.set(x + i, y + j, spark);
-    }
-    return true;
-  });
+    },
+    attackSpeed(IMPACT_MS, intervalSeconds),
+  );
 }
 
 const effects: Record<EffectId, (stage: HTMLElement, opts: HitOptions) => void> = {
-  'slash-sparks': (stage, { rng, target }) => {
-    slash(stage, rng, false);
+  'slash-sparks': (stage, { rng, target, intervalSeconds }) => {
+    slash(stage, rng, false, intervalSeconds);
     react(target, 'bi-react-flinch');
   },
-  'slash-chips': (stage, { rng, target }) => {
-    slash(stage, rng, true);
+  'slash-chips': (stage, { rng, target, intervalSeconds }) => {
+    slash(stage, rng, true, intervalSeconds);
     react(target, 'bi-react-flinch');
   },
-  'heavy-hit': (stage, { rng, target }) => {
-    impact(stage, rng);
+  'heavy-hit': (stage, { rng, target, intervalSeconds }) => {
+    impact(stage, rng, intervalSeconds);
     react(target, 'bi-react-thud');
   },
   // 'rise' is a tick style; see showTick.
@@ -289,9 +306,17 @@ const effects: Record<EffectId, (stage: HTMLElement, opts: HitOptions) => void> 
  * small offset (whole-pixel transforms only, so the pixels stay square), with a soft glow copy
  * behind as the approved effects style.
  */
-function pixelSlash(stage: HTMLElement, effectId: string, rng: Rng): boolean {
+function pixelSlash(
+  stage: HTMLElement,
+  effectId: string,
+  rng: Rng,
+  intervalSeconds?: number,
+): boolean {
   const sheet = attackSheet(effectId);
   if (!sheet) return false;
+  // frames play over a share of the hit interval: `speed` above 1 shortens each of them
+  const drawn = sheet.durations.reduce((a, d) => a + d, 0);
+  const speed = attackSpeed(drawn, intervalSeconds);
   const fx = layer(stage);
   while (fx.querySelectorAll('.bi-fx').length >= MAX_LIVE_HITS)
     fx.querySelector('.bi-fx')?.remove();
@@ -322,7 +347,7 @@ function pixelSlash(stage: HTMLElement, effectId: string, rng: Rng): boolean {
       glow.style.backgroundPosition = pos;
       hard.style.backgroundPosition = pos;
     }, t);
-    t += d;
+    t += d / speed;
   });
   window.setTimeout(() => box.remove(), t);
   return true;
@@ -331,7 +356,7 @@ function pixelSlash(stage: HTMLElement, effectId: string, rng: Rng): boolean {
 /** Plays one hit of an attack effect. Skipped entirely with reduced motion. */
 export function playHit(effectId: string, stage: HTMLElement, opts: HitOptions): void {
   if (prefersReducedMotion()) return;
-  if (pixelSlash(stage, effectId, opts.rng)) {
+  if (pixelSlash(stage, effectId, opts.rng, opts.intervalSeconds)) {
     react(opts.target, 'bi-react-flinch');
     return;
   }
