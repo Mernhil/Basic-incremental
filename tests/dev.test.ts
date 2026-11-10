@@ -125,6 +125,9 @@ describe('dev cheats (dev builds only)', () => {
       'mossy_cellar',
       'ember_crypt',
       'frostspire_vault',
+      'thunderpeak_aerie',
+      'sunken_sanctum',
+      'void_hollow',
       'glimmer_trial',
     ]);
     expect(options.cards).toHaveLength(content.cards.length);

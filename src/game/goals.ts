@@ -157,10 +157,12 @@ export function incomePerSecond(
     if (spk !== null && stage) {
       // A floor's enemies drop the boss's table at their share of the boss's HP.
       const worth = stage.enemies.reduce((sum, e) => sum + e.dropScale, 0);
+      const purseWorth = stage.enemies.reduce((sum, e) => sum + e.purseScale, 0);
       let perKill = 0;
+      let perKillPurse = 0;
       for (const currency of drops.currencies) {
         if (currency.resource !== resourceId) continue;
-        perKill += ((currency.min + currency.max) / 2) * (currency.multiplier ?? 1);
+        perKillPurse += ((currency.min + currency.max) / 2) * (currency.multiplier ?? 1);
       }
       if (drops.material.resource === resourceId) {
         perKill += drops.material.chance * drops.material.amount;
@@ -168,7 +170,7 @@ export function incomePerSecond(
       for (const extra of drops.extraMaterials) {
         if (extra.resource === resourceId) perKill += (extra.chance * (extra.min + extra.max)) / 2;
       }
-      total = total.add((perKill * worth) / spk);
+      total = total.add((perKill * worth + perKillPurse * purseWorth) / spk);
     }
   }
   const trial = active ? content.trialById.get(active) : undefined;

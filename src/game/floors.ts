@@ -42,6 +42,9 @@ export interface FloorEnemy {
   /** Its share of the boss's drops, XP and purse on this difficulty: its HP over the HP of the
    *  difficulty's boss. The boss is 1; an endless depth grows past it. */
   dropScale: number;
+  /** Its share of the Money purse in dungeons.json: `dropScale`, and 2% more for every floor it
+   *  stands below the first and for every endless depth (DESIGN.md §6 Deeper pays more). */
+  purseScale: number;
   /** The HP is shown as this many stacked bars. */
   hpBars: number;
 }
@@ -246,6 +249,11 @@ export function floorSpec(
   const part = (base: Decimal, share: number, fraction: number): Decimal =>
     plain ? base.mul(share) : base.mul(worth).mul(fraction);
   const tier = difficultyScale(content, difficulty);
+  // Deeper pays more: the purse per HP grows with every floor below the first, and the endless
+  // depths carry on from the Nightmare boss's floor.
+  const below = difficulty === 'endless' ? dungeon.floors - 1 + floor : floor - 1;
+  const purseBonus = Math.min(Math.pow(config.purseFloorBonus, below), MAX_PLAIN_SCALE);
+  const purseOf = (share: number): number => Math.min(share * purseBonus, MAX_PLAIN_SCALE);
   // The boss of this difficulty: every floor is measured against it.
   const bossHp = dungeon.boss.hp.mul(tier.hp);
   const bossAttack = dungeon.boss.attack.damage.mul(tier.attack);
@@ -268,6 +276,7 @@ export function floorSpec(
           kind: 'boss',
           hp: bossHp,
           dropScale: 1,
+          purseScale: purseOf(1),
           hpBars: dungeon.boss.hpBars,
         },
       ],
@@ -292,6 +301,7 @@ export function floorSpec(
           kind: 'miniboss',
           hp,
           dropScale: share,
+          purseScale: purseOf(share),
           hpBars: Math.max(1, Math.round(dungeon.boss.hpBars / 2)),
         },
       ],
@@ -313,6 +323,7 @@ export function floorSpec(
       kind: 'enemy',
       hp: part(bossHp, share, (config.waveHpShare * type.hpWeight) / weight),
       dropScale: share,
+      purseScale: purseOf(share),
       hpBars: 1,
     };
   });

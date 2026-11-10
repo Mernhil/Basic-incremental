@@ -69,15 +69,20 @@ function wholeUnits(scaled: number, rng: Rng): number {
 
 /**
  * Rolls the kill of a normal enemy or mini-boss (DESIGN.md §6 Normal enemies): the dungeon's
- * boss table at `scale`, the enemy's share of the boss's HP. Every currency is paid at `scale` of
- * a boss kill's roll; the material and the extra materials drop with `scale` of the boss's
+ * boss table at `scale`, the enemy's share of the boss's HP. Every currency is paid at
+ * `purseScale` of a boss kill's roll (its share of the purse, DESIGN.md §6 Deeper pays more); the material and the extra materials drop with `scale` of the boss's
  * chance. The rare item and its pity belong to the boss alone.
  */
-export function rollEnemyDrop(drops: DropTable, scale: number, rng: Rng): EnemyDropResult {
+export function rollEnemyDrop(
+  drops: DropTable,
+  scale: number,
+  rng: Rng,
+  purseScale: number = scale,
+): EnemyDropResult {
   const currencies = drops.currencies.map((currency) => {
     const span = currency.max - currency.min + 1;
     const units = currency.min + Math.floor(rng() * span);
-    return wholeUnits(units * (currency.multiplier ?? 1) * scale, rng);
+    return wholeUnits(units * (currency.multiplier ?? 1) * purseScale, rng);
   });
   const material = rng() < drops.material.chance * scale ? drops.material.amount : 0;
   const extraMaterials = drops.extraMaterials.map((extra) =>
@@ -99,6 +104,7 @@ export function rollEnemyDrops(
   scale: number,
   count: number,
   rng: Rng,
+  purseScale: number = scale,
 ): EnemyDropResult {
   const total: EnemyDropResult = {
     currencies: drops.currencies.map(() => 0),
@@ -107,7 +113,7 @@ export function rollEnemyDrops(
   };
   if (count <= ENEMY_DROP_ROLLS) {
     for (let i = 0; i < count; i++) {
-      const roll = rollEnemyDrop(drops, scale, rng);
+      const roll = rollEnemyDrop(drops, scale, rng, purseScale);
       roll.currencies.forEach((units, j) => (total.currencies[j]! += units));
       total.material += roll.material;
       roll.extraMaterials.forEach((units, j) => (total.extraMaterials[j]! += units));
@@ -117,7 +123,7 @@ export function rollEnemyDrops(
   const chance = (c: number): number => Math.min(1, Math.max(0, c * scale));
   total.currencies = drops.currencies.map((currency) =>
     wholeUnits(
-      ((currency.min + currency.max) / 2) * (currency.multiplier ?? 1) * scale * count,
+      ((currency.min + currency.max) / 2) * (currency.multiplier ?? 1) * purseScale * count,
       rng,
     ),
   );

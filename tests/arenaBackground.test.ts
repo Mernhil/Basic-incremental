@@ -41,6 +41,9 @@ describe('arena backgrounds (DESIGN.md §6)', () => {
       'mossy_cellar',
       'ember_crypt',
       'frostspire_vault',
+      'thunderpeak_aerie',
+      'sunken_sanctum',
+      'void_hollow',
     ]);
   });
 });
