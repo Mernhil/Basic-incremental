@@ -5,6 +5,7 @@ import {
   type ProductionStageView,
 } from '../../../game';
 import type { HarvestPattern } from '../../../data';
+import { COPY } from '../copy';
 
 /**
  * View model of the Production stage (DESIGN.md §4, §11): turns the report's harvest events into
@@ -201,4 +202,38 @@ export function stageKey(view: ProductionStageView): string {
     x: { cardId: string; rank: { tier: string; stars: number }; level: number } | null | undefined,
   ) => (x ? [x.cardId, x.rank.tier, x.rank.stars, x.level] : null);
   return JSON.stringify([c(view.main), view.supports.map(c), view.pattern.style]);
+}
+
+/** "Burst 21 / 30": how full the harvest gauge is, as the chip under the rows says it. */
+export function burstCountText(view: Pick<ProductionStageView, 'gauge' | 'burst'>): string {
+  const size = view.burst.size;
+  const n = Math.min(size, Math.max(0, Math.round(view.gauge * size)));
+  return COPY.production.burstCount(n, size);
+}
+
+/** One support card as the chips line shows it: its name, what it does and whether it helps now. */
+export interface SupportChip {
+  id: string;
+  name: string;
+  effect: string;
+  rarity: string;
+  helps: boolean;
+}
+
+/** The three support slots as chips; `null` is an empty slot. */
+export function supportChips(
+  view: Pick<ProductionStageView, 'supports'>,
+): Array<SupportChip | null> {
+  return Array.from({ length: 3 }, (_, i) => {
+    const c = view.supports[i];
+    return c
+      ? {
+          id: c.cardId,
+          name: c.name,
+          effect: c.abilityText,
+          rarity: c.rarity,
+          helps: c.helpsHarvest,
+        }
+      : null;
+  });
 }

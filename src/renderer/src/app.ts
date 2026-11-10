@@ -281,6 +281,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     visible: visible('production'),
     sound: playSound,
     onTierUps,
+    setBuySlot: (el) => shell.setQuestSlot('production', el),
   });
   // one card view model for the Cards page and the dungeon drawer's weapon panel
   const cardsModel = createCardsModel(content, (id, owned) =>

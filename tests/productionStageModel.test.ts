@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { Decimal, type HarvestEvent } from '../src/game';
 import {
+  burstCountText,
   gaugePercent,
   harvestMoments,
   lungeVector,
   strikeLook,
   strikeNumberKind,
+  supportChips,
 } from '../src/renderer/src/pages/productionStageModel';
 
 const ev = (over: Partial<HarvestEvent>): HarvestEvent => ({
@@ -102,5 +104,36 @@ describe('strike looks', () => {
     expect(gaugePercent(1.4)).toBe(100);
     expect(gaugePercent(-1)).toBe(0);
     expect(gaugePercent(0.456)).toBe(46);
+  });
+});
+
+describe('burstCountText', () => {
+  it('says how full the gauge is out of its size', () => {
+    expect(burstCountText({ gauge: 0.7, burst: { size: 30 } as never })).toBe('Burst 21 / 30');
+    expect(burstCountText({ gauge: 0, burst: { size: 30 } as never })).toBe('Burst 0 / 30');
+    expect(burstCountText({ gauge: 1.2, burst: { size: 30 } as never })).toBe('Burst 30 / 30');
+  });
+});
+
+describe('supportChips', () => {
+  it('lists the three slots, null for an empty one', () => {
+    const card = {
+      cardId: 'grove_keeper',
+      name: 'Grove Keeper',
+      rarity: 'rare',
+      abilityText: '+1 burst fill per tick',
+      helpsHarvest: true,
+    };
+    const chips = supportChips({ supports: [card as never, undefined, undefined] });
+    expect(chips).toHaveLength(3);
+    expect(chips[0]).toEqual({
+      id: 'grove_keeper',
+      name: 'Grove Keeper',
+      effect: '+1 burst fill per tick',
+      rarity: 'rare',
+      helps: true,
+    });
+    expect(chips[1]).toBeNull();
+    expect(chips[2]).toBeNull();
   });
 });

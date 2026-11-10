@@ -1,8 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, collectModifiers, buyTreeLevels, type GameState } from '../src/game';
 import {
-  allRateText,
-  jobRateText,
+  Decimal,
+  collectModifiers,
+  buyTreeLevels,
+  timeToAfford,
+  type GameState,
+} from '../src/game';
+import {
+  formatWait,
+  gainText,
+  jobRateValue,
+  milestoneSegments,
   productionRows,
   shelfSummary,
 } from '../src/renderer/src/pages/productionModel';
@@ -25,10 +33,13 @@ describe('productionRows', () => {
     expect(rows.map((r) => r.kindIndex)).toEqual(rows.map((_, i) => i));
     const [oak, ...locked] = rows;
     expect(oak!.kind).toBe('active');
-    expect(oak!.levelText).toBe('Lv 0');
+    expect(oak!.levelText).toBe('Level 0');
     expect(oak!.output).toMatch(/\/s$/);
+    expect(oak!.outputUnit).toBe('Oak Gem/s');
     expect(oak!.buy?.offer.affordable).toBe(true);
-    expect(oak!.milestone).toMatchObject({ label: 'Lv 25: ×2', toGo: '25 to go', progress: 0 });
+    expect(oak!.previewText).toMatch(/ → .* \/s$/);
+    expect(oak!.milestone).toMatchObject({ label: 'Lv 25: ×2', toGo: '×2 in 25', progress: 0 });
+    expect(oak!.milestone?.segments).toEqual({ total: 25, filled: 0 });
     expect(locked.length).toBeGreaterThan(0);
     for (const r of locked) {
       expect(r.kind).toBe('locked-tree');
@@ -36,7 +47,10 @@ describe('productionRows', () => {
       expect(r.milestone).toBeNull();
       expect(r.unlock?.price).toBeTruthy();
       expect(r.unlock?.have).toMatch(/^You have /);
-      expect(r.note).toMatch(/^Starts at .*\/s at level 0$/);
+      expect(r.unlock?.amount).toBeTruthy();
+      expect(r.unlock?.resources).toBeTruthy();
+      expect(r.nextBuy).toBeNull();
+      expect(r.note).toBe(`Unlock for ${r.unlock!.price}`);
     }
   });
 
@@ -73,18 +87,72 @@ describe('productionRows', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     const oak = productionRows(r.state, content, 'logging', 10, mods(r.state))[0]!;
-    expect(oak.levelText).toBe('Lv 10');
-    expect(oak.milestone?.toGo).toBe('15 to go');
+    expect(oak.levelText).toBe('Level 10');
+    expect(oak.milestone?.toGo).toBe('×2 in 15');
+    expect(oak.milestone?.segments).toEqual({ total: 25, filled: 10 });
     expect(oak.milestone?.progress).toBeCloseTo(10 / 25);
     expect(oak.buy?.label).toBe('Buy ×10');
   });
 });
 
-describe('rate texts', () => {
-  it('sums the gems per second', () => {
+describe('next buy', () => {
+  it('says "ready" with the output gain when the level is affordable', () => {
     const s = rich();
-    expect(jobRateText(s, content, 'logging', mods(s))).toMatch(/gems\/s$/);
-    expect(allRateText(s, content, mods(s))).toMatch(/gems\/s$/);
+    const oak = productionRows(s, content, 'logging', 1, mods(s))[0]!;
+    expect(oak.nextBuy?.ready).toBe(true);
+    expect(oak.nextBuy?.text).toBe('ready');
+    expect(oak.nextBuy?.sub).toMatch(/^×\d+(\.\d+)? output$/);
+  });
+
+  it('shows the wait to afford when it is not, from the game helper', () => {
+    const s = freshState();
+    s.resources.money = new Decimal(0);
+    const oak = productionRows(s, content, 'logging', 1, mods(s))[0]!;
+    expect(oak.buy?.offer.affordable).toBe(false);
+    expect(oak.nextBuy?.ready).toBe(false);
+    const wait = timeToAfford(s, content, oak.buy!.offer.price, mods(s));
+    expect(oak.nextBuy?.text).toBe(formatWait(wait));
+    expect(oak.nextBuy?.sub).toBe(wait === null ? 'no income' : 'to afford');
+  });
+});
+
+describe('formatWait', () => {
+  it('writes days and hours, hours and minutes, minutes and seconds, seconds', () => {
+    expect(formatWait(9 * 86_400 + 3 * 3600 + 10)).toBe('9d 3h');
+    expect(formatWait(3600 + 49 * 60)).toBe('1h 49m');
+    expect(formatWait(12 * 60 + 5)).toBe('12m 5s');
+    expect(formatWait(40)).toBe('40 s');
+    expect(formatWait(0.2)).toBe('1 s');
+  });
+  it('shows a dash with no income or an endless wait', () => {
+    expect(formatWait(null)).toBe('—');
+    expect(formatWait(1e12)).toBe('—');
+  });
+});
+
+describe('gainText', () => {
+  it('keeps two decimals under 10 and fewer above', () => {
+    expect(gainText(1.034)).toBe('1.03');
+    expect(gainText(12.34)).toBe('12.3');
+    expect(gainText(480.6)).toBe('481');
+  });
+});
+
+describe('milestoneSegments', () => {
+  it('spans the levels between milestones and lights the done ones', () => {
+    expect(milestoneSegments(19, 6 / 25)).toEqual({ total: 25, filled: 6 });
+    expect(milestoneSegments(25, 0)).toEqual({ total: 25, filled: 0 });
+    expect(milestoneSegments(1, 24 / 25)).toEqual({ total: 25, filled: 24 });
+  });
+  it('caps long spans at 25 segments', () => {
+    expect(milestoneSegments(80, 0).total).toBe(25);
+  });
+});
+
+describe('band rate', () => {
+  it('sums the job gems per second as a number', () => {
+    const s = rich();
+    expect(jobRateValue(s, content, 'logging', mods(s))).toMatch(/\d/);
   });
 });
 
