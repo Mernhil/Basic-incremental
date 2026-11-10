@@ -46,6 +46,7 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 - [Built] **Money comes only from dungeons**: a wage per second while fighting the first dungeon's boss (not while knocked out) and a purse on every kill in every dungeon (`dungeons.json`). A new game starts with 100 Money. Its display name lives only in `resources.json`.
 - [Built] **Money buys** tree and mine levels, the upgrade shelf (§4) and weapon tier-ups (§5). The three damage lines it used to buy are gone (§5).
 - [Built] Every Money price is a curve `base × growth^n` in the data files, read through `cost.multiplier` and `cost.growth`.
+- [To build] **Ladders** (user, 2026-11-10). Every ladder grows at one steady rate instead of jumping: enemy HP about ×1.12 per floor once floors exist (§6) and, between dungeons, the same steady rate in place of today's jumps; purses follow the same rate; tier-ups cost about the same amount of play time at each step (§5). Exact values are tuned with the sim (`dungeons.json`, `cardRules.json`).
 - [Built] **Production pays materials only**: the six gems. Gems, Cores, Frost Sigils, Glimmer Dust and Facet Shards pay for card upgrades, cosmetic upgrades and tree unlocks. Nothing in production pays Money.
 - [Built] **Crystals are the premium tier.** The Summon Crystal pays for the Card Portal and the Glamour Crystal for the Wardrobe Gate. Every dungeon drops both on every kill, deeper dungeons more. Only the portals spend them, and Ascension keeps them.
 - [Built] **Cores** (Moss, Cinder, Frost) drop with a chance per kill and **Frost Sigils** only in the Frostspire Vault, so every dungeon stays worth farming for its material (`dungeons.json`).
@@ -57,7 +58,7 @@ The layered version this file replaced (sections 11 and 12 as amendments) is in 
 - [Default · in game] **Balance after plots.** Every filled plot added a full copy of a tree's output, so the base rate of every tree kind and mine type is now three times what it was (Oak 3 a second, Copper Quarry 1.5, ...; `trees.json`, `mines.json`), tuned with the sim against the pacing targets (§14). The +10% per level and the ×2 every 25 levels stay as they are. Old saves got back the Money they spent on plots and slots (save format 16, built): each expansion at its old price, 25 × 1.4ⁿ rounded up, before any modifier.
 - [Built] **Trees.** Oak (start), Ironbark and Moonwillow, each yielding its own gem. A tree kind is unlocked once with gems of the tier below (`trees.json`).
 - [Built] **Mines.** Copper Quarry (start), Iron Deeps (unlocked by clearing the Mossy Cellar) and Crystal Grotto (unlocked by clearing the Ember Crypt), each yielding its own gem.
-- [Built] **Levels.** Each tree kind and mine type has a level bought with Money (`trees.json`, `mines.json`): +10% output per level and ×2 every 25 levels. The next milestone shows on the line ("Lv 25: ×2") and reaching it plays a small celebration. Levels reset on Ascension.
+- [To build] **Levels** (user, 2026-11-10). Each tree kind and mine type has a level bought with Money (`trees.json`, `mines.json`) and follows the classic idle shape: the cost grows by only about ×1.07 to ×1.15 per level, and more milestone multipliers (×2 to ×3) keep income close to prices. Today the cost grows ×1.3 to ×1.34 per level against +10% output per level and ×2 every 25 levels. The next milestone shows on the line ("Lv 25: ×2") and reaching it plays a small celebration. Levels reset on Ascension.
 - [Built] **Upgrade shelf.** One-time Money upgrades beside the level lines (`upgrades.json`). Each appears when its unlock is met, glows when affordable and is owned once bought; its effects are ordinary modifiers. Per-run items reset on Ascension; permanent ones stay. Lifetime Money earned is counted and kept.
 - [Default · in game] The six shelf upgrades that were unlocked by damage-line levels (Copper, Iron and Crystal Temper and Hardening) went with the lines, and an owned one paid its Money back (save format 17). No shelf item depends on plots or damage lines.
 - [Built] **The main card plays the field.** The main logging or mining card strikes with its pattern (`cards.json` `main.harvest`: steady, chop, flurry or volley; interval, strikes per cycle and targeting sweep, random or all) and shows "+n" per strike. Strikes are show: the economy uses the expected value, so online and offline give the same totals. The targets are the unlocked kinds.
@@ -134,6 +135,23 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
   | Mythic/Void | 1, 0, 1, 0, 1      | 3     | not estimated         |
 
 - [Default · in game] **Star impact.** Base damage and health are multiplied by ×1.25, ×1.6, ×2, ×2.6 and ×3.5 at ★2 to ★6, so a maxed Common (base 200) equals a fresh Legendary (base 700). The bonuses of supports and the main growth keep their smaller star step (`cardRules.json` `power`).
+- [To build] **Rarity matters** (user, 2026-11-10). A higher rarity must always be worth having. A fresh card of a higher rarity beats a fresh card of a lower one, and cards keep different stats by rarity (base damage and health, `cardRules.json`) and by weapon type. No retune flattens these gaps.
+- [To build] **Show the stats** (user, 2026-11-10; plan 2). Every card shows DPS, health, hit speed and crits, plus a compare line against the equipped card.
+- [To build] **Weapon identities** (user, 2026-11-10; plan 2). Each weapon type has its own shape, built only from mechanics combat already has: signature strength, gauge speed, crit chance, crit damage and health. Stuns, life steal, full-health bonuses and new elemental effects are out. The hit intervals and signature multipliers are the ones the roster already has; because each hit is worth DPS × interval, hit speed alone does not change damage, so the identity comes from signature, gauge, crits and health. At the same rarity the types' total power is within about 10% of each other.
+- [Default] **Weapon identity table** (Claude, 2026-11-10):
+
+  | Weapon     | Hits every | Identity                                      |
+  | ---------- | ---------- | --------------------------------------------- |
+  | Sword      | 1 s        | Balanced                                      |
+  | Spear      | 0.8 s      | High crit chance                              |
+  | Scythe     | 1 s        | Medium crit chance and crit damage            |
+  | Bow        | 1.2 s      | Highest crit damage, lowest health            |
+  | Staff      | 1.4 s      | Gauge 1.5×, so the signature comes more often |
+  | Lance      | 1.5 s      | Signature ×20, high health                    |
+  | Greatsword | 2 s        | Signature ×15, heavy hits                     |
+  | Hammer     | 3 s        | Signature ×30, highest health                 |
+  | Dagger     | 0.5 s      | Gauge ×2, low health                          |
+
 - [Built] **Stars restart on tier-up** (user, 2026-11-08). A tier-up needs the card at ★6 and resets it to ★1 with an empty star bar, the star colour following the new tier; each tier is starred up again from copies alone, and Cores, gems and Money go to tier-ups. Copies of a card waiting at ★6 for its tier-up still become shards. No save change was needed: saved cards keep their stars and fill, and a card above Bronze that is under ★6 cannot tier up again until it reaches ★6 (save format 18 had already moved old duplicates to an empty bar).
 - [Default · in game] **Star fill in the shard shop.** The shard shop sells copies of a chosen card, and a bought copy fills its star bar like any duplicate. A copy past ★6 (or when the bar already holds every star left) becomes shards.
 - [Default · in game] **Weapon looks, for now.** A card shows the weapon of its rarity from the moment it is summoned (user, 2026-11-10: the tier-up looks are not in the game yet, so a Mythic or Void card must not show a wooden weapon): Common the Wood picture, Uncommon Bronze, Rare Silver, Epic Gold, Legendary Prismatic, Mythic or Void the T6 picture of its side, each with its animation, and the item's name matches (`lookTier`); the Heirloom still wins at its tier. Tier-ups keep raising level cap, frame and power, but do not change the picture until each tier has its own look. The Wood tier (T1) shows the approved T1 picture of every type (ASSET_RULES §5). Until a type has its new art for a higher tier approved, it shows the nearest old ladder art, moving one step up that ladder per tier and capped at its top (sword, greatsword and staff their own ladders; hammer the maul; bow the bow; pickaxe the pickaxe; logging axe the hatchet; dagger the twin blades), or a plain labelled placeholder (spear, lance, scythe). Interim frames: Wood shows the Bronze frame, Mythic, Void and the Heirloom the Prismatic frame. The old art is deleted type by type as the new art lands.
@@ -157,12 +175,15 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 
 ## 6. Combat and dungeons
 
-- [Built] **Bosses** are HP walls auto-fought in parallel with everything else, with no combat input. They respawn so they can be farmed. HP shows as stacked bars with a ×N count of bars left; the current bar drains over the colour of the next.
+- [To build] **Fight pace** (user, 2026-11-10). Bosses are auto-fought in parallel with everything else, with no combat input, and respawn so they can be farmed. Fights are short and both sides bleed: a loadout that matches the dungeon kills its boss in about 15 to 30 s, and one that is too weak falls in about 10 to 20 s. Bosses are no longer HP walls that cannot hurt you. Today a first Root Warden kill takes about 23 min. HP shows as stacked bars with a ×N count of bars left; the current bar drains over the colour of the next.
+- [To build] **Floors pace** (user, 2026-11-10; plan 3). On floors, a normal wave dies in a few seconds and a mini-boss in about 15 to 30 s.
+- [Default] **Knockout** lasts 10 s instead of 30 (Claude, 2026-11-10), so a lost fight costs little time and the next try comes quickly (`combat.json`).
+- [To build] **Attack animation follows hit speed** (user, 2026-11-10). The attack animation plays over a share of the main card's hit interval, clamped to a readable range, so a dagger swings fast and a hammer swings slowly. Reduced motion stays as it is.
 - [Built] **Scaling.** Boss HP and attack grow slowly with the Ascension count; harder dungeons unlock with progress.
 - [Built] **Dungeons.** Mossy Cellar (Root Warden, drops Moss Core), Ember Crypt (Cinder Lich, Cinder Core) and Frostspire Vault (Glacier Colossus, Frost Core and Frost Sigils). Every kill drops Money and both crystals (`dungeons.json`).
 - [To build] **Dungeon floors** (user, 2026-11-09). A dungeon is a stack of floors. A normal floor is a wave of 3 to 5 small enemies auto-fought like a boss; every 10th floor holds a mini-boss and the last floor holds the dungeon's boss (today's boss: Root Warden, Cinder Lich, Glacier Colossus). The floor count is data in `dungeons.json`: 10 for the Mossy Cellar, 20 for the Ember Crypt and 30 for the Frostspire Vault. Push moves you down a floor when you win; farm stays. A knockout drops you one floor and switches to farm, so walls work on their own. Deeper floors pay more. Ascension resets the current floor, keeps the best one and lets a run start at half of it. The Glimmer Trial has no floors.
 - [To build] **Clearing** (user, 2026-11-09; replaces the 1 / 10 / 50 boss kills). A dungeon is cleared the first time its last-floor boss dies. Clearing a dungeon unlocks the next one and its mine. The old kill counts and the Frostspire Vault's 90-kill difference are gone.
-- [To build] **Normal enemies** (user, 2026-11-09): 3 types per dungeon, 9 in total, mixed in each wave, each with its own sprite, HP and small purse. Enemy HP and attack scale with the floor and, like bosses, slowly with Ascension. Normal enemies drop Money, crystals and Cores at lower rates than a boss; the boss floors keep today's boss drops (`dungeons.json`).
+- [To build] **Normal enemies** (user, 2026-11-09, confirmed 2026-11-10: they keep their small crystal drops): 3 types per dungeon, 9 in total, mixed in each wave, each with its own sprite, HP and small purse. Enemy HP and attack scale with the floor and, like bosses, slowly with Ascension. Normal enemies drop Money, crystals and Cores at lower rates than a boss; the boss floors keep today's boss drops (`dungeons.json`).
 - [Default] The three types per dungeon are a moss slime, a root sprite and a bramble beast; an ember bat, a cinder imp and a magma crawler; a frost imp, an ice wisp and a snow wolf. Mini-bosses are stronger copies of one of the dungeon's enemies. Waves hit and fall in the same chunks as the boss fights, and our damage spreads across the wave in order.
 - [Built] **Rare drops.** Each dungeon has one rare item at 0.5% per kill with a pity counter (`dungeons.json`).
 - [Built] **The Glimmer Trial** is a special dungeon that unlocks when the Ember Crypt is cleared: a strength test against the Crystal Sentinel, which has fixed HP (no Ascension scaling) and never attacks. Each attempt lasts 30 s and repeats; the score is the share of its HP dealt, up to 100%. Each of the 25 / 50 / 75 / 100% tiers pays Glimmer Dust and the top two also Facet Shards (`trials.json`); 100% clears it.
@@ -171,17 +192,21 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 - [Built] **Crits.** `combat.critChance` (base 5%) and `combat.critDamage` (base ×2) through the modifier pipeline. Normal hits and signature attacks can crit. The account tree's Combat branch has crit nodes.
 - [Built] **Our damage lands in hits** (user, 2026-11-08). The main fighting card's damage reaches a boss, and the Glimmer Trial's target, in chunks: one hit every burst interval, each worth the damage per second times that interval, plus the signature attack on a full gauge, so the boss bar drops in steps instead of sliding. Damage within the current interval is held until its hit lands (the timer is saved with the burst gauge), so a kill can come up to one interval later than a smooth drain would give. `TickReport.playerHits` lists the hits for the stage (damage per hit, hit count, signature flag).
 - [Default · in game] Damage and crits are dealt at their expected value, so online, offline and any split of time give the same totals; the stage rolls single crits only for show.
-- [Built] **Card health.** Bosses hit back at their own rhythm with their own damage. The fighting loadout has one shared health pool: the sum of its cards' health (rarity, level, rank). At 0 the loadout is knocked out for 30 s, the boss heals to full, then the fight starts again at full health. Health and defence come only through modifiers; there are no heal or shield effects. Offline follows the same rules.
+- [Built] **Card health.** Bosses hit back at their own rhythm with their own damage. The fighting loadout has one shared health pool: the sum of its cards' health (rarity, level, rank). At 0 the loadout is knocked out (Knockout above), the boss heals to full, then the fight starts again at full health. Health and defence come only through modifiers; there are no heal or shield effects. Offline follows the same rules.
 - [Built] **Hits land in chunks.** Each boss attack takes its damage from the pool in one chunk at the boss's rhythm, like the player's hits, with the same damage per minute so the balance holds (user, 2026-11-08). The pool takes each attack as one chunk, the loadout is knocked out on the hit that empties it, and `TickReport.bossAttacks` lists every attack. On screen (the user's pick at the review gate, "Screen edge pulse", 2026-11-08): the health bar closes at once and each hit's piece stays pale for a moment like a trailing segment, then falls off the bar, small for a light hit and wide for a slam. The red numbers on the cards come from those reported attacks, not from a timer of the stage's own.
 - [Default · in game] **Boss attack pattern.** Every boss hits lightly at its rhythm, and every sixth attack is a telegraphed heavy slam: five light hits at 0.4× and one slam at 4× an attack, so the damage per minute in `dungeons.json` stays the same (`bossPattern` in `combat.json`; defence applies to every hit). Built: the attacks, their damage, `bossAttackView` (when the next attack and the next slam land, a 0..1 wind-up) and the slam flag on each reported attack. The wind-up is the screen edge pulse (the look is the user's pick, 2026-11-08): in the last 1.5 s before a slam the arena's edges pulse red, building up and breathing faster toward the hit (under 3 pulses a second and never switched fully off, so it does not strobe), then one soft red flash and a shake as the slam lands; under reduced motion it is a still glow that builds up, with no flash or shake. It follows the game's own attack clock, not a timer of the stage's. The attacks sit on the play-time clock like the harvest strikes (attack N lands at N × the boss's interval), so no new saved state is needed and online, offline and any split of time agree; a fight that starts mid-cycle meets its first slam whenever the clock says, and hits that would land during a knockout do not.
 - [Default · in game] **"You fall in" readout** tells the player when the loadout would fall before it kills the boss, which can then never die. `stageReadout` gives `secondsToKnockout` (the full pool, averaged over the six places in the cycle a fight can start from), `secondsToKnockoutNow` (the health left, on the real schedule) and `fallsFirst`, and the goal tracker and the sim treat a dungeon with `fallsFirst` as a wall. On screen (the look is the user's pick, 2026-11-08): a red pill at the top of the arena that reads "You fall in 16m 40s, 42s before the boss does", shown only when `fallsFirst`; nothing shows when the loadout wins the race or in a special dungeon. Its tooltip adds the time left from the health now.
-- [Built] **Boss mastery.** Kills per boss (floors will count mini-boss and last-floor boss kills: [To build]) give medals at 10 / 100 / 1,000 / 10,000 kills, kept through Ascension: +5% damage against that boss and +10% to that dungeon's crystal and Core drops per tier. The Glimmer Trial's medal comes from its best score.
+- [Differs] **Stage stars** (user, 2026-11-10; plan 3; replaces the Boss mastery medals). Every boss floor, meaning each mini-boss and the last-floor boss, has stars. ★1 to ★4 come from kill counts; ★5 is a challenge, a kill with no knockout inside a time limit. Each star gives better loot on that stage and a one-time crystal chest; these chests are how the player gets many crystals at once. Stars are kept through Ascension. A stage map shows every stage's stars, with achievements for fully starred dungeons and star totals. Today's +5% damage per medal tier carries over as a bonus per star. Not built yet: today each boss gives medals at 10 / 100 / 1,000 / 10,000 kills, kept through Ascension, worth +5% damage against that boss and +10% to that dungeon's crystal and Core drops per tier. The Glimmer Trial's medal comes from its best score.
+- [To build] **Elements in combat** (user, 2026-11-07, decided 2026-11-10; plan 2; moved here from §15). Each boss has a weakness and a resistance. The main card's element against the boss gives a bonus or a malus, each matching support adds a smaller bonus, and production cards get a lighter bonus on matching sources. Elements are a bonus, never a wall: the pacing must hold with the wrong elements.
+- [Default] Root Warden weak to Fire and resists Nature; Cinder Lich weak to Light and resists Fire; Glacier Colossus weak to Storm and resists Crystal; the Glimmer Trial is neutral. Weakness +50%, resistance −25%, +10% per matching support; production +15% (Crystal on the Crystal Grotto, Nature on the trees, Earth on the Copper Quarry and Iron Deeps). Modifier source `element`.
 - [Default · in game] Medal drop bonuses round fractions by chance so the average is exact; the trial medal gives +5% damage in the trial and +10% to its rewards per tier.
 
 ## 7. Summon portals
 
 - [Built] **Portals.** Several portals (cards, cosmetics, more later), each with its own pool and a cost in one crystal. In-game currency only, never real money.
 - [Built] **Pulls.** A single pull (1× cost) and a 10-pull (10× cost); every 10-pull guarantees at least one Rare or better.
+- [To build] **Rarer summons** (user, 2026-11-10). Better rarities must feel special: the rates go down and so do the crystal drops, landing near 12 to 15 pulls an hour and about one Epic every 2 h (`portals.json`, `dungeons.json`, `account.json`, `achievements.json`). Today it is about 22 pulls an hour and about 9.6% Epic or better per pull. The Legendary pity at 90 and the 10-pull Rare guarantee stay.
+- [Default] **Card Portal rates** (Claude, 2026-11-10). Each rarity's chance is split equally among its 11 cards, as before: Common 53.2% (was about 45%), Uncommon 28% (30%), Rare 13% (15.5%), Epic 4% (6%), Legendary 1.5% (2.25%), Mythic 0.2% (0.9%), Void 0.1% (0.45%) (`portals.json`).
 - [Built] **Hard pity.** Legendary or better at 90 pulls without one. Counters are per portal, saved and kept through Ascension.
 - [Built] **Rates** show in a hover tooltip on the portal.
 - [Built] **Card Portal** costs Summon Crystals (`portals.json`). Bosses no longer drop cards.
@@ -257,22 +282,27 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 ## 14. Pacing and balance
 
 - [Built] **One modifier pipeline.** Every tunable number (rates, damage, drop chances, pity, cost cap, offline cap, XP, costs) goes through it, with skill trees, owned items, sets, cards, upgrades and prestige as inputs. Each modifier has a target stat, a kind (flat, percent, multiplier, set), a source and an optional condition (job, resource, dungeon). The order is fixed: base, flat, percent, multipliers, then caps. Tooltips show the breakdown (`docs/MODIFIERS.md`).
-- [Built] **Pacing targets** for active play with the game open:
+- [To build] **Pacing intent** (user, 2026-11-10). The first Ascension stays at 8 h, and the hours before it are paced so every rarity step feels earned.
+- [Default] **Pacing targets** (Claude, 2026-11-10) for active play with the game open:
 
-  | Milestone                                | Target |
-  | ---------------------------------------- | ------ |
-  | First dungeon cleared (Iron Deeps opens) | 0.5 h  |
-  | First summon                             | 0.75 h |
-  | First Silver card                        | 1.5 h  |
-  | Dungeon 2 cleared                        | 3 h    |
-  | First Gold card                          | 5 h    |
-  | First ★6 (a Gold ★6)                     | 7 h    |
-  | First Ascension                          | 8 h    |
-  | Dungeon 3 cleared                        | 12 h   |
-  | Glimmer Trial cleared                    | 15 h   |
-  | First max-level cosmetic                 | 20 h   |
-  | First Prismatic card                     | 25 h   |
-  | Beta content mostly exhausted            | 40 h   |
+  | Milestone                     | Target   |
+  | ----------------------------- | -------- |
+  | First summon                  | 5–10 min |
+  | First dungeon cleared         | 15 min   |
+  | First Silver card             | 1 h      |
+  | First Epic                    | 1.5–2 h  |
+  | Dungeon 2 cleared             | 1.5 h    |
+  | First Gold card               | 4 h      |
+  | First Legendary               | 4–5 h    |
+  | First ★6 (a Gold ★6)          | 7 h      |
+  | First Ascension               | 8 h      |
+  | Dungeon 3 cleared             | 12 h     |
+  | Glimmer Trial cleared         | 15 h     |
+  | First max-level cosmetic      | 20 h     |
+  | First Prismatic card          | 25 h     |
+  | Beta content mostly exhausted | 40 h     |
+
+  "First Epic" and "First Legendary" are new sim milestones. "First enemy killed in 2 s" waits for floors (plan 3).
 
 - [Built] **Balance sim.** `npm run sim -- --hours 40 --seeds 5` plays the real game logic and prints each milestone's target, median, spread and runs that reached it. Mastery, milestones and growth are part of it and must not break the targets.
 - [Default · in game] The sim player's choices: what it buys first, which card it focuses, what it reserves, which dungeon it fights and when it ascends (`scripts/sim/`). The first Ascension is taken as soon as it pays the minimum, later ones when the gain at least matches all the Starlight earned and the run's Starlight per hour has passed its peak; the player finishes the fighting lead's upgrades first, saves a tier-up's Money only when it is the last thing missing, and holds an Ascension while a tier-up is three quarters funded. "Mostly exhausted" counts every other milestone, every card owned and a weapon at T6 (Mythic or Void).
@@ -283,8 +313,6 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 
 _The user chose these on 2026-11-07 in claude.ai. The handoff to the repo never happened, so they were in no document and nothing was built. The systems are the user's choice; the details were filled in by Claude and are defaults._
 
-- [To build] **Elements in combat.** Each boss has a weakness and a resistance. The main card's element against the boss gives a bonus or a malus, each matching support adds a smaller bonus, and production cards get a lighter bonus on matching sources. Elements are a bonus, never a wall: the pacing must hold with the wrong elements.
-- [Default] Root Warden weak to Fire and resists Nature; Cinder Lich weak to Light and resists Fire; Glacier Colossus weak to Storm and resists Crystal; the Glimmer Trial is neutral. Weakness +50%, resistance −25%, +10% per matching support; production +15% (Crystal on the Crystal Grotto, Nature on the trees, Earth on the Copper Quarry and Iron Deeps). Modifier source `element`.
 - [To build] **Loadout presets.** Each dungeon remembers its own fighting loadout and switches to it when picked; production jobs get named presets.
 - [Default] Three presets per production job; a preset that goes over the cost cap is flagged, not deleted.
 - [To build] **Bonds.** Specific pairs of cards in the same loadout unlock a small named bonus. An undiscovered bond shows as a silhouette in a Codex until first triggered; a pixel chain links the two cards on the table.
@@ -313,6 +341,14 @@ Waiting since 2026-11-08 (`[Proposed]`):
 Changed without asking (to confirm or undo):
 
 - The Frostspire Vault needs 90 kills to clear instead of the 50 the user confirmed (§6).
+
+Defaults by Claude, 2026-11-10 (pace and economy retune, to confirm):
+
+- §14 the pacing targets table (first summon 5–10 min, first dungeon 15 min, first Silver 1 h, first Epic 1.5–2 h, dungeon 2 at 1.5 h, first Gold 4 h, first Legendary 4–5 h; the rest unchanged).
+- §7 the Card Portal rates (Common 53.2%, Uncommon 28%, Rare 13%, Epic 4%, Legendary 1.5%, Mythic 0.2%, Void 0.1%).
+- §6 the knockout at 10 s.
+- §5 the weapon identity table.
+- §3, §4, §5, §6, §7 the exact growth rates, milestone multipliers, boss HP and attack, purses, crystal drops and tier-up Money, tuned with the sim inside the user's ranges.
 
 Waiting since 2026-11-08 (weapon skins test, §8): whether the Reaper Test Card stays or gets a real card and name.
 
@@ -348,6 +384,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 
 ## 17. Changelog
 
+- 2026-11-10 — Pace and economy retune (user): short two-sided boss fights, floors pace, stage stars replacing boss medals, steady production and enemy ladders, rarer summons, rarity gaps kept, attack animation following hit speed, weapon identities and card stats display planned, elements moved from §15 to §6 (§3 to §7, §14, §15; Claude defaults for the pacing table, Card Portal rates, 10 s knockout and the identity table).
 - 2026-11-09 — Dungeon floors (user): waves of 3 to 5 normal enemies, 3 types per dungeon, a mini-boss every 10th floor and the dungeon's boss on the last floor (10 / 20 / 30 floors); a dungeon is cleared by its last-floor boss, replacing the 1 / 10 / 50 boss kills; elements stay for later (§6, §15).
 - 2026-11-10 — Roster: every weapon type has a card of every rarity, 56 more fighting cards (§5; user, Claude defaults for the details).
 - 2026-11-09 — Base roster: nine cards so every job has a card of every rarity (§5; Claude defaults).
