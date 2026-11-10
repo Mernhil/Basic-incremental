@@ -63,10 +63,10 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
+  gap: 4px;
   /* room above the card for the HP bar and the floating numbers */
   min-height: calc(var(--u) * 186 + 36px);
-  padding: 10px 12px 14px;
+  padding: 14px 8px 14px 14px;
 }
 /* the main card at 1x: the 176 x 248 box scaled to the whole device-pixel size */
 .hm-slot {
@@ -74,9 +74,8 @@
   flex: none;
   width: calc(176px * var(--card-k));
   height: calc(248px * var(--card-k));
-  /* the card box has a margin around the art: pull the art to the corner */
-  margin-bottom: calc(-20px * var(--card-k));
-  margin-left: calc(-16px * var(--card-k));
+  /* the card box has a little air round the art */
+  margin-left: calc(-8px * var(--card-k));
 }
 .hm-slot > .bi-card {
   position: absolute;
