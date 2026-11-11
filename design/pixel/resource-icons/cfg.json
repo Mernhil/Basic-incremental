@@ -1,0 +1,6 @@
+{"title":"Header icons: Money, Summon Crystal, Glamour Crystal","scale":4,"groups":[
+{"title":"1 Cel-shaded single","note":"one bold object, black outline","items":[{"src":"1a-money.png"},{"src":"1b-summon.png"},{"src":"1c-glamour.png"}]},
+{"title":"2 Piles and clusters","note":"stack of coins, shard cluster, gem cluster","items":[{"src":"2a-money.png"},{"src":"2b-summon.png"},{"src":"2c-glamour.png"}]},
+{"title":"3 Ornate gold mounts","note":"gold ring and claw settings","items":[{"src":"3a-money.png"},{"src":"3b-summon.png"},{"src":"3c-glamour.png"}]},
+{"title":"4 Minimal flat","note":"low detail, readable at 24px","items":[{"src":"4a-money.png"},{"src":"4b-summon.png"},{"src":"4c-glamour.png"}]},
+{"title":"5 Glowing","note":"sparkles and glow","items":[{"src":"5a-money.png"},{"src":"5b-summon.png"},{"src":"5c-glamour.png"}]}]}
