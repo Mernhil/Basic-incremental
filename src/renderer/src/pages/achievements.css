@@ -51,7 +51,7 @@
 .ac-book__meter {
   align-self: center;
   flex: 1;
-  max-width: 240px;
+  max-width: none;
   height: calc(var(--fs) * 2);
   margin-left: auto;
   background: var(--px-lo);

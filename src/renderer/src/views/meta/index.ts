@@ -2,21 +2,33 @@ import { accountInfo, collectModifiers, Decimal } from '../../../../game';
 import { COPY } from '../../copy';
 import { levelBadge } from '../../pages/accountModel';
 import { createAchievementsPage } from '../../pages/achievements';
+import { shardsText } from '../../pages/achievementsModel';
 import { createSettingsPage } from '../../pages/settings';
 import { shelfChips } from '../../pages/shelfModel';
 import { createShopPage } from '../../pages/shop';
 import { createSkillsPage } from '../../pages/skills';
+import { h } from '../../shell/shell';
 import { fmt } from '../../settings/numberFormat';
-import type { ViewPackage } from '../../table/contract';
-import { createShelf } from '../../ui/shelf';
+import type { ViewApi, ViewPackage } from '../../table/contract';
 import { META_COPY as T } from './copy';
+import { mountUpgrades } from './upgradesView';
 import './meta.css';
 
 /**
  * Package 9d: the Skill Tree, Achievements, Shop, Upgrades and Settings piles and their views
- * (mockups 4j, 4k, 4l, 4m, 4n; UI_RULES.md §2). Today each view holds its old page as it was; the
- * Upgrades view holds the two upgrade shelves (production and fighting) side by side.
+ * (mockups 4j, 4k, 4l, 4m, 4n; UI_RULES.md §2). Each view keeps the screen of its page, takes the
+ * table's view look (its count as a subtitle at the right end of the title bar, the page filling
+ * the view, its main blocks marked `data-deal` for motion E); Upgrades is its own two-panel view.
  */
+
+/** The muted subtitle at the right end of the title bar; `set` rewrites it only when it changes. */
+function subtitle(api: ViewApi): (text: string) => void {
+  const el = h('span', 'mv-subtitle');
+  api.setTools(el);
+  return (text) => {
+    if (el.textContent !== text) el.textContent = text;
+  };
+}
 
 export const metaViews: ViewPackage = {
   views: [
@@ -30,13 +42,17 @@ export const metaViews: ViewPackage = {
           return points > 0 ? { text: T.points(points), ready: true } : null;
         },
       },
-      mount: (host, ctx) =>
-        createSkillsPage(host, {
+      mount(host, ctx, api) {
+        host.classList.add('mv-fit', 'mv-skills');
+        const set = subtitle(api);
+        return createSkillsPage(host, {
           content: ctx.content,
           state: ctx.state,
           apply: ctx.apply,
           sound: ctx.sound,
-        }),
+          subtitle: (learned, total) => set(T.skills.subtitle(learned, total)),
+        });
+      },
     },
     {
       id: 'achievements',
@@ -47,13 +63,30 @@ export const metaViews: ViewPackage = {
           text: T.of(Object.keys(ctx.state().achievements).length, ctx.content.achievements.length),
         }),
       },
-      mount: (host, ctx) =>
-        createAchievementsPage(host, {
+      mount(host, ctx, api) {
+        host.classList.add('mv-fit', 'mv-achievements');
+        const set = subtitle(api);
+        const page = createAchievementsPage(host, {
           content: ctx.content,
           state: ctx.state,
           apply: ctx.apply,
           sound: ctx.sound,
-        }),
+        });
+        const sync = (): void =>
+          set(
+            T.achievements.subtitle(
+              Object.keys(ctx.state().achievements).length,
+              ctx.content.achievements.length,
+            ),
+          );
+        sync();
+        return {
+          render() {
+            page.render();
+            sync();
+          },
+        };
+      },
     },
     {
       id: 'shop',
@@ -67,13 +100,28 @@ export const metaViews: ViewPackage = {
           return { text: T.amount(fmt(amount), res.name) };
         },
       },
-      mount: (host, ctx) =>
-        createShopPage(host, {
+      mount(host, ctx, api) {
+        host.classList.add('mv-fit', 'mv-shop');
+        const set = subtitle(api);
+        const page = createShopPage(host, {
           content: ctx.content,
           state: ctx.state,
           apply: ctx.apply,
           sound: ctx.sound,
-        }),
+        });
+        const sync = (): void => {
+          const s = ctx.state();
+          const starlight = s.resources[ctx.content.prestige.currency] ?? new Decimal(0);
+          set(T.shop.subtitle(fmt(starlight), shardsText(s)));
+        };
+        sync();
+        return {
+          render() {
+            page.render();
+            sync();
+          },
+        };
+      },
     },
     {
       id: 'upgrades',
@@ -89,38 +137,24 @@ export const metaViews: ViewPackage = {
           return n > 0 ? { text: T.ready(n), ready: true } : null;
         },
       },
-      mount(host, ctx) {
-        host.classList.add('mv-upgrades');
-        const shelves = (['production', 'fighting'] as const).map((scope) =>
-          createShelf({
-            content: ctx.content,
-            state: ctx.state,
-            apply: ctx.apply,
-            scope,
-            sound: ctx.sound,
-          }),
-        );
-        host.append(...shelves.map((s) => s.el));
-        return {
-          render() {
-            for (const s of shelves) s.update();
-          },
-        };
-      },
+      mount: (host, ctx, api) => mountUpgrades(host, ctx, api),
     },
     {
       id: 'settings',
       title: COPY.view.titles.settings,
       pile: { glyph: 'settings' },
-      mount: (host, ctx) =>
-        createSettingsPage(host, {
+      mount(host, ctx, api) {
+        host.classList.add('mv-fit');
+        subtitle(api)(T.settings.subtitle(ctx.version));
+        return createSettingsPage(host, {
           content: ctx.content,
           state: ctx.state,
           version: ctx.version,
           exportText: ctx.save.exportText,
           replace: ctx.save.replace,
           lastSavedAt: ctx.save.lastSavedAt,
-        }),
+        });
+      },
     },
   ],
 };
