@@ -53,6 +53,7 @@ export * from './goals';
 export * from './portals';
 export * from './autobuyers';
 export * from './prestige';
+export * from './challenges';
 export * from './wardrobe';
 export * from './achievements';
 export * from './presets';

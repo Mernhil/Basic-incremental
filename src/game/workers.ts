@@ -5,6 +5,7 @@ import type { Modifier } from './modifiers';
 import { isProducerUnlocked, producersOf, type Producer } from './production';
 import { cloneState, isOnTrip, type GameState, type OwnedCard } from './state';
 import { supportPower } from './upgrades';
+import { challengeWorkerLimit } from './challenges';
 
 /**
  * Workers (DESIGN.md §4 Workers, Worker slots, Worker abilities). Logging and mining cards are
@@ -88,10 +89,12 @@ export function workersPerPlace(state: GameState, content: Content, producerId: 
 export function workerSlots(state: GameState, content: Content): number {
   const { base, perAscension } = content.production.workers.slots;
   const first = allPlaces(content).length * content.production.workers.slots.perProducer;
-  return (
+  const slots =
     Math.min(first, base + perAscension * Math.max(0, state.prestigeCount)) +
-    secondSlots(state, content)
-  );
+    secondSlots(state, content);
+  // Single Post (Ascension challenge): one worker works.
+  const limit = challengeWorkerLimit(state, content);
+  return limit === null ? slots : Math.min(slots, limit);
 }
 
 /** The worker card of a valid assignment, or undefined: known, a worker of this job, owned. */

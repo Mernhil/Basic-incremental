@@ -5,6 +5,7 @@ import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './acc
 import { achievementsDue, settleAchievements } from './achievements';
 import { bondsDue, settleBonds } from './bonds';
 import { advanceTrips } from './expeditions';
+import { settleChallenges } from './challenges';
 import { autobuyDue, settleAutobuyers } from './autobuyers';
 import { recordLuckyStrikes } from './lucky';
 import { advanceForge } from './forge';
@@ -207,6 +208,8 @@ function advanceSpan(
   const moneyBefore = next.resources[content.upgrades.currency];
   advanceCombat(next, content, seconds, rng, report, modifiers, options);
   countMoneyEarned(next, content, moneyBefore);
+  // An Ascension challenge is done once the run stands on its target floor.
+  settleChallenges(next, content);
 
   return next;
 }

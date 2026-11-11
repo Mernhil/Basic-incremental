@@ -380,6 +380,10 @@ function checkTableUpdate(
         issues.push(
           `challenges.json › [${i}] › targets › [${j}] › dungeon: unknown dungeon "${t.dungeon}"`,
         );
+      } else if (t.floor > c.dungeons.find((d) => d.id === t.dungeon)!.floors) {
+        issues.push(
+          `challenges.json › [${i}] › targets › [${j}] › floor: ${t.floor} is past the last floor of "${t.dungeon}"`,
+        );
       }
     }),
   );
