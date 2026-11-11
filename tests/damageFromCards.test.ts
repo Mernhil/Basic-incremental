@@ -86,9 +86,12 @@ describe('fighting damage comes from the main card', () => {
 
   it('follows the rarity of whichever card leads', () => {
     const epic = leadWith('storm_duelist');
-    expect(baseDamage(epic, content).eq(rules.baseDamage.epic)).toBe(true);
+    expect(baseDamage(epic, content).toNumber()).toBeCloseTo(rules.baseDamage.epic.toNumber()); // dagger ×1
     const legendary = leadWith('dawnblade_regent');
-    expect(baseDamage(legendary, content).eq(rules.baseDamage.legendary)).toBe(true);
+    // The greatsword's identity factor (DESIGN.md §5) is on top of the rarity's base.
+    expect(baseDamage(legendary, content).toNumber()).toBeCloseTo(
+      rules.baseDamage.legendary.toNumber() * rules.weapons.greatsword.damage,
+    );
   });
 
   it('grows with level, stars and tier through the base-stat power', () => {

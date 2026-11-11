@@ -342,10 +342,12 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     // star line
     if (w.starBar) {
       starMain.textContent = w.starBar.text;
+      starLine.title = w.starBar.title;
       starImpact.textContent = w.starBar.impact;
       starLine.hidden = false;
     } else {
       starMain.textContent = COPY.weapon.allStars;
+      starLine.removeAttribute('title');
       starImpact.textContent = '';
       starLine.hidden = false;
     }

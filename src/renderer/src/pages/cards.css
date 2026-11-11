@@ -307,6 +307,19 @@ html .cp-sort .cp-select:not(#_px) {
   gap: calc(var(--fs) * 2);
   padding: 0 var(--fs);
 }
+.cp-stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: calc(var(--fs) * 2);
+  padding: 0 var(--fs);
+}
+.cp-compare {
+  margin: 0;
+  padding: 0 var(--fs);
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
 .cp-fact {
   display: grid;
   gap: 2px;

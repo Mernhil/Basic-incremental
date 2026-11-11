@@ -13,6 +13,10 @@ const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, 
 const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
+/** Card elements (DESIGN.md §12): each picks the card's element effect. */
+export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
+export type CardElement = (typeof ELEMENTS)[number];
+
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
@@ -106,6 +110,8 @@ export const treeSchema = z.strictObject({
   ...producerFields,
   /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
   unlockCost: z.array(costSchema),
+  /** The tree's element: workers of this element on it give +15% (DESIGN.md §6 Elements in combat). */
+  element: z.enum(ELEMENTS),
   /** Tree levels (DESIGN.md §4), bought with Money and reset on prestige. */
   level: producerLevelSchema,
   /** Tree colours, themed to its gem: canopy and bark, light to dark. */
@@ -116,6 +122,8 @@ export const mineSchema = z.strictObject({
   ...producerFields,
   /** Dungeon whose clear unlocks this mine type; null = available from the start. */
   unlockedByDungeon: id.nullable(),
+  /** The mine's element: workers of this element on it give +15% (DESIGN.md §6 Elements in combat). */
+  element: z.enum(ELEMENTS),
   /** Mine levels, bought with Money and reset on prestige. */
   level: producerLevelSchema,
 });
@@ -333,9 +341,6 @@ const cardEffectSchema = z.strictObject({
 });
 export type CardEffect = z.output<typeof cardEffectSchema>;
 
-/** Card elements (DESIGN.md §12): each picks the card's element effect. */
-export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
-export type CardElement = (typeof ELEMENTS)[number];
 /** The 11 item types a card can carry (DESIGN.md §5 "Item types"). */
 export const ITEM_KINDS = [
   'sword',
@@ -351,7 +356,6 @@ export const ITEM_KINDS = [
   'logging_axe',
 ] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
-
 /** One item type's names and whether its Heirloom is open (items.json; DESIGN.md §5). */
 export const itemTypeSchema = z.strictObject({
   kind: z.enum(ITEM_KINDS),
@@ -450,6 +454,11 @@ const perJob = <T extends z.ZodType>(schema: T) =>
   z.strictObject({ mining: schema, logging: schema, fighting: schema });
 
 /** Card progression numbers (cardRules.json; DESIGN.md §5). All tunable. */
+const weaponFactorSchema = z.strictObject({
+  damage: z.number().positive(),
+  health: z.number().positive(),
+});
+
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
   startCards: z.array(id),
@@ -516,6 +525,22 @@ export const cardRulesSchema = z.strictObject({
    * Fighting damage is the main card's base damage × its power, then the modifiers.
    */
   baseDamage: perRarity(positiveDecimal),
+  /**
+   * Weapon identities (DESIGN.md §5): each fighting type's factor on a card's base damage and
+   * base health. The signature, gauge and crit parts of an identity are on the cards' main
+   * abilities; these two keep the types' total power within about 10% of each other.
+   */
+  weapons: z.strictObject({
+    sword: weaponFactorSchema,
+    greatsword: weaponFactorSchema,
+    spear: weaponFactorSchema,
+    lance: weaponFactorSchema,
+    dagger: weaponFactorSchema,
+    hammer: weaponFactorSchema,
+    bow: weaponFactorSchema,
+    staff: weaponFactorSchema,
+    scythe: weaponFactorSchema,
+  }),
   /** Shards for a duplicate gained past ★6, by rarity. */
   shards: perRarity(count),
 });
@@ -562,6 +587,9 @@ export const dungeonSchema = z.strictObject({
     name,
     /** Which boss drawing to use; a boss without one shows a plain labelled placeholder. */
     art: z.enum(BOSS_ARTS).optional(),
+    /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
+    weakness: z.enum(ELEMENTS),
+    resistance: z.enum(ELEMENTS),
     hp: positiveDecimal,
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
@@ -877,6 +905,17 @@ export const combatSchema = z.strictObject({
    * Nightmare is a stage with six star levels earned by kills there.
    */
   stageStars: stageStarsSchema,
+  /**
+   * Elements in combat (DESIGN.md §6), as percents added to damage or output: the main card on the
+   * boss's weakness, on its resistance (negative), each support on the weakness, and a worker on a
+   * matching tree or mine.
+   */
+  elements: z.strictObject({
+    weakness: decimal,
+    resistance: decimal.refine((d) => d.gte(-50), { message: 'a resistance is never a wall' }),
+    supportBonus: decimal,
+    production: decimal,
+  }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
     chance: z.number().min(0).max(1),

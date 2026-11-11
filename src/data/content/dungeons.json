@@ -27,6 +27,8 @@
       "id": "root_warden",
       "name": "Root Warden",
       "art": "root_warden",
+      "weakness": "fire",
+      "resistance": "nature",
       "hp": "12900",
       "hpBars": 5,
       "attack": {
@@ -107,6 +109,8 @@
       "id": "cinder_lich",
       "name": "Cinder Lich",
       "art": "cinder_lich",
+      "weakness": "light",
+      "resistance": "fire",
       "hp": "300000",
       "hpBars": 8,
       "attack": {
@@ -196,6 +200,8 @@
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
+      "weakness": "storm",
+      "resistance": "crystal",
       "hp": "7000000",
       "hpBars": 12,
       "attack": {
@@ -277,6 +283,8 @@
     "boss": {
       "id": "storm_roc",
       "name": "Storm Roc",
+      "weakness": "earth",
+      "resistance": "storm",
       "hp": "161000000",
       "hpBars": 12,
       "attack": {
@@ -358,6 +366,8 @@
     "boss": {
       "id": "dawn_hierophant",
       "name": "Dawn Hierophant",
+      "weakness": "void",
+      "resistance": "light",
       "hp": "3703000000",
       "hpBars": 12,
       "attack": {
@@ -439,6 +449,8 @@
     "boss": {
       "id": "unmade_king",
       "name": "The Unmade King",
+      "weakness": "light",
+      "resistance": "void",
       "hp": "85169000000",
       "hpBars": 12,
       "attack": {

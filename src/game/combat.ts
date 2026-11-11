@@ -1024,21 +1024,25 @@ export function advanceCombat(
       next.combat.loadoutDamage = new Decimal(0);
     } else return;
   }
-  if (left <= EPSILON) return;
-  // Crits add their expected damage to every hit and signature attack.
-  const dps = effectiveDamage(next, content, id, modifiers).mul(
-    critFactor(critStats(content, modifiers, id)),
-  );
-  if (dps.lte(0)) return;
-  const stats = burstStats(content, 'fighting', modifiers);
-
   const dungeon = content.dungeonById.get(id);
-  if (dungeon) {
-    fightDungeon(next, content, dungeon, dps, stats, left, rng, report, modifiers, options);
-    return;
+  let mods = modifiers;
+  // A rare drop joins the collection and its cosmetic bonus counts at once: the fight stops
+  // there and carries on with fresh modifiers, so any split of time deals the same damage.
+  for (let resume = 0; left > EPSILON && resume <= MAX_FIGHT_EVENTS_PER_ADVANCE; resume++) {
+    // Crits add their expected damage to every hit and signature attack.
+    const dps = effectiveDamage(next, content, id, mods).mul(
+      critFactor(critStats(content, mods, id)),
+    );
+    if (dps.lte(0)) return;
+    const stats = burstStats(content, 'fighting', mods);
+    if (!dungeon) {
+      const trial = content.trialById.get(id);
+      if (trial) fightTrial(next, content, trial, dps, stats, left, report, mods);
+      return;
+    }
+    left = fightDungeon(next, content, dungeon, dps, stats, left, rng, report, mods, options);
+    if (left > EPSILON) mods = collectModifiers(next, content);
   }
-  const trial = content.trialById.get(id);
-  if (trial) fightTrial(next, content, trial, dps, stats, left, report, modifiers);
 }
 
 /**
@@ -1128,7 +1132,7 @@ function fightDungeon(
   report: TickReport,
   modifiers: readonly Modifier[],
   options: FightOptions,
-): void {
+): number {
   /**
    * Fights `stage` for `t` seconds at `dps`: the hits that land, the card XP and the wages, both
    * grown by the stage's difficulty (DESIGN.md §6 Harder modes pay more). Returns the damage.
@@ -1175,6 +1179,8 @@ function fightDungeon(
   const max = loadoutMaxHealth(next, content, modifiers, dungeon.id);
   const pattern = content.combat.bossPattern;
   const ko = content.combat.knockoutSeconds;
+  const rareItem = dungeon.drops.rare.itemId;
+  const raresAtStart = report.drops[rareItem] ?? 0;
   let left = seconds;
   let knockouts = 0;
   // The floor's attacks sit on the play-time clock (bossAttacks.ts): this fight is its last
@@ -1185,7 +1191,9 @@ function fightDungeon(
   /** Damage of the last hit left over from the floor above (push). */
   let carry = new Decimal(0);
   for (let event = 0; event < MAX_FIGHT_EVENTS_PER_ADVANCE; event++) {
-    if (left <= EPSILON && carry.lte(0)) return;
+    if (left <= EPSILON && carry.lte(0)) return 0;
+    // A rare drop changed the modifiers (its cosmetic): hand the rest of the span back.
+    if ((report.drops[rareItem] ?? 0) > raresAtStart && left > EPSILON && carry.lte(0)) return left;
     const position = floorPosition(next, dungeon);
     const stage = stageAt(position.difficulty, position.floor);
     const pushing = !options.noPush && position.mode === 'push' && hasDeeperFloor(position);
@@ -1265,7 +1273,7 @@ function fightDungeon(
         const taken = bossDamageBetween(since, end, normal, pattern);
         next.combat.loadoutDamage = run.hits > 0 ? taken : next.combat.loadoutDamage.add(taken);
       }
-      if (span >= left) return;
+      if (span >= left) return 0;
       settled = Math.max(done, end);
       left -= span;
       clock += span;
@@ -1305,7 +1313,7 @@ function fightDungeon(
         );
         recordBossAttacks(report, dungeon.id, done, last, normal, interval, pattern, false);
       }
-      return;
+      return 0;
     }
     // The pool runs dry on the hit that lands at `lethal`: fight until then.
     land(fightFor(untilDown, dps, stage).dealt);
@@ -1328,10 +1336,11 @@ function fightDungeon(
     if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
       next.combat.knockoutSeconds = ko - wait;
       next.combat.loadoutDamage = max;
-      return;
+      return 0;
     }
     next.combat.loadoutDamage = new Decimal(0);
   }
+  return 0;
 }
 
 function addResource(state: GameState, resource: string, amount: Decimal | number): void {
