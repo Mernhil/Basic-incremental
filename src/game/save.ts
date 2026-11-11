@@ -1,10 +1,11 @@
 import { z } from 'zod';
 import type { Content } from '../data';
-import { JOBS, MAX_STARS, RANK_TIERS } from '../data/schemas';
+import { JOBS, MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
 import { Decimal, decimalToString, isDecimalString } from './num';
 import { SaveError } from './saveError';
 import { isDungeonUnlocked } from './combat';
+import { parseStageKey } from './floors';
 import {
   cloneBursts,
   cloneCards,
@@ -26,7 +27,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 25;
+export const CURRENT_SAVE_VERSION = 26;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -36,6 +37,8 @@ const cardLoadoutSchema = z.object({
   supports: z.array(z.string().nullable()),
 });
 const gaugeSchema = z.object({ gauge: z.number().min(0), timer: z.number().min(0) });
+/** v26: stage key -> a count (kills, or chests paid). */
+const stageCounts = z.record(z.string(), z.number().int().min(0));
 
 /** The on-disk shape of GameState: Decimals as strings, nothing else special. */
 export const serializedStateSchema = z.object({
@@ -45,6 +48,19 @@ export const serializedStateSchema = z.object({
     mineLevels: counts,
     /** v15. */
     treeLevels: counts,
+    /** v26: workers, their harvest gauges, tool lines, depth and the forge (DESIGN.md §4). */
+    workers: z.record(z.string(), z.array(z.string())),
+    harvestGauges: z.record(z.string(), gaugeSchema),
+    tools: counts,
+    depth: z.record(
+      z.string(),
+      z.object({ layer: z.number().int().min(1), progress: decimalText }),
+    ),
+    forge: z.object({
+      recipe: z.string().nullable(),
+      progress: decimalText,
+      worker: z.string().nullable(),
+    }),
   }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
@@ -67,6 +83,10 @@ export const serializedStateSchema = z.object({
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
     loadoutDamage: decimalText,
     knockoutSeconds: z.number().min(0),
+    /** v26: stage stars and overflow, keyed by `stageKey` (DESIGN.md §6). */
+    stageKills: stageCounts,
+    stageChests: stageCounts,
+    overflow: z.record(z.string(), z.boolean()),
   }),
   bursts: z.object({ fighting: gaugeSchema, logging: gaugeSchema, mining: gaugeSchema }),
   activeDungeonId: z.string().nullable(),
@@ -108,6 +128,8 @@ export const serializedStateSchema = z.object({
       fighting: cardLoadoutSchema,
     }),
     shards: z.number().int().min(0),
+    /** v26: cards marked to hunt (DESIGN.md §7 Wishlist). */
+    wishlist: z.array(z.string()),
   }),
   stats: z.object({
     playTimeMs: z.number().min(0),
@@ -127,6 +149,12 @@ export const serializedStateSchema = z.object({
   }),
   /** v15: the upgrade shelf (DESIGN.md §4). */
   upgrades: z.object({ owned: z.array(z.string()), moneyEarned: decimalText }),
+  /** v26: the autobuyer switches (DESIGN.md §15). */
+  automation: z.object({
+    treeLevels: z.boolean(),
+    mineLevels: z.boolean(),
+    reservePercent: z.number().min(0).max(100),
+  }),
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
     harvested: z.record(z.string(), decimalText),
@@ -168,7 +196,7 @@ export function serializeState(state: GameState): SerializedState {
   for (const [id, value] of Object.entries(state.resources)) resources[id] = decimalToString(value);
   return {
     resources,
-    production: cloneProduction(state.production),
+    production: serializeProduction(state.production),
     clearedDungeons: [...state.clearedDungeons],
     combat: {
       kills: { ...state.combat.kills },
@@ -181,6 +209,9 @@ export function serializeState(state: GameState): SerializedState {
       trialBest: { ...state.combat.trialBest },
       loadoutDamage: decimalToString(state.combat.loadoutDamage),
       knockoutSeconds: state.combat.knockoutSeconds,
+      stageKills: { ...state.combat.stageKills },
+      stageChests: { ...state.combat.stageChests },
+      overflow: { ...state.combat.overflow },
     },
     bursts: cloneBursts(state.bursts),
     activeDungeonId: state.activeDungeonId,
@@ -197,6 +228,7 @@ export function serializeState(state: GameState): SerializedState {
       owned: [...state.upgrades.owned],
       moneyEarned: decimalToString(state.upgrades.moneyEarned),
     },
+    automation: { ...state.automation },
     account: {
       xp: decimalToString(state.account.xp),
       level: state.account.level,
@@ -212,6 +244,7 @@ export function serializeState(state: GameState): SerializedState {
       ),
       loadouts: cloneCards(state.cards).loadouts,
       shards: state.cards.shards,
+      wishlist: [...state.cards.wishlist],
     },
     mastery: {
       harvested: Object.fromEntries(
@@ -247,7 +280,9 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.clearedDungeons = saved.clearedDungeons.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),
   );
+  // The format 26 fields are rebuilt by deserializeWorkers once the cards are known.
   state.production = {
+    ...base.production,
     unlockedTrees: saved.production.unlockedTrees.filter((id) => content.treeById.has(id)),
     mineLevels: Object.fromEntries(
       Object.entries(saved.production.mineLevels).filter(([id]) => content.mineById.has(id)),
@@ -276,6 +311,16 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     trialBest: { ...saved.combat.trialBest },
     loadoutDamage: new Decimal(saved.combat.loadoutDamage),
     knockoutSeconds: saved.combat.knockoutSeconds,
+    // Stages of dungeons that left the game (and keys that are not stage keys) are dropped; a
+    // chest count stays within the six star levels.
+    stageKills: knownStages(saved.combat.stageKills, content),
+    stageChests: Object.fromEntries(
+      Object.entries(knownStages(saved.combat.stageChests, content)).map(([key, paid]) => [
+        key,
+        Math.min(paid, STAGE_STAR_LEVELS),
+      ]),
+    ),
+    overflow: knownStages(saved.combat.overflow, content),
   };
   state.bursts = cloneBursts(saved.bursts);
   const active = saved.activeDungeonId;
@@ -328,6 +373,8 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   };
   refundClampedTiers(state, saved.cards, content);
   state.cards = deserializeCards(saved.cards, content);
+  deserializeWorkers(state, saved.production, content);
+  state.automation = { ...saved.automation };
   deserializeMastery(state, saved.mastery, content);
   // Counters of portals removed from the game are dropped.
   const portalIds = new Set(content.portals.map((p) => p.id));
@@ -582,5 +629,90 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
       loadout.supports[i] = keep(saved.loadouts[job].supports[i]);
     loadouts[job] = loadout;
   }
-  return { owned, loadouts, shards: saved.shards };
+  // Unknown cards and repeats are dropped from the wishlist; a marked card need not be owned.
+  const wishlist = [...new Set(saved.wishlist)].filter((id) => content.cardById.has(id));
+  return { owned, loadouts, shards: saved.shards, wishlist };
+}
+
+/** Star levels a stage has (DESIGN.md §6 Stage stars): a chest count never goes past this. */
+const STAGE_STAR_LEVELS = 6;
+
+/** The entries whose key is a stage key of a dungeon in the game. */
+function knownStages<T>(entries: Record<string, T>, content: Content): Record<string, T> {
+  return Object.fromEntries(
+    Object.entries(entries).filter(([key]) => {
+      const stage = parseStageKey(key);
+      return stage !== null && content.dungeonById.has(stage.dungeonId);
+    }),
+  );
+}
+
+/**
+ * Rebuilds the format 26 production fields (DESIGN.md §4 Workers): trees and mines that left the
+ * game are dropped, and so is a worker that is unknown, not owned, of the wrong job (a mining
+ * card on a tree, a logging card on a mine) or already working somewhere else (the first place
+ * in save order keeps it, then the forge). Needs `state.cards` already rebuilt.
+ */
+function deserializeWorkers(
+  state: GameState,
+  saved: SerializedState['production'],
+  content: Content,
+): void {
+  const jobOf = (producerId: string): Job | null =>
+    content.treeById.has(producerId)
+      ? 'logging'
+      : content.mineById.has(producerId)
+        ? 'mining'
+        : null;
+  const known = <T>(entries: Record<string, T>): [string, T][] =>
+    Object.entries(entries).filter(([id]) => jobOf(id) !== null);
+  const working = new Set<string>();
+  const workers: Record<string, string[]> = {};
+  for (const [producerId, cardIds] of Object.entries(saved.workers)) {
+    const job = jobOf(producerId);
+    if (!job) continue;
+    const kept = cardIds.filter((id) => {
+      if (!state.cards.owned[id] || content.cardById.get(id)?.job !== job || working.has(id))
+        return false;
+      working.add(id);
+      return true;
+    });
+    if (kept.length > 0) workers[producerId] = kept;
+  }
+  const forgeWorker = saved.forge.worker;
+  state.production.workers = workers;
+  state.production.harvestGauges = Object.fromEntries(
+    known(saved.harvestGauges).map(([id, g]) => [id, { ...g }]),
+  );
+  // Tool lines and forge recipes are not in the content yet (package 6): kept as saved.
+  state.production.tools = { ...saved.tools };
+  state.production.depth = Object.fromEntries(
+    known(saved.depth).map(([id, d]) => [
+      id,
+      { layer: d.layer, progress: new Decimal(d.progress) },
+    ]),
+  );
+  state.production.forge = {
+    recipe: saved.forge.recipe,
+    progress: new Decimal(saved.forge.progress),
+    worker:
+      forgeWorker && state.cards.owned[forgeWorker] && !working.has(forgeWorker)
+        ? forgeWorker
+        : null,
+  };
+}
+
+/** The on-disk shape of the production state: Decimals as strings. */
+function serializeProduction(p: GameState['production']): SerializedState['production'] {
+  const copy = cloneProduction(p);
+  return {
+    ...copy,
+    depth: Object.fromEntries(
+      Object.entries(copy.depth).map(([id, d]) => [
+        id,
+        { layer: d.layer, progress: decimalToString(d.progress) },
+      ]),
+    ),
+    forge: { ...copy.forge, progress: decimalToString(copy.forge.progress) },
+  };
 }

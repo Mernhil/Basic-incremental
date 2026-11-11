@@ -60,7 +60,74 @@ export const MIGRATIONS: MigrationTable = {
   23: v23ToV24,
   /** v24 -> v25: replay Normal first, and training levels (DESIGN.md §6). */
   24: v24ToV25,
+  /** v25 -> v26: the balance update (DESIGN.md §4 to §10): workers, stage stars and the rest. */
+  25: v25ToV26,
 };
+
+/** The first tree kind and mine type when save format 26 was made (a snapshot). */
+const V26_FIRST_PRODUCER = { logging: 'oak', mining: 'copper_quarry' } as const;
+
+/** Floors of each dungeon on Normal when save format 26 was made (a snapshot). */
+const V26_FLOORS: Record<string, number> = {
+  mossy_cellar: 10,
+  ember_crypt: 20,
+  frostspire_vault: 30,
+  thunderpeak_aerie: 40,
+  sunken_sanctum: 50,
+  void_hollow: 60,
+};
+
+/**
+ * v25 -> v26: the balance update (user, 2026-11-11). Logging and mining cards become workers
+ * (DESIGN.md §4 Workers): each job's main card becomes the worker of that job's first tree or
+ * mine, and the job's harvest gauge moves with it. The boss kills of each dungeon become the
+ * stage kills of its Normal last floor (§6 Stage stars), keyed `"<dungeon>:normal:<last floor>"`
+ * as `stageKey` writes it in format 26. Cards keep their stars, levels and tiers. Everything else
+ * starts empty: no tool lines, depth, forge, wishlist, chests paid, overflow switches or
+ * autobuyers switched on. The old loadouts, burst gauges and kill counts stay as they are: the
+ * game still reads them until the packages that replace them remove them.
+ */
+function v25ToV26(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const cards = isRecord(state['cards']) ? state['cards'] : {};
+  const loadouts = isRecord(cards['loadouts']) ? cards['loadouts'] : {};
+  const bursts = isRecord(state['bursts']) ? state['bursts'] : {};
+  const workers: Record<string, string[]> = {};
+  const harvestGauges: Record<string, unknown> = {};
+  for (const job of ['logging', 'mining'] as const) {
+    const loadout = loadouts[job];
+    const main = isRecord(loadout) ? loadout['main'] : null;
+    if (typeof main !== 'string') continue;
+    const producer = V26_FIRST_PRODUCER[job];
+    workers[producer] = [main];
+    // An empty gauge needs no entry (missing = empty).
+    const gauge = bursts[job];
+    if (isRecord(gauge) && (gauge['gauge'] !== 0 || gauge['timer'] !== 0))
+      harvestGauges[producer] = { ...gauge };
+  }
+  const kills = isRecord(combat['kills']) ? combat['kills'] : {};
+  const stageKills: Record<string, unknown> = {};
+  for (const [dungeonId, count] of Object.entries(kills)) {
+    const last = V26_FLOORS[dungeonId];
+    if (last === undefined || typeof count !== 'number' || !(count > 0)) continue;
+    stageKills[`${dungeonId}:normal:${last}`] = count;
+  }
+  return {
+    ...state,
+    production: {
+      ...production,
+      workers,
+      harvestGauges,
+      tools: {},
+      depth: {},
+      forge: { recipe: null, progress: '0', worker: null },
+    },
+    combat: { ...combat, stageKills, stageChests: {}, overflow: {} },
+    cards: { ...cards, wishlist: [] },
+    automation: { treeLevels: false, mineLevels: false, reservePercent: 0 },
+  };
+}
 
 /**
  * v24 -> v25. Replay Normal first (user, 2026-11-10): format 24 put a dungeon that had been

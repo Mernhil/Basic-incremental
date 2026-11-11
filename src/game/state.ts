@@ -53,6 +53,25 @@ export interface GameState {
   account: AccountState;
   /** The upgrade shelf (DESIGN.md §4): owned upgrades and the lifetime Money earned. */
   upgrades: UpgradeState;
+  /** The autobuyers for tree and mine levels (DESIGN.md §9, §15). Save format 26; not read yet. */
+  automation: AutomationState;
+}
+
+/**
+ * The autobuyers for tree and mine levels (DESIGN.md §15), bought in the Starlight shop (§9).
+ * Only the player's switches live here: whether an autobuyer is owned comes from the shop.
+ */
+export interface AutomationState {
+  /** The tree-level autobuyer is switched on. */
+  treeLevels: boolean;
+  /** The mine-level autobuyer is switched on. */
+  mineLevels: boolean;
+  /** Percent of the Money held (0..100) the autobuyers leave unspent. */
+  reservePercent: number;
+}
+
+export function initialAutomation(): AutomationState {
+  return { treeLevels: false, mineLevels: false, reservePercent: 0 };
 }
 
 /** The upgrade shelf's state. */
@@ -139,6 +158,41 @@ export interface ProductionState {
   mineLevels: Record<string, number>;
   /** Tree id -> level bought with Money (DESIGN.md §4). Reset on prestige. */
   treeLevels: Record<string, number>;
+  /** Tree or mine id -> the ids of the cards working it, in slot order (DESIGN.md §4 Workers).
+   *  A card works one place at a time; missing or [] = no worker. Kept through prestige. */
+  workers: Record<string, string[]>;
+  /** Tree or mine id -> its worker's harvest gauge (DESIGN.md §4 Harvest burst); missing = empty.
+   *  Reset on prestige, as the burst gauges are. */
+  harvestGauges: Record<string, BurstGauge>;
+  /** Tool line id -> level bought with Money (DESIGN.md §4 Tool lines). Reset on prestige. */
+  tools: Record<string, number>;
+  /** Tree or mine id -> its age or layer (DESIGN.md §4 Depth and growth); missing = layer 1 with
+   *  nothing broken. Reset on prestige. */
+  depth: Record<string, DepthProgress>;
+  /** The forge (DESIGN.md §4 The forge). Kept through prestige. */
+  forge: ForgeState;
+}
+
+/** How deep a mine is dug or how old a tree has grown (DESIGN.md §4 Depth and growth). */
+export interface DepthProgress {
+  /** The layer (mine) or age (tree) being broken through, 1-based. */
+  layer: number;
+  /** Hardness of that layer broken so far (the worker's damage), 0 up to the layer's hardness. */
+  progress: Decimal;
+}
+
+/** The forge (DESIGN.md §4 The forge): one recipe at a time, run by one worker card. */
+export interface ForgeState {
+  /** The recipe id being made (`production.json`), or null when idle. */
+  recipe: string | null;
+  /** Progress toward the next craft of that recipe. */
+  progress: Decimal;
+  /** The card working the forge, or null. A card works one place at a time. */
+  worker: string | null;
+}
+
+export function initialForge(): ForgeState {
+  return { recipe: null, progress: new Decimal(0), worker: null };
 }
 
 /**
@@ -182,6 +236,15 @@ export interface CombatState {
   loadoutDamage: Decimal;
   /** Seconds left of a knockout; while above 0 the loadout does not fight. */
   knockoutSeconds: number;
+  /** Stage key (`stageKey` in floors.ts) -> kills on that stage, ever (DESIGN.md §6 Stage stars).
+   *  Kept through prestige. */
+  stageKills: Record<string, number>;
+  /** Stage key -> star levels whose one-time chest is paid, 0..6 (missing = 0). Kept through
+   *  prestige. */
+  stageChests: Record<string, number>;
+  /** Stage key -> the overflow switch is on (DESIGN.md §6 Overflow); missing = off. Kept through
+   *  prestige. */
+  overflow: Record<string, boolean>;
 }
 
 export interface TrialAttempt {
@@ -206,6 +269,9 @@ export function initialCombat(): CombatState {
     trialBest: {},
     loadoutDamage: new Decimal(0),
     knockoutSeconds: 0,
+    stageKills: {},
+    stageChests: {},
+    overflow: {},
   };
 }
 
@@ -223,12 +289,33 @@ export function initialProduction(): ProductionState {
     unlockedTrees: [],
     mineLevels: {},
     treeLevels: {},
+    workers: {},
+    harvestGauges: {},
+    tools: {},
+    depth: {},
+    forge: initialForge(),
   };
 }
 
 /** What a resource holds at the start of a game or of a run (Money starts with a little; DESIGN.md §3). */
 export function startingAmount(content: Content, resourceId: string): Decimal {
   return content.resourceById.get(resourceId)?.startAmount ?? new Decimal(0);
+}
+
+/**
+ * A new game's workers (DESIGN.md §4 Workers): each logging and mining start card
+ * (cardRules.startCards) works its job's first tree kind or mine type, as an old save's main
+ * cards do after the format 26 migration.
+ */
+export function initialWorkers(content: Content): Record<string, string[]> {
+  const first = { logging: content.trees[0]?.id, mining: content.mines[0]?.id };
+  const workers: Record<string, string[]> = {};
+  for (const id of content.cardRules.startCards) {
+    const job = content.cardById.get(id)?.job;
+    const producer = job === 'logging' || job === 'mining' ? first[job] : undefined;
+    if (producer && !workers[producer]) workers[producer] = [id];
+  }
+  return workers;
 }
 
 export function createInitialState(content: Content): GameState {
@@ -238,7 +325,7 @@ export function createInitialState(content: Content): GameState {
 
   return {
     resources,
-    production: initialProduction(),
+    production: { ...initialProduction(), workers: initialWorkers(content) },
     clearedDungeons: [],
     combat: initialCombat(),
     bursts: initialBursts(),
@@ -254,6 +341,7 @@ export function createInitialState(content: Content): GameState {
     shardShop: {},
     account: initialAccount(),
     upgrades: initialUpgrades(),
+    automation: initialAutomation(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -287,6 +375,7 @@ export function cloneState(state: GameState): GameState {
     achievements: { ...state.achievements },
     shardShop: { ...state.shardShop },
     upgrades: { owned: [...state.upgrades.owned], moneyEarned: state.upgrades.moneyEarned },
+    automation: { ...state.automation },
     account: { ...state.account, skills: { ...state.account.skills } },
     prestige: {
       runStart: { ...state.prestige.runStart },
@@ -308,6 +397,13 @@ export function cloneProduction(p: ProductionState): ProductionState {
     unlockedTrees: [...p.unlockedTrees],
     mineLevels: { ...p.mineLevels },
     treeLevels: { ...p.treeLevels },
+    workers: Object.fromEntries(Object.entries(p.workers).map(([id, w]) => [id, [...w]])),
+    harvestGauges: Object.fromEntries(
+      Object.entries(p.harvestGauges).map(([id, g]) => [id, { ...g }]),
+    ),
+    tools: { ...p.tools },
+    depth: Object.fromEntries(Object.entries(p.depth).map(([id, d]) => [id, { ...d }])),
+    forge: { ...p.forge },
   };
 }
 
@@ -320,6 +416,9 @@ export function cloneCombat(c: CombatState): CombatState {
     trialBest: { ...c.trialBest },
     loadoutDamage: c.loadoutDamage,
     knockoutSeconds: c.knockoutSeconds,
+    stageKills: { ...c.stageKills },
+    stageChests: { ...c.stageChests },
+    overflow: { ...c.overflow },
   };
 }
 
@@ -384,6 +483,9 @@ export interface CardState {
   loadouts: Record<Job, CardLoadout>;
   /** From duplicates gained past ★6 (DESIGN.md §5). */
   shards: number;
+  /** Card ids marked to hunt in the Card Portal (DESIGN.md §7 Wishlist), in the order marked.
+   *  Owned or not. Kept through prestige. */
+  wishlist: string[];
 }
 
 export const SUPPORT_SLOTS = 3;
@@ -414,6 +516,7 @@ export function initialCards(content: Content): CardState {
       fighting: emptyCardLoadout(),
     },
     shards: 0,
+    wishlist: [],
   };
   for (const id of content.cardRules.startCards) {
     const card = content.cardById.get(id);
@@ -439,5 +542,6 @@ export function cloneCards(c: CardState): CardState {
       fighting: loadout(c.loadouts.fighting),
     },
     shards: c.shards,
+    wishlist: [...c.wishlist],
   };
 }

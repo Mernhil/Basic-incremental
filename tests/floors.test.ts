@@ -23,10 +23,12 @@ import {
   isDungeonUnlocked,
   loadoutHealth,
   MIGRATIONS,
+  parseStageKey,
   readSave,
   setActiveDungeon,
   setFloorMode,
   simulateOffline,
+  stageKey,
   winsFloor,
   type GameState,
 } from '../src/game';
@@ -554,7 +556,7 @@ describe('save formats 24 and 25: floors', () => {
   it('loads a format 23 save made with the 0.5.3 dev tools', () => {
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v23-dev-tools.save.txt'), 'utf8');
     expect(JSON.parse(text).version).toBe(23);
-    expect(CURRENT_SAVE_VERSION).toBe(25);
+    expect(CURRENT_SAVE_VERSION).toBe(26);
     const { state } = readSave(text, floorsContent);
     // Both cleared dungeons stay cleared, with what they opened ...
     expect(state.clearedDungeons).toEqual(['mossy_cellar', 'ember_crypt']);
@@ -582,5 +584,37 @@ describe('save formats 24 and 25: floors', () => {
     expect(floorPosition(later.state, cellar)).toMatchObject({ floor: 10, best: 10 });
     expect(later.state.combat.kills['mossy_cellar']).toBeGreaterThan(70);
     expect(isDifficultyUnlocked(later.state, cellar, 'hard')).toBe(true);
+  });
+});
+
+describe('stage keys (DESIGN.md §6 Stage stars, Overflow)', () => {
+  it('names a stage by dungeon, difficulty and floor, and reads the name back', () => {
+    expect(stageKey('mossy_cellar', 'normal', 10)).toBe('mossy_cellar:normal:10');
+    expect(stageKey('void_hollow', 'nightmare', 60)).toBe('void_hollow:nightmare:60');
+    for (const difficulty of ['normal', 'hard', 'nightmare', 'endless'] as const) {
+      expect(parseStageKey(stageKey('ember_crypt', difficulty, 20))).toEqual({
+        dungeonId: 'ember_crypt',
+        difficulty,
+        floor: 20,
+      });
+    }
+  });
+
+  it('refuses anything that is not a stage key', () => {
+    for (const bad of [
+      '',
+      'mossy_cellar',
+      'mossy_cellar:normal',
+      'mossy_cellar:easy:10',
+      'mossy_cellar:normal:0',
+      'mossy_cellar:normal:-3',
+      'mossy_cellar:normal:1.5',
+      'mossy_cellar:normal:010',
+      'mossy_cellar:normal:10:2',
+      ':normal:10',
+      'mossy_cellar:normal:ten',
+    ]) {
+      expect(parseStageKey(bad), bad).toBeNull();
+    }
   });
 });

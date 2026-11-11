@@ -64,9 +64,14 @@ describe('a new game', () => {
 
   it('has no plots, slots or expansions in the state', () => {
     expect(Object.keys(freshState().production).sort()).toEqual([
+      'depth',
+      'forge',
+      'harvestGauges',
       'mineLevels',
+      'tools',
       'treeLevels',
       'unlockedTrees',
+      'workers',
     ]);
   });
 });

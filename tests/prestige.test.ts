@@ -155,6 +155,33 @@ describe('ascend', () => {
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 
+  it('keeps the workers, the forge, stage stars and the wishlist; tool lines, depth and gauges start over', () => {
+    const before = progressedRun();
+    before.production.workers = { oak: ['apprentice_feller'] };
+    before.production.forge = { recipe: 'r', progress: new Decimal(4), worker: 'cave_digger' };
+    before.production.tools = { logging_yield: 3 };
+    before.production.depth = { oak: { layer: 2, progress: new Decimal(1) } };
+    before.production.harvestGauges = { oak: { gauge: 5, timer: 0 } };
+    before.combat.stageKills = { 'mossy_cellar:normal:10': 120 };
+    before.combat.stageChests = { 'mossy_cellar:normal:10': 3 };
+    before.combat.overflow = { 'mossy_cellar:normal:10': true };
+    before.cards.wishlist = ['ember_squire'];
+    before.automation = { treeLevels: true, mineLevels: true, reservePercent: 10 };
+    const result = ascend(before, content);
+    if (!result.ok) throw new Error(result.reason);
+    const s = result.state;
+    expect(s.production.workers).toEqual(before.production.workers);
+    expect(s.production.forge).toEqual(before.production.forge);
+    expect(s.production.tools).toEqual({});
+    expect(s.production.depth).toEqual({});
+    expect(s.production.harvestGauges).toEqual({});
+    expect(s.combat.stageKills).toEqual(before.combat.stageKills);
+    expect(s.combat.stageChests).toEqual(before.combat.stageChests);
+    expect(s.combat.overflow).toEqual(before.combat.overflow);
+    expect(s.cards.wishlist).toEqual(['ember_squire']);
+    expect(s.automation).toEqual(before.automation);
+  });
+
   it('keeps the owned legacy weapon skins and the one worn', () => {
     const result = ascend(progressedRun(), content);
     if (!result.ok) throw new Error(result.reason);
