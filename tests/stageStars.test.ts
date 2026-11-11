@@ -70,7 +70,7 @@ function at(content: Content, floor: number, difficulty: Difficulty = 'normal'):
 }
 const run = (state: GameState, content: Content, seconds: number, rng = constantRng(0.5)) =>
   advance(state, content, seconds * 1000, rng);
-const crystals = (s: GameState): number => s.resources['summon_crystal']!.toNumber();
+const crystals = (s: GameState): number => s.resources['summon_scroll']!.toNumber();
 
 describe('stages', () => {
   it('are the mini-boss floors and the last-floor boss of Normal, Hard and Nightmare', () => {
@@ -174,7 +174,7 @@ describe('chests', () => {
     for (let level = 2; level <= 6; level++) {
       const amount = (d: 'normal' | 'hard' | 'nightmare', l: number) =>
         stageChest(real, d, l)
-          .find((p) => p.resource === 'summon_crystal')!
+          .find((p) => p.resource === 'summon_scroll')!
           .amount.toNumber();
       expect(amount('normal', level)).toBeGreaterThan(amount('normal', level - 1));
       expect(amount('hard', level)).toBeGreaterThan(amount('normal', level));
@@ -194,25 +194,18 @@ describe('chests', () => {
   it('pays the Wood chest with the first kill and the Bronze chest with the tenth, never again', () => {
     const content = harmless(withDps(1e12, real));
     const start = at(content, 10);
-    const wage = cellar.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
-    const wood = stageChest(real, 'normal', 1).find((p) => p.resource === 'summon_crystal')!;
-    const bronze = stageChest(real, 'normal', 2).find((p) => p.resource === 'summon_crystal')!;
+    const wood = stageChest(real, 'normal', 1).find((p) => p.resource === 'summon_scroll')!;
+    const bronze = stageChest(real, 'normal', 2).find((p) => p.resource === 'summon_scroll')!;
     const first = run(start, content, 1);
     expect(first.state.combat.stageKills[BOSS]).toBe(1);
     expect(first.state.combat.stageChests[BOSS]).toBe(1);
-    // Farming a beaten floor pays no first-clear purse: that comes with the Challenge.
-    expect(crystals(first.state) - crystals(start)).toBeCloseTo(
-      wage.add(wood.amount).toNumber(),
-      6,
-    );
+    // Farming a beaten floor pays no first-clear purse and no first-win lump: those come with the Challenge.
+    expect(crystals(first.state) - crystals(start)).toBeCloseTo(wood.amount.toNumber(), 6);
     const tenth = run(first.state, content, 9);
     expect(tenth.state.combat.stageChests[BOSS]).toBe(2);
-    expect(crystals(tenth.state) - crystals(first.state)).toBeCloseTo(
-      wage.mul(9).add(bronze.amount).toNumber(),
-      6,
-    );
+    expect(crystals(tenth.state) - crystals(first.state)).toBeCloseTo(bronze.amount.toNumber(), 6);
     const later = run(tenth.state, content, 5);
-    expect(crystals(later.state) - crystals(tenth.state)).toBeCloseTo(wage.mul(5).toNumber(), 6);
+    expect(crystals(later.state) - crystals(tenth.state)).toBeCloseTo(0, 6);
   });
 
   it('pays a save from before the stars for every level its old kills reach, with its next kill', () => {
@@ -225,12 +218,11 @@ describe('chests', () => {
     expect(stageStarLevel(start, content, BOSS)).toBe(3);
     expect(stageStars(start, content, BOSS)!.chestsPaid).toBe(0);
     const owed = [1, 2, 3]
-      .map((l) => stageChest(real, 'normal', l).find((p) => p.resource === 'summon_crystal')!)
+      .map((l) => stageChest(real, 'normal', l).find((p) => p.resource === 'summon_scroll')!)
       .reduce((sum, p) => sum + p.amount.toNumber(), 0);
-    const wage = cellar.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
     const after = run(start, content, 1);
     expect(after.state.combat.stageChests[BOSS]).toBe(3);
-    expect(crystals(after.state) - crystals(start)).toBeCloseTo(owed + wage.toNumber(), 6);
+    expect(crystals(after.state) - crystals(start)).toBeCloseTo(owed, 6);
   });
 
   it('turns a real 0.5.5 save into stage kills that reach star levels', () => {
@@ -469,7 +461,7 @@ function withOverflowOn(state: GameState): GameState {
 }
 
 describe('harder modes pay more (DESIGN.md §6)', () => {
-  it('pays more per second of Money, Cores, crystals and card XP on each tier than the one below, for a loadout that one-hits both', () => {
+  it('pays more per second of Money, Cores and card XP on each tier than the one below, for a loadout that one-hits both', () => {
     // A hit that kills the Nightmare boss outright, so every tier is farmed at a kill a hit.
     const content = harmless(withDps(1e15, neutral));
     const farm = (difficulty: Difficulty) => {
@@ -484,8 +476,6 @@ describe('harder modes pay more (DESIGN.md §6)', () => {
       return {
         money: report.currencies['money']!,
         cores: report.materials['moss_core']!,
-        crystals: report.currencies['summon_crystal']!,
-        glamour: report.currencies['glamour_crystal']!,
         // Card XP: levels first, then the XP into the level.
         xp: [after.level - before.level, after.xp.sub(before.xp).toNumber()] as const,
       };
@@ -496,8 +486,6 @@ describe('harder modes pay more (DESIGN.md §6)', () => {
       const higher = tiers[i]!;
       expect(higher.money).toBeGreaterThan(lower.money);
       expect(higher.cores).toBeGreaterThan(lower.cores);
-      expect(higher.crystals).toBeGreaterThan(lower.crystals);
-      expect(higher.glamour).toBeGreaterThan(lower.glamour);
       const moreXp =
         higher.xp[0] > lower.xp[0] || (higher.xp[0] === lower.xp[0] && higher.xp[1] > lower.xp[1]);
       expect(moreXp).toBe(true);

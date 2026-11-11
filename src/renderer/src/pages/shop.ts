@@ -227,8 +227,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
 
   /** Pixel supply icons by resource: one per supply line, in the order the shop sells them. */
   const SUPPLY_SPRITES: Record<string, string> = {
-    summon_crystal: 'shop-sup1',
-    glamour_crystal: 'shop-sup2',
+    summon_scroll: 'shop-sup1',
+    glamour_scroll: 'shop-sup2',
     frost_core: 'shop-sup3',
     glimmer_dust: 'shop-sup4',
     facet_shard: 'shop-sup5',

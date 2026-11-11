@@ -186,7 +186,7 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
         views.push({
           id,
           label,
-          detail: t.keptDetail.crystals(have('summon_crystal'), have('glamour_crystal')),
+          detail: t.keptDetail.crystals(have('summon_scroll'), have('glamour_scroll')),
           art: { kind: 'plaque', glyph: 'summon' },
         });
         break;

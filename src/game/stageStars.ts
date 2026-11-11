@@ -206,7 +206,10 @@ export function stageChest(
   const factor = chests.difficulty[difficulty];
   const out: Price[] = [];
   for (const reward of chests.rewards) {
-    const amount = (reward.amounts[level - 1] ?? new Decimal(0)).mul(factor).mul(bonus).floor();
+    const scaled = (reward.amounts[level - 1] ?? new Decimal(0)).mul(factor).mul(bonus);
+    // Scrolls may be a fraction of one; every other chest reward is whole units.
+    const amount =
+      content.resourceById.get(reward.resource)?.kind === 'scroll' ? scaled : scaled.floor();
     if (amount.gt(0)) out.push({ resource: reward.resource, amount });
   }
   return out;

@@ -106,6 +106,7 @@ import {
   unlockTree,
   averageDps,
   cardCost,
+  claimDaily,
   pull,
   pullPrice,
   ascend,
@@ -2315,6 +2316,11 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     // Idle profile: between check-ins the game runs by itself.
     const acting = !idle || sinceCheckin >= IDLE_CHECKIN_SECONDS;
     if (acting) sinceCheckin = 0;
+    // The daily scroll reward, claimed at the first check-in of each simulated day (DESIGN.md §3).
+    if (acting) {
+      const daily = claimDaily(state, content, `day-${Math.floor(t / DAY_SECONDS)}`);
+      if (daily.ok) state = daily.state;
+    }
     if (acting) {
       const buys = greedyBuy(state, content, rng);
       state = buys.state;
@@ -2762,7 +2768,7 @@ export function formatSummary(result: SimResult, content: Content): string {
       .map(([t, d]) => `${t / 3600} h ${d.toExponential(1)}`)
       .join(', ')}`,
     `Time fought: ${fought || 'none'}`,
-    `Summons: ${result.log.summons} pulls; Money in hand ${num(s.resources['money'] ?? new Decimal(0)).toExponential(1)}, crystals ${num(s.resources['summon_crystal'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_crystal'] ?? new Decimal(0)).toFixed(0)} glamour`,
+    `Summons: ${result.log.summons} pulls; Money in hand ${num(s.resources['money'] ?? new Decimal(0)).toExponential(1)}, scrolls ${num(s.resources['summon_scroll'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_scroll'] ?? new Decimal(0)).toFixed(0)} glamour`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
     `Tree levels: ${trees}`,
     `Mine levels: ${mines}`,
