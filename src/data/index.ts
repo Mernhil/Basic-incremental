@@ -531,7 +531,6 @@ function checkAccount(
   const levels = new Set<number>();
   c.account.rewardTrack.forEach((e, i) => {
     const where = `account.json › rewardTrack › [${i}]`;
-    if (e.level > c.account.levels.maxLevel) issues.push(`${where} › level: above the max level`);
     if (levels.has(e.level)) issues.push(`${where} › level: level ${e.level} is listed twice`);
     levels.add(e.level);
     e.resources.forEach((r, j) => {
@@ -543,6 +542,13 @@ function checkAccount(
       if (!cosmetics.has(id))
         issues.push(`${where} › cosmetics › [${j}]: unknown cosmetic "${id}"`);
     });
+  });
+  c.account.rewardRepeat.resources.forEach((r, j) => {
+    if (!resources.has(r.resource)) {
+      issues.push(
+        `account.json › rewardRepeat › resources › [${j}]: unknown resource "${r.resource}"`,
+      );
+    }
   });
   const cards = new Set(c.cards.map((x) => x.id));
   for (const [card, options] of Object.entries(c.enhancements.cards)) {

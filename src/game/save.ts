@@ -22,6 +22,7 @@ import {
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { applyFreeStars, cardTopTier, levelCap } from './cards';
 import { isWeaponSkinAvailable } from './wardrobe';
+import { fitSkillsToPoints } from './account';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
 export { SaveError } from './saveError';
@@ -350,16 +351,12 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.achievements = Object.fromEntries(
     Object.entries(saved.achievements).filter(([id]) => achievementIds.has(id)),
   );
-  // Unknown tree nodes are dropped; ranks stay within the node's max; the level within the max.
-  const skills: Record<string, number> = {};
-  for (const [id, rank] of Object.entries(saved.account.skills)) {
-    const node = content.account.tree.find((n) => n.id === id);
-    if (node && rank > 0) skills[id] = Math.min(rank, node.maxRank);
-  }
+  // The ranks are fitted to the tree and the points earned at the end of loading (they need the
+  // cards, the Ascension count and the achievements); there is no level cap.
   state.account = {
     xp: new Decimal(saved.account.xp),
-    level: Math.min(saved.account.level, content.account.levels.maxLevel),
-    skills,
+    level: saved.account.level,
+    skills: { ...saved.account.skills },
     freeRespecsUsed: saved.account.freeRespecsUsed,
   };
   const shopIds = new Set(content.shardShop.map((i) => i.id));
@@ -412,6 +409,8 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     loadout: sanitizeLoadout(content, saved.cosmetics.loadout as CosmeticLoadout),
     owned,
   };
+  // Last, because the points and the open rings and circles read the rest of the state.
+  state.account.skills = fitSkillsToPoints(state, content, state.account.skills);
   return state;
 }
 

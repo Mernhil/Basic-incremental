@@ -11,6 +11,7 @@ import {
 } from '../src/game';
 import {
   CENTRE,
+  RING_RADIUS,
   SKY,
   branchAngle,
   respecView,
@@ -19,14 +20,21 @@ import {
 } from '../src/renderer/src/pages/skillsModel';
 import { effectText } from '../src/renderer/src/shell/modifierText';
 import { createCardsModel } from '../src/renderer/src/pages/cardsAdapter';
-import { content, freshState } from './helpers';
+import { content as bundled, freshState, levelPointsOnly } from './helpers';
+
+const content = levelPointsOnly(bundled);
+
+/** The tree without its weapon circles, which are hidden on a new game. */
+const branchNodes = content.account.tree.filter((n) => !n.circle);
 
 const view = (s: GameState) => treeView(content, skillTree(s, content), skillPoints(s, content));
 
 describe('constellation layout', () => {
   it('places every node inside the sky, on its own branch ray, without overlaps', () => {
     const v = view(freshState());
-    expect(v.nodes).toHaveLength(content.account.tree.length);
+    // the weapon circles are hidden on a new game: only their outlines are in the view
+    expect(v.nodes).toHaveLength(branchNodes.length);
+    expect(v.circles).toHaveLength(0);
     expect(v.branches.map((b) => b.id)).toEqual([...SKILL_BRANCHES]);
     for (const n of v.nodes) {
       expect(n.x).toBeGreaterThan(SKY.x);
@@ -52,15 +60,18 @@ describe('constellation layout', () => {
       const n = v.nodes.find((x) => x.id === id)!;
       return Math.hypot(n.x - CENTRE.x, n.y - CENTRE.y);
     };
-    expect(r('grove_rhythm')).toBeGreaterThan(r('grove_yield'));
-    expect(r('grove_bounty')).toBeGreaterThan(r('grove_rhythm'));
-    expect(r('brutal')).toBeGreaterThan(r('keen_eye'));
+    // a gem sits on its ring: further out than what it requires once the requirement is a ring inside
+    expect(r('logging_s3')).toBeGreaterThan(r('logging_s2'));
+    expect(r('combat_s6')).toBeGreaterThan(r('combat_s3'));
+    expect(r('combat_k')).toBeGreaterThan(r('combat_l3'));
+    expect(r('logging_s1')).toBeCloseTo(RING_RADIUS[0], 0);
+    expect(r('logging_k')).toBeCloseTo(RING_RADIUS[3], 0);
   });
 
   it('draws an edge per requirement, plus one from the centre for each root', () => {
     const v = view(freshState());
-    const roots = content.account.tree.filter((n) => n.requires.length === 0).length;
-    const links = content.account.tree.reduce((a, n) => a + n.requires.length, 0);
+    const roots = branchNodes.filter((n) => n.requires.length === 0).length;
+    const links = branchNodes.reduce((a, n) => a + n.requires.length, 0);
     expect(v.edges).toHaveLength(roots + links);
     expect(v.edges.every((e) => !e.lit)).toBe(true);
   });
@@ -72,34 +83,34 @@ describe('node states and effects', () => {
     s.account.level = 20;
     let v = view(s);
     const node = (id: string) => v.nodes.find((n) => n.id === id)!;
-    expect(node('grove_yield').state).toBe('open');
-    expect(node('grove_yield').canBuy).toBe(true);
-    expect(node('grove_rhythm').state).toBe('locked');
-    expect(node('grove_rhythm').needs).toBe('Needs Grove Yield first');
-    expect(node('grove_yield').now).toEqual([]);
-    expect(node('grove_yield').next).toEqual(['+5% logging production']);
+    expect(node('logging_s1').state).toBe('open');
+    expect(node('logging_s1').canBuy).toBe(true);
+    expect(node('logging_s2').state).toBe('locked');
+    expect(node('logging_s2').needs).toBe('Needs Grove Yield first');
+    expect(node('logging_s1').now).toEqual([]);
+    expect(node('logging_s1').next).toEqual(['+5% logging production']);
 
-    s.account.skills = { grove_yield: 2 };
+    s.account.skills = { logging_s1: 2 };
     v = view(s);
-    expect(node('grove_yield').state).toBe('owned');
-    expect(node('grove_yield').now).toEqual(['+10% logging production']);
-    expect(node('grove_yield').next).toEqual(['+15% logging production']);
-    expect(node('grove_yield').rankText).toBe('2/5');
-    expect(node('grove_rhythm').state).toBe('open');
+    expect(node('logging_s1').state).toBe('owned');
+    expect(node('logging_s1').now).toEqual(['+10% logging production']);
+    expect(node('logging_s1').next).toEqual(['+15% logging production']);
+    expect(node('logging_s1').rankText).toBe('2/5');
+    expect(node('logging_s2').state).toBe('open');
     expect(v.edges.filter((e) => e.lit)).toHaveLength(1);
     // the link from the centre to a learned root is learned, the next link is open, the rest locked
     expect(v.edges.filter((e) => e.state === 'learned')).toHaveLength(1);
     expect(v.edges.filter((e) => e.state === 'open').length).toBeGreaterThan(1);
     expect(v.edges.filter((e) => e.state === 'locked').length).toBeGreaterThan(0);
     expect(v.learned).toBe(1);
-    expect(v.total).toBe(content.account.tree.length);
+    expect(v.total).toBe(branchNodes.length);
     expect(v.branches.find((b) => b.id === 'logging')!.learned).toBe(1);
 
-    s.account.skills = { grove_yield: 5 };
+    s.account.skills = { logging_s1: 5 };
     v = view(s);
-    expect(node('grove_yield').state).toBe('maxed');
-    expect(node('grove_yield').next).toEqual([]);
-    expect(node('grove_yield').canBuy).toBe(false);
+    expect(node('logging_s1').state).toBe('maxed');
+    expect(node('logging_s1').next).toEqual([]);
+    expect(node('logging_s1').canBuy).toBe(false);
   });
 
   it('words effects in the units players read', () => {
@@ -127,7 +138,7 @@ describe('respec', () => {
     expect(r.enabled).toBe(false);
     expect(r.note).toBe('No points spent yet.');
 
-    s.account.skills = { grove_yield: 3 };
+    s.account.skills = { logging_s1: 3 };
     r = respecView(content, s, respecInfo(s, content));
     expect(r.enabled).toBe(true);
     expect(r.free).toBe(true);
@@ -136,7 +147,7 @@ describe('respec', () => {
 
     const after = respecSkills(s, content);
     if (!after.ok) throw new Error('respec failed');
-    after.state.account.skills = { grove_yield: 1 };
+    after.state.account.skills = { logging_s1: 1 };
     r = respecView(content, after.state, respecInfo(after.state, content));
     expect(r.free).toBe(false);
     expect(r.button).toBe(`Respec for ${content.account.respec.cost.toString()} Starlight`);

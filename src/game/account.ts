@@ -1,4 +1,12 @@
-import type { Content, EnhancementOption, Job, Rank, RewardTrackEntry, SkillNode } from '../data';
+import type {
+  CircleStep,
+  Content,
+  EnhancementOption,
+  Job,
+  Rank,
+  RewardTrackEntry,
+  SkillNode,
+} from '../data';
 import { JOBS, RANK_TIERS, MAX_STARS } from '../data';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -29,7 +37,7 @@ export function xpToNextAccountLevel(content: Content, level: number): Decimal {
 
 /**
  * Adds account XP (mutates `state`, a fresh copy owned by the caller), through `xp.account`
- * (scope: job when given). Nothing is gained at the max level. Level-ups wait for
+ * (scope: job when given). There is no level cap. Level-ups wait for
  * `settleAccount` (the 1 s play-time grid, like card levels).
  */
 export function grantAccountXp(
@@ -39,7 +47,7 @@ export function grantAccountXp(
   modifiers: readonly Modifier[],
   job?: Job,
 ): void {
-  if (!amount.gt(0) || state.account.level >= content.account.levels.maxLevel) return;
+  if (!amount.gt(0)) return;
   const gained = statValue('xp.account', amount, modifiers, job ? { job } : {});
   if (gained.gt(0)) state.account.xp = state.account.xp.add(gained);
 }
@@ -69,34 +77,49 @@ export function killXp(content: Content, dungeonTier: number): Decimal {
 /** Whether enough XP is banked for a level-up (a settle would level up). */
 export function accountLevelDue(state: GameState, content: Content): boolean {
   const { level, xp } = state.account;
-  return level < content.account.levels.maxLevel && xp.gte(xpToNextAccountLevel(content, level));
+  return xp.gte(xpToNextAccountLevel(content, level));
 }
 
 /** Grants what reaching `level` gives on the track besides skill points (mutates `state`). */
 function grantTrackRewards(state: GameState, content: Content, level: number): void {
-  const entry = content.account.rewardTrack.find((e) => e.level === level);
-  if (!entry) return;
-  for (const r of entry.resources) {
+  const reward = trackReward(content, level);
+  for (const r of reward.resources) {
     state.resources[r.resource] = (state.resources[r.resource] ?? new Decimal(0)).add(r.amount);
   }
-  for (const id of entry.cosmetics) grantCosmetic(state, id);
+  for (const id of reward.cosmetics) grantCosmetic(state, id);
+}
+
+/**
+ * What reaching `level` gives besides its skill point: the listed entry, or past the last listed
+ * level the repeating reward every `rewardRepeat.every` levels (DESIGN.md §10).
+ */
+export function trackReward(
+  content: Content,
+  level: number,
+): Pick<RewardTrackEntry, 'resources' | 'cosmetics' | 'costCap'> {
+  const { rewardTrack, rewardRepeat } = content.account;
+  const entry = rewardTrack.find((e) => e.level === level);
+  if (entry) return entry;
+  const last = Math.max(0, ...rewardTrack.map((e) => e.level));
+  if (level > last && (level - last) % rewardRepeat.every === 0) {
+    return { resources: rewardRepeat.resources, cosmetics: [], costCap: 0 };
+  }
+  return { resources: [], cosmetics: [], costCap: 0 };
 }
 
 /**
  * Applies pending account level-ups (mutates `state`) with their track rewards, and records
- * them in `report.accountLevel`. XP stops at the max level.
+ * them in `report.accountLevel`.
  */
 export function settleAccount(state: GameState, content: Content, report?: TickReport): void {
   const from = state.account.level;
-  const max = content.account.levels.maxLevel;
-  while (state.account.level < max) {
+  for (;;) {
     const need = xpToNextAccountLevel(content, state.account.level);
     if (state.account.xp.lt(need)) break;
     state.account.xp = state.account.xp.sub(need);
     state.account.level += 1;
     grantTrackRewards(state, content, state.account.level);
   }
-  if (state.account.level >= max) state.account.xp = new Decimal(0);
   if (report && state.account.level !== from) {
     report.accountLevel = { from: report.accountLevel?.from ?? from, to: state.account.level };
   }
@@ -110,29 +133,54 @@ export interface SkillPoints {
   available: number;
 }
 
-/** Skill points spent in the account tree. */
-export function skillPointsSpent(state: GameState, content: Content): number {
+/**
+ * Stage star levels earned, for the skill points they give (DESIGN.md §6, §10).
+ * STUB until package 3 (stage stars) merges: the orchestrator wires this to
+ * `totalStageStarLevels(state, content)`. Until then stage stars give no points.
+ */
+function stageStarLevels(): number {
+  return 0;
+}
+
+const skillNode = (content: Content, id: string): SkillNode | undefined =>
+  content.account.tree.find((n) => n.id === id);
+
+function ranksCost(content: Content, skills: Readonly<Record<string, number>>): number {
   let spent = 0;
-  for (const [id, rank] of Object.entries(state.account.skills)) {
-    spent += rank * (content.account.tree.find((n) => n.id === id)?.cost ?? 0);
+  for (const [id, rank] of Object.entries(skills)) {
+    spent += rank * (skillNode(content, id)?.cost ?? 0);
   }
   return spent;
 }
 
+/** Skill points spent in the account tree. */
+export function skillPointsSpent(state: GameState, content: Content): number {
+  return ranksCost(content, state.account.skills);
+}
+
+/** Points earned: account level, stage star levels and achievements. Derived, never saved. */
+function pointsEarned(state: GameState, content: Content): number {
+  const { levels } = content.account;
+  return (
+    (state.account.level - 1) * levels.skillPointsPerLevel +
+    stageStarLevels() * levels.pointsPerStageStar +
+    Object.keys(state.achievements).length * levels.pointsPerAchievement
+  );
+}
+
 export function skillPoints(state: GameState, content: Content): SkillPoints {
-  const total = (state.account.level - 1) * content.account.levels.skillPointsPerLevel;
+  const total = pointsEarned(state, content);
   const spent = skillPointsSpent(state, content);
   return { total, spent, available: Math.max(0, total - spent) };
 }
 
 export interface AccountInfo {
   level: number;
-  maxLevel: number;
   /** XP toward the next level. */
   xp: Decimal;
-  /** XP the next level needs, or null at the max. */
-  xpToNext: Decimal | null;
-  /** Bar toward the next level, 0..1 (1 at the max). */
+  /** XP the next level needs (there is no level cap). */
+  xpToNext: Decimal;
+  /** Bar toward the next level, 0..1. */
   progress: number;
   skillPoints: SkillPoints;
 }
@@ -140,14 +188,12 @@ export interface AccountInfo {
 /** The header's account level and XP bar, and the skill points. */
 export function accountInfo(state: GameState, content: Content): AccountInfo {
   const { level, xp } = state.account;
-  const maxLevel = content.account.levels.maxLevel;
-  const need = level < maxLevel ? xpToNextAccountLevel(content, level) : null;
+  const need = xpToNextAccountLevel(content, level);
   return {
     level,
-    maxLevel,
     xp,
     xpToNext: need,
-    progress: need ? Math.min(1, Math.max(0, xp.div(need).toNumber())) : 1,
+    progress: Math.min(1, Math.max(0, xp.div(need).toNumber())),
     skillPoints: skillPoints(state, content),
   };
 }
@@ -161,25 +207,30 @@ export interface TrackLevel {
   reached: boolean;
 }
 
-/** Every level from 2 to the max with what it gives, for the reward track row. */
+/** How many levels past the player's own the reward track row shows. */
+const TRACK_LOOKAHEAD = 10;
+
+/**
+ * Every level from 2 with what it gives, for the reward track row: the listed levels, and always
+ * a few past the player's own (the track repeats, so it has no end).
+ */
 export function rewardTrack(state: GameState, content: Content): TrackLevel[] {
+  const last = Math.max(...content.account.rewardTrack.map((e) => e.level));
+  const to = Math.max(last, state.account.level + TRACK_LOOKAHEAD);
   const out: TrackLevel[] = [];
-  for (let level = 2; level <= content.account.levels.maxLevel; level++) {
-    const entry = content.account.rewardTrack.find((e) => e.level === level);
+  for (let level = 2; level <= to; level++) {
+    const reward = trackReward(content, level);
     out.push({
       level,
       skillPoints: content.account.levels.skillPointsPerLevel,
-      resources: entry?.resources ?? [],
-      cosmetics: entry?.cosmetics ?? [],
-      costCap: entry?.costCap ?? 0,
+      resources: reward.resources,
+      cosmetics: reward.cosmetics,
+      costCap: reward.costCap,
       reached: state.account.level >= level,
     });
   }
   return out;
 }
-
-const skillNode = (content: Content, id: string): SkillNode | undefined =>
-  content.account.tree.find((n) => n.id === id);
 
 /** A node's bonus at a rank: each perRank modifier × rank, source `skill`. */
 export function skillModifiers(node: SkillNode, rank: number): Modifier[] {
@@ -191,10 +242,70 @@ export function skillModifiers(node: SkillNode, rank: number): Modifier[] {
   }));
 }
 
+// ---- rings and weapon circles ----
+
+/** A ring is open when the Ascension count reaches its number; ring 0 is open from the start. */
+export function ringOpen(state: GameState, ring: number): boolean {
+  return state.prestigeCount >= ring;
+}
+
+export interface WeaponCircle {
+  kind: string;
+  noun: string;
+  /** Shown in full: an owned card of this type has reached Gold. Hidden ones are a dim outline. */
+  revealed: boolean;
+  /** The furthest step reached, or null while hidden. */
+  step: CircleStep | null;
+}
+
+/**
+ * One circle per item type (items.json). Whether it is revealed and how far it has opened is read
+ * from the tiers of the owned cards of that type. Cards are never lost, not even to an Ascension,
+ * so a circle that has opened stays open without any saved flag.
+ */
+export function weaponCircles(state: GameState, content: Content): WeaponCircle[] {
+  const steps = content.account.circleSteps;
+  const best = new Map<string, number>();
+  for (const [id, owned] of Object.entries(state.cards.owned)) {
+    const kind = content.cardById.get(id)?.item.kind;
+    if (!kind) continue;
+    best.set(kind, Math.max(best.get(kind) ?? -1, RANK_TIERS.indexOf(owned.tier)));
+  }
+  return content.items.types.map((t) => {
+    const tier = best.get(t.kind) ?? -1;
+    let reached = -1;
+    steps.forEach((s, i) => {
+      if (tier >= RANK_TIERS.indexOf(s.tier)) reached = i;
+    });
+    return {
+      kind: t.kind,
+      noun: t.noun,
+      revealed: reached >= 0,
+      step: reached >= 0 ? steps[reached]!.step : null,
+    };
+  });
+}
+
+/** Whether a node can be bought into at all right now: its ring is open, its circle step reached. */
+function nodeOpen(
+  node: SkillNode,
+  state: GameState,
+  content: Content,
+  circles: WeaponCircle[] = weaponCircles(state, content),
+): boolean {
+  if (!node.circle) return ringOpen(state, node.ring);
+  const circle = circles.find((c) => c.kind === node.circle);
+  if (!circle?.step || !node.step) return false;
+  const order = content.account.circleSteps.map((s) => s.step);
+  return order.indexOf(circle.step) >= order.indexOf(node.step);
+}
+
 export interface SkillNodeInfo {
   node: SkillNode;
   rank: number;
   maxRank: number;
+  /** The node's ring has opened (or its weapon circle has reached its step). */
+  open: boolean;
   /** Every required node has at least one rank. */
   requiresMet: boolean;
   /** Can buy the next rank now. */
@@ -206,15 +317,18 @@ export interface SkillNodeInfo {
 /** The account tree, in data order (group by `node.branch` for the six branches). */
 export function skillTree(state: GameState, content: Content): SkillNodeInfo[] {
   const available = skillPoints(state, content).available;
+  const circles = weaponCircles(state, content);
   return content.account.tree.map((node) => {
     const rank = state.account.skills[node.id] ?? 0;
     const requiresMet = node.requires.every((r) => (state.account.skills[r] ?? 0) > 0);
+    const open = nodeOpen(node, state, content, circles);
     return {
       node,
       rank,
       maxRank: node.maxRank,
+      open,
       requiresMet,
-      canBuy: requiresMet && rank < node.maxRank && available >= node.cost,
+      canBuy: open && requiresMet && rank < node.maxRank && available >= node.cost,
       current: skillModifiers(node, rank),
       next: rank < node.maxRank ? skillModifiers(node, rank + 1) : [],
     };
@@ -223,7 +337,7 @@ export function skillTree(state: GameState, content: Content): SkillNodeInfo[] {
 
 export type SkillBuyResult =
   | { ok: true; state: GameState }
-  | { ok: false; reason: 'unknown' | 'maxed' | 'locked' | 'no-points' };
+  | { ok: false; reason: 'unknown' | 'maxed' | 'locked' | 'closed' | 'no-points' };
 
 /** Buys one rank of an account tree node with skill points. */
 export function buySkill(state: GameState, content: Content, nodeId: string): SkillBuyResult {
@@ -231,6 +345,7 @@ export function buySkill(state: GameState, content: Content, nodeId: string): Sk
   if (!node) return { ok: false, reason: 'unknown' };
   const rank = state.account.skills[nodeId] ?? 0;
   if (rank >= node.maxRank) return { ok: false, reason: 'maxed' };
+  if (!nodeOpen(node, state, content)) return { ok: false, reason: 'closed' };
   if (!node.requires.every((r) => (state.account.skills[r] ?? 0) > 0)) {
     return { ok: false, reason: 'locked' };
   }
@@ -238,6 +353,56 @@ export function buySkill(state: GameState, content: Content, nodeId: string): Sk
   const next = cloneState(state);
   next.account.skills[nodeId] = rank + 1;
   return { ok: true, state: next };
+}
+
+/**
+ * Brings a set of bought ranks (a save being loaded) in line with the tree and the points earned,
+ * so that a migration or a changed tree never leaves more ranks than points (DESIGN.md §10):
+ * old node ids move to their new node (`legacySkills`); unknown nodes, ranks above a node's max,
+ * nodes in a closed ring or a hidden circle and nodes whose requirement is not bought are dropped;
+ * then the nodes at the end of the tree lose ranks until what is spent fits the points earned.
+ * Dropped ranks need no refund step: points are derived, so they simply become free again.
+ */
+export function fitSkillsToPoints(
+  state: GameState,
+  content: Content,
+  saved: Readonly<Record<string, number>>,
+): Record<string, number> {
+  const skills: Record<string, number> = {};
+  for (const [savedId, rank] of Object.entries(saved)) {
+    const id = content.account.legacySkills[savedId] ?? savedId;
+    const node = skillNode(content, id);
+    if (!node || !(rank > 0)) continue;
+    skills[id] = Math.max(skills[id] ?? 0, Math.min(Math.floor(rank), node.maxRank));
+  }
+  const circles = weaponCircles(state, content);
+  const tree = content.account.tree;
+  const dropInvalid = (): void => {
+    for (let changed = true; changed;) {
+      changed = false;
+      for (const node of tree) {
+        if (!skills[node.id]) continue;
+        const ok =
+          nodeOpen(node, state, content, circles) &&
+          node.requires.every((r) => (skills[r] ?? 0) > 0);
+        if (!ok) {
+          delete skills[node.id];
+          changed = true;
+        }
+      }
+    }
+  };
+  dropInvalid();
+  const earned = pointsEarned(state, content);
+  for (let i = tree.length - 1; i >= 0 && ranksCost(content, skills) > earned; i--) {
+    const node = tree[i]!;
+    while ((skills[node.id] ?? 0) > 0 && ranksCost(content, skills) > earned) {
+      skills[node.id]! -= 1;
+    }
+    if (!skills[node.id]) delete skills[node.id];
+  }
+  dropInvalid();
+  return skills;
 }
 
 export interface RespecInfo {

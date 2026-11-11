@@ -12,11 +12,13 @@
     "perAscension": "500"
   },
   "levels": {
-    "maxLevel": 50,
     "xpBase": "1100",
     "xpGrowth": "1.2",
-    "skillPointsPerLevel": 1
+    "skillPointsPerLevel": 1,
+    "pointsPerAchievement": 1,
+    "pointsPerStageStar": 1
   },
+  "loadoutCostCapTop": 40,
   "rewardTrack": [
     {
       "level": 3,
@@ -126,373 +128,881 @@
       "cosmetics": ["gilded_filigree", "nodes_d"]
     }
   ],
-  "tree": [
+  "rewardRepeat": {
+    "every": 5,
+    "resources": [
+      {
+        "resource": "frost_sigil",
+        "amount": "100"
+      }
+    ]
+  },
+  "skillKinds": {
+    "small": {
+      "cost": 1,
+      "maxRank": 5,
+      "scale": "1"
+    },
+    "large": {
+      "cost": 2,
+      "maxRank": 3,
+      "scale": "2"
+    },
+    "keystone": {
+      "cost": 5,
+      "maxRank": 1,
+      "scale": "1"
+    }
+  },
+  "skeleton": [
     {
-      "id": "grove_yield",
-      "name": "Grove Yield",
+      "slot": "s1",
+      "ring": 0,
+      "kind": "small",
+      "requires": [],
+      "effect": 0
+    },
+    {
+      "slot": "s2",
+      "ring": 0,
+      "kind": "small",
+      "requires": ["s1"],
+      "effect": 1
+    },
+    {
+      "slot": "l1",
+      "ring": 0,
+      "kind": "large",
+      "requires": ["s1"],
+      "effect": 0
+    },
+    {
+      "slot": "s3",
+      "ring": 1,
+      "kind": "small",
+      "requires": ["s2"],
+      "effect": 2
+    },
+    {
+      "slot": "s4",
+      "ring": 1,
+      "kind": "small",
+      "requires": ["s2"],
+      "effect": 3
+    },
+    {
+      "slot": "s5",
+      "ring": 1,
+      "kind": "small",
+      "requires": ["l1"],
+      "effect": 0
+    },
+    {
+      "slot": "l2",
+      "ring": 1,
+      "kind": "large",
+      "requires": ["s4"],
+      "effect": 1
+    },
+    {
+      "slot": "s6",
+      "ring": 2,
+      "kind": "small",
+      "requires": ["s3"],
+      "effect": 1
+    },
+    {
+      "slot": "s7",
+      "ring": 2,
+      "kind": "small",
+      "requires": ["s4"],
+      "effect": 2
+    },
+    {
+      "slot": "s8",
+      "ring": 2,
+      "kind": "small",
+      "requires": ["s5"],
+      "effect": 3
+    },
+    {
+      "slot": "l3",
+      "ring": 2,
+      "kind": "large",
+      "requires": ["l2"],
+      "effect": 2
+    },
+    {
+      "slot": "s9",
+      "ring": 3,
+      "kind": "small",
+      "requires": ["s6"],
+      "effect": 0
+    },
+    {
+      "slot": "s10",
+      "ring": 3,
+      "kind": "small",
+      "requires": ["s7"],
+      "effect": 1
+    },
+    {
+      "slot": "s11",
+      "ring": 3,
+      "kind": "small",
+      "requires": ["s8"],
+      "effect": 2
+    },
+    {
+      "slot": "k",
+      "ring": 3,
+      "kind": "keystone",
+      "requires": ["l3"],
+      "effect": 0
+    }
+  ],
+  "branches": [
+    {
       "branch": "logging",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
+      "small": [
         {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "logging"
-          }
+          "name": "Grove Yield",
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "5",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Grove Rhythm",
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "10",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Wide Groves",
+          "perRank": [
+            {
+              "stat": "cost.growth",
+              "kind": "percent",
+              "value": "-1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Grove Bounty",
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "2",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
         }
-      ]
+      ],
+      "large": [
+        {
+          "name": "Old Growth",
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "5",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deep Roots",
+          "perRank": [
+            {
+              "stat": "cost.growth",
+              "kind": "percent",
+              "value": "-1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Heartwood",
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "2",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Ancient Grove",
+        "perRank": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "25",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
     },
     {
-      "id": "grove_rhythm",
-      "name": "Grove Rhythm",
-      "branch": "logging",
-      "cost": 1,
-      "maxRank": 3,
-      "requires": ["grove_yield"],
-      "perRank": [
-        {
-          "stat": "burst.fill",
-          "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    {
-      "id": "wide_groves",
-      "name": "Wide Groves",
-      "branch": "logging",
-      "cost": 2,
-      "maxRank": 3,
-      "requires": ["grove_yield"],
-      "perRank": [
-        {
-          "stat": "cost.growth",
-          "kind": "percent",
-          "value": "-1",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    {
-      "id": "grove_bounty",
-      "name": "Grove Bounty",
-      "branch": "logging",
-      "cost": 2,
-      "maxRank": 3,
-      "requires": ["grove_rhythm"],
-      "perRank": [
-        {
-          "stat": "burst.power",
-          "kind": "flat",
-          "value": "2",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    {
-      "id": "vein_yield",
-      "name": "Vein Yield",
       "branch": "mining",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
+      "small": [
         {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "mining"
+          "name": "Vein Yield",
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "5",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vein Rhythm",
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "10",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deep Levels",
+          "perRank": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "percent",
+              "value": "10",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vein Bounty",
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "2",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Rich Seams",
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "5",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Deep Shafts",
+          "perRank": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "percent",
+              "value": "10",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Hard Strikes",
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "2",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Heart of the Mountain",
+        "perRank": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "25",
+            "scope": {
+              "job": "mining"
+            }
           }
-        }
-      ]
+        ]
+      }
     },
     {
-      "id": "vein_rhythm",
-      "name": "Vein Rhythm",
-      "branch": "mining",
-      "cost": 1,
-      "maxRank": 3,
-      "requires": ["vein_yield"],
-      "perRank": [
+      "branch": "combat",
+      "small": [
         {
-          "stat": "burst.fill",
-          "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "mining"
+          "name": "Might",
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Keen Eye",
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "name": "Vigor",
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Guard",
+          "perRank": [
+            {
+              "stat": "combat.defence",
+              "kind": "flat",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Brutal",
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.1"
+            }
+          ]
+        },
+        {
+          "name": "Warlord",
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Bulwark",
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Unbroken",
+        "perRank": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "25"
           }
-        }
-      ]
+        ]
+      }
     },
     {
-      "id": "deep_levels",
-      "name": "Deep Levels",
-      "branch": "mining",
-      "cost": 2,
-      "maxRank": 3,
-      "requires": ["vein_yield"],
-      "perRank": [
+      "branch": "luck",
+      "small": [
         {
-          "stat": "production.levelBonus",
-          "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "mining"
+          "name": "Crystal Luck",
+          "perRank": [
+            {
+              "stat": "drops.crystalMultiplier",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Core Luck",
+          "perRank": [
+            {
+              "stat": "drops.materialChance",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Rare Luck",
+          "perRank": [
+            {
+              "stat": "drops.rareChance",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Pity Sense",
+          "perRank": [
+            {
+              "stat": "summon.pityThreshold",
+              "kind": "flat",
+              "value": "-2"
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Lucky Find",
+          "perRank": [
+            {
+              "stat": "drops.crystalMultiplier",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Rare Hunter",
+          "perRank": [
+            {
+              "stat": "drops.rareChance",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Core Hunter",
+          "perRank": [
+            {
+              "stat": "drops.materialChance",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Fortune's Favour",
+        "perRank": [
+          {
+            "stat": "drops.rareChance",
+            "kind": "percent",
+            "value": "25"
           }
-        }
-      ]
+        ]
+      }
     },
     {
-      "id": "vein_bounty",
-      "name": "Vein Bounty",
-      "branch": "mining",
-      "cost": 2,
-      "maxRank": 3,
-      "requires": ["vein_rhythm"],
-      "perRank": [
-        {
-          "stat": "burst.power",
-          "kind": "flat",
-          "value": "2",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    {
-      "id": "might",
-      "name": "Might",
-      "branch": "combat",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "5"
-        }
-      ]
-    },
-    {
-      "id": "keen_eye",
-      "name": "Keen Eye",
-      "branch": "combat",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": ["might"],
-      "perRank": [
-        {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.01"
-        }
-      ]
-    },
-    {
-      "id": "brutal",
-      "name": "Brutal",
-      "branch": "combat",
-      "cost": 2,
-      "maxRank": 5,
-      "requires": ["keen_eye"],
-      "perRank": [
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "0.1"
-        }
-      ]
-    },
-    {
-      "id": "vigor",
-      "name": "Vigor",
-      "branch": "combat",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
-        {
-          "stat": "combat.health",
-          "kind": "percent",
-          "value": "10"
-        }
-      ]
-    },
-    {
-      "id": "guard",
-      "name": "Guard",
-      "branch": "combat",
-      "cost": 2,
-      "maxRank": 5,
-      "requires": ["vigor"],
-      "perRank": [
-        {
-          "stat": "combat.defence",
-          "kind": "flat",
-          "value": "2"
-        }
-      ]
-    },
-    {
-      "id": "crystal_luck",
-      "name": "Crystal Luck",
-      "branch": "luck",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
-        {
-          "stat": "drops.crystalMultiplier",
-          "kind": "percent",
-          "value": "5"
-        }
-      ]
-    },
-    {
-      "id": "core_luck",
-      "name": "Core Luck",
-      "branch": "luck",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": ["crystal_luck"],
-      "perRank": [
-        {
-          "stat": "drops.materialChance",
-          "kind": "percent",
-          "value": "5"
-        }
-      ]
-    },
-    {
-      "id": "rare_luck",
-      "name": "Rare Luck",
-      "branch": "luck",
-      "cost": 2,
-      "maxRank": 3,
-      "requires": ["core_luck"],
-      "perRank": [
-        {
-          "stat": "drops.rareChance",
-          "kind": "percent",
-          "value": "10"
-        }
-      ]
-    },
-    {
-      "id": "pity_sense",
-      "name": "Pity Sense",
-      "branch": "luck",
-      "cost": 2,
-      "maxRank": 5,
-      "requires": ["crystal_luck"],
-      "perRank": [
-        {
-          "stat": "summon.pityThreshold",
-          "kind": "flat",
-          "value": "-2"
-        }
-      ]
-    },
-    {
-      "id": "quick_study",
-      "name": "Quick Study",
       "branch": "collection",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
+      "small": [
         {
-          "stat": "xp.card",
-          "kind": "percent",
-          "value": "10"
+          "name": "Quick Study",
+          "perRank": [
+            {
+              "stat": "xp.card",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Renown",
+          "perRank": [
+            {
+              "stat": "xp.account",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Field Notes",
+          "perRank": [
+            {
+              "stat": "xp.card",
+              "kind": "percent",
+              "value": "5",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Apprentice Notes",
+          "perRank": [
+            {
+              "stat": "xp.card",
+              "kind": "percent",
+              "value": "5",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
         }
-      ]
+      ],
+      "large": [
+        {
+          "name": "Deep Pockets",
+          "perRank": [
+            {
+              "stat": "loadout.costCap",
+              "kind": "flat",
+              "value": "0.5",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Scholar",
+          "perRank": [
+            {
+              "stat": "xp.card",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Fame",
+          "perRank": [
+            {
+              "stat": "xp.account",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Grand Archive",
+        "perRank": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "25"
+          }
+        ]
+      }
     },
     {
-      "id": "deep_pockets",
-      "name": "Deep Pockets",
-      "branch": "collection",
-      "cost": 2,
-      "maxRank": 3,
-      "requires": ["quick_study"],
-      "perRank": [
-        {
-          "stat": "loadout.costCap",
-          "kind": "flat",
-          "value": "1"
-        }
-      ]
-    },
-    {
-      "id": "renown",
-      "name": "Renown",
-      "branch": "collection",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": ["quick_study"],
-      "perRank": [
-        {
-          "stat": "xp.account",
-          "kind": "percent",
-          "value": "5"
-        }
-      ]
-    },
-    {
-      "id": "long_watch",
-      "name": "Long Watch",
       "branch": "automation",
-      "cost": 1,
-      "maxRank": 4,
-      "requires": [],
-      "perRank": [
+      "small": [
         {
-          "stat": "offline.capHours",
-          "kind": "flat",
-          "value": "1"
+          "name": "Long Watch",
+          "perRank": [
+            {
+              "stat": "offline.capHours",
+              "kind": "flat",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "name": "Trial Focus",
+          "perRank": [
+            {
+              "stat": "trial.reward",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Starlit Mind",
+          "perRank": [
+            {
+              "stat": "prestige.gain",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Tidy Habits",
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "2"
+            }
+          ]
         }
-      ]
+      ],
+      "large": [
+        {
+          "name": "Long Night",
+          "perRank": [
+            {
+              "stat": "offline.capHours",
+              "kind": "flat",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "name": "Patron",
+          "perRank": [
+            {
+              "stat": "trial.reward",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Ascendant",
+          "perRank": [
+            {
+              "stat": "prestige.gain",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Starforged",
+        "perRank": [
+          {
+            "stat": "prestige.gain",
+            "kind": "percent",
+            "value": "20"
+          }
+        ]
+      }
+    }
+  ],
+  "circleSteps": [
+    {
+      "step": "gold",
+      "tier": "gold"
     },
     {
-      "id": "trial_focus",
-      "name": "Trial Focus",
-      "branch": "automation",
-      "cost": 1,
-      "maxRank": 5,
-      "requires": [],
-      "perRank": [
-        {
-          "stat": "trial.reward",
-          "kind": "percent",
-          "value": "10"
-        }
-      ]
+      "step": "prismatic",
+      "tier": "prismatic"
     },
     {
-      "id": "starlit_mind",
-      "name": "Starlit Mind",
-      "branch": "automation",
-      "cost": 2,
-      "maxRank": 5,
-      "requires": ["long_watch"],
-      "perRank": [
+      "step": "mythic",
+      "tier": "mythic"
+    },
+    {
+      "step": "heirloom",
+      "tier": "heirloom"
+    }
+  ],
+  "circles": [
+    {
+      "kind": "sword",
+      "skills": [
         {
-          "stat": "prestige.gain",
-          "kind": "percent",
-          "value": "5"
+          "id": "sword_edge",
+          "name": "Keen Edge",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "sword_poise",
+          "name": "Poise",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["sword_edge"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "sword_footwork",
+          "name": "Footwork",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["sword_edge"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "sword_grip",
+          "name": "Steady Grip",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["sword_poise"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        },
+        {
+          "id": "sword_flurry",
+          "name": "Flurry",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["sword_poise"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "sword_clarity",
+          "name": "Clarity",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["sword_footwork"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "sword_dancer",
+          "name": "Dancer",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["sword_flurry"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.1"
+            }
+          ]
+        },
+        {
+          "id": "sword_light",
+          "name": "Light Blade",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["sword_dancer"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "sword_shadow",
+          "name": "Shadow Blade",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["sword_clarity"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.2"
+            }
+          ]
+        },
+        {
+          "id": "sword_heirloom",
+          "name": "The Heirloom Edge",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["sword_dancer"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "20"
+            }
+          ]
         }
       ]
     }
@@ -500,5 +1010,30 @@
   "respec": {
     "cost": "5",
     "freePerAscension": 1
+  },
+  "legacySkills": {
+    "grove_yield": "logging_s1",
+    "grove_rhythm": "logging_s2",
+    "wide_groves": "logging_s3",
+    "grove_bounty": "logging_s4",
+    "vein_yield": "mining_s1",
+    "vein_rhythm": "mining_s2",
+    "deep_levels": "mining_s3",
+    "vein_bounty": "mining_s4",
+    "might": "combat_s1",
+    "keen_eye": "combat_s2",
+    "vigor": "combat_s3",
+    "guard": "combat_s4",
+    "brutal": "combat_l1",
+    "crystal_luck": "luck_s1",
+    "core_luck": "luck_s2",
+    "rare_luck": "luck_s3",
+    "pity_sense": "luck_s4",
+    "quick_study": "collection_s1",
+    "renown": "collection_s2",
+    "deep_pockets": "collection_l1",
+    "long_watch": "automation_s1",
+    "trial_focus": "automation_s2",
+    "starlit_mind": "automation_s3"
   }
 }

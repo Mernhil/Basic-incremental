@@ -279,7 +279,7 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     expect('moss_sigil' in state.resources).toBe(false);
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
     expect('damageLevels' in state.combat).toBe(false);
-    expect(state.account.skills).toEqual({ crystal_luck: 2 });
+    expect(state.account.skills).toEqual({ luck_s1: 2 });
     // Start 100 + two copper levels (15 + 19.5) + a Copper Edge level (10) + the one plot (25),
     // which is paid back once, when plots go away (v16).
     expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 10 + 25);

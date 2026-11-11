@@ -20,9 +20,9 @@ const RESOURCE_TINT: Record<string, string> = {
 const DEFAULT_TINT = '#c9a14a';
 
 export interface RewardTrack {
-  open(tiles: TrackTileView[], level: number, max: number): void;
+  open(tiles: TrackTileView[], level: number): void;
   /** Refreshes an open track (after a level-up); does nothing when closed. */
-  update(tiles: TrackTileView[], level: number, max: number): void;
+  update(tiles: TrackTileView[], level: number): void;
   close(): void;
   isOpen(): boolean;
 }
@@ -51,7 +51,7 @@ export function createRewardTrack(
     return box;
   };
 
-  function draw(tiles: TrackTileView[], level: number, max: number): void {
+  function draw(tiles: TrackTileView[], level: number): void {
     const next = JSON.stringify([level, tiles.map((x) => x.reached)]);
     if (next === key && panel.childElementCount > 0) return;
     key = next;
@@ -61,7 +61,7 @@ export function createRewardTrack(
     const close = h('button', 'shell-track__close', t.close);
     close.type = 'button';
     close.addEventListener('click', () => hide(true));
-    head.append(title, h('span', 'shell-track__note', t.trackNote(level, max)), close);
+    head.append(title, h('span', 'shell-track__note', t.trackNote(level)), close);
 
     const row = h('ol', 'shell-track__row');
     row.tabIndex = 0;
@@ -123,15 +123,15 @@ export function createRewardTrack(
   });
 
   return {
-    open(tiles, level, max) {
+    open(tiles, level) {
       key = '';
-      draw(tiles, level, max);
+      draw(tiles, level);
       open = true;
       ctx.setOpen(true);
       panel.querySelector<HTMLElement>('.shell-track__row')?.focus({ preventScroll: true });
     },
-    update(tiles, level, max) {
-      if (open) draw(tiles, level, max);
+    update(tiles, level) {
+      if (open) draw(tiles, level);
     },
     close: () => hide(false),
     isOpen: () => open,

@@ -981,7 +981,6 @@ export const COPY = {
   },
   account: {
     xp: (have: string, need: string) => `${have} / ${need} XP`,
-    maxLevel: 'Max level',
     points: (n: number) => (n === 1 ? '1 skill point to spend' : `${n} skill points to spend`),
     noPoints: 'No skill points to spend',
     badgeLabel: (level: number, xp: string, points: string) =>
@@ -989,7 +988,7 @@ export const COPY = {
     tipXp: 'XP comes from harvests, boss kills, trial attempts, pulls and ascensions.',
     tipOpen: 'Click to see the rewards for the next levels.',
     track: 'Reward track',
-    trackNote: (level: number, max: number) => `Level ${level} of ${max}`,
+    trackNote: (level: number) => `Level ${level}`,
     close: 'Close',
     level: (n: number) => `Lv ${n}`,
     reached: 'Reached',
@@ -1039,7 +1038,26 @@ export const COPY = {
     buy: (n: number) => (n === 1 ? 'Learn rank (1 point)' : `Learn rank (${n} points)`),
     noPoints: 'Not enough skill points',
     pickNode: 'Choose a gem to see what it does.',
-    state: { locked: 'Locked', open: 'Open', owned: 'Learned', maxed: 'Maxed' },
+    state: {
+      locked: 'Locked',
+      open: 'Open',
+      owned: 'Learned',
+      maxed: 'Maxed',
+      closed: 'Not open yet',
+    },
+    needsRing: (ring: number) => `Opens with Ascension ${ring}`,
+    needsStep: (step: string) => `Opens when a card of this type reaches ${step}`,
+    step: { gold: 'Gold', prismatic: 'Prismatic', mythic: 'Mythic or Void', heirloom: 'Heirloom' },
+    circleHidden: 'A weapon circle, hidden. Raise a card of this type to Gold to reveal it.',
+    circleOpen: (name: string, step: string, learned: number, total: number) =>
+      total === 0
+        ? `${name} circle, open to ${step}, no skills yet`
+        : `${name} circle, open to ${step}, ${learned} of ${total} learned`,
+    circlesHeading: 'Weapon circles',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    zoomReset: 'Reset view',
+    panHint: 'Drag to pan, scroll to zoom.',
     nodeLabel: (name: string, state: string, rank: string) => `${name}, ${state}, ${rank}`,
     bought: (name: string, rank: number) => `${name} is now rank ${rank}`,
     respec: 'Respec',
@@ -1070,6 +1088,7 @@ export const COPY = {
       unknown: 'That skill does not exist.',
       maxed: 'That skill is already at max rank.',
       locked: 'Learn the gem before it first.',
+      closed: 'That part of the tree is not open yet.',
       'no-points': 'Not enough skill points. Level up your account to earn more.',
       nothing: 'No points spent yet.',
       unaffordable: 'Not enough Starlight to respec.',

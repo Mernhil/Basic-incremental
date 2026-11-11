@@ -361,10 +361,12 @@ export function loadoutCostCap(
 ): number {
   const { base, perLevel } = content.cardRules.costCap;
   const value = base + perLevel * (accountLevel(state) - 1);
-  return Math.max(
+  const cap = Math.max(
     0,
     Math.floor(statValue('loadout.costCap', value, modifiers, { job }).toNumber()),
   );
+  // With no account level cap the fighting loadout's cap stops at a top value (DESIGN.md §10).
+  return job === 'fighting' ? Math.min(cap, content.account.loadoutCostCapTop) : cap;
 }
 
 /** Card ids of a loadout, main first, without empty slots. */

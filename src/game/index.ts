@@ -84,8 +84,16 @@ export {
   accountLevel,
   /** XP from one level to the next (quick early, slow later). */
   xpToNextAccountLevel,
-  /** The reward track: every level 2..max with skill points, crystals, cosmetics, cost cap, reached. */
+  /** The reward track: every level from 2 (the listed ones, then the repeating reward, no cap) with skill points, crystals, cosmetics, cost cap, reached. */
   rewardTrack,
+  /** What reaching a level gives besides its skill point. */
+  trackReward,
+  /** One circle per weapon type: revealed or hidden, and the step its cards have reached. */
+  weaponCircles,
+  /** Whether an Ascension has opened a ring of the tree. */
+  ringOpen,
+  /** Brings loaded ranks in line with the tree and the points earned (never more ranks than points). */
+  fitSkillsToPoints,
   /** The account tree: each node's rank, max, requirements met, can buy, bonus now / next. */
   skillTree,
   /** Buys one rank of a tree node with skill points. */
@@ -105,6 +113,7 @@ export {
   type SkillNodeInfo,
   type SkillPoints,
   type SkillBuyResult,
+  type WeaponCircle,
   type RespecInfo,
   type RespecResult,
   type CardEnhancementInfo,

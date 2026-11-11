@@ -1191,13 +1191,28 @@ export const SKILL_BRANCHES = [
 ] as const;
 export type SkillBranch = (typeof SKILL_BRANCHES)[number];
 
+export const SKILL_KINDS = ['small', 'large', 'keystone'] as const;
+export type SkillKind = (typeof SKILL_KINDS)[number];
+/** The steps of a hidden weapon circle, in order; each opens when a card reaches its tier. */
+export const CIRCLE_STEPS = ['gold', 'prismatic', 'mythic', 'heirloom'] as const;
+export type CircleStep = (typeof CIRCLE_STEPS)[number];
+
+const skillEffectSchema = z.strictObject({ name, perRank: z.array(modifierSchema).min(1) });
+const skillKindRuleSchema = z.strictObject({
+  cost: z.number().int().min(1),
+  maxRank: z.number().int().min(1),
+  scale: positiveDecimal,
+});
+
 /**
  * Account XP, levels, the reward track, the account tree and its respec (account.json).
  * XP (through `xp.account`, scope job): per unit harvested by job × the gem tier's weight, per
  * boss kill × killTierGrowth^(dungeon tier − 1), per pull, per Glimmer Trial attempt, per
- * ascension. Level L → L + 1 costs xpBase × xpGrowth^(L − 1); each level gives skill points.
+ * ascension. Level L → L + 1 costs xpBase × xpGrowth^(L − 1); each level gives skill points;
+ * there is no level cap. The account tree is generated: every branch uses the same `skeleton`
+ * (slots in rings) and the effects in its `branches` entry; the weapon circles are written out.
  */
-export const accountSchema = z.strictObject({
+const accountFileSchema = z.strictObject({
   xp: z.strictObject({
     perUnit: z.strictObject({ logging: decimal, mining: decimal }),
     tierWeights: z.array(positiveDecimal).min(1),
@@ -1208,12 +1223,17 @@ export const accountSchema = z.strictObject({
     perAscension: decimal,
   }),
   levels: z.strictObject({
-    maxLevel: z.number().int().min(1),
     xpBase: positiveDecimal,
     xpGrowth: atLeastOne,
     skillPointsPerLevel: z.number().int().min(0),
+    /** Skill points per achievement unlocked. */
+    pointsPerAchievement: z.number().int().min(0),
+    /** Skill points per stage star level earned (DESIGN.md §6). */
+    pointsPerStageStar: z.number().int().min(0),
   }),
-  /** What reaching a level gives besides its skill points (E7). */
+  /** The cost cap of the fighting loadout never grows past this (DESIGN.md §10). */
+  loadoutCostCapTop: z.number().int().min(1),
+  /** What reaching a level gives besides its skill points (E7), for the levels listed. */
   rewardTrack: z.array(
     z.strictObject({
       level: z.number().int().min(2),
@@ -1223,25 +1243,141 @@ export const accountSchema = z.strictObject({
       costCap: z.number().int().min(0).default(0),
     }),
   ),
-  /** The account tree: ranks bought with skill points; each rank adds `perRank` once more. */
-  tree: z.array(
+  /** Past the last listed level, every `every` levels gives `resources` (and nothing else). */
+  rewardRepeat: z.strictObject({
+    every: z.number().int().min(1),
+    resources: z.array(costSchema),
+  }),
+  /** What one kind of skill costs and how it scales: a skill's modifiers are × `scale`. */
+  skillKinds: z.strictObject({
+    small: skillKindRuleSchema,
+    large: skillKindRuleSchema,
+    keystone: skillKindRuleSchema,
+  }),
+  /** The shared shape of a branch: ring 0 is open from the start, ring N opens with Ascension N. */
+  skeleton: z
+    .array(
+      z.strictObject({
+        slot: id,
+        ring: z.number().int().min(0),
+        kind: z.enum(SKILL_KINDS),
+        /** Slots of the same branch that need a rank first. */
+        requires: z.array(id),
+        /** Which of the branch's effects of this kind it carries (wraps around). */
+        effect: z.number().int().min(0),
+      }),
+    )
+    .min(1),
+  /** Each branch's effects: small and large ones cycle over the skeleton, one keystone. */
+  branches: z.array(
     z.strictObject({
-      id,
-      name,
       branch: z.enum(SKILL_BRANCHES),
-      /** Skill points per rank. */
-      cost: z.number().int().min(1),
-      maxRank: z.number().int().min(1),
-      /** Nodes that need at least one rank first. */
-      requires: z.array(id),
-      perRank: z.array(modifierSchema).min(1),
+      small: z.array(skillEffectSchema).min(1),
+      large: z.array(skillEffectSchema).min(1),
+      keystone: skillEffectSchema,
+    }),
+  ),
+  /** Which card tier opens each step of a weapon circle. */
+  circleSteps: z.array(z.strictObject({ step: z.enum(CIRCLE_STEPS), tier: z.enum(RANK_TIERS) })),
+  /** Written-out weapon circles (one item type each), skills in order. */
+  circles: z.array(
+    z.strictObject({
+      kind: z.enum(ITEM_KINDS),
+      skills: z.array(
+        z.strictObject({
+          id,
+          name,
+          step: z.enum(CIRCLE_STEPS),
+          kind: z.enum(SKILL_KINDS),
+          requires: z.array(id),
+          perRank: z.array(modifierSchema).min(1),
+        }),
+      ),
     }),
   ),
   /** Respec (DESIGN.md §10): `freePerAscension` free ones each run, then `cost` Starlight. */
   respec: z.strictObject({ cost: positiveDecimal, freePerAscension: z.number().int().min(0) }),
+  /** Node ids from before the balance update → the node a bought rank moves to when a save loads. */
+  legacySkills: z.record(id, id),
 });
+
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+
+/** A skill of the account tree (generated from the skeleton, or written in a circle). */
+export interface SkillNode {
+  id: string;
+  name: string;
+  /** A circle skill uses the branch of its item type's job (colour and gem). */
+  branch: SkillBranch;
+  /** Skill points per rank. */
+  cost: number;
+  maxRank: number;
+  /** Nodes that need at least one rank first. */
+  requires: string[];
+  perRank: ModifierData[];
+  kind: SkillKind;
+  /** Ring 0 is open from the start; ring N opens when the Ascension count reaches N. */
+  ring: number;
+  /** The weapon type of a circle skill. */
+  circle?: ItemKind;
+  /** The circle step that must be reached (a card of the type at that tier). */
+  step?: CircleStep;
+}
+
+/** The pickaxe is a mining item, the logging axe a logging item, every other type a fighting one. */
+const circleBranchOf = (kind: ItemKind): SkillBranch =>
+  kind === 'pickaxe' ? 'mining' : kind === 'logging_axe' ? 'logging' : 'combat';
+
+function generateTree(a: z.output<typeof accountFileSchema>): SkillNode[] {
+  const out: SkillNode[] = [];
+  for (const b of a.branches) {
+    const seen = new Map<object, number>();
+    for (const slot of a.skeleton) {
+      const rule = a.skillKinds[slot.kind];
+      const list = slot.kind === 'small' ? b.small : slot.kind === 'large' ? b.large : [b.keystone];
+      const effect = list[slot.effect % list.length]!;
+      const nth = seen.get(effect) ?? 0;
+      seen.set(effect, nth + 1);
+      out.push({
+        id: `${b.branch}_${slot.slot}`,
+        name: nth > 0 ? `${effect.name} ${ROMAN[nth] ?? nth + 1}` : effect.name,
+        branch: b.branch,
+        cost: rule.cost,
+        maxRank: rule.maxRank,
+        requires: slot.requires.map((r) => `${b.branch}_${r}`),
+        perRank: effect.perRank.map((m) => ({ ...m, value: m.value.mul(rule.scale) })),
+        kind: slot.kind,
+        ring: slot.ring,
+      });
+    }
+  }
+  for (const c of a.circles) {
+    for (const s of c.skills) {
+      const rule = a.skillKinds[s.kind];
+      out.push({
+        id: s.id,
+        name: s.name,
+        branch: circleBranchOf(c.kind),
+        cost: rule.cost,
+        maxRank: rule.maxRank,
+        requires: s.requires,
+        perRank: s.perRank,
+        kind: s.kind,
+        ring: 0,
+        circle: c.kind,
+        step: s.step,
+      });
+    }
+  }
+  return out;
+}
+
+export const accountSchema = accountFileSchema.transform((a) => ({
+  ...a,
+  /** Every skill: the branches from the skeleton, then the circles. */
+  tree: generateTree(a),
+}));
 export type AccountConfig = z.output<typeof accountSchema>;
-export type SkillNode = AccountConfig['tree'][number];
 export type RewardTrackEntry = AccountConfig['rewardTrack'][number];
 
 /**

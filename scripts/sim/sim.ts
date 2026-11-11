@@ -370,32 +370,22 @@ export function ascensionGuard(runs: readonly RunRecord[]): {
 
 // ---- buyer priorities --------------------------------------------------------------------------
 
-/** Account tree nodes in the order the buyer fills them (each up to its max rank). */
-export const SKILL_PRIORITY = [
-  'might',
-  'vigor',
-  'keen_eye',
-  'crystal_luck',
-  'core_luck',
-  'vein_yield',
-  'grove_yield',
-  'quick_study',
-  'brutal',
-  'deep_pockets',
-  'guard',
-  'deep_levels',
-  'renown',
-  'vein_rhythm',
-  'grove_rhythm',
-  'trial_focus',
-  'vein_bounty',
-  'grove_bounty',
-  'starlit_mind',
-  'rare_luck',
-  'pity_sense',
-  'wide_groves',
-  'long_watch',
-];
+/** The branches the buyer fills first: what makes a run faster, then the rest. */
+const SKILL_BRANCH_PRIORITY = ['combat', 'luck', 'mining', 'logging', 'collection', 'automation'];
+
+/**
+ * Account tree nodes in the order the buyer fills them (each up to its max rank): the skeleton's
+ * slots from the middle outwards, every branch in turn, then the weapon circles. The buyer takes
+ * the first one it can buy, so closed rings and locked nodes are skipped on their own.
+ */
+export function skillPriority(content: Content): string[] {
+  const out: string[] = [];
+  for (const slot of content.account.skeleton) {
+    for (const branch of SKILL_BRANCH_PRIORITY) out.push(`${branch}_${slot.slot}`);
+  }
+  for (const node of content.account.tree) if (node.circle) out.push(node.id);
+  return out;
+}
 
 /** Starlight shop items the buyer buys (cheapest level first); the offline cap is useless here. */
 const STARLIGHT_SKIP = new Set(['long_night']);
@@ -670,7 +660,7 @@ export function buyerCandidates(
   }
   // Account tree: the first node of the priority list it can buy (no resource price).
   const nodes = skillTree(state, content);
-  for (const id of SKILL_PRIORITY) {
+  for (const id of skillPriority(content)) {
     const info = nodes.find((n) => n.node.id === id);
     if (!info?.canBuy) continue;
     out.push({
