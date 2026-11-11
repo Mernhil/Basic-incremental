@@ -372,9 +372,14 @@ export function productionPerSecond(
  */
 export function resetProduction(state: GameState): GameState {
   const next = cloneState(state);
+  // Levels, tool lines, depth and harvest gauges start over; unlocked kinds, the workers and the
+  // forge are kept (DESIGN.md §4, §9).
+  const kept = next.production;
   next.production = {
     ...initialProduction(),
-    unlockedTrees: [...state.production.unlockedTrees],
+    unlockedTrees: kept.unlockedTrees,
+    workers: kept.workers,
+    forge: kept.forge,
   };
   return next;
 }

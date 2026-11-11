@@ -76,6 +76,35 @@ export interface FloorSpec {
   scale: DifficultyScale;
 }
 
+/** One floor of one dungeon on one difficulty: what a stage key names. */
+export interface StageRef {
+  dungeonId: string;
+  difficulty: Difficulty;
+  /** 1-based (on `endless`, the depth). */
+  floor: number;
+}
+
+/**
+ * The key of a stage (DESIGN.md §6 Stage stars, Overflow): `"<dungeonId>:<difficulty>:<floor>"`,
+ * for example `"mossy_cellar:normal:10"`. The stage kills, chests and overflow switches of
+ * `state.combat` are keyed by it. This text is saved (format 26): changing it needs a migration.
+ */
+export function stageKey(dungeonId: string, difficulty: Difficulty, floor: number): string {
+  return `${dungeonId}:${difficulty}:${floor}`;
+}
+
+/** Reads a stage key back; null for anything `stageKey` cannot have written. */
+export function parseStageKey(key: string): StageRef | null {
+  const parts = key.split(':');
+  if (parts.length !== 3) return null;
+  const [dungeonId, difficulty, floorText] = parts as [string, string, string];
+  if (!dungeonId || !(DIFFICULTIES as readonly string[]).includes(difficulty)) return null;
+  if (!/^[1-9]\d*$/.test(floorText)) return null;
+  const floor = Number(floorText);
+  if (!Number.isSafeInteger(floor)) return null;
+  return { dungeonId, difficulty: difficulty as Difficulty, floor };
+}
+
 /** A dungeon's progress as a new game has it: Normal, pushing, on floor 1, nothing beaten. */
 export function initialProgress(): DungeonProgress {
   return { difficulty: 'normal', mode: 'push', tiers: {} };
