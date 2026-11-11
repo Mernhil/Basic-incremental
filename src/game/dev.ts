@@ -11,7 +11,7 @@ import { RANK_TIERS, type Content, type RankTier } from '../data';
 import { grantAccountXp, settleAccount } from './account';
 import { settleAchievements } from './achievements';
 import { cardTopTier, levelCap } from './cards';
-import { floorCount, initialProgress } from './floors';
+import { floorCount, initialProgress, stageKey } from './floors';
 import { settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal, isDecimalString } from './num';
@@ -89,9 +89,10 @@ export function devSetDungeonCleared(
   next = cloneState(next);
   if (!next.clearedDungeons.includes(dungeonId)) next.clearedDungeons.push(dungeonId);
   if (isDungeon) {
-    next.combat.kills[dungeonId] = Math.max(1, next.combat.kills[dungeonId] ?? 0);
-    // It stands on its Normal last floor, with that floor as its best.
+    // It stands on its Normal last floor, with that floor as its best, and its boss died once.
     const floors = floorCount(content.dungeonById.get(dungeonId)!);
+    const key = stageKey(dungeonId, 'normal', floors);
+    next.combat.stageKills[key] = Math.max(1, next.combat.stageKills[key] ?? 0);
     const progress = (next.combat.floors[dungeonId] ??= initialProgress());
     const normal = progress.tiers.normal ?? { floor: 1, best: 0 };
     progress.tiers.normal = { floor: Math.max(normal.floor, floors), best: floors };

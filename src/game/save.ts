@@ -64,7 +64,6 @@ export const serializedStateSchema = z.object({
   }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
-    kills: counts,
     /** v24: floors per dungeon and difficulty (DESIGN.md §6). */
     floors: z.record(
       z.string(),
@@ -199,7 +198,6 @@ export function serializeState(state: GameState): SerializedState {
     production: serializeProduction(state.production),
     clearedDungeons: [...state.clearedDungeons],
     combat: {
-      kills: { ...state.combat.kills },
       floors: cloneFloors(state.combat.floors),
       training: { ...state.combat.training },
       trialAttempt: {
@@ -292,7 +290,6 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     ),
   };
   state.combat = {
-    kills: { ...saved.combat.kills },
     // Dungeons that left the game are dropped; a floor past a dungeon's last is read back inside
     // its range (floors.ts `floorPosition`).
     floors: cloneFloors(
@@ -551,10 +548,9 @@ function deserializeMastery(
   state.mastery = {
     harvested,
     gemTiers: keep(saved.gemTiers ?? {}, (id) => isProductionGem(content, id)),
-    bossTiers: keep(
-      saved.bossTiers ?? {},
-      (id) => content.dungeonById.has(id) || content.trialById.has(id),
-    ),
+    // Dungeons have stage stars instead of medals (DESIGN.md §6): only the special dungeons'
+    // medals are kept.
+    bossTiers: keep(saved.bossTiers ?? {}, (id) => content.trialById.has(id)),
   };
   if (!saved.gemTiers || !saved.bossTiers) settleMastery(state, content);
 }

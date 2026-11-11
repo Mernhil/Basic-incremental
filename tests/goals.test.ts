@@ -148,13 +148,12 @@ describe('goal rules (DESIGN.md §10)', () => {
     expect(goal.etaSeconds).toBeCloseTo(400 / (4 / 3));
   });
 
-  it('has the next boss medal with kills left times the time per kill', () => {
+  it('has the next star of the stage being fought, with kills left times the time per kill', () => {
     const state = fighter();
-    state.combat.kills['mossy_cellar'] = 50;
-    state.mastery.bossTiers['mossy_cellar'] = 1;
+    state.combat.stageKills['mossy_cellar:normal:1'] = 50;
     state.clearedDungeons = ['mossy_cellar'];
-    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar')!;
-    expect(goal).toMatchObject({ title: 'Root Warden medal: Silver', page: 'dungeons' });
+    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar:normal:1')!;
+    expect(goal).toMatchObject({ title: 'Root Warden star: Silver', page: 'dungeons' });
     expect(goal.progress).toBeCloseTo(40 / 90);
     expect(goal.etaSeconds).toBeCloseTo(50 * secondsPerKill(state, content, 'mossy_cellar')!);
   });

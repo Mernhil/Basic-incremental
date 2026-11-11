@@ -825,7 +825,6 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.production.harvestGauges['oak']).toEqual(state.bursts.logging);
     expect(state.production.harvestGauges['copper_quarry']).toEqual(state.bursts.mining);
     expect(state.combat.stageKills).toEqual({ [stageKey('mossy_cellar', 'normal', 10)]: 78 });
-    expect(state.combat.kills).toEqual({ mossy_cellar: 78 });
     // Stars, levels and loadouts are what the 0.5.5 game wrote.
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
     expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });

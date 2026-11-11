@@ -332,7 +332,28 @@ export const COPY = {
     fightLabel: (name: string) => `Fight in ${name}`,
     clearToUnlock: (name: string) => `Clear ${name} to unlock`,
     boss: (name: string, hp: string, bars: number) => `${name} · ${hp} HP in ${bars} bars`,
-    kills: (n: number) => (n === 1 ? '1 boss kill' : `${n} boss kills`),
+    /** Stage stars and overflow (DESIGN.md §6): plain working UI until the floors UI is designed. */
+    stars: (levels: number, max: number) => `★ ${levels} / ${max}`,
+    starLevel: (level: number, name: string) => (level > 0 ? `★${level} ${name}` : 'No star yet'),
+    stageHere: (floor: number) => `Stage: floor ${floor}`,
+    stageBelow: (floor: number) => `Next stage: floor ${floor}`,
+    stageDepths: (floor: number) => `Depths follow the Nightmare stage, floor ${floor}`,
+    killsToNext: (n: number, name: string) =>
+      n === 1 ? `1 kill to ${name}` : `${n.toLocaleString('en-US')} kills to ${name}`,
+    allStars: 'every star earned',
+    stageTip:
+      'Kills on a mini-boss or boss floor earn its stars, separately on each tier. Each star pays a chest once and adds damage and loot on that stage.',
+    overflowLabel: 'Overflow',
+    overflowOn: 'On',
+    overflowOff: 'Off',
+    overflowLocked: (name: string) =>
+      `Reach ${name} on this stage to unlock overflow: leftover damage from a kill then carries on.`,
+    overflowTipOn: 'Overflow on: leftover damage from a kill carries into the next kill or floor.',
+    overflowTipOff: 'Overflow off: leftover damage from a kill is lost.',
+    stageMap: 'Stage map',
+    stageMapNote: 'Stars of every mini-boss and boss floor, by dungeon and tier.',
+    stageMapDungeon: 'Dungeon',
+    stageCell: (floor: number, level: number) => `F${floor} ★${level}`,
     perKill: (d: string) => `about ${d} per floor`,
     perKillTip:
       'Average time to clear the floor from full HP at your damage, signature attacks included.',

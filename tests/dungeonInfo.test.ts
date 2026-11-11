@@ -40,8 +40,9 @@ describe('dungeon page helpers', () => {
     const dps = effectiveDamage(state, content, mossy.id);
     // Crits count at their expected value: 5% chance of x2 = 1.05 (DESIGN.md §6).
     const avg = averageDamage(dps, burstStats(content, 'fighting')).mul(1.05);
-    const expected = bossMaxHp(mossy, 0).div(avg);
-    expect(secondsPerKill(state, content, mossy.id)).toBeCloseTo(expected.toNumber());
+    // A kill takes whole hits of 1 s while overflow is off (DESIGN.md §6 Overflow).
+    const expected = Math.ceil(bossMaxHp(mossy).div(avg).toNumber());
+    expect(secondsPerKill(state, content, mossy.id)).toBe(expected);
     expect(secondsPerKill(state, content, 'nope')).toBeNull();
     expect(
       secondsPerKill(state, content, mossy.id, [

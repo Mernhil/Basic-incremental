@@ -10,6 +10,8 @@ export * from './report';
 export * from './tick';
 export * from './combat';
 export * from './floors';
+/** Stage stars and overflow (DESIGN.md §6): `stageStarLevel` and `totalStageStarLevels` feed the skill points. */
+export * from './stageStars';
 export * from './training';
 export * from './loop';
 export * from './offline';

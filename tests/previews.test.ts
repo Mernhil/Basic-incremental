@@ -46,7 +46,11 @@ describe('live stage readouts (DESIGN.md §11)', () => {
     expect(r.averageDps.eq(averageDps(state, content))).toBe(true);
     expect(r.secondsPerKill).toBeCloseTo(secondsPerKill(state, content, 'mossy_cellar')!, 9);
     expect(r.killsPerMinute).toBeCloseTo(60 / r.secondsPerKill!, 9);
-    expect(r.secondsLeft).toBeCloseTo(r.secondsPerKill! / 2, 6);
+    // A kill takes whole hits (overflow is off, DESIGN.md §6); the HP left drains at the average.
+    expect(r.secondsPerKill).toBe(
+      Math.ceil(content.dungeons[0]!.boss.hp.div(r.averageDps).toNumber()),
+    );
+    expect(r.secondsLeft).toBeCloseTo(state.bossHp.div(r.averageDps).toNumber(), 6);
   });
 
   it('has no kill readouts while a special dungeon or nothing is fought', () => {

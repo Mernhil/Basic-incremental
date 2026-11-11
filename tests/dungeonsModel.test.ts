@@ -5,8 +5,11 @@ import {
   drawerStatus,
   floorParts,
   healthPercent,
+  overflowSwitch,
   parseTab,
   signatureCount,
+  stageLine,
+  starTotal,
   tabAfterKey,
 } from '../src/renderer/src/pages/dungeonsModel';
 
@@ -115,5 +118,31 @@ describe('the interim floor line', () => {
       { kind: 'best', best: 9 },
     ]);
     expect(floorParts({ ...base, floorKind: 'miniboss' })[1]).toEqual({ kind: 'miniboss' });
+  });
+});
+
+describe('the stage line and overflow switch (DESIGN.md §6 Stage stars, Overflow)', () => {
+  it('names the stage, its star level and the kills to the next level', () => {
+    expect(stageLine({ floor: 10, level: 3, kills: 150, nextKills: 1000, here: true })).toEqual({
+      floor: 10,
+      here: true,
+      level: 3,
+      toNext: 850,
+    });
+    expect(stageLine({ floor: 20, level: 0, kills: 0, nextKills: 1, here: false }).toNext).toBe(1);
+    expect(stageLine({ floor: 10, level: 6, kills: 2e5, nextKills: null, here: true }).toNext).toBe(
+      null,
+    );
+  });
+
+  it('keeps the switch locked until the stage opens it, then shows it off or on', () => {
+    expect(overflowSwitch({ overflowUnlocked: false, overflowOn: false })).toBe('locked');
+    expect(overflowSwitch({ overflowUnlocked: true, overflowOn: false })).toBe('off');
+    expect(overflowSwitch({ overflowUnlocked: true, overflowOn: true })).toBe('on');
+  });
+
+  it('counts a dungeon’s stars against the most it can have', () => {
+    expect(starTotal(4, 36)).toEqual({ levels: 4, max: 36 });
+    expect(starTotal(40, 36)).toEqual({ levels: 36, max: 36 });
   });
 });

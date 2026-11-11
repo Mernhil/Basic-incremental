@@ -48,7 +48,7 @@ describe('dev cheats (dev builds only)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.state.clearedDungeons).toContain('mossy_cellar');
-    expect(result.state.combat.kills['mossy_cellar']).toBeGreaterThanOrEqual(1);
+    expect(result.state.combat.stageKills['mossy_cellar:normal:1']).toBeGreaterThanOrEqual(1);
     expect(isProducerUnlocked(result.state, content, 'mining', 'iron_deeps')).toBe(true);
     const undone = devSetDungeonCleared(result.state, content, 'mossy_cellar', false);
     expect(undone.ok && undone.state.clearedDungeons).toEqual([]);
