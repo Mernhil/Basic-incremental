@@ -29,7 +29,7 @@ import { effectText } from '../shell/modifierText';
 // ---- constellation geometry ---------------------------------------------------------------------
 
 /** The constellation's drawing box (SVG viewBox units); the centre star sits at CENTRE. */
-export const SKY = { x: -1100, y: -1100, w: 2200, h: 2200 } as const;
+export const SKY = { x: -1200, y: -1200, w: 2400, h: 2400 } as const;
 export const CENTRE = { x: 0, y: 0 } as const;
 /** Radius of each ring of the branches (ring 0 is open from the start, ring N with Ascension N). */
 export const RING_RADIUS = [330, 430, 530, 630] as const;
@@ -41,7 +41,7 @@ const STEP_DEG = 20;
 const SECTOR_DEG = 360 / SKILL_BRANCHES.length;
 const GAP_PX = 62;
 /** The weapon circles sit past the branches: their centre radius, outline radius and gem radius. */
-const CIRCLE_CENTRE_R = 930;
+const CIRCLE_CENTRE_R = 1010;
 export const CIRCLE_R = 92;
 const CIRCLE_GEM_R = 58;
 
@@ -167,8 +167,8 @@ const at = (deg: number, r: number, from: { x: number; y: number } = CENTRE) => 
 export const branchAngle = (branch: SkillBranch): number =>
   -90 + SKILL_BRANCHES.indexOf(branch) * (360 / SKILL_BRANCHES.length);
 
-/** Angle of a weapon circle around the constellation: the first at the top, then clockwise. */
-const circleAngle = (index: number, count: number): number => -90 + (index * 360) / count;
+/** Angle of a weapon circle around the constellation: between two branch rays, clockwise from the top. */
+const circleAngle = (index: number, count: number): number => -90 + ((index + 0.5) * 360) / count;
 
 /**
  * Lays a branch out ring by ring along its ray: a ring's gems are spread across the ray, ordered

@@ -31,9 +31,9 @@ export interface SkillsContext extends PageContext {
 }
 
 /** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
-const START_SCALE = 1.15;
-const MIN_SCALE = 0.8;
-const MAX_SCALE = 2.4;
+const START_SCALE = 0.75;
+const MIN_SCALE = 0.4;
+const MAX_SCALE = 1.7;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag: string, attrs: Record<string, string | number>): SVGElement => {
