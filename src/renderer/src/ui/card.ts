@@ -22,8 +22,8 @@ const EMBLEMS: Record<string, string> = {
   tree: '<path d="M50 10 76 46H62L82 70H18L38 46H24Z"/><path d="M44 70H56V90H44Z"/>',
 };
 
-/** The frame of each tier: Wood shows the Bronze frame; Mythic, Void and the Heirloom keep the
- *  Prismatic frame, look and effects until their own are drawn (DESIGN.md §5). */
+/** The tier the card's effects and rank layer follow: Wood still reads as Bronze, and Mythic and
+ *  the Heirloom as Prismatic (the frame pictures themselves are each tier's own, art/frame.ts). */
 const frameTierOf = (tier: Rank['tier']): FrameTier =>
   tier === 'wood' ? 'bronze' : tier === 'mythic' || tier === 'heirloom' ? 'prismatic' : tier;
 
@@ -151,10 +151,10 @@ export function createCard(initial: CardProps): CardView {
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
     // the tier is the frame (DESIGN.md §5); bosses have no rank and so no frame
-    const tier = p.boss ? '' : frameTierOf(p.rank.tier);
+    const tier = p.boss ? '' : `${p.rank.tier}/${p.rarity === 'void' ? 'void' : 'mythic'}`;
     if (tier !== frameTier) {
       frameTier = tier;
-      frameSvg.innerHTML = p.boss ? '' : cardFrame(frameTierOf(p.rank.tier));
+      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.rarity);
     }
     attachElementFx(
       artBox,
