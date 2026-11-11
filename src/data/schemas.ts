@@ -1185,6 +1185,9 @@ export const portalSchema = z.strictObject({
   /** Skin portals: a skin you already own pays back this fraction of a single pull's price (in the
    *  portal resource). Ignored by other kinds. */
   duplicatePayback: z.number().min(0).max(1).default(0.2),
+  /** Card portals: how many cards of each rarity can be marked on the wishlist (DESIGN.md §7).
+   *  0 = no wishlist (the other kinds). */
+  wishlistPerRarity: z.number().int().min(0).default(0),
 });
 
 /**
@@ -1499,6 +1502,9 @@ export type RewardTrackEntry = AccountConfig['rewardTrack'][number];
  */
 export const enhancementsSchema = z.strictObject({
   unlockRank: rankSchema,
+  /** Milestone levels (DESIGN.md §5 Level): an option of milestone `n` opens at card level
+   *  `n × milestoneEvery`; milestone 0 is open from the unlock rank. */
+  milestoneEvery: z.number().int().min(1),
   budget: perTier(z.number().int().min(0)),
   cards: z.record(
     id,
@@ -1508,6 +1514,8 @@ export const enhancementsSchema = z.strictObject({
           id,
           name,
           cost: z.number().int().min(1),
+          /** 0 = open from the start; n = opens at card level n × `milestoneEvery`. */
+          milestone: z.number().int().min(0).default(0),
           modifiers: z.array(modifierSchema).min(1),
         }),
       )

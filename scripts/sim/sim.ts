@@ -97,6 +97,7 @@ import {
   cardEnhancements,
   chooseEnhancement,
   resetEnhancements,
+  setWishlisted,
   cosmeticMaxLevel,
   cosmeticUpgradeCheck,
   upgradeCosmetic,
@@ -912,6 +913,7 @@ export function greedyBuy(
   if (bought.length > 0) current = optimizeLoadouts(current, content);
   current = fillEnhancements(current, content);
   current = equipSets(current, content);
+  current = markWishlist(current, content);
   return { state: current, bought };
 }
 
@@ -921,32 +923,33 @@ function optionWeight(option: { modifiers: readonly { stat: string }[] }): numbe
 }
 
 /**
- * Gives each card the enhancement set with the most weight its budget allows (all subsets of
- * its options), rebuilt with a free respec whenever a better set fits.
+ * Gives each card the enhancement set with the most weight its budget allows (among the options
+ * it has the level for), rebuilt with a free respec whenever a better set fits.
  */
 export function fillEnhancements(state: GameState, content: Content): GameState {
   let current = state;
   for (const cardId of Object.keys(state.cards.owned)) {
     const info = cardEnhancements(current, content, cardId);
     if (!info?.unlocked) continue;
-    const options = info.options.map((o) => o.option);
-    let best: string[] = [];
-    let bestWeight = -1;
-    for (let mask = 0; mask < 1 << options.length; mask++) {
-      let cost = 0;
-      let weight = 0;
-      const ids: string[] = [];
-      options.forEach((o, i) => {
-        if (!(mask & (1 << i))) return;
-        cost += o.cost;
-        weight += optionWeight(o);
-        ids.push(o.id);
-      });
-      if (cost <= info.budget && weight > bestWeight) {
-        best = ids;
-        bestWeight = weight;
+    // 0/1 knapsack over the options the card has reached the level of
+    const options = info.options.filter((o) => o.open).map((o) => o.option);
+    const table: { weight: number; ids: string[] }[] = Array.from(
+      { length: info.budget + 1 },
+      () => ({
+        weight: 0,
+        ids: [],
+      }),
+    );
+    for (const o of options) {
+      const w = optionWeight(o);
+      for (let b = info.budget; b >= o.cost; b--) {
+        const from = table[b - o.cost]!;
+        if (from.weight + w > table[b]!.weight) {
+          table[b] = { weight: from.weight + w, ids: [...from.ids, o.id] };
+        }
       }
     }
+    const best = table[info.budget]!.ids;
     const chosen = current.cards.owned[cardId]!.enhancements;
     if (best.length === chosen.length && best.every((id) => chosen.includes(id))) continue;
     current = resetEnhancements(current, content, cardId);
@@ -954,6 +957,37 @@ export function fillEnhancements(state: GameState, content: Content): GameState 
       const result = chooseEnhancement(current, content, cardId, id);
       if (result.ok) current = result.state;
     }
+  }
+  return current;
+}
+
+/**
+ * Marks the cards the sim is building on the Card Portal's wishlist (DESIGN.md §7): per rarity, up
+ * to the limit of cards it does not own yet, fighting cards first (they fill the loadout) and then
+ * the workers, in catalogue order. A card it owns leaves the list.
+ */
+export function markWishlist(state: GameState, content: Content): GameState {
+  const portal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
+  if (!portal) return state;
+  const want = new Set<string>();
+  for (const rarity of RARITIES) {
+    const missing = portal.pool
+      .filter((e) => e.rarity === rarity && !state.cards.owned[e.itemId])
+      .map((e) => content.cardById.get(e.itemId)!)
+      .sort((a, b) => Number(b.job === 'fighting') - Number(a.job === 'fighting'));
+    for (const card of missing.slice(0, portal.wishlistPerRarity)) want.add(card.id);
+  }
+  const now = state.cards.wishlist;
+  if (now.length === want.size && now.every((id) => want.has(id))) return state;
+  let current = state;
+  for (const id of now) {
+    if (want.has(id)) continue;
+    const result = setWishlisted(current, content, id, false, portal.id);
+    if (result.ok) current = result.state;
+  }
+  for (const id of want) {
+    const result = setWishlisted(current, content, id, true, portal.id);
+    if (result.ok) current = result.state;
   }
   return current;
 }

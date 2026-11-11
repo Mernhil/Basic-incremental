@@ -278,10 +278,10 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
     return state;
   };
 
-  it('unlock at Silver ★1 with a budget that grows by tier', () => {
-    const bronze = cardEnhancements(freshState(), content, 'ember_squire')!;
-    expect(bronze.unlocked).toBe(false);
-    expect(bronze.unlockRank).toEqual({ tier: 'silver', stars: 1 });
+  it('open at Wood ★1 with a budget that grows by tier (more in the tests of enhancements.test.ts)', () => {
+    const wood = cardEnhancements(freshState(), content, 'ember_squire')!;
+    expect(wood.unlocked).toBe(true);
+    expect(wood.unlockRank).toEqual({ tier: 'wood', stars: 1 });
     const info = cardEnhancements(silver(), content, 'ember_squire')!;
     expect(info.unlocked).toBe(true);
     expect(info.budget).toBe(content.enhancements.budget.silver);
@@ -292,7 +292,7 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
   it('give each card its own options costing about twice the top budget', () => {
     const top = content.enhancements.budget.prismatic;
     for (const card of content.cards) {
-      const options = content.enhancements.cards[card.id]!;
+      const options = content.enhancements.cards[card.id]!.filter((o) => o.milestone === 0);
       expect(options.length, card.id).toBeGreaterThanOrEqual(3);
       const total = options.reduce((a, o) => a + o.cost, 0);
       expect(total / top, card.id).toBeGreaterThanOrEqual(1.6);
@@ -320,18 +320,29 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
 
   it('refuse locked cards, over-budget picks, repeats and unknown options', () => {
     const first = content.enhancements.cards['ember_squire']![0]!.id;
-    expect(chooseEnhancement(freshState(), content, 'ember_squire', first)).toEqual({
+    const closed = {
+      ...content,
+      enhancements: {
+        ...content.enhancements,
+        budget: { ...content.enhancements.budget, wood: 0 },
+      },
+    };
+    expect(chooseEnhancement(freshState(), closed, 'ember_squire', first)).toEqual({
       ok: false,
       reason: 'locked',
     });
-    const once = chooseEnhancement(silver(), content, 'ember_squire', first);
+    const once = chooseEnhancement(freshState(), content, 'ember_squire', first);
     if (!once.ok) throw new Error(once.reason);
     expect(chooseEnhancement(once.state, content, 'ember_squire', first)).toEqual({
       ok: false,
       reason: 'already',
     });
     const costly = content.enhancements.cards['ember_squire']!.find(
-      (o) => o.id !== first && o.cost + content.enhancements.cards['ember_squire']![0]!.cost > 4,
+      (o) =>
+        o.id !== first &&
+        o.milestone === 0 &&
+        o.cost + content.enhancements.cards['ember_squire']![0]!.cost >
+          content.enhancements.budget.wood,
     )!;
     expect(chooseEnhancement(once.state, content, 'ember_squire', costly.id)).toEqual({
       ok: false,
