@@ -42,7 +42,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="cards"]');
+await page.click('[data-open="cards"]');
 // the demo save unlocks achievements: their toasts would cover the detail panel
 await page.addStyleTag({ content: '.st-toast, .st-toasts { display: none !important; }' });
 await page.waitForSelector('.cp-tile');

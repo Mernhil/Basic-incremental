@@ -4,26 +4,9 @@ import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
 import { onFrame, replay } from '../stage/motion';
-import { navPlaque, PLAQUE_VIEWBOX, svg } from '../art/gems';
 import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
 import './shell.css';
-
-/** Sidebar order is fixed by DESIGN.md §11. */
-export const PAGES = [
-  { id: 'home', icon: 'home' },
-  { id: 'cards', icon: 'cards' },
-  { id: 'production', icon: 'production' },
-  { id: 'dungeons', icon: 'dungeons' },
-  { id: 'summon', icon: 'summon' },
-  { id: 'skills', icon: 'skills' },
-  { id: 'wardrobe', icon: 'wardrobe' },
-  { id: 'achievements', icon: 'achievements' },
-  { id: 'shop', icon: 'shop' },
-  { id: 'settings', icon: 'settings' },
-] as const satisfies ReadonlyArray<{ id: string; icon: IconName }>;
-
-export type PageId = (typeof PAGES)[number]['id'];
 
 export function h<K extends keyof HTMLElementTagNameMap>(
   tag: K,
@@ -66,12 +49,12 @@ export interface Currency {
 }
 
 export interface Shell {
+  /** The whole screen: the header on top, `main` under it (UI_RULES.md §2, "The table"). */
   el: HTMLElement;
-  /** Notice area above the page (warnings, "while you were away"). */
+  /** Where the table goes, under the header. */
+  main: HTMLElement;
+  /** Notices over the table (a save warning, a cleared dungeon). */
   notices: HTMLElement;
-  page(id: PageId): HTMLElement;
-  show(id: PageId): void;
-  current(): PageId;
   /** The account level badge, XP bar and points to spend (pages/accountModel `levelBadge`). */
   setLevel(view: {
     level: number;
@@ -106,15 +89,14 @@ export interface Shell {
   tools: HTMLElement;
   /** Replaces a resource chip's coin art (the gem's mastery metal, DESIGN.md §4). */
   setCurrencyArt(id: string, art: string): void;
-  /** The goals strip under the header (goal tracker, DESIGN.md §10). */
-  quest: HTMLElement;
-  /**
-   * Puts `el` into the slot at the right end of the goals strip while `page` is the current page
-   * (for example Production's x1 / x10 / x100 / Max toggle). `null` takes it out again. A page
-   * calls this once, when it is built; the shell moves the element in and out as pages change.
-   */
-  setQuestSlot(page: PageId, el: HTMLElement | null): void;
-  scrollToTop(): void;
+  /** The goal list that drops down under the Goals button (DESIGN.md §10). */
+  goals: HTMLElement;
+  /** The Goals button. */
+  goalsButton: HTMLButtonElement;
+  /** The Goals button's count of goals shown (0 hides it). */
+  setGoals(count: number): void;
+  /** Rolls the goal list back up. */
+  closeGoals(): void;
 }
 
 export function createShell(opts: {
@@ -123,7 +105,6 @@ export function createShell(opts: {
   version: string;
   currencies: Currency[];
   levelTip: TipContent;
-  onShow?: (id: PageId) => void;
   /** The account level was clicked (opens the reward track). */
   onLevel?: () => void;
 }): Shell {
@@ -213,7 +194,46 @@ export function createShell(opts: {
     currencyList.append(item);
   }
   const tools = h('div', 'shell-tools');
-  header.append(brand, level, currencyList, detailsBtn, tools);
+
+  // the Goals button (UI_RULES.md §2, "Goals are a header button"): the list drops down under it
+  const goalsWrap = h('div', 'shell-goals');
+  const goalsBtn = h('button', 'px-btn shell-goals__btn');
+  goalsBtn.type = 'button';
+  goalsBtn.setAttribute('aria-expanded', 'false');
+  goalsBtn.setAttribute('aria-controls', 'shell-goals-list');
+  const goalsCount = h('span', 'shell-goals__count bi-num');
+  goalsBtn.append(h('span', 'shell-goals__label', COPY.progress.goals), goalsCount);
+  const goals = h('div', 'shell-goals__list');
+  goals.id = 'shell-goals-list';
+  goals.hidden = true;
+  goalsWrap.append(goalsBtn, goals);
+  const setGoalsOpen = (open: boolean, focusBack = false): void => {
+    goals.hidden = !open;
+    goalsBtn.setAttribute('aria-expanded', String(open));
+    if (!open && focusBack) goalsBtn.focus();
+  };
+  goalsBtn.addEventListener('click', () => setGoalsOpen(goals.hidden === true));
+  goals.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      setGoalsOpen(false, true);
+    }
+  });
+  goalsBtn.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !goals.hidden) {
+      e.preventDefault();
+      setGoalsOpen(false);
+    }
+  });
+  // a click on a goal or anywhere outside rolls it back up
+  goals.addEventListener('click', (e) => {
+    if ((e.target as Element | null)?.closest('button')) setGoalsOpen(false);
+  });
+  document.addEventListener('pointerdown', (e) => {
+    if (!goals.hidden && !goalsWrap.contains(e.target as Node)) setGoalsOpen(false);
+  });
+
+  header.append(brand, level, goalsWrap, currencyList, detailsBtn, tools);
 
   onFrame((dt) => {
     for (const [id, c] of counters) {
@@ -236,83 +256,18 @@ export function createShell(opts: {
     }
   });
 
-  // ---- sidebar ----
-  const nav = h('nav', 'shell-rail');
-  nav.setAttribute('aria-label', COPY.shell.navigation);
-  const list = h('ul', 'shell-rail__list');
-  const links = new Map<PageId, HTMLButtonElement>();
-  for (const p of PAGES) {
-    const li = h('li');
-    const btn = h('button', 'shell-rail__item');
-    btn.type = 'button';
-    btn.dataset.page = p.id;
-    btn.dataset.tipSide = 'right';
-    // the pixel navigation plaque (DESIGN.md §12) at a whole scale; the name is its accessible
-    // name and its tooltip (hover and keyboard focus), nothing is written under it
-    const plaque = h('span', 'shell-rail__plaque');
-    plaque.innerHTML = svg(navPlaque(p.id), PLAQUE_VIEWBOX);
-    btn.append(plaque, h('span', 'shell-rail__label', COPY.pages[p.id].label));
-    attachTooltip(btn, COPY.pages[p.id].label);
-    btn.addEventListener('click', () => show(p.id));
-    links.set(p.id, btn);
-    li.append(btn);
-    list.append(li);
-  }
-  nav.append(list);
-
-  // ---- pages ----
-  const main = h('main', 'shell-main');
-  main.tabIndex = -1;
+  // ---- main: the table goes here; notices float over it ----
+  const main = h('main', 'shell-main-area');
   const notices = h('div', 'shell-notices');
-  const quest = h('div', 'shell-quest');
-  quest.hidden = true;
-  // the slot at the strip's right end: whatever the current page put there (`setQuestSlot`)
-  const questSlot = h('div', 'shell-quest__slot');
-  quest.append(questSlot);
-  const questSlots = new Map<PageId, HTMLElement>();
-  // the strip shows while there are goals (quest.ts sets data-goals) or a page filled the slot
-  const syncQuest = (): void => {
-    quest.hidden = quest.dataset.goals !== '1' && questSlot.childElementCount === 0;
-  };
-  quest.addEventListener('goals', syncQuest);
-  main.append(quest, notices);
-  const pages = new Map<PageId, HTMLElement>();
-  for (const p of PAGES) {
-    const page = h('div', 'shell-page');
-    page.dataset.page = p.id;
-    const title = h('h1', 'shell-page__title', COPY.pages[p.id].label);
-    page.append(title);
-    page.hidden = true;
-    pages.set(p.id, page);
-    main.append(page);
-  }
 
   // the reward track drops down under the header (A16 B quest scroll)
   const track = h('div', 'shell-track');
   track.id = 'shell-track';
   track.hidden = true;
 
-  el.append(header, nav, main, track);
+  el.append(header, main, notices, track);
 
-  let active: PageId = 'home';
-  function show(id: PageId): void {
-    active = id;
-    for (const [pid, page] of pages) page.hidden = pid !== id;
-    const slotted = questSlots.get(id);
-    questSlot.replaceChildren(...(slotted ? [slotted] : []));
-    syncQuest();
-    for (const [pid, link] of links) {
-      if (pid === id) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
-    }
-    main.scrollTop = 0;
-    opts.onShow?.(id);
-  }
-  show('home');
-  // Start every launch at the top of the page.
-  requestAnimationFrame(() => (main.scrollTop = 0));
-
-  // Below this width the sidebar shows icons only (the window can shrink to 1024px).
+  // Below this width the header drops the coin and Details names (the window can shrink to 1024px).
   const narrow = window.matchMedia('(max-width: 1120px)');
   const applyNarrow = (): void => {
     el.classList.toggle('shell--narrow', narrow.matches);
@@ -322,10 +277,8 @@ export function createShell(opts: {
 
   return {
     el,
+    main,
     notices,
-    page: (id) => pages.get(id)!,
-    show,
-    current: () => active,
     setLevel(v) {
       const set = (node: HTMLElement, text: string) => {
         if (node.textContent !== text) node.textContent = text;
@@ -347,9 +300,6 @@ export function createShell(opts: {
       level.setAttribute('aria-expanded', String(open));
     },
     levelButton: level,
-    scrollToTop() {
-      main.scrollTop = 0;
-    },
     setCurrency(id, amount, perSecond) {
       const c = counters.get(id);
       if (c) c.target = amount;
@@ -377,14 +327,15 @@ export function createShell(opts: {
       if (c) c.held = amount ?? new Decimal(0);
     },
     tools,
-    quest,
-    setQuestSlot(page, el) {
-      if (el) questSlots.set(page, el);
-      else questSlots.delete(page);
-      if (page === active) {
-        questSlot.replaceChildren(...(el ? [el] : []));
-        syncQuest();
-      }
+    goals,
+    goalsButton: goalsBtn,
+    setGoals(count) {
+      const text = count > 0 ? String(count) : '';
+      if (goalsCount.textContent !== text) goalsCount.textContent = text;
+      goalsBtn.setAttribute('aria-label', COPY.progress.goalsButton(count));
+    },
+    closeGoals() {
+      setGoalsOpen(false);
     },
     setCurrencyArt(id, art) {
       const glyph = currencyGlyphs.get(id);
@@ -394,14 +345,4 @@ export function createShell(opts: {
       }
     },
   };
-}
-
-/** Fills a not-yet-built page with a framed empty state. */
-export function placeholderPage(page: HTMLElement, id: Exclude<PageId, 'home'>): void {
-  const { el, body } = frame(COPY.pages[id].frame);
-  body.append(
-    h('p', 'frame__lead', COPY.pages[id].empty),
-    h('p', 'frame__muted', COPY.shell.coming),
-  );
-  page.append(el);
 }

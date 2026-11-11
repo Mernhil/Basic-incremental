@@ -130,7 +130,7 @@ for (const dpr of dprs) {
   await page.waitForTimeout(900);
   for (const id of pageIds) {
     await dismiss();
-    await page.click(`.shell-rail__item[data-page="${id}"]`, { timeout: 4000 }).catch(() => {});
+    await page.click(`[data-open="${id}"]`, { timeout: 4000 }).catch(() => {});
     await page.waitForTimeout(900);
     if (shots) {
       // the CDP capture is in device pixels (Playwright would scale it back to CSS pixels)

@@ -1,0 +1,16 @@
+/* Package 9b: fits the Production ledger (pages/production.css) into the Logging and Mining views,
+   and lays out the Forge view. */
+
+.vh-body > .shell-page.gv-job {
+  display: block;
+}
+.gv-job > .gv-ledger.shell-page--stage {
+  margin: -4px -26px -40px;
+  max-width: none;
+  height: calc(100vh - var(--header-h, 64px) - var(--view-bar-h, 56px));
+}
+.gv-forge {
+  max-width: 1280px;
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+  align-items: start;
+}

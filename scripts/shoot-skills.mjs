@@ -15,14 +15,14 @@ const page = browser
 if (!page) throw new Error('No app window found');
 await page.setViewportSize({ width: 1440, height: 1000 }).catch(() => undefined);
 await page.waitForSelector('.shell');
-await page.click('.shell-rail__item[data-page="skills"]');
+await page.click('[data-open="skills"]');
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${out}/skills.png` });
 const first = page.locator('.sk-node').first();
 await first.click();
 await page.waitForTimeout(300);
 await page.screenshot({ path: `${out}/skills-detail.png` });
-await page.click('.shell-rail__item[data-page="cards"]');
+await page.click('[data-open="cards"]');
 await page.waitForTimeout(500);
 await page
   .locator('.cp-card, .card')

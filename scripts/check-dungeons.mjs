@@ -11,7 +11,7 @@ page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 const homeTitle = () =>
   page.evaluate(() => document.querySelector('.table__boss .frame__heading')?.textContent);
-await page.click('.shell-rail__item[data-page="dungeons"]');
+await page.click('[data-open="dungeon"]');
 const dps0 = await page.textContent('.dp-dps');
 await page.click('[data-key="up-copper_edge"]');
 await page.waitForTimeout(300);
@@ -22,14 +22,14 @@ await page.waitForTimeout(300);
 const active = await page.evaluate(
   () => document.querySelector('.dp-floor--active .dp-floor__name')?.firstChild?.textContent,
 );
-await page.click('.shell-rail__item[data-page="home"]');
+await page.keyboard.press('Escape');
 await page.waitForTimeout(300);
 const home = await homeTitle();
 await page.screenshot({ path: 'design/app-screens/dungeons-home-ember.png' });
-await page.click('.shell-rail__item[data-page="dungeons"]');
+await page.click('[data-open="dungeon"]');
 await page.click('[data-key="fight-mossy_cellar"]');
 await page.waitForTimeout(300);
-await page.click('.shell-rail__item[data-page="home"]');
+await page.keyboard.press('Escape');
 const back = await homeTitle();
 console.log(JSON.stringify({ dps0, dps1, focused, active, home, back, errors }));
 await browser.close();

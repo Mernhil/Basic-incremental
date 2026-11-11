@@ -58,7 +58,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="production"]');
+await page.click('[data-open="logging"]');
 await page.waitForSelector('.pp-w__btn');
 for (const [w, h] of [
   [1280, 720],
