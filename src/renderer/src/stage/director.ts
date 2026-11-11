@@ -68,6 +68,11 @@ export interface ShowEvents {
   harvestBurst: { job: ProductionJob; totals: Loot[] };
   /** The main cards' strikes and harvest bursts of one game step (DESIGN.md §4), as reported. */
   harvests: { events: HarvestEvent[] };
+  /**
+   * One game step as reported, with the play time it covered: the duel keeps its fight log from it
+   * (`recordDuel`) and plays each card's hits, skills and knockouts (DESIGN.md §6 What the duel shows).
+   */
+  duel: { report: TickReport; seconds: number; before: GameState; after: GameState };
 }
 
 type Listener<K extends keyof ShowEvents> = (event: ShowEvents[K]) => void;
@@ -171,6 +176,13 @@ export function createDirector(content: Content, state: () => GameState) {
     },
     /** Reads one game-loop step: kills, drops, knockouts and bursts. */
     afterStep(report: TickReport, before: GameState, after: GameState): void {
+      // the duel's log counts every step, seen or not
+      emit('duel', {
+        report,
+        seconds: Math.max(0, (after.stats.playTimeMs - before.stats.playTimeMs) / 1000),
+        before,
+        after,
+      });
       if (document.hidden) return;
       const mods = collectModifiers(after, content);
       if (report.bursts.fighting > 0 && after.activeDungeonId) {
