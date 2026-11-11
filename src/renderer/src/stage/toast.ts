@@ -2,10 +2,10 @@ import './toast.css';
 
 /**
  * Short toasts for moments worth naming (rare drops, milestones). One polite live region so
- * screen readers hear them too. At most MAX_TOASTS stay; older ones leave first.
+ * screen readers hear them too. At most MAX_TOASTS stay; older ones leave first. Where they sit and why: UI_RULES.md §2 "Toasts".
  */
 
-const MAX_TOASTS = 4;
+const MAX_TOASTS = 3;
 const TTL_MS = 4200;
 let stack: HTMLElement | null = null;
 
@@ -55,6 +55,6 @@ export function toast(
   while (box.children.length > MAX_TOASTS) box.firstElementChild?.remove();
   window.setTimeout(() => {
     el.classList.add('is-leaving');
-    window.setTimeout(() => el.remove(), 300);
+    window.setTimeout(() => el.remove(), 240);
   }, TTL_MS);
 }

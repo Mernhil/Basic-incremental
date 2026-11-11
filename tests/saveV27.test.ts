@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  advance,
   ascend,
   createInitialState,
   createSaveText,
@@ -13,7 +14,11 @@ import {
   V27_CRYSTALS_PER_SCROLL,
   type GameState,
 } from '../src/game';
+import { loadContent } from '../src/data';
 import { content } from './helpers';
+
+/** The shipped numbers: the play-through tests below need the real floors. */
+const real = loadContent();
 
 /** Save format 27: the state of the table update (docs/plans/table-update.md, Interfaces). */
 const step = MIGRATIONS[26]!;
@@ -22,6 +27,101 @@ type Out = Record<string, Record<string, unknown>>;
 /** The parts of a serialized state that format 27 added, so the rest can be compared with 0.6.0. */
 const V27_TOP = ['summon', 'presets', 'discoveredBonds', 'expeditions', 'ascensionChallenges'];
 const V27_COMBAT = ['enemyIndex', 'challenge', 'challengeWaitSeconds', 'cardDamage', 'cardsOut'];
+
+const owned = (tier: string, stars: number, level: number) => ({ tier, stars, level });
+
+describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', () => {
+  const lone = (extra: Record<string, unknown> = {}) => ({
+    account: { level: 1 },
+    activeDungeonId: 'ember_crypt',
+    cards: {
+      loadouts: { fighting: { main: 'ember_squire', supports: [null, null, null] } },
+      owned: {
+        ember_squire: owned('wood', 6, 20),
+        apprentice_feller: owned('wood', 1, 20), // a logging card: never a fighter
+        field_reaper: owned('wood', 1, 1),
+        hedge_acolyte: owned('wood', 1, 9),
+        hollow_spearman: owned('wood', 1, 1), // uncommon, cost 3
+        golden_sage: owned('wood', 1, 1), // epic, cost 6
+      },
+    },
+    combat: {
+      floors: {
+        mossy_cellar: { difficulty: 'normal', tiers: { normal: { floor: 10, best: 10 } } },
+      } as Record<string, unknown>,
+    },
+    ...extra,
+  });
+  const supports = (out: Record<string, unknown>) =>
+    ((out['cards'] as Out)['loadouts']!['fighting'] as { supports: unknown[] }).supports;
+
+  it('fills the support slots with the best owned fighters the cost cap allows', () => {
+    // Cap 6, the Squire costs 2: two more slots of the cheapest cost fit, so the uncommon (3)
+    // and the epic (6) stay out and the higher-level common comes first.
+    expect(supports(step(lone()))).toEqual(['hedge_acolyte', 'field_reaper', null]);
+  });
+
+  it('fills all three slots when the cap allows, best first, and keeps the main card', () => {
+    const out = step(lone({ account: { level: 6 } })); // cap 16
+    expect(supports(out)).toEqual(['golden_sage', 'hollow_spearman', 'hedge_acolyte']);
+    expect(((out['cards'] as Out)['loadouts']!['fighting'] as { main: string }).main).toBe(
+      'ember_squire',
+    );
+  });
+
+  it('leaves a filled slot alone and never repeats a card', () => {
+    const save = lone();
+    (save.cards.loadouts.fighting as { supports: unknown[] }).supports = [
+      'field_reaper',
+      null,
+      null,
+    ];
+    expect(supports(step(save))).toEqual(['field_reaper', 'hedge_acolyte', null]);
+  });
+
+  it('moves a player off a dungeon with nothing beaten to the last dungeon with a beaten floor', () => {
+    expect(step(lone())['activeDungeonId']).toBe('mossy_cellar');
+    expect(step(lone({ activeDungeonId: 'mossy_cellar' }))['activeDungeonId']).toBe('mossy_cellar');
+  });
+
+  it('keeps a player where a floor is beaten, and where nothing is beaten anywhere', () => {
+    const beaten = lone({ activeDungeonId: 'ember_crypt' });
+    (beaten.combat.floors as Record<string, unknown>)['ember_crypt'] = {
+      difficulty: 'normal',
+      tiers: { normal: { floor: 3, best: 3 } },
+    };
+    expect(step(beaten)['activeDungeonId']).toBe('ember_crypt');
+    const none = lone();
+    none.combat.floors = {};
+    expect(step(none)['activeDungeonId']).toBe('ember_crypt');
+  });
+
+  it('the 0.6.0 fixture farms on from the migrated save: no knockout loop in two minutes', () => {
+    const text = readFileSync(resolve(__dirname, 'fixtures/saves/v26-0.6.0.save.txt'), 'utf8');
+    let state = readSave(text, real).state;
+    expect(state.cards.loadouts.fighting.supports.filter((id) => id !== null)).toHaveLength(2);
+    const farmed = state.combat.floors[state.activeDungeonId!]!.tiers['normal']!;
+    expect(farmed.best).toBeGreaterThan(0);
+    expect(state.combat.knockoutSeconds).toBe(0); // the old save was parked mid-knockout
+    const dropped: number[] = [];
+    for (let s = 0; s < 120; s++) {
+      state = advance(state, real, 1000, () => 0.5).state;
+      if (state.combat.knockoutSeconds > 0) dropped.push(s);
+    }
+    // At most one stumble on a boss floor, then it farms: nothing in the last minute.
+    expect(dropped.filter((s) => s >= 60)).toEqual([]);
+    expect(state.combat.floors[state.activeDungeonId!]!.tiers['normal']!.floor).toBeGreaterThan(0);
+  });
+
+  it('a brand-new game never opens on a knocked-out fight', () => {
+    let state = createInitialState(real);
+    for (let s = 0; s < 60; s++) {
+      state = advance(state, real, 1000, () => 0.5).state;
+      expect(state.combat.cardsOut).toEqual([]);
+      expect(state.combat.knockoutSeconds).toBe(0);
+    }
+  });
+});
 
 describe('v26 -> v27 (the table update)', () => {
   it('is the current format', () => {
@@ -69,6 +169,7 @@ describe('v26 -> v27 (the table update)', () => {
     expect(out.bossHp).toBeNull();
     expect(out.combat).toEqual({
       loadoutDamage: '7',
+      knockoutSeconds: 0,
       floors: {},
       enemyIndex: 0,
       challenge: null,
@@ -128,11 +229,16 @@ describe('v26 -> v27 (the table update)', () => {
     }
     // The shared health pool is gone: each team card's own health replaced it (package 7).
     delete (expected['combat'] as Record<string, unknown>)['loadoutDamage'];
+    // A knockout the old save was parked in does not carry over.
+    (expected['combat'] as Record<string, unknown>)['knockoutSeconds'] = 0;
     // the crystals became scrolls: the save no longer holds them
     const kept = expected['resources'] as Record<string, unknown>;
     delete kept['summon_crystal'];
     delete kept['glamour_crystal'];
-    expect(again).toEqual({ ...expected, bossHp: null });
+    // The team was filled and the player moved off the dungeon with nothing beaten (below).
+    const exp = expected as { cards: { loadouts: { fighting: { supports: unknown[] } } } };
+    exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.supports;
+    expect(again).toEqual({ ...expected, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is format 27 and loads to the same state.
     const resaved = createSaveText(state, 1);
