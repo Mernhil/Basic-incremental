@@ -138,7 +138,44 @@ import {
   type Modifier,
   type Price,
   type Rng,
+  pickDungeon,
+  startFloorChallenge,
+  startChallenge,
+  leaveChallenge,
+  isOnTrip,
+  isRestricted,
+  challengesOpen,
+  challengeById,
+  challengeTarget,
+  FOCUS_PORTAL_ID,
+  setFocusKind,
 } from '../../src/game';
+import {
+  CHALLENGE_GIVE_UP_SECONDS,
+  CHALLENGE_TRY_MARGIN,
+  CHALLENGE_WIN,
+  challengeLooksQuick,
+  challengeMargin,
+  challengeOrder,
+  challengeWall,
+  focusChoice,
+  gemWeight,
+  runExpeditions,
+  teamForChallenge,
+  teamRoles,
+  wantsCardsNow,
+} from './table';
+export {
+  CHALLENGE_TRY_MARGIN,
+  CHALLENGE_WIN,
+  challengeMargin,
+  focusChoice,
+  pullValue,
+  runExpeditions,
+  teamForChallenge,
+  teamSurvival,
+  wantsCardsNow,
+} from './table';
 
 // ---- milestones (DESIGN.md §14) ---------------------------------------------------------------
 
@@ -166,7 +203,59 @@ export interface SimLog {
   fought: Record<string, number>;
   /** Star dust spent on stars. */
   dustSpent?: number;
+  /** The table update's systems (DESIGN.md §14 The sim player's choices), for the report. */
+  table?: TableLog;
 }
+
+/** What the sim counts of the table update's systems. */
+export interface TableLog {
+  /** Floor Challenges won and lost, and how many of them the player started by hand. */
+  challengesWon: number;
+  challengesLost: number;
+  manualTries: number;
+  /** The longest stretch without a new best floor anywhere (seconds), and where it fought. */
+  stuckLongest: number;
+  stuckWhere: string;
+  /** Sim seconds of the last new best floor, and the sum of best floors then. */
+  lastRiseAt: number;
+  bestSum: number;
+  /** Scrolls spent on pulls: Summon (Card and Focus Portal) and Glamour. */
+  summonSpent: number;
+  glamourSpent: number;
+  /** Pulls made at the Focus Portal. */
+  focusPulls: number;
+  /** Expeditions: trips collected, Core units and tier-weighted gems they brought. */
+  trips: number;
+  tripMaterials: number;
+  tripGems: number;
+  /** Core units the fights brought (the trips' share is measured against them). */
+  fightMaterials: number;
+  /** Ascension challenges started, left, and each completion: [challenge id, sim seconds]. */
+  challengeRuns: number;
+  challengesLeft: number;
+  completions: Array<[string, number]>;
+}
+
+/** An empty `TableLog`. */
+export const emptyTableLog = (): TableLog => ({
+  challengesWon: 0,
+  challengesLost: 0,
+  manualTries: 0,
+  stuckLongest: 0,
+  stuckWhere: '-',
+  lastRiseAt: 0,
+  bestSum: 0,
+  summonSpent: 0,
+  glamourSpent: 0,
+  focusPulls: 0,
+  trips: 0,
+  tripMaterials: 0,
+  tripGems: 0,
+  fightMaterials: 0,
+  challengeRuns: 0,
+  challengesLeft: 0,
+  completions: [],
+});
 
 const tierAtLeast = (state: GameState, tier: (typeof RANK_TIERS)[number]): boolean =>
   Object.values(state.cards.owned).some(
@@ -718,6 +807,55 @@ const TRAINING_VALUE: Record<string, number> = {
   'burst.fill': 0.3,
 };
 
+/** `challengeWall`, remembered per state and modifier list like `incomeOf`. */
+const walls = new WeakMap<GameState, WeakMap<readonly Modifier[], 'health' | 'damage' | null>>();
+
+/**
+ * The value of a relative rise of a training line's stat: TRAINING_VALUE, except that health is
+ * worth as much as damage while the team's health is what loses it the next Challenge
+ * (`challengeWall`).
+ */
+export function trainingValue(
+  state: GameState,
+  content: Content,
+  stat: string,
+  modifiers: readonly Modifier[],
+): number {
+  if (stat !== 'combat.health') return TRAINING_VALUE[stat] ?? 0.3;
+  let byModifiers = walls.get(state);
+  if (!byModifiers) walls.set(state, (byModifiers = new WeakMap()));
+  let wall = byModifiers.get(modifiers);
+  if (wall === undefined) {
+    wall = challengeWall(state, content, modifiers);
+    byModifiers.set(modifiers, wall);
+  }
+  return wall === 'health' ? TRAINING_VALUE['combat.damage']! : TRAINING_VALUE[stat]!;
+}
+
+/**
+ * What a relative rise of a gem's income is worth through the training it pays for (DESIGN.md §6
+ * The gems of training): a line's price grows `growth` times a level, so income `1 + x` times as
+ * high buys about ln(1 + x) / ln(growth) more levels, each worth the line's next rise
+ * (`trainingValue`). Mines and trees add it to their gain, so a level of the gem a wall needs is
+ * worth more. 0 for a gem no line costs.
+ */
+export function trainingFeed(
+  state: GameState,
+  content: Content,
+  resource: string,
+  modifiers: readonly Modifier[],
+): number {
+  let value = 0;
+  for (const t of trainingLines(state, content, 1, modifiers)) {
+    if (t.offer.price.resource !== resource || t.now.lte(0)) continue;
+    const growth = num(new Decimal(t.line.cost.growth));
+    if (!(growth > 1)) continue;
+    const rise = t.after.div(t.now).toNumber() - 1;
+    value += (trainingValue(state, content, t.line.stat, modifiers) * rise) / Math.log(growth);
+  }
+  return value;
+}
+
 /** Share of a place's output its harvest gauge bursts add at a strike speed of 1 (10 s every 30). */
 const BURST_SHARE = 1 / 3;
 
@@ -766,11 +904,14 @@ function economyCandidates(
       totalProduction > 0
         ? weightedProduction(state, content, modifiers, [mine.resource]) / totalProduction
         : 1;
+    const rise = now > 0 ? (next - now) / now : 1;
     out.push({
       id: `mine:${mine.id}`,
       kind: 'economy',
       prices: [price],
-      gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
+      gain:
+        PRODUCTION_VALUE * (now > 0 ? rise * share : 1) +
+        rise * trainingFeed(state, content, mine.resource, modifiers),
       buy: (s, c, m) => okState(buyMineLevel(s, c, mine.id, m)),
       bulk: (s, c, m, budget) => {
         const ctx = { job: 'mining' as const, producer: mine.id, resource: mine.resource };
@@ -792,11 +933,14 @@ function economyCandidates(
       totalProduction > 0
         ? weightedProduction(state, content, modifiers, [tree.resource]) / totalProduction
         : 1;
+    const rise = now > 0 ? (next - now) / now : 1;
     out.push({
       id: `tree:${tree.id}`,
       kind: 'economy',
       prices: [price],
-      gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
+      gain:
+        PRODUCTION_VALUE * (now > 0 ? rise * share : 1) +
+        rise * trainingFeed(state, content, tree.resource, modifiers),
       buy: (s, c, m) => okState(buyTreeLevel(s, c, tree.id, m)),
       bulk: (s, c, m, budget) => {
         const ctx = { job: 'logging' as const, producer: tree.id, resource: tree.resource };
@@ -814,7 +958,7 @@ function economyCandidates(
       id: `train:${t.line.id}`,
       kind: 'economy',
       prices: [t.offer.price],
-      gain: (TRAINING_VALUE[t.line.stat] ?? 0.3) * rise,
+      gain: trainingValue(state, content, t.line.stat, modifiers) * rise,
       buy: (s, c, m) => okState(buyTraining(s, c, t.line.id, 1, m)),
     });
   }
@@ -955,12 +1099,27 @@ export function buyerCandidates(
     // The Legacy Gate's skins are looks only: the sim player leaves them (and their pity and
     // rarity milestones) alone, as it does the cosmetics' looks it cannot value.
     if (portal.kind === 'skins') continue;
-    for (const count of [10, 1] as const) {
+    // Scrolls (DESIGN.md §7): single pulls only while a team or worker slot waits for a card;
+    // otherwise the scrolls are saved for 10-pulls (the Rare guarantee at the same price a pull).
+    const counts = portal.kind === 'cards' && wantsCardsNow(state, content) ? [10, 1] : [10];
+    for (const count of counts as (1 | 10)[]) {
+      const price = pullPrice(portal, count, modifiers);
+      // The Card Portal's scrolls may go to the Focus Portal instead (`focusChoice`), looked at
+      // only when a pull is affordable.
+      const focus =
+        portal.kind === 'cards' && have(state, price.resource).gte(price.amount)
+          ? focusChoice(state, content, new Set(buildOrder(state, content))).kind
+          : null;
+      const id = focus === null ? portal.id : `${FOCUS_PORTAL_ID}:${focus}`;
       out.push({
-        id: count === 10 ? `summon:${portal.id}:10` : `summon:${portal.id}`,
+        id: count === 10 ? `summon:${id}:10` : `summon:${id}`,
         kind: 'summon',
-        prices: [pullPrice(portal, count, modifiers)],
-        buy: (s, c, m, rng) => okState(pull(s, c, portal.id, count, rng, m)),
+        prices: [price],
+        buy: (s, c, m, rng) => {
+          if (focus === null) return okState(pull(s, c, portal.id, count, rng, m));
+          const aimed = setFocusKind(s, c, focus);
+          return aimed.ok ? okState(pull(aimed.state, c, FOCUS_PORTAL_ID, count, rng, m)) : null;
+        },
       });
     }
   }
@@ -1451,9 +1610,15 @@ export const LEAD_SWAP_MARGIN = 1.1;
  */
 export function chooseLead(state: GameState, content: Content, cap: number): string | null {
   const damage = (id: string): number => num(cardBaseDamage(content, id, state.cards.owned[id]!));
+  // Under Common Folk only Commons count (DESIGN.md §15); a card away on a trip cannot fight.
+  const commonsOnly = isRestricted(state, content, 'commons_only');
+  const usable = (id: string): boolean =>
+    !!state.cards.owned[id] &&
+    !isOnTrip(state, id) &&
+    (!commonsOnly || content.cardById.get(id)?.rarity === 'common');
   let best: string | null = null;
   for (const card of content.cards) {
-    if (card.job !== 'fighting' || !state.cards.owned[card.id]) continue;
+    if (card.job !== 'fighting' || !usable(card.id)) continue;
     if (cardCost(content, card.id) > cap) continue;
     if (best === null || damage(card.id) > damage(best)) best = card.id;
   }
@@ -1462,7 +1627,7 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
     best !== null &&
     now !== null &&
     now !== best &&
-    state.cards.owned[now] &&
+    usable(now) &&
     cardCost(content, now) <= cap &&
     damage(best) < damage(now) * LEAD_SWAP_MARGIN
   )
@@ -1472,15 +1637,24 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
 
 /**
  * Puts the hardest-hitting card in the lead (`chooseLead`) and the strongest others (rarity, then
- * power) in the supports within the cost cap, and
- * the strongest workers on the best trees and mines (`placeBestWorkers`).
+ * power) in the supports within the cost cap; when that team loses the next Challenge, tries other
+ * supports for one that wins it (`teamForChallenge`: guards, healers, bonds, element); and puts
+ * the strongest workers on the best trees and mines (`placeBestWorkers`). Cards away on a trip
+ * and, under Common Folk, cards that are not Commons are left out.
  */
 export function optimizeLoadouts(state: GameState, content: Content): GameState {
   let current = state;
   const job = 'fighting' as const;
   const cap = loadoutCostCap(current, content, job);
+  const commonsOnly = isRestricted(current, content, 'commons_only');
   const ranked = content.cards
-    .filter((c) => c.job === job && current.cards.owned[c.id])
+    .filter(
+      (c) =>
+        c.job === job &&
+        current.cards.owned[c.id] &&
+        !isOnTrip(current, c.id) &&
+        (!commonsOnly || c.rarity === 'common'),
+    )
     .sort(
       (a, b) =>
         RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) ||
@@ -1505,6 +1679,7 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
     const result = setLoadout(current, content, job, loadout);
     if (result.ok) current = result.state;
   }
+  current = teamForChallenge(current, content);
   return placeBestWorkers(current, content);
 }
 
@@ -1545,7 +1720,7 @@ export function workerPicks(state: GameState, content: Content): WorkerPick[] {
   const pairs: WorkerPick[] = [];
   for (const job of PRODUCTION_JOBS) {
     const cards = content.cards
-      .filter((c) => c.job === job && state.cards.owned[c.id])
+      .filter((c) => c.job === job && state.cards.owned[c.id] && !isOnTrip(state, c.id))
       .map((c) => ({ id: c.id, power: workerPower(content, c.id, state.cards.owned[c.id]!) }))
       .sort((a, b) => b.power - a.power);
     const slots = producersOf(content, job)
@@ -1596,7 +1771,13 @@ export function placeBestWorkers(state: GameState, content: Content): GameState 
     const weakest = picks[picks.length - 1];
     const busy = new Set(picks.map((p) => p.card));
     const idle = content.cards
-      .filter((c) => c.job !== 'fighting' && state.cards.owned[c.id] && !busy.has(c.id))
+      .filter(
+        (c) =>
+          c.job !== 'fighting' &&
+          state.cards.owned[c.id] &&
+          !busy.has(c.id) &&
+          !isOnTrip(state, c.id),
+      )
       .sort(
         (a, b) =>
           workerPower(content, b.id, state.cards.owned[b.id]!) -
@@ -1749,6 +1930,29 @@ export function ascendNow(
   return rate <= tracker.peakRate * PAST_PEAK;
 }
 
+/**
+ * Ascends (DESIGN.md §9), as a challenge run when one looks quick (DESIGN.md §15 Ascension
+ * challenges): every challenge that can start, fewest completions first, is tried as the
+ * Ascension it is, and the first whose target its starting team already wins as a Challenge
+ * (`challengeLooksQuick`, the rule in force) is taken; its reward is permanent and the run goes
+ * on as a normal one once the target is reached. Otherwise a plain Ascension.
+ */
+export function ascendOrChallenge(
+  state: GameState,
+  content: Content,
+): { ok: true; state: GameState } | { ok: false } {
+  if (challengesOpen(state)) {
+    for (const id of challengeOrder(state, content)) {
+      const started = startChallenge(state, content, id);
+      if (!started.ok) continue;
+      const team = optimizeLoadouts(started.state, content);
+      if (challengeLooksQuick(team, content)) return { ok: true, state: team };
+    }
+  }
+  const result = ascend(state, content);
+  return result.ok ? { ok: true, state: result.state } : { ok: false };
+}
+
 /** Share of a tier-up's missing resource already held at which the player waits for it. */
 const HOLD_SHARE = 0.75;
 /** The longest a run is stretched while waiting for a tier-up, in seconds. */
@@ -1853,6 +2057,15 @@ export function chooseFight(
 ): FightChoice {
   const normal = (id: string | null): FightChoice => ({ id, difficulty: 'normal' });
   const modifiers = collectModifiers(state, content);
+  // A challenge run (DESIGN.md §15 Ascension challenges) climbs its target first: the rule holds
+  // the run back until the target floor is reached.
+  const challenge = state.ascensionChallenges.active
+    ? challengeById(content, state.ascensionChallenges.active)
+    : undefined;
+  const target = challenge ? challengeTarget(state, challenge) : null;
+  if (target && isDungeonUnlocked(state, content, target.dungeon)) {
+    return { id: target.dungeon, difficulty: target.difficulty };
+  }
   for (const trial of content.trials) {
     if (!isDungeonUnlocked(state, content, trial.id) || isDungeonCleared(state, trial.id)) continue;
     const dealt = averageDps(state, content, trial.id, modifiers).mul(trial.durationSeconds);
@@ -1984,12 +2197,13 @@ export function chooseDungeon(
   return chooseFight(state, content, options).id;
 }
 
-/** The sim player pushes on only when the next floor's "you fall in" is this many times its clear time. */
+/** The sim player pushes on only when the next Challenge leaves this much room (`challengeMargin`). */
 export const PUSH_MARGIN = 1.2;
 
 /**
- * Whether the floor below the one the player stands on (on the dungeon's chosen difficulty, or
- * on `difficulty`) is one the loadout wins with room to spare.
+ * Whether the next Challenge of a dungeon (on its chosen difficulty, or on `difficulty`) is one
+ * the team wins with room to spare: it clears the floor inside the Challenge's timer and before it
+ * falls, healers counted (`challengeMargin`).
  */
 function winsNextFloor(
   state: GameState,
@@ -1998,16 +2212,7 @@ function winsNextFloor(
   modifiers: readonly Modifier[],
   difficulty?: Difficulty,
 ): boolean {
-  const dungeon = content.dungeonById.get(dungeonId);
-  if (!dungeon) return false;
-  const position = floorPosition(state, dungeon, difficulty);
-  const next = position.challengeFloor;
-  if (next === null) return false;
-  const at = position.difficulty;
-  const spk = secondsPerKill(state, content, dungeonId, modifiers, next, at);
-  if (spk === null || !Number.isFinite(spk)) return false;
-  const survival = survivalSeconds(state, content, dungeonId, modifiers, next, at);
-  return survival === null || survival >= spk * PUSH_MARGIN;
+  return (challengeMargin(state, content, dungeonId, modifiers, difficulty) ?? 0) >= PUSH_MARGIN;
 }
 
 /**
@@ -2059,17 +2264,37 @@ function climbTarget(
   return best && { id: best.id, difficulty: best.difficulty };
 }
 
+/** A lost Challenge the estimate calls hopeless is tried again by hand at most this often (s). */
+export const CHALLENGE_RETRY_SECONDS = 900;
+
 /**
- * Auto-challenge (DESIGN.md §6 Auto-challenge): a player who turned it off turns it on again once
- * the next floor is one the loadout wins with room to spare. (Package 11 teaches the rest.)
+ * Auto-challenge and the Challenge button (DESIGN.md §6 Farming and Challenge, Auto-challenge). A
+ * lost Challenge costs farming time (its timer, then a 60 s wait before the next try), so the
+ * player leaves auto-challenge on only while the next Challenge is one it wins
+ * (`challengeMargin` at least CHALLENGE_WIN) and turns it off when it is not. With it off, it
+ * presses the Challenge button itself once every CHALLENGE_RETRY_SECONDS while the Challenge is
+ * close (margin at least CHALLENGE_TRY_MARGIN), since the estimate leaves out what the real fight
+ * may still give (crits, level-ups); `lastTry` is when it last pressed it (sim seconds, or null).
  */
-export function chooseAutoChallenge(state: GameState, content: Content): GameState {
+export function chooseAutoChallenge(
+  state: GameState,
+  content: Content,
+  now = 0,
+  lastTry: number | null = null,
+): { state: GameState; tried: boolean } {
   const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
-  if (!dungeon) return state;
-  if (floorPosition(state, dungeon).autoChallenge) return state;
-  if (!winsNextFloor(state, content, dungeon.id, collectModifiers(state, content))) return state;
-  const result = setAutoChallenge(state, content, dungeon.id, true);
-  return result.ok ? result.state : state;
+  if (!dungeon) return { state, tried: false };
+  const margin = challengeMargin(state, content, dungeon.id, collectModifiers(state, content));
+  if (margin === null) return { state, tried: false };
+  const on = margin >= CHALLENGE_WIN;
+  const set = setAutoChallenge(state, content, dungeon.id, on);
+  const next = set.ok ? set.state : state;
+  if (on || margin < CHALLENGE_TRY_MARGIN) return { state: next, tried: false };
+  if (lastTry !== null && now - lastTry < CHALLENGE_RETRY_SECONDS) {
+    return { state: next, tried: false };
+  }
+  const tried = startFloorChallenge(next, content);
+  return tried.ok ? { state: tried.state, tried: true } : { state: next, tried: false };
 }
 
 /**
@@ -2183,6 +2408,19 @@ export interface ProgressSample {
   /** What it fights: "dungeon difficulty floor" (or the trial), and the best weapon so far. */
   fight: string;
   bestWeapon: string;
+  /** The table update's systems (`TableLog` so far): the team's roles, Challenges won and lost,
+   *  Summon Scrolls earned and spent, the trips' share of Cores and gems (0..1), Ascension
+   *  challenge completions, the longest stretch without a new best floor (seconds). */
+  team?: string;
+  challengesWon?: number;
+  challengesLost?: number;
+  scrollsEarned?: number;
+  scrollsSpent?: number;
+  tripMaterialShare?: number;
+  tripGemShare?: number;
+  challengeCompletions?: number;
+  stuckLongest?: number;
+  focusPulls?: number;
 }
 
 /** The top of the weapon ladder (DESIGN.md §14 A maxed weapon): a Mythic or Void Heirloom at ★6. */
@@ -2212,6 +2450,7 @@ export function progressOf(
   content: Content,
   t: number,
   dustSpent: number,
+  table?: TableLog,
 ): ProgressSample {
   let starLevels = 0;
   let chests = 0;
@@ -2236,7 +2475,50 @@ export function progressOf(
     slots: workerSlots(state, content),
     fight: at ? `${dungeon!.id} ${at.difficulty} ${at.floor}` : (state.activeDungeonId ?? '-'),
     bestWeapon: bestWeapon(state, content),
+    ...(table ? tableProgress(state, content, t, table) : {}),
   };
+}
+
+/** Weighted gems harvested over the whole game (`mastery.harvested` × Starlight tier weight). */
+function gemsHarvested(state: GameState, content: Content): number {
+  let total = 0;
+  for (const [id, amount] of Object.entries(state.mastery.harvested)) {
+    total += num(amount) * gemWeight(content, id);
+  }
+  return total;
+}
+
+/** The table update's part of a `ProgressSample`. */
+function tableProgress(
+  state: GameState,
+  content: Content,
+  t: number,
+  table: TableLog,
+): Partial<ProgressSample> {
+  const gems = gemsHarvested(state, content);
+  const share = (trip: number, other: number): number =>
+    trip + other > 0 ? trip / (trip + other) : 0;
+  return {
+    team: teamRoles(state, content),
+    challengesWon: table.challengesWon,
+    challengesLost: table.challengesLost,
+    scrollsEarned: num(have(state, 'summon_scroll')) + table.summonSpent,
+    scrollsSpent: table.summonSpent,
+    tripMaterialShare: share(table.tripMaterials, table.fightMaterials),
+    tripGemShare: share(table.tripGems, gems),
+    challengeCompletions: table.completions.length,
+    focusPulls: table.focusPulls,
+    stuckLongest: Math.max(table.stuckLongest, t - table.lastRiseAt),
+  };
+}
+
+/** The sum of the best floors of every dungeon tier: it rises with every won Challenge. */
+export function bestFloorSum(state: GameState): number {
+  let total = 0;
+  for (const progress of Object.values(state.combat.floors)) {
+    for (const tier of Object.values(progress.tiers)) total += tier?.best ?? 0;
+  }
+  return total;
 }
 
 /** Where the player fights: dungeon, tier and floor (or the trial), as one text. */
@@ -2270,7 +2552,25 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const early = options.stepSeconds ?? 5;
   const late = options.lateStepSeconds ?? Math.max(early, LATE_STEP_SECONDS);
   const total = Math.round(options.hours * 3600);
-  const log: SimLog = { summons: 0, levelAt: {}, ascensions: [], fought: {}, dustSpent: 0 };
+  const table = emptyTableLog();
+  const log: SimLog = {
+    summons: 0,
+    levelAt: {},
+    ascensions: [],
+    fought: {},
+    dustSpent: 0,
+    table,
+  };
+  // The dungeon materials (Cores, Sigils): the trips' share of them is measured against the fights'.
+  const cores = new Set(
+    content.dungeons.flatMap((d) => [
+      d.drops.material.resource,
+      ...d.drops.extraMaterials.map((e) => e.resource),
+    ]),
+  );
+  let lastTry: number | null = null;
+  let challengeStartedAt = 0;
+  let completionsSeen: Record<string, number> = {};
   const progress: ProgressSample[] = [];
   let maxedWeaponAt: number | null = null;
   const hits: Record<string, number | null> = Object.fromEntries(
@@ -2286,7 +2586,19 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const pullSamples: Array<[number, number, number]> = [];
   let t = 0;
   const countSummons = (buys: { bought: string[]; dustSpent: number }): void => {
-    for (const id of buys.bought) if (id.startsWith('summon:')) log.summons++;
+    for (const id of buys.bought) {
+      if (!id.startsWith('summon:')) continue;
+      log.summons++;
+      const pulls = id.endsWith(':10') ? 10 : 1;
+      const portalId = id.split(':')[1]!;
+      const portal = content.portals.find((x) => x.id === portalId);
+      if (portalId === FOCUS_PORTAL_ID) table.focusPulls += pulls;
+      if (portalId === FOCUS_PORTAL_ID || portal?.cost.resource === 'summon_scroll') {
+        table.summonSpent += pulls;
+      } else if (portal?.cost.resource === 'glamour_scroll') {
+        table.glamourSpent += pulls;
+      }
+    }
     log.dustSpent = (log.dustSpent ?? 0) + buys.dustSpent;
   };
   // Run milestones (the Ascension guard): observed only, they never change what the player does.
@@ -2325,6 +2637,22 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       const buys = greedyBuy(state, content, rng);
       state = buys.state;
       countSummons(buys);
+      // Expeditions (DESIGN.md §15): the idle cards travel; an hour at a time while the player
+      // is at the game, longer when it only checks in (8 h before the night).
+      const night = idle && IDLE_AWAKE_SECONDS - (t % DAY_SECONDS) <= IDLE_CHECKIN_SECONDS;
+      const trips = runExpeditions(state, content, idle ? (night ? 8 : 4) : 1);
+      state = trips.state;
+      table.trips += trips.income.trips;
+      table.tripMaterials += trips.income.materials;
+      table.tripGems += trips.income.gems;
+      // A challenge run that has not reached its target in a long while is given up.
+      if (
+        state.ascensionChallenges.active !== null &&
+        t - challengeStartedAt >= CHALLENGE_GIVE_UP_SECONDS
+      ) {
+        state = leaveChallenge(state);
+        table.challengesLeft++;
+      }
     }
     if (acting && sinceAscendCheck >= ASCEND_CHECK_SECONDS) {
       sinceAscendCheck = 0;
@@ -2337,8 +2665,12 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       };
       const holding = now.runSeconds < HOLD_MAX_RUN_SECONDS && holdAscension(state, content);
       if (ascendNow(now, tracker) && !holding) {
-        const result = ascend(state, content);
+        const result = ascendOrChallenge(state, content);
         if (result.ok) {
+          if (result.state.ascensionChallenges.active !== null) {
+            table.challengeRuns++;
+            challengeStartedAt = t;
+          }
           const after = greedyBuy(result.state, content, rng);
           state = after.state;
           countSummons(after);
@@ -2358,14 +2690,22 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       const trialShare = since > 0 ? (log.fought['glimmer_trial'] ?? 0) / since : 0;
       const fight = chooseFight(state, content, { trialShare });
       if (fight.id !== state.activeDungeonId) {
-        const result = setActiveDungeon(state, content, fight.id);
+        // Through the dungeon's loadout preset (DESIGN.md §15 Loadout presets): the team left in
+        // a dungeon comes back with it; the team is then chosen again for the new fight.
+        const result = pickDungeon(state, content, fight.id);
         if (result.ok) state = result.state;
       }
       if (fight.id !== null && content.dungeonById.has(fight.id)) {
         const tier = setDifficulty(state, content, fight.id, fight.difficulty);
         if (tier.ok) state = tier.state;
       }
-      state = chooseAutoChallenge(state, content);
+      state = optimizeLoadouts(state, content);
+      const challenge = chooseAutoChallenge(state, content, t, lastTry);
+      state = challenge.state;
+      if (challenge.tried) {
+        lastTry = t;
+        table.manualTries++;
+      }
       state = chooseOverflow(state, content);
       sinceChoose = 0;
     }
@@ -2392,9 +2732,17 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     sinceCheckin += dt;
     // A kill that moves the player (a floor pushed) is a new place to choose from; a boss farmed
     // again and again is not, or a farm with overflow would re-choose every step.
+    for (const c of report.challenges) {
+      if (c.won) table.challengesWon++;
+      else table.challengesLost++;
+    }
+    for (const [id, amount] of Object.entries(report.materials)) {
+      if (cores.has(id)) table.fightMaterials += amount;
+    }
     if (
       whereFighting(state, content) !== before ||
       report.knockouts > 0 ||
+      report.challenges.some((c) => !c.won) ||
       report.trialAttempts > 0 ||
       report.cleared.length > 0
     ) {
@@ -2412,7 +2760,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     }
     if (t % PROGRESS_SAMPLE_SECONDS < dt) {
       progress.push(
-        progressOf(state, content, t - (t % PROGRESS_SAMPLE_SECONDS), log.dustSpent ?? 0),
+        progressOf(state, content, t - (t % PROGRESS_SAMPLE_SECONDS), log.dustSpent ?? 0, table),
       );
     }
     if (options.probe && options.probeSeconds && t % options.probeSeconds < dt) {
@@ -2445,6 +2793,23 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
       }
     }
     if (maxedWeaponAt === null && maxedWeapon(state, content)) maxedWeaponAt = t;
+    // A new best floor anywhere ends a stretch stuck (DESIGN.md §6 Farming and Challenge).
+    const best = bestFloorSum(state);
+    if (best > table.bestSum) {
+      if (t - table.lastRiseAt > table.stuckLongest) {
+        table.stuckLongest = t - table.lastRiseAt;
+        table.stuckWhere = whereFighting(state, content);
+      }
+      table.bestSum = best;
+      table.lastRiseAt = t;
+    } else if (best < table.bestSum) {
+      table.bestSum = best; // a challenge run put a tier back on floor 1
+    }
+    for (const c of content.challenges) {
+      const done = state.ascensionChallenges.completions[c.id] ?? 0;
+      if (done > (completionsSeen[c.id] ?? 0)) table.completions.push([c.id, t]);
+    }
+    completionsSeen = { ...state.ascensionChallenges.completions };
     for (let level = 2; level <= state.account.level; level++) {
       log.levelAt[level] ??= t;
     }
@@ -2714,6 +3079,56 @@ export function formatProgress(
   return lines.join('\n');
 }
 
+/** The most common value of a list (the first of equals), or '-'. */
+function mostCommon(values: readonly string[]): string {
+  const counts = new Map<string, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  let best: [string, number] | null = null;
+  for (const entry of counts) if (!best || entry[1] > best[1]) best = entry;
+  return best ? `${best[0]} (${best[1]}/${values.length})` : '-';
+}
+
+/**
+ * The table update's systems over every seed (DESIGN.md §14 The sim player's choices), at each
+ * reading hour: floor Challenges won and lost (and the win rate), the longest stretch so far
+ * without a new best floor, the most common team (its roles), Summon Scrolls earned (the starting
+ * one included) and spent, Focus Portal pulls, the expeditions' share of the Cores and of the
+ * tier-weighted gems, and Ascension challenge completions. Medians over the seeds.
+ */
+export function formatTableUpdate(
+  runs: ReadonlyArray<{ seed: number; progress: readonly ProgressSample[] }>,
+  hours: number,
+): string {
+  const lines = [
+    '| Hour | Challenges won / lost (win rate) | Longest stuck | Team (most common) | Summon Scrolls earned / spent | Focus pulls | Trips: share of Cores / gems | Ascension challenges done |',
+    '|---|---|---|---|---|---|---|---|',
+  ];
+  for (const h of progressHours(hours)) {
+    const at = runs
+      .map((r) => r.progress.find((p) => p.t === h * 3600))
+      .filter((p): p is ProgressSample => p !== undefined && p.team !== undefined);
+    if (at.length === 0) continue;
+    const m = (f: (p: ProgressSample) => number): number => median(at.map(f));
+    const won = m((p) => p.challengesWon ?? 0);
+    const lost = m((p) => p.challengesLost ?? 0);
+    const rate = median(
+      at.map((p) => {
+        const all = (p.challengesWon ?? 0) + (p.challengesLost ?? 0);
+        return all > 0 ? (p.challengesWon ?? 0) / all : 0;
+      }),
+    );
+    const pct = (x: number): string => `${Math.round(x * 100)}%`;
+    lines.push(
+      `| ${h} | ${won} / ${lost} (${pct(rate)}) | ${hoursText(m((p) => p.stuckLongest ?? 0))} | ${mostCommon(at.map((p) => p.team ?? '-'))} | ${Math.round(m((p) => p.scrollsEarned ?? 0))} / ${Math.round(m((p) => p.scrollsSpent ?? 0))} | ${m((p) => p.focusPulls ?? 0)} | ${pct(m((p) => p.tripMaterialShare ?? 0))} / ${pct(m((p) => p.tripGemShare ?? 0))} | ${m((p) => p.challengeCompletions ?? 0)} |`,
+    );
+  }
+  lines.push(
+    '',
+    '(medians over the seeds; "Longest stuck" is the longest stretch without a new best floor on any dungeon tier)',
+  );
+  return lines.join('\n');
+}
+
 /** Where one run fought, and its best weapon, at each reading hour. */
 export function formatFightTimeline(progress: readonly ProgressSample[], hours: number): string {
   return progressHours(hours)
@@ -2793,5 +3208,28 @@ export function formatSummary(result: SimResult, content: Content): string {
         .join(', ') || 'none'
     }`,
     `Wishlist: ${s.cards.wishlist.join(', ') || 'empty'}; star dust ${num(have(s, 'star_dust')).toFixed(0)} held, ${(result.log.dustSpent ?? 0).toFixed(0)} spent`,
+    ...(result.log.table ? [formatTableLog(result.log.table, s, content, result.simSeconds)] : []),
+  ].join('\n');
+}
+
+/** The table update's counters of one run, as a few lines (`formatSummary`). */
+export function formatTableLog(
+  table: TableLog,
+  state: GameState,
+  content: Content,
+  simSeconds: number,
+): string {
+  const all = table.challengesWon + table.challengesLost;
+  const open = simSeconds - table.lastRiseAt;
+  const stuck =
+    open > table.stuckLongest
+      ? `${hoursText(open)} at ${whereFighting(state, content)} (still)`
+      : `${hoursText(table.stuckLongest)} before a new best floor at ${table.stuckWhere}`;
+  return [
+    `Floor Challenges: ${table.challengesWon} won, ${table.challengesLost} lost (${all > 0 ? Math.round((table.challengesWon / all) * 100) : 0}%), ${table.manualTries} started by hand; longest stuck ${stuck}`,
+    `Team: ${teamRoles(state, content)} (${[state.cards.loadouts.fighting.main, ...state.cards.loadouts.fighting.supports].filter(Boolean).join(', ')})`,
+    `Scrolls spent: ${table.summonSpent} Summon (${table.focusPulls} at the Focus Portal), ${table.glamourSpent} Glamour; held ${num(have(state, 'summon_scroll')).toFixed(2)} / ${num(have(state, 'glamour_scroll')).toFixed(2)}`,
+    `Expeditions: ${table.trips} trips, ${table.tripMaterials} Core units (fights ${table.fightMaterials}), ${table.tripGems.toExponential(1)} weighted gems`,
+    `Ascension challenges: ${table.challengeRuns} runs, ${table.challengesLeft} left, completed ${table.completions.map(([id, at]) => `${id} at ${hoursText(at)}`).join(', ') || 'none'}`,
   ].join('\n');
 }

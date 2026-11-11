@@ -73,18 +73,23 @@ describe('balance sim: greedy buyer', () => {
     expect(Number.isFinite(oak!.eta!)).toBe(true);
     // Plots, slots and expansions are gone.
     expect(candidates.some((c) => c.id.startsWith('expand:'))).toBe(false);
-    // Nothing earns Glamour Scrolls before a kill, so a Wardrobe Gate pull is out of reach.
-    const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate');
+    // Nothing earns Glamour Scrolls before a kill, so a Wardrobe Gate 10-pull is out of reach.
+    const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate:10');
     expect(gate?.eta === null || gate!.eta! > 0).toBe(true);
   });
 
-  it('buys the cheapest affordable purchase first, then keeps buying', () => {
-    // The price of an Oak level buys it (the best gain per Money); a mine level costs less.
+  it('buys the best gain per Money first, then keeps buying', () => {
+    // The price of an Oak level buys a level of the line with the best gain per Money. The
+    // Copper Quarry's gems also pay for Sharpen (`trainingFeed`), which puts it just ahead.
     const state = rich(freshState(), 'money', firstLevel('tree', 'oak'));
+    const money = buyerCandidates(state, content).filter(
+      (c) => c.kind === 'economy' && c.prices[0]!.resource === 'money',
+    );
+    const per = (c: (typeof money)[number]): number => c.gain! / c.prices[0]!.amount.toNumber();
+    const best = [...money].sort((a, b) => per(b) - per(a))[0]!;
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought).toContain('tree:oak');
-    expect(after.production.treeLevels['oak']).toBe(1);
-    expect(after.resources['money']!.toNumber()).toBe(0);
+    expect(bought.find((id) => /^(mine|tree|tool):/.test(id))).toBe(best.id);
+    expect(after.resources['money']!.lt(state.resources['money']!)).toBe(true);
   });
 
   it('summons from a portal once a pull is affordable', () => {
@@ -669,8 +674,8 @@ describe('balance sim: idle profile', () => {
   it('buys only at its check-ins, every 30 minutes', () => {
     // The starter pull and the daily scrolls are spent at the first check-in (t = 0); scrolls
     // earned afterwards wait for the next one.
-    const daily = loadContent().scrolls.daily;
-    const first = Math.floor(daily.summon.toNumber() + 1) + Math.floor(daily.glamour.toNumber());
+    const first = runSim(loadContent(), { hours: 0.01, seed: 1, profile: 'idle' }).log.summons;
+    expect(first).toBeGreaterThan(0);
     const before = runSim(loadContent(), { hours: 0.45, seed: 1, profile: 'idle' });
     expect(before.simSeconds).toBe(0.45 * 3600);
     expect(before.simSeconds).toBeLessThan(IDLE_CHECKIN_SECONDS);
@@ -706,10 +711,10 @@ describe('balance sim: floors', () => {
       return state;
     };
     // A strong loadout wins floor 4 with room to spare: auto-challenge goes back on.
-    const strong = chooseAutoChallenge(knocked(), withDps(1e6, floors));
+    const strong = chooseAutoChallenge(knocked(), withDps(1e6, floors)).state;
     expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(true);
     // A bare-handed one would fall first: it keeps farming.
-    const weak = chooseAutoChallenge(knocked(), withDps(0.01, floors));
+    const weak = chooseAutoChallenge(knocked(), withDps(0.01, floors)).state;
     expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(false);
   });
 
