@@ -351,6 +351,9 @@ export interface CombatState {
    *  fighting loadout, main then supports; duel.ts). Save format 27; it replaced the shared
    *  `loadoutDamage` pool. */
   cardDamage: Record<string, Decimal>;
+  /** Team card ids knocked out on the floor being fought (DESIGN.md §6 card duel): they stay out
+   *  until the floor is won, even when their max health rises meanwhile. Save format 27. */
+  cardsOut: string[];
 }
 
 /** A running Challenge (DESIGN.md §6 Farming and Challenge). */
@@ -388,6 +391,7 @@ export function initialCombat(): CombatState {
     challenge: null,
     challengeWaitSeconds: 0,
     cardDamage: {},
+    cardsOut: [],
   };
 }
 
@@ -554,6 +558,7 @@ export function cloneCombat(c: CombatState): CombatState {
     challenge: c.challenge ? { ...c.challenge } : null,
     challengeWaitSeconds: c.challengeWaitSeconds,
     cardDamage: { ...c.cardDamage },
+    cardsOut: [...c.cardsOut],
   };
 }
 

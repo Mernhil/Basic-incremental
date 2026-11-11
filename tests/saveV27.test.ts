@@ -21,7 +21,7 @@ type Out = Record<string, Record<string, unknown>>;
 
 /** The parts of a serialized state that format 27 added, so the rest can be compared with 0.6.0. */
 const V27_TOP = ['summon', 'presets', 'discoveredBonds', 'expeditions', 'ascensionChallenges'];
-const V27_COMBAT = ['enemyIndex', 'challenge', 'challengeWaitSeconds', 'cardDamage'];
+const V27_COMBAT = ['enemyIndex', 'challenge', 'challengeWaitSeconds', 'cardDamage', 'cardsOut'];
 
 describe('v26 -> v27 (the table update)', () => {
   it('is the current format', () => {
@@ -74,6 +74,7 @@ describe('v26 -> v27 (the table update)', () => {
       challenge: null,
       challengeWaitSeconds: 0,
       cardDamage: {},
+      cardsOut: [],
     });
     expect(out.summon).toEqual({ focusKind: null, dailyClaimedDay: null });
     expect(out.presets).toEqual({
@@ -150,6 +151,7 @@ describe('format 27 state', () => {
       challenge: null,
       challengeWaitSeconds: 0,
       cardDamage: {},
+      cardsOut: [],
     });
     expect(state.presets.production.logging).toEqual([null, null, null]);
     expect(state.expeditions.trips).toEqual([]);
@@ -198,6 +200,7 @@ describe('format 27 state', () => {
     const state = filled();
     state.combat.challenge = { dungeonId: 'gone', difficulty: 'normal', elapsedSeconds: 1 };
     state.combat.cardDamage = { ember_squire: new Decimal(1), dawnblade_regent: new Decimal(1) };
+    state.combat.cardsOut = ['ember_squire', 'ember_squire', 'dawnblade_regent', 'cave_digger'];
     state.summon.focusKind = 'twin_blades';
     state.presets.dungeons['gone'] = { main: 'ember_squire', supports: [null, null, null] };
     state.presets.dungeons['ember_crypt'] = {
@@ -220,6 +223,7 @@ describe('format 27 state', () => {
     const loaded = readSave(createSaveText(state, 1), content).state;
     expect(loaded.combat.challenge).toBeNull();
     expect(Object.keys(loaded.combat.cardDamage)).toEqual(['ember_squire']);
+    expect(loaded.combat.cardsOut).toEqual(['ember_squire']);
     expect(loaded.summon.focusKind).toBeNull();
     expect(loaded.presets.dungeons).toEqual({
       mossy_cellar: { main: 'ember_squire', supports: [null, null, null] },

@@ -110,6 +110,8 @@ export const serializedStateSchema = z.object({
       .nullable(),
     challengeWaitSeconds: z.number().min(0),
     cardDamage: z.record(z.string(), decimalText),
+    /** Format 27 (package 7 fix): the team cards knocked out on this floor. */
+    cardsOut: z.array(z.string()).default([]),
   }),
   /** The fighting gauge. Format 26 saves written before the workers kept the old logging and
    *  mining gauges here too; parsing strips them (they moved to `production.harvestGauges`). */
@@ -270,6 +272,7 @@ export function serializeState(state: GameState): SerializedState {
       cardDamage: Object.fromEntries(
         Object.entries(state.combat.cardDamage).map(([id, d]) => [id, decimalToString(d)]),
       ),
+      cardsOut: [...state.combat.cardsOut],
     },
     bursts: cloneBursts(state.bursts),
     activeDungeonId: state.activeDungeonId,
@@ -401,6 +404,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     cardDamage: Object.fromEntries(
       Object.entries(saved.combat.cardDamage).map(([id, d]) => [id, new Decimal(d)]),
     ),
+    cardsOut: [...saved.combat.cardsOut],
   };
   state.bursts = cloneBursts(saved.bursts);
   const active = saved.activeDungeonId;
@@ -725,6 +729,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
   state.combat.cardDamage = Object.fromEntries(
     Object.entries(state.combat.cardDamage).filter(([id]) => isFighting(id)),
   );
+  state.combat.cardsOut = [...new Set(state.combat.cardsOut.filter(isFighting))];
   const focusKind = saved.summon.focusKind;
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,

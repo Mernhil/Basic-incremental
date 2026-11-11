@@ -161,6 +161,7 @@ export function ascend(
     training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     cardDamage: {},
+    cardsOut: [],
     knockoutSeconds: 0,
     enemyIndex: 0,
     challenge: null,

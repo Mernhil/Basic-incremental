@@ -5,6 +5,7 @@ import {
   buildTeam,
   cardHealth,
   cardSkill,
+  cloneState,
   collectModifiers,
   Decimal,
   duelEnemy,
@@ -143,6 +144,23 @@ describe('who the enemy hits', () => {
     const later = advance(after, walled, 3_000, rng);
     expect(hitters(later.report).has('ember_squire')).toBe(false);
     expect(hitters(later.report).has('militia_picket')).toBe(true);
+  });
+
+  it('keeps a knocked-out card out when its max health rises (a level-up) before the floor is won', () => {
+    const state = teamOf([...FOUR], walled);
+    const lead = team(state, walled)[0]!;
+    state.combat.cardDamage = { ember_squire: lead.maxHealth.sub(1e-6) };
+    const out = advance(state, walled, 4_000, rng);
+    expect(out.report.cardKnockouts).toEqual(['ember_squire']);
+    // Fighting XP levels the card up: its max health rises above the damage it took.
+    const grown = cloneState(out.state);
+    grown.cards.owned['ember_squire']!.level = 15;
+    expect(team(grown, walled)[0]!.maxHealth.gt(taken(grown, 'ember_squire'))).toBe(true);
+    const later = advance(grown, walled, 10_000, rng);
+    expect(teamView(later.state, walled)[0]!.knockedOut).toBe(true);
+    expect(later.report.bossAttacks.some((e) => e.cardId === 'ember_squire')).toBe(false);
+    expect(hitters(later.report).has('ember_squire')).toBe(false);
+    expect(later.report.cardKnockouts).not.toContain('ember_squire');
   });
 
   it('brings every card back at full health when the floor is cleared', () => {

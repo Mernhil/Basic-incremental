@@ -47,6 +47,9 @@ import {
   gaugeAt,
   healTeam,
   isStanding,
+  knockOut,
+  reviveTeam,
+  type Damaged,
   nextHealAt,
   secondsToDealTeam,
   secondsToHits,
@@ -250,7 +253,7 @@ export function startFloorChallenge(state: GameState, content: Content): CombatR
 /** A Challenge begins (a state being built): fresh floor, full health, timer at 0. */
 function beginChallenge(next: GameState, dungeonId: string, difficulty: Difficulty): void {
   freshFloor(next);
-  next.combat.cardDamage = {};
+  reviveTeam(next);
   next.combat.challenge = { dungeonId, difficulty, elapsedSeconds: 0 };
 }
 
@@ -1155,7 +1158,7 @@ export function secondsToKnockoutNow(
   const interval = stage.intervalSeconds;
   const clock = state.stats.playTimeMs / 1000;
   const lethal = teamLethalAttack(
-    state.combat.cardDamage,
+    state,
     team,
     stage.attack,
     bossAttacksBy(clock, interval),
@@ -1186,13 +1189,12 @@ export function survivalSeconds(
   if (teamMaxHealth(team).lte(0) || normal.lte(0)) return null;
   // The enemy takes the cards down one at a time, guards first (DESIGN.md §6 card duel); a
   // debuffer's weaken counts while it stands. Heals are left out, so this is a floor.
-  const down: Record<string, Decimal> = {};
-  const view = { ...state, combat: { ...state.combat, cardDamage: down } };
+  const view: Damaged = { combat: { cardDamage: {}, cardsOut: [] } };
   let attacks = 0;
   for (let target = enemyTarget(view, team); target; target = enemyTarget(view, team)) {
     const hit = normal.mul(weakenFactor(view, team));
     attacks += meanAttacksToKnockout(target.maxHealth, hit, pattern);
-    down[target.id] = target.maxHealth;
+    knockOut(view, target);
   }
   // A fight starts between two hits: on average half an interval before the next one.
   return (attacks - 0.5) * stage.intervalSeconds;
@@ -1246,7 +1248,7 @@ export function advanceCombat(
     left -= wait;
     if (next.combat.knockoutSeconds <= EPSILON) {
       next.combat.knockoutSeconds = 0;
-      next.combat.cardDamage = {};
+      reviveTeam(next);
     } else return;
   }
   const dungeon = content.dungeonById.get(id);
@@ -1430,7 +1432,7 @@ function fightDungeon(
   const onCleared = (stage: FightStage, clears: number): void => {
     // The team catches its breath between floors: every card comes back, at full health
     // (DESIGN.md §6 card duel).
-    next.combat.cardDamage = {};
+    reviveTeam(next);
     report.floorsCleared += clears;
     if (!next.combat.challenge) return;
     // Victory (DESIGN.md §6 Farming and Challenge): the best floor rises and the farming moves
@@ -1479,7 +1481,7 @@ function fightDungeon(
     });
     next.combat.challenge = null;
     freshFloor(next);
-    next.combat.cardDamage = {};
+    reviveTeam(next);
     if (floorPosition(next, dungeon).autoChallenge) {
       next.combat.challengeWaitSeconds = content.combat.challenge.autoWaitSeconds;
     }
@@ -1554,7 +1556,7 @@ function fightDungeon(
     const standing = standingCards(next, team);
     if (standing.length === 0) {
       // Nobody stands (a state from outside the fight): the team starts the floor again.
-      next.combat.cardDamage = {};
+      reviveTeam(next);
       continue;
     }
     const target = enemyTarget(next, team);
@@ -1749,7 +1751,7 @@ function fightDungeon(
       target!.id,
     );
     settled = lethal;
-    next.combat.cardDamage[target!.id] = target!.maxHealth;
+    knockOut(next, target!);
     report.cardKnockouts.push(target!.id);
     if (!lastCard) {
       applyHeals(standing, from, clock);
@@ -1773,11 +1775,11 @@ function fightDungeon(
     if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
       next.combat.knockoutSeconds = ko - wait;
       for (const card of team) {
-        if (card.maxHealth.gt(0)) next.combat.cardDamage[card.id] = card.maxHealth;
+        if (card.maxHealth.gt(0)) knockOut(next, card);
       }
       return 0;
     }
-    next.combat.cardDamage = {};
+    reviveTeam(next);
   }
   return 0;
 }

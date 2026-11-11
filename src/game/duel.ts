@@ -284,9 +284,9 @@ export function nextHealAt(cards: readonly TeamCard[], t: number): number {
 
 // ---- health ----------------------------------------------------------------------------------
 
-/** Anything holding the team cards' damage: a state, or a view of one. */
+/** Anything holding the team cards' damage and who is out: a state, or a view of one. */
 export interface Damaged {
-  combat: { cardDamage: Record<string, Decimal> };
+  combat: { cardDamage: Record<string, Decimal>; cardsOut: string[] };
 }
 
 /** Damage a card's health has taken (0 = full). */
@@ -294,10 +294,30 @@ export function damageTaken(state: Damaged, id: string): Decimal {
   return state.combat.cardDamage[id] ?? new Decimal(0);
 }
 
-/** Whether a card still fights: bare hands always; a card while its health is above 0. */
+/**
+ * Whether a card still fights: bare hands always; a card until it is knocked out. Being out is
+ * the saved list `combat.cardsOut`, not the damage against the max health, so a card whose max
+ * health rises while it is out (a level-up from fighting XP) stays out until the floor is won
+ * (DESIGN.md §6 card duel).
+ */
 export function isStanding(state: Damaged, card: TeamCard): boolean {
   if (card.maxHealth.lte(0)) return true;
+  if (state.combat.cardsOut.includes(card.id)) return false;
   return damageTaken(state, card.id).lt(card.maxHealth);
+}
+
+/** Knocks a card out (a state being built): its health is empty and it stays out until the floor
+ *  is won. */
+export function knockOut(next: Damaged, card: TeamCard): void {
+  next.combat.cardDamage[card.id] = card.maxHealth;
+  if (!next.combat.cardsOut.includes(card.id)) next.combat.cardsOut.push(card.id);
+}
+
+/** Every card back at full health and standing (a state being built): a cleared floor, a new
+ *  Challenge, the end of a knockout. */
+export function reviveTeam(next: Damaged): void {
+  next.combat.cardDamage = {};
+  next.combat.cardsOut = [];
 }
 
 /** The cards still fighting. */
@@ -373,13 +393,15 @@ export function teamHitRate(team: readonly TeamCard[]): number {
  * still standing). `normal` is the floor's normal attack before weaken; heals are left out.
  */
 export function teamLethalAttack(
-  damage: Record<string, Decimal>,
+  state: Damaged,
   team: readonly TeamCard[],
   normal: Decimal,
   after: number,
   pattern: BossPattern,
 ): number {
-  const view: Damaged = { combat: { cardDamage: { ...damage } } };
+  const view: Damaged = {
+    combat: { cardDamage: { ...state.combat.cardDamage }, cardsOut: [...state.combat.cardsOut] },
+  };
   let k = after;
   for (let target = enemyTarget(view, team); target; target = enemyTarget(view, team)) {
     const hit = normal.mul(weakenFactor(view, team));
@@ -387,7 +409,7 @@ export function teamLethalAttack(
     const pool = Decimal.max(target.maxHealth.sub(damageTaken(view, target.id)), 0);
     k = lethalBossAttack(pool, hit, k, pattern);
     if (k >= Number.MAX_SAFE_INTEGER) return k;
-    view.combat.cardDamage[target.id] = target.maxHealth;
+    knockOut(view, target);
   }
   return k;
 }
