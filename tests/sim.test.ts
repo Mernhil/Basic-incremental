@@ -30,7 +30,7 @@ import {
   formatRunTable,
   RUN_MILESTONES,
   IDLE_CHECKIN_SECONDS,
-  choosePush,
+  chooseAutoChallenge,
   type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
@@ -539,7 +539,6 @@ describe('balance sim: run', () => {
     const first = content.dungeons[0]!;
     state.combat.floors[first.id] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: {
         normal: { floor: first.floors, best: first.floors },
@@ -693,24 +692,23 @@ describe('balance sim: idle profile', () => {
 });
 
 describe('balance sim: floors', () => {
-  it('pushes again once the next floor is one the loadout wins, and not into a wall', () => {
+  it('turns auto-challenge back on once the next floor is one the loadout wins, not into a wall', () => {
     const floors = floorsContent;
     const knocked = (): GameState => {
       const state = freshState();
       state.combat.floors['mossy_cellar'] = {
         difficulty: 'normal',
-        mode: 'farm',
         autoChallenge: false,
         tiers: { normal: { floor: 3, best: 3 } },
       };
       return state;
     };
-    // A strong loadout wins floor 4 with room to spare: back to pushing.
-    const strong = choosePush(knocked(), withDps(1e6, floors));
-    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).mode).toBe('push');
+    // A strong loadout wins floor 4 with room to spare: auto-challenge goes back on.
+    const strong = chooseAutoChallenge(knocked(), withDps(1e6, floors));
+    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(true);
     // A bare-handed one would fall first: it keeps farming.
-    const weak = choosePush(knocked(), withDps(0.01, floors));
-    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).mode).toBe('farm');
+    const weak = chooseAutoChallenge(knocked(), withDps(0.01, floors));
+    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(false);
   });
 
   it('reaches the Ember Crypt through the ten floors of the Mossy Cellar', () => {

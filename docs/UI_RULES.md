@@ -71,7 +71,8 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Default · in game] **Floors, interim** (Claude, 2026-11-10; DESIGN §6 Dungeon floors). Until the floors UI is designed in a 5-options round (the arena with waves, the floor strip, the tier picker, the depth readout), the Dungeons screen shows floors with the least that works:
   - The line under the HP bar reads the dungeon, the difficulty, the floor ("Floor 3 / 10", or "Depth 12" in the endless depths), which enemy of the wave the hits are on ("Enemy 2 / 4") or "Mini-boss" / "Boss", and the best floor.
   - The existing arena shows the wave one enemy at a time: its name and HP bar, and, until the enemy art exists, a plain labelled box in the boss's place. The boss keeps its drawing.
-  - The Dungeons tab of the drawer holds, for the dungeon being fought, the same line as plain text, a Push / Farm toggle with a one-line explanation, and the difficulty selector: Normal, Hard, Nightmare and Endless, a locked one greyed out with a tooltip naming the boss to beat. Each dungeon row shows its difficulty (when not Normal), its floor or depth and its stars earned of the most it can have ("★ 6 / 36").
+  - Under the HP bar, a Challenge row (DESIGN §6 Farming and Challenge, table update package 2): while farming, a gold "Challenge floor n" button (or the auto-challenge wait after a loss); while a Challenge runs, its timer as a draining bar with the seconds left. When a Challenge ends, a plain banner across the top of the arena reads "Victory!" and the floor beaten, or "Defeat" with why (time or health) and the enemy HP left.
+  - The Dungeons tab of the drawer holds, for the dungeon being fought, the same line as plain text, the Challenge button and the auto-challenge switch with a line on what is happening (the floor farmed, the Challenge's time left or the wait), and the difficulty selector: Normal, Hard, Nightmare and Endless, a locked one greyed out with a tooltip naming the boss to beat. Each dungeon row shows its difficulty (when not Normal), its floor or depth and its stars earned of the most it can have ("★ 6 / 36").
 
 - [Default · in game] **Stage stars, interim** (Claude, 2026-11-11; DESIGN §6 Stage stars, Overflow). Until the one-table redesign, the stars use the same plain floor controls:
   - Under the difficulty selector, a stage line names the stage the floor belongs to ("Stage: floor 10" on a stage, "Next stage: floor 20" on a wave floor, "Depths follow the Nightmare stage" in the depths), its star level ("★3 Silver") and the kills to the next level ("688 kills to Gold"), with a tooltip on what stars give.
@@ -91,7 +92,7 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user.
 
 Defaults by Claude, 2026-11-10 (to be replaced by the floors UI, Scope 3 phase 4):
 
-- §2 Floors, interim: the plain-text floor line, the Push / Farm toggle, the difficulty selector and the labelled placeholder for enemies without art.
+- §2 Floors, interim: the plain-text floor line, the Challenge row, banner, button and auto-challenge switch, the difficulty selector and the labelled placeholder for enemies without art.
 - §2 Stage stars, interim: the stage line, the Overflow toggle and the plain stage map table.
 
 Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.

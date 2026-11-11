@@ -29,6 +29,7 @@ import {
   type CardState,
   type GameState,
   type OwnedCard,
+  isOnTrip,
 } from './state';
 
 /**
@@ -61,6 +62,8 @@ export type CardFailure =
   | 'duplicate'
   /** The loadout would cost more than the job's cost cap. */
   | 'over-cost-cap'
+  /** The card is away on an expedition (DESIGN.md §15). */
+  | 'on-expedition'
   /** Not a valid slot. */
   | 'invalid-slot'
   /** No star-up (already ★6) or no tier-up (already at the card's top tier) from this rank. */
@@ -427,6 +430,7 @@ export function loadoutProblem(
     if (!card) return 'unknown';
     if (!state.cards.owned[id]) return 'not-owned';
     if (card.job !== job) return 'wrong-job';
+    if (isOnTrip(state, id)) return 'on-expedition';
   }
   if (new Set(ids).size !== ids.length) return 'duplicate';
   if (loadoutCost(content, loadout) > loadoutCostCap(state, content, job, modifiers)) {

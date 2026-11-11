@@ -932,6 +932,40 @@
       }
     },
     {
+      "id": "bond_found",
+      "name": "Bond Found",
+      "description": "Discover your first bond.",
+      "condition": {
+        "kind": "bonds_found",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "15"
+          }
+        ]
+      }
+    },
+    {
+      "id": "first_expedition",
+      "name": "First Expedition",
+      "description": "Bring a card home from a trip.",
+      "condition": {
+        "kind": "expeditions_done",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "25"
+          }
+        ]
+      }
+    },
+    {
       "id": "hard_won",
       "name": "Hard Won",
       "description": "Beat the last-floor boss of a dungeon on Hard.",

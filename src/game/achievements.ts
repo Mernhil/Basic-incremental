@@ -162,6 +162,10 @@ function measure(
         state.production.forge.recipe !== null && forgeWorker(state, content) !== null;
       return { value: working ? 1 : 0, target: 1 };
     }
+    case 'bonds_found':
+      return { value: state.discoveredBonds.length, target: condition.count };
+    case 'expeditions_done':
+      return { value: state.expeditions.completed, target: condition.count };
     case 'wishlist':
       return { value: state.cards.wishlist.length, target: condition.count };
     case 'wishlist_owned':

@@ -75,6 +75,7 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'tool_levels':
     case 'depth':
     case 'forge_working':
+    case 'expeditions_done':
     case 'producers':
     case 'milestone':
     case 'gem_mastery':
@@ -95,6 +96,7 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'card_tier':
     case 'card_stars':
     case 'full_loadout':
+    case 'bonds_found':
       return 'cards';
     case 'full_set':
     case 'cosmetics_owned':

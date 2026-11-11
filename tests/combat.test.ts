@@ -56,7 +56,14 @@ import training from '../src/data/content/training.json';
 import coins from '../src/data/content/coins.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
 import items from '../src/data/content/items.json';
-import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
+import {
+  constantRng,
+  bareState,
+  plainContent as content,
+  freshState,
+  withAutoChallenge,
+  withDps,
+} from './helpers';
 
 const rng = constantRng(0.5);
 const [mossy, ember, frost] = content.dungeons as [
@@ -136,7 +143,8 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
   it('the first kill clears the dungeon and unlocks the next dungeon and a mine', () => {
     const maxHp = bossMaxHp(mossy);
     const content = withDps(maxHp);
-    const start = freshState();
+    // A new game challenges its first floor by itself (DESIGN.md §6 Auto-challenge).
+    const start = withAutoChallenge(freshState(), true);
     expect(isProducerUnlocked(start, content, 'mining', 'iron_deeps')).toBe(false);
     const { state, report } = advance(start, content, 1000, rng);
     expect(report.bossKills).toBe(1);
@@ -263,6 +271,8 @@ describe('drops', () => {
     const purse = dungeon.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
     const wage = dungeon.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
     const state = bareState();
+    // The first floor's Challenge is under way, its boss nearly dead.
+    state.combat.challenge = { dungeonId: dungeon.id, difficulty: 'normal', elapsedSeconds: 0 };
     state.bossHp = new Decimal(1e-6);
     const first = advance(state, content, 1000, constantRng(0.5));
     expect(first.report.cleared).toContain(dungeon.id);
