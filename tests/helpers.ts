@@ -1,5 +1,13 @@
 import { JOBS, loadContent, type Content } from '../src/data';
-import { createInitialState, Decimal, emptyCardLoadout, type GameState } from '../src/game';
+import {
+  createInitialState,
+  Decimal,
+  emptyCardLoadout,
+  stageFloors,
+  stageKey,
+  STAR_DIFFICULTIES,
+  type GameState,
+} from '../src/game';
 
 /**
  * The bundled content with the trees' and mines' base rates pinned to the round numbers the rule
@@ -49,6 +57,40 @@ function pinStarBar(bundled: Content): Content {
 }
 
 /**
+ * Stage stars (DESIGN.md §6) with no damage, loot or chests: rule tests that count exact damage,
+ * drops and crystals are not moved by the star levels their kills reach. Star tests use the real
+ * numbers.
+ */
+export function neutralStars(base: Content): Content {
+  const stageStars = {
+    ...base.combat.stageStars,
+    damagePerLevel: 0,
+    lootPerLevel: 0,
+    chests: { ...base.combat.stageStars.chests, rewards: [] },
+  };
+  return { ...base, combat: { ...base.combat, stageStars } };
+}
+
+/**
+ * Every stage of every dungeon at the star level that opens its overflow switch, with the switch
+ * on (DESIGN.md §6 Overflow): leftover damage from a kill carries on everywhere. Mutates and
+ * returns `state`. Use it with `neutralStars` content so the stars add nothing else.
+ */
+export function withOverflow(state: GameState, base: Content): GameState {
+  const kills = base.combat.stageStars.kills[base.combat.stageStars.overflowFromLevel - 1]!;
+  for (const dungeon of base.dungeons) {
+    for (const difficulty of STAR_DIFFICULTIES) {
+      for (const floor of stageFloors(base, dungeon)) {
+        const key = stageKey(dungeon.id, difficulty, floor);
+        state.combat.stageKills[key] = Math.max(kills, state.combat.stageKills[key] ?? 0);
+        state.combat.overflow[key] = true;
+      }
+    }
+  }
+  return state;
+}
+
+/**
  * Every dungeon pinned to one floor: its boss (DESIGN.md §6 Dungeon floors). The boss rule tests
  * (damage, drops, knockouts, medals) then fight the boss from the first second, as they did
  * before floors, and tuning the floor counts does not move them. Floor tests use `floorsContent`.
@@ -87,13 +129,12 @@ export const plainContent: Content = {
   progression: {
     ...content.progression,
     gemMastery: { ...content.progression.gemMastery, perTier: [] },
-    bossMastery: { ...content.progression.bossMastery, perTier: [] },
     trialMastery: { ...content.progression.trialMastery, perTier: [] },
   },
   mines: plainMines,
   mineById: new Map(plainMines.map((m) => [m.id, m])),
   combat: {
-    ...content.combat,
+    ...neutralStars(content).combat,
     crit: { chance: 0, damage: new Decimal(1) },
   },
 };

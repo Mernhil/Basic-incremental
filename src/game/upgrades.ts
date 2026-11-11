@@ -1,5 +1,6 @@
 import type { Content, ModifierData, Upgrade, UpgradeUnlock } from '../data';
 import { effectiveDamage } from './combat';
+import { stageKey } from './floors';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, mineLevel, pay, producerRate, treeLevel, type Price } from './production';
@@ -104,7 +105,7 @@ export function keepPermanentUpgrades(state: GameState, content: Content): GameS
   };
 }
 
-function unlockMet(state: GameState, u: UpgradeUnlock): boolean {
+function unlockMet(state: GameState, content: Content, u: UpgradeUnlock): boolean {
   switch (u.kind) {
     case 'treeLevel':
       return treeLevel(state, u.tree) >= u.level;
@@ -112,8 +113,12 @@ function unlockMet(state: GameState, u: UpgradeUnlock): boolean {
       return mineLevel(state, u.mine) >= u.level;
     case 'gemMastery':
       return (state.mastery.gemTiers[u.gem] ?? 0) >= u.tier;
-    case 'bossKills':
-      return (state.combat.kills[u.dungeon] ?? 0) >= u.kills;
+    case 'bossKills': {
+      // Kills of the dungeon's boss: its Normal last-floor stage (DESIGN.md §6 Stage stars).
+      const dungeon = content.dungeonById.get(u.dungeon);
+      const key = dungeon ? stageKey(dungeon.id, 'normal', dungeon.floors) : null;
+      return (key ? (state.combat.stageKills[key] ?? 0) : 0) >= u.kills;
+    }
     case 'lifetimeMoney':
       return state.upgrades.moneyEarned.gte(u.amount);
   }
@@ -140,9 +145,9 @@ export function unlockText(content: Content, u: UpgradeUnlock): string {
 }
 
 /** Status of one upgrade: owned wins, then the threshold decides hidden / available. */
-export function upgradeStatus(state: GameState, upgrade: Upgrade): UpgradeStatus {
+export function upgradeStatus(state: GameState, content: Content, upgrade: Upgrade): UpgradeStatus {
   if (state.upgrades.owned.includes(upgrade.id)) return 'owned';
-  return unlockMet(state, upgrade.unlock) ? 'available' : 'hidden';
+  return unlockMet(state, content, upgrade.unlock) ? 'available' : 'hidden';
 }
 
 function previewOf(
@@ -189,7 +194,7 @@ export function upgradeShelf(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): ShelfItem[] {
   return content.upgrades.upgrades.map((u) => {
-    const status = upgradeStatus(state, u);
+    const status = upgradeStatus(state, content, u);
     const cost: Price = { resource: u.cost.resource, amount: u.cost.amount };
     return {
       id: u.id,
@@ -210,7 +215,7 @@ export function upgradeShelf(
 export function buyUpgrade(state: GameState, content: Content, id: string): UpgradeBuyResult {
   const upgrade = content.upgradeById.get(id);
   if (!upgrade) return { ok: false, reason: 'unknown' };
-  const status = upgradeStatus(state, upgrade);
+  const status = upgradeStatus(state, content, upgrade);
   if (status === 'owned') return { ok: false, reason: 'owned' };
   if (status === 'hidden') return { ok: false, reason: 'locked' };
   const cost: Price = { resource: upgrade.cost.resource, amount: upgrade.cost.amount };

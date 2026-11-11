@@ -3,6 +3,7 @@ import {
   ascend,
   ascensionPreview,
   bossAttackDps,
+  fightStage,
   bossMaxHp,
   buyStarlightItem,
   collectModifiers,
@@ -42,7 +43,7 @@ function progressedRun(): GameState {
   state.production.mineLevels = { copper_quarry: 30 };
   state.production.unlockedTrees = ['ironbark'];
   state.clearedDungeons = ['mossy_cellar'];
-  state.combat.kills = { mossy_cellar: 120 };
+  state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
   state.combat.loadoutDamage = new Decimal(50);
   state.bursts.logging = { gauge: 12, timer: 0.5 };
   state.bossHp = new Decimal(123);
@@ -194,7 +195,7 @@ describe('ascend', () => {
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.combat.kills).toEqual({ mossy_cellar: 120 });
+    expect(s.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 120 });
     expect(s.cards.owned['ember_squire']!.level).toBe(15);
     expect(s.cards.loadouts).toEqual(before.cards.loadouts);
     expect(s.cosmetics.owned['holo_hex']).toBeDefined();
@@ -292,13 +293,19 @@ describe('Starlight shop', () => {
   });
 });
 
-describe('bosses grow with prestige (DESIGN.md §9, §6)', () => {
-  it('scales HP and attack slowly by the prestige count', () => {
+describe('enemies do not grow with Ascension (DESIGN.md §6)', () => {
+  it('keeps every floor, its attack and its purse as they are after Ascensions', () => {
+    const fresh = freshState();
+    const ascended = freshState();
+    ascended.prestigeCount = 4;
+    const at = (s: typeof fresh) => fightStage(s, content, 'mossy_cellar', [])!;
+    expect(at(ascended).hp.eq(at(fresh).hp)).toBe(true);
+    expect(at(ascended).attack.eq(at(fresh).attack)).toBe(true);
+    expect(at(ascended).scale).toEqual(at(fresh).scale);
     const d = content.dungeons[0]!;
-    const growth = 1 + d.boss.hpScalingPerPrestige;
-    expect(bossMaxHp(d, 2).toNumber()).toBeCloseTo(d.boss.hp.toNumber() * growth ** 2, 6);
-    expect(bossAttackDps(d, 2, []).toNumber()).toBeCloseTo(
-      (d.boss.attack.damage.toNumber() * growth ** 2) / d.boss.attack.intervalSeconds,
+    expect(bossMaxHp(d).eq(d.boss.hp)).toBe(true);
+    expect(bossAttackDps(d, []).toNumber()).toBeCloseTo(
+      d.boss.attack.damage.toNumber() / d.boss.attack.intervalSeconds,
       9,
     );
   });

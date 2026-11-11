@@ -26,19 +26,23 @@ import {
 import { devSetFloor } from '../src/game/dev';
 import { chooseFight, MILESTONES } from '../scripts/sim/sim';
 import { floorParts } from '../src/renderer/src/pages/dungeonsModel';
-import { constantRng, floorsContent, freshState, withBossAttack, withDps } from './helpers';
+import {
+  constantRng,
+  floorsContent,
+  freshState,
+  neutralStars,
+  withBossAttack,
+  withDps,
+  withOverflow,
+} from './helpers';
 
 /**
  * Difficulty tiers, endless depths, harder Ascensions and the three new dungeons (DESIGN.md §6).
  * The shipped floor counts, with crits and mastery bonuses off.
  */
 const plain: Content = {
-  ...floorsContent,
-  progression: {
-    ...floorsContent.progression,
-    bossMastery: { ...floorsContent.progression.bossMastery, perTier: [] },
-  },
-  combat: { ...floorsContent.combat, crit: { chance: 0, damage: new Decimal(1) } },
+  ...neutralStars(floorsContent),
+  combat: { ...neutralStars(floorsContent).combat, crit: { chance: 0, damage: new Decimal(1) } },
 };
 const harmless = (base: Content): Content => withBossAttack(base, 'mossy_cellar', 1e-30, 10);
 const cellar = plain.dungeonById.get('mossy_cellar')!;
@@ -58,7 +62,14 @@ const run = (state: GameState, content: Content, seconds: number, rng = constant
 
 describe('difficulty tiers', () => {
   it('reads what Hard and Nightmare multiply from the data: a thousand a tier', () => {
-    expect(difficultyScale(plain, 'normal')).toEqual({ hp: 1, attack: 1, purse: 1, material: 1 });
+    expect(difficultyScale(plain, 'normal')).toEqual({
+      hp: 1,
+      attack: 1,
+      purse: 1,
+      material: 1,
+      wage: 1,
+      xp: 1,
+    });
     expect(difficultyScale(plain, 'hard')).toMatchObject({ hp: 1000, attack: 1000 });
     expect(difficultyScale(plain, 'nightmare')).toMatchObject({ hp: 1e6, attack: 1e6 });
     // The endless depths start from Nightmare's numbers.
@@ -106,9 +117,9 @@ describe('difficulty tiers', () => {
   });
 
   it('unlocks Hard by beating the Normal boss, Nightmare by the Hard one, the depths by Nightmare', () => {
-    // One hit kills anything: the first hit takes the whole Normal tier.
+    // One hit kills anything: with overflow on, the first hit takes the whole Normal tier.
     const content = harmless(withDps(1e40, plain));
-    let state = run(inCellar(content), content, 1.01).state;
+    let state = run(withOverflow(inCellar(content), content), content, 1.01).state;
     expect(isDungeonCleared(state, 'mossy_cellar')).toBe(true);
     expect(unlockedDifficulties(state, cellar)).toEqual(['normal', 'hard']);
     // Push does not walk into Hard by itself: the player picks the tier.
@@ -140,7 +151,7 @@ describe('difficulty tiers', () => {
     const content = harmless(withDps(1e40, plain));
     // Hard is fought first here (set by the dev cheat); the Normal boss was never killed.
     const state = run(on(inCellar(content), content, 10, 'hard'), content, 1.01).state;
-    expect(state.combat.kills['mossy_cellar']).toBeGreaterThan(0);
+    expect(state.combat.stageKills['mossy_cellar:hard:10']).toBeGreaterThan(0);
     expect(isDungeonCleared(state, 'mossy_cellar')).toBe(false);
   });
 
@@ -173,13 +184,21 @@ describe('difficulty tiers', () => {
     const normal = on(inCellar(content), content, 10, 'normal');
     const hard = on(inCellar(content), content, 10, 'hard');
     const perSecond = (s: GameState) => incomePerSecond(s, content, 'money').toNumber();
-    expect(perSecond(hard) / perSecond(normal)).toBeCloseTo(1.5, 1);
+    // Overflow off: a hit is one kill on either tier, so Hard pays its whole purse factor.
+    expect(perSecond(hard) / perSecond(normal)).toBeCloseTo(1500, -2);
+    // Overflow on: Normal dies a thousand times as often, and Hard still pays half as much again.
+    const on2 = (s: GameState) => withOverflow(s, content);
+    expect(perSecond(on2(hard)) / perSecond(on2(normal))).toBeCloseTo(1.5, 1);
   });
 
   it('pays more Money per second the deeper the floor, and keeps the boss purse as the data has it', () => {
     const content = harmless(withDps(1e9, plain));
     const perSecond = (floor: number, difficulty = 'normal') =>
-      incomePerSecond(on(inCellar(content), content, floor, difficulty), content, 'money')
+      incomePerSecond(
+        withOverflow(on(inCellar(content), content, floor, difficulty), content),
+        content,
+        'money',
+      )
         .sub(50) // the first dungeon's Money wage
         .toNumber();
     const bonus = plain.combat.floors.purseFloorBonus;
@@ -198,7 +217,7 @@ describe('difficulty tiers', () => {
     expect(perSecond(8, 'endless') / perSecond(7, 'endless')).toBeCloseTo(bonus, 6);
   });
 
-  it('grows the purses with the Ascension exactly like the enemies, so the growth costs no Money', () => {
+  it('pays the same purses after an Ascension: enemies and purses do not grow with it', () => {
     const content = harmless(withDps(1e9, plain));
     const at = (prestigeCount: number) => {
       const state = on(inCellar(content), content, 10, 'normal');
@@ -207,8 +226,7 @@ describe('difficulty tiers', () => {
     };
     const perSecond = (s: GameState) => incomePerSecond(s, content, 'money').sub(50).toNumber();
     expect(perSecond(at(3)) / perSecond(at(0))).toBeCloseTo(1, 6);
-    const step = 1 + cellar.boss.hpScalingPerPrestige;
-    expect(fightStage(at(2), content, 'mossy_cellar')!.scale.purse).toBeCloseTo(step ** 2, 9);
+    expect(fightStage(at(2), content, 'mossy_cellar')!.scale.purse).toBe(1);
   });
 
   it('keeps every tier through an Ascension and restarts each at half of its best floor', () => {
@@ -266,7 +284,7 @@ describe('endless depths', () => {
     // A hit worth 1e25: the Nightmare boss has about 1.3e10 HP, and each depth is 1.12 times
     // the one before, so the hit carries a long way down and then stops.
     const content = harmless(withDps(1e25, plain));
-    const start = on(inCellar(content), content, 1, 'endless');
+    const start = withOverflow(on(inCellar(content), content, 1, 'endless'), content);
     const { state } = run(start, content, 1.01);
     const position = floorPosition(state, cellar);
     expect(position.floors).toBe(Infinity);
@@ -319,19 +337,16 @@ describe('endless depths', () => {
   });
 });
 
-describe('harder each Ascension', () => {
-  it('grows every enemy of a dungeon by the same step with each Ascension, HP and attack alike', () => {
-    const step = 1 + cellar.boss.hpScalingPerPrestige;
-    expect(step).toBeGreaterThan(1.05); // noticeable, not the old 2%
-    const at = (prestigeCount: number, floor: number) =>
-      fightStage({ ...freshState(), prestigeCount }, plain, 'mossy_cellar', [], floor)!;
+describe('enemies do not grow with Ascension (DESIGN.md §6)', () => {
+  it('keeps every floor of every tier as it is, HP and attack alike', () => {
+    const at = (prestigeCount: number, floor: number, difficulty: 'normal' | 'hard') =>
+      fightStage({ ...freshState(), prestigeCount }, plain, 'mossy_cellar', [], floor, difficulty)!;
     for (const floor of [1, 10]) {
-      expect(at(1, floor).hp.div(at(0, floor).hp).toNumber()).toBeCloseTo(step, 9);
-      expect(at(3, floor).hp.div(at(0, floor).hp).toNumber()).toBeCloseTo(step ** 3, 9);
-      expect(at(2, floor).attack.div(at(0, floor).attack).toNumber()).toBeCloseTo(step ** 2, 9);
+      for (const difficulty of ['normal', 'hard'] as const) {
+        expect(at(3, floor, difficulty).hp.eq(at(0, floor, difficulty).hp)).toBe(true);
+        expect(at(3, floor, difficulty).attack.eq(at(0, floor, difficulty).attack)).toBe(true);
+      }
     }
-    // Every dungeon grows by the same step.
-    expect(new Set(plain.allDungeons.map((d) => d.boss.hpScalingPerPrestige)).size).toBe(1);
   });
 });
 

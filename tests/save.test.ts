@@ -55,7 +55,7 @@ describe('save round-trip', () => {
     expect(serializeState(loaded.state)).toEqual(serializeState(state));
     expect(loaded.state.resources['oak_gem']!.eq(new Decimal('1.5e500'))).toBe(true);
     expect(loaded.state.combat.trialAttempt.dealt.eq(new Decimal('3e400'))).toBe(true);
-    expect(loaded.state.combat.kills).toEqual({ mossy_cellar: 2 });
+    expect(loaded.state.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 2 });
     expect(loaded.state.inventory['holo_hex']).toBe(2);
     expect(loaded.state.pity['root_warden']).toBe(17);
     expect(loaded.state.bossHp!.eq(state.bossHp!)).toBe(true);
@@ -251,7 +251,7 @@ describe('save format v3: production', () => {
     expect(state.pity).toEqual({ root_warden: 12 });
     // v3 -> v4: the 3 earlier kills were in the Mossy Cellar, so it counts as cleared.
     expect(state.clearedDungeons).toEqual(['mossy_cellar']);
-    expect(state.combat.kills).toEqual({ mossy_cellar: 3 });
+    expect(state.combat.stageKills).toEqual({ 'mossy_cellar:normal:10': 3 });
     expect(state.bossHp).toBeNull();
     expect(serializeState(state).production).toEqual(serializeState(freshState()).production);
   });
@@ -305,7 +305,8 @@ describe('save format v8: mastery', () => {
     expect(state.mastery.harvested['oak_gem']!.toNumber()).toBe(2e5);
     expect(state.mastery.harvested['copper_gem']!.toNumber()).toBe(50);
     expect(state.mastery.gemTiers).toEqual({ oak_gem: 2 });
-    expect(state.mastery.bossTiers).toEqual({ mossy_cellar: 2 });
+    // Dungeon medals are gone (DESIGN.md §6 Stage stars): the kills became stage kills.
+    expect(state.mastery.bossTiers).toEqual({});
   });
 
   it('drops totals of resources that are not production gems', () => {

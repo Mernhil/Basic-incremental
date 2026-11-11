@@ -1764,9 +1764,7 @@ export function formatSummary(result: SimResult, content: Content): string {
             .join(', ')}`,
       )
       .join('; ')}`,
-    `Boss and mini-boss kills: ${s.stats.bossKills} (last-floor bosses: ${Object.entries(
-      s.combat.kills,
-    )
+    `Boss and mini-boss kills: ${s.stats.bossKills} (stages: ${Object.entries(s.combat.stageKills)
       .map(([d, k]) => `${d} ${k}`)
       .join(', ')})`,
     `DPS vs Mossy Cellar: ${result.dpsSamples

@@ -9,26 +9,6 @@
       }
     ]
   },
-  "bossMastery": {
-    "thresholds": [10, 100, 1000, 10000],
-    "perTier": [
-      {
-        "stat": "combat.damage",
-        "kind": "percent",
-        "value": "5"
-      },
-      {
-        "stat": "drops.crystalMultiplier",
-        "kind": "percent",
-        "value": "10"
-      },
-      {
-        "stat": "drops.materialChance",
-        "kind": "percent",
-        "value": "10"
-      }
-    ]
-  },
   "trialMastery": {
     "thresholds": [0.25, 0.5, 0.75, 1],
     "perTier": [

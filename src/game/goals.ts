@@ -13,7 +13,8 @@ import {
   survivalSeconds,
   trialRewards,
 } from './combat';
-import { floorPosition } from './floors';
+import { floorPosition, floorSpec, stageKey } from './floors';
+import { STAGE_STAR_NAMES, stageStars } from './stageStars';
 import { bossMastery, gemMastery, MAX_MASTERY_TIER, metalOf } from './mastery';
 import { milestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
@@ -337,19 +338,21 @@ const gemMasteryRule: RuleFn = (state, content, modifiers) =>
 
 const bossMasteryRule: RuleFn = (state, content, modifiers) => {
   const out: Candidate[] = [];
+  // Dungeons have stage stars instead of medals (DESIGN.md §6): the next star of the stage being
+  // fought, with an ETA from the time per kill there.
   for (const d of content.dungeons) {
-    const m = bossMastery(state, content, d.id);
-    if (!m || m.tier >= MAX_MASTERY_TIER || m.nextThreshold === null) continue;
-    if (!isDungeonUnlocked(state, content, d.id) || m.value <= 0) continue;
-    // The medal counts kills of the last-floor boss: an ETA only while that floor is fought.
+    if (!isDungeonUnlocked(state, content, d.id)) continue;
     const position = floorPosition(state, d);
-    const spk =
-      position.floor === position.floors ? killSeconds(state, content, d.id, modifiers) : null;
-    const left = Math.max(0, m.nextThreshold - m.value);
+    const info = stageStars(state, content, stageKey(d.id, position.difficulty, position.floor));
+    if (!info || info.nextKills === null || info.kills <= 0) continue;
+    const from = info.level > 0 ? content.combat.stageStars.kills[info.level - 1]! : 0;
+    const left = Math.max(0, info.nextKills - info.kills);
+    const spk = killSeconds(state, content, d.id, modifiers);
+    const name = floorSpec(content, d, position.difficulty, position.floor).enemies[0]!.name;
     out.push({
-      targetId: d.id,
-      title: `${d.boss.name} medal: ${metalName(m.tier + 1)}`,
-      progress: m.progress,
+      targetId: info.key,
+      title: `${name} star: ${STAGE_STAR_NAMES[info.level + 1]}`,
+      progress: (info.kills - from) / (info.nextKills - from),
       etaSeconds: left === 0 ? 0 : spk === null ? null : left * spk,
     });
   }
