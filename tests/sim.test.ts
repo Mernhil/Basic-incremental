@@ -35,10 +35,12 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
   return state;
 };
 
-/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and leads its job. */
+/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and
+ *  leads the fighting loadout, or works the job's first tree or mine. */
 const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'mining'): void => {
   state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
-  state.cards.loadouts[job]!.main = id;
+  if (job === 'fighting') state.cards.loadouts.fighting.main = id;
+  else state.production.workers[job === 'logging' ? 'oak' : 'copper_quarry'] = [id];
 };
 
 describe('balance sim: greedy buyer', () => {

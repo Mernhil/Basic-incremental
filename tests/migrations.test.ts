@@ -823,14 +823,17 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
       copper_quarry: ['cave_digger'],
     });
     expect(Object.keys(state.production.harvestGauges).sort()).toEqual(['copper_quarry', 'oak']);
-    expect(state.production.harvestGauges['oak']).toEqual(state.bursts.logging);
-    expect(state.production.harvestGauges['copper_quarry']).toEqual(state.bursts.mining);
+    // the old job gauges moved to the first tree and mine; the state keeps the fighting one only
+    const saved = JSON.parse(text) as { state: { bursts: Record<string, unknown> } };
+    expect(state.production.harvestGauges['oak']).toEqual(saved.state.bursts['logging']);
+    expect(state.production.harvestGauges['copper_quarry']).toEqual(saved.state.bursts['mining']);
+    expect(Object.keys(state.bursts)).toEqual(['fighting']);
     expect(state.combat.stageKills).toEqual({ [stageKey('mossy_cellar', 'normal', 10)]: 78 });
     expect(state.combat.kills).toEqual({ mossy_cellar: 78 });
     // Stars, levels and loadouts are what the 0.5.5 game wrote.
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
     expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });
-    expect(state.cards.loadouts.logging.main).toBe('apprentice_feller');
+    expect(Object.keys(state.cards.loadouts)).toEqual(['fighting']);
     expect(state.cards.loadouts.fighting.main).toBe('ember_squire');
     expect(state.cards.wishlist).toEqual([]);
     expect(state.production.tools).toEqual({});

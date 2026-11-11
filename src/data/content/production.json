@@ -1,22 +1,24 @@
 {
   "harvest": {
-    "default": {
-      "logging": {
-        "style": "steady",
-        "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
-      },
-      "mining": {
-        "style": "steady",
-        "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
-      }
-    },
     "crit": {
       "chance": 0,
       "damage": "2"
+    }
+  },
+  "workers": {
+    "slots": {
+      "base": 2,
+      "perAscension": 1,
+      "perProducer": 1
+    },
+    "rarityPower": {
+      "common": 1,
+      "uncommon": 1.25,
+      "rare": 1.6,
+      "epic": 2,
+      "legendary": 2.6,
+      "mythic": 3.5,
+      "void": 3.5
     }
   }
 }

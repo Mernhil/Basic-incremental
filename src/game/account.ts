@@ -1,9 +1,10 @@
 import type { Content, EnhancementOption, Job, Rank, RewardTrackEntry, SkillNode } from '../data';
-import { JOBS, RANK_TIERS, MAX_STARS } from '../data';
+import { RANK_TIERS, MAX_STARS } from '../data';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, finalPrice, pay, type Price } from './production';
 import type { TickReport } from './report';
+import { cardsAtWork } from './cards';
 import { cloneState, type GameState, type OwnedCard } from './state';
 import { grantCosmetic } from './wardrobe';
 
@@ -388,19 +389,19 @@ export function accountModifiers(state: GameState, content: Content): Modifier[]
       });
     }
   }
-  const inLoadout = new Set<string>();
-  for (const job of JOBS) {
-    const l = state.cards.loadouts[job];
-    for (const id of [l.main, ...l.supports]) if (id) inLoadout.add(id);
-  }
-  for (const cardId of inLoadout) {
+  // A worker's enhancements act at its own place only (DESIGN.md §4 Worker abilities).
+  for (const { cardId, scope } of cardsAtWork(state, content)) {
     const owned = state.cards.owned[cardId];
     if (!owned || enhancementBudget(content, owned) <= 0) continue;
     for (const optionId of owned.enhancements) {
       const option = optionsOf(content, cardId).find((o) => o.id === optionId);
       if (!option) continue;
       for (const m of option.modifiers) {
-        out.push({ ...m, source: { kind: 'enhancement', id: `${cardId}:${optionId}` } });
+        out.push({
+          ...m,
+          ...(scope ? { scope: { ...m.scope, ...scope } } : {}),
+          source: { kind: 'enhancement', id: `${cardId}:${optionId}` },
+        });
       }
     }
   }

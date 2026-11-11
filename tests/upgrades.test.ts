@@ -112,10 +112,10 @@ describe('effects through the modifier pipeline', () => {
     expect(mods.some((m) => m.source.kind === 'upgrade' && m.source.id === 'keen_axes')).toBe(true);
   });
 
-  it('makes a logging card support effect stronger', () => {
+  it('makes a logging worker ability stronger', () => {
     const state = bareState();
     const card = content.cards.find(
-      (c) => c.job === 'logging' && c.support.modifiers.some((m) => m.kind !== 'set'),
+      (c) => c.job === 'logging' && c.worker.modifiers.some((m) => m.kind !== 'set'),
     )!;
     state.cards.owned[card.id] = {
       tier: 'bronze',
@@ -125,7 +125,7 @@ describe('effects through the modifier pipeline', () => {
       starFill: 0,
       enhancements: [],
     };
-    state.cards.loadouts.logging.supports[0] = card.id;
+    state.production.workers = { oak: [card.id] };
     const sum = (s: GameState) =>
       collectModifiers(s, content)
         .filter((m) => m.source.kind === 'card' && m.source.id === card.id)

@@ -1,14 +1,14 @@
 import type { Content } from '../data';
-import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
-import { advanceCombat, advanceHarvestBursts, type FightOptions } from './combat';
+import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
+import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
-import { recordStrikes } from './harvest';
+import { advanceHarvestGauges, recordStrikes } from './harvest';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
 import { countMoneyEarned } from './upgrades';
-import { jobProductionPerSecond, PRODUCTION_JOBS } from './production';
+import { PRODUCTION_JOBS, siteOutput, workSites, type WorkSite } from './production';
 import { emptyReport, mergeReports, type TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type GameState } from './state';
@@ -128,7 +128,7 @@ function levelUpDue(
   );
 }
 
-/** One span with fixed modifiers: production, harvest bursts, card XP and combat. */
+/** One span with fixed modifiers: production, harvest gauges, card XP and combat. */
 function advanceSpan(
   state: GameState,
   content: Content,
@@ -143,36 +143,45 @@ function advanceSpan(
   const fromMs = state.stats.playTimeMs;
   next.stats.playTimeMs += dtMs;
 
-  // The main logging / mining cards' strikes for the stage: events only, no state (DESIGN.md §4).
+  // Production (DESIGN.md §4 Workers): every unlocked tree kind and mine type yields its level
+  // rate × its worker's power per second, once; each worker strikes its own place (events only)
+  // and fills its own harvest gauge.
+  const sites = Object.fromEntries(
+    PRODUCTION_JOBS.map((job) => [job, workSites(state, content, job, modifiers)]),
+  ) as Record<(typeof PRODUCTION_JOBS)[number], WorkSite[]>;
   for (const job of PRODUCTION_JOBS) {
-    recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report);
-  }
-
-  // Production: every unlocked tree kind and mine type yields its rate per second, once.
-  const perJob = Object.fromEntries(
-    PRODUCTION_JOBS.map((job) => [job, jobProductionPerSecond(state, content, job, modifiers)]),
-  ) as Record<(typeof PRODUCTION_JOBS)[number], Record<string, Decimal>>;
-  for (const job of PRODUCTION_JOBS) {
-    for (const [resource, perSecond] of Object.entries(perJob[job])) {
+    recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report, sites[job]);
+    for (const site of sites[job]) {
+      const resource = site.producer.resource;
       const current = next.resources[resource] ?? new Decimal(0);
-      next.resources[resource] = current.add(perSecond.mul(seconds));
+      next.resources[resource] = current.add(siteOutput(site).mul(seconds));
     }
   }
-  // Harvest bursts: production ticks fill each job's gauge; full = a bonus harvest.
-  const burstSeconds = advanceHarvestBursts(next, state, content, seconds, report, modifiers);
+  const burstSeconds = advanceHarvestGauges(
+    next,
+    content,
+    seconds,
+    report,
+    modifiers,
+    PRODUCTION_JOBS.flatMap((job) => sites[job]),
+  );
 
-  // Card XP: each job's loadout gains XP per unit harvested (normal output and bursts), and
-  // every gem harvested counts toward its mastery.
+  // Card XP: each worker gains XP per unit its own place harvested (normal output and bursts);
+  // every gem harvested counts toward its mastery and the account.
   for (const job of PRODUCTION_JOBS) {
-    const harvestSeconds = burstSeconds[job].add(seconds);
-    const gains = Object.fromEntries(
-      Object.entries(perJob[job]).map(([id, perSecond]) => [id, perSecond.mul(harvestSeconds)]),
-    );
+    const gains: Record<string, Decimal> = {};
+    for (const site of sites[job]) {
+      const harvestSeconds = (burstSeconds[site.producer.id] ?? new Decimal(0)).add(seconds);
+      const units = siteOutput(site).mul(harvestSeconds);
+      const resource = site.producer.resource;
+      gains[resource] = (gains[resource] ?? new Decimal(0)).add(units);
+      for (const id of site.workers) {
+        const perUnit = productionXpPerUnit(content, job, modifiers, site.producer.id);
+        grantWorkerXp(next, content, id, units.mul(perUnit));
+      }
+    }
     countHarvest(next, content, gains);
     grantAccountXp(next, content, harvestXp(content, job, gains), modifiers, job);
-    const perSecond = Object.values(perJob[job]).reduce((a, b) => a.add(b), new Decimal(0));
-    const units = perSecond.mul(harvestSeconds);
-    grantLoadoutXp(next, content, job, units.mul(productionXpPerUnit(content, job, modifiers)));
   }
 
   // Combat: the dungeon's floors are auto-fought in parallel.

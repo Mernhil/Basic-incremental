@@ -104,8 +104,12 @@ describe('counting harvest', () => {
 
   it('counts harvest bursts too', () => {
     const state = bareState();
-    // The logging gauge is one tick from firing: 10 s of output on top.
-    state.bursts.logging = { gauge: content.combat.bursts.logging.gaugeSize - 1, timer: 0 };
+    // Oak's worker's gauge is one tick from firing: 10 s of output on top.
+    state.production.workers = { oak: ['apprentice_feller'] };
+    state.production.harvestGauges.oak = {
+      gauge: content.combat.bursts.logging.gaugeSize - 1,
+      timer: 0,
+    };
     const after = advance(state, content, 1000, rng).state;
     const power = content.combat.bursts.logging.power.toNumber();
     expect(after.mastery.harvested['oak_gem']!.toNumber()).toBeCloseTo(1 + power);

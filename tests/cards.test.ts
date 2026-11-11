@@ -5,6 +5,8 @@ import {
   advanceChunked,
   approxEq,
   burstStats,
+  harvestBurstStats,
+  workSites,
   cardCollection,
   cardEffectModifiers,
   cardHealth,
@@ -25,7 +27,6 @@ import {
   MIGRATIONS,
   migrateState,
   newOwnedCard,
-  producerRate,
   productionXpPerUnit,
   readSave,
   serializeState,
@@ -78,8 +79,11 @@ describe('a new game (DESIGN.md §5)', () => {
       main: 'ember_squire',
       supports: [null, null, null],
     });
-    expect(state.cards.loadouts.logging.main).toBe('apprentice_feller');
-    expect(state.cards.loadouts.mining.main).toBe('cave_digger');
+    // the logging and mining start cards are workers on the first tree and mine (DESIGN.md §4)
+    expect(state.production.workers).toEqual({
+      oak: ['apprentice_feller'],
+      copper_quarry: ['cave_digger'],
+    });
     expect(state.cards.shards).toBe(0);
   });
 });
@@ -102,33 +106,42 @@ describe('levels (DESIGN.md §5)', () => {
     expect(approxEq(xpToNextLevel(content, 5), base.mul(growth.pow(4)))).toBe(true);
   });
 
-  it('gives production cards XP per unit harvested, only in their loadout', () => {
+  it('gives a worker XP per unit its place harvested, and only workers', () => {
     let state = own(bareState(), 'grove_keeper');
-    state.cards.loadouts.logging.main = 'apprentice_feller';
+    state.production.workers = { oak: ['apprentice_feller'] };
+    // the Feller's own ability (+20% card XP) counts at its place
+    const perUnit = productionXpPerUnit(
+      content,
+      'logging',
+      collectModifiers(state, content),
+      'oak',
+    );
+    expect(perUnit.toNumber()).toBeCloseTo(content.cardRules.xp.perUnit.logging.toNumber() * 1.2);
     state = advance(state, content, 5000, rng).state; // 5 Oak Gem, no level-up yet
-    const perUnit = productionXpPerUnit(content, 'logging');
-    expect(state.cards.owned['apprentice_feller']!.xp.eq(perUnit.mul(5))).toBe(true);
-    expect(state.cards.owned['grove_keeper']!.xp.eq(0)).toBe(true); // owned, not in a loadout
-    expect(state.cards.owned['cave_digger']!.xp.eq(0)).toBe(true); // not in the mining loadout
+    expect(approxEq(state.cards.owned['apprentice_feller']!.xp, perUnit.mul(5))).toBe(true);
+    expect(state.cards.owned['grove_keeper']!.xp.eq(0)).toBe(true); // owned, not working
+    expect(state.cards.owned['cave_digger']!.xp.eq(0)).toBe(true); // not working
   });
 
   it('counts harvest-burst output as harvested', () => {
     const state = bareState();
-    state.cards.loadouts.mining.main = 'cave_digger';
-    state.bursts.mining = { gauge: 29, timer: 0 };
+    state.production.workers = { copper_quarry: ['cave_digger'] };
+    state.production.harvestGauges.copper_quarry = { gauge: 29, timer: 0 };
     const after = advance(state, content, 1000, rng).state; // 0.5 ore + a 10 s burst (5 ore)
-    const expected = productionXpPerUnit(content, 'mining').mul(5.5);
+    const mods = collectModifiers(state, content);
+    const expected = productionXpPerUnit(content, 'mining', mods, 'copper_quarry').mul(5.5);
     const owned = after.cards.owned['cave_digger']!;
-    // 11 XP: level 1 -> 2 (10 XP) on the whole second, 1 left.
+    // over 10 XP: level 1 -> 2 (10 XP) on the whole second, the rest left.
     expect(owned.level).toBe(2);
     expect(approxEq(owned.xp, expected.sub(xpToNextLevel(content, 1)))).toBe(true);
   });
 
   it('levels up on whole seconds of play time and reports it', () => {
     const state = bareState();
-    state.cards.loadouts.logging.main = 'apprentice_feller';
-    // 10 XP is due at 10 s of Oak (1 XP per unit, 1 unit per second).
-    let { state: after, report } = advance(state, content, 9_500, rng);
+    state.production.workers = { oak: ['apprentice_feller'] };
+    // 10 XP is due after 8.33 s of Oak (1.2 XP per unit with its own +20%, 1 unit per second),
+    // so the level comes on the 9 s boundary.
+    let { state: after, report } = advance(state, content, 8_500, rng);
     expect(after.cards.owned['apprentice_feller']!.level).toBe(1);
     expect(report.cardLevels).toEqual({});
     ({ state: after, report } = advance(after, content, 500, rng));
@@ -166,7 +179,7 @@ describe('levels (DESIGN.md §5)', () => {
 
   it('stops XP at the level cap until a tier-up raises it', () => {
     const state = own(bareState(), 'apprentice_feller', { level: 20 });
-    state.cards.loadouts.logging.main = 'apprentice_feller';
+    state.production.workers = { oak: ['apprentice_feller'] };
     const after = advance(state, content, 60_000, rng).state;
     expect(after.cards.owned['apprentice_feller']).toMatchObject({ level: 20 });
     expect(after.cards.owned['apprentice_feller']!.xp.eq(0)).toBe(true);
@@ -218,13 +231,19 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     expect(fighting(state).power.eq(15)).toBe(true);
   });
 
-  it('gives Elder Treant and Geode Golem 15 s harvest bursts', () => {
+  it('gives Elder Treant and Geode Golem 15 s harvest bursts where they work', () => {
     const state = own(own(bareState(), 'elder_treant'), 'geode_golem');
-    state.cards.loadouts.logging.main = 'elder_treant';
-    state.cards.loadouts.mining.main = 'geode_golem';
+    state.production.workers = { oak: ['elder_treant'], copper_quarry: ['geode_golem'] };
     const mods = collectModifiers(state, content);
-    expect(burstStats(content, 'logging', mods).power.eq(15)).toBe(true);
-    expect(burstStats(content, 'mining', mods).power.eq(15)).toBe(true);
+    const at = (job: 'logging' | 'mining', id: string) =>
+      harvestBurstStats(
+        content,
+        { job, producer: (job === 'logging' ? content.treeById : content.mineById).get(id)! },
+        mods,
+      ).power;
+    expect(at('logging', 'oak').eq(15)).toBe(true);
+    expect(at('mining', 'copper_quarry').eq(15)).toBe(true);
+    expect(at('logging', 'ironbark').eq(10)).toBe(true); // nobody works there
     expect(burstStats(content, 'fighting', mods).power.eq(10)).toBe(true);
   });
 
@@ -278,19 +297,17 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);
   });
 
-  it('makes a levelled main card raise its job output', () => {
+  it('makes a levelled worker raise its place’s output', () => {
     const state = own(bareState(), 'apprentice_feller', { level: 11 });
-    const oak = content.treeById.get('oak')!;
-    expect(producerRate(oak, 'logging', collectModifiers(state, content)).eq(1)).toBe(true);
-    state.cards.loadouts.logging.main = 'apprentice_feller';
-    const rate = producerRate(oak, 'logging', collectModifiers(state, content));
-    expect(rate.toNumber()).toBeCloseTo(1.2);
+    expect(workSites(state, content, 'logging')[0]!.rate.eq(1)).toBe(true);
+    state.production.workers = { oak: ['apprentice_feller'] };
+    expect(workSites(state, content, 'logging')[0]!.rate.toNumber()).toBeCloseTo(1.2);
   });
 
   it('lists nothing for cards in the wrong job or not owned', () => {
     const state = bareState();
     state.cards.loadouts.fighting.main = 'apprentice_feller'; // a logging card
-    state.cards.loadouts.logging.main = 'moonwood_dryad'; // not owned
+    state.production.workers = { oak: ['moonwood_dryad'] }; // not owned
     expect(cardModifiers(state, content)).toEqual([]);
   });
 });
@@ -307,7 +324,7 @@ describe('loadouts (DESIGN.md §5)', () => {
       source: { kind: 'skill', id: 'test' },
     };
     expect(loadoutCostCap(state, content, 'fighting', [raise])).toBe(8);
-    expect(loadoutCostCap(state, content, 'logging', [raise])).toBe(6);
+    // only the fighting loadout has a cost cap: logging and mining cards are workers
     expect(loadoutInfo(state, content, 'fighting')).toEqual({
       job: 'fighting',
       main: 'ember_squire',
@@ -622,7 +639,7 @@ describe('saving cards (save format v5)', () => {
       main: 'removed_card',
       supports: ['ember_squire', 'ember_squire', 'apprentice_feller'],
     };
-    cards.loadouts.mining = { main: 'gem_cutter', supports: [] };
+    cards.loadouts.mining = { main: 'gem_cutter', supports: [] }; // an old loadout: dropped
     const loaded = readSave(JSON.stringify(envelope), content).state;
     expect(loaded.cards.owned['removed_card']).toBeUndefined();
     expect(loaded.cards.owned['ember_squire']).toMatchObject({ level: 20 });
@@ -631,7 +648,7 @@ describe('saving cards (save format v5)', () => {
       main: null,
       supports: ['ember_squire', null, null],
     });
-    expect(loaded.cards.loadouts.mining).toEqual({ main: null, supports: [null, null, null] });
+    expect(Object.keys(loaded.cards.loadouts)).toEqual(['fighting']);
   });
 
   it('migrates a v4 save: the three Commons, each leading its job', () => {

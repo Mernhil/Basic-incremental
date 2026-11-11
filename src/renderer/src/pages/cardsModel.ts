@@ -125,8 +125,12 @@ export interface CardEntry {
   /** The star bar's fill (copies waiting for the next star). */
   duplicates: number;
   cost: number;
+  /** A fighting card's main ability, or a worker's ability. */
   mainAbility: string;
+  /** A fighting card's support effect; empty for a worker (it has one ability). */
   supportEffect: string;
+  /** A worker's workplace name ("Oak"), or null when it works nowhere or is a fighting card. */
+  workplace: string | null;
   /** The bottom plate of the card face (ability, speed, level, progress). */
   face: CardFace;
   role: LoadoutRole | null;
@@ -138,8 +142,9 @@ export interface CardEntry {
   weapon: WeaponView | null;
 }
 
+/** The fighting loadout (the only job with one, DESIGN.md §5 Loadouts). */
 export interface JobLoadout {
-  job: Job;
+  job: 'fighting';
   /** Card ids: index 0 is the main card, 1..3 the supports (null = empty). */
   slots: Array<string | null>;
   cost: number;
@@ -199,7 +204,7 @@ export interface CardsModel {
   entries(state: GameState): CardEntry[];
   /** One card's entry (cheaper than `entries` when a panel follows a single card), or null. */
   entry(state: GameState, id: string): CardEntry | null;
-  loadout(state: GameState, job: Job): JobLoadout;
+  loadout(state: GameState, job: 'fighting'): JobLoadout;
   shards(state: GameState): string;
   /** Changes in what the page shows structurally (not per-tick numbers). */
   signature(state: GameState): string;

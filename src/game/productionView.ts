@@ -1,14 +1,27 @@
 import type { Card, Content, HarvestPattern, ProductionJob, Rarity, Rank } from '../data';
 import { cardRank } from './cards';
-import { burstView } from './combat';
-import { activeTargets, harvestSupports, mainHarvestPattern, strikePeriodSeconds } from './harvest';
-import { collectModifiers } from './modifiers';
+import { harvestBurstStats, harvestGauge, strikePeriodSeconds, workerPattern } from './harvest';
+import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { harvestCrit, harvestCritFactor } from './production';
+import { harvestCritFactor, producersOf, workSites, type WorkSite } from './production';
 import type { GameState } from './state';
 import { jobAttackEffect, resolveCard, jobNumberStyle, type ResolvedCard } from './theme';
+import {
+  producerJob,
+  workerAt,
+  workerPower,
+  workerSlots,
+  workersUsed,
+  workplaceOf,
+} from './workers';
 
-/** A card on the production stage. */
+/**
+ * View models of the workers on the Production screen (DESIGN.md §4 Workers, Workers play the
+ * field; §11): one entry per unlocked tree kind or mine type with the card working it, its strike
+ * rhythm and its harvest gauge, and the cards a place can take. Ready to draw; no DOM.
+ */
+
+/** A worker card as the Production rows draw it. */
 export interface StageCard {
   cardId: string;
   name: string;
@@ -17,116 +30,174 @@ export interface StageCard {
   item: Card['item'];
   rank: Rank;
   level: number;
-  /** Main ability text (main card) or support effect text (supports), from the card data. */
+  /** The worker ability text, from the card data. */
   abilityText: string;
-  /** Support only: its effect touches this job's harvest, so strikes list it as helping. */
-  helpsHarvest: boolean;
+  /** The worker's power: it multiplies its place's output. */
+  power: number;
   /** Border, finish and rarity look of the card, resolved from the wardrobe. */
   look: ResolvedCard;
 }
 
-/** One unlocked tree kind / mine type as the stage draws it. */
+/** One unlocked tree kind / mine type at work, as its row draws it. */
 export interface StageTarget {
   /** Position among the job's kinds in content order (matches `HarvestEvent.kind`). */
   kind: number;
   /** Tree / mine id. */
   producer: string;
   resource: string;
+  /** The card working it, or null (the plain level rate, no strikes and no gauge). */
+  worker: StageCard | null;
+  /** How the worker strikes; null with no worker. */
+  pattern: HarvestPattern | null;
   /** Output per second of this kind (crits included). */
   ratePerSecond: Decimal;
   /** Share of the job's output, 0..1. */
   share: number;
-  /** What one strike on this kind yields without a crit. */
+  /** What one strike yields without a crit (0 with no worker). */
   perStrike: Decimal;
-}
-
-/** Everything the production stage shows for one job, ready to draw (DESIGN.md §4). */
-export interface ProductionStageView {
-  job: ProductionJob;
-  main: StageCard | null;
-  /** Always 3 entries; undefined = empty support slot. */
-  supports: (StageCard | undefined)[];
-  /** How the main card strikes (job default when there is none). */
-  pattern: HarvestPattern;
-  /** Harvest burst gauge, 0..1 (fires automatically when full). */
+  /** Harvest gauge, 0..1 (fires automatically when full); 0 with no worker. */
   gauge: number;
-  /** Seconds of the job's output one full gauge harvests, and gauge points per tick. */
+  /** Seconds of this place's output one full gauge harvests, and the gauge's size. */
   burst: { power: Decimal; fillPerTick: number; size: number };
   /** Progress to the next strike, 0..1, and the seconds left. Derived from play time. */
   nextStrike: { progress: number; inSeconds: number };
-  /** Harvest crit chance (0..1) and multiplier. */
+  /** Harvest crit chance (0..1) and multiplier at this place. */
   crit: { chance: number; damage: Decimal };
+}
+
+/** Everything the Production screen shows for one job's workers (DESIGN.md §4). */
+export interface ProductionStageView {
+  job: ProductionJob;
   /** One entry per unlocked tree kind / mine type, in content order. */
   targets: StageTarget[];
+  /** Worker slots in use and in all (both jobs share them). */
+  slots: { used: number; total: number };
   /** Animation ids from the equipped cosmetics for this job's strikes and numbers. */
   attackEffect: string | null;
   tickEffect: string | null;
 }
 
-/** Ready-to-show view of one production job's stage: cards, pattern, gauge, targets. */
+function stageCard(state: GameState, content: Content, cardId: string): StageCard | null {
+  const def = content.cardById.get(cardId);
+  const owned = state.cards.owned[cardId];
+  if (!def || !owned || def.job === 'fighting') return null;
+  const rank = cardRank(owned);
+  return {
+    cardId,
+    name: def.name,
+    rarity: def.rarity,
+    element: def.element,
+    item: def.item,
+    rank,
+    level: owned.level,
+    abilityText: def.worker.description,
+    power: workerPower(content, cardId, owned),
+    look: resolveCard(content, state.cosmetics.loadout, { id: cardId, rank, rarity: def.rarity }),
+  };
+}
+
+function targetView(
+  state: GameState,
+  content: Content,
+  site: WorkSite,
+  total: Decimal,
+  modifiers: readonly Modifier[],
+): StageTarget {
+  const id = site.workers[0] ?? null;
+  const pattern = id ? workerPattern(content, id) : null;
+  const stats = harvestBurstStats(content, site, modifiers);
+  const periodMs = pattern ? strikePeriodSeconds(pattern) * 1000 : 0;
+  const into = periodMs > 0 ? state.stats.playTimeMs % periodMs : 0;
+  const gauge = id ? Math.min(harvestGauge(state, site.producer.id).gauge, stats.size) : 0;
+  return {
+    kind: site.kind,
+    producer: site.producer.id,
+    resource: site.producer.resource,
+    worker: id ? stageCard(state, content, id) : null,
+    pattern,
+    ratePerSecond: site.rate.mul(harvestCritFactor(site.crit)),
+    share: total.gt(0) ? site.rate.div(total).toNumber() : 0,
+    perStrike: site.rate.mul(periodMs / 1000),
+    gauge: gauge / stats.size,
+    burst: { power: stats.power, fillPerTick: stats.fill, size: stats.size },
+    nextStrike:
+      periodMs > 0
+        ? { progress: into / periodMs, inSeconds: (periodMs - into) / 1000 }
+        : { progress: 0, inSeconds: 0 },
+    crit: { chance: site.crit.chance, damage: site.crit.damage },
+  };
+}
+
+/** Ready-to-show view of one production job's workers: each place's card, rhythm, gauge. */
 export function productionStageView(
   state: GameState,
   content: Content,
   job: ProductionJob,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): ProductionStageView {
-  const modifiers = collectModifiers(state, content);
-  const loadout = state.cards.loadouts[job];
-  const loadoutCosmetics = state.cosmetics.loadout;
-  const helps = new Set(harvestSupports(state, content, job));
-  const card = (id: string | null, role: 'main' | 'support'): StageCard | undefined => {
-    const def = id ? content.cardById.get(id) : undefined;
-    const owned = id ? state.cards.owned[id] : undefined;
-    if (!id || !def || !owned || def.job !== job) return undefined;
-    const rank = cardRank(owned);
-    return {
-      cardId: id,
-      name: def.name,
-      rarity: def.rarity,
-      element: def.element,
-      item: def.item,
-      rank,
-      level: owned.level,
-      abilityText: (role === 'main' ? def.main : def.support).description,
-      helpsHarvest: role === 'support' && helps.has(id),
-      look: resolveCard(content, loadoutCosmetics, { id, rank, rarity: def.rarity }),
-    };
-  };
-
-  const pattern = mainHarvestPattern(state, content, job);
-  const gaugeView = burstView(state, content, job, modifiers);
-  const periodMs = strikePeriodSeconds(pattern) * 1000;
-  const into = state.stats.playTimeMs % periodMs;
-  const crit = harvestCrit(content, job, modifiers);
-  const factor = harvestCritFactor(crit);
-
-  const live = activeTargets(state, content, job, modifiers);
-  const total = live.reduce((a, t) => a.add(t.rate), new Decimal(0));
-  const reach = pattern.targeting === 'all' ? 1 : Math.max(1, live.length);
-  const periodSeconds = periodMs / 1000;
-  const targets = live.map((t): StageTarget => ({
-    kind: t.kind,
-    producer: t.producer.id,
-    resource: t.producer.resource,
-    ratePerSecond: t.rate.mul(factor),
-    share: total.gt(0) ? t.rate.div(total).toNumber() : 0,
-    perStrike: t.rate.mul(periodSeconds * reach),
-  }));
-
+  const sites = workSites(state, content, job, modifiers);
+  const total = sites.reduce((a, t) => a.add(t.rate), new Decimal(0));
   return {
     job,
-    main: card(loadout.main, 'main') ?? null,
-    supports: loadout.supports.map((id) => card(id, 'support')),
-    pattern,
-    gauge: gaugeView.fraction,
-    burst: {
-      power: gaugeView.stats.power,
-      fillPerTick: gaugeView.stats.fill,
-      size: gaugeView.stats.size,
-    },
-    nextStrike: { progress: into / periodMs, inSeconds: (periodMs - into) / 1000 },
-    crit: { chance: crit.chance, damage: crit.damage },
-    targets,
+    targets: sites.map((site) => targetView(state, content, site, total, modifiers)),
+    slots: { used: workersUsed(state, content), total: workerSlots(state, content) },
     attackEffect: jobAttackEffect(content, state.cosmetics.loadout, job),
     tickEffect: jobNumberStyle(content, state.cosmetics.loadout).tickEffect,
   };
+}
+
+/** One card the worker picker offers for a place. */
+export interface WorkerChoice {
+  cardId: string;
+  name: string;
+  rarity: Rarity;
+  rank: Rank;
+  level: number;
+  /** Its worker power (what it would multiply the place's output by). */
+  power: number;
+  abilityText: string;
+  /** Where it works now (a tree or mine id), or null. */
+  workplace: string | null;
+  /** Its workplace's name, for "works at Oak". */
+  workplaceName: string | null;
+  /** It works this place now. */
+  here: boolean;
+  /** Placing it here needs a free slot and there is none (it neither moves nor replaces). */
+  needsSlot: boolean;
+}
+
+/**
+ * The owned cards of a place's job, strongest first, for the worker picker (DESIGN.md §4
+ * Workers): a click puts one to work there with `assignWorker`. Empty for an unknown place.
+ */
+export function workerChoices(
+  state: GameState,
+  content: Content,
+  producerId: string,
+): WorkerChoice[] {
+  const job = producerJob(content, producerId);
+  if (!job) return [];
+  const freeSlot = workersUsed(state, content) < workerSlots(state, content);
+  const placeTaken = workerAt(state, content, producerId) !== null;
+  const names = new Map(producersOf(content, job).map((p) => [p.id, p.name]));
+  const out: WorkerChoice[] = [];
+  for (const card of content.cards) {
+    const owned = state.cards.owned[card.id];
+    if (card.job !== job || !owned) continue;
+    const workplace = workplaceOf(state, content, card.id);
+    out.push({
+      cardId: card.id,
+      name: card.name,
+      rarity: card.rarity,
+      rank: cardRank(owned),
+      level: owned.level,
+      power: workerPower(content, card.id, owned),
+      abilityText: card.worker.description,
+      workplace,
+      workplaceName: workplace ? (names.get(workplace) ?? null) : null,
+      here: workplace === producerId,
+      needsSlot: workplace === null && !placeTaken && !freeSlot,
+    });
+  }
+  return out.sort((a, b) => b.power - a.power);
 }

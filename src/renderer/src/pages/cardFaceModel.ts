@@ -22,7 +22,7 @@ export const secondsText = (s: number): string => `${Number(s.toFixed(2))}s`;
 
 /**
  * Seconds between one hit of the card's main ability: the fight tick for a fighting card, the
- * gap between two strikes of the harvest pattern for a logging or mining card.
+ * gap between two strikes of a worker's (logging or mining card's) harvest pattern.
  */
 export function hitSeconds(content: Content, info: CardInfo, mods?: readonly Modifier[]): number {
   const { card } = info;
@@ -31,8 +31,7 @@ export function hitSeconds(content: Content, info: CardInfo, mods?: readonly Mod
     const live = mods?.length && info.slot?.slot === 'main' ? mods : info.mainModifiers;
     return burstStats(content, 'fighting', live).interval;
   }
-  const pattern = card.main.harvest ?? content.production.harvest.default[card.job];
-  return pattern.intervalSeconds / pattern.strikes;
+  return card.worker.harvest.intervalSeconds / card.worker.harvest.strikes;
 }
 
 /** The face of one card. `mods` lets a loadout card use the live modifiers for its speed. */

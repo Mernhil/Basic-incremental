@@ -30,7 +30,7 @@ function busyState() {
   };
   state.combat.trialBest = { glimmer_trial: 0.5 };
   state.combat.trialAttempt = { elapsedSeconds: 12.5, dealt: new Decimal('3e400') };
-  state.bursts.mining = { gauge: 7, timer: 0.25 };
+  state.production.harvestGauges.copper_quarry = { gauge: 7, timer: 0.25 };
   state.pity = { root_warden: 17 };
   return state;
 }

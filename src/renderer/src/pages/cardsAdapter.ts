@@ -55,6 +55,10 @@ export function createCardsModel(
   art?: (cardId: string, owned: OwnedCard | null) => string,
 ): CardsModel {
   const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
+  const placeName = (id: string): string =>
+    content.treeById.get(id)?.name ?? content.mineById.get(id)?.name ?? id;
+  /** Only fighting cards go in a loadout; logging and mining cards work on the Production page. */
+  const fighting = (id: string): boolean => content.cardById.get(id)?.job === 'fighting';
 
   const reason = (r: CardFailure | string): string =>
     (COPY.cards.reasons as Record<string, string>)[r] ?? COPY.cards.reasons.unknown;
@@ -145,8 +149,9 @@ export function createCardsModel(
       xp,
       duplicates: owned?.starFill ?? 0,
       cost: info.cost,
-      mainAbility: card.main.description,
-      supportEffect: card.support.description,
+      mainAbility: card.job === 'fighting' ? card.main.description : card.worker.description,
+      supportEffect: card.job === 'fighting' ? card.support.description : '',
+      workplace: info.workplace ? placeName(info.workplace) : null,
       face: cardFaceOf(content, info),
       role: info.slot
         ? { job: info.slot.job, slot: info.slot.slot === 'main' ? 'main' : 'support' }
@@ -182,6 +187,7 @@ export function createCardsModel(
           o.enhancements,
         ]),
         state.cards.loadouts,
+        state.production.workers,
         state.weaponSkins,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
@@ -189,23 +195,23 @@ export function createCardsModel(
       ]);
     },
     setMain(state, id) {
-      const card = content.cardById.get(id);
-      if (!card) return { ok: false, reason: reason('unknown') };
-      return wrap(setLoadoutSlot(state, content, card.job, 'main', id));
+      if (!content.cardById.has(id)) return { ok: false, reason: reason('unknown') };
+      if (!fighting(id)) return { ok: false, reason: reason('wrong-job') };
+      return wrap(setLoadoutSlot(state, content, 'fighting', 'main', id));
     },
     addSupport(state, id) {
-      const card = content.cardById.get(id);
-      if (!card) return { ok: false, reason: reason('unknown') };
-      const supports = state.cards.loadouts[card.job].supports;
+      if (!content.cardById.has(id)) return { ok: false, reason: reason('unknown') };
+      if (!fighting(id)) return { ok: false, reason: reason('wrong-job') };
+      const supports = state.cards.loadouts.fighting.supports;
       const free = supports.findIndex((s) => s === null);
       if (free < 0 || free >= SUPPORT_SLOTS) return { ok: false, reason: COPY.cards.reasons.full };
-      return wrap(setLoadoutSlot(state, content, card.job, free as 0 | 1 | 2, id));
+      return wrap(setLoadoutSlot(state, content, 'fighting', free as 0 | 1 | 2, id));
     },
     place(state, slot, id) {
-      const card = content.cardById.get(id);
-      if (!card) return { ok: false, reason: reason('unknown') };
+      if (!content.cardById.has(id)) return { ok: false, reason: reason('unknown') };
+      if (!fighting(id)) return { ok: false, reason: reason('wrong-job') };
       const target = slot === 0 ? 'main' : ((slot - 1) as 0 | 1 | 2);
-      return wrap(setLoadoutSlot(state, content, card.job, target, id));
+      return wrap(setLoadoutSlot(state, content, 'fighting', target, id));
     },
     remove(state, id) {
       const info = cardInfo(state, content, id);

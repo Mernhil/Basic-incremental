@@ -1,23 +1,111 @@
-/* The cards of one Production band (DESIGN.md §4, §11): the fan (ui/loadoutFan.css) with its harvest
-   gauge under it, the supports as one line of chips and the burst count. This file is the layout of
-   those pieces and the strike motions. The motions are slides and glows only: nothing rotates or
-   scales, so the card art stays on whole pixels (ASSET_RULES.md §5).
+/* The worker cell of a Production row (DESIGN.md §4 Workers, §11): the working card as a chip with
+   its harvest gauge under it, and the worker picker that opens under the row. The motions are
+   slides and glows only: nothing rotates or scales (ASSET_RULES.md §5).
    Restyle through the tokens: --pp-ease (motion curve) and --pp-glow (pulse colour). */
 
-.pp-party {
+.pp-w {
   --pp-ease: cubic-bezier(0.3, 0.8, 0.4, 1);
   --pp-glow: var(--bi-tick-crit, #ffb02e);
   display: grid;
-  justify-items: start;
-  gap: 0;
+  gap: 6px;
+  min-width: 0;
+}
+.pp-w[hidden] {
+  display: none;
+}
+.pp-w__btn {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'sw name'
+    'sw sub';
+  column-gap: 7px;
+  align-items: center;
+  min-width: 0;
+  padding: 4px 8px;
+  box-sizing: border-box;
+  font: inherit;
+  text-align: left;
+  color: var(--bi-frame-ink);
+  background: var(--px-raised);
+  border: 0;
+  cursor: pointer;
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge);
+}
+.pp-w__btn:hover {
+  background: color-mix(in srgb, var(--pp-job) 14%, var(--px-raised));
+}
+.pp-w__btn:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: calc(var(--fs-sm) + 2px);
+}
+.pp-w__btn[aria-expanded='true'] {
+  background: color-mix(in srgb, var(--pp-job) 22%, var(--px-raised));
+}
+.pp-w__btn i,
+.pp-pick__opt i {
+  grid-area: sw;
+  flex: none;
+  width: 10px;
+  height: 22px;
+  background: var(--pp-rarity, #9aa4b4);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.pp-w__name {
+  grid-area: name;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pp-w__sub {
+  grid-area: sub;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pp-w.is-empty .pp-w__btn {
+  background: none;
+  box-shadow: 0 0 0 1px var(--px-hi);
+}
+.pp-w.is-empty .pp-w__btn i {
+  background: none;
+  box-shadow: 0 0 0 1px var(--px-hi);
+}
+.pp-w.is-empty .pp-w__name {
+  font-weight: 400;
+  color: var(--bi-frame-ink-muted);
+}
+:is(.pp-w, .pp-pick) [data-rarity='uncommon'] {
+  --pp-rarity: #6fdc8c;
+}
+:is(.pp-w, .pp-pick) [data-rarity='rare'] {
+  --pp-rarity: #4f86e0;
+}
+:is(.pp-w, .pp-pick) [data-rarity='epic'] {
+  --pp-rarity: #9a6ae0;
+}
+:is(.pp-w, .pp-pick) [data-rarity='legendary'] {
+  --pp-rarity: #e0a43a;
+}
+:is(.pp-w, .pp-pick) [data-rarity='mythic'] {
+  --pp-rarity: #ff3fb4;
+}
+:is(.pp-w, .pp-pick) [data-rarity='void'] {
+  --pp-rarity: #6b7280;
 }
 
-/* ---- the harvest gauge: a segmented bar under the fan, as wide as the main card ---- */
+/* ---- the worker's harvest gauge: a segmented bar under its chip ---- */
 .pp-gauge {
   position: relative;
-  margin: calc(var(--lf-u, 1px) * 12) 0 0 calc(var(--lf-u, 1px) * 16);
-  width: calc(var(--lf-u, 1px) * 132);
-  height: calc(var(--fs-sm) * 4);
+  height: calc(var(--fs-sm) * 3);
   box-sizing: border-box;
   background: var(--px-lo);
   box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
@@ -49,168 +137,146 @@
   filter: brightness(1.25);
 }
 
-/* ---- the supports line and the burst count ---- */
-.pp-chips {
+/* ---- the worker picker: a row of the list under the row it fills ---- */
+.pp-pick {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 10px;
+}
+.pp-pick__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.pp-pick__list {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
   gap: 8px;
-  min-width: 0;
 }
-.pp-chip,
-.pp-burst {
-  display: flex;
+.pp-pick__opt {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'sw name power'
+    'sw note note';
+  column-gap: 7px;
   align-items: center;
-  gap: 6px;
-  min-width: 0;
-  padding: 3px 10px;
+  width: 100%;
+  padding: 4px 8px;
   box-sizing: border-box;
+  font: inherit;
   font-size: 12px;
-  line-height: 1.3;
-  color: var(--bi-frame-ink-muted);
-  background: var(--px-raised);
-  box-shadow:
-    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
-    var(--fs-sm) 0 0 0 var(--px-edge),
-    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
-    0 var(--fs-sm) 0 0 var(--px-edge);
-}
-.pp-chip b {
+  text-align: left;
   color: var(--bi-frame-ink);
-  font-weight: 700;
-  white-space: nowrap;
+  background: var(--px-raised);
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
-.pp-chip span {
+.pp-pick__opt:hover {
+  background: color-mix(in srgb, var(--pp-job) 14%, var(--px-raised));
+}
+.pp-pick__opt:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.pp-pick__opt[aria-disabled='true'] {
+  cursor: default;
+  opacity: 0.55;
+}
+.pp-pick__opt[aria-current='true'] {
+  box-shadow: 0 0 0 var(--fs-sm) var(--pp-job);
+}
+.pp-pick__opt b {
+  grid-area: name;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.pp-chip i {
-  flex: none;
-  width: 9px;
-  height: 9px;
-  background: var(--pp-rarity, #9aa4b4);
-  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+.pp-pick__power {
+  grid-area: power;
+  font-weight: 700;
 }
-.pp-chip i[data-rarity='uncommon'] {
-  --pp-rarity: #6fdc8c;
+.pp-pick__note {
+  grid-area: note;
+  color: var(--bi-frame-ink-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.pp-chip i[data-rarity='rare'] {
-  --pp-rarity: #4f86e0;
-}
-.pp-chip i[data-rarity='epic'] {
-  --pp-rarity: #9a6ae0;
-}
-.pp-chip i[data-rarity='legendary'] {
-  --pp-rarity: #e0a43a;
-}
-.pp-chip i[data-rarity='mythic'] {
-  --pp-rarity: #ff3fb4;
-}
-.pp-chip i[data-rarity='void'] {
-  --pp-rarity: #6b7280;
-}
-.pp-chip[role='button'] {
-  cursor: pointer;
-}
-.pp-chip[role='button']:hover {
-  color: var(--bi-frame-ink);
-}
-.pp-chip[role='button']:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: calc(var(--fs-sm) + 2px);
-}
-.pp-chip--empty {
-  background: none;
-  box-shadow: 0 0 0 1px var(--px-hi);
-}
-.pp-chip--empty i {
-  background: none;
-  box-shadow: 0 0 0 1px var(--px-hi);
-}
-.pp-burst {
-  flex: none;
-}
-.pp-burst {
-  color: var(--bi-frame-ink);
+.pp-pick__empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
 }
 
-/* ---- the main card slides toward the row it struck: --lx / --ly are the vector in px ---- */
-.pp-slot--main.is-strike-steady {
+/* ---- the worker's chip nudges toward its tile on each strike ---- */
+.pp-w__btn.is-strike-steady {
   animation: pp-strike-steady 0.3s var(--pp-ease);
 }
-.pp-slot--main.is-strike-chop {
+.pp-w__btn.is-strike-chop {
   animation: pp-strike-chop 0.62s var(--pp-ease);
 }
-.pp-slot--main.is-strike-flurry {
+.pp-w__btn.is-strike-flurry {
   animation: pp-strike-flurry 0.22s ease-out;
 }
-.pp-slot--main.is-strike-volley {
+.pp-w__btn.is-strike-volley {
   animation: pp-strike-volley 0.42s var(--pp-ease);
 }
-.pp-slot--main.is-bursting {
+.pp-w__btn.is-bursting {
   animation: pp-bursting 0.8s ease-out;
 }
 @keyframes pp-strike-steady {
   40% {
-    translate: var(--lx, 0) var(--ly, 0);
+    translate: 4px 0;
   }
 }
 @keyframes pp-strike-chop {
-  /* wind up away from the row, then a heavy slide into it */
+  /* wind up away from the tile, then a heavy slide into it */
   25% {
-    translate: calc(var(--lx, 0px) * -0.35) calc(var(--ly, 0px) * -0.35 - 6px);
+    translate: -3px -2px;
   }
   45%,
   60% {
-    translate: var(--lx, 0) var(--ly, 0);
+    translate: 7px 0;
   }
 }
 @keyframes pp-strike-flurry {
   35% {
-    translate: var(--lx, 0) var(--ly, 0);
+    translate: 3px 0;
   }
   70% {
-    translate: calc(var(--lx, 0px) * 0.4) calc(var(--ly, 0px) * 0.4);
+    translate: 1px 0;
   }
 }
 @keyframes pp-strike-volley {
   50% {
-    translate: var(--lx, 0) var(--ly, 0);
-    filter: drop-shadow(0 0 10px var(--pp-glow));
+    translate: 3px 0;
+    filter: drop-shadow(0 0 6px var(--pp-glow));
   }
 }
 @keyframes pp-bursting {
   20% {
-    filter: drop-shadow(0 0 16px var(--pp-glow)) brightness(1.15);
+    filter: drop-shadow(0 0 10px var(--pp-glow)) brightness(1.15);
   }
   60% {
-    filter: drop-shadow(0 0 10px var(--pp-glow));
+    filter: drop-shadow(0 0 6px var(--pp-glow));
   }
 }
 
-/* a support that helped a strike flashes: the fan's slot (ui/loadoutFan.css) or its chip */
-.pp-chip.is-pulse {
-  animation: pp-chip-pulse 0.52s ease-out;
-}
-@keyframes pp-chip-pulse {
-  30% {
-    color: var(--bi-frame-ink);
-    background: color-mix(in srgb, var(--pp-glow) 28%, var(--px-raised));
-  }
-}
-
-:root[data-motion='reduced'] .pp-slot--main[class*='is-strike'],
-:root[data-motion='reduced'] .pp-slot--main.is-bursting,
-:root[data-motion='reduced'] .pp-chip.is-pulse {
+:root[data-motion='reduced'] .pp-w__btn[class*='is-strike'],
+:root[data-motion='reduced'] .pp-w__btn.is-bursting {
   animation: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .pp-slot--main[class*='is-strike'],
-  :root:not([data-motion='full']) .pp-slot--main.is-bursting,
-  :root:not([data-motion='full']) .pp-chip.is-pulse {
+  :root:not([data-motion='full']) .pp-w__btn[class*='is-strike'],
+  :root:not([data-motion='full']) .pp-w__btn.is-bursting {
     animation: none;
   }
   .pp-gauge i {
