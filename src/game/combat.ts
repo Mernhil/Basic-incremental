@@ -219,7 +219,7 @@ export function setAutoChallenge(
  * nothing is active, there is no floor to challenge, a Challenge is running or the loadout is
  * knocked out.
  */
-export function startChallenge(state: GameState, content: Content): CombatResult {
+export function startFloorChallenge(state: GameState, content: Content): CombatResult {
   const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
   if (!dungeon) return fail('unknown');
   if (!isDungeonUnlocked(state, content, dungeon.id)) return fail('locked');
@@ -239,7 +239,7 @@ function beginChallenge(next: GameState, dungeonId: string, difficulty: Difficul
 }
 
 /** The running Challenge as the arena shows it (DESIGN.md §6 Farming and Challenge). */
-export interface ChallengeView {
+export interface FloorChallengeView {
   dungeonId: string;
   difficulty: Difficulty;
   floor: number;
@@ -250,7 +250,7 @@ export interface ChallengeView {
 }
 
 /** The next Challenge of a dungeon (its floor and timer), or null when there is none. */
-export interface NextChallenge {
+export interface NextFloorChallenge {
   floor: number;
   durationSeconds: number;
   /** Auto-challenge is on, and the seconds it still waits after a loss (0 = none). */
@@ -281,7 +281,7 @@ function runningChallenge(
 }
 
 /** The Challenge running in the active dungeon, or null while farming. */
-export function challengeView(state: GameState, content: Content): ChallengeView | null {
+export function floorChallengeView(state: GameState, content: Content): FloorChallengeView | null {
   const run = runningChallenge(state, content);
   if (!run) return null;
   const kind = floorSpec(content, run.dungeon, run.difficulty, run.floor).kind;
@@ -297,11 +297,11 @@ export function challengeView(state: GameState, content: Content): ChallengeView
 }
 
 /** What the Challenge button of a dungeon would start, on its chosen difficulty. */
-export function nextChallenge(
+export function nextFloorChallenge(
   state: GameState,
   content: Content,
   dungeonId: string,
-): NextChallenge | null {
+): NextFloorChallenge | null {
   const dungeon = content.dungeonById.get(dungeonId);
   if (!dungeon) return null;
   const position = floorPosition(state, dungeon);
@@ -524,7 +524,7 @@ export interface BossStatus {
   farmFloor: number;
   challengeFloor: number | null;
   /** The Challenge being fought, or null while farming. */
-  challenge: ChallengeView | null;
+  challenge: FloorChallengeView | null;
   /** The deepest floor beaten on this difficulty. */
   bestFloor: number;
   /** Which enemy of the floor this is (1-based) and how many the floor holds. */
@@ -564,7 +564,7 @@ export function bossStatus(
     autoChallenge: position.autoChallenge,
     farmFloor: position.floor,
     challengeFloor: position.challengeFloor,
-    challenge: challengeView(state, content),
+    challenge: floorChallengeView(state, content),
     bestFloor: position.best,
     wave: { index: index + 1, size: stage.enemies.length },
   };

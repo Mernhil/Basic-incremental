@@ -25,14 +25,14 @@ import {
   MIGRATIONS,
   parseStageKey,
   readSave,
-  challengeView,
+  floorChallengeView,
   initialProgress,
-  nextChallenge,
+  nextFloorChallenge,
   setActiveDungeon,
   setAutoChallenge,
   simulateOffline,
   stageKey,
-  startChallenge,
+  startFloorChallenge,
   winsFloor,
   type GameState,
   type TickReport,
@@ -182,7 +182,7 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
     return withAutoChallenge(placed.state, auto);
   };
   const challenge = (state: GameState, content: Content): GameState => {
-    const started = startChallenge(state, content);
+    const started = startFloorChallenge(state, content);
     if (!started.ok) throw new Error(started.reason);
     return started.state;
   };
@@ -244,11 +244,18 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
   it('loses a Challenge on the timer: why, the enemy HP left, back to farming, retried at once', () => {
     const content = harmless(withDps(1, plain));
     const start = challenge(farmingAt(content, 1), content);
-    const timer = nextChallenge(farmingAt(content, 1), content, 'mossy_cellar')!.durationSeconds;
+    const timer = nextFloorChallenge(
+      farmingAt(content, 1),
+      content,
+      'mossy_cellar',
+    )!.durationSeconds;
     expect(timer).toBe(30);
-    expect(challengeView(start, content)).toMatchObject({ floor: 2, secondsLeft: 30 });
+    expect(floorChallengeView(start, content)).toMatchObject({ floor: 2, secondsLeft: 30 });
     const halfway = run(start, content, 10).state;
-    expect(challengeView(halfway, content)).toMatchObject({ elapsedSeconds: 10, secondsLeft: 20 });
+    expect(floorChallengeView(halfway, content)).toMatchObject({
+      elapsedSeconds: 10,
+      secondsLeft: 20,
+    });
     const { state, report } = run(halfway, content, 21);
     expect(report.challenges).toHaveLength(1);
     const lost = report.challenges[0]!;
@@ -262,7 +269,7 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
     expect(state.combat.knockoutSeconds).toBe(0);
     // Auto-challenge is off: no wait, and the button starts the next try for free.
     expect(state.combat.challengeWaitSeconds).toBe(0);
-    expect(startChallenge(state, content).ok).toBe(true);
+    expect(startFloorChallenge(state, content).ok).toBe(true);
   });
 
   it('loses a Challenge when the health runs out, without a knockout, at full health after', () => {
@@ -284,7 +291,7 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
     const timer = (dungeonId: string, floor: number): number | undefined => {
       const placed = devSetFloor(freshState(), plain, dungeonId, floor);
       if (!placed.ok) throw new Error(placed.reason);
-      return nextChallenge(placed.state, plain, dungeonId)?.durationSeconds;
+      return nextFloorChallenge(placed.state, plain, dungeonId)?.durationSeconds;
     };
     expect(timer('mossy_cellar', 1)).toBe(30);
     expect(timer('ember_crypt', 9)).toBe(45);
@@ -311,7 +318,10 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
     expect(lost.report.challenges.map((c) => c.reason)).toEqual(['timer']);
     expect(lost.state.combat.challenge).toBeNull();
     expect(lost.state.combat.challengeWaitSeconds).toBeCloseTo(59.5, 6);
-    expect(nextChallenge(lost.state, weak, 'mossy_cellar')).toMatchObject({ auto: true, floor: 2 });
+    expect(nextFloorChallenge(lost.state, weak, 'mossy_cellar')).toMatchObject({
+      auto: true,
+      floor: 2,
+    });
     const waiting = run(lost.state, weak, 59.4).state;
     expect(waiting.combat.challenge).toBeNull();
     const again = run(waiting, weak, 0.2).state;
@@ -320,14 +330,14 @@ describe('farming and Challenge (DESIGN.md §6)', () => {
   });
 
   it('refuses a Challenge with nothing to challenge, while one runs or while knocked out', () => {
-    expect(startChallenge(farmingAt(plain, 10), plain)).toEqual({ ok: false, reason: 'none' });
+    expect(startFloorChallenge(farmingAt(plain, 10), plain)).toEqual({ ok: false, reason: 'none' });
     const running = challenge(farmingAt(plain, 3), plain);
-    expect(startChallenge(running, plain)).toEqual({ ok: false, reason: 'busy' });
+    expect(startFloorChallenge(running, plain)).toEqual({ ok: false, reason: 'busy' });
     const knocked = farmingAt(plain, 3);
     knocked.combat.knockoutSeconds = 5;
-    expect(startChallenge(knocked, plain)).toEqual({ ok: false, reason: 'busy' });
+    expect(startFloorChallenge(knocked, plain)).toEqual({ ok: false, reason: 'busy' });
     const idle = { ...freshState(), activeDungeonId: null };
-    expect(startChallenge(idle, plain)).toEqual({ ok: false, reason: 'unknown' });
+    expect(startFloorChallenge(idle, plain)).toEqual({ ok: false, reason: 'unknown' });
   });
 
   it('ends a running Challenge when the dungeon or the difficulty fought changes', () => {
@@ -519,7 +529,7 @@ describe('clearing', () => {
     const below = devSetFloor(inCellar(content), content, 'mossy_cellar', 9);
     if (!below.ok) throw new Error(below.reason);
     // The boss's Challenge, then farming the boss.
-    const started = startChallenge(below.state, content);
+    const started = startFloorChallenge(below.state, content);
     if (!started.ok) throw new Error(started.reason);
     const start = started.state;
     const crystals = (s: GameState) => s.resources['summon_crystal']!;

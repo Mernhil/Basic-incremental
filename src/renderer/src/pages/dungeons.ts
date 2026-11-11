@@ -18,9 +18,9 @@ import {
   setActiveDungeon,
   setAutoChallenge,
   setDifficulty,
-  startChallenge,
-  nextChallenge,
-  challengeView,
+  startFloorChallenge,
+  nextFloorChallenge,
+  floorChallengeView,
   trialRewards,
   bossMastery,
   overflowStage,
@@ -136,7 +136,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     sound: ctx.sound,
     // the arena's Challenge button (DESIGN.md §6 Farming and Challenge)
     challenge: () => {
-      const result = startChallenge(ctx.state(), content);
+      const result = startFloorChallenge(ctx.state(), content);
       if (!result.ok) return;
       ctx.apply(result.state);
       render();
@@ -368,11 +368,11 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     challengeBtn.type = 'button';
     challengeBtn.dataset.key = 'challenge';
     attachTooltip(challengeBtn, () => {
-      const next = nextChallenge(ctx.state(), content, d.id);
+      const next = nextFloorChallenge(ctx.state(), content, d.id);
       return next ? COPY.dungeons.challengeTip(next.durationSeconds) : COPY.dungeons.lastFloorTip;
     });
     challengeBtn.addEventListener('click', () => {
-      const result = startChallenge(ctx.state(), content);
+      const result = startFloorChallenge(ctx.state(), content);
       if (!result.ok) return;
       ctx.apply(result.state);
       render();
@@ -494,8 +494,8 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       ].join(' · ');
       if (where.textContent !== text) where.textContent = text;
       // The Challenge button and the auto-challenge switch (DESIGN.md §6 Farming and Challenge).
-      const next = nextChallenge(s, content, d.id);
-      const running = challengeView(s, content);
+      const next = nextFloorChallenge(s, content, d.id);
+      const running = floorChallengeView(s, content);
       const button = challengeButton({
         running: running !== null,
         hasNext: next !== null,

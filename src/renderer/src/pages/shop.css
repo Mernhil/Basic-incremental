@@ -573,3 +573,43 @@ html .shop-body .shop-ascend.px-display:not(#_px) {
 .shop-auto__reserve {
   width: 4.5em;
 }
+
+/* Ascension challenges: a plain list under Kept and Reset */
+.shop-challenges {
+  width: 100%;
+  padding: 8px 10px 10px;
+  text-align: left;
+}
+.shop-challenges .shop-head {
+  margin: 0 0 6px;
+  color: var(--px-ink);
+}
+.shop-challenge-list {
+  display: grid;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.shop-challenge {
+  display: grid;
+  gap: 2px;
+  padding: 6px 8px;
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--px-muted);
+  border: 1px solid var(--px-line, currentColor);
+}
+.shop-challenge[data-status='active'] {
+  color: var(--px-ink);
+}
+.shop-challenge__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--px-ink);
+}
+.shop-challenge__button {
+  justify-self: start;
+  margin-top: 4px;
+}

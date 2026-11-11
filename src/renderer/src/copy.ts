@@ -523,6 +523,32 @@ export const COPY = {
     /** The chip of a Starlight line that is at its top level. */
     max: 'Max',
   },
+  challenges: {
+    title: 'Ascension challenges',
+    intro:
+      'A challenge is an Ascension run with a rule. Reach its target floor under the rule, up to three times with harder targets, and keep a reward for good. Leaving a challenge ends the rule and earns nothing.',
+    closed: 'Challenges open after your first Ascension.',
+    stickers: (done: number, max: number) => `${done} of ${max} done`,
+    target: (dungeon: string, difficulty: string, floor: number) =>
+      `Target: reach floor ${floor} of ${dungeon} (${difficulty})`,
+    progress: (dungeon: string, difficulty: string, floor: number, target: number) =>
+      `Running: floor ${floor} of ${target} in ${dungeon} (${difficulty})`,
+    reward: (text: string) => `Reward: ${text}`,
+    earned: (text: string) => `Kept: ${text}`,
+    allDone: 'All three done.',
+    start: 'Ascend into it',
+    confirm: 'Click again to ascend',
+    leave: 'Leave (the rule ends)',
+    toast: (name: string) => `${name} begins`,
+    toastDetail: 'You ascended into a challenge run.',
+    problems: {
+      unknown: 'Unknown challenge.',
+      locked: 'Opens after your first Ascension.',
+      maxed: 'All three done.',
+      'dungeon-locked': 'The target dungeon is not open yet.',
+      'too-early': 'Not enough Starlight to ascend yet.',
+    } as Record<string, string>,
+  },
   ascension: {
     gate: 'Ascension',
     gateLabel: 'The Ascension gate, with everything you keep drifting into it',

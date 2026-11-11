@@ -102,6 +102,7 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'skills_learned':
     case 'keystones':
     case 'circles_open':
+    case 'challenge_completions':
     case 'ascensions':
     case 'offline_hours':
       return 'journey';

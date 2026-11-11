@@ -3,8 +3,8 @@ import {
   Decimal,
   barMoment,
   bossStatus,
-  challengeView,
-  nextChallenge,
+  floorChallengeView,
+  nextFloorChallenge,
   type BarLook,
   burstView,
   collectModifiers,
@@ -212,7 +212,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   chalBtn.addEventListener('click', () => ctx.challenge?.());
   attachTooltip(chalBtn, () => {
     const id = ctx.state().activeDungeonId;
-    const next = id ? nextChallenge(ctx.state(), content, id) : null;
+    const next = id ? nextFloorChallenge(ctx.state(), content, id) : null;
     return next ? COPY.dungeons.challengeTip(next.durationSeconds) : COPY.dungeons.lastFloorTip;
   });
   chal.append(chalMeter, chalBtn);
@@ -571,8 +571,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
         if (barMoment(lastLook, look, false) === 'shatter') shatter();
         lastLook = look;
         // the Challenge: its timer while it runs, the button while farming
-        const run = challengeView(s, content);
-        const next = nextChallenge(s, content, dungeon.id);
+        const run = floorChallengeView(s, content);
+        const next = nextFloorChallenge(s, content, dungeon.id);
         const button = challengeButton({
           running: run !== null,
           hasNext: next !== null,

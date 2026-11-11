@@ -143,6 +143,8 @@ export function ascend(
     next.resources[resource.id] = startingAmount(content, resource.id);
   }
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);
+  // An Ascension ends a challenge run that was not completed; `startChallenge` sets it again.
+  next.ascensionChallenges.active = null;
   next.bursts = initialBursts();
   next.bossHp = null;
   // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run farms from half
