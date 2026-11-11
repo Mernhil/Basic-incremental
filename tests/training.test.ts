@@ -20,11 +20,12 @@ import { content, freshState } from './helpers';
 
 /**
  * Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer, bought with
- * Money like tree and mine levels, with a milestone every 25 levels, reset on Ascension.
+ * gems (each line its own kind) like tree and mine levels, with a milestone every 25 levels, reset on Ascension.
  */
 const rich = (amount: number | string = '1e30'): GameState => {
   const state = freshState();
   state.resources['money'] = new Decimal(amount);
+  for (const line of content.training) state.resources[line.cost.resource] = new Decimal(amount);
   return state;
 };
 const buy = (state: GameState, id: string, count: number | 'max' = 1): GameState => {
@@ -59,13 +60,27 @@ describe('training lines', () => {
     );
   });
 
-  it('costs Money on a growing price, the same one level at a time or in bulk', () => {
+  it('is paid in gems, one kind per line, and no line costs Money', () => {
+    expect(content.training.map((t) => [t.id, t.cost.resource])).toEqual([
+      ['sharpen', 'copper_gem'],
+      ['toughen', 'ironbark_gem'],
+      ['plunder', 'iron_gem'],
+      ['tempo', 'oak_gem'],
+    ]);
+    const start = rich(1e9);
+    const bought = buy(start, 'sharpen', 3);
+    expect(bought.resources['money']!.eq(start.resources['money']!)).toBe(true);
+    expect(bought.resources['copper_gem']!.lt(start.resources['copper_gem']!)).toBe(true);
+    expect(bought.resources['oak_gem']!.eq(start.resources['oak_gem']!)).toBe(true);
+  });
+
+  it('costs on a growing price, the same one level at a time or in bulk', () => {
     const start = rich(1e9);
     const one = buy(buy(buy(start, 'sharpen'), 'sharpen'), 'sharpen');
     const three = buy(start, 'sharpen', 3);
     expect(trainingLevel(one, 'sharpen')).toBe(3);
-    expect(three.resources['money']!.eq(one.resources['money']!)).toBe(true);
-    const spent = start.resources['money']!.sub(three.resources['money']!).toNumber();
+    expect(three.resources['copper_gem']!.eq(one.resources['copper_gem']!)).toBe(true);
+    const spent = start.resources['copper_gem']!.sub(three.resources['copper_gem']!).toNumber();
     const { base, growth } = sharpen.cost;
     const expected = [0, 1, 2].reduce(
       (sum, n) => sum + Math.ceil(base.mul(growth.pow(n)).toNumber()),
@@ -74,16 +89,17 @@ describe('training lines', () => {
     expect(spent).toBe(expected);
   });
 
-  it('refuses what the Money does not afford, and an unknown line', () => {
+  it('refuses what the gems do not afford, and an unknown line', () => {
     const poor = freshState();
-    poor.resources['money'] = new Decimal(1);
+    poor.resources['money'] = new Decimal('1e30');
+    poor.resources['copper_gem'] = new Decimal(1);
     expect(buyTraining(poor, content, 'sharpen')).toEqual({ ok: false, reason: 'unaffordable' });
     expect(buyTraining(rich(), content, 'nope')).toEqual({ ok: false, reason: 'unknown' });
     // Max buys as many as the Money affords.
     const some = rich(sharpen.cost.base.mul(10).toString());
     const bought = buy(some, 'sharpen', 'max');
     expect(trainingLevel(bought, 'sharpen')).toBeGreaterThan(1);
-    expect(bought.resources['money']!.gte(0)).toBe(true);
+    expect(bought.resources['copper_gem']!.gte(0)).toBe(true);
   });
 
   it('raises what it says: damage, health, Money per kill and the gauge fill', () => {

@@ -81,7 +81,7 @@ describe('v26 -> v27 (the table update)', () => {
       production: { logging: [null, null, null], mining: [null, null, null] },
     });
     expect(out['discoveredBonds']).toEqual([]);
-    expect(out.expeditions).toEqual({ trips: [] });
+    expect(out.expeditions).toEqual({ trips: [], completed: 0 });
     expect(out.ascensionChallenges).toEqual({ active: null, completions: {} });
   });
 
@@ -119,11 +119,17 @@ describe('v26 -> v27 (the table update)', () => {
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];
     delete resources['glamour_scroll'];
+    // The push / farm `mode` is gone: auto-challenge replaced it (package 2).
+    const expected = structuredClone(saved.state);
+    const floors = (expected['combat'] as Record<string, unknown>)['floors'];
+    for (const p of Object.values(floors as Record<string, Record<string, unknown>>)) {
+      delete p['mode'];
+    }
     // the crystals became scrolls: the save no longer holds them
-    const kept = { ...(saved.state['resources'] as Record<string, unknown>) };
+    const kept = expected['resources'] as Record<string, unknown>;
     delete kept['summon_crystal'];
     delete kept['glamour_crystal'];
-    expect(again).toEqual({ ...saved.state, resources: kept, bossHp: null });
+    expect(again).toEqual({ ...expected, bossHp: null });
 
     // Saved again it is format 27 and loads to the same state.
     const resaved = createSaveText(state, 1);
@@ -153,7 +159,6 @@ describe('format 27 state', () => {
     const state = createInitialState(content);
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: { normal: { floor: 4, best: 4 } },
     };

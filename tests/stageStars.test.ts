@@ -14,7 +14,6 @@ import {
   overflowStage,
   readSave,
   secondsPerKill,
-  setFloorMode,
   setActiveDungeon,
   setOverflow,
   simulateOffline,
@@ -39,6 +38,7 @@ import {
   neutralStars,
   withBossAttack,
   withDps,
+  withAutoChallenge,
   withOverflow,
 } from './helpers';
 
@@ -66,9 +66,7 @@ function at(content: Content, floor: number, difficulty: Difficulty = 'normal'):
   if (!active.ok) throw new Error(active.reason);
   const placed = devSetFloor(active.state, content, 'mossy_cellar', floor, difficulty);
   if (!placed.ok) throw new Error(placed.reason);
-  const farming = setFloorMode(placed.state, content, 'mossy_cellar', 'farm');
-  if (!farming.ok) throw new Error(farming.reason);
-  return farming.state;
+  return placed.state;
 }
 const run = (state: GameState, content: Content, seconds: number, rng = constantRng(0.5)) =>
   advance(state, content, seconds * 1000, rng);
@@ -116,10 +114,12 @@ describe('kills and star levels', () => {
     const active = setActiveDungeon(freshState(), content, 'mossy_cellar');
     if (!active.ok) throw new Error(active.reason);
     active.state.clearedDungeons = ['mossy_cellar'];
-    const inCrypt = setActiveDungeon(active.state, content, 'ember_crypt');
+    const inCrypt = setActiveDungeon(withAutoChallenge(active.state, true), content, 'ember_crypt');
     if (!inCrypt.ok) throw new Error(inCrypt.reason);
-    // Pushing from floor 1 at one floor a hit: floor 10 (a mini-boss) falls on the 10th hit.
-    const { state } = run(inCrypt.state, content, 12);
+    // Challenging from floor 1 at one kill a hit: floor 10 (a mini-boss) falls after the waves of
+    // floors 1 to 9 (3 to 5 enemies each), and the 11th floor's wave does not count.
+    const { state } = run(inCrypt.state, content, 50);
+    expect(floorPosition(state, crypt).best).toBeGreaterThan(10);
     expect(state.combat.stageKills).toEqual({ [stageKey('ember_crypt', 'normal', 10)]: 1 });
   });
 
@@ -194,19 +194,13 @@ describe('chests', () => {
   it('pays the Wood chest with the first kill and the Bronze chest with the tenth, never again', () => {
     const content = harmless(withDps(1e12, real));
     const start = at(content, 10);
-    // the first win of the boss floor pays its scroll lump with the first kill
-    const lump = real.scrolls.floorFirstWin.boss.summon;
     const wood = stageChest(real, 'normal', 1).find((p) => p.resource === 'summon_scroll')!;
     const bronze = stageChest(real, 'normal', 2).find((p) => p.resource === 'summon_scroll')!;
     const first = run(start, content, 1);
     expect(first.state.combat.stageKills[BOSS]).toBe(1);
     expect(first.state.combat.stageChests[BOSS]).toBe(1);
-    // The dungeon was cleared too: the first-clear purse is paid with the same kill.
-    const purse = cellar.drops.firstClear.find((p) => p.resource === 'summon_scroll')!.amount;
-    expect(crystals(first.state) - crystals(start)).toBeCloseTo(
-      lump.add(wood.amount).add(purse).toNumber(),
-      6,
-    );
+    // Farming a beaten floor pays no first-clear purse and no first-win lump: those come with the Challenge.
+    expect(crystals(first.state) - crystals(start)).toBeCloseTo(wood.amount.toNumber(), 6);
     const tenth = run(first.state, content, 9);
     expect(tenth.state.combat.stageChests[BOSS]).toBe(2);
     expect(crystals(tenth.state) - crystals(first.state)).toBeCloseTo(bronze.amount.toNumber(), 6);
@@ -226,10 +220,9 @@ describe('chests', () => {
     const owed = [1, 2, 3]
       .map((l) => stageChest(real, 'normal', l).find((p) => p.resource === 'summon_scroll')!)
       .reduce((sum, p) => sum + p.amount.toNumber(), 0);
-    const lump = real.scrolls.floorFirstWin.boss.summon;
     const after = run(start, content, 1);
     expect(after.state.combat.stageChests[BOSS]).toBe(3);
-    expect(crystals(after.state) - crystals(start)).toBeCloseTo(owed + lump.toNumber(), 6);
+    expect(crystals(after.state) - crystals(start)).toBeCloseTo(owed, 6);
   });
 
   it('turns a real 0.5.5 save into stage kills that reach star levels', () => {
@@ -357,15 +350,21 @@ describe('overflow switch', () => {
     expect(bossStatus(off.state, content)!.overflow).toBe(false);
   });
 
-  it('loses the leftover damage while off and carries it while on, pushing', () => {
+  it('stops a hit at the kill while off and carries it through the wave while on, in a Challenge', () => {
     const content = harmless(withDps(1e12, neutral));
-    const start = setActiveDungeon(freshState(), content, 'mossy_cellar');
+    const start = setActiveDungeon(withAutoChallenge(freshState(), true), content, 'mossy_cellar');
     if (!start.ok) throw new Error(start.reason);
-    // One hit: one floor while off, every floor while on.
-    expect(floorPosition(run(start.state, content, 1).state, cellar).floor).toBe(2);
-    expect(
-      floorPosition(run(withOverflow(start.state, content), content, 1).state, cellar).floor,
-    ).toBe(10);
+    // One hit: one enemy of floor 1's wave while off, the whole wave (and the Challenge) while on.
+    const off = run(start.state, content, 1);
+    expect(off.report.enemyKills).toBe(1);
+    expect(floorPosition(off.state, cellar).best).toBe(0);
+    expect(off.state.combat.enemyIndex).toBe(1);
+    const on = run(withOverflow(start.state, content), content, 1);
+    expect(on.report.enemyKills).toBe(
+      fightStage(on.state, content, 'mossy_cellar', [], 1)!.enemies.length,
+    );
+    expect(floorPosition(on.state, cellar).best).toBe(1);
+    expect(on.report.challenges.map((c) => c.won)).toEqual([true]);
   });
 });
 
@@ -462,7 +461,7 @@ function withOverflowOn(state: GameState): GameState {
 }
 
 describe('harder modes pay more (DESIGN.md §6)', () => {
-  it('pays more per second of Money, Cores, crystals and card XP on each tier than the one below, for a loadout that one-hits both', () => {
+  it('pays more per second of Money, Cores and card XP on each tier than the one below, for a loadout that one-hits both', () => {
     // A hit that kills the Nightmare boss outright, so every tier is farmed at a kill a hit.
     const content = harmless(withDps(1e15, neutral));
     const farm = (difficulty: Difficulty) => {
@@ -477,8 +476,6 @@ describe('harder modes pay more (DESIGN.md §6)', () => {
       return {
         money: report.currencies['money']!,
         cores: report.materials['moss_core']!,
-        crystals: report.currencies['summon_scroll']!,
-        glamour: report.currencies['glamour_scroll']!,
         // Card XP: levels first, then the XP into the level.
         xp: [after.level - before.level, after.xp.sub(before.xp).toNumber()] as const,
       };
@@ -489,8 +486,6 @@ describe('harder modes pay more (DESIGN.md §6)', () => {
       const higher = tiers[i]!;
       expect(higher.money).toBeGreaterThan(lower.money);
       expect(higher.cores).toBeGreaterThan(lower.cores);
-      expect(higher.crystals).toBeGreaterThan(lower.crystals);
-      expect(higher.glamour).toBeGreaterThan(lower.glamour);
       const moreXp =
         higher.xp[0] > lower.xp[0] || (higher.xp[0] === lower.xp[0] && higher.xp[1] > lower.xp[1]);
       expect(moreXp).toBe(true);

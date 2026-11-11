@@ -81,7 +81,6 @@ export const serializedStateSchema = z.object({
       z.string(),
       z.object({
         difficulty: z.enum(DIFFICULTIES),
-        mode: z.enum(['push', 'farm']),
         /** v27: auto-challenge (DESIGN.md §6). */
         autoChallenge: z.boolean(),
         tiers: z.partialRecord(
@@ -205,6 +204,7 @@ export const serializedStateSchema = z.object({
         elapsedSeconds: z.number().min(0),
       }),
     ),
+    completed: z.number().int().min(0).default(0),
   }),
   ascensionChallenges: z.object({
     active: z.string().nullable(),
@@ -292,7 +292,10 @@ export function serializeState(state: GameState): SerializedState {
     summon: { ...state.summon },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
-    expeditions: { trips: state.expeditions.trips.map((t) => ({ ...t })) },
+    expeditions: {
+      trips: state.expeditions.trips.map((t) => ({ ...t })),
+      completed: state.expeditions.completed,
+    },
     ascensionChallenges: {
       active: state.ascensionChallenges.active,
       completions: { ...state.ascensionChallenges.completions },
@@ -779,6 +782,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
         return ok;
       })
       .map((t) => ({ ...t })),
+    completed: saved.expeditions.completed,
   };
   const challengeIds = new Set(content.challenges.map((c) => c.id));
   const active = saved.ascensionChallenges.active;

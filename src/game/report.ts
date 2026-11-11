@@ -1,5 +1,6 @@
 import type { BurstJob, Metal, ProductionJob } from '../data';
 import type { Decimal } from './num';
+import type { Difficulty } from './state';
 
 /**
  * What tiered up (DESIGN.md §12): gem mastery, a boss medal (dungeon or special dungeon), a
@@ -157,6 +158,21 @@ export function pushBossAttack(into: BossAttackEvent[], event: BossAttackEvent):
   into.push(event);
 }
 
+/**
+ * A Challenge that ended (DESIGN.md §6 Farming and Challenge): won (the Victory banner), or lost
+ * with why and how much enemy HP was left.
+ */
+export interface ChallengeEvent {
+  dungeonId: string;
+  difficulty: Difficulty;
+  floor: number;
+  won: boolean;
+  /** Why it was lost: the timer ran out or the health reached zero; null for a win. */
+  reason: 'timer' | 'health' | null;
+  /** HP of the enemies still standing when it ended (0 for a win). */
+  enemyHpLeft: Decimal;
+}
+
 /** What happened during one advance() call, for notifications, animations and the away summary. */
 export interface TickReport {
   /** Kills of boss floors' enemies: mini-bosses and last-floor bosses. */
@@ -190,6 +206,8 @@ export interface TickReport {
   cardLevels: Record<string, { from: number; to: number }>;
   /** Times the fighting loadout was knocked out (DESIGN.md §6). */
   knockouts: number;
+  /** Challenges that ended, won or lost, in order (DESIGN.md §6 Farming and Challenge). */
+  challenges: ChallengeEvent[];
   /** The boss's attacks on the fighting loadout, in order (merged when there are many). */
   bossAttacks: BossAttackEvent[];
   /** Our hits on the boss or trial target, in order (merged when there are many). */
@@ -221,6 +239,7 @@ export function emptyReport(): TickReport {
     cardDrops: [],
     cardLevels: {},
     knockouts: 0,
+    challenges: [],
     bossAttacks: [],
     playerHits: [],
     tierUps: [],
@@ -248,6 +267,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.trialAttempts += add.trialAttempts;
   into.trialTopScore = Math.max(into.trialTopScore, add.trialTopScore);
   into.knockouts += add.knockouts;
+  into.challenges.push(...add.challenges);
   into.cardDrops.push(...add.cardDrops);
   for (const event of add.bossAttacks) pushBossAttack(into.bossAttacks, { ...event });
   for (const event of add.playerHits) pushPlayerHit(into.playerHits, { ...event });

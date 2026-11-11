@@ -87,7 +87,7 @@ import {
   hasDeeperFloor,
   isDifficultyUnlocked,
   setDifficulty,
-  setFloorMode,
+  setAutoChallenge,
   setOverflow,
   stageStars,
   DIFFICULTIES,
@@ -952,6 +952,9 @@ export function buyerCandidates(
   }
   // Summons: a 10-pull when affordable, else a single pull.
   for (const portal of content.portals) {
+    // The Legacy Gate's skins are looks only: the sim player leaves them (and their pity and
+    // rarity milestones) alone, as it does the cosmetics' looks it cannot value.
+    if (portal.kind === 'skins') continue;
     for (const count of [10, 1] as const) {
       out.push({
         id: count === 10 ? `summon:${portal.id}:10` : `summon:${portal.id}`,
@@ -1998,8 +2001,8 @@ function winsNextFloor(
   const dungeon = content.dungeonById.get(dungeonId);
   if (!dungeon) return false;
   const position = floorPosition(state, dungeon, difficulty);
-  if (!hasDeeperFloor(position)) return false;
-  const next = position.floor + 1;
+  const next = position.challengeFloor;
+  if (next === null) return false;
   const at = position.difficulty;
   const spk = secondsPerKill(state, content, dungeonId, modifiers, next, at);
   if (spk === null || !Number.isFinite(spk)) return false;
@@ -2026,7 +2029,7 @@ function advances(
   const position = floorPosition(state, dungeon, difficulty);
   // The mode is the dungeon's: it only says something about the difficulty being fought.
   const chosen = floorPosition(state, dungeon).difficulty === difficulty;
-  if (!hasDeeperFloor(position) || (chosen && position.mode === 'push')) return true;
+  if (!hasDeeperFloor(position) || (chosen && position.autoChallenge)) return true;
   return winsNextFloor(state, content, dungeonId, modifiers, difficulty);
 }
 
@@ -2057,15 +2060,15 @@ function climbTarget(
 }
 
 /**
- * Push or farm (DESIGN.md §6 Dungeon floors): a player who was knocked back to farming pushes
- * again once the next floor is one the loadout wins with room to spare.
+ * Auto-challenge (DESIGN.md §6 Auto-challenge): a player who turned it off turns it on again once
+ * the next floor is one the loadout wins with room to spare. (Package 11 teaches the rest.)
  */
-export function choosePush(state: GameState, content: Content): GameState {
+export function chooseAutoChallenge(state: GameState, content: Content): GameState {
   const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
   if (!dungeon) return state;
-  if (floorPosition(state, dungeon).mode === 'push') return state;
+  if (floorPosition(state, dungeon).autoChallenge) return state;
   if (!winsNextFloor(state, content, dungeon.id, collectModifiers(state, content))) return state;
-  const result = setFloorMode(state, content, dungeon.id, 'push');
+  const result = setAutoChallenge(state, content, dungeon.id, true);
   return result.ok ? result.state : state;
 }
 
@@ -2362,7 +2365,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         const tier = setDifficulty(state, content, fight.id, fight.difficulty);
         if (tier.ok) state = tier.state;
       }
-      state = choosePush(state, content);
+      state = chooseAutoChallenge(state, content);
       state = chooseOverflow(state, content);
       sinceChoose = 0;
     }
@@ -2744,7 +2747,7 @@ export function formatSummary(result: SimResult, content: Content): string {
       const where = Number.isFinite(at.floors)
         ? `floor ${at.floor}/${at.floors}`
         : `depth ${at.floor}`;
-      return `${d.id} ${at.difficulty} ${where} (best ${at.best}, ${at.mode}) ${spk === null ? '-' : `${spk.toFixed(0)} s/floor`} (survives ${survive.toFixed(0)} s)`;
+      return `${d.id} ${at.difficulty} ${where} (best ${at.best}, ${at.autoChallenge ? 'auto' : 'farm'}) ${spk === null ? '-' : `${spk.toFixed(0)} s/floor`} (survives ${survive.toFixed(0)} s)`;
     })
     .join(', ');
   return [

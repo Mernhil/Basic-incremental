@@ -21,6 +21,10 @@
     }
   },
   "knockoutSeconds": 10,
+  "challenge": {
+    "timerSeconds": { "wave": 30, "miniboss": 45, "boss": 60 },
+    "autoWaitSeconds": 60
+  },
   "bossPattern": {
     "attacksPerCycle": 6,
     "lightMultiplier": 0.4,

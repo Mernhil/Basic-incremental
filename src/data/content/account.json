@@ -750,6 +750,11 @@
             "stat": "xp.card",
             "kind": "percent",
             "value": "25"
+          },
+          {
+            "stat": "expedition.slots",
+            "kind": "flat",
+            "value": "1"
           }
         ]
       }

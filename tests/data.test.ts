@@ -101,7 +101,7 @@ describe('bundled content', () => {
       ['Hollow of the Void', 'The Unmade King'],
     ]);
     expect(content.cosmetics.length).toBeGreaterThan(7);
-    expect(content.portals).toHaveLength(2); // Card Portal and Wardrobe Gate (open with the Wardrobe)
+    expect(content.portals).toHaveLength(3); // Card Portal, Wardrobe Gate and Legacy Gate
     expect(content.dungeons.map((d) => d.boss.name)).toEqual([
       'Root Warden',
       'Cinder Lich',

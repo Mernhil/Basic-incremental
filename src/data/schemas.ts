@@ -390,6 +390,8 @@ export const STATS = [
   'stars.damage',
   /** The loot each star level adds on its stage, base 1. Scope: dungeon. */
   'stars.loot',
+  /** Expedition slots (DESIGN.md §15 Expeditions): base 1, the account tree and the Starlight shop add. */
+  'expedition.slots',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -992,6 +994,18 @@ export const combatSchema = z.strictObject({
   /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md §6). */
   knockoutSeconds: z.number().gt(0),
   /**
+   * The Challenge (DESIGN.md §6 Farming and Challenge, Auto-challenge): seconds on its timer by
+   * what the floor holds, and how long auto-challenge waits after a loss before it tries again.
+   */
+  challenge: z.strictObject({
+    timerSeconds: z.strictObject({
+      wave: z.number().gt(0),
+      miniboss: z.number().gt(0),
+      boss: z.number().gt(0),
+    }),
+    autoWaitSeconds: z.number().min(0),
+  }),
+  /**
    * How a boss's attacks are shaped (DESIGN.md §6). In every `attacksPerCycle` attacks all but
    * the last are light (`lightMultiplier` of an attack's damage) and the last is a slam
    * (`slamMultiplier`). A cycle must add up to `attacksPerCycle` normal attacks, so the damage
@@ -1364,8 +1378,11 @@ export const prestigeSchema = z.strictObject({
       perLevel: z.array(modifierSchema).default([]),
       /** A rule a level opens instead of a modifier (DESIGN.md §9 More to buy with Starlight):
        *  `second_worker_slots` (each level gives the next tree or mine a second worker slot, only
-       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15). */
-      grants: z.enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines']).optional(),
+       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15), `expedition_slot` (each level one more expedition
+       *  slot, §15). */
+      grants: z
+        .enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines', 'expedition_slot'])
+        .optional(),
     }),
   ),
   /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */
@@ -1419,7 +1436,20 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
     count: z.number().int().min(1).default(1),
   }),
   /** A dungeon with every stage of every star difficulty at `level` or more. */
-  z.strictObject({ kind: z.literal('dungeon_starred'), level: z.number().int().min(1).max(6) }),
+  /** A dungeon with every stage of every star difficulty (or only `difficulty`) at `level` or more. */
+  z.strictObject({
+    kind: z.literal('dungeon_starred'),
+    level: z.number().int().min(1).max(6),
+    difficulty: z.enum(['normal', 'hard', 'nightmare']).optional(),
+  }),
+  /** Dungeons whose last-floor boss was beaten on `difficulty` (`count`, default every dungeon). */
+  z.strictObject({
+    kind: z.literal('tier_cleared'),
+    difficulty: z.enum(['hard', 'nightmare']),
+    count: z.number().int().min(1).optional(),
+  }),
+  /** The deepest endless depth reached in any dungeon. */
+  z.strictObject({ kind: z.literal('endless_depth'), depth: z.number().int().min(1) }),
   /** Star levels earned over all stages. */
   z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
   /** Workers at work on trees and mines now. */
@@ -1430,6 +1460,10 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('depth'), layer: z.number().int().min(2) }),
   /** The forge has a worker and a recipe. */
   z.strictObject({ kind: z.literal('forge_working') }),
+  /** Bonds discovered (DESIGN.md §15 Bonds). */
+  z.strictObject({ kind: z.literal('bonds_found'), count: z.number().int().min(1) }),
+  /** Expedition trips collected (DESIGN.md §15 Expeditions). */
+  z.strictObject({ kind: z.literal('expeditions_done'), count: z.number().int().min(1) }),
   /** Cards marked on the wishlist. */
   z.strictObject({ kind: z.literal('wishlist'), count: z.number().int().min(1) }),
   /** Marked cards that are owned now. */
@@ -1891,6 +1925,17 @@ export const expeditionPlaceSchema = z.strictObject({
   dungeon: id,
   /** Cards of this element bring back double. */
   element: z.enum(ELEMENTS),
+  /** What a trip brings back, per hour of the trip (DESIGN.md §15 [Default]). */
+  rewards: z.strictObject({
+    /** The area's materials, whole units an hour. */
+    materials: z.array(z.strictObject({ resource: id, perHour: z.number().positive() })).min(1),
+    /** Gems: seconds of the gem's tree or mine output (at its current level) an hour. */
+    gems: z
+      .array(z.strictObject({ resource: id, secondsPerHour: z.number().positive() }))
+      .default([]),
+    /** Card XP an hour, as a share of the levels the card is on (0.1 = a tenth of a level). */
+    cardXpLevels: z.number().min(0),
+  }),
 });
 export type ExpeditionPlace = z.output<typeof expeditionPlaceSchema>;
 

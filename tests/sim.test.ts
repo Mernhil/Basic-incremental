@@ -30,7 +30,7 @@ import {
   formatRunTable,
   RUN_MILESTONES,
   IDLE_CHECKIN_SECONDS,
-  choosePush,
+  chooseAutoChallenge,
   type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
@@ -136,18 +136,20 @@ describe('balance sim: greedy buyer', () => {
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
-  it('spends Money on the economy and leaves the gems to the card upgrades waiting for them', () => {
+  it('spends Money on the economy, its spare gems on training, and leaves the Cores to the card upgrades', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 6;
     squire.level = 40;
     state.resources['moss_core'] = new Decimal(10);
-    state.resources['iron_gem'] = new Decimal(600);
+    state.resources['copper_gem'] = new Decimal(6000);
     state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought.some((id) => id.startsWith('mine:') || id.startsWith('tree:'))).toBe(true);
-    expect(after.resources['iron_gem']!.toNumber()).toBe(600);
+    // Training is paid in gems (DESIGN.md §6): the spare Copper Gems go into Sharpen.
+    expect(bought).toContain('train:sharpen');
+    expect(after.resources['copper_gem']!.toNumber()).toBeLessThan(6000);
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
@@ -537,7 +539,6 @@ describe('balance sim: run', () => {
     const first = content.dungeons[0]!;
     state.combat.floors[first.id] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: {
         normal: { floor: first.floors, best: first.floors },
@@ -693,24 +694,23 @@ describe('balance sim: idle profile', () => {
 });
 
 describe('balance sim: floors', () => {
-  it('pushes again once the next floor is one the loadout wins, and not into a wall', () => {
+  it('turns auto-challenge back on once the next floor is one the loadout wins, not into a wall', () => {
     const floors = floorsContent;
     const knocked = (): GameState => {
       const state = freshState();
       state.combat.floors['mossy_cellar'] = {
         difficulty: 'normal',
-        mode: 'farm',
         autoChallenge: false,
         tiers: { normal: { floor: 3, best: 3 } },
       };
       return state;
     };
-    // A strong loadout wins floor 4 with room to spare: back to pushing.
-    const strong = choosePush(knocked(), withDps(1e6, floors));
-    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).mode).toBe('push');
+    // A strong loadout wins floor 4 with room to spare: auto-challenge goes back on.
+    const strong = chooseAutoChallenge(knocked(), withDps(1e6, floors));
+    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(true);
     // A bare-handed one would fall first: it keeps farming.
-    const weak = choosePush(knocked(), withDps(0.01, floors));
-    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).mode).toBe('farm');
+    const weak = chooseAutoChallenge(knocked(), withDps(0.01, floors));
+    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(false);
   });
 
   it('reaches the Ember Crypt through the ten floors of the Mossy Cellar', () => {

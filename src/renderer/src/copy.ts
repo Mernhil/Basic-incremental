@@ -438,12 +438,22 @@ export const COPY = {
     miniBoss: 'Mini-boss',
     bossFloor: 'Boss',
     floorsTitle: 'Floors',
-    modeLabel: 'Push or farm',
-    push: 'Push',
-    farm: 'Farm',
-    pushTip: 'Push: every win moves you down a floor.',
-    farmTip: 'Farm: stay on this floor. A knockout drops you one floor and switches to Farm.',
-    lastFloorTip: 'This is the last floor: the boss is farmed here.',
+    challengeLabel: 'Farming and Challenge',
+    challenge: (floor: number) => `Challenge floor ${floor}`,
+    challengeDepth: (depth: number) => `Challenge depth ${depth}`,
+    challengeRunning: 'Challenge under way',
+    challengeTip: (seconds: number) =>
+      `Fight the next floor at full health. Kill every enemy within ${seconds} s to win it and farm it from then on. A loss costs nothing: try again at once.`,
+    autoChallenge: 'Auto-challenge',
+    autoOn: 'Auto-challenge: on',
+    autoOff: 'Auto-challenge: off',
+    autoTip:
+      'On: the next Challenge starts by itself after every win, and a minute after a loss. Off: keep farming until you press Challenge.',
+    farming: (floor: string) => `Farming ${floor}`,
+    challengeLeft: (floor: string, left: string) => `Challenge ${floor} · ${left} left`,
+    autoWait: (left: string) => `Auto-challenge again in ${left}`,
+    farmTip: 'You farm your best beaten floor on a loop. A knockout drops the farming one floor.',
+    lastFloorTip: 'This is the last floor: the boss is farmed here, nothing deeper to challenge.',
     difficultyLabel: 'Difficulty',
     opens: (list: string) => `First clear opens ${list}`,
     perKillDrop: (res: string) => `${res} per boss kill`,
@@ -760,6 +770,7 @@ export const COPY = {
     duplicate: (n: number) => `Duplicate (${n})`,
     shards: (n: number) => `+${n} shards`,
     copy: (n: number) => `Copy (${n})`,
+    payback: (amount: string) => `Owned · +${amount} back`,
     byPity: 'Pity',
     byGuarantee: '×10 guarantee',
     hidden: 'Face-down card',
@@ -788,7 +799,7 @@ export const COPY = {
       `${name}${worn ? ', equipped' : ''}${picked ? ', previewing' : ''}`,
     applied: (name: string) => `${name} applied.`,
     failed: 'That skin cannot be worn right now.',
-    none: 'You own no weapon skins yet. Legacy skins come with the Legacy Gate in a later release.',
+    none: 'You own no weapon skins yet. Pull them from the Legacy Gate on the Summon page.',
     level: 'Level',
     hitsEvery: 'Hits every',
   },
@@ -1007,6 +1018,14 @@ export const COPY = {
     fallTip: (now: string | null) =>
       `Your full health lasts this long against this floor, and you would fall before you clear it. ${now ? `With the health you have now: ${now}.` : ''}`.trim(),
     rareDrop: 'Rare drop!',
+    challengeTimer: 'Challenge',
+    challengeButton: 'Challenge',
+    victory: 'Victory!',
+    victoryLine: (floor: string) => `${floor} beaten`,
+    defeat: 'Defeat',
+    defeatTimer: 'Time ran out',
+    defeatHealth: 'Your health ran out',
+    defeatLeft: (hp: string) => `${hp} enemy HP left`,
     drawer: 'Upgrades and floors',
     drawerOpen: 'Show upgrades and floors',
     drawerClose: 'Hide upgrades and floors',
@@ -1084,7 +1103,7 @@ export const COPY = {
   /** Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer. */
   training: {
     title: 'Training',
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
     level: (n: number) => `Lv ${n}`,
     effect: (times: string, what: string) => `×${times} ${what}`,
     toGo: (mult: string, levels: number) =>
@@ -1111,7 +1130,7 @@ export const COPY = {
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
   },
   buy: {
     countLabel: 'Buy amount',

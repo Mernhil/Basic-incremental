@@ -4,7 +4,6 @@ import {
   DIFFICULTIES,
   type Difficulty,
   type DungeonProgress,
-  type FloorMode,
   type GameState,
   type TierProgress,
 } from './state';
@@ -109,9 +108,9 @@ export function parseStageKey(key: string): StageRef | null {
   return { dungeonId, difficulty: difficulty as Difficulty, floor };
 }
 
-/** A dungeon's progress as a new game has it: Normal, pushing, on floor 1, nothing beaten. */
+/** A dungeon's progress as a new game has it: Normal, auto-challenge on, floor 1, nothing beaten. */
 export function initialProgress(): DungeonProgress {
-  return { difficulty: 'normal', mode: 'push', autoChallenge: true, tiers: {} };
+  return { difficulty: 'normal', autoChallenge: true, tiers: {} };
 }
 
 /** How many floors a dungeon has on a difficulty; the endless depths have no last floor. */
@@ -133,13 +132,17 @@ export function dungeonProgress(state: GameState, dungeonId: string): DungeonPro
 /** Where the player stands in a dungeon. */
 export interface FloorPosition {
   difficulty: Difficulty;
-  mode: FloorMode;
-  /** The floor being fought, 1 to the floor count (the depth, in the endless depths). */
+  /** Auto-challenge is on for the dungeon (DESIGN.md §6 Auto-challenge). */
+  autoChallenge: boolean;
+  /** The floor being farmed, 1 to the floor count (the depth, in the endless depths). Once a floor
+   *  is beaten it is never above the best one (DESIGN.md §6 Farming and Challenge). */
   floor: number;
   /** The deepest floor beaten on this difficulty (0 = none). Kept through Ascension. */
   best: number;
   /** Floors on this difficulty; Infinity in the endless depths. */
   floors: number;
+  /** The floor a Challenge fights (`challengeFloor`), or null when there is none. */
+  challengeFloor: number | null;
 }
 
 const clampFloor = (floor: number, floors: number): number =>
@@ -158,13 +161,34 @@ export function floorPosition(
   const at = difficulty ?? progress.difficulty;
   const tier: TierProgress = progress.tiers[at] ?? { floor: 1, best: 0 };
   const floors = floorCount(dungeon, at);
+  const best = Math.max(0, Math.floor(tier.best) || 0);
+  // The farm is a beaten floor: never above the best one (a save from before the Challenge stood
+  // one floor past it while pushing). With nothing beaten it is floor 1, the first Challenge.
+  const floor = clampFloor(Math.min(tier.floor, Math.max(1, best)), floors);
   return {
     difficulty: at,
-    mode: progress.mode,
-    floor: clampFloor(tier.floor, floors),
-    best: Math.max(0, Math.floor(tier.best) || 0),
+    autoChallenge: progress.autoChallenge,
+    floor,
+    best,
     floors,
+    challengeFloor: challengeFloor(floor, best, floors),
   };
+}
+
+/**
+ * The floor a Challenge fights (DESIGN.md §6 Farming and Challenge): the floor after the farmed
+ * one, which is the best floor plus one unless a knockout or an Ascension put the farming lower
+ * (then the farming climbs back one Challenge at a time); floor 1 while nothing is beaten. Null on
+ * the last floor of a tier, where there is nothing left to challenge.
+ */
+export function challengeFloor(farmed: number, best: number, floors: number): number | null {
+  const next = best <= 0 ? 1 : farmed + 1;
+  return next > floors ? null : next;
+}
+
+/** Seconds on a Challenge's timer (DESIGN.md §6, `combat.json` `challenge`), by floor kind. */
+export function challengeSeconds(content: Content, kind: FloorKind): number {
+  return content.combat.challenge.timerSeconds[kind];
 }
 
 /**
@@ -188,7 +212,7 @@ export function unlockedDifficulties(state: GameState, dungeon: Dungeon): Diffic
   return DIFFICULTIES.filter((d) => isDifficultyUnlocked(state, dungeon, d));
 }
 
-/** Whether a deeper floor exists below this one (push has somewhere to go). */
+/** Whether a deeper floor exists below this one (there is something to challenge). */
 export function hasDeeperFloor(position: Pick<FloorPosition, 'floor' | 'floors'>): boolean {
   return position.floor < position.floors;
 }

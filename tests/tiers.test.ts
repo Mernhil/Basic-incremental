@@ -32,6 +32,7 @@ import {
   freshState,
   neutralStars,
   withBossAttack,
+  withAutoChallenge,
   withDps,
   withOverflow,
 } from './helpers';
@@ -117,12 +118,13 @@ describe('difficulty tiers', () => {
   });
 
   it('unlocks Hard by beating the Normal boss, Nightmare by the Hard one, the depths by Nightmare', () => {
-    // One hit kills anything: with overflow on, the first hit takes the whole Normal tier.
+    // One hit kills anything: with overflow on and auto-challenge, each hit wins a floor's Challenge.
     const content = harmless(withDps(1e40, plain));
-    let state = run(withOverflow(inCellar(content), content), content, 1.01).state;
+    const start = withAutoChallenge(withOverflow(inCellar(content), content), true);
+    let state = run(start, content, 10.01).state;
     expect(isDungeonCleared(state, 'mossy_cellar')).toBe(true);
     expect(unlockedDifficulties(state, cellar)).toEqual(['normal', 'hard']);
-    // Push does not walk into Hard by itself: the player picks the tier.
+    // Auto-challenge does not walk into Hard by itself: the player picks the tier.
     state = run(state, content, 5).state;
     expect(floorPosition(state, cellar)).toMatchObject({ difficulty: 'normal', floor: 10 });
 
@@ -134,13 +136,13 @@ describe('difficulty tiers', () => {
       floor: 1,
       best: 0,
     });
-    state = run(hard.state, content, 1.01).state;
+    state = run(hard.state, content, 10.01).state;
     expect(floorPosition(state, cellar)).toMatchObject({ difficulty: 'hard', floor: 10, best: 10 });
     expect(unlockedDifficulties(state, cellar)).toEqual(['normal', 'hard', 'nightmare']);
 
     const nightmare = setDifficulty(state, content, 'mossy_cellar', 'nightmare');
     if (!nightmare.ok) throw new Error(nightmare.reason);
-    state = run(nightmare.state, content, 1.01).state;
+    state = run(nightmare.state, content, 10.01).state;
     expect(isDifficultyUnlocked(state, cellar, 'endless')).toBe(true);
     // Each tier kept its own floor and best floor.
     expect(floorPosition(state, cellar, 'normal')).toMatchObject({ floor: 10, best: 10 });
@@ -238,7 +240,7 @@ describe('difficulty tiers', () => {
     expect(unlockedDifficulties(after, cellar)).toEqual(['normal', 'hard', 'nightmare']);
     expect(floorPosition(after, cellar, 'normal')).toMatchObject({ floor: 5, best: 10 });
     expect(floorPosition(after, cellar, 'hard')).toMatchObject({ floor: 5, best: 10 });
-    expect(floorPosition(after, cellar, 'nightmare')).toMatchObject({ floor: 1, best: 3 });
+    expect(floorPosition(after, cellar, 'nightmare')).toMatchObject({ floor: 2, best: 4 });
     // The difficulty chosen is kept too.
     expect(floorPosition(after, cellar).difficulty).toBe('nightmare');
   });
@@ -280,28 +282,33 @@ describe('endless depths', () => {
     expect(floorPosition(state, cellar).difficulty).toBe('endless');
   });
 
-  it('pushes down the depths and stops where the hit runs out', () => {
+  it('challenges down the depths and stops where the hit runs out', () => {
     // A hit worth 1e25: the Nightmare boss has about 1.3e10 HP, and each depth is 1.12 times
-    // the one before, so the hit carries a long way down and then stops.
+    // the one before, so a hit wins depth after depth (one Challenge a hit, overflow on) until the
+    // waves outgrow what the Challenge timer leaves room for.
     const content = harmless(withDps(1e25, plain));
-    const start = withOverflow(on(inCellar(content), content, 1, 'endless'), content);
-    const { state } = run(start, content, 1.01);
+    const start = withAutoChallenge(
+      withOverflow(on(inCellar(content), content, 1, 'endless'), content),
+      true,
+    );
+    const { state, report } = run(start, content, 700);
     const position = floorPosition(state, cellar);
     expect(position.floors).toBe(Infinity);
-    expect(position.floor).toBeGreaterThan(100);
-    expect(position.floor).toBeLessThan(400);
-    expect(position.best).toBe(position.floor - 1);
+    expect(position.best).toBeGreaterThan(250);
+    expect(position.best).toBeLessThan(400);
+    expect(position.floor).toBe(position.best);
+    expect(report.challenges.some((c) => !c.won)).toBe(true);
     const status = bossStatus(state, content)!;
     expect(status.floors).toBe(Infinity);
     expect(status.difficulty).toBe('endless');
   });
 
-  it('drops a depth and switches to farm on a knockout, never above depth 1', () => {
+  it('drops the farmed depth on a knockout, never above depth 1', () => {
     const content = withBossAttack(withDps(1, plain), 'mossy_cellar', 1, 2);
     const start = on(inCellar(content), content, 5, 'endless');
     const { state, report } = run(start, content, 3);
     expect(report.knockouts).toBe(1);
-    expect(floorPosition(state, cellar)).toMatchObject({ floor: 4, mode: 'farm', best: 4 });
+    expect(floorPosition(state, cellar)).toMatchObject({ floor: 4, best: 5 });
     const bottom = run(on(inCellar(content), content, 1, 'endless'), content, 200).state;
     expect(floorPosition(bottom, cellar).floor).toBe(1);
   });
@@ -311,10 +318,10 @@ describe('endless depths', () => {
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
-    expect(floorPosition(result.state, cellar, 'endless')).toMatchObject({ floor: 15, best: 30 });
+    expect(floorPosition(result.state, cellar, 'endless')).toMatchObject({ floor: 15, best: 31 });
   });
 
-  it('never pushes deeper while offline', () => {
+  it('never climbs deeper offline with auto-challenge off', () => {
     const content = harmless(withDps(1e25, plain));
     const start = on(inCellar(content), content, 3, 'endless');
     const away = simulateOffline(start, content, 0, 600_000, createSeededRng(1));
@@ -429,7 +436,6 @@ describe('balance sim: tiers', () => {
       const id = d.id;
       state.combat.floors[id] = {
         difficulty: 'normal',
-        mode: 'farm',
         autoChallenge: false,
         tiers: { normal: { floor: d.floors, best: d.floors } },
       };

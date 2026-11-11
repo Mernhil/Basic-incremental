@@ -930,6 +930,180 @@
           }
         ]
       }
+    },
+    {
+      "id": "bond_found",
+      "name": "Bond Found",
+      "description": "Discover your first bond.",
+      "condition": {
+        "kind": "bonds_found",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "15"
+          }
+        ]
+      }
+    },
+    {
+      "id": "first_expedition",
+      "name": "First Expedition",
+      "description": "Bring a card home from a trip.",
+      "condition": {
+        "kind": "expeditions_done",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "25"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hard_won",
+      "name": "Hard Won",
+      "description": "Beat the last-floor boss of a dungeon on Hard.",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "hard",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hard_everywhere",
+      "name": "Hard Everywhere",
+      "description": "Beat the last-floor boss of every dungeon on Hard.",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "hard"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "8"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nightmare_won",
+      "name": "Nightmare Won",
+      "description": "Beat the last-floor boss of a dungeon on Nightmare.",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "nightmare",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nightmare_everywhere",
+      "name": "Nightmare Everywhere",
+      "description": "Beat the last-floor boss of every dungeon on Nightmare.",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "nightmare"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "12"
+          }
+        ]
+      }
+    },
+    {
+      "id": "hard_starred",
+      "name": "Hard Starred",
+      "description": "Give every stage of a dungeon on Hard its first star.",
+      "condition": {
+        "kind": "dungeon_starred",
+        "level": 1,
+        "difficulty": "hard"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "4"
+          }
+        ]
+      }
+    },
+    {
+      "id": "nightmare_starred",
+      "name": "Nightmare Starred",
+      "description": "Give every stage of a dungeon on Nightmare its first star.",
+      "condition": {
+        "kind": "dungeon_starred",
+        "level": 1,
+        "difficulty": "nightmare"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "deep_diver",
+      "name": "Deep Diver",
+      "description": "Reach depth 10 of the endless depths in any dungeon.",
+      "condition": {
+        "kind": "endless_depth",
+        "depth": 10
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "5"
+          }
+        ]
+      }
+    },
+    {
+      "id": "abyss_walker",
+      "name": "Abyss Walker",
+      "description": "Reach depth 50 of the endless depths in any dungeon.",
+      "condition": {
+        "kind": "endless_depth",
+        "depth": 50
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "10"
+          }
+        ]
+      }
     }
   ],
   "shardShop": [
