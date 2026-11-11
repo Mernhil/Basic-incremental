@@ -4,149 +4,319 @@
       "id": "first_harvest",
       "name": "First Harvest",
       "description": "Harvest your first gem.",
-      "condition": { "kind": "harvested", "amount": "1" },
-      "reward": { "resources": [{ "resource": "oak_gem", "amount": "25" }] }
+      "condition": {
+        "kind": "harvested",
+        "amount": "1"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "oak_gem",
+            "amount": "25"
+          }
+        ]
+      }
     },
     {
       "id": "first_kill",
       "name": "First Kill",
       "description": "Defeat a boss.",
-      "condition": { "kind": "kills", "amount": 1 },
-      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "600" }] }
+      "condition": {
+        "kind": "kills",
+        "amount": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "600"
+          }
+        ]
+      }
     },
     {
       "id": "lumberjack_1",
       "name": "Lumberjack I",
       "description": "Harvest 10,000 tree gems.",
-      "condition": { "kind": "harvested", "job": "logging", "amount": "1e4" },
-      "reward": { "resources": [{ "resource": "moss_core", "amount": "3" }] }
+      "condition": {
+        "kind": "harvested",
+        "job": "logging",
+        "amount": "1e4"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "moss_core",
+            "amount": "3"
+          }
+        ]
+      }
     },
     {
       "id": "lumberjack_2",
       "name": "Lumberjack II",
       "description": "Harvest 10 million tree gems.",
-      "condition": { "kind": "harvested", "job": "logging", "amount": "1e7" },
-      "reward": { "resources": [{ "resource": "cinder_core", "amount": "5" }] }
+      "condition": {
+        "kind": "harvested",
+        "job": "logging",
+        "amount": "1e7"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "cinder_core",
+            "amount": "5"
+          }
+        ]
+      }
     },
     {
       "id": "prospector_1",
       "name": "Prospector I",
       "description": "Mine 10,000 mine gems.",
-      "condition": { "kind": "harvested", "job": "mining", "amount": "1e4" },
-      "reward": { "resources": [{ "resource": "moss_core", "amount": "3" }] }
+      "condition": {
+        "kind": "harvested",
+        "job": "mining",
+        "amount": "1e4"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "moss_core",
+            "amount": "3"
+          }
+        ]
+      }
     },
     {
       "id": "prospector_2",
       "name": "Prospector II",
       "description": "Mine 10 million mine gems.",
-      "condition": { "kind": "harvested", "job": "mining", "amount": "1e7" },
-      "reward": { "resources": [{ "resource": "cinder_core", "amount": "5" }] }
+      "condition": {
+        "kind": "harvested",
+        "job": "mining",
+        "amount": "1e7"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "cinder_core",
+            "amount": "5"
+          }
+        ]
+      }
     },
     {
       "id": "tree_hugger",
       "name": "Tree Hugger",
       "description": "Unlock all 3 tree kinds.",
-      "condition": { "kind": "producers", "job": "logging" },
-      "reward": { "resources": [{ "resource": "glimmer_dust", "amount": "100" }] }
+      "condition": {
+        "kind": "producers",
+        "job": "logging"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "100"
+          }
+        ]
+      }
     },
     {
       "id": "deep_delver",
       "name": "Deep Delver",
       "description": "Open all 3 mines.",
-      "condition": { "kind": "producers", "job": "mining" },
-      "reward": { "resources": [{ "resource": "glimmer_dust", "amount": "100" }] }
+      "condition": {
+        "kind": "producers",
+        "job": "mining"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "100"
+          }
+        ]
+      }
     },
     {
       "id": "giant_slayer_1",
       "name": "Giant Slayer I",
       "description": "Clear the Mossy Cellar.",
-      "condition": { "kind": "cleared", "dungeon": "mossy_cellar" },
-      "reward": { "cosmetics": ["holo_hex"] }
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "mossy_cellar"
+      },
+      "reward": {
+        "cosmetics": ["holo_hex"]
+      }
     },
     {
       "id": "giant_slayer_2",
       "name": "Giant Slayer II",
       "description": "Clear the Ember Crypt.",
-      "condition": { "kind": "cleared", "dungeon": "ember_crypt" },
-      "reward": { "cosmetics": ["holo_waves"] }
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "ember_crypt"
+      },
+      "reward": {
+        "cosmetics": ["holo_waves"]
+      }
     },
     {
       "id": "giant_slayer_3",
       "name": "Giant Slayer III",
       "description": "Clear the Frostspire Vault.",
-      "condition": { "kind": "cleared", "dungeon": "frostspire_vault" },
-      "reward": { "cosmetics": ["prism_pointer"] }
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "frostspire_vault"
+      },
+      "reward": {
+        "cosmetics": ["prism_pointer"]
+      }
     },
     {
       "id": "glimmer_seeker",
       "name": "Glimmer Seeker",
       "description": "Clear the Glimmer Trial.",
-      "condition": { "kind": "cleared", "dungeon": "glimmer_trial" },
-      "reward": { "cosmetics": ["gt_finish"] }
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "glimmer_trial"
+      },
+      "reward": {
+        "cosmetics": ["gt_finish"]
+      }
     },
     {
       "id": "first_summon",
       "name": "First Summon",
       "description": "Pull from a portal.",
-      "condition": { "kind": "pulls", "amount": 1 },
-      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "300" }] }
+      "condition": {
+        "kind": "pulls",
+        "amount": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "300"
+          }
+        ]
+      }
     },
     {
       "id": "ten_pulls",
       "name": "Ten Pulls",
       "description": "Pull 10 times.",
-      "condition": { "kind": "pulls", "amount": 10 },
-      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "300" }] }
+      "condition": {
+        "kind": "pulls",
+        "amount": 10
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "300"
+          }
+        ]
+      }
     },
     {
       "id": "pity_breaker",
       "name": "Pity Breaker",
       "description": "Trigger a portal's pity.",
-      "condition": { "kind": "pity_hits", "amount": 1 },
-      "reward": { "cosmetics": ["gt_attack"] }
+      "condition": {
+        "kind": "pity_hits",
+        "amount": 1
+      },
+      "reward": {
+        "cosmetics": ["gt_attack"]
+      }
     },
     {
       "id": "silver_lining",
       "name": "Silver Lining",
       "description": "Raise a card to Silver.",
-      "condition": { "kind": "card_tier", "tier": "silver" },
-      "reward": { "resources": [{ "resource": "cinder_core", "amount": "5" }] }
+      "condition": {
+        "kind": "card_tier",
+        "tier": "silver"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "cinder_core",
+            "amount": "5"
+          }
+        ]
+      }
     },
     {
       "id": "golden_hour",
       "name": "Golden Hour",
       "description": "Raise a card to Gold.",
-      "condition": { "kind": "card_tier", "tier": "gold" },
-      "reward": { "cosmetics": ["gt_border"] }
+      "condition": {
+        "kind": "card_tier",
+        "tier": "gold"
+      },
+      "reward": {
+        "cosmetics": ["gt_border"]
+      }
     },
     {
       "id": "six_stars",
       "name": "Six Stars",
       "description": "Raise a card to ★6.",
-      "condition": { "kind": "card_stars", "stars": 6 },
-      "reward": { "cosmetics": ["gt_tick"] }
+      "condition": {
+        "kind": "card_stars",
+        "stars": 6
+      },
+      "reward": {
+        "cosmetics": ["gt_tick"]
+      }
     },
     {
       "id": "prismatic_dawn",
       "name": "Prismatic Dawn",
       "description": "Raise a card to Prismatic.",
-      "condition": { "kind": "card_tier", "tier": "prismatic" },
-      "reward": { "cosmetics": ["gt_table"] }
+      "condition": {
+        "kind": "card_tier",
+        "tier": "prismatic"
+      },
+      "reward": {
+        "cosmetics": ["gt_table"]
+      }
     },
     {
       "id": "full_loadout",
       "name": "Full Loadout",
       "description": "Fill all four slots of a loadout.",
-      "condition": { "kind": "full_loadout" },
-      "reward": { "resources": [{ "resource": "summon_crystal", "amount": "300" }] }
+      "condition": {
+        "kind": "full_loadout"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "300"
+          }
+        ]
+      }
     },
     {
       "id": "dressed_up",
       "name": "Dressed Up",
       "description": "Equip a full cosmetic set.",
-      "condition": { "kind": "full_set" },
+      "condition": {
+        "kind": "full_set"
+      },
       "reward": {
-        "resources": [{ "resource": "facet_shard", "amount": "100" }],
+        "resources": [
+          {
+            "resource": "facet_shard",
+            "amount": "100"
+          }
+        ],
         "cosmetics": ["wardrobe_b"]
       }
     },
@@ -154,16 +324,29 @@
       "id": "fashionista",
       "name": "Fashionista",
       "description": "Own 10 cosmetics besides the starter set.",
-      "condition": { "kind": "cosmetics_owned", "amount": 10 },
-      "reward": { "cosmetics": ["gt_number"] }
+      "condition": {
+        "kind": "cosmetics_owned",
+        "amount": 10
+      },
+      "reward": {
+        "cosmetics": ["gt_number"]
+      }
     },
     {
       "id": "skilled",
       "name": "Skilled",
       "description": "Spend your first 10 skill points.",
-      "condition": { "kind": "skill_points_spent", "amount": 10 },
+      "condition": {
+        "kind": "skill_points_spent",
+        "amount": 10
+      },
       "reward": {
-        "resources": [{ "resource": "glamour_crystal", "amount": "900" }],
+        "resources": [
+          {
+            "resource": "glamour_crystal",
+            "amount": "900"
+          }
+        ],
         "cosmetics": ["nodes_b"]
       }
     },
@@ -171,30 +354,63 @@
       "id": "first_ascension",
       "name": "First Ascension",
       "description": "Ascend for the first time.",
-      "condition": { "kind": "ascensions", "amount": 1 },
-      "reward": { "resources": [{ "resource": "glamour_crystal", "amount": "900" }] }
+      "condition": {
+        "kind": "ascensions",
+        "amount": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glamour_crystal",
+            "amount": "900"
+          }
+        ]
+      }
     },
     {
       "id": "night_owl",
       "name": "Night Owl",
       "description": "Collect 8 hours of offline progress at once.",
-      "condition": { "kind": "offline_hours", "hours": 8 },
-      "reward": { "cosmetics": ["gt_cursor"] }
+      "condition": {
+        "kind": "offline_hours",
+        "hours": 8
+      },
+      "reward": {
+        "cosmetics": ["gt_cursor"]
+      }
     },
     {
       "id": "first_milestone",
       "name": "First Milestone",
       "description": "Take a mine to level 25.",
-      "condition": { "kind": "milestone", "level": 25 },
-      "reward": { "resources": [{ "resource": "moss_core", "amount": "2" }] }
+      "condition": {
+        "kind": "milestone",
+        "level": 25
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "moss_core",
+            "amount": "2"
+          }
+        ]
+      }
     },
     {
       "id": "gem_adept",
       "name": "Gem Adept",
       "description": "Reach Gold mastery on a gem.",
-      "condition": { "kind": "gem_mastery", "tier": 3 },
+      "condition": {
+        "kind": "gem_mastery",
+        "tier": 3
+      },
       "reward": {
-        "resources": [{ "resource": "glimmer_dust", "amount": "200" }],
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "200"
+          }
+        ],
         "cosmetics": ["sticker_c"]
       }
     },
@@ -202,9 +418,17 @@
       "id": "medalist",
       "name": "Medalist",
       "description": "Earn a Silver medal on a boss.",
-      "condition": { "kind": "boss_mastery", "tier": 2 },
+      "condition": {
+        "kind": "boss_mastery",
+        "tier": 2
+      },
       "reward": {
-        "resources": [{ "resource": "glamour_crystal", "amount": "600" }],
+        "resources": [
+          {
+            "resource": "glamour_crystal",
+            "amount": "600"
+          }
+        ],
         "cosmetics": ["sticker_b"]
       }
     },
@@ -212,9 +436,16 @@
       "id": "masterwork",
       "name": "Masterwork",
       "description": "Take a cosmetic to its max level.",
-      "condition": { "kind": "max_cosmetic" },
+      "condition": {
+        "kind": "max_cosmetic"
+      },
       "reward": {
-        "resources": [{ "resource": "facet_shard", "amount": "200" }],
+        "resources": [
+          {
+            "resource": "facet_shard",
+            "amount": "200"
+          }
+        ],
         "cosmetics": ["sticker_e"]
       }
     }
@@ -222,199 +453,798 @@
   "shardShop": [
     {
       "id": "copy_ember_squire",
-      "reward": { "kind": "card", "card": "ember_squire" },
+      "reward": {
+        "kind": "card",
+        "card": "ember_squire"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_apprentice_feller",
-      "reward": { "kind": "card", "card": "apprentice_feller" },
+      "reward": {
+        "kind": "card",
+        "card": "apprentice_feller"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_cave_digger",
-      "reward": { "kind": "card", "card": "cave_digger" },
+      "reward": {
+        "kind": "card",
+        "card": "cave_digger"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_rusty_brute",
-      "reward": { "kind": "card", "card": "rusty_brute" },
+      "reward": {
+        "kind": "card",
+        "card": "rusty_brute"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_militia_picket",
-      "reward": { "kind": "card", "card": "militia_picket" },
+      "reward": {
+        "kind": "card",
+        "card": "militia_picket"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_stable_squire",
-      "reward": { "kind": "card", "card": "stable_squire" },
+      "reward": {
+        "kind": "card",
+        "card": "stable_squire"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_alley_cutpurse",
-      "reward": { "kind": "card", "card": "alley_cutpurse" },
+      "reward": {
+        "kind": "card",
+        "card": "alley_cutpurse"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_quarry_smasher",
-      "reward": { "kind": "card", "card": "quarry_smasher" },
+      "reward": {
+        "kind": "card",
+        "card": "quarry_smasher"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_fieldhand_archer",
-      "reward": { "kind": "card", "card": "fieldhand_archer" },
+      "reward": {
+        "kind": "card",
+        "card": "fieldhand_archer"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_hedge_acolyte",
-      "reward": { "kind": "card", "card": "hedge_acolyte" },
+      "reward": {
+        "kind": "card",
+        "card": "hedge_acolyte"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_field_reaper",
-      "reward": { "kind": "card", "card": "field_reaper" },
+      "reward": {
+        "kind": "card",
+        "card": "field_reaper"
+      },
       "price": 5,
       "stock": null
     },
     {
       "id": "copy_hollow_spearman",
-      "reward": { "kind": "card", "card": "hollow_spearman" },
+      "reward": {
+        "kind": "card",
+        "card": "hollow_spearman"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_moss_forager",
-      "reward": { "kind": "card", "card": "moss_forager" },
+      "reward": {
+        "kind": "card",
+        "card": "moss_forager"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_pebble_prospector",
-      "reward": { "kind": "card", "card": "pebble_prospector" },
+      "reward": {
+        "kind": "card",
+        "card": "pebble_prospector"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_brass_vanguard",
-      "reward": { "kind": "card", "card": "brass_vanguard" },
+      "reward": {
+        "kind": "card",
+        "card": "brass_vanguard"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_warden",
-      "reward": { "kind": "card", "card": "bronze_warden" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_warden"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_jouster",
-      "reward": { "kind": "card", "card": "bronze_jouster" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_jouster"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_sneak",
-      "reward": { "kind": "card", "card": "bronze_sneak" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_sneak"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_forgehand",
-      "reward": { "kind": "card", "card": "bronze_forgehand" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_forgehand"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_hunter",
-      "reward": { "kind": "card", "card": "bronze_hunter" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_hunter"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_mystic",
-      "reward": { "kind": "card", "card": "bronze_mystic" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_mystic"
+      },
       "price": 8,
       "stock": null
     },
     {
       "id": "copy_bronze_gleaner",
-      "reward": { "kind": "card", "card": "bronze_gleaner" },
+      "reward": {
+        "kind": "card",
+        "card": "bronze_gleaner"
+      },
       "price": 8,
       "stock": null
     },
     {
+      "id": "copy_storm_duelist",
+      "reward": {
+        "kind": "card",
+        "card": "storm_duelist"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_dawnblade_regent",
+      "reward": {
+        "kind": "card",
+        "card": "dawnblade_regent"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_grove_keeper",
+      "reward": {
+        "kind": "card",
+        "card": "grove_keeper"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_elder_treant",
+      "reward": {
+        "kind": "card",
+        "card": "elder_treant"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_moonwood_dryad",
+      "reward": {
+        "kind": "card",
+        "card": "moonwood_dryad"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_gem_cutter",
+      "reward": {
+        "kind": "card",
+        "card": "gem_cutter"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_geode_golem",
+      "reward": {
+        "kind": "card",
+        "card": "geode_golem"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_core_titan",
+      "reward": {
+        "kind": "card",
+        "card": "core_titan"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_reaper_test",
+      "reward": {
+        "kind": "card",
+        "card": "reaper_test"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_seraph_lancer",
+      "reward": {
+        "kind": "card",
+        "card": "seraph_lancer"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_grave_hammerer",
+      "reward": {
+        "kind": "card",
+        "card": "grave_hammerer"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_heartwood_warden",
+      "reward": {
+        "kind": "card",
+        "card": "heartwood_warden"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_rotwood_sovereign",
+      "reward": {
+        "kind": "card",
+        "card": "rotwood_sovereign"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_prism_delver",
+      "reward": {
+        "kind": "card",
+        "card": "prism_delver"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_lodestone_seer",
+      "reward": {
+        "kind": "card",
+        "card": "lodestone_seer"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_cavalier",
+      "reward": {
+        "kind": "card",
+        "card": "silver_cavalier"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_gilded_knight",
+      "reward": {
+        "kind": "card",
+        "card": "gilded_knight"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_prism_paladin",
+      "reward": {
+        "kind": "card",
+        "card": "prism_paladin"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_dawn_champion",
+      "reward": {
+        "kind": "card",
+        "card": "dawn_champion"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_shadow_reaver",
+      "reward": {
+        "kind": "card",
+        "card": "shadow_reaver"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_executioner",
+      "reward": {
+        "kind": "card",
+        "card": "silver_executioner"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_gold_warlord",
+      "reward": {
+        "kind": "card",
+        "card": "gold_warlord"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_sunbreaker_titan",
+      "reward": {
+        "kind": "card",
+        "card": "sunbreaker_titan"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_ruin_tyrant",
+      "reward": {
+        "kind": "card",
+        "card": "ruin_tyrant"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_skirmisher",
+      "reward": {
+        "kind": "card",
+        "card": "silver_skirmisher"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_golden_hoplite",
+      "reward": {
+        "kind": "card",
+        "card": "golden_hoplite"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_shard_strider",
+      "reward": {
+        "kind": "card",
+        "card": "shard_strider"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_valor_pikeman",
+      "reward": {
+        "kind": "card",
+        "card": "valor_pikeman"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_wraith_impaler",
+      "reward": {
+        "kind": "card",
+        "card": "wraith_impaler"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_rider",
+      "reward": {
+        "kind": "card",
+        "card": "silver_rider"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_golden_tilter",
+      "reward": {
+        "kind": "card",
+        "card": "golden_tilter"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_mirror_cavalier",
+      "reward": {
+        "kind": "card",
+        "card": "mirror_cavalier"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_dread_horseman",
+      "reward": {
+        "kind": "card",
+        "card": "dread_horseman"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_shiv",
+      "reward": {
+        "kind": "card",
+        "card": "silver_shiv"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_whisper_assassin",
+      "reward": {
+        "kind": "card",
+        "card": "whisper_assassin"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_gleam_phantom",
+      "reward": {
+        "kind": "card",
+        "card": "gleam_phantom"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_venom_stalker",
+      "reward": {
+        "kind": "card",
+        "card": "venom_stalker"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_sledger",
+      "reward": {
+        "kind": "card",
+        "card": "silver_sledger"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_golden_anvilmaster",
+      "reward": {
+        "kind": "card",
+        "card": "golden_anvilmaster"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_facet_crusher",
+      "reward": {
+        "kind": "card",
+        "card": "facet_crusher"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_thunder_smith",
+      "reward": {
+        "kind": "card",
+        "card": "thunder_smith"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_ranger",
+      "reward": {
+        "kind": "card",
+        "card": "silver_ranger"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_golden_sharpshot",
+      "reward": {
+        "kind": "card",
+        "card": "golden_sharpshot"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_rainbow_sniper",
+      "reward": {
+        "kind": "card",
+        "card": "rainbow_sniper"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_seraph_archer",
+      "reward": {
+        "kind": "card",
+        "card": "seraph_archer"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_wither_huntress",
+      "reward": {
+        "kind": "card",
+        "card": "wither_huntress"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_mage",
+      "reward": {
+        "kind": "card",
+        "card": "silver_mage"
+      },
+      "price": 20,
+      "stock": null
+    },
+    {
+      "id": "copy_golden_sage",
+      "reward": {
+        "kind": "card",
+        "card": "golden_sage"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_kaleido_weaver",
+      "reward": {
+        "kind": "card",
+        "card": "kaleido_weaver"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_sanctum_oracle",
+      "reward": {
+        "kind": "card",
+        "card": "sanctum_oracle"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_hex_warlock",
+      "reward": {
+        "kind": "card",
+        "card": "hex_warlock"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_golden_harvester",
+      "reward": {
+        "kind": "card",
+        "card": "golden_harvester"
+      },
+      "price": 60,
+      "stock": null
+    },
+    {
+      "id": "copy_halfmoon_reaper",
+      "reward": {
+        "kind": "card",
+        "card": "halfmoon_reaper"
+      },
+      "price": 200,
+      "stock": null
+    },
+    {
+      "id": "copy_mercy_harvester",
+      "reward": {
+        "kind": "card",
+        "card": "mercy_harvester"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
+      "id": "copy_grim_sovereign",
+      "reward": {
+        "kind": "card",
+        "card": "grim_sovereign"
+      },
+      "price": 600,
+      "stock": null
+    },
+    {
       "id": "summon_crystals",
-      "reward": { "kind": "resource", "resource": "summon_crystal", "amount": "3000" },
+      "reward": {
+        "kind": "resource",
+        "resource": "summon_crystal",
+        "amount": "3000"
+      },
       "price": 100,
       "stock": null
     },
     {
       "id": "glamour_crystals",
-      "reward": { "kind": "resource", "resource": "glamour_crystal", "amount": "3000" },
+      "reward": {
+        "kind": "resource",
+        "resource": "glamour_crystal",
+        "amount": "3000"
+      },
       "price": 150,
       "stock": null
     },
     {
       "id": "frost_cores",
-      "reward": { "kind": "resource", "resource": "frost_core", "amount": "10" },
+      "reward": {
+        "kind": "resource",
+        "resource": "frost_core",
+        "amount": "10"
+      },
       "price": 20,
       "stock": null
     },
     {
       "id": "glimmer_dust",
-      "reward": { "kind": "resource", "resource": "glimmer_dust", "amount": "500" },
+      "reward": {
+        "kind": "resource",
+        "resource": "glimmer_dust",
+        "amount": "500"
+      },
       "price": 10,
       "stock": null
     },
     {
       "id": "facet_shards",
-      "reward": { "kind": "resource", "resource": "facet_shard", "amount": "300" },
+      "reward": {
+        "kind": "resource",
+        "resource": "facet_shard",
+        "amount": "300"
+      },
       "price": 15,
       "stock": null
     },
     {
       "id": "ember_crown",
-      "reward": { "kind": "cosmetic", "cosmetic": "ember_crown" },
+      "reward": {
+        "kind": "cosmetic",
+        "cosmetic": "ember_crown"
+      },
       "price": 150,
       "stock": 1
     },
     {
       "id": "starlight_d",
-      "reward": { "kind": "cosmetic", "cosmetic": "starlight_d" },
+      "reward": {
+        "kind": "cosmetic",
+        "cosmetic": "starlight_d"
+      },
       "price": 100,
       "stock": 1
     },
     {
       "id": "starlight_e",
-      "reward": { "kind": "cosmetic", "cosmetic": "starlight_e" },
+      "reward": {
+        "kind": "cosmetic",
+        "cosmetic": "starlight_e"
+      },
       "price": 160,
       "stock": 1
     },
     {
       "id": "sticker_d",
-      "reward": { "kind": "cosmetic", "cosmetic": "sticker_d" },
+      "reward": {
+        "kind": "cosmetic",
+        "cosmetic": "sticker_d"
+      },
       "price": 100,
       "stock": 1
     },
     {
       "id": "nodes_e",
-      "reward": { "kind": "cosmetic", "cosmetic": "nodes_e" },
+      "reward": {
+        "kind": "cosmetic",
+        "cosmetic": "nodes_e"
+      },
       "price": 160,
       "stock": 1
     },
     {
       "id": "wardrobe_e",
-      "reward": { "kind": "cosmetic", "cosmetic": "wardrobe_e" },
+      "reward": {
+        "kind": "cosmetic",
+        "cosmetic": "wardrobe_e"
+      },
       "price": 160,
       "stock": 1
     }

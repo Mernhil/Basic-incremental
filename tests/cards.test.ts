@@ -241,8 +241,8 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
       main: 'storm_duelist',
       supports: ['ember_squire', null, null],
     });
-    // An Epic main deals 2.25x a Common's base damage, plus the Squire support +5%.
-    expect(effectiveDamage(state, content).eq(base.mul(2.25).mul(1.05))).toBe(true);
+    // An Epic main deals 4x a Common's base damage, plus the Squire support +5%.
+    expect(effectiveDamage(state, content).eq(base.mul(4).mul(1.05))).toBe(true);
     expect(fighting(state).interval).toBe(0.5); // Duelist main: a hit every 0.5 s
   });
 
@@ -272,7 +272,7 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
   it('gives each card health by rarity, scaled by its power', () => {
     const base = newOwnedCard();
     expect(cardHealth(content, 'ember_squire', base).eq(100)).toBe(true);
-    expect(cardHealth(content, 'dawnblade_regent', base).eq(350)).toBe(true);
+    expect(cardHealth(content, 'dawnblade_regent', base).eq(700)).toBe(true);
     const silver = { ...base, tier: 'silver' as const, level: 11 };
     expect(cardHealth(content, 'ember_squire', silver).toNumber()).toBeCloseTo(100 * 1.2 * 1.5);
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);
@@ -376,7 +376,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
         r.need.toNumber(),
         r.met,
       ]),
-    ).toEqual([['starFill', undefined, 0, content.cardRules.starBar.needs.common[0], false]]);
+    ).toEqual([['starFill', undefined, 0, content.cardRules.starBar.needs.common.wood, false]]);
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
     expect(starUpCheck(state, content, 'storm_duelist')).toBeNull();
     expect(starUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'not-owned' });
@@ -384,7 +384,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
   });
 
   it('spends the fill and keeps the level; the cap stays', () => {
-    const need = content.cardRules.starBar.needs.common[0]!;
+    const need = content.cardRules.starBar.needs.common.wood;
     const state = own(freshState(), 'ember_squire', { level: 20, starFill: need + 2 });
     const after = ok(starUp(state, content, 'ember_squire'));
     expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, starFill: 2 });
