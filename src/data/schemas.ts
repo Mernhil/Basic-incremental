@@ -1308,7 +1308,11 @@ export const prestigeSchema = z.strictObject({
       maxLevel: z.number().int().min(1),
       /** Starlight price of level n + 1 (0-based n): base × growth^n. */
       cost: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
-      perLevel: z.array(modifierSchema).min(1),
+      perLevel: z.array(modifierSchema).default([]),
+      /** A rule a level opens instead of a modifier (DESIGN.md §9 More to buy with Starlight):
+       *  `second_worker_slots` (each level gives the next tree or mine a second worker slot, only
+       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15). */
+      grants: z.enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines']).optional(),
     }),
   ),
   /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */

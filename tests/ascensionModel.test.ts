@@ -44,6 +44,8 @@ describe('ascension gate', () => {
       'tree_levels',
       'resources',
       'tile_stages',
+      'tool_lines',
+      'depth_growth',
     ]);
     expect(v.resets.every((r) => r.label && r.detail)).toBe(true);
   });

@@ -199,7 +199,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
   checkItems({ cards, items }, issues);
-  checkPrestige({ resources, cosmetics, prestige }, issues);
+  checkPrestige({ resources, cosmetics, prestige, trees, mines }, issues);
   checkAchievements(
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
     issues,
@@ -687,7 +687,7 @@ function checkAchievements(
 
 /** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
 function checkPrestige(
-  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige'>,
+  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige' | 'trees' | 'mines'>,
   issues: string[],
 ): void {
   const currency = c.resources.find((r) => r.id === c.prestige.currency);
@@ -707,7 +707,18 @@ function checkPrestige(
   c.prestige.shop.forEach((item, i) => {
     if (ids.has(item.id)) issues.push(`prestige.json › shop › [${i}] › id: duplicate "${item.id}"`);
     ids.add(item.id);
+    if (item.perLevel.length === 0 && !item.grants) {
+      issues.push(`prestige.json › shop › [${i}]: needs perLevel modifiers or a grants rule`);
+    }
   });
+  const slotItems = c.prestige.shop.filter((x) => x.grants === 'second_worker_slots');
+  if (slotItems.length > 1) issues.push('prestige.json › shop: only one second-slot item');
+  const places = c.trees.length + c.mines.length;
+  if (slotItems[0] && slotItems[0].maxLevel > places) {
+    issues.push(
+      `prestige.json › shop › ${slotItems[0].id} › maxLevel: ${slotItems[0].maxLevel} is more than the ${places} trees and mines`,
+    );
+  }
   const cosmetics = new Set(c.cosmetics.map((x) => x.id));
   c.prestige.rewards.forEach((reward, i) =>
     reward.cosmetics.forEach((id, j) => {

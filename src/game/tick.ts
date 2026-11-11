@@ -3,6 +3,7 @@ import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels }
 import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { autobuyDue, settleAutobuyers } from './autobuyers';
 import { recordLuckyStrikes } from './lucky';
 import { advanceForge } from './forge';
 import { addDigging, depthDue, settleDepth } from './depth';
@@ -70,6 +71,7 @@ export function advance(
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
     settleDepth(current, content);
+    settleAutobuyers(current, content);
     settleAccount(current, content, report);
     settleAchievements(current, content, report);
     remaining -= until;
@@ -128,6 +130,7 @@ function levelUpDue(
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
     depthDue(ahead, content) ||
+    autobuyDue(ahead, content) ||
     accountLevelDue(ahead, content) ||
     achievementsDue(ahead, content)
   );
