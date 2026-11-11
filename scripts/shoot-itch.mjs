@@ -102,6 +102,7 @@ const dungeons = [
 for (const [id, last, cleared] of dungeons) {
   for (const [kind, floor] of [
     ['wave', 4],
+    ['wave2', 7],
     ['mini', 10],
     ['boss', last],
   ]) {

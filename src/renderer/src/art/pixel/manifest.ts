@@ -859,6 +859,8 @@ export const MANIFEST: Record<
   'foe-plague_lantern_keeper': { w: 160, h: 172, animated: { frames: 9 } },
   'foe-sanctuary_archangel-anim': { w: 2720, h: 172 },
   'foe-sanctuary_archangel': { w: 160, h: 172, animated: { frames: 17 } },
+  'foe-shadow_slime-anim': { w: 1280, h: 172 },
+  'foe-shadow_slime': { w: 160, h: 172, animated: { frames: 8 } },
   'foe-woodland_stalker_wolf-anim': { w: 1920, h: 172 },
   'foe-woodland_stalker_wolf': { w: 160, h: 172, animated: { frames: 12 } },
   'item-bow-common': {

@@ -430,7 +430,8 @@
       {
         "id": "shade_mote",
         "name": "Shadow Slime",
-        "hpWeight": 0.7
+        "hpWeight": 0.7,
+        "sprite": "shadow_slime"
       },
       {
         "id": "hollow_stalker",

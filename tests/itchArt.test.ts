@@ -27,14 +27,14 @@ describe('the enemy roster art (ASSET_RULES §5)', () => {
     }
   });
 
-  it('covers every enemy, mini-boss and boss but the Shadow Slime', () => {
+  it('covers every enemy, mini-boss and boss', () => {
     const without: string[] = [];
     for (const d of content.allDungeons) {
       for (const e of d.enemies) if (!e.sprite) without.push(e.id);
       if (!d.miniBoss.sprite) without.push(d.miniBoss.id);
       if (!d.boss.sprite && !d.boss.art) without.push(d.boss.id);
     }
-    expect(without).toEqual(['shade_mote']);
+    expect(without).toEqual([]);
   });
 
   it('keeps a mini-boss out of the normal enemies and gives each dungeon its own', () => {
