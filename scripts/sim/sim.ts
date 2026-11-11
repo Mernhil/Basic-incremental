@@ -4,24 +4,29 @@
  *
  * The buyer (Phase 9), every step:
  * - buys card star-ups and tier-ups, tree kinds, cosmetic levels, summons (10-pulls when
- *   affordable, else single pulls), Starlight shop levels (cheapest first) and skill points (a
- *   priority list) as soon as they are affordable, and rebuilds each card's enhancements as the
- *   best set its budget allows;
+ *   affordable, else single pulls), Starlight shop levels (cheapest first) and skill points (the
+ *   most value per point, `nextSkill`) as soon as they are affordable, and rebuilds each card's
+ *   enhancements as the best set its budget allows;
+ * - builds one card at a time (`buildOrder`: the lead, its supports, its workers): the wishlist,
+ *   star dust and shard-shop copies go to it;
  * - keeps the resources the next waiting card upgrade or tree kind needs (reservations);
  * - spends its Money on the economy purchase with the best gain per Money: a mine level (relative gain
  *   of the weighted production) or a tree level (the same), waiting for the
  *   best one unless a cheaper one costs a small share of it. A card's tier-up also costs Money, so
  *   it is kept for it once the card is at its level cap (a star-up costs only the star bar);
- * - fills loadouts with the rarest cards,
- *   equips complete cosmetic sets;
+ * - leads with the hardest-hitting card, fills the supports with the rarest ones, places workers
+ *   where they bring in the most (second slots too), runs the forge for star dust, equips complete
+ *   cosmetic sets, switches its autobuyers on and every overflow switch as it opens;
  * - pushes down a dungeon's floors whenever the next floor is one it wins with room to spare (a
  *   knockout drops it a floor and back to farming, by the game's own rule);
- * - fights on Normal while a dungeon is not cleared or a Core is wanted, and climbs the Hard and
- *   Nightmare tiers and the endless depths when nothing else is waiting;
+ * - farms a wanted Core on the tier that pays it fastest and a last-floor boss close to its next
+ *   star level, and climbs the Hard and Nightmare tiers and the endless depths when nothing else
+ *   is waiting;
  * - fights: the Glimmer Trial once it can score 100%, else a newly killable dungeon, else the
  *   cleared trial for cosmetic materials within a time share, else a dungeon whose Core a card
  *   waits for, else the hardest killable one (every dungeon pays Money and both crystals);
- * - ascends once the run's Starlight per hour has passed its peak.
+ * - ascends once the run's Starlight per hour has passed its peak, or its gain is three times all
+ *   the Starlight earned.
  * Mastery, milestones, crits, achievements and account levels come from the real game rules.
  *
  * Profiles (DESIGN.md §14 Sim bands): `active` plays every step for the whole time; `idle` checks
