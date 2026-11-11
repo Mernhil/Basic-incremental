@@ -1,22 +1,184 @@
 {
-  "harvest": {
-    "default": {
-      "logging": {
-        "style": "steady",
-        "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
+  "tools": [
+    {
+      "id": "logging_yield",
+      "name": "Logging Yield",
+      "job": "logging",
+      "effect": "yield",
+      "stat": "production.rate",
+      "cost": {
+        "resource": "money",
+        "base": "1000",
+        "growth": "1.45"
       },
-      "mining": {
-        "style": "steady",
-        "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
+      "ratePercent": "8",
+      "milestones": {
+        "every": 25,
+        "multiplier": "1.5"
       }
     },
+    {
+      "id": "logging_speed",
+      "name": "Logging Pace",
+      "job": "logging",
+      "effect": "strike speed",
+      "stat": "harvest.speed",
+      "cost": {
+        "resource": "money",
+        "base": "2000",
+        "growth": "1.5"
+      },
+      "ratePercent": "4",
+      "milestones": {
+        "every": 25,
+        "multiplier": "1.25"
+      }
+    },
+    {
+      "id": "logging_crit_chance",
+      "name": "Logging Keen Edge",
+      "job": "logging",
+      "effect": "crit chance",
+      "stat": "harvest.critChance",
+      "cost": {
+        "resource": "money",
+        "base": "4000",
+        "growth": "1.55"
+      },
+      "ratePercent": "0.5"
+    },
+    {
+      "id": "logging_crit_damage",
+      "name": "Logging Heavy Blow",
+      "job": "logging",
+      "effect": "crit damage",
+      "stat": "harvest.critDamage",
+      "cost": {
+        "resource": "money",
+        "base": "4000",
+        "growth": "1.5"
+      },
+      "ratePercent": "5"
+    },
+    {
+      "id": "mining_yield",
+      "name": "Mining Yield",
+      "job": "mining",
+      "effect": "yield",
+      "stat": "production.rate",
+      "cost": {
+        "resource": "money",
+        "base": "1000",
+        "growth": "1.45"
+      },
+      "ratePercent": "8",
+      "milestones": {
+        "every": 25,
+        "multiplier": "1.5"
+      }
+    },
+    {
+      "id": "mining_speed",
+      "name": "Mining Pace",
+      "job": "mining",
+      "effect": "strike speed",
+      "stat": "harvest.speed",
+      "cost": {
+        "resource": "money",
+        "base": "2000",
+        "growth": "1.5"
+      },
+      "ratePercent": "4",
+      "milestones": {
+        "every": 25,
+        "multiplier": "1.25"
+      }
+    },
+    {
+      "id": "mining_crit_chance",
+      "name": "Mining Keen Edge",
+      "job": "mining",
+      "effect": "crit chance",
+      "stat": "harvest.critChance",
+      "cost": {
+        "resource": "money",
+        "base": "4000",
+        "growth": "1.55"
+      },
+      "ratePercent": "0.5"
+    },
+    {
+      "id": "mining_crit_damage",
+      "name": "Mining Heavy Blow",
+      "job": "mining",
+      "effect": "crit damage",
+      "stat": "harvest.critDamage",
+      "cost": {
+        "resource": "money",
+        "base": "4000",
+        "growth": "1.5"
+      },
+      "ratePercent": "5"
+    }
+  ],
+  "harvest": {
     "crit": {
       "chance": 0,
       "damage": "2"
+    }
+  },
+  "workers": {
+    "slots": {
+      "base": 2,
+      "perAscension": 1,
+      "perProducer": 1
+    },
+    "rarityPower": {
+      "common": 1,
+      "uncommon": 1.25,
+      "rare": 1.6,
+      "epic": 2,
+      "legendary": 2.6,
+      "mythic": 3.5,
+      "void": 3.5
+    }
+  },
+  "forge": {
+    "speed": "1",
+    "recipes": [
+      {
+        "id": "star_dust",
+        "name": "Star Dust",
+        "inputs": [
+          {
+            "resource": "moonwillow_gem",
+            "amount": "20000"
+          },
+          {
+            "resource": "grotto_gem",
+            "amount": "20000"
+          }
+        ],
+        "output": {
+          "resource": "star_dust",
+          "amount": "1"
+        },
+        "work": "3600"
+      }
+    ]
+  },
+  "lucky": {
+    "logging": {
+      "name": "Golden tree",
+      "everySeconds": 180,
+      "windowSeconds": 12,
+      "payoutSeconds": 30
+    },
+    "mining": {
+      "name": "Rich vein",
+      "everySeconds": 180,
+      "windowSeconds": 12,
+      "payoutSeconds": 30
     }
   }
 }

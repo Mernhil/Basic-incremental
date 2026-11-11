@@ -199,7 +199,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
   checkItems({ cards, items }, issues);
-  checkPrestige({ resources, cosmetics, prestige }, issues);
+  checkPrestige({ resources, cosmetics, prestige, trees, mines }, issues);
   checkAchievements(
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
     issues,
@@ -303,6 +303,19 @@ function checkProduction(
   issues: string[],
 ): void {
   const resources = new Map(c.resources.map((r) => [r.id, r]));
+  c.production.forge.recipes.forEach((recipe, i) => {
+    const where = `production.json › forge › recipes › [${i}]`;
+    for (const r of [...recipe.inputs, recipe.output])
+      if (!resources.has(r.resource)) issues.push(`${where}: unknown resource "${r.resource}"`);
+    if (c.production.forge.recipes.findIndex((o) => o.id === recipe.id) !== i)
+      issues.push(`${where}: duplicate recipe id "${recipe.id}"`);
+  });
+  c.production.tools.forEach((tool, i) => {
+    if (!resources.has(tool.cost.resource))
+      issues.push(
+        `production.json › tools › [${i}] › cost: unknown resource "${tool.cost.resource}"`,
+      );
+  });
   const checkCost = (where: string, resource: string, kind: Resource['kind']): void => {
     const res = resources.get(resource);
     if (!res) issues.push(`${where}: unknown resource "${resource}"`);
@@ -492,8 +505,12 @@ function checkModifiers(
   );
   c.sets.forEach((x, i) => check(`sets.json › [${i}] › modifiers`, x.modifiers));
   c.cards.forEach((x, i) => {
-    check(`cards.json › [${i}] › main › modifiers`, x.main.modifiers);
-    check(`cards.json › [${i}] › support › modifiers`, x.support.modifiers);
+    if (x.job === 'fighting') {
+      check(`cards.json › [${i}] › main › modifiers`, x.main.modifiers);
+      check(`cards.json › [${i}] › support › modifiers`, x.support.modifiers);
+    } else {
+      check(`cards.json › [${i}] › worker › modifiers`, x.worker.modifiers);
+    }
   });
   for (const job of JOBS) {
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
@@ -531,7 +548,6 @@ function checkAccount(
   const levels = new Set<number>();
   c.account.rewardTrack.forEach((e, i) => {
     const where = `account.json › rewardTrack › [${i}]`;
-    if (e.level > c.account.levels.maxLevel) issues.push(`${where} › level: above the max level`);
     if (levels.has(e.level)) issues.push(`${where} › level: level ${e.level} is listed twice`);
     levels.add(e.level);
     e.resources.forEach((r, j) => {
@@ -543,6 +559,13 @@ function checkAccount(
       if (!cosmetics.has(id))
         issues.push(`${where} › cosmetics › [${j}]: unknown cosmetic "${id}"`);
     });
+  });
+  c.account.rewardRepeat.resources.forEach((r, j) => {
+    if (!resources.has(r.resource)) {
+      issues.push(
+        `account.json › rewardRepeat › resources › [${j}]: unknown resource "${r.resource}"`,
+      );
+    }
   });
   const cards = new Set(c.cards.map((x) => x.id));
   for (const [card, options] of Object.entries(c.enhancements.cards)) {
@@ -664,7 +687,7 @@ function checkAchievements(
 
 /** Starlight is the one prestige resource; shop ids are unique; reward cosmetics exist. */
 function checkPrestige(
-  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige'>,
+  c: Pick<Content, 'resources' | 'cosmetics' | 'prestige' | 'trees' | 'mines'>,
   issues: string[],
 ): void {
   const currency = c.resources.find((r) => r.id === c.prestige.currency);
@@ -684,7 +707,18 @@ function checkPrestige(
   c.prestige.shop.forEach((item, i) => {
     if (ids.has(item.id)) issues.push(`prestige.json › shop › [${i}] › id: duplicate "${item.id}"`);
     ids.add(item.id);
+    if (item.perLevel.length === 0 && !item.grants) {
+      issues.push(`prestige.json › shop › [${i}]: needs perLevel modifiers or a grants rule`);
+    }
   });
+  const slotItems = c.prestige.shop.filter((x) => x.grants === 'second_worker_slots');
+  if (slotItems.length > 1) issues.push('prestige.json › shop: only one second-slot item');
+  const places = c.trees.length + c.mines.length;
+  if (slotItems[0] && slotItems[0].maxLevel > places) {
+    issues.push(
+      `prestige.json › shop › ${slotItems[0].id} › maxLevel: ${slotItems[0].maxLevel} is more than the ${places} trees and mines`,
+    );
+  }
   const cosmetics = new Set(c.cosmetics.map((x) => x.id));
   c.prestige.rewards.forEach((reward, i) =>
     reward.cosmetics.forEach((id, j) => {
@@ -705,17 +739,21 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
-  // Logging and mining mains say how they strike; fighting mains have no harvest pattern (11.15).
+  // A worker ability acts on its own place: the game adds the place, data never names one.
   c.cards.forEach((card, i) => {
-    const has = card.main.harvest !== undefined;
-    if (card.job === 'fighting' && has) {
-      issues.push(`cards.json › [${i}] › main › harvest: fighting cards do not harvest`);
-    }
-    if (card.job !== 'fighting' && !has) {
-      issues.push(
-        `cards.json › [${i}] › main › harvest: a ${card.job} card needs a harvest pattern`,
-      );
-    }
+    if (card.job === 'fighting') return;
+    card.worker.modifiers.forEach((m, j) => {
+      if (m.scope?.producer !== undefined || m.scope?.resource !== undefined) {
+        issues.push(
+          `cards.json › [${i}] › worker › modifiers › [${j}] › scope: a worker ability acts on its own place`,
+        );
+      }
+      if (m.scope?.job !== undefined && m.scope.job !== card.job) {
+        issues.push(
+          `cards.json › [${i}] › worker › modifiers › [${j}] › scope › job: not the card's job`,
+        );
+      }
+    });
   });
   c.cardRules.startCards.forEach((id, i) => {
     const where = `cardRules.json › startCards › [${i}]`;

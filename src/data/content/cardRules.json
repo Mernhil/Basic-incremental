@@ -23,7 +23,7 @@
     "heirloom": 140
   },
   "xpCurve": {
-    "base": "10",
+    "base": "60",
     "growth": "1.12"
   },
   "xp": {
@@ -48,7 +48,16 @@
       "mythic": 5,
       "heirloom": 7
     },
-    "starMultiplier": [1.25, 1.6, 2, 2.6, 3.5]
+    "starMultiplier": [1.25, 1.6, 2, 2.6, 3.5],
+    "statTier": {
+      "wood": 1,
+      "bronze": 3.5,
+      "silver": 12.25,
+      "gold": 43,
+      "prismatic": 151,
+      "mythic": 529,
+      "heirloom": 1852
+    }
   },
   "mainGrowth": {
     "fighting": [
@@ -275,11 +284,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "525"
+          "amount": "263"
         },
         {
           "resource": "frost_sigil",
           "amount": "455"
+        },
+        {
+          "resource": "storm_core",
+          "amount": "400"
         },
         {
           "resource": "moonwillow_gem",
@@ -297,11 +310,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "525"
+          "amount": "263"
         },
         {
           "resource": "frost_sigil",
           "amount": "455"
+        },
+        {
+          "resource": "storm_core",
+          "amount": "400"
         },
         {
           "resource": "grotto_gem",
@@ -319,11 +336,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "525"
+          "amount": "263"
         },
         {
           "resource": "frost_sigil",
           "amount": "455"
+        },
+        {
+          "resource": "storm_core",
+          "amount": "400"
         },
         {
           "resource": "grotto_gem",
@@ -343,11 +364,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "770"
+          "amount": "385"
         },
         {
           "resource": "frost_sigil",
           "amount": "630"
+        },
+        {
+          "resource": "sanctum_core",
+          "amount": "385"
         },
         {
           "resource": "moonwillow_gem",
@@ -365,11 +390,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "770"
+          "amount": "385"
         },
         {
           "resource": "frost_sigil",
           "amount": "630"
+        },
+        {
+          "resource": "sanctum_core",
+          "amount": "385"
         },
         {
           "resource": "grotto_gem",
@@ -387,11 +416,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "770"
+          "amount": "385"
         },
         {
           "resource": "frost_sigil",
           "amount": "630"
+        },
+        {
+          "resource": "sanctum_core",
+          "amount": "385"
         },
         {
           "resource": "grotto_gem",
@@ -411,11 +444,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "1540"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
           "amount": "1260"
+        },
+        {
+          "resource": "void_core",
+          "amount": "770"
         },
         {
           "resource": "moonwillow_gem",
@@ -433,11 +470,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "1540"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
           "amount": "1260"
+        },
+        {
+          "resource": "void_core",
+          "amount": "770"
         },
         {
           "resource": "grotto_gem",
@@ -455,11 +496,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "1540"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
           "amount": "1260"
+        },
+        {
+          "resource": "void_core",
+          "amount": "770"
         },
         {
           "resource": "grotto_gem",
@@ -474,12 +519,12 @@
   },
   "health": {
     "common": "100",
-    "uncommon": "125",
-    "rare": "150",
-    "epic": "225",
-    "legendary": "350",
-    "mythic": "700",
-    "void": "700"
+    "uncommon": "160",
+    "rare": "250",
+    "epic": "400",
+    "legendary": "700",
+    "mythic": "1200",
+    "void": "1200"
   },
   "shards": {
     "common": 1,
@@ -492,12 +537,12 @@
   },
   "baseDamage": {
     "common": "200",
-    "uncommon": "250",
-    "rare": "300",
-    "epic": "450",
-    "legendary": "700",
-    "mythic": "1400",
-    "void": "1400"
+    "uncommon": "320",
+    "rare": "500",
+    "epic": "800",
+    "legendary": "1400",
+    "mythic": "2400",
+    "void": "2400"
   },
   "starBar": {
     "fillPerDuplicate": {
@@ -510,13 +555,172 @@
       "void": 1
     },
     "needs": {
-      "common": [1, 1, 1, 1, 1],
-      "uncommon": [1, 1, 1, 1, 1],
-      "rare": [0, 0, 0, 0, 0],
-      "epic": [0, 0, 0, 0, 0],
-      "legendary": [0, 0, 0, 0, 0],
-      "mythic": [0, 0, 0, 0, 0],
-      "void": [0, 0, 0, 0, 0]
+      "common": {
+        "wood": 1,
+        "bronze": 1,
+        "silver": 1,
+        "gold": 1,
+        "prismatic": 1,
+        "mythic": 1,
+        "heirloom": 1
+      },
+      "uncommon": {
+        "wood": 0.25,
+        "bronze": 1,
+        "silver": 1,
+        "gold": 1,
+        "prismatic": 1,
+        "mythic": 1,
+        "heirloom": 1
+      },
+      "rare": {
+        "wood": 0.125,
+        "bronze": 0.25,
+        "silver": 1,
+        "gold": 1,
+        "prismatic": 1,
+        "mythic": 1,
+        "heirloom": 1
+      },
+      "epic": {
+        "wood": 0.03125,
+        "bronze": 0.0625,
+        "silver": 0.125,
+        "gold": 1,
+        "prismatic": 1,
+        "mythic": 1,
+        "heirloom": 1
+      },
+      "legendary": {
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
+        "gold": 0.25,
+        "prismatic": 1,
+        "mythic": 1,
+        "heirloom": 1
+      },
+      "mythic": {
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
+        "gold": 0.125,
+        "prismatic": 0.25,
+        "mythic": 1,
+        "heirloom": 1
+      },
+      "void": {
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
+        "gold": 0.125,
+        "prismatic": 0.25,
+        "mythic": 1,
+        "heirloom": 1
+      }
+    },
+    "dust": {
+      "common": {
+        "wood": 5,
+        "bronze": 8,
+        "silver": 10,
+        "gold": 15,
+        "prismatic": 20,
+        "mythic": 30,
+        "heirloom": 40
+      },
+      "uncommon": {
+        "wood": 8,
+        "bronze": 12,
+        "silver": 16,
+        "gold": 24,
+        "prismatic": 32,
+        "mythic": 48,
+        "heirloom": 64
+      },
+      "rare": {
+        "wood": 15,
+        "bronze": 23,
+        "silver": 30,
+        "gold": 45,
+        "prismatic": 60,
+        "mythic": 90,
+        "heirloom": 120
+      },
+      "epic": {
+        "wood": 40,
+        "bronze": 60,
+        "silver": 80,
+        "gold": 120,
+        "prismatic": 160,
+        "mythic": 240,
+        "heirloom": 320
+      },
+      "legendary": {
+        "wood": 100,
+        "bronze": 150,
+        "silver": 200,
+        "gold": 300,
+        "prismatic": 400,
+        "mythic": 600,
+        "heirloom": 800
+      },
+      "mythic": {
+        "wood": 250,
+        "bronze": 375,
+        "silver": 500,
+        "gold": 750,
+        "prismatic": 1000,
+        "mythic": 1500,
+        "heirloom": 2000
+      },
+      "void": {
+        "wood": 250,
+        "bronze": 375,
+        "silver": 500,
+        "gold": 750,
+        "prismatic": 1000,
+        "mythic": 1500,
+        "heirloom": 2000
+      }
+    }
+  },
+  "weapons": {
+    "sword": {
+      "damage": 1,
+      "health": 1
+    },
+    "greatsword": {
+      "damage": 0.82,
+      "health": 1.05
+    },
+    "spear": {
+      "damage": 0.99,
+      "health": 0.88
+    },
+    "lance": {
+      "damage": 0.63,
+      "health": 1.2
+    },
+    "dagger": {
+      "damage": 1,
+      "health": 0.75
+    },
+    "hammer": {
+      "damage": 0.44,
+      "health": 1.35
+    },
+    "bow": {
+      "damage": 1.07,
+      "health": 0.7
+    },
+    "staff": {
+      "damage": 0.95,
+      "health": 0.9
+    },
+    "scythe": {
+      "damage": 0.99,
+      "health": 0.92
     }
   }
 }

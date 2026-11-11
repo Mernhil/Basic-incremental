@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, portalInfo, type PullResult } from '../src/game';
+import { Decimal, portalInfo, setWishlisted, wishlistView, type PullResult } from '../src/game';
 import {
   DECK_MAX_LAYERS,
   DECK_MIN_LAYERS,
@@ -11,6 +11,7 @@ import {
   portalView,
   revealSound,
   revealViews,
+  wishlistPanelView,
 } from '../src/renderer/src/pages/summonModel';
 import { content, freshState } from './helpers';
 
@@ -153,5 +154,38 @@ describe('summon deck and hand', () => {
       '1 pull · 1 new · 0 copies',
     );
     expect(handSummary([])).toBe('');
+  });
+});
+
+describe('wishlist panel', () => {
+  it('lists the cards by rarity with the marks, the room left and a "Hunting" line', () => {
+    const state = freshState();
+    const none = wishlistPanelView(wishlistView(state, content, portal.id)!, state, content);
+    expect(none.active).toBe(false);
+    expect(none.hunting).toBe('No card marked');
+    const id = portal.pool.find((e) => e.rarity === 'epic')!.itemId;
+    const r = setWishlisted(state, content, id, true);
+    if (!r.ok) throw new Error(r.reason);
+    const v = wishlistPanelView(wishlistView(r.state, content, portal.id)!, r.state, content);
+    expect(v.active).toBe(true);
+    expect(v.hunting).toBe(`Hunting: ${content.cardById.get(id)!.name}`);
+    const epic = v.rows.find((x) => x.rarity === 'epic')!;
+    expect(epic.countText).toBe(`1 / ${portal.wishlistPerRarity}`);
+    expect(epic.cards.find((c) => c.id === id)!.label).toContain('Click to unmark');
+    expect(epic.cards.every((c) => c.marked || !c.blocked)).toBe(true);
+  });
+
+  it('blocks the unmarked cards of a full rarity', () => {
+    let s = freshState();
+    const ids = portal.pool.filter((e) => e.rarity === 'rare').map((e) => e.itemId);
+    for (const id of ids.slice(0, portal.wishlistPerRarity)) {
+      const r = setWishlisted(s, content, id, true);
+      if (!r.ok) throw new Error(r.reason);
+      s = r.state;
+    }
+    const v = wishlistPanelView(wishlistView(s, content, portal.id)!, s, content);
+    const rare = v.rows.find((x) => x.rarity === 'rare')!;
+    expect(rare.full).toBe(true);
+    expect(rare.cards.filter((c) => c.blocked)).toHaveLength(ids.length - portal.wishlistPerRarity);
   });
 });

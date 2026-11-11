@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, cloneState, cosmeticMaxLevel, floorPosition, type GameState } from '../src/game';
+import {
+  Decimal,
+  cardEnhancements,
+  cloneState,
+  cosmeticMaxLevel,
+  floorPosition,
+  type GameState,
+} from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -8,6 +15,9 @@ import {
   formatTable,
   shouldAscend,
   fillEnhancements,
+  buildOrder,
+  heir,
+  markWishlist,
   chooseDungeon,
   ascendNow,
   summarizeRuns,
@@ -24,7 +34,14 @@ import {
   type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
-import { content, CRYSTAL_UNIT, floorsContent, freshState, withDps } from './helpers';
+import {
+  content,
+  CRYSTAL_UNIT,
+  floorsContent,
+  freshState,
+  levelPointsOnly,
+  withDps,
+} from './helpers';
 
 /** First level price of a mine or tree (the shipped numbers are tuning, DESIGN.md §4). */
 const firstLevel = (kind: 'mine' | 'tree', id: string): number =>
@@ -35,10 +52,12 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
   return state;
 };
 
-/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and leads its job. */
+/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and
+ *  leads the fighting loadout, or works the job's first tree or mine. */
 const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'mining'): void => {
   state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
-  state.cards.loadouts[job]!.main = id;
+  if (job === 'fighting') state.cards.loadouts.fighting.main = id;
+  else state.production.workers[job === 'logging' ? 'oak' : 'copper_quarry'] = [id];
 };
 
 describe('balance sim: greedy buyer', () => {
@@ -78,7 +97,7 @@ describe('balance sim: greedy buyer', () => {
 
   it('ascends once the gain is worth it, then spends the Starlight', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     expect(shouldAscend(state, content)).toBe(true);
     expect(shouldAscend(freshState(), content)).toBe(false);
     const rich = freshState();
@@ -102,7 +121,7 @@ describe('balance sim: greedy buyer', () => {
     const state = freshState();
     state.account.level = 3;
     state.cards.owned['ember_squire']!.tier = 'silver';
-    const { state: after, bought } = greedyBuy(state, content);
+    const { state: after, bought } = greedyBuy(state, levelPointsOnly(content));
     expect(bought.filter((id) => id.startsWith('skill:'))).toHaveLength(2);
     expect(after.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThan(0);
   });
@@ -111,7 +130,7 @@ describe('balance sim: greedy buyer', () => {
     // no Money and no crystals (a new game holds one pull)
     const state = rich(freshState(), 'money', 0);
     state.resources['summon_crystal'] = new Decimal(0);
-    const { bought } = greedyBuy(state, content);
+    const { bought } = greedyBuy(state, levelPointsOnly(content));
     expect(bought).toEqual([]);
   });
 });
@@ -170,7 +189,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
   it('buys a star-up from the star bar alone: it needs no Cores to share', () => {
     const state = freshState();
     const feller = state.cards.owned['apprentice_feller']!;
-    feller.starFill = content.cardRules.starBar.needs.common[0]!;
+    feller.starFill = content.cardRules.starBar.needs.common.wood;
     const { bought } = greedyBuy(state, content);
     expect(bought).toContain('star:apprentice_feller');
   });
@@ -230,6 +249,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const [, coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
     state.resources['frost_core'] = new Decimal(coreCost!.amount);
     state.resources['frost_sigil'] = new Decimal(sigilCost!.amount).mul(2);
+    state.resources['storm_core'] = new Decimal(1e6); // the Gold step also asks Thunderpeak's Core
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
     state.resources['money'] = new Decimal(1e9);
@@ -252,18 +272,67 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
   it('spends skill points by priority (Might before the data order)', () => {
     const state = freshState();
     state.account.level = 3;
-    const { state: after } = greedyBuy(state, content);
-    expect(after.account.skills).toEqual({ might: 2 });
+    const { state: after } = greedyBuy(state, levelPointsOnly(content));
+    expect(after.account.skills).toEqual({ combat_s1: 2 });
   });
 
   it('picks the best enhancement set for the budget, rebuilt when the budget grows', () => {
     const state = freshState();
-    state.cards.owned['ember_squire']!.tier = 'silver';
-    const silver = fillEnhancements(state, content);
-    expect(silver.cards.owned['ember_squire']!.enhancements).toEqual(['edge']);
+    const wood = fillEnhancements(state, content);
+    expect(wood.cards.owned['ember_squire']!.enhancements).toEqual(['edge']);
+    wood.cards.owned['ember_squire']!.tier = 'silver';
+    const silver = fillEnhancements(wood, content);
+    expect([...silver.cards.owned['ember_squire']!.enhancements].sort()).toEqual([
+      'bulwark',
+      'edge',
+    ]);
     silver.cards.owned['ember_squire']!.tier = 'gold';
+    silver.cards.owned['ember_squire']!.level = 20;
     const gold = fillEnhancements(silver, content);
-    expect([...gold.cards.owned['ember_squire']!.enhancements].sort()).toEqual(['bulwark', 'edge']);
+    // the budget grows and the first milestone option has opened
+    expect(gold.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThanOrEqual(2);
+    expect(cardEnhancements(gold, content, 'ember_squire')!.spent).toBeLessThanOrEqual(
+      content.enhancements.budget.gold,
+    );
+  });
+
+  it('marks the cards it is building on the wishlist, then unowned ones, up to the limit per rarity', () => {
+    const state = markWishlist(freshState(), content);
+    const portal = content.portals.find((p) => p.id === 'card_portal')!;
+    expect(state.cards.wishlist.length).toBeGreaterThan(0);
+    for (const rarity of ['common', 'rare', 'legendary']) {
+      const marked = state.cards.wishlist.filter(
+        (id) => content.cardById.get(id)!.rarity === rarity,
+      );
+      expect(marked.length).toBeLessThanOrEqual(portal.wishlistPerRarity);
+    }
+    // the lead (a Common below ★6) is hunted for its copies; the rest are cards it does not own
+    expect(state.cards.wishlist).toContain('ember_squire');
+    expect(
+      state.cards.wishlist
+        .filter((id) => content.cardById.get(id)!.rarity !== 'common')
+        .every((id) => !state.cards.owned[id]),
+    ).toBe(true);
+    // a Rare it comes to own is the heir of the Common lead (capped at Wood): hunted alone
+    const id = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'rare')!;
+    state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
+    const rares = markWishlist(state, content).cards.wishlist.filter(
+      (x) => content.cardById.get(x)!.rarity === 'rare',
+    );
+    expect(rares).toEqual([id]);
+    // a card it comes to own and does not build leaves the list
+    const other = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'uncommon')!;
+    state.cards.owned[other] = { ...state.cards.owned['ember_squire']! };
+    expect(markWishlist(state, content).cards.wishlist).not.toContain(other);
+  });
+
+  it('builds the heir of a lead at its top tier: the rarest card owned', () => {
+    const state = freshState();
+    // Ember Squire is a Common: Wood is its top tier, so a rarer card is built next.
+    state.cards.owned['dawnblade_regent'] = { ...state.cards.owned['ember_squire']! };
+    state.cards.owned['storm_duelist'] = { ...state.cards.owned['ember_squire']! };
+    expect(heir(state, content)).toBe('dawnblade_regent');
+    expect(buildOrder(state, content).slice(0, 2)).toEqual(['ember_squire', 'dawnblade_regent']);
   });
 
   it('equips a complete cosmetic set for its bonus', () => {
@@ -284,7 +353,7 @@ describe('balance sim: where to fight', () => {
     squire.level = 20;
     squire.starFill = 1;
     // Strong enough to kill the Cinder Lich in good time.
-    expect(chooseDungeon(state, withDps(1e6, content))).toBe('ember_crypt');
+    expect(chooseDungeon(state, withDps(1e7, content))).toBe('ember_crypt');
   });
 
   it('keeps farming Cores while the next boss would take over ten minutes to kill', () => {
@@ -434,16 +503,13 @@ describe('balance sim: run', () => {
     expect(MILESTONES.map((m) => m.targetHours)).toContain(40);
   });
 
-  it('counts the first ★6 only for a card whose stars cost copies', () => {
+  it('counts the first ★6 of any card, since every star now takes copies', () => {
     const star6 = MILESTONES.find((m) => m.id === 'first_star6')!;
     const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
     const shipped = loadContent();
     const state = freshState();
-    // A Rare star bar needs no copies in the shipped data, so its ★6 does not count.
-    expect(shipped.cardRules.starBar.needs.rare.every((n) => n === 0)).toBe(true);
-    state.cards.owned['gem_cutter'] = { ...state.cards.owned['ember_squire']!, stars: 6 };
     expect(star6.reached(state, shipped, log)).toBe(false);
-    state.cards.owned['ember_squire']!.stars = 6; // a Common: its stars took copies
+    state.cards.owned['gem_cutter'] = { ...state.cards.owned['ember_squire']!, stars: 6 };
     expect(star6.reached(state, shipped, log)).toBe(true);
   });
 
@@ -456,12 +522,13 @@ describe('balance sim: run', () => {
     expect(maxCosmetic.reached(state, content, log)).toBe(false);
   });
 
-  it('calls the content exhausted only with every card owned and a card at the Mythic tier', () => {
+  it('calls the content exhausted with every other milestone and a card at the Mythic tier, not every card owned', () => {
     const exhausted = MILESTONES.find((m) => m.id === 'exhausted')!;
     const log = { summons: 1, levelAt: {}, ascensions: [], fought: {} };
     const state = freshState();
-    for (const card of content.cards) {
-      state.cards.owned[card.id] ??= { ...state.cards.owned['ember_squire']! };
+    // Only some cards are owned: a Mythic card, and the rarities the milestones ask for.
+    for (const id of ['moonwood_dryad', 'dawnblade_regent', 'storm_duelist', 'reaper_test']) {
+      state.cards.owned[id] ??= { ...state.cards.owned['ember_squire']! };
     }
     state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
     state.prestigeCount = 1;

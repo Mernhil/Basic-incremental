@@ -161,12 +161,12 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     onShow: (id) => pages[id]?.render(),
     onLevel: () => {
       if (track.isOpen()) track.close();
-      else track.open(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+      else track.open(trackView(content, rewardTrack(loop.state, content)), levelOf());
     },
   });
-  const levelOf = (): [number, number] => {
+  const levelOf = (): number => {
     const info = accountInfo(loop.state, content);
-    return [info.level, info.maxLevel];
+    return info.level;
   };
   const track = createRewardTrack(shell.track, {
     content,
@@ -253,7 +253,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     playSound('levelUp');
     shell.flashLevel();
     toast(v.title, v.lines, 'milestone', v.big ? 'prismatic' : 'gold');
-    track.update(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+    track.update(trackView(content, rewardTrack(loop.state, content)), levelOf());
   };
 
   const applyAndSave = (next: GameState): void => {
@@ -401,7 +401,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     announce(report);
     if (report.accountLevel) {
       if (document.hidden) {
-        track.update(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+        track.update(trackView(content, rewardTrack(loop.state, content)), levelOf());
       } else celebrateLevel(report.accountLevel.from, report.accountLevel.to);
     }
     if (!document.hidden) celebrateAchievements(report.achievements);

@@ -21,9 +21,7 @@ export interface LevelBadgeView {
 }
 
 export function levelBadge(info: AccountInfo): LevelBadgeView {
-  const xpText = info.xpToNext
-    ? COPY.account.xp(fmt(info.xp.floor()), fmt(info.xpToNext.ceil()))
-    : COPY.account.maxLevel;
+  const xpText = COPY.account.xp(fmt(info.xp.floor()), fmt(info.xpToNext.ceil()));
   const points = info.skillPoints.available;
   const pointsText = points > 0 ? COPY.account.points(points) : '';
   return {

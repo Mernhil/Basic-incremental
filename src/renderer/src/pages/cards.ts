@@ -422,10 +422,26 @@ export function createCardsPage(
       d.append(h('dt', '', label), h('dd', '', value));
       facts.append(d);
     };
-    fact(COPY.cards.mainAbility, e.mainAbility);
-    fact(COPY.cards.supportEffect, e.supportEffect);
-    fact(COPY.cards.cost, String(e.cost));
-    body.append(main, facts);
+    if (e.job === 'fighting') {
+      fact(COPY.cards.mainAbility, e.mainAbility);
+      fact(COPY.cards.supportEffect, e.supportEffect);
+      fact(COPY.cards.cost, String(e.cost));
+    } else {
+      // a worker: its one ability and where it works (placed from the Production page)
+      fact(COPY.cards.workerAbility, e.mainAbility);
+      fact(COPY.cards.worksAt, e.workplace ?? COPY.cards.notWorking);
+    }
+    // damage, health, hit speed and crits, with the compare line (DESIGN.md §5 Show the stats)
+    const stats = h('dl', 'cp-stats');
+    for (const t of e.stats.tiles) {
+      const d = h('div', 'px-tile cp-fact');
+      if (t.title) d.title = t.title;
+      d.append(h('dt', '', t.label), h('dd', '', t.value));
+      stats.append(d);
+    }
+    body.append(main, stats);
+    if (e.stats.compare) body.append(h('p', 'cp-compare', e.stats.compare));
+    body.append(facts);
 
     if (e.owned) {
       const chart = model.chart(state, e.id);
@@ -451,13 +467,14 @@ export function createCardsPage(
         actions.append(b);
       }
       // a button for the role the card already has would do nothing: it is left out
-      if (e.role?.slot !== 'main') {
+      if (e.job === 'fighting' && e.role?.slot !== 'main') {
         btn(COPY.cards.setMain, 'set-main', () => model.setMain(ctx.state(), e.id));
       }
-      if (e.role?.slot !== 'support') {
+      if (e.job === 'fighting' && e.role?.slot !== 'support') {
         btn(COPY.cards.addSupport, 'add-support', () => model.addSupport(ctx.state(), e.id));
       }
       if (e.role) btn(COPY.cards.remove, 'remove', () => model.remove(ctx.state(), e.id));
+      if (e.job !== 'fighting') actions.append(h('p', 'cp-upgrade__note', COPY.cards.workerHint));
       body.append(actions);
       if (hasChart && enhanceOpen && chart) body.append(enhanceBox(e.id, chart));
     }
@@ -474,6 +491,13 @@ export function createCardsPage(
    */
   const pixelState = (st: StarView['state']): 'owned' | 'open' | 'locked' =>
     st === 'chosen' ? 'owned' : st === 'open' ? 'open' : 'locked';
+
+  /** An option's name, with the card level that opens it under it while that is not reached. */
+  function optionName(s: StarView): HTMLElement {
+    const name = h('span', 'cp-option__name', s.name);
+    if (s.levelText) name.append(h('span', 'cp-option__level', s.levelText));
+    return name;
+  }
 
   function enhanceBox(id: string, v: StarChartView): HTMLElement {
     const t = COPY.enhance;
@@ -495,14 +519,15 @@ export function createCardsPage(
 
     // the chart: the pixel sky of the equipped nodes style, with a button laid over each star
     const style = nodeStyle(ctx.content, ctx.state());
+    const sky = v.stars.filter((s) => s.onChart);
     const chart = h('div', 'cp-chart');
     chart.style.aspectRatio = `${CHART.w} / ${CHART.h}`;
     chart.innerHTML = chartSky(
       style,
-      v.stars.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
-      v.stars.slice(1).map((_, i) => [i, i + 1] as const),
+      sky.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
+      sky.slice(1).map((_, i) => [i, i + 1] as const),
     );
-    for (const s of v.stars) {
+    for (const s of sky) {
       const star = h('button', `cp-star is-${s.state}`);
       star.type = 'button';
       star.tabIndex = -1; // the list below is the keyboard way in
@@ -544,7 +569,7 @@ export function createCardsPage(
       mark.innerHTML = chartStar(style, pixelState(s.state));
       b.append(
         mark,
-        h('span', 'cp-option__name', s.name),
+        optionName(s),
         h('span', 'cp-option__effect bi-num', s.effect),
         h('span', 'cp-option__cost bi-num', s.costText),
       );
@@ -648,7 +673,8 @@ export function createCardsPage(
     head.append(tabBar);
     wrap.append(head);
     const byId = new Map(entries.map((e) => [e.id, e]));
-    for (const job of JOB_ORDER) {
+    // Only fighting has a loadout; logging and mining cards work on the Production page.
+    for (const job of ['fighting'] as const) {
       const lo = model.loadout(state, job);
       const { el, body } = frame(COPY.cards.jobLoadout(JOB_NAMES[job]));
       el.classList.add('cp-job');

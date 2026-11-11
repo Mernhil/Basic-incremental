@@ -3,6 +3,11 @@
  * "save" (never "file" or "data"), "boss", "bars" for HP, "Export save" / "Import save".
  * Written with the ux-copy guidelines: verb-first actions, errors say what happened and what to do.
  */
+/** The share of the next star the bar holds, as a whole percent. */
+export function starPercent(fill: number, need: number): number {
+  return need <= 0 ? 100 : Math.min(100, Math.floor((fill / need) * 100 + 1e-9));
+}
+
 export const COPY = {
   update: {
     message: 'Update ready — restart to install',
@@ -167,6 +172,18 @@ export const COPY = {
     settings: { label: 'Settings', frame: '', empty: '' },
   },
   production: {
+    /** A lucky strike showing (DESIGN.md §4 Lucky strikes). */
+    lucky: (name: string, seconds: number) => `${name}! ${seconds} s`,
+    /** Depth and growth (DESIGN.md §4): the age of a tree, the layer of a mine. */
+    depth: {
+      logging: (n: number, name: string) => `Age ${n} · ${name}`,
+      mining: (n: number, name: string) => `Layer ${n} · ${name}`,
+      deepest: 'deepest',
+      yield: (mult: string) => `×${mult} yield`,
+      next: (mult: string) => `next ×${mult}`,
+      noWorker: 'no worker, no digging',
+      tip: (broken: string, hardness: string) => `${broken} of ${hardness} broken`,
+    },
     logging: {
       title: 'Logging',
       tilesLabel: 'Trees',
@@ -179,7 +196,6 @@ export const COPY = {
       kindsLabel: 'Mine types',
       idle: 'Nothing is being mined. Clear a dungeon to open a mine.',
     },
-    partyLabel: (job: string) => `${job} cards`,
     harvestBurst: 'Harvest burst',
     strikesEvery: 'Strikes every',
     every: 'Every',
@@ -208,9 +224,7 @@ export const COPY = {
     stageStrikes: (style: string, every: string) => `${style} · strikes every ${every}`,
     stageBurst: (size: number, seconds: string) => `Bursts at ${size} for ${seconds} of output.`,
     patterns: { steady: 'Steady', chop: 'Chop', flurry: 'Flurry', volley: 'Volley' },
-    emptySupport: 'Empty support slot',
     showCard: 'Show the card',
-    noMain: 'No main card. Pick one on the Cards page.',
     columns: {
       producer: 'Producer',
       output: 'Output and next ×2',
@@ -231,7 +245,26 @@ export const COPY = {
     unlockFor: (price: string) => `Unlock for ${price}`,
     burstCount: (n: number, size: number) => `Burst ${n} / ${size}`,
     bandLabel: (job: string) => `${job} producers`,
-    supportsLabel: 'Supports',
+    /** Worker cells and the worker picker (DESIGN.md §4 Workers). */
+    workerColumn: 'Worker',
+    workerSub: (level: number, power: string) => `Lv ${level} · ×${power}`,
+    addWorker: 'Add a worker',
+    noFreeSlot: 'No free slot',
+    noWorker: 'No worker',
+    workerLabel: (place: string, card: string, sub: string) =>
+      `${place}: worked by ${card}, ${sub}. Change the worker`,
+    noWorkerLabel: (place: string) => `${place}: no worker. Choose a worker`,
+    slots: (used: number, total: number) => `Workers ${used} / ${total}`,
+    slotsHint: 'One more worker slot opens with each Ascension.',
+    pickTitle: (place: string) => `Worker for ${place}`,
+    pickClose: 'Close',
+    pickRemove: 'Send away',
+    pickNone: 'No cards of this job yet. Summon some on the Summon page.',
+    pickHere: 'Works here',
+    pickAt: (place: string) => `Works at ${place} (moves here)`,
+    pickIdle: 'Not working',
+    pickNoSlot: 'No free slot',
+    pickPower: (power: string) => `×${power}`,
     shelfLine: (ready: number, owned: number) => `${ready} ready to buy · ${owned} owned`,
     shelfOpen: 'Open the upgrade shelf',
     shelfClose: 'Close the upgrade shelf',
@@ -261,6 +294,31 @@ export const COPY = {
     lockedDetail: 'Not found yet. Cards come from the Card Portal on the Summon page.',
     mainAbility: 'Main ability',
     supportEffect: 'Support effect',
+    workerAbility: 'Worker ability',
+    /** Stat tiles on every card (DESIGN.md §5 Show the stats). */
+    stats: {
+      damage: 'Damage / s',
+      output: 'Output',
+      health: 'Health',
+      hit: 'Hits every',
+      strike: 'Strikes every',
+      crits: 'Crits',
+      seconds: (n: number) => `${+n.toFixed(2)} s`,
+      crit: (chance: number, damage: string) => `${+(chance * 100).toFixed(1)}% · ×${damage}`,
+      outputValue: (power: string) => `×${power}`,
+      damageTip: 'Average damage per second as the main card: hits, signature attacks and crits.',
+      outputTip: 'The multiplier this worker gives its tree or mine.',
+      compare: (name: string, parts: string[]) => `vs ${name}: ${parts.join(', ')}`,
+      compareMain: 'equipped main',
+      comparePart: (percent: number, what: string) =>
+        `${percent >= 0 ? '+' : '−'}${Math.abs(Math.round(percent * 100))}% ${what}`,
+      same: 'about the same',
+      equipped: 'This is the equipped main card.',
+      working: 'This is the card working that place.',
+    },
+    worksAt: 'Works at',
+    notWorking: 'Not working',
+    workerHint: 'Put it to work on a tree or mine on the Production page.',
     cost: 'Cost',
     duplicates: 'Star bar',
     shards: 'Shards',
@@ -332,7 +390,28 @@ export const COPY = {
     fightLabel: (name: string) => `Fight in ${name}`,
     clearToUnlock: (name: string) => `Clear ${name} to unlock`,
     boss: (name: string, hp: string, bars: number) => `${name} · ${hp} HP in ${bars} bars`,
-    kills: (n: number) => (n === 1 ? '1 boss kill' : `${n} boss kills`),
+    /** Stage stars and overflow (DESIGN.md §6): plain working UI until the floors UI is designed. */
+    stars: (levels: number, max: number) => `★ ${levels} / ${max}`,
+    starLevel: (level: number, name: string) => (level > 0 ? `★${level} ${name}` : 'No star yet'),
+    stageHere: (floor: number) => `Stage: floor ${floor}`,
+    stageBelow: (floor: number) => `Next stage: floor ${floor}`,
+    stageDepths: (floor: number) => `Depths follow the Nightmare stage, floor ${floor}`,
+    killsToNext: (n: number, name: string) =>
+      n === 1 ? `1 kill to ${name}` : `${n.toLocaleString('en-US')} kills to ${name}`,
+    allStars: 'every star earned',
+    stageTip:
+      'Kills on a mini-boss or boss floor earn its stars, separately on each tier. Each star pays a chest once and adds damage and loot on that stage.',
+    overflowLabel: 'Overflow',
+    overflowOn: 'On',
+    overflowOff: 'Off',
+    overflowLocked: (name: string) =>
+      `Reach ${name} on this stage to unlock overflow: leftover damage from a kill then carries on.`,
+    overflowTipOn: 'Overflow on: leftover damage from a kill carries into the next kill or floor.',
+    overflowTipOff: 'Overflow off: leftover damage from a kill is lost.',
+    stageMap: 'Stage map',
+    stageMapNote: 'Stars of every mini-boss and boss floor, by dungeon and tier.',
+    stageMapDungeon: 'Dungeon',
+    stageCell: (floor: number, level: number) => `F${floor} ★${level}`,
     perKill: (d: string) => `about ${d} per floor`,
     perKillTip:
       'Average time to clear the floor from full HP at your damage, signature attacks included.',
@@ -399,6 +478,8 @@ export const COPY = {
   },
   home: {
     manageProduction: 'Manage production',
+    worker: 'Worker',
+    noWorker: 'No worker',
     nothingProducing: 'Nothing is producing. Open Production to plant a tree or start a mine.',
     nothingFought: 'Nothing is being fought. Open Dungeons to choose a dungeon.',
     damage: 'Damage',
@@ -441,6 +522,11 @@ export const COPY = {
       tree_levels: ['Tree levels', 'Every tree back to level 0'],
       resources: ['Gems and materials', 'Every resource except Starlight'],
       tile_stages: ['Tile growth', 'Trees and mines back to the first stage'],
+      tool_lines: ['Tool lines', 'Yield, strike speed and crit lines back to level 0'],
+      depth_growth: [
+        'Depth and age',
+        'Every mine back to its first layer, every tree to its first age',
+      ],
     },
     upgradesNote:
       'Per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
@@ -454,6 +540,12 @@ export const COPY = {
       portal_pity: 'Portal pity',
       crystals: 'Crystals',
       starlight: 'Starlight',
+      workers: 'Workers',
+      forge: 'The forge',
+      star_dust: 'Star dust',
+      stage_stars: 'Stage stars',
+      wishlist: 'Wishlist',
+      skill_tree: 'Skill tree',
     },
     keptDetail: {
       cards: (n: number) => (n === 1 ? '1 card, rank and level' : `${n} cards, ranks and levels`),
@@ -465,6 +557,12 @@ export const COPY = {
       portal_pity: 'Pulls counted toward each pity',
       crystals: (summon: string, glamour: string) => `${summon} Summon, ${glamour} Glamour`,
       starlight: (n: string) => `${n} in hand`,
+      workers: (n: number) => (n === 1 ? '1 worker placed' : `${n} workers placed`),
+      forge: 'Its recipe, worker and progress',
+      star_dust: (n: string) => `${n} in hand`,
+      stage_stars: (n: number) => (n === 1 ? '1 stage kill counted' : `${n} stage kills counted`),
+      wishlist: (n: number) => (n === 1 ? '1 card marked' : `${n} cards marked`),
+      skill_tree: (n: number) => (n === 1 ? '1 rank bought' : `${n} ranks bought`),
     },
     gainLabel: 'Starlight from this run',
     gainHint: 'Grows with the gems harvested since this run began.',
@@ -492,6 +590,15 @@ export const COPY = {
     level: (lv: number, max: number) => `Lv ${lv} / ${max}`,
     effect: (from: string, to: string) => `${from} → ${to}`,
     maxedEffect: (now: string) => `${now}, max level`,
+    /** Starlight lines that open a rule instead of a bonus (DESIGN.md §9). */
+    slots: (open: number, places: number) => `${open} of ${places} places have a second slot`,
+    slotsLocked: 'Opens once every tree and mine has its first worker slot',
+    autobuyer: (owned: boolean) => (owned ? 'Owned: switch it on below' : 'Not owned'),
+    autobuyers: 'Autobuyers',
+    autoTrees: 'Buy tree levels',
+    autoMines: 'Buy mine levels',
+    autoReserve: 'Keep at least this share of what you hold',
+    autoNote: 'They run every second, like offline progress. They never touch cards.',
     buy: 'Buy level',
     maxed: 'Max level',
     price: (amount: string) => `${amount} Starlight`,
@@ -580,6 +687,22 @@ export const COPY = {
     noteCopy: '+1 copy',
     handSummary: (pulls: number, news: number, copies: number) =>
       `${pulls} ${pulls === 1 ? 'pull' : 'pulls'} · ${news} new · ${copies} ${copies === 1 ? 'copy' : 'copies'}`,
+    wishlistTitle: 'Wishlist',
+    wishlistAbout: (n: number) =>
+      `Mark up to ${n} cards per rarity to hunt. A pull of that rarity then lands on one of your marked cards. The chance of each rarity, the price and the pity stay the same.`,
+    wishlistRow: (rarity: string, marked: number, limit: number) =>
+      `${rarity}: ${marked} of ${limit} marked`,
+    wishlistCount: (marked: number, limit: number) => `${marked} / ${limit}`,
+    wishlistCard: (name: string, marked: boolean, full: boolean) =>
+      marked
+        ? `${name}, marked. Click to unmark`
+        : full
+          ? `${name}, not marked. This rarity is full: unmark a card first`
+          : `${name}, not marked. Click to mark`,
+    wishlistHunting: (names: string) => `Hunting: ${names}`,
+    wishlistNone: 'No card marked',
+    wishlistFull: 'This rarity has no room left. Unmark a card first.',
+    oddsWishlist: 'Wishlist on: a pull of a rarity with a marked card lands on a marked card.',
     handTitle: 'Your last hand',
     handEmpty: 'Draw from a deck and the cards you get will wait here.',
     handLabel: (n: number) => `Your last hand, ${n} ${n === 1 ? 'card' : 'cards'}`,
@@ -877,7 +1000,15 @@ export const COPY = {
     xpLabel: (pct: number) => `${pct}% of the way to the next level`,
     xpFull: 'XP full',
     xpOf: (now: string, need: string) => `${now} / ${need} XP`,
-    starLine: (fill: number, need: number, next: number) => `${fill} / ${need} copies to ★${next}`,
+    /** Stars cost fractions of a copy, so the bar reads as a share of the next star. */
+    starLine: (fill: number, need: number, next: number) =>
+      `${starPercent(fill, need)}% to ★${next}`,
+    /** The exact numbers, in the tooltip. */
+    starTitle: (fill: number, need: number, next: number) =>
+      `${+fill.toFixed(3)} / ${+need.toFixed(3)} copies to ★${next}`,
+    /** The star dust button: tops up what the star bar lacks. */
+    dustStar: (next: number, cost: number, have: number) =>
+      `Star ★${next} with ${cost} Star Dust (you have ${have})`,
     allStars: 'All six stars',
     impact: (from: number, to: number) => `×${from} → ×${to}`,
     addStar: (next: number) => `Add star ★${next}`,
@@ -918,6 +1049,26 @@ export const COPY = {
     preview: (from: string, to: string) => `×${from} → ×${to}`,
     buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
     oneTime: 'One-time upgrades',
+  },
+  /** The forge (DESIGN.md §4 The forge). */
+  forge: {
+    title: 'Forge',
+    recipes: 'Recipes',
+    workerLabel: 'Worker',
+    noneWorker: 'No worker',
+    recipe: (inputs: string, output: string) => `${inputs} → ${output}`,
+    worker: (name: string, power: string, at: string | null, rank: string) =>
+      `${name} (${rank}) · power ${power}${at ? ` · works at ${at}` : ''}`,
+    noRecipe: 'Pick a recipe.',
+    noWorker: 'Needs a worker and a free slot.',
+    waitingForGems: 'Waiting for gems.',
+    making: (wait: string) => `Next in ${wait}`,
+    speed: (work: string) => `${work} work/s`,
+  },
+  /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
+  tools: {
+    title: (job: string) => `${job} tools`,
+    note: 'Bought with Money, again and again. Resets on Ascension.',
   },
   buy: {
     countLabel: 'Buy amount',
@@ -981,7 +1132,6 @@ export const COPY = {
   },
   account: {
     xp: (have: string, need: string) => `${have} / ${need} XP`,
-    maxLevel: 'Max level',
     points: (n: number) => (n === 1 ? '1 skill point to spend' : `${n} skill points to spend`),
     noPoints: 'No skill points to spend',
     badgeLabel: (level: number, xp: string, points: string) =>
@@ -989,7 +1139,7 @@ export const COPY = {
     tipXp: 'XP comes from harvests, boss kills, trial attempts, pulls and ascensions.',
     tipOpen: 'Click to see the rewards for the next levels.',
     track: 'Reward track',
-    trackNote: (level: number, max: number) => `Level ${level} of ${max}`,
+    trackNote: (level: number) => `Level ${level}`,
     close: 'Close',
     level: (n: number) => `Lv ${n}`,
     reached: 'Reached',
@@ -1016,6 +1166,11 @@ export const COPY = {
       luck: 'Summoning and luck',
       collection: 'Collection',
       automation: 'Automation and offline',
+      workers: 'Workers',
+      forge: 'Forge and tools',
+      elements: 'Elements',
+      dungeons: 'Dungeons and stars',
+      ascension: 'Ascension',
     },
     branchShort: {
       logging: 'Logging',
@@ -1024,6 +1179,11 @@ export const COPY = {
       luck: 'Luck',
       collection: 'Collection',
       automation: 'Automation',
+      workers: 'Workers',
+      forge: 'Forge',
+      elements: 'Elements',
+      dungeons: 'Dungeons',
+      ascension: 'Ascension',
     },
     points: 'points',
     pointsAvailable: (n: number) => (n === 1 ? '1 point to spend' : `${n} points to spend`),
@@ -1039,7 +1199,26 @@ export const COPY = {
     buy: (n: number) => (n === 1 ? 'Learn rank (1 point)' : `Learn rank (${n} points)`),
     noPoints: 'Not enough skill points',
     pickNode: 'Choose a gem to see what it does.',
-    state: { locked: 'Locked', open: 'Open', owned: 'Learned', maxed: 'Maxed' },
+    state: {
+      locked: 'Locked',
+      open: 'Open',
+      owned: 'Learned',
+      maxed: 'Maxed',
+      closed: 'Not open yet',
+    },
+    needsRing: (ring: number) => `Opens with Ascension ${ring}`,
+    needsStep: (step: string) => `Opens when a card of this type reaches ${step}`,
+    step: { gold: 'Gold', prismatic: 'Prismatic', mythic: 'Mythic or Void', heirloom: 'Heirloom' },
+    circleHidden: 'A weapon circle, hidden. Raise a card of this type to Gold to reveal it.',
+    circleOpen: (name: string, step: string, learned: number, total: number) =>
+      total === 0
+        ? `${name} circle, open to ${step}, no skills yet`
+        : `${name} circle, open to ${step}, ${learned} of ${total} learned`,
+    circlesHeading: 'Weapon circles',
+    zoomIn: 'Zoom in',
+    zoomOut: 'Zoom out',
+    zoomReset: 'Reset view',
+    panHint: 'Drag to pan, scroll to zoom.',
     nodeLabel: (name: string, state: string, rank: string) => `${name}, ${state}, ${rank}`,
     bought: (name: string, rank: number) => `${name} is now rank ${rank}`,
     respec: 'Respec',
@@ -1070,6 +1249,7 @@ export const COPY = {
       unknown: 'That skill does not exist.',
       maxed: 'That skill is already at max rank.',
       locked: 'Learn the gem before it first.',
+      closed: 'That part of the tree is not open yet.',
       'no-points': 'Not enough skill points. Level up your account to earn more.',
       nothing: 'No points spent yet.',
       unaffordable: 'Not enough Starlight to respec.',
@@ -1087,6 +1267,7 @@ export const COPY = {
     overBudget: 'Not enough points left',
     open: 'Click to choose',
     lockedStar: 'Locked',
+    opensAtLevel: (level: number) => `Opens at level ${level}`,
     starLabel: (name: string, effect: string, cost: string, state: string) =>
       `${name}: ${effect}, ${cost}. ${state}`,
     reset: 'Reset (free)',
@@ -1095,7 +1276,8 @@ export const COPY = {
     reasons: {
       unknown: 'That option does not exist.',
       'not-owned': 'Own this card first.',
-      locked: 'Enhancements unlock at Silver ★1.',
+      locked: 'Enhancements are not open for this card yet.',
+      level: 'That option opens at a higher card level.',
       already: 'Already chosen.',
       'over-budget': 'Not enough points left. Reset to choose again.',
     },

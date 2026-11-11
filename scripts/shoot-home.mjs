@@ -1,5 +1,5 @@
 // Screenshots Home (UI_RULES.md §2) with a seeded save: a dungeon fight, two unlocked tree kinds,
-// one mine cleared, jobs with main cards. It replaces the dev save, so use a profile:
+// one mine cleared, the fighting loadout and a worker on the first tree and mine. It replaces the dev save, so use a profile:
 // `BI_PROFILE=rework2home npx electron-vite dev -- --remote-debugging-port=9401`, then
 // `node scripts/shoot-home.mjs [port] [outDir]`.
 import { resolve } from 'node:path';
@@ -31,7 +31,14 @@ await page.evaluate(
     for (const job of ['fighting', 'logging', 'mining']) {
       const cards = content.cards.filter((c) => c.job === job).slice(0, 4);
       for (const c of cards) s.cards.owned[c.id] ??= { ...base };
-      s.cards.loadouts[job] = { main: cards[0].id, supports: cards.slice(1).map((c) => c.id) };
+      if (job === 'fighting') {
+        s.cards.loadouts.fighting = {
+          main: cards[0].id,
+          supports: cards.slice(1).map((c) => c.id),
+        };
+      } else {
+        s.production.workers[job === 'logging' ? 'oak' : 'copper_quarry'] = [cards[0].id];
+      }
     }
     const trees = content.trees.slice(0, 2);
     s.production.unlockedTrees = trees.map((t) => t.id);

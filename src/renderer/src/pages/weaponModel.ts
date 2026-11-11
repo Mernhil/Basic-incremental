@@ -32,7 +32,20 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
         gauge: bar.gauge,
         ready: bar.ready,
         text: COPY.weapon.starLine(bar.fill, bar.need, owned.stars + 1),
+        title: COPY.weapon.starTitle(bar.fill, bar.need, owned.stars + 1),
         impact: COPY.weapon.impact(multiplierAt(owned.stars), multiplierAt(owned.stars + 1)),
+        dust:
+          info.starDust && info.starDust.cost > 0 && info.starDust.have > 0
+            ? {
+                ...info.starDust,
+                affordable: info.starDust.have >= info.starDust.cost,
+                label: COPY.weapon.dustStar(
+                  owned.stars + 1,
+                  info.starDust.cost,
+                  info.starDust.have,
+                ),
+              }
+            : null,
       }
     : null;
 

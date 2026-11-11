@@ -13,6 +13,10 @@ const id = z.string().regex(/^[a-z][a-z0-9_]*$/, 'ids are lowercase snake_case, 
 const name = z.string().min(1);
 const tier = z.number().int().min(1);
 
+/** Card elements (DESIGN.md §12): each picks the card's element effect. */
+export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
+export type CardElement = (typeof ELEMENTS)[number];
+
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
@@ -53,6 +57,8 @@ export const resourceSchema = z.strictObject({
   /** Amount a brand-new game starts with (default 0). Money starts with enough for the first
    *  damage levels (DESIGN.md §3). */
   startAmount: decimal.optional(),
+  /** Kept through an Ascension although its kind is reset by one (star dust belongs to the collection, DESIGN.md §5). */
+  keptOnAscend: z.boolean().optional(),
 });
 
 const costSchema = z.strictObject({ resource: id, amount: positiveDecimal });
@@ -67,8 +73,26 @@ export const costCurveSchema = z.strictObject({
   growth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
 });
 
+/**
+ * Depth and growth of a tree kind (ages) or mine type (layers) (DESIGN.md §4 Depth and growth).
+ * Layer `n` (1-based) has hardness `hardness x hardnessGrowth^(n-1)` that the worker's digging
+ * (`digRate` hardness per second at worker power 1) breaks; each layer below the first multiplies
+ * the place's yield by `yieldGrowth`. There are as many layers as `names`; the last one is never
+ * broken. Reset on Ascension.
+ */
+export const depthSchema = z.strictObject({
+  /** The age or layer names, shallowest first (at least two). */
+  names: z.array(name).min(2),
+  hardness: positiveDecimal,
+  hardnessGrowth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+  yieldGrowth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+  digRate: positiveDecimal,
+});
+export type DepthDef = z.output<typeof depthSchema>;
+
 /** Shared by trees (logging) and mines (mining). Each unlocked one produces once. */
 const producerFields = {
+  depth: depthSchema,
   id,
   name,
   tier,
@@ -104,6 +128,8 @@ export const treeSchema = z.strictObject({
   ...producerFields,
   /** Gems paid once to unlock this tree kind (kept through prestige). Empty = unlocked from the start. */
   unlockCost: z.array(costSchema),
+  /** The tree's element: workers of this element on it give +15% (DESIGN.md §6 Elements in combat). */
+  element: z.enum(ELEMENTS),
   /** Tree levels (DESIGN.md §4), bought with Money and reset on prestige. */
   level: producerLevelSchema,
   /** Tree colours, themed to its gem: canopy and bark, light to dark. */
@@ -114,16 +140,16 @@ export const mineSchema = z.strictObject({
   ...producerFields,
   /** Dungeon whose clear unlocks this mine type; null = available from the start. */
   unlockedByDungeon: id.nullable(),
+  /** The mine's element: workers of this element on it give +15% (DESIGN.md §6 Elements in combat). */
+  element: z.enum(ELEMENTS),
   /** Mine levels, bought with Money and reset on prestige. */
   level: producerLevelSchema,
 });
 
-/** How a production main card strikes (DESIGN.md §4): a look and a rhythm, never extra output. */
+/** How a worker strikes its place (DESIGN.md §4 Workers play the field): a look and a rhythm,
+ *  never extra output. */
 export const HARVEST_STYLES = ['steady', 'chop', 'flurry', 'volley'] as const;
 export type HarvestStyle = (typeof HARVEST_STYLES)[number];
-/** Which unlocked kinds a strike lands on: the next one in turn, a random one, or every one. */
-export const HARVEST_TARGETING = ['sweep', 'random', 'all'] as const;
-export type HarvestTargeting = (typeof HARVEST_TARGETING)[number];
 
 export const harvestPatternSchema = z.strictObject({
   /** Name of the strike's look, for the stage to pick an animation. */
@@ -132,21 +158,8 @@ export const harvestPatternSchema = z.strictObject({
   intervalSeconds: z.number().positive(),
   /** Strikes in one cycle, spread evenly over it. */
   strikes: z.number().int().min(1).max(8),
-  targeting: z.enum(HARVEST_TARGETING),
 });
 export type HarvestPattern = z.output<typeof harvestPatternSchema>;
-
-export const productionSchema = z.strictObject({
-  harvest: z.strictObject({
-    /** Pattern of a job with no main card. */
-    default: z.strictObject({ logging: harvestPatternSchema, mining: harvestPatternSchema }),
-    /** Base harvest crit (the `harvest.*` stats change it). 0 keeps the output exactly as before. */
-    crit: z.strictObject({
-      chance: z.number().min(0).max(1),
-      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
-    }),
-  }),
-});
 
 export const JOBS = ['mining', 'logging', 'fighting'] as const;
 /** Mythic and Void are one top rarity with two sides, equal in power (DESIGN.md §5). */
@@ -161,6 +174,114 @@ export const RARITIES = [
 ] as const;
 export type Rarity = (typeof RARITIES)[number];
 export type Job = (typeof JOBS)[number];
+
+const positiveNumber = z.number().positive();
+
+/** The stats a tool line can raise (DESIGN.md §4 Tool lines). */
+export const TOOL_STATS = [
+  'production.rate',
+  'harvest.speed',
+  'harvest.critChance',
+  'harvest.critDamage',
+] as const;
+
+/**
+ * A tool line of a production job (DESIGN.md §4 Tool lines): repeatable, bought with Money like a
+ * Training line. Yield and strike speed multiply their stat by (1 + ratePercent% x level) x the
+ * milestones (`milestones` required); crit chance adds ratePercent percentage points a level and
+ * crit damage adds ratePercent/100 to the crit multiplier a level (no milestones). The job is the
+ * scope. Reset on Ascension.
+ */
+export const toolLineSchema = z
+  .strictObject({
+    id,
+    name,
+    job: z.enum(['logging', 'mining']),
+    /** What it raises, as the words after the amount ("yield"). */
+    effect: z.string().min(1),
+    stat: z.enum(TOOL_STATS),
+    cost: costCurveSchema,
+    ratePercent: decimal.refine((d) => d.gt(0), { message: 'must be above 0' }),
+    milestones: milestoneSchema.optional(),
+  })
+  .refine(
+    (t) =>
+      (t.stat === 'production.rate' || t.stat === 'harvest.speed') === (t.milestones !== undefined),
+    { message: 'yield and speed lines need milestones, crit lines have none' },
+  );
+export type ToolLine = z.output<typeof toolLineSchema>;
+
+/**
+ * A forge recipe (DESIGN.md §4 The forge): `inputs` are spent and `output` made each time the
+ * worker has done `work` (progress per second is the forge's `speed` × the worker's power).
+ */
+export const forgeRecipeSchema = z.strictObject({
+  id,
+  name,
+  inputs: z.array(costSchema).min(1),
+  output: costSchema,
+  work: positiveDecimal,
+});
+export type ForgeRecipe = z.output<typeof forgeRecipeSchema>;
+
+/**
+ * The lucky strike of a job (DESIGN.md §4 Lucky strikes): a worked place gets one every
+ * `everySeconds` on average, visible for `windowSeconds`, paying `payoutSeconds` of its output. The
+ * economy uses the average, 1 + payout / interval; 0 payout switches it off.
+ */
+export const luckySchema = z
+  .strictObject({
+    /** What appears: "Golden tree", "Rich vein". */
+    name,
+    everySeconds: z.number().positive(),
+    windowSeconds: z.number().positive(),
+    payoutSeconds: z.number().min(0),
+  })
+  .refine((l) => l.windowSeconds < l.everySeconds, {
+    message: 'the window must be shorter than the interval',
+  });
+export type LuckyConfig = z.output<typeof luckySchema>;
+
+export const productionSchema = z.strictObject({
+  /** Lucky strikes of each job (DESIGN.md §4 Lucky strikes). */
+  lucky: z.strictObject({ logging: luckySchema, mining: luckySchema }),
+  /** The forge (DESIGN.md §4 The forge): its recipes and its progress per second at power 1. */
+  forge: z.strictObject({
+    speed: positiveDecimal,
+    recipes: z.array(forgeRecipeSchema).min(1),
+  }),
+  /** The tool lines of both jobs (DESIGN.md §4 Tool lines), in the order the page shows them. */
+  tools: z.array(toolLineSchema).min(1),
+  harvest: z.strictObject({
+    /** Base harvest crit; the `harvest.*` stats change it, read at a worker's place. A place
+     *  with no worker has no crits. */
+    crit: z.strictObject({
+      chance: z.number().min(0).max(1),
+      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+    }),
+  }),
+  /** Workers (DESIGN.md §4 Workers, Worker slots). */
+  workers: z.strictObject({
+    /** Worker slots: `base` plus `perAscension` per Ascension, at most `perProducer` on one tree
+     *  kind or mine type (so never more than that many times the trees and mines). */
+    slots: z.strictObject({
+      base: z.number().int().min(0),
+      perAscension: z.number().int().min(0),
+      perProducer: z.number().int().min(1),
+    }),
+    /** A worker's power by rarity; × the card's level, star and tier power (`cardStatPower`) it
+     *  multiplies its place's output. */
+    rarityPower: z.strictObject({
+      common: positiveNumber,
+      uncommon: positiveNumber,
+      rare: positiveNumber,
+      epic: positiveNumber,
+      legendary: positiveNumber,
+      mythic: positiveNumber,
+      void: positiveNumber,
+    }),
+  }),
+});
 
 // ---- modifiers ---------------------------------------------------------------------------------
 
@@ -217,6 +338,8 @@ export const STATS = [
   'harvest.critChance',
   /** Output multiplier of a harvest crit (at least 1). Scope: job. */
   'harvest.critDamage',
+  /** Strike and harvest-gauge speed of a worked place, base 1 (at least 0). Scope: job, producer. */
+  'harvest.speed',
   /** Special dungeon reward units per score tier reached (floored). Scope: dungeon, resource. */
   'trial.reward',
   /** Fighting loadout health pool (DESIGN.md §6): the sum of the cards' health. Scope: dungeon. */
@@ -238,6 +361,34 @@ export const STATS = [
   /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
    *  their modifiers (DESIGN.md §4). Only read from upgrades. Scope: job. */
   'card.supportPower',
+  /** Power of the workers at a place (DESIGN.md §4), also its digging. Scope: job, producer. */
+  'worker.power',
+  /** Hardness a place's workers break per second (DESIGN.md §4 Depth), base 1. Scope: job, producer. */
+  'depth.digRate',
+  /** Yield multiplier of a place's layer or age, read on the layer's own multiplier. Scope: job, producer. */
+  'depth.yield',
+  /** Seconds of output a lucky strike pays (DESIGN.md §4 Lucky strikes). Scope: job, producer. */
+  'lucky.payout',
+  /** Progress per second of the forge (DESIGN.md §4 The forge), base 1. */
+  'forge.speed',
+  /** Output amount of each craft, base 1. */
+  'forge.yield',
+  /** Share of a craft's inputs given back, 0..0.9, base 0. */
+  'forge.refund',
+  /** Strength of the tool lines of a job: scales what their levels give, base 1. Scope: job. */
+  'tool.strength',
+  /** Strength of the elemental damage bonuses (weakness and matching supports), base 1. */
+  'element.bonus',
+  /** Strength of the elemental damage malus (a resisted element), base 1 (0 = no malus). */
+  'element.resist',
+  /** Strength of a worker's element bonus on its own tree or mine, base 1. */
+  'element.production',
+  /** Chest of each stage star level, base 1 (DESIGN.md §6 Stage stars). Scope: dungeon. */
+  'stars.chest',
+  /** The damage each star level adds on its stage, base 1 (= the +5% a level). Scope: dungeon. */
+  'stars.damage',
+  /** The loot each star level adds on its stage, base 1. Scope: dungeon. */
+  'stars.loot',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -312,13 +463,6 @@ const cardEffectSchema = z.strictObject({
 });
 export type CardEffect = z.output<typeof cardEffectSchema>;
 
-/**
- * A collectible card (DESIGN.md §5). Every card can lead its job (`main`) or sit in one of
- * its 3 support slots (`support`); only the effect of the slot it is in applies.
- */
-/** Card elements (DESIGN.md §12): each picks the card's element effect. */
-export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
-export type CardElement = (typeof ELEMENTS)[number];
 /** The 11 item types a card can carry (DESIGN.md §5 "Item types"). */
 export const ITEM_KINDS = [
   'sword',
@@ -334,7 +478,6 @@ export const ITEM_KINDS = [
   'logging_axe',
 ] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
-
 /** One item type's names and whether its Heirloom is open (items.json; DESIGN.md §5). */
 export const itemTypeSchema = z.strictObject({
   kind: z.enum(ITEM_KINDS),
@@ -359,20 +502,43 @@ export const itemsSchema = z.strictObject({
 export type ItemType = z.output<typeof itemTypeSchema>;
 export type ItemsData = z.output<typeof itemsSchema>;
 
-export const cardSchema = z.strictObject({
+const cardBase = {
   id,
   name,
-  job: z.enum(JOBS),
   rarity: z.enum(RARITIES),
   element: z.enum(ELEMENTS),
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
-  /** Used when the card leads its job's loadout. Logging and mining mains also set how it
-   *  strikes (`harvest`, DESIGN.md §4). */
-  main: cardEffectSchema.extend({ harvest: harvestPatternSchema.optional() }),
+};
+
+/** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
+export const fightingCardSchema = z.strictObject({
+  ...cardBase,
+  job: z.literal('fighting'),
+  /** Used when the card leads the fighting loadout. */
+  main: cardEffectSchema,
   /** Used when the card is in one of the 3 support slots. */
   support: cardEffectSchema,
 });
+
+/**
+ * A logging or mining card is a worker (DESIGN.md §4 Workers): it works one tree kind or mine
+ * type, and its one ability acts on that place only (the game scopes its modifiers to it). The
+ * modifiers apply as written: the card's power multiplies the place's output by itself.
+ */
+export const workerCardSchema = z.strictObject({
+  ...cardBase,
+  job: z.enum(['logging', 'mining']),
+  worker: z.strictObject({
+    /** Player-facing summary, e.g. "+10% output here". */
+    description: z.string().min(1),
+    /** How the card strikes its place. */
+    harvest: harvestPatternSchema,
+    modifiers: z.array(modifierSchema).default([]),
+  }),
+});
+
+export const cardSchema = z.discriminatedUnion('job', [fightingCardSchema, workerCardSchema]);
 
 const count = z.number().int().min(0);
 const atLeastOne = decimal.refine((d) => d.gte(1), { message: 'must be at least 1' });
@@ -410,6 +576,11 @@ const perJob = <T extends z.ZodType>(schema: T) =>
   z.strictObject({ mining: schema, logging: schema, fighting: schema });
 
 /** Card progression numbers (cardRules.json; DESIGN.md §5). All tunable. */
+const weaponFactorSchema = z.strictObject({
+  damage: z.number().positive(),
+  health: z.number().positive(),
+});
+
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
   startCards: z.array(id),
@@ -436,8 +607,8 @@ export const cardRulesSchema = z.strictObject({
   /**
    * Card power, which scales `full` card modifiers and the main growth:
    * (1 + perLevel × (level − 1)) × (1 + perStar × (stars − 1), + star6Bonus at ★6) × tier.
-   * Base damage and health use the star multiplier instead of the perStar part:
-   * (1 + perLevel × (level − 1)) × starMultiplier[stars − 2] (1 at ★1) × tier.
+   * Base damage and health use the star multiplier instead of the perStar part and their own
+   * tier step: (1 + perLevel × (level − 1)) × starMultiplier[stars − 2] (1 at ★1) × statTier.
    */
   power: z.strictObject({
     perLevel: z.number().min(0),
@@ -446,6 +617,11 @@ export const cardRulesSchema = z.strictObject({
     /** Multiplier of base damage and health at ★2 … ★6 (DESIGN.md §5 star impact). */
     starMultiplier: z.array(z.number().positive()).length(MAX_STARS - 1),
     tier: perTier(z.number().positive()),
+    /**
+     * Tier multiplier of base damage and health (and worker power), DESIGN.md §5 Tier: a step at
+     * least as big as ★6 over ★1, so a tier-up that restarts the stars never weakens the card.
+     */
+    statTier: perTier(z.number().positive()),
   }),
   /**
    * What a main card adds to its job as it grows (11.2: base power, gauge speed). Each value is
@@ -455,12 +631,14 @@ export const cardRulesSchema = z.strictObject({
   mainGrowth: perJob(z.array(modifierSchema)),
   /**
    * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
-   * saved fill, and star n → n + 1 takes `needs[n - 1]` of it (5 steps, ★1→2 … ★5→6; 0 = free).
-   * A star-up costs only the fill.
+   * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
+   * that tier: a fraction at low tiers, 1 at the rarity's top tier. Star dust pays for the missing
+   * part: `dust[rarity][tier]` is the dust price of one whole copy.
    */
   starBar: z.strictObject({
     fillPerDuplicate: perRarity(z.number().positive()),
-    needs: perRarity(z.array(z.number().min(0)).length(MAX_STARS - 1)),
+    needs: perRarity(perTier(z.number().positive())),
+    dust: perRarity(perTier(z.number().positive())),
   }),
   /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
    *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must
@@ -474,6 +652,22 @@ export const cardRulesSchema = z.strictObject({
    * Fighting damage is the main card's base damage × its power, then the modifiers.
    */
   baseDamage: perRarity(positiveDecimal),
+  /**
+   * Weapon identities (DESIGN.md §5): each fighting type's factor on a card's base damage and
+   * base health. The signature, gauge and crit parts of an identity are on the cards' main
+   * abilities; these two keep the types' total power within about 10% of each other.
+   */
+  weapons: z.strictObject({
+    sword: weaponFactorSchema,
+    greatsword: weaponFactorSchema,
+    spear: weaponFactorSchema,
+    lance: weaponFactorSchema,
+    dagger: weaponFactorSchema,
+    hammer: weaponFactorSchema,
+    bow: weaponFactorSchema,
+    staff: weaponFactorSchema,
+    scythe: weaponFactorSchema,
+  }),
   /** Shards for a duplicate gained past ★6, by rarity. */
   shards: perRarity(count),
 });
@@ -520,16 +714,14 @@ export const dungeonSchema = z.strictObject({
     name,
     /** Which boss drawing to use; a boss without one shows a plain labelled placeholder. */
     art: z.enum(BOSS_ARTS).optional(),
+    /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
+    weakness: z.enum(ELEMENTS),
+    resistance: z.enum(ELEMENTS),
     hp: positiveDecimal,
-    /**
-     * Every enemy of the dungeon (waves, mini-bosses and the boss; HP and attack alike) is
-     * multiplied by (1 + this) for every Ascension (DESIGN.md §6 Harder each Ascension).
-     */
-    hpScalingPerPrestige: z.number().min(0).max(1),
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
-    /** The boss hits the fighting loadout back (DESIGN.md §6). Damage grows with prestige
-     *  like the HP (hpScalingPerPrestige). */
+    /** The boss hits the fighting loadout back (DESIGN.md §6). Enemies do not grow with
+     *  Ascension. */
     attack: z.strictObject({
       damage: positiveDecimal,
       intervalSeconds: z.number().gt(0),
@@ -589,8 +781,9 @@ export const dungeonSchema = z.strictObject({
 
 /**
  * A special dungeon (DESIGN.md §6): a strength test. Each attempt lasts `durationSeconds`
- * against a target with a fixed HP; the score is the share of that HP dealt (capped at 1).
- * Every tier whose `score` was reached pays its rewards; a score of 1 clears it.
+ * against a target with a fixed HP; the score is the share of that HP dealt (not capped: tiers
+ * above 1 are the extra levels). Every tier whose `score` was reached pays its rewards; a score
+ * of 1 clears it.
  */
 export const trialSchema = z
   .strictObject({
@@ -603,8 +796,8 @@ export const trialSchema = z
     tiers: z
       .array(
         z.strictObject({
-          /** Share of the target HP, 0..1 (0.25 = 25%). */
-          score: z.number().gt(0).max(1),
+          /** Share of the target HP (0.25 = 25%, 1 = all of it, 2 = twice its HP). */
+          score: z.number().gt(0),
           rewards: z.array(costSchema).min(1),
         }),
       )
@@ -635,7 +828,15 @@ const increasing = (list: (number | Decimal)[]): boolean =>
   list.every((v, i) => i === 0 || new Decimal(v).gt(list[i - 1]!));
 
 /** Pages a goal can jump to (the renderer's page ids). */
-export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon', 'shop'] as const;
+export const GOAL_PAGES = [
+  'home',
+  'cards',
+  'production',
+  'dungeons',
+  'summon',
+  'shop',
+  'skills',
+] as const;
 export type GoalPage = (typeof GOAL_PAGES)[number];
 /**
  * Goal rules (E8). Each kind finds its candidates in the state:
@@ -661,27 +862,30 @@ export const GOAL_KINDS = [
   'tier_up',
   /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md §9). */
   'ascension',
+  /** The cheapest next level of a tool line (DESIGN.md §4 Tool lines). */
+  'tool_line',
+  /** A free worker slot and a production card that is not working (DESIGN.md §4 Workers). */
+  'worker_slot',
+  /** Skill points waiting to be spent (DESIGN.md §10). */
+  'skill_points',
+  /** A new game's wishlist is empty (DESIGN.md §7 Wishlist). */
+  'wishlist',
 ] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
 
 export const progressionSchema = z.strictObject({
-  /** E2: tier from the lifetime total harvested of each production gem, kept through prestige. */
+  /** E2: tier from the lifetime total harvested of each production gem, kept through prestige.
+   *  The first four tiers are the metals; tiers above them (more thresholds) keep the prismatic
+   *  coin and add the same bonus each. */
   gemMastery: z.strictObject({
     thresholds: z
       .array(positiveDecimal)
-      .length(MASTERY_TIERS)
+      .min(MASTERY_TIERS)
       .refine(increasing, { message: 'thresholds must increase' }),
     perTier: z.array(masteryBonusSchema),
   }),
-  /** E3: medal tier from kills per dungeon (boss), kept through prestige. */
-  bossMastery: z.strictObject({
-    thresholds: z
-      .array(z.number().int().min(1))
-      .length(MASTERY_TIERS)
-      .refine(increasing, { message: 'thresholds must increase' }),
-    perTier: z.array(masteryBonusSchema),
-  }),
-  /** E3: special dungeons take their medal tier from their best score (0..1) instead. */
+  /** E3: a special dungeon's medal tier comes from its best score (0..1), kept through prestige.
+   *  Dungeons have stage stars instead (`combat.json` `stageStars`, DESIGN.md §6). */
   trialMastery: z.strictObject({
     thresholds: z
       .array(z.number().gt(0).max(1))
@@ -732,6 +936,44 @@ const difficultySchema = z.strictObject({
   attack: z.number().min(1),
   purse: z.number().min(1),
   material: z.number().int().min(1),
+  /** The fighting wage per second (crystals, and Money in the first dungeon; DESIGN.md §6 Harder
+   *  modes pay more). */
+  wage: z.number().min(1),
+  /** Card XP, per second fought and per kill. */
+  xp: z.number().min(1),
+});
+
+/** One value per stage star level (Wood .. Mythic, DESIGN.md §6 Stage stars). */
+export const STAGE_STAR_LEVELS = 6;
+
+const stageStarsSchema = z.strictObject({
+  /** Kills on a stage (one tier of one dungeon) that reach each star level, increasing. */
+  kills: z
+    .array(z.number().int().min(1))
+    .length(STAGE_STAR_LEVELS)
+    .refine(increasing, { message: 'kill counts must increase' }),
+  /** Damage on that stage per star level: 0.05 = +5% a level. */
+  damagePerLevel: z.number().min(0),
+  /** Loot on that stage per star level (Money purses and material chances): 0.1 = +10%. */
+  lootPerLevel: z.number().min(0),
+  /** The star level (1-based) from which the stage's overflow switch can be turned on. */
+  overflowFromLevel: z.number().int().min(1).max(STAGE_STAR_LEVELS),
+  /** The one-time chest of each level: amounts per resource per level, times the tier's factor. */
+  chests: z.strictObject({
+    rewards: z.array(
+      z.strictObject({
+        resource: id,
+        amounts: z
+          .array(decimal.refine((d) => d.gte(0), { message: 'must not be negative' }))
+          .length(STAGE_STAR_LEVELS),
+      }),
+    ),
+    difficulty: z.strictObject({
+      normal: z.number().min(0),
+      hard: z.number().min(0),
+      nightmare: z.number().min(0),
+    }),
+  }),
 });
 
 export const combatSchema = z.strictObject({
@@ -803,6 +1045,22 @@ export const combatSchema = z.strictObject({
   difficulties: z.strictObject({
     hard: difficultySchema,
     nightmare: difficultySchema,
+  }),
+  /**
+   * Stage stars (DESIGN.md §6): every mini-boss floor and last-floor boss of Normal, Hard and
+   * Nightmare is a stage with six star levels earned by kills there.
+   */
+  stageStars: stageStarsSchema,
+  /**
+   * Elements in combat (DESIGN.md §6), as percents added to damage or output: the main card on the
+   * boss's weakness, on its resistance (negative), each support on the weakness, and a worker on a
+   * matching tree or mine.
+   */
+  elements: z.strictObject({
+    weakness: decimal,
+    resistance: decimal.refine((d) => d.gte(-50), { message: 'a resistance is never a wall' }),
+    supportBonus: decimal,
+    production: decimal,
   }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
@@ -1073,6 +1331,9 @@ export const portalSchema = z.strictObject({
   /** Skin portals: a skin you already own pays back this fraction of a single pull's price (in the
    *  portal resource). Ignored by other kinds. */
   duplicatePayback: z.number().min(0).max(1).default(0.2),
+  /** Card portals: how many cards of each rarity can be marked on the wishlist (DESIGN.md §7).
+   *  0 = no wishlist (the other kinds). */
+  wishlistPerRarity: z.number().int().min(0).default(0),
 });
 
 /**
@@ -1099,7 +1360,11 @@ export const prestigeSchema = z.strictObject({
       maxLevel: z.number().int().min(1),
       /** Starlight price of level n + 1 (0-based n): base × growth^n. */
       cost: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
-      perLevel: z.array(modifierSchema).min(1),
+      perLevel: z.array(modifierSchema).default([]),
+      /** A rule a level opens instead of a modifier (DESIGN.md §9 More to buy with Starlight):
+       *  `second_worker_slots` (each level gives the next tree or mine a second worker slot, only
+       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15). */
+      grants: z.enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines']).optional(),
     }),
   ),
   /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */
@@ -1114,7 +1379,8 @@ export const prestigeSchema = z.strictObject({
  * unlocked (or `count` of them), a dungeon / trial cleared, portal pulls, pity hits, any card at
  * a tier or star count, a full loadout, a full non-starter set equipped, non-starter cosmetics
  * owned, skill points spent, ascensions, the longest offline session, any gem mastery / boss
- * medal tier, any mine level, any cosmetic at its max level.
+ * medal tier, any mine level, any cosmetic at its max level, stage stars, workers, tool lines, depth,
+ * the forge, the wishlist and the skill tree (balance update).
  */
 export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({
@@ -1143,6 +1409,34 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('boss_mastery'), tier: z.number().int().min(1).max(4) }),
   z.strictObject({ kind: z.literal('milestone'), level: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('max_cosmetic') }),
+  /** `count` stages (default 1) at star level `level` or more (1 Wood .. 6 Mythic). */
+  z.strictObject({
+    kind: z.literal('stage_stars'),
+    level: z.number().int().min(1).max(6),
+    count: z.number().int().min(1).default(1),
+  }),
+  /** A dungeon with every stage of every star difficulty at `level` or more. */
+  z.strictObject({ kind: z.literal('dungeon_starred'), level: z.number().int().min(1).max(6) }),
+  /** Star levels earned over all stages. */
+  z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
+  /** Workers at work on trees and mines now. */
+  z.strictObject({ kind: z.literal('workers'), count: z.number().int().min(1) }),
+  /** Tool line levels bought this run, all lines together. */
+  z.strictObject({ kind: z.literal('tool_levels'), amount: z.number().int().min(1) }),
+  /** The deepest layer or age of any tree or mine (1-based). */
+  z.strictObject({ kind: z.literal('depth'), layer: z.number().int().min(2) }),
+  /** The forge has a worker and a recipe. */
+  z.strictObject({ kind: z.literal('forge_working') }),
+  /** Cards marked on the wishlist. */
+  z.strictObject({ kind: z.literal('wishlist'), count: z.number().int().min(1) }),
+  /** Marked cards that are owned now. */
+  z.strictObject({ kind: z.literal('wishlist_owned'), count: z.number().int().min(1) }),
+  /** Skills of the account tree with at least one rank. */
+  z.strictObject({ kind: z.literal('skills_learned'), amount: z.number().int().min(1) }),
+  /** Keystones learned. */
+  z.strictObject({ kind: z.literal('keystones'), amount: z.number().int().min(1) }),
+  /** Weapon circles revealed (a card of the type reached Gold). */
+  z.strictObject({ kind: z.literal('circles_open'), amount: z.number().int().min(1) }),
 ]);
 export type AchievementCondition = z.output<typeof achievementConditionSchema>;
 
@@ -1188,16 +1482,36 @@ export const SKILL_BRANCHES = [
   'luck',
   'collection',
   'automation',
+  'workers',
+  'forge',
+  'elements',
+  'dungeons',
+  'ascension',
 ] as const;
 export type SkillBranch = (typeof SKILL_BRANCHES)[number];
+
+export const SKILL_KINDS = ['small', 'large', 'keystone'] as const;
+export type SkillKind = (typeof SKILL_KINDS)[number];
+/** The steps of a hidden weapon circle, in order; each opens when a card reaches its tier. */
+export const CIRCLE_STEPS = ['gold', 'prismatic', 'mythic', 'heirloom'] as const;
+export type CircleStep = (typeof CIRCLE_STEPS)[number];
+
+const skillEffectSchema = z.strictObject({ name, perRank: z.array(modifierSchema).min(1) });
+const skillKindRuleSchema = z.strictObject({
+  cost: z.number().int().min(1),
+  maxRank: z.number().int().min(1),
+  scale: positiveDecimal,
+});
 
 /**
  * Account XP, levels, the reward track, the account tree and its respec (account.json).
  * XP (through `xp.account`, scope job): per unit harvested by job × the gem tier's weight, per
  * boss kill × killTierGrowth^(dungeon tier − 1), per pull, per Glimmer Trial attempt, per
- * ascension. Level L → L + 1 costs xpBase × xpGrowth^(L − 1); each level gives skill points.
+ * ascension. Level L → L + 1 costs xpBase × xpGrowth^(L − 1); each level gives skill points;
+ * there is no level cap. The account tree is generated: every branch uses the same `skeleton`
+ * (slots in rings) and the effects in its `branches` entry; the weapon circles are written out.
  */
-export const accountSchema = z.strictObject({
+const accountFileSchema = z.strictObject({
   xp: z.strictObject({
     perUnit: z.strictObject({ logging: decimal, mining: decimal }),
     tierWeights: z.array(positiveDecimal).min(1),
@@ -1208,12 +1522,17 @@ export const accountSchema = z.strictObject({
     perAscension: decimal,
   }),
   levels: z.strictObject({
-    maxLevel: z.number().int().min(1),
     xpBase: positiveDecimal,
     xpGrowth: atLeastOne,
     skillPointsPerLevel: z.number().int().min(0),
+    /** Skill points per achievement unlocked. */
+    pointsPerAchievement: z.number().int().min(0),
+    /** Skill points per stage star level earned (DESIGN.md §6). */
+    pointsPerStageStar: z.number().int().min(0),
   }),
-  /** What reaching a level gives besides its skill points (E7). */
+  /** The cost cap of the fighting loadout never grows past this (DESIGN.md §10). */
+  loadoutCostCapTop: z.number().int().min(1),
+  /** What reaching a level gives besides its skill points (E7), for the levels listed. */
   rewardTrack: z.array(
     z.strictObject({
       level: z.number().int().min(2),
@@ -1223,25 +1542,141 @@ export const accountSchema = z.strictObject({
       costCap: z.number().int().min(0).default(0),
     }),
   ),
-  /** The account tree: ranks bought with skill points; each rank adds `perRank` once more. */
-  tree: z.array(
+  /** Past the last listed level, every `every` levels gives `resources` (and nothing else). */
+  rewardRepeat: z.strictObject({
+    every: z.number().int().min(1),
+    resources: z.array(costSchema),
+  }),
+  /** What one kind of skill costs and how it scales: a skill's modifiers are × `scale`. */
+  skillKinds: z.strictObject({
+    small: skillKindRuleSchema,
+    large: skillKindRuleSchema,
+    keystone: skillKindRuleSchema,
+  }),
+  /** The shared shape of a branch: ring 0 is open from the start, ring N opens with Ascension N. */
+  skeleton: z
+    .array(
+      z.strictObject({
+        slot: id,
+        ring: z.number().int().min(0),
+        kind: z.enum(SKILL_KINDS),
+        /** Slots of the same branch that need a rank first. */
+        requires: z.array(id),
+        /** Which of the branch's effects of this kind it carries (wraps around). */
+        effect: z.number().int().min(0),
+      }),
+    )
+    .min(1),
+  /** Each branch's effects: small and large ones cycle over the skeleton, one keystone. */
+  branches: z.array(
     z.strictObject({
-      id,
-      name,
       branch: z.enum(SKILL_BRANCHES),
-      /** Skill points per rank. */
-      cost: z.number().int().min(1),
-      maxRank: z.number().int().min(1),
-      /** Nodes that need at least one rank first. */
-      requires: z.array(id),
-      perRank: z.array(modifierSchema).min(1),
+      small: z.array(skillEffectSchema).min(1),
+      large: z.array(skillEffectSchema).min(1),
+      keystone: skillEffectSchema,
+    }),
+  ),
+  /** Which card tier opens each step of a weapon circle. */
+  circleSteps: z.array(z.strictObject({ step: z.enum(CIRCLE_STEPS), tier: z.enum(RANK_TIERS) })),
+  /** Written-out weapon circles (one item type each), skills in order. */
+  circles: z.array(
+    z.strictObject({
+      kind: z.enum(ITEM_KINDS),
+      skills: z.array(
+        z.strictObject({
+          id,
+          name,
+          step: z.enum(CIRCLE_STEPS),
+          kind: z.enum(SKILL_KINDS),
+          requires: z.array(id),
+          perRank: z.array(modifierSchema).min(1),
+        }),
+      ),
     }),
   ),
   /** Respec (DESIGN.md §10): `freePerAscension` free ones each run, then `cost` Starlight. */
   respec: z.strictObject({ cost: positiveDecimal, freePerAscension: z.number().int().min(0) }),
+  /** Node ids from before the balance update → the node a bought rank moves to when a save loads. */
+  legacySkills: z.record(id, id),
 });
+
+const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
+
+/** A skill of the account tree (generated from the skeleton, or written in a circle). */
+export interface SkillNode {
+  id: string;
+  name: string;
+  /** A circle skill uses the branch of its item type's job (colour and gem). */
+  branch: SkillBranch;
+  /** Skill points per rank. */
+  cost: number;
+  maxRank: number;
+  /** Nodes that need at least one rank first. */
+  requires: string[];
+  perRank: ModifierData[];
+  kind: SkillKind;
+  /** Ring 0 is open from the start; ring N opens when the Ascension count reaches N. */
+  ring: number;
+  /** The weapon type of a circle skill. */
+  circle?: ItemKind;
+  /** The circle step that must be reached (a card of the type at that tier). */
+  step?: CircleStep;
+}
+
+/** The pickaxe is a mining item, the logging axe a logging item, every other type a fighting one. */
+const circleBranchOf = (kind: ItemKind): SkillBranch =>
+  kind === 'pickaxe' ? 'mining' : kind === 'logging_axe' ? 'logging' : 'combat';
+
+function generateTree(a: z.output<typeof accountFileSchema>): SkillNode[] {
+  const out: SkillNode[] = [];
+  for (const b of a.branches) {
+    const seen = new Map<object, number>();
+    for (const slot of a.skeleton) {
+      const rule = a.skillKinds[slot.kind];
+      const list = slot.kind === 'small' ? b.small : slot.kind === 'large' ? b.large : [b.keystone];
+      const effect = list[slot.effect % list.length]!;
+      const nth = seen.get(effect) ?? 0;
+      seen.set(effect, nth + 1);
+      out.push({
+        id: `${b.branch}_${slot.slot}`,
+        name: nth > 0 ? `${effect.name} ${ROMAN[nth] ?? nth + 1}` : effect.name,
+        branch: b.branch,
+        cost: rule.cost,
+        maxRank: rule.maxRank,
+        requires: slot.requires.map((r) => `${b.branch}_${r}`),
+        perRank: effect.perRank.map((m) => ({ ...m, value: m.value.mul(rule.scale) })),
+        kind: slot.kind,
+        ring: slot.ring,
+      });
+    }
+  }
+  for (const c of a.circles) {
+    for (const s of c.skills) {
+      const rule = a.skillKinds[s.kind];
+      out.push({
+        id: s.id,
+        name: s.name,
+        branch: circleBranchOf(c.kind),
+        cost: rule.cost,
+        maxRank: rule.maxRank,
+        requires: s.requires,
+        perRank: s.perRank,
+        kind: s.kind,
+        ring: 0,
+        circle: c.kind,
+        step: s.step,
+      });
+    }
+  }
+  return out;
+}
+
+export const accountSchema = accountFileSchema.transform((a) => ({
+  ...a,
+  /** Every skill: the branches from the skeleton, then the circles. */
+  tree: generateTree(a),
+}));
 export type AccountConfig = z.output<typeof accountSchema>;
-export type SkillNode = AccountConfig['tree'][number];
 export type RewardTrackEntry = AccountConfig['rewardTrack'][number];
 
 /**
@@ -1251,6 +1686,9 @@ export type RewardTrackEntry = AccountConfig['rewardTrack'][number];
  */
 export const enhancementsSchema = z.strictObject({
   unlockRank: rankSchema,
+  /** Milestone levels (DESIGN.md §5 Level): an option of milestone `n` opens at card level
+   *  `n × milestoneEvery`; milestone 0 is open from the unlock rank. */
+  milestoneEvery: z.number().int().min(1),
   budget: perTier(z.number().int().min(0)),
   cards: z.record(
     id,
@@ -1260,6 +1698,8 @@ export const enhancementsSchema = z.strictObject({
           id,
           name,
           cost: z.number().int().min(1),
+          /** 0 = open from the start; n = opens at card level n × `milestoneEvery`. */
+          milestone: z.number().int().min(0).default(0),
           modifiers: z.array(modifierSchema).min(1),
         }),
       )
@@ -1346,7 +1786,7 @@ export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('gemMastery'),
     gem: id,
-    tier: z.number().int().min(1).max(MASTERY_TIERS),
+    tier: z.number().int().min(1).max(16),
   }),
   z.strictObject({ kind: z.literal('bossKills'), dungeon: id, kills: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('lifetimeMoney'), amount: positiveDecimal }),
@@ -1471,6 +1911,9 @@ export type CostCurve = z.output<typeof costCurveSchema>;
 export type ProductionConfig = z.output<typeof productionSchema>;
 export type ProductionJob = 'logging' | 'mining';
 export type Card = z.output<typeof cardSchema>;
+export type FightingCard = z.output<typeof fightingCardSchema>;
+export type WorkerCard = z.output<typeof workerCardSchema>;
+export type WorkerAbility = WorkerCard['worker'];
 export type CardRules = z.output<typeof cardRulesSchema>;
 export type RankTier = (typeof RANK_TIERS)[number];
 export type Dungeon = z.output<typeof dungeonSchema>;

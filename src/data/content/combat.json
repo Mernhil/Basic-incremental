@@ -42,20 +42,57 @@
   },
   "difficulties": {
     "hard": {
-      "hp": 1000,
-      "attack": 1000,
-      "purse": 1500,
-      "material": 2
+      "hp": 5000,
+      "attack": 5000,
+      "purse": 7500,
+      "material": 2,
+      "wage": 1.25,
+      "xp": 1.5
     },
     "nightmare": {
-      "hp": 1000000,
-      "attack": 1000000,
-      "purse": 2250000,
-      "material": 4
+      "hp": 20000,
+      "attack": 20000,
+      "purse": 45000,
+      "material": 4,
+      "wage": 1.5,
+      "xp": 2.25
+    }
+  },
+  "stageStars": {
+    "kills": [1, 10, 100, 1000, 10000, 100000],
+    "damagePerLevel": 0.05,
+    "lootPerLevel": 0.1,
+    "overflowFromLevel": 3,
+    "chests": {
+      "rewards": [
+        {
+          "resource": "summon_crystal",
+          "amounts": ["30", "60", "150", "300", "600", "1200"]
+        },
+        {
+          "resource": "glamour_crystal",
+          "amounts": ["15", "30", "75", "150", "300", "600"]
+        },
+        {
+          "resource": "star_dust",
+          "amounts": ["0", "0", "0", "2", "5", "15"]
+        }
+      ],
+      "difficulty": {
+        "normal": 1,
+        "hard": 2,
+        "nightmare": 4
+      }
     }
   },
   "crit": {
     "chance": 0.05,
     "damage": "2"
+  },
+  "elements": {
+    "weakness": "50",
+    "resistance": "-25",
+    "supportBonus": "10",
+    "production": "15"
   }
 }

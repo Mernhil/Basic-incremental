@@ -2,7 +2,7 @@
   "currency": "starlight",
   "gain": {
     "tierWeights": ["1", "10", "100"],
-    "divisor": "3e6",
+    "divisor": "2e10",
     "exponent": 0.4,
     "minimum": 10
   },
@@ -84,7 +84,7 @@
     {
       "id": "constellation_crystals",
       "name": "Constellation Crystals",
-      "description": "+10% crystals from bosses per level",
+      "description": "+4% crystals from bosses per level",
       "maxLevel": 10,
       "cost": {
         "base": "5",
@@ -94,7 +94,7 @@
         {
           "stat": "drops.crystalMultiplier",
           "kind": "percent",
-          "value": "10"
+          "value": "4"
         }
       ]
     },
@@ -131,6 +131,42 @@
           "value": "1"
         }
       ]
+    },
+    {
+      "id": "second_hands",
+      "name": "Second Hands",
+      "description": "A second worker slot on the next tree or mine, once every place has its first",
+      "maxLevel": 6,
+      "cost": {
+        "base": "12",
+        "growth": "1.6"
+      },
+      "perLevel": [],
+      "grants": "second_worker_slots"
+    },
+    {
+      "id": "timber_steward",
+      "name": "Timber Steward",
+      "description": "Buys tree levels for you, with an on / off switch and a reserve",
+      "maxLevel": 1,
+      "cost": {
+        "base": "15",
+        "growth": "1"
+      },
+      "perLevel": [],
+      "grants": "autobuyer_trees"
+    },
+    {
+      "id": "vein_steward",
+      "name": "Vein Steward",
+      "description": "Buys mine levels for you, with an on / off switch and a reserve",
+      "maxLevel": 1,
+      "cost": {
+        "base": "15",
+        "growth": "1"
+      },
+      "perLevel": [],
+      "grants": "autobuyer_mines"
     }
   ],
   "rewards": [

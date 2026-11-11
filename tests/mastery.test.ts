@@ -6,8 +6,6 @@ import {
   collectModifiers,
   createSaveText,
   Decimal,
-  effectiveDamage,
-  effectiveDrops,
   gemMastery,
   METALS,
   MODIFIER_SOURCE_KINDS,
@@ -27,9 +25,11 @@ function settled(state: GameState): GameState {
 }
 
 describe('gem mastery data (DESIGN.md §4)', () => {
-  it('has the decided thresholds and +10% per tier', () => {
+  it('has the decided thresholds and +10% per tier, with more tiers above 1e9', () => {
     const m = content.progression.gemMastery;
-    expect(m.thresholds.map((t) => t.toNumber())).toEqual([1e3, 1e5, 1e7, 1e9]);
+    expect(m.thresholds.map((t) => t.toNumber())).toEqual([
+      1e3, 1e5, 1e7, 1e9, 1e11, 1e13, 1e15, 1e17,
+    ]);
     expect(m.perTier).toEqual([
       expect.objectContaining({ stat: 'production.rate', kind: 'percent', value: new Decimal(10) }),
     ]);
@@ -59,16 +59,32 @@ describe('gemMastery', () => {
     expect(m.progress).toBeCloseTo((50_500 - 1e3) / (1e5 - 1e3));
   });
 
-  it('is full at prismatic with no next threshold', () => {
+  it('keeps the prismatic coin above 1e9 and goes on to the last tier', () => {
     const state = freshState();
     state.mastery.harvested['copper_gem'] = new Decimal(5e9);
     state.mastery.gemTiers['copper_gem'] = 4;
+    const at4 = gemMastery(state, content, 'copper_gem');
+    expect(at4).toMatchObject({ tier: 4, metal: 'prismatic' });
+    expect(at4.nextThreshold?.toNumber()).toBe(1e11);
+    state.mastery.harvested['copper_gem'] = new Decimal(5e17);
+    state.mastery.gemTiers['copper_gem'] = 8;
     expect(gemMastery(state, content, 'copper_gem')).toMatchObject({
-      tier: 4,
+      tier: 8,
       metal: 'prismatic',
       nextThreshold: null,
       progress: 1,
     });
+  });
+
+  it('settles tiers above 4 and gives +10% a tier', () => {
+    const state = freshState();
+    state.mastery.harvested['oak_gem'] = new Decimal(3e13);
+    const s = settled(state);
+    expect(s.mastery.gemTiers['oak_gem']).toBe(6);
+    const mod = collectModifiers(s, content).find(
+      (m) => m.source.kind === 'mastery' && m.source.id === 'oak_gem',
+    )!;
+    expect(mod.value.toNumber()).toBe(60);
   });
 });
 
@@ -104,8 +120,12 @@ describe('counting harvest', () => {
 
   it('counts harvest bursts too', () => {
     const state = bareState();
-    // The logging gauge is one tick from firing: 10 s of output on top.
-    state.bursts.logging = { gauge: content.combat.bursts.logging.gaugeSize - 1, timer: 0 };
+    // Oak's worker's gauge is one tick from firing: 10 s of output on top.
+    state.production.workers = { oak: ['apprentice_feller'] };
+    state.production.harvestGauges.oak = {
+      gauge: content.combat.bursts.logging.gaugeSize - 1,
+      timer: 0,
+    };
     const after = advance(state, content, 1000, rng).state;
     const power = content.combat.bursts.logging.power.toNumber();
     expect(after.mastery.harvested['oak_gem']!.toNumber()).toBeCloseTo(1 + power);
@@ -163,25 +183,18 @@ describe('gem tier-ups', () => {
 });
 
 describe('boss mastery (DESIGN.md §6)', () => {
-  it('has the decided medal thresholds and bonuses in data', () => {
-    const b = content.progression.bossMastery;
-    expect(b.thresholds).toEqual([10, 100, 1000, 10_000]);
-    const values = Object.fromEntries(b.perTier.map((m) => [m.stat, m.value.toNumber()]));
-    expect(values).toEqual({
-      'combat.damage': 5,
-      'drops.crystalMultiplier': 10,
-      'drops.materialChance': 10,
-    });
+  it('keeps the trial medal thresholds in data', () => {
     expect(content.progression.trialMastery.thresholds).toEqual([0.25, 0.5, 0.75, 1]);
   });
 
-  it('reads medal tiers from kills per dungeon', () => {
+  it('gives dungeons no medal: they have stage stars instead', () => {
     const state = freshState();
-    state.combat.kills['mossy_cellar'] = 55;
+    state.combat.stageKills['mossy_cellar:normal:1'] = 55;
     state.mastery.bossTiers['mossy_cellar'] = 1;
-    const m = bossMastery(state, content, 'mossy_cellar')!;
-    expect(m).toMatchObject({ tier: 1, metal: 'bronze', value: 55, nextThreshold: 100 });
-    expect(m.progress).toBeCloseTo((55 - 10) / 90);
+    expect(bossMastery(state, content, 'mossy_cellar')).toBeNull();
+    expect(collectModifiers(state, content).some((m) => m.source.kind === 'mastery')).toBe(false);
+    const settled = advance(state, content, 1000, rng).state;
+    expect(settled.mastery.bossTiers['mossy_cellar']).toBeUndefined();
   });
 
   it('reads the Glimmer Trial medal from its best score', () => {
@@ -195,63 +208,6 @@ describe('boss mastery (DESIGN.md §6)', () => {
 
   it('is null for an unknown dungeon', () => {
     expect(bossMastery(freshState(), content, 'nowhere')).toBeNull();
-  });
-
-  it('gives +5% damage against that boss only', () => {
-    const state = freshState();
-    const before = effectiveDamage(state, content, 'mossy_cellar');
-    state.mastery.bossTiers['mossy_cellar'] = 2;
-    const mods = collectModifiers(state, content);
-    expect(effectiveDamage(state, content, 'mossy_cellar', mods).toNumber()).toBeCloseTo(
-      before.toNumber() * 1.1,
-    );
-    expect(effectiveDamage(state, content, 'ember_crypt', mods).toNumber()).toBeCloseTo(
-      before.toNumber(),
-    );
-  });
-
-  it('raises that dungeon core chance by 10% per tier', () => {
-    const state = freshState();
-    state.mastery.bossTiers['ember_crypt'] = 3;
-    const dungeon = content.dungeonById.get('ember_crypt')!;
-    const drops = effectiveDrops(dungeon, collectModifiers(state, content), content);
-    expect(drops.material.chance).toBeCloseTo(dungeon.drops.material.chance * 1.3);
-  });
-
-  it('raises the crystal wage by 10% per tier, but not the Money purse', () => {
-    // Crystals come as a wage while fighting (DESIGN.md §3); the medal multiplies it.
-    const wageOf = (tier: number): number => {
-      const state = bareState();
-      state.mastery.bossTiers['mossy_cellar'] = tier;
-      const dungeon = content.dungeonById.get('mossy_cellar')!;
-      const drops = effectiveDrops(dungeon, collectModifiers(state, content), content);
-      return drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond.toNumber();
-    };
-    expect(wageOf(2)).toBeCloseTo(wageOf(0) * 1.2);
-    const killOnce = (tier: number, resource: string): number => {
-      const state = bareState();
-      state.mastery.bossTiers['mossy_cellar'] = tier;
-      state.bossHp = new Decimal(1e-6);
-      const before = state.resources[resource]!.toNumber();
-      const after = advance(state, content, 1000, constantRng(0)).state;
-      return after.resources[resource]!.toNumber() - before;
-    };
-    // Money ignores the medal bonus: the same purse at tier 0 and tier 2.
-    expect(killOnce(2, 'money')).toBeCloseTo(killOnce(0, 'money'), 2);
-  });
-
-  it('settles medal tiers from kills on the grid and reports them', () => {
-    const state = freshState();
-    state.combat.kills['mossy_cellar'] = 10;
-    const { state: after, report } = advance(state, content, 1000, rng);
-    expect(after.mastery.bossTiers['mossy_cellar']).toBe(1);
-    expect(report.tierUps).toContainEqual({
-      kind: 'boss_mastery',
-      id: 'mossy_cellar',
-      from: 0,
-      to: 1,
-      metal: 'bronze',
-    });
   });
 });
 
@@ -273,6 +229,7 @@ describe('mastery through prestige and saves', () => {
     const loaded = readSave(createSaveText(state, 0), content).state;
     expect(loaded.mastery.harvested['iron_gem']!.toString()).toBe('150000000');
     expect(loaded.mastery.gemTiers).toEqual({ iron_gem: 3 });
-    expect(loaded.mastery.bossTiers).toEqual({ ember_crypt: 1 });
+    // Dungeons have no medals any more: only the special dungeons' are kept.
+    expect(loaded.mastery.bossTiers).toEqual({});
   });
 });

@@ -30,12 +30,18 @@ Every tunable number in the game goes through one pipeline (DESIGN.md §14), so 
 
 New systems add their modifiers inside `collectModifiers`; callers never change.
 
+### Stats of the skill tree (balance update)
+
+Some stats are read where the system already has its modifiers: `worker.power`, `depth.digRate` and `depth.yield` (`workSites`, scope job and producer), `lucky.payout` (`luckyFactor`), `forge.speed`, `forge.yield` and `forge.refund` (`forge.ts`), `stars.damage` and `stars.loot` (`stageDamageFactor`, `stageLootFactor`, scope dungeon) and `stars.chest` (`stageChest`). Four act on the finished list at the end of `collectModifiers` (`strengthen`): `tool.strength` (scope job) scales what the tool lines give, and `element.bonus`, `element.resist` and `element.production` scale the `element` modifiers (a bonus, a malus, a worker's +15%). They read only the skills' own modifiers, so a `set` on `element.resist` removes the malus.
+
+A weapon circle skill (`account.json` `circles`) is added to the list only while a card of its item type is at work, scoped to the worker's place for the pickaxe and logging axe.
+
 ## Reading a stat
 
 - `computeStat(stat, base, modifiers, context)` returns the value plus the modifiers that applied, in order, for tooltip breakdowns.
 - `statValue(...)` returns only the value.
 - Game helpers that already use it: `producerRate`, `curvePrice` (mine and tree levels), `treeUnlockCost`, `baseDamage`, `damageStat` / `effectiveDamage`, `bossMaxHp`, `effectiveDrops`, `burstStats`, `trialRewards`, `offlineCapMs`, `loadoutCostCap`, `cardDropChance`, `fightingXpPerKill` / `fightingXpPerSecond` / `productionXpPerUnit` (`xp.card`), `starUpCost` / `tierUpCost` (`cost.multiplier`).
-- Prices: exponential prices read `cost.growth` for the growth factor (never below 1), then every price is scaled by `cost.multiplier` (base 1, never below 0) and rounded up. Both get the job, producer and resource in their context.
+- Prices: exponential prices read `cost.growth` for the growth factor: its modifiers act on the part above 1 (a −10% cut turns ×1.2 into ×1.18) and together take at most half of it (`effectiveGrowth`, `MAX_GROWTH_CUT`), so a price always grows; then every price is scaled by `cost.multiplier` (base 1, never below 0) and rounded up. Both get the job, producer and resource in their context.
 
 ## Adding a stat
 

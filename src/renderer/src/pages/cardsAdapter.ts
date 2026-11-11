@@ -13,6 +13,7 @@ import {
   weaponLookRarity,
   setLoadoutSlot,
   starUp,
+  starUpWithDust,
   tierUp,
   type CardFailure,
   type CardInfo,
@@ -25,7 +26,8 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
-import { COPY } from '../copy';
+import { COPY, starPercent } from '../copy';
+import { statTiles } from './statsModel';
 import { itemArt } from '../art/items';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
@@ -55,6 +57,10 @@ export function createCardsModel(
   art?: (cardId: string, owned: OwnedCard | null) => string,
 ): CardsModel {
   const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
+  const placeName = (id: string): string =>
+    content.treeById.get(id)?.name ?? content.mineById.get(id)?.name ?? id;
+  /** Only fighting cards go in a loadout; logging and mining cards work on the Production page. */
+  const fighting = (id: string): boolean => content.cardById.get(id)?.job === 'fighting';
 
   const reason = (r: CardFailure | string): string =>
     (COPY.cards.reasons as Record<string, string>)[r] ?? COPY.cards.reasons.unknown;
@@ -74,7 +80,12 @@ export function createCardsModel(
     if (r.kind === 'stars')
       return { label: COPY.cards.req.stars, met: r.met, value: `★${have} / ★${need}` };
     if (r.kind === 'starFill')
-      return { label: COPY.cards.req.starBar, met: r.met, value: COPY.cards.req.of(have, need) };
+      return {
+        label: COPY.cards.req.starBar,
+        met: r.met,
+        value: `${starPercent(r.have.toNumber(), r.need.toNumber())}%`,
+        title: COPY.cards.req.of(have, need),
+      };
     return { label: resName(r.resource ?? ''), met: r.met, value: COPY.cards.req.of(have, need) };
   }
 
@@ -110,7 +121,7 @@ export function createCardsModel(
     };
   }
 
-  function entry(info: CardInfo): CardEntry {
+  function entry(info: CardInfo, state: GameState): CardEntry {
     const { card, owned } = info;
     const rank = info.rank ?? BASE_RANK;
     const cap = info.levelCap ?? levelCap(content, rank);
@@ -145,8 +156,9 @@ export function createCardsModel(
       xp,
       duplicates: owned?.starFill ?? 0,
       cost: info.cost,
-      mainAbility: card.main.description,
-      supportEffect: card.support.description,
+      mainAbility: card.job === 'fighting' ? card.main.description : card.worker.description,
+      supportEffect: card.job === 'fighting' ? card.support.description : '',
+      workplace: info.workplace ? placeName(info.workplace) : null,
       face: cardFaceOf(content, info),
       role: info.slot
         ? { job: info.slot.job, slot: info.slot.slot === 'main' ? 'main' : 'support' }
@@ -154,6 +166,7 @@ export function createCardsModel(
       next: owned ? step('star', info.starUp) : null,
       tier: owned ? step('tier', info.tierUp) : null,
       weapon: weaponView(content, info),
+      stats: statTiles(content, state, card.id),
     };
   }
 
@@ -161,10 +174,10 @@ export function createCardsModel(
     cardCollection(state, content, undefined, collectModifiers(state, content));
 
   return {
-    entries: (state) => all(state).map(entry),
+    entries: (state) => all(state).map((i) => entry(i, state)),
     entry(state, id) {
       const info = cardInfo(state, content, id);
-      return info ? entry(info) : null;
+      return info ? entry(info, state) : null;
     },
     loadout(state, job) {
       const lo = loadoutInfo(state, content, job);
@@ -182,6 +195,7 @@ export function createCardsModel(
           o.enhancements,
         ]),
         state.cards.loadouts,
+        state.production.workers,
         state.weaponSkins,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
@@ -189,23 +203,23 @@ export function createCardsModel(
       ]);
     },
     setMain(state, id) {
-      const card = content.cardById.get(id);
-      if (!card) return { ok: false, reason: reason('unknown') };
-      return wrap(setLoadoutSlot(state, content, card.job, 'main', id));
+      if (!content.cardById.has(id)) return { ok: false, reason: reason('unknown') };
+      if (!fighting(id)) return { ok: false, reason: reason('wrong-job') };
+      return wrap(setLoadoutSlot(state, content, 'fighting', 'main', id));
     },
     addSupport(state, id) {
-      const card = content.cardById.get(id);
-      if (!card) return { ok: false, reason: reason('unknown') };
-      const supports = state.cards.loadouts[card.job].supports;
+      if (!content.cardById.has(id)) return { ok: false, reason: reason('unknown') };
+      if (!fighting(id)) return { ok: false, reason: reason('wrong-job') };
+      const supports = state.cards.loadouts.fighting.supports;
       const free = supports.findIndex((s) => s === null);
       if (free < 0 || free >= SUPPORT_SLOTS) return { ok: false, reason: COPY.cards.reasons.full };
-      return wrap(setLoadoutSlot(state, content, card.job, free as 0 | 1 | 2, id));
+      return wrap(setLoadoutSlot(state, content, 'fighting', free as 0 | 1 | 2, id));
     },
     place(state, slot, id) {
-      const card = content.cardById.get(id);
-      if (!card) return { ok: false, reason: reason('unknown') };
+      if (!content.cardById.has(id)) return { ok: false, reason: reason('unknown') };
+      if (!fighting(id)) return { ok: false, reason: reason('wrong-job') };
       const target = slot === 0 ? 'main' : ((slot - 1) as 0 | 1 | 2);
-      return wrap(setLoadoutSlot(state, content, card.job, target, id));
+      return wrap(setLoadoutSlot(state, content, 'fighting', target, id));
     },
     remove(state, id) {
       const info = cardInfo(state, content, id);
@@ -214,6 +228,7 @@ export function createCardsModel(
     },
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
+      if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
       return wrap(kind === 'star' ? starUp(state, content, id) : tierUp(state, content, id));
     },
     chart(state, id) {

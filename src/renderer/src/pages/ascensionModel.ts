@@ -95,6 +95,12 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
     'portal_pity',
     'crystals',
     'starlight',
+    'workers',
+    'forge',
+    'star_dust',
+    'stage_stars',
+    'wishlist',
+    'skill_tree',
   ]) {
     const label = t.keptParts[id as keyof typeof t.keptParts];
     switch (id) {
@@ -185,6 +191,60 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
         });
         break;
       }
+      case 'workers': {
+        const n = Object.values(state.production.workers).reduce((sum, ids) => sum + ids.length, 0);
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.workers(n),
+          art: { kind: 'plaque', glyph: 'dungeons' },
+        });
+        break;
+      }
+      case 'forge':
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.forge,
+          art: { kind: 'plaque', glyph: 'dungeons' },
+        });
+        break;
+      case 'star_dust':
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.star_dust(fmt(state.resources['star_dust'] ?? new Decimal(0))),
+          art: { kind: 'starlight' },
+        });
+        break;
+      case 'stage_stars': {
+        const n = Object.values(state.combat.stageKills).reduce((sum, k) => sum + k, 0);
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.stage_stars(n),
+          art: { kind: 'medal', tier: 1 },
+        });
+        break;
+      }
+      case 'wishlist':
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.wishlist(state.cards.wishlist.length),
+          art: { kind: 'plaque', glyph: 'summon' },
+        });
+        break;
+      case 'skill_tree': {
+        const n = Object.values(state.account.skills).reduce((sum, r) => sum + r, 0);
+        views.push({
+          id,
+          label,
+          detail: t.keptDetail.skill_tree(n),
+          art: { kind: 'plaque', glyph: 'wardrobe' },
+        });
+        break;
+      }
       case 'starlight': {
         const have = state.resources[content.prestige.currency] ?? new Decimal(0);
         views.push({
@@ -249,6 +309,22 @@ function effectText(mods: readonly Modifier[], fallback: Modifier | undefined): 
   return modifierText({ ...fallback, value: new Decimal(0) });
 }
 
+/** The effect line of an item that opens a rule instead of a bonus, or null for a modifier item. */
+function grantText(o: StarlightOffer, state: GameState, content: Content): string | null {
+  const t = COPY.ascension;
+  switch (o.item.grants) {
+    case 'second_worker_slots':
+      return o.locked && o.level === 0
+        ? t.slotsLocked
+        : t.slots(o.level, content.trees.length + content.mines.length);
+    case 'autobuyer_trees':
+    case 'autobuyer_mines':
+      return t.autobuyer(o.level > 0);
+    default:
+      return null;
+  }
+}
+
 export function starlightViews(
   offers: readonly StarlightOffer[],
   state: GameState,
@@ -261,7 +337,9 @@ export function starlightViews(
     const maxed = o.price === null;
     const template = o.next[0] ?? o.current[0];
     const now = effectText(o.current, template);
-    const preview = maxed ? t.maxedEffect(now) : t.effect(now, effectText(o.next, template));
+    const preview =
+      grantText(o, state, content) ??
+      (maxed ? t.maxedEffect(now) : t.effect(now, effectText(o.next, template)));
     const price = o.price ?? { resource: currency, amount: new Decimal(0) };
     // a maxed line shows no fill bar
     const progress = maxed

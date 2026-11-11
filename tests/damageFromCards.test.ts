@@ -59,10 +59,10 @@ function leadWith(
 }
 
 describe('base damage by rarity (DESIGN.md §5)', () => {
-  it('follows the health ratios: 1, 1.25, 1.5, 2.25, 3.5, 7, 7 times the Common value (Mythic = Void)', () => {
+  it('follows the rarity ratios: 1, 1.6, 2.5, 4, 7, 12, 12 times the Common value (Mythic = Void)', () => {
     const common = rules.baseDamage.common;
     expect(common.gt(0)).toBe(true);
-    const ratios = [1, 1.25, 1.5, 2.25, 3.5, 7, 7];
+    const ratios = [1, 1.6, 2.5, 4, 7, 12, 12];
     RARITIES.forEach((rarity, i) => {
       expect(approxEq(rules.baseDamage[rarity], common.mul(ratios[i]!))).toBe(true);
     });
@@ -86,9 +86,12 @@ describe('fighting damage comes from the main card', () => {
 
   it('follows the rarity of whichever card leads', () => {
     const epic = leadWith('storm_duelist');
-    expect(baseDamage(epic, content).eq(rules.baseDamage.epic)).toBe(true);
+    expect(baseDamage(epic, content).toNumber()).toBeCloseTo(rules.baseDamage.epic.toNumber()); // dagger ×1
     const legendary = leadWith('dawnblade_regent');
-    expect(baseDamage(legendary, content).eq(rules.baseDamage.legendary)).toBe(true);
+    // The greatsword's identity factor (DESIGN.md §5) is on top of the rarity's base.
+    expect(baseDamage(legendary, content).toNumber()).toBeCloseTo(
+      rules.baseDamage.legendary.toNumber() * rules.weapons.greatsword.damage,
+    );
   });
 
   it('grows with level, stars and tier through the base-stat power', () => {

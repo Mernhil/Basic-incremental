@@ -23,15 +23,25 @@ import {
   isDungeonUnlocked,
   loadoutHealth,
   MIGRATIONS,
+  parseStageKey,
   readSave,
   setActiveDungeon,
   setFloorMode,
   simulateOffline,
+  stageKey,
   winsFloor,
   type GameState,
 } from '../src/game';
 import { devSetDungeonCleared, devSetFloor } from '../src/game/dev';
-import { constantRng, floorsContent, freshState, withBossAttack, withDps } from './helpers';
+import {
+  constantRng,
+  floorsContent,
+  freshState,
+  neutralStars,
+  withBossAttack,
+  withDps,
+  withOverflow,
+} from './helpers';
 
 /**
  * Dungeon floors (DESIGN.md §6 Dungeon floors, Clearing, Normal enemies): a dungeon is a stack of
@@ -39,12 +49,8 @@ import { constantRng, floorsContent, freshState, withBossAttack, withDps } from 
  * These tests use the shipped floor counts (10, 20, 30) with crits and mastery bonuses off.
  */
 const plain: Content = {
-  ...floorsContent,
-  progression: {
-    ...floorsContent.progression,
-    bossMastery: { ...floorsContent.progression.bossMastery, perTier: [] },
-  },
-  combat: { ...floorsContent.combat, crit: { chance: 0, damage: new Decimal(1) } },
+  ...neutralStars(floorsContent),
+  combat: { ...neutralStars(floorsContent).combat, crit: { chance: 0, damage: new Decimal(1) } },
 };
 /** Enemies that never hurt: the Root Warden's attack pinned to almost nothing. */
 const harmless = (base: Content): Content => withBossAttack(base, 'mossy_cellar', 1e-9, 10);
@@ -219,9 +225,12 @@ describe('push and farm', () => {
   });
 
   it('carries the damage of a big hit through several floors', () => {
-    // One hit of 1e9 is far more than the whole dungeon: every floor falls on the first hit.
+    // One hit of 1e9 is far more than the whole dungeon: with overflow on (DESIGN.md §6), every
+    // floor falls on the first hit.
     const content = harmless(withDps(1e9, plain));
-    const { state, report } = run(inCellar(content), content, 1.01);
+    const off = run(inCellar(content), content, 1.01);
+    expect(floorPosition(off.state, cellar).floor).toBe(2); // overflow off: one floor a hit
+    const { state, report } = run(withOverflow(inCellar(content), content), content, 1.01);
     expect(floorPosition(state, cellar).floor).toBe(10);
     expect(floorPosition(state, cellar).best).toBe(10);
     expect(report.bossKills).toBeGreaterThanOrEqual(1);
@@ -342,11 +351,11 @@ describe('clearing', () => {
     expect(cleared).toEqual(['mossy_cellar']);
     expect(mines).toEqual(['iron_deeps']);
     expect(opened).toContain('ember_crypt');
-    expect(state.combat.kills['mossy_cellar']).toBe(1);
+    expect(state.combat.stageKills['mossy_cellar:normal:10']).toBe(1);
     // The boss floor is farmed from then on: push has nowhere deeper to go.
     const later = run(state, content, 300).state;
     expect(floorPosition(later, cellar).floor).toBe(10);
-    expect(later.combat.kills['mossy_cellar']).toBeGreaterThan(1);
+    expect(later.combat.stageKills['mossy_cellar:normal:10']).toBeGreaterThan(1);
   });
 
   it('pays the first-clear purse once', () => {
@@ -382,7 +391,7 @@ describe('drops of normal enemies', () => {
     // rng 0: every roll is the lowest purse, every chance hits and every fraction rounds up.
     const { state, report } = run(start, content, 10, constantRng(0));
     const clears = report.floorsCleared;
-    expect(clears).toBeGreaterThan(100);
+    expect(clears).toBe(10); // a hit a second, each one clear: overflow is off
     // Each enemy is paid its share of the purse: on floor 1 its plain share of the HP, and 2%
     // more for every floor below (DESIGN.md §6 Deeper pays more).
     const worth = stage.enemies.reduce((sum, e) => sum + e.purseScale, 0);
@@ -404,7 +413,7 @@ describe('drops of normal enemies', () => {
     expect(report.enemyKills).toBeGreaterThanOrEqual(clears * stage.enemies.length);
     expect(report.drops).toEqual({});
     expect(state.pity['root_warden'] ?? 0).toBe(0);
-    expect(state.combat.kills['mossy_cellar'] ?? 0).toBe(0);
+    expect(state.combat.stageKills['mossy_cellar:normal:10'] ?? 0).toBe(0);
     expect(state.stats.bossKills).toBe(0);
   });
 
@@ -416,7 +425,7 @@ describe('drops of normal enemies', () => {
     const { state, report } = run(start.state, content, 5, constantRng(0.999));
     expect(report.bossKills).toBe(5);
     expect(report.enemyKills).toBe(0);
-    expect(state.combat.kills['mossy_cellar']).toBe(5);
+    expect(state.combat.stageKills['mossy_cellar:normal:10']).toBe(5);
     expect(state.stats.bossKills).toBe(5);
     expect(state.pity['root_warden']).toBe(5);
     expect(report.currencies['money']).toBeGreaterThanOrEqual(cellar.drops.currencies[0]!.max * 5);
@@ -554,7 +563,7 @@ describe('save formats 24 and 25: floors', () => {
   it('loads a format 23 save made with the 0.5.3 dev tools', () => {
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v23-dev-tools.save.txt'), 'utf8');
     expect(JSON.parse(text).version).toBe(23);
-    expect(CURRENT_SAVE_VERSION).toBe(25);
+    expect(CURRENT_SAVE_VERSION).toBe(26);
     const { state } = readSave(text, floorsContent);
     // Both cleared dungeons stay cleared, with what they opened ...
     expect(state.clearedDungeons).toEqual(['mossy_cellar', 'ember_crypt']);
@@ -570,9 +579,12 @@ describe('save formats 24 and 25: floors', () => {
       });
       expect(isDifficultyUnlocked(state, dungeon, 'hard')).toBe(false);
     }
-    // Kills (and so the boss medals) are untouched; the fight starts fresh; no training yet.
-    expect(state.combat.kills).toEqual({ mossy_cellar: 70, ember_crypt: 1 });
-    expect(state.mastery.bossTiers['mossy_cellar']).toBe(1);
+    // Kills stay as stage kills of each Normal last floor; the fight starts fresh; no training yet.
+    expect(state.combat.stageKills).toEqual({
+      'mossy_cellar:normal:10': 70,
+      'ember_crypt:normal:20': 1,
+    });
+    expect(state.mastery.bossTiers['mossy_cellar']).toBeUndefined();
     expect(state.bossHp).toBeNull();
     expect(state.combat.training).toEqual({});
     expect(state.activeDungeonId).toBe('mossy_cellar');
@@ -580,7 +592,39 @@ describe('save formats 24 and 25: floors', () => {
     // ... and it plays on: down the floors to the boss, which opens Hard.
     const later = advance(state, floorsContent, 600_000, createSeededRng(2));
     expect(floorPosition(later.state, cellar)).toMatchObject({ floor: 10, best: 10 });
-    expect(later.state.combat.kills['mossy_cellar']).toBeGreaterThan(70);
+    expect(later.state.combat.stageKills['mossy_cellar:normal:10']).toBeGreaterThan(70);
     expect(isDifficultyUnlocked(later.state, cellar, 'hard')).toBe(true);
+  });
+});
+
+describe('stage keys (DESIGN.md §6 Stage stars, Overflow)', () => {
+  it('names a stage by dungeon, difficulty and floor, and reads the name back', () => {
+    expect(stageKey('mossy_cellar', 'normal', 10)).toBe('mossy_cellar:normal:10');
+    expect(stageKey('void_hollow', 'nightmare', 60)).toBe('void_hollow:nightmare:60');
+    for (const difficulty of ['normal', 'hard', 'nightmare', 'endless'] as const) {
+      expect(parseStageKey(stageKey('ember_crypt', difficulty, 20))).toEqual({
+        dungeonId: 'ember_crypt',
+        difficulty,
+        floor: 20,
+      });
+    }
+  });
+
+  it('refuses anything that is not a stage key', () => {
+    for (const bad of [
+      '',
+      'mossy_cellar',
+      'mossy_cellar:normal',
+      'mossy_cellar:easy:10',
+      'mossy_cellar:normal:0',
+      'mossy_cellar:normal:-3',
+      'mossy_cellar:normal:1.5',
+      'mossy_cellar:normal:010',
+      'mossy_cellar:normal:10:2',
+      ':normal:10',
+      'mossy_cellar:normal:ten',
+    ]) {
+      expect(parseStageKey(bad), bad).toBeNull();
+    }
   });
 });

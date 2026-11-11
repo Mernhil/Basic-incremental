@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { accountInfo, formatDecimal, rewardTrack, xpToNextAccountLevel } from '../src/game';
 import { levelBadge, levelUpView, trackView } from '../src/renderer/src/pages/accountModel';
-import { content, freshState } from './helpers';
+import { content as bundled, freshState, levelPointsOnly } from './helpers';
+
+const content = levelPointsOnly(bundled);
 
 /** The Summon Crystals the level 10 reward gives (account.json). */
 const lv10Crystals = (): string =>
@@ -25,15 +27,15 @@ describe('account level badge', () => {
   it('counts the points to spend and says max level at the top', () => {
     const s = freshState();
     s.account.level = 6;
-    s.account.skills = { grove_yield: 2 };
+    s.account.skills = { logging_s1: 2 };
     const v = levelBadge(accountInfo(s, content));
     expect(v.points).toBe(3);
     expect(v.pointsText).toBe('3 skill points to spend');
 
-    s.account.level = content.account.levels.maxLevel;
-    const top = levelBadge(accountInfo(s, content));
-    expect(top.xpText).toBe('Max level');
-    expect(top.fraction).toBe(1);
+    s.account.level = 80;
+    const high = levelBadge(accountInfo(s, content));
+    expect(high.xpText).not.toBe('Max level');
+    expect(high.level).toBe(80);
   });
 });
 

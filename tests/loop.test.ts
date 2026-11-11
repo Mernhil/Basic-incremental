@@ -15,7 +15,7 @@ describe('GameLoop', () => {
     const fast = run(16, 30_000);
     const single = run(30_000, 30_000);
     for (const loop of [slow, fast]) {
-      expect(approxEq(loop.state.resources['oak_gem']!, 40)).toBe(true); // 30 s + one 10 s burst
+      expect(approxEq(loop.state.resources['oak_gem']!, 30)).toBe(true); // 30 s, no worker: no burst
       expect(approxEq(loop.state.bossHp!, single.state.bossHp!)).toBe(true);
       expect(loop.state.stats.playTimeMs).toBe(30_000);
     }

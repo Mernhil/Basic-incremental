@@ -505,7 +505,7 @@
     {
       "id": "crystal_lure",
       "name": "Crystal Lure",
-      "description": "Crystal drops x1.5",
+      "description": "Crystal drops x1.25",
       "unlock": {
         "kind": "bossKills",
         "dungeon": "mossy_cellar",
@@ -520,14 +520,14 @@
         {
           "stat": "drops.crystalMultiplier",
           "kind": "mult",
-          "value": "1.5"
+          "value": "1.25"
         }
       ]
     },
     {
       "id": "gleaming_hoard",
       "name": "Gleaming Hoard",
-      "description": "Crystal drops x1.5 more",
+      "description": "Crystal drops x1.25 more",
       "unlock": {
         "kind": "bossKills",
         "dungeon": "ember_crypt",
@@ -542,14 +542,14 @@
         {
           "stat": "drops.crystalMultiplier",
           "kind": "mult",
-          "value": "1.5"
+          "value": "1.25"
         }
       ]
     },
     {
       "id": "lumberjack_pact",
       "name": "Lumberjack Pact",
-      "description": "Logging support cards +25% effect",
+      "description": "Logging worker abilities +25% effect",
       "unlock": {
         "kind": "treeLevel",
         "tree": "oak",
@@ -574,7 +574,7 @@
     {
       "id": "miner_pact",
       "name": "Miner Pact",
-      "description": "Mining support cards +25% effect",
+      "description": "Mining worker abilities +25% effect",
       "unlock": {
         "kind": "mineLevel",
         "mine": "copper_quarry",

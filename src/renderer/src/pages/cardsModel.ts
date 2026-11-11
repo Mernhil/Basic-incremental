@@ -15,6 +15,8 @@ export interface Requirement {
   met: boolean;
   /** "3 of 7", "Lv 28 / 28", "done" ... */
   value: string;
+  /** The exact numbers behind a shortened value (the star bar's percent). */
+  title?: string;
 }
 
 export interface UpgradeStep {
@@ -65,10 +67,14 @@ export interface WeaponView {
     /** fill / need, 0..1. */
     gauge: number;
     ready: boolean;
-    /** "4 / 7 copies to ★4" */
+    /** "40% to ★4" */
     text: string;
+    /** The exact numbers for the tooltip: "0.05 / 0.125 copies to ★2". */
+    title: string;
     /** "×1.6 → ×2" */
     impact: string;
+    /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
+    dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
   /** The next tier-up, or null at the weapon's top tier. */
   tierUp: {
@@ -98,6 +104,13 @@ export interface WeaponView {
   endNote: string | null;
 }
 
+/** The four stat tiles of a card and the line comparing it with the card it would replace. */
+export interface StatTiles {
+  tiles: Array<{ label: string; value: string; title: string }>;
+  /** "vs Ember Squire: +12% damage, −8% health"; the card's own note when there is nothing to compare. */
+  compare: string;
+}
+
 export interface LoadoutRole {
   job: Job;
   slot: 'main' | 'support';
@@ -125,8 +138,12 @@ export interface CardEntry {
   /** The star bar's fill (copies waiting for the next star). */
   duplicates: number;
   cost: number;
+  /** A fighting card's main ability, or a worker's ability. */
   mainAbility: string;
+  /** A fighting card's support effect; empty for a worker (it has one ability). */
   supportEffect: string;
+  /** A worker's workplace name ("Oak"), or null when it works nowhere or is a fighting card. */
+  workplace: string | null;
   /** The bottom plate of the card face (ability, speed, level, progress). */
   face: CardFace;
   role: LoadoutRole | null;
@@ -136,10 +153,13 @@ export interface CardEntry {
   tier: UpgradeStep | null;
   /** The weapon panel's data (level ring, star bar, tier-up cost); null when not owned. */
   weapon: WeaponView | null;
+  /** The stat tiles with their compare line (DESIGN.md §5 Show the stats). */
+  stats: StatTiles;
 }
 
+/** The fighting loadout (the only job with one, DESIGN.md §5 Loadouts). */
 export interface JobLoadout {
-  job: Job;
+  job: 'fighting';
   /** Card ids: index 0 is the main card, 1..3 the supports (null = empty). */
   slots: Array<string | null>;
   cost: number;
@@ -199,7 +219,7 @@ export interface CardsModel {
   entries(state: GameState): CardEntry[];
   /** One card's entry (cheaper than `entries` when a panel follows a single card), or null. */
   entry(state: GameState, id: string): CardEntry | null;
-  loadout(state: GameState, job: Job): JobLoadout;
+  loadout(state: GameState, job: 'fighting'): JobLoadout;
   shards(state: GameState): string;
   /** Changes in what the page shows structurally (not per-tick numbers). */
   signature(state: GameState): string;
@@ -210,7 +230,7 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'tier'): ModelResult;
+  upgrade(state: GameState, id: string, kind: 'star' | 'tier' | 'dust'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

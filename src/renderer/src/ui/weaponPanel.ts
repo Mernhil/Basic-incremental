@@ -30,7 +30,7 @@ export interface WeaponPanelOptions {
   content: Content;
   state: () => GameState;
   /** Takes the star-up or the tier-up (the page runs the game action and re-renders). */
-  act: (kind: 'star' | 'tier') => void;
+  act: (kind: 'star' | 'tier' | 'dust') => void;
 }
 
 export interface WeaponPanel {
@@ -342,16 +342,18 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     // star line
     if (w.starBar) {
       starMain.textContent = w.starBar.text;
+      starLine.title = w.starBar.title;
       starImpact.textContent = w.starBar.impact;
       starLine.hidden = false;
     } else {
       starMain.textContent = COPY.weapon.allStars;
+      starLine.removeAttribute('title');
       starImpact.textContent = '';
       starLine.hidden = false;
     }
     starLine.style.setProperty('--gauge', `${((w.starBar?.gauge ?? 1) * 100).toFixed(1)}%`);
 
-    const sig = JSON.stringify([w.stars, w.starBar?.ready, w.tierUp, w.endNote]);
+    const sig = JSON.stringify([w.stars, w.starBar?.ready, w.starBar?.dust, w.tierUp, w.endNote]);
     if (sig === sideSig) return;
     sideSig = sig;
     const keep = root.contains(document.activeElement);
@@ -363,6 +365,16 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       b.type = 'button';
       b.dataset.key = 'wp-star';
       b.addEventListener('click', () => opts.act('star'));
+      starHost.append(b);
+    } else if (w.starBar?.dust) {
+      const d = w.starBar.dust;
+      const b = h('button', 'button wp-add', d.label);
+      b.type = 'button';
+      b.dataset.key = 'wp-dust';
+      if (!d.affordable) b.setAttribute('aria-disabled', 'true');
+      b.addEventListener('click', () => {
+        if (b.getAttribute('aria-disabled') !== 'true') opts.act('dust');
+      });
       starHost.append(b);
     }
 

@@ -35,7 +35,7 @@ const start = (): GameState => {
   return state;
 };
 const dpsOf = (state: GameState) => effectiveDamage(state, content, 'mossy_cellar');
-const dealt = (state: GameState) => bossMaxHp(boss, 0).sub(state.bossHp!);
+const dealt = (state: GameState) => bossMaxHp(boss).sub(state.bossHp!);
 
 describe('chunked damage to bosses (DESIGN.md §6)', () => {
   it('holds damage until the hit lands, then drops the bar by exactly one hit', () => {

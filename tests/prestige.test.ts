@@ -3,6 +3,7 @@ import {
   ascend,
   ascensionPreview,
   bossAttackDps,
+  fightStage,
   bossMaxHp,
   buyStarlightItem,
   collectModifiers,
@@ -35,16 +36,17 @@ function expectedGain(points: number): number {
 
 /** A run far enough along to ascend, with things that reset and things that persist. */
 function progressedRun(): GameState {
-  const state = runWith(1e9, 1e7);
+  const state = runWith(1e13, 1e11);
   state.resources['oak_gem'] = new Decimal(5000);
   state.resources['summon_crystal'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
   state.production.mineLevels = { copper_quarry: 30 };
   state.production.unlockedTrees = ['ironbark'];
   state.clearedDungeons = ['mossy_cellar'];
-  state.combat.kills = { mossy_cellar: 120 };
+  state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
   state.combat.loadoutDamage = new Decimal(50);
-  state.bursts.logging = { gauge: 12, timer: 0.5 };
+  state.bursts.fighting = { gauge: 12, timer: 0.5 };
+  state.production.harvestGauges = { oak: { gauge: 12, timer: 0.5 } };
   state.bossHp = new Decimal(123);
   state.cards.owned['ember_squire']!.level = 15;
   state.portals['card_portal'] = { pity: 33, pulls: 50, pityHits: 0 };
@@ -66,8 +68,8 @@ describe('Starlight gain (DESIGN.md §9)', () => {
 
   it('comes from the gems harvested this run, weighted by gem tier', () => {
     const weights = content.prestige.gain.tierWeights.map((w) => w.toNumber());
-    const points = 1e7 * weights[0]! + 1e5 * weights[2]!;
-    expect(starlightGain(runWith(1e7, 1e5), content).toNumber()).toBe(expectedGain(points));
+    const points = 1e13 * weights[0]! + 1e11 * weights[2]!;
+    expect(starlightGain(runWith(1e13, 1e11), content).toNumber()).toBe(expectedGain(points));
   });
 
   it('counts only this run: gems harvested before the last ascension do not count', () => {
@@ -78,8 +80,8 @@ describe('Starlight gain (DESIGN.md §9)', () => {
 
   it('can be raised through prestige.gain', () => {
     const g = content.prestige.gain;
-    const raw = Math.pow(1e8 / g.divisor.toNumber(), g.exponent);
-    const doubled = starlightGain(runWith(1e8), content, [
+    const raw = Math.pow(1e12 / g.divisor.toNumber(), g.exponent);
+    const doubled = starlightGain(runWith(1e12), content, [
       {
         stat: 'prestige.gain',
         kind: 'mult',
@@ -111,7 +113,7 @@ describe('ascension preview', () => {
         'starlight',
       ]),
     );
-    expect(preview.gain.toNumber()).toBe(expectedGain(1e9 + 1e7 * 100));
+    expect(preview.gain.toNumber()).toBe(expectedGain(1e13 + 1e11 * 100));
     expect(preview.rewards).toEqual(['gilded_plate']);
   });
 });
@@ -130,12 +132,16 @@ describe('ascend', () => {
     expect(s.production.treeLevels).toEqual({});
     for (const [id, amount] of Object.entries(s.resources)) {
       const kind = content.resourceById.get(id)!.kind;
-      if (kind === 'prestige' || kind === 'crystal') continue;
+      if (kind === 'prestige' || kind === 'crystal' || content.resourceById.get(id)!.keptOnAscend)
+        continue;
       // Gems, Money and Cores start over (Money from its starting amount).
       const start = content.resourceById.get(id)!.startAmount?.toNumber() ?? 0;
       expect(amount.toNumber(), id).toBe(start);
     }
-    expect(s.bursts.logging).toEqual({ gauge: 0, timer: 0 });
+    expect(s.bursts.fighting).toEqual({ gauge: 0, timer: 0 });
+    expect(s.production.harvestGauges).toEqual({});
+    // the workers stay where they are (DESIGN.md §4)
+    expect(s.production.workers).toEqual(before.production.workers);
     expect(s.bossHp).toBeNull();
     expect(s.combat.loadoutDamage.toNumber()).toBe(0);
     expect(s.prestigeCount).toBe(1);
@@ -155,6 +161,33 @@ describe('ascend', () => {
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over
   });
 
+  it('keeps the workers, the forge, stage stars and the wishlist; tool lines, depth and gauges start over', () => {
+    const before = progressedRun();
+    before.production.workers = { oak: ['apprentice_feller'] };
+    before.production.forge = { recipe: 'r', progress: new Decimal(4), worker: 'cave_digger' };
+    before.production.tools = { logging_yield: 3 };
+    before.production.depth = { oak: { layer: 2, progress: new Decimal(1) } };
+    before.production.harvestGauges = { oak: { gauge: 5, timer: 0 } };
+    before.combat.stageKills = { 'mossy_cellar:normal:10': 120 };
+    before.combat.stageChests = { 'mossy_cellar:normal:10': 3 };
+    before.combat.overflow = { 'mossy_cellar:normal:10': true };
+    before.cards.wishlist = ['ember_squire'];
+    before.automation = { treeLevels: true, mineLevels: true, reservePercent: 10 };
+    const result = ascend(before, content);
+    if (!result.ok) throw new Error(result.reason);
+    const s = result.state;
+    expect(s.production.workers).toEqual(before.production.workers);
+    expect(s.production.forge).toEqual(before.production.forge);
+    expect(s.production.tools).toEqual({});
+    expect(s.production.depth).toEqual({});
+    expect(s.production.harvestGauges).toEqual({});
+    expect(s.combat.stageKills).toEqual(before.combat.stageKills);
+    expect(s.combat.stageChests).toEqual(before.combat.stageChests);
+    expect(s.combat.overflow).toEqual(before.combat.overflow);
+    expect(s.cards.wishlist).toEqual(['ember_squire']);
+    expect(s.automation).toEqual(before.automation);
+  });
+
   it('keeps the owned legacy weapon skins and the one worn', () => {
     const result = ascend(progressedRun(), content);
     if (!result.ok) throw new Error(result.reason);
@@ -167,7 +200,7 @@ describe('ascend', () => {
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.combat.kills).toEqual({ mossy_cellar: 120 });
+    expect(s.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 120 });
     expect(s.cards.owned['ember_squire']!.level).toBe(15);
     expect(s.cards.loadouts).toEqual(before.cards.loadouts);
     expect(s.cosmetics.owned['holo_hex']).toBeDefined();
@@ -189,7 +222,7 @@ describe('ascend', () => {
     expect(ascensionPreview(first.state, content).gain.toNumber()).toBe(0);
 
     const second = first.state;
-    second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e9);
+    second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e13);
     const again = ascend(second, content);
     if (!again.ok) throw new Error(again.reason);
     expect(again.state.prestigeCount).toBe(2);
@@ -265,13 +298,19 @@ describe('Starlight shop', () => {
   });
 });
 
-describe('bosses grow with prestige (DESIGN.md §9, §6)', () => {
-  it('scales HP and attack slowly by the prestige count', () => {
+describe('enemies do not grow with Ascension (DESIGN.md §6)', () => {
+  it('keeps every floor, its attack and its purse as they are after Ascensions', () => {
+    const fresh = freshState();
+    const ascended = freshState();
+    ascended.prestigeCount = 4;
+    const at = (s: typeof fresh) => fightStage(s, content, 'mossy_cellar', [])!;
+    expect(at(ascended).hp.eq(at(fresh).hp)).toBe(true);
+    expect(at(ascended).attack.eq(at(fresh).attack)).toBe(true);
+    expect(at(ascended).scale).toEqual(at(fresh).scale);
     const d = content.dungeons[0]!;
-    const growth = 1 + d.boss.hpScalingPerPrestige;
-    expect(bossMaxHp(d, 2).toNumber()).toBeCloseTo(d.boss.hp.toNumber() * growth ** 2, 6);
-    expect(bossAttackDps(d, 2, []).toNumber()).toBeCloseTo(
-      (d.boss.attack.damage.toNumber() * growth ** 2) / d.boss.attack.intervalSeconds,
+    expect(bossMaxHp(d).eq(d.boss.hp)).toBe(true);
+    expect(bossAttackDps(d, []).toNumber()).toBeCloseTo(
+      d.boss.attack.damage.toNumber() / d.boss.attack.intervalSeconds,
       9,
     );
   });
