@@ -317,7 +317,6 @@
 
 /* ---- the odds table ---- */
 .sm-odds {
-  grid-column: 2;
   align-self: start;
   margin-top: 40px;
   padding: 10px 16px 12px;
