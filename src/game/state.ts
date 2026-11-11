@@ -125,10 +125,17 @@ export interface ExpeditionTrip {
 export interface ExpeditionState {
   /** Trips under way, one per slot in use (the slot count is derived). */
   trips: ExpeditionTrip[];
+  /** Trips collected so far (the First Expedition achievement). Kept through prestige. */
+  completed: number;
 }
 
 export function initialExpeditions(): ExpeditionState {
-  return { trips: [] };
+  return { trips: [], completed: 0 };
+}
+
+/** Whether a card is away on an expedition: it cannot be equipped or work (DESIGN.md §15). */
+export function isOnTrip(state: Pick<GameState, 'expeditions'>, cardId: string): boolean {
+  return state.expeditions.trips.some((t) => t.cardId === cardId);
 }
 
 /** A challenge is completed up to three times, with harder targets (DESIGN.md §15). */
@@ -499,7 +506,10 @@ export function cloneState(state: GameState): GameState {
     summon: { ...state.summon },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
-    expeditions: { trips: state.expeditions.trips.map((t) => ({ ...t })) },
+    expeditions: {
+      trips: state.expeditions.trips.map((t) => ({ ...t })),
+      completed: state.expeditions.completed,
+    },
     ascensionChallenges: {
       active: state.ascensionChallenges.active,
       completions: { ...state.ascensionChallenges.completions },

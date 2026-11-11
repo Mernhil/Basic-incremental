@@ -233,7 +233,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
       );
     }
   }
-  checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges }, issues);
+  checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -330,9 +330,11 @@ function checkTableUpdate(
     bonds: Bond[];
     expeditions: ExpeditionsConfig;
     challenges: AscensionChallenge[];
+    resources: { id: string }[];
   },
   issues: string[],
 ): void {
+  const resourceIds = new Set(c.resources.map((r) => r.id));
   const cardIds = new Set(c.cards.map((x) => x.id));
   const dungeonIds = new Set(c.dungeons.map((d) => d.id));
   const unique = (file: string, ids: string[]): void => {
@@ -363,6 +365,13 @@ function checkTableUpdate(
   c.expeditions.places.forEach((p, i) => {
     if (!dungeonIds.has(p.dungeon)) {
       issues.push(`expeditions.json › places › [${i}] › dungeon: unknown dungeon "${p.dungeon}"`);
+    }
+    for (const r of [...p.rewards.materials, ...p.rewards.gems]) {
+      if (!resourceIds.has(r.resource)) {
+        issues.push(
+          `expeditions.json › places › [${i}] › rewards: unknown resource "${r.resource}"`,
+        );
+      }
     }
   });
   c.challenges.forEach((x, i) =>

@@ -3,7 +3,7 @@ import { cardStatPower } from './cards';
 import { workerElementModifier } from './elements';
 import type { Modifier } from './modifiers';
 import { isProducerUnlocked, producersOf, type Producer } from './production';
-import { cloneState, type GameState, type OwnedCard } from './state';
+import { cloneState, isOnTrip, type GameState, type OwnedCard } from './state';
 import { supportPower } from './upgrades';
 
 /**
@@ -31,7 +31,9 @@ export type WorkerFailure =
   /** A mining card on a tree, a logging card on a mine, or a fighting card. */
   | 'wrong-job'
   /** Every worker slot is in use. */
-  | 'no-slot';
+  | 'no-slot'
+  /** The card is away on an expedition (DESIGN.md §15). */
+  | 'on-expedition';
 
 export type WorkerResult = { ok: true; state: GameState } | { ok: false; reason: WorkerFailure };
 
@@ -100,7 +102,9 @@ function workerCard(
   cardId: string,
 ): WorkerCard | undefined {
   const card = content.cardById.get(cardId);
-  if (!card || card.job !== job || !state.cards.owned[cardId]) return undefined;
+  if (!card || card.job !== job || !state.cards.owned[cardId] || isOnTrip(state, cardId)) {
+    return undefined;
+  }
   return card;
 }
 
@@ -151,7 +155,9 @@ export function workplaceOf(state: GameState, content: Content, cardId: string):
 export function forgeWorker(state: GameState, content: Content): string | null {
   const id = state.production.forge.worker;
   const card = id ? content.cardById.get(id) : undefined;
-  if (!id || !card || card.job === 'fighting' || !state.cards.owned[id]) return null;
+  if (!id || !card || card.job === 'fighting' || !state.cards.owned[id] || isOnTrip(state, id)) {
+    return null;
+  }
   const placed = Object.values(activeWorkers(state, content));
   if (placed.some((ids) => ids.includes(id))) return null;
   const used = placed.reduce((n, ids) => n + ids.length, 0);
@@ -183,6 +189,7 @@ export function assignForgeWorker(
   if (!card) return fail('unknown');
   if (!state.cards.owned[cardId]) return fail('not-owned');
   if (card.job === 'fighting') return fail('wrong-job');
+  if (isOnTrip(state, cardId)) return fail('on-expedition');
   const workers = activeWorkers(state, content);
   const from = Object.keys(workers).find((place) => workers[place]!.includes(cardId)) ?? null;
   if (from === null && forgeWorker(state, content) !== cardId) {
@@ -234,6 +241,7 @@ export function assignWorker(
   if (!card) return fail('unknown');
   if (!state.cards.owned[cardId]) return fail('not-owned');
   if (card.job !== job) return fail('wrong-job');
+  if (isOnTrip(state, cardId)) return fail('on-expedition');
   if (here.includes(cardId)) return done(state, workers);
 
   const from = Object.keys(workers).find((place) => workers[place]!.includes(cardId)) ?? null;

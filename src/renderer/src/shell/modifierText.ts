@@ -14,6 +14,7 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   achievement: 'Achievement',
   mastery: 'Mastery',
   element: 'Element',
+  bond: 'Bond',
   account: 'Account level', // compile fix (mechanics): reward track cost cap bumps
   upgrade: 'Upgrade', // compile fix (mechanics): upgrade shelf purchases (DESIGN §4)
 };

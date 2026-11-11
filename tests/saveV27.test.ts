@@ -83,7 +83,7 @@ describe('v26 -> v27 (the table update)', () => {
       production: { logging: [null, null, null], mining: [null, null, null] },
     });
     expect(out['discoveredBonds']).toEqual([]);
-    expect(out.expeditions).toEqual({ trips: [] });
+    expect(out.expeditions).toEqual({ trips: [], completed: 0 });
     expect(out.ascensionChallenges).toEqual({ active: null, completions: {} });
   });
 

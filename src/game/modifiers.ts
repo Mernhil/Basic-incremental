@@ -10,6 +10,7 @@ import { upgradeModifiers } from './upgrades';
 import { trainingModifiers } from './training';
 import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
+import { bondModifiers } from './bonds';
 
 /**
  * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
@@ -33,6 +34,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'upgrade',
   /** Elements in combat: weakness, resistance and matching workers (DESIGN.md §6). */
   'element',
+  /** Bonds: a named pair of cards at work together (DESIGN.md §15). */
+  'bond',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -221,6 +224,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // The loadout's elements against each boss.
   out.push(...elementModifiers(state, content));
+
+  // Named pairs of cards at work together.
+  out.push(...bondModifiers(state, content));
 
   return strengthen(out);
 }

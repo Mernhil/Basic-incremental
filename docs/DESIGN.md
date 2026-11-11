@@ -432,19 +432,19 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 
 _The user chose these on 2026-11-07 in claude.ai. The handoff to the repo never happened, so they were in no document and nothing was built. The systems are the user's choice; the details were filled in by Claude and are defaults._
 
-- [To build] **Loadout presets.** Each dungeon remembers its own fighting loadout and switches to it when picked; production jobs get named presets.
-- [Default] Three presets per production job; a preset that goes over the cost cap is flagged, not deleted.
-- [To build] **Bonds.** Specific pairs of cards in the same loadout unlock a small named bonus. An undiscovered bond shows as a silhouette in a Codex until first triggered; a pixel chain links the two cards on the table.
-- [Default] Oath of Dawn (Ember Squire + Dawnblade Regent: +2 burst fill per hit), Old Growth (Apprentice Feller + Elder Treant: harvest bursts +5 s), Deep Vein (Cave Digger + Geode Golem: +15% mining).
-- [To build] **Expeditions.** Cards not in a loadout go on timed trips to places opened by clearing dungeons and bring back that area's materials, some gems and card XP, double for a matching element. They are plain timers outside the offline cap. A card on a trip cannot be equipped.
-- [Default] Trips of 1, 4 or 8 h to Mossy Outskirts, Ember Catacombs and Frostspire Pass; one slot at the start, one more from the account tree and one from the Starlight shop; recalling early returns nothing. The places' elements are Nature, Fire and Crystal, the elements their dungeons' bosses resist (Claude, 2026-11-11).
+- [Built] **Loadout presets.** Each dungeon remembers its own fighting loadout and switches to it when picked; production jobs get named presets.
+- [Default · in game] Three presets per production job (name, Use, Save here, Clear on each production band). The dungeon's loadout is remembered when you leave it; a dungeon with nothing remembered keeps the current loadout; a remembered card that is gone or away leaves its slot empty; a loadout over the cost cap is flagged and not applied, never deleted. Workers have slots, not a cost cap (0.6.0), so a worker preset that needs more slots or places than are open is applied as far as it fits and flagged with how many did not fit; it stays saved as it was.
+- [Built] **Bonds.** Specific pairs of cards in the same loadout unlock a small named bonus. An undiscovered bond shows as a silhouette in a Codex until first triggered; a pixel chain links the two cards on the table.
+- [Default · in game] Oath of Dawn (Ember Squire + Dawnblade Regent: +2 burst fill per hit), Old Growth (Apprentice Feller + Elder Treant: harvest bursts +5 s), Deep Vein (Cave Digger + Geode Golem: +15% mining). A fighting pair is active while both are in the fighting loadout; a logging or mining pair while both work, at any tree or mine of their job (Claude, 2026-11-11). The bonus enters through the modifier pipeline (source `bond`) and a bond is discovered the first time it is active, recorded on the 1 s grid.
+- [Built] **Expeditions.** Cards not in a loadout go on timed trips to places opened by clearing dungeons and bring back that area's materials, some gems and card XP, double for a matching element. They are plain timers outside the offline cap. A card on a trip cannot be equipped.
+- [Default] Trips of 1, 4 or 8 h to Mossy Outskirts, Ember Catacombs and Frostspire Pass; one slot at the start, one more from the account tree and one from the Starlight shop; recalling early returns nothing. The places' elements are Nature, Fire and Crystal, the elements their dungeons' bosses resist (Claude, 2026-11-11). Rewards per hour of trip, doubled for a matching element: the dungeon's Core (1), 120 seconds of the place's gem output (Oak, Ironbark, Moonwillow gems at their current level) and a tenth of the card's current level in XP. The extra slots are the account tree's Grand Archive keystone and the Starlight shop's Travel Pack (20 Starlight). All numbers are placeholders for the balance run.
 - [To build] **Ascension challenges.** After the first Ascension, a challenge is an Ascension run with a rule, completed by clearing a target under that rule, up to three times with harder targets, each completion giving a permanent reward. They appear as side portals around the Ascension gate and each completion is a sticker.
 - [Default] Lone Wolf (no supports), Common Folk (Commons only), Bare Hands (no damage lines), Drought (production ×0.5), Glass Cannon (health ×0.25) and Single Plot (one plot and one slot); completing all six once unlocks Auto-Ascend.
 - [Proposed] Bare Hands and Single Plot no longer fit the 2026-11-08 changes (no damage lines, no plots) and need replacing.
 - [Built] **Autobuyers** in the Starlight shop, each with an on / off switch and a reserve per resource ("never spend below X%") so tier-up materials stay safe. Card management (stars, tiers, pulls) is never automated.
 - [Built] The autobuyers are for tree levels and mine levels (user, 2026-11-11) and are part of the balance update.
 - [Default · in game] **How the autobuyers work** (Claude, 2026-11-11). Each is bought once in the Starlight shop and has its own on / off switch; one reserve (0 to 100%) is shared. They run on the 1 s play-time grid, where card levels settle, so online play, offline progress and any split of time buy the same levels: a pass buys the cheapest affordable level, again and again, but never spends a resource below the reserve's share of what was held of it when the pass began (tree levels cost Money, mine levels their own ore). The switches sit under the Starlight lines on the Shop page.
-- [Default] New achievements: Bond Found, First Expedition, Rock Bottom (reach the last floor) and Challenger (first challenge completion).
+- [Default] New achievements: Bond Found, First Expedition, Rock Bottom (reach the last floor) and Challenger (first challenge completion). Bond Found (15 Glimmer Dust) and First Expedition (25 Star Dust) are in the game; Rock Bottom belongs to the stage battles and Challenger to the Ascension challenges.
 
 ## 16. Open questions
 
@@ -523,6 +523,11 @@ Defaults by Claude, 2026-11-11 (the table update, package 1, to confirm):
 - §3 a new game starts with one Summon Scroll; scrolls are kept through Ascension.
 - §6 one auto-challenge switch per dungeon, on after the save update where the dungeon was pushing.
 - §15 the elements of the expedition places (Nature, Fire, Crystal).
+
+Defaults by Claude, 2026-11-11 (the table update, package 5, to confirm):
+
+- §15 worker presets applied as far as slots allow and flagged (workers have no cost cap); a dungeon with nothing remembered keeps the current loadout; production bonds need both cards at work, at any place of the job.
+- §15 expedition rewards per hour (1 Core, 120 s of the place's gem, a tenth of a level of XP), the account tree keystone and the Travel Pack as the extra slots, and the rewards of Bond Found and First Expedition.
 
 Defaults by Claude, never confirmed (`[Default]`):
 
