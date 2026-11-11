@@ -522,12 +522,13 @@ describe('balance sim: run', () => {
     expect(maxCosmetic.reached(state, content, log)).toBe(false);
   });
 
-  it('calls the content exhausted only with every card owned and a card at the Mythic tier', () => {
+  it('calls the content exhausted with every other milestone and a card at the Mythic tier, not every card owned', () => {
     const exhausted = MILESTONES.find((m) => m.id === 'exhausted')!;
     const log = { summons: 1, levelAt: {}, ascensions: [], fought: {} };
     const state = freshState();
-    for (const card of content.cards) {
-      state.cards.owned[card.id] ??= { ...state.cards.owned['ember_squire']! };
+    // Only some cards are owned: a Mythic card, and the rarities the milestones ask for.
+    for (const id of ['moonwood_dryad', 'dawnblade_regent', 'storm_duelist', 'reaper_test']) {
+      state.cards.owned[id] ??= { ...state.cards.owned['ember_squire']! };
     }
     state.clearedDungeons = [...content.dungeons, ...content.trials].map((d) => d.id);
     state.prestigeCount = 1;

@@ -233,7 +233,9 @@ export const MILESTONES: Milestone[] = [
   {
     id: 'first_star6',
     label: 'First ★6 from copies',
-    targetHours: 7,
+    // 0.5 h (user, 2026-11-11): a Common needs a copy a star and the wishlist sends it every
+    // Common pull, so its stars fill within the first hour.
+    targetHours: 0.5,
     // Every card starts at ★1, so any ★6 was earned with copies (DESIGN.md §5 Stars).
     reached: (s) => Object.values(s.cards.owned).some((owned) => owned.stars >= 6),
   },
@@ -309,10 +311,10 @@ export const MILESTONES: Milestone[] = [
     id: 'exhausted',
     label: 'Beta content mostly exhausted',
     targetHours: 40,
-    // Every other milestone reached, every card owned and a weapon taken to the last tier
-    // (T6, Mythic or Void, DESIGN.md §5): the final upgrade of the beta.
+    // Every other milestone reached and a weapon taken to the last tier (T6, Mythic or Void,
+    // DESIGN.md §5): the final upgrade of the beta. Owning every card is not asked (user,
+    // 2026-11-11): the Mythic and Void cards come at 0.2% and 0.1% a pull.
     reached: (s, c, log) =>
-      c.cards.every((card) => s.cards.owned[card.id]) &&
       Object.values(s.cards.owned).some((card) => card.tier === 'mythic') &&
       MILESTONES.every((m) => m.id === 'exhausted' || m.pending || m.reached(s, c, log)),
   },
