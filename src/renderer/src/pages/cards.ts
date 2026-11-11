@@ -431,7 +431,17 @@ export function createCardsPage(
       fact(COPY.cards.workerAbility, e.mainAbility);
       fact(COPY.cards.worksAt, e.workplace ?? COPY.cards.notWorking);
     }
-    body.append(main, facts);
+    // damage, health, hit speed and crits, with the compare line (DESIGN.md §5 Show the stats)
+    const stats = h('dl', 'cp-stats');
+    for (const t of e.stats.tiles) {
+      const d = h('div', 'px-tile cp-fact');
+      if (t.title) d.title = t.title;
+      d.append(h('dt', '', t.label), h('dd', '', t.value));
+      stats.append(d);
+    }
+    body.append(main, stats);
+    if (e.stats.compare) body.append(h('p', 'cp-compare', e.stats.compare));
+    body.append(facts);
 
     if (e.owned) {
       const chart = model.chart(state, e.id);

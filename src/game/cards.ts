@@ -284,6 +284,14 @@ export function cardStatPower(content: Content, owned: OwnedCard): number {
   return (1 + p.perLevel * (owned.level - 1)) * star * p.tier[owned.tier];
 }
 
+/** The weapon identity's factor on base damage or health (DESIGN.md §5); 1 off the fighting types. */
+function weaponFactor(content: Content, card: Card, stat: 'damage' | 'health'): number {
+  if (card.job !== 'fighting') return 1;
+  return (
+    content.cardRules.weapons[card.item.kind as keyof typeof content.cardRules.weapons]?.[stat] ?? 1
+  );
+}
+
 /**
  * A card's health (DESIGN.md §6): its rarity's base health × its base-stat power, so it grows
  * with level, stars and tier. 0 for unknown ids. The fight side sums the loadout.
@@ -291,7 +299,9 @@ export function cardStatPower(content: Content, owned: OwnedCard): number {
 export function cardHealth(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.health[card.rarity].mul(cardStatPower(content, owned));
+  return content.cardRules.health[card.rarity]
+    .mul(cardStatPower(content, owned))
+    .mul(weaponFactor(content, card, 'health'));
 }
 
 /**
@@ -303,7 +313,9 @@ export function cardHealth(content: Content, cardId: string, owned: OwnedCard): 
 export function cardBaseDamage(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.baseDamage[card.rarity].mul(cardStatPower(content, owned));
+  return content.cardRules.baseDamage[card.rarity]
+    .mul(cardStatPower(content, owned))
+    .mul(weaponFactor(content, card, 'damage'));
 }
 
 /**

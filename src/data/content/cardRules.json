@@ -639,5 +639,43 @@
         "heirloom": 2000
       }
     }
+  },
+  "weapons": {
+    "sword": {
+      "damage": 1,
+      "health": 1
+    },
+    "greatsword": {
+      "damage": 0.82,
+      "health": 1.05
+    },
+    "spear": {
+      "damage": 0.99,
+      "health": 0.88
+    },
+    "lance": {
+      "damage": 0.63,
+      "health": 1.2
+    },
+    "dagger": {
+      "damage": 1,
+      "health": 0.75
+    },
+    "hammer": {
+      "damage": 0.44,
+      "health": 1.35
+    },
+    "bow": {
+      "damage": 1.07,
+      "health": 0.7
+    },
+    "staff": {
+      "damage": 0.95,
+      "health": 0.9
+    },
+    "scythe": {
+      "damage": 0.99,
+      "health": 0.92
+    }
   }
 }

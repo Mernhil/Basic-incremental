@@ -291,7 +291,8 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
   it('gives each card health by rarity, scaled by its power', () => {
     const base = newOwnedCard();
     expect(cardHealth(content, 'ember_squire', base).eq(100)).toBe(true);
-    expect(cardHealth(content, 'dawnblade_regent', base).eq(700)).toBe(true);
+    // Weapon identities (DESIGN.md §5): the greatsword's health factor is 1.05.
+    expect(cardHealth(content, 'dawnblade_regent', base).toNumber()).toBeCloseTo(700 * 1.05);
     const silver = { ...base, tier: 'silver' as const, level: 11 };
     expect(cardHealth(content, 'ember_squire', silver).toNumber()).toBeCloseTo(100 * 1.2 * 1.5);
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);

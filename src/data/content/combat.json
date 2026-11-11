@@ -88,5 +88,11 @@
   "crit": {
     "chance": 0.05,
     "damage": "2"
+  },
+  "elements": {
+    "weakness": "50",
+    "resistance": "-25",
+    "supportBonus": "10",
+    "production": "15"
   }
 }

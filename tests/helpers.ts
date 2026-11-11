@@ -95,8 +95,19 @@ function pinOneFloor(bundled: Content): Content {
   return { ...bundled, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
 }
 
+/**
+ * Elements (DESIGN.md §6) switched off: rule tests count exact damage and output with the starter
+ * cards, which would otherwise get the weakness and matching-worker bonuses. Element tests use
+ * the real `loadContent()`.
+ */
+function pinNoElements(bundled: Content): Content {
+  const zero = new Decimal(0);
+  const elements = { weakness: zero, resistance: zero, supportBonus: zero, production: zero };
+  return { ...bundled, combat: { ...bundled.combat, elements } };
+}
+
 /** The pinned content with the shipped floors of every dungeon back in. */
-export const floorsContent: Content = pinStarBar(pinProductionRates(loadContent()));
+export const floorsContent: Content = pinNoElements(pinStarBar(pinProductionRates(loadContent())));
 
 export const content: Content = pinOneFloor(floorsContent);
 

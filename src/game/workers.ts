@@ -1,5 +1,6 @@
 import type { Content, ModifierScope, ProductionJob, WorkerCard } from '../data';
 import { cardStatPower } from './cards';
+import { workerElementModifier } from './elements';
 import type { Modifier } from './modifiers';
 import { isProducerUnlocked, producersOf, type Producer } from './production';
 import { cloneState, type GameState, type OwnedCard } from './state';
@@ -239,6 +240,7 @@ export function workerModifiers(state: GameState, content: Content): Modifier[] 
         };
         out.push(power.eq(1) ? mod : boost(mod, power));
       }
+      out.push(...workerElementModifier(content, id, place, workerScope(job, place)));
     }
   }
   return out;

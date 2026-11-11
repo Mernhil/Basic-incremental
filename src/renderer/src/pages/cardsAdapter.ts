@@ -26,7 +26,8 @@ import {
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
-import { COPY } from '../copy';
+import { COPY, starPercent } from '../copy';
+import { statTiles } from './statsModel';
 import { itemArt } from '../art/items';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
@@ -79,7 +80,12 @@ export function createCardsModel(
     if (r.kind === 'stars')
       return { label: COPY.cards.req.stars, met: r.met, value: `★${have} / ★${need}` };
     if (r.kind === 'starFill')
-      return { label: COPY.cards.req.starBar, met: r.met, value: COPY.cards.req.of(have, need) };
+      return {
+        label: COPY.cards.req.starBar,
+        met: r.met,
+        value: `${starPercent(r.have.toNumber(), r.need.toNumber())}%`,
+        title: COPY.cards.req.of(have, need),
+      };
     return { label: resName(r.resource ?? ''), met: r.met, value: COPY.cards.req.of(have, need) };
   }
 
@@ -115,7 +121,7 @@ export function createCardsModel(
     };
   }
 
-  function entry(info: CardInfo): CardEntry {
+  function entry(info: CardInfo, state: GameState): CardEntry {
     const { card, owned } = info;
     const rank = info.rank ?? BASE_RANK;
     const cap = info.levelCap ?? levelCap(content, rank);
@@ -160,6 +166,7 @@ export function createCardsModel(
       next: owned ? step('star', info.starUp) : null,
       tier: owned ? step('tier', info.tierUp) : null,
       weapon: weaponView(content, info),
+      stats: statTiles(content, state, card.id),
     };
   }
 
@@ -167,10 +174,10 @@ export function createCardsModel(
     cardCollection(state, content, undefined, collectModifiers(state, content));
 
   return {
-    entries: (state) => all(state).map(entry),
+    entries: (state) => all(state).map((i) => entry(i, state)),
     entry(state, id) {
       const info = cardInfo(state, content, id);
-      return info ? entry(info) : null;
+      return info ? entry(info, state) : null;
     },
     loadout(state, job) {
       const lo = loadoutInfo(state, content, job);
