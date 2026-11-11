@@ -61,6 +61,7 @@ const TIER_ART: Partial<Record<RankTier, string>> = {
   wood: 't1',
   bronze: 't2',
   silver: 't3',
+  gold: 't4',
   prismatic: 't5',
 };
 
@@ -75,9 +76,8 @@ function placeholder(kind: ItemKind): string {
 
 /**
  * The item's pixel sprite for a card art window, in the 200 x 240 item box. At the tiers drawn so
- * far (Wood T1, Bronze T2, Silver T3, Prismatic T5, Mythic or Void T6) every type has its own
- * approved picture (`item-<type>-t1`, `-t2`, `-t3`, `-t5`, `-t6m`, `-t6v`, hand-made); Gold (T4)
- * still shows the interim look until it is drawn. The Heirloom has its own picture per type and
+ * far (Wood T1 to Prismatic T5, Mythic or Void T6) every type has its own picture
+ * (`item-<type>-t1`, `-t2`, `-t3`, `-t4`, `-t5`, `-t6m`, `-t6v`, hand-made). The Heirloom has its own picture per type and
  * side (`item-<type>-hm` Mythic, `-hv` Void). `side` is the card's own rarity, which picks the
  * Mythic or Void version at T6 and the Heirloom.
  */
