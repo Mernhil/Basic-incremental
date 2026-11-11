@@ -52,25 +52,44 @@ function allPlaces(content: Content): { job: ProductionJob; producer: Producer }
   ];
 }
 
-/**
- * Workers one tree kind or mine type takes at most: `perProducer` today (0 for an unknown id). A
- * function of the state so the Starlight shop's second slots (DESIGN.md §9) can raise it per place.
- */
-export function workersPerPlace(_state: GameState, content: Content, producerId: string): number {
-  return producerJob(content, producerId) ? content.production.workers.slots.perProducer : 0;
+/** How many trees and mines there are (one first worker slot each). */
+export function allPlacesCount(content: Content): number {
+  return allPlaces(content).length;
+}
+
+/** Places that have a second worker slot: the level of the Starlight shop's second-slot item (DESIGN.md §9). */
+export function secondSlots(state: GameState, content: Content): number {
+  const item = content.prestige.shop.find((i) => i.grants === 'second_worker_slots');
+  if (!item) return 0;
+  return Math.min(
+    Math.max(0, state.prestige.shop[item.id] ?? 0),
+    item.maxLevel,
+    allPlaces(content).length,
+  );
 }
 
 /**
- * Worker slots in all: the base plus one per Ascension (`production.json`), never more than every
- * tree kind and mine type can take.
+ * Workers one tree kind or mine type takes at most: `perProducer` plus one when the Starlight shop
+ * gave its place a second slot (the first places in order get them first; 0 for an unknown id).
+ */
+export function workersPerPlace(state: GameState, content: Content, producerId: string): number {
+  if (!producerJob(content, producerId)) return 0;
+  const index = allPlaces(content).findIndex((p) => p.producer.id === producerId);
+  const second = index >= 0 && index < secondSlots(state, content) ? 1 : 0;
+  return content.production.workers.slots.perProducer + second;
+}
+
+/**
+ * Worker slots in all: the base plus one per Ascension (`production.json`), never more than one
+ * per tree kind and mine type, plus the second slots bought with Starlight, which add to that.
  */
 export function workerSlots(state: GameState, content: Content): number {
   const { base, perAscension } = content.production.workers.slots;
-  const most = allPlaces(content).reduce(
-    (sum, p) => sum + workersPerPlace(state, content, p.producer.id),
-    0,
+  const first = allPlaces(content).length * content.production.workers.slots.perProducer;
+  return (
+    Math.min(first, base + perAscension * Math.max(0, state.prestigeCount)) +
+    secondSlots(state, content)
   );
-  return Math.min(most, base + perAscension * Math.max(0, state.prestigeCount));
 }
 
 /** The worker card of a valid assignment, or undefined: known, a worker of this job, owned. */
