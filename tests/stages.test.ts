@@ -17,23 +17,23 @@ import { RANK_TIERS, type Content } from '../src/data';
 import { bareState, constantRng, content, freshState } from './helpers';
 
 describe('tile stages (DESIGN.md §12)', () => {
-  it('grows a mine tile one stage per 25-level milestone, up to stage 4', () => {
+  it('grows a mine tile one stage per 15-level milestone, up to stage 4', () => {
     const state = freshState();
     expect(tileStage(state, content, 'mining', 'copper_quarry')).toBe(0);
-    state.production.mineLevels['copper_quarry'] = 24;
+    state.production.mineLevels['copper_quarry'] = 14;
     expect(tileStage(state, content, 'mining', 'copper_quarry')).toBe(0);
-    state.production.mineLevels['copper_quarry'] = 50;
+    state.production.mineLevels['copper_quarry'] = 30;
     expect(tileStage(state, content, 'mining', 'copper_quarry')).toBe(2);
     state.production.mineLevels['copper_quarry'] = 400;
     expect(tileStage(state, content, 'mining', 'copper_quarry')).toBe(4);
     expect(tileStage(state, content, 'mining', 'iron_deeps')).toBe(0);
   });
 
-  it('grows a tree tile one stage per 25-level milestone (DESIGN.md §4)', () => {
+  it('grows a tree tile one stage per 15-level milestone (DESIGN.md §4)', () => {
     expect(content.progression.tileStages.logging).toEqual({ source: 'level' });
     const state = freshState();
     expect(tileStage(state, content, 'logging', 'oak')).toBe(0);
-    state.production.treeLevels['oak'] = 50;
+    state.production.treeLevels['oak'] = 30;
     expect(tileStage(state, content, 'logging', 'oak')).toBe(2);
     expect(tileStage(state, content, 'logging', 'ironbark')).toBe(0);
   });
@@ -59,11 +59,11 @@ describe('tier-ups from purchases (DESIGN.md §12)', () => {
   it('reports mine milestones and nothing when none is crossed', () => {
     const state = freshState();
     state.resources['money'] = new Decimal('1e60');
-    const small = buyMineLevels(state, content, 'copper_quarry', 10);
+    const small = buyMineLevels(state, content, 'copper_quarry', 10); // under the first milestone (15)
     expect(small.ok && small.tierUps).toEqual([]);
     const big = buyMineLevels(state, content, 'copper_quarry', 100);
     expect(big.ok && big.tierUps).toEqual([
-      { kind: 'mine_milestone', id: 'copper_quarry', from: 0, to: 4, metal: 'prismatic' },
+      { kind: 'mine_milestone', id: 'copper_quarry', from: 0, to: 6, metal: 'prismatic' },
     ]);
   });
 });

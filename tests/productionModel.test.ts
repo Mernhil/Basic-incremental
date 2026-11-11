@@ -38,8 +38,8 @@ describe('productionRows', () => {
     expect(oak!.outputUnit).toBe('Oak Gem/s');
     expect(oak!.buy?.offer.affordable).toBe(true);
     expect(oak!.previewText).toMatch(/ → .* \/s$/);
-    expect(oak!.milestone).toMatchObject({ label: 'Lv 25: ×2', toGo: '×2 in 25', progress: 0 });
-    expect(oak!.milestone?.segments).toEqual({ total: 25, filled: 0 });
+    expect(oak!.milestone).toMatchObject({ label: 'Lv 15: ×2', toGo: '×2 in 15', progress: 0 });
+    expect(oak!.milestone?.segments).toEqual({ total: 15, filled: 0 });
     expect(locked.length).toBeGreaterThan(0);
     for (const r of locked) {
       expect(r.kind).toBe('locked-tree');
@@ -88,9 +88,9 @@ describe('productionRows', () => {
     if (!r.ok) return;
     const oak = productionRows(r.state, content, 'logging', 10, mods(r.state))[0]!;
     expect(oak.levelText).toBe('Level 10');
-    expect(oak.milestone?.toGo).toBe('×2 in 15');
-    expect(oak.milestone?.segments).toEqual({ total: 25, filled: 10 });
-    expect(oak.milestone?.progress).toBeCloseTo(10 / 25);
+    expect(oak.milestone?.toGo).toBe('×2 in 5');
+    expect(oak.milestone?.segments).toEqual({ total: 15, filled: 10 });
+    expect(oak.milestone?.progress).toBeCloseTo(10 / 15);
     expect(oak.buy?.label).toBe('Buy ×10');
   });
 });

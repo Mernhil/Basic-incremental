@@ -671,8 +671,8 @@
         "silver": 500,
         "gold": 750,
         "prismatic": 1000,
-        "mythic": 1500,
-        "heirloom": 2000
+        "mythic": 500,
+        "heirloom": 600
       },
       "void": {
         "wood": 250,
@@ -680,8 +680,8 @@
         "silver": 500,
         "gold": 750,
         "prismatic": 1000,
-        "mythic": 1500,
-        "heirloom": 2000
+        "mythic": 500,
+        "heirloom": 600
       }
     }
   },

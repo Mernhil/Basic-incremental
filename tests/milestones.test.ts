@@ -55,21 +55,21 @@ describe('level milestones (DESIGN.md §4)', () => {
     expect(growthStage(x2, 1000)).toBe(4);
   });
 
-  it('is data-driven per line: every mine level has x2 every 25 levels', () => {
+  it('is data-driven per line: every mine level has x2 every 15 levels', () => {
     for (const mine of content.mines) {
-      expect(mine.level.milestones.every).toBe(25);
+      expect(mine.level.milestones.every).toBe(15);
       expect(mine.level.milestones.multiplier.toNumber()).toBe(2);
     }
   });
 
-  it('doubles a mine level line at level 25', () => {
-    const plain = quarry.baseRate.mul(1 + (25 * 10) / 100);
-    expect(producerRate(quarry, 'mining', [], 25).eq(plain.mul(2))).toBe(true);
+  it('doubles a mine level line at level 15', () => {
+    const plain = quarry.baseRate.mul(1 + (15 * 5) / 100);
+    expect(producerRate(quarry, 'mining', [], 15).eq(plain.mul(2))).toBe(true);
   });
 
   it('resets mine level milestones with the production reset of a prestige', () => {
     const state = freshState();
-    state.production.mineLevels = { copper_quarry: 50 };
+    state.production.mineLevels = { copper_quarry: 30 };
     const after = resetProduction(state);
     after.prestigeCount = 1;
     expect(mineLevelMilestone(state, content, 'copper_quarry')!.reached).toBe(2);
@@ -79,7 +79,7 @@ describe('level milestones (DESIGN.md §4)', () => {
   it('reports the milestone info of a line by id', () => {
     const state = freshState();
     state.production.mineLevels = { copper_quarry: 3 };
-    expect(mineLevelMilestone(state, content, 'copper_quarry')!.levelsToNext).toBe(22);
+    expect(mineLevelMilestone(state, content, 'copper_quarry')!.levelsToNext).toBe(12);
     expect(mineLevelMilestone(state, content, 'nope')).toBeNull();
   });
 });
