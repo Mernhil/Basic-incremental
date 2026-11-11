@@ -5,6 +5,7 @@ import { Decimal } from './num';
 import { isProducerUnlocked, mineLevel, producersOf } from './production';
 import { floorCount, floorPosition, stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
 import { stageStarLevel, totalStageStarLevels } from './stageStars';
+import { totalChallengeCompletions } from './challenges';
 import { activeWorkers, forgeWorker } from './workers';
 import type { TickReport } from './report';
 import { cloneState, type GameState } from './state';
@@ -87,6 +88,8 @@ function measure(
     }
     case 'skill_points_spent':
       return { value: skillPointsSpent(state, content), target: condition.amount };
+    case 'challenge_completions':
+      return { value: totalChallengeCompletions(state, content), target: condition.amount };
     case 'ascensions':
       return { value: state.prestigeCount, target: condition.amount };
     case 'offline_hours':

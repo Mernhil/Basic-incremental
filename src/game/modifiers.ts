@@ -10,6 +10,7 @@ import { upgradeModifiers } from './upgrades';
 import { trainingModifiers } from './training';
 import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
+import { challengeModifiers, restrictModifiers, restrictedView } from './challenges';
 
 /**
  * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
@@ -33,6 +34,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'upgrade',
   /** Elements in combat: weakness, resistance and matching workers (DESIGN.md §6). */
   'element',
+  /** Ascension challenges: a run's rule and the rewards earned (DESIGN.md §15). */
+  'challenge',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -203,7 +206,10 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   }
 
   // Cards in the loadouts: main abilities (with main growth) and support effects.
-  out.push(...cardModifiers(state, content));
+  // A challenge run may leave some cards out (Lone Wolf, Common Folk): the card-reading
+  // collectors see the loadout without them.
+  const view = restrictedView(state, content);
+  out.push(...cardModifiers(view, content));
 
   // Settled gem mastery tiers and boss medals.
   out.push(...masteryModifiers(state, content));
@@ -212,7 +218,7 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   out.push(...prestigeModifiers(state, content));
 
   // Account tree ranks, reward track cost cap bumps, card enhancements.
-  out.push(...accountModifiers(state, content));
+  out.push(...accountModifiers(view, content));
 
   // Upgrade shelf purchases.
   out.push(...upgradeModifiers(state, content));
@@ -220,9 +226,12 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   out.push(...toolModifiers(state, content));
 
   // The loadout's elements against each boss.
-  out.push(...elementModifiers(state, content));
+  out.push(...elementModifiers(view, content));
 
-  return strengthen(out);
+  // Ascension challenges: rewards earned, the active rule's penalties, Training taken away.
+  out.push(...challengeModifiers(state, content));
+
+  return strengthen(restrictModifiers(state, content, out));
 }
 
 /** A modifier made `factor` times as strong: flat and percent scale, a mult its part above 1. */

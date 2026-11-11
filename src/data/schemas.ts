@@ -1406,6 +1406,8 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('cosmetics_owned'), amount: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('skill_points_spent'), amount: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('ascensions'), amount: z.number().int().min(1) }),
+  /** Ascension challenge completions in all (DESIGN.md §15). */
+  z.strictObject({ kind: z.literal('challenge_completions'), amount: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('offline_hours'), hours: z.number().positive() }),
   z.strictObject({ kind: z.literal('gem_mastery'), tier: z.number().int().min(1).max(4) }),
   z.strictObject({ kind: z.literal('boss_mastery'), tier: z.number().int().min(1).max(4) }),
@@ -1918,17 +1920,34 @@ export const expeditionsSchema = z.strictObject({
 });
 export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
 
+/** What a challenge takes away (src/game/challenges.ts applies each through the modifier pipeline). */
+export const CHALLENGE_RESTRICTIONS = [
+  /** The fighting loadout's supports give no effect and no health. */
+  'no_supports',
+  /** Only Common cards count in the fighting loadout (effects, health, and the main's damage). */
+  'commons_only',
+  /** Training gives nothing. */
+  'no_training',
+  /** Only one worker works. */
+  'one_worker',
+] as const;
+export type ChallengeRestriction = (typeof CHALLENGE_RESTRICTIONS)[number];
+
 /**
  * An Ascension challenge (DESIGN.md §15): an Ascension run under a rule, completed by clearing a
  * target, up to three times with harder targets, each completion giving a permanent reward. The
- * rule's shape is set by the package that builds the challenges; the file starts empty.
+ * rule is in words (`rule`), as named restrictions and as penalty modifiers.
  */
 export const ascensionChallengeSchema = z.strictObject({
   id,
   name,
   /** The rule in words, as the side portal shows it. */
   rule: z.string().min(1),
-  /** One target per completion, easiest first: the dungeon floor to reach under the rule. */
+  /** What the run loses, by name (see CHALLENGE_RESTRICTIONS). */
+  restrictions: z.array(z.enum(CHALLENGE_RESTRICTIONS)).default([]),
+  /** Modifiers that apply only while the challenge is the run's rule (source `challenge`). */
+  penalties: z.array(modifierSchema).default([]),
+  /** One target per completion, easiest first: the floor to reach in a dungeon tier under the rule. */
   targets: z
     .array(
       z.strictObject({
