@@ -48,7 +48,7 @@ describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', ()
     combat: {
       floors: {
         mossy_cellar: { difficulty: 'normal', tiers: { normal: { floor: 10, best: 10 } } },
-      },
+      } as Record<string, unknown>,
     },
     ...extra,
   });
