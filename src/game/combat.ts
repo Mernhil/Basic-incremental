@@ -10,10 +10,10 @@ import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
 import { rollBossDrop, rollEnemyDrops, rollMaterialDrop, type DropTable } from './drops';
 import {
+  challengeSeconds,
   floorCount,
   floorPosition,
   floorSpec,
-  hasDeeperFloor,
   initialProgress,
   isDifficultyUnlocked,
   isStageFloor,
@@ -57,7 +57,6 @@ import {
   type BurstGauge,
   type Difficulty,
   type DungeonProgress,
-  type FloorMode,
   type GameState,
   type TierProgress,
 } from './state';
@@ -65,10 +64,14 @@ import {
 /**
  * Combat (DESIGN.md §6): a dungeon is a stack of floors (floors.ts), auto-fought in parallel with
  * production: waves of normal enemies, a mini-boss every 10th floor and the dungeon's boss on the
- * last one. Push moves down a floor on a win, farm stays; the enemies hit back, and a loadout
- * that runs out of health is knocked out, drops a floor and switches to farm. Damage comes from
- * the main fighting card (DESIGN.md §5). A dungeon is cleared the first time its last-floor boss
- * dies, which unlocks the next dungeon and a mine type.
+ * last one. The loadout farms the best floor it has beaten, on a loop; the next floor is a
+ * Challenge, started by a button or by auto-challenge, at full health and on a timer. A won
+ * Challenge moves the farming down to that floor; a lost one returns to farming (with
+ * auto-challenge on, after a wait). The enemies hit back, and a loadout that runs out of health
+ * while farming is knocked out and drops a floor. Each enemy has its own HP: a hit stops at the
+ * kill unless the stage's overflow switch is on. Damage comes from the main fighting card
+ * (DESIGN.md §5). A dungeon is cleared the first time its Normal last-floor boss dies, which
+ * unlocks the next dungeon and a mine type.
  * The Glimmer Trial is a special dungeon fought in timed attempts for a score.
  * Burst gauges fill with each hit (fighting) or tick (logging, mining) and fire automatically.
  *
@@ -85,7 +88,11 @@ export type CombatFailure =
   /** No dungeon / special dungeon with that id. */
   | 'unknown'
   /** The dungeon, or the difficulty asked for, is not unlocked yet. */
-  | 'locked';
+  | 'locked'
+  /** There is no floor to challenge (the last floor of a tier is farmed). */
+  | 'none'
+  /** A Challenge is already running, or the loadout is knocked out. */
+  | 'busy';
 
 export type CombatResult = { ok: true; state: GameState } | { ok: false; reason: CombatFailure };
 
@@ -166,29 +173,163 @@ export function setActiveDungeon(
   if (id === state.activeDungeonId) return { ok: true, state };
   const next = cloneState(state);
   next.activeDungeonId = id;
-  next.bossHp = null;
+  resetFight(next);
   next.combat.trialAttempt = { elapsedSeconds: 0, dealt: new Decimal(0) };
   return { ok: true, state: next };
 }
 
 /**
- * Switches a dungeon between push (a win moves down a floor) and farm (stay on the floor).
- * The floor and the fight in progress are kept.
+ * Back to farming a fresh floor (a state being built): no Challenge, no auto-challenge wait, the
+ * floor's first enemy at full HP. Used when the dungeon or the difficulty fought changes.
  */
-export function setFloorMode(
+function resetFight(next: GameState): void {
+  freshFloor(next);
+  next.combat.challenge = null;
+  next.combat.challengeWaitSeconds = 0;
+}
+
+/** The floor starts again: its first enemy, at full HP (DESIGN.md §6 Each enemy has its own HP). */
+function freshFloor(next: GameState): void {
+  next.bossHp = null;
+  next.combat.enemyIndex = 0;
+}
+
+/**
+ * Turns a dungeon's auto-challenge on or off (DESIGN.md §6 Auto-challenge). A Challenge already
+ * running plays out; the wait after a loss is kept.
+ */
+export function setAutoChallenge(
   state: GameState,
   content: Content,
   dungeonId: string,
-  mode: FloorMode,
+  on: boolean,
 ): CombatResult {
-  if (!content.dungeonById.has(dungeonId)) return fail('unknown');
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return fail('unknown');
   if (!isDungeonUnlocked(state, content, dungeonId)) return fail('locked');
-  if (floorPosition(state, content.dungeonById.get(dungeonId)!).mode === mode) {
-    return { ok: true, state };
-  }
+  if (floorPosition(state, dungeon).autoChallenge === on) return { ok: true, state };
   const next = cloneState(state);
-  ensureProgress(next, dungeonId).mode = mode;
+  ensureProgress(next, dungeonId).autoChallenge = on;
   return { ok: true, state: next };
+}
+
+/**
+ * Starts a Challenge of the next floor in the active dungeon (DESIGN.md §6 Farming and Challenge):
+ * the Challenge button. It starts at full health on a fresh floor with its timer at 0. Fails when
+ * nothing is active, there is no floor to challenge, a Challenge is running or the loadout is
+ * knocked out.
+ */
+export function startFloorChallenge(state: GameState, content: Content): CombatResult {
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  if (!dungeon) return fail('unknown');
+  if (!isDungeonUnlocked(state, content, dungeon.id)) return fail('locked');
+  if (state.combat.challenge || state.combat.knockoutSeconds > 0) return fail('busy');
+  const position = floorPosition(state, dungeon);
+  if (position.challengeFloor === null) return fail('none');
+  const next = cloneState(state);
+  beginChallenge(next, dungeon.id, position.difficulty);
+  return { ok: true, state: next };
+}
+
+/** A Challenge begins (a state being built): fresh floor, full health, timer at 0. */
+function beginChallenge(next: GameState, dungeonId: string, difficulty: Difficulty): void {
+  freshFloor(next);
+  next.combat.loadoutDamage = new Decimal(0);
+  next.combat.challenge = { dungeonId, difficulty, elapsedSeconds: 0 };
+}
+
+/** The running Challenge as the arena shows it (DESIGN.md §6 Farming and Challenge). */
+export interface FloorChallengeView {
+  dungeonId: string;
+  difficulty: Difficulty;
+  floor: number;
+  /** Seconds on its timer, and how many have run. */
+  durationSeconds: number;
+  elapsedSeconds: number;
+  secondsLeft: number;
+}
+
+/** The next Challenge of a dungeon (its floor and timer), or null when there is none. */
+export interface NextFloorChallenge {
+  floor: number;
+  durationSeconds: number;
+  /** Auto-challenge is on, and the seconds it still waits after a loss (0 = none). */
+  auto: boolean;
+  waitSeconds: number;
+}
+
+/**
+ * The running Challenge of a dungeon in a state, or null: it must be on the active dungeon and on
+ * its chosen difficulty, with a floor to challenge.
+ */
+function runningChallenge(
+  state: GameState,
+  content: Content,
+): { dungeon: Dungeon; difficulty: Difficulty; floor: number; elapsedSeconds: number } | null {
+  const run = state.combat.challenge;
+  if (!run || run.dungeonId !== state.activeDungeonId) return null;
+  const dungeon = content.dungeonById.get(run.dungeonId);
+  if (!dungeon) return null;
+  const position = floorPosition(state, dungeon);
+  if (position.difficulty !== run.difficulty || position.challengeFloor === null) return null;
+  return {
+    dungeon,
+    difficulty: run.difficulty,
+    floor: position.challengeFloor,
+    elapsedSeconds: run.elapsedSeconds,
+  };
+}
+
+/** The Challenge running in the active dungeon, or null while farming. */
+export function floorChallengeView(state: GameState, content: Content): FloorChallengeView | null {
+  const run = runningChallenge(state, content);
+  if (!run) return null;
+  const kind = floorSpec(content, run.dungeon, run.difficulty, run.floor).kind;
+  const duration = challengeSeconds(content, kind);
+  return {
+    dungeonId: run.dungeon.id,
+    difficulty: run.difficulty,
+    floor: run.floor,
+    durationSeconds: duration,
+    elapsedSeconds: run.elapsedSeconds,
+    secondsLeft: Math.max(0, duration - run.elapsedSeconds),
+  };
+}
+
+/** What the Challenge button of a dungeon would start, on its chosen difficulty. */
+export function nextFloorChallenge(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+): NextFloorChallenge | null {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return null;
+  const position = floorPosition(state, dungeon);
+  if (position.challengeFloor === null) return null;
+  const kind = floorSpec(content, dungeon, position.difficulty, position.challengeFloor).kind;
+  return {
+    floor: position.challengeFloor,
+    durationSeconds: challengeSeconds(content, kind),
+    auto: position.autoChallenge,
+    waitSeconds: state.activeDungeonId === dungeonId ? state.combat.challengeWaitSeconds : 0,
+  };
+}
+
+/**
+ * The floor being fought in a dungeon: the Challenge's while one runs there on that difficulty,
+ * otherwise the farmed floor.
+ */
+export function currentFloor(
+  state: GameState,
+  content: Content,
+  dungeon: Dungeon,
+  difficulty?: Difficulty,
+): number {
+  const position = floorPosition(state, dungeon, difficulty);
+  const run = runningChallenge(state, content);
+  return run && run.dungeon.id === dungeon.id && run.difficulty === position.difficulty
+    ? run.floor
+    : position.floor;
 }
 
 /**
@@ -209,7 +350,7 @@ export function setDifficulty(
   if (floorPosition(state, dungeon).difficulty === difficulty) return { ok: true, state };
   const next = cloneState(state);
   ensureProgress(next, dungeonId).difficulty = difficulty;
-  if (next.activeDungeonId === dungeonId) next.bossHp = null;
+  if (next.activeDungeonId === dungeonId) resetFight(next);
   return { ok: true, state: next };
 }
 
@@ -283,7 +424,8 @@ export function fightStage(
   const dungeon = content.dungeonById.get(dungeonId);
   if (!dungeon) return null;
   const position = floorPosition(state, dungeon, difficulty);
-  const at = Math.min(position.floors, Math.max(1, Math.floor(floor ?? position.floor)));
+  const here = floor ?? currentFloor(state, content, dungeon, position.difficulty);
+  const at = Math.min(position.floors, Math.max(1, Math.floor(here)));
   return stageOf(content, dungeon, position.difficulty, at, modifiers);
 }
 
@@ -316,9 +458,42 @@ function stageOf(
   };
 }
 
-/** HP left of a stage's floor: the saved HP, never above the floor's HP. */
+/** Index of the enemy being fought on a stage's floor (the ones before it are dead). */
+function enemyIndexOn(state: GameState, stage: FightStage): number {
+  const i = Math.floor(state.combat.enemyIndex) || 0;
+  return Math.min(stage.enemies.length - 1, Math.max(0, i));
+}
+
+/** HP left of the enemy being fought: the saved HP, never above its own HP (null = full). */
+function enemyHpLeft(state: GameState, stage: FightStage): Decimal {
+  const enemy = stage.enemies[enemyIndexOn(state, stage)]!;
+  return Decimal.min(state.bossHp ?? enemy.hp, enemy.hp);
+}
+
+/** HP left of a stage's whole floor: the enemy being fought and every one after it. */
 function stageHpLeft(state: GameState, stage: FightStage): Decimal {
-  return Decimal.min(state.bossHp ?? stage.hp, stage.hp);
+  const index = enemyIndexOn(state, stage);
+  const after = stage.hp.sub(stage.enemies[index]!.upto);
+  return enemyHpLeft(state, stage).add(after);
+}
+
+/**
+ * Sets the floor's HP left as one pool (a state being built; overflow on): the enemy it falls in
+ * becomes the one being fought, with the rest of its HP. At or above the floor's HP the floor is
+ * fresh.
+ */
+function setStageHpLeft(state: GameState, stage: FightStage, left: Decimal): void {
+  if (left.gte(stage.hp)) {
+    freshFloor(state);
+    return;
+  }
+  const dealt = stage.hp.sub(left);
+  const found = stage.enemies.findIndex((e) => e.upto.gt(dealt));
+  const index = found < 0 ? stage.enemies.length - 1 : found;
+  state.combat.enemyIndex = index;
+  // The floor guards against rounding pushing HP to <= 0.
+  const enemy = stage.enemies[index]!;
+  state.bossHp = Decimal.max(enemy.upto.sub(dealt), enemy.hp.mul(1e-9));
 }
 
 export interface BossStatus {
@@ -343,7 +518,13 @@ export interface BossStatus {
   floors: number;
   floorKind: FloorKind;
   difficulty: Difficulty;
-  mode: FloorMode;
+  /** Auto-challenge is on for the dungeon (DESIGN.md §6 Auto-challenge). */
+  autoChallenge: boolean;
+  /** The floor being farmed, and the next one to challenge (null on a tier's last floor). */
+  farmFloor: number;
+  challengeFloor: number | null;
+  /** The Challenge being fought, or null while farming. */
+  challenge: FloorChallengeView | null;
   /** The deepest floor beaten on this difficulty. */
   bestFloor: number;
   /** Which enemy of the floor this is (1-based) and how many the floor holds. */
@@ -362,11 +543,9 @@ export function bossStatus(
   if (!stage) return null;
   const { dungeon } = stage;
   const position = floorPosition(state, dungeon);
-  const dealt = stage.hp.sub(stageHpLeft(state, stage));
-  const found = stage.enemies.findIndex((e) => e.upto.gt(dealt));
-  const index = found < 0 ? stage.enemies.length - 1 : found;
+  const index = enemyIndexOn(state, stage);
   const enemy = stage.enemies[index]!;
-  const hp = Decimal.min(Decimal.max(enemy.upto.sub(dealt), 0), enemy.hp);
+  const hp = Decimal.max(enemyHpLeft(state, stage), 0);
   const stars = stageStars(state, content, stageKey(dungeon.id, stage.difficulty, stage.floor));
   return {
     dungeon,
@@ -382,7 +561,10 @@ export function bossStatus(
     floors: stage.floors,
     floorKind: stage.kind,
     difficulty: stage.difficulty,
-    mode: position.mode,
+    autoChallenge: position.autoChallenge,
+    farmFloor: position.floor,
+    challengeFloor: position.challengeFloor,
+    challenge: floorChallengeView(state, content),
     bestFloor: position.best,
     wave: { index: index + 1, size: stage.enemies.length },
   };
@@ -625,11 +807,18 @@ export function secondsPerKill(
     stageDamageFactor(state, content, stage.dungeon, stage.difficulty, stage.floor, modifiers),
   );
   if (avg.lte(0)) return null;
-  const seconds = stage.hp.div(avg).toNumber();
-  if (overflowActive(state, content, stage.dungeon, stage.difficulty, stage.floor)) return seconds;
-  // Overflow off (DESIGN.md §6): the damage past a kill is lost, so a kill takes whole hits.
+  if (overflowActive(state, content, stage.dungeon, stage.difficulty, stage.floor)) {
+    return stage.hp.div(avg).toNumber();
+  }
+  // Overflow off (DESIGN.md §6 Each enemy has its own HP): a hit stops at the kill, so each enemy
+  // takes whole hits of its own.
   const interval = burstStats(content, 'fighting', modifiers).interval;
-  return Math.ceil(seconds / interval - EPSILON) * interval;
+  const hit = avg.mul(interval);
+  let hits = 0;
+  for (const enemy of stage.enemies) {
+    hits += Math.max(1, Math.ceil(enemy.hp.div(hit).toNumber() - EPSILON));
+  }
+  return hits * interval;
 }
 
 // ---- live stage readouts (DESIGN.md §11) --------------------------------------------------------
@@ -995,13 +1184,17 @@ export function winsFloor(
   return survival === null || survival >= spk;
 }
 
-/** What `advanceCombat` may be told about the span it fights. */
-export interface FightOptions {
-  /** Never move down a floor, whatever the mode (offline progress, DESIGN.md §6). */
-  noPush?: boolean;
+/** Counts down the auto-challenge wait after a loss (a state being built). */
+function countDownWait(next: GameState, seconds: number): void {
+  const wait = next.combat.challengeWaitSeconds - seconds;
+  next.combat.challengeWaitSeconds = wait <= EPSILON ? 0 : wait;
 }
 
-/** Fights whatever is active for `seconds`. Mutates `next` (a fresh clone owned by advance). */
+/**
+ * Fights whatever is active for `seconds`. Mutates `next` (a fresh clone owned by advance).
+ * Offline progress runs the same rules (DESIGN.md §6 Offline on floors): it farms, and it climbs
+ * only where auto-challenge is on.
+ */
 export function advanceCombat(
   next: GameState,
   content: Content,
@@ -1009,7 +1202,6 @@ export function advanceCombat(
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
-  options: FightOptions = {},
 ): void {
   const id = next.activeDungeonId;
   if (!id || !isDungeonUnlocked(next, content, id)) return;
@@ -1018,6 +1210,7 @@ export function advanceCombat(
   if (next.combat.knockoutSeconds > 0) {
     const wait = Math.min(left, next.combat.knockoutSeconds);
     next.combat.knockoutSeconds -= wait;
+    countDownWait(next, wait);
     left -= wait;
     if (next.combat.knockoutSeconds <= EPSILON) {
       next.combat.knockoutSeconds = 0;
@@ -1040,7 +1233,7 @@ export function advanceCombat(
       if (trial) fightTrial(next, content, trial, dps, stats, left, report, mods);
       return;
     }
-    left = fightDungeon(next, content, dungeon, dps, stats, left, rng, report, mods, options);
+    left = fightDungeon(next, content, dungeon, dps, stats, left, rng, report, mods);
     if (left > EPSILON) mods = collectModifiers(next, content);
   }
 }
@@ -1111,15 +1304,26 @@ function secondsToDeal(
 }
 
 /**
- * A dungeon fight (DESIGN.md §6). The floor's enemies take our hits in order and the floor hits
- * back. Time is split at the events that change the fight:
- * - the floor is cleared: the loadout's health refills, and in push mode it moves down a floor;
- *   in farm mode the floor starts again. The last hit's leftover damage carries on only where
- *   overflow is on (DESIGN.md §6 Overflow); otherwise it is lost;
+ * A dungeon fight (DESIGN.md §6 Farming and Challenge). The loadout farms its floor on a loop, or
+ * fights a Challenge of the next floor; the floor's enemies take our hits one at a time and the
+ * floor hits back. Time is split at the events that change the fight:
+ * - an enemy dies: with overflow off (DESIGN.md §6 Each enemy has its own HP) the hit stops at the
+ *   kill and the next enemy stands at full HP; with it on the floor is one pool and the leftover
+ *   carries on, while farming even into the floor started again;
+ * - the floor is cleared: the loadout's health refills; farming starts the floor again; a
+ *   Challenge is won (the best floor, the farming and the Victory);
  * - a stage reaches a new star level: its damage bonus applies from the next hit on;
- * - the health pool runs out: the loadout is knocked out, the floor heals, the loadout drops one
- *   floor and switches to farm, sits out, and the fight starts again with full health.
- * With `noPush` (offline progress) the floor is never left for a deeper one.
+ * - the health runs out: farming, the loadout is knocked out, drops a floor and sits out; in a
+ *   Challenge, the Challenge is lost and farming goes on at full health;
+ * - a Challenge's timer runs out: it is lost;
+ * - auto-challenge (DESIGN.md §6 Auto-challenge) starts the next Challenge after every win and
+ *   when the wait after a loss is over.
+ *
+ * Package 7 (the card duel) plugs in here: the health is one pool (`max`, `loadoutDamage`, the
+ * floor's attacks through `lethalBossAttack` / `bossDamageBetween`); per-card health replaces those
+ * reads with the team's cards (the first standing card takes each attack, the fight is lost when
+ * all are out), and per-card attacks replace `baseDps` / `fightFor` with each card's own hits.
+ * The events (kill, clear, loss, win) stay as they are.
  */
 function fightDungeon(
   next: GameState,
@@ -1131,7 +1335,6 @@ function fightDungeon(
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
-  options: FightOptions,
 ): number {
   /**
    * Fights `stage` for `t` seconds at `dps`: the hits that land, the card XP and the wages, both
@@ -1186,65 +1389,156 @@ function fightDungeon(
   // The floor's attacks sit on the play-time clock (bossAttacks.ts): this fight is its last
   // `seconds`, so any split of time lands the same hits.
   let clock = next.stats.playTimeMs / 1000 - seconds;
-  /** Attacks up to this number are settled (landed, or skipped by a knockout). */
+  /** Attacks up to this number are settled (landed, or skipped by a knockout or a clear). */
   let settled = 0;
-  /** Damage of the last hit left over from the floor above (push). */
-  let carry = new Decimal(0);
+  /** Set when a kill came with the attack that empties the health: that attack still lands. */
+  let pendingDone: number | null = null;
+
+  /** Time passes: the span, the play-time clock, the Challenge's timer and the wait. */
+  const pass = (t: number): void => {
+    left -= t;
+    clock += t;
+    if (next.combat.challenge) next.combat.challenge.elapsedSeconds += t;
+    countDownWait(next, t);
+  };
+  /** The floor was cleared `clears` times: health refills; a Challenge is won. */
+  const onCleared = (stage: FightStage, clears: number): void => {
+    // The loadout catches its breath between floors: its health refills (DESIGN.md §6).
+    next.combat.loadoutDamage = new Decimal(0);
+    report.floorsCleared += clears;
+    if (!next.combat.challenge) return;
+    // Victory (DESIGN.md §6 Farming and Challenge): the best floor rises and the farming moves
+    // down to the floor won. Clearing (DESIGN.md §6): the Normal last-floor boss died. The last
+    // floor of a tier also opens the next one (floors.ts `isDifficultyUnlocked`).
+    const tier = ensureTier(next, dungeon);
+    tier.best = Math.max(tier.best, stage.floor);
+    tier.floor = stage.floor;
+    next.combat.challenge = null;
+    next.combat.challengeWaitSeconds = 0;
+    freshFloor(next);
+    report.challenges.push({
+      dungeonId: dungeon.id,
+      difficulty: stage.difficulty,
+      floor: stage.floor,
+      won: true,
+      reason: null,
+      enemyHpLeft: new Decimal(0),
+    });
+    if (stage.difficulty === 'normal' && stage.kind === 'boss') {
+      markCleared(next, content, dungeon.id, report);
+    }
+  };
+  /** The Challenge is lost: it says why and how much enemy HP was left; farming goes on. */
+  const loseChallenge = (stage: FightStage, reason: 'timer' | 'health'): void => {
+    report.challenges.push({
+      dungeonId: dungeon.id,
+      difficulty: stage.difficulty,
+      floor: stage.floor,
+      won: false,
+      reason,
+      enemyHpLeft: stageHpLeft(next, stage),
+    });
+    next.combat.challenge = null;
+    freshFloor(next);
+    next.combat.loadoutDamage = new Decimal(0);
+    if (floorPosition(next, dungeon).autoChallenge) {
+      next.combat.challengeWaitSeconds = content.combat.challenge.autoWaitSeconds;
+    }
+  };
+  /** One enemy (overflow off) takes `dealt`: the hit stops at the kill. True on a floor clear. */
+  const landOnEnemy = (stage: FightStage, dealt: Decimal): boolean => {
+    const hp = enemyHpLeft(next, stage);
+    if (dealt.lt(hp)) {
+      if (dealt.gt(0)) next.bossHp = hp.sub(dealt);
+      return false;
+    }
+    const index = enemyIndexOn(next, stage);
+    const kills = stage.enemies.map((_, i) => (i === index ? 1 : 0));
+    next.bossHp = null;
+    next.combat.enemyIndex = index + 1;
+    const cleared = index + 1 >= stage.enemies.length;
+    if (cleared) freshFloor(next);
+    killEnemies(next, content, stage, drops, kills, rng, report, modifiers);
+    if (cleared) onCleared(stage, 1);
+    return cleared;
+  };
+  /** The floor as one pool (overflow on) takes `dealt`. True on a floor clear. */
+  const landOnPool = (stage: FightStage, dealt: Decimal, once: boolean): boolean => {
+    const clears = damageFloor(next, content, stage, drops, dealt, once, rng, report, modifiers);
+    if (clears > 0) onCleared(stage, clears);
+    return clears > 0;
+  };
+
   for (let event = 0; event < MAX_FIGHT_EVENTS_PER_ADVANCE; event++) {
-    if (left <= EPSILON && carry.lte(0)) return 0;
+    if (left <= EPSILON) return 0;
     // A rare drop changed the modifiers (its cosmetic): hand the rest of the span back.
-    if ((report.drops[rareItem] ?? 0) > raresAtStart && left > EPSILON && carry.lte(0)) return left;
+    if ((report.drops[rareItem] ?? 0) > raresAtStart) return left;
+    // A Challenge left behind (another dungeon or difficulty) is over.
+    if (next.combat.challenge && !runningChallenge(next, content)) next.combat.challenge = null;
     const position = floorPosition(next, dungeon);
-    const stage = stageAt(position.difficulty, position.floor);
-    const pushing = !options.noPush && position.mode === 'push' && hasDeeperFloor(position);
+    // Auto-challenge: the next Challenge starts by itself once the wait is over.
+    if (
+      !next.combat.challenge &&
+      position.autoChallenge &&
+      position.challengeFloor !== null &&
+      next.combat.challengeWaitSeconds <= 0
+    ) {
+      beginChallenge(next, dungeon.id, position.difficulty);
+      pendingDone = null;
+    }
+    const run = runningChallenge(next, content);
+    const stage = stageAt(position.difficulty, run ? run.floor : position.floor);
+    const timerLeft = run ? challengeSeconds(content, stage.kind) - run.elapsedSeconds : Infinity;
+    if (run && timerLeft <= EPSILON) {
+      loseChallenge(stage, 'timer');
+      pendingDone = null;
+      continue;
+    }
+    const waitLeft =
+      !run && position.autoChallenge && position.challengeFloor !== null
+        ? next.combat.challengeWaitSeconds
+        : Infinity;
+    const horizon = Math.min(left, timerLeft, waitLeft);
     // The stage's star levels add their damage there; overflow decides whether a kill's leftover
     // damage carries on (DESIGN.md §6 Stage stars, Overflow).
     const dps = baseDps.mul(
       stageDamageFactor(next, content, dungeon, stage.difficulty, stage.floor, modifiers),
     );
     const overflow = overflowActive(next, content, dungeon, stage.difficulty, stage.floor);
-    const land = (dealt: Decimal, hits?: number): void => {
-      const hit = damageFloor(next, content, stage, drops, dealt, pushing, overflow, rng, report, {
-        modifiers,
-        hits,
-      });
-      carry = new Decimal(0);
-      if (hit.cleared && pushing) {
-        carry = hit.overflow;
-        ensureTier(next, dungeon).floor = Math.min(stage.floors, stage.floor + 1);
-      }
-    };
-    if (carry.gt(0)) {
-      land(carry);
-      continue;
-    }
     const interval = stage.intervalSeconds;
     const normal = stage.attack;
     const attacked = max.gt(0) && normal.gt(0);
-    const done = Math.max(settled, bossAttacksBy(clock, interval));
-    const last = bossAttacksBy(clock + left, interval);
+    const done = pendingDone ?? Math.max(settled, bossAttacksBy(clock, interval));
+    pendingDone = null;
+    const last = bossAttacksBy(clock + horizon, interval);
     const pool = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
     const lethal = attacked ? lethalBossAttack(pool, normal, done, pattern) : Infinity;
     const falls = lethal <= last;
-    const untilDown = falls ? Math.min(left, Math.max(0, lethal * interval - clock)) : left;
+    const untilDown = falls ? Math.min(horizon, Math.max(0, lethal * interval - clock)) : horizon;
 
     // Farming in bulk: nothing can change for the rest of the span but the kills, so it is
     // resolved in one go, up to the kill that gives the stage its next star level. Either nothing
     // hits back (no health to lose, or a floor that deals no damage) and the kills follow from the
-    // damage alone (every hit clears, or overflow carries the leftover on), or every hit clears
-    // and the attacks between two hits cannot empty a full pool.
-    const everyHitClears = hitDamage(dps, stats).gte(stage.hp);
-    let bulk = !pushing && (attacked ? everyHitClears : overflow || everyHitClears);
-    if (bulk && attacked) {
-      const perHit = Math.ceil(stats.interval / interval) + 1;
+    // damage alone, or every hit kills and the attacks between two floor clears cannot empty a
+    // full pool. With overflow off that is every hit killing the floor's strongest enemy (one
+    // kill a hit); with it on, every hit clearing the floor, or the damage alone without attacks.
+    const hit = hitDamage(dps, stats);
+    const size = stage.enemies.length;
+    const strongest = stage.enemies.reduce((m, e) => Decimal.max(m, e.hp), new Decimal(0));
+    const holds = (hitsPerClear: number): boolean => {
+      if (!attacked) return true;
+      const perHit = Math.ceil((hitsPerClear * stats.interval) / interval) + 1;
       const worst = normal.mul(
         perHit * pattern.lightMultiplier +
           Math.ceil(perHit / pattern.attacksPerCycle) * pattern.slamMultiplier,
       );
-      bulk = next.combat.loadoutDamage.add(worst).lt(max);
-    }
+      return next.combat.loadoutDamage.add(worst).lt(max);
+    };
+    const bulk =
+      !run &&
+      (overflow ? !attacked || (hit.gte(stage.hp) && holds(1)) : hit.gte(strongest) && holds(size));
     if (bulk) {
-      let span = left;
+      let span = horizon;
       const need = killsToNextStar(next, content, stage);
       if (need !== null) {
         // With overflow off each hit is one kill; with it on the kills follow the damage.
@@ -1254,84 +1548,116 @@ function fightDungeon(
               stats,
               dps,
               stageHpLeft(next, stage).add(stage.hp.mul(need - 1)),
-              left,
+              horizon,
             )
           : Math.max(DUE_HIT_SECONDS, need * stats.interval - next.bursts.fighting.timer);
-        if (at !== null && at < left) span = at;
+        if (at !== null && at < span) span = at;
       }
       const end = bossAttacksBy(clock + span, interval);
-      const run = fightFor(span, dps, stage);
-      land(run.dealt, run.hits);
+      const fought = fightFor(span, dps, stage);
+      let clears = 0;
+      /** Hits from the start of the span to the last floor clear. */
+      let toLastClear = 0;
+      if (overflow) {
+        clears = damageFloor(
+          next,
+          content,
+          stage,
+          drops,
+          fought.dealt,
+          false,
+          rng,
+          report,
+          modifiers,
+        );
+        toLastClear = clears > 0 ? fought.hits : 0;
+      } else if (fought.hits > 0) {
+        // One kill a hit, in the wave's order, round and round the floor.
+        const from = enemyIndexOn(next, stage);
+        const to = from + fought.hits;
+        const upTo = (x: number, j: number): number =>
+          Math.max(0, Math.floor((x - j + size - 1) / size));
+        const kills = stage.enemies.map((_, j) => upTo(to, j) - upTo(from, j));
+        clears = Math.floor(to / size);
+        toLastClear = clears * size - from;
+        next.combat.enemyIndex = to % size;
+        next.bossHp = null;
+        killEnemies(next, content, stage, drops, kills, rng, report, modifiers);
+      }
+      if (clears > 0) onCleared(stage, clears);
       if (attacked) {
         recordBossAttacks(report, dungeon.id, done, end, normal, interval, pattern, false);
-        // Each hit cleared the floor and refilled the pool: only the attacks since the last hit
-        // are still on it.
+        // Each clear refilled the pool: only the attacks since the last one are still on it.
         const since =
-          run.hits > 0
-            ? Math.max(done, bossAttacksBy(clock + run.hits * stats.interval - run.timer, interval))
+          clears > 0
+            ? Math.max(
+                done,
+                bossAttacksBy(clock + toLastClear * stats.interval - fought.timer, interval),
+              )
             : done;
         const taken = bossDamageBetween(since, end, normal, pattern);
-        next.combat.loadoutDamage = run.hits > 0 ? taken : next.combat.loadoutDamage.add(taken);
+        next.combat.loadoutDamage = clears > 0 ? taken : next.combat.loadoutDamage.add(taken);
       }
-      if (span >= left) return 0;
       settled = Math.max(done, end);
-      left -= span;
-      clock += span;
+      pass(span);
       continue;
     }
 
-    // The next floor clear, when it comes before the pool runs dry.
-    const toClear = secondsToDeal(
-      next.bursts.fighting,
-      stats,
-      dps,
-      stageHpLeft(next, stage),
-      untilDown,
-    );
-    if (toClear !== null) {
-      const run = fightFor(toClear, dps, stage);
-      // A hit that lands with the clear does not empty the pool: the floor is already down.
-      const landed = Math.min(bossAttacksBy(clock + toClear, interval), lethal - 1);
+    // The next kill, when it comes before the health runs out (or the timer, or the wait).
+    const target = overflow ? stageHpLeft(next, stage) : enemyHpLeft(next, stage);
+    const toKill = secondsToDeal(next.bursts.fighting, stats, dps, target, untilDown);
+    if (toKill !== null) {
+      const fought = fightFor(toKill, dps, stage);
+      const at = bossAttacksBy(clock + toKill, interval);
+      // An attack that lands with the kill does not empty the health first.
+      const landed = Math.min(at, lethal - 1);
       if (attacked) {
         recordBossAttacks(report, dungeon.id, done, landed, normal, interval, pattern, false);
         next.combat.loadoutDamage = next.combat.loadoutDamage.add(
           bossDamageBetween(done, landed, normal, pattern),
         );
       }
-      settled = Math.max(landed, bossAttacksBy(clock + toClear, interval));
-      left -= toClear;
-      clock += toClear;
-      land(run.dealt);
+      pass(toKill);
+      const cleared = overflow
+        ? landOnPool(stage, fought.dealt, !!run)
+        : landOnEnemy(stage, fought.dealt);
+      // A clear refills the health, so the attack that came with it is spent; after a kill that
+      // leaves the floor standing it still lands.
+      settled = cleared ? Math.max(landed, at) : landed;
+      if (!cleared && landed < at) pendingDone = landed;
       continue;
     }
+    // No kill before the horizon or the knockout: the damage stays on the enemy.
+    const fought = fightFor(untilDown, dps, stage);
+    if (overflow) landOnPool(stage, fought.dealt, !!run);
+    else landOnEnemy(stage, fought.dealt);
+    pass(untilDown);
     if (!falls) {
-      // The pool holds through the attacks of this span, and the floor through our hits.
-      land(fightFor(left, dps, stage).dealt);
       if (attacked) {
         next.combat.loadoutDamage = next.combat.loadoutDamage.add(
           bossDamageBetween(done, last, normal, pattern),
         );
         recordBossAttacks(report, dungeon.id, done, last, normal, interval, pattern, false);
       }
-      return 0;
+      settled = Math.max(done, last);
+      continue;
     }
-    // The pool runs dry on the hit that lands at `lethal`: fight until then.
-    land(fightFor(untilDown, dps, stage).dealt);
+    // The health runs dry on the attack that lands at `lethal`.
     recordBossAttacks(report, dungeon.id, done, lethal, normal, interval, pattern, true);
-    left -= untilDown;
-    clock += untilDown;
-    // Knocked out: the floor heals, the loadout drops a floor, switches to farm and sits out;
-    // hits during it do not land (DESIGN.md §6 Dungeon floors).
-    next.bossHp = null;
-    carry = new Decimal(0);
-    const tier = ensureTier(next, dungeon);
-    tier.floor = Math.max(1, floorPosition(next, dungeon).floor - 1);
-    ensureProgress(next, dungeon.id).mode = 'farm';
+    settled = lethal;
+    if (run) {
+      // A Challenge is lost; farming goes on at full health (DESIGN.md §6 Farming and Challenge).
+      loseChallenge(stage, 'health');
+      continue;
+    }
+    // Knocked out while farming: the floor heals, the farming drops a floor and the loadout sits
+    // out; hits during it do not land (DESIGN.md §6).
+    freshFloor(next);
+    ensureTier(next, dungeon).floor = Math.max(1, position.floor - 1);
     report.knockouts++;
     knockouts++;
     const wait = Math.min(left, ko);
-    left -= wait;
-    clock += wait;
+    pass(wait);
     settled = Math.max(lethal, bossAttacksBy(clock, interval));
     if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
       next.combat.knockoutSeconds = ko - wait;
@@ -1383,12 +1709,12 @@ function killsToNextStar(state: GameState, content: Content, stage: FightStage):
 }
 
 /**
- * Lands `dealt` damage on the floor being fought: the enemies it kills drop their loot, and a
- * cleared floor refills the loadout's health, counts as the best floor and, on the Normal last
- * floor, clears the dungeon. With `overflow` off (DESIGN.md §6 Overflow) a clear wastes the damage
- * past it: the floor is cleared once, or once per hit when `hits` every one of which clears it
- * were landed in bulk. With it on, while `pushing` a cleared floor is left at once and the damage
- * left over is returned; otherwise the floor starts again as often as the damage clears it.
+ * Lands `dealt` damage on the floor being fought as one pool, as it is where the overflow switch
+ * is on (DESIGN.md §6 Overflow): the enemies it kills drop their loot and the leftover of a kill
+ * carries into the next enemy. Returns how often the floor was cleared. With `once` (a Challenge)
+ * the first clear ends the fight and the damage past it is lost; farming, the floor starts again
+ * as often as the damage clears it and what is left stays on the fresh floor. The caller handles
+ * what a clear does (health, Victory).
  */
 function damageFloor(
   state: GameState,
@@ -1396,14 +1722,12 @@ function damageFloor(
   stage: FightStage,
   drops: DropTable,
   dealt: Decimal,
-  pushing: boolean,
-  overflowOn: boolean,
+  once: boolean,
   rng: Rng,
   report: TickReport,
-  { modifiers, hits }: { modifiers: readonly Modifier[]; hits?: number | undefined },
-): { cleared: boolean; overflow: Decimal } {
-  const none = { cleared: false, overflow: new Decimal(0) };
-  if (dealt.lte(0)) return none;
+  modifiers: readonly Modifier[],
+): number {
+  if (dealt.lte(0)) return 0;
   const total = stage.hp;
   const hp = stageHpLeft(state, stage);
   const before = total.sub(hp);
@@ -1413,27 +1737,20 @@ function damageFloor(
     stage.enemies.forEach((e, i) => {
       if (e.upto.gt(before) && e.upto.lte(after)) kills[i] = 1;
     });
-    state.bossHp = hp.sub(dealt);
+    setStageHpLeft(state, stage, hp.sub(dealt));
     killEnemies(state, content, stage, drops, kills, rng, report, modifiers);
-    return none;
+    return 0;
   }
   // The floor is cleared at least once: every enemy still standing dies.
   stage.enemies.forEach((e, i) => {
     if (e.upto.gt(before)) kills[i] = 1;
   });
-  let overflow = dealt.sub(hp);
   let clears = 1;
-  if (!overflowOn) {
-    // The damage past the kill is lost (DESIGN.md §6 Overflow); farming in bulk, each hit was one.
-    const extra = pushing ? 0 : Math.min(Math.max(0, (hits ?? 1) - 1), MAX_KILLS_PER_ADVANCE - 1);
-    clears += extra;
-    stage.enemies.forEach((_, i) => (kills[i]! += extra));
-    state.bossHp = null;
-    overflow = new Decimal(0);
-  } else if (pushing) {
-    state.bossHp = null;
+  if (once) {
+    freshFloor(state);
   } else {
     // Farming: damage left over carries into the floor as it starts again.
+    let overflow = dealt.sub(hp);
     const extra = Decimal.min(overflow.div(total).floor(), MAX_KILLS_PER_ADVANCE - 1).toNumber();
     clears += extra;
     overflow = clears >= MAX_KILLS_PER_ADVANCE ? new Decimal(0) : overflow.sub(total.mul(extra));
@@ -1442,22 +1759,10 @@ function damageFloor(
       // What is left is below the floor's HP, so the last enemy always stands.
       if (i < stage.enemies.length - 1 && e.upto.lte(overflow)) kills[i]! += 1;
     });
-    // The floor guards against rounding pushing HP to <= 0.
-    state.bossHp = Decimal.max(total.sub(overflow), total.mul(1e-9));
-    overflow = new Decimal(0);
+    setStageHpLeft(state, stage, total.sub(overflow));
   }
   killEnemies(state, content, stage, drops, kills, rng, report, modifiers);
-  // The loadout catches its breath between floors: its health refills (DESIGN.md §6).
-  state.combat.loadoutDamage = new Decimal(0);
-  const tier = ensureTier(state, stage.dungeon);
-  tier.best = Math.max(tier.best, stage.floor);
-  report.floorsCleared += clears;
-  // Clearing (DESIGN.md §6): the Normal last-floor boss died. The last floor of a tier also
-  // opens the next one, which is read from the best floor (floors.ts `isDifficultyUnlocked`).
-  if (stage.difficulty === 'normal' && stage.kind === 'boss') {
-    markCleared(state, content, stage.dungeon.id, report);
-  }
-  return { cleared: true, overflow };
+  return clears;
 }
 
 /**

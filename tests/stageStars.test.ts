@@ -14,7 +14,6 @@ import {
   overflowStage,
   readSave,
   secondsPerKill,
-  setFloorMode,
   setActiveDungeon,
   setOverflow,
   simulateOffline,
@@ -39,6 +38,7 @@ import {
   neutralStars,
   withBossAttack,
   withDps,
+  withAutoChallenge,
   withOverflow,
 } from './helpers';
 
@@ -66,9 +66,7 @@ function at(content: Content, floor: number, difficulty: Difficulty = 'normal'):
   if (!active.ok) throw new Error(active.reason);
   const placed = devSetFloor(active.state, content, 'mossy_cellar', floor, difficulty);
   if (!placed.ok) throw new Error(placed.reason);
-  const farming = setFloorMode(placed.state, content, 'mossy_cellar', 'farm');
-  if (!farming.ok) throw new Error(farming.reason);
-  return farming.state;
+  return placed.state;
 }
 const run = (state: GameState, content: Content, seconds: number, rng = constantRng(0.5)) =>
   advance(state, content, seconds * 1000, rng);
@@ -116,10 +114,12 @@ describe('kills and star levels', () => {
     const active = setActiveDungeon(freshState(), content, 'mossy_cellar');
     if (!active.ok) throw new Error(active.reason);
     active.state.clearedDungeons = ['mossy_cellar'];
-    const inCrypt = setActiveDungeon(active.state, content, 'ember_crypt');
+    const inCrypt = setActiveDungeon(withAutoChallenge(active.state, true), content, 'ember_crypt');
     if (!inCrypt.ok) throw new Error(inCrypt.reason);
-    // Pushing from floor 1 at one floor a hit: floor 10 (a mini-boss) falls on the 10th hit.
-    const { state } = run(inCrypt.state, content, 12);
+    // Challenging from floor 1 at one kill a hit: floor 10 (a mini-boss) falls after the waves of
+    // floors 1 to 9 (3 to 5 enemies each), and the 11th floor's wave does not count.
+    const { state } = run(inCrypt.state, content, 50);
+    expect(floorPosition(state, crypt).best).toBeGreaterThan(10);
     expect(state.combat.stageKills).toEqual({ [stageKey('ember_crypt', 'normal', 10)]: 1 });
   });
 
@@ -200,10 +200,9 @@ describe('chests', () => {
     const first = run(start, content, 1);
     expect(first.state.combat.stageKills[BOSS]).toBe(1);
     expect(first.state.combat.stageChests[BOSS]).toBe(1);
-    // The dungeon was cleared too: the first-clear purse is paid with the same kill.
-    const purse = cellar.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
+    // Farming a beaten floor pays no first-clear purse: that comes with the Challenge.
     expect(crystals(first.state) - crystals(start)).toBeCloseTo(
-      wage.add(wood.amount).add(purse).toNumber(),
+      wage.add(wood.amount).toNumber(),
       6,
     );
     const tenth = run(first.state, content, 9);
@@ -359,15 +358,21 @@ describe('overflow switch', () => {
     expect(bossStatus(off.state, content)!.overflow).toBe(false);
   });
 
-  it('loses the leftover damage while off and carries it while on, pushing', () => {
+  it('stops a hit at the kill while off and carries it through the wave while on, in a Challenge', () => {
     const content = harmless(withDps(1e12, neutral));
-    const start = setActiveDungeon(freshState(), content, 'mossy_cellar');
+    const start = setActiveDungeon(withAutoChallenge(freshState(), true), content, 'mossy_cellar');
     if (!start.ok) throw new Error(start.reason);
-    // One hit: one floor while off, every floor while on.
-    expect(floorPosition(run(start.state, content, 1).state, cellar).floor).toBe(2);
-    expect(
-      floorPosition(run(withOverflow(start.state, content), content, 1).state, cellar).floor,
-    ).toBe(10);
+    // One hit: one enemy of floor 1's wave while off, the whole wave (and the Challenge) while on.
+    const off = run(start.state, content, 1);
+    expect(off.report.enemyKills).toBe(1);
+    expect(floorPosition(off.state, cellar).best).toBe(0);
+    expect(off.state.combat.enemyIndex).toBe(1);
+    const on = run(withOverflow(start.state, content), content, 1);
+    expect(on.report.enemyKills).toBe(
+      fightStage(on.state, content, 'mossy_cellar', [], 1)!.enemies.length,
+    );
+    expect(floorPosition(on.state, cellar).best).toBe(1);
+    expect(on.report.challenges.map((c) => c.won)).toEqual([true]);
   });
 });
 

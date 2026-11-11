@@ -16,8 +16,11 @@ import {
   loadoutHealth,
   secondsPerKill,
   pickDungeon,
+  setAutoChallenge,
   setDifficulty,
-  setFloorMode,
+  startFloorChallenge,
+  nextFloorChallenge,
+  floorChallengeView,
   trialRewards,
   bossMastery,
   overflowStage,
@@ -45,6 +48,7 @@ import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
 import type { CardsModel } from './cardsModel';
 import {
   DRAWER_TABS,
+  challengeButton,
   drawerStatus,
   floorParts,
   overflowSwitch,
@@ -130,6 +134,13 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
     coins: ctx.coins,
     active: ctx.visible,
     sound: ctx.sound,
+    // the arena's Challenge button (DESIGN.md §6 Farming and Challenge)
+    challenge: () => {
+      const result = startFloorChallenge(ctx.state(), content);
+      if (!result.ok) return;
+      ctx.apply(result.state);
+      render();
+    },
   });
 
   // ---- drawer: a handle bar along the bottom, the panes slide up above it ----
@@ -338,34 +349,48 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
 
   /**
    * The interim floor controls of the dungeon being fought (UI_RULES §2, until the floors UI is
-   * designed): the floor and difficulty as plain text, the Push / Farm toggle and the difficulty
-   * selector for the unlocked tiers.
+   * designed): the floor and difficulty as plain text, the Challenge button and the auto-challenge
+   * switch (DESIGN.md §6 Farming and Challenge, Auto-challenge), a line on what is happening (the
+   * farmed floor, the Challenge's time left or the wait after a loss) and the difficulty selector
+   * for the unlocked tiers.
    */
   function floorControls(d: Dungeon): HTMLElement {
     const box = h('section', 'dp-fl');
     box.setAttribute('aria-label', COPY.dungeons.floorsTitle);
     const where = h('p', 'dp-fl__where bi-num');
     where.dataset.key = 'floor-readout';
-    const hint = h('p', 'dp-fl__hint');
+    const hint = h('p', 'dp-fl__hint bi-num');
+    hint.dataset.key = 'challenge-line';
     const modes = h('div', 'dp-fl__row');
     modes.setAttribute('role', 'group');
-    modes.setAttribute('aria-label', COPY.dungeons.modeLabel);
-    const modeButton = (mode: 'push' | 'farm'): HTMLButtonElement => {
-      const b = h('button', 'px-btn dp-fl__opt', COPY.dungeons[mode]) as HTMLButtonElement;
-      b.type = 'button';
-      b.dataset.key = `mode-${mode}`;
-      b.addEventListener('click', () => {
-        const result = setFloorMode(ctx.state(), content, d.id, mode);
-        if (!result.ok) return;
-        ctx.apply(result.state);
-        render();
-        floorsCol.querySelector<HTMLElement>(`[data-key="mode-${mode}"]`)?.focus();
-      });
-      return b;
-    };
-    const push = modeButton('push');
-    const farm = modeButton('farm');
-    modes.append(push, farm);
+    modes.setAttribute('aria-label', COPY.dungeons.challengeLabel);
+    const challengeBtn = h('button', 'px-btn px-btn--gold dp-fl__opt', '') as HTMLButtonElement;
+    challengeBtn.type = 'button';
+    challengeBtn.dataset.key = 'challenge';
+    attachTooltip(challengeBtn, () => {
+      const next = nextFloorChallenge(ctx.state(), content, d.id);
+      return next ? COPY.dungeons.challengeTip(next.durationSeconds) : COPY.dungeons.lastFloorTip;
+    });
+    challengeBtn.addEventListener('click', () => {
+      const result = startFloorChallenge(ctx.state(), content);
+      if (!result.ok) return;
+      ctx.apply(result.state);
+      render();
+      floorsCol.querySelector<HTMLElement>('[data-key="challenge"]')?.focus();
+    });
+    const autoBtn = h('button', 'px-btn dp-fl__opt', COPY.dungeons.autoOff) as HTMLButtonElement;
+    autoBtn.type = 'button';
+    autoBtn.dataset.key = 'auto-challenge';
+    attachTooltip(autoBtn, () => COPY.dungeons.autoTip);
+    autoBtn.addEventListener('click', () => {
+      const on = floorPosition(ctx.state(), d).autoChallenge;
+      const result = setAutoChallenge(ctx.state(), content, d.id, !on);
+      if (!result.ok) return;
+      ctx.apply(result.state);
+      render();
+      floorsCol.querySelector<HTMLElement>('[data-key="auto-challenge"]')?.focus();
+    });
+    modes.append(challengeBtn, autoBtn);
     const tiers = h('div', 'dp-fl__row');
     tiers.setAttribute('role', 'group');
     tiers.setAttribute('aria-label', COPY.dungeons.difficultyLabel);
@@ -468,17 +493,48 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
         ...floorParts(status).map(floorPartText),
       ].join(' · ');
       if (where.textContent !== text) where.textContent = text;
-      const pushing = status.mode === 'push';
-      if (push.getAttribute('aria-pressed') !== String(pushing)) {
-        push.setAttribute('aria-pressed', String(pushing));
-        farm.setAttribute('aria-pressed', String(!pushing));
+      // The Challenge button and the auto-challenge switch (DESIGN.md §6 Farming and Challenge).
+      const next = nextFloorChallenge(s, content, d.id);
+      const running = floorChallengeView(s, content);
+      const button = challengeButton({
+        running: running !== null,
+        hasNext: next !== null,
+        knockoutSeconds: s.combat.knockoutSeconds,
+      });
+      const floorName = (floor: number): string =>
+        status.difficulty === 'endless'
+          ? COPY.dungeons.depthOf(floor)
+          : COPY.dungeons.floorOf(floor, status.floors);
+      const label =
+        button === 'running'
+          ? COPY.dungeons.challengeRunning
+          : next === null
+            ? COPY.dungeons.lastFloorTip
+            : status.difficulty === 'endless'
+              ? COPY.dungeons.challengeDepth(next.floor)
+              : COPY.dungeons.challenge(next.floor);
+      if (challengeBtn.textContent !== label) challengeBtn.textContent = label;
+      const disabled = button !== 'ready';
+      if (challengeBtn.disabled !== disabled) challengeBtn.disabled = disabled;
+      const auto = status.autoChallenge;
+      const autoLabel = auto ? COPY.dungeons.autoOn : COPY.dungeons.autoOff;
+      if (autoBtn.textContent !== autoLabel) autoBtn.textContent = autoLabel;
+      if (autoBtn.getAttribute('aria-pressed') !== String(auto)) {
+        autoBtn.setAttribute('aria-pressed', String(auto));
       }
-      const tip =
-        status.floor >= status.floors
-          ? COPY.dungeons.lastFloorTip
-          : pushing
-            ? COPY.dungeons.pushTip
-            : COPY.dungeons.farmTip;
+      const tip = running
+        ? COPY.dungeons.challengeLeft(
+            floorName(running.floor),
+            formatDuration(Math.ceil(running.secondsLeft) * 1000),
+          )
+        : [
+            COPY.dungeons.farming(floorName(status.farmFloor)),
+            next && next.auto && next.waitSeconds > 0
+              ? COPY.dungeons.autoWait(formatDuration(Math.ceil(next.waitSeconds) * 1000))
+              : next
+                ? COPY.dungeons.farmTip
+                : COPY.dungeons.lastFloorTip,
+          ].join(' · ');
       if (hint.textContent !== tip) hint.textContent = tip;
       for (const { difficulty, b } of tierButtons) {
         const open = isDifficultyUnlocked(s, d, difficulty);

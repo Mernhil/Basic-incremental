@@ -176,7 +176,6 @@ describe('sim player: where to fight', () => {
     const t = Object.fromEntries(tiers.map((x) => [x, { floor: d.floors, best: d.floors }]));
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: t,
     };
