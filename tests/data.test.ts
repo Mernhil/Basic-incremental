@@ -521,7 +521,13 @@ describe('production data', () => {
   });
 
   it('has no plots or expansions: the harvest rules and the worker slots and power', () => {
-    expect(Object.keys(production).sort()).toEqual(['forge', 'harvest', 'tools', 'workers']);
+    expect(Object.keys(production).sort()).toEqual([
+      'forge',
+      'harvest',
+      'lucky',
+      'tools',
+      'workers',
+    ]);
   });
 
   it('keeps a worker ability on its own place: data never names a place in it', () => {

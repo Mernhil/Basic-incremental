@@ -524,3 +524,33 @@ html .pp-drawer .pp-drawer__handle {
 .pp-forge__bar {
   height: calc(var(--fs-sm) * 4);
 }
+
+/* a lucky strike on show: a golden tree or a rich vein (DESIGN.md §4) */
+.pp-r__lucky {
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bi-frame-ink);
+  background: var(--pp-job);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  animation: pp-lucky 0.9s steps(2, end) infinite alternate;
+}
+@keyframes pp-lucky {
+  to {
+    filter: brightness(1.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-r__lucky {
+    animation: none;
+  }
+}
+.pp-forge {
+  grid-template-areas: none;
+  grid-template-rows: none;
+  align-content: start;
+  align-self: start;
+}
+.pp-forge > * {
+  grid-area: auto;
+}

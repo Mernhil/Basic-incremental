@@ -166,5 +166,19 @@
         "work": "3600"
       }
     ]
+  },
+  "lucky": {
+    "logging": {
+      "name": "Golden tree",
+      "everySeconds": 180,
+      "windowSeconds": 12,
+      "payoutSeconds": 30
+    },
+    "mining": {
+      "name": "Rich vein",
+      "everySeconds": 180,
+      "windowSeconds": 12,
+      "payoutSeconds": 30
+    }
   }
 }

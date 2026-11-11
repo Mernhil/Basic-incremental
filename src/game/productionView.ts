@@ -1,5 +1,6 @@
 import type { Card, Content, HarvestPattern, ProductionJob, Rarity, Rank } from '../data';
 import { cardRank } from './cards';
+import { luckyWindow, type LuckyWindow } from './lucky';
 import { depthInfo, type DepthInfo } from './depth';
 import { harvestBurstStats, harvestGauge, strikePeriodSeconds, workerPattern } from './harvest';
 import { collectModifiers, type Modifier } from './modifiers';
@@ -67,6 +68,8 @@ export interface StageTarget {
   depth: DepthInfo;
   /** Hardness broken per second by its workers (0 with none). */
   dig: Decimal;
+  /** The lucky strike showing on it now (DESIGN.md §4 Lucky strikes), or null. */
+  lucky: LuckyWindow | null;
   /** Harvest crit chance (0..1) and multiplier at this place. */
   crit: { chance: number; damage: Decimal };
 }
@@ -133,6 +136,7 @@ function targetView(
         : { progress: 0, inSeconds: 0 },
     depth: depthInfo(state, content, site.producer.id)!,
     dig: site.dig,
+    lucky: luckyWindow(content, state, site.producer.id, state.stats.playTimeMs),
     crit: { chance: site.crit.chance, damage: site.crit.damage },
   };
 }

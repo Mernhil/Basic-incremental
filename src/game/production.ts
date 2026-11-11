@@ -1,4 +1,5 @@
 import type { Content, CostCurve, Mine, ProductionJob, Tree } from '../data';
+import { luckyFactor } from './lucky';
 import { depthYield, digPerSecond } from './depth';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
@@ -365,6 +366,8 @@ export interface WorkSite {
   /** Output per second without crits: the level rate × the workers' power × its layer's yield. */
   rate: Decimal;
   crit: HarvestCrit;
+  /** The expected-value factor of its lucky strikes, 1 + payout / interval (1 with no worker). */
+  lucky: Decimal;
   /** Hardness of its current layer or age broken per second by the workers (0 with none). */
   dig: Decimal;
   /** Strike and gauge speed, 1 = the card's own rhythm (1 with no worker). */
@@ -399,13 +402,14 @@ export function workSites(
       dig: digPerSecond(state, content, producer.id, ids.length > 0 ? power : 0, speed),
       crit: ids.length > 0 ? harvestCrit(content, job, modifiers, producer) : NO_HARVEST_CRIT,
       speed,
+      lucky: ids.length > 0 ? luckyFactor(content, job) : new Decimal(1),
     };
   });
 }
 
 /** Output per second of one site, crits included (the expected value). */
 export function siteOutput(site: WorkSite): Decimal {
-  return site.rate.mul(harvestCritFactor(site.crit));
+  return site.rate.mul(harvestCritFactor(site.crit)).mul(site.lucky);
 }
 
 /** Resource id -> gained per second from one job's unlocked kinds, once each (crits included). */

@@ -38,6 +38,14 @@ function pinProductionRates(bundled: Content): Content {
   const mines = pin(bundled.mines);
   return {
     ...bundled,
+    // lucky strikes off: rule tests count exact output (lucky tests set their own)
+    production: {
+      ...bundled.production,
+      lucky: {
+        logging: { ...bundled.production.lucky.logging, payoutSeconds: 0 },
+        mining: { ...bundled.production.lucky.mining, payoutSeconds: 0 },
+      },
+    },
     trees,
     treeById: new Map(trees.map((t) => [t.id, t])),
     mines,

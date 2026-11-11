@@ -107,6 +107,7 @@ interface RowRef {
   next: HTMLElement;
   nextText: HTMLElement;
   nextSub: HTMLElement;
+  lucky: HTMLElement;
   depthName: HTMLElement;
   depthFill: HTMLElement;
   depthText: HTMLElement;
@@ -315,6 +316,8 @@ export function createProductionPage(
     const track = h('div', 'pp-seg');
     track.setAttribute('aria-hidden', 'true');
     const x2 = h('span', 'pp-r__x2 bi-num');
+    const lucky = h('span', 'pp-r__lucky bi-num');
+    lucky.hidden = true;
     const depthLine = h('div', 'pp-r__depth');
     const depthName = h('span', 'pp-r__depthName bi-num');
     const depthBar = h('div', 'pp-dep');
@@ -327,7 +330,7 @@ export function createProductionPage(
       mid.append(h('span', 'pp-r__note', row.note));
     } else {
       const line = h('div', 'pp-r__line');
-      line.append(value, unit);
+      line.append(value, unit, lucky);
       mid.append(line, track, x2, depthLine);
     }
     // next buy
@@ -351,6 +354,7 @@ export function createProductionPage(
       next,
       nextText,
       nextSub,
+      lucky,
       depthName,
       depthFill,
       depthText,
@@ -526,6 +530,10 @@ export function createProductionPage(
         ref.worker.update(target, picking === row.id, canAdd);
         if (target) {
           ref.workerKey = workerKey(target);
+          const lucky = target.lucky;
+          ref.lucky.hidden = !lucky;
+          if (lucky)
+            set(ref.lucky, COPY.production.lucky(lucky.name, Math.ceil(lucky.secondsLeft)));
           const d = target.depth;
           const t = COPY.production.depth;
           set(

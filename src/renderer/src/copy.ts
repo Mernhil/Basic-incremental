@@ -167,6 +167,8 @@ export const COPY = {
     settings: { label: 'Settings', frame: '', empty: '' },
   },
   production: {
+    /** A lucky strike showing (DESIGN.md §4 Lucky strikes). */
+    lucky: (name: string, seconds: number) => `${name}! ${seconds} s`,
     /** Depth and growth (DESIGN.md §4): the age of a tree, the layer of a mine. */
     depth: {
       logging: (n: number, name: string) => `Age ${n} · ${name}`,

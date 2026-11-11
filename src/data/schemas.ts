@@ -216,7 +216,27 @@ export const forgeRecipeSchema = z.strictObject({
 });
 export type ForgeRecipe = z.output<typeof forgeRecipeSchema>;
 
+/**
+ * The lucky strike of a job (DESIGN.md §4 Lucky strikes): a worked place gets one every
+ * `everySeconds` on average, visible for `windowSeconds`, paying `payoutSeconds` of its output. The
+ * economy uses the average, 1 + payout / interval; 0 payout switches it off.
+ */
+export const luckySchema = z
+  .strictObject({
+    /** What appears: "Golden tree", "Rich vein". */
+    name,
+    everySeconds: z.number().positive(),
+    windowSeconds: z.number().positive(),
+    payoutSeconds: z.number().min(0),
+  })
+  .refine((l) => l.windowSeconds < l.everySeconds, {
+    message: 'the window must be shorter than the interval',
+  });
+export type LuckyConfig = z.output<typeof luckySchema>;
+
 export const productionSchema = z.strictObject({
+  /** Lucky strikes of each job (DESIGN.md §4 Lucky strikes). */
+  lucky: z.strictObject({ logging: luckySchema, mining: luckySchema }),
   /** The forge (DESIGN.md §4 The forge): its recipes and its progress per second at power 1. */
   forge: z.strictObject({
     speed: positiveDecimal,

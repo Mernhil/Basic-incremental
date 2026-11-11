@@ -2,7 +2,7 @@ import type { Content, HarvestPattern, ProductionJob, WorkerCard } from '../data
 import { advanceGauge, type BurstStats } from './combat';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { harvestCritFactor, workSites, type WorkSite } from './production';
+import { siteOutput, workSites, type WorkSite } from './production';
 import { pushHarvest, type HarvestEvent, type TickReport } from './report';
 import type { BurstGauge, GameState } from './state';
 
@@ -147,7 +147,7 @@ export function advanceHarvestGauges(
     report.bursts[site.job] += run.bursts;
     const burstSeconds = stats.power.mul(run.bursts);
     harvested[id] = burstSeconds;
-    const amount = site.rate.mul(harvestCritFactor(site.crit)).mul(burstSeconds);
+    const amount = siteOutput(site).mul(burstSeconds);
     const resource = site.producer.resource;
     next.resources[resource] = (next.resources[resource] ?? new Decimal(0)).add(amount);
     pushHarvest(report.harvests, {

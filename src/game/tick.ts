@@ -3,6 +3,7 @@ import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels }
 import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { recordLuckyStrikes } from './lucky';
 import { advanceForge } from './forge';
 import { addDigging, depthDue, settleDepth } from './depth';
 import { advanceHarvestGauges, recordStrikes } from './harvest';
@@ -155,6 +156,7 @@ function advanceSpan(
   ) as Record<(typeof PRODUCTION_JOBS)[number], WorkSite[]>;
   for (const job of PRODUCTION_JOBS) {
     recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report, sites[job]);
+    recordLuckyStrikes(content, job, fromMs, fromMs + dtMs, report, sites[job]);
     for (const site of sites[job]) {
       const resource = site.producer.resource;
       const current = next.resources[resource] ?? new Decimal(0);

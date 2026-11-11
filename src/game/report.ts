@@ -52,6 +52,8 @@ export interface HarvestEvent {
   crits: number;
   /** The bonus harvest of a full harvest gauge (one event per place whose gauge fired). */
   burst: boolean;
+  /** A lucky strike (DESIGN.md §4): a golden tree or rich vein struck, its payout (show only). */
+  lucky?: boolean;
   /** The card working the place (the one that struck). */
   worker: string;
 }
@@ -67,6 +69,7 @@ export function pushHarvest(into: HarvestEvent[], event: HarvestEvent): void {
         e.job === event.job &&
         e.kind === event.kind &&
         e.burst === event.burst &&
+        !!e.lucky === !!event.lucky &&
         e.producer === event.producer,
     );
     if (same) {
