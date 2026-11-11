@@ -259,11 +259,11 @@ describe('the Wardrobe Gate (DESIGN.md §7)', () => {
     expect(content.allPortals.some((p) => p.id === 'wardrobe_gate')).toBe(true);
   });
 
-  it('costs Glamour Crystals with the same pull, pity and guarantee rules', () => {
+  it('costs Glamour Scrolls with the same pull, pity and guarantee rules', () => {
     const state = freshState();
-    state.resources['glamour_crystal'] = new Decimal(100 * CRYSTAL_UNIT);
+    state.resources['glamour_scroll'] = new Decimal(100 * CRYSTAL_UNIT);
     const info = portalInfo(state, gateOpen, 'wardrobe_gate')!;
-    expect(info.single.price.resource).toBe('glamour_crystal');
+    expect(info.single.price.resource).toBe('glamour_scroll');
     expect(info.ten.affordable).toBe(true);
     expect(info.pity.threshold).toBe(90);
     expect(info.tenPullGuarantee).toBe('rare');
@@ -271,7 +271,7 @@ describe('the Wardrobe Gate (DESIGN.md §7)', () => {
 
   it('pulls cosmetics; a duplicate becomes a copy for upgrade levels', () => {
     const state = freshState();
-    state.resources['glamour_crystal'] = new Decimal(20 * CRYSTAL_UNIT);
+    state.resources['glamour_scroll'] = new Decimal(20 * CRYSTAL_UNIT);
     const once = pull(state, gateOpen, 'wardrobe_gate', 1, constantRng(0));
     if (!once.ok) throw new Error(once.reason);
     const id = once.results[0]!.itemId;

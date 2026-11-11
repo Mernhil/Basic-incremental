@@ -71,7 +71,7 @@ function row(state: GameState, t: number): string {
     `lead=${lead} [next tier-up lacks: ${unmet || 'nothing'}]`,
     `dps=${sci(averageDps(state, content, 'mossy_cellar', modifiers))}`,
     dungeons,
-    `money=${sci(state.resources['money'] ?? 0)} crystals=${sci(state.resources['summon_crystal'] ?? 0)}/${sci(state.resources['glamour_crystal'] ?? 0)} kills=${state.stats.bossKills}`,
+    `money=${sci(state.resources['money'] ?? 0)} scrolls=${sci(state.resources['summon_scroll'] ?? 0)}/${sci(state.resources['glamour_scroll'] ?? 0)} kills=${state.stats.bossKills}`,
     `prod/s[${prod}]`,
     `lv(tree/mine)=${levels}`,
     `cards=${cards.length} best(f/l/m)=${best('fighting')}/${best('logging')}/${best('mining')}`,

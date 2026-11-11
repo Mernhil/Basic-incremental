@@ -4,9 +4,9 @@
     "name": "Card Portal",
     "kind": "cards",
     "cost": {
-      "resource": "summon_crystal",
-      "single": "300",
-      "ten": "3000"
+      "resource": "summon_scroll",
+      "single": "1",
+      "ten": "10"
     },
     "pool": [
       {
@@ -411,9 +411,9 @@
     "kind": "cosmetics",
     "enabled": true,
     "cost": {
-      "resource": "glamour_crystal",
-      "single": "300",
-      "ten": "3000"
+      "resource": "glamour_scroll",
+      "single": "1",
+      "ten": "10"
     },
     "pool": [
       {
@@ -812,9 +812,9 @@
     "kind": "skins",
     "enabled": false,
     "cost": {
-      "resource": "glamour_crystal",
-      "single": "300",
-      "ten": "3000"
+      "resource": "glamour_scroll",
+      "single": "1",
+      "ten": "10"
     },
     "pool": [
       {

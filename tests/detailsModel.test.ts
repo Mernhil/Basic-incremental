@@ -12,17 +12,17 @@ const entryOf = (id: string) =>
 describe('header and details split', () => {
   it('puts only Money and the two crystals in the header', () => {
     const header = content.resources.filter(isHeaderResource).map((r) => r.id);
-    expect(header).toEqual(['money', 'summon_crystal', 'glamour_crystal']);
+    expect(header).toEqual(['money', 'summon_scroll', 'glamour_scroll']);
     expect(content.resources.filter(isCrystal).map((r) => r.id)).toEqual([
-      'summon_crystal',
-      'glamour_crystal',
+      'summon_scroll',
+      'glamour_scroll',
     ]);
   });
 
   it('gives Money a coin and each crystal its own icon id', () => {
     const icon = (id: string) => resourceIconId(content.resourceById.get(id)!);
     expect(icon('money')).toBe('coin');
-    expect(icon('summon_crystal')).not.toBe(icon('glamour_crystal'));
+    expect(icon('summon_scroll')).not.toBe(icon('glamour_scroll'));
   });
 });
 
@@ -32,7 +32,7 @@ describe('details view', () => {
     expect(groups.map((g) => g.id)).toEqual(['tree', 'mine', 'dungeon', 'prestige']);
     const ids = groups.flatMap((g) => g.entries.map((e) => e.id));
     expect(ids).not.toContain('money');
-    expect(ids).not.toContain('summon_crystal');
+    expect(ids).not.toContain('summon_scroll');
     expect(ids).toContain('frost_sigil');
     expect(ids).toContain('starlight');
     expect(groups.find((g) => g.id === 'dungeon')!.entries.map((e) => e.id)).toEqual(

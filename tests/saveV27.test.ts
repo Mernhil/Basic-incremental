@@ -28,14 +28,12 @@ describe('v26 -> v27 (the table update)', () => {
     expect(CURRENT_SAVE_VERSION).toBe(27);
   });
 
-  it('turns the crystals held into scrolls at the pull price, rounded down, and keeps the crystals', () => {
+  it('turns the crystals held into scrolls at the pull price, rounded down, and drops the crystals', () => {
     expect(V27_CRYSTALS_PER_SCROLL).toBe(300);
     const out = step({
       resources: { summon_crystal: '1526', glamour_crystal: '299.9', money: '5' },
     }) as Out;
     expect(out.resources).toEqual({
-      summon_crystal: '1526',
-      glamour_crystal: '299.9',
       money: '5',
       summon_scroll: '5',
       glamour_scroll: '0',
@@ -121,7 +119,11 @@ describe('v26 -> v27 (the table update)', () => {
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];
     delete resources['glamour_scroll'];
-    expect(again).toEqual({ ...saved.state, bossHp: null });
+    // the crystals became scrolls: the save no longer holds them
+    const kept = { ...(saved.state['resources'] as Record<string, unknown>) };
+    delete kept['summon_crystal'];
+    delete kept['glamour_crystal'];
+    expect(again).toEqual({ ...saved.state, resources: kept, bossHp: null });
 
     // Saved again it is format 27 and loads to the same state.
     const resaved = createSaveText(state, 1);

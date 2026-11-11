@@ -14,8 +14,8 @@ export type ResourceIconId =
 /** Resources whose icon is not decided by their kind. */
 export const ICON_BY_RESOURCE: Readonly<Record<string, ResourceIconId>> = {
   money: 'coin',
-  summon_crystal: 'crystal-summon',
-  glamour_crystal: 'crystal-glamour',
+  summon_scroll: 'crystal-summon',
+  glamour_scroll: 'crystal-glamour',
 };
 
 const ICON_BY_KIND: Readonly<Record<Resource['kind'], ResourceIconId>> = {
@@ -23,7 +23,6 @@ const ICON_BY_KIND: Readonly<Record<Resource['kind'], ResourceIconId>> = {
   mine_gem: 'gem',
   material: 'material',
   currency: 'coin',
-  crystal: 'crystal-summon',
   scroll: 'crystal-summon',
   prestige: 'starlight',
 };
@@ -31,12 +30,12 @@ const ICON_BY_KIND: Readonly<Record<Resource['kind'], ResourceIconId>> = {
 export const resourceIconId = (r: Pick<Resource, 'id' | 'kind'>): ResourceIconId =>
   ICON_BY_RESOURCE[r.id] ?? ICON_BY_KIND[r.kind];
 
-/** True for the three resources the header shows: Money and the two crystals. */
+/** True for the three resources the header shows: Money and the two scrolls. */
 export const isHeaderResource = (r: Pick<Resource, 'kind'>): boolean =>
-  r.kind === 'currency' || r.kind === 'crystal';
+  r.kind === 'currency' || r.kind === 'scroll';
 
 /** True for the crystals (a bigger moment on pickup, a glow in the header). */
-export const isCrystal = (r: Pick<Resource, 'kind'> | undefined): boolean => r?.kind === 'crystal';
+export const isCrystal = (r: Pick<Resource, 'kind'> | undefined): boolean => r?.kind === 'scroll';
 
 const V = (name: string, fallback: string): string => `var(--res-${name},${fallback})`;
 

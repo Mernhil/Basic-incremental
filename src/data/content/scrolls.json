@@ -1,0 +1,10 @@
+{
+  "floorFirstWin": {
+    "wave": { "summon": "0.25", "glamour": "0.125" },
+    "miniboss": { "summon": "1", "glamour": "0.5" },
+    "boss": { "summon": "3", "glamour": "1.5" },
+    "difficulty": { "normal": 1, "hard": 2, "nightmare": 4, "endless": 2 }
+  },
+  "daily": { "summon": "5", "glamour": "2.5" },
+  "reveal": { "glowFrom": "rare", "entranceFrom": "rare" }
+}

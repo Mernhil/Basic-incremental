@@ -201,27 +201,21 @@ describe('drops', () => {
     ]);
   });
 
-  it('pays Money by the kill and both crystals as a wage, and deeper dungeons pay more', () => {
+  it('pays Money by the kill and a Money wage in the first dungeon only, scrolls as first-clear purses', () => {
     for (const d of content.dungeons) {
       expect(d.drops.currencies.map((c) => c.resource)).toEqual(['money']);
       expect(d.drops.firstClear.map((p) => p.resource)).toEqual([
-        'summon_crystal',
-        'glamour_crystal',
+        'summon_scroll',
+        'glamour_scroll',
       ]);
+      // scrolls come in lumps: nothing ticks in per second (DESIGN.md §3)
+      expect(d.drops.wages.every((w) => w.resource === 'money')).toBe(true);
     }
     const money = content.dungeons.map(
       (d) => (d.drops.currencies[0]!.min + d.drops.currencies[0]!.max) / 2,
     );
     expect(money[1]!).toBeGreaterThan(money[0]!);
     expect(money[2]!).toBeGreaterThan(money[1]!);
-    for (const id of ['summon_crystal', 'glamour_crystal']) {
-      const wage = content.dungeons.map((d) =>
-        d.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber(),
-      );
-      expect(wage[1]!).toBeGreaterThan(wage[0]!);
-      expect(wage[2]!).toBeGreaterThan(wage[1]!);
-    }
-    // Only the first dungeon pays a Money wage: Money still comes by the kill.
     expect(content.dungeons.map((d) => d.drops.wages.some((w) => w.resource === 'money'))).toEqual([
       true,
       false,
@@ -232,41 +226,27 @@ describe('drops', () => {
     ]);
   });
 
-  it('pays the crystal wage for every second of fighting, never per kill', () => {
+  it('pays no scroll for fighting, only the Money wage', () => {
     const dungeon = content.dungeons[0]!;
-    const wage = (id: string): number =>
-      dungeon.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber();
     const state = bareState();
     state.clearedDungeons = [dungeon.id]; // no first-clear purse
-    const before = state.resources['summon_crystal']!.toNumber();
+    const before = state.resources['summon_scroll']!.toNumber();
     const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
-    expect(after.resources['summon_crystal']!.toNumber()).toBeCloseTo(
-      before + wage('summon_crystal') * 10,
-    );
-    expect(report.currencies['glamour_crystal']).toBeCloseTo(wage('glamour_crystal') * 10);
-    // A kill adds no crystals on top of the wage.
-    const kill = bareState();
-    kill.clearedDungeons = [dungeon.id];
-    kill.bossHp = new Decimal(1e-6);
-    const killed = advance(kill, content, 1000, constantRng(0.5));
-    expect(killed.report.bossKills).toBe(1);
-    expect(killed.report.currencies['summon_crystal']).toBeCloseTo(wage('summon_crystal'));
-    // Knocked out: no wage.
-    const knocked = bareState();
-    knocked.combat.knockoutSeconds = 30;
-    const out = advance(knocked, content, 10_000, constantRng(0.5));
-    expect(out.report.currencies['summon_crystal'] ?? 0).toBe(0);
+    expect(after.resources['summon_scroll']!.toNumber()).toBe(before);
+    expect(report.currencies['glamour_scroll'] ?? 0).toBe(0);
+    expect(report.currencies['money']).toBeGreaterThan(0);
   });
 
   it('pays the first-clear purse once, on the clear', () => {
     const dungeon = content.dungeons[0]!;
-    const purse = dungeon.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
-    const wage = dungeon.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
+    const purse = dungeon.drops.firstClear.find((p) => p.resource === 'summon_scroll')!.amount;
+    // winning the last floor for the first time also pays its scroll lump (DESIGN.md §3)
+    const lump = content.scrolls.floorFirstWin.boss.summon;
     const state = bareState();
     state.bossHp = new Decimal(1e-6);
     const first = advance(state, content, 1000, constantRng(0.5));
     expect(first.report.cleared).toContain(dungeon.id);
-    expect(first.report.currencies['summon_crystal']).toBeCloseTo(purse.add(wage).toNumber());
+    expect(first.report.currencies['summon_scroll']).toBeCloseTo(purse.add(lump).toNumber());
     const again = advance(
       { ...first.state, bossHp: new Decimal(1e-6) },
       content,
@@ -274,7 +254,7 @@ describe('drops', () => {
       constantRng(0.5),
     );
     expect(again.report.cleared).toEqual([]);
-    expect(again.report.currencies['summon_crystal']).toBeCloseTo(wage.toNumber());
+    expect(again.report.currencies['summon_scroll'] ?? 0).toBe(0);
   });
 
   it('drops Frost Sigils on every Frostspire Vault kill and, rarely, in the Ember Crypt', () => {
@@ -639,12 +619,12 @@ describe('combat data is validated', () => {
   it('catches wrong resource kinds for Cores and trial rewards', () => {
     const bad = raw();
     (bad.dungeons as { drops: { material: { resource: string } } }[])[0]!.drops.material.resource =
-      'summon_crystal';
+      'summon_scroll';
     const t = (bad.trials as { tiers: { rewards: { resource: string }[] }[] }[])[0]!;
     t.tiers[0]!.rewards[0]!.resource = 'oak_gem';
     const found = issues(bad).join('\n');
     expect(found).toContain(
-      'drops › material › resource: "summon_crystal" is crystal, expected material',
+      'drops › material › resource: "summon_scroll" is scroll, expected material',
     );
     expect(found).toContain('rewards › [0] › resource: "oak_gem" is tree_gem, expected material');
   });

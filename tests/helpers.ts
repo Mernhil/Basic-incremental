@@ -171,8 +171,8 @@ export const floorsContent: Content = pinRuleNumbers(
 export const content: Content = pinOneFloor(floorsContent);
 
 /**
- * Crystals per "pull unit": rule tests count crystals in units of a tenth of a Card Portal pull
- * (10 a pull, 100 a 10-pull), so a retune of the crystal prices and drops does not move them.
+ * Scrolls per "pull unit": rule tests count scrolls in units of a tenth of a Card Portal pull
+ * (10 a pull, 100 a 10-pull), so a retune of the portal prices does not move them.
  */
 export const CRYSTAL_UNIT =
   content.portals.find((p) => p.id === 'card_portal')!.cost.single.toNumber() / 10;
