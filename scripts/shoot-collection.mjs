@@ -2,7 +2,7 @@
 // portals, wishlist, a x10 reveal mid-show; Wardrobe: both tabs) at 1280 x 720 CSS px, at 100% and
 // 150%, from the 0.6.0 fixture save with some scrolls added. It replaces the dev save, so use a profile:
 // `BI_PROFILE=9c npx electron-vite dev -- --remote-debugging-port=9422`, then
-// `node scripts/shoot-collection.mjs [port] [outDir]`.
+// `SAVE=<save text file> node scripts/shoot-collection.mjs [port] [outDir]` (SAVE defaults to the fixture).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
@@ -21,7 +21,7 @@ page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 await page.waitForSelector('.shell');
 
-const save = readFileSync('tests/fixtures/saves/v26-0.6.0.save.txt', 'utf8');
+const save = readFileSync(process.env.SAVE ?? 'tests/fixtures/saves/v26-0.6.0.save.txt', 'utf8');
 await page.evaluate(async (text) => window.api.writeSave(text), save);
 
 const cdp = await page.context().newCDPSession(page);
@@ -59,15 +59,31 @@ for (const scale of [1, 1.5]) {
   });
   await page.reload();
   await page.waitForSelector('.tbl-pile');
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1500);
+  for (let i = 0; i < 20; i++) {
+    const btn = await page.$('.wb button');
+    if (!btn) break;
+    await btn.click().catch(() => {});
+    await page.waitForTimeout(300);
+  }
+  await page.waitForTimeout(2500);
   const tag = scale === 1 ? '100' : '150';
 
   // Cards
   await click('[data-open="cards"]', 1400);
   await shot(`cards-collection-${tag}`);
   await text('.cp-tab', 'Loadouts');
-  await click('.cp-slot .cp-tile, .cp-empty', 500);
   await shot(`cards-loadouts-${tag}`);
+  await page.evaluate(() =>
+    document.querySelector('.vh-view:not([hidden]) .vh-body')?.scrollTo(0, 99999),
+  );
+  await page.waitForTimeout(300);
+  await shot(`cards-teams-${tag}`);
+  await page.evaluate(() =>
+    document.querySelector('.vh-view:not([hidden]) .vh-body')?.scrollTo(0, 0),
+  );
+  await click('.cp-empty', 500);
+  await shot(`cards-loadouts-pick-${tag}`);
   await text('.cp-tab', 'Bonds');
   await shot(`cards-bonds-${tag}`);
   await text('.cp-tab', 'Expeditions');
@@ -86,11 +102,12 @@ for (const scale of [1, 1.5]) {
   await page.evaluate(() =>
     document.querySelector('.vh-view:not([hidden]) .vh-body')?.scrollTo(0, 0),
   );
-  if (await click('.sm-deck--left .sm-pull--ten', 1800)) {
-    await page.keyboard.press('Space');
-    await page.waitForTimeout(700);
-    await page.keyboard.press('Space');
-    await page.waitForTimeout(900);
+  if (await click('.sm-deck--left .sm-pull--ten', 2200)) {
+    await shot(`summon-reveal-dealt-${tag}`);
+    for (let i = 0; i < 4; i++) {
+      await page.click('.rv__row').catch(() => {});
+      await page.waitForTimeout(800);
+    }
     await shot(`summon-reveal-${tag}`);
     await page.keyboard.press('Escape');
     await page.waitForTimeout(600);
