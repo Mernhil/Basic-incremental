@@ -53,13 +53,13 @@ for (const [w, h] of [
   [1920, 1080],
 ]) {
   await page.setViewportSize({ width: w, height: h }).catch(() => undefined);
-  await page.click('.shell-rail__item[data-page="achievements"]');
+  await page.click('[data-open="achievements"]');
   await page.waitForSelector('.ac-cover');
   await page.waitForTimeout(1500);
   await clearToasts();
   await page.mouse.move(640, 5);
   await page.screenshot({ path: `${out}/achievements-${w}x${h}.png` });
-  await page.click('.shell-rail__item[data-page="shop"]');
+  await page.click('[data-open="shop"]');
   await page.waitForSelector('.shop-table');
   await page.waitForTimeout(1500);
   await clearToasts();

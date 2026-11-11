@@ -112,7 +112,10 @@ export function createRewardTrack(
   }
 
   panel.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hide(true);
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      hide(true);
+    }
   });
   // a click anywhere outside the scroll and the badge rolls it back up
   document.addEventListener('pointerdown', (e) => {

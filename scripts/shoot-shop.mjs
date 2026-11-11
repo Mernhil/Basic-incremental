@@ -36,7 +36,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="shop"]');
+await page.click('[data-open="shop"]');
 await page.waitForSelector('.shop-table');
 await page.waitForTimeout(1200);
 await page.evaluate(() => document.querySelector('.shell-page, main')?.scrollTo?.(0, 0));

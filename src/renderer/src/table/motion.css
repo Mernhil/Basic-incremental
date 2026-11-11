@@ -1,0 +1,25 @@
+/* Motion E, "dealt from the deck" (UI_RULES.md §2, "Motion E tokens and moments"). The shared
+   tokens every view uses; `table/motion.ts` reads them for the Web Animations API, and CSS
+   transitions in views may use them directly. Only transform and opacity ever animate. */
+
+:root {
+  /* a calm ease-out for everything that arrives, an ease-in for what leaves */
+  --deal-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --deal-exit-ease: cubic-bezier(0.4, 0, 1, 1);
+  /* one dealt item */
+  --deal-dur: 440ms;
+  /* the gap before the second item; each later gap is 10 ms shorter, never under --deal-step-min */
+  --deal-step: 90ms;
+  --deal-step-min: 40ms;
+  /* items dealt one by one; the rest arrive with the last of them */
+  --deal-max: 7;
+  /* a dealt item starts this size, transparent, this share of the way toward where it came from */
+  --deal-scale: 0.92;
+  --deal-reach: 0.6;
+  /* a closing view: all at once, toward its opener */
+  --deal-exit-dur: 220ms;
+  /* the view's backdrop only fades */
+  --deal-fade: 180ms;
+  /* reduced motion: a plain fade */
+  --deal-fade-reduced: 120ms;
+}

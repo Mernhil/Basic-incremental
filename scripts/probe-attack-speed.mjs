@@ -39,7 +39,7 @@ for (const lead of ['storm_duelist', 'grave_hammerer']) {
   await page.reload();
   await page.waitForSelector('.shell');
   await page.evaluate(() => document.querySelector('.away button')?.click());
-  await page.click('.shell-rail__item[data-page="dungeons"]');
+  await page.click('[data-open="dungeon"]');
   await page.waitForSelector('.ar__fan .lf-slot--main .bi-card');
   const result = await page.evaluate(
     () =>

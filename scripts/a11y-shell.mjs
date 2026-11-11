@@ -67,7 +67,9 @@ await page.reload();
 await page.waitForSelector('.shell');
 await page.waitForTimeout(1200);
 await collectWelcome();
-const pages = await page.$$eval('.shell-rail__item', (els) => els.map((e) => e.dataset.page));
+const pages = await page.$$eval('[data-open]', (els) => [
+  ...new Set(els.map((e) => e.dataset.open)),
+]);
 
 const failures = [];
 let checked = 0;
@@ -78,7 +80,7 @@ for (const table of TABLES) {
       document.documentElement.style.setProperty(`--bi-${k}`, v);
   }, tokens);
   for (const id of pages) {
-    await page.click(`.shell-rail__item[data-page="${id}"]`);
+    await page.click(`[data-open="${id}"]`);
     const result = await page.evaluate(measure, CHECKS);
     checked++;
     for (const [sel, { ratio, sample }] of Object.entries(result)) {
@@ -87,7 +89,7 @@ for (const table of TABLES) {
   }
 }
 // tooltip contrast (opened by focus)
-await page.click('.shell-rail__item[data-page="home"]');
+await page.keyboard.press('Escape');
 await page.focus('.shell-currency');
 const tip = await page.evaluate(measure, [
   '.shell-tip__title',
@@ -117,7 +119,7 @@ for (let i = 0; i < 40; i++) {
       if (!el || el === document.body) return null;
       const cs = getComputedStyle(el);
       return {
-        what: `${el.tagName.toLowerCase()}.${String(el.className).split(' ')[0]}${el.dataset.page ? ':' + el.dataset.page : ''}`,
+        what: `${el.tagName.toLowerCase()}.${String(el.className).split(' ')[0]}${el.dataset.open ? ':' + el.dataset.open : ''}`,
         ring: cs.outlineStyle !== 'none' && parseFloat(cs.outlineWidth) >= 2,
       };
     }),
@@ -125,7 +127,7 @@ for (let i = 0; i < 40; i++) {
 }
 const seen = new Map();
 for (const r of reached.filter(Boolean)) seen.set(r.what, r.ring);
-const railReached = [...seen.keys()].filter((k) => k.startsWith('button.shell-rail__item')).length;
+const railReached = [...seen.keys()].filter((k) => k.startsWith('button[data-open]')).length;
 
 // reduced motion
 await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -137,7 +139,7 @@ const looping = await page.evaluate(
         (a) =>
           a.playState === 'running' &&
           a.effect?.getTiming().iterations === Infinity &&
-          a.effect?.target?.closest?.('.shell-header, .shell-rail, .frame__title'),
+          a.effect?.target?.closest?.('.shell-header, .tbl-dock, .frame__title'),
       ).length,
 );
 await browser.close();

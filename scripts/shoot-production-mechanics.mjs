@@ -78,7 +78,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="production"]');
+await page.click('[data-open="logging"]');
 await page.waitForSelector('.pp-r');
 await page.setViewportSize({ width: 1600, height: 1000 }).catch(() => undefined);
 await page.waitForTimeout(1500);

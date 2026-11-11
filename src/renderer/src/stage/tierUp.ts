@@ -96,7 +96,10 @@ export function showEvolution(props: CardProps): void {
     document.removeEventListener('keydown', onKey, true);
   };
   const onKey = (e: KeyboardEvent): void => {
-    if (e.key === 'Escape') close();
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      close();
+    }
   };
   overlay.addEventListener('click', close);
   document.addEventListener('keydown', onKey, true);

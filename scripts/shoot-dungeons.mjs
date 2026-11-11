@@ -9,7 +9,7 @@ await page.reload();
 await page.waitForSelector('.bi-card', { timeout: 20000 });
 await page.setViewportSize({ width: 1400, height: 900 }).catch(() => {});
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="dungeons"]');
+await page.click('[data-open="dungeon"]');
 await page.waitForTimeout(1200);
 await page.screenshot({ path: out });
 const errors = [];
