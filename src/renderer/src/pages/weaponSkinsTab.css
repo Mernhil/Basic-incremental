@@ -1,24 +1,13 @@
-/* Wardrobe "Weapon skins" tab (a test). Pixel art is sized with the whole-scale round() pattern
-   from ui/pixelScale.css; the preview card gets --card-k from fitCard(). */
-.ws {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
-  gap: 18px;
-  align-items: start;
+/* Wardrobe "Weapon skins" tab (a test), in the shell look: two pixel panels, the picker with its
+   skin tiles (.ws-tile, frames.css) and the preview card at a whole scale beside it. The grid of
+   the two panels is shared with the Mannequin tab (wardrobe.css, .wd / .ws). Pixel art is sized
+   with the whole-scale round() pattern from ui/pixelScale.css; the preview card gets --card-k
+   from fitCard(). */
+.ws-picker > .wd-tabs {
+  margin-bottom: 2px;
 }
-@media (max-width: 900px) {
-  .ws {
-    grid-template-columns: minmax(0, 1fr);
-  }
-}
-.ws-badge {
-  margin-left: 8px;
-  padding: 1px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 700;
-  background: var(--bi-frame-title-line);
-  color: var(--bi-frame-ink);
+.ws-picker {
+  min-width: 0;
 }
 .ws-weapon {
   margin: 0 0 10px;
@@ -27,9 +16,10 @@
 .ws-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-  gap: 10px;
+  gap: calc(var(--fs) * 3);
   margin: 12px 0 0;
-  padding: 0;
+  /* the selected tile's gold edge sits a step outside it */
+  padding: var(--fs);
   list-style: none;
 }
 .ws-tile {
@@ -39,21 +29,13 @@
   gap: 4px;
   width: 100%;
   padding: 8px 6px 6px;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-  color: var(--bi-frame-ink);
   font: inherit;
   cursor: pointer;
 }
-.ws-tile[aria-pressed='true'] {
-  box-shadow: inset 0 0 0 2px var(--bi-frame-ink);
-}
 .ws-tile:focus-visible,
 .ws-apply:focus-visible {
-  outline: 2px solid var(--bi-frame-ink);
-  outline-offset: 2px;
+  outline: 2px solid var(--px-ink);
+  outline-offset: calc(var(--fs-sm) * 2 + 1px);
 }
 .ws-tile__name {
   font-size: 12px;
@@ -86,7 +68,7 @@
   position: relative;
   width: calc(176px * var(--card-k));
   height: calc(248px * var(--card-k));
-  margin: 16px;
+  margin: 24px;
 }
 .ws-card > .bi-card {
   transform: scale(var(--card-k));
@@ -103,7 +85,4 @@
   grid-column: 1 / -1;
   min-height: 1.2em;
   margin: 0;
-}
-.wd-tabs {
-  margin-bottom: 14px;
 }

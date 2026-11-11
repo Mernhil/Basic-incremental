@@ -14,18 +14,23 @@ const owning = (...ids: string[]) => {
 };
 
 describe('weapon skins tab model', () => {
-  it('lists every item type with legacy skins, named by its noun', () => {
-    expect(weaponOptions(content)).toEqual([
+  it('lists only the item types with a skin the player owns, named by its noun', () => {
+    // Locked legacy skins are hidden until the Legacy Gate opens (DESIGN.md §8).
+    expect(weaponOptions(freshState(), content)).toEqual([]);
+    expect(weaponOptions(owning('legacy-scythe-04', 'legacy-sword-01'), content)).toEqual([
       { kind: 'sword', name: 'Sword' },
-      { kind: 'hammer', name: 'Hammer' },
-      { kind: 'bow', name: 'Bow' },
-      { kind: 'staff', name: 'Staff' },
       { kind: 'scythe', name: 'Scythe' },
     ]);
   });
 
-  it('starts on the first set, on Original, nothing to apply', () => {
+  it('has no weapon to show when no skin is owned', () => {
     const v = weaponSkinsView(freshState(), content, {}, 'Original');
+    expect(v.weapon).toBeNull();
+    expect(v.tiles.map((t) => t.id)).toEqual([null]);
+  });
+
+  it('starts on the first owned set, on Original, nothing to apply', () => {
+    const v = weaponSkinsView(owning('legacy-sword-01'), content, {}, 'Original');
     expect(v.weapon).toBe('sword');
     expect(v.tiles).toHaveLength(2);
     expect(v.tiles[0]).toMatchObject({ id: null, name: 'Original', worn: true, picked: true });
@@ -33,21 +38,22 @@ describe('weapon skins tab model', () => {
     expect(v.canApply).toBe(false);
   });
 
-  it('shows 13 skins plus Original for the scythe, previewed on the card carrying a scythe', () => {
-    const v = weaponSkinsView(freshState(), content, { weapon: 'scythe' }, 'Original');
+  it('shows only the owned scythe skins plus Original, previewed on the card carrying a scythe', () => {
+    const state = owning('legacy-scythe-04', 'legacy-scythe-06');
+    const v = weaponSkinsView(state, content, { weapon: 'scythe' }, 'Original');
     expect(v.weapon).toBe('scythe');
-    expect(v.tiles).toHaveLength(14);
+    expect(v.tiles.map((t) => t.id)).toEqual([null, 'legacy-scythe-04', 'legacy-scythe-06']);
     expect(v.previewCardId).toBe('reaper_test');
     expect(v.ownsPreviewCard).toBe(false);
   });
 
-  it('previews a card of the type, else the first fighting card', () => {
-    const sword = weaponSkinsView(freshState(), content, { weapon: 'sword' }, 'Original');
+  it('previews a card of the type', () => {
+    const all = owning(...content.weaponSkins.flatMap((set) => set.skins.map((s) => s.id)));
+    const sword = weaponSkinsView(all, content, { weapon: 'sword' }, 'Original');
     expect(sword.previewCardId).toBe('ember_squire');
-    const hammer = weaponSkinsView(freshState(), content, { weapon: 'bow' }, 'Original');
-    expect(content.cards.some((c) => c.item.kind === 'bow')).toBe(false);
-    expect(hammer.previewCardId).toBe(content.cards.find((c) => c.job === 'fighting')!.id);
-    const hammerCard = weaponSkinsView(freshState(), content, { weapon: 'hammer' }, 'Original');
+    const bow = weaponSkinsView(all, content, { weapon: 'bow' }, 'Original');
+    expect(content.cardById.get(bow.previewCardId!)!.item.kind).toBe('bow');
+    const hammerCard = weaponSkinsView(all, content, { weapon: 'hammer' }, 'Original');
     expect(hammerCard.previewCardId).toBe('grave_hammerer');
   });
 
@@ -64,14 +70,15 @@ describe('weapon skins tab model', () => {
     expect(state.weaponSkins).toEqual({});
   });
 
-  it('previewing a skin that is not owned cannot be applied', () => {
+  it('a skin that is not owned is not offered: the pick falls back to Original', () => {
     const v = weaponSkinsView(
-      freshState(),
+      owning('legacy-scythe-06'),
       content,
       { weapon: 'scythe', skin: 'legacy-scythe-04' },
       'Original',
     );
-    expect(v.previewArt).toBe('skin-scythe-03');
+    expect(v.pickedId).toBeNull();
+    expect(v.previewArt).toBeNull();
     expect(v.canApply).toBe(false);
   });
 

@@ -1,6 +1,7 @@
 import type { Content } from '../../../data';
 import { formatDuration, type Decimal, type OfflineSummary } from '../../../game';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
 
 /**
@@ -57,20 +58,21 @@ export function welcomeCards(summary: OfflineSummary, content: Content): Welcome
       title: t.resources,
       headline: `+${fmt(gains[0]![1])}`,
       lines: gains.map(([id, amount]) => ({
-        text: t.gain(fmt(amount), name(content, id)),
+        text: t.gainText(amountText(content, id, amount)),
         resource: id,
         amount,
       })),
     });
   }
 
-  if (summary.bossKills > 0 || summary.knockouts > 0) {
+  const kills = summary.bossKills + summary.enemyKills;
+  if (kills > 0 || summary.knockouts > 0) {
     const lines: WelcomeLine[] = [];
     if (summary.knockouts > 0) lines.push({ text: t.knockouts(summary.knockouts) });
     cards.push({
       kind: 'fights',
       title: t.fights,
-      headline: t.kills(summary.bossKills),
+      headline: t.kills(kills),
       lines,
     });
   }

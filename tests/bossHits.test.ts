@@ -24,10 +24,14 @@ import {
   type Modifier,
   type TickReport,
 } from '../src/game';
-import { constantRng, content as bundled, freshState, withBossAttack } from './helpers';
+import { constantRng, content as bundled, freshState, withBossAttack, withBossHp } from './helpers';
 
 // The Root Warden is pinned to the numbers these tests document (1 damage every 10 s).
-const content = withBossAttack(bundled, 'mossy_cellar', 1, 10);
+/** The Root Warden pinned to 1 damage every 10 s and the knockout to 30 s, the timings these
+ *  tests count in (the shipped numbers are tuning, DESIGN.md §6). */
+// Its HP is out of the loadout's reach, so no kill refills the health while a test counts hits.
+const attacked = withBossAttack(withBossHp(bundled, 'mossy_cellar', 1e12), 'mossy_cellar', 1, 10);
+const content = { ...attacked, combat: { ...attacked.combat, knockoutSeconds: 30 } };
 
 /**
  * Boss hits in chunks (DESIGN.md §6): discrete attacks at the boss's interval, five light hits at
@@ -102,7 +106,7 @@ describe('hits land in chunks', () => {
   });
 
   it('keeps the same damage per minute as the dungeon data (any start in the cycle)', () => {
-    const dps = bossAttackDps(content.dungeonById.get('mossy_cellar')!, 0, []).toNumber();
+    const dps = bossAttackDps(content.dungeonById.get('mossy_cellar')!, []).toNumber();
     for (const offsetMs of [0, 25_000, 41_000, 59_999]) {
       const start = inCellar();
       start.stats.playTimeMs = offsetMs;
@@ -123,12 +127,11 @@ describe('hits land in chunks', () => {
         source: { kind: 'cosmetic', id: 'test' },
       } as Modifier,
     ];
-    const open = bossAttackDamages(dungeon, 0, [], pattern);
-    const guarded = bossAttackDamages(dungeon, 0, defence, pattern);
+    const open = bossAttackDamages(dungeon, [], pattern);
+    const guarded = bossAttackDamages(dungeon, defence, pattern);
     expect(open.normal.toNumber()).toBeCloseTo(1);
     expect(guarded.light.toNumber()).toBeCloseTo(0.2);
     expect(guarded.slam.toNumber()).toBeCloseTo(2);
-    expect(bossAttackDamages(dungeon, 3, [], pattern).normal.gt(open.normal)).toBe(true);
   });
 
   it('does not attack special dungeons', () => {
@@ -303,7 +306,8 @@ describe('the wind-up and the "you fall in" readout', () => {
     // The Root Warden case: killing takes 17 min 22 s but 100 health lasts about 16 min 40 s.
     const { state, content: c } = cellarKilledIn(1042.4);
     const r = stageReadout(state, c);
-    expect(r.secondsPerKill).toBeCloseTo(1042.4, 1);
+    // A kill takes whole hits (overflow is off, DESIGN.md §6).
+    expect(r.secondsPerKill).toBe(1043);
     expect(r.fallsFirst).toBe(true);
   });
 

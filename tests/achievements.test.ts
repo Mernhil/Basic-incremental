@@ -63,7 +63,8 @@ describe('achievements (DESIGN.md §10)', () => {
     expect(first.unlocked).toEqual(['first_kill']);
     expect(first.state.achievements['first_kill']).toBe(5000);
     const reward = content.achievements.find((a) => a.id === 'first_kill')!.reward.resources[0]!;
-    expect(first.state.resources[reward.resource]!.eq(reward.amount)).toBe(true);
+    const before = state.resources[reward.resource]!;
+    expect(first.state.resources[reward.resource]!.eq(before.add(reward.amount))).toBe(true);
     expect(checkAchievements(first.state, content).unlocked).toEqual([]);
   });
 
@@ -98,11 +99,13 @@ describe('achievements (DESIGN.md §10)', () => {
     const state = newGame();
     const squire = state.cards.owned['ember_squire']!;
     state.cards.owned['ember_squire'] = { ...squire, tier: 'gold', stars: 6 };
-    // Fighting has three cards, so the full loadout is a logging one: Feller leads, three supports.
-    state.cards.loadouts.logging = {
-      main: 'apprentice_feller',
-      supports: ['grove_keeper', 'elder_treant', 'moonwood_dryad'],
-    };
+    // A full fighting loadout: the Squire leads, three supports.
+    const supports = content.cards
+      .filter((c) => c.job === 'fighting' && c.id !== 'ember_squire')
+      .slice(0, 3)
+      .map((c) => c.id);
+    for (const id of supports) state.cards.owned[id] = { ...squire };
+    state.cards.loadouts.fighting = { main: 'ember_squire', supports };
     for (const c of content.cosmetics.filter((x) => x.set === 'gilded_tradition')) {
       state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
       state.cosmetics.loadout.slots[c.slot] = { id: c.id, level: 1 };
@@ -179,15 +182,29 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     expect(copy).toMatchObject({ affordable: true, left: null });
   });
 
+  it('sells a copy of every card, at any rarity', () => {
+    // Every rarity uses copies for stars now (DESIGN.md §5, Star fill in the shard shop).
+    const sold = content.shardShop.flatMap((i) =>
+      i.reward.kind === 'card' ? [i.reward.card] : [],
+    );
+    const wanted = content.cards.map((c) => c.id);
+    expect([...sold].sort()).toEqual([...wanted].sort());
+  });
+
   it('spends shards for a card copy, a resource bundle or a cosmetic', () => {
     const card = buyShardItem(withShards(100), content, 'copy_ember_squire');
     if (!card.ok) throw new Error(card.reason);
     expect(card.state.cards.shards).toBe(95);
     expect(card.state.cards.owned['ember_squire']!.starFill).toBe(1);
 
+    const start = withShards(100).resources['summon_crystal']!;
     const bundle = buyShardItem(withShards(100), content, 'summon_crystals');
     if (!bundle.ok) throw new Error(bundle.reason);
-    expect(bundle.state.resources['summon_crystal']!.toNumber()).toBe(100);
+    const bundleItem = content.shardShop.find((i) => i.id === 'summon_crystals')!;
+    if (bundleItem.reward.kind !== 'resource') throw new Error('not a bundle');
+    expect(bundle.state.resources['summon_crystal']!.eq(start.add(bundleItem.reward.amount))).toBe(
+      true,
+    );
 
     const crown = buyShardItem(withShards(200), content, 'ember_crown');
     if (!crown.ok) throw new Error(crown.reason);
@@ -204,7 +221,7 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
       ok: false,
       reason: 'unknown',
     });
-    expect(buyShardItem(withShards(1), content, 'copy_core_titan')).toEqual({
+    expect(buyShardItem(withShards(1), content, 'copy_ember_squire')).toEqual({
       ok: false,
       reason: 'unaffordable',
     });

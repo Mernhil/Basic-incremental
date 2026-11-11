@@ -53,30 +53,23 @@ function fund(state: GameState, id: string): GameState {
 }
 
 /** Copies a Common needs for the star after `stars` (cardRules.json). */
-const commonNeed = (stars: number): number => content.cardRules.starBar.needs.common[stars - 1]!;
+const COMMON_NEED: number = content.cardRules.starBar.needs.common.wood;
 
 describe('the star bar (DESIGN.md §5)', () => {
-  it('needs the copies of the table for ★2 to ★6, per rarity', () => {
-    // The table itself is tuning (cardRules.json); the rules are its shape: every star takes at
-    // least as many copies as the one before for Commons, totals fall with rarity, and the top
-    // rarities need only a few copies.
-    const totals: Record<string, number> = {};
+  it('needs the copies of the table for ★2 to ★5, per rarity and tier', () => {
+    // The shipped table is tuned and tested in cardsFromStart.test.ts; this content pins one whole
+    // copy per star, so the rules below count copies.
     for (const rarity of RARITIES) {
-      const copies = [1, 2, 3, 4, 5].map(
-        (stars) =>
-          starFillNeeded(content, rarity, stars)! /
-          content.cardRules.starBar.fillPerDuplicate[rarity],
-      );
-      expect(copies, rarity).toEqual(content.cardRules.starBar.needs[rarity]);
-      totals[rarity] = copies.reduce((x, y) => x + y, 0);
+      for (const tier of RANK_TIERS) {
+        for (const stars of [1, 2, 3, 4, 5]) {
+          expect(starFillNeeded(content, rarity, stars, tier), `${rarity} ${tier}`).toBe(
+            content.cardRules.starBar.needs[rarity][tier] *
+              content.cardRules.starBar.fillPerDuplicate[rarity],
+          );
+        }
+      }
     }
-    const common = content.cardRules.starBar.needs.common;
-    expect(common.every((n, i) => i === 0 || n >= common[i - 1]!)).toBe(true);
-    expect(totals['common']).toBeGreaterThanOrEqual(6);
-    const order = RARITIES.map((r) => totals[r]!);
-    expect(order.every((n, i) => i === 0 || n <= order[i - 1]!)).toBe(true);
-    expect(totals['void']).toBeLessThanOrEqual(3);
-    expect(starFillNeeded(content, 'common', 6)).toBeNull();
+    expect(starFillNeeded(content, 'common', 6, 'wood')).toBeNull();
   });
 
   it('fills by the rarity of each duplicate and keeps the fill on the card', () => {
@@ -85,16 +78,16 @@ describe('the star bar (DESIGN.md §5)', () => {
     result = addCard(result.state, content, 'ember_squire')!;
     expect(result.state.cards.owned['ember_squire']!.starFill).toBe(2);
     const view = cardInfo(result.state, content, 'ember_squire')!.starBar!;
-    expect(view).toMatchObject({ fill: 2, need: commonNeed(1), ready: true });
+    expect(view).toMatchObject({ fill: 2, need: COMMON_NEED, ready: true });
     expect(view.gauge).toBe(1);
   });
 
   it('shows a gauge between 0 and 1 and no bar at ★6 or for a card not owned', () => {
-    const state = own(freshState(), 'ember_squire', { stars: 4, starFill: 1 });
+    const state = own(freshState(), 'ember_squire', { stars: 4, starFill: 0.5 });
     expect(cardInfo(state, content, 'ember_squire')!.starBar).toMatchObject({
-      fill: 1,
-      need: commonNeed(4),
-      gauge: 1 / commonNeed(4),
+      fill: 0.5,
+      need: COMMON_NEED,
+      gauge: 0.5 / COMMON_NEED,
       ready: false,
     });
     own(state, 'storm_duelist', { stars: 6 });
@@ -103,7 +96,7 @@ describe('the star bar (DESIGN.md §5)', () => {
   });
 
   it('makes a star-up cost only the fill: no level cap, no Core, gems or Money', () => {
-    const state = own(freshState(), 'ember_squire', { level: 1, starFill: commonNeed(1) });
+    const state = own(freshState(), 'ember_squire', { level: 1, starFill: COMMON_NEED });
     const check = starUpCheck(state, content, 'ember_squire')!;
     expect(check.to).toEqual({ tier: 'wood', stars: 2 });
     expect(check.requirements.map((r) => r.kind)).toEqual(['starFill']);
@@ -116,19 +109,16 @@ describe('the star bar (DESIGN.md §5)', () => {
   });
 
   it('refuses a star-up while the bar is short and carries the leftover over', () => {
-    const state = own(freshState(), 'ember_squire', { starFill: commonNeed(1) - 1 });
+    const state = own(freshState(), 'ember_squire', { starFill: COMMON_NEED - 1 });
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
-    own(state, 'ember_squire', { starFill: commonNeed(1) + 3 });
+    own(state, 'ember_squire', { starFill: COMMON_NEED + 3 });
     const once = ok(starUp(state, content, 'ember_squire'));
     expect(once.cards.owned['ember_squire']).toMatchObject({ stars: 2, starFill: 3 });
   });
 
-  it('lets a star with no copies to pay (Legendary ★2 to ★3) be taken at once', () => {
+  it('has no free star: a Legendary ★2 to ★3 needs its copy too', () => {
     const state = own(freshState(), 'dawnblade_regent', { stars: 2, starFill: 0 });
-    expect(starUpCheck(state, content, 'dawnblade_regent')!.met).toBe(true);
-    expect(
-      ok(starUp(state, content, 'dawnblade_regent')).cards.owned['dawnblade_regent'],
-    ).toMatchObject({ stars: 3 });
+    expect(starUpCheck(state, content, 'dawnblade_regent')!.met).toBe(false);
   });
 
   it('has no star-up at ★6', () => {
@@ -161,11 +151,11 @@ describe('copies past ★6 become shards', () => {
   });
 
   it('turns a copy into shards once the bar already holds every star left to ★6', () => {
-    // Void ★5 -> ★6 is the only star left that needs a copy (table: 1, 0, 1, 0, 1).
-    const state = own(freshState(), 'core_titan', { stars: 4, starFill: 1 });
+    // Void ★4 has two stars left, one copy each (pinned): a bar of 2 holds them all.
+    const state = own(freshState(), 'core_titan', { stars: 4, starFill: 2 });
     const result = addCard(state, content, 'core_titan')!;
     expect(result.gain).toEqual({ kind: 'shards', shards: 25 });
-    expect(result.state.cards.owned['core_titan']!.starFill).toBe(1);
+    expect(result.state.cards.owned['core_titan']!.starFill).toBe(2);
     const empty = own(freshState(), 'core_titan', { stars: 4, starFill: 0 });
     expect(addCard(empty, content, 'core_titan')!.gain).toEqual({
       kind: 'duplicate',
@@ -196,10 +186,10 @@ describe('star impact on base stats', () => {
     });
   });
 
-  it('makes a maxed Common equal a fresh Legendary in base health', () => {
+  it('keeps a maxed Common below a fresh Legendary in base health', () => {
     const maxed = cardHealth(content, 'ember_squire', { ...newOwnedCard(), stars: 6 });
     const legendary = cardHealth(content, 'dawnblade_regent', newOwnedCard());
-    expect(maxed.eq(legendary)).toBe(true);
+    expect(maxed.lt(legendary)).toBe(true);
   });
 });
 
@@ -517,7 +507,7 @@ describe('weapon looks for now (DESIGN.md §5)', () => {
 
 describe('production cards use the same model', () => {
   it('star up from the bar and tier up at max level like a fighting card', () => {
-    const need = content.cardRules.starBar.needs.rare[0]!;
+    const need = content.cardRules.starBar.needs.rare.wood;
     const state = own(freshState(), 'grove_keeper', { starFill: need, level: 20 });
     fund(state, 'grove_keeper');
     const starred = ok(starUp(state, content, 'grove_keeper'));
@@ -566,16 +556,17 @@ describe('save format 18, read through the whole migration chain', () => {
   });
 
   it('round-trips the star fill and a Mythic-tier card', () => {
+    // ★3 (the next star costs a copy in the tests' star bar, so nothing is free to take on load)
     const state = own(freshState(), 'core_titan', {
       tier: 'mythic',
-      stars: 4,
+      stars: 3,
       level: 120,
       starFill: 3,
     });
     const loaded = readSave(createSaveText(state, 1), content).state;
     expect(loaded.cards.owned['core_titan']).toMatchObject({
       tier: 'mythic',
-      stars: 4,
+      stars: 3,
       level: 120,
       starFill: 3,
     });

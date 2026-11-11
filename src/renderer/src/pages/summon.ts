@@ -3,6 +3,8 @@ import {
   defaultRng,
   portalInfo,
   pull,
+  setWishlisted,
+  wishlistView,
   type GameState,
   type PullCount,
 } from '../../../game';
@@ -12,61 +14,204 @@ import { h } from '../shell/shell';
 import { hide as hideTip } from '../shell/tooltip';
 import { showReveal } from '../stage/reveal';
 import { cosmeticSwatch } from '../ui/cosmeticSwatch';
+import { createCard, type CardProps } from '../ui/card';
+import { fitCard, screenDpr } from '../ui/pixelFit';
+import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
 import { cardFaceProps } from './loadoutCards';
 import type { PageContext } from './production';
 import {
+  handSummary,
   lastHandView,
+  oddsTable,
   portalView,
   revealViews,
+  wishlistPanelView,
   type HandCardView,
   type PortalView,
+  type RevealView,
 } from './summonModel';
 import './summon.css';
 
 /**
- * Summon page (DESIGN.md §7 Beta portals): "Deck and Table". Each portal is a deck whose edge
- * thickens toward its hard pity, a crest shows the pity count, and Draw ×1 / Deal ×10 pull.
- * The odds panel in the middle follows the deck you hover or focus; the last hand waits below.
- * The reveal still opens in a modal. The last hand lives in UI memory only (no save change).
+ * Summon page (DESIGN.md §7 Beta portals): "Deck and Table" as one pixel panel. Each portal is a
+ * deck of card backs at 1x whose edge thickens toward its hard pity, with its pity bar and its
+ * Pull 1 / Pull 10 buttons. The odds table in the middle lists every portal side by side; the
+ * last hand waits below as real cards. The reveal still opens in a modal. The last hand lives in
+ * UI memory only (no save change).
  */
 
 export interface SummonContext extends PageContext {
   sound?: (id: string) => void;
 }
 
+/** A card of the last hand: its view, and the card face or cosmetic picture it shows. */
+interface HandEntry {
+  view: HandCardView;
+  face: CardProps | null;
+  picture: HTMLElement | null;
+}
+
+type PullButton = { el: HTMLButtonElement; cost: HTMLElement };
+type DeckUi = {
+  root: HTMLElement;
+  stack: HTMLElement;
+  pityValue: HTMLElement;
+  pityBar: HTMLElement;
+  pityFill: HTMLElement;
+  line: HTMLElement;
+  /** "Hunting: ..." under the deck (card portal with a wishlist only). */
+  hunt: HTMLElement | null;
+  single: PullButton;
+  ten: PullButton;
+};
+
 export function createSummonPage(page: HTMLElement, ctx: SummonContext): { render(): void } {
   const { content } = ctx;
-  const table = h('div', 'sm-table');
+  // the panel carries the sighted headings; the page name stays for screen readers
+  page.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
+  const table = h('div', 'sm-table px-panel');
+  // the deck backs and the hand's cards are 1x: 132 CSS px on a 100 % screen, whole device pixels
+  fitCard(table, { want: 132 });
   page.append(table);
+  const top = h('div', 'sm-top');
 
-  type DeckUi = {
-    root: HTMLElement;
-    stack: HTMLElement;
-    count: HTMLElement;
-    of: HTMLElement;
-    caption: HTMLElement;
-    single: HTMLButtonElement;
-    ten: HTMLButtonElement;
-  };
   const decks = new Map<string, DeckUi>();
   const views = new Map<string, PortalView>();
   let busy = false;
-  let oddsPortal: string | null = null;
-  let hand: HandCardView[] = [];
+  let hand: HandEntry[] = [];
+  let handViews: RevealView[] = [];
+  let oddsKey = '';
+  let wishKey = '';
+  let wishActive = false;
 
-  const odds = h('section', 'sm-odds');
-  odds.setAttribute('aria-live', 'polite');
-  const oddsName = h('p', 'sm-odds__for');
-  const oddsList = h('ul', 'sm-odds__list');
+  // ---- odds table (every portal side by side) ----
+  const odds = h('section', 'sm-odds px-well');
+  odds.setAttribute('aria-label', COPY.summon.oddsTitle);
+  const oddsBody = h('table', 'sm-odds__table');
+  oddsBody.setAttribute('aria-label', COPY.summon.oddsTableLabel);
   const oddsNote = h('p', 'sm-odds__note');
-  odds.append(h('h2', 'sm-odds__title', COPY.summon.oddsTitle), oddsName, oddsList, oddsNote);
+  odds.append(h('h2', 'sm-odds__title px-display', COPY.summon.oddsTitle), oddsBody, oddsNote);
 
+  function renderOdds(): void {
+    const list = [...decks.keys()].map((id) => views.get(id)).filter((v): v is PortalView => !!v);
+    const t = oddsTable(list);
+    const key = JSON.stringify(t);
+    if (key === oddsKey) return;
+    oddsKey = key;
+    const head = h('tr');
+    head.append(h('th', 'sm-odds__corner'));
+    for (const c of t.columns) {
+      const th = h('th', 'sm-odds__col', c.name);
+      th.scope = 'col';
+      head.append(th);
+    }
+    const thead = h('thead');
+    thead.append(head);
+    const tbody = h('tbody');
+    for (const r of t.rows) {
+      const tr = h('tr', 'sm-odds__row');
+      tr.dataset['rarity'] = r.rarity;
+      const th = h('th', 'sm-odds__rarity');
+      th.scope = 'row';
+      const swatch = h('i', 'sm-odds__swatch');
+      swatch.setAttribute('aria-hidden', 'true');
+      th.append(swatch, h('span', '', r.name));
+      tr.append(th);
+      for (const cell of r.cells) {
+        const td = h('td', 'sm-odds__cell bi-num', cell ?? COPY.summon.oddsNone);
+        if (cell === null) td.setAttribute('aria-label', COPY.summon.oddsNoneLabel);
+        tr.append(td);
+      }
+      tbody.append(tr);
+    }
+    oddsBody.replaceChildren(thead, tbody);
+    const notes = [...new Set(list.map((v) => v.guarantee))];
+    if (wishActive) notes.push(COPY.summon.oddsWishlist);
+    oddsNote.replaceChildren(...notes.map((n) => h('span', '', n)));
+  }
+
+  // ---- the wishlist (the Card Portal's cards, marked to hunt) ----
+  const wish = h('section', 'sm-wish px-well');
+  wish.setAttribute('aria-label', COPY.summon.wishlistTitle);
+  wish.hidden = true;
+  const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
+
+  function renderWishlist(): void {
+    if (!wishPortal) return;
+    const s = ctx.state();
+    const info = wishlistView(s, content, wishPortal.id);
+    if (!info) return;
+    const v = wishlistPanelView(info, s, content);
+    wishActive = v.active;
+    const hunt = decks.get(wishPortal.id)?.hunt;
+    if (hunt) set(hunt, v.hunting);
+    const key = JSON.stringify(v);
+    if (key === wishKey) return;
+    wishKey = key;
+    wish.hidden = false;
+    const focused = (document.activeElement as HTMLElement | null)?.dataset['wish'];
+    const rows = v.rows.map((r) => {
+      const row = h('div', 'sm-wish__row');
+      row.dataset['rarity'] = r.rarity;
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', r.label);
+      const head = h('span', 'sm-wish__rarity');
+      head.append(h('i', 'sm-odds__swatch'), h('span', '', r.name));
+      head.append(h('b', 'sm-wish__count bi-num', r.countText));
+      const list = h('span', 'sm-wish__cards');
+      for (const c of r.cards) {
+        const b = h(
+          'button',
+          `sm-wish__card px-btn px-btn--quiet${c.marked ? ' is-marked' : ''}`,
+          c.name,
+        );
+        b.type = 'button';
+        b.dataset['wish'] = c.id;
+        b.setAttribute('aria-pressed', String(c.marked));
+        b.setAttribute('aria-label', c.label);
+        b.classList.toggle('is-blocked', c.blocked);
+        b.addEventListener('click', () => {
+          const result = setWishlisted(ctx.state(), content, c.id, !c.marked, wishPortal.id);
+          if (result.ok) ctx.apply(result.state);
+          render();
+        });
+        list.append(b);
+      }
+      row.append(head, list);
+      return row;
+    });
+    wish.replaceChildren(
+      h('h2', 'sm-wish__title px-display', COPY.summon.wishlistTitle),
+      h('p', 'sm-wish__about', v.about),
+      ...rows,
+    );
+    if (focused) wish.querySelector<HTMLElement>(`[data-wish="${focused}"]`)?.focus();
+  }
+
+  // ---- the last hand ----
   const handBox = h('section', 'sm-hand');
+  const handHead = h('header', 'sm-hand__head');
+  const handSum = h('p', 'sm-hand__summary bi-num');
+  handHead.append(h('h2', 'sm-hand__title px-display', COPY.summon.handTitle), handSum);
   const handList = h('ul', 'sm-hand__list');
-  handBox.setAttribute('aria-label', COPY.summon.handTitle);
-  const handTitle = h('h2', 'sm-hand__title', COPY.summon.handTitle);
   const handEmpty = h('p', 'sm-hand__empty', COPY.summon.handEmpty);
-  handBox.append(handTitle, handEmpty, handList);
+  const handRow = h('div', 'sm-hand__row');
+  handRow.append(handEmpty, handList);
+  handBox.append(handHead, handRow);
+  handBox.setAttribute('aria-label', COPY.summon.handTitle);
+
+  /** Spaces the cards of the hand: a gap when they fit, an overlap (whole device pixels) when not. */
+  function spaceHand(): void {
+    const n = hand.length;
+    const first = handList.firstElementChild as HTMLElement | null;
+    if (n < 2 || !first) return;
+    const d = screenDpr();
+    const cardW = first.getBoundingClientRect().width;
+    const free = handRow.clientWidth - n * cardW;
+    const gap = Math.min(16, Math.max(-cardW * 0.62, free / (n - 1)));
+    handList.style.setProperty('--sm-gap', `${Math.floor(gap * d) / d}px`);
+  }
+  if (typeof ResizeObserver !== 'undefined') new ResizeObserver(spaceHand).observe(handRow);
 
   function renderHand(): void {
     handList.replaceChildren();
@@ -76,36 +221,30 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       'aria-label',
       hand.length ? COPY.summon.handLabel(hand.length) : COPY.summon.handTitle,
     );
-    for (const c of hand) {
+    handSum.textContent = handSummary(handViews);
+    for (const e of hand) {
+      const c = e.view;
       const li = h('li', 'sm-hand__card');
-      li.dataset.rarity = c.rarity;
-      li.style.setProperty('--tilt', `${c.tilt}deg`);
-      li.setAttribute('aria-label', c.label);
-      li.append(h('span', 'sm-hand__rarity', c.rarityName), h('strong', 'sm-hand__name', c.name));
-      if (c.isNew) li.append(h('span', 'sm-hand__new', COPY.summon.isNew));
+      li.dataset['rarity'] = c.rarity;
+      li.setAttribute('aria-label', c.note ? `${c.label}, ${c.note}` : c.label);
+      const tag = h(
+        'span',
+        c.isNew ? 'px-tile sm-hand__tag sm-hand__tag--new' : 'px-tile sm-hand__tag',
+        c.isNew ? COPY.summon.tagNew : c.note,
+      );
+      tag.hidden = !c.isNew && !c.note;
+      const fit = h('span', 'cp-fit sm-fit');
+      if (e.face) fit.append(createCard(e.face).el);
+      else {
+        const plain = h('span', 'sm-plain');
+        if (e.picture) plain.append(e.picture);
+        plain.append(h('b', 'sm-plain__name', c.name));
+        fit.append(plain);
+      }
+      li.append(tag, fit);
       handList.append(li);
     }
-  }
-
-  function renderOdds(): void {
-    const v = oddsPortal ? views.get(oddsPortal) : undefined;
-    if (!v) return;
-    oddsName.textContent = COPY.summon.oddsFor(v.name);
-    oddsList.replaceChildren();
-    for (const r of v.odds) {
-      const li = h('li', 'sm-odds__row');
-      li.dataset.rarity = r.rarity;
-      li.append(h('span', '', r.name), h('b', 'bi-num', r.chance));
-      oddsList.append(li);
-    }
-    oddsNote.textContent = v.guarantee;
-    for (const [id, d] of decks) d.root.classList.toggle('is-odds', id === oddsPortal);
-  }
-
-  function showOdds(id: string): void {
-    if (oddsPortal === id) return;
-    oddsPortal = id;
-    renderOdds();
+    spaceHand();
   }
 
   function doPull(portalId: string, count: PullCount): void {
@@ -118,10 +257,18 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     const portal = content.portals.find((p) => p.id === portalId)!;
     const after = result.state;
     const reveal = revealViews(result.results, content);
-    hand = lastHandView(reveal);
+    handViews = reveal;
+    hand = lastHandView(reveal, content).map((view) => ({
+      view,
+      face: content.cardById.has(view.itemId) ? cardFaceProps(content, after, view.itemId) : null,
+      picture: content.cosmeticById.has(view.itemId)
+        ? cosmeticSwatch(content, view.itemId, after.cosmetics.owned[view.itemId]?.level ?? 1)
+        : null,
+    }));
     renderHand();
     showReveal({
       portalName: portal.name,
+      kind: portal.kind,
       views: reveal,
       face: (id) => (content.cardById.has(id) ? cardFaceProps(content, after, id) : null),
       picture: (id) =>
@@ -131,79 +278,97 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
-        decks.get(portalId)?.single.focus();
+        // the buttons are enabled again before the focus goes back to the one that was used
+        render();
+        decks.get(portalId)?.single.el.focus();
       },
     });
   }
 
-  function deckShell(kind: 'cards' | 'cosmetics', locked: boolean): HTMLElement {
+  // ---- decks ----
+  function deckShell(kind: string, locked: boolean): HTMLElement {
     const root = h('article', 'sm-deck');
-    root.dataset.kind = kind;
+    root.dataset['kind'] = kind;
     if (locked) root.classList.add('is-locked');
     return root;
   }
 
-  function crestIcon(kind: 'cards' | 'cosmetics'): HTMLElement {
-    const icon = h('span', 'sm-crest__icon');
+  function crestIcon(kind: string): HTMLElement {
+    const icon = h('span', 'sm-plate__icon');
     icon.setAttribute('aria-hidden', 'true');
     icon.innerHTML = svg(navPlaque(kind === 'cosmetics' ? 'wardrobe' : 'summon'), PLAQUE_VIEWBOX);
     return icon;
   }
 
-  function buildStack(kind: 'cards' | 'cosmetics'): {
-    stack: HTMLElement;
-    count: HTMLElement;
-    of: HTMLElement;
-  } {
+  /** The deck: card backs seen from the front, the edge of the pile showing right and below. */
+  function buildStack(kind: string): HTMLElement {
     const stack = h('div', 'sm-stack');
-    const back = h('div', 'sm-stack__back');
-    const edge = h('div', 'sm-stack__edge');
-    const crest = h('div', 'sm-crest');
-    const count = h('strong', 'sm-crest__count bi-num');
-    const of = h('small', 'sm-crest__of bi-num');
-    crest.append(crestIcon(kind), count, of);
-    back.append(crest);
-    stack.append(back, edge);
     stack.setAttribute('role', 'img');
-    return { stack, count, of };
+    const back = h('div', 'sm-stack__back');
+    const plate = h('span', 'sm-plate');
+    plate.append(crestIcon(kind));
+    for (const corner of ['tl', 'tr', 'bl', 'br']) {
+      const gem = h('i', `sm-stack__gem sm-stack__gem--${corner}`);
+      gem.setAttribute('aria-hidden', 'true');
+      back.append(gem);
+    }
+    back.append(plate);
+    stack.append(
+      h('i', 'sm-stack__edge sm-stack__edge--right'),
+      h('i', 'sm-stack__edge sm-stack__edge--bottom'),
+      back,
+    );
+    return stack;
+  }
+
+  function pullButton(label: string, ten: boolean, onClick: () => void): PullButton {
+    const el = h('button', ten ? 'sm-pull sm-pull--ten px-btn px-btn--quiet' : 'sm-pull px-btn');
+    el.type = 'button';
+    const cost = h('span', 'sm-pull__cost bi-num');
+    el.append(h('span', 'sm-pull__label', label), cost);
+    el.addEventListener('click', onClick);
+    return { el, cost };
   }
 
   function portalDeck(portalId: string): HTMLElement {
     const portal = content.portals.find((p) => p.id === portalId)!;
-    const kind = portal.kind === 'cosmetics' ? 'cosmetics' : 'cards';
-    const root = deckShell(kind, false);
-    root.dataset.portal = portalId;
-    const { stack, count, of } = buildStack(kind);
-    const caption = h('p', 'sm-deck__pity');
+    const root = deckShell(portal.kind, false);
+    root.dataset['portal'] = portalId;
+    const stack = buildStack(portal.kind);
+    const line = h('p', 'sm-deck__line');
+    const pityValue = h('b', 'bi-num');
+    const pityTop = h('div', 'sm-pity__top');
+    pityTop.append(h('span', '', COPY.summon.pityLabel), pityValue);
+    const pityFill = h('i');
+    const pityBar = h('div', 'sm-pity__track px-well');
+    pityBar.setAttribute('role', 'meter');
+    pityBar.setAttribute('aria-valuemin', '0');
+    pityBar.setAttribute('aria-label', COPY.summon.pityMeter(portal.name));
+    pityBar.append(pityFill);
+    const pity = h('div', 'sm-pity');
+    pity.append(pityTop, pityBar);
     const buttons = h('div', 'sm-deck__buttons');
-    const button = (n: PullCount): HTMLButtonElement => {
-      const b = h('button', n === 1 ? 'sm-pull' : 'sm-pull sm-pull--ten');
-      b.type = 'button';
-      b.addEventListener('click', () => doPull(portalId, n));
-      buttons.append(b);
-      return b;
-    };
-    const single = button(1);
-    const ten = button(10);
-    root.append(h('h2', 'sm-deck__name', portal.name), stack, caption, buttons);
-    root.addEventListener('pointerenter', () => showOdds(portalId));
-    root.addEventListener('focusin', () => showOdds(portalId));
-    decks.set(portalId, { root, stack, count, of, caption, single, ten });
+    const single = pullButton(COPY.summon.pullOne, false, () => doPull(portalId, 1));
+    const ten = pullButton(COPY.summon.pullTen, true, () => doPull(portalId, 10));
+    buttons.append(single.el, ten.el);
+    root.append(h('h2', 'sm-deck__name px-display', portal.name), line, stack, pity, buttons);
+    const hunt =
+      portal.kind === 'cards' && portal.wishlistPerRarity > 0 ? h('p', 'sm-deck__hunt') : null;
+    if (hunt) line.after(hunt);
+    decks.set(portalId, { root, stack, pityValue, pityBar, pityFill, line, hunt, single, ten });
     return root;
   }
 
   function lockedDeck(): HTMLElement {
     const root = deckShell('cosmetics', true);
-    const { stack, count, of } = buildStack('cosmetics');
-    count.textContent = '?';
-    of.hidden = true;
+    const stack = buildStack('cosmetics');
     stack.setAttribute('aria-label', `${COPY.summon.gate}: ${COPY.summon.gateLocked}`);
     stack.style.setProperty('--layers', '1');
     root.append(
-      h('h2', 'sm-deck__name', COPY.summon.gate),
+      h('h2', 'sm-deck__name px-display', COPY.summon.gate),
+      h('p', 'sm-deck__line', COPY.summon.gateAbout),
       stack,
-      h('p', 'sm-deck__pity', COPY.summon.gateLocked),
-      h('p', 'sm-deck__about', COPY.summon.gateAbout),
+      h('p', 'sm-deck__locked', COPY.summon.gateLocked),
     );
     return root;
   }
@@ -217,9 +382,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   const [left, ...rest] = slots;
   if (left) left.classList.add('sm-deck--left');
   for (const r of rest) r.classList.add('sm-deck--right');
-  const first = content.portals[0];
-  if (first) oddsPortal = first.id;
-  table.append(...(left ? [left] : []), odds, ...rest, handBox);
+  top.append(...(left ? [left] : []), odds, ...rest);
+  table.append(top, wish, handBox);
   renderHand();
 
   function render(): void {
@@ -235,19 +399,28 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         'aria-label',
         COPY.summon.deckLabel(v.name, v.pityCount, v.pityThreshold, v.pityRarityName),
       );
-      set(ui.count, String(v.pityCount));
-      set(ui.of, COPY.summon.crestOf(v.pityThreshold));
-      set(ui.caption, v.pity);
-      for (const [b, o, n, text] of [
-        [ui.single, v.single, 1, COPY.summon.draw],
-        [ui.ten, v.ten, 10, COPY.summon.deal],
+      set(ui.line, v.line);
+      set(ui.pityValue, v.pityText);
+      ui.pityFill.style.width = `${Math.round(v.pityProgress * 100)}%`;
+      ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
+      ui.pityBar.setAttribute('aria-valuenow', String(v.pityCount));
+      const resource = content.resourceById.get(v.resourceId);
+      const icon = (resource ? iconMarkup(resourceIconId(resource)) : null) ?? '';
+      for (const [b, o, n] of [
+        [ui.single, v.single, 1],
+        [ui.ten, v.ten, 10],
       ] as const) {
-        set(b, `${text} · ${o.price}`);
-        b.disabled = !o.affordable || busy;
-        b.classList.toggle('is-affordable', o.affordable);
-        b.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
+        const html = `${icon ? `<span class="sm-pull__icon">${icon}</span>` : ''}${o.amount}`;
+        if (b.cost.dataset['k'] !== html) {
+          b.cost.dataset['k'] = html;
+          b.cost.innerHTML = html;
+        }
+        b.el.disabled = !o.affordable || busy;
+        b.el.classList.toggle('is-affordable', o.affordable);
+        b.el.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
       }
     }
+    renderWishlist();
     renderOdds();
   }
 

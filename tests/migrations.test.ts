@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   createSaveText,
@@ -6,10 +8,11 @@ import {
   migrateState,
   readSave,
   SaveError,
+  stageKey,
   type MigrationTable,
 } from '../src/game';
 import { Decimal } from '../src/game';
-import { content, freshState } from './helpers';
+import { content, floorsContent, freshState } from './helpers';
 
 // A made-up v1 -> v2 migration used only to exercise the pipeline:
 // v1 stored `coins`; v2 renames it to `gold` and adds a `gems` field.
@@ -620,8 +623,21 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
     expect(out.cards.owned['b']!.tier).toBe('gold');
   });
 
-  it('loads at format 22 with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(22);
+  it('has a step at key 22 that multiplies the crystals held by 30 (the repricing)', () => {
+    const out = MIGRATIONS[22]!({
+      resources: { summon_crystal: '7', glamour_crystal: '2', money: '5', oak_gem: '1' },
+    }) as { resources: Record<string, string> };
+    expect(out.resources).toEqual({
+      summon_crystal: '210',
+      glamour_crystal: '60',
+      money: '5',
+      oak_gem: '1',
+    });
+    expect(MIGRATIONS[22]!({}) as unknown).toEqual({ resources: {} });
+  });
+
+  it('loads at the current format with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
+    expect(CURRENT_SAVE_VERSION).toBe(26);
     const loaded = readSave(v21Save(), content);
     // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
     expect(loaded.state.weaponSkins).toEqual({
@@ -635,7 +651,7 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
     const loaded = readSave(v21Save(), content);
     expect(loaded.state.cards.owned['moonwood_dryad']).toMatchObject({
       tier: 'mythic',
-      stars: 2,
+      stars: 2, // saved stars are kept as they are
       level: 30,
     });
   });
@@ -678,5 +694,155 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
   it('leaves a Mythic card at Mythic with no refund beyond the Common and Legendary ones', () => {
     const loaded = readSave(v21Save(), content);
     expect(loaded.state.cards.owned['moonwood_dryad']!.tier).toBe('mythic');
+  });
+});
+
+describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to §10)', () => {
+  /** A format 25 payload with only what the step reads. */
+  const v25 = (over: Record<string, unknown> = {}): Record<string, unknown> => ({
+    cards: {
+      owned: { apprentice_feller: { tier: 'bronze', stars: 4 }, cave_digger: { tier: 'wood' } },
+      loadouts: {
+        logging: { main: 'apprentice_feller', supports: ['moss_forager', null, null] },
+        mining: { main: 'cave_digger', supports: [null, null, null] },
+        fighting: { main: 'ember_squire', supports: [null, null, null] },
+      },
+      shards: 3,
+    },
+    bursts: {
+      fighting: { gauge: 4, timer: 0.5 },
+      logging: { gauge: 12, timer: 0.25 },
+      mining: { gauge: 7, timer: 1 },
+    },
+    production: { unlockedTrees: ['ironbark'], treeLevels: { oak: 3 }, mineLevels: {} },
+    combat: { kills: { mossy_cellar: 78, void_hollow: 2 }, floors: {}, training: { sharpen: 4 } },
+    ...over,
+  });
+  const step = MIGRATIONS[25]!;
+  type Out = {
+    production: Record<string, unknown>;
+    combat: Record<string, unknown>;
+    cards: Record<string, unknown>;
+    bursts: Record<string, unknown>;
+    automation: unknown;
+  };
+
+  it('makes each production job main card the worker of its first tree or mine', () => {
+    const out = step(v25()) as Out;
+    expect(out.production['workers']).toEqual({
+      oak: ['apprentice_feller'],
+      copper_quarry: ['cave_digger'],
+    });
+    // Supports become nothing; a job with no main card gives no worker.
+    const empty = v25();
+    (empty['cards'] as { loadouts: Record<string, { main: unknown }> }).loadouts['mining']!.main =
+      null;
+    expect((step(empty) as Out).production['workers']).toEqual({ oak: ['apprentice_feller'] });
+    // What the production already held stays.
+    expect(out.production).toMatchObject({ unlockedTrees: ['ironbark'], treeLevels: { oak: 3 } });
+  });
+
+  it('moves the old harvest gauges to that worker and keeps the old ones readable', () => {
+    const out = step(v25()) as Out;
+    expect(out.production['harvestGauges']).toEqual({
+      oak: { gauge: 12, timer: 0.25 },
+      copper_quarry: { gauge: 7, timer: 1 },
+    });
+    expect(out.bursts).toEqual(v25()['bursts']);
+    // No worker, no gauge.
+    const empty = v25();
+    (empty['cards'] as { loadouts: Record<string, { main: unknown }> }).loadouts['logging']!.main =
+      null;
+    expect((step(empty) as Out).production['harvestGauges']).toEqual({
+      copper_quarry: { gauge: 7, timer: 1 },
+    });
+    // An empty gauge needs no entry (missing = empty).
+    const idle = v25({
+      bursts: {
+        fighting: { gauge: 0, timer: 0 },
+        logging: { gauge: 0, timer: 0 },
+        mining: { gauge: 3, timer: 0 },
+      },
+    });
+    expect((step(idle) as Out).production['harvestGauges']).toEqual({
+      copper_quarry: { gauge: 3, timer: 0 },
+    });
+  });
+
+  it("turns each dungeon's boss kills into the stage kills of its Normal last floor", () => {
+    const out = step(
+      v25({
+        combat: { kills: { mossy_cellar: 78, void_hollow: 2, glimmer_trial: 5, ember_crypt: 0 } },
+      }),
+    ) as Out;
+    expect(out.combat['stageKills']).toEqual({
+      [stageKey('mossy_cellar', 'normal', 10)]: 78,
+      [stageKey('void_hollow', 'normal', 60)]: 2,
+    });
+    // The old kill counts stay readable (the medals still read them until package 3).
+    expect(out.combat['kills']).toEqual({
+      mossy_cellar: 78,
+      void_hollow: 2,
+      glimmer_trial: 5,
+      ember_crypt: 0,
+    });
+  });
+
+  it('keeps the stars, loadouts and everything else of the cards; the wishlist starts empty', () => {
+    const before = v25();
+    const out = step(before) as Out;
+    expect(out.cards).toEqual({ ...(before['cards'] as object), wishlist: [] });
+  });
+
+  it('starts everything else empty', () => {
+    const out = step(v25()) as Out;
+    expect(out.production).toMatchObject({
+      tools: {},
+      depth: {},
+      forge: { recipe: null, progress: '0', worker: null },
+    });
+    expect(out.combat).toMatchObject({ stageChests: {}, overflow: {}, training: { sharpen: 4 } });
+    expect(out.automation).toEqual({ treeLevels: false, mineLevels: false, reservePercent: 0 });
+  });
+
+  it('copes with a payload missing every part it reads', () => {
+    const out = step({}) as Out;
+    expect(out.production['workers']).toEqual({});
+    expect(out.production['harvestGauges']).toEqual({});
+    expect(out.combat['stageKills']).toEqual({});
+    expect(out.cards).toEqual({ wishlist: [] });
+  });
+
+  it('loads a format 25 save written by the 0.5.5 game (dev tools and ten minutes of play)', () => {
+    const text = readFileSync(resolve(__dirname, 'fixtures/saves/v25-dev-tools.save.txt'), 'utf8');
+    expect(JSON.parse(text).version).toBe(25);
+    const { state } = readSave(text, floorsContent);
+    expect(state.production.workers).toEqual({
+      oak: ['apprentice_feller'],
+      copper_quarry: ['cave_digger'],
+    });
+    expect(Object.keys(state.production.harvestGauges).sort()).toEqual(['copper_quarry', 'oak']);
+    // the old job gauges moved to the first tree and mine; the state keeps the fighting one only
+    const saved = JSON.parse(text) as { state: { bursts: Record<string, unknown> } };
+    expect(state.production.harvestGauges['oak']).toEqual(saved.state.bursts['logging']);
+    expect(state.production.harvestGauges['copper_quarry']).toEqual(saved.state.bursts['mining']);
+    expect(Object.keys(state.bursts)).toEqual(['fighting']);
+    expect(state.combat.stageKills).toEqual({ [stageKey('mossy_cellar', 'normal', 10)]: 78 });
+    // Stars, levels and loadouts are what the 0.5.5 game wrote.
+    expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
+    expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });
+    expect(Object.keys(state.cards.loadouts)).toEqual(['fighting']);
+    expect(state.cards.loadouts.fighting.main).toBe('ember_squire');
+    expect(state.cards.wishlist).toEqual([]);
+    expect(state.production.tools).toEqual({});
+    expect(state.production.depth).toEqual({});
+    expect(state.production.forge.recipe).toBeNull();
+    expect(state.combat.stageChests).toEqual({});
+    expect(state.combat.overflow).toEqual({});
+    expect(state.automation).toEqual({ treeLevels: false, mineLevels: false, reservePercent: 0 });
+    // Saved again, it is format 26 and loads to the same state.
+    const again = readSave(createSaveText(state, 1), floorsContent);
+    expect(JSON.parse(createSaveText(state, 1)).version).toBe(26);
+    expect(again.state).toEqual(state);
   });
 });

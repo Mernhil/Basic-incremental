@@ -249,6 +249,46 @@ export function itemTiles(
     );
 }
 
+/** The filter chips of the inventory (UI_RULES §2 Wardrobe), in order. `skins` shows the weapon
+ *  skins instead of cosmetics. */
+export const INVENTORY_FILTERS = [
+  'all',
+  'worn',
+  'frames',
+  'effects',
+  'table',
+  'interface',
+  'upgrade',
+  'skins',
+] as const;
+export type InventoryFilter = (typeof INVENTORY_FILTERS)[number];
+
+const FILTER_SLOTS: Partial<Record<InventoryFilter, readonly string[]>> = {
+  frames: ['border', 'finish'],
+  effects: ['attack', 'tick', 'number'],
+  table: ['table', 'cursor'],
+};
+const CARD_AND_TABLE = new Set(Object.values(FILTER_SLOTS).flat());
+
+/** The tiles a filter chip lets through, in the order they came. */
+export function inventoryTiles(tiles: readonly ItemTile[], filter: InventoryFilter): ItemTile[] {
+  switch (filter) {
+    case 'all':
+      return [...tiles];
+    case 'worn':
+      return tiles.filter((t) => t.equipped);
+    case 'upgrade':
+      return tiles.filter((t) => t.upgradable);
+    case 'interface':
+      // the four interface styles: every slot that is not a card or table piece
+      return tiles.filter((t) => !CARD_AND_TABLE.has(t.slot));
+    case 'skins':
+      return [];
+    default:
+      return tiles.filter((t) => FILTER_SLOTS[filter]?.includes(t.slot));
+  }
+}
+
 // ---- selected item ---------------------------------------------------------------------------
 
 export interface LadderRung {
@@ -270,8 +310,12 @@ export interface UpgradeView {
   /** What the step adds, in one line. */
   note: string;
   requirements: Requirement[];
-  /** "Upgrade · 1 copy, 300 Glimmer Dust". */
+  /** The button label ("Upgrade"); the price is in `price`. */
   action: string;
+  /** "1 copy, 300 Glimmer Dust". */
+  price: string;
+  /** The parts of the price still missing ("40 Glimmer Dust"); empty when it can be paid. */
+  missing: string[];
   ready: boolean;
 }
 
@@ -286,8 +330,12 @@ export interface EquipOptions {
 
 export interface ItemDetail {
   tile: ItemTile;
-  /** "Epic border · Gilded Tradition set". */
+  /** "Border · Epic · Gilded Tradition set" (slot, rarity, set). */
   subtitle: string;
+  /** The item's set with how many of its pieces are worn ("3/7"), or null without a set. */
+  set: { name: string; count: string } | null;
+  /** The ladder step the next upgrade adds ("Glow"), or null at the top or when not owned. */
+  nextStep: string | null;
   source: string;
   /** Owned buff lines ("+1% damage"); empty when the item has none. */
   buffs: string[];
@@ -313,9 +361,11 @@ export function itemDetail(
   const tile = itemTiles([item], content, 'all', previewCard)[0]!;
   const set = c.set ? content.setById.get(c.set) : undefined;
   const subtitle = [
-    `${rarityName(content, c.rarity)} ${t.slots[c.slot].toLowerCase()}`,
+    t.slots[c.slot],
+    rarityName(content, c.rarity),
     ...(set ? [t.setOf(set.name)] : []),
   ].join(' · ');
+  const setView = set ? setViews(state, content).find((s) => s.id === set.id) : undefined;
 
   const previewOwned = previewCard ? state.cards.owned[previewCard] : undefined;
   const previewRank = previewOwned ? { tier: previewOwned.tier, stars: previewOwned.stars } : null;
@@ -355,18 +405,21 @@ export function itemDetail(
       const name = content.resourceById.get(r.resource ?? '')?.name ?? r.resource ?? '';
       return { label: name, value: t.haveOf(fmt(r.have), need), met: r.met };
     });
-    const price = item.upgrade.requirements
-      .map((r) =>
-        r.kind === 'copies'
-          ? t.copies(r.need.toNumber())
-          : `${fmt(r.need)} ${content.resourceById.get(r.resource ?? '')?.name ?? ''}`,
-      )
-      .join(', ');
+    const part = (r: (typeof item.upgrade.requirements)[number], amount: Decimal): string =>
+      r.kind === 'copies'
+        ? t.copies(amount.toNumber())
+        : `${fmt(amount)} ${content.resourceById.get(r.resource ?? '')?.name ?? ''}`;
+    const price = item.upgrade.requirements.map((r) => part(r, r.need)).join(', ');
+    const missing = item.upgrade.requirements
+      .filter((r) => !r.met)
+      .map((r) => part(r, Decimal.max(r.need.sub(r.have), 0)));
     upgrade = {
       title: t.nextLevel(item.upgrade.toLevel, t.steps[item.upgrade.step]),
       note: t.stepNote[item.upgrade.step],
       requirements: reqs,
-      action: `${t.upgrade} · ${price}`,
+      action: t.upgrade,
+      price,
+      missing,
       ready: item.upgrade.met,
     };
   }
@@ -408,6 +461,8 @@ export function itemDetail(
   return {
     tile,
     subtitle,
+    set: set && setView ? { name: set.name, count: setView.count } : null,
+    nextStep: upgrade && item.upgrade?.step ? t.steps[item.upgrade.step] : null,
     source: sourceText(content, c.id, item.source),
     buffs: item.ownedModifiers.map(buffText),
     buffActive: item.owned,

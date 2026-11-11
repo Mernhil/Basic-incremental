@@ -23,6 +23,7 @@ import {
 } from '../../game';
 import { fmt } from './settings/numberFormat';
 import { COPY } from './copy';
+import { coinAmount, isMoney } from './settings/coins';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
 import { iconMarkup, isCrystal, isHeaderResource, resourceIconId } from './ui/resourceIcons';
@@ -155,16 +156,17 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const shell = createShell({
     version,
     currencies,
+    coins: (id, amount) => (isMoney(content, id) ? coinAmount(content.coins, amount) : null),
     levelTip,
     onShow: (id) => pages[id]?.render(),
     onLevel: () => {
       if (track.isOpen()) track.close();
-      else track.open(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+      else track.open(trackView(content, rewardTrack(loop.state, content)), levelOf());
     },
   });
-  const levelOf = (): [number, number] => {
+  const levelOf = (): number => {
     const info = accountInfo(loop.state, content);
-    return [info.level, info.maxLevel];
+    return info.level;
   };
   const track = createRewardTrack(shell.track, {
     content,
@@ -251,7 +253,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     playSound('levelUp');
     shell.flashLevel();
     toast(v.title, v.lines, 'milestone', v.big ? 'prismatic' : 'gold');
-    track.update(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+    track.update(trackView(content, rewardTrack(loop.state, content)), levelOf());
   };
 
   const applyAndSave = (next: GameState): void => {
@@ -281,6 +283,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     visible: visible('production'),
     sound: playSound,
     onTierUps,
+    setBuySlot: (el) => shell.setQuestSlot('production', el),
   });
   // one card view model for the Cards page and the dungeon drawer's weapon panel
   const cardsModel = createCardsModel(content, (id, owned) =>
@@ -398,7 +401,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     announce(report);
     if (report.accountLevel) {
       if (document.hidden) {
-        track.update(trackView(content, rewardTrack(loop.state, content)), ...levelOf());
+        track.update(trackView(content, rewardTrack(loop.state, content)), levelOf());
       } else celebrateLevel(report.accountLevel.from, report.accountLevel.to);
     }
     if (!document.hidden) celebrateAchievements(report.achievements);
@@ -453,6 +456,16 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   window.api.onFlushRequest(() => {
     void save().finally(() => window.api.flushDone());
   });
+
+  // The dev cheats panel (DESIGN.md §2): dev builds only. Vite drops this import from a release
+  // build, and the main process says no in a packaged app.
+  if (import.meta.env.DEV) {
+    void window.api.devCheatsEnabled().then(async (enabled) => {
+      if (!enabled) return;
+      const { installDevPanel } = await import('./dev/devPanel');
+      installDevPanel({ content, state: () => loop.state, apply: applyAndSave });
+    });
+  }
 
   rendered();
   await save(); // a fresh game gets a save file right away

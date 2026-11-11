@@ -7,6 +7,9 @@ import { masteryModifiers } from './mastery';
 import { prestigeModifiers } from './prestige';
 import { accountModifiers } from './account';
 import { upgradeModifiers } from './upgrades';
+import { trainingModifiers } from './training';
+import { toolModifiers } from './toolLines';
+import { elementModifiers } from './elements';
 
 /**
  * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
@@ -28,6 +31,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'account',
   /** Upgrade shelf purchases (DESIGN.md §4). */
   'upgrade',
+  /** Elements in combat: weakness, resistance and matching workers (DESIGN.md §6). */
+  'element',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -63,6 +68,79 @@ export function scopeMatches(scope: ModifierScope | undefined, context: StatCont
 
 const ORDER: readonly ModifierKind[] = ['flat', 'percent', 'mult', 'set', 'min', 'max'];
 
+/** The modifiers of one stat, in their original order, split by kind. */
+type ByKind = Partial<Record<ModifierKind, Modifier[]>>;
+
+interface StatIndex {
+  /** Length of the list when it was indexed: a list that grew since is indexed again. */
+  length: number;
+  byStat: Map<Stat, Modifier[]>;
+}
+
+/**
+ * Modifier lists by stat, remembered per list. One list (the result of `collectModifiers`) is
+ * read for many stats in a row, so each read looks only at its own stat's modifiers instead of
+ * the whole list. The order inside a stat is the list's order, so results do not change.
+ */
+const indexes = new WeakMap<readonly Modifier[], StatIndex>();
+
+function modifiersOf(stat: Stat, modifiers: readonly Modifier[]): readonly Modifier[] {
+  let index = indexes.get(modifiers);
+  if (!index || index.length !== modifiers.length) {
+    const byStat = new Map<Stat, Modifier[]>();
+    for (const m of modifiers) {
+      const list = byStat.get(m.stat);
+      if (list) list.push(m);
+      else byStat.set(m.stat, [m]);
+    }
+    index = { length: modifiers.length, byStat };
+    indexes.set(modifiers, index);
+  }
+  return index.byStat.get(stat) ?? NONE;
+}
+const NONE: readonly Modifier[] = [];
+
+/** The modifiers of `stat` that apply in `context`, split by kind in one pass. */
+function matchingByKind(
+  stat: Stat,
+  modifiers: readonly Modifier[],
+  context: StatContext,
+): ByKind | null {
+  let out: ByKind | null = null;
+  for (const m of modifiersOf(stat, modifiers)) {
+    if (!scopeMatches(m.scope, context)) continue;
+    out ??= {};
+    const list = out[m.kind];
+    if (list) list.push(m);
+    else out[m.kind] = [m];
+  }
+  return out;
+}
+
+/** Applies the kinds in their fixed order (see computeStat). */
+function applyKinds(start: Decimal, kinds: ByKind): Decimal {
+  let value = start;
+  const flat = kinds.flat;
+  if (flat) value = value.add(sum(flat));
+
+  const percent = kinds.percent;
+  if (percent) value = value.mul(sum(percent).div(100).add(1));
+
+  const mult = kinds.mult;
+  if (mult) for (const m of mult) value = value.mul(m.value);
+
+  const set = kinds.set;
+  if (set) value = set[set.length - 1]!.value;
+
+  const floors = kinds.min;
+  if (floors) value = Decimal.max(value, floors.map((m) => m.value).reduce(maxOf));
+
+  const caps = kinds.max;
+  if (caps) value = Decimal.min(value, caps.map((m) => m.value).reduce(minOf));
+
+  return value;
+}
+
 /**
  * Applies modifiers to `base` in a fixed order:
  * base -> + flat (summed) -> x (1 + percent sum / 100) -> x each mult -> set (last wins)
@@ -75,29 +153,10 @@ export function computeStat(
   context: StatContext = {},
 ): StatResult {
   const start = new Decimal(base);
-  const matching = modifiers.filter((m) => m.stat === stat && scopeMatches(m.scope, context));
-  const byKind = (kind: ModifierKind): Modifier[] => matching.filter((m) => m.kind === kind);
-
-  let value = start;
-  const flat = byKind('flat');
-  if (flat.length) value = value.add(sum(flat));
-
-  const percent = byKind('percent');
-  if (percent.length) value = value.mul(sum(percent).div(100).add(1));
-
-  for (const m of byKind('mult')) value = value.mul(m.value);
-
-  const set = byKind('set');
-  if (set.length) value = set[set.length - 1]!.value;
-
-  const floors = byKind('min');
-  if (floors.length) value = Decimal.max(value, floors.map((m) => m.value).reduce(maxOf));
-
-  const caps = byKind('max');
-  if (caps.length) value = Decimal.min(value, caps.map((m) => m.value).reduce(minOf));
-
-  const applied = ORDER.flatMap(byKind);
-  return { base: start, value, applied };
+  const kinds = matchingByKind(stat, modifiers, context);
+  if (!kinds) return { base: start, value: start, applied: [] };
+  const applied = ORDER.flatMap((kind) => kinds[kind] ?? []);
+  return { base: start, value: applyKinds(start, kinds), applied };
 }
 
 function sum(mods: Modifier[]): Decimal {
@@ -106,14 +165,16 @@ function sum(mods: Modifier[]): Decimal {
 const maxOf = (a: Decimal, b: Decimal): Decimal => Decimal.max(a, b);
 const minOf = (a: Decimal, b: Decimal): Decimal => Decimal.min(a, b);
 
-/** Shorthand when only the number is needed. */
+/** Shorthand when only the number is needed (it skips the breakdown list). */
 export function statValue(
   stat: Stat,
   base: DecimalSource,
   modifiers: readonly Modifier[],
   context: StatContext = {},
 ): Decimal {
-  return computeStat(stat, base, modifiers, context).value;
+  const start = new Decimal(base);
+  const kinds = matchingByKind(stat, modifiers, context);
+  return kinds ? applyKinds(start, kinds) : start;
 }
 
 const withSource =
@@ -155,6 +216,44 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Upgrade shelf purchases.
   out.push(...upgradeModifiers(state, content));
+  out.push(...trainingModifiers(state, content));
+  out.push(...toolModifiers(state, content));
 
-  return out;
+  // The loadout's elements against each boss.
+  out.push(...elementModifiers(state, content));
+
+  return strengthen(out);
+}
+
+/** A modifier made `factor` times as strong: flat and percent scale, a mult its part above 1. */
+function scaled(m: Modifier, factor: Decimal): Modifier {
+  if (m.kind === 'flat' || m.kind === 'percent') return { ...m, value: m.value.mul(factor) };
+  if (m.kind === 'mult') return { ...m, value: m.value.sub(1).mul(factor).add(1) };
+  return m;
+}
+
+/**
+ * The skill tree's strength stats (DESIGN.md §10): `tool.strength` scales what the tool lines give
+ * (per job); `element.bonus`, `element.resist` and `element.production` what the elements give.
+ * They act on the finished list, so each reads only the skills' own modifiers.
+ */
+function strengthen(list: Modifier[]): Modifier[] {
+  const hasStrength = list.some(
+    (m) =>
+      m.stat === 'tool.strength' ||
+      m.stat === 'element.bonus' ||
+      m.stat === 'element.resist' ||
+      m.stat === 'element.production',
+  );
+  if (!hasStrength) return list;
+  const read = (stat: Stat, context: StatContext = {}): Decimal =>
+    Decimal.max(statValue(stat, 1, list, context), 0);
+  return list.map((m) => {
+    if (m.source.kind === 'upgrade' && m.source.id.startsWith('tool:')) {
+      return scaled(m, read('tool.strength', m.scope?.job ? { job: m.scope.job } : {}));
+    }
+    if (m.source.kind !== 'element') return m;
+    if (m.stat === 'production.rate') return scaled(m, read('element.production'));
+    return scaled(m, read(m.value.lt(0) ? 'element.resist' : 'element.bonus'));
+  });
 }

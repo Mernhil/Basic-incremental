@@ -5,120 +5,401 @@
     "kind": "cards",
     "cost": {
       "resource": "summon_crystal",
-      "single": "10",
-      "ten": "100"
+      "single": "300",
+      "ten": "3000"
     },
     "pool": [
       {
         "itemId": "ember_squire",
         "rarity": "common",
-        "weight": 30
+        "weight": 4.836364
       },
       {
         "itemId": "apprentice_feller",
         "rarity": "common",
-        "weight": 30
+        "weight": 4.836364
       },
       {
         "itemId": "cave_digger",
         "rarity": "common",
-        "weight": 30
+        "weight": 4.836364
+      },
+      {
+        "itemId": "rusty_brute",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "militia_picket",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "stable_squire",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "alley_cutpurse",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "quarry_smasher",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "fieldhand_archer",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "hedge_acolyte",
+        "rarity": "common",
+        "weight": 4.836364
+      },
+      {
+        "itemId": "field_reaper",
+        "rarity": "common",
+        "weight": 4.836364
       },
       {
         "itemId": "hollow_spearman",
         "rarity": "uncommon",
-        "weight": 20
+        "weight": 2.545455
       },
       {
         "itemId": "moss_forager",
         "rarity": "uncommon",
-        "weight": 20
+        "weight": 2.545455
       },
       {
         "itemId": "pebble_prospector",
         "rarity": "uncommon",
-        "weight": 20
+        "weight": 2.545455
+      },
+      {
+        "itemId": "brass_vanguard",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_warden",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_jouster",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_sneak",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_forgehand",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_hunter",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_mystic",
+        "rarity": "uncommon",
+        "weight": 2.545455
+      },
+      {
+        "itemId": "bronze_gleaner",
+        "rarity": "uncommon",
+        "weight": 2.545455
       },
       {
         "itemId": "grove_keeper",
         "rarity": "rare",
-        "weight": 10
+        "weight": 1.181818
       },
       {
         "itemId": "gem_cutter",
         "rarity": "rare",
-        "weight": 10
+        "weight": 1.181818
       },
       {
         "itemId": "reaper_test",
         "rarity": "rare",
-        "weight": 1
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_cavalier",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_executioner",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_skirmisher",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_rider",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_shiv",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_sledger",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_ranger",
+        "rarity": "rare",
+        "weight": 1.181818
+      },
+      {
+        "itemId": "silver_mage",
+        "rarity": "rare",
+        "weight": 1.181818
       },
       {
         "itemId": "storm_duelist",
         "rarity": "epic",
-        "weight": 4
+        "weight": 0.363636
       },
       {
         "itemId": "elder_treant",
         "rarity": "epic",
-        "weight": 4
+        "weight": 0.363636
       },
       {
         "itemId": "prism_delver",
         "rarity": "epic",
-        "weight": 4
+        "weight": 0.363636
+      },
+      {
+        "itemId": "gilded_knight",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "gold_warlord",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "golden_hoplite",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "golden_tilter",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "golden_anvilmaster",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "golden_sharpshot",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "golden_sage",
+        "rarity": "epic",
+        "weight": 0.363636
+      },
+      {
+        "itemId": "golden_harvester",
+        "rarity": "epic",
+        "weight": 0.363636
       },
       {
         "itemId": "dawnblade_regent",
         "rarity": "legendary",
-        "weight": 1.5
+        "weight": 0.136364
       },
       {
         "itemId": "geode_golem",
         "rarity": "legendary",
-        "weight": 1.5
+        "weight": 0.136364
       },
       {
         "itemId": "heartwood_warden",
         "rarity": "legendary",
-        "weight": 1.5
+        "weight": 0.136364
+      },
+      {
+        "itemId": "prism_paladin",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "shard_strider",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "mirror_cavalier",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "whisper_assassin",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "facet_crusher",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "rainbow_sniper",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "kaleido_weaver",
+        "rarity": "legendary",
+        "weight": 0.136364
+      },
+      {
+        "itemId": "halfmoon_reaper",
+        "rarity": "legendary",
+        "weight": 0.136364
       },
       {
         "itemId": "moonwood_dryad",
         "rarity": "mythic",
-        "weight": 0.6
+        "weight": 0.018182
       },
       {
         "itemId": "seraph_lancer",
         "rarity": "mythic",
-        "weight": 0.6
+        "weight": 0.018182
       },
       {
         "itemId": "lodestone_seer",
         "rarity": "mythic",
-        "weight": 0.6
+        "weight": 0.018182
+      },
+      {
+        "itemId": "dawn_champion",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "sunbreaker_titan",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "valor_pikeman",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "gleam_phantom",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "thunder_smith",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "seraph_archer",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "sanctum_oracle",
+        "rarity": "mythic",
+        "weight": 0.018182
+      },
+      {
+        "itemId": "mercy_harvester",
+        "rarity": "mythic",
+        "weight": 0.018182
       },
       {
         "itemId": "core_titan",
         "rarity": "void",
-        "weight": 0.3
+        "weight": 0.009091
       },
       {
         "itemId": "grave_hammerer",
         "rarity": "void",
-        "weight": 0.3
+        "weight": 0.009091
       },
       {
         "itemId": "rotwood_sovereign",
         "rarity": "void",
-        "weight": 0.3
+        "weight": 0.009091
+      },
+      {
+        "itemId": "shadow_reaver",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "ruin_tyrant",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "wraith_impaler",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "dread_horseman",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "venom_stalker",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "wither_huntress",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "hex_warlock",
+        "rarity": "void",
+        "weight": 0.009091
+      },
+      {
+        "itemId": "grim_sovereign",
+        "rarity": "void",
+        "weight": 0.009091
       }
     ],
     "pity": {
       "rarity": "legendary",
       "threshold": 90
     },
+    "wishlistPerRarity": 2,
     "tenPullGuarantee": "rare",
     "reveal": {
       "upgradeFlashChance": 0.25
@@ -131,8 +412,8 @@
     "enabled": true,
     "cost": {
       "resource": "glamour_crystal",
-      "single": "10",
-      "ten": "100"
+      "single": "300",
+      "ten": "3000"
     },
     "pool": [
       {
@@ -532,8 +813,8 @@
     "enabled": false,
     "cost": {
       "resource": "glamour_crystal",
-      "single": "10",
-      "ten": "100"
+      "single": "300",
+      "ten": "3000"
     },
     "pool": [
       {

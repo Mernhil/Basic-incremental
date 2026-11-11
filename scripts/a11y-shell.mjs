@@ -13,33 +13,39 @@ const port = process.argv[2] ?? '9222';
 const cosmetics = JSON.parse(readFileSync('src/data/content/cosmetics.json', 'utf8'));
 const TABLES = cosmetics.filter((c) => c.slot === 'table').map((c) => c.id);
 const CHECKS = [
-  '.shell-brand__name',
-  '.shell-brand__ver',
   '.shell-level__label',
   '.shell-level__xp',
   '.shell-currency__value',
+  '.shell-currency__rate',
   '.shell-currency__name',
-  '.shell-rail__label',
+  '.shell-quest__title',
+  '.shell-quest__text',
+  '.shell-quest__eta',
   '.shell-page__title',
   '.frame__heading',
   '.frame__note',
   '.frame__lead',
   '.frame__muted',
-  '.stat-row dt',
-  '.stat-row dd',
-  '.prod__name',
-  '.prod__meta',
-  '.slot-empty',
-  '.away__list',
   '.button',
-  '.tools__message',
-  '.pp-summary',
-  '.pp-tile__name',
-  '.pp-tile__rate',
-  '.pp-kind__name',
-  '.pp-kind__meta',
-  '.pp-tier',
-  '.pp-kind__level',
+  '.shell-details',
+  '.hm-panel__title',
+  '.hm-panel__where',
+  '.hm-big__label',
+  '.hm-stat__k',
+  '.hm-line__name',
+  '.hm-line__value',
+  '.cp-tab',
+  '.cp-chip',
+  '.cp-status',
+  '.pp-band__title',
+  '.pp-row__name',
+  '.pp-row__lv',
+  '.set-row__label',
+  '.set-row__hint',
+  '.sk-points__label',
+  '.sk-row',
+  '.sm-deck__name',
+  '.sm-odds__row',
 ];
 
 const browser = await chromium.connectOverCDP(`http://localhost:${port}`);
@@ -48,8 +54,19 @@ const page = browser
   .flatMap((c) => c.pages())
   .find((p) => !p.url().startsWith('devtools'));
 if (!page) throw new Error('No app window found');
+// the welcome-back card covers the page after offline progress
+async function collectWelcome() {
+  for (let i = 0; i < 3; i++) {
+    const wb = await page.$('.wb__collect');
+    if (!wb) return;
+    await wb.click({ force: true });
+    await page.waitForTimeout(1500);
+  }
+}
 await page.reload();
 await page.waitForSelector('.shell');
+await page.waitForTimeout(1200);
+await collectWelcome();
 const pages = await page.$$eval('.shell-rail__item', (els) => els.map((e) => e.dataset.page));
 
 const failures = [];
@@ -71,7 +88,7 @@ for (const table of TABLES) {
 }
 // tooltip contrast (opened by focus)
 await page.click('.shell-rail__item[data-page="home"]');
-await page.focus('.stat-row dd');
+await page.focus('.shell-currency');
 const tip = await page.evaluate(measure, [
   '.shell-tip__title',
   '.shell-tip__rows dt',
@@ -85,6 +102,8 @@ const described = await page.evaluate(
 );
 await page.reload();
 await page.waitForSelector('.shell');
+await page.waitForTimeout(1200);
+await collectWelcome();
 
 // keyboard
 await page.evaluate(() => document.querySelector('.away .button')?.click());
@@ -109,6 +128,7 @@ for (const r of reached.filter(Boolean)) seen.set(r.what, r.ring);
 const railReached = [...seen.keys()].filter((k) => k.startsWith('button.shell-rail__item')).length;
 
 // reduced motion
+await page.emulateMedia({ reducedMotion: 'reduce' });
 const looping = await page.evaluate(
   () =>
     document

@@ -3,12 +3,13 @@ import { SaveError, formatDuration, importSaveString, type GameState } from '../
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { soundSettingsFrame } from '../sound/controls';
+import { onSoundSettings } from '../sound/engine';
+import { reducedMotion } from '../stage/motion';
 import { buildIssueUrl, issueBody, LOG_LINES, systemFromUserAgent } from '../settings/issueReport';
 import { rendererLog } from '../settings/logBuffer';
 import { AUTOSAVE_CHOICES, onPrefs, prefs, setPrefs } from '../settings/prefs';
 import {
   autosaveLabel,
-  motionChoices,
   numberChoices,
   saveSummary,
   summaryLine,
@@ -17,9 +18,10 @@ import {
 import './settings.css';
 
 /**
- * The Settings page (DESIGN.md §11), option B "two-column panels": Display, Sound, Save
- * and Help as framed panels side by side. Import checks the save first and asks in the page
- * before it replaces the game.
+ * The Settings page (DESIGN.md §11), option B "two-column panels": Display and Save on the left,
+ * Sound and Help on the right, as pixel panels (UI_RULES.md §2, "Shell look"). Choices are pixel
+ * button groups with the chosen one gold, reduced motion is a pixel toggle, volumes are pixel
+ * sliders. Import checks the save first and asks in the page before it replaces the game.
  */
 
 export interface SettingsDeps {
@@ -49,7 +51,7 @@ function segmented<T extends string | number>(
   const name = `set-seg-${groupId++}`;
   const inputs: { input: HTMLInputElement; value: T }[] = [];
   for (const c of choices) {
-    const opt = h('label', 'set-seg__opt');
+    const opt = h('label', 'set-seg__opt px-btn--quiet');
     const input = h('input');
     input.type = 'radio';
     input.name = name;
@@ -69,12 +71,50 @@ function segmented<T extends string | number>(
   return { el: group, sync };
 }
 
+/**
+ * The reduced-motion pixel toggle. It switches between On and Off; while the preference follows
+ * Windows it shows the Windows setting, and a quiet "Follow Windows" button brings that back.
+ */
+function motionToggle(): { control: HTMLElement; hint: HTMLElement; sync(): void } {
+  const control = h('div', 'set-toggle-box');
+  const toggle = h('button', 'set-toggle');
+  toggle.type = 'button';
+  toggle.setAttribute('role', 'switch');
+  toggle.setAttribute('aria-label', COPY.settings.motion);
+  const knob = h('i', 'set-toggle__knob');
+  knob.setAttribute('aria-hidden', 'true');
+  toggle.append(knob);
+  const follow = h('button', 'set-follow px-btn px-btn--quiet', COPY.settings.motionFollow);
+  follow.type = 'button';
+  const hint = h('span', 'set-row__hint');
+  const effective = (): boolean => {
+    const m = prefs().motion;
+    return m === 'system' ? reducedMotion() : m === 'reduced';
+  };
+  toggle.addEventListener('click', () => setPrefs({ motion: effective() ? 'full' : 'reduced' }));
+  follow.addEventListener('click', () => {
+    setPrefs({ motion: 'system' });
+    toggle.focus();
+  });
+  control.append(follow, toggle);
+  const sync = (): void => {
+    const on = effective();
+    const system = prefs().motion === 'system';
+    toggle.setAttribute('aria-checked', String(on));
+    toggle.classList.toggle('is-on', on);
+    follow.hidden = system;
+    hint.textContent = system ? COPY.settings.motionFollows(on) : COPY.settings.motionHint;
+  };
+  sync();
+  return { control, hint, sync };
+}
+
 /** A setting row: label (and hint) on the left, its control on the right. */
-function row(label: string, control: HTMLElement, hint?: string): HTMLElement {
+function row(label: string, control: HTMLElement, hint?: string | HTMLElement): HTMLElement {
   const el = h('div', 'set-row');
   const text = h('div', 'set-row__text');
   text.append(h('span', 'set-row__label', label));
-  if (hint) text.append(h('span', 'set-row__hint', hint));
+  if (hint) text.append(typeof hint === 'string' ? h('span', 'set-row__hint', hint) : hint);
   el.append(text, control);
   return el;
 }
@@ -86,16 +126,15 @@ function saveFileName(now: Date): string {
 
 export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { render(): void } {
   root.classList.add('set-page');
+  // the panels carry the sighted headings; the page name stays for screen readers
+  root.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
   const grid = h('div', 'set-grid');
+  const left = h('div', 'set-col');
+  const right = h('div', 'set-col');
 
   // ---- Display ----
   const display = frame(COPY.settings.display);
-  const motion = segmented(
-    COPY.settings.motion,
-    motionChoices(),
-    () => prefs().motion,
-    (v) => setPrefs({ motion: v }),
-  );
+  const motion = motionToggle();
   const numbers = segmented(
     COPY.settings.numbers,
     numberChoices(),
@@ -105,12 +144,21 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   numbers.el.classList.add('set-seg--examples');
   display.body.classList.add('set-body');
   display.body.append(
-    row(COPY.settings.motion, motion.el, COPY.settings.motionHint),
+    row(COPY.settings.motion, motion.control, motion.hint),
     row(COPY.settings.numbers, numbers.el, COPY.settings.numbersHint),
   );
 
   // ---- Sound (the existing panel) ----
   const sound = soundSettingsFrame();
+  // the pixel sliders fill up to their value (--v, in percent)
+  const sliders = Array.from(sound.querySelectorAll<HTMLInputElement>('input[type="range"]'));
+  const fill = (): void => {
+    for (const r of sliders)
+      r.style.setProperty('--v', String((Number(r.value) / Number(r.max)) * 100));
+  };
+  for (const r of sliders) r.addEventListener('input', fill);
+  onSoundSettings(fill);
+  fill();
 
   // ---- Save ----
   const saveFrame = frame(COPY.save.heading);
@@ -129,13 +177,13 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
     autosave.sync();
   });
 
-  const button = (label: string, cls = 'button'): HTMLButtonElement => {
+  const button = (label: string, cls = 'px-btn px-btn--quiet'): HTMLButtonElement => {
     const b = h('button', cls, label);
     b.type = 'button';
     return b;
   };
   const copyBtn = button(COPY.save.copy);
-  const fileBtn = button(COPY.save.toFile, 'button button--ghost');
+  const fileBtn = button(COPY.save.toFile);
   const exportRow = h('div', 'set-actions');
   exportRow.append(copyBtn, fileBtn);
 
@@ -144,7 +192,7 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   text.spellcheck = false;
   text.placeholder = COPY.save.placeholder;
   text.setAttribute('aria-label', COPY.save.placeholder);
-  const loadBtn = button(COPY.save.fromFile, 'button button--ghost');
+  const loadBtn = button(COPY.save.fromFile);
   const importBtn = button(COPY.save.import);
   const picker = h('input');
   picker.type = 'file';
@@ -229,7 +277,7 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
     const imported = summaryLine(saveSummary(pending, deps.content));
     const current = summaryLine(saveSummary(deps.state(), deps.content));
     const replaceBtn = button(COPY.save.confirmReplace, 'button button--danger');
-    const keepBtn = button(COPY.save.confirmKeep, 'button button--ghost');
+    const keepBtn = button(COPY.save.confirmKeep);
     const actions = h('div', 'set-actions');
     actions.append(replaceBtn, keepBtn);
     confirm.setAttribute('role', 'alertdialog');
@@ -272,7 +320,7 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   // ---- Help ----
   const help = frame(COPY.settings.help);
   help.body.classList.add('set-body');
-  const reportBtn = button(COPY.settings.report);
+  const reportBtn = button(COPY.settings.report, 'px-btn px-btn--gold');
   const reportMsg = h('p', 'set-message');
   reportMsg.setAttribute('role', 'status');
   const details = h('details', 'set-details');
@@ -298,7 +346,9 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   });
   help.body.append(h('p', 'set-lead', COPY.settings.reportText), reportBtn, reportMsg, details);
 
-  grid.append(display.el, sound, saveFrame.el, help.el);
+  left.append(display.el, saveFrame.el);
+  right.append(sound, help.el);
+  grid.append(left, right);
   root.append(grid);
 
   let savedText = '';

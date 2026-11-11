@@ -1,6 +1,13 @@
-/* The dungeon arena (DESIGN.md §11, A1 D): a full-bleed stage. The backdrop comes from the table
-   tokens; frame-* tokens skin the readouts. The boss sits centre stage on a lit floor, the party
-   stands bottom-left facing it. */
+/* The dungeon arena (UI_RULES.md §2 "Dungeons arena layout", option "Hero fan"): it fills the page
+   under the goals strip. Behind everything is a room drawn in CSS (the default brick room: a wall,
+   two torches and a plank floor; `stage/arenaBackground.ts` picks it from the dungeon's
+   `background` id). The party fan stands on the left, the boss right of centre, three readout
+   chips stack in the top-right corner. Colours come from the table tokens (--bi-chrome-*,
+   --bi-frame-*); frames come from theme/frames.css (--fs, --fs-sm, --px-*).
+
+   Clean pixels (DESIGN.md §12): the room's bricks and planks are whole device pixels (--fs), the
+   boss and the cards take whole scales, nothing is rotated. Sizes that depend on the arena use
+   container units (cqw, cqh) of .ar. */
 
 .ar {
   position: relative;
@@ -8,68 +15,271 @@
   overflow: hidden;
   min-height: 420px;
   height: 100%;
+  container-type: size;
   color: var(--bi-chrome-ink);
-  background:
-    radial-gradient(
-      42% 20% at 56% 76%,
-      color-mix(in srgb, var(--bi-chrome-accent) 22%, transparent),
-      transparent 70%
-    ),
-    radial-gradient(
-      70% 60% at 56% 30%,
-      color-mix(in srgb, var(--bi-chrome-active-bg) 90%, transparent),
-      transparent 75%
-    ),
-    linear-gradient(
-      180deg,
-      var(--bi-chrome-bg),
-      color-mix(in srgb, var(--bi-chrome-rail-bg) 70%, var(--bi-chrome-bg))
-    );
-}
-/* the floor line the fight stands on */
-.ar::before {
-  content: '';
-  position: absolute;
-  left: -5%;
-  right: -5%;
-  top: 70%;
-  bottom: -20%;
-  z-index: -1;
-  border-radius: 50% 50% 0 0 / 18% 18% 0 0;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--bi-chrome-line) 35%, transparent),
-    transparent 70%
-  );
-  box-shadow: inset 0 1px 0 var(--bi-chrome-line);
+  background: var(--bi-chrome-rail-bg);
 }
 
-/* ---- top bar: where, and the readouts top-right ---- */
-.ar__top {
+/* ---- the room: the default brick room (background id with no art of its own) ---- */
+.ar__scene {
+  --ar-wall: color-mix(in srgb, var(--bi-chrome-bg) 78%, var(--bi-chrome-rail-bg));
+  --ar-mortar: color-mix(in srgb, var(--bi-chrome-rail-bg) 78%, #000);
+  --ar-brick-lit: color-mix(in srgb, var(--bi-frame-hi) 38%, transparent);
+  --ar-floor: color-mix(in srgb, #6a4630 34%, var(--bi-chrome-rail-bg));
+  --ar-seam: color-mix(in srgb, #1a0f0a 70%, var(--bi-chrome-rail-bg));
+  --ar-plank-lit: color-mix(in srgb, #b98a5c 24%, transparent);
+  --ar-grain: color-mix(in srgb, #1a0f0a 55%, transparent);
+  --ar-floor-top: 71%;
+  --ar-u: var(--fs, 4px);
   position: absolute;
-  inset: 16px 18px auto;
-  z-index: 4;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
   pointer-events: none;
 }
-.ar__top > * {
-  pointer-events: auto;
+.ar__wall,
+.ar__bricks {
+  position: absolute;
+  inset: 0 0 calc(100% - var(--ar-floor-top)) 0;
 }
-.ar__where {
+.ar__wall {
+  background:
+    radial-gradient(70% 90% at 50% 100%, transparent 40%, rgba(0, 0, 0, 0.45)),
+    linear-gradient(180deg, color-mix(in srgb, var(--ar-wall) 82%, #000), var(--ar-wall));
+}
+/* the mortar between the bricks and a lit top edge on each brick: one 16 x 16 tile of two rows, drawn as masks so the
+   colours stay tokens (each brick 16 x 8 steps of --fs) */
+.ar__bricks {
+  background: var(--ar-mortar);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h16v1H0zM0 8h16v1H0zM0 0h1v8H0zM8 8h1v8H8z'/%3E%3C/svg%3E");
+  mask-size: calc(16 * var(--ar-u)) calc(16 * var(--ar-u));
+  mask-position: left top;
+  image-rendering: pixelated;
+}
+.ar__bricks::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--ar-brick-lit);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h15v1H1zM0 9h8v1H0zM9 9h7v1H9z'/%3E%3C/svg%3E");
+  mask-size: calc(16 * var(--ar-u)) calc(16 * var(--ar-u));
+  mask-position: left top;
+}
+/* the plank floor: rows of planks with staggered ends, darker at the wall */
+.ar__floor {
+  position: absolute;
+  inset: var(--ar-floor-top) 0 0 0;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.5), transparent 38%),
+    radial-gradient(60% 80% at 50% 0%, transparent 30%, rgba(0, 0, 0, 0.32)), var(--ar-floor);
+  box-shadow:
+    inset 0 var(--ar-u) 0 color-mix(in srgb, var(--ar-seam) 70%, #000),
+    inset 0 calc(var(--ar-u) * 2) 0 color-mix(in srgb, var(--bi-frame-hi) 14%, transparent);
+}
+.ar__floor::before,
+.ar__floor::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  mask-size: calc(32 * var(--ar-u)) calc(16 * var(--ar-u));
+  mask-position: left top;
+}
+.ar__floor::before {
+  background: var(--ar-seam);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16' shape-rendering='crispEdges'%3E%3Cpath d='M0 0h32v1H0zM0 8h32v1H0zM0 0h1v8H0zM16 8h1v8h-1z'/%3E%3C/svg%3E");
+}
+.ar__floor::after {
+  background: var(--ar-plank-lit);
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 16' shape-rendering='crispEdges'%3E%3Cpath d='M1 1h31v1H1zM0 9h16v1H0zM17 9h15v1H17z'/%3E%3C/svg%3E");
+}
+
+/* two torches on the wall: a bracket, a stick and a flame drawn square by square (1 square = --fs) */
+.ar__torch {
+  position: absolute;
+  top: 25%;
+  width: calc(var(--ar-u) * 5);
+  height: calc(var(--ar-u) * 22);
+  --o: #e4702a;
+  --y: #ffc94d;
+  --w: #fff2b8;
+}
+.ar__torch--l {
+  left: calc(var(--ar-cx) - var(--ar-hpw) / 2 - 56px);
+}
+.ar__torch--r {
+  left: min(calc(var(--ar-cx) + var(--ar-hpw) / 2 + 40px), calc(100cqw - 210px));
+}
+/* a narrow arena has no room between the medal and the readout chips for the second torch */
+@container (max-width: 1060px) {
+  .ar__torch--r {
+    display: none;
+  }
+}
+.ar__torch-glow {
+  position: absolute;
+  left: 50%;
+  top: calc(var(--ar-u) * 3);
+  width: 380px;
+  height: 380px;
+  translate: -50% -50%;
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 168, 70, 0.3),
+    rgba(255, 120, 40, 0.11) 55%,
+    transparent
+  );
+  animation: ar-torch-glow 1.7s steps(4, jump-none) infinite alternate;
+}
+.ar__torch-stick {
+  position: absolute;
+  left: var(--ar-u);
+  top: calc(var(--ar-u) * 8);
+  width: calc(var(--ar-u) * 3);
+  height: calc(var(--ar-u) * 14);
+  background: linear-gradient(90deg, #6b4a30 0 33%, #4d3422 33% 100%);
+  box-shadow: 0 0 0 var(--ar-u) rgba(0, 0, 0, 0.3);
+}
+.ar__torch-cup {
+  position: absolute;
+  left: 0;
+  top: calc(var(--ar-u) * 7);
+  width: calc(var(--ar-u) * 5);
+  height: calc(var(--ar-u) * 3);
+  background: linear-gradient(180deg, #6d6a78 0 33%, #3c3947 33% 100%);
+  box-shadow: 0 0 0 var(--ar-u) rgba(0, 0, 0, 0.3);
+}
+.ar__torch-flame {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: var(--ar-u);
+  height: var(--ar-u);
+  --u: var(--ar-u);
+  box-shadow:
+    calc(var(--u) * 2) 0 0 0 var(--o),
+    calc(var(--u) * 1) calc(var(--u) * 1) 0 0 var(--o),
+    calc(var(--u) * 2) calc(var(--u) * 1) 0 0 var(--y),
+    calc(var(--u) * 1) calc(var(--u) * 2) 0 0 var(--o),
+    calc(var(--u) * 2) calc(var(--u) * 2) 0 0 var(--y),
+    calc(var(--u) * 3) calc(var(--u) * 2) 0 0 var(--o),
+    0 calc(var(--u) * 3) 0 0 var(--o),
+    calc(var(--u) * 1) calc(var(--u) * 3) 0 0 var(--y),
+    calc(var(--u) * 2) calc(var(--u) * 3) 0 0 var(--y),
+    calc(var(--u) * 3) calc(var(--u) * 3) 0 0 var(--y),
+    calc(var(--u) * 4) calc(var(--u) * 3) 0 0 var(--o),
+    0 calc(var(--u) * 4) 0 0 var(--o),
+    calc(var(--u) * 1) calc(var(--u) * 4) 0 0 var(--y),
+    calc(var(--u) * 2) calc(var(--u) * 4) 0 0 var(--w),
+    calc(var(--u) * 3) calc(var(--u) * 4) 0 0 var(--y),
+    calc(var(--u) * 4) calc(var(--u) * 4) 0 0 var(--o),
+    0 calc(var(--u) * 5) 0 0 var(--o),
+    calc(var(--u) * 1) calc(var(--u) * 5) 0 0 var(--y),
+    calc(var(--u) * 2) calc(var(--u) * 5) 0 0 var(--w),
+    calc(var(--u) * 3) calc(var(--u) * 5) 0 0 var(--y),
+    calc(var(--u) * 4) calc(var(--u) * 5) 0 0 var(--o),
+    calc(var(--u) * 1) calc(var(--u) * 6) 0 0 var(--o),
+    calc(var(--u) * 2) calc(var(--u) * 6) 0 0 var(--y),
+    calc(var(--u) * 3) calc(var(--u) * 6) 0 0 var(--o);
+  animation: ar-torch-flame 0.5s steps(1) infinite;
+}
+@keyframes ar-torch-glow {
+  to {
+    opacity: 0.78;
+  }
+}
+@keyframes ar-torch-flame {
+  50% {
+    translate: 0 calc(var(--ar-u) * -1);
+    filter: brightness(1.12);
+  }
+}
+
+/* ---- the readout chips, top-right (they stay clear of the boss bar: the boss column keeps its
+   distance from this corner, see --ar-cx) ---- */
+.ar {
+  --ar-hpw: min(420px, 46cqw);
+  --ar-cx: min(62cqw, calc(100cqw - 190px - var(--ar-hpw) / 2));
+}
+.ar__readouts {
+  position: absolute;
+  top: 14px;
+  right: 16px;
+  z-index: 4;
+  margin: 0;
+  display: grid;
+  gap: 12px;
+  justify-items: end;
+}
+.ar__readout {
+  min-width: 118px;
+  padding: 7px 14px 8px;
+  box-sizing: border-box;
+  text-align: right;
+  color: var(--bi-frame-ink);
+}
+.ar__readout dt {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.ar__readout dd {
+  margin: 0;
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+.ar__readout:focus-visible,
+.ar__hp:focus-visible,
+.ar__health:focus-visible,
+.ar__medal:focus-visible,
+.ar__fall:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 3px;
+}
+
+/* ---- boss: name, stacked HP bar, small line above it; the boss itself on the floor ---- */
+.ar__boss {
+  /* the column stands on the floor: the boss at the bottom, its name and bar right above it */
+  position: absolute;
+  left: var(--ar-cx);
+  bottom: 14cqh;
+  translate: -50% 0;
+  z-index: 2;
+  width: var(--ar-hpw);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+.ar__head {
+  position: relative;
+  width: 100%;
   display: grid;
   gap: 6px;
+  z-index: 3;
 }
 .ar__name-row {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
+  min-height: 26px;
+}
+.ar__name {
+  margin: 0;
+  min-width: 0;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--bi-chrome-ink);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
 }
 .ar__medal {
   /* the 48 px medal at a whole device scale (DESIGN.md §12) */
   --one: calc(48px / var(--dpr));
+  /* at the right end of the name row, rising above it so the row (and the bar under it) stays slim */
+  flex: none;
+  align-self: flex-start;
+  margin-top: -22px;
   display: grid;
   width: max(var(--one), round(nearest, 48px, var(--one)));
   aspect-ratio: 1;
@@ -81,90 +291,124 @@
 .ar__medal[data-tier='0'] {
   opacity: 0.45;
 }
-.ar__medal:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
-}
-.ar__name {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-  color: var(--bi-chrome-ink);
-  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
-}
-.ar__tags {
-  display: flex;
-  gap: 6px;
-}
-.ar__tag {
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  background: var(--bi-frame-title-bg);
-  color: var(--bi-frame-title-ink);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-}
-.ar__readouts {
-  margin: 0;
-  display: flex;
-  gap: 6px;
-}
-.ar__readout {
-  min-width: 74px;
-  padding: 6px 12px 7px;
-  border-radius: 10px;
-  background: color-mix(in srgb, var(--bi-frame-bg) 88%, transparent);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-line);
-  color: var(--bi-frame-ink);
-}
-.ar__readout dt {
-  font-size: 11px;
-  color: var(--bi-frame-ink-muted);
-}
-.ar__readout dd {
-  margin: 0;
-  font-size: 19px;
-  font-weight: 800;
-}
-.ar__readout:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
-}
-
-/* ---- boss ---- */
-.ar__boss {
-  position: absolute;
-  left: 68%;
-  top: 44%;
-  translate: -50% -50%;
-  z-index: 2;
-  display: grid;
-  justify-items: center;
-  gap: 10px;
-  width: min(420px, 48%);
-}
 .ar__hp {
   width: 100%;
-  z-index: 3;
+  gap: 0;
 }
+.ar__hp .bi-hpstack__row {
+  gap: 10px;
+}
+.ar__hp .bi-hpstack__count {
+  order: -1;
+  min-width: 0;
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 22px;
+  font-weight: 600;
+  /* the red of the bar, lifted so it reads on the wall (4.5:1) */
+  color: color-mix(in srgb, var(--bi-hp-0) 62%, #fff);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.55);
+}
+.ar__hp .bi-hpstack__text {
+  display: none;
+}
+/* the bars of the arena are square with a dark edge: boss HP, party health, signature gauge */
+.ar__hp .bi-hpstack__track,
+.ar-bar,
+.ar-gauge__track {
+  position: relative;
+  height: 22px;
+  border-radius: 0;
+  overflow: visible;
+  background: var(--px-lo, #1d1729);
+  box-shadow:
+    0 0 0 var(--fs-sm, 2px) var(--px-edge, #08060c),
+    inset 0 var(--fs-sm, 2px) 0 rgba(0, 0, 0, 0.45);
+}
+.ar__hp .bi-hpstack__under,
+.ar__hp .bi-hpstack__fill,
+.ar-bar > i,
+.ar-gauge__track > i {
+  border-radius: 0;
+}
+.ar__hp .bi-hpstack__fill {
+  box-shadow: inset 0 var(--fs-sm, 2px) 0 rgba(255, 255, 255, 0.28);
+}
+.ar__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 12px;
+  line-height: 1.3;
+  color: var(--bi-chrome-ink-muted);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
+}
+.ar__line-where {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ar__line-gone {
+  flex: none;
+  font-weight: 700;
+  color: var(--bi-chrome-ink);
+}
+.ar__line--solo .ar__line-gone {
+  display: none;
+}
+
+/* "You fall in": a red pill under the boss bar, only while the loadout would fall before it kills the boss */
+.ar__fall {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  max-width: 100%;
+  padding: 7px 16px;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--bi-hp-0) 25%, #fff);
+  background: color-mix(in srgb, var(--bi-hp-0) 24%, var(--bi-chrome-rail-bg));
+  box-shadow:
+    0 0 0 var(--fs-sm, 2px) var(--bi-hp-0),
+    0 6px 14px rgba(0, 0, 0, 0.5);
+}
+.ar__fall[hidden] {
+  display: none;
+}
+.ar__fall b {
+  font-weight: 800;
+  color: var(--bi-hp-0);
+}
+
 .ar-boss {
   position: relative;
   /* 2 CSS px per boss pixel (grid 160 x 172), snapped to whole device pixels and never shrunk
-     (DESIGN.md §12); the largest whole size that fits when the stage is narrow */
+     (DESIGN.md §12); the largest whole size that leaves room for the name and bar above it */
   --one: calc(172px / var(--dpr));
-  width: max(var(--one), min(round(nearest, 344px, var(--one)), round(down, 100%, var(--one))));
+  width: max(
+    var(--one),
+    min(
+      round(nearest, 344px, var(--one)),
+      round(down, 86cqh - 126px, var(--one)),
+      round(down, 36cqw, var(--one))
+    )
+  );
   aspect-ratio: 1;
 }
 .ar-boss__shadow {
   position: absolute;
-  left: 18%;
-  right: 18%;
-  bottom: 2%;
-  height: 9%;
+  left: 14%;
+  right: 14%;
+  bottom: 1%;
+  height: 8%;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.45), transparent);
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
   animation: ar-shadow 3.2s ease-in-out infinite;
 }
 .ar-boss__bob {
@@ -181,6 +425,36 @@
   width: 100%;
   height: 100%;
   overflow: visible;
+}
+/* A normal enemy or mini-boss without art yet: a plain labelled placeholder (DESIGN.md §6). */
+.ar-enemy {
+  display: grid;
+  place-items: center;
+  width: 64%;
+  height: 56%;
+  margin: 38% auto 0;
+  padding: 6px;
+  box-sizing: border-box;
+  border: 2px dashed var(--bi-frame-ink-muted, #a79bb8);
+  background: rgb(0 0 0 / 0.55);
+  color: var(--bi-frame-ink, #f4ecff);
+  text-align: center;
+}
+.ar-enemy--miniboss,
+.ar-enemy--boss {
+  width: 80%;
+  height: 70%;
+  margin-top: 24%;
+  border-style: solid;
+}
+.ar-enemy__name {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.ar-boss__body.is-hit .ar-enemy {
+  animation: ar-white 0.1s steps(1) 1;
 }
 .ar-boss__fx {
   position: absolute;
@@ -231,7 +505,6 @@
 @keyframes ar-boss-lunge {
   40% {
     translate: -26px 6px;
-    rotate: -4deg;
   }
 }
 @keyframes ar-pop {
@@ -279,9 +552,6 @@
     opacity: 0;
   }
 }
-.ar__hp .bi-hpstack__track {
-  position: relative;
-}
 .bi-hpstack__count.is-ticking {
   animation: ar-tick 0.5s ease-out;
 }
@@ -325,80 +595,49 @@
   }
 }
 
-/* ---- party ---- */
+/* ---- party: the fan, then the signature gauge and the party health ---- */
 .ar__party {
+  /* one art pixel of the fan in CSS px; --card-n comes from the fan (arena.ts copies it here) */
+  --lf-u: calc(var(--card-n, 2) / var(--dpr) * 1px);
   position: absolute;
-  left: 28px;
-  bottom: 28px;
+  left: clamp(24px, 3.6cqw, 52px);
+  bottom: 20px;
   z-index: 3;
   display: grid;
-  gap: 10px;
+  justify-items: start;
   transition: filter 0.3s;
 }
-/* the party fan (ui/loadoutFan.ts): its own cards stay whole-pixel and unrotated (DESIGN.md §11, §12) */
-.ar__fan {
-  /* the gauge and the health bar hang below the main card */
-  margin-bottom: 4px;
+/* a soft gold glow behind the main card, lighting the wall and the floor round it */
+.ar__party::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--lf-u) * -30);
+  top: calc(var(--lf-u) * -34);
+  width: calc(var(--lf-u) * 240);
+  height: calc(var(--lf-u) * 280);
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in srgb, var(--bi-chrome-accent) 26%, transparent),
+    color-mix(in srgb, var(--bi-chrome-accent) 9%, transparent) 60%,
+    transparent
+  );
 }
+/* the party fan (ui/loadoutFan.ts): its own cards stay whole-pixel and unrotated (DESIGN.md §11, §12) */
 .ar__fan .lf-slot.is-lunging {
   animation: ar-lunge-fan 0.36s cubic-bezier(0.3, 0.8, 0.4, 1);
 }
+/* a boss hit lands on the card in red */
 .ar__fan .lf-slot.is-hurt {
   animation: ar-hurt 0.4s linear;
 }
 .ar__fan .lf-slot.is-hurt > .bi-card {
-  filter: drop-shadow(0 0 10px var(--bi-hp-0));
+  animation: ar-card-red 0.4s linear;
 }
 @keyframes ar-lunge-fan {
   35% {
     translate: calc(var(--lf-u) * 20) calc(var(--lf-u) * -4);
-  }
-}
-.ar__party.is-ko .ar__fan {
-  filter: grayscale(0.85) brightness(0.65);
-  translate: 0 calc(var(--lf-u) * 6);
-  transition: translate 0.3s;
-}
-.ar__fan .ar-gauge {
-  bottom: calc(var(--lf-u) * -12);
-}
-.ar-slot {
-  /* --card-k is set by fitCard() (ui/pixelFit.ts): the card grid 132 x 186 at a whole number of
-     device pixels per art pixel, 1 CSS px per art px on a 100 % screen (DESIGN.md §12) */
-  position: relative;
-  width: calc(176px * var(--card-k));
-  height: calc(248px * var(--card-k));
-  flex: none;
-}
-.ar-slot--main {
-  order: 4; /* the main card stands closest to the boss */
-}
-.ar-slot > .bi-card {
-  position: absolute;
-  left: 0;
-  top: 0;
-  transform: scale(var(--card-k));
-  transform-origin: 0 0;
-}
-.ar-slot--empty {
-  border-radius: 10px;
-  box-sizing: border-box;
-  border: 2px dashed var(--bi-chrome-line);
-  opacity: 0.7;
-}
-.ar-slot.is-lunging {
-  animation: ar-lunge 0.36s cubic-bezier(0.3, 0.8, 0.4, 1);
-}
-.ar-slot.is-hurt {
-  animation: ar-hurt 0.4s linear;
-}
-.ar-slot.is-hurt > .bi-card {
-  filter: drop-shadow(0 0 10px var(--bi-hp-0));
-}
-@keyframes ar-lunge {
-  35% {
-    translate: 28px -6px;
-    rotate: 4deg;
   }
 }
 @keyframes ar-hurt {
@@ -412,36 +651,78 @@
     translate: -3px 0;
   }
 }
+@keyframes ar-card-red {
+  0%,
+  100% {
+    filter: none;
+  }
+  18%,
+  45% {
+    filter: sepia(1) saturate(8) hue-rotate(-52deg) brightness(1.1)
+      drop-shadow(0 0 10px var(--bi-hp-0));
+  }
+}
+.ar__party.is-ko .ar__fan {
+  filter: grayscale(0.85) brightness(0.65);
+  translate: 0 calc(var(--lf-u) * 6);
+  transition: translate 0.3s;
+}
 
-/* burst gauge, on the main card */
-.ar-gauge {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: -16px;
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.5);
-  box-shadow: inset 0 0 0 1px var(--bi-chrome-line);
+/* the signature gauge and the party health bar, under the main card (not under the peeks) */
+.ar__meters {
+  display: grid;
+  gap: 14px;
+  margin: calc(var(--lf-u) * 14) 0 0 calc(var(--lf-u) * 16);
+  width: max(calc(var(--lf-u) * 132), 168px);
 }
-.ar-gauge span {
-  position: absolute;
-  left: 0;
-  top: 10px;
-  white-space: nowrap;
-  font-size: 10.5px;
-  font-weight: 700;
-  color: var(--bi-chrome-ink-muted);
+.ar-gauge,
+.ar__health {
+  display: grid;
+  gap: 5px;
 }
-.ar-gauge i {
+.ar-gauge__track,
+.ar-bar {
+  height: 14px;
+}
+.ar-gauge__text {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  /* on the plank floor, which has lit lines: full ink, not the muted one */
+  color: var(--bi-chrome-ink);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+}
+.ar-gauge__text b {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bi-chrome-ink);
+}
+.ar-gauge__track > i {
   display: block;
   height: 100%;
   width: 0;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--bi-tick-color, #f3dc9a), var(--bi-tick-crit, #ffb02e));
+  background: linear-gradient(180deg, var(--bi-tick-crit, #ffb02e), #e8742a);
+  box-shadow: inset 0 var(--fs-sm, 2px) 0 rgba(255, 255, 255, 0.3);
   transition: width 0.2s linear;
 }
-.ar-gauge.is-full i {
+/* twenty ticks along the gauge, one per point */
+.ar-gauge__track::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(100% / var(--segments, 20) - var(--fs-sm, 2px)),
+    rgba(0, 0, 0, 0.6) calc(100% / var(--segments, 20) - var(--fs-sm, 2px)),
+    rgba(0, 0, 0, 0.6) calc(100% / var(--segments, 20))
+  );
+}
+.ar-gauge.is-full .ar-gauge__track > i {
   box-shadow: 0 0 10px var(--bi-tick-crit, #ffb02e);
   animation: ar-gauge-ready 0.6s ease-in-out infinite alternate;
 }
@@ -450,39 +731,44 @@
     filter: brightness(1.4);
   }
 }
-
-.ar__health {
-  display: grid;
-  gap: 2px;
-  width: 100%;
-  max-width: 420px;
-  margin-top: 26px;
+.ar-bar > i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: var(--bi-hp-3);
+  box-shadow: inset 0 var(--fs-sm, 2px) 0 rgba(255, 255, 255, 0.28);
+  /* the bar closes at once; the lost piece trails, then falls off */
 }
-.ar__health-label {
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--bi-chrome-ink-muted);
+.ar-bar[data-level='mid'] > i {
+  background: var(--bi-hp-1);
+}
+.ar-bar[data-level='low'] > i {
+  background: var(--bi-hp-0);
 }
 
-/* knockout: the countdown big on the stage */
+/* knockout: the countdown big over the fan */
 .ar__ko {
   position: absolute;
-  left: 28px;
-  top: 96px;
+  left: 50%;
+  top: 34%;
+  translate: -50% 0;
   z-index: 5;
   display: grid;
-  justify-items: start;
-  padding: 8px 16px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--bi-chrome-bg) 85%, transparent);
-  box-shadow: inset 0 0 0 2px var(--bi-hp-0);
+  justify-items: center;
+  padding: 8px 18px;
+  background: color-mix(in srgb, var(--bi-chrome-rail-bg) 88%, transparent);
+  box-shadow: 0 0 0 var(--fs-sm, 2px) var(--bi-hp-0);
   color: var(--bi-chrome-ink);
+}
+.ar__ko[hidden] {
+  display: none;
 }
 .ar__ko span {
   font-size: 13px;
   font-weight: 600;
 }
 .ar__ko b {
+  font-family: var(--bi-font-display);
   font-size: 44px;
   line-height: 1;
   color: var(--bi-hp-0);
@@ -491,28 +777,29 @@
   animation: ar-hurt 0.7s linear;
 }
 
-/* special dungeon: time and score meters under the name */
+/* special dungeon: time and score meters where the boss bar would be */
 .ar__trial {
-  position: absolute;
-  left: 18px;
-  top: 96px;
-  z-index: 4;
+  /* side by side, so the name block is as tall as it is with a boss bar */
   display: grid;
-  gap: 8px;
-  width: 260px;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 18px;
+}
+.ar__trial[hidden] {
+  display: none;
 }
 .ar-meter {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 3px 8px;
+  gap: 4px 8px;
   font-size: 12.5px;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
 }
 .ar-meter__track {
   grid-column: 1 / -1;
-  height: 8px;
-  border-radius: 4px;
+  height: 12px;
   overflow: hidden;
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--px-lo, #1d1729);
+  box-shadow: 0 0 0 var(--fs-sm, 2px) var(--px-edge, #08060c);
 }
 .ar-meter__track i {
   display: block;
@@ -523,12 +810,16 @@
 .ar__empty {
   position: absolute;
   inset: 0;
+  z-index: 2;
   display: grid;
   place-items: center;
   padding: 0 20%;
   text-align: center;
   font-size: 16px;
   color: var(--bi-chrome-ink-muted);
+}
+.ar__empty[hidden] {
+  display: none;
 }
 
 /* signature attack: screen flash */
@@ -552,58 +843,7 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .ar-boss__bob,
-  .ar-boss__shadow,
-  .ar-boss__body.is-hit,
-  .ar-boss__body.is-hit svg,
-  .ar-boss.is-attacking .ar-boss__bob,
-  .ar-slot.is-lunging,
-  .ar-slot.is-hurt,
-  .ar__fan .lf-slot.is-lunging,
-  .ar__fan .lf-slot.is-hurt,
-  .ar__party.is-knocked,
-  .ar-gauge.is-full i,
-  .ar__flash.st-flash {
-    animation: none;
-  }
-  .ar-boss.is-popping .ar-boss__body {
-    animation: ar-fade-pop 0.7s ease;
-  }
-  @keyframes ar-fade-pop {
-    40% {
-      opacity: 0.2;
-    }
-  }
-}
-
 /* ---- boss hits (DESIGN.md §6, "Screen edge pulse") ---- */
-
-/* "You fall in": a red pill at the top, only while the loadout would fall before it kills the boss */
-.ar__fall {
-  align-self: flex-start;
-  flex: 0 1 auto;
-  min-width: 0;
-  padding: 7px 16px;
-  border-radius: 999px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 700;
-  color: color-mix(in srgb, var(--bi-hp-0) 25%, #fff);
-  background: color-mix(in srgb, var(--bi-hp-0) 22%, var(--bi-chrome-bg));
-  box-shadow: inset 0 0 0 2px var(--bi-hp-0);
-}
-.ar__fall[hidden] {
-  display: none;
-}
-.ar__fall b {
-  font-weight: 800;
-  color: var(--bi-hp-0);
-}
-.ar__fall:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
-}
 
 /* the wind-up: red edges whose strength the frame loop sets (stage/bossHitModel.ts); opacity only */
 .ar__edge {
@@ -650,20 +890,15 @@
 @keyframes ar-boss-slam {
   35% {
     translate: 10px 6px;
-    rotate: 3deg;
   }
   65% {
     translate: -48px 8px;
-    rotate: -7deg;
   }
 }
 
-/* the health bar closes at once; the lost piece trails, then falls off the bar */
-.ar__health .bi-hpstack__fill {
+/* a hit's lost piece of a bar comes away pale, holds, then falls off (boss HP and party health) */
+.ar__health .ar-bar > i {
   transition: none;
-}
-.ar__health .bi-hpstack__track {
-  overflow: visible;
 }
 .ar-chunk {
   position: absolute;
@@ -672,7 +907,6 @@
   left: calc(var(--to) * 1%);
   width: max(3px, calc(var(--size) * 1%));
   z-index: 2;
-  border-radius: 3px;
   background: color-mix(in srgb, #fff 88%, var(--bi-hp-0));
   box-shadow: 0 0 6px rgba(255, 255, 255, 0.55);
   pointer-events: none;
@@ -706,14 +940,42 @@
     opacity: 0;
   }
 }
-@media (prefers-reduced-motion: reduce) {
-  .ar__slam-flash.is-hit,
-  .ar-boss.is-slamming .ar-boss__bob {
-    animation: none;
-  }
-  /* the lost piece just fades where it was */
-  .ar-chunk,
-  .ar-chunk--slam {
-    animation-name: ar-chunk-fade;
+
+/* ---- reduced motion (UI_RULES.md §2): the arena sets .ar--calm from the Windows setting and the
+   Settings override. Nothing shakes, bobs or flickers; a lost piece of a bar just fades. ---- */
+.ar--calm .ar-boss__bob,
+.ar--calm .ar-boss__shadow,
+.ar--calm .ar-boss__body.is-hit,
+.ar--calm .ar-boss__body.is-hit svg,
+.ar--calm .ar-boss.is-attacking .ar-boss__bob,
+.ar--calm .ar-boss.is-slamming .ar-boss__bob,
+.ar--calm .ar__fan .lf-slot.is-lunging,
+.ar--calm .ar__fan .lf-slot.is-hurt,
+.ar--calm .ar__fan .lf-slot.is-hurt > .bi-card,
+.ar--calm .ar__party.is-knocked,
+.ar--calm .ar-gauge.is-full .ar-gauge__track > i,
+.ar--calm .ar__flash.st-flash,
+.ar--calm .ar__slam-flash.is-hit,
+.ar--calm .ar__torch-glow,
+.ar--calm .ar__torch-flame {
+  animation: none;
+}
+.ar--calm .ar-boss.is-popping .ar-boss__body {
+  animation: ar-fade-pop 0.7s ease;
+}
+/* a card that was hit stays tinted red for the moment instead of flashing */
+.ar--calm .ar__fan .lf-slot.is-hurt > .bi-card {
+  filter: sepia(0.7) saturate(4) hue-rotate(-52deg) drop-shadow(0 0 8px var(--bi-hp-0));
+}
+.ar--calm .ar-chunk,
+.ar--calm .ar-chunk--slam {
+  animation-name: ar-chunk-fade;
+}
+.ar--calm .ar-gauge__track > i {
+  transition: none;
+}
+@keyframes ar-fade-pop {
+  40% {
+    opacity: 0.2;
   }
 }

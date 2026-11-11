@@ -13,10 +13,14 @@ const content = loadContent();
 describe('pixel bosses (DESIGN.md §12)', () => {
   it('draws every boss art, and every dungeon boss and trial target names one', () => {
     for (const art of BOSS_ARTS) expect(bossVector(art).length).toBeGreaterThan(500);
+    // The three newest dungeons have no boss drawing yet (a labelled placeholder is shown).
     expect(content.dungeons.map((d) => d.boss.art)).toEqual([
       'root_warden',
       'cinder_lich',
       'glacier_colossus',
+      undefined,
+      undefined,
+      undefined,
     ]);
     expect(content.trials[0]!.target).toMatchObject({
       name: 'Crystal Sentinel',

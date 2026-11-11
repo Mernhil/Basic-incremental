@@ -1,0 +1,81 @@
+/* The Training panel of the Dungeons drawer (DESIGN.md §6 Training): four repeatable lines. */
+.tr {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.tr__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.tr__head .buy-toggle {
+  margin-left: auto;
+}
+.tr__list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.tr__row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.8fr) minmax(160px, 1.6fr) minmax(190px, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--bi-frame-edge, rgb(255 255 255 / 0.12));
+  color: var(--bi-frame-ink);
+}
+.tr__who {
+  display: grid;
+  gap: 2px;
+}
+.tr__name {
+  font-size: 15px;
+  font-weight: 700;
+}
+.tr__level {
+  font-size: 12.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.tr__mid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 10px;
+}
+.tr__effect {
+  font-size: 15px;
+  font-weight: 700;
+}
+.tr__togo {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.tr__track {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 2px;
+  height: 8px;
+}
+.tr__track i {
+  flex: 1;
+  background: rgb(0 0 0 / 0.45);
+}
+.tr__track i.is-on {
+  background: var(--px-gold, #f2c14e);
+}
+.tr__row .buy-btn {
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .tr__row {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tr__row .buy-btn {
+    grid-column: 1 / -1;
+  }
+}

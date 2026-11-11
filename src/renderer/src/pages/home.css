@@ -1,75 +1,164 @@
-/* Home, command centre (DESIGN.md §11, A3 A): three live mini-stages side by side. */
+/* Home (UI_RULES.md §2, "Home"): three equal pixel panels side by side, Fight, Logging, Mining.
+   The frames, tiles and buttons come from theme/frames.css (.px-panel, .px-well, .px-tile,
+   .px-btn); this file is the layout. Pixel art is at 1x: the cards by fitCard() (--card-n, --card-k),
+   the boss and the tiles with the --one / round() pattern of ui/pixelScale.css. Pixelify Sans only
+   at 18 px and up (.px-display). */
 
+/* the three panels use the whole width of the window */
+.shell-page:has(> .hm-grid) {
+  max-width: none;
+}
 .hm-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  /* the frames bleed one step outside their box: keep a gap wider than that */
+  gap: 24px;
+  /* the frames' outer edge */
+  padding: var(--fs);
 }
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   .hm-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-.hm-stage {
+
+.hm-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding: 12px 16px 16px;
+}
+.hm-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.hm-panel__title {
+  margin: 0;
+  font-size: 22px;
+  line-height: 1.1;
+}
+.hm-panel__where {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--px-muted);
+}
+
+/* ---- the scene: an inset well, the cards floating in it ---- */
+.hm-scene {
   position: relative;
+  overflow: hidden;
   display: grid;
-  grid-template-rows: minmax(260px, 46vh) auto;
-  padding: 0;
-  overflow: hidden;
-  border: 0;
-  border-radius: var(--bi-frame-radius, 14px);
-  font: inherit;
-  text-align: left;
-  color: var(--bi-frame-ink);
-  cursor: pointer;
-  background:
-    radial-gradient(
-      50% 30% at 50% 78%,
-      color-mix(in srgb, var(--bi-chrome-accent) 16%, transparent),
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--bi-chrome-bg) 75%, var(--bi-table-bg)),
-      var(--bi-frame-bg)
-    );
-  box-shadow: inset 0 0 0 1px var(--bi-frame-line);
-  transition: box-shadow 0.2s;
+  grid-template-rows: 1fr auto;
 }
-.hm-stage:hover {
-  box-shadow:
-    inset 0 0 0 2px var(--bi-chrome-accent),
-    0 6px 22px rgba(0, 0, 0, 0.3);
-}
-.hm-stage:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 3px;
-}
-.hm-stage__scene {
+.hm-field {
+  /* one card art pixel in CSS px (whole device pixels) */
+  --u: calc(var(--card-n) / var(--dpr) * 1px);
   position: relative;
-  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 4px;
+  /* room above the card for the HP bar and the floating numbers */
+  min-height: calc(var(--u) * 186 + 36px);
+  padding: 14px 8px 14px 14px;
+}
+/* the main card at 1x: the 176 x 248 box scaled to the whole device-pixel size */
+.hm-slot {
+  position: relative;
+  flex: none;
+  width: calc(176px * var(--card-k));
+  height: calc(248px * var(--card-k));
+  /* the card box has a little air round the art */
+  margin-left: calc(-8px * var(--card-k));
+}
+.hm-slot > .bi-card {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: scale(var(--card-k));
+  transform-origin: 0 0;
+}
+.hm-slot.is-empty {
   display: grid;
   place-items: center;
-  min-height: 0;
+  width: calc(132px * var(--card-n) / var(--dpr));
+  height: calc(186px * var(--card-n) / var(--dpr));
+  margin: 0;
+  box-shadow: inset 0 0 0 var(--fs-sm) var(--px-lo);
 }
-.hm-floor {
+.hm-empty {
+  padding: 8px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--px-muted);
+}
+
+/* ---- the boss column: HP bar and caption over the boss ---- */
+.hm-bosscol {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: end;
+  align-content: end;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.hm-bosscol[hidden] {
+  display: none;
+}
+.hm-hp {
+  position: relative;
+  width: 100%;
+  height: calc(var(--fs-sm) * 5);
+  box-sizing: border-box;
+  background: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.hm-hp[hidden],
+.hm-hp__caption[hidden] {
+  display: none;
+}
+.hm-hp__under,
+.hm-hp__fill {
   position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: 16%;
-  height: 12%;
-  z-index: 0;
-  border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.4), transparent);
+  top: var(--fs-sm);
+  bottom: var(--fs-sm);
+  left: var(--fs-sm);
+}
+.hm-hp__under {
+  right: var(--fs-sm);
+}
+.hm-hp__fill {
+  width: 0;
+  transition: width 0.2s linear;
+}
+.hm-hp__caption {
+  width: 100%;
+  font-size: 12px;
+  color: var(--px-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hm-bossslot {
+  position: relative;
+  display: grid;
+  justify-items: end;
 }
 .hm-boss {
   position: relative;
-  z-index: 1;
-  /* 2 CSS px per boss pixel (grid 160 x 172), snapped to whole device pixels and never shrunk
-     (DESIGN.md §12); the largest whole size that fits when the stage is narrow */
+  /* the boss at 1x (grid 160 x 172), whole device pixels, never below 1x (DESIGN.md §12) */
   --one: calc(172px / var(--dpr));
-  width: max(var(--one), min(round(nearest, 344px, var(--one)), round(down, 92%, var(--one))));
+  width: max(var(--one), round(nearest, 172px, var(--one)));
   aspect-ratio: 1;
+  margin-bottom: -8px;
   animation: hm-bob 3.2s ease-in-out infinite;
 }
 .hm-boss svg {
@@ -86,63 +175,196 @@
 .hm-boss.is-popping svg {
   animation: hm-pop 0.7s ease;
 }
+
+/* ---- job tiles at 1x: a zig-zag of three ---- */
 .hm-tiles {
   position: relative;
   z-index: 1;
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  grid-template-rows: repeat(3, auto);
   justify-content: center;
-  align-items: flex-end;
-  gap: 4px;
-  width: 92%;
+  align-content: end;
+  gap: 4px 20px;
+  flex: 1;
+  margin-bottom: 8px;
 }
 .hm-tile {
-  flex: none;
-  /* 2 CSS px per tile pixel (grid 58 x 64), snapped to whole device pixels (DESIGN.md §12) */
+  /* 1x tile pixel (grid 58 x 64), whole device pixels (DESIGN.md §12) */
   --one: calc(64px / var(--dpr));
-  width: max(var(--one), round(nearest, 128px, var(--one)));
+  width: max(var(--one), round(nearest, 64px, var(--one)));
   aspect-ratio: 1;
   animation: hm-sway 4s ease-in-out var(--d, 0s) infinite;
+}
+.hm-tile--0 {
+  grid-area: 1 / 1;
+}
+.hm-tile--1 {
+  grid-area: 2 / 2;
+}
+.hm-tile--2 {
+  grid-area: 3 / 1;
 }
 .hm-tile svg {
   width: 100%;
   height: 100%;
   overflow: visible;
 }
+.hm-tile.is-locked {
+  opacity: 0.55;
+  filter: grayscale(1) brightness(0.8);
+  animation: none;
+}
 .hm-tile.is-harvest {
   animation: hm-harvest 0.4s ease-out;
 }
-.hm-empty {
-  position: relative;
-  z-index: 1;
-  color: var(--bi-frame-ink-muted);
+
+/* ---- the big number ---- */
+.hm-big {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
 }
-.hm-stage__info {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 2px 12px;
-  padding: 12px 16px 14px;
-  background: var(--bi-frame-title-bg);
-  box-shadow: inset 0 1px 0 var(--bi-frame-title-line);
-  color: var(--bi-frame-title-ink);
-}
-.hm-stage__title {
-  font-size: 17px;
-  font-weight: 800;
-}
-.hm-stage__where {
-  grid-column: 1;
-  font-size: 12.5px;
-  color: var(--bi-frame-ink-muted);
-}
-.hm-stage__rate {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-  align-self: center;
-  font-size: 18px;
-  font-weight: 800;
-  text-align: right;
+.hm-big__n {
+  font-size: 34px;
+  line-height: 1;
   white-space: nowrap;
+}
+.hm-big__label {
+  font-size: 13px;
+  color: var(--px-muted);
+}
+
+/* ---- fight: three small tiles ---- */
+.hm-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.hm-stat {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 7px 10px 8px;
+}
+.hm-stat__k {
+  font-size: 12px;
+  color: var(--px-muted);
+  white-space: nowrap;
+}
+.hm-stat__v {
+  font-size: 19px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* ---- the gauge with its count ---- */
+.hm-meter {
+  display: grid;
+  gap: 5px;
+}
+.hm-meter__top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--px-muted);
+}
+.hm-meter__top b {
+  color: var(--px-ink);
+}
+.hm-gauge {
+  position: relative;
+  height: calc(var(--fs-sm) * 5);
+  box-sizing: border-box;
+  background: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  margin: var(--fs-sm) 0;
+}
+.hm-gauge i {
+  position: absolute;
+  top: var(--fs-sm);
+  bottom: var(--fs-sm);
+  left: var(--fs-sm);
+  width: 0;
+  max-width: calc(100% - var(--fs-sm) * 2);
+  background: var(--bi-chrome-burst, var(--bi-chrome-accent));
+  transition: width 0.25s linear;
+}
+/* the segment ticks sit over the fill */
+.hm-gauge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(10% - var(--fs-sm)),
+    var(--px-edge) calc(10% - var(--fs-sm)),
+    var(--px-edge) 10%
+  );
+}
+.hm-gauge.is-full i {
+  filter: brightness(1.25);
+}
+
+/* ---- lines: one per kind with its rate ---- */
+.hm-lines {
+  margin: 0 0 4px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+}
+.hm-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 6px 0;
+  font-size: 14px;
+  box-shadow: inset 0 var(--fs-sm) 0 0 var(--px-lo);
+}
+.hm-line[hidden] {
+  display: none;
+}
+.hm-line:first-child {
+  box-shadow: none;
+}
+.hm-line__name {
+  white-space: nowrap;
+  color: var(--px-muted);
+}
+.hm-line__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+  font-weight: 700;
+}
+.hm-line.is-locked .hm-line__name,
+.hm-line.is-locked .hm-line__value {
+  color: var(--px-muted);
+  font-weight: 400;
+}
+/* a kind's name reads as ink; its rate beside it */
+.hm-panel--logging .hm-line__name,
+.hm-panel--mining .hm-line__name {
+  color: var(--px-ink);
+}
+.hm-panel--logging .hm-line.is-locked .hm-line__name,
+.hm-panel--mining .hm-line.is-locked .hm-line__name {
+  color: var(--px-muted);
+}
+
+/* ---- the button: full width, at the bottom ---- */
+.hm-go {
+  margin-top: auto;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 18px;
+  line-height: 1.1;
 }
 
 @keyframes hm-bob {
@@ -190,5 +412,9 @@
   .hm-boss.is-popping svg,
   .hm-tile.is-harvest {
     animation: none;
+  }
+  .hm-hp__fill,
+  .hm-gauge i {
+    transition: none;
   }
 }

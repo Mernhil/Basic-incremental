@@ -56,7 +56,7 @@ describe('shelf status', () => {
     const state = freshState();
     state.production.mineLevels['copper_quarry'] = 10;
     expect(item(state, 'sharp_picks').status).toBe('available');
-    state.combat.kills['mossy_cellar'] = 20;
+    state.combat.stageKills['mossy_cellar:normal:1'] = 20;
     expect(item(state, 'tax_collector').status).toBe('available');
     state.mastery.gemTiers['oak_gem'] = 1;
     expect(item(state, 'harvest_rhythm').status).toBe('available');
@@ -112,10 +112,10 @@ describe('effects through the modifier pipeline', () => {
     expect(mods.some((m) => m.source.kind === 'upgrade' && m.source.id === 'keen_axes')).toBe(true);
   });
 
-  it('makes a logging card support effect stronger', () => {
+  it('makes a logging worker ability stronger', () => {
     const state = bareState();
     const card = content.cards.find(
-      (c) => c.job === 'logging' && c.support.modifiers.some((m) => m.kind !== 'set'),
+      (c) => c.job === 'logging' && c.worker.modifiers.some((m) => m.kind !== 'set'),
     )!;
     state.cards.owned[card.id] = {
       tier: 'bronze',
@@ -125,7 +125,7 @@ describe('effects through the modifier pipeline', () => {
       starFill: 0,
       enhancements: [],
     };
-    state.cards.loadouts.logging.supports[0] = card.id;
+    state.production.workers = { oak: [card.id] };
     const sum = (s: GameState) =>
       collectModifiers(s, content)
         .filter((m) => m.source.kind === 'card' && m.source.id === card.id)
@@ -154,7 +154,7 @@ describe('lifetime Money earned', () => {
 describe('ascension', () => {
   it('drops per-run upgrades, keeps permanent ones and lifetime Money', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     state.mastery.harvested['grotto_gem'] = new Decimal(1e8);
     state.upgrades.owned.push('keen_axes', 'battle_cry');
     state.upgrades.moneyEarned = new Decimal(123456);

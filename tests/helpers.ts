@@ -1,5 +1,13 @@
-import { JOBS, loadContent, type Content } from '../src/data';
-import { createInitialState, Decimal, emptyCardLoadout, type GameState } from '../src/game';
+import { RANK_TIERS, RARITIES, loadContent, type Content } from '../src/data';
+import {
+  createInitialState,
+  Decimal,
+  emptyCardLoadout,
+  stageFloors,
+  stageKey,
+  STAR_DIFFICULTIES,
+  type GameState,
+} from '../src/game';
 
 /**
  * The bundled content with the trees' and mines' base rates pinned to the round numbers the rule
@@ -15,12 +23,29 @@ function pinProductionRates(bundled: Content): Content {
     iron_deeps: '0.25',
     crystal_grotto: '0.1',
   };
-  const pin = <T extends { id: string; baseRate: Decimal }>(list: T[]): T[] =>
-    list.map((p) => ({ ...p, baseRate: new Decimal(rates[p.id] ?? p.baseRate) }));
+  const pin = <
+    T extends { id: string; baseRate: Decimal; depth: Content['trees'][number]['depth'] },
+  >(
+    list: T[],
+  ): T[] =>
+    list.map((p) => ({
+      ...p,
+      baseRate: new Decimal(rates[p.id] ?? p.baseRate),
+      // no digging: rule tests count exact output; depth tests use `shippedContent`
+      depth: { ...p.depth, digRate: new Decimal('1e-30') },
+    }));
   const trees = pin(bundled.trees);
   const mines = pin(bundled.mines);
   return {
     ...bundled,
+    // lucky strikes off: rule tests count exact output (lucky tests set their own)
+    production: {
+      ...bundled.production,
+      lucky: {
+        logging: { ...bundled.production.lucky.logging, payoutSeconds: 0 },
+        mining: { ...bundled.production.lucky.mining, payoutSeconds: 0 },
+      },
+    },
     trees,
     treeById: new Map(trees.map((t) => [t.id, t])),
     mines,
@@ -28,7 +53,129 @@ function pinProductionRates(bundled: Content): Content {
   };
 }
 
-export const content: Content = pinProductionRates(loadContent());
+/**
+ * The star bar pinned to one whole copy per star at every rarity and tier (the shipped one asks a
+ * fraction of a copy at low tiers, DESIGN.md §5 Star bar), so the star bar, shard and tier-up rule
+ * tests have whole copies to count. The shipped table is tested in cardsFromStart.test.ts.
+ */
+function pinStarBar(bundled: Content): Content {
+  const needs = Object.fromEntries(
+    RARITIES.map((r) => [r, Object.fromEntries(RANK_TIERS.map((t) => [t, 1]))]),
+  ) as unknown as Content['cardRules']['starBar']['needs'];
+  return {
+    ...bundled,
+    cardRules: { ...bundled.cardRules, starBar: { ...bundled.cardRules.starBar, needs } },
+  };
+}
+
+/**
+ * Stage stars (DESIGN.md §6) with no damage, loot or chests: rule tests that count exact damage,
+ * drops and crystals are not moved by the star levels their kills reach. Star tests use the real
+ * numbers.
+ */
+export function neutralStars(base: Content): Content {
+  const stageStars = {
+    ...base.combat.stageStars,
+    damagePerLevel: 0,
+    lootPerLevel: 0,
+    chests: { ...base.combat.stageStars.chests, rewards: [] },
+  };
+  return { ...base, combat: { ...base.combat, stageStars } };
+}
+
+/**
+ * Every stage of every dungeon at the star level that opens its overflow switch, with the switch
+ * on (DESIGN.md §6 Overflow): leftover damage from a kill carries on everywhere. Mutates and
+ * returns `state`. Use it with `neutralStars` content so the stars add nothing else.
+ */
+export function withOverflow(state: GameState, base: Content): GameState {
+  const kills = base.combat.stageStars.kills[base.combat.stageStars.overflowFromLevel - 1]!;
+  for (const dungeon of base.dungeons) {
+    for (const difficulty of STAR_DIFFICULTIES) {
+      for (const floor of stageFloors(base, dungeon)) {
+        const key = stageKey(dungeon.id, difficulty, floor);
+        state.combat.stageKills[key] = Math.max(kills, state.combat.stageKills[key] ?? 0);
+        state.combat.overflow[key] = true;
+      }
+    }
+  }
+  return state;
+}
+
+/**
+ * Every dungeon pinned to one floor: its boss (DESIGN.md §6 Dungeon floors). The boss rule tests
+ * (damage, drops, knockouts, medals) then fight the boss from the first second, as they did
+ * before floors, and tuning the floor counts does not move them. Floor tests use `floorsContent`.
+ */
+function pinOneFloor(bundled: Content): Content {
+  const dungeons = bundled.dungeons.map((d) => ({ ...d, floors: 1 }));
+  return { ...bundled, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
+}
+
+/**
+ * Elements (DESIGN.md §6) switched off: rule tests count exact damage and output with the starter
+ * cards, which would otherwise get the weakness and matching-worker bonuses. Element tests use
+ * the real `loadContent()`.
+ */
+function pinNoElements(bundled: Content): Content {
+  const zero = new Decimal(0);
+  const elements = { weakness: zero, resistance: zero, supportBonus: zero, production: zero };
+  return { ...bundled, combat: { ...bundled.combat, elements } };
+}
+
+/**
+ * The numbers the rule tests were written against, pinned so the balance run (DESIGN.md §14) can
+ * tune them without moving those tests: the Mossy Cellar's boss (12,900 HP, 15 damage every 3 s,
+ * purses of 1,000 to 1,500), Hard and Nightmare at a thousand times the tier below (purses half as
+ * much again a tier), the card XP curve from 10 XP, and base stats stepping by tier as card effects do. Balance tests read the shipped numbers from `loadContent()`.
+ */
+function pinRuleNumbers(bundled: Content): Content {
+  const dungeons = bundled.dungeons.map((d) =>
+    d.id === 'mossy_cellar'
+      ? {
+          ...d,
+          boss: {
+            ...d.boss,
+            hp: new Decimal(12_900),
+            attack: { damage: new Decimal(15), intervalSeconds: 3 },
+          },
+          drops: {
+            ...d.drops,
+            currencies: d.drops.currencies.map((c) =>
+              c.resource === 'money' ? { ...c, min: 1000, max: 1500 } : c,
+            ),
+          },
+        }
+      : d,
+  );
+  const power = { ...bundled.cardRules.power, statTier: bundled.cardRules.power.tier };
+  const xpCurve = { ...bundled.cardRules.xpCurve, base: new Decimal(10) };
+  const difficulties = {
+    hard: { ...bundled.combat.difficulties.hard, hp: 1000, attack: 1000, purse: 1500 },
+    nightmare: { ...bundled.combat.difficulties.nightmare, hp: 1e6, attack: 1e6, purse: 2.25e6 },
+  };
+  return {
+    ...bundled,
+    dungeons,
+    dungeonById: new Map(dungeons.map((d) => [d.id, d])),
+    cardRules: { ...bundled.cardRules, power, xpCurve },
+    combat: { ...bundled.combat, difficulties },
+  };
+}
+
+/** The pinned content with the shipped floors of every dungeon back in. */
+export const floorsContent: Content = pinRuleNumbers(
+  pinNoElements(pinStarBar(pinProductionRates(loadContent()))),
+);
+
+export const content: Content = pinOneFloor(floorsContent);
+
+/**
+ * Crystals per "pull unit": rule tests count crystals in units of a tenth of a Card Portal pull
+ * (10 a pull, 100 a 10-pull), so a retune of the crystal prices and drops does not move them.
+ */
+export const CRYSTAL_UNIT =
+  content.portals.find((p) => p.id === 'card_portal')!.cost.single.toNumber() / 10;
 
 const noMilestones = { every: 25, multiplier: new Decimal(1) };
 const plainMines = content.mines.map((m) => ({
@@ -47,13 +194,12 @@ export const plainContent: Content = {
   progression: {
     ...content.progression,
     gemMastery: { ...content.progression.gemMastery, perTier: [] },
-    bossMastery: { ...content.progression.bossMastery, perTier: [] },
     trialMastery: { ...content.progression.trialMastery, perTier: [] },
   },
   mines: plainMines,
   mineById: new Map(plainMines.map((m) => [m.id, m])),
   combat: {
-    ...content.combat,
+    ...neutralStars(content).combat,
     crit: { chance: 0, damage: new Decimal(1) },
   },
 };
@@ -97,10 +243,12 @@ export function newGame(): GameState {
   return createInitialState(content);
 }
 
-/** A new game with empty card loadouts: no card effects or level-ups, for exact rate maths. */
+/** A new game with an empty fighting loadout and no workers: no card effects or level-ups, for
+ *  exact rate maths. */
 export function bareState(): GameState {
   const state = freshState();
-  for (const job of JOBS) state.cards.loadouts[job] = emptyCardLoadout();
+  state.cards.loadouts.fighting = emptyCardLoadout();
+  state.production.workers = {};
   return state;
 }
 
@@ -126,4 +274,31 @@ export function withBossAttack(
       : d,
   );
   return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
+}
+
+/**
+ * The same content with one dungeon's boss HP set to `hp`: rule tests that need a fight with no
+ * kill (or a kill at an exact time) pin the boss they use, so tuning the HP does not move them.
+ */
+export function withBossHp(
+  base: Content,
+  dungeonId: string,
+  hp: Decimal | number | string,
+): Content {
+  const dungeons = base.dungeons.map((d) =>
+    d.id === dungeonId ? { ...d, boss: { ...d.boss, hp: new Decimal(hp) } } : d,
+  );
+  return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
+}
+
+/**
+ * The same content where only account levels give skill points: `freshState` counts every
+ * achievement as unlocked, and each would give a point (DESIGN.md §10), so exact skill point tests
+ * use this.
+ */
+export function levelPointsOnly(base: Content = content): Content {
+  return {
+    ...base,
+    account: { ...base.account, levels: { ...base.account.levels, pointsPerAchievement: 0 } },
+  };
 }

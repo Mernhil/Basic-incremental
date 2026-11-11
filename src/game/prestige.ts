@@ -7,6 +7,8 @@ import { initialBursts, startingAmount, type GameState } from './state';
 import { keepPermanentUpgrades } from './upgrades';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
+import { allPlacesCount } from './workers';
+import { ascensionStartFloor } from './floors';
 
 /**
  * Prestige, Ascension (DESIGN.md §9). An ascension resets the run (tree and mine
@@ -18,7 +20,14 @@ import { grantAccountXp } from './account';
  */
 
 /** What an ascension resets, as ids for the UI to label (DESIGN.md §9, §12). */
-export const ASCENSION_RESETS = ['mine_levels', 'tree_levels', 'resources', 'tile_stages'] as const;
+export const ASCENSION_RESETS = [
+  'mine_levels',
+  'tree_levels',
+  'resources',
+  'tile_stages',
+  'tool_lines',
+  'depth_growth',
+] as const;
 /** What an ascension keeps. */
 export const ASCENSION_PERSISTS = [
   'cards',
@@ -29,6 +38,12 @@ export const ASCENSION_PERSISTS = [
   'portal_pity',
   'crystals',
   'starlight',
+  'workers',
+  'forge',
+  'star_dust',
+  'stage_stars',
+  'wishlist',
+  'skill_tree',
 ] as const;
 export type AscensionResetPart = (typeof ASCENSION_RESETS)[number];
 export type AscensionPersistPart = (typeof ASCENSION_PERSISTS)[number];
@@ -123,14 +138,25 @@ export function ascend(
   // Gems, Money, Cores and the rest start over; Starlight and the premium crystals are kept
   // (DESIGN.md §3), like the pity counters that go with them.
   for (const resource of content.resources) {
-    if (resource.kind === 'prestige' || resource.kind === 'crystal') continue;
+    if (resource.kind === 'prestige' || resource.kind === 'crystal' || resource.keptOnAscend)
+      continue;
     next.resources[resource.id] = startingAmount(content, resource.id);
   }
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);
   next.bursts = initialBursts();
   next.bossHp = null;
+  // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run starts at
+  // half of it, pushing again.
+  for (const progress of Object.values(next.combat.floors)) {
+    progress.mode = 'push';
+    for (const tier of Object.values(progress.tiers)) {
+      tier.floor = ascensionStartFloor(tier.best);
+    }
+  }
   next.combat = {
     ...next.combat,
+    // Training is bought again each run (DESIGN.md §6 Training).
+    training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     loadoutDamage: new Decimal(0),
     knockoutSeconds: 0,
@@ -193,6 +219,8 @@ export interface StarlightOffer {
   /** Null at the max level. */
   price: Price | null;
   affordable: boolean;
+  /** Not buyable yet (see `starlightItemLocked`). */
+  locked: boolean;
   /** The bonus now and with one more level (for "+15% → +30%" tooltips). */
   current: Modifier[];
   next: Modifier[];
@@ -212,7 +240,9 @@ export function starlightShop(
       level,
       maxLevel: item.maxLevel,
       price,
-      affordable: price !== null && canAfford(state, [price]),
+      affordable:
+        price !== null && !starlightItemLocked(state, content, item) && canAfford(state, [price]),
+      locked: starlightItemLocked(state, content, item),
       current: starlightItemModifiers(item, level),
       next: level < item.maxLevel ? starlightItemModifiers(item, level + 1) : [],
     };
@@ -220,7 +250,22 @@ export function starlightShop(
 }
 
 export type StarlightBuyResult =
-  { ok: true; state: GameState } | { ok: false; reason: 'unknown' | 'maxed' | 'unaffordable' };
+  | { ok: true; state: GameState }
+  | { ok: false; reason: 'unknown' | 'maxed' | 'locked' | 'unaffordable' };
+
+/**
+ * Whether an item cannot be bought yet: the second worker slots wait until every tree and mine has
+ * its first slot (DESIGN.md §4 Worker slots), i.e. the Ascensions have opened them all.
+ */
+export function starlightItemLocked(
+  state: GameState,
+  content: Content,
+  item: StarlightItem,
+): boolean {
+  if (item.grants !== 'second_worker_slots') return false;
+  const { base, perAscension } = content.production.workers.slots;
+  return base + perAscension * Math.max(0, state.prestigeCount) < allPlacesCount(content);
+}
 
 /** Buys the next level of a Starlight shop item. Kept forever. */
 export function buyStarlightItem(
@@ -233,6 +278,7 @@ export function buyStarlightItem(
   if (!item) return { ok: false, reason: 'unknown' };
   const price = starlightPrice(state, content, item, modifiers);
   if (!price) return { ok: false, reason: 'maxed' };
+  if (starlightItemLocked(state, content, item)) return { ok: false, reason: 'locked' };
   if (!canAfford(state, [price])) return { ok: false, reason: 'unaffordable' };
   const next = pay(state, [price]);
   next.prestige.shop[itemId] = starlightLevel(state, itemId) + 1;

@@ -18,8 +18,9 @@ describe('dev cheats (dev builds only)', () => {
     const result = devGrant(state, content, { resource: 'summon_crystal', amount: 250 });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(250);
-    expect(state.resources['summon_crystal']!.toNumber()).toBe(0);
+    // a new game starts with one pull of Summon Crystals (DESIGN.md §3)
+    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(550);
+    expect(state.resources['summon_crystal']!.toNumber()).toBe(300);
   });
 
   it('accepts a decimal string amount and refuses unknown resources or bad amounts', () => {
@@ -47,7 +48,7 @@ describe('dev cheats (dev builds only)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.state.clearedDungeons).toContain('mossy_cellar');
-    expect(result.state.combat.kills['mossy_cellar']).toBeGreaterThanOrEqual(1);
+    expect(result.state.combat.stageKills['mossy_cellar:normal:1']).toBeGreaterThanOrEqual(1);
     expect(isProducerUnlocked(result.state, content, 'mining', 'iron_deeps')).toBe(true);
     const undone = devSetDungeonCleared(result.state, content, 'mossy_cellar', false);
     expect(undone.ok && undone.state.clearedDungeons).toEqual([]);
@@ -124,6 +125,9 @@ describe('dev cheats (dev builds only)', () => {
       'mossy_cellar',
       'ember_crypt',
       'frostspire_vault',
+      'thunderpeak_aerie',
+      'sunken_sanctum',
+      'void_hollow',
       'glimmer_trial',
     ]);
     expect(options.cards).toHaveLength(content.cards.length);

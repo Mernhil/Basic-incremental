@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, portalInfo, type PullResult } from '../src/game';
+import { Decimal, portalInfo, setWishlisted, wishlistView, type PullResult } from '../src/game';
 import {
   DECK_MAX_LAYERS,
   DECK_MIN_LAYERS,
   HAND_MAX,
   deckLayers,
+  handSummary,
   lastHandView,
+  oddsTable,
   portalView,
   revealSound,
   revealViews,
+  wishlistPanelView,
 } from '../src/renderer/src/pages/summonModel';
 import { content, freshState } from './helpers';
 
@@ -17,11 +20,15 @@ const portal = content.portals[0]!;
 describe('summon shelf', () => {
   it('shows prices, pity and rates of a portal', () => {
     const state = freshState();
-    state.resources[portal.cost.resource] = new Decimal(1000);
+    state.resources[portal.cost.resource] = portal.cost.ten;
     const v = portalView(portalInfo(state, content, portal.id)!, content);
     expect(v.name).toBe(portal.name);
     expect(v.single.affordable && v.ten.affordable).toBe(true);
-    expect(v.ten.label).toBe('Pull ×10');
+    expect(v.ten.label).toBe('Pull 10');
+    expect(v.ten.amount).toBe(portal.cost.ten.toNumber().toLocaleString('en-US'));
+    expect(v.resourceId).toBe(portal.cost.resource);
+    expect(v.line).toMatch(/or better within \d+ pulls$/);
+    expect(v.pityText).toMatch(/^0 \/ \d+$/);
     expect(v.pity).toMatch(/or better within \d+ pulls$/);
     expect(v.pityProgress).toBe(0);
     expect(v.guarantee).toMatch(/^Every ×10 holds a /);
@@ -29,7 +36,9 @@ describe('summon shelf', () => {
   });
 
   it('cannot pull without the portal resource', () => {
-    const v = portalView(portalInfo(freshState(), content, portal.id)!, content);
+    const state = freshState();
+    state.resources[portal.cost.resource] = new Decimal(0);
+    const v = portalView(portalInfo(state, content, portal.id)!, content);
     expect(v.single.affordable).toBe(false);
   });
 });
@@ -87,7 +96,30 @@ describe('summon deck and hand', () => {
     expect(v.odds[0]).toMatchObject({ rarity: 'common' });
   });
 
-  it('builds the last hand: new marks, a cap of ten, a light fan', () => {
+  it('builds the odds table: a row per rarity, a column per portal, from the real rates', () => {
+    const state = freshState();
+    const views = content.portals.map((p) =>
+      portalView(portalInfo(state, content, p.id)!, content),
+    );
+    const t = oddsTable(views);
+    expect(t.columns.map((c) => c.id)).toEqual(content.portals.map((p) => p.id));
+    expect(t.columns[0]!.name).toBe('Cards');
+    expect(t.rows[0]).toMatchObject({ rarity: 'common' });
+    expect(t.rows.every((r) => r.cells.length === views.length)).toBe(true);
+    // a rarity one portal does not hold shows as null, never as a made-up number
+    const missing = t.rows.find((r) => r.cells.includes(null));
+    if (missing) {
+      const at = missing.cells.indexOf(null);
+      expect(views[at]!.odds.some((o) => o.rarity === missing.rarity)).toBe(false);
+    }
+    for (const [i, v] of views.entries()) {
+      for (const o of v.odds) {
+        expect(t.rows.find((r) => r.rarity === o.rarity)!.cells[i]).toBe(o.chance);
+      }
+    }
+  });
+
+  it('builds the last hand: new marks, notes, a cap of ten, no tilt', () => {
     const card = content.cards[0]!;
     const results: PullResult[] = Array.from({ length: 12 }, (_, i) => ({
       itemId: card.id,
@@ -102,9 +134,58 @@ describe('summon deck and hand', () => {
     expect(hand[HAND_MAX - 1]).toMatchObject({ isNew: true });
     expect(hand[HAND_MAX - 1]!.label).toContain('New!');
     expect(hand[0]!.isNew).toBe(false);
-    expect(hand[0]!.tilt).toBeLessThan(0);
-    expect(hand[HAND_MAX - 1]!.tilt).toBeGreaterThan(0);
+    expect(hand[HAND_MAX - 1]!.note).toBe('New card');
+    expect(hand[0]!.note).toBe('+1 copy');
     expect(lastHandView([])).toEqual([]);
-    expect(lastHandView(revealViews(results.slice(0, 1), content))[0]!.tilt).toBe(0);
+  });
+
+  it('sums the last hand in one line', () => {
+    const card = content.cards[0]!;
+    const results: PullResult[] = Array.from({ length: 10 }, (_, i) => ({
+      itemId: card.id,
+      rarity: 'rare',
+      orb: 'rare',
+      pity: false,
+      guaranteed: false,
+      gain: i < 2 ? { kind: 'new' } : { kind: 'duplicate', duplicates: 1 },
+    }));
+    expect(handSummary(revealViews(results, content))).toBe('10 pulls · 2 new · 8 copies');
+    expect(handSummary(revealViews(results.slice(0, 1), content))).toBe(
+      '1 pull · 1 new · 0 copies',
+    );
+    expect(handSummary([])).toBe('');
+  });
+});
+
+describe('wishlist panel', () => {
+  it('lists the cards by rarity with the marks, the room left and a "Hunting" line', () => {
+    const state = freshState();
+    const none = wishlistPanelView(wishlistView(state, content, portal.id)!, state, content);
+    expect(none.active).toBe(false);
+    expect(none.hunting).toBe('No card marked');
+    const id = portal.pool.find((e) => e.rarity === 'epic')!.itemId;
+    const r = setWishlisted(state, content, id, true);
+    if (!r.ok) throw new Error(r.reason);
+    const v = wishlistPanelView(wishlistView(r.state, content, portal.id)!, r.state, content);
+    expect(v.active).toBe(true);
+    expect(v.hunting).toBe(`Hunting: ${content.cardById.get(id)!.name}`);
+    const epic = v.rows.find((x) => x.rarity === 'epic')!;
+    expect(epic.countText).toBe(`1 / ${portal.wishlistPerRarity}`);
+    expect(epic.cards.find((c) => c.id === id)!.label).toContain('Click to unmark');
+    expect(epic.cards.every((c) => c.marked || !c.blocked)).toBe(true);
+  });
+
+  it('blocks the unmarked cards of a full rarity', () => {
+    let s = freshState();
+    const ids = portal.pool.filter((e) => e.rarity === 'rare').map((e) => e.itemId);
+    for (const id of ids.slice(0, portal.wishlistPerRarity)) {
+      const r = setWishlisted(s, content, id, true);
+      if (!r.ok) throw new Error(r.reason);
+      s = r.state;
+    }
+    const v = wishlistPanelView(wishlistView(s, content, portal.id)!, s, content);
+    const rare = v.rows.find((x) => x.rarity === 'rare')!;
+    expect(rare.full).toBe(true);
+    expect(rare.cards.filter((c) => c.blocked)).toHaveLength(ids.length - portal.wishlistPerRarity);
   });
 });

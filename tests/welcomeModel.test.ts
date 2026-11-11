@@ -10,6 +10,7 @@ const base = (): OfflineSummary => ({
   capped: false,
   gains: {},
   bossKills: 0,
+  enemyKills: 0,
   drops: {},
   cardDrops: [],
   cardLevels: {},

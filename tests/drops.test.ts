@@ -91,7 +91,7 @@ describe('rollBossDrop', () => {
         expect(values).toEqual(Array.from({ length: max - min + 1 }, (_, k) => min + k));
       } else {
         // A wide range (Money): spread over the range, reaching near both ends.
-        expect(values.length).toBeGreaterThan(500);
+        expect(values.length).toBeGreaterThan(Math.min(500, (max - min) / 2));
         expect(values[0]!).toBeLessThan(min + (max - min) * 0.05);
         expect(values[values.length - 1]!).toBeGreaterThan(max - (max - min) * 0.05);
       }

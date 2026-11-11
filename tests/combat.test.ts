@@ -52,6 +52,8 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
+import training from '../src/data/content/training.json';
+import coins from '../src/data/content/coins.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
 import items from '../src/data/content/items.json';
 import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
@@ -132,7 +134,7 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
   });
 
   it('the first kill clears the dungeon and unlocks the next dungeon and a mine', () => {
-    const maxHp = bossMaxHp(mossy, 0);
+    const maxHp = bossMaxHp(mossy);
     const content = withDps(maxHp);
     const start = freshState();
     expect(isProducerUnlocked(start, content, 'mining', 'iron_deeps')).toBe(false);
@@ -142,13 +144,13 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(report.unlockedDungeons).toEqual([ember.id]);
     expect(report.unlockedMines).toEqual(['iron_deeps']);
     expect(state.clearedDungeons).toEqual([mossy.id]);
-    expect(state.combat.kills).toEqual({ [mossy.id]: 1 });
+    expect(state.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 1 });
     expect(isProducerUnlocked(state, content, 'mining', 'iron_deeps')).toBe(true);
 
     // Farming afterwards counts kills but clears nothing again.
     const again = advance(state, content, 1000, rng);
     expect(again.report.cleared).toEqual([]);
-    expect(again.state.combat.kills[mossy.id]).toBe(2);
+    expect(again.state.combat.stageKills['mossy_cellar:normal:1']).toBe(2);
     expect(again.state.clearedDungeons).toEqual([mossy.id]);
   });
 
@@ -188,34 +190,119 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
 });
 
 describe('drops', () => {
-  it('each dungeon drops its own Core', () => {
+  it('every dungeon drops its own Core', () => {
     expect(content.dungeons.map((d) => d.drops.material.resource)).toEqual([
       'moss_core',
       'cinder_core',
       'frost_core',
+      'storm_core',
+      'sanctum_core',
+      'void_core',
     ]);
   });
 
-  it('every dungeon drops Money and both crystals, and deeper ones drop more', () => {
-    const ids = ['money', 'summon_crystal', 'glamour_crystal'];
+  it('pays Money by the kill and both crystals as a wage, and deeper dungeons pay more', () => {
     for (const d of content.dungeons) {
-      expect(d.drops.currencies.map((c) => c.resource)).toEqual(ids);
+      expect(d.drops.currencies.map((c) => c.resource)).toEqual(['money']);
+      expect(d.drops.firstClear.map((p) => p.resource)).toEqual([
+        'summon_crystal',
+        'glamour_crystal',
+      ]);
     }
-    for (const id of ids) {
-      const average = content.dungeons.map((d) => {
-        const c = d.drops.currencies.find((x) => x.resource === id)!;
-        return (c.min + c.max) / 2;
-      });
-      expect(average[1]!).toBeGreaterThan(average[0]!);
-      expect(average[2]!).toBeGreaterThan(average[1]!);
+    const money = content.dungeons.map(
+      (d) => (d.drops.currencies[0]!.min + d.drops.currencies[0]!.max) / 2,
+    );
+    expect(money[1]!).toBeGreaterThan(money[0]!);
+    expect(money[2]!).toBeGreaterThan(money[1]!);
+    for (const id of ['summon_crystal', 'glamour_crystal']) {
+      const wage = content.dungeons.map((d) =>
+        d.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber(),
+      );
+      expect(wage[1]!).toBeGreaterThan(wage[0]!);
+      expect(wage[2]!).toBeGreaterThan(wage[1]!);
     }
-    // Only the first dungeon pays a wage: a wall cannot be farmed idle.
-    expect(content.dungeons.map((d) => d.drops.wage !== undefined)).toEqual([true, false, false]);
+    // Only the first dungeon pays a Money wage: Money still comes by the kill.
+    expect(content.dungeons.map((d) => d.drops.wages.some((w) => w.resource === 'money'))).toEqual([
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
+    ]);
   });
 
-  it('only the Frostspire Vault drops Frost Sigils, a material used for Prismatic card upgrades', () => {
+  it('pays the crystal wage for every second of fighting, never per kill', () => {
+    const dungeon = content.dungeons[0]!;
+    const wage = (id: string): number =>
+      dungeon.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber();
+    const state = bareState();
+    state.clearedDungeons = [dungeon.id]; // no first-clear purse
+    const before = state.resources['summon_crystal']!.toNumber();
+    const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
+    expect(after.resources['summon_crystal']!.toNumber()).toBeCloseTo(
+      before + wage('summon_crystal') * 10,
+    );
+    expect(report.currencies['glamour_crystal']).toBeCloseTo(wage('glamour_crystal') * 10);
+    // A kill adds no crystals on top of the wage.
+    const kill = bareState();
+    kill.clearedDungeons = [dungeon.id];
+    kill.bossHp = new Decimal(1e-6);
+    const killed = advance(kill, content, 1000, constantRng(0.5));
+    expect(killed.report.bossKills).toBe(1);
+    expect(killed.report.currencies['summon_crystal']).toBeCloseTo(wage('summon_crystal'));
+    // Knocked out: no wage.
+    const knocked = bareState();
+    knocked.combat.knockoutSeconds = 30;
+    const out = advance(knocked, content, 10_000, constantRng(0.5));
+    expect(out.report.currencies['summon_crystal'] ?? 0).toBe(0);
+  });
+
+  it('pays the first-clear purse once, on the clear', () => {
+    const dungeon = content.dungeons[0]!;
+    const purse = dungeon.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
+    const wage = dungeon.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
+    const state = bareState();
+    state.bossHp = new Decimal(1e-6);
+    const first = advance(state, content, 1000, constantRng(0.5));
+    expect(first.report.cleared).toContain(dungeon.id);
+    expect(first.report.currencies['summon_crystal']).toBeCloseTo(purse.add(wage).toNumber());
+    const again = advance(
+      { ...first.state, bossHp: new Decimal(1e-6) },
+      content,
+      1000,
+      constantRng(0.5),
+    );
+    expect(again.report.cleared).toEqual([]);
+    expect(again.report.currencies['summon_crystal']).toBeCloseTo(wage.toNumber());
+  });
+
+  it('drops Frost Sigils on every Frostspire Vault kill and, rarely, in the Ember Crypt', () => {
     const extras = content.dungeons.map((d) => d.drops.extraMaterials.map((e) => e.resource));
-    expect(extras).toEqual([[], [], ['frost_sigil']]);
+    expect(extras.slice(0, 3)).toEqual([[], ['frost_core', 'frost_sigil'], ['frost_sigil']]);
+    // The three later dungeons drop Sigils on every boss kill too.
+    expect(extras.slice(3)).toEqual([['frost_sigil'], ['frost_sigil'], ['frost_sigil']]);
+    // The Ember Crypt's Frost drops are rare (DESIGN.md §3); the Vault's Sigil comes every kill.
+    for (const e of content.dungeonById.get('ember_crypt')!.drops.extraMaterials) {
+      expect(e.chance).toBeGreaterThan(0);
+      expect(e.chance).toBeLessThan(0.1);
+    }
+    const crypt = bareState();
+    crypt.clearedDungeons = ['mossy_cellar'];
+    crypt.activeDungeonId = 'ember_crypt';
+    crypt.bossHp = new Decimal(1e-6);
+    // a roll under the chance drops both, a roll over it drops none
+    const lucky = advance(crypt, content, 1000, constantRng(0)).state;
+    expect(lucky.resources['frost_core']!.toNumber()).toBe(1);
+    expect(lucky.resources['frost_sigil']!.toNumber()).toBe(1);
+    const unlucky = advance(
+      { ...crypt, bossHp: new Decimal(1e-6) },
+      content,
+      1000,
+      constantRng(0.999),
+    ).state;
+    expect(unlucky.resources['frost_core']!.toNumber()).toBe(0);
+    expect(unlucky.resources['frost_sigil']!.toNumber()).toBe(0);
     const frost = content.dungeonById.get('frostspire_vault')!;
     const { min, max } = frost.drops.extraMaterials[0]!;
     expect(min).toBeGreaterThan(0);
@@ -243,10 +330,9 @@ describe('drops', () => {
     state.resources['money'] = new Decimal(0);
     const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
     expect(report.bossKills).toBe(0);
-    expect(after.resources['money']!.toNumber()).toBeCloseTo(
-      dungeon.drops.wage!.perSecond.toNumber() * 10,
-    );
-    expect(report.currencies['money']).toBeCloseTo(dungeon.drops.wage!.perSecond.toNumber() * 10);
+    const wage = dungeon.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber();
+    expect(after.resources['money']!.toNumber()).toBeCloseTo(wage * 10);
+    expect(report.currencies['money']).toBeCloseTo(wage * 10);
   });
 
   it('pays no wage in the later dungeons, only by the kill', () => {
@@ -276,7 +362,7 @@ describe('drops', () => {
   it('drops a Core when the roll is under its chance', () => {
     const { state, report } = advance(
       freshState(),
-      withDps(bossMaxHp(mossy, 0)),
+      withDps(bossMaxHp(mossy)),
       1000,
       constantRng(0.01),
     );
@@ -349,13 +435,6 @@ describe('burst gauges (DESIGN.md §6)', () => {
     const later = advance(state, content, 5000, rng).state;
     expect(burstView(later, content, 'fighting').fraction).toBeCloseTo(5 / 20);
   });
-
-  it('a harvest burst adds 10 s of each job’s output', () => {
-    const { state, report } = advance(bareState(), content, 30_000, rng);
-    expect(report.bursts).toMatchObject({ logging: 1, mining: 1 });
-    expect(state.resources['oak_gem']!.eq(30 + 10)).toBe(true); // Oak: 1/s
-    expect(state.resources['copper_gem']!.eq(15 + 5)).toBe(true); // Copper Quarry: 0.5/s
-  });
 });
 
 describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
@@ -373,10 +452,10 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
     return state;
   };
 
-  it('scores the share of the fixed target HP, capped at 1', () => {
+  it('scores the share of the fixed target HP, past 1 for the extra levels', () => {
     expect(trialScore(trial, new Decimal(0))).toBe(0);
     expect(trialScore(trial, trial.target.hp.div(2))).toBeCloseTo(0.5);
-    expect(trialScore(trial, trial.target.hp.mul(3))).toBe(1);
+    expect(trialScore(trial, trial.target.hp.mul(3))).toBeCloseTo(3);
   });
 
   it('pays every tier reached; Facet Shards only from 75%', () => {
@@ -421,14 +500,24 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
     expect(bossStatus(state, content)).toBeNull();
   });
 
-  it('a full score clears the trial', () => {
-    const content = withDps(trial.target.hp);
+  it('a full score clears the trial, and a score past it pays the extra levels', () => {
+    const content = withDps(trial.target.hp.div(25));
     const start = open();
     const { state, report } = advance(start, content, 30_000, rng);
     expect(report.cleared).toEqual([trial.id]);
     expect(state.clearedDungeons).toContain(trial.id);
     expect(trialStatus(state, content)!.cleared).toBe(true);
-    expect(state.resources['facet_shard']!.eq(pays(1, 'facet_shard'))).toBe(true);
+    const score = state.combat.trialBest[trial.id]!;
+    expect(score).toBeGreaterThanOrEqual(1);
+    expect(state.resources['facet_shard']!.eq(pays(score, 'facet_shard'))).toBe(true);
+    expect(pays(5, 'glimmer_dust')).toBeGreaterThan(pays(1, 'glimmer_dust'));
+  });
+
+  it('has score levels above 100%', () => {
+    expect(trial.tiers.filter((t) => t.score > 1).length).toBeGreaterThanOrEqual(3);
+    const rich = trialRewards(trial, 5).find((r) => r.resource === 'glimmer_dust')!.amount;
+    const clear = trialRewards(trial, 1).find((r) => r.resource === 'glimmer_dust')!.amount;
+    expect(rich.gt(clear)).toBe(true);
   });
 
   it('long spans resolve many attempts the same as small steps', () => {
@@ -457,7 +546,7 @@ describe('save format v4: combat', () => {
   it('round-trips kills, the trial attempt and burst gauges', () => {
     let state = ok(setActiveDungeon(cleared(mossy.id, ember.id), content, trial.id));
     state = advance(state, withDps(1234), 12_345, rng).state;
-    state.combat.kills = { mossy_cellar: 4 };
+    state.combat.stageKills = { 'mossy_cellar:normal:1': 4 };
     const loaded = readSave(createSaveText(state, NOW), content).state;
     expect(loaded.combat).toEqual(state.combat);
     expect(loaded.bursts).toEqual(state.bursts);
@@ -479,7 +568,7 @@ describe('save format v4: combat', () => {
     v3.state.bossHp = '40';
     v3.state.stats.bossKills = 5;
     const { state } = readSave(JSON.stringify(v3), content);
-    expect(state.combat.kills).toEqual({ mossy_cellar: 5 });
+    expect(state.combat.stageKills).toEqual({ 'mossy_cellar:normal:10': 5 });
     expect(state.clearedDungeons).toEqual(['mossy_cellar']);
     expect(state.bossHp).toBeNull();
     expect(state.bursts.fighting).toEqual({ gauge: 0, timer: 0 });
@@ -488,7 +577,7 @@ describe('save format v4: combat', () => {
     v3.state.stats.bossKills = 0;
     const fresh = readSave(JSON.stringify(v3), content).state;
     expect(fresh.clearedDungeons).toEqual([]);
-    expect(fresh.combat.kills).toEqual({});
+    expect(fresh.combat.stageKills).toEqual({});
   });
 });
 
@@ -516,6 +605,8 @@ describe('combat data is validated', () => {
       cosmeticRules,
       prestige,
       upgrades,
+      training,
+      coins,
       weaponSkins,
       items,
     });

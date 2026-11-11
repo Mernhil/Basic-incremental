@@ -1,4 +1,4 @@
-import type { BurstJob, Content, Dungeon, ProductionJob, Trial } from '../data';
+import type { BurstJob, Content, Dungeon, Trial } from '../data';
 import {
   cardBaseDamage,
   cardHealth,
@@ -8,7 +8,20 @@ import {
 } from './cards';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
-import { rollBossDrop, rollMaterialDrop, type DropTable } from './drops';
+import { rollBossDrop, rollEnemyDrops, rollMaterialDrop, type DropTable } from './drops';
+import {
+  floorCount,
+  floorPosition,
+  floorSpec,
+  hasDeeperFloor,
+  initialProgress,
+  isDifficultyUnlocked,
+  isStageFloor,
+  stageKey,
+  type DifficultyScale,
+  type FloorEnemy,
+  type FloorKind,
+} from './floors';
 import { hpBarState, type HpBarState } from './hpBars';
 import {
   bossAttacksBy,
@@ -19,7 +32,6 @@ import {
   recordBossAttacks,
   type BossPattern,
 } from './bossAttacks';
-import { recordBurst } from './harvest';
 import {
   collectModifiers,
   computeStat,
@@ -29,15 +41,34 @@ import {
   type StatResult,
 } from './modifiers';
 import { Decimal } from './num';
-import { clearDungeon, jobProductionPerSecond, PRODUCTION_JOBS, type Price } from './production';
+import { clearDungeon, type Price } from './production';
 import { pushPlayerHit, type TickReport } from './report';
 import type { Rng } from './rng';
-import { cloneState, type BurstGauge, type GameState } from './state';
+import {
+  overflowActive,
+  payStageChests,
+  stageDamageFactor,
+  stageLootFactor,
+  stageStars,
+  type StageStarInfo,
+} from './stageStars';
+import {
+  cloneState,
+  type BurstGauge,
+  type Difficulty,
+  type DungeonProgress,
+  type FloorMode,
+  type GameState,
+  type TierProgress,
+} from './state';
 
 /**
- * Combat (DESIGN.md §6): bosses are HP walls auto-fought in parallel with production,
- * respawning for farming. Damage comes from the main fighting card (DESIGN.md §5). The first kill
- * clears a dungeon, which unlocks the next dungeon and a mine type.
+ * Combat (DESIGN.md §6): a dungeon is a stack of floors (floors.ts), auto-fought in parallel with
+ * production: waves of normal enemies, a mini-boss every 10th floor and the dungeon's boss on the
+ * last one. Push moves down a floor on a win, farm stays; the enemies hit back, and a loadout
+ * that runs out of health is knocked out, drops a floor and switches to farm. Damage comes from
+ * the main fighting card (DESIGN.md §5). A dungeon is cleared the first time its last-floor boss
+ * dies, which unlocks the next dungeon and a mine type.
  * The Glimmer Trial is a special dungeon fought in timed attempts for a score.
  * Burst gauges fill with each hit (fighting) or tick (logging, mining) and fire automatically.
  *
@@ -53,7 +84,7 @@ export const MAX_TRIAL_ATTEMPTS_PER_ADVANCE = 10_000;
 export type CombatFailure =
   /** No dungeon / special dungeon with that id. */
   | 'unknown'
-  /** The dungeon is not unlocked yet. */
+  /** The dungeon, or the difficulty asked for, is not unlocked yet. */
   | 'locked';
 
 export type CombatResult = { ok: true; state: GameState } | { ok: false; reason: CombatFailure };
@@ -119,11 +150,6 @@ export function unlockedTrials(state: GameState, content: Content): Trial[] {
   return content.trials.filter((t) => isDungeonUnlocked(state, content, t.id));
 }
 
-/** Boss kills in this dungeon, ever. */
-export function dungeonKills(state: GameState, dungeonId: string): number {
-  return state.combat.kills[dungeonId] ?? 0;
-}
-
 /**
  * Chooses what is auto-fought: a dungeon, a special dungeon, or nothing (null). Switching
  * spawns a fresh boss and starts a new trial attempt; picking the current one changes nothing.
@@ -146,50 +172,219 @@ export function setActiveDungeon(
 }
 
 /**
- * Boss HP grows slowly with prestige count: base * (1 + scaling)^prestiges, then the
- * combat.bossHp modifiers apply.
+ * Switches a dungeon between push (a win moves down a floor) and farm (stay on the floor).
+ * The floor and the fight in progress are kept.
  */
-export function bossMaxHp(
-  dungeon: Dungeon,
-  prestigeCount: number,
-  modifiers: readonly Modifier[] = [],
-): Decimal {
-  const growth = Decimal.pow(1 + dungeon.boss.hpScalingPerPrestige, prestigeCount);
-  const base = dungeon.boss.hp.mul(growth);
+export function setFloorMode(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  mode: FloorMode,
+): CombatResult {
+  if (!content.dungeonById.has(dungeonId)) return fail('unknown');
+  if (!isDungeonUnlocked(state, content, dungeonId)) return fail('locked');
+  if (floorPosition(state, content.dungeonById.get(dungeonId)!).mode === mode) {
+    return { ok: true, state };
+  }
+  const next = cloneState(state);
+  ensureProgress(next, dungeonId).mode = mode;
+  return { ok: true, state: next };
+}
+
+/**
+ * Chooses the difficulty a dungeon is fought on (DESIGN.md §6 Difficulty tiers): Normal, or a
+ * tier whose way in has been beaten, or the endless depths below Nightmare. Each difficulty keeps
+ * its own floor; the fight on the new one starts fresh.
+ */
+export function setDifficulty(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  difficulty: Difficulty,
+): CombatResult {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return fail('unknown');
+  if (!isDungeonUnlocked(state, content, dungeonId)) return fail('locked');
+  if (!isDifficultyUnlocked(state, dungeon, difficulty)) return fail('locked');
+  if (floorPosition(state, dungeon).difficulty === difficulty) return { ok: true, state };
+  const next = cloneState(state);
+  ensureProgress(next, dungeonId).difficulty = difficulty;
+  if (next.activeDungeonId === dungeonId) next.bossHp = null;
+  return { ok: true, state: next };
+}
+
+/** The dungeon's saved floors in a state being built (a fresh clone), created when missing. */
+function ensureProgress(next: GameState, dungeonId: string): DungeonProgress {
+  return (next.combat.floors[dungeonId] ??= initialProgress());
+}
+
+/** The progress on the chosen difficulty in a state being built, created when missing. */
+function ensureTier(next: GameState, dungeon: Dungeon): TierProgress {
+  const progress = ensureProgress(next, dungeon.id);
+  const position = floorPosition(next, dungeon);
+  return (progress.tiers[progress.difficulty] ??= { floor: position.floor, best: position.best });
+}
+
+/**
+ * HP of the dungeon's last-floor boss after the combat.bossHp modifiers. Enemies do not grow with
+ * Ascension (DESIGN.md §6): harder enemies come from the difficulty tiers and the depths.
+ */
+export function bossMaxHp(dungeon: Dungeon, modifiers: readonly Modifier[] = []): Decimal {
+  return enemyMaxHp(dungeon, dungeon.boss.hp, modifiers);
+}
+
+/** An enemy's HP after the combat.bossHp modifiers (at least 1). */
+function enemyMaxHp(dungeon: Dungeon, hp: Decimal, modifiers: readonly Modifier[]): Decimal {
   return Decimal.max(
-    statValue('combat.bossHp', base, modifiers, { ...FIGHTING, dungeon: dungeon.id }),
+    statValue('combat.bossHp', hp, modifiers, { ...FIGHTING, dungeon: dungeon.id }),
     1,
   );
 }
 
+/** One enemy of the floor being fought, with its HP after modifiers. */
+export interface StageEnemy extends FloorEnemy {
+  /** Damage dealt to the floor by the time this enemy is dead (the HP of it and those before). */
+  upto: Decimal;
+}
+
+/**
+ * The floor being fought in a dungeon as the fight sees it (DESIGN.md §6): its enemies in the
+ * order our damage reaches them and how hard the floor hits back, after modifiers and defence.
+ */
+export interface FightStage {
+  dungeon: Dungeon;
+  kind: FloorKind;
+  difficulty: Difficulty;
+  /** The floor (1-based) and how many the dungeon has on this difficulty. */
+  floor: number;
+  floors: number;
+  enemies: StageEnemy[];
+  /** HP of the whole floor. */
+  hp: Decimal;
+  /** What one normal attack of the floor takes from the health pool, after defence. */
+  attack: Decimal;
+  intervalSeconds: number;
+  /** What the difficulty multiplies the drops, the wage and card XP by. */
+  scale: DifficultyScale;
+}
+
+/**
+ * The stage of a dungeon's floor: the one the player stands on, or `floor` when given, on the
+ * chosen difficulty or on `difficulty` when given. Null for an unknown dungeon.
+ */
+export function fightStage(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+  floor?: number,
+  difficulty?: Difficulty,
+): FightStage | null {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return null;
+  const position = floorPosition(state, dungeon, difficulty);
+  const at = Math.min(position.floors, Math.max(1, Math.floor(floor ?? position.floor)));
+  return stageOf(content, dungeon, position.difficulty, at, modifiers);
+}
+
+function stageOf(
+  content: Content,
+  dungeon: Dungeon,
+  difficulty: Difficulty,
+  floor: number,
+  modifiers: readonly Modifier[],
+): FightStage {
+  const spec = floorSpec(content, dungeon, difficulty, floor);
+  let upto = new Decimal(0);
+  const enemies = spec.enemies.map((enemy): StageEnemy => {
+    const hp = enemyMaxHp(dungeon, enemy.hp, modifiers);
+    upto = upto.add(hp);
+    return { ...enemy, hp, upto };
+  });
+  const attack = spec.attack.mul(1 - defencePercent(modifiers, dungeon.id) / 100);
+  return {
+    dungeon,
+    kind: spec.kind,
+    difficulty,
+    floor,
+    floors: floorCount(dungeon, difficulty),
+    enemies,
+    hp: upto,
+    attack,
+    intervalSeconds: spec.intervalSeconds,
+    scale: spec.scale,
+  };
+}
+
+/** HP left of a stage's floor: the saved HP, never above the floor's HP. */
+function stageHpLeft(state: GameState, stage: FightStage): Decimal {
+  return Decimal.min(state.bossHp ?? stage.hp, stage.hp);
+}
+
 export interface BossStatus {
   dungeon: Dungeon;
+  /** The enemy our damage is on now: a wave's next enemy, the mini-boss or the boss. */
+  enemy: Pick<StageEnemy, 'id' | 'name' | 'kind' | 'hpBars'>;
+  /** That enemy's HP left and full HP. */
   hp: Decimal;
   maxHp: Decimal;
   /** Stacked bars ("x N") for the life gauge. */
   bars: HpBarState;
+  /** Kills on the stage being fought, ever (0 on a wave floor or a depth). */
   kills: number;
-  /** Rare-drop pity counter: kills in a row without the rare item. */
+  /** The stars of the stage being fought; null on a wave floor or a depth (DESIGN.md §6). */
+  stars: StageStarInfo | null;
+  /** Leftover damage from a kill carries on here (DESIGN.md §6 Overflow). */
+  overflow: boolean;
+  /** Rare-drop pity counter: boss kills in a row without the rare item. */
   pity: number;
+  /** The floor being fought, of how many, and what it holds. */
+  floor: number;
+  floors: number;
+  floorKind: FloorKind;
+  difficulty: Difficulty;
+  mode: FloorMode;
+  /** The deepest floor beaten on this difficulty. */
+  bestFloor: number;
+  /** Which enemy of the floor this is (1-based) and how many the floor holds. */
+  wave: { index: number; size: number };
 }
 
-/** The boss being fought, or null when a special dungeon or nothing is active. */
+/** The enemy being fought, or null when a special dungeon or nothing is active. */
 export function bossStatus(
   state: GameState,
   content: Content,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BossStatus | null {
-  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
-  if (!dungeon) return null;
-  const maxHp = bossMaxHp(dungeon, state.prestigeCount, modifiers);
-  const hp = Decimal.min(state.bossHp ?? maxHp, maxHp);
+  const stage = state.activeDungeonId
+    ? fightStage(state, content, state.activeDungeonId, modifiers)
+    : null;
+  if (!stage) return null;
+  const { dungeon } = stage;
+  const position = floorPosition(state, dungeon);
+  const dealt = stage.hp.sub(stageHpLeft(state, stage));
+  const found = stage.enemies.findIndex((e) => e.upto.gt(dealt));
+  const index = found < 0 ? stage.enemies.length - 1 : found;
+  const enemy = stage.enemies[index]!;
+  const hp = Decimal.min(Decimal.max(enemy.upto.sub(dealt), 0), enemy.hp);
+  const stars = stageStars(state, content, stageKey(dungeon.id, stage.difficulty, stage.floor));
   return {
     dungeon,
+    enemy: { id: enemy.id, name: enemy.name, kind: enemy.kind, hpBars: enemy.hpBars },
     hp,
-    maxHp,
-    bars: hpBarState(hp, maxHp, dungeon.boss.hpBars),
-    kills: dungeonKills(state, dungeon.id),
+    maxHp: enemy.hp,
+    bars: hpBarState(hp, enemy.hp, enemy.hpBars),
+    kills: stars?.kills ?? 0,
+    stars,
+    overflow: overflowActive(state, content, dungeon, stage.difficulty, stage.floor),
     pity: state.pity[dungeon.boss.id] ?? 0,
+    floor: stage.floor,
+    floors: stage.floors,
+    floorKind: stage.kind,
+    difficulty: stage.difficulty,
+    mode: position.mode,
+    bestFloor: position.best,
+    wave: { index: index + 1, size: stage.enemies.length },
   };
 }
 
@@ -210,27 +405,24 @@ export function effectiveDrops(
   content: Content,
 ): DropTable {
   const ctx = { ...FIGHTING, dungeon: dungeon.id };
-  const { rare, currencies, material, wage, extraMaterials } = dungeon.drops;
+  const { rare, currencies, material, wages, extraMaterials, firstClear } = dungeon.drops;
   const clamp01 = (d: Decimal): number => Math.min(1, Math.max(0, d.toNumber()));
   const chance = clamp01(statValue('drops.rareChance', rare.chance, modifiers, ctx));
   const pity = statValue('drops.pityThreshold', rare.pityThreshold, modifiers, ctx).toNumber();
   const materialCtx = { ...ctx, resource: material.resource };
   return {
     rare: { ...rare, chance, pityThreshold: Math.max(1, Math.round(pity)) },
-    ...(wage
-      ? {
-          wage: {
-            ...wage,
-            perSecond: Decimal.max(
-              statValue(currencyMultiplierStat(content, wage.resource), wage.perSecond, modifiers, {
-                ...ctx,
-                resource: wage.resource,
-              }),
-              0,
-            ),
-          },
-        }
-      : {}),
+    firstClear,
+    wages: wages.map((wage) => ({
+      ...wage,
+      perSecond: Decimal.max(
+        statValue(currencyMultiplierStat(content, wage.resource), wage.perSecond, modifiers, {
+          ...ctx,
+          resource: wage.resource,
+        }),
+        0,
+      ),
+    })),
     currencies: currencies.map((currency) => {
       const currencyCtx = { ...ctx, resource: currency.resource };
       const amount = (n: number): number =>
@@ -258,7 +450,8 @@ export function effectiveDrops(
           Math.floor(statValue('drops.materialAmount', n, modifiers, extraCtx).toNumber()),
         );
       const min = amount(extra.min);
-      return { ...extra, min, max: Math.max(min, amount(extra.max)) };
+      const chance = clamp01(statValue('drops.materialChance', extra.chance, modifiers, extraCtx));
+      return { ...extra, min, max: Math.max(min, amount(extra.max)), chance };
     }),
     material: {
       ...material,
@@ -359,11 +552,11 @@ export interface BurstView {
   stats: BurstStats;
 }
 
-/** A job's gauge for display (the renderer animates it). */
+/** The fighting gauge for display (the renderer animates it). Harvest gauges: harvest.ts. */
 export function burstView(
   state: GameState,
   content: Content,
-  job: BurstJob,
+  job: 'fighting',
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BurstView {
   const stats = burstStats(content, job, modifiers);
@@ -413,18 +606,30 @@ export function averageDamage(dps: Decimal, stats: BurstStats): Decimal {
   return dps.mul(stats.power.mul(stats.fill / stats.size).add(1));
 }
 
-/** Average seconds to defeat a dungeon's boss from full HP, or null when no damage is dealt. */
+/**
+ * Average seconds to clear a floor of a dungeon from full HP (the floor the player stands on, or
+ * `floor` when given), or null when no damage is dealt. On the last floor this is the seconds per
+ * boss kill.
+ */
 export function secondsPerKill(
   state: GameState,
   content: Content,
   dungeonId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
+  floor?: number,
+  difficulty?: Difficulty,
 ): number | null {
-  const dungeon = content.dungeonById.get(dungeonId);
-  if (!dungeon) return null;
-  const avg = averageDps(state, content, dungeonId, modifiers);
+  const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
+  if (!stage) return null;
+  const avg = averageDps(state, content, dungeonId, modifiers).mul(
+    stageDamageFactor(state, content, stage.dungeon, stage.difficulty, stage.floor, modifiers),
+  );
   if (avg.lte(0)) return null;
-  return bossMaxHp(dungeon, state.prestigeCount, modifiers).div(avg).toNumber();
+  const seconds = stage.hp.div(avg).toNumber();
+  if (overflowActive(state, content, stage.dungeon, stage.difficulty, stage.floor)) return seconds;
+  // Overflow off (DESIGN.md §6): the damage past a kill is lost, so a kill takes whole hits.
+  const interval = burstStats(content, 'fighting', modifiers).interval;
+  return Math.ceil(seconds / interval - EPSILON) * interval;
 }
 
 // ---- live stage readouts (DESIGN.md §11) --------------------------------------------------------
@@ -445,7 +650,7 @@ export function averageDps(
   );
 }
 
-/** Boss kills per minute in a dungeon (60 / seconds per kill), or null without kills. */
+/** Floors cleared per minute in a dungeon (60 / seconds per floor), or null without kills. */
 export function killsPerMinute(
   state: GameState,
   content: Content,
@@ -463,11 +668,11 @@ export interface StageReadout {
   dps: Decimal;
   /** Damage per second with signature attacks and crits at their expected value. */
   averageDps: Decimal;
-  /** Boss kills per minute; null for a special dungeon, nothing active or no damage. */
+  /** Floors cleared per minute; null for a special dungeon, nothing active or no damage. */
   killsPerMinute: number | null;
-  /** Average seconds to kill the boss from full HP; null like killsPerMinute. */
+  /** Average seconds to clear the floor from full HP; null like killsPerMinute. */
   secondsPerKill: number | null;
-  /** Seconds to finish the current boss from its HP now; null like killsPerMinute. */
+  /** Seconds to finish the floor from its HP now; null like killsPerMinute. */
   secondsLeft: number | null;
   /**
    * "You fall in": seconds the full health pool lasts against the boss, averaged over the places in
@@ -492,17 +697,22 @@ export function stageReadout(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): StageReadout {
   const id = state.activeDungeonId;
-  const avg = averageDps(state, content, id, modifiers);
   const dungeon = id ? content.dungeonById.get(id) : undefined;
+  const here = dungeon ? fightStage(state, content, dungeon.id, modifiers) : null;
+  // The stage's star levels add their damage there (DESIGN.md §6 Stage stars).
+  const factor = here
+    ? stageDamageFactor(state, content, here.dungeon, here.difficulty, here.floor, modifiers)
+    : 1;
+  const avg = averageDps(state, content, id, modifiers).mul(factor);
   const spk = dungeon ? secondsPerKill(state, content, dungeon.id, modifiers) : null;
-  const boss = dungeon && spk !== null ? bossStatus(state, content, modifiers) : null;
+  const stage = spk !== null ? here : null;
   const survival = dungeon ? survivalSeconds(state, content, dungeon.id, modifiers) : null;
   return {
-    dps: effectiveDamage(state, content, id, modifiers),
+    dps: effectiveDamage(state, content, id, modifiers).mul(factor),
     averageDps: avg,
     killsPerMinute: spk === null || spk <= 0 ? null : 60 / spk,
     secondsPerKill: spk,
-    secondsLeft: boss ? boss.hp.div(avg).toNumber() : null,
+    secondsLeft: stage ? stageHpLeft(state, stage).div(avg).toNumber() : null,
     secondsToKnockout: survival,
     secondsToKnockoutNow: secondsToKnockoutNow(state, content, modifiers),
     fallsFirst: survival !== null && spk !== null && survival < spk,
@@ -524,10 +734,10 @@ export function clearUnlocks(
 
 // ---- special dungeons ------------------------------------------------------------------------
 
-/** Share of the target's HP dealt, 0..1. */
+/** Share of the target's HP dealt: 1 is a clear, and it goes on past that (more score levels). */
 export function trialScore(trial: Trial, dealt: Decimal): number {
   if (dealt.lte(0)) return 0;
-  return Math.min(1, dealt.div(trial.target.hp).toNumber());
+  return dealt.div(trial.target.hp).toNumber();
 }
 
 /** Everything one attempt with this score pays: every tier reached, merged by resource. */
@@ -553,9 +763,9 @@ export interface TrialStatus {
   elapsedSeconds: number;
   durationSeconds: number;
   dealt: Decimal;
-  /** Score of the running attempt so far, 0..1. */
+  /** Score of the running attempt so far (1 = the target's whole HP; it can go above). */
   score: number;
-  /** Best score ever, 0..1. */
+  /** Best score ever. */
   best: number;
   cleared: boolean;
 }
@@ -577,42 +787,6 @@ export function trialStatus(state: GameState, content: Content): TrialStatus | n
 }
 
 // ---- stepping (called by advance) ------------------------------------------------------------
-
-/**
- * Harvest bursts: ticks fill each production job's gauge; full = that much extra output.
- * Returns, per job, the seconds of output the bursts harvested (0 when none fired).
- */
-export function advanceHarvestBursts(
-  next: GameState,
-  before: GameState,
-  content: Content,
-  seconds: number,
-  report: TickReport,
-  modifiers: readonly Modifier[],
-): Record<ProductionJob, Decimal> {
-  const harvested: Record<ProductionJob, Decimal> = {
-    logging: new Decimal(0),
-    mining: new Decimal(0),
-  };
-  for (const job of PRODUCTION_JOBS) {
-    const stats = burstStats(content, job, modifiers);
-    const run = advanceGauge(next.bursts[job], seconds, stats);
-    next.bursts[job] = run.gauge;
-    if (run.bursts === 0) continue;
-    report.bursts[job] += run.bursts;
-    const harvestSeconds = stats.power.mul(run.bursts);
-    harvested[job] = harvestSeconds;
-    recordBurst(before, content, job, harvestSeconds, modifiers, report);
-    for (const [resource, perSecond] of Object.entries(
-      jobProductionPerSecond(before, content, job, modifiers),
-    )) {
-      next.resources[resource] = (next.resources[resource] ?? new Decimal(0)).add(
-        perSecond.mul(harvestSeconds),
-      );
-    }
-  }
-  return harvested;
-}
 
 // ---- card health (DESIGN.md §6) ----
 
@@ -644,7 +818,7 @@ export function defencePercent(modifiers: readonly Modifier[], dungeonId: string
 
 /** What one boss attack takes from the pool, after defence (DESIGN.md §6). */
 export interface BossAttackDamages {
-  /** A normal attack: the damage in dungeons.json, grown with prestige like the HP. */
+  /** A normal attack: the damage in dungeons.json. */
   normal: Decimal;
   /** A light hit (five of every six attacks). */
   light: Decimal;
@@ -652,26 +826,22 @@ export interface BossAttackDamages {
   slam: Decimal;
 }
 
-/** Damage of a boss's normal attack: grows with prestige like its HP, less defence. */
-function bossNormalAttack(
-  dungeon: Dungeon,
-  prestigeCount: number,
-  modifiers: readonly Modifier[],
-): Decimal {
-  const grown = dungeon.boss.attack.damage.mul(
-    Decimal.pow(1 + dungeon.boss.hpScalingPerPrestige, prestigeCount),
-  );
-  return grown.mul(1 - defencePercent(modifiers, dungeon.id) / 100);
+/** Damage of a boss's normal attack, less defence. */
+function bossNormalAttack(dungeon: Dungeon, modifiers: readonly Modifier[]): Decimal {
+  return dungeon.boss.attack.damage.mul(1 - defencePercent(modifiers, dungeon.id) / 100);
 }
 
 /** Damage of a boss's normal, light and slam attacks (the pattern is combat.json's `bossPattern`). */
 export function bossAttackDamages(
   dungeon: Dungeon,
-  prestigeCount: number,
   modifiers: readonly Modifier[],
   pattern: BossPattern,
 ): BossAttackDamages {
-  const normal = bossNormalAttack(dungeon, prestigeCount, modifiers);
+  return attackDamages(bossNormalAttack(dungeon, modifiers), pattern);
+}
+
+/** The light and slam damage that go with a normal attack. */
+function attackDamages(normal: Decimal, pattern: BossPattern): BossAttackDamages {
   return {
     normal,
     light: normal.mul(pattern.lightMultiplier),
@@ -684,14 +854,8 @@ export function bossAttackDamages(
  * The hits themselves land in chunks (bossAttackDamages); this is the same damage per minute as
  * dungeons.json, for readouts and balance.
  */
-export function bossAttackDps(
-  dungeon: Dungeon,
-  prestigeCount: number,
-  modifiers: readonly Modifier[],
-): Decimal {
-  return bossNormalAttack(dungeon, prestigeCount, modifiers).div(
-    dungeon.boss.attack.intervalSeconds,
-  );
+export function bossAttackDps(dungeon: Dungeon, modifiers: readonly Modifier[]): Decimal {
+  return bossNormalAttack(dungeon, modifiers).div(dungeon.boss.attack.intervalSeconds);
 }
 
 export interface LoadoutHealth {
@@ -715,9 +879,8 @@ export function loadoutHealth(
   const max = loadoutMaxHealth(state, content, modifiers, id);
   const ko = state.combat.knockoutSeconds;
   const current = ko > 0 ? new Decimal(0) : Decimal.max(max.sub(state.combat.loadoutDamage), 0);
-  const incoming = dungeon
-    ? bossAttackDps(dungeon, state.prestigeCount, modifiers)
-    : new Decimal(0);
+  const stage = dungeon ? fightStage(state, content, dungeon.id, modifiers) : null;
+  const incoming = stage ? stage.attack.div(stage.intervalSeconds) : new Decimal(0);
   return { max, current, knockoutSeconds: ko, incoming };
 }
 
@@ -743,12 +906,14 @@ export function bossAttackView(
   content: Content,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BossAttackView | null {
-  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
-  if (!dungeon || state.combat.knockoutSeconds > 0) return null;
-  if (loadoutMaxHealth(state, content, modifiers, dungeon.id).lte(0)) return null;
+  const stage = state.activeDungeonId
+    ? fightStage(state, content, state.activeDungeonId, modifiers)
+    : null;
+  if (!stage || state.combat.knockoutSeconds > 0) return null;
+  if (loadoutMaxHealth(state, content, modifiers, stage.dungeon.id).lte(0)) return null;
   const pattern = content.combat.bossPattern;
-  const interval = dungeon.boss.attack.intervalSeconds;
-  const damages = bossAttackDamages(dungeon, state.prestigeCount, modifiers, pattern);
+  const interval = stage.intervalSeconds;
+  const damages = attackDamages(stage.attack, pattern);
   if (damages.normal.lte(0)) return null;
   const clock = state.stats.playTimeMs / 1000;
   const landed = bossAttacksBy(clock, interval);
@@ -772,13 +937,15 @@ export function secondsToKnockoutNow(
   content: Content,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): number | null {
-  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
-  if (!dungeon || state.combat.knockoutSeconds > 0) return null;
-  const max = loadoutMaxHealth(state, content, modifiers, dungeon.id);
+  const stage = state.activeDungeonId
+    ? fightStage(state, content, state.activeDungeonId, modifiers)
+    : null;
+  if (!stage || state.combat.knockoutSeconds > 0) return null;
+  const max = loadoutMaxHealth(state, content, modifiers, stage.dungeon.id);
   const pattern = content.combat.bossPattern;
-  const normal = bossAttackDamages(dungeon, state.prestigeCount, modifiers, pattern).normal;
+  const normal = stage.attack;
   if (max.lte(0) || normal.lte(0)) return null;
-  const interval = dungeon.boss.attack.intervalSeconds;
+  const interval = stage.intervalSeconds;
   const clock = state.stats.playTimeMs / 1000;
   const pool = Decimal.max(max.sub(state.combat.loadoutDamage), 0);
   const lethal = lethalBossAttack(pool, normal, bossAttacksBy(clock, interval), pattern);
@@ -786,25 +953,52 @@ export function secondsToKnockoutNow(
 }
 
 /**
- * Seconds the full health pool lasts against a dungeon's boss, averaged over the places in the
- * attack cycle a fight can start from; null when nothing would attack (no health, no damage).
- * This is the "you fall in" figure to set beside `secondsPerKill`.
+ * Seconds the full health pool lasts against a floor of a dungeon (the one the player stands on,
+ * or `floor` when given), averaged over the places in the attack cycle a fight can start from;
+ * null when nothing would attack (no health, no damage). This is the "you fall in" figure to set
+ * beside `secondsPerKill`.
  */
 export function survivalSeconds(
   state: GameState,
   content: Content,
   dungeonId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
+  floor?: number,
+  difficulty?: Difficulty,
 ): number | null {
-  const dungeon = content.dungeonById.get(dungeonId);
-  if (!dungeon) return null;
+  const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
+  if (!stage) return null;
   const max = loadoutMaxHealth(state, content, modifiers, dungeonId);
   const pattern = content.combat.bossPattern;
-  const normal = bossAttackDamages(dungeon, state.prestigeCount, modifiers, pattern).normal;
+  const normal = stage.attack;
   if (max.lte(0) || normal.lte(0)) return null;
   // A fight starts between two hits: on average half an interval before the next one.
   const attacks = meanAttacksToKnockout(max, normal, pattern) - 0.5;
-  return attacks * dungeon.boss.attack.intervalSeconds;
+  return attacks * stage.intervalSeconds;
+}
+
+/**
+ * Whether the loadout wins a floor of a dungeon: it clears the floor before the floor knocks it
+ * out (DESIGN.md §6 "You fall in"). False when it deals no damage.
+ */
+export function winsFloor(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+  floor?: number,
+  difficulty?: Difficulty,
+): boolean {
+  const spk = secondsPerKill(state, content, dungeonId, modifiers, floor, difficulty);
+  if (spk === null || !Number.isFinite(spk)) return false;
+  const survival = survivalSeconds(state, content, dungeonId, modifiers, floor, difficulty);
+  return survival === null || survival >= spk;
+}
+
+/** What `advanceCombat` may be told about the span it fights. */
+export interface FightOptions {
+  /** Never move down a floor, whatever the mode (offline progress, DESIGN.md §6). */
+  noPush?: boolean;
 }
 
 /** Fights whatever is active for `seconds`. Mutates `next` (a fresh clone owned by advance). */
@@ -815,6 +1009,7 @@ export function advanceCombat(
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
+  options: FightOptions = {},
 ): void {
   const id = next.activeDungeonId;
   if (!id || !isDungeonUnlocked(next, content, id)) return;
@@ -829,21 +1024,25 @@ export function advanceCombat(
       next.combat.loadoutDamage = new Decimal(0);
     } else return;
   }
-  if (left <= EPSILON) return;
-  // Crits add their expected damage to every hit and signature attack.
-  const dps = effectiveDamage(next, content, id, modifiers).mul(
-    critFactor(critStats(content, modifiers, id)),
-  );
-  if (dps.lte(0)) return;
-  const stats = burstStats(content, 'fighting', modifiers);
-
   const dungeon = content.dungeonById.get(id);
-  if (dungeon) {
-    fightDungeon(next, content, dungeon, dps, stats, left, rng, report, modifiers);
-    return;
+  let mods = modifiers;
+  // A rare drop joins the collection and its cosmetic bonus counts at once: the fight stops
+  // there and carries on with fresh modifiers, so any split of time deals the same damage.
+  for (let resume = 0; left > EPSILON && resume <= MAX_FIGHT_EVENTS_PER_ADVANCE; resume++) {
+    // Crits add their expected damage to every hit and signature attack.
+    const dps = effectiveDamage(next, content, id, mods).mul(
+      critFactor(critStats(content, mods, id)),
+    );
+    if (dps.lte(0)) return;
+    const stats = burstStats(content, 'fighting', mods);
+    if (!dungeon) {
+      const trial = content.trialById.get(id);
+      if (trial) fightTrial(next, content, trial, dps, stats, left, report, mods);
+      return;
+    }
+    left = fightDungeon(next, content, dungeon, dps, stats, left, rng, report, mods, options);
+    if (left > EPSILON) mods = collectModifiers(next, content);
   }
-  const trial = content.trialById.get(id);
-  if (trial) fightTrial(next, content, trial, dps, stats, left, report, modifiers);
 }
 
 /**
@@ -871,96 +1070,277 @@ function recordPlayerHits(
 
 /** Most knockouts handled in one advance (each costs knockoutSeconds, so this is generous). */
 const MAX_KNOCKOUTS_PER_ADVANCE = 100_000;
+/** Safety valve: never resolve more fight events (floor clears, knockouts) in one advance(). */
+const MAX_FIGHT_EVENTS_PER_ADVANCE = 200_000;
+
+/** The least time a fight event takes: a hit that is already due lands after this. */
+const DUE_HIT_SECONDS = 1e-6;
 
 /**
- * A dungeon fight where the boss hits back. Time splits at the moment the pool runs out: the
- * loadout deals damage until then, is knocked out (the boss heals to full), sits out, and the
- * fight starts again with full health.
+ * Seconds until the hits of a gauge have dealt `hp`, or null when the hits landing within
+ * `maxSeconds` do not get there. Hits land one per interval, each `dps` x interval, with a
+ * signature attack on every full gauge: the same damage `advanceGauge` and `recordPlayerHits`
+ * give for that time.
+ */
+function secondsToDeal(
+  gauge: BurstGauge,
+  stats: BurstStats,
+  dps: Decimal,
+  hp: Decimal,
+  maxSeconds: number,
+): number | null {
+  if (!(maxSeconds > 0)) return null;
+  const hit = hitDamage(dps, stats);
+  const signature = signatureDamage(dps, stats);
+  const dealtBy = (hits: number): Decimal =>
+    hit
+      .mul(hits)
+      .add(signature.mul(Math.floor((gauge.gauge + hits * stats.fill) / stats.size + EPSILON)));
+  const most = Math.floor((gauge.timer + maxSeconds) / stats.interval + EPSILON);
+  if (most < 1 || dealtBy(most).lt(hp)) return null;
+  let low = 1;
+  let high = most;
+  while (low < high) {
+    const mid = Math.floor((low + high) / 2);
+    if (dealtBy(mid).gte(hp)) high = mid;
+    else low = mid + 1;
+  }
+  // A hit already due (the timer is at or past the interval, as after a change of lead card)
+  // still takes a moment, so the fight always moves on.
+  return Math.min(maxSeconds, Math.max(DUE_HIT_SECONDS, low * stats.interval - gauge.timer));
+}
+
+/**
+ * A dungeon fight (DESIGN.md §6). The floor's enemies take our hits in order and the floor hits
+ * back. Time is split at the events that change the fight:
+ * - the floor is cleared: the loadout's health refills, and in push mode it moves down a floor;
+ *   in farm mode the floor starts again. The last hit's leftover damage carries on only where
+ *   overflow is on (DESIGN.md §6 Overflow); otherwise it is lost;
+ * - a stage reaches a new star level: its damage bonus applies from the next hit on;
+ * - the health pool runs out: the loadout is knocked out, the floor heals, the loadout drops one
+ *   floor and switches to farm, sits out, and the fight starts again with full health.
+ * With `noPush` (offline progress) the floor is never left for a deeper one.
  */
 function fightDungeon(
   next: GameState,
   content: Content,
   dungeon: Dungeon,
-  dps: Decimal,
+  baseDps: Decimal,
   stats: BurstStats,
   seconds: number,
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
-): void {
-  const fight = (t: number): void => {
-    if (t <= EPSILON) return;
+  options: FightOptions,
+): number {
+  /**
+   * Fights `stage` for `t` seconds at `dps`: the hits that land, the card XP and the wages, both
+   * grown by the stage's difficulty (DESIGN.md §6 Harder modes pay more). Returns the damage.
+   */
+  const fightFor = (
+    t: number,
+    dps: Decimal,
+    stage: FightStage,
+  ): { dealt: Decimal; hits: number; timer: number } => {
+    const timer = next.bursts.fighting.timer;
+    if (t <= EPSILON) return { dealt: new Decimal(0), hits: 0, timer };
     const run = advanceGauge(next.bursts.fighting, t, stats);
     next.bursts.fighting = run.gauge;
     report.bursts.fighting += run.bursts;
     // Damage lands in chunks: one hit per interval, held until it lands (DESIGN.md §6).
     const dealt = recordPlayerHits(report, dungeon.id, dps, stats, run);
-    fightBoss(next, content, dungeon, dealt, rng, report, modifiers);
     // Card XP for the time fought, never for a knockout (DESIGN.md §5).
     grantLoadoutXp(
       next,
       content,
       'fighting',
-      fightingXpPerSecond(content, dungeon, modifiers).mul(t),
+      fightingXpPerSecond(content, dungeon, modifiers).mul(t * stage.scale.xp),
     );
-    // The wage: Money for every second spent fighting, so the first levels can be bought before
-    // the first kill (DESIGN.md §3).
-    const wage = effectiveDrops(dungeon, modifiers, content).wage;
-    if (wage) {
-      const paid = wage.perSecond.mul(t);
+    // The wages: crystals (and, in the first dungeon, Money) for every second spent fighting,
+    // so pulls do not grow with kill speed (DESIGN.md §3).
+    for (const wage of drops.wages) {
+      const paid = wage.perSecond.mul(t * stage.scale.wage);
       addResource(next, wage.resource, paid);
       report.currencies[wage.resource] = (report.currencies[wage.resource] ?? 0) + paid.toNumber();
     }
+    return { dealt, hits: run.hits, timer };
+  };
+  const drops = effectiveDrops(dungeon, modifiers, content);
+  const stages = new Map<string, FightStage>();
+  const stageAt = (difficulty: Difficulty, floor: number): FightStage => {
+    const key = `${difficulty}:${floor}`;
+    let stage = stages.get(key);
+    if (!stage) {
+      stage = stageOf(content, dungeon, difficulty, floor, modifiers);
+      stages.set(key, stage);
+    }
+    return stage;
   };
   const max = loadoutMaxHealth(next, content, modifiers, dungeon.id);
   const pattern = content.combat.bossPattern;
-  const interval = dungeon.boss.attack.intervalSeconds;
-  const normal = bossAttackDamages(dungeon, next.prestigeCount, modifiers, pattern).normal;
   const ko = content.combat.knockoutSeconds;
+  const rareItem = dungeon.drops.rare.itemId;
+  const raresAtStart = report.drops[rareItem] ?? 0;
   let left = seconds;
   let knockouts = 0;
-  // The boss's attacks sit on the play-time clock (bossAttacks.ts): this fight is its last
+  // The floor's attacks sit on the play-time clock (bossAttacks.ts): this fight is its last
   // `seconds`, so any split of time lands the same hits.
   let clock = next.stats.playTimeMs / 1000 - seconds;
-  let done = bossAttacksBy(clock, interval);
-  while (left > EPSILON) {
-    if (max.lte(0) || normal.lte(0)) {
-      fight(left);
-      return;
+  /** Attacks up to this number are settled (landed, or skipped by a knockout). */
+  let settled = 0;
+  /** Damage of the last hit left over from the floor above (push). */
+  let carry = new Decimal(0);
+  for (let event = 0; event < MAX_FIGHT_EVENTS_PER_ADVANCE; event++) {
+    if (left <= EPSILON && carry.lte(0)) return 0;
+    // A rare drop changed the modifiers (its cosmetic): hand the rest of the span back.
+    if ((report.drops[rareItem] ?? 0) > raresAtStart && left > EPSILON && carry.lte(0)) return left;
+    const position = floorPosition(next, dungeon);
+    const stage = stageAt(position.difficulty, position.floor);
+    const pushing = !options.noPush && position.mode === 'push' && hasDeeperFloor(position);
+    // The stage's star levels add their damage there; overflow decides whether a kill's leftover
+    // damage carries on (DESIGN.md §6 Stage stars, Overflow).
+    const dps = baseDps.mul(
+      stageDamageFactor(next, content, dungeon, stage.difficulty, stage.floor, modifiers),
+    );
+    const overflow = overflowActive(next, content, dungeon, stage.difficulty, stage.floor);
+    const land = (dealt: Decimal, hits?: number): void => {
+      const hit = damageFloor(next, content, stage, drops, dealt, pushing, overflow, rng, report, {
+        modifiers,
+        hits,
+      });
+      carry = new Decimal(0);
+      if (hit.cleared && pushing) {
+        carry = hit.overflow;
+        ensureTier(next, dungeon).floor = Math.min(stage.floors, stage.floor + 1);
+      }
+    };
+    if (carry.gt(0)) {
+      land(carry);
+      continue;
     }
-    const pool = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
-    const lethal = lethalBossAttack(pool, normal, done, pattern);
+    const interval = stage.intervalSeconds;
+    const normal = stage.attack;
+    const attacked = max.gt(0) && normal.gt(0);
+    const done = Math.max(settled, bossAttacksBy(clock, interval));
     const last = bossAttacksBy(clock + left, interval);
-    if (lethal > last) {
-      // The pool holds through the attacks of this span.
-      fight(left);
-      next.combat.loadoutDamage = next.combat.loadoutDamage.add(
-        bossDamageBetween(done, last, normal, pattern),
+    const pool = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
+    const lethal = attacked ? lethalBossAttack(pool, normal, done, pattern) : Infinity;
+    const falls = lethal <= last;
+    const untilDown = falls ? Math.min(left, Math.max(0, lethal * interval - clock)) : left;
+
+    // Farming in bulk: nothing can change for the rest of the span but the kills, so it is
+    // resolved in one go, up to the kill that gives the stage its next star level. Either nothing
+    // hits back (no health to lose, or a floor that deals no damage) and the kills follow from the
+    // damage alone (every hit clears, or overflow carries the leftover on), or every hit clears
+    // and the attacks between two hits cannot empty a full pool.
+    const everyHitClears = hitDamage(dps, stats).gte(stage.hp);
+    let bulk = !pushing && (attacked ? everyHitClears : overflow || everyHitClears);
+    if (bulk && attacked) {
+      const perHit = Math.ceil(stats.interval / interval) + 1;
+      const worst = normal.mul(
+        perHit * pattern.lightMultiplier +
+          Math.ceil(perHit / pattern.attacksPerCycle) * pattern.slamMultiplier,
       );
-      recordBossAttacks(report, dungeon.id, done, last, normal, interval, pattern, false);
-      return;
+      bulk = next.combat.loadoutDamage.add(worst).lt(max);
+    }
+    if (bulk) {
+      let span = left;
+      const need = killsToNextStar(next, content, stage);
+      if (need !== null) {
+        // With overflow off each hit is one kill; with it on the kills follow the damage.
+        const at = overflow
+          ? secondsToDeal(
+              next.bursts.fighting,
+              stats,
+              dps,
+              stageHpLeft(next, stage).add(stage.hp.mul(need - 1)),
+              left,
+            )
+          : Math.max(DUE_HIT_SECONDS, need * stats.interval - next.bursts.fighting.timer);
+        if (at !== null && at < left) span = at;
+      }
+      const end = bossAttacksBy(clock + span, interval);
+      const run = fightFor(span, dps, stage);
+      land(run.dealt, run.hits);
+      if (attacked) {
+        recordBossAttacks(report, dungeon.id, done, end, normal, interval, pattern, false);
+        // Each hit cleared the floor and refilled the pool: only the attacks since the last hit
+        // are still on it.
+        const since =
+          run.hits > 0
+            ? Math.max(done, bossAttacksBy(clock + run.hits * stats.interval - run.timer, interval))
+            : done;
+        const taken = bossDamageBetween(since, end, normal, pattern);
+        next.combat.loadoutDamage = run.hits > 0 ? taken : next.combat.loadoutDamage.add(taken);
+      }
+      if (span >= left) return 0;
+      settled = Math.max(done, end);
+      left -= span;
+      clock += span;
+      continue;
+    }
+
+    // The next floor clear, when it comes before the pool runs dry.
+    const toClear = secondsToDeal(
+      next.bursts.fighting,
+      stats,
+      dps,
+      stageHpLeft(next, stage),
+      untilDown,
+    );
+    if (toClear !== null) {
+      const run = fightFor(toClear, dps, stage);
+      // A hit that lands with the clear does not empty the pool: the floor is already down.
+      const landed = Math.min(bossAttacksBy(clock + toClear, interval), lethal - 1);
+      if (attacked) {
+        recordBossAttacks(report, dungeon.id, done, landed, normal, interval, pattern, false);
+        next.combat.loadoutDamage = next.combat.loadoutDamage.add(
+          bossDamageBetween(done, landed, normal, pattern),
+        );
+      }
+      settled = Math.max(landed, bossAttacksBy(clock + toClear, interval));
+      left -= toClear;
+      clock += toClear;
+      land(run.dealt);
+      continue;
+    }
+    if (!falls) {
+      // The pool holds through the attacks of this span, and the floor through our hits.
+      land(fightFor(left, dps, stage).dealt);
+      if (attacked) {
+        next.combat.loadoutDamage = next.combat.loadoutDamage.add(
+          bossDamageBetween(done, last, normal, pattern),
+        );
+        recordBossAttacks(report, dungeon.id, done, last, normal, interval, pattern, false);
+      }
+      return 0;
     }
     // The pool runs dry on the hit that lands at `lethal`: fight until then.
-    const untilDown = Math.min(left, Math.max(0, lethal * interval - clock));
-    fight(untilDown);
+    land(fightFor(untilDown, dps, stage).dealt);
     recordBossAttacks(report, dungeon.id, done, lethal, normal, interval, pattern, true);
     left -= untilDown;
     clock += untilDown;
-    // Knocked out: the boss heals to full and the loadout sits out; hits during it do not land.
+    // Knocked out: the floor heals, the loadout drops a floor, switches to farm and sits out;
+    // hits during it do not land (DESIGN.md §6 Dungeon floors).
     next.bossHp = null;
+    carry = new Decimal(0);
+    const tier = ensureTier(next, dungeon);
+    tier.floor = Math.max(1, floorPosition(next, dungeon).floor - 1);
+    ensureProgress(next, dungeon.id).mode = 'farm';
     report.knockouts++;
     knockouts++;
     const wait = Math.min(left, ko);
     left -= wait;
     clock += wait;
-    done = Math.max(lethal, bossAttacksBy(clock, interval));
+    settled = Math.max(lethal, bossAttacksBy(clock, interval));
     if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
       next.combat.knockoutSeconds = ko - wait;
       next.combat.loadoutDamage = max;
-      return;
+      return 0;
     }
     next.combat.loadoutDamage = new Decimal(0);
   }
+  return 0;
 }
 
 function addResource(state: GameState, resource: string, amount: Decimal | number): void {
@@ -970,10 +1350,17 @@ function addResource(state: GameState, resource: string, amount: Decimal | numbe
 /** Records a first clear and what it unlocks. */
 function markCleared(next: GameState, content: Content, id: string, report: TickReport): void {
   if (isDungeonCleared(next, id)) return;
-  if (content.dungeonById.has(id)) {
+  const dungeon = content.dungeonById.get(id);
+  if (dungeon) {
     const result = clearDungeon(next, content, id);
     next.clearedDungeons = result.state.clearedDungeons;
     report.unlockedMines.push(...result.unlockedMines);
+    // The first-clear purse (DESIGN.md §3).
+    for (const purse of dungeon.drops.firstClear) {
+      addResource(next, purse.resource, purse.amount);
+      report.currencies[purse.resource] =
+        (report.currencies[purse.resource] ?? 0) + purse.amount.toNumber();
+    }
   } else {
     next.clearedDungeons.push(id);
   }
@@ -983,55 +1370,196 @@ function markCleared(next: GameState, content: Content, id: string, report: Tick
   }
 }
 
-function fightBoss(
+/**
+ * Kills still needed on the floor's stage for its next star level; null on a wave floor, a depth
+ * or a stage at the top level.
+ */
+function killsToNextStar(state: GameState, content: Content, stage: FightStage): number | null {
+  if (!isStageFloor(content, stage.dungeon, stage.difficulty, stage.floor)) return null;
+  const key = stageKey(stage.dungeon.id, stage.difficulty, stage.floor);
+  const info = stageStars(state, content, key);
+  if (!info || info.nextKills === null) return null;
+  return Math.max(1, info.nextKills - info.kills);
+}
+
+/**
+ * Lands `dealt` damage on the floor being fought: the enemies it kills drop their loot, and a
+ * cleared floor refills the loadout's health, counts as the best floor and, on the Normal last
+ * floor, clears the dungeon. With `overflow` off (DESIGN.md §6 Overflow) a clear wastes the damage
+ * past it: the floor is cleared once, or once per hit when `hits` every one of which clears it
+ * were landed in bulk. With it on, while `pushing` a cleared floor is left at once and the damage
+ * left over is returned; otherwise the floor starts again as often as the damage clears it.
+ */
+function damageFloor(
   state: GameState,
   content: Content,
-  dungeon: Dungeon,
+  stage: FightStage,
+  drops: DropTable,
   dealt: Decimal,
+  pushing: boolean,
+  overflowOn: boolean,
+  rng: Rng,
+  report: TickReport,
+  { modifiers, hits }: { modifiers: readonly Modifier[]; hits?: number | undefined },
+): { cleared: boolean; overflow: Decimal } {
+  const none = { cleared: false, overflow: new Decimal(0) };
+  if (dealt.lte(0)) return none;
+  const total = stage.hp;
+  const hp = stageHpLeft(state, stage);
+  const before = total.sub(hp);
+  const kills = stage.enemies.map(() => 0);
+  if (dealt.lt(hp)) {
+    const after = before.add(dealt);
+    stage.enemies.forEach((e, i) => {
+      if (e.upto.gt(before) && e.upto.lte(after)) kills[i] = 1;
+    });
+    state.bossHp = hp.sub(dealt);
+    killEnemies(state, content, stage, drops, kills, rng, report, modifiers);
+    return none;
+  }
+  // The floor is cleared at least once: every enemy still standing dies.
+  stage.enemies.forEach((e, i) => {
+    if (e.upto.gt(before)) kills[i] = 1;
+  });
+  let overflow = dealt.sub(hp);
+  let clears = 1;
+  if (!overflowOn) {
+    // The damage past the kill is lost (DESIGN.md §6 Overflow); farming in bulk, each hit was one.
+    const extra = pushing ? 0 : Math.min(Math.max(0, (hits ?? 1) - 1), MAX_KILLS_PER_ADVANCE - 1);
+    clears += extra;
+    stage.enemies.forEach((_, i) => (kills[i]! += extra));
+    state.bossHp = null;
+    overflow = new Decimal(0);
+  } else if (pushing) {
+    state.bossHp = null;
+  } else {
+    // Farming: damage left over carries into the floor as it starts again.
+    const extra = Decimal.min(overflow.div(total).floor(), MAX_KILLS_PER_ADVANCE - 1).toNumber();
+    clears += extra;
+    overflow = clears >= MAX_KILLS_PER_ADVANCE ? new Decimal(0) : overflow.sub(total.mul(extra));
+    stage.enemies.forEach((e, i) => {
+      kills[i]! += extra;
+      // What is left is below the floor's HP, so the last enemy always stands.
+      if (i < stage.enemies.length - 1 && e.upto.lte(overflow)) kills[i]! += 1;
+    });
+    // The floor guards against rounding pushing HP to <= 0.
+    state.bossHp = Decimal.max(total.sub(overflow), total.mul(1e-9));
+    overflow = new Decimal(0);
+  }
+  killEnemies(state, content, stage, drops, kills, rng, report, modifiers);
+  // The loadout catches its breath between floors: its health refills (DESIGN.md §6).
+  state.combat.loadoutDamage = new Decimal(0);
+  const tier = ensureTier(state, stage.dungeon);
+  tier.best = Math.max(tier.best, stage.floor);
+  report.floorsCleared += clears;
+  // Clearing (DESIGN.md §6): the Normal last-floor boss died. The last floor of a tier also
+  // opens the next one, which is read from the best floor (floors.ts `isDifficultyUnlocked`).
+  if (stage.difficulty === 'normal' && stage.kind === 'boss') {
+    markCleared(state, content, stage.dungeon.id, report);
+  }
+  return { cleared: true, overflow };
+}
+
+/**
+ * A dungeon's drop table on a difficulty (DESIGN.md §6 Difficulty tiers): Money purses times the
+ * difficulty's purse, material units times its material. Normal is the table itself.
+ */
+export function difficultyDrops(drops: DropTable, scale: DifficultyScale): DropTable {
+  if (scale.purse === 1 && scale.material === 1) return drops;
+  return {
+    ...drops,
+    currencies: drops.currencies.map((currency) => ({
+      ...currency,
+      multiplier: (currency.multiplier ?? 1) * scale.purse,
+    })),
+    material: { ...drops.material, amount: drops.material.amount * scale.material },
+    extraMaterials: drops.extraMaterials.map((extra) => ({
+      ...extra,
+      min: extra.min * scale.material,
+      max: extra.max * scale.material,
+    })),
+  };
+}
+
+/**
+ * Pays what the enemies killed drop. `kills[i]` is how often `stage.enemies[i]` died. The boss
+ * rolls the dungeon's whole table (rare item with pity included); a normal enemy or mini-boss
+ * rolls the same table scaled by its share of the boss's HP, without the rare item.
+ */
+function killEnemies(
+  state: GameState,
+  content: Content,
+  stage: FightStage,
+  drops: DropTable,
+  kills: readonly number[],
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
 ): void {
-  const maxHp = bossMaxHp(dungeon, state.prestigeCount, modifiers);
-  const hp = Decimal.min(state.bossHp ?? maxHp, maxHp);
-
-  if (dealt.lt(hp)) {
-    state.bossHp = hp.sub(dealt);
-    return;
-  }
-
-  // At least one kill. Overflow damage carries into respawned bosses.
-  let overflow = dealt.sub(hp);
-  let kills = 1;
-  const extra = Decimal.min(overflow.div(maxHp).floor(), MAX_KILLS_PER_ADVANCE - 1).toNumber();
-  kills += extra;
-  overflow = kills >= MAX_KILLS_PER_ADVANCE ? new Decimal(0) : overflow.sub(maxHp.mul(extra));
-  // Remaining overflow is < maxHp; the floor guards against rounding pushing HP to <= 0.
-  state.bossHp = Decimal.max(maxHp.sub(overflow), maxHp.mul(1e-9));
-
+  const { dungeon } = stage;
   const bossId = dungeon.boss.id;
-  const drops = effectiveDrops(dungeon, modifiers, content);
+  drops = stageLoot(
+    difficultyDrops(drops, stage.scale),
+    stageLootFactor(state, content, dungeon, stage.difficulty, stage.floor, modifiers),
+  );
   let pity = state.pity[bossId] ?? 0;
   const purse = drops.currencies.map(() => 0);
   const extras = drops.extraMaterials.map(() => 0);
   let rares = 0;
   let material = 0;
-  for (let i = 0; i < kills; i++) {
-    const roll = rollBossDrop(drops, pity, rng);
-    pity = roll.pity;
-    roll.currencies.forEach((units, j) => (purse[j]! += units));
-    if (roll.rare) rares++;
-    material += rollMaterialDrop(drops, rng);
-    drops.extraMaterials.forEach((extra, j) => {
-      extras[j]! += extra.min + Math.floor(rng() * (extra.max - extra.min + 1));
-    });
-  }
+  let bossFloorKills = 0;
+  let enemyKills = 0;
+  /** Kills as shares of a boss kill, for the XP. */
+  let worth = 0;
+  stage.enemies.forEach((enemy, e) => {
+    const count = kills[e] ?? 0;
+    if (count <= 0) return;
+    worth += enemy.dropScale * count;
+    if (enemy.kind === 'enemy') enemyKills += count;
+    else bossFloorKills += count;
+    if (enemy.kind !== 'boss') {
+      const roll = rollEnemyDrops(drops, enemy.dropScale, count, rng, enemy.purseScale);
+      roll.currencies.forEach((units, j) => (purse[j]! += units));
+      material += roll.material;
+      roll.extraMaterials.forEach((units, j) => (extras[j]! += units));
+      return;
+    }
+    // The boss's purse grows with the floor it stands on (DESIGN.md §6 Deeper pays more).
+    const table =
+      enemy.purseScale === 1
+        ? drops
+        : {
+            ...drops,
+            currencies: drops.currencies.map((currency) => ({
+              ...currency,
+              multiplier: (currency.multiplier ?? 1) * enemy.purseScale,
+            })),
+          };
+    for (let i = 0; i < count; i++) {
+      const roll = rollBossDrop(table, pity, rng);
+      pity = roll.pity;
+      roll.currencies.forEach((units, j) => (purse[j]! += units));
+      if (roll.rare) rares++;
+      material += rollMaterialDrop(drops, rng);
+      drops.extraMaterials.forEach((extra, j) => {
+        if (extra.chance < 1 && rng() >= extra.chance) return;
+        extras[j]! += extra.min + Math.floor(rng() * (extra.max - extra.min + 1));
+      });
+    }
+  });
+  if (worth <= 0) return;
 
   state.pity[bossId] = pity;
-  state.stats.bossKills += kills;
-  report.bossKills += kills;
-  const totalKills = dungeonKills(state, dungeon.id) + kills;
-  state.combat.kills[dungeon.id] = totalKills;
+  state.stats.bossKills += bossFloorKills;
+  report.bossKills += bossFloorKills;
+  report.enemyKills += enemyKills;
+  // Stage stars (DESIGN.md §6): a mini-boss or last-floor boss kill counts on its stage, and each
+  // star level reached pays its chest once.
+  if (bossFloorKills > 0 && isStageFloor(content, dungeon, stage.difficulty, stage.floor)) {
+    const key = stageKey(dungeon.id, stage.difficulty, stage.floor);
+    state.combat.stageKills[key] = (state.combat.stageKills[key] ?? 0) + bossFloorKills;
+    payStageChests(state, content, key, report);
+  }
   drops.currencies.forEach((currency, j) => {
     const units = purse[j]!;
     if (units <= 0) return;
@@ -1058,15 +1586,35 @@ function fightBoss(
       for (let i = 0; i < rares; i++) grantCosmetic(state, item);
     }
   }
-  grantAccountXp(state, content, killXp(content, dungeon.tier).mul(kills), modifiers, 'fighting');
-  // Cards: the fighting loadout gains XP per kill.
+  // Account and card XP per kill, a normal enemy worth its share of a boss kill.
+  grantAccountXp(state, content, killXp(content, dungeon.tier).mul(worth), modifiers, 'fighting');
   grantLoadoutXp(
     state,
     content,
     'fighting',
-    fightingXpPerKill(content, dungeon, modifiers).mul(kills),
+    fightingXpPerKill(content, dungeon, modifiers).mul(worth * stage.scale.xp),
   );
-  if (totalKills >= dungeon.killsToClear) markCleared(state, content, dungeon.id, report);
+}
+
+/**
+ * A drop table with a stage's star loot (DESIGN.md §6 Stage stars): Money purses and the chances
+ * of every material drop grown by `factor` (chances stay at most 1).
+ */
+export function stageLoot(drops: DropTable, factor: number): DropTable {
+  if (factor === 1) return drops;
+  const chance = (c: number): number => Math.min(1, c * factor);
+  return {
+    ...drops,
+    currencies: drops.currencies.map((currency) => ({
+      ...currency,
+      multiplier: (currency.multiplier ?? 1) * factor,
+    })),
+    material: { ...drops.material, chance: chance(drops.material.chance) },
+    extraMaterials: drops.extraMaterials.map((extra) => ({
+      ...extra,
+      chance: chance(extra.chance),
+    })),
+  };
 }
 
 function fightTrial(

@@ -1,23 +1,27 @@
-/* Skill Tree page (DESIGN.md §11, A8 A radial constellation). The sky is always night: the gems
-   need a dark field to light up in their branch colours. Frames and buttons follow the table
-   cosmetic like every page. */
+/* Skill Tree page (DESIGN.md §11; UI_RULES.md §2, Shell look and the Skill tree screen pick). Two
+   pixel panels: the starfield "Account tree" and the side panel with the selected gem. Panels and
+   buttons come from theme/frames.css (.frame, .button, --fs, --fs-sm). The sky is always night: the
+   gems need a dark field to light up in their branch colours. Gem sprites are shown at a whole
+   scale (the --one / round() pattern of ui/pixelScale.css). Pixelify Sans (the display font) only
+   at 18 px and up: the panel titles and the skill point count. */
 
+/* the panels use the whole width of the window */
+.shell-page:has(> .sk-wrap) {
+  max-width: none;
+}
 .sk-wrap {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
-  gap: 16px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr) clamp(310px, 26vw, 380px);
+  /* the frames bleed one step outside their box: keep a gap wider than that */
+  gap: calc(var(--fs) * 5);
+  align-items: stretch;
+  /* the frames' outer edge */
+  padding: var(--fs);
 }
-@media (max-width: 1180px) {
+@media (max-width: 1100px) {
   .sk-wrap {
     grid-template-columns: minmax(0, 1fr);
   }
-}
-.sk-side {
-  display: grid;
-  gap: 16px;
-  position: sticky;
-  top: 40px;
 }
 .sk-status {
   margin: 0;
@@ -25,19 +29,39 @@
   font-size: 14px;
   color: var(--bi-on-table);
 }
+.sk-status:empty {
+  display: none;
+}
 
 /* ---- the sky ---- */
-.sk-sky {
+.sk-frame {
+  min-width: 0;
+}
+/* The stage is a window onto the sky: the sky box is sized and placed from the page's pan and zoom
+   (pixels per sky unit), so gems keep their whole pixel scale at every zoom. */
+.sk-stage {
   position: relative;
-  width: 100%;
-  max-width: 860px;
-  margin: 0 auto;
-  border-radius: calc(var(--bi-frame-radius) - 4px);
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  background: #0b0e20;
+  /* as tall as the window allows */
+  height: clamp(540px, calc(100vh - 210px), 800px);
+}
+.sk-stage.is-panning {
+  cursor: grabbing;
+}
+.sk-sky {
+  position: absolute;
   background:
     radial-gradient(circle at 50% 50%, rgba(255, 220, 140, 0.16), transparent 24%),
     radial-gradient(ellipse at 50% 50%, #1d2650 0%, #121731 55%, #0b0e20 100%);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  overflow: hidden;
+  /* the notched pixel edge of a well */
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge);
 }
 .sk-lines {
   position: absolute;
@@ -53,29 +77,48 @@
   stroke-linecap: round;
   opacity: 0.07;
 }
+/* links: learned solid in the branch colour, open dashed, locked dim. The widths are device pixels
+   (non-scaling), so the lines stay crisp at every window size. */
 .sk-edge {
-  stroke: #454b72;
-  stroke-width: 2;
-  stroke-dasharray: 4 6;
-  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: crispEdges;
+  stroke-width: var(--fs-sm);
 }
-.sk-edge.is-lit {
-  stroke-width: 3;
-  stroke-dasharray: none;
-  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.35));
+.sk-edge.is-learned {
+  stroke-width: calc(var(--fs-sm) * 1.5);
+}
+.sk-edge.is-open {
+  stroke-dasharray: var(--fs) calc(var(--fs) * 1.5);
+  opacity: 0.8;
+}
+.sk-edge.is-locked {
+  stroke: #3a4064;
+  opacity: 0.7;
 }
 .sk-branch {
-  font-family: var(--bi-font-ui);
-  font-size: 16px;
+  position: absolute;
+  font-size: 15px;
   font-weight: 700;
-  paint-order: stroke;
-  stroke: #0b0e20;
-  stroke-width: 4px;
+  white-space: nowrap;
+  text-shadow:
+    0 1px 0 #0b0e20,
+    0 -1px 0 #0b0e20,
+    1px 0 0 #0b0e20,
+    -1px 0 0 #0b0e20;
+}
+.sk-branch--start {
+  translate: 0 -50%;
+}
+.sk-branch--middle {
+  translate: -50% -50%;
+}
+.sk-branch--end {
+  translate: -100% -50%;
 }
 .sk-branch__count {
   font-size: 13px;
   font-weight: 600;
-  fill: #b7bedb;
+  color: #b7bedb;
 }
 
 /* the centre star holds the points to spend */
@@ -125,13 +168,10 @@
 }
 .sk-node {
   position: relative;
-  display: grid;
-  justify-items: center;
-  gap: 1px;
-  width: 64px;
+  display: block;
   padding: 0;
   border: 0;
-  border-radius: 10px;
+  border-radius: 0;
   background: none;
   color: #e9ecfb;
   font: inherit;
@@ -154,16 +194,19 @@
   filter: brightness(1.15);
 }
 .sk-node__rank {
-  padding: 0 6px;
-  border-radius: 999px;
+  position: absolute;
+  right: -6px;
+  bottom: -5px;
+  padding: 0 5px;
   font-size: 11px;
   font-weight: 700;
   line-height: 16px;
-  background: rgba(11, 14, 32, 0.85);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  color: #fff;
+  background: #0b0e20;
+  box-shadow: 0 0 0 var(--fs-sm) color-mix(in srgb, var(--gem) 75%, #0b0e20);
 }
-.sk-node.is-locked .sk-node__rank {
-  color: #8c92b0;
+.sk-node.is-maxed .sk-node__rank {
+  background: color-mix(in srgb, var(--gem) 45%, #0b0e20);
 }
 .sk-node.is-open .sk-node__gem {
   filter: drop-shadow(0 0 3px color-mix(in srgb, var(--gem) 70%, transparent));
@@ -174,23 +217,11 @@
 .sk-node.is-maxed .sk-node__gem {
   filter: drop-shadow(0 0 10px var(--gem)) brightness(1.08);
 }
-.sk-node.is-owned .sk-node__rank,
-.sk-node.is-maxed .sk-node__rank {
-  color: #ffffff;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--gem) 70%, transparent);
-}
-.sk-node.is-maxed .sk-node__rank {
-  background: color-mix(in srgb, var(--gem) 45%, #0b0e20);
-}
 /* a gem you can learn now breathes a ring */
 .sk-node.can-buy::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 50%;
-  width: 46px;
-  height: 46px;
-  margin: -3px 0 0 -23px;
+  inset: -5px;
   border-radius: 50%;
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--gem) 75%, transparent);
   animation: sk-breathe 1.8s ease-in-out infinite;
@@ -200,30 +231,24 @@
   0%,
   100% {
     opacity: 0.15;
-    transform: scale(0.88);
+    transform: scale(0.9);
   }
   50% {
     opacity: 0.7;
     transform: scale(1.04);
   }
 }
-
+/* the selected gem: a gold square marker, a step outside the gem */
 .sk-node[aria-pressed='true']::after {
   content: '';
   position: absolute;
-  top: -5px;
-  left: 50%;
-  width: 50px;
-  height: 50px;
-  margin-left: -25px;
-  border-radius: 50%;
-  border: 2px solid #ffffff;
-  opacity: 0.85;
+  inset: calc(var(--fs-sm) * -3);
+  border: var(--fs-sm) solid var(--px-gold);
   pointer-events: none;
 }
 .sk-node:focus-visible {
   outline: 2px solid #ffffff;
-  outline-offset: 3px;
+  outline-offset: calc(var(--fs-sm) * 4);
 }
 .sk-node.is-flash .sk-node__gem {
   animation: sk-flash 0.7s ease-out;
@@ -254,17 +279,56 @@
   margin: 6px 0 0;
 }
 
-/* ---- detail ---- */
-.sk-detail__head {
+/* ---- the side panel ---- */
+.sk-detail {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.sk-detail > .frame__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.sk-detail .frame__title {
+  display: grid;
+  gap: 2px;
+  padding: 0;
+}
+.sk-detail .frame__heading {
+  font-size: 22px;
+}
+.sk-points {
+  display: grid;
+  gap: 0;
+}
+.sk-points__label {
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.sk-points__num {
+  font-size: 34px;
+  line-height: 1.1;
+  color: var(--px-gold);
+}
+/* the gem and its effect in a dark well */
+.sk-art {
   display: flex;
   align-items: center;
   gap: 14px;
+  padding: 12px;
+  background: var(--px-lo);
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge);
 }
 .sk-detail__gem {
   /* 24 px node sprite (32 px keystone) at a whole device scale, at least 1x (DESIGN.md §12) */
   --one: calc(24px / var(--dpr));
   flex: none;
-  width: max(var(--one), round(nearest, 48px, var(--one)));
+  width: max(var(--one), round(nearest, 72px, var(--one)));
   aspect-ratio: 1;
   filter: drop-shadow(0 0 6px color-mix(in srgb, var(--gem) 60%, transparent));
 }
@@ -275,63 +339,57 @@
 .sk-detail__gem.is-locked {
   filter: none;
 }
-.sk-detail__meta {
-  display: grid;
-  gap: 5px;
-  font-size: 13px;
-}
-.sk-detail__rank {
-  font-weight: 700;
-}
-.sk-detail__cost {
-  color: var(--bi-frame-ink-muted);
-}
-.sk-pips {
-  display: flex;
-  gap: 4px;
-}
-.sk-pips i {
-  width: 14px;
-  height: 6px;
-  border-radius: 3px;
-  background: color-mix(in srgb, var(--bi-frame-ink) 18%, transparent);
-}
-.sk-pips i.is-on {
-  background: var(--gem);
-  box-shadow: 0 0 5px color-mix(in srgb, var(--gem) 70%, transparent);
-}
-.sk-effects {
-  margin: 0;
-  display: grid;
-  gap: 8px;
-}
-.sk-effects > div {
+.sk-art__text {
   display: grid;
   gap: 2px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--bi-frame-ink) 6%, transparent);
+  min-width: 0;
+  font-size: 15px;
 }
-.sk-effects__next {
-  box-shadow: inset 3px 0 0 var(--gem);
+.sk-art__note {
+  font-size: 13px;
+  color: var(--px-muted);
 }
-.sk-effects dt {
-  font-size: 12px;
-  color: var(--bi-frame-ink-muted);
-}
-.sk-effects dd {
+.sk-rows {
   margin: 0;
   display: grid;
-  font-size: 15px;
-  font-weight: 600;
 }
-.sk-needs {
+.sk-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.sk-row + .sk-row {
+  border-top: var(--fs-sm) solid var(--px-raised);
+}
+.sk-row dt {
+  color: var(--px-muted);
+}
+.sk-row dd {
   margin: 0;
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted);
+  font-weight: 700;
+  text-align: right;
 }
 .sk-buy {
-  justify-self: start;
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
+}
+.sk-hint {
+  text-align: center;
+}
+.sk-respec {
+  display: grid;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+}
+.sk-respec__btn {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 16px;
 }
 
 /* ---- respec confirm ---- */
@@ -352,4 +410,77 @@
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+/* ---- rings, weapon circles, pan and zoom ---- */
+.sk-ring {
+  fill: none;
+  stroke: #8fa0e0;
+  stroke-width: var(--fs-sm);
+  vector-effect: non-scaling-stroke;
+  opacity: 0.16;
+}
+.sk-ring.is-closed {
+  stroke-dasharray: var(--fs) calc(var(--fs) * 2);
+  opacity: 0.1;
+}
+.sk-ring-note {
+  position: absolute;
+  translate: -50% -50%;
+  padding: 2px 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: #8f98c4;
+  background: #0b0e20;
+}
+.sk-circle {
+  fill: rgba(143, 160, 224, 0.05);
+  stroke: #b7bedb;
+  stroke-width: var(--fs-sm);
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+}
+.sk-circle.is-hidden {
+  fill: none;
+  stroke: #6b73a0;
+  stroke-dasharray: var(--fs) calc(var(--fs) * 2);
+  opacity: 0.35;
+}
+.sk-circle-label {
+  position: absolute;
+  translate: -50% 0;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  color: #b7bedb;
+}
+.sk-circle-label.is-hidden {
+  color: #6b73a0;
+  opacity: 0.6;
+}
+/* a large skill: the gem wears a ring */
+.sk-node.is-large .sk-node__gem {
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--gem) 55%, transparent);
+}
+/* a closed gem (ring or circle not open yet) is dimmer than a locked one */
+.sk-node.is-closed .sk-node__gem {
+  opacity: 0.45;
+}
+.sk-zoom {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: default;
+}
+.sk-zoom__btn {
+  min-width: 34px;
+}
+.sk-zoom__hint {
+  font-size: 12px;
+  color: #8f98c4;
 }

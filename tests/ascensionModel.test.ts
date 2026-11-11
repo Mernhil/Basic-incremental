@@ -13,7 +13,7 @@ const gem = content.resources.find((r) => r.kind === 'tree_gem' && r.tier === 1)
 /** A run that harvested enough to ascend. */
 function readyState(): GameState {
   const s = freshState();
-  s.mastery.harvested[gem.id] = new Decimal(1e9);
+  s.mastery.harvested[gem.id] = new Decimal(1e14);
   return s;
 }
 
@@ -44,6 +44,8 @@ describe('ascension gate', () => {
       'tree_levels',
       'resources',
       'tile_stages',
+      'tool_lines',
+      'depth_growth',
     ]);
     expect(v.resets.every((r) => r.label && r.detail)).toBe(true);
   });

@@ -4,17 +4,36 @@
     "name": "Mossy Cellar",
     "tier": 1,
     "unlockedBy": null,
-    "killsToClear": 1,
+    "floors": 10,
+    "enemies": [
+      {
+        "id": "moss_slime",
+        "name": "Moss Slime",
+        "hpWeight": 1
+      },
+      {
+        "id": "root_sprite",
+        "name": "Root Sprite",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "bramble_beast",
+        "name": "Bramble Beast",
+        "hpWeight": 1.5
+      }
+    ],
+    "background": "mossy_cellar",
     "boss": {
       "id": "root_warden",
       "name": "Root Warden",
       "art": "root_warden",
-      "hp": "7.6e5",
-      "hpScalingPerPrestige": 0.02,
+      "weakness": "fire",
+      "resistance": "nature",
+      "hp": "45000",
       "hpBars": 5,
       "attack": {
-        "damage": "0.6",
-        "intervalSeconds": 10
+        "damage": "61",
+        "intervalSeconds": 3
       }
     },
     "drops": {
@@ -23,31 +42,41 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wage": {
-        "resource": "money",
-        "perSecond": "50"
-      },
-      "currencies": [
+      "wages": [
         {
           "resource": "money",
-          "min": 12000,
-          "max": 18000
+          "perSecond": "50"
         },
         {
           "resource": "summon_crystal",
-          "min": 2,
-          "max": 4
+          "perSecond": "0.5"
         },
         {
           "resource": "glamour_crystal",
-          "min": 1,
-          "max": 2
+          "perSecond": "0.4"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "300"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "150"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 3490,
+          "max": 5250
         }
       ],
       "extraMaterials": [],
       "material": {
         "resource": "moss_core",
-        "chance": 0.8,
+        "chance": 0.5,
         "amount": 1
       }
     }
@@ -57,17 +86,36 @@
     "name": "Ember Crypt",
     "tier": 2,
     "unlockedBy": "mossy_cellar",
-    "killsToClear": 10,
+    "floors": 20,
+    "enemies": [
+      {
+        "id": "ember_bat",
+        "name": "Ember Bat",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "cinder_imp",
+        "name": "Cinder Imp",
+        "hpWeight": 1
+      },
+      {
+        "id": "magma_crawler",
+        "name": "Magma Crawler",
+        "hpWeight": 1.5
+      }
+    ],
+    "background": "ember_crypt",
     "boss": {
       "id": "cinder_lich",
       "name": "Cinder Lich",
       "art": "cinder_lich",
-      "hp": "8e5",
-      "hpScalingPerPrestige": 0.02,
+      "weakness": "light",
+      "resistance": "fire",
+      "hp": "2500000",
       "hpBars": 8,
       "attack": {
-        "damage": "10",
-        "intervalSeconds": 8
+        "damage": "2810",
+        "intervalSeconds": 2.5
       }
     },
     "drops": {
@@ -76,27 +124,50 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "currencies": [
-        {
-          "resource": "money",
-          "min": 260000,
-          "max": 390000
-        },
+      "wages": [
         {
           "resource": "summon_crystal",
-          "min": 4,
-          "max": 6
+          "perSecond": "0.6"
         },
         {
           "resource": "glamour_crystal",
-          "min": 2,
-          "max": 4
+          "perSecond": "0.45"
         }
       ],
-      "extraMaterials": [],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "900"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "600"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 194000,
+          "max": 290000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_core",
+          "min": 1,
+          "max": 1,
+          "chance": 0.02
+        },
+        {
+          "resource": "frost_sigil",
+          "min": 1,
+          "max": 1,
+          "chance": 0.02
+        }
+      ],
       "material": {
         "resource": "cinder_core",
-        "chance": 0.5,
+        "chance": 0.4,
         "amount": 1
       }
     }
@@ -106,17 +177,36 @@
     "name": "Frostspire Vault",
     "tier": 3,
     "unlockedBy": "ember_crypt",
-    "killsToClear": 90,
+    "floors": 30,
+    "enemies": [
+      {
+        "id": "frost_imp",
+        "name": "Frost Imp",
+        "hpWeight": 1
+      },
+      {
+        "id": "ice_wisp",
+        "name": "Ice Wisp",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "snow_wolf",
+        "name": "Snow Wolf",
+        "hpWeight": 1.5
+      }
+    ],
+    "background": "frostspire_vault",
     "boss": {
       "id": "glacier_colossus",
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
-      "hp": "1.1e7",
-      "hpScalingPerPrestige": 0.02,
+      "weakness": "storm",
+      "resistance": "crystal",
+      "hp": "400000000",
       "hpBars": 12,
       "attack": {
-        "damage": "30",
-        "intervalSeconds": 6
+        "damage": "360000",
+        "intervalSeconds": 2
       }
     },
     "drops": {
@@ -125,34 +215,293 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "currencies": [
-        {
-          "resource": "money",
-          "min": 2400000,
-          "max": 3600000
-        },
+      "wages": [
         {
           "resource": "summon_crystal",
-          "min": 6,
-          "max": 10
+          "perSecond": "0.7"
         },
         {
           "resource": "glamour_crystal",
-          "min": 5,
-          "max": 8
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "1500"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "900"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 31000000,
+          "max": 46600000
         }
       ],
       "extraMaterials": [
         {
           "resource": "frost_sigil",
           "min": 1,
-          "max": 3
+          "max": 1
         }
       ],
       "material": {
         "resource": "frost_core",
-        "chance": 0.7,
+        "chance": 0.6,
         "amount": 2
+      }
+    }
+  },
+  {
+    "id": "thunderpeak_aerie",
+    "name": "Thunderpeak Aerie",
+    "tier": 4,
+    "unlockedBy": "frostspire_vault",
+    "floors": 40,
+    "enemies": [
+      {
+        "id": "spark_wisp",
+        "name": "Spark Wisp",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "gale_harpy",
+        "name": "Gale Harpy",
+        "hpWeight": 1
+      },
+      {
+        "id": "thunder_ram",
+        "name": "Thunder Ram",
+        "hpWeight": 1.5
+      }
+    ],
+    "background": "thunderpeak_aerie",
+    "boss": {
+      "id": "storm_roc",
+      "name": "Storm Roc",
+      "weakness": "earth",
+      "resistance": "storm",
+      "hp": "800000000",
+      "hpBars": 12,
+      "attack": {
+        "damage": "720000",
+        "intervalSeconds": 2
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "forge_tick",
+        "chance": 0.005,
+        "pityThreshold": 200
+      },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "2100"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "1200"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 61900000,
+          "max": 93100000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_sigil",
+          "min": 2,
+          "max": 2
+        }
+      ],
+      "material": {
+        "resource": "storm_core",
+        "chance": 0.6,
+        "amount": 3
+      }
+    }
+  },
+  {
+    "id": "sunken_sanctum",
+    "name": "Sunken Sanctum",
+    "tier": 5,
+    "unlockedBy": "thunderpeak_aerie",
+    "floors": 50,
+    "enemies": [
+      {
+        "id": "lantern_moth",
+        "name": "Lantern Moth",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "gilded_acolyte",
+        "name": "Gilded Acolyte",
+        "hpWeight": 1
+      },
+      {
+        "id": "marble_sentinel",
+        "name": "Marble Sentinel",
+        "hpWeight": 1.5
+      }
+    ],
+    "background": "sunken_sanctum",
+    "boss": {
+      "id": "dawn_hierophant",
+      "name": "Dawn Hierophant",
+      "weakness": "void",
+      "resistance": "light",
+      "hp": "3000000000",
+      "hpBars": 12,
+      "attack": {
+        "damage": "2700000",
+        "intervalSeconds": 2
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "starmap_attack",
+        "chance": 0.005,
+        "pityThreshold": 200
+      },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "2700"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "1500"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 233000000,
+          "max": 350000000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_sigil",
+          "min": 3,
+          "max": 3
+        }
+      ],
+      "material": {
+        "resource": "sanctum_core",
+        "chance": 0.6,
+        "amount": 4
+      }
+    }
+  },
+  {
+    "id": "void_hollow",
+    "name": "Hollow of the Void",
+    "tier": 6,
+    "unlockedBy": "sunken_sanctum",
+    "floors": 60,
+    "enemies": [
+      {
+        "id": "shade_mote",
+        "name": "Shade Mote",
+        "hpWeight": 0.7
+      },
+      {
+        "id": "hollow_stalker",
+        "name": "Hollow Stalker",
+        "hpWeight": 1
+      },
+      {
+        "id": "rift_maw",
+        "name": "Rift Maw",
+        "hpWeight": 1.5
+      }
+    ],
+    "background": "void_hollow",
+    "boss": {
+      "id": "unmade_king",
+      "name": "The Unmade King",
+      "weakness": "light",
+      "resistance": "void",
+      "hp": "6000000000",
+      "hpBars": 12,
+      "attack": {
+        "damage": "5410000",
+        "intervalSeconds": 2
+      }
+    },
+    "drops": {
+      "rare": {
+        "itemId": "rune_attack",
+        "chance": 0.005,
+        "pityThreshold": 200
+      },
+      "wages": [
+        {
+          "resource": "summon_crystal",
+          "perSecond": "0.7"
+        },
+        {
+          "resource": "glamour_crystal",
+          "perSecond": "0.55"
+        }
+      ],
+      "firstClear": [
+        {
+          "resource": "summon_crystal",
+          "amount": "3300"
+        },
+        {
+          "resource": "glamour_crystal",
+          "amount": "1800"
+        }
+      ],
+      "currencies": [
+        {
+          "resource": "money",
+          "min": 465000000,
+          "max": 696000000
+        }
+      ],
+      "extraMaterials": [
+        {
+          "resource": "frost_sigil",
+          "min": 4,
+          "max": 4
+        }
+      ],
+      "material": {
+        "resource": "void_core",
+        "chance": 0.6,
+        "amount": 5
       }
     }
   }

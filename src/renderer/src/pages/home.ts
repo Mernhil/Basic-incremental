@@ -1,10 +1,16 @@
 import type { Content } from '../../../data';
 import {
+  Decimal,
   PRODUCTION_JOBS,
+  bossStatus,
+  burstView,
   collectModifiers,
-  isProducerUnlocked,
+  effectiveDrops,
+  formatDuration,
   jobProductionPerSecond,
+  loadoutHealth,
   producersOf,
+  productionStageView,
   stageReadout,
   trialStatus,
   type GameState,
@@ -19,11 +25,19 @@ import type { Director } from '../stage/director';
 import { jitter, replay } from '../stage/motion';
 import { popText } from '../stage/math';
 import { popGain, popNumber } from '../stage/numbers';
+import { createCard, type CardView } from '../ui/card';
+import { fitCard } from '../ui/pixelFit';
+import { formatRate } from './buyModel';
+import { loadoutProps } from './loadoutCards';
+import { productionRows } from './productionModel';
 import './home.css';
 
 /**
- * Home (DESIGN.md §11, A3 A command centre): three live mini-stages (fight, logging, mining) with
- * their rates; clicking one opens its page. The goal tracker joins on top in Phase 2 (E8).
+ * Home (UI_RULES.md §2, "Home"): a command centre of three equal pixel panels side by side, Fight,
+ * Logging and Mining. Each panel has its title with a short line on the right, an inset scene
+ * (the fighting main card at 1x with the boss, or the job's strongest worker with its three
+ * tiles), one big number, its gauge (the fullest worker gauge of the job) and its lines, and a gold button that opens the page. The goal tracker sits
+ * above, in the shell.
  */
 
 export interface HomeContext {
@@ -34,130 +48,401 @@ export interface HomeContext {
   open: (page: 'dungeons' | 'production') => void;
 }
 
-/** Tiles drawn per mini-stage at most. */
-const MAX_TILES = 5;
+/** Tiles drawn per job panel (every job has three kinds). */
+const MAX_TILES = 3;
+/** The rows and the "ready to buy" count are worked out at most this often (ms). */
+const ROWS_EVERY_MS = 400;
+
+type Mods = ReturnType<typeof collectModifiers>;
+
+interface Meter {
+  gauge: HTMLElement;
+  fill: HTMLElement;
+  count: HTMLElement;
+}
+
+interface Panel {
+  where: HTMLElement;
+  /** The scene's field: the card and the boss or tiles stand here; pops are drawn over it. */
+  field: HTMLElement;
+  bigNumber: HTMLElement;
+  bigLabel: HTMLElement;
+  meter: Meter;
+  lines: HTMLElement;
+  go: HTMLButtonElement;
+  slot: HTMLElement;
+  cardKey: string;
+  card: CardView | null;
+}
+
+const set = (node: HTMLElement, text: string): void => {
+  if (node.textContent !== text) node.textContent = text;
+};
+
+function line(label: string): { li: HTMLElement; value: HTMLElement } {
+  const li = h('li', 'hm-line');
+  const value = h('b', 'hm-line__value bi-num');
+  li.append(h('span', 'hm-line__name', label), value);
+  return { li, value };
+}
+
+function setMeter(m: Meter, fraction: number, count: string): void {
+  const pct = Math.round(Math.min(1, Math.max(0, fraction)) * 100);
+  m.fill.style.width = `${pct}%`;
+  m.gauge.classList.toggle('is-full', fraction > 0.92);
+  m.gauge.setAttribute('aria-valuenow', String(pct));
+  set(m.count, count);
+}
 
 export function createHomePage(page: HTMLElement, ctx: HomeContext): { render(): void } {
   const { content } = ctx;
+  // the panels carry the sighted headings; the page name stays for screen readers
+  page.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
   const grid = h('div', 'hm-grid');
   page.append(grid);
 
-  const mini = (
+  function buildPanel(
     kind: 'fight' | ProductionJob,
     title: string,
+    meterLabel: string,
+    goLabel: string,
     target: 'dungeons' | 'production',
-  ) => {
-    const btn = h('button', `hm-stage hm-stage--${kind}`);
-    btn.type = 'button';
-    const scene = h('div', 'hm-stage__scene');
-    const label = h('span', 'hm-stage__title', title);
-    const where = h('span', 'hm-stage__where');
-    const rate = h('span', 'hm-stage__rate bi-num');
-    const info = h('span', 'hm-stage__info');
-    info.append(label, where, rate);
-    btn.append(scene, info);
-    btn.addEventListener('click', () => ctx.open(target));
-    grid.append(btn);
-    return { btn, scene, where, rate };
-  };
+  ): Panel & { el: HTMLElement; stats: HTMLElement } {
+    const el = h('section', `hm-panel px-panel hm-panel--${kind}`);
+    el.setAttribute('aria-label', title);
+    const head = h('header', 'hm-panel__head');
+    const where = h('span', 'hm-panel__where');
+    head.append(h('h2', 'hm-panel__title px-display', title), where);
 
-  const fight = mini('fight', COPY.home.fight, 'dungeons');
+    // the scene: an inset well with the cards floating in it
+    const scene = h('div', 'hm-scene px-well');
+    const field = h('div', 'hm-field');
+    field.setAttribute('role', 'img');
+    field.setAttribute('aria-label', COPY.home.sceneLabel(title));
+    // the main card stands at 1x: 132 CSS px on a 100 % screen, whole device pixels
+    fitCard(field, { want: 132 });
+    const slot = h('div', 'hm-slot');
+    field.append(slot);
+    scene.append(field);
+
+    const big = h('div', 'hm-big');
+    const bigNumber = h('b', 'hm-big__n px-display bi-num');
+    const bigLabel = h('span', 'hm-big__label');
+    big.append(bigNumber, bigLabel);
+
+    const stats = h('div', 'hm-stats');
+    const meterEl = h('div', 'hm-meter');
+    const top = h('div', 'hm-meter__top');
+    const count = h('b', 'bi-num');
+    top.append(h('span', '', meterLabel), count);
+    const gauge = h('div', 'hm-gauge');
+    gauge.setAttribute('role', 'meter');
+    gauge.setAttribute('aria-label', meterLabel);
+    gauge.setAttribute('aria-valuemin', '0');
+    gauge.setAttribute('aria-valuemax', '100');
+    const fill = h('i');
+    gauge.append(fill);
+    meterEl.append(top, gauge);
+
+    const lines = h('ul', 'hm-lines');
+    const go = h('button', 'hm-go px-btn px-btn--gold px-display', goLabel);
+    go.type = 'button';
+    go.addEventListener('click', () => ctx.open(target));
+
+    el.append(head, scene, big, ...(kind === 'fight' ? [stats] : []), meterEl, lines, go);
+    grid.append(el);
+    return {
+      el,
+      stats,
+      where,
+      field,
+      bigNumber,
+      bigLabel,
+      meter: { gauge, fill, count },
+      lines,
+      go,
+      slot,
+      cardKey: '',
+      card: null,
+    };
+  }
+
+  const fight = buildPanel(
+    'fight',
+    COPY.home.fight,
+    COPY.dungeons.burst,
+    COPY.home.openDungeons,
+    'dungeons',
+  );
   const jobs = {
-    logging: mini('logging', COPY.production.logging.title, 'production'),
-    mining: mini('mining', COPY.production.mining.title, 'production'),
+    logging: buildPanel(
+      'logging',
+      COPY.production.logging.title,
+      COPY.production.harvestBurst,
+      COPY.home.openProduction,
+      'production',
+    ),
+    mining: buildPanel(
+      'mining',
+      COPY.production.mining.title,
+      COPY.production.harvestBurst,
+      COPY.home.openProduction,
+      'production',
+    ),
   } as const;
 
-  let fightKey = '';
-  const tileKeys: Record<ProductionJob, string> = { logging: '', mining: '' };
-  /** Kind index -> tile element, per job (only the first MAX_TILES kinds are drawn). */
-  const tileAt: Record<ProductionJob, Map<number, HTMLElement>> = {
-    logging: new Map(),
-    mining: new Map(),
+  // ---- the fight panel's own pieces ----
+  const stat = (label: string): HTMLElement => {
+    const tile = h('div', 'hm-stat px-tile');
+    const value = h('b', 'hm-stat__v px-display bi-num');
+    tile.append(h('span', 'hm-stat__k', label), value);
+    fight.stats.append(tile);
+    return value;
   };
+  const kpmOut = stat(COPY.arena.kpm);
+  const ttkOut = stat(COPY.arena.ttk);
+  const healthOut = stat(COPY.home.partyHealth);
+  const rare = line(COPY.home.rareDrop);
+  rare.li.classList.add('hm-line--rare');
+  fight.lines.append(rare.li);
 
-  function renderFight(s: GameState): void {
+  // the boss column: its HP bar and bars-left caption over the boss at 1x
+  const bossCol = h('div', 'hm-bosscol');
+  const hpTrack = h('div', 'hm-hp');
+  hpTrack.setAttribute('role', 'meter');
+  hpTrack.setAttribute('aria-valuemin', '0');
+  hpTrack.setAttribute('aria-valuemax', '100');
+  const hpUnder = h('i', 'hm-hp__under');
+  const hpFill = h('i', 'hm-hp__fill');
+  hpTrack.append(hpUnder, hpFill);
+  const hpCaption = h('span', 'hm-hp__caption');
+  const bossSlot = h('div', 'hm-bossslot');
+  bossCol.append(hpTrack, hpCaption, bossSlot);
+  fight.field.append(bossCol);
+
+  let fightKey = '';
+
+  /**
+   * A panel's card at 1x, redrawn only when the card or its rank changes: the fighting main card,
+   * or a production job's strongest worker (DESIGN.md §4 Workers).
+   */
+  function drawCard(
+    panel: Panel,
+    s: GameState,
+    id: string | null,
+    mods: Mods,
+    worker = false,
+  ): void {
+    const owned = id ? s.cards.owned[id] : undefined;
+    const key = JSON.stringify([id, owned?.tier, owned?.stars, owned?.level, s.weaponSkins]);
+    if (key === panel.cardKey) return;
+    panel.cardKey = key;
+    const base = id ? loadoutProps(content, s, id, 'main', mods) : null;
+    const props = base && worker ? { ...base, label: COPY.home.worker } : base;
+    panel.slot.classList.toggle('is-empty', !props);
+    if (!props) {
+      panel.card = null;
+      panel.slot.replaceChildren(
+        h('span', 'hm-empty', worker ? COPY.home.noWorker : COPY.table.emptyMain),
+      );
+      return;
+    }
+    if (panel.card) panel.card.update(props);
+    else {
+      panel.card = createCard(props);
+      panel.slot.replaceChildren(panel.card.el);
+    }
+  }
+
+  function renderFight(s: GameState, mods: Mods): void {
     const id = s.activeDungeonId;
     const dungeon = id ? content.dungeonById.get(id) : undefined;
     const trial = id ? content.trialById.get(id) : undefined;
     const level = trial ? sentinelLevel(Math.min(trialStatus(s, content)?.score ?? 0, 1)) : 0;
     const art = dungeon?.boss.art ?? trial?.target.art;
+    // On a dungeon floor the name is the enemy our hits are on; the picture stays the boss's
+    // until the normal enemies have art.
+    const foe = dungeon ? bossStatus(s, content, mods)?.enemy.name : undefined;
+    const bossName = foe ?? dungeon?.boss.name ?? trial?.target.name ?? COPY.home.noBoss;
+    drawCard(fight, s, s.cards.loadouts.fighting.main, mods);
+
     const key = `${art ?? ''}:${level}`;
     if (key !== fightKey) {
       fightKey = key;
-      fight.scene.innerHTML = art
+      bossSlot.innerHTML = art
         ? `<div class="hm-boss"><svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(art, level)}</svg></div>`
         : '';
-      fight.scene.append(h('i', 'hm-floor'));
     }
-    const where = dungeon?.name ?? trial?.name ?? COPY.home.nothingFought;
+    bossCol.hidden = !art;
+
+    const where = dungeon?.name ?? trial?.name ?? '';
     set(fight.where, where);
-    const r = stageReadout(s, content);
-    set(fight.rate, art ? COPY.home.dps(fmt(r.averageDps)) : '');
-    fight.btn.setAttribute('aria-label', `${COPY.home.fight}: ${where}. ${COPY.home.openDungeons}`);
+
+    // the boss's life: the bar in play over the next one, the bars left in the caption
+    const status = bossStatus(s, content, mods);
+    hpTrack.hidden = !status;
+    hpCaption.hidden = !status;
+    if (status) {
+      const bars = status.bars;
+      const color = (i: number): string => `var(--bi-hp-${((i % 6) + 6) % 6})`;
+      hpFill.style.background = color(bars.index);
+      hpFill.style.width = `${(bars.fraction * 100).toFixed(1)}%`;
+      hpUnder.style.background = bars.remaining > 1 ? color(bars.index - 1) : 'transparent';
+      const text = COPY.home.barsLeft(bossName, bars.remaining);
+      hpTrack.setAttribute('aria-valuenow', String(Math.round(bars.fraction * 100)));
+      hpTrack.setAttribute('aria-label', text);
+      set(hpCaption, text);
+    }
+
+    const r = stageReadout(s, content, mods);
+    // A boss without a drawing (a dungeon whose theme is not decided) is still a fight.
+    const fighting = Boolean(dungeon ?? trial);
+    set(fight.bigNumber, fighting ? fmt(r.averageDps) : '—');
+    set(fight.bigLabel, COPY.home.damagePerSecond);
+    set(kpmOut, formatRate(r.killsPerMinute));
+    set(ttkOut, r.secondsPerKill === null ? '—' : formatDuration(r.secondsPerKill * 1000));
+    const lh = loadoutHealth(s, content, mods);
+    const pct = Math.round(lh.current.div(Decimal.max(lh.max, 1e-9)).toNumber() * 100);
+    set(healthOut, fighting ? `${Math.min(100, Math.max(0, pct))}%` : '—');
+
+    // the signature attack gauge with its count
+    const gv = burstView(s, content, 'fighting', mods);
+    const n = Math.min(gv.size, Math.floor(gv.gauge));
+    setMeter(fight.meter, gv.fraction, COPY.home.gaugeCount(n, gv.size));
+
+    // the rare drop and how close its guarantee is
+    rare.li.hidden = !(dungeon && status);
+    if (dungeon && status) {
+      const item =
+        content.cosmeticById.get(dungeon.drops.rare.itemId)?.name ?? dungeon.drops.rare.itemId;
+      const threshold = effectiveDrops(dungeon, mods, content).rare.pityThreshold;
+      set(rare.value, COPY.home.rarePity(item, status.pity, threshold));
+    }
+    fight.go.setAttribute(
+      'aria-label',
+      where ? `${COPY.home.openDungeons}: ${where}` : COPY.home.openDungeons,
+    );
   }
 
-  function renderJob(s: GameState, job: ProductionJob): void {
+  // ---- the job panels ----
+  const tileKeys: Record<ProductionJob, string> = { logging: '', mining: '' };
+  /** Kind index -> tile element, per job. */
+  const tileAt: Record<ProductionJob, Map<number, HTMLElement>> = {
+    logging: new Map(),
+    mining: new Map(),
+  };
+  const tilesEl = {} as Record<ProductionJob, HTMLElement>;
+  const rowLines = {} as Record<ProductionJob, Array<ReturnType<typeof line>>>;
+  const rowCache = {} as Record<ProductionJob, ReturnType<typeof productionRows>>;
+  const readyCount: Record<ProductionJob, number> = { logging: 0, mining: 0 };
+  for (const job of PRODUCTION_JOBS) {
+    tilesEl[job] = h('div', 'hm-tiles');
+    jobs[job].field.append(tilesEl[job]);
+    rowLines[job] = [];
+  }
+  let rowsAt = -Infinity;
+
+  function renderJob(s: GameState, job: ProductionJob, mods: Mods, refresh: boolean): void {
     const ui = jobs[job];
-    const mods = collectModifiers(s, content);
-    const list = producersOf(content, job).map((p) =>
-      isProducerUnlocked(s, content, job, p.id) ? p.id : null,
+    const view = productionStageView(s, content, job, mods);
+    const working = view.targets.filter((t) => t.worker);
+    const lead = working.reduce<(typeof working)[number] | null>(
+      (best, t) => (!best || t.worker!.power > best.worker!.power ? t : best),
+      null,
     );
-    const key = JSON.stringify(list.slice(0, MAX_TILES));
-    if (key !== tileKeys[job]) {
-      tileKeys[job] = key;
+    drawCard(ui, s, lead?.worker?.cardId ?? null, mods, true);
+    if (refresh || !rowCache[job]) {
+      const rows = productionRows(s, content, job, 1, mods);
+      rowCache[job] = rows;
+      readyCount[job] = rows.filter((r) =>
+        r.kind === 'active' ? Boolean(r.buy?.offer.affordable) : Boolean(r.unlock?.affordable),
+      ).length;
+    }
+    const rows = rowCache[job];
+    const all = producersOf(content, job);
+
+    // the three tiles at 1x: a locked kind is greyed
+    const tileKey = JSON.stringify(
+      rows.slice(0, MAX_TILES).map((r) => [r.kindIndex, r.kind === 'active', r.stage]),
+    );
+    if (tileKey !== tileKeys[job]) {
+      tileKeys[job] = tileKey;
       tileAt[job].clear();
-      const row = h('div', 'hm-tiles');
-      list.slice(0, MAX_TILES).forEach((id, index) => {
-        const p = id ? producersOf(content, job).find((x) => x.id === id) : undefined;
+      const tiles: HTMLElement[] = [];
+      rows.slice(0, MAX_TILES).forEach((row, index) => {
+        const p = all[row.kindIndex];
         const gem = p ? content.resourceById.get(p.resource)?.gem : undefined;
         if (!p || !gem) return;
-        const tile = h('span', 'hm-tile');
+        const tile = h(
+          'span',
+          `hm-tile hm-tile--${index}${row.kind === 'active' ? '' : ' is-locked'}`,
+        );
         tile.style.setProperty('--d', `${(index * 0.37).toFixed(2)}s`);
         const tree = job === 'logging' ? content.treeById.get(p.id) : undefined;
-        tile.innerHTML = `<svg viewBox="-6 -6 112 112" aria-hidden="true" focusable="false">${tree ? treeTile(tree, gem) : mineTile(gem)}</svg>`;
-        row.append(tile);
-        tileAt[job].set(index, tile);
+        tile.innerHTML = `<svg viewBox="-6 -6 112 112" aria-hidden="true" focusable="false">${tree ? treeTile(tree, gem, row.stage) : mineTile(gem, row.stage)}</svg>`;
+        tiles.push(tile);
+        tileAt[job].set(row.kindIndex, tile);
       });
-      ui.scene.replaceChildren(row, h('i', 'hm-floor'));
-      if (tileAt[job].size === 0) ui.scene.append(h('span', 'hm-empty', COPY.home.idleJob));
+      tilesEl[job].replaceChildren(...tiles);
     }
-    const rates = Object.entries(jobProductionPerSecond(s, content, job, mods)).map(([res, v]) =>
-      COPY.table.perSecond(`${fmt(v)} ${content.resourceById.get(res)?.name ?? res}`),
+
+    // one line per kind with its rate; a locked kind says "locked"
+    if (rowLines[job].length !== rows.length) {
+      rowLines[job] = rows.map((r) => line(r.name));
+      ui.lines.replaceChildren(...rowLines[job].map((l) => l.li));
+    }
+    rows.forEach((r, i) => {
+      const l = rowLines[job][i]!;
+      const locked = r.kind !== 'active';
+      l.li.classList.toggle('is-locked', locked);
+      set(l.value, locked ? COPY.home.kindLocked : COPY.table.perSecond(r.outputValue));
+    });
+
+    const total = Object.values(jobProductionPerSecond(s, content, job, mods)).reduce(
+      (sum, v) => sum.add(v),
+      new Decimal(0),
     );
-    const total = list.filter(Boolean).length;
-    set(ui.where, job === 'logging' ? COPY.table.trees(total) : COPY.table.mines(total));
-    set(ui.rate, rates.join(' · '));
-    ui.btn.setAttribute(
+    set(ui.where, COPY.home.readyToBuy(readyCount[job]));
+    set(ui.bigNumber, fmt(total));
+    set(ui.bigLabel, COPY.home.gemsPerSecond);
+    // the fullest worker gauge of the job
+    const full = working.reduce<(typeof working)[number] | null>(
+      (best, t) => (!best || t.gauge > best.gauge ? t : best),
+      null,
+    );
+    const size = full?.burst.size ?? 1;
+    const fraction = full?.gauge ?? 0;
+    setMeter(ui.meter, fraction, COPY.home.gaugeCount(Math.floor(fraction * size), size));
+    ui.go.setAttribute(
       'aria-label',
-      `${COPY.production[job].title}: ${rates.join(', ') || COPY.home.idleJob}. ${COPY.home.openProduction}`,
+      `${COPY.home.openProduction}: ${COPY.production[job].title}, ${COPY.production.gemsPerSecond(fmt(total))}`,
     );
   }
 
   ctx.director.on('hit', (e) => {
     if (!ctx.visible()) return;
-    const boss = fight.scene.querySelector('.hm-boss');
-    replay(boss, 'is-hit', 220);
-    popNumber(fight.scene, {
+    replay(fight.field.querySelector('.hm-boss'), 'is-hit', 220);
+    popNumber(fight.field, {
       kind: e.crit ? 'crit' : 'hit',
       text: popText(e.damage),
-      x: jitter(0.35, 0.65),
-      y: jitter(0.25, 0.45),
+      x: jitter(0.66, 0.9),
+      y: jitter(0.3, 0.45),
       scale: Math.min(1.4, e.scale * 0.8),
     });
   });
   ctx.director.on('kill', () => {
-    if (ctx.visible()) replay(fight.scene.querySelector('.hm-boss'), 'is-popping', 700);
+    if (ctx.visible()) replay(fight.field.querySelector('.hm-boss'), 'is-popping', 700);
   });
   ctx.director.on('harvest', (e) => {
     if (!ctx.visible()) return;
-    const scene = jobs[e.job].scene;
-    const box = scene.getBoundingClientRect();
+    const field = jobs[e.job].field;
+    const box = field.getBoundingClientRect();
     for (const p of e.plots) {
       const tile = tileAt[e.job].get(p.index);
       if (!tile || box.width === 0) continue;
       const t = tile.getBoundingClientRect();
       popGain(
-        scene,
+        field,
         `home-${e.job}-${p.index}`,
         p.amount,
         (t.left + t.width / 2 - box.left) / box.width,
@@ -171,12 +456,12 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
   return {
     render() {
       const s = ctx.state();
-      renderFight(s);
-      for (const job of PRODUCTION_JOBS) renderJob(s, job);
+      const mods = collectModifiers(s, content);
+      const now = performance.now();
+      const refresh = now - rowsAt >= ROWS_EVERY_MS;
+      if (refresh) rowsAt = now;
+      renderFight(s, mods);
+      for (const job of PRODUCTION_JOBS) renderJob(s, job, mods, refresh);
     },
   };
-}
-
-function set(node: HTMLElement, text: string): void {
-  if (node.textContent !== text) node.textContent = text;
 }

@@ -3,8 +3,9 @@ import type { GoalRow } from '../pages/progressionModel';
 import { h } from './shell';
 
 /**
- * The quest scroll (DESIGN.md §10, A16 B): the next 1-3 goals with a check box, a progress bar
- * and an estimate; clicking a goal opens its page.
+ * The goals strip (DESIGN.md §10): the next 1-3 goals with a check box, a progress bar and an
+ * estimate; clicking a goal opens its page. The strip's right end is a slot a page can fill
+ * (`Shell.setQuestSlot`).
  */
 export function createQuestScroll(
   slot: HTMLElement,
@@ -13,7 +14,8 @@ export function createQuestScroll(
   const title = h('span', 'shell-quest__title', COPY.progress.goals);
   const list = h('ul', 'shell-quest__list');
   list.setAttribute('aria-label', COPY.progress.goals);
-  slot.append(title, list);
+  // the slot at the right end (shell.setQuestSlot) is already in `slot`; the goals go before it
+  slot.prepend(title, list);
   let key = '';
   const items = new Map<
     string,
@@ -21,7 +23,8 @@ export function createQuestScroll(
   >();
   return {
     update(rows) {
-      slot.hidden = rows.length === 0;
+      slot.dataset.goals = rows.length > 0 ? '1' : '';
+      slot.dispatchEvent(new Event('goals'));
       const next = rows.map((r) => r.id).join('|');
       if (next !== key) {
         key = next;

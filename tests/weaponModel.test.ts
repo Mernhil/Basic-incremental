@@ -50,9 +50,18 @@ describe('weapon panel model', () => {
     const w = view('ember_squire', { stars: 3, starFill: 4 })!;
     const [, , mult3, mult4] = [1, ...content.cardRules.power.starMultiplier];
     expect(w.starBar?.fill).toBe(4);
-    expect(w.starBar?.text).toBe(`4 / ${w.starBar?.need} copies to ★4`);
+    // A star costs fractions of a copy, so the bar reads as a share of the next star.
+    expect(w.starBar?.text).toBe('100% to ★4');
+    expect(w.starBar?.title).toBe(`4 / ${w.starBar?.need} copies to ★4`);
     expect(w.starBar?.impact).toBe(`×${mult3} → ×${mult4}`);
     expect(w.starBar?.gauge).toBeCloseTo(Math.min(1, 4 / w.starBar!.need));
+  });
+
+  it('shows a part-filled bar as a percentage, exact numbers in the title', () => {
+    const w = view('ember_squire', { stars: 1, starFill: 0.05 })!;
+    const need = w.starBar!.need;
+    expect(w.starBar?.text).toBe(`${Math.floor((0.05 / need) * 100)}% to ★2`);
+    expect(w.starBar?.title).toBe(`0.05 / ${+need.toFixed(3)} copies to ★2`);
   });
 
   it('has no star bar at six stars', () => {
@@ -83,6 +92,26 @@ describe('weapon panel model', () => {
     expect(w.tierUp?.costs.map((c) => c.id)).toEqual(price.map((p) => p.resource));
     expect(w.tierUp?.costs.every((c) => c.met)).toBe(true);
     expect(w.tierUp?.lead).toBe('It costs:');
+    expect(w.tierUp?.levelMet).toBe(true);
+    expect(w.tierUp?.starsMet).toBe(true);
+    expect(w.tierUp?.blocker).toBe('');
+  });
+
+  it('the tier-up button says why it cannot be taken: stars first, then level, then prices', () => {
+    const cap = content.cardRules.levelCaps.silver;
+    // below ★6: "Needs ★6", even at the level cap with the prices missing
+    const stars = view('dawnblade_regent', { tier: 'silver', level: cap, stars: 3 })!;
+    expect(stars.tierUp?.starsMet).toBe(false);
+    expect(stars.tierUp?.blocker).toBe('Needs ★6');
+    // ★6 but below the level cap
+    const level = view('dawnblade_regent', { tier: 'silver', level: cap - 1, stars: 6 })!;
+    expect(level.tierUp?.starsMet).toBe(true);
+    expect(level.tierUp?.levelMet).toBe(false);
+    expect(level.tierUp?.blocker).toBe(`Needs Lv ${cap}`);
+    // ★6 at the cap: it counts what is short (a single price is named instead)
+    const short = view('dawnblade_regent', { tier: 'silver', level: cap, stars: 6 }, '1')!;
+    expect(short.tierUp?.blocker).toBe('Missing 4 items');
+    expect(short.tierUp?.ready).toBe(false);
   });
 
   it('max level, not enough: short, and names what is missing', () => {

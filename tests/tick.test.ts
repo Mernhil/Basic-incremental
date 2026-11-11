@@ -7,11 +7,19 @@ import {
   Decimal,
   MAX_KILLS_PER_ADVANCE,
 } from '../src/game';
-import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
+import {
+  constantRng,
+  bareState,
+  plainContent as content,
+  plainContent,
+  freshState,
+  withDps,
+  withOverflow,
+} from './helpers';
 
 const dungeon = content.dungeons[0]!;
 const rng = constantRng(0.5);
-const maxHp = bossMaxHp(dungeon, 0);
+const maxHp = bossMaxHp(dungeon);
 
 describe('advance (tick math)', () => {
   it('produces rate * seconds for each unlocked kind, once', () => {
@@ -45,19 +53,25 @@ describe('advance (tick math)', () => {
       const extra =
         c.resource === 'money'
           ? content.resourceById.get('money')!.startAmount!.toNumber() +
-            dungeon.drops.wage!.perSecond.toNumber()
+            dungeon.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber()
           : 0;
       expect(state.resources[c.resource]!.toNumber()).toBeCloseTo(rolled + extra);
     }
     const { chance, amount } = dungeon.drops.material;
     expect(state.resources['moss_core']!.eq(0.5 < chance ? amount : 0)).toBe(true);
-    expect(state.bossHp!.eq(maxHp)).toBe(true);
+    expect(state.bossHp).toBeNull(); // a fresh boss at full HP
   });
 
   it('carries overflow damage into the next boss', () => {
-    const { state, report } = advance(freshState(), withDps(maxHp.mul(2.5)), 1000, rng);
+    // Overflow on (DESIGN.md §6): the leftover damage of a kill carries into the next boss.
+    const start = withOverflow(freshState(), plainContent);
+    const { state, report } = advance(start, withDps(maxHp.mul(2.5)), 1000, rng);
     expect(report.bossKills).toBe(2);
     expect(approxEq(state.bossHp!, maxHp.div(2))).toBe(true);
+    // Overflow off: the leftover is lost, one kill per hit.
+    const off = advance(freshState(), withDps(maxHp.mul(2.5)), 1000, rng);
+    expect(off.report.bossKills).toBe(1);
+    expect(off.state.bossHp).toBeNull();
   });
 
   it('ignores zero, negative and non-finite deltas', () => {
@@ -75,14 +89,13 @@ describe('advance (tick math)', () => {
     expect(start.stats.bossKills).toBe(0);
   });
 
-  it('scales boss HP slowly with prestige count', () => {
-    expect(bossMaxHp(dungeon, 0).eq(dungeon.boss.hp)).toBe(true);
-    const scaled = dungeon.boss.hp.mul(Math.pow(1 + dungeon.boss.hpScalingPerPrestige, 10));
-    expect(approxEq(bossMaxHp(dungeon, 10), scaled, 1e-6)).toBe(true);
+  it('reads the boss HP from the data, whatever the Ascensions', () => {
+    expect(bossMaxHp(dungeon).eq(dungeon.boss.hp)).toBe(true);
   });
 
   it('caps boss kills per call', () => {
-    const { report } = advance(freshState(), withDps(new Decimal('1e30')), 1000, rng);
+    const start = withOverflow(freshState(), plainContent);
+    const { report } = advance(start, withDps(new Decimal('1e30')), 1000, rng);
     expect(report.bossKills).toBe(MAX_KILLS_PER_ADVANCE);
   });
 

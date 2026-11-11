@@ -128,25 +128,18 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "Steady output",
+    "worker": {
+      "description": "+20% card XP here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
-      }
-    },
-    "support": {
-      "description": "+5% logging",
+        "strikes": 1
+      },
       "modifiers": [
         {
-          "stat": "production.rate",
+          "stat": "xp.card",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "20"
         }
       ]
     }
@@ -160,36 +153,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+10% logging",
+    "worker": {
+      "description": "+1 harvest gauge fill per tick here, +10% output",
       "harvest": {
         "style": "flurry",
         "intervalSeconds": 0.5,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+1 harvest-burst fill per tick",
       "modifiers": [
         {
           "stat": "burst.fill",
           "kind": "flat",
-          "value": "1",
-          "scope": {
-            "job": "logging"
-          },
-          "scale": "none"
+          "value": "1"
+        },
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "10"
         }
       ]
     }
@@ -203,35 +183,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output instead of 10 s",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +10% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+12% logging",
-      "modifiers": [
+          "value": "15"
+        },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "12",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "10"
         }
       ]
     }
@@ -245,43 +213,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+30% logging, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "30",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "20",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "1.5"
         }
       ]
     }
@@ -295,25 +243,18 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "Steady output",
+    "worker": {
+      "description": "+20% card XP here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
-      }
-    },
-    "support": {
-      "description": "+5% mining",
+        "strikes": 1
+      },
       "modifiers": [
         {
-          "stat": "production.rate",
+          "stat": "xp.card",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "20"
         }
       ]
     }
@@ -327,36 +268,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+10% mining",
+    "worker": {
+      "description": "10% harvest crit chance here, +10% output",
       "harvest": {
         "style": "flurry",
         "intervalSeconds": 0.5,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
       "modifiers": [
         {
+          "stat": "harvest.critChance",
+          "kind": "flat",
+          "value": "0.1"
+        },
+        {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+1 harvest-burst fill per tick",
-      "modifiers": [
-        {
-          "stat": "burst.fill",
-          "kind": "flat",
-          "value": "1",
-          "scope": {
-            "job": "mining"
-          },
-          "scale": "none"
+          "value": "10"
         }
       ]
     }
@@ -370,43 +298,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output, +15% mining",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +20% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "15"
         },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+15% mining",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "20"
         }
       ]
     }
@@ -420,55 +328,30 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+40% mining, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "40",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+25% mining, +5% Core drop chance",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "25",
-          "scope": {
-            "job": "mining"
-          }
-        },
-        {
-          "stat": "drops.materialChance",
-          "kind": "percent",
-          "value": "5"
+          "value": "1.5"
         }
       ]
     }
   },
   {
     "id": "reaper_test",
-    "name": "Reaper Test Card",
+    "name": "Dusk Reaper",
     "job": "fighting",
     "rarity": "rare",
     "element": "void",
@@ -476,7 +359,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "TEST CARD (weapon skins). Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -485,11 +368,29 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
     "support": {
-      "description": "TEST CARD (weapon skins). +5% damage",
+      "description": "+5% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
@@ -509,7 +410,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -518,6 +419,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -633,35 +543,18 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+5% logging",
+    "worker": {
+      "description": "+15% output here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 0.8,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+7% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "7",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "15"
         }
       ]
     }
@@ -675,43 +568,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output, +15% logging",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +20% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "15"
         },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+15% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "20"
         }
       ]
     }
@@ -725,43 +598,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+30% logging, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "30",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "20",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "1.5"
         }
       ]
     }
@@ -775,35 +628,18 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+5% mining",
+    "worker": {
+      "description": "+15% output here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 0.8,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+7% mining",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "7",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "15"
         }
       ]
     }
@@ -817,35 +653,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output instead of 10 s",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +10% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+12% mining",
-      "modifiers": [
+          "value": "15"
+        },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "12",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "10"
         }
       ]
     }
@@ -859,21 +683,1926 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+40% mining, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "40",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "brass_vanguard",
+    "name": "Brass Vanguard",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "fire",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
           "scope": {
-            "job": "mining"
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_cavalier",
+    "name": "Silver Cavalier",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "fire",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "gilded_knight",
+    "name": "Gilded Knight",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "fire",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "prism_paladin",
+    "name": "Prism Paladin",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "fire",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "dawn_champion",
+    "name": "Dawn Champion",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "shadow_reaver",
+    "name": "Shadow Reaver",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "rusty_brute",
+    "name": "Rusty Brute",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "fire",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_warden",
+    "name": "Bronze Warden",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "fire",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_executioner",
+    "name": "Silver Executioner",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "fire",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "gold_warlord",
+    "name": "Gold Warlord",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "fire",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sunbreaker_titan",
+    "name": "Sunbreaker Titan",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "ruin_tyrant",
+    "name": "Ruin Tyrant",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "militia_picket",
+    "name": "Militia Picket",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "earth",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_skirmisher",
+    "name": "Silver Skirmisher",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "earth",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_hoplite",
+    "name": "Golden Hoplite",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "earth",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "shard_strider",
+    "name": "Shard Strider",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "earth",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "valor_pikeman",
+    "name": "Valor Pikeman",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "wraith_impaler",
+    "name": "Wraith Impaler",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "stable_squire",
+    "name": "Stable Squire",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_jouster",
+    "name": "Bronze Jouster",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_rider",
+    "name": "Silver Rider",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_tilter",
+    "name": "Golden Tilter",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mirror_cavalier",
+    "name": "Mirror Cavalier",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "dread_horseman",
+    "name": "Dread Horseman",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "alley_cutpurse",
+    "name": "Alley Cutpurse",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "storm",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_sneak",
+    "name": "Bronze Sneak",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "storm",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_shiv",
+    "name": "Silver Shiv",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "storm",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "whisper_assassin",
+    "name": "Whisper Assassin",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "storm",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "gleam_phantom",
+    "name": "Gleam Phantom",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "venom_stalker",
+    "name": "Venom Stalker",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "quarry_smasher",
+    "name": "Quarry Smasher",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_forgehand",
+    "name": "Bronze Forgehand",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_sledger",
+    "name": "Silver Sledger",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_anvilmaster",
+    "name": "Golden Anvilmaster",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "facet_crusher",
+    "name": "Facet Crusher",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "thunder_smith",
+    "name": "Thunder Smith",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "fieldhand_archer",
+    "name": "Fieldhand Archer",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "nature",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_hunter",
+    "name": "Bronze Hunter",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "nature",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_ranger",
+    "name": "Silver Ranger",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "nature",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_sharpshot",
+    "name": "Golden Sharpshot",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "nature",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "rainbow_sniper",
+    "name": "Rainbow Sniper",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "nature",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "seraph_archer",
+    "name": "Seraph Archer",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "wither_huntress",
+    "name": "Wither Huntress",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "hedge_acolyte",
+    "name": "Hedge Acolyte",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "crystal",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
           }
         },
         {
@@ -881,26 +2610,600 @@
           "kind": "mult",
           "value": "1.5",
           "scope": {
-            "job": "mining"
+            "job": "fighting"
           }
         }
       ]
     },
     "support": {
-      "description": "+25% mining, +5% Core drop chance",
+      "description": "+5% damage",
       "modifiers": [
         {
-          "stat": "production.rate",
+          "stat": "combat.damage",
           "kind": "percent",
-          "value": "25",
+          "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_mystic",
+    "name": "Bronze Mystic",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "crystal",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
           "scope": {
-            "job": "mining"
+            "job": "fighting"
           }
         },
         {
-          "stat": "drops.materialChance",
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_mage",
+    "name": "Silver Mage",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "crystal",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_sage",
+    "name": "Golden Sage",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "crystal",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "kaleido_weaver",
+    "name": "Kaleido Weaver",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "crystal",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sanctum_oracle",
+    "name": "Sanctum Oracle",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "hex_warlock",
+    "name": "Hex Warlock",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "field_reaper",
+    "name": "Field Reaper",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+5% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
           "kind": "percent",
           "value": "5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_gleaner",
+    "name": "Bronze Gleaner",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+8% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_harvester",
+    "name": "Golden Harvester",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+12% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "halfmoon_reaper",
+    "name": "Halfmoon Reaper",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+15% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "15"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mercy_harvester",
+    "name": "Mercy Harvester",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "grim_sovereign",
+    "name": "Grim Sovereign",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
         }
       ]
     }

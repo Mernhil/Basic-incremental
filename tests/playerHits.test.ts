@@ -14,7 +14,7 @@ import {
   type GameState,
   type PlayerHitEvent,
 } from '../src/game';
-import { constantRng, content as pinned, freshState, withDps } from './helpers';
+import { constantRng, content as pinned, freshState, withBossHp, withDps } from './helpers';
 
 /**
  * Our damage lands in chunks (DESIGN.md §6): one hit every burst interval, each worth
@@ -25,7 +25,7 @@ const ok = (r: CombatResult): GameState => {
   if (!r.ok) throw new Error(r.reason);
   return r.state;
 };
-const content = withDps(1000);
+const content = withBossHp(withDps(1000), 'mossy_cellar', 7.6e5);
 const fighting = burstStats(content, 'fighting');
 const boss = content.dungeonById.get('mossy_cellar')!;
 /** Bare-handed so no card levels up while the damage is counted. */
@@ -35,7 +35,7 @@ const start = (): GameState => {
   return state;
 };
 const dpsOf = (state: GameState) => effectiveDamage(state, content, 'mossy_cellar');
-const dealt = (state: GameState) => bossMaxHp(boss, 0).sub(state.bossHp!);
+const dealt = (state: GameState) => bossMaxHp(boss).sub(state.bossHp!);
 
 describe('chunked damage to bosses (DESIGN.md §6)', () => {
   it('holds damage until the hit lands, then drops the bar by exactly one hit', () => {

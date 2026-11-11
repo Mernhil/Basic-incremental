@@ -2,6 +2,13 @@ import '@fontsource/outfit/500.css';
 import '@fontsource/outfit/600.css';
 import '@fontsource/outfit/700.css';
 import '@fontsource/outfit/800.css';
+// the pixel-frame shell's two fonts (UI_RULES.md §2, "Shell look"): Pixelify Sans for headings
+// and large numbers, Atkinson Hyperlegible for every other text
+import '@fontsource/pixelify-sans/400.css';
+import '@fontsource/pixelify-sans/600.css';
+import '@fontsource/pixelify-sans/700.css';
+import '@fontsource/atkinson-hyperlegible/400.css';
+import '@fontsource/atkinson-hyperlegible/700.css';
 import { installLogCapture } from './settings/logBuffer';
 import { installMotionPref } from './settings/motion';
 import { installPixelScale } from './ui/pixelFit';

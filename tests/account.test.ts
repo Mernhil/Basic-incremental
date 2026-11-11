@@ -24,8 +24,19 @@ import {
   xpToNextAccountLevel,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState, newGame, withDps } from './helpers';
+import {
+  bareState,
+  constantRng,
+  content as bundled,
+  levelPointsOnly,
+  CRYSTAL_UNIT,
+  freshState,
+  newGame,
+  withDps,
+} from './helpers';
 
+/** Only account levels give skill points here (see `levelPointsOnly`). */
+const content = levelPointsOnly(bundled);
 const A = content.account;
 
 /** A state with `points` skill points to spend (its level set to match). */
@@ -38,7 +49,7 @@ function withPoints(points: number): GameState {
 describe('account XP (DESIGN.md §10a, 12.4)', () => {
   it('a new game is level 1 with no XP or skill points', () => {
     const info = accountInfo(newGame(), content);
-    expect(info).toMatchObject({ level: 1, maxLevel: A.levels.maxLevel, progress: 0 });
+    expect(info).toMatchObject({ level: 1, progress: 0 });
     expect(info.xp.toNumber()).toBe(0);
     expect(info.xpToNext!.eq(A.levels.xpBase)).toBe(true);
     expect(info.skillPoints).toEqual({ total: 0, spent: 0, available: 0 });
@@ -63,8 +74,14 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
   it('comes from kills, more for harder dungeons', () => {
     const state = bareState();
-    // The first boss falls within the 3 s.
-    const { state: after, report } = advance(state, withDps(1e6, content), 3_000, constantRng(0.5));
+    // The first boss falls within the 3 s (after 2 s), once.
+    const hp = content.dungeons[0]!.boss.hp.toNumber();
+    const { state: after, report } = advance(
+      state,
+      withDps(hp / 2, content),
+      3_000,
+      constantRng(0.5),
+    );
     expect(report.bossKills).toBeGreaterThan(0);
     // The gems the one Oak and one Copper Quarry harvested in those seconds add their own XP.
     const oak = after.mastery.harvested['oak_gem']!.toNumber();
@@ -78,13 +95,13 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
   it('comes from pulls and ascensions', () => {
     const state = freshState();
-    state.resources['summon_crystal'] = new Decimal(10);
+    state.resources['summon_crystal'] = new Decimal(10 * CRYSTAL_UNIT);
     const pulled = pull(state, content, 'card_portal', 1, constantRng(0.5));
     if (!pulled.ok) throw new Error(pulled.reason);
     expect(pulled.state.account.xp.eq(A.xp.perPull)).toBe(true);
 
     const run = freshState();
-    run.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    run.mastery.harvested['oak_gem'] = new Decimal(1e14);
     const ascended = ascend(run, content);
     if (!ascended.ok) throw new Error(ascended.reason);
     expect(ascended.state.account.xp.eq(A.xp.perAscension)).toBe(true);
@@ -92,7 +109,7 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
 
   it('goes through xp.account', () => {
     const state = bareState();
-    state.account.skills['renown'] = 2;
+    state.account.skills['collection_s2'] = 2;
     const boosted = advance(state, content, 10_000, constantRng(0.5)).state;
     const plain = advance(bareState(), content, 10_000, constantRng(0.5)).state;
     expect(boosted.account.xp.div(plain.account.xp).toNumber()).toBeCloseTo(1.1, 6);
@@ -140,19 +157,19 @@ describe('account levels and the reward track (DESIGN.md §10, §5)', () => {
     state.account.level = 6;
     const track = rewardTrack(state, content);
     expect(track[0]!.level).toBe(2);
-    expect(track).toHaveLength(A.levels.maxLevel - 1);
+    expect(track.length).toBeGreaterThanOrEqual(49);
     expect(track.every((e) => e.skillPoints === A.levels.skillPointsPerLevel)).toBe(true);
     expect(track.find((e) => e.level === 5)).toMatchObject({ reached: true });
     expect(track.find((e) => e.level === 10)).toMatchObject({ reached: false });
   });
 
-  it('stops at the max level', () => {
+  it('has no max level: levels past 50 keep coming', () => {
     const state = freshState();
-    state.account.level = A.levels.maxLevel;
+    state.account.level = 50;
     state.account.xp = new Decimal(1e30);
     const after = advance(state, content, 1000, constantRng(0.5)).state;
-    expect(after.account.level).toBe(A.levels.maxLevel);
-    expect(accountInfo(after, content).xpToNext).toBeNull();
+    expect(after.account.level).toBeGreaterThan(50);
+    expect(accountInfo(after, content).xpToNext.gt(0)).toBe(true);
   });
 
   it('accountLevel reads the state', () => {
@@ -163,23 +180,38 @@ describe('account levels and the reward track (DESIGN.md §10, §5)', () => {
 });
 
 describe('account tree (DESIGN.md §10a)', () => {
-  it('has the six branches', () => {
+  it('has the eleven branches', () => {
     const branches = new Set(skillTree(freshState(), content).map((n) => n.node.branch));
     expect([...branches].sort()).toEqual(
-      ['automation', 'collection', 'combat', 'logging', 'luck', 'mining'].sort(),
+      [
+        'ascension',
+        'automation',
+        'collection',
+        'combat',
+        'dungeons',
+        'elements',
+        'forge',
+        'logging',
+        'luck',
+        'mining',
+        'workers',
+      ].sort(),
     );
   });
 
   it('buys ranks with skill points; effects are skill modifiers that grow per rank', () => {
-    const result = buySkill(withPoints(3), content, 'might');
+    const result = buySkill(withPoints(3), content, 'combat_s1');
     if (!result.ok) throw new Error(result.reason);
-    const again = buySkill(result.state, content, 'might');
+    const again = buySkill(result.state, content, 'combat_s1');
     if (!again.ok) throw new Error(again.reason);
-    expect(again.state.account.skills['might']).toBe(2);
+    expect(again.state.account.skills['combat_s1']).toBe(2);
     const mods = collectModifiers(again.state, content).filter((m) => m.source.kind === 'skill');
-    const might = A.tree.find((n) => n.id === 'might')!;
+    const might = A.tree.find((n) => n.id === 'combat_s1')!;
     expect(mods).toEqual([
-      expect.objectContaining({ stat: 'combat.damage', source: { kind: 'skill', id: 'might' } }),
+      expect.objectContaining({
+        stat: 'combat.damage',
+        source: { kind: 'skill', id: 'combat_s1' },
+      }),
     ]);
     expect(mods[0]!.value.toNumber()).toBe(might.perRank[0]!.value.toNumber() * 2);
     expect(accountInfo(again.state, content).skillPoints).toEqual({
@@ -190,19 +222,22 @@ describe('account tree (DESIGN.md §10a)', () => {
   });
 
   it('needs the node before it, free points and room below the max rank', () => {
-    expect(buySkill(withPoints(5), content, 'keen_eye')).toEqual({ ok: false, reason: 'locked' });
-    expect(buySkill(withPoints(0), content, 'might')).toEqual({ ok: false, reason: 'no-points' });
+    expect(buySkill(withPoints(5), content, 'combat_s2')).toEqual({ ok: false, reason: 'locked' });
+    expect(buySkill(withPoints(0), content, 'combat_s1')).toEqual({
+      ok: false,
+      reason: 'no-points',
+    });
     const maxed = withPoints(10);
-    maxed.account.skills['might'] = A.tree.find((n) => n.id === 'might')!.maxRank;
-    expect(buySkill(maxed, content, 'might')).toEqual({ ok: false, reason: 'maxed' });
+    maxed.account.skills['combat_s1'] = A.tree.find((n) => n.id === 'combat_s1')!.maxRank;
+    expect(buySkill(maxed, content, 'combat_s1')).toEqual({ ok: false, reason: 'maxed' });
     expect(buySkill(maxed, content, 'nope')).toEqual({ ok: false, reason: 'unknown' });
     const tree = skillTree(maxed, content);
-    expect(tree.find((n) => n.node.id === 'keen_eye')).toMatchObject({ requiresMet: true });
+    expect(tree.find((n) => n.node.id === 'combat_s2')).toMatchObject({ requiresMet: true });
   });
 
   it('crit nodes raise crit chance and damage (DESIGN.md §6)', () => {
     const state = withPoints(10);
-    state.account.skills = { might: 1, keen_eye: 2, brutal: 1 };
+    state.account.skills = { combat_s1: 1, combat_s2: 2, combat_l1: 1 };
     const mods = collectModifiers(state, content).filter((m) => m.source.kind === 'skill');
     expect(mods.map((m) => m.stat)).toEqual(
       expect.arrayContaining(['combat.critChance', 'combat.critDamage']),
@@ -211,12 +246,12 @@ describe('account tree (DESIGN.md §10a)', () => {
 
   it('respecs for free once per ascension, then for Starlight (DESIGN.md §10)', () => {
     const state = withPoints(4);
-    state.account.skills = { might: 2 };
+    state.account.skills = { combat_s1: 2 };
     expect(respecInfo(state, content)).toEqual({ free: true, price: null, refund: 2 });
     const free = respecSkills(state, content);
     if (!free.ok) throw new Error(free.reason);
     expect(free.state.account.skills).toEqual({});
-    free.state.account.skills = { vigor: 1 };
+    free.state.account.skills = { combat_s3: 1 };
     const info = respecInfo(free.state, content);
     expect(info.free).toBe(false);
     expect(info.price!.resource).toBe(content.prestige.currency);
@@ -233,7 +268,7 @@ describe('account tree (DESIGN.md §10a)', () => {
   it('the free respec comes back with each ascension', () => {
     const state = withPoints(4);
     state.account.freeRespecsUsed = 1;
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.account.freeRespecsUsed).toBe(0);
@@ -243,7 +278,7 @@ describe('account tree (DESIGN.md §10a)', () => {
   it('Skilled unlocks once 10 skill points are spent', () => {
     const state = newGame();
     state.account.level = 11;
-    state.account.skills = { might: 5, vigor: 5 };
+    state.account.skills = { combat_s1: 5, combat_s3: 5 };
     expect(checkAchievements(state, content).unlocked).toContain('skilled');
   });
 });
@@ -255,10 +290,10 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
     return state;
   };
 
-  it('unlock at Silver ★1 with a budget that grows by tier', () => {
-    const bronze = cardEnhancements(freshState(), content, 'ember_squire')!;
-    expect(bronze.unlocked).toBe(false);
-    expect(bronze.unlockRank).toEqual({ tier: 'silver', stars: 1 });
+  it('open at Wood ★1 with a budget that grows by tier (more in the tests of enhancements.test.ts)', () => {
+    const wood = cardEnhancements(freshState(), content, 'ember_squire')!;
+    expect(wood.unlocked).toBe(true);
+    expect(wood.unlockRank).toEqual({ tier: 'wood', stars: 1 });
     const info = cardEnhancements(silver(), content, 'ember_squire')!;
     expect(info.unlocked).toBe(true);
     expect(info.budget).toBe(content.enhancements.budget.silver);
@@ -269,7 +304,7 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
   it('give each card its own options costing about twice the top budget', () => {
     const top = content.enhancements.budget.prismatic;
     for (const card of content.cards) {
-      const options = content.enhancements.cards[card.id]!;
+      const options = content.enhancements.cards[card.id]!.filter((o) => o.milestone === 0);
       expect(options.length, card.id).toBeGreaterThanOrEqual(3);
       const total = options.reduce((a, o) => a + o.cost, 0);
       expect(total / top, card.id).toBeGreaterThanOrEqual(1.6);
@@ -297,18 +332,29 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
 
   it('refuse locked cards, over-budget picks, repeats and unknown options', () => {
     const first = content.enhancements.cards['ember_squire']![0]!.id;
-    expect(chooseEnhancement(freshState(), content, 'ember_squire', first)).toEqual({
+    const closed = {
+      ...content,
+      enhancements: {
+        ...content.enhancements,
+        budget: { ...content.enhancements.budget, wood: 0 },
+      },
+    };
+    expect(chooseEnhancement(freshState(), closed, 'ember_squire', first)).toEqual({
       ok: false,
       reason: 'locked',
     });
-    const once = chooseEnhancement(silver(), content, 'ember_squire', first);
+    const once = chooseEnhancement(freshState(), content, 'ember_squire', first);
     if (!once.ok) throw new Error(once.reason);
     expect(chooseEnhancement(once.state, content, 'ember_squire', first)).toEqual({
       ok: false,
       reason: 'already',
     });
     const costly = content.enhancements.cards['ember_squire']!.find(
-      (o) => o.id !== first && o.cost + content.enhancements.cards['ember_squire']![0]!.cost > 4,
+      (o) =>
+        o.id !== first &&
+        o.milestone === 0 &&
+        o.cost + content.enhancements.cards['ember_squire']![0]!.cost >
+          content.enhancements.budget.wood,
     )!;
     expect(chooseEnhancement(once.state, content, 'ember_squire', costly.id)).toEqual({
       ok: false,
@@ -335,7 +381,7 @@ describe('saving (save format v13)', () => {
     state.account = {
       xp: new Decimal(42),
       level: 6,
-      skills: { might: 2, gone: 1 },
+      skills: { combat_s1: 2, gone: 1 },
       freeRespecsUsed: 1,
     };
     state.cards.owned['ember_squire']!.tier = 'silver';
@@ -343,7 +389,7 @@ describe('saving (save format v13)', () => {
     const loaded = readSave(createSaveText(state, 1), content).state;
     expect(loaded.account.xp.toNumber()).toBe(42);
     expect(loaded.account.level).toBe(6);
-    expect(loaded.account.skills).toEqual({ might: 2 });
+    expect(loaded.account.skills).toEqual({ combat_s1: 2 });
     expect(loaded.account.freeRespecsUsed).toBe(1);
     expect(loaded.cards.owned['ember_squire']!.enhancements).toEqual(['edge']);
   });

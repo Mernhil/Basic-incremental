@@ -67,7 +67,7 @@ describe('upgrade shelf chips', () => {
     const s = richState();
     s.upgrades.moneyEarned = new Decimal(1e12);
     s.production.treeLevels.oak = 100;
-    s.combat.kills.mossy_cellar = 100;
+    s.combat.stageKills['mossy_cellar:normal:1'] = 100;
     const prod = shelfChips(s, content, mods(s), 'production').map((c) => c.id);
     const fight = shelfChips(s, content, mods(s), 'fighting').map((c) => c.id);
     expect(prod.filter((id) => fight.includes(id))).toEqual([]);

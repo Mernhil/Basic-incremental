@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { Decimal, type HarvestEvent } from '../src/game';
 import {
+  burstCountText,
   gaugePercent,
   harvestMoments,
   lungeVector,
   strikeLook,
   strikeNumberKind,
+  pickOptions,
+  workerCellText,
 } from '../src/renderer/src/pages/productionStageModel';
 
 const ev = (over: Partial<HarvestEvent>): HarvestEvent => ({
@@ -17,7 +20,7 @@ const ev = (over: Partial<HarvestEvent>): HarvestEvent => ({
   strikes: 1,
   crits: 0,
   burst: false,
-  supports: [],
+  worker: 'apprentice_feller',
   ...over,
 });
 
@@ -27,19 +30,16 @@ describe('harvestMoments', () => {
     expect(m.strikes.map((s) => s.kind)).toEqual([0]);
   });
 
-  it('merges strikes on the same kind: amounts, strikes, crit and supports', () => {
+  it('merges strikes on the same kind: amounts, strikes and crit', () => {
     const m = harvestMoments(
-      [
-        ev({ amount: new Decimal(5), supports: ['a'] }),
-        ev({ amount: new Decimal(7), crits: 1, supports: ['a', 'b'] }),
-      ],
+      [ev({ amount: new Decimal(5) }), ev({ amount: new Decimal(7), crits: 1 })],
       'logging',
     );
     expect(m.strikes).toHaveLength(1);
     expect(m.strikes[0]!.amount.toNumber()).toBe(12);
     expect(m.strikes[0]!.strikes).toBe(2);
     expect(m.strikes[0]!.crit).toBe(true);
-    expect(m.strikes[0]!.supports).toEqual(['a', 'b']);
+    expect(m.strikes[0]!.worker).toBe('apprentice_feller');
   });
 
   it('turns burst events into one wave with totals per resource', () => {
@@ -102,5 +102,82 @@ describe('strike looks', () => {
     expect(gaugePercent(1.4)).toBe(100);
     expect(gaugePercent(-1)).toBe(0);
     expect(gaugePercent(0.456)).toBe(46);
+  });
+});
+
+describe('burstCountText', () => {
+  it('says how full the gauge is out of its size', () => {
+    expect(burstCountText({ gauge: 0.7, burst: { size: 30 } as never })).toBe('Burst 21 / 30');
+    expect(burstCountText({ gauge: 0, burst: { size: 30 } as never })).toBe('Burst 0 / 30');
+    expect(burstCountText({ gauge: 1.2, burst: { size: 30 } as never })).toBe('Burst 30 / 30');
+  });
+});
+
+describe('worker cells and the picker', () => {
+  const target = {
+    worker: { name: 'Grove Keeper', level: 7, power: 1.92 } as never,
+    gauge: 0.5,
+    burst: { size: 30 } as never,
+  };
+
+  it('a worked place shows its card, level and power', () => {
+    expect(workerCellText(target, true)).toEqual({ name: 'Grove Keeper', sub: 'Lv 7 · ×1.92' });
+  });
+
+  it('an empty place offers a worker, or says there is no free slot', () => {
+    expect(workerCellText({ ...target, worker: null }, true).name).toBe('Add a worker');
+    expect(workerCellText({ ...target, worker: null }, false)).toEqual({
+      name: 'No worker',
+      sub: 'No free slot',
+    });
+  });
+
+  it('turns the game’s choices into options saying where each card works', () => {
+    const base = {
+      rarity: 'rare' as const,
+      rank: { tier: 'wood' as const, stars: 1 },
+      level: 1,
+      abilityText: '+10% output here',
+    };
+    const options = pickOptions([
+      {
+        ...base,
+        cardId: 'a',
+        name: 'A',
+        power: 2,
+        workplace: 'oak',
+        workplaceName: 'Oak',
+        here: true,
+        needsSlot: false,
+      },
+      {
+        ...base,
+        cardId: 'b',
+        name: 'B',
+        power: 1.5,
+        workplace: 'ironbark',
+        workplaceName: 'Ironbark',
+        here: false,
+        needsSlot: false,
+      },
+      {
+        ...base,
+        cardId: 'c',
+        name: 'C',
+        power: 1,
+        workplace: null,
+        workplaceName: null,
+        here: false,
+        needsSlot: true,
+      },
+    ]);
+    expect(options.map((o) => [o.id, o.current, o.disabled])).toEqual([
+      ['a', true, false],
+      ['b', false, false],
+      ['c', false, true],
+    ]);
+    expect(options[0]!.power).toBe('×2');
+    expect(options[1]!.note).toBe('+10% output here · Works at Ironbark (moves here)');
+    expect(options[2]!.note).toBe('+10% output here · No free slot');
   });
 });

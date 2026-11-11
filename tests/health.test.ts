@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   advance,
   bossAttackDps,
+  fightStage,
   collectModifiers,
   createSaveText,
   Decimal,
@@ -17,7 +18,12 @@ import {
   type Modifier,
 } from '../src/game';
 import { MIGRATIONS } from '../src/game/migrations';
-import { constantRng, content, freshState } from './helpers';
+import { constantRng, content as bundled, freshState, withBossAttack, withBossHp } from './helpers';
+
+/** The Root Warden pinned to an HP the loadout cannot finish, 0.6 damage every 10 s and a 30 s
+ *  knockout: the timings these tests count in (the shipped numbers are tuning, DESIGN.md §6). */
+const pinned = withBossAttack(withBossHp(bundled, 'mossy_cellar', 7.6e8), 'mossy_cellar', 0.6, 10);
+const content = { ...pinned, combat: { ...pinned.combat, knockoutSeconds: 30 } };
 
 const rng = constantRng(0.99);
 const warden = content.dungeonById.get('mossy_cellar')!;
@@ -47,12 +53,15 @@ describe('card health (DESIGN.md §6)', () => {
     expect(loadoutHealth(s, content).current.eq(pool)).toBe(true);
   });
 
-  it('lets bosses hit back at their own rhythm, harder with prestige', () => {
-    const base = bossAttackDps(warden, 0, []);
+  it('lets bosses hit back at their own rhythm, no harder with prestige', () => {
+    const base = bossAttackDps(warden, []);
     expect(base.toNumber()).toBeCloseTo(
       warden.boss.attack.damage.toNumber() / warden.boss.attack.intervalSeconds,
     );
-    expect(bossAttackDps(warden, 3, []).gt(base)).toBe(true);
+    const ascended = freshState();
+    ascended.prestigeCount = 3;
+    const stage = (s: typeof ascended) => fightStage(s, content, 'mossy_cellar', [])!.attack;
+    expect(stage(ascended).eq(stage(freshState()))).toBe(true);
   });
 
   it('blocks damage only through the defence stat, capped at 90%', () => {
@@ -65,10 +74,10 @@ describe('card health (DESIGN.md §6)', () => {
         source: { kind: 'cosmetic', id: 'test' },
       } as Modifier,
     ];
-    const base = () => bossAttackDps(warden, 0, []);
+    const base = () => bossAttackDps(warden, []);
     expect(defencePercent(def('25'), 'mossy_cellar')).toBe(25);
     expect(defencePercent(def('500'), 'mossy_cellar')).toBe(90);
-    expect(bossAttackDps(warden, 0, def('50')).toNumber()).toBeCloseTo(base().toNumber() / 2);
+    expect(bossAttackDps(warden, def('50')).toNumber()).toBeCloseTo(base().toNumber() / 2);
   });
 
   it('knocks the loadout out when the pool runs dry: the boss heals and the fight pauses', () => {

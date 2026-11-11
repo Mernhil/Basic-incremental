@@ -9,6 +9,14 @@ export * from './drops';
 export * from './report';
 export * from './tick';
 export * from './combat';
+export * from './floors';
+/** Stage stars and overflow (DESIGN.md §6): `stageStarLevel` and `totalStageStarLevels` feed the skill points. */
+export * from './stageStars';
+export * from './training';
+export * from './toolLines';
+export * from './depth';
+export * from './forge';
+export * from './lucky';
 export * from './loop';
 export * from './offline';
 export * from './migrations';
@@ -16,19 +24,23 @@ export * from './save';
 export * from './theme';
 export * from './modifiers';
 export * from './production';
-// ---- Production cards in play (DESIGN.md §4): the contract with the UI ----------------------
+// ---- Workers (DESIGN.md §4): the contract with the UI ----------------------------------------
+export * from './workers';
 export {
-  /** The harvest pattern (style, interval, strikes, targeting) the job's main card strikes with. */
-  mainHarvestPattern,
-  /** Ids of a job's support cards whose effect helps its harvest. */
-  harvestSupports,
+  /** The pattern (style, interval, strikes) a worker card strikes with. */
+  workerPattern,
+  /** A place's harvest burst numbers (gauge size, fill, seconds of output). */
+  harvestBurstStats,
 } from './harvest';
 export {
-  /** Ready-to-show view of one production job's stage: cards, pattern, gauge 0..1, next strike, targets. */
+  /** Ready-to-show view of one production job's workers: card, rhythm and gauge per place. */
   productionStageView,
+  /** The cards a place's worker picker offers, strongest first. */
+  workerChoices,
   type ProductionStageView,
   type StageCard,
   type StageTarget,
+  type WorkerChoice,
 } from './productionView';
 export * from './hpBars';
 export * from './cards';
@@ -39,6 +51,7 @@ export * from './mastery';
 export * from './stages';
 export * from './goals';
 export * from './portals';
+export * from './autobuyers';
 export * from './prestige';
 export * from './wardrobe';
 export * from './achievements';
@@ -82,8 +95,16 @@ export {
   accountLevel,
   /** XP from one level to the next (quick early, slow later). */
   xpToNextAccountLevel,
-  /** The reward track: every level 2..max with skill points, crystals, cosmetics, cost cap, reached. */
+  /** The reward track: every level from 2 (the listed ones, then the repeating reward, no cap) with skill points, crystals, cosmetics, cost cap, reached. */
   rewardTrack,
+  /** What reaching a level gives besides its skill point. */
+  trackReward,
+  /** One circle per weapon type: revealed or hidden, and the step its cards have reached. */
+  weaponCircles,
+  /** Whether an Ascension has opened a ring of the tree. */
+  ringOpen,
+  /** Brings loaded ranks in line with the tree and the points earned (never more ranks than points). */
+  fitSkillsToPoints,
   /** The account tree: each node's rank, max, requirements met, can buy, bonus now / next. */
   skillTree,
   /** Buys one rank of a tree node with skill points. */
@@ -103,6 +124,7 @@ export {
   type SkillNodeInfo,
   type SkillPoints,
   type SkillBuyResult,
+  type WeaponCircle,
   type RespecInfo,
   type RespecResult,
   type CardEnhancementInfo,
@@ -233,6 +255,7 @@ export {
   /** The side of a card's T6 and Heirloom: 'mythic' or 'void'. */
   cardSide,
   /** The item rarity to draw for a card's rarity and tier: one step up the rarity ladder per tier, capped at Void. */
+  lookTier,
   weaponLookRarity,
   /** Whether a rank is at least another (tier, then stars). */
   rankAtLeast,
@@ -246,6 +269,8 @@ export {
   allGoals,
   /** Units of a resource earned per second (production with bursts, plus drops being fought). */
   incomePerSecond,
+  /** Seconds until one price is affordable at the current income (0 now, null never): the Next buy wait. */
+  timeToAfford,
   type Goal,
 } from './goals';
 export {
@@ -330,6 +355,8 @@ export {
   previewMineLevel,
   /** Tree level purchase preview: gem per second before / after. */
   previewTreeLevel,
+  /** The output gain of a preview as a multiplier (1.03 for "x1.03 output"), null while the producer makes nothing. */
+  outputGainMultiplier,
   type MinePreview,
   type TreePreview,
 } from './previews';
@@ -347,3 +374,5 @@ export {
   nextBossSlam,
   type BossPattern,
 } from './bossAttacks';
+export * from './elements';
+export * from './cardStats';

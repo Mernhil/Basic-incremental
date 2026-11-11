@@ -16,7 +16,23 @@ import {
   type GameState,
   type OwnedCard,
 } from '../src/game';
-import { bareState, constantRng, freshState, plainContent as content, withDps } from './helpers';
+import {
+  bareState,
+  constantRng,
+  freshState,
+  plainContent,
+  withBossAttack,
+  withBossHp,
+  withDps,
+} from './helpers';
+
+/** The Root Warden pinned to an HP no test here finishes by accident. */
+const content = withBossAttack(
+  withBossHp(plainContent, 'mossy_cellar', 7.6e5),
+  'mossy_cellar',
+  0.6,
+  10,
+);
 
 const rng = constantRng(0.5);
 const rules = content.cardRules;
@@ -43,10 +59,10 @@ function leadWith(
 }
 
 describe('base damage by rarity (DESIGN.md §5)', () => {
-  it('follows the health ratios: 1, 1.25, 1.5, 2.25, 3.5, 7, 7 times the Common value (Mythic = Void)', () => {
+  it('follows the rarity ratios: 1, 1.6, 2.5, 4, 7, 12, 12 times the Common value (Mythic = Void)', () => {
     const common = rules.baseDamage.common;
     expect(common.gt(0)).toBe(true);
-    const ratios = [1, 1.25, 1.5, 2.25, 3.5, 7, 7];
+    const ratios = [1, 1.6, 2.5, 4, 7, 12, 12];
     RARITIES.forEach((rarity, i) => {
       expect(approxEq(rules.baseDamage[rarity], common.mul(ratios[i]!))).toBe(true);
     });
@@ -70,9 +86,12 @@ describe('fighting damage comes from the main card', () => {
 
   it('follows the rarity of whichever card leads', () => {
     const epic = leadWith('storm_duelist');
-    expect(baseDamage(epic, content).eq(rules.baseDamage.epic)).toBe(true);
+    expect(baseDamage(epic, content).toNumber()).toBeCloseTo(rules.baseDamage.epic.toNumber()); // dagger ×1
     const legendary = leadWith('dawnblade_regent');
-    expect(baseDamage(legendary, content).eq(rules.baseDamage.legendary)).toBe(true);
+    // The greatsword's identity factor (DESIGN.md §5) is on top of the rarity's base.
+    expect(baseDamage(legendary, content).toNumber()).toBeCloseTo(
+      rules.baseDamage.legendary.toNumber() * rules.weapons.greatsword.damage,
+    );
   });
 
   it('grows with level, stars and tier through the base-stat power', () => {
@@ -144,7 +163,7 @@ describe('card XP from fighting time (DESIGN.md §5)', () => {
 
   it('adds the per-kill bonus on top of the time', () => {
     // A kill every 3 s: three kills in 10 s, with the time still fought.
-    const strong = withDps(mossy.boss.hp.div(3));
+    const strong = withDps(mossy.boss.hp.div(3), content);
     const { state: after, report } = advance(freshState(), strong, 10_000, rng);
     expect(report.bossKills).toBe(3);
     const expected = rules.xp.perSecond.mul(10).add(rules.xp.perKill.mul(3));

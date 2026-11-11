@@ -15,6 +15,8 @@ import './reveal.css';
 
 export interface RevealOptions {
   portalName: string;
+  /** The portal's kind (`cards`, `cosmetics`): picks the colour of the card backs. */
+  kind?: string;
   views: RevealView[];
   /** The card face of an item (null for items without one, e.g. cosmetics). */
   face: (itemId: string) => CardProps | null;
@@ -28,6 +30,7 @@ export function showReveal(opts: RevealOptions): void {
   const { views } = opts;
   const overlay = document.createElement('div');
   overlay.className = 'rv';
+  if (opts.kind) overlay.dataset['kind'] = opts.kind;
   const dialog = document.createElement('section');
   dialog.className = `rv__dialog${views.length > 1 ? ' rv__dialog--ten' : ''}`;
   dialog.setAttribute('role', 'dialog');
@@ -60,6 +63,8 @@ export function showReveal(opts: RevealOptions): void {
   overlay.append(dialog);
   document.body.append(overlay);
 
+  // A new card that arrives at ★6 (its stars are free, DESIGN.md §5) plays the star flash once.
+  const flashes: Array<(() => void) | null> = views.map(() => null);
   const slots = views.map((v, i) => {
     const li = document.createElement('li');
     li.className = 'rv-slot';
@@ -76,8 +81,13 @@ export function showReveal(opts: RevealOptions): void {
     const front = document.createElement('div');
     front.className = 'rv-slot__front';
     const props = opts.face(v.itemId);
-    if (props) front.append(createCard(props).el);
-    else {
+    if (props) {
+      const card = createCard(props);
+      front.append(card.el);
+      if (props.rank.stars === 6 && v.tags.includes(COPY.summon.isNew)) {
+        flashes[i] = () => card.levelUp();
+      }
+    } else {
       const plain = document.createElement('div');
       plain.className = 'rv-slot__plain';
       const pic = opts.picture?.(v.itemId);
@@ -112,6 +122,8 @@ export function showReveal(opts: RevealOptions): void {
     const open = (): void => {
       li.classList.add('is-open');
       li.setAttribute('aria-label', COPY.summon.shown(v.name, v.rarityName, v.tags.join(', ')));
+      const flash = flashes[i];
+      if (flash && !quiet) window.setTimeout(flash, 450);
       if (!quiet) {
         status.textContent = li.getAttribute('aria-label');
         opts.sound?.(revealSound(v.rarity));

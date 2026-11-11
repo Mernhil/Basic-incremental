@@ -71,3 +71,10 @@ export function previewTreeLevel(
     rateAfter: rate(after),
   };
 }
+
+/** What a preview multiplies the producer's output by (1.03 for "x1.03 output"); null while it makes nothing. */
+export function outputGainMultiplier(preview: MinePreview): number | null {
+  if (preview.rateBefore.lte(0)) return null;
+  const gain = preview.rateAfter.div(preview.rateBefore).toNumber();
+  return Number.isFinite(gain) ? gain : null;
+}

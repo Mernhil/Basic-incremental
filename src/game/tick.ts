@@ -1,14 +1,18 @@
 import type { Content } from '../data';
-import { grantLoadoutXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
-import { advanceCombat, advanceHarvestBursts } from './combat';
+import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
+import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
-import { recordStrikes } from './harvest';
+import { autobuyDue, settleAutobuyers } from './autobuyers';
+import { recordLuckyStrikes } from './lucky';
+import { advanceForge } from './forge';
+import { addDigging, depthDue, settleDepth } from './depth';
+import { advanceHarvestGauges, recordStrikes } from './harvest';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal } from './num';
 import { countMoneyEarned } from './upgrades';
-import { jobProductionPerSecond, PRODUCTION_JOBS } from './production';
+import { PRODUCTION_JOBS, siteOutput, workSites, type WorkSite } from './production';
 import { emptyReport, mergeReports, type TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type GameState } from './state';
@@ -34,6 +38,7 @@ export function advance(
   content: Content,
   dtMs: number,
   rng: Rng,
+  options: FightOptions = {},
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   if (!Number.isFinite(dtMs) || dtMs <= 0) return { state, report };
@@ -56,15 +61,17 @@ export function advance(
         ? 0
         : boundaries <= STEP_THROUGH_BOUNDARIES
           ? 1
-          : firstDueBoundary(current, content, toBoundary, boundaries);
+          : firstDueBoundary(current, content, toBoundary, boundaries, options);
     if (first === 0) {
-      current = advanceSpan(current, content, remaining, rng, report);
+      current = advanceSpan(current, content, remaining, rng, report, options);
       break;
     }
     const until = toBoundary + (first - 1) * CARD_LEVEL_STEP_MS;
-    current = advanceSpan(current, content, until, rng, report);
+    current = advanceSpan(current, content, until, rng, report, options);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
+    settleDepth(current, content);
+    settleAutobuyers(current, content);
     settleAccount(current, content, report);
     settleAchievements(current, content, report);
     remaining -= until;
@@ -89,9 +96,10 @@ function firstDueBoundary(
   content: Content,
   toBoundary: number,
   boundaries: number,
+  options: FightOptions,
 ): number {
   const due = (k: number): boolean =>
-    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS);
+    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS, options);
   let lo = 0; // known not due (0 = before the first boundary)
   let hi = 1;
   while (!due(hi)) {
@@ -111,23 +119,31 @@ function firstDueBoundary(
  * Whether a card level-up or a mastery tier would be pending after `dtMs`. Runs a throwaway
  * copy. Kills and harvests never depend on random drops, so the fixed lookahead rng is exact.
  */
-function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
-  const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport());
+function levelUpDue(
+  state: GameState,
+  content: Content,
+  dtMs: number,
+  options: FightOptions,
+): boolean {
+  const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport(), options);
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
+    depthDue(ahead, content) ||
+    autobuyDue(ahead, content) ||
     accountLevelDue(ahead, content) ||
     achievementsDue(ahead, content)
   );
 }
 
-/** One span with fixed modifiers: production, harvest bursts, card XP and combat. */
+/** One span with fixed modifiers: production, harvest gauges, card XP and combat. */
 function advanceSpan(
   state: GameState,
   content: Content,
   dtMs: number,
   rng: Rng,
   report: TickReport,
+  options: FightOptions,
 ): GameState {
   const next = cloneState(state);
   const seconds = dtMs / 1000;
@@ -135,41 +151,55 @@ function advanceSpan(
   const fromMs = state.stats.playTimeMs;
   next.stats.playTimeMs += dtMs;
 
-  // The main logging / mining cards' strikes for the stage: events only, no state (DESIGN.md §4).
+  // Production (DESIGN.md §4 Workers): every unlocked tree kind and mine type yields its level
+  // rate × its worker's power per second, once; each worker strikes its own place (events only)
+  // and fills its own harvest gauge.
+  const sites = Object.fromEntries(
+    PRODUCTION_JOBS.map((job) => [job, workSites(state, content, job, modifiers)]),
+  ) as Record<(typeof PRODUCTION_JOBS)[number], WorkSite[]>;
   for (const job of PRODUCTION_JOBS) {
-    recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report);
-  }
-
-  // Production: every unlocked tree kind and mine type yields its rate per second, once.
-  const perJob = Object.fromEntries(
-    PRODUCTION_JOBS.map((job) => [job, jobProductionPerSecond(state, content, job, modifiers)]),
-  ) as Record<(typeof PRODUCTION_JOBS)[number], Record<string, Decimal>>;
-  for (const job of PRODUCTION_JOBS) {
-    for (const [resource, perSecond] of Object.entries(perJob[job])) {
+    recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report, sites[job]);
+    recordLuckyStrikes(content, job, fromMs, fromMs + dtMs, report, sites[job]);
+    for (const site of sites[job]) {
+      const resource = site.producer.resource;
       const current = next.resources[resource] ?? new Decimal(0);
-      next.resources[resource] = current.add(perSecond.mul(seconds));
+      next.resources[resource] = current.add(siteOutput(site).mul(seconds));
+      addDigging(next, content, site.producer.id, site.dig, seconds);
     }
   }
-  // Harvest bursts: production ticks fill each job's gauge; full = a bonus harvest.
-  const burstSeconds = advanceHarvestBursts(next, state, content, seconds, report, modifiers);
+  const burstSeconds = advanceHarvestGauges(
+    next,
+    content,
+    seconds,
+    report,
+    modifiers,
+    PRODUCTION_JOBS.flatMap((job) => sites[job]),
+  );
 
-  // Card XP: each job's loadout gains XP per unit harvested (normal output and bursts), and
-  // every gem harvested counts toward its mastery.
+  // The forge turns the gems of the step into what its recipe makes.
+  advanceForge(next, content, seconds);
+
+  // Card XP: each worker gains XP per unit its own place harvested (normal output and bursts);
+  // every gem harvested counts toward its mastery and the account.
   for (const job of PRODUCTION_JOBS) {
-    const harvestSeconds = burstSeconds[job].add(seconds);
-    const gains = Object.fromEntries(
-      Object.entries(perJob[job]).map(([id, perSecond]) => [id, perSecond.mul(harvestSeconds)]),
-    );
+    const gains: Record<string, Decimal> = {};
+    for (const site of sites[job]) {
+      const harvestSeconds = (burstSeconds[site.producer.id] ?? new Decimal(0)).add(seconds);
+      const units = siteOutput(site).mul(harvestSeconds);
+      const resource = site.producer.resource;
+      gains[resource] = (gains[resource] ?? new Decimal(0)).add(units);
+      for (const id of site.workers) {
+        const perUnit = productionXpPerUnit(content, job, modifiers, site.producer.id);
+        grantWorkerXp(next, content, id, units.mul(perUnit));
+      }
+    }
     countHarvest(next, content, gains);
     grantAccountXp(next, content, harvestXp(content, job, gains), modifiers, job);
-    const perSecond = Object.values(perJob[job]).reduce((a, b) => a.add(b), new Decimal(0));
-    const units = perSecond.mul(harvestSeconds);
-    grantLoadoutXp(next, content, job, units.mul(productionXpPerUnit(content, job, modifiers)));
   }
 
-  // Combat: the boss is auto-fought in parallel and respawns for farming.
+  // Combat: the dungeon's floors are auto-fought in parallel.
   const moneyBefore = next.resources[content.upgrades.currency];
-  advanceCombat(next, content, seconds, rng, report, modifiers);
+  advanceCombat(next, content, seconds, rng, report, modifiers, options);
   countMoneyEarned(next, content, moneyBefore);
 
   return next;
@@ -182,13 +212,14 @@ export function advanceChunked(
   totalMs: number,
   rng: Rng,
   chunkMs: number,
+  options: FightOptions = {},
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   let current = state;
   let remaining = totalMs;
   while (remaining > 0) {
     const step = Math.min(chunkMs, remaining);
-    const result = advance(current, content, step, rng);
+    const result = advance(current, content, step, rng, options);
     current = result.state;
     mergeReports(report, result.report);
     remaining -= step;

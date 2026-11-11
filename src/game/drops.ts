@@ -50,3 +50,86 @@ export function rollBossDrop(drops: DropTable, pity: number, rng: Rng): BossDrop
 export function rollMaterialDrop(drops: Dungeon['drops'], rng: Rng): number {
   return rng() < drops.material.chance ? drops.material.amount : 0;
 }
+
+export interface EnemyDropResult {
+  /** Units of each currency, in `DropTable.currencies` order. */
+  currencies: number[];
+  /** Units of the material (Core). */
+  material: number;
+  /** Units of each extra material, in `DropTable.extraMaterials` order. */
+  extraMaterials: number[];
+}
+
+/** Rounds a scaled amount to whole units: the fraction adds one more unit with that chance. */
+function wholeUnits(scaled: number, rng: Rng): number {
+  const whole = Math.floor(Math.max(0, scaled) + FRACTION_EPSILON);
+  const fraction = scaled - whole;
+  return fraction > FRACTION_EPSILON && rng() < fraction ? whole + 1 : whole;
+}
+
+/**
+ * Rolls the kill of a normal enemy or mini-boss (DESIGN.md §6 Normal enemies): the dungeon's
+ * boss table at `scale`, the enemy's share of the boss's HP. Every currency is paid at
+ * `purseScale` of a boss kill's roll (its share of the purse, DESIGN.md §6 Deeper pays more); the material and the extra materials drop with `scale` of the boss's
+ * chance. The rare item and its pity belong to the boss alone.
+ */
+export function rollEnemyDrop(
+  drops: DropTable,
+  scale: number,
+  rng: Rng,
+  purseScale: number = scale,
+): EnemyDropResult {
+  const currencies = drops.currencies.map((currency) => {
+    const span = currency.max - currency.min + 1;
+    const units = currency.min + Math.floor(rng() * span);
+    return wholeUnits(units * (currency.multiplier ?? 1) * purseScale, rng);
+  });
+  const material = rng() < drops.material.chance * scale ? drops.material.amount : 0;
+  const extraMaterials = drops.extraMaterials.map((extra) =>
+    rng() < extra.chance * scale ? extra.min + Math.floor(rng() * (extra.max - extra.min + 1)) : 0,
+  );
+  return { currencies, material, extraMaterials };
+}
+
+/** Above this many kills of one enemy in a step, its drops are paid at their average. */
+export const ENEMY_DROP_ROLLS = 32;
+
+/**
+ * The drops of `count` kills of one normal enemy or mini-boss. A few kills are rolled one by
+ * one; a long run of them (a strong loadout farming a shallow floor, or hours offline) is paid at
+ * its average, each total rounded to whole units by chance so the average stays exact.
+ */
+export function rollEnemyDrops(
+  drops: DropTable,
+  scale: number,
+  count: number,
+  rng: Rng,
+  purseScale: number = scale,
+): EnemyDropResult {
+  const total: EnemyDropResult = {
+    currencies: drops.currencies.map(() => 0),
+    material: 0,
+    extraMaterials: drops.extraMaterials.map(() => 0),
+  };
+  if (count <= ENEMY_DROP_ROLLS) {
+    for (let i = 0; i < count; i++) {
+      const roll = rollEnemyDrop(drops, scale, rng, purseScale);
+      roll.currencies.forEach((units, j) => (total.currencies[j]! += units));
+      total.material += roll.material;
+      roll.extraMaterials.forEach((units, j) => (total.extraMaterials[j]! += units));
+    }
+    return total;
+  }
+  const chance = (c: number): number => Math.min(1, Math.max(0, c * scale));
+  total.currencies = drops.currencies.map((currency) =>
+    wholeUnits(
+      ((currency.min + currency.max) / 2) * (currency.multiplier ?? 1) * purseScale * count,
+      rng,
+    ),
+  );
+  total.material = wholeUnits(chance(drops.material.chance) * drops.material.amount * count, rng);
+  total.extraMaterials = drops.extraMaterials.map((extra) =>
+    wholeUnits(chance(extra.chance) * ((extra.min + extra.max) / 2) * count, rng),
+  );
+  return total;
+}

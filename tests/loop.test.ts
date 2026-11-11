@@ -15,7 +15,7 @@ describe('GameLoop', () => {
     const fast = run(16, 30_000);
     const single = run(30_000, 30_000);
     for (const loop of [slow, fast]) {
-      expect(approxEq(loop.state.resources['oak_gem']!, 40)).toBe(true); // 30 s + one 10 s burst
+      expect(approxEq(loop.state.resources['oak_gem']!, 30)).toBe(true); // 30 s, no worker: no burst
       expect(approxEq(loop.state.bossHp!, single.state.bossHp!)).toBe(true);
       expect(loop.state.stats.playTimeMs).toBe(30_000);
     }
@@ -56,5 +56,19 @@ describe('GameLoop', () => {
     const loop = new GameLoop(freshState(), content, constantRng(0.5), 0);
     loop.step(MAX_STEP_MS * 5);
     expect(loop.state.stats.playTimeMs).toBe(MAX_STEP_MS);
+  });
+  it('catches up a long gap (the PC slept) to the same result as second-by-second steps', () => {
+    const gapMs = 20 * 60 * 1000;
+    const slept = new GameLoop(freshState(), content, constantRng(0.5), 0);
+    slept.step(gapMs); // one call: caught up in minute steps
+    const awake = run(1000, gapMs, freshState);
+    expect(slept.state.stats.playTimeMs).toBe(gapMs);
+    expect(slept.state.stats.bossKills).toBe(awake.state.stats.bossKills);
+    for (const id of ['oak_gem', 'copper_gem', 'money']) {
+      expect(approxEq(slept.state.resources[id]!, awake.state.resources[id]!)).toBe(true);
+    }
+    for (const [id, card] of Object.entries(awake.state.cards.owned)) {
+      expect(slept.state.cards.owned[id]!.level).toBe(card.level);
+    }
   });
 });

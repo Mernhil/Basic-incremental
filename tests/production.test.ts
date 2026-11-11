@@ -8,6 +8,7 @@ import {
   clearDungeon,
   collectModifiers,
   curvePrice,
+  effectiveGrowth,
   Decimal,
   isProducerUnlocked,
   mineLevelCost,
@@ -64,9 +65,14 @@ describe('a new game', () => {
 
   it('has no plots, slots or expansions in the state', () => {
     expect(Object.keys(freshState().production).sort()).toEqual([
+      'depth',
+      'forge',
+      'harvestGauges',
       'mineLevels',
+      'tools',
       'treeLevels',
       'unlockedTrees',
+      'workers',
     ]);
   });
 });
@@ -159,15 +165,17 @@ describe('mine types and levels', () => {
   });
 
   it('level up with Money and raise that mine only', () => {
-    let state = give(freshState(), 'money', 100);
+    const quarry = content.mineById.get('copper_quarry')!.level.cost;
+    const base = quarry.base.toNumber();
+    let state = give(freshState(), 'money', base * 10);
     expect(mineLevelCost(state, content, 'copper_quarry')).toEqual({
       resource: 'money',
-      amount: new Decimal(15),
+      amount: new Decimal(base),
     });
     state = ok(buyMineLevel(state, content, 'copper_quarry'));
-    state = ok(buyMineLevel(state, content, 'copper_quarry')); // 15 + ceil(15 * growth)
-    const growth = content.mineById.get('copper_quarry')!.level.cost.growth.toNumber();
-    expect(state.resources['money']!.eq(100 - 15 - Math.ceil(15 * growth))).toBe(true);
+    state = ok(buyMineLevel(state, content, 'copper_quarry')); // base + ceil(base * growth)
+    const growth = quarry.growth.toNumber();
+    expect(state.resources['money']!.eq(base * 10 - base - Math.ceil(base * growth))).toBe(true);
     expect(state.production.mineLevels['copper_quarry']).toBe(2);
     // 0.5 * (1 + 2 * 10%) = 0.6
     expect(productionPerSecond(state, content)['copper_gem']!.eq(0.6)).toBe(true);
@@ -244,5 +252,27 @@ describe('curve prices', () => {
     expect(curvePrice(curve, 5, []).amount.toNumber()).toBe(320);
     const odd = { ...curve, growth: new Decimal(1.15) };
     expect(curvePrice(odd, 1, []).amount.toNumber()).toBe(12); // 11.5 still rounds up
+  });
+
+  const cut = (value: string): Modifier => ({
+    stat: 'cost.growth',
+    kind: 'percent',
+    value: new Decimal(value),
+    source: { kind: 'upgrade', id: 'test' },
+  });
+
+  it('cuts only the growth above 1: -10% turns ×1.2 into ×1.18', () => {
+    const curve = { resource: 'money', base: new Decimal(1000), growth: new Decimal(1.2) };
+    expect(effectiveGrowth(curve.growth, [cut('-10')]).toNumber()).toBeCloseTo(1.18, 10);
+    expect(curvePrice(curve, 2, [cut('-10')]).amount.toNumber()).toBe(Math.ceil(1000 * 1.18 ** 2));
+  });
+
+  it('caps the total cut at half the growth above 1, so prices always keep growing', () => {
+    const curve = { resource: 'money', base: new Decimal(1000), growth: new Decimal(1.13) };
+    // Wide Skies, Fresh Start, Wide Groves and Deep Roots together: -36%, and far more.
+    expect(effectiveGrowth(curve.growth, [cut('-36')]).toNumber()).toBeCloseTo(1.0832, 10);
+    expect(effectiveGrowth(curve.growth, [cut('-200')]).toNumber()).toBeCloseTo(1.065, 10);
+    const late = curvePrice(curve, 1000, [cut('-200')]).amount;
+    expect(late.gt(new Decimal(1000).mul(new Decimal(1.06).pow(1000)))).toBe(true);
   });
 });

@@ -53,7 +53,142 @@ export const MIGRATIONS: MigrationTable = {
   /** v21 -> v22: the weapon base (DESIGN.md §5, §8): tiers Wood to Mythic/Void, Unique renamed
    *  Heirloom, the 11 item types and the picked legacy skins. */
   21: v21ToV22,
+  /** v22 -> v23: crystals repriced (DESIGN.md §7 Rarer summons): a pull costs 30 times the crystals
+   *  it did, so the Summon and Glamour Crystals held are multiplied by 30 and keep their worth. */
+  22: v22ToV23,
+  /** v23 -> v24: dungeon floors (DESIGN.md §6 Dungeon floors, Clearing, Difficulty tiers). */
+  23: v23ToV24,
+  /** v24 -> v25: replay Normal first, and training levels (DESIGN.md §6). */
+  24: v24ToV25,
+  /** v25 -> v26: the balance update (DESIGN.md §4 to §10): workers, stage stars and the rest. */
+  25: v25ToV26,
 };
+
+/** The first tree kind and mine type when save format 26 was made (a snapshot). */
+const V26_FIRST_PRODUCER = { logging: 'oak', mining: 'copper_quarry' } as const;
+
+/** Floors of each dungeon on Normal when save format 26 was made (a snapshot). */
+const V26_FLOORS: Record<string, number> = {
+  mossy_cellar: 10,
+  ember_crypt: 20,
+  frostspire_vault: 30,
+  thunderpeak_aerie: 40,
+  sunken_sanctum: 50,
+  void_hollow: 60,
+};
+
+/**
+ * v25 -> v26: the balance update (user, 2026-11-11). Logging and mining cards become workers
+ * (DESIGN.md §4 Workers): each job's main card becomes the worker of that job's first tree or
+ * mine, and the job's harvest gauge moves with it. The boss kills of each dungeon become the
+ * stage kills of its Normal last floor (§6 Stage stars), keyed `"<dungeon>:normal:<last floor>"`
+ * as `stageKey` writes it in format 26. Cards keep their stars, levels and tiers. Everything else
+ * starts empty: no tool lines, depth, forge, wishlist, chests paid, overflow switches or
+ * autobuyers switched on. The old loadouts, burst gauges and kill counts stay as they are: the
+ * game still reads them until the packages that replace them remove them.
+ */
+function v25ToV26(state: Record<string, unknown>): Record<string, unknown> {
+  const production = isRecord(state['production']) ? state['production'] : {};
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const cards = isRecord(state['cards']) ? state['cards'] : {};
+  const loadouts = isRecord(cards['loadouts']) ? cards['loadouts'] : {};
+  const bursts = isRecord(state['bursts']) ? state['bursts'] : {};
+  const workers: Record<string, string[]> = {};
+  const harvestGauges: Record<string, unknown> = {};
+  for (const job of ['logging', 'mining'] as const) {
+    const loadout = loadouts[job];
+    const main = isRecord(loadout) ? loadout['main'] : null;
+    if (typeof main !== 'string') continue;
+    const producer = V26_FIRST_PRODUCER[job];
+    workers[producer] = [main];
+    // An empty gauge needs no entry (missing = empty).
+    const gauge = bursts[job];
+    if (isRecord(gauge) && (gauge['gauge'] !== 0 || gauge['timer'] !== 0))
+      harvestGauges[producer] = { ...gauge };
+  }
+  const kills = isRecord(combat['kills']) ? combat['kills'] : {};
+  const stageKills: Record<string, unknown> = {};
+  for (const [dungeonId, count] of Object.entries(kills)) {
+    const last = V26_FLOORS[dungeonId];
+    if (last === undefined || typeof count !== 'number' || !(count > 0)) continue;
+    stageKills[`${dungeonId}:normal:${last}`] = count;
+  }
+  return {
+    ...state,
+    production: {
+      ...production,
+      workers,
+      harvestGauges,
+      tools: {},
+      depth: {},
+      forge: { recipe: null, progress: '0', worker: null },
+    },
+    combat: { ...combat, stageKills, stageChests: {}, overflow: {} },
+    cards: { ...cards, wishlist: [] },
+    automation: { treeLevels: false, mineLevels: false, reservePercent: 0 },
+  };
+}
+
+/**
+ * v24 -> v25. Replay Normal first (user, 2026-11-10): format 24 put a dungeon that had been
+ * cleared by boss kills on its Normal last floor with Hard open, although its floors had never
+ * been played. Every dungeon now starts again on floor 1 of Normal, pushing, with nothing
+ * beaten, so Hard opens only by beating the Normal boss through the floors. What a clear
+ * unlocked stays: the cleared dungeons, the next dungeons and the mines, kills and medals.
+ * Format 24 was two days old, so floors played in it are replayed too. Training levels (the
+ * repeatable fighting upgrades) start at none.
+ */
+function v24ToV25(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  return { ...state, bossHp: null, combat: { ...combat, floors: {}, training: {} } };
+}
+
+/** Floors of each dungeon when save format 24 was made (a snapshot: migrations never read the
+ *  content, which may change later). */
+const V24_FLOORS: Record<string, number> = {
+  mossy_cellar: 10,
+  ember_crypt: 20,
+  frostspire_vault: 30,
+};
+
+/**
+ * v23 -> v24: dungeons became stacks of floors, with progress saved per dungeon and difficulty
+ * (current floor, best floor; the endless depths use the same shape). A dungeon already cleared
+ * stays cleared and stands on its Normal last floor, the boss it was farming, with that floor as
+ * its best, in farm mode; every other dungeon starts on floor 1 in push mode, which is what a
+ * missing entry means. The boss being fought is respawned, because the HP now belongs to a floor.
+ * Kill counts and boss medals stay as they are.
+ */
+function v23ToV24(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const cleared = Array.isArray(state['clearedDungeons']) ? state['clearedDungeons'] : [];
+  const floors: Record<string, unknown> = {};
+  for (const id of cleared) {
+    const count = typeof id === 'string' ? V24_FLOORS[id] : undefined;
+    if (typeof id !== 'string' || count === undefined) continue;
+    floors[id] = {
+      difficulty: 'normal',
+      mode: 'farm',
+      tiers: { normal: { floor: count, best: count } },
+    };
+  }
+  return { ...state, bossHp: null, combat: { ...combat, floors } };
+}
+
+/** The factor crystals were repriced by in save format 23. */
+export const V23_CRYSTAL_FACTOR = 30;
+
+/** v22 -> v23: Summon and Glamour Crystals held times 30 (junk amounts count as 0). */
+function v22ToV23(state: Record<string, unknown>): Record<string, unknown> {
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  for (const id of ['summon_crystal', 'glamour_crystal']) {
+    const held = resources[id];
+    if (typeof held === 'string' && isDecimalString(held)) {
+      resources[id] = new Decimal(held).mul(V23_CRYSTAL_FACTOR).toString();
+    }
+  }
+  return { ...state, resources };
+}
 
 /** Old weapon kind -> its new item type (maul, twin blades and the Soul Reaper scythe). */
 const V22_WEAPONS: Record<string, string> = {

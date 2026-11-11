@@ -121,7 +121,11 @@ describe('selected item', () => {
     expect(d.upgrade!.title).toBe('Level 2: Accent colour');
     expect(d.upgrade!.requirements.map((r) => r.label)).toEqual(['Copies', 'Glimmer Dust']);
     expect(d.upgrade!.requirements[0]!.met).toBe(true);
-    expect(d.upgrade!.action).toBe('Upgrade · 1 copy, 800 Glimmer Dust');
+    expect(d.upgrade!.action).toBe('Upgrade');
+    expect(d.upgrade!.price).toBe('1 copy, 800 Glimmer Dust');
+    expect(d.upgrade!.missing).toEqual(['800 Glimmer Dust']);
+    expect(d.nextStep).toBe('Accent colour');
+    expect(d.subtitle).toMatch(/^Border · /);
     expect(d.upgrade!.ready).toBe(false);
   });
 

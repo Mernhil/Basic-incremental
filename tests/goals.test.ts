@@ -12,7 +12,13 @@ import {
   type Goal,
 } from '../src/game';
 import type { Content } from '../src/data';
-import { bareState, content as realContent, plainContent as plain, withDps } from './helpers';
+import {
+  bareState,
+  content as realContent,
+  newGame,
+  plainContent as plain,
+  withDps,
+} from './helpers';
 
 /** The test content deals exactly 100 damage per second to anyone, cards or bare hands. */
 const content = withDps(100, plain);
@@ -30,13 +36,18 @@ describe('incomePerSecond', () => {
     expect(incomePerSecond(bareState(), content, 'oak_gem').toNumber()).toBeCloseTo(4 / 3);
   });
 
-  it('counts the active dungeon drops per kill', () => {
+  it('counts the active dungeon drops per kill and its wages per second', () => {
     const state = fighter();
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
     // Moss Cores: 10% of 1 per kill.
     expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
-    // Summon Crystals: 2..4 per kill, 3 on average.
-    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(3 / spk);
+    // Summon Crystals: the wage, paid every second of fighting (DESIGN.md §3).
+    const wage = content.dungeonById
+      .get('mossy_cellar')!
+      .drops.wages.find((w) => w.resource === 'summon_crystal')!;
+    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(
+      wage.perSecond.toNumber(),
+    );
   });
 
   it('is 0 for a resource nothing gives', () => {
@@ -137,22 +148,21 @@ describe('goal rules (DESIGN.md §10)', () => {
     expect(goal.etaSeconds).toBeCloseTo(400 / (4 / 3));
   });
 
-  it('has the next boss medal with kills left times the time per kill', () => {
+  it('has the next star of the stage being fought, with kills left times the time per kill', () => {
     const state = fighter();
-    state.combat.kills['mossy_cellar'] = 50;
-    state.mastery.bossTiers['mossy_cellar'] = 1;
+    state.combat.stageKills['mossy_cellar:normal:1'] = 50;
     state.clearedDungeons = ['mossy_cellar'];
-    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar')!;
-    expect(goal).toMatchObject({ title: 'Root Warden medal: Silver', page: 'dungeons' });
+    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar:normal:1')!;
+    expect(goal).toMatchObject({ title: 'Root Warden star: Silver', page: 'dungeons' });
     expect(goal.progress).toBeCloseTo(40 / 90);
     expect(goal.etaSeconds).toBeCloseTo(50 * secondsPerKill(state, content, 'mossy_cellar')!);
   });
 
   it('has a star bar goal once some copies are held, with no ETA', () => {
     const state = fighter();
-    // ★4 -> ★5 takes 2 copies of a Common; one is held.
-    expect(content.cardRules.starBar.needs.common[3]).toBe(2);
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 4, starFill: 1 };
+    // ★4 -> ★5 takes 1 copy of a Common (pinned); half of it is held.
+    expect(content.cardRules.starBar.needs.common.wood).toBe(1);
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 4, starFill: 0.5 };
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
     expect(goal).toMatchObject({
       title: "Fill Ember Squire's star bar for ★5",
@@ -272,9 +282,26 @@ describe('ascension goal', () => {
   });
 });
 
+describe('first summon (DESIGN.md §3)', () => {
+  it('starts a new game with one pull and puts the first summon first, until a card is pulled', () => {
+    const state = newGame();
+    const portal = realContent.portals.find((p) => p.kind === 'cards')!;
+    expect(state.resources[portal.cost.resource]!.gte(portal.cost.single)).toBe(true);
+    expect(nextGoals(state, realContent)[0]).toMatchObject({
+      id: 'first_summon:card_portal',
+      page: 'summon',
+      progress: 1,
+      etaSeconds: 0,
+    });
+    state.portals[portal.id] = { pity: 1, pulls: 1, pityHits: 0 };
+    expect(find(allGoals(state, realContent), 'first_summon:card_portal')).toBeUndefined();
+  });
+});
+
 describe('nextGoals', () => {
   it('gives the n nearest goals by estimated time, unknown times last', () => {
     const state = fighter();
+    state.portals['card_portal'] = { pity: 1, pulls: 1, pityHits: 0 }; // past the first summon
     state.resources['oak_gem'] = new Decimal(600);
     const goals = nextGoals(state, content);
     expect(goals).toHaveLength(3);

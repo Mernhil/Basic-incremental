@@ -15,6 +15,8 @@ export interface Requirement {
   met: boolean;
   /** "3 of 7", "Lv 28 / 28", "done" ... */
   value: string;
+  /** The exact numbers behind a shortened value (the star bar's percent). */
+  title?: string;
 }
 
 export interface UpgradeStep {
@@ -65,10 +67,14 @@ export interface WeaponView {
     /** fill / need, 0..1. */
     gauge: number;
     ready: boolean;
-    /** "4 / 7 copies to ★4" */
+    /** "40% to ★4" */
     text: string;
+    /** The exact numbers for the tooltip: "0.05 / 0.125 copies to ★2". */
+    title: string;
     /** "×1.6 → ×2" */
     impact: string;
+    /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
+    dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
   /** The next tier-up, or null at the weapon's top tier. */
   tierUp: {
@@ -86,9 +92,23 @@ export interface WeaponView {
     ready: boolean;
     /** What is missing, for the tag's hint ("Missing Frost Sigil."), empty when nothing is. */
     missing: string;
+    /** The level cap is reached. */
+    levelMet: boolean;
+    /** The card is at ★6, which a tier-up needs (DESIGN.md §5). */
+    starsMet: boolean;
+    /** Why the tier-up cannot be taken, as the dark button says it ("Needs ★6", "Needs Lv 40",
+     *  "Missing Money"); empty when it can. */
+    blocker: string;
   } | null;
   /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
   endNote: string | null;
+}
+
+/** The four stat tiles of a card and the line comparing it with the card it would replace. */
+export interface StatTiles {
+  tiles: Array<{ label: string; value: string; title: string }>;
+  /** "vs Ember Squire: +12% damage, −8% health"; the card's own note when there is nothing to compare. */
+  compare: string;
 }
 
 export interface LoadoutRole {
@@ -102,6 +122,9 @@ export interface CardEntry {
   job: Job;
   rarity: Rarity;
   emblem: string;
+  /** The item type the card carries (`items.json`) and its name, for the collection groups. */
+  itemKind: string;
+  itemType: string;
   /** Signature item markup (art/items.ts). */
   item: string;
   element: CardElement;
@@ -115,8 +138,12 @@ export interface CardEntry {
   /** The star bar's fill (copies waiting for the next star). */
   duplicates: number;
   cost: number;
+  /** A fighting card's main ability, or a worker's ability. */
   mainAbility: string;
+  /** A fighting card's support effect; empty for a worker (it has one ability). */
   supportEffect: string;
+  /** A worker's workplace name ("Oak"), or null when it works nowhere or is a fighting card. */
+  workplace: string | null;
   /** The bottom plate of the card face (ability, speed, level, progress). */
   face: CardFace;
   role: LoadoutRole | null;
@@ -126,14 +153,62 @@ export interface CardEntry {
   tier: UpgradeStep | null;
   /** The weapon panel's data (level ring, star bar, tier-up cost); null when not owned. */
   weapon: WeaponView | null;
+  /** The stat tiles with their compare line (DESIGN.md §5 Show the stats). */
+  stats: StatTiles;
 }
 
+/** The fighting loadout (the only job with one, DESIGN.md §5 Loadouts). */
 export interface JobLoadout {
-  job: Job;
+  job: 'fighting';
   /** Card ids: index 0 is the main card, 1..3 the supports (null = empty). */
   slots: Array<string | null>;
   cost: number;
   cap: number;
+}
+
+/** One card a loadout slot could take (UI_RULES §2 Loadouts). */
+export interface SlotChoice {
+  id: string;
+  cost: number;
+  /** The slot the card sits in now (0 = main, 1..3 supports), or null. Picking it swaps. */
+  from: number | null;
+  /** It is the card already in the slot being filled. */
+  current: boolean;
+  /** The loadout's cost with this card in the slot, and whether that fits the cap. */
+  costAfter: number;
+  fits: boolean;
+}
+
+/**
+ * What a slot of a job's loadout could take: every owned card of the job with what picking it
+ * would cost. A card already in another slot swaps places with the slot's card, so the cost
+ * stays; any other card replaces the slot's card. Cards that fit come first, cheapest last, so
+ * the strongest (costliest) cards lead.
+ */
+export function slotChoices(
+  entries: readonly CardEntry[],
+  loadout: JobLoadout,
+  slot: number,
+): SlotChoice[] {
+  const costOf = new Map(entries.map((e) => [e.id, e.cost]));
+  const occupant = loadout.slots[slot] ?? null;
+  const occupantCost = occupant ? (costOf.get(occupant) ?? 0) : 0;
+  return entries
+    .filter((e) => e.owned && e.job === loadout.job)
+    .map((e): SlotChoice => {
+      const at = loadout.slots.indexOf(e.id);
+      const from = at >= 0 ? at : null;
+      const costAfter = from !== null ? loadout.cost : loadout.cost - occupantCost + e.cost;
+      return {
+        id: e.id,
+        cost: e.cost,
+        from,
+        current: from === slot,
+        costAfter,
+        fits: costAfter <= loadout.cap,
+      };
+    })
+    .sort((a, b) => Number(b.fits) - Number(a.fits) || b.cost - a.cost);
 }
 
 /** A card action's result; tier-ups (DESIGN.md §12) play their moment. */
@@ -144,15 +219,18 @@ export interface CardsModel {
   entries(state: GameState): CardEntry[];
   /** One card's entry (cheaper than `entries` when a panel follows a single card), or null. */
   entry(state: GameState, id: string): CardEntry | null;
-  loadout(state: GameState, job: Job): JobLoadout;
+  loadout(state: GameState, job: 'fighting'): JobLoadout;
   shards(state: GameState): string;
   /** Changes in what the page shows structurally (not per-tick numbers). */
   signature(state: GameState): string;
   setMain(state: GameState, id: string): ModelResult;
   addSupport(state: GameState, id: string): ModelResult;
   remove(state: GameState, id: string): ModelResult;
+  /** Puts a card in a slot of its job's loadout (0 = main, 1..3 supports); a card already in
+   *  another slot swaps with the slot's card. */
+  place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'tier'): ModelResult;
+  upgrade(state: GameState, id: string, kind: 'star' | 'tier' | 'dust'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

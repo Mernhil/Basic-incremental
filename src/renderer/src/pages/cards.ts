@@ -7,7 +7,14 @@ import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
-import type { CardEntry, CardsModel, Job, ModelResult } from './cardsModel';
+import {
+  slotChoices,
+  type CardEntry,
+  type CardsModel,
+  type Job,
+  type JobLoadout,
+  type ModelResult,
+} from './cardsModel';
 import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './cards.css';
@@ -38,6 +45,9 @@ const CARD_WANT = { tile: 264, detail: 264, slot: 132 } as const;
 /** Cards across the collection grid, and the gap between them (CSS px). */
 const GRID_COLUMNS = 4;
 const GRID_GAP = 10;
+/** The weapon tiles beside the detail card: the narrowest they may get, and the gap to the card. */
+const DETAIL_SIDE_MIN = 150;
+const DETAIL_GAP = 12;
 type Fit = Parameters<typeof fitCard>[1];
 
 /**
@@ -77,7 +87,10 @@ export function createCardsPage(
   ctx: CardsPageContext,
 ): { render(): void; show(tab: Tab, job?: Job): void } {
   const { content, model } = ctx;
+  /** Weapon types in their `items.json` order, for the collection groups. */
+  const itemOrder: readonly string[] = content.items.types.map((type) => type.kind);
   page.classList.add('shell-page--cards');
+  page.querySelector('.shell-page__title')?.classList.add('sr-only');
 
   // ---- view state ----
   let tab: Tab = 'collection';
@@ -85,6 +98,10 @@ export function createCardsPage(
   let readyOnly = false;
   let sort: Sort = 'rarity';
   let selected: string | null = null;
+  /** The Enhancements star chart is open under the buttons of the selected card. */
+  let enhanceOpen = false;
+  /** The loadout slot being filled (0 = main, 1..3 supports): its job's cards show to pick from. */
+  let pick: { job: Job; slot: number } | null = null;
   let last = '';
   let message = '';
   let ticks: Array<() => void> = [];
@@ -118,7 +135,8 @@ export function createCardsPage(
   });
   const status = h('p', 'cp-status');
   status.setAttribute('role', 'status');
-  page.append(tabBar, panel, status);
+  // the tab bar lives inside the panel's top row (Collection and Loadouts alike, UI rework 2.2)
+  page.append(panel, status);
 
   function switchTab(next: Tab, job?: Job): void {
     tab = next;
@@ -160,7 +178,7 @@ export function createCardsPage(
     const view = createCard(props);
     view.el.removeAttribute('aria-label');
     view.el.setAttribute('aria-hidden', 'true');
-    const fit = h('span', `cp-fit${e.owned ? '' : ' cp-fit--locked'}`);
+    const fit = h('span', `cp-fit${e.owned ? ' cp-fit--lv' : ' cp-fit--locked'}`);
     fit.append(view.el);
     return fit;
   }
@@ -197,11 +215,12 @@ export function createCardsPage(
   function collection(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-wrap');
     const owned = entries.filter((e) => e.owned).length;
-    const note = `${COPY.cards.found(owned, entries.length)} · ${COPY.cards.shards} ${model.shards(state)}`;
-    const { el, body } = frame(COPY.cards.collectionTab, note);
-    el.classList.add('cp-collection');
+    const el = h('section', 'frame cp-collection');
+    el.setAttribute('aria-label', COPY.cards.collectionTab);
 
-    // toolbar
+    // the top rows: the tabs and the shard count, then the filters, sort and found count
+    const head = h('div', 'cp-head');
+    head.append(tabBar, h('span', 'cp-shards bi-num', COPY.cards.shardsLabel(model.shards(state))));
     const bar = h('div', 'cp-toolbar');
     const chips = h('div', 'cp-chips');
     chips.setAttribute('role', 'group');
@@ -240,7 +259,10 @@ export function createCardsPage(
       build('sort');
     });
     sortLabel.append(select);
-    bar.append(chips, sortLabel);
+    const count = h('span', 'cp-count bi-num', COPY.cards.found(owned, entries.length));
+    const tools = h('div', 'cp-tools');
+    tools.append(sortLabel, count);
+    bar.append(chips, tools);
 
     // grid
     const shown = sorted(
@@ -253,7 +275,39 @@ export function createCardsPage(
       row: { count: GRID_COLUMNS, gap: GRID_GAP },
     });
     grid.setAttribute('aria-label', COPY.cards.collectionTab);
-    for (const e of shown) {
+    // Owned cards first, then the unowned ones grouped by weapon type, each group with its
+    // collected count (UI_RULES §2, Owned cards first).
+    const heading = (text: string, key: string): void => {
+      const li = h('li', 'cp-group');
+      li.dataset.key = key;
+      li.append(h('h3', 'cp-group__title', text));
+      grid.append(li);
+    };
+    const mine = shown.filter((e) => e.owned);
+    const kinds = [...new Set(shown.map((e) => e.itemKind))].sort(
+      (a, b) => itemOrder.indexOf(a) - itemOrder.indexOf(b),
+    );
+    const groups: Array<{ title: string | null; key: string; list: CardEntry[] }> = [
+      {
+        title: mine.length > 0 ? COPY.cards.ownedGroup(mine.length) : null,
+        key: 'group-owned',
+        list: mine,
+      },
+      ...kinds.flatMap((kind) => {
+        const ofKind = shown.filter((e) => e.itemKind === kind);
+        const missing = ofKind.filter((e) => !e.owned);
+        if (missing.length === 0) return [];
+        const have = ofKind.length - missing.length;
+        return [
+          {
+            title: COPY.cards.typeGroup(missing[0]!.itemType, have, ofKind.length),
+            key: `group-${kind}`,
+            list: missing,
+          },
+        ];
+      }),
+    ];
+    const cell = (e: CardEntry): void => {
       const li = h('li', 'cp-cell');
       const b = h('button', 'cp-tile');
       b.type = 'button';
@@ -262,21 +316,34 @@ export function createCardsPage(
       // the loadout role is a word for screen readers only: the full-art card carries no chips
       const role = e.role ? `, ${COPY.cards.role[e.role.slot]}` : '';
       const detail = e.owned
-        ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}${role}`
+        ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}${role}${isReady(e) ? `, ${COPY.cards.readyTag}` : ''}`
         : COPY.cards.notFound;
       b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, detail));
       b.append(cardEl(e, state));
-      if (e.owned && e.duplicates > 0) b.append(h('span', 'cp-badge bi-num', `+${e.duplicates}`));
-      if (isReady(e)) b.append(h('span', 'cp-ready', '▲'));
+      if (e.owned) {
+        const lv = h('span', 'cp-lv wp-chip bi-num', String(e.level));
+        lv.setAttribute('aria-hidden', 'true');
+        b.append(lv);
+      }
+      if (isReady(e)) {
+        const ready = h('span', 'cp-ready', '▲');
+        ready.setAttribute('aria-hidden', 'true');
+        b.append(ready);
+      }
       b.addEventListener('click', () => {
+        if (selected !== e.id) enhanceOpen = false;
         selected = e.id;
         message = '';
         build(`tile-${e.id}`);
       });
       li.append(b);
       grid.append(li);
+    };
+    for (const g of groups) {
+      if (g.title) heading(g.title, g.key);
+      g.list.forEach(cell);
     }
-    body.append(bar, grid);
+    el.append(head, bar, grid);
     const pick = entries.find((e) => e.id === selected);
     wrap.append(el, pick ? detailPanel(state, pick) : h('div'));
     return wrap;
@@ -305,31 +372,40 @@ export function createCardsPage(
 
   // ---- detail panel ----
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
-    const { el, body } = frame(e.name, `${cap1(e.rarity)} · ${JOB_NAMES[e.job]}`);
+    // "rarity · job · role" on the right of the name
+    const parts = [cap1(e.rarity), JOB_NAMES[e.job]];
+    if (e.owned && e.role) parts.push(COPY.cards.role[e.role.slot]);
+    const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
-    // the card at 2x; the weapon panel's level badge and XP bar lie on it, and its star line and
-    // tier-up tag sit under it (DESIGN.md §5, §11)
-    const top = h('div', 'cp-detail__top');
-    watchFit(top, { want: CARD_WANT.detail, max: () => innerWidth(top) });
+
+    // the card at 2x with its large level badge, and the weapon panel's tiles beside it
+    // (DESIGN.md §5, §11); the card's whole scale is picked on this row
+    const main = h('div', 'cp-detail__main');
+    watchFit(main, {
+      want: CARD_WANT.detail,
+      max: () => innerWidth(main) - DETAIL_SIDE_MIN - DETAIL_GAP,
+    });
     const face = cardEl(e, state);
-    top.append(face);
-    const under = h('div', 'cp-detail__under');
+    const side = h('div', 'cp-detail__side');
     if (!e.owned) {
-      under.append(h('p', 'frame__muted', COPY.cards.lockedDetail));
+      side.append(h('p', 'frame__muted px-tile cp-locked', COPY.cards.lockedDetail));
     } else {
-      if (e.role) {
-        under.append(
-          h('p', 'cp-inrole', COPY.cards.inLoadout(COPY.cards.role[e.role.slot], JOB_NAMES[e.job])),
-        );
-      }
       const panel = createWeaponPanel({
         variant: 'card',
         content,
         state: ctx.state,
-        act: (kind) => act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`),
+        act: (kind) => {
+          act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`);
+          // A tier-up of a card whose stars are free lands at ★6: the star flash plays once.
+          if (kind === 'tier' && model.entry(ctx.state(), e.id)?.rank.stars === 6) {
+            const card = page.querySelector<HTMLElement>('.cp-detail .bi-card');
+            card?.classList.add('is-levelup');
+            window.setTimeout(() => card?.classList.remove('is-levelup'), 1200);
+          }
+        },
       });
       if (panel.overlay) face.append(panel.overlay);
-      under.append(panel.el);
+      side.append(panel.el);
       const update = (): void => {
         const entry = entryOf(e.id);
         if (entry) panel.update(entry);
@@ -337,44 +413,70 @@ export function createCardsPage(
       ticks.push(update);
       update();
     }
+    main.append(face, side);
 
-    const facts = h('dl', 'cp-facts');
+    // main ability, support effect and cost as three tiles
+    const facts = h('dl', 'cp-facts3');
     const fact = (label: string, value: string) => {
-      const d = h('div');
+      const d = h('div', 'px-tile cp-fact');
       d.append(h('dt', '', label), h('dd', '', value));
       facts.append(d);
     };
-    fact(COPY.cards.mainAbility, e.mainAbility);
-    fact(COPY.cards.supportEffect, e.supportEffect);
-    fact(COPY.cards.cost, String(e.cost));
-    body.append(top, under, facts);
+    if (e.job === 'fighting') {
+      fact(COPY.cards.mainAbility, e.mainAbility);
+      fact(COPY.cards.supportEffect, e.supportEffect);
+      fact(COPY.cards.cost, String(e.cost));
+    } else {
+      // a worker: its one ability and where it works (placed from the Production page)
+      fact(COPY.cards.workerAbility, e.mainAbility);
+      fact(COPY.cards.worksAt, e.workplace ?? COPY.cards.notWorking);
+    }
+    // damage, health, hit speed and crits, with the compare line (DESIGN.md §5 Show the stats)
+    const stats = h('dl', 'cp-stats');
+    for (const t of e.stats.tiles) {
+      const d = h('div', 'px-tile cp-fact');
+      if (t.title) d.title = t.title;
+      d.append(h('dt', '', t.label), h('dd', '', t.value));
+      stats.append(d);
+    }
+    body.append(main, stats);
+    if (e.stats.compare) body.append(h('p', 'cp-compare', e.stats.compare));
+    body.append(facts);
 
     if (e.owned) {
       const chart = model.chart(state, e.id);
-      if (chart && chart.stars.length > 0) body.append(enhanceBox(e.id, chart));
+      const hasChart = Boolean(chart && chart.stars.length > 0);
       const actions = h('div', 'cp-actions');
-      const btn = (label: string, key: string, run: () => ModelResult, disabled = false) => {
-        const b = h('button', 'button button--ghost', label);
+      const btn = (label: string, key: string, run: () => ModelResult, gold = false) => {
+        const b = h('button', `button${gold ? '' : ' button--ghost'}`, label);
         b.type = 'button';
         b.dataset.key = key;
-        b.disabled = disabled;
         b.addEventListener('click', () => act(run(), key));
         actions.append(b);
       };
-      btn(
-        COPY.cards.setMain,
-        'set-main',
-        () => model.setMain(ctx.state(), e.id),
-        e.role?.slot === 'main',
-      );
-      btn(
-        COPY.cards.addSupport,
-        'add-support',
-        () => model.addSupport(ctx.state(), e.id),
-        e.role?.slot === 'support',
-      );
+      if (hasChart) {
+        const b = h('button', 'button cp-enh-btn', COPY.enhance.title);
+        b.type = 'button';
+        b.dataset.key = 'enh-toggle';
+        b.setAttribute('aria-expanded', String(enhanceOpen));
+        b.setAttribute('aria-controls', 'cp-enhance');
+        b.addEventListener('click', () => {
+          enhanceOpen = !enhanceOpen;
+          build('enh-toggle');
+        });
+        actions.append(b);
+      }
+      // a button for the role the card already has would do nothing: it is left out
+      if (e.job === 'fighting' && e.role?.slot !== 'main') {
+        btn(COPY.cards.setMain, 'set-main', () => model.setMain(ctx.state(), e.id));
+      }
+      if (e.job === 'fighting' && e.role?.slot !== 'support') {
+        btn(COPY.cards.addSupport, 'add-support', () => model.addSupport(ctx.state(), e.id));
+      }
       if (e.role) btn(COPY.cards.remove, 'remove', () => model.remove(ctx.state(), e.id));
+      if (e.job !== 'fighting') actions.append(h('p', 'cp-upgrade__note', COPY.cards.workerHint));
       body.append(actions);
+      if (hasChart && enhanceOpen && chart) body.append(enhanceBox(e.id, chart));
     }
     return el;
   }
@@ -390,9 +492,17 @@ export function createCardsPage(
   const pixelState = (st: StarView['state']): 'owned' | 'open' | 'locked' =>
     st === 'chosen' ? 'owned' : st === 'open' ? 'open' : 'locked';
 
+  /** An option's name, with the card level that opens it under it while that is not reached. */
+  function optionName(s: StarView): HTMLElement {
+    const name = h('span', 'cp-option__name', s.name);
+    if (s.levelText) name.append(h('span', 'cp-option__level', s.levelText));
+    return name;
+  }
+
   function enhanceBox(id: string, v: StarChartView): HTMLElement {
     const t = COPY.enhance;
     const box = h('section', `cp-enhance${v.unlocked ? '' : ' is-locked'}`);
+    box.id = 'cp-enhance';
     box.setAttribute('aria-labelledby', 'cp-enhance-title');
     const head = h('div', 'cp-enhance__head');
     const title = h('h3', 'cp-upgrade__title', t.title);
@@ -409,14 +519,15 @@ export function createCardsPage(
 
     // the chart: the pixel sky of the equipped nodes style, with a button laid over each star
     const style = nodeStyle(ctx.content, ctx.state());
+    const sky = v.stars.filter((s) => s.onChart);
     const chart = h('div', 'cp-chart');
     chart.style.aspectRatio = `${CHART.w} / ${CHART.h}`;
     chart.innerHTML = chartSky(
       style,
-      v.stars.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
-      v.stars.slice(1).map((_, i) => [i, i + 1] as const),
+      sky.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
+      sky.slice(1).map((_, i) => [i, i + 1] as const),
     );
-    for (const s of v.stars) {
+    for (const s of sky) {
       const star = h('button', `cp-star is-${s.state}`);
       star.type = 'button';
       star.tabIndex = -1; // the list below is the keyboard way in
@@ -458,7 +569,7 @@ export function createCardsPage(
       mark.innerHTML = chartStar(style, pixelState(s.state));
       b.append(
         mark,
-        h('span', 'cp-option__name', s.name),
+        optionName(s),
         h('span', 'cp-option__effect bi-num', s.effect),
         h('span', 'cp-option__cost bi-num', s.costText),
       );
@@ -485,11 +596,85 @@ export function createCardsPage(
     return box;
   }
 
+  // ---- the loadout picker: the cards a slot could take, under the slots of its job ----
+  function picker(
+    state: GameState,
+    entries: CardEntry[],
+    lo: JobLoadout,
+    slot: number,
+    slotName: (i: number) => string,
+  ): HTMLElement {
+    const box = h('section', 'cp-pick');
+    box.setAttribute('aria-label', COPY.cards.pickFor(slotName(slot)));
+    const head = h('div', 'cp-pick__head');
+    const done = h('button', 'button button--ghost', COPY.cards.pickCancel);
+    done.type = 'button';
+    done.dataset.key = `pick-done-${lo.job}`;
+    done.addEventListener('click', () => {
+      pick = null;
+      build(`slot-${lo.job}-${slot}`);
+    });
+    head.append(
+      h('h4', 'cp-pick__title', COPY.cards.pickFor(slotName(slot))),
+      h('span', 'cp-pick__hint', COPY.cards.pickHint),
+      done,
+    );
+    box.append(head);
+    const byId = new Map(entries.map((e) => [e.id, e]));
+    const choices = slotChoices(entries, lo, slot);
+    if (choices.length === 0) {
+      box.append(h('p', 'cp-pick__hint', COPY.cards.pickNone));
+      return box;
+    }
+    const list = h('ul', 'cp-pick__list');
+    watchFit(list, { want: CARD_WANT.slot });
+    for (const c of choices) {
+      const e = byId.get(c.id);
+      if (!e) continue;
+      const li = h('li', 'cp-pick__item');
+      const tag = c.current
+        ? COPY.cards.pickCurrent
+        : !c.fits
+          ? COPY.cards.pickOver(c.costAfter, lo.cap)
+          : c.from !== null
+            ? COPY.cards.pickSwap(slotName(c.from))
+            : '';
+      const b = h('button', 'cp-tile cp-pick__card');
+      b.type = 'button';
+      b.dataset.key = `pick-${lo.job}-${c.id}`;
+      const usable = c.fits && !c.current;
+      b.setAttribute('aria-disabled', String(!usable));
+      b.setAttribute(
+        'aria-label',
+        [e.name, COPY.cards.pickCost(c.cost), tag].filter(Boolean).join('. '),
+      );
+      if (c.current) b.setAttribute('aria-pressed', 'true');
+      b.append(cardEl(e, state));
+      b.addEventListener('click', () => {
+        if (!usable) return;
+        const key = `slot-${lo.job}-${slot}`;
+        pick = null;
+        act(model.place(ctx.state(), slot, c.id), key);
+      });
+      const note = h('span', 'cp-pick__note bi-num', COPY.cards.pickCost(c.cost));
+      li.append(b, note);
+      if (tag) li.append(h('span', `cp-pick__tag${c.fits ? '' : ' is-over'}`, tag));
+      if (!usable) li.classList.add('is-off');
+      list.append(li);
+    }
+    box.append(list);
+    return box;
+  }
+
   // ---- loadouts ----
   function loadouts(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-loadouts');
+    const head = h('div', 'cp-head');
+    head.append(tabBar);
+    wrap.append(head);
     const byId = new Map(entries.map((e) => [e.id, e]));
-    for (const job of JOB_ORDER) {
+    // Only fighting has a loadout; logging and mining cards work on the Production page.
+    for (const job of ['fighting'] as const) {
       const lo = model.loadout(state, job);
       const { el, body } = frame(COPY.cards.jobLoadout(JOB_NAMES[job]));
       el.classList.add('cp-job');
@@ -515,19 +700,36 @@ export function createCardsPage(
 
       const slots = h('ol', 'cp-slots');
       watchFit(slots, { want: CARD_WANT.slot });
+      const picking = pick && pick.job === job ? pick.slot : null;
+      const slotName = (i: number): string =>
+        i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);
       lo.slots.forEach((id, i) => {
-        const li = h('li', 'cp-slot');
-        const label = i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);
+        const li = h('li', `cp-slot${picking === i ? ' is-picking' : ''}`);
+        const label = slotName(i);
         li.append(h('span', 'cp-slot__label', label));
         const e = id ? byId.get(id) : undefined;
+        // Click a slot to fill or change it: the cards that fit show under the slots.
+        const choose = (): void => {
+          pick = picking === i ? null : { job, slot: i };
+          build(`slot-${job}-${i}`);
+        };
         if (e) {
           const open = h('button', 'cp-tile');
           open.type = 'button';
           open.dataset.key = `slot-${job}-${i}`;
-          open.setAttribute('aria-label', `${label}: ${e.name}`);
+          open.setAttribute('aria-label', COPY.cards.changeCard(label, e.name));
+          open.setAttribute('aria-pressed', String(picking === i));
           open.append(cardEl(e, state));
-          open.addEventListener('click', () => {
+          open.addEventListener('click', choose);
+          const buttons = h('div', 'cp-slot__buttons');
+          const details = h('button', 'button button--ghost cp-slot__remove', COPY.cards.openCard);
+          details.type = 'button';
+          details.dataset.key = `open-${job}-${i}`;
+          details.setAttribute('aria-label', `${COPY.cards.openCard}: ${e.name}`);
+          details.addEventListener('click', () => {
+            if (selected !== e.id) enhanceOpen = false;
             selected = e.id;
+            pick = null;
             switchTab('collection');
             panel.querySelector<HTMLElement>(`[data-key="tile-${e.id}"]`)?.focus();
           });
@@ -536,9 +738,10 @@ export function createCardsPage(
           rm.dataset.key = `rm-${job}-${i}`;
           rm.setAttribute('aria-label', `${COPY.cards.remove}: ${e.name}`);
           rm.addEventListener('click', () =>
-            act(model.remove(ctx.state(), e.id), `rm-${job}-${i}`),
+            act(model.remove(ctx.state(), e.id), `slot-${job}-${i}`),
           );
-          li.append(open, rm);
+          buttons.append(details, rm);
+          li.append(open, buttons);
         } else {
           const empty = h('button', 'cp-empty', COPY.cards.chooseCard);
           empty.type = 'button';
@@ -547,16 +750,14 @@ export function createCardsPage(
             'aria-label',
             `${label}: ${COPY.cards.emptySlot}. ${COPY.cards.chooseCard}`,
           );
-          empty.addEventListener('click', () => {
-            jobFilter = job;
-            readyOnly = false;
-            switchTab('collection');
-          });
+          empty.setAttribute('aria-pressed', String(picking === i));
+          empty.addEventListener('click', choose);
           li.append(empty);
         }
         slots.append(li);
       });
       body.append(meter, slots);
+      if (picking !== null) body.append(picker(state, entries, lo, picking, slotName));
       wrap.append(el);
     }
     return wrap;

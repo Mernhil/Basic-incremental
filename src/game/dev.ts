@@ -11,13 +11,14 @@ import { RANK_TIERS, type Content, type RankTier } from '../data';
 import { grantAccountXp, settleAccount } from './account';
 import { settleAchievements } from './achievements';
 import { cardTopTier, levelCap } from './cards';
+import { floorCount, initialProgress, stageKey } from './floors';
 import { settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
 import { Decimal, isDecimalString } from './num';
 import { clearDungeon } from './production';
 import { emptyReport, type TickReport } from './report';
 import { createSeededRng, type Rng } from './rng';
-import { cloneState, newOwnedCard, type GameState } from './state';
+import { cloneState, DIFFICULTIES, newOwnedCard, type Difficulty, type GameState } from './state';
 import { advance } from './tick';
 import { grantCosmetic } from './wardrobe';
 
@@ -79,14 +80,58 @@ export function devSetDungeonCleared(
   if (!cleared) {
     const next = cloneState(state);
     next.clearedDungeons = next.clearedDungeons.filter((id) => id !== dungeonId);
+    // Back to the top of its floors, nothing beaten.
+    delete next.combat.floors[dungeonId];
+    if (next.activeDungeonId === dungeonId) next.bossHp = null;
     return { ok: true, state: next };
   }
   let next = isDungeon ? clearDungeon(state, content, dungeonId).state : state;
   next = cloneState(next);
   if (!next.clearedDungeons.includes(dungeonId)) next.clearedDungeons.push(dungeonId);
-  if (isDungeon) next.combat.kills[dungeonId] = Math.max(1, next.combat.kills[dungeonId] ?? 0);
-  else next.combat.trialBest[dungeonId] = 1;
+  if (isDungeon) {
+    // It stands on its Normal last floor, with that floor as its best, and its boss died once.
+    const floors = floorCount(content.dungeonById.get(dungeonId)!);
+    const key = stageKey(dungeonId, 'normal', floors);
+    next.combat.stageKills[key] = Math.max(1, next.combat.stageKills[key] ?? 0);
+    const progress = (next.combat.floors[dungeonId] ??= initialProgress());
+    const normal = progress.tiers.normal ?? { floor: 1, best: 0 };
+    progress.tiers.normal = { floor: Math.max(normal.floor, floors), best: floors };
+    if (next.activeDungeonId === dungeonId) next.bossHp = null;
+  } else next.combat.trialBest[dungeonId] = 1;
   settle(next, content);
+  return { ok: true, state: next };
+}
+
+/**
+ * Puts a dungeon on a floor (inside its range) of its chosen difficulty, or of `difficulty` when
+ * given: Hard, Nightmare or the endless depths, opened by counting every tier before it as
+ * beaten. The floors above the chosen one count as beaten. The fight on that floor starts fresh.
+ */
+export function devSetFloor(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  floor: number,
+  difficulty?: Difficulty,
+): DevResult {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon) return fail('unknown');
+  if (!Number.isFinite(floor)) return fail('invalid');
+  if (difficulty !== undefined && !DIFFICULTIES.includes(difficulty)) return fail('invalid');
+  const next = cloneState(state);
+  const progress = (next.combat.floors[dungeonId] ??= initialProgress());
+  if (difficulty !== undefined) {
+    progress.difficulty = difficulty;
+    for (const before of DIFFICULTIES.slice(0, DIFFICULTIES.indexOf(difficulty))) {
+      const count = floorCount(dungeon, before);
+      const beaten = progress.tiers[before] ?? { floor: count, best: 0 };
+      progress.tiers[before] = { floor: beaten.floor, best: Math.max(beaten.best, count) };
+    }
+  }
+  const at = Math.min(floorCount(dungeon, progress.difficulty), Math.max(1, Math.floor(floor)));
+  const tier = progress.tiers[progress.difficulty] ?? { floor: 1, best: 0 };
+  progress.tiers[progress.difficulty] = { floor: at, best: Math.max(tier.best, at - 1) };
+  if (next.activeDungeonId === dungeonId) next.bossHp = null;
   return { ok: true, state: next };
 }
 

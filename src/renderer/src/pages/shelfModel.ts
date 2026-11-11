@@ -2,6 +2,7 @@ import type { Content } from '../../../data';
 import { upgradeShelf, type GameState, type Modifier, type ShelfItem } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
+import { amountText } from '../settings/coins';
 
 /**
  * Upgrade shelf view models (DESIGN.md §4, §11): the chips of the shelf panel. Hidden upgrades
@@ -64,7 +65,7 @@ export function shelfChips(
     name: i.name,
     effect: i.description,
     status: i.status === 'owned' ? 'owned' : 'available',
-    price: `${fmt(i.cost.amount)} ${resName(content, i.cost.resource)}`,
+    price: amountText(content, i.cost.resource, i.cost.amount),
     affordable: i.canAfford,
     permanent: i.permanent,
     unlockText: i.unlockText,

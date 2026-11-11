@@ -21,6 +21,8 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
+import training from '../src/data/content/training.json';
+import coins from '../src/data/content/coins.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
 import items from '../src/data/content/items.json';
 
@@ -53,6 +55,8 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     cosmeticRules,
     prestige,
     upgrades,
+    training,
+    coins,
     weaponSkins,
     items,
     ...overrides,
@@ -80,11 +84,14 @@ describe('bundled content', () => {
       ['Crystal Grotto', 'ember_crypt'],
     ]);
     // 11 beta cards plus the weapon-skins test card (`reaper_test`).
-    expect(content.cards).toHaveLength(21);
+    expect(content.cards).toHaveLength(77);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
       ['Frostspire Vault', 'Glacier Colossus'],
+      ['Thunderpeak Aerie', 'Storm Roc'],
+      ['Sunken Sanctum', 'Dawn Hierophant'],
+      ['Hollow of the Void', 'The Unmade King'],
     ]);
     expect(content.cosmetics.length).toBeGreaterThan(7);
     expect(content.portals).toHaveLength(2); // Card Portal and Wardrobe Gate (open with the Wardrobe)
@@ -92,6 +99,9 @@ describe('bundled content', () => {
       'Root Warden',
       'Cinder Lich',
       'Glacier Colossus',
+      'Storm Roc',
+      'Dawn Hierophant',
+      'The Unmade King',
     ]);
     expect(content.trials.map((t) => t.name)).toEqual(['The Glimmer Trial']);
   });
@@ -183,6 +193,17 @@ describe('content validation errors', () => {
     expect(issuesFor(bad).join('\n')).toContain('dungeons.json');
   });
 
+  it('keeps the arena background of a dungeon optional and checks its id (DESIGN.md §6)', () => {
+    const without = raw();
+    for (const d of without.dungeons as Record<string, unknown>[]) delete d['background'];
+    expect(issuesFor(without)).toEqual([]);
+    const bad = raw();
+    (bad.dungeons as Record<string, unknown>[])[0]!['background'] = 'Not An Id';
+    const issues = issuesFor(bad);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatch(/^dungeons\.json › \[0\] › background: /);
+  });
+
   it('reports every file with problems at once', () => {
     const bad = raw({ resources: [{ id: 'Bad Id' }], cards: [{}] });
     const issues = issuesFor(bad);
@@ -220,35 +241,41 @@ describe('content validation errors', () => {
 });
 
 describe('card ranks and portals', () => {
-  it('has the 20 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
+  it('has the 76 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
     const loaded = loadContent();
-    // The weapon-skins test card (`reaper_test`) is not one of the beta cards.
+    // The Rare scythe (`reaper_test`, once the weapon-skins test card) is not a beta card.
     const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
-    expect(loaded.cardById.get('reaper_test')?.name).toBe('Reaper Test Card');
-    expect(content.cards).toHaveLength(20);
-    // Fighting lost its Rare (the Shield Warden); logging and mining keep four cards each.
+    expect(loaded.cardById.get('reaper_test')?.name).toBe('Dusk Reaper');
+    expect(content.cards).toHaveLength(76);
+    // Fighting has every weapon type at every rarity (63, minus the test card); logging and mining keep seven each.
     for (const [job, n] of [
-      ['fighting', 6],
+      ['fighting', 62],
       ['logging', 7],
       ['mining', 7],
     ] as const) {
       expect(content.cards.filter((c) => c.job === job)).toHaveLength(n);
     }
     const rarities = content.cards.map((c) => c.rarity);
-    expect(rarities.filter((r) => r === 'common')).toHaveLength(3);
-    expect(rarities.filter((r) => r === 'uncommon')).toHaveLength(3);
-    expect(rarities.filter((r) => r === 'rare')).toHaveLength(2);
-    expect(rarities.filter((r) => r === 'epic')).toHaveLength(3);
-    expect(rarities.filter((r) => r === 'legendary')).toHaveLength(3);
-    expect(rarities.filter((r) => r === 'mythic')).toHaveLength(3);
-    expect(rarities.filter((r) => r === 'void')).toHaveLength(3);
+    expect(rarities.filter((r) => r === 'common')).toHaveLength(11);
+    expect(rarities.filter((r) => r === 'uncommon')).toHaveLength(11);
+    expect(rarities.filter((r) => r === 'rare')).toHaveLength(10);
+    expect(rarities.filter((r) => r === 'epic')).toHaveLength(11);
+    expect(rarities.filter((r) => r === 'legendary')).toHaveLength(11);
+    expect(rarities.filter((r) => r === 'mythic')).toHaveLength(11);
+    expect(rarities.filter((r) => r === 'void')).toHaveLength(11);
     // every job has a base card of every rarity (one per tier cap), except fighting's Rare, the skin test card
     for (const job of ['logging', 'mining'] as const) {
       expect(new Set(content.cards.filter((c) => c.job === job).map((c) => c.rarity)).size).toBe(7);
     }
+    // fighting cards have a main ability and a support effect; workers one worker ability
     for (const card of content.cards) {
-      expect(card.main.description.length).toBeGreaterThan(0);
-      expect(card.support.modifiers.length).toBeGreaterThan(0);
+      if (card.job === 'fighting') {
+        expect(card.main.description.length).toBeGreaterThan(0);
+        expect(card.support.modifiers.length).toBeGreaterThan(0);
+      } else {
+        expect(card.worker.description.length, card.id).toBeGreaterThan(0);
+        expect(card.worker.modifiers.length, card.id).toBeGreaterThan(0);
+      }
     }
     expect(content.cardRules.startCards).toEqual([
       'ember_squire',
@@ -260,13 +287,16 @@ describe('card ranks and portals', () => {
   it('scales flat and percent card bonuses by default, and nothing else', () => {
     const content = loadContent();
     const duelist = content.cardById.get('storm_duelist')!;
+    if (duelist.job !== 'fighting') throw new Error('a fighting card');
     expect(duelist.main.modifiers.map((m) => [m.kind, m.scale])).toEqual([
       ['set', 'none'],
       ['mult', 'none'],
     ]);
     expect(duelist.support.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
+    // a worker ability applies as written: it has no scale (the worker's power multiplies the
+    // place's output instead)
     const keeper = content.cardById.get('grove_keeper')!;
-    expect(keeper.support.modifiers[0]!.scale).toBe('none'); // explicit: +1 fill stays +1
+    expect(keeper.job === 'logging' && 'scale' in keeper.worker.modifiers[0]!).toBe(false);
   });
 
   it('catches bad card rules', () => {
@@ -341,10 +371,10 @@ describe('card ranks and portals', () => {
     expect(issues.some((i) => i.startsWith('portals.json › [0] › pity › threshold'))).toBe(true);
   });
 
-  it('has the beta Card Portal: 10 / 100 Summon Crystals, Legendary+ at 90, Rare+ per 10-pull', () => {
+  it('has the beta Card Portal: a 10-pull at ten singles, Legendary+ at 90, Rare+ per 10-pull', () => {
     const portal = loadContent().portals.find((p) => p.id === 'card_portal')!;
-    expect(portal.cost.single.toNumber()).toBe(10);
-    expect(portal.cost.ten.toNumber()).toBe(100);
+    expect(portal.cost.resource).toBe('summon_crystal');
+    expect(portal.cost.ten.eq(portal.cost.single.mul(10))).toBe(true);
     expect(portal.pity).toEqual({ rarity: 'legendary', threshold: 90 });
     expect(portal.tenPullGuarantee).toBe('rare');
   });
@@ -403,14 +433,22 @@ describe('card ranks and portals', () => {
   it('checks the account tree, reward track and enhancement lists', () => {
     const bad = raw();
     const account = bad.account as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    account['tree'][1].requires = ['nowhere'];
-    account['tree'][0].perRank[0].scope = { dungeon: 'nowhere' };
+    account['skeleton'][1].requires = ['nowhere'];
+    account['branches'][0].small[0].perRank[0].scope = { dungeon: 'nowhere' };
     account['rewardTrack'][0].cosmetics = ['nope'];
+    account['rewardRepeat'].resources[0].resource = 'nothing';
+    account['circles'][0].skills[1].requires = ['sword_nowhere'];
     const enh = bad.enhancements as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     delete enh['cards']['core_titan'];
     enh['cards']['nobody'] = enh['cards']['ember_squire'];
     const issues = issuesFor(bad);
-    expect(issues).toContain('account.json › tree › [1] › requires › [0]: unknown node "nowhere"');
+    expect(issues).toContain(
+      'account.json › tree › [1] › requires › [0]: unknown node "logging_nowhere"',
+    );
+    expect(issues).toContain(
+      'account.json › rewardRepeat › resources › [0]: unknown resource "nothing"',
+    );
+    expect(issues.some((i) => i.includes('unknown node "sword_nowhere"'))).toBe(true);
     expect(issues).toContain(
       'account.json › tree › [0] › perRank › [0] › scope › dungeon: unknown dungeon "nowhere"',
     );
@@ -482,8 +520,34 @@ describe('production data', () => {
     expect(issues).toContain('mines.json › [2] › id: "oak" is already a tree id');
   });
 
-  it('has no plots, slots or expansions: only the harvest rules', () => {
-    expect(Object.keys(production).sort()).toEqual(['harvest']);
+  it('has no plots or expansions: the harvest rules and the worker slots and power', () => {
+    expect(Object.keys(production).sort()).toEqual([
+      'forge',
+      'harvest',
+      'lucky',
+      'tools',
+      'workers',
+    ]);
+  });
+
+  it('keeps a worker ability on its own place: data never names a place in it', () => {
+    const bad = raw();
+    const card = (bad.cards as { id: string; worker?: { modifiers: unknown[] } }[]).find(
+      (c) => c.id === 'apprentice_feller',
+    )!;
+    card.worker!.modifiers = [
+      { stat: 'production.rate', kind: 'percent', value: '5', scope: { producer: 'oak' } },
+    ];
+    expect(issuesFor(bad).some((i) => i.includes('acts on its own place'))).toBe(true);
+  });
+
+  it('refuses a logging or mining card with a main ability, or a fighting card without one', () => {
+    const bad = raw();
+    const card = (bad.cards as Record<string, unknown>[]).find(
+      (c) => c['id'] === 'apprentice_feller',
+    )!;
+    card['main'] = { description: 'Steady output' };
+    expect(issuesFor(bad).length).toBeGreaterThan(0);
   });
 
   it('needs a tree and a mine available from the start, since every unlocked kind produces', () => {
@@ -544,8 +608,9 @@ describe('the three loops (DESIGN.md §3)', () => {
 
   it('refuses a dungeon that leaves out a crystal or drops a gem', () => {
     const bad = raw();
-    const drops = (bad.dungeons as { drops: { currencies: { resource: string }[] } }[])[1]!.drops;
-    drops.currencies = drops.currencies.filter((x) => x.resource !== 'glamour_crystal');
+    type Drops = { currencies: { resource: string }[]; wages: { resource: string }[] };
+    const drops = (bad.dungeons as { drops: Drops }[])[1]!.drops;
+    drops.wages = drops.wages.filter((x) => x.resource !== 'glamour_crystal');
     drops.currencies.push({ resource: 'oak_gem', min: 1, max: 2 } as never);
     const issues = issuesFor(bad);
     expect(issues.join(String.fromCharCode(10))).toContain('"glamour_crystal" is not dropped');

@@ -1,6 +1,6 @@
 import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
-import { itemName, tierLabel, type CardInfo } from '../../../game';
+import { itemName, lookTier, tierLabel, type CardInfo } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import type { CostChip, WeaponView } from './cardsModel';
@@ -32,7 +32,20 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
         gauge: bar.gauge,
         ready: bar.ready,
         text: COPY.weapon.starLine(bar.fill, bar.need, owned.stars + 1),
+        title: COPY.weapon.starTitle(bar.fill, bar.need, owned.stars + 1),
         impact: COPY.weapon.impact(multiplierAt(owned.stars), multiplierAt(owned.stars + 1)),
+        dust:
+          info.starDust && info.starDust.cost > 0 && info.starDust.have > 0
+            ? {
+                ...info.starDust,
+                affordable: info.starDust.have >= info.starDust.cost,
+                label: COPY.weapon.dustStar(
+                  owned.stars + 1,
+                  info.starDust.cost,
+                  info.starDust.have,
+                ),
+              }
+            : null,
       }
     : null;
 
@@ -52,6 +65,7 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
         met: r.met,
       }));
     const levelMet = check.requirements.every((r) => r.kind !== 'level' || r.met);
+    const starsMet = check.requirements.every((r) => r.kind !== 'stars' || r.met);
     const phase = !levelMet ? 'leveling' : check.met ? 'ready' : 'short';
     const missing = costs.filter((c) => !c.met).map((c) => c.name);
     tierUp = {
@@ -66,6 +80,17 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
         : COPY.weapon.tierUpTo(toName),
       ready: check.met,
       missing: phase === 'short' ? COPY.weapon.missing(missing.join(', ')) : '',
+      levelMet,
+      starsMet,
+      blocker: check.met
+        ? ''
+        : !starsMet
+          ? COPY.weapon.needsStars(MAX_STARS)
+          : !levelMet
+            ? COPY.weapon.needsLevel(cap)
+            : missing.length === 1
+              ? COPY.weapon.needsCosts(missing[0] ?? '')
+              : COPY.weapon.needsMany(missing.length),
     };
   } else if (rank.tier === 'heirloom') {
     endNote = COPY.weapon.fullyUpgraded;
@@ -79,7 +104,7 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
   }
 
   return {
-    weapon: itemName(content, card.item.kind, rank.tier, card.rarity),
+    weapon: itemName(content, card.item.kind, lookTier(card.rarity, rank.tier), card.rarity),
     tier: rank.tier,
     tierName: tierLabel(rank.tier, card.rarity),
     level: owned.level,

@@ -19,6 +19,7 @@ const goldCard = (cores: number, level = 80, stars = 6) => {
   };
   state.resources['frost_core'] = new Decimal(cores);
   state.resources['frost_sigil'] = new Decimal(1000);
+  state.resources['storm_core'] = new Decimal(1e6);
   // The gems of the step are in hand: only the slow dungeon materials decide the hold.
   state.resources['moonwillow_gem'] = new Decimal(1e6);
   state.resources['grotto_gem'] = new Decimal(1e6);

@@ -36,6 +36,8 @@ import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
 import upgrades from '../src/data/content/upgrades.json';
+import training from '../src/data/content/training.json';
+import coins from '../src/data/content/coins.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
 import items from '../src/data/content/items.json';
 import { constantRng, content, freshState } from './helpers';
@@ -170,7 +172,7 @@ describe('game numbers go through the pipeline', () => {
 
   it('boss HP, drops and the offline cap read their modifiers', () => {
     const dungeon = content.dungeons[0]!;
-    const hp = bossMaxHp(dungeon, 0, [mod('combat.bossHp', 'mult', '0.5')]);
+    const hp = bossMaxHp(dungeon, [mod('combat.bossHp', 'mult', '0.5')]);
     expect(hp.eq(dungeon.boss.hp.div(2))).toBe(true);
 
     const drops = effectiveDrops(
@@ -223,6 +225,8 @@ describe('modifier data is validated', () => {
       cosmeticRules,
       prestige,
       upgrades,
+      training,
+      coins,
       weaponSkins,
       items,
     });

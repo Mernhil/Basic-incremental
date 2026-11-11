@@ -1,31 +1,29 @@
-/* Cards page, "Codex": Collection grid + detail panel, and a Loadouts tab.
-   Colours come from the chrome-*, frame-* and tip-* tokens; the cards themselves are the real
-   card component, scaled down with a transform (zoom breaks the rank star rendering). */
+/* Cards page, "Codex" (UI rework 2.2): the Collection panel (pixel tabs, filter chips, the grid of
+   full cards at a whole scale) beside the detail panel (the card at 2x, the weapon tiles, three
+   fact tiles, the buttons), and the Loadouts tab. Panels, tiles and buttons come from the shared
+   pixel recipe (theme/frames.css: .frame, .px-tile, .button, --fs, --fs-sm); colours from the
+   frame-* and chrome-* tokens. The cards themselves are the real card component, scaled with a
+   transform to a whole device scale (--card-k from ui/pixelFit.ts). Pixelify Sans (the display
+   font) only at 18 px and up: the tabs and the large numbers. */
 
 /* a wide window has room for the grid at 2x (DESIGN.md §11 Sharp cards): four cards at 2x, the
-   gaps, the frame and the detail panel take about 1,600 px */
+   gaps, the frame and the detail panel take about 1,700 px */
 .shell-page--cards {
-  max-width: 1680px;
+  --cp-detail-w: 476px;
+  max-width: 1700px;
+  /* the panels fill the window under the header (and the goal tracker when it shows) and scroll
+     inside, like the reference; the shell's own bottom padding is taken back */
+  height: calc(100vh - var(--header-h, 64px) - 24px);
+  margin-bottom: -40px;
+  grid-template-rows: minmax(0, 1fr) auto;
 }
 
-.cp-tabs {
-  display: flex;
-  gap: 8px;
+.shell-main:has(> .shell-quest:not([hidden])) .shell-page--cards {
+  height: calc(100vh - var(--header-h, 64px) - 24px - 60px);
 }
-.cp-tab {
-  padding: 8px 16px;
-  border: 0;
-  border-radius: 9px;
-  background: var(--bi-frame-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-  color: var(--bi-frame-ink-muted);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.cp-tab[aria-selected='true'] {
-  color: var(--bi-frame-ink);
-  box-shadow: inset 0 0 0 2px var(--bi-chrome-accent);
+.cp-panel {
+  min-height: 0;
+  display: grid;
 }
 .cp-status {
   margin: 0;
@@ -39,46 +37,93 @@
 
 .cp-wrap {
   display: grid;
-  /* the collection, and the detail card at 2x beside it (DESIGN.md §11 Sharp cards) */
-  grid-template-columns: minmax(0, 1fr) 376px;
-  gap: 16px;
-  align-items: start;
+  /* the collection, and the detail panel (the card at 2x and the weapon tiles) beside it */
+  grid-template-columns: minmax(0, 1fr) var(--cp-detail-w);
+  gap: calc(var(--fs) * 4);
+  align-items: stretch;
+  min-height: 0;
+  /* the panels' frame edges bleed one step outside their boxes */
+  padding: var(--fs);
 }
 @media (max-width: 1180px) {
   .cp-wrap {
     grid-template-columns: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, auto);
+    overflow-y: auto;
   }
 }
+.cp-collection,
+.cp-detail {
+  min-height: 0;
+}
+.cp-collection {
+  grid-template-rows: auto auto minmax(0, 1fr);
+  align-content: stretch;
+}
+.cp-detail {
+  gap: 8px;
+  padding: 10px 12px 12px;
+  overflow-y: auto;
+  /* a fixed gutter, so a scrollbar appearing never changes the width the card scale is picked on */
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--px-hi) var(--px-lo);
+}
 
-/* ---- toolbar ---- */
+/* ---- the top rows: tabs, then filters and the found count ---- */
+.cp-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+.cp-tabs {
+  display: flex;
+  gap: calc(var(--fs) * 2);
+}
+html .cp-tabs .cp-tab:not(#_px) {
+  padding: 6px 18px;
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+/* the tab that is not showing is the dark plum, the shown one is gold (frames.css) */
+html .cp-tabs .cp-tab[aria-selected='false']:not(#_px) {
+  --px-bg: var(--px-dark);
+  --px-top: var(--px-dark-hi);
+  --px-bottom: var(--px-dark);
+  color: var(--px-muted);
+}
+.cp-shards,
+.cp-count {
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
 .cp-toolbar {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 10px;
+  gap: 8px 12px;
+  padding: 0 var(--fs);
 }
 .cp-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: calc(var(--fs) * 2);
 }
-.cp-chip {
-  padding: 4px 11px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-  color: var(--bi-frame-ink-muted);
-  font: inherit;
+html .cp-chips .cp-chip:not(#_px) {
+  padding: 4px 12px;
   font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
+  line-height: 1.3;
 }
-.cp-chip[aria-pressed='true'] {
-  background: var(--bi-chrome-accent);
-  color: var(--bi-chrome-bg);
-  box-shadow: none;
+.cp-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 .cp-sort {
   display: flex;
@@ -87,47 +132,50 @@
   font-size: 13px;
   color: var(--bi-frame-ink-muted);
 }
-.cp-select {
-  padding: 4px 8px;
-  border: 0;
-  border-radius: 7px;
-  background: var(--bi-frame-title-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-  color: var(--bi-frame-title-ink);
-  font: inherit;
+html .cp-sort .cp-select:not(#_px) {
+  padding: 3px 8px;
   font-size: 13px;
+  font-weight: 600;
 }
 
 /* ---- grid ---- */
 .cp-grid {
   margin: 0;
-  /* room for ★6 crowns and badges outside the card edge */
-  padding: 14px 4px 6px;
+  /* room around the cards for the ★6 crowns, the level badges and the selected outline */
+  padding: 18px 8px 12px;
+  --lv-in: calc(var(--fs-sm) * 11);
+  scrollbar-width: thin;
   list-style: none;
   display: grid;
   /* the full card, as wide as fitCard() made it (132 x 186 art pixels at a whole scale): four
      across at 1x, reflowing to fewer when the window is narrow */
   grid-template-columns: repeat(auto-fill, calc(176px * var(--card-k)));
-  gap: 24px 10px;
+  grid-auto-rows: max-content;
+  gap: 22px 10px;
   justify-content: center;
+  align-content: start;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: var(--px-hi) var(--px-lo);
 }
 .cp-tile {
   position: relative;
   display: block;
   padding: 0;
   border: 0;
-  border-radius: 12px;
+  border-radius: 0;
   background: none;
   color: inherit;
   font: inherit;
   cursor: pointer;
 }
+/* the selected card: a gold outline, a whole step wide */
 .cp-tile[aria-pressed='true'] {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 7px;
+  outline: calc(var(--fs-sm) * 2) solid var(--px-gold);
+  outline-offset: calc(var(--fs-sm) * 3);
 }
 .cp-tile:hover .cp-fit {
-  transform: translateY(-2px);
+  transform: translateY(calc(var(--fs-sm) * -1));
 }
 @media (prefers-reduced-motion: reduce) {
   .cp-tile:hover .cp-fit {
@@ -148,6 +196,7 @@
   transform: scale(var(--card-k));
   transform-origin: top left;
 }
+/* a card not found yet: dimmed and grey */
 .cp-fit--locked > .bi-card {
   filter: grayscale(1) brightness(0.55);
 }
@@ -171,59 +220,164 @@
   display: none;
 }
 
-.cp-badge,
+/* the level badge lies on the card's top-left corner, so the name in the card's head starts after it */
+.cp-fit--lv > .bi-card:not(.bi-card--boss) .bi-card__head {
+  padding-left: calc(var(--lv-in) / var(--card-k) - 9px);
+}
+
+/* a group heading in the collection grid: owned cards, then one group per weapon type */
+.cp-group {
+  grid-column: 1 / -1;
+  margin: 4px 0 -12px;
+}
+.cp-group:first-child {
+  margin-top: -10px;
+}
+.cp-group__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--px-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* the level badge (top-left) and the "upgrade ready" marker (bottom-right) of a grid card */
+.cp-lv,
 .cp-ready {
   position: absolute;
   z-index: 2;
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 999px;
   pointer-events: none;
 }
-.cp-badge {
-  top: -7px;
-  right: -7px;
-  padding: 4px 6px;
-  background: #7fc79a;
-  color: #10251a;
-  box-shadow: 0 0 0 2px var(--bi-frame-bg);
+.cp-lv {
+  left: calc(var(--fs-sm) * -3);
+  top: calc(var(--fs-sm) * -3);
+  min-width: calc(var(--fs-sm) * 14);
+  height: calc(var(--fs-sm) * 14);
+  padding: 0 calc(var(--fs-sm) * 3);
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
 }
 .cp-ready {
-  bottom: -7px;
-  right: -7px;
-  padding: 4px 5px;
-  background: var(--bi-chrome-accent);
-  color: var(--bi-chrome-bg);
-  box-shadow: 0 0 0 2px var(--bi-frame-bg);
+  right: calc(var(--fs-sm) * -2);
+  bottom: calc(var(--fs-sm) * -2);
+  display: grid;
+  place-items: center;
+  width: calc(var(--fs-sm) * 12);
+  height: calc(var(--fs-sm) * 12);
+  font-size: 11px;
+  line-height: 1;
+  background: var(--bi-ready, #5fcf62);
+  color: #0f2a14;
+  box-shadow:
+    calc(var(--fs-sm) * -1) 0 0 0 var(--px-edge),
+    var(--fs-sm) 0 0 0 var(--px-edge),
+    0 calc(var(--fs-sm) * -1) 0 0 var(--px-edge),
+    0 var(--fs-sm) 0 0 var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 color-mix(in srgb, var(--bi-ready, #5fcf62) 60%, #fff),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 color-mix(in srgb, var(--bi-ready, #5fcf62) 65%, #000);
 }
 
 /* ---- detail ---- */
-/* the card at 2x, with room around it for the level badge and the ★6 crown */
-.cp-detail__top {
+/* the card at 2x with room around it for the level badge and the ★6 crown */
+.cp-detail__main {
   display: grid;
-  justify-items: center;
-  padding: 30px 0 8px;
+  grid-template-columns: calc(176px * var(--card-k)) minmax(0, 1fr);
+  --lv-in: calc(var(--fs-sm) * 16);
+  gap: 12px;
+  align-items: start;
+  padding: 8px 4px 0;
 }
-.cp-detail__under {
-  display: grid;
-  gap: 10px;
-  justify-items: stretch;
+.cp-detail__main .bi-card__name {
+  font-size: 13px;
+}
+.cp-detail__side {
   min-width: 0;
 }
-.cp-inrole {
+.cp-locked {
   margin: 0;
-  justify-self: start;
-  padding: 2px 9px;
-  border-radius: 999px;
+  padding: 10px;
+}
+.cp-facts3 {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 1.5fr 1.2fr 0.6fr;
+  gap: calc(var(--fs) * 2);
+  padding: 0 var(--fs);
+}
+.cp-stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  gap: calc(var(--fs) * 2);
+  padding: 0 var(--fs);
+}
+.cp-compare {
+  margin: 0;
+  padding: 0 var(--fs);
   font-size: 12px;
-  font-weight: 600;
-  background: var(--bi-chrome-active-bg);
+  color: var(--bi-frame-ink-muted);
+}
+.cp-fact {
+  display: grid;
+  gap: 2px;
+  align-content: start;
+  min-width: 0;
+  padding: 5px 10px;
+}
+.cp-fact dt {
+  font-size: 12px;
+  line-height: 1.2;
+  color: var(--bi-frame-ink-muted);
+}
+.cp-fact dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.cp-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--fs) * 2);
+  padding: 0 var(--fs);
+}
+.cp-actions .button {
+  flex: 1 1 auto;
+  padding: 6px 8px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+.cp-upgrade__title {
+  margin: 0;
+  padding: 6px 12px;
+  font-size: 15px;
+  background: var(--bi-frame-title-bg);
   box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+  color: var(--bi-frame-title-ink);
+}
+.cp-upgrade__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+
+/* ---- loadouts ---- */
+.cp-loadouts {
+  display: grid;
+  gap: calc(var(--fs) * 4);
+  align-content: start;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-color: var(--px-hi) var(--px-lo);
+  /* the frame edges bleed one step outside their boxes */
+  padding: var(--fs);
 }
 .cp-level {
   display: grid;
-  gap: 4px;
+  gap: 6px;
 }
 .cp-level__row {
   display: flex;
@@ -232,123 +386,22 @@
   color: var(--bi-frame-ink-muted);
 }
 .cp-level__track {
-  height: 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
+  height: calc(var(--fs-sm) * 4);
+  margin: var(--fs-sm);
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
   overflow: hidden;
 }
 .cp-level__track i {
   display: block;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--bi-chrome-accent) 65%, #000),
-    var(--bi-chrome-accent)
-  );
+  background: var(--px-gold);
   transition: width 0.25s linear;
 }
 @media (prefers-reduced-motion: reduce) {
   .cp-level__track i {
     transition: none;
   }
-}
-
-.cp-facts {
-  margin: 0;
-  display: grid;
-  gap: 6px;
-  padding: 10px 12px;
-  border-radius: 9px;
-  background: var(--bi-frame-title-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-  color: var(--bi-frame-title-ink);
-}
-.cp-facts > div {
-  display: grid;
-  grid-template-columns: 7.5em minmax(0, 1fr);
-  gap: 10px;
-  font-size: 13px;
-}
-.cp-facts dt {
-  opacity: 0.8;
-}
-.cp-facts dd {
-  margin: 0;
-  font-weight: 600;
-}
-
-.cp-upgrade {
-  display: grid;
-  gap: 8px;
-}
-.cp-upgrade__title {
-  margin: 0;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-size: 15px;
-  background: var(--bi-frame-title-bg);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-  color: var(--bi-frame-title-ink);
-}
-/* the cost panel: one row per cost (3-4 lines: Money-free gems, Cores, Frost Sigils, ...) */
-.cp-reqs {
-  margin: 0;
-  padding: 2px 10px;
-  list-style: none;
-  display: grid;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--bi-frame-title-bg) 45%, transparent);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-}
-.cp-req {
-  display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto;
-  align-items: baseline;
-  gap: 8px;
-  padding: 5px 0;
-  font-size: 13px;
-}
-.cp-req + .cp-req {
-  border-top: 1px solid color-mix(in srgb, var(--bi-frame-title-line) 60%, transparent);
-}
-.cp-req > .bi-num {
-  text-align: right;
-  white-space: nowrap;
-}
-.cp-req__mark {
-  font-weight: 700;
-  color: #ef8a7a;
-}
-.cp-req--met .cp-req__mark {
-  color: #7fc79a;
-}
-.cp-upgrade__note {
-  margin: 0;
-  font-size: 12px;
-  color: var(--bi-frame-ink-muted);
-}
-.cp-upgrade__btn {
-  justify-self: start;
-}
-.cp-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.button.button--ghost {
-  background: transparent;
-  color: var(--bi-frame-ink);
-  box-shadow: inset 0 0 0 1px var(--bi-frame-title-line);
-}
-.button.button--ghost:hover:not(:disabled) {
-  box-shadow: inset 0 0 0 1.5px var(--bi-chrome-accent);
-}
-
-/* ---- loadouts ---- */
-.cp-loadouts {
-  display: grid;
-  gap: 16px;
 }
 .cp-slots {
   margin: 0;
@@ -362,6 +415,7 @@
   display: grid;
   gap: 6px;
   justify-items: center;
+  padding: 8px 10px 10px;
 }
 .cp-slot__label {
   font-size: 12px;
@@ -378,8 +432,8 @@
 .cp-empty {
   width: calc(176px * var(--card-k));
   height: calc(248px * var(--card-k));
-  border: 1.5px dashed var(--bi-frame-title-line);
-  border-radius: 10px;
+  border: var(--fs-sm) dashed var(--bi-frame-title-line);
+  border-radius: 0;
   background: transparent;
   color: var(--bi-frame-ink-muted);
   font: inherit;
@@ -391,9 +445,6 @@
   color: var(--bi-frame-ink);
 }
 
-.cp-tab:focus-visible,
-.cp-chip:focus-visible,
-.cp-select:focus-visible,
 .cp-tile:focus-visible,
 .cp-empty:focus-visible,
 .cp-wrap .button:focus-visible,
@@ -497,7 +548,13 @@
 .cp-option:disabled {
   cursor: default;
 }
+.cp-option__level {
+  display: block;
+  font-size: 11px;
+  color: #ffd968;
+}
 .cp-option.is-blocked,
+.cp-option.is-level,
 .cp-option.is-locked {
   opacity: 0.55;
 }
@@ -540,4 +597,77 @@
 .cp-enhance__foot .button {
   flex: none;
   white-space: nowrap;
+}
+
+/* ---- the loadout picker (UI_RULES §2 Loadouts): click a slot, then a card ---- */
+.cp-slot.is-picking {
+  outline: calc(var(--fs-sm) * 2) solid var(--px-gold);
+  outline-offset: calc(var(--fs-sm) * -1);
+}
+.cp-slot__buttons {
+  display: flex;
+  gap: 6px;
+}
+.cp-empty[aria-pressed='true'] {
+  outline: calc(var(--fs-sm) * 2) solid var(--px-gold);
+}
+.cp-pick {
+  margin: 12px 4px 4px;
+  padding: 10px 12px 12px;
+  border: 1px solid var(--px-gold);
+  background: rgb(0 0 0 / 0.25);
+}
+.cp-pick__head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 12px;
+  margin-bottom: 10px;
+}
+.cp-pick__head .button {
+  margin-left: auto;
+  font-size: 12px;
+  padding: 4px 12px;
+}
+.cp-pick__title {
+  margin: 0;
+  font-size: 15px;
+  color: var(--bi-frame-ink);
+}
+.cp-pick__hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.cp-pick__list {
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 16px;
+  max-height: 46vh;
+  overflow-y: auto;
+}
+.cp-pick__item {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+}
+.cp-pick__item.is-off .cp-fit {
+  filter: grayscale(0.8) brightness(0.6);
+}
+.cp-pick__item.is-off .cp-pick__card {
+  cursor: default;
+}
+.cp-pick__note {
+  font-size: 12px;
+  color: var(--bi-frame-ink);
+}
+.cp-pick__tag {
+  font-size: 11.5px;
+  color: var(--px-gold);
+}
+.cp-pick__tag.is-over {
+  color: var(--bi-danger, #e0637a);
 }

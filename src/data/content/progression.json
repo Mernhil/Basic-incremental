@@ -1,29 +1,9 @@
 {
   "gemMastery": {
-    "thresholds": ["1e3", "1e5", "1e7", "1e9"],
+    "thresholds": ["1e3", "1e5", "1e7", "1e9", "1e11", "1e13", "1e15", "1e17"],
     "perTier": [
       {
         "stat": "production.rate",
-        "kind": "percent",
-        "value": "10"
-      }
-    ]
-  },
-  "bossMastery": {
-    "thresholds": [10, 100, 1000, 10000],
-    "perTier": [
-      {
-        "stat": "combat.damage",
-        "kind": "percent",
-        "value": "5"
-      },
-      {
-        "stat": "drops.crystalMultiplier",
-        "kind": "percent",
-        "value": "10"
-      },
-      {
-        "stat": "drops.materialChance",
         "kind": "percent",
         "value": "10"
       }
@@ -53,6 +33,10 @@
     }
   },
   "goals": [
+    {
+      "kind": "first_summon",
+      "page": "summon"
+    },
     {
       "kind": "clear_dungeon",
       "page": "dungeons"
@@ -91,6 +75,23 @@
       "kind": "ascension",
       "page": "shop",
       "minProgress": 0.25
+    },
+    {
+      "kind": "tool_line",
+      "page": "production",
+      "minProgress": 0.25
+    },
+    {
+      "kind": "worker_slot",
+      "page": "production"
+    },
+    {
+      "kind": "skill_points",
+      "page": "skills"
+    },
+    {
+      "kind": "wishlist",
+      "page": "summon"
     }
   ]
 }

@@ -1,7 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { accountInfo, formatDecimal, rewardTrack, xpToNextAccountLevel } from '../src/game';
 import { levelBadge, levelUpView, trackView } from '../src/renderer/src/pages/accountModel';
-import { content, freshState } from './helpers';
+import { content as bundled, freshState, levelPointsOnly } from './helpers';
+
+const content = levelPointsOnly(bundled);
+
+/** The Summon Crystals the level 10 reward gives (account.json). */
+const lv10Crystals = (): string =>
+  content.account.rewardTrack
+    .find((r) => r.level === 10)!
+    .resources!.find((r) => r.resource === 'summon_crystal')!
+    .amount.toString();
 
 describe('account level badge', () => {
   it('shows the level, the XP bar and no points on a new game', () => {
@@ -18,15 +27,15 @@ describe('account level badge', () => {
   it('counts the points to spend and says max level at the top', () => {
     const s = freshState();
     s.account.level = 6;
-    s.account.skills = { grove_yield: 2 };
+    s.account.skills = { logging_s1: 2 };
     const v = levelBadge(accountInfo(s, content));
     expect(v.points).toBe(3);
     expect(v.pointsText).toBe('3 skill points to spend');
 
-    s.account.level = content.account.levels.maxLevel;
-    const top = levelBadge(accountInfo(s, content));
-    expect(top.xpText).toBe('Max level');
-    expect(top.fraction).toBe(1);
+    s.account.level = 80;
+    const high = levelBadge(accountInfo(s, content));
+    expect(high.xpText).not.toBe('Max level');
+    expect(high.level).toBe(80);
   });
 });
 
@@ -47,7 +56,7 @@ describe('reward track', () => {
     const lv10 = tiles.find((t) => t.level === 10)!;
     // the cosmetic is the headline, then the sigils
     expect(lv10.rewards.map((r) => r.kind)).toEqual(['cosmetic', 'resource', 'points']);
-    expect(lv10.rewards[1]!.text).toBe('+20 Summon Crystal');
+    expect(lv10.rewards[1]!.text).toBe(`+${lv10Crystals()} Summon Crystal`);
 
     expect(tiles.find((t) => t.level === 4)!.milestone).toBe(false);
     expect(lv3.label).toBe('Level 3: +1 loadout cost cap, +1 skill point. Reached');
@@ -61,7 +70,7 @@ describe('level-up toast', () => {
     const v = levelUpView(content, rewardTrack(s, content), 7, 10);
     expect(v.title).toBe('Account level 10!');
     expect(v.lines[0]).toBe('+3 skill points');
-    expect(v.lines).toContain('+20 Summon Crystal');
+    expect(v.lines).toContain(`+${lv10Crystals()} Summon Crystal`);
     expect(v.lines).toContain('+1 loadout cost cap');
     expect(v.lines).toContain(content.cosmeticById.get('holo_hex')!.name);
     expect(v.big).toBe(true);

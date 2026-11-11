@@ -12,21 +12,22 @@ import {
   type Modifier,
 } from '../src/game';
 import { RARITIES } from '../src/data';
-import { constantRng, content, freshState, withDps } from './helpers';
+import { constantRng, content, CRYSTAL_UNIT, freshState, withDps } from './helpers';
 
 const PORTAL = 'card_portal';
 const withSigils = (n: number): GameState => {
   const state = freshState();
-  state.resources['summon_crystal'] = new Decimal(n);
+  state.resources['summon_crystal'] = new Decimal(n * CRYSTAL_UNIT);
   return state;
 };
 const rank = (r: string) => RARITIES.indexOf(r as (typeof RARITIES)[number]);
 
 describe('Card Portal (DESIGN.md §7, beta portals)', () => {
-  it('costs 10 Summon Crystals for one pull and 100 for ten', () => {
+  it('costs a single pull for one and ten times that for ten', () => {
     const info = portalInfo(withSigils(50), content, PORTAL)!;
-    expect(info.single.price).toEqual({ resource: 'summon_crystal', amount: new Decimal(10) });
-    expect(info.ten.price).toEqual({ resource: 'summon_crystal', amount: new Decimal(100) });
+    const single = new Decimal(10 * CRYSTAL_UNIT);
+    expect(info.single.price).toEqual({ resource: 'summon_crystal', amount: single });
+    expect(info.ten.price).toEqual({ resource: 'summon_crystal', amount: single.mul(10) });
     expect(info.single.affordable).toBe(true);
     expect(info.ten.affordable).toBe(false);
   });

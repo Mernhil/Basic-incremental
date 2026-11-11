@@ -1,3 +1,4 @@
+import type { CoinAmount } from '../settings/coins';
 import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -105,12 +106,20 @@ export interface Shell {
   tools: HTMLElement;
   /** Replaces a resource chip's coin art (the gem's mastery metal, DESIGN.md §4). */
   setCurrencyArt(id: string, art: string): void;
-  /** The quest scroll slot under the header (goal tracker, DESIGN.md §10). */
+  /** The goals strip under the header (goal tracker, DESIGN.md §10). */
   quest: HTMLElement;
+  /**
+   * Puts `el` into the slot at the right end of the goals strip while `page` is the current page
+   * (for example Production's x1 / x10 / x100 / Max toggle). `null` takes it out again. A page
+   * calls this once, when it is built; the shell moves the element in and out as pages change.
+   */
+  setQuestSlot(page: PageId, el: HTMLElement | null): void;
   scrollToTop(): void;
 }
 
 export function createShell(opts: {
+  /** How a currency counts in coins (Money), or null for a plain number (DESIGN.md §3 Coins). */
+  coins?: (id: string, amount: Decimal) => CoinAmount | null;
   version: string;
   currencies: Currency[];
   levelTip: TipContent;
@@ -178,7 +187,10 @@ export function createShell(opts: {
       currencyGlyphs.set(c.id, land);
       continue;
     }
-    const item = h('li', `shell-currency${c.crystal ? ' shell-currency--crystal' : ''}`);
+    const item = h(
+      'li',
+      `shell-currency ${c.crystal ? 'shell-currency--crystal' : 'shell-currency--money'}`,
+    );
     if (c.iconId) item.dataset.icon = c.iconId;
     if (c.crystal) crystals.add(c.id);
     item.tabIndex = 0;
@@ -209,9 +221,18 @@ export function createShell(opts: {
       if (c.shown.eq(goal)) continue;
       c.shown = rollToward(c.shown, goal, dt);
       // whole-number amounts (crystals, cores) roll through whole numbers only
-      const text = fmt(goal.eq(goal.floor()) ? c.shown.round() : c.shown);
+      const shown = goal.eq(goal.floor()) ? c.shown.round() : c.shown;
       const v = currencyValues.get(id)!;
+      // Money counts in coins (DESIGN.md §3 Coins): the chip shows the count and names the coin.
+      const coin = opts.coins?.(id, shown) ?? null;
+      const text = coin ? coin.value : fmt(shown);
       if (v.textContent !== text) v.textContent = text;
+      if (coin) {
+        const item = currencyItems.get(id);
+        const label = item?.querySelector<HTMLElement>('.shell-currency__name');
+        if (label && label.textContent !== coin.coin.name) label.textContent = coin.coin.name;
+        if (item && item.dataset['coin'] !== coin.coin.id) item.dataset['coin'] = coin.coin.id;
+      }
     }
   });
 
@@ -226,14 +247,12 @@ export function createShell(opts: {
     btn.type = 'button';
     btn.dataset.page = p.id;
     btn.dataset.tipSide = 'right';
-    // the pixel navigation plaque (DESIGN.md §12), half its 64 px grid
+    // the pixel navigation plaque (DESIGN.md §12) at a whole scale; the name is its accessible
+    // name and its tooltip (hover and keyboard focus), nothing is written under it
     const plaque = h('span', 'shell-rail__plaque');
     plaque.innerHTML = svg(navPlaque(p.id), PLAQUE_VIEWBOX);
     btn.append(plaque, h('span', 'shell-rail__label', COPY.pages[p.id].label));
-    // In the narrow (icons only) layout the label is hidden, so the tooltip names the page.
-    attachTooltip(btn, () =>
-      el.classList.contains('shell--narrow') ? COPY.pages[p.id].label : '',
-    );
+    attachTooltip(btn, COPY.pages[p.id].label);
     btn.addEventListener('click', () => show(p.id));
     links.set(p.id, btn);
     li.append(btn);
@@ -247,6 +266,15 @@ export function createShell(opts: {
   const notices = h('div', 'shell-notices');
   const quest = h('div', 'shell-quest');
   quest.hidden = true;
+  // the slot at the strip's right end: whatever the current page put there (`setQuestSlot`)
+  const questSlot = h('div', 'shell-quest__slot');
+  quest.append(questSlot);
+  const questSlots = new Map<PageId, HTMLElement>();
+  // the strip shows while there are goals (quest.ts sets data-goals) or a page filled the slot
+  const syncQuest = (): void => {
+    quest.hidden = quest.dataset.goals !== '1' && questSlot.childElementCount === 0;
+  };
+  quest.addEventListener('goals', syncQuest);
   main.append(quest, notices);
   const pages = new Map<PageId, HTMLElement>();
   for (const p of PAGES) {
@@ -270,6 +298,9 @@ export function createShell(opts: {
   function show(id: PageId): void {
     active = id;
     for (const [pid, page] of pages) page.hidden = pid !== id;
+    const slotted = questSlots.get(id);
+    questSlot.replaceChildren(...(slotted ? [slotted] : []));
+    syncQuest();
     for (const [pid, link] of links) {
       if (pid === id) link.setAttribute('aria-current', 'page');
       else link.removeAttribute('aria-current');
@@ -347,6 +378,14 @@ export function createShell(opts: {
     },
     tools,
     quest,
+    setQuestSlot(page, el) {
+      if (el) questSlots.set(page, el);
+      else questSlots.delete(page);
+      if (page === active) {
+        questSlot.replaceChildren(...(el ? [el] : []));
+        syncQuest();
+      }
+    },
     setCurrencyArt(id, art) {
       const glyph = currencyGlyphs.get(id);
       if (glyph && glyphArt.get(id) !== art) {
