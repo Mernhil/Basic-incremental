@@ -117,7 +117,7 @@ function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
       production: { logging: [null, null, null], mining: [null, null, null] },
     },
     discoveredBonds: [],
-    expeditions: { trips: [] },
+    expeditions: { trips: [], completed: 0 },
     ascensionChallenges: { active: null, completions: {} },
   };
 }
