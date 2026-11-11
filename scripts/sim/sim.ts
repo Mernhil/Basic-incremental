@@ -2414,6 +2414,29 @@ export interface SimResult {
   progress: ProgressSample[];
   /** Sim seconds when a weapon was fully maxed (`maxedWeapon`), or null. */
   maxedWeaponAt: number | null;
+  /** How long fights take (DESIGN.md §6 Fight pace, Floors pace): see `FightSample`. */
+  fights: FightSample[];
+}
+
+/**
+ * One fight timed by the game's own readouts (`secondsPerKill`, `survivalSeconds`): `first` is the
+ * first win of a floor (a Challenge won on a floor never beaten before), `farm` the floor farmed,
+ * read every quarter hour, and `loss` a Challenge lost (the team was too weak).
+ */
+export interface FightSample {
+  at: 'first' | 'farm' | 'loss';
+  kind: 'wave' | 'miniboss' | 'boss';
+  dungeonId: string;
+  difficulty: Difficulty;
+  floor: number;
+  /** Sim seconds. */
+  t: number;
+  /** Seconds the team takes to clear the floor from full HP. */
+  kill: number | null;
+  /** Seconds the team's full health lasts against the floor. */
+  survive: number | null;
+  /** A first win that came after the floor was lost at least once: the team matched it. */
+  held?: boolean;
 }
 
 /** One hourly reading of the systems the balance run tunes (DESIGN.md §14 The balance update's sim). */
@@ -2448,6 +2471,11 @@ export interface ProgressSample {
   challengeCompletions?: number;
   stuckLongest?: number;
   focusPulls?: number;
+  /** Levels (DESIGN.md §4 Levels): the mean tree and mine level, the gem output a second weighted
+   *  as Starlight weighs it, and the seconds of Money income the cheapest next level costs. */
+  meanLevel?: number;
+  gemOutput?: number;
+  levelWait?: number;
 }
 
 /** The top of the weapon ladder (DESIGN.md §14 A maxed weapon): a Mythic or Void Heirloom at ★6. */
@@ -2503,10 +2531,38 @@ export function progressOf(
     fight: at ? `${dungeon!.id} ${at.difficulty} ${at.floor}` : (state.activeDungeonId ?? '-'),
     bestWeapon: bestWeapon(state, content),
     ...(table ? tableProgress(state, content, t, table) : {}),
+    ...levelProgress(state, content),
   };
 }
 
 /** Weighted gems harvested over the whole game (`mastery.harvested` × Starlight tier weight). */
+/** The Levels reading of `ProgressSample` (DESIGN.md §4 Levels). */
+function levelProgress(
+  state: GameState,
+  content: Content,
+): Pick<ProgressSample, 'meanLevel' | 'gemOutput' | 'levelWait'> {
+  const modifiers = collectModifiers(state, content);
+  const trees = content.trees.filter((x) => isProducerUnlocked(state, content, 'logging', x.id));
+  const mines = content.mines.filter((x) => isProducerUnlocked(state, content, 'mining', x.id));
+  const levels = [
+    ...trees.map((x) => treeLevel(state, x.id)),
+    ...mines.map((x) => mineLevel(state, x.id)),
+  ];
+  const prices = [
+    ...trees.map((x) => treeLevelCost(state, content, x.id, modifiers)),
+    ...mines.map((x) => mineLevelCost(state, content, x.id, modifiers)),
+  ]
+    .filter((x) => x !== null && x.resource === 'money')
+    .map((x) => x!.amount);
+  const money = num(incomeOf(state, content, 'money', modifiers));
+  const cheapest = prices.length > 0 ? Math.min(...prices.map(num)) : Infinity;
+  return {
+    meanLevel: levels.length > 0 ? levels.reduce((a, b) => a + b, 0) / levels.length : 0,
+    gemOutput: weightedProduction(state, content, modifiers),
+    levelWait: money > 0 ? cheapest / money : Infinity,
+  };
+}
+
 function gemsHarvested(state: GameState, content: Content): number {
   let total = 0;
   for (const [id, amount] of Object.entries(state.mastery.harvested)) {
@@ -2612,6 +2668,32 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   let trialClearedAt: number | null = null;
   const dpsSamples: Array<[number, number]> = [];
   const pullSamples: Array<[number, number, number]> = [];
+  const fights: FightSample[] = [];
+  const firstWins = new Set<string>();
+  const lostFloors = new Set<string>();
+  /** Times a floor of a dungeon and tier with the team as it stands (DESIGN.md §6 Fight pace). */
+  const timeFight = (
+    at: FightSample['at'],
+    dungeonId: string,
+    difficulty: Difficulty,
+    floor: number,
+    modifiers: Modifier[],
+    held = false,
+  ): void => {
+    const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
+    if (!stage) return;
+    fights.push({
+      at,
+      kind: stage.kind,
+      dungeonId,
+      difficulty,
+      floor: stage.floor,
+      t,
+      kill: secondsPerKill(state, content, dungeonId, modifiers, stage.floor, difficulty),
+      survive: survivalSeconds(state, content, dungeonId, modifiers, stage.floor, difficulty),
+      ...(at === 'first' ? { held } : {}),
+    });
+  };
   let t = 0;
   const countSummons = (buys: { bought: string[]; dustSpent: number }): void => {
     for (const id of buys.bought) {
@@ -2760,7 +2842,23 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     sinceCheckin += dt;
     // A kill that moves the player (a floor pushed) is a new place to choose from; a boss farmed
     // again and again is not, or a farm with overflow would re-choose every step.
+    const challengeMods = report.challenges.length > 0 ? collectModifiers(state, content) : [];
     for (const c of report.challenges) {
+      const firstKey = `${c.dungeonId}:${c.difficulty}:${c.floor}`;
+      if (c.won && !firstWins.has(firstKey)) {
+        firstWins.add(firstKey);
+        timeFight(
+          'first',
+          c.dungeonId,
+          c.difficulty,
+          c.floor,
+          challengeMods,
+          lostFloors.has(firstKey),
+        );
+      } else if (!c.won) {
+        lostFloors.add(firstKey);
+        timeFight('loss', c.dungeonId, c.difficulty, c.floor, challengeMods);
+      }
       if (c.won) table.challengesWon++;
       else {
         table.challengesLost++;
@@ -2786,6 +2884,17 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     }
     if (report.cardDrops.length > 0) state = optimizeLoadouts(state, content);
     if (t % DPS_SAMPLE_SECONDS < dt) {
+      const here = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+      if (here && state.combat.challenge === null) {
+        const position = floorPosition(state, here);
+        timeFight(
+          'farm',
+          here.id,
+          position.difficulty,
+          position.floor,
+          collectModifiers(state, content),
+        );
+      }
       const first = content.dungeons[0]!.id;
       dpsSamples.push([t - (t % DPS_SAMPLE_SECONDS), num(averageDps(state, content, first))]);
       pullSamples.push([
@@ -2814,6 +2923,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     runs,
     progress,
     maxedWeaponAt,
+    fights,
   };
 
   /** Notes the milestones, run milestones and account levels the state has reached by now. */
@@ -3268,4 +3378,131 @@ export function formatTableLog(
     `Expeditions: ${table.trips} trips, ${table.tripMaterials} Core units (fights ${table.fightMaterials}), ${table.tripGems.toExponential(1)} weighted gems`,
     `Ascension challenges: ${table.challengeRuns} runs, ${table.challengesLeft} left, completed ${table.completions.map(([id, at]) => `${id} at ${hoursText(at)}`).join(', ') || 'none'}`,
   ].join('\n');
+}
+
+/** Seconds as the fight-pace table prints them. */
+const secondsText = (s: number | null): string =>
+  s === null ? '-' : s < 10 ? `${s.toFixed(1)} s` : `${Math.round(s)} s`;
+
+/** Share of the values inside [lo, hi], as a percent. */
+const shareIn = (values: readonly number[], lo: number, hi: number): string =>
+  values.length === 0
+    ? '-'
+    : `${Math.round((values.filter((v) => v >= lo && v <= hi).length / values.length) * 100)}%`;
+
+/** The fight pace bands of DESIGN.md §6: boss and mini-boss 15 to 30 s, a wave a few seconds. */
+export const FIGHT_BAND = { killLo: 15, killHi: 30, fallLo: 10, fallHi: 20, waveHi: 6 } as const;
+
+/**
+ * How long fights take (DESIGN.md §6 Fight pace, Floors pace), over every seed: per dungeon and
+ * tier, the median time to kill at the first win of the last-floor boss, the mini-bosses and the
+ * waves (with how long the team would last there), the floor farmed (read every quarter hour) and
+ * how long a team that lost a Challenge lasted. Then the share of every first win inside its band.
+ */
+export function formatFightPace(
+  runs: ReadonlyArray<{ fights: readonly FightSample[] }>,
+  content: Content,
+): string {
+  const all = runs.flatMap((r) => r.fights);
+  const kills = (xs: readonly FightSample[]): number[] =>
+    xs.map((f) => f.kill).filter((v): v is number => v !== null && Number.isFinite(v));
+  const lasts = (xs: readonly FightSample[]): number[] =>
+    xs.map((f) => f.survive).filter((v): v is number => v !== null && Number.isFinite(v));
+  const cell = (xs: readonly FightSample[], withLast = true): string => {
+    if (xs.length === 0) return '-';
+    const k = kills(xs);
+    const l = lasts(xs);
+    const last = withLast && l.length > 0 ? ` (lasts ${secondsText(median(l))})` : '';
+    return `${secondsText(k.length > 0 ? median(k) : null)}${last} n=${xs.length}`;
+  };
+  const lines = [
+    '| Dungeon | Tier | Boss, first win | Mini-bosses, first wins | Waves, first wins | Farmed floor | Lost Challenges: team lasts |',
+    '|---|---|---|---|---|---|---|',
+  ];
+  for (const d of content.dungeons) {
+    for (const tier of DIFFICULTIES) {
+      const here = all.filter((f) => f.dungeonId === d.id && f.difficulty === tier);
+      if (here.length === 0) continue;
+      const of = (at: FightSample['at'], kind?: FightSample['kind']): FightSample[] =>
+        here.filter((f) => f.at === at && (kind === undefined || f.kind === kind));
+      const loss = of('loss');
+      lines.push(
+        `| ${d.name} | ${tier} | ${cell(of('first', 'boss'))} | ${cell(of('first', 'miniboss'))} | ${cell(of('first', 'wave'))} | ${cell(of('farm'), false)} | ${loss.length > 0 ? `${secondsText(median(lasts(loss)))} n=${loss.length}` : '-'} |`,
+      );
+    }
+  }
+  const first = all.filter((f) => f.at === 'first');
+  const b = FIGHT_BAND;
+  const band = (label: string, xs: readonly FightSample[], lo: number, hi: number): string => {
+    const k = kills(xs);
+    return `${label} ${shareIn(k, lo, hi)} in ${lo}-${hi} s (median ${secondsText(median(k))}, n=${k.length})`;
+  };
+  const fell = lasts(all.filter((f) => f.at === 'loss'));
+  const fellBoss = lasts(all.filter((f) => f.at === 'loss' && f.kind !== 'wave'));
+  const held = first.filter((f) => f.held === true);
+  lines.push(
+    '',
+    `Every first win: ${band(
+      'bosses',
+      first.filter((f) => f.kind === 'boss'),
+      b.killLo,
+      b.killHi,
+    )}; ${band(
+      'mini-bosses',
+      first.filter((f) => f.kind === 'miniboss'),
+      b.killLo,
+      b.killHi,
+    )}; ${band(
+      'waves',
+      first.filter((f) => f.kind === 'wave'),
+      0,
+      b.waveHi,
+    )}.`,
+    `First wins after a loss (a matching team): ${band(
+      'bosses',
+      held.filter((f) => f.kind === 'boss'),
+      b.killLo,
+      b.killHi,
+    )}; ${band(
+      'mini-bosses',
+      held.filter((f) => f.kind === 'miniboss'),
+      b.killLo,
+      b.killHi,
+    )}; ${band(
+      'waves',
+      held.filter((f) => f.kind === 'wave'),
+      0,
+      b.waveHi,
+    )}.`,
+    `A losing team falls: ${shareIn(fell, b.fallLo, b.fallHi)} in ${b.fallLo}-${b.fallHi} s (median ${secondsText(median(fell))}, n=${fell.length}); on a boss or mini-boss ${shareIn(fellBoss, b.fallLo, b.fallHi)} (median ${secondsText(median(fellBoss))}, n=${fellBoss.length}).`,
+    '(times from the game\'s own readouts, `secondsPerKill` and `survivalSeconds`, with the team as it stood; "lasts" is how long its full health holds there)',
+  );
+  return lines.join('\n');
+}
+
+/**
+ * Levels (DESIGN.md §4 Levels), medians over the seeds at the reading hours: the mean tree and
+ * mine level, the gem output a second (weighted as Starlight weighs the tiers) and how many
+ * seconds of Money income the cheapest next level costs. Production runs away when the output
+ * grows faster than the prices: the wait would fall toward nothing while the output explodes.
+ */
+export function formatLevels(
+  runs: ReadonlyArray<{ progress: readonly ProgressSample[] }>,
+  hours: number,
+): string {
+  const lines = [
+    '| Hour | Mean level | Gem output /s (weighted) | Next level costs (s of Money income) |',
+    '|---|---|---|---|',
+  ];
+  for (const h of progressHours(hours)) {
+    const at = runs
+      .map((r) => r.progress.find((p) => p.t === h * 3600))
+      .filter((p): p is ProgressSample => p !== undefined && p.meanLevel !== undefined);
+    if (at.length === 0) continue;
+    const m = (f: (p: ProgressSample) => number): number => median(at.map(f));
+    lines.push(
+      `| ${h} | ${Math.round(m((p) => p.meanLevel ?? 0))} | ${m((p) => p.gemOutput ?? 0).toExponential(2)} | ${secondsText(m((p) => p.levelWait ?? 0))} |`,
+    );
+  }
+  return lines.join('\n');
 }
