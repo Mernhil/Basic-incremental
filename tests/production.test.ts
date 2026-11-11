@@ -8,6 +8,7 @@ import {
   clearDungeon,
   collectModifiers,
   curvePrice,
+  effectiveGrowth,
   Decimal,
   isProducerUnlocked,
   mineLevelCost,
@@ -251,5 +252,27 @@ describe('curve prices', () => {
     expect(curvePrice(curve, 5, []).amount.toNumber()).toBe(320);
     const odd = { ...curve, growth: new Decimal(1.15) };
     expect(curvePrice(odd, 1, []).amount.toNumber()).toBe(12); // 11.5 still rounds up
+  });
+
+  const cut = (value: string): Modifier => ({
+    stat: 'cost.growth',
+    kind: 'percent',
+    value: new Decimal(value),
+    source: { kind: 'upgrade', id: 'test' },
+  });
+
+  it('cuts only the growth above 1: -10% turns ×1.2 into ×1.18', () => {
+    const curve = { resource: 'money', base: new Decimal(1000), growth: new Decimal(1.2) };
+    expect(effectiveGrowth(curve.growth, [cut('-10')]).toNumber()).toBeCloseTo(1.18, 10);
+    expect(curvePrice(curve, 2, [cut('-10')]).amount.toNumber()).toBe(Math.ceil(1000 * 1.18 ** 2));
+  });
+
+  it('caps the total cut at half the growth above 1, so prices always keep growing', () => {
+    const curve = { resource: 'money', base: new Decimal(1000), growth: new Decimal(1.13) };
+    // Wide Skies, Fresh Start, Wide Groves and Deep Roots together: -36%, and far more.
+    expect(effectiveGrowth(curve.growth, [cut('-36')]).toNumber()).toBeCloseTo(1.0832, 10);
+    expect(effectiveGrowth(curve.growth, [cut('-200')]).toNumber()).toBeCloseTo(1.065, 10);
+    const late = curvePrice(curve, 1000, [cut('-200')]).amount;
+    expect(late.gt(new Decimal(1000).mul(new Decimal(1.06).pow(1000)))).toBe(true);
   });
 });

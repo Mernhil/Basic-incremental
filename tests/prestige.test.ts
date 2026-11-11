@@ -36,7 +36,7 @@ function expectedGain(points: number): number {
 
 /** A run far enough along to ascend, with things that reset and things that persist. */
 function progressedRun(): GameState {
-  const state = runWith(1e9, 1e7);
+  const state = runWith(1e13, 1e11);
   state.resources['oak_gem'] = new Decimal(5000);
   state.resources['summon_crystal'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
@@ -68,8 +68,8 @@ describe('Starlight gain (DESIGN.md §9)', () => {
 
   it('comes from the gems harvested this run, weighted by gem tier', () => {
     const weights = content.prestige.gain.tierWeights.map((w) => w.toNumber());
-    const points = 1e7 * weights[0]! + 1e5 * weights[2]!;
-    expect(starlightGain(runWith(1e7, 1e5), content).toNumber()).toBe(expectedGain(points));
+    const points = 1e13 * weights[0]! + 1e11 * weights[2]!;
+    expect(starlightGain(runWith(1e13, 1e11), content).toNumber()).toBe(expectedGain(points));
   });
 
   it('counts only this run: gems harvested before the last ascension do not count', () => {
@@ -80,8 +80,8 @@ describe('Starlight gain (DESIGN.md §9)', () => {
 
   it('can be raised through prestige.gain', () => {
     const g = content.prestige.gain;
-    const raw = Math.pow(1e8 / g.divisor.toNumber(), g.exponent);
-    const doubled = starlightGain(runWith(1e8), content, [
+    const raw = Math.pow(1e12 / g.divisor.toNumber(), g.exponent);
+    const doubled = starlightGain(runWith(1e12), content, [
       {
         stat: 'prestige.gain',
         kind: 'mult',
@@ -113,7 +113,7 @@ describe('ascension preview', () => {
         'starlight',
       ]),
     );
-    expect(preview.gain.toNumber()).toBe(expectedGain(1e9 + 1e7 * 100));
+    expect(preview.gain.toNumber()).toBe(expectedGain(1e13 + 1e11 * 100));
     expect(preview.rewards).toEqual(['gilded_plate']);
   });
 });
@@ -222,7 +222,7 @@ describe('ascend', () => {
     expect(ascensionPreview(first.state, content).gain.toNumber()).toBe(0);
 
     const second = first.state;
-    second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e9);
+    second.mastery.harvested['oak_gem'] = second.mastery.harvested['oak_gem']!.add(1e13);
     const again = ascend(second, content);
     if (!again.ok) throw new Error(again.reason);
     expect(again.state.prestigeCount).toBe(2);

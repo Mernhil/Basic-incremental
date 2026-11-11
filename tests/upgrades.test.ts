@@ -154,7 +154,7 @@ describe('lifetime Money earned', () => {
 describe('ascension', () => {
   it('drops per-run upgrades, keeps permanent ones and lifetime Money', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     state.mastery.harvested['grotto_gem'] = new Decimal(1e8);
     state.upgrades.owned.push('keen_axes', 'battle_cry');
     state.upgrades.moneyEarned = new Decimal(123456);

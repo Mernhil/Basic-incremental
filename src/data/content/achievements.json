@@ -29,7 +29,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "600"
+            "amount": "150"
           }
         ]
       }
@@ -217,7 +217,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "300"
+            "amount": "150"
           }
         ]
       }
@@ -298,7 +298,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "300"
+            "amount": "150"
           }
         ]
       }
@@ -541,7 +541,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "1500"
+            "amount": "150"
           }
         ]
       }
@@ -769,7 +769,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "300"
+            "amount": "150"
           }
         ]
       }
@@ -786,7 +786,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "600"
+            "amount": "150"
           }
         ]
       }
@@ -803,7 +803,7 @@
         "resources": [
           {
             "resource": "summon_crystal",
-            "amount": "1500"
+            "amount": "300"
           }
         ]
       }

@@ -607,8 +607,8 @@ export const cardRulesSchema = z.strictObject({
   /**
    * Card power, which scales `full` card modifiers and the main growth:
    * (1 + perLevel × (level − 1)) × (1 + perStar × (stars − 1), + star6Bonus at ★6) × tier.
-   * Base damage and health use the star multiplier instead of the perStar part:
-   * (1 + perLevel × (level − 1)) × starMultiplier[stars − 2] (1 at ★1) × tier.
+   * Base damage and health use the star multiplier instead of the perStar part and their own
+   * tier step: (1 + perLevel × (level − 1)) × starMultiplier[stars − 2] (1 at ★1) × statTier.
    */
   power: z.strictObject({
     perLevel: z.number().min(0),
@@ -617,6 +617,11 @@ export const cardRulesSchema = z.strictObject({
     /** Multiplier of base damage and health at ★2 … ★6 (DESIGN.md §5 star impact). */
     starMultiplier: z.array(z.number().positive()).length(MAX_STARS - 1),
     tier: perTier(z.number().positive()),
+    /**
+     * Tier multiplier of base damage and health (and worker power), DESIGN.md §5 Tier: a step at
+     * least as big as ★6 over ★1, so a tier-up that restarts the stars never weakens the card.
+     */
+    statTier: perTier(z.number().positive()),
   }),
   /**
    * What a main card adds to its job as it grows (11.2: base power, gauge speed). Each value is

@@ -124,6 +124,28 @@ export function finalPrice(
   return { resource, amount: ceilPrice(amount.mul(multiplier)) };
 }
 
+/**
+ * The most of a price curve's growth above 1 that `cost.growth` cuts may take away together
+ * (DESIGN §3 Every Money price): stacked cuts (Wide Skies, Fresh Start, Wide Groves, Deep Roots)
+ * once pushed ×1.13 to the floor of 1, and level prices stopped growing.
+ */
+export const MAX_GROWTH_CUT = 0.5;
+
+/**
+ * A curve's growth after `cost.growth`: the modifiers act on the part above 1 (a -10% cut turns
+ * ×1.2 into ×1.18), and together they never take more than `MAX_GROWTH_CUT` of it, so a price
+ * always keeps growing.
+ */
+export function effectiveGrowth(
+  growth: Decimal,
+  modifiers: readonly Modifier[],
+  context: StatContext = {},
+): Decimal {
+  const excess = Decimal.max(growth.sub(1), 0);
+  const share = Decimal.max(statValue('cost.growth', 1, modifiers, context), 1 - MAX_GROWTH_CUT);
+  return excess.mul(share).add(1);
+}
+
 /** The `owned`-th purchase on an exponential curve: base * growth^owned, growth via `cost.growth`. */
 export function curvePrice(
   curve: CostCurve,
@@ -132,7 +154,7 @@ export function curvePrice(
   context: StatContext = {},
 ): Price {
   const ctx = { ...context, resource: curve.resource };
-  const growth = Decimal.max(statValue('cost.growth', curve.growth, modifiers, ctx), 1);
+  const growth = effectiveGrowth(curve.growth, modifiers, ctx);
   return finalPrice(curve.resource, curve.base.mul(growth.pow(owned)), modifiers, ctx);
 }
 

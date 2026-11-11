@@ -123,8 +123,50 @@ function pinNoElements(bundled: Content): Content {
   return { ...bundled, combat: { ...bundled.combat, elements } };
 }
 
+/**
+ * The numbers the rule tests were written against, pinned so the balance run (DESIGN.md §14) can
+ * tune them without moving those tests: the Mossy Cellar's boss (12,900 HP, 15 damage every 3 s,
+ * purses of 1,000 to 1,500), Hard and Nightmare at a thousand times the tier below (purses half as
+ * much again a tier), the card XP curve from 10 XP, and base stats stepping by tier as card effects do. Balance tests read the shipped numbers from `loadContent()`.
+ */
+function pinRuleNumbers(bundled: Content): Content {
+  const dungeons = bundled.dungeons.map((d) =>
+    d.id === 'mossy_cellar'
+      ? {
+          ...d,
+          boss: {
+            ...d.boss,
+            hp: new Decimal(12_900),
+            attack: { damage: new Decimal(15), intervalSeconds: 3 },
+          },
+          drops: {
+            ...d.drops,
+            currencies: d.drops.currencies.map((c) =>
+              c.resource === 'money' ? { ...c, min: 1000, max: 1500 } : c,
+            ),
+          },
+        }
+      : d,
+  );
+  const power = { ...bundled.cardRules.power, statTier: bundled.cardRules.power.tier };
+  const xpCurve = { ...bundled.cardRules.xpCurve, base: new Decimal(10) };
+  const difficulties = {
+    hard: { ...bundled.combat.difficulties.hard, hp: 1000, attack: 1000, purse: 1500 },
+    nightmare: { ...bundled.combat.difficulties.nightmare, hp: 1e6, attack: 1e6, purse: 2.25e6 },
+  };
+  return {
+    ...bundled,
+    dungeons,
+    dungeonById: new Map(dungeons.map((d) => [d.id, d])),
+    cardRules: { ...bundled.cardRules, power, xpCurve },
+    combat: { ...bundled.combat, difficulties },
+  };
+}
+
 /** The pinned content with the shipped floors of every dungeon back in. */
-export const floorsContent: Content = pinNoElements(pinStarBar(pinProductionRates(loadContent())));
+export const floorsContent: Content = pinRuleNumbers(
+  pinNoElements(pinStarBar(pinProductionRates(loadContent()))),
+);
 
 export const content: Content = pinOneFloor(floorsContent);
 

@@ -29,10 +29,10 @@
       "art": "root_warden",
       "weakness": "fire",
       "resistance": "nature",
-      "hp": "12900",
+      "hp": "45000",
       "hpBars": 5,
       "attack": {
-        "damage": "15",
+        "damage": "61",
         "intervalSeconds": 3
       }
     },
@@ -69,8 +69,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 1000,
-          "max": 1500
+          "min": 3490,
+          "max": 5250
         }
       ],
       "extraMaterials": [],
@@ -111,10 +111,10 @@
       "art": "cinder_lich",
       "weakness": "light",
       "resistance": "fire",
-      "hp": "300000",
+      "hp": "2500000",
       "hpBars": 8,
       "attack": {
-        "damage": "250",
+        "damage": "2810",
         "intervalSeconds": 2.5
       }
     },
@@ -147,8 +147,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 24000,
-          "max": 34000
+          "min": 194000,
+          "max": 290000
         }
       ],
       "extraMaterials": [
@@ -202,10 +202,10 @@
       "art": "glacier_colossus",
       "weakness": "storm",
       "resistance": "crystal",
-      "hp": "7000000",
+      "hp": "400000000",
       "hpBars": 12,
       "attack": {
-        "damage": "6800",
+        "damage": "360000",
         "intervalSeconds": 2
       }
     },
@@ -238,8 +238,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 560000,
-          "max": 790000
+          "min": 31000000,
+          "max": 46600000
         }
       ],
       "extraMaterials": [
@@ -285,10 +285,10 @@
       "name": "Storm Roc",
       "weakness": "earth",
       "resistance": "storm",
-      "hp": "161000000",
+      "hp": "800000000",
       "hpBars": 12,
       "attack": {
-        "damage": "156400",
+        "damage": "720000",
         "intervalSeconds": 2
       }
     },
@@ -321,8 +321,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 12880000,
-          "max": 18170000
+          "min": 61900000,
+          "max": 93100000
         }
       ],
       "extraMaterials": [
@@ -368,10 +368,10 @@
       "name": "Dawn Hierophant",
       "weakness": "void",
       "resistance": "light",
-      "hp": "3703000000",
+      "hp": "3000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "3597200",
+        "damage": "2700000",
         "intervalSeconds": 2
       }
     },
@@ -404,8 +404,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 296240000,
-          "max": 417910000
+          "min": 233000000,
+          "max": 350000000
         }
       ],
       "extraMaterials": [
@@ -451,10 +451,10 @@
       "name": "The Unmade King",
       "weakness": "light",
       "resistance": "void",
-      "hp": "85169000000",
+      "hp": "6000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "82735600",
+        "damage": "5410000",
         "intervalSeconds": 2
       }
     },
@@ -487,8 +487,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 6813520000,
-          "max": 9611930000
+          "min": 465000000,
+          "max": 696000000
         }
       ],
       "extraMaterials": [

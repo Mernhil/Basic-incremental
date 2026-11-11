@@ -142,7 +142,7 @@ describe('autobuyers', () => {
 
   it('keep their switches through an Ascension', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     state.automation = { treeLevels: true, mineLevels: false, reservePercent: 30 };
     const r = ascend(state, content, collectModifiers(state, content));
     if (!r.ok) throw new Error(r.reason);

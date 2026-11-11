@@ -29,7 +29,7 @@
       "resources": [
         {
           "resource": "summon_crystal",
-          "amount": "300"
+          "amount": "150"
         }
       ]
     },
@@ -42,7 +42,7 @@
       "resources": [
         {
           "resource": "summon_crystal",
-          "amount": "600"
+          "amount": "300"
         }
       ],
       "cosmetics": ["holo_hex"]
@@ -52,7 +52,7 @@
       "resources": [
         {
           "resource": "summon_crystal",
-          "amount": "900"
+          "amount": "450"
         }
       ],
       "costCap": 1
