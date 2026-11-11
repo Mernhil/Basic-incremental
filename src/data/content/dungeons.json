@@ -29,10 +29,10 @@
       "art": "root_warden",
       "weakness": "fire",
       "resistance": "nature",
-      "hp": "60000",
+      "hp": "45000",
       "hpBars": 5,
       "attack": {
-        "damage": "81.3",
+        "damage": "61",
         "intervalSeconds": 3
       }
     },
@@ -69,8 +69,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 4650,
-          "max": 7000
+          "min": 3490,
+          "max": 5250
         }
       ],
       "extraMaterials": [],
