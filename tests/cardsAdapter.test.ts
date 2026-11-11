@@ -7,11 +7,15 @@ import { content, freshState } from './helpers';
 const model = createCardsModel(content);
 
 describe('Cards page model', () => {
-  it('lists every card, owned commons leading their jobs', () => {
+  it('lists every card: the Squire leads, the two other commons work', () => {
     const entries = model.entries(freshState());
     expect(entries).toHaveLength(content.cards.length);
     const owned = entries.filter((e) => e.owned);
-    expect(owned.map((e) => e.role?.slot)).toEqual(['main', 'main', 'main']);
+    expect(owned.map((e) => [e.id, e.role?.slot ?? null, e.workplace])).toEqual([
+      ['ember_squire', 'main', null],
+      ['apprentice_feller', null, 'Oak'],
+      ['cave_digger', null, 'Copper Quarry'],
+    ]);
     for (const e of owned) {
       expect(e.next?.kind).toBe('star');
       expect(e.tier).toBeNull(); // commons stop at Wood (rarity caps the tier)
@@ -32,6 +36,15 @@ describe('Cards page model', () => {
     expect(model.loadout(added.state, 'fighting').slots[1]).toBe(rare.id);
     const removed = model.remove(added.state, rare.id);
     expect(removed.ok && model.loadout(removed.state, 'fighting').slots[1]).toBe(null);
+  });
+
+  it('keeps workers out of the loadout: they work on the Production page', () => {
+    const state = freshState();
+    expect(model.setMain(state, 'apprentice_feller').ok).toBe(false);
+    expect(model.addSupport(state, 'cave_digger').ok).toBe(false);
+    const feller = model.entries(state).find((e) => e.id === 'apprentice_feller')!;
+    expect(feller.supportEffect).toBe('');
+    expect(feller.mainAbility).toBe('+20% card XP here');
   });
 
   it('explains refusals in words', () => {

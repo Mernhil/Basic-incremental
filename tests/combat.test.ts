@@ -435,13 +435,6 @@ describe('burst gauges (DESIGN.md §6)', () => {
     const later = advance(state, content, 5000, rng).state;
     expect(burstView(later, content, 'fighting').fraction).toBeCloseTo(5 / 20);
   });
-
-  it('a harvest burst adds 10 s of each job’s output', () => {
-    const { state, report } = advance(bareState(), content, 30_000, rng);
-    expect(report.bursts).toMatchObject({ logging: 1, mining: 1 });
-    expect(state.resources['oak_gem']!.eq(30 + 10)).toBe(true); // Oak: 1/s
-    expect(state.resources['copper_gem']!.eq(15 + 5)).toBe(true); // Copper Quarry: 0.5/s
-  });
 });
 
 describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {

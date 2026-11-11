@@ -45,7 +45,8 @@ function progressedRun(): GameState {
   state.clearedDungeons = ['mossy_cellar'];
   state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
   state.combat.loadoutDamage = new Decimal(50);
-  state.bursts.logging = { gauge: 12, timer: 0.5 };
+  state.bursts.fighting = { gauge: 12, timer: 0.5 };
+  state.production.harvestGauges = { oak: { gauge: 12, timer: 0.5 } };
   state.bossHp = new Decimal(123);
   state.cards.owned['ember_squire']!.level = 15;
   state.portals['card_portal'] = { pity: 33, pulls: 50, pityHits: 0 };
@@ -137,7 +138,10 @@ describe('ascend', () => {
       const start = content.resourceById.get(id)!.startAmount?.toNumber() ?? 0;
       expect(amount.toNumber(), id).toBe(start);
     }
-    expect(s.bursts.logging).toEqual({ gauge: 0, timer: 0 });
+    expect(s.bursts.fighting).toEqual({ gauge: 0, timer: 0 });
+    expect(s.production.harvestGauges).toEqual({});
+    // the workers stay where they are (DESIGN.md §4)
+    expect(s.production.workers).toEqual(before.production.workers);
     expect(s.bossHp).toBeNull();
     expect(s.combat.loadoutDamage.toNumber()).toBe(0);
     expect(s.prestigeCount).toBe(1);

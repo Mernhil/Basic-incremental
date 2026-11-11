@@ -1,4 +1,4 @@
-import type { BurstJob, Content, Dungeon, ProductionJob, Trial } from '../data';
+import type { BurstJob, Content, Dungeon, Trial } from '../data';
 import {
   cardBaseDamage,
   cardHealth,
@@ -32,7 +32,6 @@ import {
   recordBossAttacks,
   type BossPattern,
 } from './bossAttacks';
-import { recordBurst } from './harvest';
 import {
   collectModifiers,
   computeStat,
@@ -42,7 +41,7 @@ import {
   type StatResult,
 } from './modifiers';
 import { Decimal } from './num';
-import { clearDungeon, jobProductionPerSecond, PRODUCTION_JOBS, type Price } from './production';
+import { clearDungeon, type Price } from './production';
 import { pushPlayerHit, type TickReport } from './report';
 import type { Rng } from './rng';
 import {
@@ -553,11 +552,11 @@ export interface BurstView {
   stats: BurstStats;
 }
 
-/** A job's gauge for display (the renderer animates it). */
+/** The fighting gauge for display (the renderer animates it). Harvest gauges: harvest.ts. */
 export function burstView(
   state: GameState,
   content: Content,
-  job: BurstJob,
+  job: 'fighting',
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BurstView {
   const stats = burstStats(content, job, modifiers);
@@ -788,42 +787,6 @@ export function trialStatus(state: GameState, content: Content): TrialStatus | n
 }
 
 // ---- stepping (called by advance) ------------------------------------------------------------
-
-/**
- * Harvest bursts: ticks fill each production job's gauge; full = that much extra output.
- * Returns, per job, the seconds of output the bursts harvested (0 when none fired).
- */
-export function advanceHarvestBursts(
-  next: GameState,
-  before: GameState,
-  content: Content,
-  seconds: number,
-  report: TickReport,
-  modifiers: readonly Modifier[],
-): Record<ProductionJob, Decimal> {
-  const harvested: Record<ProductionJob, Decimal> = {
-    logging: new Decimal(0),
-    mining: new Decimal(0),
-  };
-  for (const job of PRODUCTION_JOBS) {
-    const stats = burstStats(content, job, modifiers);
-    const run = advanceGauge(next.bursts[job], seconds, stats);
-    next.bursts[job] = run.gauge;
-    if (run.bursts === 0) continue;
-    report.bursts[job] += run.bursts;
-    const harvestSeconds = stats.power.mul(run.bursts);
-    harvested[job] = harvestSeconds;
-    recordBurst(before, content, job, harvestSeconds, modifiers, report);
-    for (const [resource, perSecond] of Object.entries(
-      jobProductionPerSecond(before, content, job, modifiers),
-    )) {
-      next.resources[resource] = (next.resources[resource] ?? new Decimal(0)).add(
-        perSecond.mul(harvestSeconds),
-      );
-    }
-  }
-  return harvested;
-}
 
 // ---- card health (DESIGN.md §6) ----
 

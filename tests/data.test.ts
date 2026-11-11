@@ -267,9 +267,15 @@ describe('card ranks and portals', () => {
     for (const job of ['logging', 'mining'] as const) {
       expect(new Set(content.cards.filter((c) => c.job === job).map((c) => c.rarity)).size).toBe(7);
     }
+    // fighting cards have a main ability and a support effect; workers one worker ability
     for (const card of content.cards) {
-      expect(card.main.description.length).toBeGreaterThan(0);
-      expect(card.support.modifiers.length).toBeGreaterThan(0);
+      if (card.job === 'fighting') {
+        expect(card.main.description.length).toBeGreaterThan(0);
+        expect(card.support.modifiers.length).toBeGreaterThan(0);
+      } else {
+        expect(card.worker.description.length, card.id).toBeGreaterThan(0);
+        expect(card.worker.modifiers.length, card.id).toBeGreaterThan(0);
+      }
     }
     expect(content.cardRules.startCards).toEqual([
       'ember_squire',
@@ -281,13 +287,16 @@ describe('card ranks and portals', () => {
   it('scales flat and percent card bonuses by default, and nothing else', () => {
     const content = loadContent();
     const duelist = content.cardById.get('storm_duelist')!;
+    if (duelist.job !== 'fighting') throw new Error('a fighting card');
     expect(duelist.main.modifiers.map((m) => [m.kind, m.scale])).toEqual([
       ['set', 'none'],
       ['mult', 'none'],
     ]);
     expect(duelist.support.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
+    // a worker ability applies as written: it has no scale (the worker's power multiplies the
+    // place's output instead)
     const keeper = content.cardById.get('grove_keeper')!;
-    expect(keeper.support.modifiers[0]!.scale).toBe('none'); // explicit: +1 fill stays +1
+    expect(keeper.job === 'logging' && 'scale' in keeper.worker.modifiers[0]!).toBe(false);
   });
 
   it('catches bad card rules', () => {
@@ -503,8 +512,28 @@ describe('production data', () => {
     expect(issues).toContain('mines.json › [2] › id: "oak" is already a tree id');
   });
 
-  it('has no plots, slots or expansions: only the harvest rules', () => {
-    expect(Object.keys(production).sort()).toEqual(['harvest']);
+  it('has no plots or expansions: the harvest rules and the worker slots and power', () => {
+    expect(Object.keys(production).sort()).toEqual(['harvest', 'workers']);
+  });
+
+  it('keeps a worker ability on its own place: data never names a place in it', () => {
+    const bad = raw();
+    const card = (bad.cards as { id: string; worker?: { modifiers: unknown[] } }[]).find(
+      (c) => c.id === 'apprentice_feller',
+    )!;
+    card.worker!.modifiers = [
+      { stat: 'production.rate', kind: 'percent', value: '5', scope: { producer: 'oak' } },
+    ];
+    expect(issuesFor(bad).some((i) => i.includes('acts on its own place'))).toBe(true);
+  });
+
+  it('refuses a logging or mining card with a main ability, or a fighting card without one', () => {
+    const bad = raw();
+    const card = (bad.cards as Record<string, unknown>[]).find(
+      (c) => c['id'] === 'apprentice_feller',
+    )!;
+    card['main'] = { description: 'Steady output' };
+    expect(issuesFor(bad).length).toBeGreaterThan(0);
   });
 
   it('needs a tree and a mine available from the start, since every unlocked kind produces', () => {

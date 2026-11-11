@@ -128,25 +128,18 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "Steady output",
+    "worker": {
+      "description": "+20% card XP here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
-      }
-    },
-    "support": {
-      "description": "+5% logging",
+        "strikes": 1
+      },
       "modifiers": [
         {
-          "stat": "production.rate",
+          "stat": "xp.card",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "20"
         }
       ]
     }
@@ -160,36 +153,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+10% logging",
+    "worker": {
+      "description": "+1 harvest gauge fill per tick here, +10% output",
       "harvest": {
         "style": "flurry",
         "intervalSeconds": 0.5,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+1 harvest-burst fill per tick",
       "modifiers": [
         {
           "stat": "burst.fill",
           "kind": "flat",
-          "value": "1",
-          "scope": {
-            "job": "logging"
-          },
-          "scale": "none"
+          "value": "1"
+        },
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "10"
         }
       ]
     }
@@ -203,35 +183,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output instead of 10 s",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +10% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+12% logging",
-      "modifiers": [
+          "value": "15"
+        },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "12",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "10"
         }
       ]
     }
@@ -245,43 +213,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+30% logging, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "30",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "20",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "1.5"
         }
       ]
     }
@@ -295,25 +243,18 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "Steady output",
+    "worker": {
+      "description": "+20% card XP here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 1,
-        "strikes": 1,
-        "targeting": "sweep"
-      }
-    },
-    "support": {
-      "description": "+5% mining",
+        "strikes": 1
+      },
       "modifiers": [
         {
-          "stat": "production.rate",
+          "stat": "xp.card",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "20"
         }
       ]
     }
@@ -327,36 +268,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+10% mining",
+    "worker": {
+      "description": "10% harvest crit chance here, +10% output",
       "harvest": {
         "style": "flurry",
         "intervalSeconds": 0.5,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
       "modifiers": [
         {
+          "stat": "harvest.critChance",
+          "kind": "flat",
+          "value": "0.1"
+        },
+        {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+1 harvest-burst fill per tick",
-      "modifiers": [
-        {
-          "stat": "burst.fill",
-          "kind": "flat",
-          "value": "1",
-          "scope": {
-            "job": "mining"
-          },
-          "scale": "none"
+          "value": "10"
         }
       ]
     }
@@ -370,43 +298,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output, +15% mining",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +20% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "15"
         },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+15% mining",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "20"
         }
       ]
     }
@@ -420,48 +328,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+40% mining, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "40",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+25% mining, +5% Core drop chance",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "25",
-          "scope": {
-            "job": "mining"
-          }
-        },
-        {
-          "stat": "drops.materialChance",
-          "kind": "percent",
-          "value": "5"
+          "value": "1.5"
         }
       ]
     }
@@ -633,35 +516,18 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+5% logging",
+    "worker": {
+      "description": "+15% output here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 0.8,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+7% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "7",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "15"
         }
       ]
     }
@@ -675,43 +541,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output, +15% logging",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +20% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "15"
         },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+15% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "15",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "20"
         }
       ]
     }
@@ -725,43 +571,23 @@
     "item": {
       "kind": "logging_axe"
     },
-    "main": {
-      "description": "+30% logging, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "30",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "logging"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% logging",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "20",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "1.5"
         }
       ]
     }
@@ -775,35 +601,18 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+5% mining",
+    "worker": {
+      "description": "+15% output here",
       "harvest": {
         "style": "steady",
         "intervalSeconds": 0.8,
-        "strikes": 1,
-        "targeting": "sweep"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "5",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+7% mining",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "7",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "15"
         }
       ]
     }
@@ -817,35 +626,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "Harvest bursts give 15 s of output instead of 10 s",
+    "worker": {
+      "description": "Harvest bursts here give 15 s of output, +10% output",
       "harvest": {
         "style": "chop",
         "intervalSeconds": 2,
-        "strikes": 1,
-        "targeting": "random"
+        "strikes": 1
       },
       "modifiers": [
         {
           "stat": "burst.power",
           "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+12% mining",
-      "modifiers": [
+          "value": "15"
+        },
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "12",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "10"
         }
       ]
     }
@@ -859,48 +656,23 @@
     "item": {
       "kind": "pickaxe"
     },
-    "main": {
-      "description": "+40% mining, harvest gauge fills faster",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
       "harvest": {
         "style": "volley",
         "intervalSeconds": 1.5,
-        "strikes": 2,
-        "targeting": "all"
+        "strikes": 2
       },
       "modifiers": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "40",
-          "scope": {
-            "job": "mining"
-          }
+          "value": "30"
         },
         {
           "stat": "burst.fill",
           "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "mining"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+25% mining, +5% Core drop chance",
-      "modifiers": [
-        {
-          "stat": "production.rate",
-          "kind": "percent",
-          "value": "25",
-          "scope": {
-            "job": "mining"
-          }
-        },
-        {
-          "stat": "drops.materialChance",
-          "kind": "percent",
-          "value": "5"
+          "value": "1.5"
         }
       ]
     }

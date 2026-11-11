@@ -6,18 +6,20 @@ import type {
   ItemKind,
   Job,
   ModifierData,
+  ModifierScope,
   Rank,
   RankTier,
   Rarity,
   Trial,
 } from '../data';
-import { JOBS, MAX_STARS, RANK_TIERS, RARITIES } from '../data/schemas';
+import { MAX_STARS, RANK_TIERS, RARITIES } from '../data/schemas';
 import { accountLevel } from './account';
 import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { finalPrice, pay, type Price } from './production';
 import { supportPower } from './upgrades';
+import { activeWorkers, producerJob, workerModifiers, workerScope, workplaceOf } from './workers';
 import type { CardGain, TickReport, TierUp } from './report';
 import {
   cloneState,
@@ -31,7 +33,8 @@ import {
 
 /**
  * Cards (DESIGN.md §5): a collection of owned cards with tier, stars, level and
- * XP; one loadout per job (1 main + 3 supports) under a cost cap; star-ups, tier-ups, shards and
+ * XP; the fighting loadout (1 main + 3 supports) under a cost cap (logging and mining cards are
+ * workers instead, workers.ts); star-ups, tier-ups, shards and
  * card drops. Card effects reach the game only as modifiers (source kind `card`) through
  * `collectModifiers`. Every progression number is in cardRules.json.
  *
@@ -42,6 +45,8 @@ import {
 
 export type { Job };
 export type CardRole = 'main' | 'support';
+/** The one job with a loadout (DESIGN.md §5 Loadouts). */
+export type LoadoutJob = 'fighting';
 /** A loadout slot: the main card or support slot 0, 1 or 2. */
 export type LoadoutSlot = 'main' | number;
 
@@ -50,7 +55,7 @@ export type CardFailure =
   | 'unknown'
   /** The card is not in the collection. */
   | 'not-owned'
-  /** The card belongs to another job's loadout. */
+  /** The card is not a fighting card. */
   | 'wrong-job'
   /** The loadout would hold the same card twice. */
   | 'duplicate'
@@ -351,11 +356,12 @@ export function cardCost(content: Content, cardId: string): number {
   return card ? content.cardRules.cost[card.rarity] : 0;
 }
 
-/** Each job's cost cap: base + perLevel × (account level − 1), through `loadout.costCap`. */
+/** The fighting loadout's cost cap: base + perLevel × (account level − 1), through
+ *  `loadout.costCap`. */
 export function loadoutCostCap(
   state: GameState,
   content: Content,
-  job: Job,
+  job: LoadoutJob,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): number {
   const { base, perLevel } = content.cardRules.costCap;
@@ -376,28 +382,26 @@ export function loadoutCost(content: Content, loadout: CardLoadout): number {
   return loadoutCards(loadout).reduce((sum, id) => sum + cardCost(content, id), 0);
 }
 
-/** Where a card sits in the loadouts, or null. */
+/** Where a card sits in the fighting loadout, or null. */
 export function loadoutSlotOf(
   state: GameState,
   cardId: string,
-): { job: Job; slot: LoadoutSlot } | null {
-  for (const job of JOBS) {
-    const loadout = state.cards.loadouts[job];
-    if (loadout.main === cardId) return { job, slot: 'main' };
-    const index = loadout.supports.indexOf(cardId);
-    if (index >= 0) return { job, slot: index };
-  }
+): { job: LoadoutJob; slot: LoadoutSlot } | null {
+  const loadout = state.cards.loadouts.fighting;
+  if (loadout.main === cardId) return { job: 'fighting', slot: 'main' };
+  const index = loadout.supports.indexOf(cardId);
+  if (index >= 0) return { job: 'fighting', slot: index };
   return null;
 }
 
 /**
- * Why a loadout cannot be saved for this job, or null when it can: every card exists, is owned,
- * belongs to the job and appears once; the total cost fits the cap; there are 3 support slots.
+ * Why a fighting loadout cannot be saved, or null when it can: every card exists, is owned, is a
+ * fighting card and appears once; the total cost fits the cap; there are 3 support slots.
  */
 export function loadoutProblem(
   state: GameState,
   content: Content,
-  job: Job,
+  job: LoadoutJob,
   loadout: CardLoadout,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): CardFailure | null {
@@ -416,11 +420,11 @@ export function loadoutProblem(
   return null;
 }
 
-/** Replaces a job's whole loadout (main + 3 supports) after checking it. */
+/** Replaces the fighting loadout (main + 3 supports) after checking it. */
 export function setLoadout(
   state: GameState,
   content: Content,
-  job: Job,
+  job: LoadoutJob,
   loadout: CardLoadout,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): CardResult {
@@ -432,13 +436,13 @@ export function setLoadout(
 }
 
 /**
- * Puts a card in one slot of its job's loadout, or empties the slot with `cardId` null. A card
- * already in another slot of the same loadout moves, swapping with what was in the target slot.
+ * Puts a card in one slot of the fighting loadout, or empties the slot with `cardId` null. A
+ * card already in another slot moves, swapping with what was in the target slot.
  */
 export function setLoadoutSlot(
   state: GameState,
   content: Content,
-  job: Job,
+  job: LoadoutJob,
   slot: LoadoutSlot,
   cardId: string | null,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
@@ -475,8 +479,9 @@ export function scaleCardModifier(m: CardModifierData, power: number): ModifierD
 }
 
 /**
- * The modifiers a card gives in a role at its current rank and level: its main ability plus the
- * job's main growth, or its support effect. Use it to preview a card in a slot.
+ * The modifiers a card gives in a role at its current rank and level: a fighting card's main
+ * ability plus the main growth, or its support effect; a worker's ability as written (role
+ * `main`; workers have no support effect), not yet scoped to a place. Use it to preview a card.
  */
 export function cardEffectModifiers(
   content: Content,
@@ -486,8 +491,11 @@ export function cardEffectModifiers(
 ): Modifier[] {
   const card = content.cardById.get(cardId);
   if (!card) return [];
-  const power = cardPower(content, owned);
   const source = { kind: 'card' as const, id: cardId };
+  if (card.job !== 'fighting') {
+    return role === 'main' ? card.worker.modifiers.map((m) => ({ ...m, source })) : [];
+  }
+  const power = cardPower(content, owned);
   const effect = role === 'main' ? card.main : card.support;
   const out: Modifier[] = effect.modifiers.map((m) => ({
     ...scaleCardModifier(m, power),
@@ -508,24 +516,49 @@ function boostSupport(m: Modifier, power: Decimal): Modifier {
   return m;
 }
 
-/** Every modifier from the cards in the three loadouts. Read by `collectModifiers`. */
+/**
+ * Every modifier from the cards at work: the fighting loadout's main ability and support effects,
+ * and each worker's ability scoped to its place (workers.ts). Read by `collectModifiers`.
+ */
 export function cardModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
-  for (const job of JOBS) {
-    const loadout = state.cards.loadouts[job];
-    // Upgrades make a job's support effects stronger (DESIGN.md §4).
-    const power = supportPower(state, content, job);
-    const add = (id: string | null, role: CardRole): void => {
-      if (id === null) return;
-      const owned = state.cards.owned[id];
-      if (!owned || content.cardById.get(id)?.job !== job) return;
-      const mods = cardEffectModifiers(content, id, role, owned);
-      out.push(
-        ...(role === 'support' && !power.eq(1) ? mods.map((m) => boostSupport(m, power)) : mods),
-      );
-    };
-    add(loadout.main, 'main');
-    for (const id of loadout.supports) add(id, 'support');
+  const loadout = state.cards.loadouts.fighting;
+  // Upgrades make the support effects stronger (DESIGN.md §4).
+  const power = supportPower(state, content, 'fighting');
+  const add = (id: string | null, role: CardRole): void => {
+    if (id === null) return;
+    const owned = state.cards.owned[id];
+    if (!owned || content.cardById.get(id)?.job !== 'fighting') return;
+    const mods = cardEffectModifiers(content, id, role, owned);
+    out.push(
+      ...(role === 'support' && !power.eq(1) ? mods.map((m) => boostSupport(m, power)) : mods),
+    );
+  };
+  add(loadout.main, 'main');
+  for (const id of loadout.supports) add(id, 'support');
+  out.push(...workerModifiers(state, content));
+  return out;
+}
+
+/**
+ * The cards at work and the scope their enhancements act in (DESIGN.md §5 Enhancements): the
+ * fighting loadout everywhere (scope null), each worker at its own place only.
+ */
+export function cardsAtWork(
+  state: GameState,
+  content: Content,
+): { cardId: string; scope: ModifierScope | null }[] {
+  const out: { cardId: string; scope: ModifierScope | null }[] = [];
+  const seen = new Set<string>();
+  const l = state.cards.loadouts.fighting;
+  for (const id of [l.main, ...l.supports]) {
+    if (!id || seen.has(id) || content.cardById.get(id)?.job !== 'fighting') continue;
+    seen.add(id);
+    out.push({ cardId: id, scope: null });
+  }
+  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
+    const job = producerJob(content, place)!;
+    for (const id of ids) out.push({ cardId: id, scope: workerScope(job, place) });
   }
   return out;
 }
@@ -836,32 +869,49 @@ export function fightingXpPerSecond(
   return Decimal.max(statValue('xp.card', base, modifiers, ctx), 0);
 }
 
-/** XP each logging / mining card in the loadout gets per unit harvested (`xp.card`). */
+/** XP a worker gets per unit its place harvests (`xp.card`, read at that place). */
 export function productionXpPerUnit(
   content: Content,
   job: 'logging' | 'mining',
   modifiers: readonly Modifier[] = [],
+  producerId?: string,
 ): Decimal {
   const base = content.cardRules.xp.perUnit[job];
-  return Decimal.max(statValue('xp.card', base, modifiers, { job }), 0);
+  const ctx = producerId ? { job, producer: producerId } : { job };
+  return Decimal.max(statValue('xp.card', base, modifiers, ctx), 0);
 }
 
 /**
- * Gives `amount` XP to every card in the job's loadout (mutates `state`, a fresh clone owned by
- * the caller). Cards at their level cap gain nothing. Level-ups wait for `settleCardLevels`.
+ * Gives `amount` XP to one card (mutates `state`, a fresh clone owned by the caller), as a
+ * worker earns it from its own place. A card at its level cap gains nothing. Level-ups wait for
+ * `settleCardLevels`.
+ */
+export function grantWorkerXp(
+  state: GameState,
+  content: Content,
+  cardId: string,
+  amount: Decimal,
+): void {
+  const owned = state.cards.owned[cardId];
+  if (!owned || amount.lte(0)) return;
+  if (owned.level >= levelCap(content, cardRank(owned))) owned.xp = new Decimal(0);
+  else owned.xp = owned.xp.add(amount);
+}
+
+/**
+ * Gives `amount` XP to every card in the fighting loadout (mutates `state`, a fresh clone owned
+ * by the caller). Cards at their level cap gain nothing. Level-ups wait for `settleCardLevels`.
  */
 export function grantLoadoutXp(
   state: GameState,
   content: Content,
-  job: Job,
+  job: LoadoutJob,
   amount: Decimal,
 ): void {
   if (amount.lte(0)) return;
   for (const id of new Set(loadoutCards(state.cards.loadouts[job]))) {
-    const owned = state.cards.owned[id];
-    if (!owned || content.cardById.get(id)?.job !== job) continue;
-    if (owned.level >= levelCap(content, cardRank(owned))) owned.xp = new Decimal(0);
-    else owned.xp = owned.xp.add(amount);
+    if (content.cardById.get(id)?.job !== job) continue;
+    grantWorkerXp(state, content, id, amount);
   }
 }
 
@@ -878,8 +928,10 @@ export interface CardInfo {
   /** 1 for a Wood ★1 Lv 1 card; scales its bonuses. */
   power: number;
   cost: number;
-  /** Where the card sits, or null. */
-  slot: { job: Job; slot: LoadoutSlot } | null;
+  /** Where the card sits in the fighting loadout, or null. */
+  slot: { job: LoadoutJob; slot: LoadoutSlot } | null;
+  /** A worker: the tree kind or mine type it works, or null. */
+  workplace: string | null;
   /** At its top tier and ★6 (its rarity's cap, or the Heirloom when open). */
   maxRank: boolean;
   /** The star bar (fill, need, gauge 0..1); null when not owned or at ★6. */
@@ -918,6 +970,7 @@ export function cardInfo(
     power: cardPower(content, preview),
     cost: cardCost(content, cardId),
     slot: loadoutSlotOf(state, cardId),
+    workplace: card.job === 'fighting' ? null : workplaceOf(state, content, cardId),
     maxRank: owned ? isMaxRank(content, cardId, owned) : false,
     starBar: owned ? starBarView(content, card, owned) : null,
     starUp: starUpCheck(state, content, cardId),
@@ -941,18 +994,18 @@ export function cardCollection(
 }
 
 export interface LoadoutInfo {
-  job: Job;
+  job: LoadoutJob;
   main: string | null;
   supports: (string | null)[];
   cost: number;
   cap: number;
 }
 
-/** A job's loadout with its cost and cap. */
+/** The fighting loadout with its cost and cap. */
 export function loadoutInfo(
   state: GameState,
   content: Content,
-  job: Job,
+  job: LoadoutJob,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): LoadoutInfo {
   const loadout = state.cards.loadouts[job];

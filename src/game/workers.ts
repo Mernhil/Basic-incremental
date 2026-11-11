@@ -1,0 +1,245 @@
+import type { Content, ModifierScope, ProductionJob, WorkerCard } from '../data';
+import { cardStatPower } from './cards';
+import type { Modifier } from './modifiers';
+import { isProducerUnlocked, producersOf, type Producer } from './production';
+import { cloneState, type GameState, type OwnedCard } from './state';
+import { supportPower } from './upgrades';
+
+/**
+ * Workers (DESIGN.md §4 Workers, Worker slots, Worker abilities). Logging and mining cards are
+ * workers: a card is placed on one tree kind or mine type and harvests it by itself. Its power
+ * (rarity, level, tier and stars) multiplies that place's output, its pattern sets the strike
+ * rhythm, and its one worker ability acts on that place only.
+ *
+ * The saved assignment is `production.workers` (place id -> card ids, in slot order). What is
+ * read is always `activeWorkers`, derived from it: a worker that is unknown, not owned, of the
+ * wrong job, on a locked place, a repeat, past its place's limit or past the slot count is left
+ * out, so a slot count that drops or a card that is gone never leaves a broken assignment.
+ * Slots are derived, never saved.
+ *
+ * Every function is pure: state changes return a new state.
+ */
+
+export type WorkerFailure =
+  /** No tree kind or mine type, or no card, with that id. */
+  | 'unknown'
+  /** The tree kind or mine type is not unlocked yet. */
+  | 'locked'
+  /** The card is not in the collection. */
+  | 'not-owned'
+  /** A mining card on a tree, a logging card on a mine, or a fighting card. */
+  | 'wrong-job'
+  /** Every worker slot is in use. */
+  | 'no-slot';
+
+export type WorkerResult = { ok: true; state: GameState } | { ok: false; reason: WorkerFailure };
+
+const fail = (reason: WorkerFailure): WorkerResult => ({ ok: false, reason });
+
+/** The job of a tree kind (logging) or mine type (mining); null for an unknown id. */
+export function producerJob(content: Content, producerId: string): ProductionJob | null {
+  if (content.treeById.has(producerId)) return 'logging';
+  if (content.mineById.has(producerId)) return 'mining';
+  return null;
+}
+
+/** Every tree kind, then every mine type, in content order: the order slots are filled in. */
+function allPlaces(content: Content): { job: ProductionJob; producer: Producer }[] {
+  return [
+    ...producersOf(content, 'logging').map((producer) => ({ job: 'logging' as const, producer })),
+    ...producersOf(content, 'mining').map((producer) => ({ job: 'mining' as const, producer })),
+  ];
+}
+
+/**
+ * Workers one tree kind or mine type takes at most: `perProducer` today (0 for an unknown id). A
+ * function of the state so the Starlight shop's second slots (DESIGN.md §9) can raise it per place.
+ */
+export function workersPerPlace(_state: GameState, content: Content, producerId: string): number {
+  return producerJob(content, producerId) ? content.production.workers.slots.perProducer : 0;
+}
+
+/**
+ * Worker slots in all: the base plus one per Ascension (`production.json`), never more than every
+ * tree kind and mine type can take.
+ */
+export function workerSlots(state: GameState, content: Content): number {
+  const { base, perAscension } = content.production.workers.slots;
+  const most = allPlaces(content).reduce(
+    (sum, p) => sum + workersPerPlace(state, content, p.producer.id),
+    0,
+  );
+  return Math.min(most, base + perAscension * Math.max(0, state.prestigeCount));
+}
+
+/** The worker card of a valid assignment, or undefined: known, a worker of this job, owned. */
+function workerCard(
+  state: GameState,
+  content: Content,
+  job: ProductionJob,
+  cardId: string,
+): WorkerCard | undefined {
+  const card = content.cardById.get(cardId);
+  if (!card || card.job !== job || !state.cards.owned[cardId]) return undefined;
+  return card;
+}
+
+/**
+ * The workers that work: place id -> card ids, places in content order (trees, then mines).
+ * Only unlocked places, valid cards, once each, within each place's limit and the slot count.
+ */
+export function activeWorkers(state: GameState, content: Content): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  const seen = new Set<string>();
+  let free = workerSlots(state, content);
+  for (const { job, producer } of allPlaces(content)) {
+    const saved = state.production.workers[producer.id];
+    if (!saved || saved.length === 0 || free <= 0) continue;
+    if (!isProducerUnlocked(state, content, job, producer.id)) continue;
+    const limit = workersPerPlace(state, content, producer.id);
+    const kept: string[] = [];
+    for (const id of saved) {
+      if (kept.length >= limit || free <= 0) break;
+      if (seen.has(id) || !workerCard(state, content, job, id)) continue;
+      seen.add(id);
+      kept.push(id);
+      free -= 1;
+    }
+    if (kept.length > 0) out[producer.id] = kept;
+  }
+  return out;
+}
+
+/** The (first) card working this tree kind or mine type, or null. */
+export function workerAt(state: GameState, content: Content, producerId: string): string | null {
+  return activeWorkers(state, content)[producerId]?.[0] ?? null;
+}
+
+/** The tree kind or mine type this card works, or null. */
+export function workplaceOf(state: GameState, content: Content, cardId: string): string | null {
+  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
+    if (ids.includes(cardId)) return place;
+  }
+  return null;
+}
+
+/** Workers working now. */
+export function workersUsed(state: GameState, content: Content): number {
+  return Object.values(activeWorkers(state, content)).reduce((n, ids) => n + ids.length, 0);
+}
+
+/**
+ * Puts a card to work on a tree kind or mine type, or with `cardId` null sends that place's
+ * workers away. A logging card works trees, a mining card mines, and a card works one place: a
+ * card already working elsewhere moves, and the card it replaces (if any) takes its old place.
+ * A full place has its last worker replaced. A new worker needs a free slot. The saved
+ * assignment is rewritten from `activeWorkers`, so it never keeps a broken entry.
+ */
+export function assignWorker(
+  state: GameState,
+  content: Content,
+  producerId: string,
+  cardId: string | null,
+): WorkerResult {
+  const job = producerJob(content, producerId);
+  if (!job) return fail('unknown');
+  if (!isProducerUnlocked(state, content, job, producerId)) return fail('locked');
+  const workers = activeWorkers(state, content);
+  const here = workers[producerId] ?? [];
+
+  if (cardId === null) {
+    delete workers[producerId];
+    return done(state, workers);
+  }
+  const card = content.cardById.get(cardId);
+  if (!card) return fail('unknown');
+  if (!state.cards.owned[cardId]) return fail('not-owned');
+  if (card.job !== job) return fail('wrong-job');
+  if (here.includes(cardId)) return done(state, workers);
+
+  const from = Object.keys(workers).find((place) => workers[place]!.includes(cardId)) ?? null;
+  const limit = workersPerPlace(state, content, producerId);
+  const next = [...here];
+  let replaced: string | null = null;
+  if (next.length >= limit) replaced = next.splice(limit - 1)[0] ?? null;
+  next.push(cardId);
+  workers[producerId] = next;
+
+  if (from !== null) {
+    // The card leaves its old place; the one it replaced there takes its slot.
+    const rest = workers[from]!.filter((id) => id !== cardId);
+    if (replaced !== null && workerCard(state, content, job, replaced)) {
+      rest.splice(workers[from]!.indexOf(cardId), 0, replaced);
+    }
+    if (rest.length > 0) workers[from] = rest;
+    else delete workers[from];
+  } else if (replaced === null) {
+    const used = Object.values(workers).reduce((n, ids) => n + ids.length, 0);
+    if (used > workerSlots(state, content)) return fail('no-slot');
+  }
+  return done(state, workers);
+}
+
+function done(state: GameState, workers: Record<string, string[]>): WorkerResult {
+  const next = cloneState(state);
+  next.production.workers = Object.fromEntries(
+    Object.entries(workers).map(([place, ids]) => [place, [...ids]]),
+  );
+  return { ok: true, state: next };
+}
+
+/**
+ * A worker's power (DESIGN.md §4 Workers): its rarity's power (`production.json`) × its level,
+ * star and tier power (`cardStatPower`). It multiplies its place's output; 1 for a Wood ★1 Lv 1
+ * Common. 0 for an unknown card.
+ */
+export function workerPower(content: Content, cardId: string, owned: OwnedCard): number {
+  const card = content.cardById.get(cardId);
+  if (!card) return 0;
+  return content.production.workers.rarityPower[card.rarity] * cardStatPower(content, owned);
+}
+
+/** The power of the place's workers together: 1 with none (the plain level rate). */
+export function placePower(state: GameState, content: Content, producerId: string): number {
+  const ids = activeWorkers(state, content)[producerId];
+  if (!ids || ids.length === 0) return 1;
+  return ids.reduce((sum, id) => sum + workerPower(content, id, state.cards.owned[id]!), 0);
+}
+
+/** The scope a worker's ability and enhancements act in: its job and its own place. */
+export function workerScope(job: ProductionJob, producerId: string): ModifierScope {
+  return { job, producer: producerId };
+}
+
+/** A modifier made `power` times as strong: flat and percent values scale, a mult its part above 1. */
+function boost(m: Modifier, power: Modifier['value']): Modifier {
+  if (m.kind === 'flat' || m.kind === 'percent') return { ...m, value: m.value.mul(power) };
+  if (m.kind === 'mult') return { ...m, value: m.value.sub(1).mul(power).add(1) };
+  return m;
+}
+
+/**
+ * The worker abilities at work (DESIGN.md §4 Worker abilities): each active worker's ability,
+ * scoped to its own place (source `card`), made stronger by the job's `card.supportPower`
+ * upgrades (Lumberjack Pact, Miner Pact). Read by `collectModifiers` through `cardModifiers`.
+ */
+export function workerModifiers(state: GameState, content: Content): Modifier[] {
+  const out: Modifier[] = [];
+  const powers: Partial<Record<ProductionJob, Modifier['value']>> = {};
+  for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
+    const job = producerJob(content, place)!;
+    const power = (powers[job] ??= supportPower(state, content, job));
+    for (const id of ids) {
+      const card = content.cardById.get(id) as WorkerCard;
+      for (const m of card.worker.modifiers) {
+        const mod: Modifier = {
+          ...m,
+          scope: { ...m.scope, ...workerScope(job, place) },
+          source: { kind: 'card', id },
+        };
+        out.push(power.eq(1) ? mod : boost(mod, power));
+      }
+    }
+  }
+  return out;
+}

@@ -120,12 +120,10 @@ export const mineSchema = z.strictObject({
   level: producerLevelSchema,
 });
 
-/** How a production main card strikes (DESIGN.md §4): a look and a rhythm, never extra output. */
+/** How a worker strikes its place (DESIGN.md §4 Workers play the field): a look and a rhythm,
+ *  never extra output. */
 export const HARVEST_STYLES = ['steady', 'chop', 'flurry', 'volley'] as const;
 export type HarvestStyle = (typeof HARVEST_STYLES)[number];
-/** Which unlocked kinds a strike lands on: the next one in turn, a random one, or every one. */
-export const HARVEST_TARGETING = ['sweep', 'random', 'all'] as const;
-export type HarvestTargeting = (typeof HARVEST_TARGETING)[number];
 
 export const harvestPatternSchema = z.strictObject({
   /** Name of the strike's look, for the stage to pick an animation. */
@@ -134,21 +132,8 @@ export const harvestPatternSchema = z.strictObject({
   intervalSeconds: z.number().positive(),
   /** Strikes in one cycle, spread evenly over it. */
   strikes: z.number().int().min(1).max(8),
-  targeting: z.enum(HARVEST_TARGETING),
 });
 export type HarvestPattern = z.output<typeof harvestPatternSchema>;
-
-export const productionSchema = z.strictObject({
-  harvest: z.strictObject({
-    /** Pattern of a job with no main card. */
-    default: z.strictObject({ logging: harvestPatternSchema, mining: harvestPatternSchema }),
-    /** Base harvest crit (the `harvest.*` stats change it). 0 keeps the output exactly as before. */
-    crit: z.strictObject({
-      chance: z.number().min(0).max(1),
-      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
-    }),
-  }),
-});
 
 export const JOBS = ['mining', 'logging', 'fighting'] as const;
 /** Mythic and Void are one top rarity with two sides, equal in power (DESIGN.md §5). */
@@ -163,6 +148,40 @@ export const RARITIES = [
 ] as const;
 export type Rarity = (typeof RARITIES)[number];
 export type Job = (typeof JOBS)[number];
+
+const positiveNumber = z.number().positive();
+
+export const productionSchema = z.strictObject({
+  harvest: z.strictObject({
+    /** Base harvest crit; the `harvest.*` stats change it, read at a worker's place. A place
+     *  with no worker has no crits. */
+    crit: z.strictObject({
+      chance: z.number().min(0).max(1),
+      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+    }),
+  }),
+  /** Workers (DESIGN.md §4 Workers, Worker slots). */
+  workers: z.strictObject({
+    /** Worker slots: `base` plus `perAscension` per Ascension, at most `perProducer` on one tree
+     *  kind or mine type (so never more than that many times the trees and mines). */
+    slots: z.strictObject({
+      base: z.number().int().min(0),
+      perAscension: z.number().int().min(0),
+      perProducer: z.number().int().min(1),
+    }),
+    /** A worker's power by rarity; × the card's level, star and tier power (`cardStatPower`) it
+     *  multiplies its place's output. */
+    rarityPower: z.strictObject({
+      common: positiveNumber,
+      uncommon: positiveNumber,
+      rare: positiveNumber,
+      epic: positiveNumber,
+      legendary: positiveNumber,
+      mythic: positiveNumber,
+      void: positiveNumber,
+    }),
+  }),
+});
 
 // ---- modifiers ---------------------------------------------------------------------------------
 
@@ -314,10 +333,6 @@ const cardEffectSchema = z.strictObject({
 });
 export type CardEffect = z.output<typeof cardEffectSchema>;
 
-/**
- * A collectible card (DESIGN.md §5). Every card can lead its job (`main`) or sit in one of
- * its 3 support slots (`support`); only the effect of the slot it is in applies.
- */
 /** Card elements (DESIGN.md §12): each picks the card's element effect. */
 export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
@@ -361,20 +376,43 @@ export const itemsSchema = z.strictObject({
 export type ItemType = z.output<typeof itemTypeSchema>;
 export type ItemsData = z.output<typeof itemsSchema>;
 
-export const cardSchema = z.strictObject({
+const cardBase = {
   id,
   name,
-  job: z.enum(JOBS),
   rarity: z.enum(RARITIES),
   element: z.enum(ELEMENTS),
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
-  /** Used when the card leads its job's loadout. Logging and mining mains also set how it
-   *  strikes (`harvest`, DESIGN.md §4). */
-  main: cardEffectSchema.extend({ harvest: harvestPatternSchema.optional() }),
+};
+
+/** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
+export const fightingCardSchema = z.strictObject({
+  ...cardBase,
+  job: z.literal('fighting'),
+  /** Used when the card leads the fighting loadout. */
+  main: cardEffectSchema,
   /** Used when the card is in one of the 3 support slots. */
   support: cardEffectSchema,
 });
+
+/**
+ * A logging or mining card is a worker (DESIGN.md §4 Workers): it works one tree kind or mine
+ * type, and its one ability acts on that place only (the game scopes its modifiers to it). The
+ * modifiers apply as written: the card's power multiplies the place's output by itself.
+ */
+export const workerCardSchema = z.strictObject({
+  ...cardBase,
+  job: z.enum(['logging', 'mining']),
+  worker: z.strictObject({
+    /** Player-facing summary, e.g. "+10% output here". */
+    description: z.string().min(1),
+    /** How the card strikes its place. */
+    harvest: harvestPatternSchema,
+    modifiers: z.array(modifierSchema).default([]),
+  }),
+});
+
+export const cardSchema = z.discriminatedUnion('job', [fightingCardSchema, workerCardSchema]);
 
 const count = z.number().int().min(0);
 const atLeastOne = decimal.refine((d) => d.gte(1), { message: 'must be at least 1' });
@@ -1506,6 +1544,9 @@ export type CostCurve = z.output<typeof costCurveSchema>;
 export type ProductionConfig = z.output<typeof productionSchema>;
 export type ProductionJob = 'logging' | 'mining';
 export type Card = z.output<typeof cardSchema>;
+export type FightingCard = z.output<typeof fightingCardSchema>;
+export type WorkerCard = z.output<typeof workerCardSchema>;
+export type WorkerAbility = WorkerCard['worker'];
 export type CardRules = z.output<typeof cardRulesSchema>;
 export type RankTier = (typeof RANK_TIERS)[number];
 export type Dungeon = z.output<typeof dungeonSchema>;

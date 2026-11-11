@@ -549,7 +549,7 @@
     {
       "id": "lumberjack_pact",
       "name": "Lumberjack Pact",
-      "description": "Logging support cards +25% effect",
+      "description": "Logging worker abilities +25% effect",
       "unlock": {
         "kind": "treeLevel",
         "tree": "oak",
@@ -574,7 +574,7 @@
     {
       "id": "miner_pact",
       "name": "Miner Pact",
-      "description": "Mining support cards +25% effect",
+      "description": "Mining worker abilities +25% effect",
       "unlock": {
         "kind": "mineLevel",
         "mine": "copper_quarry",

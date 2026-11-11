@@ -1,4 +1,4 @@
-import type { BurstJob, Content, Job, RankTier } from '../data';
+import type { Content, RankTier } from '../data';
 import { Decimal } from './num';
 import type { CosmeticLoadout } from './theme';
 
@@ -18,8 +18,9 @@ export interface GameState {
   clearedDungeons: string[];
   /** Floors, stage kills and the Glimmer Trial attempt. See combat.ts. */
   combat: CombatState;
-  /** Burst gauges: fighting (signature attack) and harvest bursts for logging and mining. */
-  bursts: Record<BurstJob, BurstGauge>;
+  /** The fighting burst gauge (signature attack). Harvest gauges are per worker, in
+   *  `production.harvestGauges`. */
+  bursts: FightingBursts;
   /** Dungeon (or special dungeon) being auto-fought, or null. */
   activeDungeonId: string | null;
   /** HP left of the floor being fought, all its enemies together (our damage reaches them in
@@ -272,12 +273,13 @@ export function initialCombat(): CombatState {
   };
 }
 
-export function initialBursts(): Record<BurstJob, BurstGauge> {
-  return {
-    fighting: { gauge: 0, timer: 0 },
-    logging: { gauge: 0, timer: 0 },
-    mining: { gauge: 0, timer: 0 },
-  };
+/** The burst gauges kept on the state: fighting only (DESIGN.md §6). */
+export interface FightingBursts {
+  fighting: BurstGauge;
+}
+
+export function initialBursts(): FightingBursts {
+  return { fighting: { gauge: 0, timer: 0 } };
 }
 
 /** Production as in a brand-new game (or right after a prestige, minus the kept unlocks). */
@@ -432,8 +434,8 @@ export function cloneFloors(
   );
 }
 
-export function cloneBursts(b: Record<BurstJob, BurstGauge>): Record<BurstJob, BurstGauge> {
-  return { fighting: { ...b.fighting }, logging: { ...b.logging }, mining: { ...b.mining } };
+export function cloneBursts(b: FightingBursts): FightingBursts {
+  return { fighting: { ...b.fighting } };
 }
 
 /** One owned card (DESIGN.md §5). Each card is owned once; further copies are duplicates. */
@@ -466,7 +468,8 @@ export function initialAccount(): AccountState {
   return { xp: new Decimal(0), level: 1, skills: {}, freeRespecsUsed: 0 };
 }
 
-/** One job's loadout: 1 main card and 3 support slots (null = empty). */
+/** The fighting loadout: 1 main card and 3 support slots (null = empty). Logging and mining
+ *  cards are workers instead (`production.workers`, DESIGN.md §4). */
 export interface CardLoadout {
   main: string | null;
   /** Always 3 entries. */
@@ -476,7 +479,8 @@ export interface CardLoadout {
 export interface CardState {
   /** Card id -> the owned card. */
   owned: Record<string, OwnedCard>;
-  loadouts: Record<Job, CardLoadout>;
+  /** Only fighting has a loadout (DESIGN.md §5 Loadouts). */
+  loadouts: { fighting: CardLoadout };
   /** From duplicates gained past ★6 (DESIGN.md §5). */
   shards: number;
   /** Card ids marked to hunt in the Card Portal (DESIGN.md §7 Wishlist), in the order marked.
@@ -502,15 +506,12 @@ export function newOwnedCard(): OwnedCard {
   };
 }
 
-/** A new game owns the start cards (cardRules.startCards), each leading its job. */
+/** A new game owns the start cards (cardRules.startCards); the fighting one leads the loadout
+ *  and the others work (`initialWorkers`). */
 export function initialCards(content: Content): CardState {
   const cards: CardState = {
     owned: {},
-    loadouts: {
-      mining: emptyCardLoadout(),
-      logging: emptyCardLoadout(),
-      fighting: emptyCardLoadout(),
-    },
+    loadouts: { fighting: emptyCardLoadout() },
     shards: 0,
     wishlist: [],
   };
@@ -518,7 +519,7 @@ export function initialCards(content: Content): CardState {
     const card = content.cardById.get(id);
     if (!card) continue;
     cards.owned[id] = newOwnedCard();
-    cards.loadouts[card.job].main = id;
+    if (card.job === 'fighting') cards.loadouts.fighting.main = id;
   }
   return cards;
 }
@@ -532,11 +533,7 @@ export function cloneCards(c: CardState): CardState {
         { ...card, enhancements: [...card.enhancements] },
       ]),
     ),
-    loadouts: {
-      mining: loadout(c.loadouts.mining),
-      logging: loadout(c.loadouts.logging),
-      fighting: loadout(c.loadouts.fighting),
-    },
+    loadouts: { fighting: loadout(c.loadouts.fighting) },
     shards: c.shards,
     wishlist: [...c.wishlist],
   };

@@ -1,4 +1,4 @@
-import { JOBS, RANK_TIERS, RARITIES, loadContent, type Content } from '../src/data';
+import { RANK_TIERS, RARITIES, loadContent, type Content } from '../src/data';
 import {
   createInitialState,
   Decimal,
@@ -173,10 +173,12 @@ export function newGame(): GameState {
   return createInitialState(content);
 }
 
-/** A new game with empty card loadouts: no card effects or level-ups, for exact rate maths. */
+/** A new game with an empty fighting loadout and no workers: no card effects or level-ups, for
+ *  exact rate maths. */
 export function bareState(): GameState {
   const state = freshState();
-  for (const job of JOBS) state.cards.loadouts[job] = emptyCardLoadout();
+  state.cards.loadouts.fighting = emptyCardLoadout();
+  state.production.workers = {};
   return state;
 }
 

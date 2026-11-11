@@ -99,11 +99,13 @@ describe('achievements (DESIGN.md §10)', () => {
     const state = newGame();
     const squire = state.cards.owned['ember_squire']!;
     state.cards.owned['ember_squire'] = { ...squire, tier: 'gold', stars: 6 };
-    // Fighting has three cards, so the full loadout is a logging one: Feller leads, three supports.
-    state.cards.loadouts.logging = {
-      main: 'apprentice_feller',
-      supports: ['grove_keeper', 'elder_treant', 'moonwood_dryad'],
-    };
+    // A full fighting loadout: the Squire leads, three supports.
+    const supports = content.cards
+      .filter((c) => c.job === 'fighting' && c.id !== 'ember_squire')
+      .slice(0, 3)
+      .map((c) => c.id);
+    for (const id of supports) state.cards.owned[id] = { ...squire };
+    state.cards.loadouts.fighting = { main: 'ember_squire', supports };
     for (const c of content.cosmetics.filter((x) => x.set === 'gilded_tradition')) {
       state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
       state.cosmetics.loadout.slots[c.slot] = { id: c.id, level: 1 };

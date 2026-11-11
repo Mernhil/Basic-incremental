@@ -32,7 +32,7 @@ await page.evaluate(
     own('cave_digger', { tier: 'wood', stars: 1, level: 14 });
     s.cards.loadouts.fighting.main = 'ember_squire';
     s.cards.loadouts.fighting.supports = ['storm_duelist'];
-    s.cards.loadouts.mining.main = 'cave_digger';
+    s.production.workers.copper_quarry = ['cave_digger'];
     s.cards.shards = 87;
     s.resources['money'] = new g.Decimal(18000);
     await window.api.writeSave(g.createSaveText(s, Date.now()));

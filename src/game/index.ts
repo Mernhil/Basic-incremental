@@ -20,19 +20,23 @@ export * from './save';
 export * from './theme';
 export * from './modifiers';
 export * from './production';
-// ---- Production cards in play (DESIGN.md §4): the contract with the UI ----------------------
+// ---- Workers (DESIGN.md §4): the contract with the UI ----------------------------------------
+export * from './workers';
 export {
-  /** The harvest pattern (style, interval, strikes, targeting) the job's main card strikes with. */
-  mainHarvestPattern,
-  /** Ids of a job's support cards whose effect helps its harvest. */
-  harvestSupports,
+  /** The pattern (style, interval, strikes) a worker card strikes with. */
+  workerPattern,
+  /** A place's harvest burst numbers (gauge size, fill, seconds of output). */
+  harvestBurstStats,
 } from './harvest';
 export {
-  /** Ready-to-show view of one production job's stage: cards, pattern, gauge 0..1, next strike, targets. */
+  /** Ready-to-show view of one production job's workers: card, rhythm and gauge per place. */
   productionStageView,
+  /** The cards a place's worker picker offers, strongest first. */
+  workerChoices,
   type ProductionStageView,
   type StageCard,
   type StageTarget,
+  type WorkerChoice,
 } from './productionView';
 export * from './hpBars';
 export * from './cards';

@@ -3,6 +3,7 @@ import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milest
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import { cloneState, initialProduction, type GameState } from './state';
+import { activeWorkers, placePower } from './workers';
 
 /**
  * Production (DESIGN.md §4): one of each. Every unlocked tree kind and mine type produces once,
@@ -300,7 +301,7 @@ export function producerRate(
   return Decimal.max(statValue('production.rate', base, modifiers, ctx), 0);
 }
 
-/** A job's harvest crit numbers after modifiers (DESIGN.md §4). */
+/** A place's harvest crit numbers after modifiers (DESIGN.md §4 Harvest crits). */
 export interface HarvestCrit {
   /** Chance one strike crits, 0..1. */
   chance: number;
@@ -308,16 +309,26 @@ export interface HarvestCrit {
   damage: Decimal;
 }
 
+/** No crits: a place with no worker (crits come from the card working it). */
+export const NO_HARVEST_CRIT: HarvestCrit = { chance: 0, damage: new Decimal(1) };
+
+/**
+ * The harvest crits of a worker's place: the base (`production.json`) through the
+ * `harvest.critChance` / `harvest.critDamage` modifiers read at that place, so a worker's
+ * ability and enhancements count only where it works.
+ */
 export function harvestCrit(
   content: Content,
   job: ProductionJob,
   modifiers: readonly Modifier[] = [],
+  producer?: Producer,
 ): HarvestCrit {
   const base = content.production.harvest.crit;
-  const chance = statValue('harvest.critChance', base.chance, modifiers, { job }).toNumber();
+  const ctx = producer ? producerContext(producer, job) : { job };
+  const chance = statValue('harvest.critChance', base.chance, modifiers, ctx).toNumber();
   return {
     chance: Math.min(1, Math.max(0, chance)),
-    damage: Decimal.max(statValue('harvest.critDamage', base.damage, modifiers, { job }), 1),
+    damage: Decimal.max(statValue('harvest.critDamage', base.damage, modifiers, ctx), 1),
   };
 }
 
@@ -329,6 +340,52 @@ export function harvestCritFactor(crit: HarvestCrit): Decimal {
   return crit.damage.sub(1).mul(crit.chance).add(1);
 }
 
+/** One unlocked tree kind or mine type at work: its rate, crits and workers. */
+export interface WorkSite {
+  job: ProductionJob;
+  /** Position among the job's kinds in content order (locked ones count, so it stays stable). */
+  kind: number;
+  producer: Producer;
+  /** Card ids working it (empty: the plain level rate, no strikes, no gauge, no crits). */
+  workers: string[];
+  /** Output per second without crits: the level rate × the workers' power. */
+  rate: Decimal;
+  crit: HarvestCrit;
+}
+
+/**
+ * The unlocked kinds of a job as they work now, in content order (DESIGN.md §4 Workers): each
+ * yields its level rate × its worker's power, crits from the worker; no worker = the plain rate.
+ */
+export function workSites(
+  state: GameState,
+  content: Content,
+  job: ProductionJob,
+  modifiers: readonly Modifier[] = collectModifiers(state, content),
+): WorkSite[] {
+  const all = producersOf(content, job);
+  const workers = activeWorkers(state, content);
+  return unlockedProducers(state, content, job).map((producer) => {
+    const ids = workers[producer.id] ?? [];
+    const level = producerLevel(state, job, producer.id);
+    return {
+      job,
+      kind: all.indexOf(producer),
+      producer,
+      workers: ids,
+      rate: producerRate(producer, job, modifiers, level).mul(
+        placePower(state, content, producer.id),
+      ),
+      crit: ids.length > 0 ? harvestCrit(content, job, modifiers, producer) : NO_HARVEST_CRIT,
+    };
+  });
+}
+
+/** Output per second of one site, crits included (the expected value). */
+export function siteOutput(site: WorkSite): Decimal {
+  return site.rate.mul(harvestCritFactor(site.crit));
+}
+
 /** Resource id -> gained per second from one job's unlocked kinds, once each (crits included). */
 export function jobProductionPerSecond(
   state: GameState,
@@ -337,11 +394,9 @@ export function jobProductionPerSecond(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Record<string, Decimal> {
   const out: Record<string, Decimal> = {};
-  const crit = harvestCritFactor(harvestCrit(content, job, modifiers));
-  for (const producer of unlockedProducers(state, content, job)) {
-    const level = producerLevel(state, job, producer.id);
-    const gained = producerRate(producer, job, modifiers, level).mul(crit);
-    out[producer.resource] = (out[producer.resource] ?? new Decimal(0)).add(gained);
+  for (const site of workSites(state, content, job, modifiers)) {
+    const resource = site.producer.resource;
+    out[resource] = (out[resource] ?? new Decimal(0)).add(siteOutput(site));
   }
   return out;
 }
@@ -367,7 +422,8 @@ export function productionPerSecond(
 
 /**
  * The production part of a prestige (DESIGN.md §9): tree and mine levels go back to the
- * start; unlocked tree kinds and cleared dungeons (so unlocked mines) are kept. Resources are
+ * start; unlocked tree kinds, cleared dungeons (so unlocked mines), the workers and the forge are
+ * kept. Resources are
  * not touched here; the prestige system resets them.
  */
 export function resetProduction(state: GameState): GameState {
