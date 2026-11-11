@@ -17,6 +17,7 @@ import {
   producersOf,
   rollHitForShow,
   signatureDamage,
+  type ChallengeEvent,
   type GameState,
   type HarvestEvent,
   type ProductionJob,
@@ -54,6 +55,8 @@ export interface ShowEvents {
     span: ChunkSpan;
   };
   knockout: { seconds: number };
+  /** A Challenge ended (DESIGN.md §6 Farming and Challenge): won, or lost with why. */
+  challenge: ChallengeEvent;
   /** A boss died: its resource drops, and the names of rare drops (items and cards). */
   kill: { loot: Loot[]; rare: string[] };
   /** One production tick: what each unlocked tree or mine gave. */
@@ -178,6 +181,7 @@ export function createDirector(content: Content, state: () => GameState) {
       if (report.harvests.length > 0) emit('harvests', { events: report.harvests });
       if (report.bossAttacks.length > 0) emitBossAttacks(report, before, after, mods);
       if (report.knockouts > 0) emit('knockout', { seconds: after.combat.knockoutSeconds });
+      for (const event of report.challenges) emit('challenge', event);
       if (report.bossKills + report.enemyKills > 0) {
         const loot: Loot[] = [];
         for (const r of content.resources) {

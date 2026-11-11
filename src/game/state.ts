@@ -290,23 +290,21 @@ export function initialForge(): ForgeState {
 export const DIFFICULTIES = ['normal', 'hard', 'nightmare', 'endless'] as const;
 export type Difficulty = (typeof DIFFICULTIES)[number];
 
-/** Push moves down a floor on a win; farm stays on the floor (DESIGN.md §6 Dungeon floors). */
-export type FloorMode = 'push' | 'farm';
-
 /** Where the player is on one difficulty of a dungeon. */
 export interface TierProgress {
-  /** The floor being fought (1-based). Reset by Ascension to half of `best`. */
+  /** The floor being farmed (1-based; DESIGN.md §6 Farming and Challenge). Never above `best`
+   *  once a floor is beaten (floors.ts `floorPosition` reads it so). Reset by Ascension to half of
+   *  `best`. */
   floor: number;
   /** The deepest floor beaten (0 = none). Kept through Ascension. */
   best: number;
 }
 
-/** A dungeon's floors: the difficulty chosen, push or farm, and the progress on each difficulty. */
+/** A dungeon's floors: the difficulty chosen, auto-challenge, and the progress on each difficulty. */
 export interface DungeonProgress {
   difficulty: Difficulty;
-  mode: FloorMode;
   /** Auto-challenge is on (DESIGN.md §6 Auto-challenge): the next Challenge starts by itself after a
-   *  win and, after a loss, once the wait is over. Save format 27; replaces `mode` (not read yet). */
+   *  win and, after a loss, once the wait is over. Save format 27. */
   autoChallenge: boolean;
   /** Missing = floor 1, nothing beaten. */
   tiers: Partial<Record<Difficulty, TierProgress>>;
@@ -336,13 +334,12 @@ export interface CombatState {
   overflow: Record<string, boolean>;
   /** Index in the floor's wave of the enemy being fought (0-based; the ones before it are dead),
    *  for "each enemy has its own HP" (DESIGN.md §6); `bossHp` is then that enemy's HP. Save format
-   *  27; not read yet. */
+   *  27. */
   enemyIndex: number;
   /** The Challenge being fought (DESIGN.md §6 Farming and Challenge), or null while farming. Its
-   *  floor is derived: the best floor of that difficulty plus one. Save format 27; not read yet. */
+   *  floor is derived: the floor after the farmed one (floors.ts `challengeFloor`). Save format 27. */
   challenge: ChallengeRun | null;
-  /** Seconds left before auto-challenge tries again after a loss (0 = no wait). Save format 27;
-   *  not read yet. */
+  /** Seconds left before auto-challenge tries again after a loss (0 = no wait). Save format 27. */
   challengeWaitSeconds: number;
   /** Card id -> damage that team card's own health has taken (DESIGN.md §6 card duel); missing =
    *  full health. The team is derived (the fighting loadout, main then supports). Save format 27;

@@ -121,7 +121,13 @@ describe('v26 -> v27 (the table update)', () => {
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];
     delete resources['glamour_scroll'];
-    expect(again).toEqual({ ...saved.state, bossHp: null });
+    // The push / farm `mode` is gone: auto-challenge replaced it (package 2).
+    const expected = structuredClone(saved.state);
+    const floors = (expected['combat'] as Record<string, unknown>)['floors'];
+    for (const p of Object.values(floors as Record<string, Record<string, unknown>>)) {
+      delete p['mode'];
+    }
+    expect(again).toEqual({ ...expected, bossHp: null });
 
     // Saved again it is format 27 and loads to the same state.
     const resaved = createSaveText(state, 1);
@@ -151,7 +157,6 @@ describe('format 27 state', () => {
     const state = createInitialState(content);
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: { normal: { floor: 4, best: 4 } },
     };

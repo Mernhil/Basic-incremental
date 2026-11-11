@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DRAWER_TABS,
+  challengeButton,
+  challengeVerdict,
   barsGone,
   drawerStatus,
   floorParts,
@@ -144,5 +146,32 @@ describe('the stage line and overflow switch (DESIGN.md §6 Stage stars, Overflo
   it('counts a dungeon’s stars against the most it can have', () => {
     expect(starTotal(4, 36)).toEqual({ levels: 4, max: 36 });
     expect(starTotal(40, 36)).toEqual({ levels: 36, max: 36 });
+  });
+});
+
+describe('the Challenge controls (DESIGN.md §6 Farming and Challenge)', () => {
+  it('shows the Challenge button ready, running, waiting out a knockout or with nothing left', () => {
+    const at = (running: boolean, hasNext: boolean, knockoutSeconds = 0) =>
+      challengeButton({ running, hasNext, knockoutSeconds });
+    expect(at(false, true)).toBe('ready');
+    expect(at(true, true)).toBe('running');
+    expect(at(false, true, 4)).toBe('knocked');
+    expect(at(false, false)).toBe('none');
+  });
+
+  it('turns a finished Challenge into Victory, or Defeat with its reason', () => {
+    expect(challengeVerdict({ won: true, reason: null, hpLeftPositive: false })).toEqual({
+      kind: 'victory',
+      reason: null,
+      showHpLeft: false,
+    });
+    expect(challengeVerdict({ won: false, reason: 'timer', hpLeftPositive: true })).toEqual({
+      kind: 'defeat',
+      reason: 'timer',
+      showHpLeft: true,
+    });
+    expect(challengeVerdict({ won: false, reason: 'health', hpLeftPositive: true }).reason).toBe(
+      'health',
+    );
   });
 });

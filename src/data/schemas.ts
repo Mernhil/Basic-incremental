@@ -993,6 +993,18 @@ export const combatSchema = z.strictObject({
   /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md §6). */
   knockoutSeconds: z.number().gt(0),
   /**
+   * The Challenge (DESIGN.md §6 Farming and Challenge, Auto-challenge): seconds on its timer by
+   * what the floor holds, and how long auto-challenge waits after a loss before it tries again.
+   */
+  challenge: z.strictObject({
+    timerSeconds: z.strictObject({
+      wave: z.number().gt(0),
+      miniboss: z.number().gt(0),
+      boss: z.number().gt(0),
+    }),
+    autoWaitSeconds: z.number().min(0),
+  }),
+  /**
    * How a boss's attacks are shaped (DESIGN.md §6). In every `attacksPerCycle` attacks all but
    * the last are light (`lightMultiplier` of an attack's damage) and the last is a slam
    * (`slamMultiplier`). A cycle must add up to `attacksPerCycle` normal attacks, so the damage

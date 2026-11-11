@@ -80,11 +80,9 @@ export function simulateOffline(
 
   const capMs = offlineCapMs(state, content);
   const simulatedMs = Math.min(elapsedMs, capMs);
-  // Offline progress fights the floor the player left it on and never pushes deeper
-  // (DESIGN.md §6 Offline on floors).
-  const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS, {
-    noPush: true,
-  });
+  // Offline progress plays by the same rules as online (DESIGN.md §6 Offline on floors): it farms
+  // the farmed floor, and it climbs only where auto-challenge is on.
+  const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS);
   // The session itself counts (Night Owl), then whatever it earned unlocks.
   const recorded = cloneState(result.state);
   recorded.stats.longestOfflineMs = Math.max(recorded.stats.longestOfflineMs, simulatedMs);

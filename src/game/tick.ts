@@ -1,6 +1,6 @@
 import type { Content } from '../data';
 import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels } from './cards';
-import { advanceCombat, type FightOptions } from './combat';
+import { advanceCombat } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
 import { autobuyDue, settleAutobuyers } from './autobuyers';
@@ -38,7 +38,6 @@ export function advance(
   content: Content,
   dtMs: number,
   rng: Rng,
-  options: FightOptions = {},
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   if (!Number.isFinite(dtMs) || dtMs <= 0) return { state, report };
@@ -61,13 +60,13 @@ export function advance(
         ? 0
         : boundaries <= STEP_THROUGH_BOUNDARIES
           ? 1
-          : firstDueBoundary(current, content, toBoundary, boundaries, options);
+          : firstDueBoundary(current, content, toBoundary, boundaries);
     if (first === 0) {
-      current = advanceSpan(current, content, remaining, rng, report, options);
+      current = advanceSpan(current, content, remaining, rng, report);
       break;
     }
     const until = toBoundary + (first - 1) * CARD_LEVEL_STEP_MS;
-    current = advanceSpan(current, content, until, rng, report, options);
+    current = advanceSpan(current, content, until, rng, report);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
     settleDepth(current, content);
@@ -96,10 +95,9 @@ function firstDueBoundary(
   content: Content,
   toBoundary: number,
   boundaries: number,
-  options: FightOptions,
 ): number {
   const due = (k: number): boolean =>
-    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS, options);
+    levelUpDue(state, content, toBoundary + (k - 1) * CARD_LEVEL_STEP_MS);
   let lo = 0; // known not due (0 = before the first boundary)
   let hi = 1;
   while (!due(hi)) {
@@ -119,13 +117,8 @@ function firstDueBoundary(
  * Whether a card level-up or a mastery tier would be pending after `dtMs`. Runs a throwaway
  * copy. Kills and harvests never depend on random drops, so the fixed lookahead rng is exact.
  */
-function levelUpDue(
-  state: GameState,
-  content: Content,
-  dtMs: number,
-  options: FightOptions,
-): boolean {
-  const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport(), options);
+function levelUpDue(state: GameState, content: Content, dtMs: number): boolean {
+  const ahead = advanceSpan(state, content, dtMs, lookaheadRng, emptyReport());
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
@@ -143,7 +136,6 @@ function advanceSpan(
   dtMs: number,
   rng: Rng,
   report: TickReport,
-  options: FightOptions,
 ): GameState {
   const next = cloneState(state);
   const seconds = dtMs / 1000;
@@ -199,7 +191,7 @@ function advanceSpan(
 
   // Combat: the dungeon's floors are auto-fought in parallel.
   const moneyBefore = next.resources[content.upgrades.currency];
-  advanceCombat(next, content, seconds, rng, report, modifiers, options);
+  advanceCombat(next, content, seconds, rng, report, modifiers);
   countMoneyEarned(next, content, moneyBefore);
 
   return next;
@@ -212,14 +204,13 @@ export function advanceChunked(
   totalMs: number,
   rng: Rng,
   chunkMs: number,
-  options: FightOptions = {},
 ): { state: GameState; report: TickReport } {
   const report = emptyReport();
   let current = state;
   let remaining = totalMs;
   while (remaining > 0) {
     const step = Math.min(chunkMs, remaining);
-    const result = advance(current, content, step, rng, options);
+    const result = advance(current, content, step, rng);
     current = result.state;
     mergeReports(report, result.report);
     remaining -= step;

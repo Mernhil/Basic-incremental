@@ -145,10 +145,10 @@ export function ascend(
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);
   next.bursts = initialBursts();
   next.bossHp = null;
-  // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run starts at
-  // half of it, pushing again.
+  // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run farms from half
+  // of it, with auto-challenge on, so it climbs back one Challenge at a time.
   for (const progress of Object.values(next.combat.floors)) {
-    progress.mode = 'push';
+    progress.autoChallenge = true;
     for (const tier of Object.values(progress.tiers)) {
       tier.floor = ascensionStartFloor(tier.best);
     }
@@ -160,6 +160,9 @@ export function ascend(
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     loadoutDamage: new Decimal(0),
     knockoutSeconds: 0,
+    enemyIndex: 0,
+    challenge: null,
+    challengeWaitSeconds: 0,
   };
   next.prestigeCount = preview.ascension;
   next.prestige = {

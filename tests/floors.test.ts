@@ -25,12 +25,17 @@ import {
   MIGRATIONS,
   parseStageKey,
   readSave,
+  challengeView,
+  initialProgress,
+  nextChallenge,
   setActiveDungeon,
-  setFloorMode,
+  setAutoChallenge,
   simulateOffline,
   stageKey,
+  startChallenge,
   winsFloor,
   type GameState,
+  type TickReport,
 } from '../src/game';
 import { devSetDungeonCleared, devSetFloor } from '../src/game/dev';
 import {
@@ -39,6 +44,7 @@ import {
   freshState,
   neutralStars,
   withBossAttack,
+  withAutoChallenge,
   withDps,
   withOverflow,
 } from './helpers';
@@ -168,46 +174,192 @@ describe('floors data', () => {
   });
 });
 
-describe('push and farm', () => {
-  it('starts a new game on floor 1 of the Mossy Cellar, pushing', () => {
-    const state = inCellar(plain);
+describe('farming and Challenge (DESIGN.md §6)', () => {
+  /** The cellar farming `floor` (beaten), with auto-challenge `auto`. */
+  const farmingAt = (content: Content, floor: number, auto = false): GameState => {
+    const placed = devSetFloor(inCellar(content), content, 'mossy_cellar', floor);
+    if (!placed.ok) throw new Error(placed.reason);
+    return withAutoChallenge(placed.state, auto);
+  };
+  const challenge = (state: GameState, content: Content): GameState => {
+    const started = startChallenge(state, content);
+    if (!started.ok) throw new Error(started.reason);
+    return started.state;
+  };
+
+  it('starts a new game on floor 1 of the Mossy Cellar with auto-challenge on, floor 1 its first Challenge', () => {
+    const state = withAutoChallenge(inCellar(plain), true);
     expect(floorPosition(state, cellar)).toEqual({
       difficulty: 'normal',
-      mode: 'push',
+      autoChallenge: true,
       floor: 1,
       best: 0,
       floors: 10,
+      challengeFloor: 1,
     });
     const status = bossStatus(state, plain)!;
     expect(status.floor).toBe(1);
     expect(status.floorKind).toBe('wave');
     expect(status.enemy.kind).toBe('enemy');
     expect(status.wave.index).toBe(1);
+    expect(status.challenge).toBeNull();
+    // A new game's dungeon has the switch on (floors.ts `initialProgress`).
+    expect(initialProgress().autoChallenge).toBe(true);
   });
 
-  it('moves down a floor on a win in push mode and keeps the best floor', () => {
+  it('farms the farmed floor on a loop and never climbs while auto-challenge is off', () => {
     const content = harmless(withDps(100, plain));
-    const start = inCellar(content);
-    // Ten hits of 100 finish the first wave (about 930 HP); 15 s leave room for the second.
-    const { state, report } = run(start, content, 15);
-    const position = floorPosition(state, cellar);
-    expect(position.floor).toBeGreaterThanOrEqual(2);
-    expect(position.best).toBe(position.floor - 1);
-    expect(report.floorsCleared).toBe(position.floor - 1);
-    expect(report.enemyKills).toBeGreaterThanOrEqual(3);
-    expect(report.bossKills).toBe(0);
-  });
-
-  it('stays on the floor in farm mode', () => {
-    const content = harmless(withDps(100, plain));
-    const farming = setFloorMode(inCellar(content), content, 'mossy_cellar', 'farm');
-    if (!farming.ok) throw new Error(farming.reason);
-    const { state, report } = run(farming.state, content, 120);
-    expect(floorPosition(state, cellar).floor).toBe(1);
-    expect(floorPosition(state, cellar).best).toBe(1);
+    const { state, report } = run(farmingAt(content, 3), content, 120);
+    expect(floorPosition(state, cellar)).toMatchObject({ floor: 3, best: 3, challengeFloor: 4 });
     expect(report.floorsCleared).toBeGreaterThan(1);
+    expect(report.challenges).toEqual([]);
   });
 
+  it('wins a Challenge: Victory, the best floor rises by one and the farming moves down to it', () => {
+    const content = harmless(withDps(100, plain));
+    const start = challenge(farmingAt(content, 3), content);
+    expect(bossStatus(start, content)).toMatchObject({ floor: 4, farmFloor: 3, challengeFloor: 4 });
+    expect(start.combat.challenge).toEqual({
+      dungeonId: 'mossy_cellar',
+      difficulty: 'normal',
+      elapsedSeconds: 0,
+    });
+    let state = start;
+    const ended: TickReport['challenges'] = [];
+    for (let i = 0; i < 30 && ended.length === 0; i++) {
+      const step = run(state, content, 1);
+      state = step.state;
+      ended.push(...step.report.challenges);
+    }
+    expect(ended).toHaveLength(1);
+    expect(ended[0]).toMatchObject({ floor: 4, won: true, reason: null, difficulty: 'normal' });
+    expect(floorPosition(state, cellar)).toMatchObject({ floor: 4, best: 4, challengeFloor: 5 });
+    expect(state.combat.challenge).toBeNull();
+    // Auto-challenge is off: it farms floor 4 from now on.
+    const later = run(state, content, 60);
+    expect(floorPosition(later.state, cellar)).toMatchObject({ floor: 4, best: 4 });
+    expect(later.report.challenges).toEqual([]);
+  });
+
+  it('loses a Challenge on the timer: why, the enemy HP left, back to farming, retried at once', () => {
+    const content = harmless(withDps(1, plain));
+    const start = challenge(farmingAt(content, 1), content);
+    const timer = nextChallenge(farmingAt(content, 1), content, 'mossy_cellar')!.durationSeconds;
+    expect(timer).toBe(30);
+    expect(challengeView(start, content)).toMatchObject({ floor: 2, secondsLeft: 30 });
+    const halfway = run(start, content, 10).state;
+    expect(challengeView(halfway, content)).toMatchObject({ elapsedSeconds: 10, secondsLeft: 20 });
+    const { state, report } = run(halfway, content, 21);
+    expect(report.challenges).toHaveLength(1);
+    const lost = report.challenges[0]!;
+    expect(lost).toMatchObject({ floor: 2, won: false, reason: 'timer' });
+    const floorHp = fightStage(start, content, 'mossy_cellar')!.hp;
+    // 30 hits of 1 (and a signature attack) landed on the floor's first enemy: that much less is left.
+    expect(lost.enemyHpLeft.toNumber()).toBeLessThan(floorHp.toNumber() - 30);
+    expect(lost.enemyHpLeft.toNumber()).toBeGreaterThan(floorHp.toNumber() - 60);
+    expect(floorPosition(state, cellar)).toMatchObject({ floor: 1, best: 1 });
+    expect(state.combat.challenge).toBeNull();
+    expect(state.combat.knockoutSeconds).toBe(0);
+    // Auto-challenge is off: no wait, and the button starts the next try for free.
+    expect(state.combat.challengeWaitSeconds).toBe(0);
+    expect(startChallenge(state, content).ok).toBe(true);
+  });
+
+  it('loses a Challenge when the health runs out, without a knockout, at full health after', () => {
+    const content = withBossAttack(withDps(100, plain), 'mossy_cellar', 1e7, 2);
+    const start = challenge(farmingAt(content, 4), content);
+    const { state, report } = run(start, content, 3);
+    expect(report.challenges.map((c) => [c.won, c.reason])).toEqual([[false, 'health']]);
+    expect(report.knockouts).toBe(0);
+    expect(report.bossAttacks.some((a) => a.knockout)).toBe(true);
+    expect(floorPosition(state, cellar)).toMatchObject({ floor: 4, best: 4 });
+    expect(state.combat.knockoutSeconds).toBe(0);
+  });
+
+  it('times a Challenge by what its floor holds: 30 s a wave, 45 s a mini-boss, 60 s a boss', () => {
+    expect(rawCombat.challenge).toEqual({
+      timerSeconds: { wave: 30, miniboss: 45, boss: 60 },
+      autoWaitSeconds: 60,
+    });
+    const timer = (dungeonId: string, floor: number): number | undefined => {
+      const placed = devSetFloor(freshState(), plain, dungeonId, floor);
+      if (!placed.ok) throw new Error(placed.reason);
+      return nextChallenge(placed.state, plain, dungeonId)?.durationSeconds;
+    };
+    expect(timer('mossy_cellar', 1)).toBe(30);
+    expect(timer('ember_crypt', 9)).toBe(45);
+    expect(timer('mossy_cellar', 9)).toBe(60);
+    // The last floor of a tier has nothing to challenge.
+    expect(timer('mossy_cellar', 10)).toBeUndefined();
+  });
+
+  it('starts the next Challenge by itself after a win and waits 60 s after a loss (auto-challenge)', () => {
+    // Strong: one Challenge after the other, down to the boss, which clears the dungeon.
+    const strong = harmless(withDps(1e9, plain));
+    const climbed = run(withAutoChallenge(inCellar(strong), true), strong, 60);
+    expect(floorPosition(climbed.state, cellar)).toMatchObject({
+      floor: 10,
+      best: 10,
+      challengeFloor: null,
+    });
+    expect(climbed.report.challenges.map((c) => c.floor)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    expect(climbed.report.challenges.every((c) => c.won)).toBe(true);
+    expect(isDungeonCleared(climbed.state, 'mossy_cellar')).toBe(true);
+    // Weak: the first Challenge is lost on the timer, then the wait runs before the next try.
+    const weak = harmless(withDps(1, plain));
+    const lost = run(farmingAt(weak, 1, true), weak, 30.5);
+    expect(lost.report.challenges.map((c) => c.reason)).toEqual(['timer']);
+    expect(lost.state.combat.challenge).toBeNull();
+    expect(lost.state.combat.challengeWaitSeconds).toBeCloseTo(59.5, 6);
+    expect(nextChallenge(lost.state, weak, 'mossy_cellar')).toMatchObject({ auto: true, floor: 2 });
+    const waiting = run(lost.state, weak, 59.4).state;
+    expect(waiting.combat.challenge).toBeNull();
+    const again = run(waiting, weak, 0.2).state;
+    expect(again.combat.challenge).toMatchObject({ dungeonId: 'mossy_cellar' });
+    expect(again.combat.challengeWaitSeconds).toBe(0);
+  });
+
+  it('refuses a Challenge with nothing to challenge, while one runs or while knocked out', () => {
+    expect(startChallenge(farmingAt(plain, 10), plain)).toEqual({ ok: false, reason: 'none' });
+    const running = challenge(farmingAt(plain, 3), plain);
+    expect(startChallenge(running, plain)).toEqual({ ok: false, reason: 'busy' });
+    const knocked = farmingAt(plain, 3);
+    knocked.combat.knockoutSeconds = 5;
+    expect(startChallenge(knocked, plain)).toEqual({ ok: false, reason: 'busy' });
+    const idle = { ...freshState(), activeDungeonId: null };
+    expect(startChallenge(idle, plain)).toEqual({ ok: false, reason: 'unknown' });
+  });
+
+  it('ends a running Challenge when the dungeon or the difficulty fought changes', () => {
+    const running = challenge(farmingAt(plain, 3), plain);
+    const away = setActiveDungeon(running, plain, null);
+    expect(away.ok && away.state.combat.challenge).toBeNull();
+  });
+
+  it('switches auto-challenge only for a dungeon that is open', () => {
+    const state = inCellar(plain);
+    expect(setAutoChallenge(state, plain, 'ember_crypt', true)).toEqual({
+      ok: false,
+      reason: 'locked',
+    });
+    expect(setAutoChallenge(state, plain, 'nowhere', true)).toEqual({
+      ok: false,
+      reason: 'unknown',
+    });
+    const same = setAutoChallenge(state, plain, 'mossy_cellar', false);
+    expect(same.ok && same.state).toBe(state);
+    const on = setAutoChallenge(state, plain, 'mossy_cellar', true);
+    expect(on.ok && floorPosition(on.state, cellar).autoChallenge).toBe(true);
+  });
+
+  it('farms a beaten floor: a save that stood a floor past its best farms its best', () => {
+    const state = inCellar(plain);
+    state.combat.floors['mossy_cellar']!.tiers.normal = { floor: 6, best: 5 };
+    expect(floorPosition(state, cellar)).toMatchObject({ floor: 5, best: 5, challengeFloor: 6 });
+  });
+});
+
+describe('each enemy has its own HP (DESIGN.md §6)', () => {
   it('kills the enemies of a wave one after the other', () => {
     const content = harmless(withDps(10, plain));
     const start = inCellar(content);
@@ -222,35 +374,47 @@ describe('push and farm', () => {
     expect(status.wave).toEqual({ index: 2, size: stage.enemies.length });
     expect(status.enemy.id).toBe(stage.enemies[1]!.id);
     expect(status.maxHp.eq(stage.enemies[1]!.hp)).toBe(true);
+    expect(state.combat.enemyIndex).toBe(1);
   });
 
-  it('carries the damage of a big hit through several floors', () => {
-    // One hit of 1e9 is far more than the whole dungeon: with overflow on (DESIGN.md §6), every
-    // floor falls on the first hit.
+  it('stops a hit at the kill while overflow is off, and carries it on while it is on', () => {
+    // One hit of 1e9 is far more than a whole floor.
     const content = harmless(withDps(1e9, plain));
+    const size = fightStage(inCellar(content), content, 'mossy_cellar')!.enemies.length;
     const off = run(inCellar(content), content, 1.01);
-    expect(floorPosition(off.state, cellar).floor).toBe(2); // overflow off: one floor a hit
-    const { state, report } = run(withOverflow(inCellar(content), content), content, 1.01);
-    expect(floorPosition(state, cellar).floor).toBe(10);
-    expect(floorPosition(state, cellar).best).toBe(10);
-    expect(report.bossKills).toBeGreaterThanOrEqual(1);
-    expect(isDungeonCleared(state, 'mossy_cellar')).toBe(true);
+    expect(off.report.enemyKills).toBe(1);
+    expect(off.report.floorsCleared).toBe(0);
+    // On, the hit clears the farmed floor again and again, and never leaves it.
+    const on = run(withOverflow(inCellar(content), content), content, 1.01);
+    expect(on.report.floorsCleared).toBeGreaterThan(1000);
+    expect(on.report.enemyKills).toBeGreaterThan(1000 * size);
+    expect(floorPosition(on.state, cellar)).toMatchObject({ floor: 1, best: 0 });
+    // Farmed in bulk with overflow off, it is one kill a hit, round and round the wave.
+    const bulk = run(inCellar(content), content, 100.01);
+    expect(bulk.report.enemyKills).toBe(100);
+    expect(bulk.report.floorsCleared).toBe(Math.floor(100 / size));
+    expect(bulk.state.combat.enemyIndex).toBe(100 % size);
   });
 
-  it('gives the same floors however the time is split', () => {
+  it('gives the same floors however the time is split, Challenges included', () => {
     const content = harmless(withDps(40, plain));
-    const start = inCellar(content);
+    const start = withAutoChallenge(inCellar(content), true);
     const once = run(start, content, 300, createSeededRng(3));
     let state = start;
     const stepRng = createSeededRng(3);
     let cleared = 0;
+    let challenges = 0;
     for (let i = 0; i < 300 * 4; i++) {
       const step = advance(state, content, 250, stepRng);
       state = step.state;
       cleared += step.report.floorsCleared;
+      challenges += step.report.challenges.length;
     }
+    expect(floorPosition(once.state, cellar).best).toBeGreaterThan(1);
     expect(floorPosition(state, cellar)).toEqual(floorPosition(once.state, cellar));
     expect(cleared).toBe(once.report.floorsCleared);
+    expect(challenges).toBe(once.report.challenges.length);
+    expect(state.combat.enemyIndex).toBe(once.state.combat.enemyIndex);
     expect(state.resources['money']!.toNumber()).toBeCloseTo(
       once.state.resources['money']!.toNumber(),
       6,
@@ -266,20 +430,9 @@ describe('push and farm', () => {
     const start = inCellar(content);
     // The gauge timer sits at the hit interval, as it does after the lead card changes.
     start.bursts.fighting = { gauge: 0, timer: 1 };
-    const { state, report } = run(start, content, 12);
+    const { report } = run(start, content, 12);
     expect(report.playerHits.reduce((n, h) => n + h.hits, 0)).toBeGreaterThanOrEqual(12);
-    expect(floorPosition(state, cellar).floor).toBeGreaterThanOrEqual(2);
-  });
-
-  it('switches push and farm only for a dungeon that is open', () => {
-    const state = inCellar(plain);
-    expect(setFloorMode(state, plain, 'ember_crypt', 'farm')).toEqual({
-      ok: false,
-      reason: 'locked',
-    });
-    expect(setFloorMode(state, plain, 'nowhere', 'farm')).toEqual({ ok: false, reason: 'unknown' });
-    const same = setFloorMode(state, plain, 'mossy_cellar', 'push');
-    expect(same.ok && same.state).toBe(state);
+    expect(report.enemyKills).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -293,18 +446,21 @@ describe('health and knockouts on floors', () => {
       return health.max.sub(health.current).toNumber();
     };
     let before = 0;
-    for (let i = 0; i < 60 && floorPosition(state, cellar).floor === 1; i++) {
+    let cleared = 0;
+    for (let i = 0; i < 60 && cleared === 0; i++) {
       before = missing(state);
-      state = run(state, content, 1).state;
+      const step = run(state, content, 1);
+      state = step.state;
+      cleared = step.report.floorsCleared;
     }
-    expect(floorPosition(state, cellar).floor).toBe(2);
+    expect(cleared).toBe(1);
     // The wave had taken a few hits' worth from the pool ...
     expect(before).toBeGreaterThan(0);
     // ... and the clear gave it all back.
     expect(missing(state)).toBe(0);
   });
 
-  it('drops a floor and switches to farm on a knockout, so walls work on their own', () => {
+  it('drops the farming a floor on a knockout, so walls work on their own', () => {
     const content = withBossAttack(withDps(100, plain), 'mossy_cellar', 1e7, 2);
     const start = devSetFloor(inCellar(content), content, 'mossy_cellar', 5);
     if (!start.ok) throw new Error(start.reason);
@@ -313,7 +469,8 @@ describe('health and knockouts on floors', () => {
     expect(report.knockouts).toBe(1);
     const position = floorPosition(state, cellar);
     expect(position.floor).toBe(4);
-    expect(position.mode).toBe('farm');
+    expect(position.best).toBe(5);
+    expect(position.challengeFloor).toBe(5);
     expect(state.bossHp).toBeNull();
     expect(state.combat.knockoutSeconds).toBeGreaterThan(0);
   });
@@ -327,16 +484,14 @@ describe('health and knockouts on floors', () => {
 });
 
 describe('clearing', () => {
-  it('clears the dungeon the first time its last-floor boss dies, not before', () => {
+  it('clears the dungeon the first time its last-floor boss dies, in a Challenge', () => {
     const content = harmless(withDps(200, plain));
     const start = devSetFloor(inCellar(content), content, 'mossy_cellar', 9);
     if (!start.ok) throw new Error(start.reason);
-    let state = start.state;
-    for (let i = 0; i < 120 && floorPosition(state, cellar).floor === 9; i++) {
-      state = run(state, content, 1).state;
-    }
-    expect(floorPosition(state, cellar).floor).toBe(10);
-    expect(isDungeonCleared(state, 'mossy_cellar')).toBe(false);
+    // Farming floor 9 never clears it, however long.
+    const farmed = run(start.state, content, 120).state;
+    expect(isDungeonCleared(farmed, 'mossy_cellar')).toBe(false);
+    let state = withAutoChallenge(farmed, true);
     const cleared: string[] = [];
     const mines: string[] = [];
     const opened: string[] = [];
@@ -352,7 +507,7 @@ describe('clearing', () => {
     expect(mines).toEqual(['iron_deeps']);
     expect(opened).toContain('ember_crypt');
     expect(state.combat.stageKills['mossy_cellar:normal:10']).toBe(1);
-    // The boss floor is farmed from then on: push has nowhere deeper to go.
+    // The boss floor is farmed from then on: there is nothing deeper to challenge.
     const later = run(state, content, 300).state;
     expect(floorPosition(later, cellar).floor).toBe(10);
     expect(later.combat.stageKills['mossy_cellar:normal:10']).toBeGreaterThan(1);
@@ -361,9 +516,12 @@ describe('clearing', () => {
   it('pays the first-clear purse once', () => {
     // On the boss floor, with a hit that is just the boss's HP: one kill a second.
     const content = harmless(withDps(13_000, plain));
-    const onBoss = devSetFloor(inCellar(content), content, 'mossy_cellar', 10);
-    if (!onBoss.ok) throw new Error(onBoss.reason);
-    const start = onBoss.state;
+    const below = devSetFloor(inCellar(content), content, 'mossy_cellar', 9);
+    if (!below.ok) throw new Error(below.reason);
+    // The boss's Challenge, then farming the boss.
+    const started = startChallenge(below.state, content);
+    if (!started.ok) throw new Error(started.reason);
+    const start = started.state;
     const crystals = (s: GameState) => s.resources['summon_crystal']!;
     const purse = cellar.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
     const wage = cellar.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
@@ -383,15 +541,15 @@ describe('clearing', () => {
 describe('drops of normal enemies', () => {
   it('pays each enemy its share of the boss purse, and never the rare item', () => {
     const content = harmless(withDps(1e5, plain));
-    const farming = setFloorMode(inCellar(content), content, 'mossy_cellar', 'farm');
-    if (!farming.ok) throw new Error(farming.reason);
-    const start = farming.state;
+    const start = inCellar(content);
     const stage = fightStage(start, content, 'mossy_cellar')!;
     const wageMoney = cellar.drops.wages.find((w) => w.resource === 'money')!.perSecond;
     // rng 0: every roll is the lowest purse, every chance hits and every fraction rounds up.
     const { state, report } = run(start, content, 10, constantRng(0));
-    const clears = report.floorsCleared;
-    expect(clears).toBe(10); // a hit a second, each one clear: overflow is off
+    // A hit a second, each one kill: overflow is off, so a hit stops at its enemy.
+    expect(report.enemyKills).toBe(10);
+    const killed = Array.from({ length: 10 }, (_, i) => stage.enemies[i % stage.enemies.length]!);
+    const paid = killed.reduce((sum, e) => sum + e.purseScale, 0);
     // Each enemy is paid its share of the purse: on floor 1 its plain share of the HP, and 2%
     // more for every floor below (DESIGN.md §6 Deeper pays more).
     const worth = stage.enemies.reduce((sum, e) => sum + e.purseScale, 0);
@@ -404,13 +562,11 @@ describe('drops of normal enemies', () => {
     const gained =
       state.resources['money']!.sub(start.resources['money']!).toNumber() -
       wageMoney.toNumber() * 10;
-    // A long run of kills is paid at the average purse, each enemy at its share of the boss's:
-    // between the lowest and the highest purse, give or take the rounding and the part of a wave
-    // the last hit started.
-    expect(gained).toBeGreaterThanOrEqual(min * worth * clears * 0.999);
-    expect(gained).toBeLessThanOrEqual(max * worth * (clears + 1) + stage.enemies.length);
-    expect(gained).toBeCloseTo(((min + max) / 2) * worth * clears, -3);
-    expect(report.enemyKills).toBeGreaterThanOrEqual(clears * stage.enemies.length);
+    // A run of kills is paid at the average purse, each enemy at its share of the boss's:
+    // between the lowest and the highest purse, give or take the rounding.
+    expect(gained).toBeGreaterThanOrEqual(min * paid * 0.999);
+    expect(gained).toBeLessThanOrEqual(max * paid + 10);
+    expect(gained).toBeCloseTo(((min + max) / 2) * paid, -3);
     expect(report.drops).toEqual({});
     expect(state.pity['root_warden'] ?? 0).toBe(0);
     expect(state.combat.stageKills['mossy_cellar:normal:10'] ?? 0).toBe(0);
@@ -433,21 +589,21 @@ describe('drops of normal enemies', () => {
 });
 
 describe('offline, Ascension and goals', () => {
-  it('never pushes deeper while offline', () => {
+  it('farms offline, and climbs only where auto-challenge is on', () => {
     const content = harmless(withDps(1e6, plain));
     const start = devSetFloor(inCellar(content), content, 'mossy_cellar', 3);
     if (!start.ok) throw new Error(start.reason);
     const away = simulateOffline(start.state, content, 0, 3600 * 1000, createSeededRng(1));
-    const position = floorPosition(away.state, cellar);
-    expect(position.floor).toBe(3);
-    expect(position.mode).toBe('push');
+    expect(floorPosition(away.state, cellar)).toMatchObject({ floor: 3, best: 3 });
     expect(away.summary!.enemyKills).toBeGreaterThan(1000);
-    // Back online the same state pushes on.
-    const online = run(away.state, content, 5);
-    expect(floorPosition(online.state, cellar).floor).toBeGreaterThan(3);
+    // With auto-challenge on, it keeps challenging the next floors by the same rules.
+    const auto = withAutoChallenge(start.state, true);
+    const climbed = simulateOffline(auto, content, 0, 3600 * 1000, createSeededRng(1));
+    expect(floorPosition(climbed.state, cellar)).toMatchObject({ floor: 10, best: 10 });
+    expect(isDungeonCleared(climbed.state, 'mossy_cellar')).toBe(true);
   });
 
-  it('restarts each dungeon at half of its best floor on an Ascension, pushing', () => {
+  it('restarts each dungeon at half of its best floor on an Ascension, auto-challenge on', () => {
     expect(ascensionStartFloor(0)).toBe(1);
     expect(ascensionStartFloor(1)).toBe(1);
     expect(ascensionStartFloor(9)).toBe(4);
@@ -455,25 +611,30 @@ describe('offline, Ascension and goals', () => {
     const state = freshState();
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: { normal: { floor: 10, best: 10 } },
     };
     state.combat.floors['ember_crypt'] = {
       difficulty: 'normal',
-      mode: 'farm',
       autoChallenge: false,
       tiers: { normal: { floor: 6, best: 13 } },
     };
+    state.combat.challenge = { dungeonId: 'mossy_cellar', difficulty: 'normal', elapsedSeconds: 3 };
+    state.combat.challengeWaitSeconds = 20;
+    state.combat.enemyIndex = 2;
     state.clearedDungeons = ['mossy_cellar'];
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.combat.floors['mossy_cellar']).toMatchObject({
       difficulty: 'normal',
-      mode: 'push',
+      autoChallenge: true,
       tiers: { normal: { floor: 5, best: 10 } },
     });
+    expect(floorPosition(result.state, cellar).challengeFloor).toBe(6);
+    expect(result.state.combat.challenge).toBeNull();
+    expect(result.state.combat.challengeWaitSeconds).toBe(0);
+    expect(result.state.combat.enemyIndex).toBe(0);
     expect(result.state.combat.floors['ember_crypt']!.tiers.normal).toEqual({ floor: 6, best: 13 });
     expect(isDungeonCleared(result.state, 'mossy_cellar')).toBe(true);
   });
@@ -504,7 +665,13 @@ describe('dev cheats', () => {
 
   it('sets a floor inside the dungeon range', () => {
     const deep = devSetFloor(freshState(), plain, 'mossy_cellar', 99);
-    expect(deep.ok && floorPosition(deep.state, cellar)).toMatchObject({ floor: 10, best: 9 });
+    expect(deep.ok && floorPosition(deep.state, cellar)).toMatchObject({ floor: 10, best: 10 });
+    const mid = devSetFloor(freshState(), plain, 'mossy_cellar', 4);
+    expect(mid.ok && floorPosition(mid.state, cellar)).toMatchObject({
+      floor: 4,
+      best: 4,
+      challengeFloor: 5,
+    });
     expect(devSetFloor(freshState(), plain, 'nowhere', 2)).toEqual({
       ok: false,
       reason: 'unknown',
@@ -571,11 +738,11 @@ describe('save formats 24 and 25: floors', () => {
     expect(state.clearedDungeons).toEqual(['mossy_cellar', 'ember_crypt']);
     expect(isDungeonUnlocked(state, floorsContent, 'frostspire_vault')).toBe(true);
     // ... but their floors were never played: every dungeon starts on floor 1 of Normal,
-    // pushing, and Hard stays locked until the Normal boss falls (replay Normal first).
+    // challenging, and Hard stays locked until the Normal boss falls (replay Normal first).
     for (const dungeon of [cellar, crypt, floorsContent.dungeonById.get('frostspire_vault')!]) {
       expect(floorPosition(state, dungeon)).toMatchObject({
         difficulty: 'normal',
-        mode: 'push',
+        autoChallenge: true,
         floor: 1,
         best: 0,
       });

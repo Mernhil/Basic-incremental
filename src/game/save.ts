@@ -81,7 +81,6 @@ export const serializedStateSchema = z.object({
       z.string(),
       z.object({
         difficulty: z.enum(DIFFICULTIES),
-        mode: z.enum(['push', 'farm']),
         /** v27: auto-challenge (DESIGN.md §6). */
         autoChallenge: z.boolean(),
         tiers: z.partialRecord(

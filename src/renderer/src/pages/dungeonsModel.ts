@@ -159,3 +159,44 @@ export function overflowSwitch(info: {
 export function starTotal(levels: number, maxLevels: number): { levels: number; max: number } {
   return { levels: Math.max(0, Math.min(levels, maxLevels)), max: Math.max(0, maxLevels) };
 }
+
+/** What the Challenge button can do right now (DESIGN.md §6 Farming and Challenge). */
+export type ChallengeButton =
+  /** Press to start the next Challenge. */
+  | 'ready'
+  /** A Challenge is being fought. */
+  | 'running'
+  /** The loadout is knocked out: wait. */
+  | 'knocked'
+  /** The last floor of the tier: nothing to challenge. */
+  | 'none';
+
+/** The Challenge button's state from what the game says (no rules here). */
+export function challengeButton(input: {
+  running: boolean;
+  hasNext: boolean;
+  knockoutSeconds: number;
+}): ChallengeButton {
+  if (input.running) return 'running';
+  if (!input.hasNext) return 'none';
+  if (input.knockoutSeconds > 0) return 'knocked';
+  return 'ready';
+}
+
+/** The banner a finished Challenge shows: Victory, or Defeat with why it was lost. */
+export interface ChallengeVerdict {
+  kind: 'victory' | 'defeat';
+  /** Why it was lost (null for a Victory). */
+  reason: 'timer' | 'health' | null;
+  /** Enemy HP left when it was lost, shown only when some was left. */
+  showHpLeft: boolean;
+}
+
+export function challengeVerdict(event: {
+  won: boolean;
+  reason: 'timer' | 'health' | null;
+  hpLeftPositive: boolean;
+}): ChallengeVerdict {
+  if (event.won) return { kind: 'victory', reason: null, showHpLeft: false };
+  return { kind: 'defeat', reason: event.reason, showHpLeft: event.hpLeftPositive };
+}
