@@ -111,7 +111,7 @@ export function parseStageKey(key: string): StageRef | null {
 
 /** A dungeon's progress as a new game has it: Normal, pushing, on floor 1, nothing beaten. */
 export function initialProgress(): DungeonProgress {
-  return { difficulty: 'normal', mode: 'push', tiers: {} };
+  return { difficulty: 'normal', mode: 'push', autoChallenge: true, tiers: {} };
 }
 
 /** How many floors a dungeon has on a difficulty; the endless depths have no last floor. */

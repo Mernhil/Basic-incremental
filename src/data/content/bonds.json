@@ -1,0 +1,26 @@
+[
+  {
+    "id": "oath_of_dawn",
+    "name": "Oath of Dawn",
+    "cards": ["ember_squire", "dawnblade_regent"],
+    "modifiers": [
+      { "stat": "burst.fill", "kind": "flat", "value": "2", "scope": { "job": "fighting" } }
+    ]
+  },
+  {
+    "id": "old_growth",
+    "name": "Old Growth",
+    "cards": ["apprentice_feller", "elder_treant"],
+    "modifiers": [
+      { "stat": "burst.power", "kind": "flat", "value": "5", "scope": { "job": "logging" } }
+    ]
+  },
+  {
+    "id": "deep_vein",
+    "name": "Deep Vein",
+    "cards": ["cave_digger", "geode_golem"],
+    "modifiers": [
+      { "stat": "production.rate", "kind": "percent", "value": "15", "scope": { "job": "mining" } }
+    ]
+  }
+]

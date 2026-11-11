@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ContentValidationError, loadContent, validateContent, type RawContent } from '../src/data';
+import {
+  bundledRawContent,
+  ContentValidationError,
+  loadContent,
+  validateContent,
+  type RawContent,
+} from '../src/data';
 import resources from '../src/data/content/resources.json';
 import trees from '../src/data/content/trees.json';
 import mines from '../src/data/content/mines.json';
@@ -34,6 +40,7 @@ type PortalRaw = {
 
 function raw(overrides: Partial<RawContent> = {}): RawContent {
   return structuredClone({
+    ...bundledRawContent(),
     resources,
     trees,
     mines,

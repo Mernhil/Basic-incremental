@@ -538,6 +538,7 @@ describe('balance sim: run', () => {
     state.combat.floors[first.id] = {
       difficulty: 'normal',
       mode: 'farm',
+      autoChallenge: false,
       tiers: {
         normal: { floor: first.floors, best: first.floors },
         hard: { floor: first.floors, best: first.floors },
@@ -697,6 +698,7 @@ describe('balance sim: floors', () => {
       state.combat.floors['mossy_cellar'] = {
         difficulty: 'normal',
         mode: 'farm',
+        autoChallenge: false,
         tiers: { normal: { floor: 3, best: 3 } },
       };
       return state;

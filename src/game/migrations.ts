@@ -62,7 +62,65 @@ export const MIGRATIONS: MigrationTable = {
   24: v24ToV25,
   /** v25 -> v26: the balance update (DESIGN.md §4 to §10): workers, stage stars and the rest. */
   25: v25ToV26,
+  /** v26 -> v27: the table update (0.7.0): stage battles, the card duel, scrolls and the rest. */
+  26: v26ToV27,
 };
+
+/** Crystals one pull cost when save format 27 was made (a snapshot): a scroll is worth this. */
+export const V27_CRYSTALS_PER_SCROLL = 300;
+
+/** The crystal each scroll is converted from (DESIGN.md §3 Scroll details). */
+const V27_SCROLLS = { summon_scroll: 'summon_crystal', glamour_scroll: 'glamour_crystal' } as const;
+
+/**
+ * v26 -> v27: the table update (user, 2026-11-11; `docs/plans/table-update.md` Interfaces). Adds
+ * the state of the rules it builds, all inert until their packages read it:
+ * - every dungeon gets an auto-challenge switch, on where it was pushing (`mode` stays for now);
+ * - the fight gets the enemy being fought (the first), no Challenge running, no auto-challenge
+ *   wait and no damage on any team card; the HP of the floor being fought is dropped (`bossHp`
+ *   becomes one enemy's HP), so the floor starts fresh;
+ * - the crystals held become scrolls at the pull price (300 crystals a scroll, rounded down). The
+ *   crystals stay too while the portals still take them; the package that moves the portals to
+ *   scrolls drops them in this same step;
+ * - no Focus Portal kind, daily reward, presets, bonds, expeditions or Ascension challenges yet.
+ */
+function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
+  const combat = isRecord(state['combat']) ? state['combat'] : {};
+  const floors = isRecord(combat['floors']) ? combat['floors'] : {};
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  for (const [scroll, crystal] of Object.entries(V27_SCROLLS)) {
+    const held = resources[crystal];
+    const crystals = typeof held === 'string' && isDecimalString(held) ? new Decimal(held) : null;
+    resources[scroll] =
+      crystals && crystals.gt(0) ? crystals.div(V27_CRYSTALS_PER_SCROLL).floor().toString() : '0';
+  }
+  return {
+    ...state,
+    resources,
+    bossHp: null,
+    combat: {
+      ...combat,
+      floors: Object.fromEntries(
+        Object.entries(floors).map(([id, p]) => [
+          id,
+          isRecord(p) ? { ...p, autoChallenge: p['mode'] !== 'farm' } : p,
+        ]),
+      ),
+      enemyIndex: 0,
+      challenge: null,
+      challengeWaitSeconds: 0,
+      cardDamage: {},
+    },
+    summon: { focusKind: null, dailyClaimedDay: null },
+    presets: {
+      dungeons: {},
+      production: { logging: [null, null, null], mining: [null, null, null] },
+    },
+    discoveredBonds: [],
+    expeditions: { trips: [] },
+    ascensionChallenges: { active: null, completions: {} },
+  };
+}
 
 /** The first tree kind and mine type when save format 26 was made (a snapshot). */
 const V26_FIRST_PRODUCER = { logging: 'oak', mining: 'copper_quarry' } as const;

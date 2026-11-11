@@ -54,8 +54,95 @@ export interface GameState {
   account: AccountState;
   /** The upgrade shelf (DESIGN.md §4): owned upgrades and the lifetime Money earned. */
   upgrades: UpgradeState;
-  /** The autobuyers for tree and mine levels (DESIGN.md §9, §15). Save format 26; not read yet. */
+  /** The autobuyers for tree and mine levels (DESIGN.md §9, §15). Save format 26. */
   automation: AutomationState;
+  /** Summoning choices of the table update (DESIGN.md §3 scrolls, §7 Focus Portal). Save format 27;
+   *  not read yet. Kept through prestige. */
+  summon: SummonState;
+  /** Loadout presets (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
+  presets: PresetState;
+  /** Bond ids (`bonds.json`) triggered at least once (DESIGN.md §15 Bonds), in discovery order.
+   *  Save format 27; not read yet. Kept through prestige. */
+  discoveredBonds: string[];
+  /** Expeditions under way (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
+  expeditions: ExpeditionState;
+  /** Ascension challenges (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
+  ascensionChallenges: AscensionChallengeState;
+}
+
+/** Summoning state of the table update (DESIGN.md §3 Crystal wage / scrolls, §7 Focus Portal). The
+ *  scrolls themselves are resources (`summon_scroll`, `glamour_scroll`). */
+export interface SummonState {
+  /** The item type (`items.json` type kind, e.g. "sword") the Focus Portal pulls; null = none
+   *  chosen yet. Its pity is the Card Portal's counter (`portals.card_portal`). */
+  focusKind: string | null;
+  /** The local calendar day ("YYYY-MM-DD") the daily scroll reward was last claimed; null = never. */
+  dailyClaimedDay: string | null;
+}
+
+export function initialSummon(): SummonState {
+  return { focusKind: null, dailyClaimedDay: null };
+}
+
+/** The production jobs that have named presets (DESIGN.md §15 Loadout presets). */
+export const PRESET_JOBS = ['logging', 'mining'] as const;
+export type PresetJob = (typeof PRESET_JOBS)[number];
+/** Named presets per production job ([Default] three). */
+export const PRESETS_PER_JOB = 3;
+
+/** A named production preset: which cards work which tree or mine of that job. */
+export interface ProductionPreset {
+  name: string;
+  /** Tree or mine id -> card ids in slot order, as `production.workers`. */
+  workers: Record<string, string[]>;
+}
+
+export interface PresetState {
+  /** Dungeon (or special dungeon) id -> the fighting loadout remembered for it; missing = none
+   *  saved, picking the dungeon keeps the current loadout. */
+  dungeons: Record<string, CardLoadout>;
+  /** Job -> always `PRESETS_PER_JOB` entries, null = an empty preset slot. */
+  production: Record<PresetJob, (ProductionPreset | null)[]>;
+}
+
+export function initialPresets(): PresetState {
+  const empty = (): (ProductionPreset | null)[] => Array<null>(PRESETS_PER_JOB).fill(null);
+  return { dungeons: {}, production: { logging: empty(), mining: empty() } };
+}
+
+/** One card's trip (DESIGN.md §15 Expeditions). A card on a trip cannot be equipped or work. */
+export interface ExpeditionTrip {
+  cardId: string;
+  /** A place id of `expeditions.json`. */
+  placeId: string;
+  /** The trip length chosen, one of `expeditions.json` `durationsHours`. */
+  hours: number;
+  /** Seconds the trip has run. Advanced by play time and by all of the time away (trips are
+   *  outside the offline cap); done when it reaches hours × 3600. */
+  elapsedSeconds: number;
+}
+
+export interface ExpeditionState {
+  /** Trips under way, one per slot in use (the slot count is derived). */
+  trips: ExpeditionTrip[];
+}
+
+export function initialExpeditions(): ExpeditionState {
+  return { trips: [] };
+}
+
+/** A challenge is completed up to three times, with harder targets (DESIGN.md §15). */
+export const MAX_CHALLENGE_COMPLETIONS = 3;
+
+export interface AscensionChallengeState {
+  /** The challenge id (`challenges.json`) the current run is under; null = a normal run. */
+  active: string | null;
+  /** Challenge id -> completions, 0..3 (missing = 0). */
+  completions: Record<string, number>;
+}
+
+export function initialAscensionChallenges(): AscensionChallengeState {
+  return { active: null, completions: {} };
 }
 
 /**
@@ -218,6 +305,9 @@ export interface TierProgress {
 export interface DungeonProgress {
   difficulty: Difficulty;
   mode: FloorMode;
+  /** Auto-challenge is on (DESIGN.md §6 Auto-challenge): the next Challenge starts by itself after a
+   *  win and, after a loss, once the wait is over. Save format 27; replaces `mode` (not read yet). */
+  autoChallenge: boolean;
   /** Missing = floor 1, nothing beaten. */
   tiers: Partial<Record<Difficulty, TierProgress>>;
 }
@@ -244,6 +334,28 @@ export interface CombatState {
   /** Stage key -> the overflow switch is on (DESIGN.md §6 Overflow); missing = off. Kept through
    *  prestige. */
   overflow: Record<string, boolean>;
+  /** Index in the floor's wave of the enemy being fought (0-based; the ones before it are dead),
+   *  for "each enemy has its own HP" (DESIGN.md §6); `bossHp` is then that enemy's HP. Save format
+   *  27; not read yet. */
+  enemyIndex: number;
+  /** The Challenge being fought (DESIGN.md §6 Farming and Challenge), or null while farming. Its
+   *  floor is derived: the best floor of that difficulty plus one. Save format 27; not read yet. */
+  challenge: ChallengeRun | null;
+  /** Seconds left before auto-challenge tries again after a loss (0 = no wait). Save format 27;
+   *  not read yet. */
+  challengeWaitSeconds: number;
+  /** Card id -> damage that team card's own health has taken (DESIGN.md §6 card duel); missing =
+   *  full health. The team is derived (the fighting loadout, main then supports). Save format 27;
+   *  replaces `loadoutDamage` (not read yet). */
+  cardDamage: Record<string, Decimal>;
+}
+
+/** A running Challenge (DESIGN.md §6 Farming and Challenge). */
+export interface ChallengeRun {
+  dungeonId: string;
+  difficulty: Difficulty;
+  /** Seconds the Challenge has run; it is lost when this reaches its timer. */
+  elapsedSeconds: number;
 }
 
 export interface TrialAttempt {
@@ -270,6 +382,10 @@ export function initialCombat(): CombatState {
     stageKills: {},
     stageChests: {},
     overflow: {},
+    enemyIndex: 0,
+    challenge: null,
+    challengeWaitSeconds: 0,
+    cardDamage: {},
   };
 }
 
@@ -341,6 +457,11 @@ export function createInitialState(content: Content): GameState {
     account: initialAccount(),
     upgrades: initialUpgrades(),
     automation: initialAutomation(),
+    summon: initialSummon(),
+    presets: initialPresets(),
+    discoveredBonds: [],
+    expeditions: initialExpeditions(),
+    ascensionChallenges: initialAscensionChallenges(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -375,6 +496,14 @@ export function cloneState(state: GameState): GameState {
     shardShop: { ...state.shardShop },
     upgrades: { owned: [...state.upgrades.owned], moneyEarned: state.upgrades.moneyEarned },
     automation: { ...state.automation },
+    summon: { ...state.summon },
+    presets: clonePresets(state.presets),
+    discoveredBonds: [...state.discoveredBonds],
+    expeditions: { trips: state.expeditions.trips.map((t) => ({ ...t })) },
+    ascensionChallenges: {
+      active: state.ascensionChallenges.active,
+      completions: { ...state.ascensionChallenges.completions },
+    },
     account: { ...state.account, skills: { ...state.account.skills } },
     prestige: {
       runStart: { ...state.prestige.runStart },
@@ -417,6 +546,26 @@ export function cloneCombat(c: CombatState): CombatState {
     stageKills: { ...c.stageKills },
     stageChests: { ...c.stageChests },
     overflow: { ...c.overflow },
+    enemyIndex: c.enemyIndex,
+    challenge: c.challenge ? { ...c.challenge } : null,
+    challengeWaitSeconds: c.challengeWaitSeconds,
+    cardDamage: { ...c.cardDamage },
+  };
+}
+
+export function clonePresets(p: PresetState): PresetState {
+  const copyWorkers = (w: Record<string, string[]>): Record<string, string[]> =>
+    Object.fromEntries(Object.entries(w).map(([id, cards]) => [id, [...cards]]));
+  const job = (list: (ProductionPreset | null)[]): (ProductionPreset | null)[] =>
+    list.map((x) => (x ? { name: x.name, workers: copyWorkers(x.workers) } : null));
+  return {
+    dungeons: Object.fromEntries(
+      Object.entries(p.dungeons).map(([id, l]) => [
+        id,
+        { main: l.main, supports: [...l.supports] },
+      ]),
+    ),
+    production: { logging: job(p.production.logging), mining: job(p.production.mining) },
   };
 }
 

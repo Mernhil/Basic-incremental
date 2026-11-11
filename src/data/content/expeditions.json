@@ -1,0 +1,23 @@
+{
+  "durationsHours": [1, 4, 8],
+  "places": [
+    {
+      "id": "mossy_outskirts",
+      "name": "Mossy Outskirts",
+      "dungeon": "mossy_cellar",
+      "element": "nature"
+    },
+    {
+      "id": "ember_catacombs",
+      "name": "Ember Catacombs",
+      "dungeon": "ember_crypt",
+      "element": "fire"
+    },
+    {
+      "id": "frostspire_pass",
+      "name": "Frostspire Pass",
+      "dungeon": "frostspire_vault",
+      "element": "crystal"
+    }
+  ]
+}
