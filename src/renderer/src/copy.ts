@@ -3,6 +3,11 @@
  * "save" (never "file" or "data"), "boss", "bars" for HP, "Export save" / "Import save".
  * Written with the ux-copy guidelines: verb-first actions, errors say what happened and what to do.
  */
+/** The share of the next star the bar holds, as a whole percent. */
+export function starPercent(fill: number, need: number): number {
+  return need <= 0 ? 100 : Math.min(100, Math.floor((fill / need) * 100 + 1e-9));
+}
+
 export const COPY = {
   update: {
     message: 'Update ready — restart to install',
@@ -278,6 +283,27 @@ export const COPY = {
     mainAbility: 'Main ability',
     supportEffect: 'Support effect',
     workerAbility: 'Worker ability',
+    /** Stat tiles on every card (DESIGN.md §5 Show the stats). */
+    stats: {
+      damage: 'Damage / s',
+      output: 'Output',
+      health: 'Health',
+      hit: 'Hits every',
+      strike: 'Strikes every',
+      crits: 'Crits',
+      seconds: (n: number) => `${+n.toFixed(2)} s`,
+      crit: (chance: number, damage: string) => `${+(chance * 100).toFixed(1)}% · ×${damage}`,
+      outputValue: (power: string) => `×${power}`,
+      damageTip: 'Average damage per second as the main card: hits, signature attacks and crits.',
+      outputTip: 'The multiplier this worker gives its tree or mine.',
+      compare: (name: string, parts: string[]) => `vs ${name}: ${parts.join(', ')}`,
+      compareMain: 'equipped main',
+      comparePart: (percent: number, what: string) =>
+        `${percent >= 0 ? '+' : '−'}${Math.abs(Math.round(percent * 100))}% ${what}`,
+      same: 'about the same',
+      equipped: 'This is the equipped main card.',
+      working: 'This is the card working that place.',
+    },
     worksAt: 'Works at',
     notWorking: 'Not working',
     workerHint: 'Put it to work on a tree or mine on the Production page.',
@@ -920,8 +946,11 @@ export const COPY = {
     xpLabel: (pct: number) => `${pct}% of the way to the next level`,
     xpFull: 'XP full',
     xpOf: (now: string, need: string) => `${now} / ${need} XP`,
-    /** Copies come in fractions at low tiers (0.25, 0.5), so the numbers are shown trimmed. */
+    /** Stars cost fractions of a copy, so the bar reads as a share of the next star. */
     starLine: (fill: number, need: number, next: number) =>
+      `${starPercent(fill, need)}% to ★${next}`,
+    /** The exact numbers, in the tooltip. */
+    starTitle: (fill: number, need: number, next: number) =>
       `${+fill.toFixed(3)} / ${+need.toFixed(3)} copies to ★${next}`,
     /** The star dust button: tops up what the star bar lacks. */
     dustStar: (next: number, cost: number, have: number) =>

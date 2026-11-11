@@ -17,7 +17,8 @@
         "every": 25,
         "multiplier": "2"
       }
-    }
+    },
+    "element": "earth"
   },
   {
     "id": "iron_deeps",
@@ -37,7 +38,8 @@
         "every": 25,
         "multiplier": "2"
       }
-    }
+    },
+    "element": "earth"
   },
   {
     "id": "crystal_grotto",
@@ -57,6 +59,7 @@
         "every": 25,
         "multiplier": "2"
       }
-    }
+    },
+    "element": "crystal"
   }
 ]
