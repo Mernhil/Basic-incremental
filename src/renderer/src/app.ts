@@ -114,6 +114,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     material: 'material',
     currency: 'material',
     crystal: 'portal',
+    scroll: 'portal', // summon scrolls (format 27): not shown until the scroll package
     prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();

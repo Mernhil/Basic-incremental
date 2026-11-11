@@ -456,18 +456,20 @@ describe('offline, Ascension and goals', () => {
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
       mode: 'farm',
+      autoChallenge: false,
       tiers: { normal: { floor: 10, best: 10 } },
     };
     state.combat.floors['ember_crypt'] = {
       difficulty: 'normal',
       mode: 'farm',
+      autoChallenge: false,
       tiers: { normal: { floor: 6, best: 13 } },
     };
     state.clearedDungeons = ['mossy_cellar'];
     state.mastery.harvested['oak_gem'] = new Decimal('1e30');
     const result = ascend(state, plain);
     if (!result.ok) throw new Error(result.reason);
-    expect(result.state.combat.floors['mossy_cellar']).toEqual({
+    expect(result.state.combat.floors['mossy_cellar']).toMatchObject({
       difficulty: 'normal',
       mode: 'push',
       tiers: { normal: { floor: 5, best: 10 } },
@@ -563,7 +565,7 @@ describe('save formats 24 and 25: floors', () => {
   it('loads a format 23 save made with the 0.5.3 dev tools', () => {
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v23-dev-tools.save.txt'), 'utf8');
     expect(JSON.parse(text).version).toBe(23);
-    expect(CURRENT_SAVE_VERSION).toBe(26);
+    expect(CURRENT_SAVE_VERSION).toBe(27);
     const { state } = readSave(text, floorsContent);
     // Both cleared dungeons stay cleared, with what they opened ...
     expect(state.clearedDungeons).toEqual(['mossy_cellar', 'ember_crypt']);

@@ -1,5 +1,8 @@
 import { COSMETIC_SLOTS, JOBS, RANK_TIERS, RARITIES, contentSchemas } from './schemas';
 import type {
+  AscensionChallenge,
+  Bond,
+  ExpeditionsConfig,
   Card,
   CardRules,
   CombatConfig,
@@ -59,6 +62,9 @@ import trainingJson from './content/training.json';
 import coinsJson from './content/coins.json';
 import weaponSkinsJson from './content/weaponSkins.json';
 import itemsJson from './content/items.json';
+import bondsJson from './content/bonds.json';
+import expeditionsJson from './content/expeditions.json';
+import challengesJson from './content/challenges.json';
 
 export * from './schemas';
 
@@ -129,6 +135,13 @@ export interface Content {
   legacySkinById: ReadonlyMap<string, { weapon: string; skin: WeaponSkin }>;
   /** The starter item of each slot (validated: exactly one per slot). */
   starterBySlot: Readonly<Record<CosmeticSlot, Cosmetic>>;
+  /** Bonds between pairs of cards (DESIGN.md §15 Bonds). Save format 27; the rule is not built. */
+  bonds: Bond[];
+  bondById: ReadonlyMap<string, Bond>;
+  /** Expedition trip lengths and places (DESIGN.md §15 Expeditions). Not built. */
+  expeditions: ExpeditionsConfig;
+  /** Ascension challenges (DESIGN.md §15). Not built. */
+  challenges: AscensionChallenge[];
 }
 
 export type RawContent = { [K in keyof typeof contentSchemas]: unknown };
@@ -190,6 +203,9 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     coins,
     weaponSkins,
     items,
+    bonds,
+    expeditions,
+    challenges,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -217,6 +233,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
       );
     }
   }
+  checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -295,7 +312,68 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
       ),
     ),
     starterBySlot,
+    bonds,
+    bondById: new Map(bonds.map((b) => [b.id, b])),
+    expeditions,
+    challenges,
   };
+}
+
+/**
+ * The content of the table update's rules (save format 27): every id is unique and every card and
+ * dungeon named exists (dungeons waiting for their theme count).
+ */
+function checkTableUpdate(
+  c: {
+    cards: Card[];
+    dungeons: Dungeon[];
+    bonds: Bond[];
+    expeditions: ExpeditionsConfig;
+    challenges: AscensionChallenge[];
+  },
+  issues: string[],
+): void {
+  const cardIds = new Set(c.cards.map((x) => x.id));
+  const dungeonIds = new Set(c.dungeons.map((d) => d.id));
+  const unique = (file: string, ids: string[]): void => {
+    const seen = new Set<string>();
+    ids.forEach((x, i) => {
+      if (seen.has(x)) issues.push(`${file} › [${i}] › id: duplicate "${x}"`);
+      seen.add(x);
+    });
+  };
+  unique(
+    'bonds.json',
+    c.bonds.map((b) => b.id),
+  );
+  unique(
+    'expeditions.json › places',
+    c.expeditions.places.map((p) => p.id),
+  );
+  unique(
+    'challenges.json',
+    c.challenges.map((x) => x.id),
+  );
+  c.bonds.forEach((b, i) =>
+    b.cards.forEach((card, j) => {
+      if (!cardIds.has(card))
+        issues.push(`bonds.json › [${i}] › cards › [${j}]: unknown card "${card}"`);
+    }),
+  );
+  c.expeditions.places.forEach((p, i) => {
+    if (!dungeonIds.has(p.dungeon)) {
+      issues.push(`expeditions.json › places › [${i}] › dungeon: unknown dungeon "${p.dungeon}"`);
+    }
+  });
+  c.challenges.forEach((x, i) =>
+    x.targets.forEach((t, j) => {
+      if (!dungeonIds.has(t.dungeon)) {
+        issues.push(
+          `challenges.json › [${i}] › targets › [${j}] › dungeon: unknown dungeon "${t.dungeon}"`,
+        );
+      }
+    }),
+  );
 }
 
 function checkProduction(
@@ -1117,6 +1195,9 @@ export function bundledRawContent(): RawContent {
     coins: coinsJson,
     weaponSkins: weaponSkinsJson,
     items: itemsJson,
+    bonds: bondsJson,
+    expeditions: expeditionsJson,
+    challenges: challengesJson,
   };
 }
 

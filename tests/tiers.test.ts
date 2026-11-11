@@ -430,6 +430,7 @@ describe('balance sim: tiers', () => {
       state.combat.floors[id] = {
         difficulty: 'normal',
         mode: 'farm',
+        autoChallenge: false,
         tiers: { normal: { floor: d.floors, best: d.floors } },
       };
     }

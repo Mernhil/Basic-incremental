@@ -86,6 +86,21 @@
     "tier": 2
   },
   {
+    "id": "summon_scroll",
+    "name": "Summon Scroll",
+    "kind": "scroll",
+    "tier": 1,
+    "startAmount": "1",
+    "keptOnAscend": true
+  },
+  {
+    "id": "glamour_scroll",
+    "name": "Glamour Scroll",
+    "kind": "scroll",
+    "tier": 2,
+    "keptOnAscend": true
+  },
+  {
     "id": "moss_core",
     "name": "Moss Core",
     "kind": "material",

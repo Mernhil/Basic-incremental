@@ -31,6 +31,8 @@ export const RESOURCE_KINDS = [
   'currency',
   'crystal',
   'prestige',
+  /** Summon and Glamour Scrolls (DESIGN.md §3): one scroll pays one pull. Save format 27. */
+  'scroll',
 ] as const;
 
 /** A colour as #rrggbb. */
@@ -1861,6 +1863,73 @@ export const coinSchema = z.strictObject({
 });
 export type Coin = z.output<typeof coinSchema>;
 
+/**
+ * A bond (DESIGN.md §15 Bonds): two specific cards in the same loadout unlock a small named bonus.
+ * Content of the table update (save format 27); the rule is not built yet.
+ */
+export const bondSchema = z
+  .strictObject({
+    id,
+    name,
+    /** The two card ids, in the order the Codex shows them. */
+    cards: z.tuple([id, id]),
+    /** What it gives while both cards are in the same loadout. */
+    modifiers: z.array(modifierSchema).min(1),
+  })
+  .refine((b) => b.cards[0] !== b.cards[1], { message: 'a bond pairs two different cards' });
+export type Bond = z.output<typeof bondSchema>;
+
+/**
+ * An expedition place (DESIGN.md §15 Expeditions), opened by clearing its dungeon. Its rewards
+ * (that area's materials, some gems and card XP) are added by the package that builds the rule.
+ */
+export const expeditionPlaceSchema = z.strictObject({
+  id,
+  name,
+  /** The dungeon whose first clear opens the place. */
+  dungeon: id,
+  /** Cards of this element bring back double. */
+  element: z.enum(ELEMENTS),
+});
+export type ExpeditionPlace = z.output<typeof expeditionPlaceSchema>;
+
+export const expeditionsSchema = z.strictObject({
+  /** The trip lengths a player can pick, in hours, shortest first. */
+  durationsHours: z
+    .array(z.number().positive())
+    .min(1)
+    .refine((list) => list.every((h, i) => i === 0 || h > list[i - 1]!), {
+      message: 'durations go from shortest to longest, each once',
+    }),
+  places: z.array(expeditionPlaceSchema),
+});
+export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
+
+/**
+ * An Ascension challenge (DESIGN.md §15): an Ascension run under a rule, completed by clearing a
+ * target, up to three times with harder targets, each completion giving a permanent reward. The
+ * rule's shape is set by the package that builds the challenges; the file starts empty.
+ */
+export const ascensionChallengeSchema = z.strictObject({
+  id,
+  name,
+  /** The rule in words, as the side portal shows it. */
+  rule: z.string().min(1),
+  /** One target per completion, easiest first: the dungeon floor to reach under the rule. */
+  targets: z
+    .array(
+      z.strictObject({
+        dungeon: id,
+        difficulty: z.enum(['normal', 'hard', 'nightmare']).default('normal'),
+        floor: z.number().int().min(1),
+      }),
+    )
+    .length(3),
+  /** The permanent reward of each completion. */
+  rewards: z.array(z.array(modifierSchema).min(1)).length(3),
+});
+export type AscensionChallenge = z.output<typeof ascensionChallengeSchema>;
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1896,6 +1965,10 @@ export const contentSchemas = {
     ),
   weaponSkins: z.array(weaponSkinSetSchema),
   items: itemsSchema,
+  /** Save format 27 (the table update): content for rules not built yet. */
+  bonds: z.array(bondSchema),
+  expeditions: expeditionsSchema,
+  challenges: z.array(ascensionChallengeSchema),
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;

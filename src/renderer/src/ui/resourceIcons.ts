@@ -24,6 +24,7 @@ const ICON_BY_KIND: Readonly<Record<Resource['kind'], ResourceIconId>> = {
   material: 'material',
   currency: 'coin',
   crystal: 'crystal-summon',
+  scroll: 'crystal-summon',
   prestige: 'starlight',
 };
 

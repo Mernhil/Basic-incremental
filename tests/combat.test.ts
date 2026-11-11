@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { RawContent } from '../src/data';
-import { validateContent } from '../src/data';
+import { bundledRawContent, validateContent } from '../src/data';
 import {
   advance,
   advanceChunked,
@@ -584,6 +584,7 @@ describe('save format v4: combat', () => {
 describe('combat data is validated', () => {
   const raw = (): RawContent =>
     structuredClone({
+      ...bundledRawContent(),
       resources,
       trees,
       mines,
