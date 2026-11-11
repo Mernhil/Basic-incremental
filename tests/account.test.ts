@@ -180,10 +180,22 @@ describe('account levels and the reward track (DESIGN.md §10, §5)', () => {
 });
 
 describe('account tree (DESIGN.md §10a)', () => {
-  it('has the six branches', () => {
+  it('has the eleven branches', () => {
     const branches = new Set(skillTree(freshState(), content).map((n) => n.node.branch));
     expect([...branches].sort()).toEqual(
-      ['automation', 'collection', 'combat', 'logging', 'luck', 'mining'].sort(),
+      [
+        'ascension',
+        'automation',
+        'collection',
+        'combat',
+        'dungeons',
+        'elements',
+        'forge',
+        'logging',
+        'luck',
+        'mining',
+        'workers',
+      ].sort(),
     );
   });
 

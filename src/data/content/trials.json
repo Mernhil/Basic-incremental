@@ -54,6 +54,58 @@
             "amount": "8"
           }
         ]
+      },
+      {
+        "score": 1.5,
+        "rewards": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "10"
+          },
+          {
+            "resource": "facet_shard",
+            "amount": "12"
+          }
+        ]
+      },
+      {
+        "score": 2,
+        "rewards": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "12"
+          },
+          {
+            "resource": "facet_shard",
+            "amount": "16"
+          }
+        ]
+      },
+      {
+        "score": 3,
+        "rewards": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "15"
+          },
+          {
+            "resource": "facet_shard",
+            "amount": "22"
+          }
+        ]
+      },
+      {
+        "score": 5,
+        "rewards": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "20"
+          },
+          {
+            "resource": "facet_shard",
+            "amount": "32"
+          }
+        ]
       }
     ]
   }

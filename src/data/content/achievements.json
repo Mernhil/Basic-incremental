@@ -448,6 +448,471 @@
         ],
         "cosmetics": ["sticker_e"]
       }
+    },
+    {
+      "id": "first_silver",
+      "name": "First Silver",
+      "description": "Take a stage to Silver stars.",
+      "condition": {
+        "kind": "stage_stars",
+        "level": 3,
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glamour_crystal",
+            "amount": "600"
+          }
+        ]
+      }
+    },
+    {
+      "id": "golden_stage",
+      "name": "Golden Stage",
+      "description": "Take a stage to Gold stars.",
+      "condition": {
+        "kind": "stage_stars",
+        "level": 4,
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "2"
+          },
+          {
+            "resource": "glamour_crystal",
+            "amount": "900"
+          }
+        ]
+      }
+    },
+    {
+      "id": "mythic_stage",
+      "name": "Mythic Stage",
+      "description": "Take a stage to Mythic stars.",
+      "condition": {
+        "kind": "stage_stars",
+        "level": 6,
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "10"
+          },
+          {
+            "resource": "glamour_crystal",
+            "amount": "1800"
+          }
+        ]
+      }
+    },
+    {
+      "id": "stage_collector",
+      "name": "Stage Collector",
+      "description": "Give ten stages their first star.",
+      "condition": {
+        "kind": "stage_stars",
+        "level": 1,
+        "count": 10
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "900"
+          }
+        ]
+      }
+    },
+    {
+      "id": "fully_starred",
+      "name": "Fully Starred",
+      "description": "Give every stage of a dungeon, on every tier, its first star.",
+      "condition": {
+        "kind": "dungeon_starred",
+        "level": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "1500"
+          }
+        ]
+      }
+    },
+    {
+      "id": "golden_dungeon",
+      "name": "Golden Dungeon",
+      "description": "Take every stage of a dungeon, on every tier, to Gold stars.",
+      "condition": {
+        "kind": "dungeon_starred",
+        "level": 4
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "10"
+          },
+          {
+            "resource": "glamour_crystal",
+            "amount": "3000"
+          }
+        ]
+      }
+    },
+    {
+      "id": "star_hunter_1",
+      "name": "Star Hunter I",
+      "description": "Earn 25 star levels.",
+      "condition": {
+        "kind": "star_total",
+        "amount": 25
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "900"
+          }
+        ]
+      }
+    },
+    {
+      "id": "star_hunter_2",
+      "name": "Star Hunter II",
+      "description": "Earn 100 star levels.",
+      "condition": {
+        "kind": "star_total",
+        "amount": 100
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glamour_crystal",
+            "amount": "1500"
+          }
+        ]
+      }
+    },
+    {
+      "id": "star_hunter_3",
+      "name": "Star Hunter III",
+      "description": "Earn 300 star levels.",
+      "condition": {
+        "kind": "star_total",
+        "amount": 300
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "20"
+          },
+          {
+            "resource": "glamour_crystal",
+            "amount": "3000"
+          }
+        ]
+      }
+    },
+    {
+      "id": "third_hand",
+      "name": "Third Hand",
+      "description": "Have three workers at work.",
+      "condition": {
+        "kind": "workers",
+        "count": 3
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "moss_core",
+            "amount": "3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "full_crew",
+      "name": "Full Crew",
+      "description": "Have six workers at work.",
+      "condition": {
+        "kind": "workers",
+        "count": 6
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "cinder_core",
+            "amount": "6"
+          }
+        ]
+      }
+    },
+    {
+      "id": "busy_hive",
+      "name": "Busy Hive",
+      "description": "Have twelve workers at work.",
+      "condition": {
+        "kind": "workers",
+        "count": 12
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "frost_core",
+            "amount": "20"
+          }
+        ]
+      }
+    },
+    {
+      "id": "sharpening",
+      "name": "Sharpening",
+      "description": "Buy 50 tool line levels in one run.",
+      "condition": {
+        "kind": "tool_levels",
+        "amount": 50
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "moss_core",
+            "amount": "3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "well_equipped",
+      "name": "Well Equipped",
+      "description": "Buy 500 tool line levels in one run.",
+      "condition": {
+        "kind": "tool_levels",
+        "amount": 500
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "cinder_core",
+            "amount": "10"
+          }
+        ]
+      }
+    },
+    {
+      "id": "digging_deeper",
+      "name": "Digging Deeper",
+      "description": "Break through the first layer or age of a tree or mine.",
+      "condition": {
+        "kind": "depth",
+        "layer": 2
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "moss_core",
+            "amount": "3"
+          }
+        ]
+      }
+    },
+    {
+      "id": "deep_roots",
+      "name": "Deep Roots",
+      "description": "Reach the fourth layer or age of a tree or mine.",
+      "condition": {
+        "kind": "depth",
+        "layer": 4
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "frost_core",
+            "amount": "10"
+          }
+        ]
+      }
+    },
+    {
+      "id": "forgemaster",
+      "name": "Forgemaster",
+      "description": "Put a worker and a recipe in the forge.",
+      "condition": {
+        "kind": "forge_working"
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "100"
+          }
+        ]
+      }
+    },
+    {
+      "id": "make_a_wish",
+      "name": "Make a Wish",
+      "description": "Mark a card on your wishlist.",
+      "condition": {
+        "kind": "wishlist",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "300"
+          }
+        ]
+      }
+    },
+    {
+      "id": "wish_granted",
+      "name": "Wish Granted",
+      "description": "Own a card you marked.",
+      "condition": {
+        "kind": "wishlist_owned",
+        "count": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "600"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dream_team",
+      "name": "Dream Team",
+      "description": "Own five cards you marked.",
+      "condition": {
+        "kind": "wishlist_owned",
+        "count": 5
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "summon_crystal",
+            "amount": "1500"
+          }
+        ]
+      }
+    },
+    {
+      "id": "branching_out",
+      "name": "Branching Out",
+      "description": "Learn 25 skills of the account tree.",
+      "condition": {
+        "kind": "skills_learned",
+        "amount": 25
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "100"
+          }
+        ]
+      }
+    },
+    {
+      "id": "constellation",
+      "name": "Constellation",
+      "description": "Learn 100 skills of the account tree.",
+      "condition": {
+        "kind": "skills_learned",
+        "amount": 100
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "400"
+          },
+          {
+            "resource": "facet_shard",
+            "amount": "100"
+          }
+        ]
+      }
+    },
+    {
+      "id": "keystone_bearer",
+      "name": "Keystone Bearer",
+      "description": "Learn a keystone.",
+      "condition": {
+        "kind": "keystones",
+        "amount": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "200"
+          }
+        ]
+      }
+    },
+    {
+      "id": "rule_breaker",
+      "name": "Rule Breaker",
+      "description": "Learn five keystones.",
+      "condition": {
+        "kind": "keystones",
+        "amount": 5
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "facet_shard",
+            "amount": "300"
+          }
+        ]
+      }
+    },
+    {
+      "id": "first_circle",
+      "name": "First Circle",
+      "description": "Reveal a weapon circle: raise a card to Gold.",
+      "condition": {
+        "kind": "circles_open",
+        "amount": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "glimmer_dust",
+            "amount": "200"
+          }
+        ]
+      }
+    },
+    {
+      "id": "armoury",
+      "name": "Armoury",
+      "description": "Reveal five weapon circles.",
+      "condition": {
+        "kind": "circles_open",
+        "amount": 5
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "facet_shard",
+            "amount": "300"
+          }
+        ]
+      }
     }
   ],
   "shardShop": [

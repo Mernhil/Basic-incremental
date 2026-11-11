@@ -275,11 +275,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "525"
+          "amount": "263"
         },
         {
           "resource": "frost_sigil",
           "amount": "455"
+        },
+        {
+          "resource": "storm_core",
+          "amount": "263"
         },
         {
           "resource": "moonwillow_gem",
@@ -297,11 +301,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "525"
+          "amount": "263"
         },
         {
           "resource": "frost_sigil",
           "amount": "455"
+        },
+        {
+          "resource": "storm_core",
+          "amount": "263"
         },
         {
           "resource": "grotto_gem",
@@ -319,11 +327,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "525"
+          "amount": "263"
         },
         {
           "resource": "frost_sigil",
           "amount": "455"
+        },
+        {
+          "resource": "storm_core",
+          "amount": "263"
         },
         {
           "resource": "grotto_gem",
@@ -343,11 +355,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "770"
+          "amount": "385"
         },
         {
           "resource": "frost_sigil",
           "amount": "630"
+        },
+        {
+          "resource": "sanctum_core",
+          "amount": "385"
         },
         {
           "resource": "moonwillow_gem",
@@ -365,11 +381,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "770"
+          "amount": "385"
         },
         {
           "resource": "frost_sigil",
           "amount": "630"
+        },
+        {
+          "resource": "sanctum_core",
+          "amount": "385"
         },
         {
           "resource": "grotto_gem",
@@ -387,11 +407,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "770"
+          "amount": "385"
         },
         {
           "resource": "frost_sigil",
           "amount": "630"
+        },
+        {
+          "resource": "sanctum_core",
+          "amount": "385"
         },
         {
           "resource": "grotto_gem",
@@ -411,11 +435,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "1540"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
           "amount": "1260"
+        },
+        {
+          "resource": "void_core",
+          "amount": "770"
         },
         {
           "resource": "moonwillow_gem",
@@ -433,11 +461,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "1540"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
           "amount": "1260"
+        },
+        {
+          "resource": "void_core",
+          "amount": "770"
         },
         {
           "resource": "grotto_gem",
@@ -455,11 +487,15 @@
         },
         {
           "resource": "frost_core",
-          "amount": "1540"
+          "amount": "770"
         },
         {
           "resource": "frost_sigil",
           "amount": "1260"
+        },
+        {
+          "resource": "void_core",
+          "amount": "770"
         },
         {
           "resource": "grotto_gem",

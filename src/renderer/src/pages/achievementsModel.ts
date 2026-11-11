@@ -71,16 +71,25 @@ export interface BookView {
 export function chapterOf(condition: AchievementCondition): ChapterId {
   switch (condition.kind) {
     case 'harvested':
+    case 'workers':
+    case 'tool_levels':
+    case 'depth':
+    case 'forge_working':
     case 'producers':
     case 'milestone':
     case 'gem_mastery':
       return 'gathering';
     case 'kills':
     case 'cleared':
+    case 'stage_stars':
+    case 'dungeon_starred':
+    case 'star_total':
     case 'boss_mastery':
       return 'battle';
     case 'pulls':
     case 'pity_hits':
+    case 'wishlist':
+    case 'wishlist_owned':
     case 'card_tier':
     case 'card_stars':
     case 'full_loadout':
@@ -90,6 +99,9 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'max_cosmetic':
       return 'wardrobe';
     case 'skill_points_spent':
+    case 'skills_learned':
+    case 'keystones':
+    case 'circles_open':
     case 'ascensions':
     case 'offline_hours':
       return 'journey';
@@ -103,6 +115,8 @@ const YES_NO = new Set<AchievementCondition['kind']>([
   'full_loadout',
   'full_set',
   'max_cosmetic',
+  'dungeon_starred',
+  'forge_working',
 ]);
 
 function progressText(entry: AchievementEntry): string {

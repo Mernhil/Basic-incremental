@@ -1,4 +1,5 @@
 import type { Content, LuckyConfig, ProductionJob } from '../data';
+import { statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import { pushHarvest, type TickReport } from './report';
 import type { GameState } from './state';
@@ -24,10 +25,19 @@ const MAX_DETAILED = 16;
 export const luckyConfig = (content: Content, job: ProductionJob): LuckyConfig =>
   content.production.lucky[job];
 
-/** The output factor of a worked place: 1 + payout seconds / interval seconds. */
-export function luckyFactor(content: Content, job: ProductionJob): Decimal {
+/**
+ * The output factor of a worked place: 1 + payout seconds / interval seconds, the payout read
+ * through `lucky.payout` (the skill tree) when modifiers are given.
+ */
+export function luckyFactor(
+  content: Content,
+  job: ProductionJob,
+  modifiers: readonly Modifier[] = [],
+  context: StatContext = { job },
+): Decimal {
   const { everySeconds, payoutSeconds } = luckyConfig(content, job);
-  return new Decimal(1 + payoutSeconds / everySeconds);
+  const payout = statValue('lucky.payout', payoutSeconds, modifiers, context).toNumber();
+  return new Decimal(1 + Math.max(0, payout) / everySeconds);
 }
 
 /** A fixed pseudo-random number in [0, 1) for slot `k` of a place (the same on every run). */
@@ -116,7 +126,7 @@ export function recordLuckyStrikes(
       kind: site.kind,
       producer: id,
       resource: site.producer.resource,
-      amount: site.rate.mul(config.payoutSeconds).mul(strikes),
+      amount: site.rate.mul(site.lucky.sub(1).mul(config.everySeconds)).mul(strikes),
       strikes,
       crits: 0,
       burst: false,

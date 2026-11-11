@@ -381,7 +381,19 @@ export function ascensionGuard(runs: readonly RunRecord[]): {
 // ---- buyer priorities --------------------------------------------------------------------------
 
 /** The branches the buyer fills first: what makes a run faster, then the rest. */
-const SKILL_BRANCH_PRIORITY = ['combat', 'luck', 'mining', 'logging', 'collection', 'automation'];
+const SKILL_BRANCH_PRIORITY = [
+  'combat',
+  'luck',
+  'mining',
+  'logging',
+  'workers',
+  'dungeons',
+  'forge',
+  'elements',
+  'collection',
+  'automation',
+  'ascension',
+];
 
 /**
  * Account tree nodes in the order the buyer fills them (each up to its max rank): the skeleton's

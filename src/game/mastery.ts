@@ -23,7 +23,7 @@ export function metalOf(tier: number): Metal {
   return METALS[Math.max(0, Math.min(MAX_MASTERY_TIER, Math.floor(tier)))]!;
 }
 
-/** Tiers whose threshold `value` reached (0..4). */
+/** Tiers whose threshold `value` reached (0 .. the number of thresholds). */
 export function tierFor(
   thresholds: readonly (Decimal | number)[],
   value: Decimal | number,
@@ -36,7 +36,7 @@ export function tierFor(
 
 /** A mastery tier ready to show: the medal / coin metal and the bar toward the next tier. */
 export interface MasteryInfo<T> {
-  /** Settled tier, 0 (stone) .. 4 (prismatic). */
+  /** Settled tier, 0 (stone) .. 4 (prismatic) and, for a gem, on up to the last threshold. */
   tier: number;
   metal: Metal;
   /** Where the bar stands toward the next tier, 0..1 (1 at prismatic). Linear from the

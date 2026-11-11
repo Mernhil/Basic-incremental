@@ -190,14 +190,14 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
 });
 
 describe('drops', () => {
-  it('each of the first three dungeons drops its own Core, the later ones Frost Cores', () => {
+  it('every dungeon drops its own Core', () => {
     expect(content.dungeons.map((d) => d.drops.material.resource)).toEqual([
       'moss_core',
       'cinder_core',
       'frost_core',
-      'frost_core',
-      'frost_core',
-      'frost_core',
+      'storm_core',
+      'sanctum_core',
+      'void_core',
     ]);
   });
 
@@ -452,10 +452,10 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
     return state;
   };
 
-  it('scores the share of the fixed target HP, capped at 1', () => {
+  it('scores the share of the fixed target HP, past 1 for the extra levels', () => {
     expect(trialScore(trial, new Decimal(0))).toBe(0);
     expect(trialScore(trial, trial.target.hp.div(2))).toBeCloseTo(0.5);
-    expect(trialScore(trial, trial.target.hp.mul(3))).toBe(1);
+    expect(trialScore(trial, trial.target.hp.mul(3))).toBeCloseTo(3);
   });
 
   it('pays every tier reached; Facet Shards only from 75%', () => {
@@ -500,14 +500,24 @@ describe('The Glimmer Trial (timed attempts, DESIGN.md §6)', () => {
     expect(bossStatus(state, content)).toBeNull();
   });
 
-  it('a full score clears the trial', () => {
-    const content = withDps(trial.target.hp);
+  it('a full score clears the trial, and a score past it pays the extra levels', () => {
+    const content = withDps(trial.target.hp.div(25));
     const start = open();
     const { state, report } = advance(start, content, 30_000, rng);
     expect(report.cleared).toEqual([trial.id]);
     expect(state.clearedDungeons).toContain(trial.id);
     expect(trialStatus(state, content)!.cleared).toBe(true);
-    expect(state.resources['facet_shard']!.eq(pays(1, 'facet_shard'))).toBe(true);
+    const score = state.combat.trialBest[trial.id]!;
+    expect(score).toBeGreaterThanOrEqual(1);
+    expect(state.resources['facet_shard']!.eq(pays(score, 'facet_shard'))).toBe(true);
+    expect(pays(5, 'glimmer_dust')).toBeGreaterThan(pays(1, 'glimmer_dust'));
+  });
+
+  it('has score levels above 100%', () => {
+    expect(trial.tiers.filter((t) => t.score > 1).length).toBeGreaterThanOrEqual(3);
+    const rich = trialRewards(trial, 5).find((r) => r.resource === 'glimmer_dust')!.amount;
+    const clear = trialRewards(trial, 1).find((r) => r.resource === 'glimmer_dust')!.amount;
+    expect(rich.gt(clear)).toBe(true);
   });
 
   it('long spans resolve many attempts the same as small steps', () => {

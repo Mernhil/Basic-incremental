@@ -622,7 +622,7 @@ export function secondsPerKill(
   const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
   if (!stage) return null;
   const avg = averageDps(state, content, dungeonId, modifiers).mul(
-    stageDamageFactor(state, content, stage.dungeon, stage.difficulty, stage.floor),
+    stageDamageFactor(state, content, stage.dungeon, stage.difficulty, stage.floor, modifiers),
   );
   if (avg.lte(0)) return null;
   const seconds = stage.hp.div(avg).toNumber();
@@ -701,7 +701,7 @@ export function stageReadout(
   const here = dungeon ? fightStage(state, content, dungeon.id, modifiers) : null;
   // The stage's star levels add their damage there (DESIGN.md §6 Stage stars).
   const factor = here
-    ? stageDamageFactor(state, content, here.dungeon, here.difficulty, here.floor)
+    ? stageDamageFactor(state, content, here.dungeon, here.difficulty, here.floor, modifiers)
     : 1;
   const avg = averageDps(state, content, id, modifiers).mul(factor);
   const spk = dungeon ? secondsPerKill(state, content, dungeon.id, modifiers) : null;
@@ -734,10 +734,10 @@ export function clearUnlocks(
 
 // ---- special dungeons ------------------------------------------------------------------------
 
-/** Share of the target's HP dealt, 0..1. */
+/** Share of the target's HP dealt: 1 is a clear, and it goes on past that (more score levels). */
 export function trialScore(trial: Trial, dealt: Decimal): number {
   if (dealt.lte(0)) return 0;
-  return Math.min(1, dealt.div(trial.target.hp).toNumber());
+  return dealt.div(trial.target.hp).toNumber();
 }
 
 /** Everything one attempt with this score pays: every tier reached, merged by resource. */
@@ -763,9 +763,9 @@ export interface TrialStatus {
   elapsedSeconds: number;
   durationSeconds: number;
   dealt: Decimal;
-  /** Score of the running attempt so far, 0..1. */
+  /** Score of the running attempt so far (1 = the target's whole HP; it can go above). */
   score: number;
-  /** Best score ever, 0..1. */
+  /** Best score ever. */
   best: number;
   cleared: boolean;
 }
@@ -1200,7 +1200,7 @@ function fightDungeon(
     // The stage's star levels add their damage there; overflow decides whether a kill's leftover
     // damage carries on (DESIGN.md §6 Stage stars, Overflow).
     const dps = baseDps.mul(
-      stageDamageFactor(next, content, dungeon, stage.difficulty, stage.floor),
+      stageDamageFactor(next, content, dungeon, stage.difficulty, stage.floor, modifiers),
     );
     const overflow = overflowActive(next, content, dungeon, stage.difficulty, stage.floor);
     const land = (dealt: Decimal, hits?: number): void => {
@@ -1500,7 +1500,7 @@ function killEnemies(
   const bossId = dungeon.boss.id;
   drops = stageLoot(
     difficultyDrops(drops, stage.scale),
-    stageLootFactor(state, content, dungeon, stage.difficulty, stage.floor),
+    stageLootFactor(state, content, dungeon, stage.difficulty, stage.floor, modifiers),
   );
   let pity = state.pity[bossId] ?? 0;
   const purse = drops.currencies.map(() => 0);

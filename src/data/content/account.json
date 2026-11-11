@@ -840,6 +840,488 @@
           }
         ]
       }
+    },
+    {
+      "branch": "workers",
+      "small": [
+        {
+          "name": "Hired Hands",
+          "perRank": [
+            {
+              "stat": "worker.power",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Quick Strikes",
+          "perRank": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Keen Strikes",
+          "perRank": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "name": "Heavy Strikes",
+          "perRank": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.1"
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Lucky Streak",
+          "perRank": [
+            {
+              "stat": "lucky.payout",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Deep Diggers",
+          "perRank": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "name": "Rich Layers",
+          "perRank": [
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Tireless Crew",
+        "perRank": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "min",
+            "value": "0.2"
+          },
+          {
+            "stat": "worker.power",
+            "kind": "percent",
+            "value": "25"
+          }
+        ]
+      }
+    },
+    {
+      "branch": "forge",
+      "small": [
+        {
+          "name": "Bellows",
+          "perRank": [
+            {
+              "stat": "forge.speed",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Fine Moulds",
+          "perRank": [
+            {
+              "stat": "forge.yield",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "name": "Whetstones",
+          "perRank": [
+            {
+              "stat": "tool.strength",
+              "kind": "percent",
+              "value": "3",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Tempered Picks",
+          "perRank": [
+            {
+              "stat": "tool.strength",
+              "kind": "percent",
+              "value": "3",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Hotter Fire",
+          "perRank": [
+            {
+              "stat": "forge.speed",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Master Smith",
+          "perRank": [
+            {
+              "stat": "forge.yield",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "name": "Thrifty Smelting",
+          "perRank": [
+            {
+              "stat": "forge.refund",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Alchemist's Refund",
+        "perRank": [
+          {
+            "stat": "forge.refund",
+            "kind": "flat",
+            "value": "0.4"
+          },
+          {
+            "stat": "forge.speed",
+            "kind": "percent",
+            "value": "25"
+          }
+        ]
+      }
+    },
+    {
+      "branch": "elements",
+      "small": [
+        {
+          "name": "Attunement",
+          "perRank": [
+            {
+              "stat": "element.bonus",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Green Thumb",
+          "perRank": [
+            {
+              "stat": "element.production",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Ward",
+          "perRank": [
+            {
+              "stat": "element.resist",
+              "kind": "percent",
+              "value": "-5"
+            }
+          ]
+        },
+        {
+          "name": "Spark of Insight",
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "2"
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Elemental Surge",
+          "perRank": [
+            {
+              "stat": "element.bonus",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Living Earth",
+          "perRank": [
+            {
+              "stat": "element.production",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Warded Soul",
+          "perRank": [
+            {
+              "stat": "element.resist",
+              "kind": "percent",
+              "value": "-5"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Prism Heart",
+        "perRank": [
+          {
+            "stat": "element.resist",
+            "kind": "set",
+            "value": "0"
+          },
+          {
+            "stat": "element.bonus",
+            "kind": "percent",
+            "value": "50"
+          }
+        ]
+      }
+    },
+    {
+      "branch": "dungeons",
+      "small": [
+        {
+          "name": "Trophy Hunter",
+          "perRank": [
+            {
+              "stat": "stars.chest",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Battle Scars",
+          "perRank": [
+            {
+              "stat": "stars.damage",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Spoils of War",
+          "perRank": [
+            {
+              "stat": "stars.loot",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Weak Points",
+          "perRank": [
+            {
+              "stat": "combat.bossHp",
+              "kind": "percent",
+              "value": "-2"
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Hoard",
+          "perRank": [
+            {
+              "stat": "stars.chest",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Veteran",
+          "perRank": [
+            {
+              "stat": "stars.damage",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Cartographer",
+          "perRank": [
+            {
+              "stat": "drops.materialChance",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Star Sovereign",
+        "perRank": [
+          {
+            "stat": "stars.damage",
+            "kind": "percent",
+            "value": "100"
+          },
+          {
+            "stat": "stars.chest",
+            "kind": "percent",
+            "value": "50"
+          },
+          {
+            "stat": "stars.loot",
+            "kind": "percent",
+            "value": "50"
+          }
+        ]
+      }
+    },
+    {
+      "branch": "ascension",
+      "small": [
+        {
+          "name": "Starlit Path",
+          "perRank": [
+            {
+              "stat": "prestige.gain",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "name": "Long Vigil",
+          "perRank": [
+            {
+              "stat": "offline.capHours",
+              "kind": "flat",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "name": "Wise Return",
+          "perRank": [
+            {
+              "stat": "xp.account",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Fresh Start",
+          "perRank": [
+            {
+              "stat": "cost.growth",
+              "kind": "percent",
+              "value": "-1"
+            }
+          ]
+        }
+      ],
+      "large": [
+        {
+          "name": "Radiance",
+          "perRank": [
+            {
+              "stat": "prestige.gain",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "name": "Vigil of Ages",
+          "perRank": [
+            {
+              "stat": "offline.capHours",
+              "kind": "flat",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "name": "Quick Return",
+          "perRank": [
+            {
+              "stat": "cost.multiplier",
+              "kind": "percent",
+              "value": "-3"
+            }
+          ]
+        }
+      ],
+      "keystone": {
+        "name": "Eternal Return",
+        "perRank": [
+          {
+            "stat": "prestige.gain",
+            "kind": "percent",
+            "value": "25"
+          },
+          {
+            "stat": "cost.multiplier",
+            "kind": "mult",
+            "value": "0.8",
+            "scope": {
+              "job": "logging"
+            }
+          },
+          {
+            "stat": "cost.multiplier",
+            "kind": "mult",
+            "value": "0.8",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
     }
   ],
   "circleSteps": [
@@ -1001,6 +1483,1496 @@
               "stat": "combat.damage",
               "kind": "percent",
               "value": "20"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "spear",
+      "skills": [
+        {
+          "id": "spear_a",
+          "name": "Sharp Point",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "spear_b",
+          "name": "Piercing Eye",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["spear_a"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "spear_c",
+          "name": "Light Shaft",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["spear_a"],
+          "perRank": [
+            {
+              "stat": "burst.interval",
+              "kind": "percent",
+              "value": "-2"
+            }
+          ]
+        },
+        {
+          "id": "spear_d",
+          "name": "Hunter's Focus",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["spear_b"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "spear_e",
+          "name": "Skewer",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["spear_b"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.1"
+            }
+          ]
+        },
+        {
+          "id": "spear_f",
+          "name": "Fleet Step",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["spear_c"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "spear_g",
+          "name": "Impale",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["spear_e"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "spear_h",
+          "name": "Radiant Pike",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["spear_g"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ]
+        },
+        {
+          "id": "spear_i",
+          "name": "Dread Pike",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["spear_f"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.2"
+            }
+          ]
+        },
+        {
+          "id": "spear_j",
+          "name": "Skypiercer",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["spear_g"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.05"
+            },
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "lance",
+      "skills": [
+        {
+          "id": "lance_a",
+          "name": "Couched Lance",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "lance_b",
+          "name": "Heavy Armour",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["lance_a"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "lance_c",
+          "name": "Steady Mount",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["lance_a"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "lance_d",
+          "name": "Charge",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["lance_b"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "lance_e",
+          "name": "Joust",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["lance_b"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "lance_f",
+          "name": "Shield Arm",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["lance_c"],
+          "perRank": [
+            {
+              "stat": "combat.defence",
+              "kind": "flat",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "id": "lance_g",
+          "name": "Impact",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["lance_e"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "lance_h",
+          "name": "Paladin",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["lance_g"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "8"
+            }
+          ]
+        },
+        {
+          "id": "lance_i",
+          "name": "Dread Rider",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["lance_f"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "8"
+            }
+          ]
+        },
+        {
+          "id": "lance_j",
+          "name": "Sunrider",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["lance_g"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "greatsword",
+      "skills": [
+        {
+          "id": "greatsword_a",
+          "name": "Heavy Blade",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_b",
+          "name": "Braced Stance",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["greatsword_a"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_c",
+          "name": "Heavy Grip",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["greatsword_a"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_d",
+          "name": "Weighted Pommel",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["greatsword_b"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_e",
+          "name": "Cleave",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["greatsword_b"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_f",
+          "name": "Iron Resolve",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["greatsword_c"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_g",
+          "name": "Sunder",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["greatsword_e"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_h",
+          "name": "Sunbreaker",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["greatsword_g"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_i",
+          "name": "Ruin",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["greatsword_f"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.2"
+            }
+          ]
+        },
+        {
+          "id": "greatsword_j",
+          "name": "Kingsoath",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["greatsword_g"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "hammer",
+      "skills": [
+        {
+          "id": "hammer_a",
+          "name": "Crushing Head",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "hammer_b",
+          "name": "Thick Haft",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["hammer_a"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "hammer_c",
+          "name": "Anvil Stance",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["hammer_a"],
+          "perRank": [
+            {
+              "stat": "combat.defence",
+              "kind": "flat",
+              "value": "1"
+            }
+          ]
+        },
+        {
+          "id": "hammer_d",
+          "name": "Quake",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["hammer_b"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "hammer_e",
+          "name": "Earthshaker",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["hammer_b"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "hammer_f",
+          "name": "Forged Resolve",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["hammer_c"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "hammer_g",
+          "name": "Worldbreaker",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["hammer_e"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "hammer_h",
+          "name": "Thunder",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["hammer_g"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "8"
+            }
+          ]
+        },
+        {
+          "id": "hammer_i",
+          "name": "Grave Quake",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["hammer_f"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "hammer_j",
+          "name": "Worldforge",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["hammer_g"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "25"
+            },
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "dagger",
+      "skills": [
+        {
+          "id": "dagger_a",
+          "name": "Quick Edge",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "dagger_b",
+          "name": "Flicker",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["dagger_a"],
+          "perRank": [
+            {
+              "stat": "burst.interval",
+              "kind": "percent",
+              "value": "-2"
+            }
+          ]
+        },
+        {
+          "id": "dagger_c",
+          "name": "Fast Hands",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["dagger_a"],
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "dagger_d",
+          "name": "Backstab",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["dagger_b"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "dagger_e",
+          "name": "Dance",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["dagger_b"],
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "8"
+            }
+          ]
+        },
+        {
+          "id": "dagger_f",
+          "name": "Shadow Step",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["dagger_c"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "dagger_g",
+          "name": "Flurry",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["dagger_e"],
+          "perRank": [
+            {
+              "stat": "burst.interval",
+              "kind": "percent",
+              "value": "-3"
+            }
+          ]
+        },
+        {
+          "id": "dagger_h",
+          "name": "Gleam",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["dagger_g"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ]
+        },
+        {
+          "id": "dagger_i",
+          "name": "Venom",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["dagger_f"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.2"
+            }
+          ]
+        },
+        {
+          "id": "dagger_j",
+          "name": "Lumen Fang",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["dagger_g"],
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "20"
+            },
+            {
+              "stat": "burst.interval",
+              "kind": "percent",
+              "value": "-10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "bow",
+      "skills": [
+        {
+          "id": "bow_a",
+          "name": "Steady Aim",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "bow_b",
+          "name": "Quickdraw",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["bow_a"],
+          "perRank": [
+            {
+              "stat": "burst.interval",
+              "kind": "percent",
+              "value": "-2"
+            }
+          ]
+        },
+        {
+          "id": "bow_c",
+          "name": "Far Sight",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["bow_a"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "bow_d",
+          "name": "Broadhead",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["bow_b"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        },
+        {
+          "id": "bow_e",
+          "name": "Piercing Shot",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["bow_b"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.15"
+            }
+          ]
+        },
+        {
+          "id": "bow_f",
+          "name": "Deep Quiver",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["bow_c"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "bow_g",
+          "name": "Volley",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["bow_e"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "bow_h",
+          "name": "Seraph Arrow",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["bow_g"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "bow_i",
+          "name": "Wither Arrow",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["bow_f"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.3"
+            }
+          ]
+        },
+        {
+          "id": "bow_j",
+          "name": "Starweaver",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["bow_g"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.4"
+            },
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.03"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "staff",
+      "skills": [
+        {
+          "id": "staff_a",
+          "name": "Arcane Focus",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "staff_b",
+          "name": "Deep Channel",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["staff_a"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "staff_c",
+          "name": "Warding Rune",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["staff_a"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "staff_d",
+          "name": "Spark",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["staff_b"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "staff_e",
+          "name": "Surge",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["staff_b"],
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "8"
+            }
+          ]
+        },
+        {
+          "id": "staff_f",
+          "name": "Lore",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["staff_c"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "staff_g",
+          "name": "Sanctum",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["staff_e"],
+          "perRank": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "staff_h",
+          "name": "Blessing",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["staff_g"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "id": "staff_i",
+          "name": "Hex",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["staff_f"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "staff_j",
+          "name": "Lifebloom",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["staff_g"],
+          "perRank": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "20"
+            },
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "scythe",
+      "skills": [
+        {
+          "id": "scythe_a",
+          "name": "Reaper's Edge",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "3"
+            }
+          ]
+        },
+        {
+          "id": "scythe_b",
+          "name": "Keen Hook",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["scythe_a"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "scythe_c",
+          "name": "Quiet Step",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["scythe_a"],
+          "perRank": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "scythe_d",
+          "name": "Grim Patience",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["scythe_b"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        },
+        {
+          "id": "scythe_e",
+          "name": "Harvest",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["scythe_b"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "scythe_f",
+          "name": "Mercy's Touch",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["scythe_c"],
+          "perRank": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "scythe_g",
+          "name": "Reap",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["scythe_e"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.1"
+            }
+          ]
+        },
+        {
+          "id": "scythe_h",
+          "name": "Mercy",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["scythe_g"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "6"
+            }
+          ]
+        },
+        {
+          "id": "scythe_i",
+          "name": "Last Breath",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["scythe_f"],
+          "perRank": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.2"
+            }
+          ]
+        },
+        {
+          "id": "scythe_j",
+          "name": "Graceharvest",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["scythe_g"],
+          "perRank": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "10"
+            },
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.2"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "pickaxe",
+      "skills": [
+        {
+          "id": "pickaxe_a",
+          "name": "Sharp Pick",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_b",
+          "name": "Vein Sense",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["pickaxe_a"],
+          "perRank": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_c",
+          "name": "Steady Swing",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["pickaxe_a"],
+          "perRank": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_d",
+          "name": "Hard Rock",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["pickaxe_b"],
+          "perRank": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_e",
+          "name": "Core Strike",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["pickaxe_b"],
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_f",
+          "name": "Lodestone",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["pickaxe_c"],
+          "perRank": [
+            {
+              "stat": "lucky.payout",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_g",
+          "name": "Deep Delve",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["pickaxe_e"],
+          "perRank": [
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_h",
+          "name": "Lodestar",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["pickaxe_g"],
+          "perRank": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.15"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_i",
+          "name": "Hollowdeep",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["pickaxe_f"],
+          "perRank": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "id": "pickaxe_j",
+          "name": "Heartdelver",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["pickaxe_g"],
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "20"
+            },
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "logging_axe",
+      "skills": [
+        {
+          "id": "logging_axe_a",
+          "name": "Sharp Axe",
+          "step": "gold",
+          "kind": "small",
+          "requires": [],
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_b",
+          "name": "Clean Cut",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["logging_axe_a"],
+          "perRank": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.01"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_c",
+          "name": "Chopping Rhythm",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["logging_axe_a"],
+          "perRank": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_d",
+          "name": "Seasoned Wood",
+          "step": "gold",
+          "kind": "small",
+          "requires": ["logging_axe_b"],
+          "perRank": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_e",
+          "name": "Fell",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["logging_axe_b"],
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_f",
+          "name": "Grove Luck",
+          "step": "prismatic",
+          "kind": "small",
+          "requires": ["logging_axe_c"],
+          "perRank": [
+            {
+              "stat": "lucky.payout",
+              "kind": "percent",
+              "value": "5"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_g",
+          "name": "Old Growth",
+          "step": "prismatic",
+          "kind": "large",
+          "requires": ["logging_axe_e"],
+          "perRank": [
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "4"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_h",
+          "name": "Grove Axe",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["logging_axe_g"],
+          "perRank": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.15"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_i",
+          "name": "Blight Axe",
+          "step": "mythic",
+          "kind": "large",
+          "requires": ["logging_axe_f"],
+          "perRank": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "10"
+            }
+          ]
+        },
+        {
+          "id": "logging_axe_j",
+          "name": "Elderwarden",
+          "step": "heirloom",
+          "kind": "keystone",
+          "requires": ["logging_axe_g"],
+          "perRank": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "20"
+            },
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "10"
             }
           ]
         }

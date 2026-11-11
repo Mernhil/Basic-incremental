@@ -509,6 +509,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
       'money',
       'frost_core',
       'frost_sigil',
+      'storm_core',
       'grotto_gem',
       'moonwillow_gem',
     ]);

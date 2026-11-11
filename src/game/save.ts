@@ -539,18 +539,22 @@ function deserializeMastery(
   for (const [id, text] of Object.entries(saved.harvested)) {
     if (isProductionGem(content, id)) harvested[id] = new Decimal(text);
   }
-  const keep = (tiers: Record<string, number>, known: (id: string) => boolean) =>
+  const keep = (tiers: Record<string, number>, known: (id: string) => boolean, top: number) =>
     Object.fromEntries(
       Object.entries(tiers)
         .filter(([id, tier]) => known(id) && tier > 0)
-        .map(([id, tier]) => [id, Math.min(tier, MAX_MASTERY_TIER)]),
+        .map(([id, tier]) => [id, Math.min(tier, top)]),
     );
   state.mastery = {
     harvested,
-    gemTiers: keep(saved.gemTiers ?? {}, (id) => isProductionGem(content, id)),
+    gemTiers: keep(
+      saved.gemTiers ?? {},
+      (id) => isProductionGem(content, id),
+      content.progression.gemMastery.thresholds.length,
+    ),
     // Dungeons have stage stars instead of medals (DESIGN.md §6): only the special dungeons'
     // medals are kept.
-    bossTiers: keep(saved.bossTiers ?? {}, (id) => content.trialById.has(id)),
+    bossTiers: keep(saved.bossTiers ?? {}, (id) => content.trialById.has(id), MAX_MASTERY_TIER),
   };
   if (!saved.gemTiers || !saved.bossTiers) settleMastery(state, content);
 }

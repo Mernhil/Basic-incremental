@@ -361,6 +361,34 @@ export const STATS = [
   /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
    *  their modifiers (DESIGN.md §4). Only read from upgrades. Scope: job. */
   'card.supportPower',
+  /** Power of the workers at a place (DESIGN.md §4), also its digging. Scope: job, producer. */
+  'worker.power',
+  /** Hardness a place's workers break per second (DESIGN.md §4 Depth), base 1. Scope: job, producer. */
+  'depth.digRate',
+  /** Yield multiplier of a place's layer or age, read on the layer's own multiplier. Scope: job, producer. */
+  'depth.yield',
+  /** Seconds of output a lucky strike pays (DESIGN.md §4 Lucky strikes). Scope: job, producer. */
+  'lucky.payout',
+  /** Progress per second of the forge (DESIGN.md §4 The forge), base 1. */
+  'forge.speed',
+  /** Output amount of each craft, base 1. */
+  'forge.yield',
+  /** Share of a craft's inputs given back, 0..0.9, base 0. */
+  'forge.refund',
+  /** Strength of the tool lines of a job: scales what their levels give, base 1. Scope: job. */
+  'tool.strength',
+  /** Strength of the elemental damage bonuses (weakness and matching supports), base 1. */
+  'element.bonus',
+  /** Strength of the elemental damage malus (a resisted element), base 1 (0 = no malus). */
+  'element.resist',
+  /** Strength of a worker's element bonus on its own tree or mine, base 1. */
+  'element.production',
+  /** Chest of each stage star level, base 1 (DESIGN.md §6 Stage stars). Scope: dungeon. */
+  'stars.chest',
+  /** The damage each star level adds on its stage, base 1 (= the +5% a level). Scope: dungeon. */
+  'stars.damage',
+  /** The loot each star level adds on its stage, base 1. Scope: dungeon. */
+  'stars.loot',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -748,8 +776,9 @@ export const dungeonSchema = z.strictObject({
 
 /**
  * A special dungeon (DESIGN.md §6): a strength test. Each attempt lasts `durationSeconds`
- * against a target with a fixed HP; the score is the share of that HP dealt (capped at 1).
- * Every tier whose `score` was reached pays its rewards; a score of 1 clears it.
+ * against a target with a fixed HP; the score is the share of that HP dealt (not capped: tiers
+ * above 1 are the extra levels). Every tier whose `score` was reached pays its rewards; a score
+ * of 1 clears it.
  */
 export const trialSchema = z
   .strictObject({
@@ -762,8 +791,8 @@ export const trialSchema = z
     tiers: z
       .array(
         z.strictObject({
-          /** Share of the target HP, 0..1 (0.25 = 25%). */
-          score: z.number().gt(0).max(1),
+          /** Share of the target HP (0.25 = 25%, 1 = all of it, 2 = twice its HP). */
+          score: z.number().gt(0),
           rewards: z.array(costSchema).min(1),
         }),
       )
@@ -794,7 +823,15 @@ const increasing = (list: (number | Decimal)[]): boolean =>
   list.every((v, i) => i === 0 || new Decimal(v).gt(list[i - 1]!));
 
 /** Pages a goal can jump to (the renderer's page ids). */
-export const GOAL_PAGES = ['home', 'cards', 'production', 'dungeons', 'summon', 'shop'] as const;
+export const GOAL_PAGES = [
+  'home',
+  'cards',
+  'production',
+  'dungeons',
+  'summon',
+  'shop',
+  'skills',
+] as const;
 export type GoalPage = (typeof GOAL_PAGES)[number];
 /**
  * Goal rules (E8). Each kind finds its candidates in the state:
@@ -820,15 +857,25 @@ export const GOAL_KINDS = [
   'tier_up',
   /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md §9). */
   'ascension',
+  /** The cheapest next level of a tool line (DESIGN.md §4 Tool lines). */
+  'tool_line',
+  /** A free worker slot and a production card that is not working (DESIGN.md §4 Workers). */
+  'worker_slot',
+  /** Skill points waiting to be spent (DESIGN.md §10). */
+  'skill_points',
+  /** A new game's wishlist is empty (DESIGN.md §7 Wishlist). */
+  'wishlist',
 ] as const;
 export type GoalKind = (typeof GOAL_KINDS)[number];
 
 export const progressionSchema = z.strictObject({
-  /** E2: tier from the lifetime total harvested of each production gem, kept through prestige. */
+  /** E2: tier from the lifetime total harvested of each production gem, kept through prestige.
+   *  The first four tiers are the metals; tiers above them (more thresholds) keep the prismatic
+   *  coin and add the same bonus each. */
   gemMastery: z.strictObject({
     thresholds: z
       .array(positiveDecimal)
-      .length(MASTERY_TIERS)
+      .min(MASTERY_TIERS)
       .refine(increasing, { message: 'thresholds must increase' }),
     perTier: z.array(masteryBonusSchema),
   }),
@@ -1327,7 +1374,8 @@ export const prestigeSchema = z.strictObject({
  * unlocked (or `count` of them), a dungeon / trial cleared, portal pulls, pity hits, any card at
  * a tier or star count, a full loadout, a full non-starter set equipped, non-starter cosmetics
  * owned, skill points spent, ascensions, the longest offline session, any gem mastery / boss
- * medal tier, any mine level, any cosmetic at its max level.
+ * medal tier, any mine level, any cosmetic at its max level, stage stars, workers, tool lines, depth,
+ * the forge, the wishlist and the skill tree (balance update).
  */
 export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({
@@ -1356,6 +1404,34 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('boss_mastery'), tier: z.number().int().min(1).max(4) }),
   z.strictObject({ kind: z.literal('milestone'), level: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('max_cosmetic') }),
+  /** `count` stages (default 1) at star level `level` or more (1 Wood .. 6 Mythic). */
+  z.strictObject({
+    kind: z.literal('stage_stars'),
+    level: z.number().int().min(1).max(6),
+    count: z.number().int().min(1).default(1),
+  }),
+  /** A dungeon with every stage of every star difficulty at `level` or more. */
+  z.strictObject({ kind: z.literal('dungeon_starred'), level: z.number().int().min(1).max(6) }),
+  /** Star levels earned over all stages. */
+  z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
+  /** Workers at work on trees and mines now. */
+  z.strictObject({ kind: z.literal('workers'), count: z.number().int().min(1) }),
+  /** Tool line levels bought this run, all lines together. */
+  z.strictObject({ kind: z.literal('tool_levels'), amount: z.number().int().min(1) }),
+  /** The deepest layer or age of any tree or mine (1-based). */
+  z.strictObject({ kind: z.literal('depth'), layer: z.number().int().min(2) }),
+  /** The forge has a worker and a recipe. */
+  z.strictObject({ kind: z.literal('forge_working') }),
+  /** Cards marked on the wishlist. */
+  z.strictObject({ kind: z.literal('wishlist'), count: z.number().int().min(1) }),
+  /** Marked cards that are owned now. */
+  z.strictObject({ kind: z.literal('wishlist_owned'), count: z.number().int().min(1) }),
+  /** Skills of the account tree with at least one rank. */
+  z.strictObject({ kind: z.literal('skills_learned'), amount: z.number().int().min(1) }),
+  /** Keystones learned. */
+  z.strictObject({ kind: z.literal('keystones'), amount: z.number().int().min(1) }),
+  /** Weapon circles revealed (a card of the type reached Gold). */
+  z.strictObject({ kind: z.literal('circles_open'), amount: z.number().int().min(1) }),
 ]);
 export type AchievementCondition = z.output<typeof achievementConditionSchema>;
 
@@ -1401,6 +1477,11 @@ export const SKILL_BRANCHES = [
   'luck',
   'collection',
   'automation',
+  'workers',
+  'forge',
+  'elements',
+  'dungeons',
+  'ascension',
 ] as const;
 export type SkillBranch = (typeof SKILL_BRANCHES)[number];
 
@@ -1700,7 +1781,7 @@ export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
   z.strictObject({
     kind: z.literal('gemMastery'),
     gem: id,
-    tier: z.number().int().min(1).max(MASTERY_TIERS),
+    tier: z.number().int().min(1).max(16),
   }),
   z.strictObject({ kind: z.literal('bossKills'), dungeon: id, kills: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('lifetimeMoney'), amount: positiveDecimal }),

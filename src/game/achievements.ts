@@ -1,8 +1,11 @@
 import { RANK_TIERS, type Achievement, type AchievementCondition, type Content } from '../data';
-import { skillPointsSpent } from './account';
+import { skillPointsSpent, weaponCircles } from './account';
 import { grantCard } from './cards';
 import { Decimal } from './num';
 import { isProducerUnlocked, mineLevel, producersOf } from './production';
+import { stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
+import { stageStarLevel, totalStageStarLevels } from './stageStars';
+import { activeWorkers, forgeWorker } from './workers';
 import type { TickReport } from './report';
 import { cloneState, type GameState } from './state';
 import { cosmeticMaxLevel, detectSets } from './theme';
@@ -102,6 +105,69 @@ function measure(
       const levels = content.mines.map((m) => mineLevel(state, m.id));
       return { value: Math.max(0, ...levels), target: condition.level };
     }
+    case 'stage_stars': {
+      let n = 0;
+      for (const key of Object.keys(state.combat.stageKills)) {
+        if (stageStarLevel(state, content, key) >= condition.level) n++;
+      }
+      return { value: n, target: condition.count };
+    }
+    case 'dungeon_starred': {
+      const done = content.dungeons.some((d) =>
+        stageFloors(content, d).every((floor) =>
+          STAR_DIFFICULTIES.every(
+            (diff) =>
+              stageStarLevel(state, content, stageKey(d.id, diff, floor)) >= condition.level,
+          ),
+        ),
+      );
+      return { value: done ? 1 : 0, target: 1 };
+    }
+    case 'star_total':
+      return { value: totalStageStarLevels(state, content), target: condition.amount };
+    case 'workers':
+      return {
+        value: Object.values(activeWorkers(state, content)).reduce((n, ids) => n + ids.length, 0),
+        target: condition.count,
+      };
+    case 'tool_levels':
+      return {
+        value: Object.values(state.production.tools).reduce((n, level) => n + level, 0),
+        target: condition.amount,
+      };
+    case 'depth':
+      return {
+        value: Math.max(1, ...Object.values(state.production.depth).map((d) => d.layer)),
+        target: condition.layer,
+      };
+    case 'forge_working': {
+      const working =
+        state.production.forge.recipe !== null && forgeWorker(state, content) !== null;
+      return { value: working ? 1 : 0, target: 1 };
+    }
+    case 'wishlist':
+      return { value: state.cards.wishlist.length, target: condition.count };
+    case 'wishlist_owned':
+      return {
+        value: state.cards.wishlist.filter((id) => state.cards.owned[id]).length,
+        target: condition.count,
+      };
+    case 'skills_learned':
+      return {
+        value: Object.values(state.account.skills).filter((rank) => rank > 0).length,
+        target: condition.amount,
+      };
+    case 'keystones': {
+      const keys = content.account.tree.filter(
+        (n) => n.kind === 'keystone' && (state.account.skills[n.id] ?? 0) > 0,
+      );
+      return { value: keys.length, target: condition.amount };
+    }
+    case 'circles_open':
+      return {
+        value: weaponCircles(state, content).filter((c) => c.revealed).length,
+        target: condition.amount,
+      };
     case 'max_cosmetic': {
       const maxed = Object.entries(state.cosmetics.owned).some(([id, o]) => {
         const c = content.cosmeticById.get(id);

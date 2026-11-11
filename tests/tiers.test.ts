@@ -377,14 +377,14 @@ describe('the three new dungeons', () => {
     expect(new Set(shipped.dungeons.map((d) => d.drops.rare.itemId)).size).toBe(6);
   });
 
-  it('open no new mine and add no new material: they drop Frost Cores and Sigils in growing amounts', () => {
+  it('open no new mine; each drops its own Core and Frost Sigils in growing amounts', () => {
     const shipped = loadContent();
     const later = shipped.dungeons.slice(3);
     expect(shipped.mines.some((m) => later.some((d) => d.id === m.unlockedByDungeon))).toBe(false);
     expect(later.map((d) => [d.drops.material.resource, d.drops.material.amount])).toEqual([
-      ['frost_core', 3],
-      ['frost_core', 4],
-      ['frost_core', 5],
+      ['storm_core', 3],
+      ['sanctum_core', 4],
+      ['void_core', 5],
     ]);
     expect(later.map((d) => d.drops.extraMaterials.map((e) => [e.resource, e.min]))).toEqual([
       [['frost_sigil', 2]],
