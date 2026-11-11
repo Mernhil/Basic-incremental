@@ -93,7 +93,6 @@ export const serializedStateSchema = z.object({
     training: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
-    loadoutDamage: decimalText,
     knockoutSeconds: z.number().min(0),
     /** v26: stage stars and overflow, keyed by `stageKey` (DESIGN.md §6). */
     stageKills: stageCounts,
@@ -261,7 +260,6 @@ export function serializeState(state: GameState): SerializedState {
         dealt: decimalToString(state.combat.trialAttempt.dealt),
       },
       trialBest: { ...state.combat.trialBest },
-      loadoutDamage: decimalToString(state.combat.loadoutDamage),
       knockoutSeconds: state.combat.knockoutSeconds,
       stageKills: { ...state.combat.stageKills },
       stageChests: { ...state.combat.stageChests },
@@ -379,7 +377,6 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       dealt: new Decimal(saved.combat.trialAttempt.dealt),
     },
     trialBest: { ...saved.combat.trialBest },
-    loadoutDamage: new Decimal(saved.combat.loadoutDamage),
     knockoutSeconds: saved.combat.knockoutSeconds,
     // Stages of dungeons that left the game (and keys that are not stage keys) are dropped; a
     // chest count stays within the six star levels.

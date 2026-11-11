@@ -160,7 +160,7 @@ export function ascend(
     // Training is bought again each run (DESIGN.md §6 Training).
     training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
-    loadoutDamage: new Decimal(0),
+    cardDamage: {},
     knockoutSeconds: 0,
     enemyIndex: 0,
     challenge: null,

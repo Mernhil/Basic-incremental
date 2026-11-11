@@ -12,6 +12,7 @@ import {
   formatDuration,
   loadoutHealth,
   resolveGlobal,
+  teamView,
   stageReadout,
   trialStatus,
   type GameState,
@@ -299,7 +300,15 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   let healthTip = '';
   health.tabIndex = 0;
   attachTooltip(health, () => healthTip);
-  meters.append(gauge, health);
+  // each team card's own health, plain and interim until the duel's look (DESIGN.md §6 card duel)
+  const teamList = div('ar__team');
+  teamList.setAttribute('role', 'list');
+  teamList.setAttribute('aria-label', COPY.arena.teamLabel);
+  const teamRows = new Map<
+    string,
+    { row: HTMLElement; fill: HTMLElement; text: HTMLElement; tip: string }
+  >();
+  meters.append(gauge, health, teamList);
 
   const ko = div('ar__ko');
   ko.setAttribute('role', 'status');
@@ -635,6 +644,51 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
       const small = document.createElement('span');
       small.textContent = COPY.arena.knockedOut;
       ko.append(small, big);
+    }
+
+    // each card's own health: a row per team card, greyed when it is out
+    const cards = teamView(s, content, mods);
+    const seen = new Set<string>();
+    for (const c of cards) {
+      seen.add(c.cardId);
+      let r = teamRows.get(c.cardId);
+      if (!r) {
+        const row = div('ar-teamrow');
+        row.setAttribute('role', 'listitem');
+        row.tabIndex = 0;
+        const text = div('ar-teamrow__text');
+        const track = div('ar-bar ar-teamrow__bar');
+        const fill = document.createElement('i');
+        track.append(fill);
+        row.append(text, track);
+        const entry = { row, fill, text, tip: '' };
+        attachTooltip(row, () => entry.tip);
+        teamRows.set(c.cardId, entry);
+        r = entry;
+      }
+      teamList.append(r.row);
+      const pct = healthPercent(c.fraction);
+      const name = content.cardById.get(c.cardId)?.name ?? c.cardId;
+      setText(
+        r.text,
+        c.knockedOut ? `${name} ${COPY.arena.teamOut}` : COPY.arena.teamRow(name, pct),
+      );
+      r.fill.style.width = `${(c.fraction * 100).toFixed(1)}%`;
+      r.row.classList.toggle('is-out', c.knockedOut);
+      r.row.classList.toggle('is-targeted', c.targeted);
+      r.row.title = c.targeted ? COPY.arena.teamTargeted : '';
+      r.tip = COPY.arena.teamTip(
+        c.skill.name,
+        c.skill.role.replace('_', ' '),
+        c.skill.description,
+        fmt(c.health),
+        fmt(c.maxHealth),
+      );
+    }
+    for (const [id, r] of teamRows) {
+      if (seen.has(id)) continue;
+      r.row.remove();
+      teamRows.delete(id);
     }
 
     // signature gauge under the main card: whole points of the gauge, "n / 20"

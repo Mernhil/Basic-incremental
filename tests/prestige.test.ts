@@ -44,7 +44,7 @@ function progressedRun(): GameState {
   state.production.unlockedTrees = ['ironbark'];
   state.clearedDungeons = ['mossy_cellar'];
   state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
-  state.combat.loadoutDamage = new Decimal(50);
+  state.combat.cardDamage = { ember_squire: new Decimal(50) };
   state.bursts.fighting = { gauge: 12, timer: 0.5 };
   state.production.harvestGauges = { oak: { gauge: 12, timer: 0.5 } };
   state.bossHp = new Decimal(123);
@@ -143,7 +143,7 @@ describe('ascend', () => {
     // the workers stay where they are (DESIGN.md §4)
     expect(s.production.workers).toEqual(before.production.workers);
     expect(s.bossHp).toBeNull();
-    expect(s.combat.loadoutDamage.toNumber()).toBe(0);
+    expect(s.combat.cardDamage).toEqual({});
     expect(s.prestigeCount).toBe(1);
   });
 

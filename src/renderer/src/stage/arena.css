@@ -1031,3 +1031,34 @@
     opacity: 0.2;
   }
 }
+
+/* Each team card's own health (DESIGN.md §6 card duel): plain rows under the party health,
+   interim until the duel's look (UI_RULES §2). A card that is out is greyed. */
+.ar__team {
+  display: grid;
+  gap: 3px;
+}
+.ar-teamrow {
+  display: grid;
+  gap: 2px;
+}
+.ar-teamrow__text {
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--bi-chrome-ink);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+}
+.ar-teamrow__bar {
+  height: 6px;
+}
+.ar-teamrow.is-targeted .ar-teamrow__text::before {
+  content: '▸ ';
+}
+.ar-teamrow.is-out {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+.ar-teamrow:focus-visible {
+  outline: 2px solid var(--bi-focus, #fff);
+  outline-offset: 2px;
+}

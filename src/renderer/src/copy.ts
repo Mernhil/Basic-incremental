@@ -1018,6 +1018,13 @@ export const COPY = {
     /** The Hero fan arena (UI rework 2.3): the bars, the drawer tabs and the handle's status line. */
     partyHealth: 'Party health',
     partyHealthLabel: (pct: number) => `Party health ${pct}%`,
+    /** The team's cards, each with its own health (DESIGN.md §6 card duel; plain, interim). */
+    teamLabel: 'Team health',
+    teamRow: (name: string, pct: number) => `${name} ${pct}%`,
+    teamOut: 'Out',
+    teamTargeted: 'The enemy hits this card next',
+    teamTip: (skill: string, role: string, desc: string, hp: string, max: string) =>
+      `${skill} (${role}): ${desc}. ${hp} / ${max} health`,
     signatureCount: (n: number, size: number) => `${n} / ${size}`,
     barsGone: (gone: number, total: number) => `${gone} of ${total} bars gone`,
     bossTip: (hp: string, max: string) => `${hp} / ${max} HP`,

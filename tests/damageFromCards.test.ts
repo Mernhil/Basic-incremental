@@ -173,7 +173,7 @@ describe('card XP from fighting time (DESIGN.md §5)', () => {
   it('does not pay while the loadout is knocked out', () => {
     const state = freshState();
     state.combat.knockoutSeconds = 30;
-    state.combat.loadoutDamage = new Decimal(1e6);
+    state.combat.cardDamage = { ember_squire: new Decimal(1e6) };
     const rest = advance(state, content, 20_000, rng).state;
     expect(totalXp(rest.cards.owned['ember_squire']!).eq(0)).toBe(true);
     expect(rest.combat.knockoutSeconds).toBeCloseTo(10);

@@ -326,8 +326,6 @@ export interface CombatState {
   trialAttempt: TrialAttempt;
   /** Special dungeon id -> best score, 0..1. */
   trialBest: Record<string, number>;
-  /** Damage the fighting loadout's health pool has taken (0 = full health; DESIGN.md §6). */
-  loadoutDamage: Decimal;
   /** Seconds left of a knockout; while above 0 the loadout does not fight. */
   knockoutSeconds: number;
   /** Stage key (`stageKey` in floors.ts) -> kills on that stage, ever (DESIGN.md §6 Stage stars).
@@ -349,8 +347,9 @@ export interface CombatState {
   /** Seconds left before auto-challenge tries again after a loss (0 = no wait). Save format 27. */
   challengeWaitSeconds: number;
   /** Card id -> damage that team card's own health has taken (DESIGN.md §6 card duel); missing =
-   *  full health. The team is derived (the fighting loadout, main then supports). Save format 27;
-   *  replaces `loadoutDamage` (not read yet). */
+   *  full health; at or above the card's max health it is knocked out. The team is derived (the
+   *  fighting loadout, main then supports; duel.ts). Save format 27; it replaced the shared
+   *  `loadoutDamage` pool. */
   cardDamage: Record<string, Decimal>;
 }
 
@@ -381,7 +380,6 @@ export function initialCombat(): CombatState {
     training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
     trialBest: {},
-    loadoutDamage: new Decimal(0),
     knockoutSeconds: 0,
     stageKills: {},
     stageChests: {},
@@ -548,7 +546,6 @@ export function cloneCombat(c: CombatState): CombatState {
     training: { ...c.training },
     trialAttempt: { ...c.trialAttempt },
     trialBest: { ...c.trialBest },
-    loadoutDamage: c.loadoutDamage,
     knockoutSeconds: c.knockoutSeconds,
     stageKills: { ...c.stageKills },
     stageChests: { ...c.stageChests },

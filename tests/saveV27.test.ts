@@ -127,6 +127,8 @@ describe('v26 -> v27 (the table update)', () => {
     for (const p of Object.values(floors as Record<string, Record<string, unknown>>)) {
       delete p['mode'];
     }
+    // The shared health pool is gone: each team card's own health replaced it (package 7).
+    delete (expected['combat'] as Record<string, unknown>)['loadoutDamage'];
     expect(again).toEqual({ ...expected, bossHp: null });
 
     // Saved again it is format 27 and loads to the same state.
