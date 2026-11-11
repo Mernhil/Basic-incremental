@@ -16,7 +16,7 @@ export interface GameState {
   production: ProductionState;
   /** Dungeons cleared at least once. Kept through prestige; clearing one unlocks mine types. */
   clearedDungeons: string[];
-  /** Damage upgrades, kills per dungeon and the Glimmer Trial attempt. See combat.ts. */
+  /** Floors, stage kills and the Glimmer Trial attempt. See combat.ts. */
   combat: CombatState;
   /** The fighting burst gauge (signature attack). Harvest gauges are per worker, in
    *  `production.harvestGauges`. */
@@ -223,8 +223,6 @@ export interface DungeonProgress {
 }
 
 export interface CombatState {
-  /** Dungeon id -> kills of its last-floor boss, ever (the boss medals count them). */
-  kills: Record<string, number>;
   /** Dungeon id -> its floors (DESIGN.md §6). Missing = a dungeon never fought. */
   floors: Record<string, DungeonProgress>;
   /** Training line id -> levels bought this run (DESIGN.md §6 Training). Reset on Ascension. */
@@ -263,7 +261,6 @@ export interface BurstGauge {
 
 export function initialCombat(): CombatState {
   return {
-    kills: {},
     floors: {},
     training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
@@ -411,7 +408,6 @@ export function cloneProduction(p: ProductionState): ProductionState {
 
 export function cloneCombat(c: CombatState): CombatState {
   return {
-    kills: { ...c.kills },
     floors: cloneFloors(c.floors),
     training: { ...c.training },
     trialAttempt: { ...c.trialAttempt },

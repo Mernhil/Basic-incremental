@@ -172,7 +172,7 @@ describe('game numbers go through the pipeline', () => {
 
   it('boss HP, drops and the offline cap read their modifiers', () => {
     const dungeon = content.dungeons[0]!;
-    const hp = bossMaxHp(dungeon, 0, [mod('combat.bossHp', 'mult', '0.5')]);
+    const hp = bossMaxHp(dungeon, [mod('combat.bossHp', 'mult', '0.5')]);
     expect(hp.eq(dungeon.boss.hp.div(2))).toBe(true);
 
     const drops = effectiveDrops(

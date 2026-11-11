@@ -69,6 +69,8 @@ export interface WeaponView {
     text: string;
     /** "×1.6 → ×2" */
     impact: string;
+    /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
+    dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
   /** The next tier-up, or null at the weapon's top tier. */
   tierUp: {
@@ -215,7 +217,7 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'tier'): ModelResult;
+  upgrade(state: GameState, id: string, kind: 'star' | 'tier' | 'dust'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

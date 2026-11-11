@@ -70,7 +70,13 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Default · in game] **Floors, interim** (Claude, 2026-11-10; DESIGN §6 Dungeon floors). Until the floors UI is designed in a 5-options round (the arena with waves, the floor strip, the tier picker, the depth readout), the Dungeons screen shows floors with the least that works:
   - The line under the HP bar reads the dungeon, the difficulty, the floor ("Floor 3 / 10", or "Depth 12" in the endless depths), which enemy of the wave the hits are on ("Enemy 2 / 4") or "Mini-boss" / "Boss", and the best floor.
   - The existing arena shows the wave one enemy at a time: its name and HP bar, and, until the enemy art exists, a plain labelled box in the boss's place. The boss keeps its drawing.
-  - The Dungeons tab of the drawer holds, for the dungeon being fought, the same line as plain text, a Push / Farm toggle with a one-line explanation, and the difficulty selector: Normal, Hard, Nightmare and Endless, a locked one greyed out with a tooltip naming the boss to beat. Each dungeon row shows its difficulty (when not Normal) and its floor or depth.
+  - The Dungeons tab of the drawer holds, for the dungeon being fought, the same line as plain text, a Push / Farm toggle with a one-line explanation, and the difficulty selector: Normal, Hard, Nightmare and Endless, a locked one greyed out with a tooltip naming the boss to beat. Each dungeon row shows its difficulty (when not Normal), its floor or depth and its stars earned of the most it can have ("★ 6 / 36").
+
+- [Default · in game] **Stage stars, interim** (Claude, 2026-11-11; DESIGN §6 Stage stars, Overflow). Until the one-table redesign, the stars use the same plain floor controls:
+  - Under the difficulty selector, a stage line names the stage the floor belongs to ("Stage: floor 10" on a stage, "Next stage: floor 20" on a wave floor, "Depths follow the Nightmare stage" in the depths), its star level ("★3 Silver") and the kills to the next level ("688 kills to Gold"), with a tooltip on what stars give.
+  - An Overflow toggle (Off / On) for that stage sits under it, greyed out with a tooltip naming the star level that unlocks it.
+  - A plain stage map follows the dungeon list: a table with a row per dungeon (locked ones greyed out), a column per tier listing each stage as "F10 ★3", and the dungeon's star total.
+  - The boss medals are gone from the dungeon rows; the Glimmer Trial keeps its medal.
 
 - [Built] **Settings** has reduced motion, number format, autosave interval, export / import, sound volumes and Report an issue.
 - [Built] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
@@ -84,6 +90,7 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user.
 Defaults by Claude, 2026-11-10 (to be replaced by the floors UI, Scope 3 phase 4):
 
 - §2 Floors, interim: the plain-text floor line, the Push / Farm toggle, the difficulty selector and the labelled placeholder for enemies without art.
+- §2 Stage stars, interim: the stage line, the Overflow toggle and the plain stage map table.
 
 Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
 
@@ -98,3 +105,4 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 - 2026-11-10 — Playtest (user): the Dungeons main card is 2x wherever the fan fits, not only from 1280 × 720; a struck Production row no longer lights up behind its tile (§2).
 - 2026-11-10 — Playtest (user): the loadout is filled by clicking a slot, then a card; the Dungeons drawer's Upgrades tab leads with Training (§2).
 - 2026-11-10 — Playtest (user): the Wardrobe is an inventory, one grid under filter chips with the item on the right (pick 1e); the header's Money chip counts in coins (§2).
+- 2026-11-11 — Stage stars, interim (Claude default, balance update): the stage line, the Overflow toggle and a plain stage map on the Dungeons screen; dungeon rows show their star totals instead of medals (§2, §3).

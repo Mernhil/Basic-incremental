@@ -72,6 +72,8 @@ import {
   isDifficultyUnlocked,
   setDifficulty,
   setFloorMode,
+  setOverflow,
+  stageStars,
   DIFFICULTIES,
   type Difficulty,
   setActiveDungeon,
@@ -199,14 +201,8 @@ export const MILESTONES: Milestone[] = [
     id: 'first_star6',
     label: 'First ★6 from copies',
     targetHours: 7,
-    // A ★6 earned with duplicates: a card whose rarity still needs copies per star (Common and
-    // Uncommon; Rare and up star up for free, DESIGN.md §5 Star bar).
-    reached: (s, c) =>
-      Object.entries(s.cards.owned).some(([id, owned]) => {
-        const rarity = c.cardById.get(id)?.rarity;
-        const needs = rarity ? c.cardRules.starBar.needs[rarity] : undefined;
-        return owned.stars >= 6 && (needs ?? []).some((n) => n > 0);
-      }),
+    // Every card starts at ★1, so any ★6 was earned with copies (DESIGN.md §5 Stars).
+    reached: (s) => Object.values(s.cards.owned).some((owned) => owned.stars >= 6),
   },
   {
     id: 'first_prestige',
@@ -1366,6 +1362,21 @@ export function choosePush(state: GameState, content: Content): GameState {
   return result.ok ? result.state : state;
 }
 
+/**
+ * Overflow (DESIGN.md §6): the player turns on every stage's overflow switch as soon as the stage
+ * reaches the star level that opens it, so no damage is wasted. (Package 10 teaches the rest.)
+ */
+export function chooseOverflow(state: GameState, content: Content): GameState {
+  let next = state;
+  for (const key of Object.keys(state.combat.stageKills)) {
+    const info = stageStars(next, content, key);
+    if (!info || !info.overflowUnlocked || info.overflowOn) continue;
+    const result = setOverflow(next, content, key, true);
+    if (result.ok) next = result.state;
+  }
+  return next;
+}
+
 // ---- running -----------------------------------------------------------------------------------
 
 export interface SimOptions {
@@ -1512,6 +1523,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         if (tier.ok) state = tier.state;
       }
       state = choosePush(state, content);
+      state = chooseOverflow(state, content);
       sinceChoose = 0;
     }
     const dt = idle
@@ -1822,9 +1834,7 @@ export function formatSummary(result: SimResult, content: Content): string {
             .join(', ')}`,
       )
       .join('; ')}`,
-    `Boss and mini-boss kills: ${s.stats.bossKills} (last-floor bosses: ${Object.entries(
-      s.combat.kills,
-    )
+    `Boss and mini-boss kills: ${s.stats.bossKills} (stages: ${Object.entries(s.combat.stageKills)
       .map(([d, k]) => `${d} ${k}`)
       .join(', ')})`,
     `DPS vs Mossy Cellar: ${result.dpsSamples

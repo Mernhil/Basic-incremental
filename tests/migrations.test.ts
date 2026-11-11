@@ -649,10 +649,9 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
 
   it('turns a Unique card into the Mythic tier and keeps its stars and level', () => {
     const loaded = readSave(v21Save(), content);
-    // ★2 -> ★3 costs nothing in the tests' star bar, so the load takes that free star (§5)
     expect(loaded.state.cards.owned['moonwood_dryad']).toMatchObject({
       tier: 'mythic',
-      stars: 3,
+      stars: 2, // saved stars are kept as they are
       level: 30,
     });
   });
@@ -662,7 +661,7 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
     expect(loaded.state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 2 });
     expect(loaded.state.cards.owned['dawnblade_regent']).toMatchObject({
       tier: 'prismatic',
-      stars: 3, // plus the free ★3 of the tests' star bar
+      stars: 2,
     });
   });
 
@@ -829,7 +828,6 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.production.harvestGauges['copper_quarry']).toEqual(saved.state.bursts['mining']);
     expect(Object.keys(state.bursts)).toEqual(['fighting']);
     expect(state.combat.stageKills).toEqual({ [stageKey('mossy_cellar', 'normal', 10)]: 78 });
-    expect(state.combat.kills).toEqual({ mossy_cellar: 78 });
     // Stars, levels and loadouts are what the 0.5.5 game wrote.
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
     expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });

@@ -134,7 +134,7 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
   });
 
   it('the first kill clears the dungeon and unlocks the next dungeon and a mine', () => {
-    const maxHp = bossMaxHp(mossy, 0);
+    const maxHp = bossMaxHp(mossy);
     const content = withDps(maxHp);
     const start = freshState();
     expect(isProducerUnlocked(start, content, 'mining', 'iron_deeps')).toBe(false);
@@ -144,13 +144,13 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(report.unlockedDungeons).toEqual([ember.id]);
     expect(report.unlockedMines).toEqual(['iron_deeps']);
     expect(state.clearedDungeons).toEqual([mossy.id]);
-    expect(state.combat.kills).toEqual({ [mossy.id]: 1 });
+    expect(state.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 1 });
     expect(isProducerUnlocked(state, content, 'mining', 'iron_deeps')).toBe(true);
 
     // Farming afterwards counts kills but clears nothing again.
     const again = advance(state, content, 1000, rng);
     expect(again.report.cleared).toEqual([]);
-    expect(again.state.combat.kills[mossy.id]).toBe(2);
+    expect(again.state.combat.stageKills['mossy_cellar:normal:1']).toBe(2);
     expect(again.state.clearedDungeons).toEqual([mossy.id]);
   });
 
@@ -238,7 +238,6 @@ describe('drops', () => {
       dungeon.drops.wages.find((w) => w.resource === id)!.perSecond.toNumber();
     const state = bareState();
     state.clearedDungeons = [dungeon.id]; // no first-clear purse
-    state.combat.kills[dungeon.id] = 1;
     const before = state.resources['summon_crystal']!.toNumber();
     const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
     expect(after.resources['summon_crystal']!.toNumber()).toBeCloseTo(
@@ -248,7 +247,6 @@ describe('drops', () => {
     // A kill adds no crystals on top of the wage.
     const kill = bareState();
     kill.clearedDungeons = [dungeon.id];
-    kill.combat.kills[dungeon.id] = 1;
     kill.bossHp = new Decimal(1e-6);
     const killed = advance(kill, content, 1000, constantRng(0.5));
     expect(killed.report.bossKills).toBe(1);
@@ -364,7 +362,7 @@ describe('drops', () => {
   it('drops a Core when the roll is under its chance', () => {
     const { state, report } = advance(
       freshState(),
-      withDps(bossMaxHp(mossy, 0)),
+      withDps(bossMaxHp(mossy)),
       1000,
       constantRng(0.01),
     );
@@ -538,7 +536,7 @@ describe('save format v4: combat', () => {
   it('round-trips kills, the trial attempt and burst gauges', () => {
     let state = ok(setActiveDungeon(cleared(mossy.id, ember.id), content, trial.id));
     state = advance(state, withDps(1234), 12_345, rng).state;
-    state.combat.kills = { mossy_cellar: 4 };
+    state.combat.stageKills = { 'mossy_cellar:normal:1': 4 };
     const loaded = readSave(createSaveText(state, NOW), content).state;
     expect(loaded.combat).toEqual(state.combat);
     expect(loaded.bursts).toEqual(state.bursts);
@@ -560,7 +558,7 @@ describe('save format v4: combat', () => {
     v3.state.bossHp = '40';
     v3.state.stats.bossKills = 5;
     const { state } = readSave(JSON.stringify(v3), content);
-    expect(state.combat.kills).toEqual({ mossy_cellar: 5 });
+    expect(state.combat.stageKills).toEqual({ 'mossy_cellar:normal:10': 5 });
     expect(state.clearedDungeons).toEqual(['mossy_cellar']);
     expect(state.bossHp).toBeNull();
     expect(state.bursts.fighting).toEqual({ gauge: 0, timer: 0 });
@@ -569,7 +567,7 @@ describe('save format v4: combat', () => {
     v3.state.stats.bossKills = 0;
     const fresh = readSave(JSON.stringify(v3), content).state;
     expect(fresh.clearedDungeons).toEqual([]);
-    expect(fresh.combat.kills).toEqual({});
+    expect(fresh.combat.stageKills).toEqual({});
   });
 });
 

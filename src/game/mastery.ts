@@ -6,9 +6,10 @@ import type { GameState } from './state';
 
 /**
  * Mastery (DESIGN.md §4, §6). Gem mastery (E2): each production gem's lifetime total harvested gives
- * a tier on the metal ladder. Boss mastery (E3): kills per dungeon give medal tiers; special
- * dungeons take theirs from their best score. Both are kept through prestige, and each tier adds
- * the bonuses in progression.json through the modifier pipeline (source kind `mastery`).
+ * a tier on the metal ladder. Special dungeons (the Glimmer Trial) take a medal tier from their best
+ * score. Both are kept through prestige, and each tier adds the bonuses in progression.json through
+ * the modifier pipeline (source kind `mastery`). Dungeons have stage stars instead of medals
+ * (stageStars.ts).
  *
  * The tiers that give bonuses are the settled ones in `state.mastery`; `settleMastery` brings
  * them up to date on the 1 s play-time grid (tick.ts).
@@ -78,27 +79,19 @@ export function gemMastery(state: GameState, content: Content, gemId: string): G
 }
 
 export interface BossMasteryInfo extends MasteryInfo<number> {
-  /** Kills in the dungeon, or the best score (0..1) of a special dungeon. */
+  /** The best score (0..1) of the special dungeon. */
   value: number;
-  /** True for a special dungeon (medal from the best score). */
+  /** Always true: only special dungeons have medals. */
   trial: boolean;
 }
 
-/** A dungeon's (or special dungeon's) medal. Null for unknown ids. */
+/** A special dungeon's medal. Null for dungeons (they have stage stars) and unknown ids. */
 export function bossMastery(
   state: GameState,
   content: Content,
   dungeonId: string,
 ): BossMasteryInfo | null {
   const tier = state.mastery.bossTiers[dungeonId] ?? 0;
-  if (content.dungeonById.has(dungeonId)) {
-    const value = state.combat.kills[dungeonId] ?? 0;
-    return {
-      ...info(content.progression.bossMastery.thresholds, tier, value),
-      value,
-      trial: false,
-    };
-  }
   if (content.trialById.has(dungeonId)) {
     const value = state.combat.trialBest[dungeonId] ?? 0;
     return {
@@ -128,7 +121,8 @@ function bonuses(
   }));
 }
 
-/** Every mastery bonus of the settled tiers: per gem (scope resource), per boss (scope dungeon). */
+/** Every mastery bonus of the settled tiers: per gem (scope resource), per special dungeon (scope
+ *  dungeon). */
 export function masteryModifiers(state: GameState, content: Content): Modifier[] {
   const p = content.progression;
   const out: Modifier[] = [];
@@ -137,12 +131,8 @@ export function masteryModifiers(state: GameState, content: Content): Modifier[]
     out.push(...bonuses(p.gemMastery.perTier, tier, { resource: gem }, gem));
   }
   for (const [id, tier] of Object.entries(state.mastery.bossTiers)) {
-    const perTier = content.dungeonById.has(id)
-      ? p.bossMastery.perTier
-      : content.trialById.has(id)
-        ? p.trialMastery.perTier
-        : null;
-    if (perTier) out.push(...bonuses(perTier, tier, { dungeon: id }, id));
+    if (!content.trialById.has(id)) continue;
+    out.push(...bonuses(p.trialMastery.perTier, tier, { dungeon: id }, id));
   }
   return out;
 }
@@ -173,10 +163,6 @@ function reachedTiers(
     if (tier > 0) gems[id] = tier;
   }
   const bosses: Record<string, number> = {};
-  for (const d of content.dungeons) {
-    const tier = tierFor(p.bossMastery.thresholds, state.combat.kills[d.id] ?? 0);
-    if (tier > 0) bosses[d.id] = tier;
-  }
   for (const t of content.trials) {
     const tier = tierFor(p.trialMastery.thresholds, state.combat.trialBest[t.id] ?? 0);
     if (tier > 0) bosses[t.id] = tier;

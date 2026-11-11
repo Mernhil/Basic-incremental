@@ -182,14 +182,12 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     expect(copy).toMatchObject({ affordable: true, left: null });
   });
 
-  it('sells a copy of every Common and Uncommon card and of no Rare or better card', () => {
-    // Only the rarities that use copies for stars (DESIGN.md §5, Star fill in the shard shop).
+  it('sells a copy of every card, at any rarity', () => {
+    // Every rarity uses copies for stars now (DESIGN.md §5, Star fill in the shard shop).
     const sold = content.shardShop.flatMap((i) =>
       i.reward.kind === 'card' ? [i.reward.card] : [],
     );
-    const wanted = content.cards
-      .filter((c) => c.rarity === 'common' || c.rarity === 'uncommon')
-      .map((c) => c.id);
+    const wanted = content.cards.map((c) => c.id);
     expect([...sold].sort()).toEqual([...wanted].sort());
   });
 

@@ -13,6 +13,7 @@ import {
   weaponLookRarity,
   setLoadoutSlot,
   starUp,
+  starUpWithDust,
   tierUp,
   type CardFailure,
   type CardInfo,
@@ -220,6 +221,7 @@ export function createCardsModel(
     },
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
+      if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
       return wrap(kind === 'star' ? starUp(state, content, id) : tierUp(state, content, id));
     },
     chart(state, id) {

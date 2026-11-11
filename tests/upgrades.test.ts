@@ -56,7 +56,7 @@ describe('shelf status', () => {
     const state = freshState();
     state.production.mineLevels['copper_quarry'] = 10;
     expect(item(state, 'sharp_picks').status).toBe('available');
-    state.combat.kills['mossy_cellar'] = 20;
+    state.combat.stageKills['mossy_cellar:normal:1'] = 20;
     expect(item(state, 'tax_collector').status).toBe('available');
     state.mastery.gemTiers['oak_gem'] = 1;
     expect(item(state, 'harvest_rhythm').status).toBe('available');

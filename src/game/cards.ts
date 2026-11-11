@@ -152,13 +152,12 @@ export function itemName(content: Content, kind: ItemKind, tier: RankTier, rarit
 }
 
 /**
- * The tier whose weapon art and name a card shows (user, 2026-11-10): a card never shows less than
- * its rarity's top tier (a Void card shows the Void T6 weapon, a Legendary the Prismatic one) while
- * the tier-up looks are not in the game; a higher tier (the Heirloom) wins.
+ * The tier whose weapon art and name a card shows (user, 2026-11-11): its own. Every card starts
+ * with its wooden weapon and each tier-up changes the picture and the name. The rarity no longer
+ * lifts the look; it stays a parameter so callers keep one signature.
  */
-export function lookTier(rarity: Rarity, tier: RankTier): RankTier {
-  const cap = RARITY_TIER_CAP[rarity];
-  return RANK_TIERS.indexOf(tier) >= RANK_TIERS.indexOf(cap) ? tier : cap;
+export function lookTier(_rarity: Rarity, tier: RankTier): RankTier {
+  return tier;
 }
 
 /**
@@ -615,19 +614,24 @@ function resourceRequirements(state: GameState, prices: Price[]): Requirement[] 
 }
 
 /**
- * The star bar's fill a star-up from `stars` takes (DESIGN.md §5), by rarity: the copies of the
- * table times the fill each duplicate gives. Null at ★6, where there is no next star.
+ * The star bar's fill a star-up from `stars` takes at a tier (DESIGN.md §5), by rarity: copies per
+ * star (a fraction at low tiers, 1 at the top tier) times the fill each duplicate gives. Null at ★6.
  */
-export function starFillNeeded(content: Content, rarity: Rarity, stars: number): number | null {
+export function starFillNeeded(
+  content: Content,
+  rarity: Rarity,
+  stars: number,
+  tier: RankTier,
+): number | null {
   if (stars >= MAX_STARS) return null;
   const { needs, fillPerDuplicate } = content.cardRules.starBar;
-  return needs[rarity][stars - 1]! * fillPerDuplicate[rarity];
+  return needs[rarity][tier] * fillPerDuplicate[rarity];
 }
 
-/** Fill still to collect from `stars` to ★6 (0 at ★6). */
-function starFillToMax(content: Content, rarity: Rarity, stars: number): number {
+/** Fill still to collect from `stars` to ★6 at a tier (0 at ★6). */
+function starFillToMax(content: Content, rarity: Rarity, stars: number, tier: RankTier): number {
   let total = 0;
-  for (let s = stars; s < MAX_STARS; s++) total += starFillNeeded(content, rarity, s)!;
+  for (let s = stars; s < MAX_STARS; s++) total += starFillNeeded(content, rarity, s, tier)!;
   return total;
 }
 
@@ -645,7 +649,7 @@ export interface StarBarView {
 
 /** The star bar of an owned card below ★6; null otherwise. */
 export function starBarView(content: Content, card: Card, owned: OwnedCard): StarBarView | null {
-  const need = starFillNeeded(content, card.rarity, owned.stars);
+  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier);
   if (need === null) return null;
   return {
     fill: owned.starFill,
@@ -681,7 +685,7 @@ export function starUpCheck(
   const card = content.cardById.get(cardId);
   const owned = state.cards.owned[cardId];
   if (!card || !owned) return null;
-  const need = starFillNeeded(content, card.rarity, owned.stars);
+  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier);
   if (need === null) return check(null, []);
   return check({ tier: owned.tier, stars: owned.stars + 1 }, [
     requirement('starFill', owned.starFill, need),
@@ -709,17 +713,20 @@ export function tierUpCheck(
 }
 
 /**
- * Takes every star that costs nothing (DESIGN.md §5, Star bar): a Rare or better card climbs to ★6
- * at once (mutates `owned`). Stars that need copies wait for them. Returns the stars gained.
+ * The star dust a star-up from the card's current star needs to cover what the bar lacks
+ * (DESIGN.md §5 Star dust): the missing copies times the dust price of a copy at the card's
+ * rarity and tier, rounded up. 0 when the bar is full; null at ★6 or for a card not owned.
  */
-export function applyFreeStars(content: Content, rarity: Rarity, owned: OwnedCard): number {
-  let gained = 0;
-  while (owned.stars < MAX_STARS && starFillNeeded(content, rarity, owned.stars) === 0) {
-    owned.stars += 1;
-    gained += 1;
-  }
-  if (gained > 0 && owned.stars >= MAX_STARS) owned.starFill = 0;
-  return gained;
+export function starDustCost(state: GameState, content: Content, cardId: string): number | null {
+  const card = content.cardById.get(cardId);
+  const owned = state.cards.owned[cardId];
+  if (!card || !owned) return null;
+  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier);
+  if (need === null) return null;
+  const missing = Math.max(0, need - owned.starFill);
+  if (missing === 0) return 0;
+  const perCopy = content.cardRules.starBar.fillPerDuplicate[card.rarity];
+  return Math.ceil((missing / perCopy) * content.cardRules.starBar.dust[card.rarity][owned.tier]);
 }
 
 /** Spends the star bar's fill and adds a star. Level and XP stay. Left-over fill carries over. */
@@ -731,7 +738,34 @@ export function starUp(state: GameState, content: Content, cardId: string): Card
   const card = content.cardById.get(cardId)!;
   const next = cloneState(state);
   const owned = next.cards.owned[cardId]!;
-  owned.starFill -= starFillNeeded(content, card.rarity, owned.stars)!;
+  owned.starFill -= starFillNeeded(content, card.rarity, owned.stars, owned.tier)!;
+  owned.stars += 1;
+  if (owned.stars >= MAX_STARS) owned.starFill = 0;
+  return { ok: true, state: next, tierUps: [] };
+}
+
+/**
+ * Buys a star with star dust for the part of the bar that is missing (DESIGN.md §5 Star dust): the
+ * dust is paid, the bar's fill is used up and the star is added. Refused when the dust is short.
+ */
+export function starUpWithDust(
+  state: GameState,
+  content: Content,
+  cardId: string,
+): CardUpgradeResult {
+  const cost = starDustCost(state, content, cardId);
+  if (cost === null) {
+    if (!content.cardById.has(cardId)) return fail('unknown');
+    return fail(state.cards.owned[cardId] ? 'unavailable' : 'not-owned');
+  }
+  const held = state.resources['star_dust'] ?? new Decimal(0);
+  if (held.lt(cost)) return fail('requirements');
+  const card = content.cardById.get(cardId)!;
+  const next = cloneState(state);
+  const owned = next.cards.owned[cardId]!;
+  next.resources['star_dust'] = held.sub(cost);
+  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier)!;
+  owned.starFill = Math.max(0, owned.starFill - need);
   owned.stars += 1;
   if (owned.stars >= MAX_STARS) owned.starFill = 0;
   return { ok: true, state: next, tierUps: [] };
@@ -756,8 +790,6 @@ export function tierUp(
   owned.tier = result.to!.tier;
   owned.stars = 1;
   owned.starFill = 0;
-  // Stars that cost nothing apply by themselves (DESIGN.md §5).
-  applyFreeStars(content, card.rarity, owned);
   const from = tierMetalIndex(before.tier);
   const to = tierMetalIndex(owned.tier);
   const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];
@@ -779,14 +811,12 @@ export function grantCard(cards: CardState, content: Content, card: Card): CardG
   const owned = cards.owned[card.id];
   if (!owned) {
     const fresh = newOwnedCard();
-    // Stars that cost nothing apply by themselves: a Rare or better card arrives at ★6.
-    applyFreeStars(content, card.rarity, fresh);
     cards.owned[card.id] = fresh;
     return { kind: 'new' };
   }
   if (
     owned.stars >= MAX_STARS ||
-    owned.starFill >= starFillToMax(content, card.rarity, owned.stars)
+    owned.starFill >= starFillToMax(content, card.rarity, owned.stars, owned.tier)
   ) {
     const shards = content.cardRules.shards[card.rarity];
     cards.shards += shards;
@@ -907,6 +937,8 @@ export interface CardInfo {
   /** The star bar (fill, need, gauge 0..1); null when not owned or at ★6. */
   starBar: StarBarView | null;
   starUp: UpgradeCheck | null;
+  /** Star dust that would cover the missing part of the next star, with what is held; null at ★6 or not owned. */
+  starDust: { cost: number; have: number } | null;
   tierUp: UpgradeCheck | null;
   /** Its effect as main / as support at the current power (Wood ★1 Lv 1 when not owned). */
   mainModifiers: Modifier[];
@@ -926,6 +958,8 @@ export function cardInfo(
   const preview = owned ?? newOwnedCard();
   const rank = owned ? cardRank(owned) : null;
   const cap = rank ? levelCap(content, rank) : null;
+  const dustCost = starDustCost(state, content, cardId);
+  const heldDust = (state.resources['star_dust'] ?? new Decimal(0)).toNumber();
   return {
     card,
     owned,
@@ -940,6 +974,7 @@ export function cardInfo(
     maxRank: owned ? isMaxRank(content, cardId, owned) : false,
     starBar: owned ? starBarView(content, card, owned) : null,
     starUp: starUpCheck(state, content, cardId),
+    starDust: dustCost === null ? null : { cost: dustCost, have: heldDust },
     tierUp: tierUpCheck(state, content, cardId, modifiers),
     mainModifiers: cardEffectModifiers(content, cardId, 'main', preview),
     supportModifiers: cardEffectModifiers(content, cardId, 'support', preview),

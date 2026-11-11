@@ -370,3 +370,38 @@
   font-size: 11.5px;
   color: var(--bi-frame-ink-muted);
 }
+
+/* The stage line (DESIGN.md §6 Stage stars; UI_RULES §2 Stage stars, interim). */
+.dp-fl__stage {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--bi-frame-ink);
+}
+
+/* The stage map: a plain table, a row per dungeon and a column per tier. */
+.dp-map {
+  margin: 12px 0 0;
+}
+.dp-map__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink);
+}
+.dp-map__table th,
+.dp-map__table td {
+  padding: 3px 6px;
+  text-align: left;
+  border-bottom: 1px solid var(--bi-frame-edge, rgb(255 255 255 / 0.12));
+}
+.dp-map__table thead th {
+  color: var(--bi-frame-ink-muted);
+  font-weight: normal;
+}
+.dp-map__table tr.is-locked {
+  opacity: 0.45;
+}
+.dp-map__table td:last-child,
+.dp-map__table th:last-child {
+  white-space: nowrap;
+}
