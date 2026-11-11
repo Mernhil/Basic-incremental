@@ -18,6 +18,7 @@ const hit = (damage: number, slam = false, knockout = false): BossAttackEvent =>
   slam,
   attacks: 1,
   knockout,
+  cardId: '',
   nextSlamSeconds: 10,
 });
 

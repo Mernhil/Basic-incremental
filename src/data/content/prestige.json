@@ -2,9 +2,9 @@
   "currency": "starlight",
   "gain": {
     "tierWeights": ["1", "10", "100"],
-    "divisor": "2e10",
+    "divisor": "8e9",
     "exponent": 0.4,
-    "minimum": 10
+    "minimum": 6
   },
   "shop": [
     {
@@ -167,6 +167,18 @@
       },
       "perLevel": [],
       "grants": "autobuyer_mines"
+    },
+    {
+      "id": "travel_pack",
+      "name": "Travel Pack",
+      "description": "One more expedition slot, so another card can be away on a trip",
+      "maxLevel": 1,
+      "cost": {
+        "base": "20",
+        "growth": "1"
+      },
+      "perLevel": [],
+      "grants": "expedition_slot"
     }
   ],
   "rewards": [

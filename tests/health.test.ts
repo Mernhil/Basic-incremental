@@ -126,7 +126,7 @@ describe('card health (DESIGN.md §6)', () => {
     const trial = ok(setActiveDungeon(s, content, 'glimmer_trial'));
     const { state, report } = advance(trial, content, 3_600_000, rng);
     expect(report.knockouts).toBe(0);
-    expect(state.combat.loadoutDamage.toNumber()).toBe(0);
+    expect(state.combat.cardDamage).toEqual({});
   });
 
   it('saves and loads damage taken and knockout time (save v7)', () => {
@@ -134,7 +134,7 @@ describe('card health (DESIGN.md §6)', () => {
     const { state } = advance(start, content, (secondsToDown(start) + 3) * 1000, rng);
     const loaded = readSave(createSaveText(state, 1), content).state;
     expect(loaded.combat.knockoutSeconds).toBeCloseTo(state.combat.knockoutSeconds, 6);
-    expect(loaded.combat.loadoutDamage.eq(state.combat.loadoutDamage)).toBe(true);
+    expect(loaded.combat.cardDamage).toEqual(state.combat.cardDamage);
   });
 
   it('migrates v6 saves to full health and no knockout', () => {

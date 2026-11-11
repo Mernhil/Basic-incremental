@@ -197,12 +197,12 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     expect(card.state.cards.shards).toBe(95);
     expect(card.state.cards.owned['ember_squire']!.starFill).toBe(1);
 
-    const start = withShards(100).resources['summon_crystal']!;
-    const bundle = buyShardItem(withShards(100), content, 'summon_crystals');
+    const start = withShards(100).resources['summon_scroll']!;
+    const bundle = buyShardItem(withShards(100), content, 'summon_scrolls');
     if (!bundle.ok) throw new Error(bundle.reason);
-    const bundleItem = content.shardShop.find((i) => i.id === 'summon_crystals')!;
+    const bundleItem = content.shardShop.find((i) => i.id === 'summon_scrolls')!;
     if (bundleItem.reward.kind !== 'resource') throw new Error('not a bundle');
-    expect(bundle.state.resources['summon_crystal']!.eq(start.add(bundleItem.reward.amount))).toBe(
+    expect(bundle.state.resources['summon_scroll']!.eq(start.add(bundleItem.reward.amount))).toBe(
       true,
     );
 

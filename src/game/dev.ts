@@ -103,9 +103,10 @@ export function devSetDungeonCleared(
 }
 
 /**
- * Puts a dungeon on a floor (inside its range) of its chosen difficulty, or of `difficulty` when
+ * Farms a dungeon on a floor (inside its range) of its chosen difficulty, or of `difficulty` when
  * given: Hard, Nightmare or the endless depths, opened by counting every tier before it as
- * beaten. The floors above the chosen one count as beaten. The fight on that floor starts fresh.
+ * beaten. That floor and the ones above it count as beaten, so the next Challenge is the floor
+ * below it (DESIGN.md §6 Farming and Challenge). The fight on that floor starts fresh.
  */
 export function devSetFloor(
   state: GameState,
@@ -130,8 +131,12 @@ export function devSetFloor(
   }
   const at = Math.min(floorCount(dungeon, progress.difficulty), Math.max(1, Math.floor(floor)));
   const tier = progress.tiers[progress.difficulty] ?? { floor: 1, best: 0 };
-  progress.tiers[progress.difficulty] = { floor: at, best: Math.max(tier.best, at - 1) };
-  if (next.activeDungeonId === dungeonId) next.bossHp = null;
+  progress.tiers[progress.difficulty] = { floor: at, best: Math.max(tier.best, at) };
+  if (next.activeDungeonId === dungeonId) {
+    next.bossHp = null;
+    next.combat.enemyIndex = 0;
+    next.combat.challenge = null;
+  }
   return { ok: true, state: next };
 }
 

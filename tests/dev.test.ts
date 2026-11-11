@@ -15,12 +15,12 @@ import { content, freshState } from './helpers';
 describe('dev cheats (dev builds only)', () => {
   it('grants an amount of a resource without touching the input state', () => {
     const state = freshState();
-    const result = devGrant(state, content, { resource: 'summon_crystal', amount: 250 });
+    const result = devGrant(state, content, { resource: 'summon_scroll', amount: 250 });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
-    // a new game starts with one pull of Summon Crystals (DESIGN.md §3)
-    expect(result.state.resources['summon_crystal']!.toNumber()).toBe(550);
-    expect(state.resources['summon_crystal']!.toNumber()).toBe(300);
+    // a new game starts with one Summon Scroll, its one free pull (DESIGN.md §3)
+    expect(result.state.resources['summon_scroll']!.toNumber()).toBe(251);
+    expect(state.resources['summon_scroll']!.toNumber()).toBe(1);
   });
 
   it('accepts a decimal string amount and refuses unknown resources or bad amounts', () => {
@@ -96,8 +96,8 @@ describe('dev cheats (dev builds only)', () => {
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     expect(result.state.account.level).toBeGreaterThan(10);
-    // Level 5 on the track gives 10 Summon Crystals.
-    expect(result.state.resources['summon_crystal']!.toNumber()).toBeGreaterThanOrEqual(10);
+    // Levels 5, 10 and 15 on the track give 3 Summon Scrolls in all, on top of the free pull.
+    expect(result.state.resources['summon_scroll']!.toNumber()).toBeGreaterThanOrEqual(4);
   });
 
   it('grants a cosmetic (new, then a copy)', () => {

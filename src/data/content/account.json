@@ -28,8 +28,8 @@
       "level": 5,
       "resources": [
         {
-          "resource": "summon_crystal",
-          "amount": "150"
+          "resource": "summon_scroll",
+          "amount": "0.5"
         }
       ]
     },
@@ -41,8 +41,8 @@
       "level": 10,
       "resources": [
         {
-          "resource": "summon_crystal",
-          "amount": "300"
+          "resource": "summon_scroll",
+          "amount": "1"
         }
       ],
       "cosmetics": ["holo_hex"]
@@ -51,8 +51,8 @@
       "level": 15,
       "resources": [
         {
-          "resource": "summon_crystal",
-          "amount": "450"
+          "resource": "summon_scroll",
+          "amount": "1.5"
         }
       ],
       "costCap": 1
@@ -61,8 +61,8 @@
       "level": 20,
       "resources": [
         {
-          "resource": "glamour_crystal",
-          "amount": "1200"
+          "resource": "glamour_scroll",
+          "amount": "4"
         }
       ],
       "cosmetics": ["holo_waves", "wardrobe_c"]
@@ -71,8 +71,8 @@
       "level": 25,
       "resources": [
         {
-          "resource": "glamour_crystal",
-          "amount": "1500"
+          "resource": "glamour_scroll",
+          "amount": "5"
         }
       ],
       "costCap": 1
@@ -81,8 +81,8 @@
       "level": 30,
       "resources": [
         {
-          "resource": "glamour_crystal",
-          "amount": "1800"
+          "resource": "glamour_scroll",
+          "amount": "6"
         }
       ],
       "cosmetics": ["prism_pointer", "nodes_c"]
@@ -750,6 +750,11 @@
             "stat": "xp.card",
             "kind": "percent",
             "value": "25"
+          },
+          {
+            "stat": "expedition.slots",
+            "kind": "flat",
+            "value": "1"
           }
         ]
       }

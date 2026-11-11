@@ -11,12 +11,14 @@ import {
   hitDamage,
   isProducerUnlocked,
   jobProductionPerSecond,
+  loadoutHealth,
   loadoutMaxHealth,
   producerLevel,
   producerRate,
   producersOf,
   rollHitForShow,
   signatureDamage,
+  type ChallengeEvent,
   type GameState,
   type HarvestEvent,
   type ProductionJob,
@@ -54,6 +56,8 @@ export interface ShowEvents {
     span: ChunkSpan;
   };
   knockout: { seconds: number };
+  /** A Challenge ended (DESIGN.md §6 Farming and Challenge): won, or lost with why. */
+  challenge: ChallengeEvent;
   /** A boss died: its resource drops, and the names of rare drops (items and cards). */
   kill: { loot: Loot[]; rare: string[] };
   /** One production tick: what each unlocked tree or mine gave. */
@@ -117,11 +121,15 @@ export function createDirector(content: Content, state: () => GameState) {
     const filled = [l.main, ...l.supports].map((c, i) => (c ? i : -1)).filter((i) => i >= 0);
     if (filled.length === 0) return;
     const max = loadoutMaxHealth(after, content, mods, id);
-    // a fight that resumes after a knockout starts from a full pool
+    // a fight that resumes after a knockout starts from a full team; the pool is the team's
+    // health left, every card summed (DESIGN.md §6 card duel)
     const poolBefore =
-      before.combat.knockoutSeconds > 0 ? max : max.sub(before.combat.loadoutDamage);
+      before.combat.knockoutSeconds > 0 ? max : loadoutHealth(before, content, mods).current;
+    const slots = [l.main, ...l.supports];
     for (const { event, span } of bossHitShows(report.bossAttacks, poolBefore, max)) {
-      const target = filled[Math.floor(Math.random() * filled.length)]!;
+      // the card the game says was hit (DESIGN.md §6 card duel)
+      const hit = event.cardId ? slots.indexOf(event.cardId) : -1;
+      const target = hit >= 0 ? hit : filled[0]!;
       emit('bossAttack', {
         damage: event.damage,
         target,
@@ -178,10 +186,11 @@ export function createDirector(content: Content, state: () => GameState) {
       if (report.harvests.length > 0) emit('harvests', { events: report.harvests });
       if (report.bossAttacks.length > 0) emitBossAttacks(report, before, after, mods);
       if (report.knockouts > 0) emit('knockout', { seconds: after.combat.knockoutSeconds });
+      for (const event of report.challenges) emit('challenge', event);
       if (report.bossKills + report.enemyKills > 0) {
         const loot: Loot[] = [];
         for (const r of content.resources) {
-          if (r.kind !== 'crystal' && r.kind !== 'currency' && r.kind !== 'material') continue;
+          if (r.kind !== 'scroll' && r.kind !== 'currency' && r.kind !== 'material') continue;
           const gained = (after.resources[r.id] ?? new Decimal(0)).sub(
             before.resources[r.id] ?? new Decimal(0),
           );

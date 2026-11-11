@@ -16,8 +16,13 @@ import {
   SUPPORT_SLOTS,
   type CardState,
   cloneProduction,
+  clonePresets,
   cloneState,
   createInitialState,
+  initialPresets,
+  MAX_CHALLENGE_COMPLETIONS,
+  PRESET_JOBS,
+  PRESETS_PER_JOB,
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
@@ -29,7 +34,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 26;
+export const CURRENT_SAVE_VERSION = 27;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -41,6 +46,11 @@ const cardLoadoutSchema = z.object({
 const gaugeSchema = z.object({ gauge: z.number().min(0), timer: z.number().min(0) });
 /** v26: stage key -> a count (kills, or chests paid). */
 const stageCounts = z.record(z.string(), z.number().int().min(0));
+/** v27: a production preset (DESIGN.md §15 Loadout presets). */
+const productionPresetSchema = z.object({
+  name: z.string(),
+  workers: z.record(z.string(), z.array(z.string())),
+});
 
 /** The on-disk shape of GameState: Decimals as strings, nothing else special. */
 export const serializedStateSchema = z.object({
@@ -71,7 +81,8 @@ export const serializedStateSchema = z.object({
       z.string(),
       z.object({
         difficulty: z.enum(DIFFICULTIES),
-        mode: z.enum(['push', 'farm']),
+        /** v27: auto-challenge (DESIGN.md §6). */
+        autoChallenge: z.boolean(),
         tiers: z.partialRecord(
           z.enum(DIFFICULTIES),
           z.object({ floor: z.number().int().min(1), best: z.number().int().min(0) }),
@@ -82,12 +93,25 @@ export const serializedStateSchema = z.object({
     training: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
     trialBest: z.record(z.string(), z.number().min(0).max(1)),
-    loadoutDamage: decimalText,
     knockoutSeconds: z.number().min(0),
     /** v26: stage stars and overflow, keyed by `stageKey` (DESIGN.md §6). */
     stageKills: stageCounts,
     stageChests: stageCounts,
     overflow: z.record(z.string(), z.boolean()),
+    /** v27: the enemy being fought, the running Challenge, the auto-challenge wait and each team
+     *  card's damage (DESIGN.md §6). */
+    enemyIndex: z.number().int().min(0),
+    challenge: z
+      .object({
+        dungeonId: z.string(),
+        difficulty: z.enum(DIFFICULTIES),
+        elapsedSeconds: z.number().min(0),
+      })
+      .nullable(),
+    challengeWaitSeconds: z.number().min(0),
+    cardDamage: z.record(z.string(), decimalText),
+    /** Format 27 (package 7 fix): the team cards knocked out on this floor. */
+    cardsOut: z.array(z.string()).default([]),
   }),
   /** The fighting gauge. Format 26 saves written before the workers kept the old logging and
    *  mining gauges here too; parsing strips them (they moved to `production.harvestGauges`). */
@@ -156,6 +180,37 @@ export const serializedStateSchema = z.object({
     mineLevels: z.boolean(),
     reservePercent: z.number().min(0).max(100),
   }),
+  /** v27: the table update (DESIGN.md §3, §7, §15). */
+  summon: z.object({
+    focusKind: z.string().nullable(),
+    dailyClaimedDay: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .nullable(),
+  }),
+  presets: z.object({
+    dungeons: z.record(z.string(), cardLoadoutSchema),
+    production: z.object({
+      logging: z.array(productionPresetSchema.nullable()),
+      mining: z.array(productionPresetSchema.nullable()),
+    }),
+  }),
+  discoveredBonds: z.array(z.string()),
+  expeditions: z.object({
+    trips: z.array(
+      z.object({
+        cardId: z.string(),
+        placeId: z.string(),
+        hours: z.number().positive(),
+        elapsedSeconds: z.number().min(0),
+      }),
+    ),
+    completed: z.number().int().min(0).default(0),
+  }),
+  ascensionChallenges: z.object({
+    active: z.string().nullable(),
+    completions: counts,
+  }),
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
     harvested: z.record(z.string(), decimalText),
@@ -207,11 +262,17 @@ export function serializeState(state: GameState): SerializedState {
         dealt: decimalToString(state.combat.trialAttempt.dealt),
       },
       trialBest: { ...state.combat.trialBest },
-      loadoutDamage: decimalToString(state.combat.loadoutDamage),
       knockoutSeconds: state.combat.knockoutSeconds,
       stageKills: { ...state.combat.stageKills },
       stageChests: { ...state.combat.stageChests },
       overflow: { ...state.combat.overflow },
+      enemyIndex: state.combat.enemyIndex,
+      challenge: state.combat.challenge ? { ...state.combat.challenge } : null,
+      challengeWaitSeconds: state.combat.challengeWaitSeconds,
+      cardDamage: Object.fromEntries(
+        Object.entries(state.combat.cardDamage).map(([id, d]) => [id, decimalToString(d)]),
+      ),
+      cardsOut: [...state.combat.cardsOut],
     },
     bursts: cloneBursts(state.bursts),
     activeDungeonId: state.activeDungeonId,
@@ -229,6 +290,17 @@ export function serializeState(state: GameState): SerializedState {
       moneyEarned: decimalToString(state.upgrades.moneyEarned),
     },
     automation: { ...state.automation },
+    summon: { ...state.summon },
+    presets: clonePresets(state.presets),
+    discoveredBonds: [...state.discoveredBonds],
+    expeditions: {
+      trips: state.expeditions.trips.map((t) => ({ ...t })),
+      completed: state.expeditions.completed,
+    },
+    ascensionChallenges: {
+      active: state.ascensionChallenges.active,
+      completions: { ...state.ascensionChallenges.completions },
+    },
     account: {
       xp: decimalToString(state.account.xp),
       level: state.account.level,
@@ -275,7 +347,9 @@ export function serializeState(state: GameState): SerializedState {
 export function deserializeState(saved: SerializedState, content: Content): GameState {
   const base = createInitialState(content);
   const state = cloneState(base);
-  for (const [id, text] of Object.entries(saved.resources)) state.resources[id] = new Decimal(text);
+  for (const [id, text] of Object.entries(saved.resources)) {
+    if (content.resourceById.has(id)) state.resources[id] = new Decimal(text);
+  }
   // Unknown ids (removed from the game) are dropped.
   state.clearedDungeons = saved.clearedDungeons.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),
@@ -308,7 +382,6 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       dealt: new Decimal(saved.combat.trialAttempt.dealt),
     },
     trialBest: { ...saved.combat.trialBest },
-    loadoutDamage: new Decimal(saved.combat.loadoutDamage),
     knockoutSeconds: saved.combat.knockoutSeconds,
     // Stages of dungeons that left the game (and keys that are not stage keys) are dropped; a
     // chest count stays within the six star levels.
@@ -320,6 +393,18 @@ export function deserializeState(saved: SerializedState, content: Content): Game
       ]),
     ),
     overflow: knownStages(saved.combat.overflow, content),
+    enemyIndex: saved.combat.enemyIndex,
+    // A Challenge in a dungeon that left the game is dropped (back to farming).
+    challenge:
+      saved.combat.challenge && content.dungeonById.has(saved.combat.challenge.dungeonId)
+        ? { ...saved.combat.challenge }
+        : null,
+    challengeWaitSeconds: saved.combat.challengeWaitSeconds,
+    // Damage is kept only for owned fighting cards (checked once the cards are rebuilt).
+    cardDamage: Object.fromEntries(
+      Object.entries(saved.combat.cardDamage).map(([id, d]) => [id, new Decimal(d)]),
+    ),
+    cardsOut: [...saved.combat.cardsOut],
   };
   state.bursts = cloneBursts(saved.bursts);
   const active = saved.activeDungeonId;
@@ -370,6 +455,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.cards = deserializeCards(saved.cards, content);
   deserializeWorkers(state, saved.production, content);
   state.automation = { ...saved.automation };
+  deserializeTableUpdate(state, saved, content);
   deserializeMastery(state, saved.mastery, content);
   // Counters of portals removed from the game are dropped.
   const portalIds = new Set(content.portals.map((p) => p.id));
@@ -629,6 +715,87 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
   // Unknown cards and repeats are dropped from the wishlist; a marked card need not be owned.
   const wishlist = [...new Set(saved.wishlist)].filter((id) => content.cardById.has(id));
   return { owned, loadouts, shards: saved.shards, wishlist };
+}
+
+/**
+ * Rebuilds the format 27 state of the table update. Unknown ids (cards, dungeons, item types,
+ * bonds, places, challenges that left the game) are dropped, so a later package can rely on every
+ * saved id existing. Needs `state.cards` and `state.production.workers` already rebuilt.
+ */
+function deserializeTableUpdate(state: GameState, saved: SerializedState, content: Content): void {
+  const owned = (id: string | null): boolean => id !== null && state.cards.owned[id] !== undefined;
+  const isFighting = (id: string): boolean =>
+    owned(id) && content.cardById.get(id)?.job === 'fighting';
+  state.combat.cardDamage = Object.fromEntries(
+    Object.entries(state.combat.cardDamage).filter(([id]) => isFighting(id)),
+  );
+  state.combat.cardsOut = [...new Set(state.combat.cardsOut.filter(isFighting))];
+  const focusKind = saved.summon.focusKind;
+  state.summon = {
+    focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,
+    dailyClaimedDay: saved.summon.dailyClaimedDay,
+  };
+  // A remembered loadout keeps only owned fighting cards, each once, in the loadout's shape.
+  const dungeons: GameState['presets']['dungeons'] = {};
+  for (const [id, loadout] of Object.entries(saved.presets.dungeons)) {
+    if (!content.dungeonById.has(id) && !content.trialById.has(id)) continue;
+    const seen = new Set<string>();
+    const keep = (card: string | null | undefined): string | null => {
+      if (!card || !isFighting(card) || seen.has(card)) return null;
+      seen.add(card);
+      return card;
+    };
+    const fixed = emptyCardLoadout();
+    fixed.main = keep(loadout.main);
+    for (let i = 0; i < SUPPORT_SLOTS; i++) fixed.supports[i] = keep(loadout.supports[i]);
+    dungeons[id] = fixed;
+  }
+  const production = initialPresets().production;
+  for (const job of PRESET_JOBS) {
+    const places = job === 'logging' ? content.treeById : content.mineById;
+    for (let i = 0; i < PRESETS_PER_JOB; i++) {
+      const preset = saved.presets.production[job][i];
+      if (!preset) continue;
+      const workers: Record<string, string[]> = {};
+      for (const [place, cards] of Object.entries(preset.workers)) {
+        if (!places.has(place)) continue;
+        const kept = cards.filter((c) => owned(c) && content.cardById.get(c)?.job === job);
+        if (kept.length > 0) workers[place] = kept;
+      }
+      production[job][i] = { name: preset.name, workers };
+    }
+  }
+  state.presets = { dungeons, production };
+  state.discoveredBonds = [...new Set(saved.discoveredBonds)].filter((id) =>
+    content.bondById.has(id),
+  );
+  // A trip of an unknown or unowned card, to an unknown place or of an unknown length is dropped;
+  // a card goes on one trip at a time.
+  const travelling = new Set<string>();
+  state.expeditions = {
+    trips: saved.expeditions.trips
+      .filter((t) => {
+        const ok =
+          owned(t.cardId) &&
+          !travelling.has(t.cardId) &&
+          content.expeditions.places.some((p) => p.id === t.placeId) &&
+          content.expeditions.durationsHours.includes(t.hours);
+        if (ok) travelling.add(t.cardId);
+        return ok;
+      })
+      .map((t) => ({ ...t })),
+    completed: saved.expeditions.completed,
+  };
+  const challengeIds = new Set(content.challenges.map((c) => c.id));
+  const active = saved.ascensionChallenges.active;
+  state.ascensionChallenges = {
+    active: active !== null && challengeIds.has(active) ? active : null,
+    completions: Object.fromEntries(
+      Object.entries(saved.ascensionChallenges.completions)
+        .filter(([id, n]) => challengeIds.has(id) && n > 0)
+        .map(([id, n]) => [id, Math.min(n, MAX_CHALLENGE_COMPLETIONS)]),
+    ),
+  };
 }
 
 /** Star levels a stage has (DESIGN.md §6 Stage stars): a chest count never goes past this. */

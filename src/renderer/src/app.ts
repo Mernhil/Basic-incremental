@@ -113,7 +113,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     mine_gem: 'ore',
     material: 'material',
     currency: 'material',
-    crystal: 'portal',
+    scroll: 'portal',
     prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();

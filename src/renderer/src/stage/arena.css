@@ -807,6 +807,58 @@
   background: var(--bi-chrome-accent);
 }
 
+/* the Challenge (DESIGN.md §6 Farming and Challenge): its timer, or the button to start one */
+.ar__chal {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.ar__chal[hidden],
+.ar__chal > [hidden] {
+  display: none;
+}
+.ar__chal .ar-meter {
+  width: 100%;
+}
+.ar-meter--challenge .ar-meter__track i {
+  background: var(--bi-hp-0);
+}
+.ar__chal-btn {
+  padding: 4px 14px;
+  font-size: 13px;
+}
+
+/* Victory / Defeat: a plain banner across the top of the arena when a Challenge ends */
+.ar__verdict {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 6;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 10px 28px;
+  pointer-events: none;
+  text-align: center;
+  color: #fff;
+  background: color-mix(in srgb, var(--bi-chrome-accent) 30%, var(--bi-chrome-rail-bg));
+  box-shadow: 0 0 0 var(--fs-sm, 2px) var(--px-edge, #08060c);
+}
+.ar__verdict[data-kind='defeat'] {
+  background: color-mix(in srgb, var(--bi-hp-0) 28%, var(--bi-chrome-rail-bg));
+}
+.ar__verdict[hidden] {
+  display: none;
+}
+.ar__verdict b {
+  font-size: 26px;
+  letter-spacing: 0.04em;
+}
+.ar__verdict span {
+  font-size: 13px;
+}
+
 .ar__empty {
   position: absolute;
   inset: 0;
@@ -978,4 +1030,35 @@
   40% {
     opacity: 0.2;
   }
+}
+
+/* Each team card's own health (DESIGN.md §6 card duel): plain rows under the party health,
+   interim until the duel's look (UI_RULES §2). A card that is out is greyed. */
+.ar__team {
+  display: grid;
+  gap: 3px;
+}
+.ar-teamrow {
+  display: grid;
+  gap: 2px;
+}
+.ar-teamrow__text {
+  font-size: 11px;
+  line-height: 1.2;
+  color: var(--bi-chrome-ink);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.7);
+}
+.ar-teamrow__bar {
+  height: 6px;
+}
+.ar-teamrow.is-targeted .ar-teamrow__text::before {
+  content: '▸ ';
+}
+.ar-teamrow.is-out {
+  filter: grayscale(1);
+  opacity: 0.55;
+}
+.ar-teamrow:focus-visible {
+  outline: 2px solid var(--bi-focus, #fff);
+  outline-offset: 2px;
 }

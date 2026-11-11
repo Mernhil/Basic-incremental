@@ -1,5 +1,9 @@
 import { COSMETIC_SLOTS, JOBS, RANK_TIERS, RARITIES, contentSchemas } from './schemas';
 import type {
+  AscensionChallenge,
+  ScrollsConfig,
+  Bond,
+  ExpeditionsConfig,
   Card,
   CardRules,
   CombatConfig,
@@ -33,6 +37,8 @@ import type {
   ItemsData,
   ItemType,
   RankTier,
+  Skill,
+  SkillsConfig,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
@@ -59,6 +65,11 @@ import trainingJson from './content/training.json';
 import coinsJson from './content/coins.json';
 import weaponSkinsJson from './content/weaponSkins.json';
 import itemsJson from './content/items.json';
+import bondsJson from './content/bonds.json';
+import expeditionsJson from './content/expeditions.json';
+import challengesJson from './content/challenges.json';
+import skillsJson from './content/skills.json';
+import scrollsJson from './content/scrolls.json';
 
 export * from './schemas';
 
@@ -129,6 +140,18 @@ export interface Content {
   legacySkinById: ReadonlyMap<string, { weapon: string; skin: WeaponSkin }>;
   /** The starter item of each slot (validated: exactly one per slot). */
   starterBySlot: Readonly<Record<CosmeticSlot, Cosmetic>>;
+  /** Bonds between pairs of cards (DESIGN.md §15 Bonds). Save format 27; the rule is not built. */
+  bonds: Bond[];
+  bondById: ReadonlyMap<string, Bond>;
+  /** Expedition trip lengths and places (DESIGN.md §15 Expeditions). Not built. */
+  expeditions: ExpeditionsConfig;
+  /** Ascension challenges (DESIGN.md §15). Not built. */
+  challenges: AscensionChallenge[];
+  /** Duel skills: each weapon type's leaning and the cards that break it (DESIGN.md §6 card duel). */
+  skills: SkillsConfig;
+  skillById: ReadonlyMap<string, Skill>;
+  /** Scroll sources besides the first clears and chests, and the reveal show (DESIGN.md §3, §7). */
+  scrolls: ScrollsConfig;
 }
 
 export type RawContent = { [K in keyof typeof contentSchemas]: unknown };
@@ -190,6 +213,11 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     coins,
     weaponSkins,
     items,
+    bonds,
+    expeditions,
+    challenges,
+    skills,
+    scrolls,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -217,6 +245,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
       );
     }
   }
+  checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
+  checkSkills({ cards, skills }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -295,7 +325,106 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
       ),
     ),
     starterBySlot,
+    bonds,
+    bondById: new Map(bonds.map((b) => [b.id, b])),
+    expeditions,
+    challenges,
+    skills,
+    skillById: new Map(skills.skills.map((x) => [x.id, x])),
+    scrolls,
   };
+}
+
+/**
+ * skills.json (DESIGN.md §6 card duel): skill ids are unique, every weapon and card names a
+ * skill that exists, and every card named is a fighting card.
+ */
+function checkSkills(c: { cards: Card[]; skills: SkillsConfig }, issues: string[]): void {
+  const ids = new Set<string>();
+  c.skills.skills.forEach((skill, i) => {
+    if (ids.has(skill.id)) issues.push(`skills.json › skills › [${i}]: duplicate id "${skill.id}"`);
+    ids.add(skill.id);
+  });
+  for (const [weapon, skill] of Object.entries(c.skills.weapons)) {
+    if (!ids.has(skill)) issues.push(`skills.json › weapons › ${weapon}: unknown skill "${skill}"`);
+  }
+  for (const [cardId, skill] of Object.entries(c.skills.cards)) {
+    const card = c.cards.find((x) => x.id === cardId);
+    if (!card) issues.push(`skills.json › cards › ${cardId}: unknown card`);
+    else if (card.job !== 'fighting')
+      issues.push(`skills.json › cards › ${cardId}: not a fighting card`);
+    if (!ids.has(skill)) issues.push(`skills.json › cards › ${cardId}: unknown skill "${skill}"`);
+  }
+}
+
+/**
+ * The content of the table update's rules (save format 27): every id is unique and every card and
+ * dungeon named exists (dungeons waiting for their theme count).
+ */
+function checkTableUpdate(
+  c: {
+    cards: Card[];
+    dungeons: Dungeon[];
+    bonds: Bond[];
+    expeditions: ExpeditionsConfig;
+    challenges: AscensionChallenge[];
+    resources: { id: string }[];
+  },
+  issues: string[],
+): void {
+  const resourceIds = new Set(c.resources.map((r) => r.id));
+  const cardIds = new Set(c.cards.map((x) => x.id));
+  const dungeonIds = new Set(c.dungeons.map((d) => d.id));
+  const unique = (file: string, ids: string[]): void => {
+    const seen = new Set<string>();
+    ids.forEach((x, i) => {
+      if (seen.has(x)) issues.push(`${file} › [${i}] › id: duplicate "${x}"`);
+      seen.add(x);
+    });
+  };
+  unique(
+    'bonds.json',
+    c.bonds.map((b) => b.id),
+  );
+  unique(
+    'expeditions.json › places',
+    c.expeditions.places.map((p) => p.id),
+  );
+  unique(
+    'challenges.json',
+    c.challenges.map((x) => x.id),
+  );
+  c.bonds.forEach((b, i) =>
+    b.cards.forEach((card, j) => {
+      if (!cardIds.has(card))
+        issues.push(`bonds.json › [${i}] › cards › [${j}]: unknown card "${card}"`);
+    }),
+  );
+  c.expeditions.places.forEach((p, i) => {
+    if (!dungeonIds.has(p.dungeon)) {
+      issues.push(`expeditions.json › places › [${i}] › dungeon: unknown dungeon "${p.dungeon}"`);
+    }
+    for (const r of [...p.rewards.materials, ...p.rewards.gems]) {
+      if (!resourceIds.has(r.resource)) {
+        issues.push(
+          `expeditions.json › places › [${i}] › rewards: unknown resource "${r.resource}"`,
+        );
+      }
+    }
+  });
+  c.challenges.forEach((x, i) =>
+    x.targets.forEach((t, j) => {
+      if (!dungeonIds.has(t.dungeon)) {
+        issues.push(
+          `challenges.json › [${i}] › targets › [${j}] › dungeon: unknown dungeon "${t.dungeon}"`,
+        );
+      } else if (t.floor > c.dungeons.find((d) => d.id === t.dungeon)!.floors) {
+        issues.push(
+          `challenges.json › [${i}] › targets › [${j}] › floor: ${t.floor} is past the last floor of "${t.dungeon}"`,
+        );
+      }
+    }),
+  );
 }
 
 function checkProduction(
@@ -933,15 +1062,15 @@ function checkReferences(
   });
 
   c.dungeons.forEach((dungeon, i) => {
-    // Every dungeon pays Money and every crystal: Money by the kill, crystals as a wage
+    // Every dungeon pays Money by the kill; scrolls come as first-clear purses, chests and floor wins
     // (DESIGN.md §3, §7).
     const dropped = new Set<string>();
     dungeon.drops.currencies.forEach((drop, j) => {
       const where = `dungeons.json › [${i}] › drops › currencies › [${j}] › resource`;
       const res = resources.get(drop.resource);
       if (!res) issues.push(`${where}: unknown resource "${drop.resource}"`);
-      else if (res.kind !== 'currency' && res.kind !== 'crystal') {
-        issues.push(`${where}: "${drop.resource}" is ${res.kind}, expected currency or crystal`);
+      else if (res.kind !== 'currency' && res.kind !== 'scroll') {
+        issues.push(`${where}: "${drop.resource}" is ${res.kind}, expected currency or scroll`);
       }
       if (dropped.has(drop.resource)) issues.push(`${where}: duplicate "${drop.resource}"`);
       dropped.add(drop.resource);
@@ -959,8 +1088,8 @@ function checkReferences(
         const res = resources.get(entry.resource);
         const where = `dungeons.json › [${i}] › drops › ${field} › [${j}] › resource`;
         if (!res) issues.push(`${where}: unknown resource "${entry.resource}"`);
-        else if (res.kind !== 'currency' && res.kind !== 'crystal') {
-          issues.push(`${where}: "${entry.resource}" is ${res.kind}, expected currency or crystal`);
+        else if (res.kind !== 'currency' && res.kind !== 'scroll') {
+          issues.push(`${where}: "${entry.resource}" is ${res.kind}, expected currency or scroll`);
         }
       });
     paid(dungeon.drops.wages, 'wages');
@@ -971,7 +1100,7 @@ function checkReferences(
     }
     for (const w of waged) dropped.add(w);
     for (const r of c.resources) {
-      if ((r.kind === 'currency' || r.kind === 'crystal') && !dropped.has(r.id)) {
+      if (r.kind === 'currency' && !dropped.has(r.id)) {
         issues.push(`dungeons.json › [${i}] › drops › currencies: "${r.id}" is not dropped`);
       }
     }
@@ -989,9 +1118,9 @@ function checkReferences(
       issues.push(
         `portals.json › [${i}] › cost › resource: unknown resource "${portal.cost.resource}"`,
       );
-    } else if (res.kind !== 'crystal') {
+    } else if (res.kind !== 'scroll') {
       issues.push(
-        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected crystal`,
+        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected scroll`,
       );
     }
     // Pity and the 10-pull guarantee pick from the pool at or above their rarity.
@@ -1117,6 +1246,11 @@ export function bundledRawContent(): RawContent {
     coins: coinsJson,
     weaponSkins: weaponSkinsJson,
     items: itemsJson,
+    bonds: bondsJson,
+    expeditions: expeditionsJson,
+    challenges: challengesJson,
+    skills: skillsJson,
+    scrolls: scrollsJson,
   };
 }
 

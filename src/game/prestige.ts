@@ -138,17 +138,19 @@ export function ascend(
   // Gems, Money, Cores and the rest start over; Starlight and the premium crystals are kept
   // (DESIGN.md §3), like the pity counters that go with them.
   for (const resource of content.resources) {
-    if (resource.kind === 'prestige' || resource.kind === 'crystal' || resource.keptOnAscend)
+    if (resource.kind === 'prestige' || resource.kind === 'scroll' || resource.keptOnAscend)
       continue;
     next.resources[resource.id] = startingAmount(content, resource.id);
   }
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);
+  // An Ascension ends a challenge run that was not completed; `startChallenge` sets it again.
+  next.ascensionChallenges.active = null;
   next.bursts = initialBursts();
   next.bossHp = null;
-  // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run starts at
-  // half of it, pushing again.
+  // Floors (DESIGN.md §6): the best floor of every dungeon tier is kept and the run farms from half
+  // of it, with auto-challenge on, so it climbs back one Challenge at a time.
   for (const progress of Object.values(next.combat.floors)) {
-    progress.mode = 'push';
+    progress.autoChallenge = true;
     for (const tier of Object.values(progress.tiers)) {
       tier.floor = ascensionStartFloor(tier.best);
     }
@@ -158,8 +160,12 @@ export function ascend(
     // Training is bought again each run (DESIGN.md §6 Training).
     training: {},
     trialAttempt: { elapsedSeconds: 0, dealt: new Decimal(0) },
-    loadoutDamage: new Decimal(0),
+    cardDamage: {},
+    cardsOut: [],
     knockoutSeconds: 0,
+    enemyIndex: 0,
+    challenge: null,
+    challengeWaitSeconds: 0,
   };
   next.prestigeCount = preview.ascension;
   next.prestige = {

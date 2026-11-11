@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { ContentValidationError, validateContent, type RawContent, type Rank } from '../src/data';
+import {
+  bundledRawContent,
+  ContentValidationError,
+  validateContent,
+  type RawContent,
+  type Rank,
+} from '../src/data';
 import {
   detectSets,
   emptyLoadout,
@@ -223,6 +229,7 @@ describe('loading and registry checks', () => {
 describe('invalid cosmetic data is rejected', () => {
   const raw = (): RawContent =>
     structuredClone({
+      ...bundledRawContent(),
       resources,
       trees,
       mines,

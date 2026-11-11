@@ -3,6 +3,7 @@ import {
   createInitialState,
   Decimal,
   emptyCardLoadout,
+  initialProgress,
   stageFloors,
   stageKey,
   STAR_DIFFICULTIES,
@@ -171,8 +172,8 @@ export const floorsContent: Content = pinRuleNumbers(
 export const content: Content = pinOneFloor(floorsContent);
 
 /**
- * Crystals per "pull unit": rule tests count crystals in units of a tenth of a Card Portal pull
- * (10 a pull, 100 a 10-pull), so a retune of the crystal prices and drops does not move them.
+ * Scrolls per "pull unit": rule tests count scrolls in units of a tenth of a Card Portal pull
+ * (10 a pull, 100 a 10-pull), so a retune of the portal prices does not move them.
  */
 export const CRYSTAL_UNIT =
   content.portals.find((p) => p.id === 'card_portal')!.cost.single.toNumber() / 10;
@@ -230,11 +231,22 @@ export function withDps(dps: Decimal | number | string, base: Content = plainCon
 
 /**
  * A new game for rule tests: every achievement counts as already unlocked, so their rewards
- * never change the exact totals those tests check. Achievement tests use `newGame()`.
+ * never change the exact totals those tests check, and auto-challenge is off in every dungeon, so
+ * a fight stays on its floor unless the test starts a Challenge (`withAutoChallenge` turns it back
+ * on). Achievement tests and the Challenge tests of a new game use `newGame()`.
  */
 export function freshState(): GameState {
   const state = createInitialState(content);
   for (const a of content.achievements) state.achievements[a.id] = 0;
+  return withAutoChallenge(state, false);
+}
+
+/** The state with every dungeon's auto-challenge switch set to `on` (changed in place). */
+export function withAutoChallenge(state: GameState, on: boolean): GameState {
+  for (const d of content.dungeons) {
+    const progress = (state.combat.floors[d.id] ??= initialProgress());
+    progress.autoChallenge = on;
+  }
   return state;
 }
 

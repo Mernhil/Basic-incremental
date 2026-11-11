@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateContent, type RawContent } from '../src/data';
+import { bundledRawContent, validateContent, type RawContent } from '../src/data';
 import {
   Decimal,
   OFFLINE_CAP_MS,
@@ -204,6 +204,7 @@ describe('game numbers go through the pipeline', () => {
 describe('modifier data is validated', () => {
   const raw = (): RawContent =>
     structuredClone({
+      ...bundledRawContent(),
       resources,
       trees,
       mines,

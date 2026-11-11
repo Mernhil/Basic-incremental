@@ -29,10 +29,10 @@
       "art": "root_warden",
       "weakness": "fire",
       "resistance": "nature",
-      "hp": "45000",
+      "hp": "70000",
       "hpBars": 5,
       "attack": {
-        "damage": "61",
+        "damage": "95",
         "intervalSeconds": 3
       }
     },
@@ -46,31 +46,23 @@
         {
           "resource": "money",
           "perSecond": "50"
-        },
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.5"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.4"
         }
       ],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "300"
+          "resource": "summon_scroll",
+          "amount": "1"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "150"
+          "resource": "glamour_scroll",
+          "amount": "0.5"
         }
       ],
       "currencies": [
         {
           "resource": "money",
-          "min": 3490,
-          "max": 5250
+          "min": 5430,
+          "max": 8170
         }
       ],
       "extraMaterials": [],
@@ -124,24 +116,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.6"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.45"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "900"
+          "resource": "summon_scroll",
+          "amount": "3"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "600"
+          "resource": "glamour_scroll",
+          "amount": "2"
         }
       ],
       "currencies": [
@@ -215,24 +198,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "1500"
+          "resource": "summon_scroll",
+          "amount": "5"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "900"
+          "resource": "glamour_scroll",
+          "amount": "3"
         }
       ],
       "currencies": [
@@ -285,10 +259,10 @@
       "name": "Storm Roc",
       "weakness": "earth",
       "resistance": "storm",
-      "hp": "800000000",
+      "hp": "1500000000",
       "hpBars": 12,
       "attack": {
-        "damage": "720000",
+        "damage": "1350000",
         "intervalSeconds": 2
       }
     },
@@ -298,31 +272,22 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "2100"
+          "resource": "summon_scroll",
+          "amount": "7"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "1200"
+          "resource": "glamour_scroll",
+          "amount": "4"
         }
       ],
       "currencies": [
         {
           "resource": "money",
-          "min": 61900000,
-          "max": 93100000
+          "min": 116000000,
+          "max": 174600000
         }
       ],
       "extraMaterials": [
@@ -368,10 +333,10 @@
       "name": "Dawn Hierophant",
       "weakness": "void",
       "resistance": "light",
-      "hp": "3000000000",
+      "hp": "6000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "2700000",
+        "damage": "5400000",
         "intervalSeconds": 2
       }
     },
@@ -381,31 +346,22 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "2700"
+          "resource": "summon_scroll",
+          "amount": "9"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "1500"
+          "resource": "glamour_scroll",
+          "amount": "5"
         }
       ],
       "currencies": [
         {
           "resource": "money",
-          "min": 233000000,
-          "max": 350000000
+          "min": 466000000,
+          "max": 700000000
         }
       ],
       "extraMaterials": [
@@ -451,10 +407,10 @@
       "name": "The Unmade King",
       "weakness": "light",
       "resistance": "void",
-      "hp": "6000000000",
+      "hp": "20000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "5410000",
+        "damage": "18000000",
         "intervalSeconds": 2
       }
     },
@@ -464,31 +420,22 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "3300"
+          "resource": "summon_scroll",
+          "amount": "11"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "1800"
+          "resource": "glamour_scroll",
+          "amount": "6"
         }
       ],
       "currencies": [
         {
           "resource": "money",
-          "min": 465000000,
-          "max": 696000000
+          "min": 1550000000,
+          "max": 2320000000
         }
       ],
       "extraMaterials": [

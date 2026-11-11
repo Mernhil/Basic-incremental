@@ -41,13 +41,8 @@ describe('incomePerSecond', () => {
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
     // Moss Cores: 10% of 1 per kill.
     expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
-    // Summon Crystals: the wage, paid every second of fighting (DESIGN.md §3).
-    const wage = content.dungeonById
-      .get('mossy_cellar')!
-      .drops.wages.find((w) => w.resource === 'summon_crystal')!;
-    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(
-      wage.perSecond.toNumber(),
-    );
+    // Scrolls come in lumps, never as income (DESIGN.md §3).
+    expect(incomePerSecond(state, content, 'summon_scroll').toNumber()).toBe(0);
   });
 
   it('is 0 for a resource nothing gives', () => {

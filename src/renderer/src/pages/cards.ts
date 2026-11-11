@@ -17,6 +17,8 @@ import {
 } from './cardsModel';
 import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
+import './tablePanels.css';
+import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
 import './cards.css';
 
 /**
@@ -25,7 +27,7 @@ import './cards.css';
  * and three supports under its cost cap). All rules come from the CardsModel.
  */
 
-type Tab = 'collection' | 'loadouts';
+type Tab = 'collection' | 'loadouts' | 'bonds' | 'trips';
 type Sort = keyof typeof COPY.cards.sortBy;
 
 const JOB_NAMES: Record<Job, string> = {
@@ -113,6 +115,8 @@ export function createCardsPage(
   const tabs: Record<Tab, HTMLButtonElement> = {
     collection: h('button', 'cp-tab', COPY.cards.collectionTab),
     loadouts: h('button', 'cp-tab', COPY.cards.loadoutsTab),
+    bonds: h('button', 'cp-tab', 'Bonds'),
+    trips: h('button', 'cp-tab', 'Expeditions'),
   };
   const panel = h('div', 'cp-panel');
   panel.setAttribute('role', 'tabpanel');
@@ -198,9 +202,19 @@ export function createCardsPage(
     if (selected === null || !entries.some((e) => e.id === selected)) {
       selected = (entries.find((e) => e.role?.slot === 'main') ?? entries[0])?.id ?? null;
     }
-    panel.replaceChildren(
-      tab === 'collection' ? collection(state, entries) : loadouts(state, entries),
-    );
+    if (tab === 'bonds' || tab === 'trips') {
+      const side: Panel = (tab === 'bonds' ? createBondsPanel : createExpeditionsPanel)(ctx);
+      const head = h('div', 'cp-head');
+      head.append(tabBar);
+      const wrap = h('div', 'cp-loadouts');
+      wrap.append(head, side.el);
+      ticks.push(() => side.update());
+      panel.replaceChildren(wrap);
+    } else {
+      panel.replaceChildren(
+        tab === 'collection' ? collection(state, entries) : loadouts(state, entries),
+      );
+    }
     status.textContent = message;
     if (focusKey) {
       // a taken star leaves no Add star button: focus goes to the star line

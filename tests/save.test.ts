@@ -246,7 +246,9 @@ describe('save format v3: production', () => {
     };
     const { state } = readSave(JSON.stringify(v2), content);
     expect(state.resources['oak_gem']!.eq(1234.5)).toBe(true);
-    expect(state.resources['summon_crystal']!.eq(7 * V23_CRYSTAL_FACTOR)).toBe(true); // repriced in format 23
+    expect(state.resources['summon_scroll']!.eq(Math.floor((7 * V23_CRYSTAL_FACTOR) / 300))).toBe(
+      true,
+    ); // repriced in format 23, then scrolls in format 27
     expect(state.activeDungeonId).toBe('mossy_cellar');
     expect(state.pity).toEqual({ root_warden: 12 });
     // v3 -> v4: the 3 earlier kills were in the Mossy Cellar, so it counts as cleared.
@@ -262,8 +264,8 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
     json.version = 13;
     delete json.state.resources.money;
-    delete json.state.resources.summon_crystal;
-    delete json.state.resources.glamour_crystal;
+    delete json.state.resources.summon_scroll;
+    delete json.state.resources.glamour_scroll;
     json.state.resources.moss_sigil = '42';
     json.state.resources.ember_sigil = '9';
     json.state.resources.frost_sigil = '5';
@@ -273,8 +275,12 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     json.state.combat.damageLevels = { copper_edge: 1 };
     json.state.account.skills = { sigil_luck: 2 };
     const { state } = readSave(JSON.stringify(json), content);
-    expect(state.resources['summon_crystal']!.toNumber()).toBe(42 * V23_CRYSTAL_FACTOR); // format 23
-    expect(state.resources['glamour_crystal']!.toNumber()).toBe(9 * V23_CRYSTAL_FACTOR);
+    expect(state.resources['summon_scroll']!.toNumber()).toBe(
+      Math.floor((42 * V23_CRYSTAL_FACTOR) / 300),
+    ); // format 23, then scrolls (format 27)
+    expect(state.resources['glamour_scroll']!.toNumber()).toBe(
+      Math.floor((9 * V23_CRYSTAL_FACTOR) / 300),
+    );
     expect(state.resources['frost_sigil']!.toNumber()).toBe(5);
     expect('moss_sigil' in state.resources).toBe(false);
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
@@ -311,7 +317,7 @@ describe('save format v8: mastery', () => {
 
   it('drops totals of resources that are not production gems', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
-    json.state.mastery.harvested = { oak_gem: '5', summon_crystal: '9', removed_gem: '3' };
+    json.state.mastery.harvested = { oak_gem: '5', summon_scroll: '9', removed_gem: '3' };
     const { state } = readSave(JSON.stringify(json), content);
     expect(Object.keys(state.mastery.harvested)).toEqual(['oak_gem']);
   });

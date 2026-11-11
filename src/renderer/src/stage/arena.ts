@@ -1,13 +1,18 @@
 import type { Content } from '../../../data';
 import {
   Decimal,
+  barMoment,
   bossStatus,
+  floorChallengeView,
+  nextFloorChallenge,
+  type BarLook,
   burstView,
   collectModifiers,
   defaultRng,
   formatDuration,
   loadoutHealth,
   resolveGlobal,
+  teamView,
   stageReadout,
   trialStatus,
   type GameState,
@@ -20,7 +25,13 @@ import { bossArt, sentinelLevel } from '../art/bosses';
 import { floorParts, type FloorPart } from '../pages/dungeonsModel';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
 import { medalTip } from '../pages/progressionModel';
-import { barsGone, healthPercent, signatureCount } from '../pages/dungeonsModel';
+import {
+  barsGone,
+  challengeButton,
+  challengeVerdict,
+  healthPercent,
+  signatureCount,
+} from '../pages/dungeonsModel';
 import { playHit } from '../theme/effects';
 import type { CardProps } from '../ui/card';
 import { createLoadoutFan, type FanCard } from '../ui/loadoutFan';
@@ -72,6 +83,8 @@ export interface ArenaContext {
   active: () => boolean;
   /** Plays a named sound (stage/sound wiring); optional. */
   sound?: (id: string) => void;
+  /** Starts the next Challenge (DESIGN.md §6 Farming and Challenge); optional. */
+  challenge?: () => void;
 }
 
 interface Slot {
@@ -180,7 +193,37 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   fall.tabIndex = 0;
   let fallNow: string | null = null;
   attachTooltip(fall, () => COPY.arena.fallTip(fallNow));
-  head.append(nameRow, hp.el, trial, line, fall);
+  // The Challenge (DESIGN.md §6 Farming and Challenge): its timer while one runs, and the button
+  // that starts the next one while farming.
+  const chal = div('ar__chal');
+  const chalMeter = div('ar-meter ar-meter--challenge');
+  const chalLabel = document.createElement('span');
+  chalLabel.textContent = COPY.arena.challengeTimer;
+  const chalLeft = document.createElement('b');
+  chalLeft.className = 'bi-num';
+  const chalTrack = div('ar-meter__track');
+  const chalFill = document.createElement('i');
+  chalTrack.append(chalFill);
+  chalMeter.append(chalLabel, chalLeft, chalTrack);
+  chalMeter.setAttribute('role', 'timer');
+  const chalBtn = document.createElement('button');
+  chalBtn.type = 'button';
+  chalBtn.className = 'px-btn px-btn--gold ar__chal-btn';
+  chalBtn.dataset['key'] = 'arena-challenge';
+  chalBtn.addEventListener('click', () => ctx.challenge?.());
+  attachTooltip(chalBtn, () => {
+    const id = ctx.state().activeDungeonId;
+    const next = id ? nextFloorChallenge(ctx.state(), content, id) : null;
+    return next ? COPY.dungeons.challengeTip(next.durationSeconds) : COPY.dungeons.lastFloorTip;
+  });
+  chal.append(chalMeter, chalBtn);
+  head.append(nameRow, hp.el, trial, line, chal, fall);
+
+  // Victory or Defeat: a banner across the arena when a Challenge ends.
+  const verdict = div('ar__verdict');
+  verdict.setAttribute('role', 'status');
+  verdict.hidden = true;
+  let verdictTimer = 0;
 
   const boss = div('ar-boss');
   const bob = div('ar-boss__bob');
@@ -257,7 +300,15 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   let healthTip = '';
   health.tabIndex = 0;
   attachTooltip(health, () => healthTip);
-  meters.append(gauge, health);
+  // each team card's own health, plain and interim until the duel's look (DESIGN.md §6 card duel)
+  const teamList = div('ar__team');
+  teamList.setAttribute('role', 'list');
+  teamList.setAttribute('aria-label', COPY.arena.teamLabel);
+  const teamRows = new Map<
+    string,
+    { row: HTMLElement; fill: HTMLElement; text: HTMLElement; tip: string }
+  >();
+  meters.append(gauge, health, teamList);
 
   const ko = div('ar__ko');
   ko.setAttribute('role', 'status');
@@ -273,12 +324,12 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   const empty = div('ar__empty');
   empty.textContent = COPY.arena.idle;
 
-  el.append(scene, readouts, bossBox, party, empty, flashEl, edge, slamFlash);
+  el.append(scene, readouts, bossBox, party, empty, verdict, flashEl, edge, slamFlash);
 
   let slots: Slot[] = [];
   let builtFor: string | null | undefined;
   let builtParty = '';
-  let lastBars = -1;
+  let lastLook: BarLook | null = null;
   let lastBarIndex = -1;
   let lastFraction = 1;
   let bossArtKey = '';
@@ -383,7 +434,8 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
   function build(s: GameState): void {
     builtFor = s.activeDungeonId;
     bossArtKey = '';
-    lastBars = -1;
+    lastLook = null;
+    chal.hidden = true;
     lastBarIndex = -1;
     const id = s.activeDungeonId;
     const dungeon = id ? content.dungeonById.get(id) : undefined;
@@ -519,9 +571,41 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
         }
         lastBarIndex = status.bars.index;
         lastFraction = fraction;
-        // a bar ran out: it shatters and the counter ticks down
-        if (lastBars > status.bars.remaining && status.bars.remaining > 0) shatter();
-        lastBars = status.bars.remaining;
+        // a bar ran out: it shatters and the counter ticks down; the death plays only on the kill
+        // the game reports (DESIGN.md §6 A boss dies once, the 'kill' event below)
+        const look = {
+          key: `${status.difficulty}:${status.floor}:${status.wave.index}:${status.enemy.id}`,
+          remaining: status.bars.remaining,
+        };
+        if (barMoment(lastLook, look, false) === 'shatter') shatter();
+        lastLook = look;
+        // the Challenge: its timer while it runs, the button while farming
+        const run = floorChallengeView(s, content);
+        const next = nextFloorChallenge(s, content, dungeon.id);
+        const button = challengeButton({
+          running: run !== null,
+          hasNext: next !== null,
+          knockoutSeconds: s.combat.knockoutSeconds,
+        });
+        chal.hidden = button === 'none';
+        chalMeter.hidden = !run;
+        chalBtn.hidden = Boolean(run) || !ctx.challenge;
+        if (run) {
+          setText(
+            chalLeft,
+            COPY.dungeons.timeLeft(formatDuration(Math.ceil(run.secondsLeft) * 1000)),
+          );
+          chalFill.style.width = `${((run.secondsLeft / run.durationSeconds) * 100).toFixed(1)}%`;
+        } else if (next) {
+          const label =
+            next.auto && next.waitSeconds > 0
+              ? COPY.dungeons.autoWait(formatDuration(Math.ceil(next.waitSeconds) * 1000))
+              : status.difficulty === 'endless'
+                ? COPY.dungeons.challengeDepth(next.floor)
+                : COPY.dungeons.challenge(next.floor);
+          setText(chalBtn, label);
+          chalBtn.disabled = button !== 'ready';
+        }
       }
     } else if (trialDef) {
       setText(lineWhere, [trialDef.name, COPY.dungeons.special].join(' · '));
@@ -560,6 +644,51 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
       const small = document.createElement('span');
       small.textContent = COPY.arena.knockedOut;
       ko.append(small, big);
+    }
+
+    // each card's own health: a row per team card, greyed when it is out
+    const cards = teamView(s, content, mods);
+    const seen = new Set<string>();
+    for (const c of cards) {
+      seen.add(c.cardId);
+      let r = teamRows.get(c.cardId);
+      if (!r) {
+        const row = div('ar-teamrow');
+        row.setAttribute('role', 'listitem');
+        row.tabIndex = 0;
+        const text = div('ar-teamrow__text');
+        const track = div('ar-bar ar-teamrow__bar');
+        const fill = document.createElement('i');
+        track.append(fill);
+        row.append(text, track);
+        const entry = { row, fill, text, tip: '' };
+        attachTooltip(row, () => entry.tip);
+        teamRows.set(c.cardId, entry);
+        r = entry;
+      }
+      teamList.append(r.row);
+      const pct = healthPercent(c.fraction);
+      const name = content.cardById.get(c.cardId)?.name ?? c.cardId;
+      setText(
+        r.text,
+        c.knockedOut ? `${name} ${COPY.arena.teamOut}` : COPY.arena.teamRow(name, pct),
+      );
+      r.fill.style.width = `${(c.fraction * 100).toFixed(1)}%`;
+      r.row.classList.toggle('is-out', c.knockedOut);
+      r.row.classList.toggle('is-targeted', c.targeted);
+      r.row.title = c.targeted ? COPY.arena.teamTargeted : '';
+      r.tip = COPY.arena.teamTip(
+        c.skill.name,
+        c.skill.role.replace('_', ' '),
+        c.skill.description,
+        fmt(c.health),
+        fmt(c.maxHealth),
+      );
+    }
+    for (const [id, r] of teamRows) {
+      if (seen.has(id)) continue;
+      r.row.remove();
+      teamRows.delete(id);
     }
 
     // signature gauge under the main card: whole points of the gauge, "n / 20"
@@ -688,6 +817,41 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     shake(el, true);
     replay(party, 'is-knocked', 700);
     play('knockout');
+  });
+
+  ctx.director.on('challenge', (e) => {
+    if (!live()) return;
+    const dungeon = content.dungeonById.get(e.dungeonId);
+    const shown = challengeVerdict({
+      won: e.won,
+      reason: e.reason,
+      hpLeftPositive: e.enemyHpLeft.gt(0),
+    });
+    const floor =
+      e.difficulty === 'endless'
+        ? COPY.dungeons.depthOf(e.floor)
+        : COPY.dungeons.floorOf(e.floor, dungeon?.floors ?? e.floor);
+    const title = document.createElement('b');
+    title.className = 'px-display';
+    title.textContent = shown.kind === 'victory' ? COPY.arena.victory : COPY.arena.defeat;
+    const sub = document.createElement('span');
+    sub.className = 'bi-num';
+    sub.textContent =
+      shown.kind === 'victory'
+        ? COPY.arena.victoryLine(floor)
+        : [
+            shown.reason === 'health' ? COPY.arena.defeatHealth : COPY.arena.defeatTimer,
+            ...(shown.showHpLeft ? [COPY.arena.defeatLeft(fmt(e.enemyHpLeft))] : []),
+          ].join(' · ');
+    verdict.replaceChildren(title, sub);
+    verdict.dataset['kind'] = shown.kind;
+    verdict.hidden = false;
+    window.clearTimeout(verdictTimer);
+    verdictTimer = window.setTimeout(
+      () => (verdict.hidden = true),
+      shown.kind === 'victory' ? 1800 : 3200,
+    );
+    if (shown.kind === 'victory') play('kill');
   });
 
   ctx.director.on('kill', (e) => {

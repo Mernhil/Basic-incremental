@@ -292,7 +292,7 @@
         },
         {
           "resource": "storm_core",
-          "amount": "400"
+          "amount": "250"
         },
         {
           "resource": "moonwillow_gem",
@@ -318,7 +318,7 @@
         },
         {
           "resource": "storm_core",
-          "amount": "400"
+          "amount": "250"
         },
         {
           "resource": "grotto_gem",
@@ -344,7 +344,7 @@
         },
         {
           "resource": "storm_core",
-          "amount": "400"
+          "amount": "250"
         },
         {
           "resource": "grotto_gem",
@@ -574,8 +574,8 @@
         "heirloom": 1
       },
       "rare": {
-        "wood": 0.125,
-        "bronze": 0.25,
+        "wood": 0.0625,
+        "bronze": 0.125,
         "silver": 1,
         "gold": 1,
         "prismatic": 1,
@@ -583,9 +583,9 @@
         "heirloom": 1
       },
       "epic": {
-        "wood": 0.03125,
-        "bronze": 0.0625,
-        "silver": 0.125,
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
         "gold": 1,
         "prismatic": 1,
         "mythic": 1,

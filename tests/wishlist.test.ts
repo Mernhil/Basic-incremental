@@ -16,7 +16,7 @@ const portal = content.portals.find((p) => p.id === PORTAL)!;
 const ofRarity = (r: Rarity) => portal.pool.filter((e) => e.rarity === r).map((e) => e.itemId);
 const rich = (): GameState => {
   const s = freshState();
-  s.resources['summon_crystal'] = new Decimal(1e9 * CRYSTAL_UNIT);
+  s.resources['summon_scroll'] = new Decimal(1e9 * CRYSTAL_UNIT);
   return s;
 };
 const mark = (state: GameState, ...ids: string[]): GameState => {
@@ -147,7 +147,7 @@ describe('Wishlist pulls', () => {
     const a = pull(marked, content, PORTAL, 10, constantRng(0.4));
     const b = pull(rich(), content, PORTAL, 10, constantRng(0.4));
     if (!a.ok || !b.ok) throw new Error('pull');
-    expect(a.state.resources['summon_crystal']).toEqual(b.state.resources['summon_crystal']);
+    expect(a.state.resources['summon_scroll']).toEqual(b.state.resources['summon_scroll']);
     expect(a.state.portals[PORTAL]).toEqual(b.state.portals[PORTAL]);
     expect(portalInfo(marked, content, PORTAL)!.rates).toEqual(
       portalInfo(rich(), content, PORTAL)!.rates,

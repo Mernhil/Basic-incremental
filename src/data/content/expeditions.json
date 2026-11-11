@@ -1,0 +1,68 @@
+{
+  "durationsHours": [1, 4, 8],
+  "places": [
+    {
+      "id": "mossy_outskirts",
+      "name": "Mossy Outskirts",
+      "dungeon": "mossy_cellar",
+      "element": "nature",
+      "rewards": {
+        "materials": [
+          {
+            "resource": "moss_core",
+            "perHour": 1
+          }
+        ],
+        "gems": [
+          {
+            "resource": "oak_gem",
+            "secondsPerHour": 120
+          }
+        ],
+        "cardXpLevels": 0.1
+      }
+    },
+    {
+      "id": "ember_catacombs",
+      "name": "Ember Catacombs",
+      "dungeon": "ember_crypt",
+      "element": "fire",
+      "rewards": {
+        "materials": [
+          {
+            "resource": "cinder_core",
+            "perHour": 1
+          }
+        ],
+        "gems": [
+          {
+            "resource": "ironbark_gem",
+            "secondsPerHour": 120
+          }
+        ],
+        "cardXpLevels": 0.1
+      }
+    },
+    {
+      "id": "frostspire_pass",
+      "name": "Frostspire Pass",
+      "dungeon": "frostspire_vault",
+      "element": "crystal",
+      "rewards": {
+        "materials": [
+          {
+            "resource": "frost_core",
+            "perHour": 1
+          }
+        ],
+        "gems": [
+          {
+            "resource": "moonwillow_gem",
+            "secondsPerHour": 120
+          }
+        ],
+        "cardXpLevels": 0.1
+      }
+    }
+  ]
+}

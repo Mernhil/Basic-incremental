@@ -73,17 +73,19 @@
     "startAmount": "100"
   },
   {
-    "id": "summon_crystal",
-    "name": "Summon Crystal",
-    "kind": "crystal",
+    "id": "summon_scroll",
+    "name": "Summon Scroll",
+    "kind": "scroll",
     "tier": 1,
-    "startAmount": "300"
+    "startAmount": "1",
+    "keptOnAscend": true
   },
   {
-    "id": "glamour_crystal",
-    "name": "Glamour Crystal",
-    "kind": "crystal",
-    "tier": 2
+    "id": "glamour_scroll",
+    "name": "Glamour Scroll",
+    "kind": "scroll",
+    "tier": 2,
+    "keptOnAscend": true
   },
   {
     "id": "moss_core",

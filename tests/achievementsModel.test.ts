@@ -90,7 +90,7 @@ describe('sticker book', () => {
     const reward = content.achievements.find((a) => a.id === 'first_kill')!.reward.resources![0]!;
     expect(unlockToast(content, 'first_kill')).toEqual({
       title: 'Achievement: First Kill',
-      detail: `Reward: ${reward.amount.toString()} Summon Crystal`,
+      detail: `Reward: ${reward.amount.toString()} Summon Scroll`,
     });
     expect(unlockToast(content, 'nope')).toBeNull();
   });

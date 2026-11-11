@@ -75,6 +75,7 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'tool_levels':
     case 'depth':
     case 'forge_working':
+    case 'expeditions_done':
     case 'producers':
     case 'milestone':
     case 'gem_mastery':
@@ -83,6 +84,8 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'cleared':
     case 'stage_stars':
     case 'dungeon_starred':
+    case 'tier_cleared':
+    case 'endless_depth':
     case 'star_total':
     case 'boss_mastery':
       return 'battle';
@@ -93,6 +96,7 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'card_tier':
     case 'card_stars':
     case 'full_loadout':
+    case 'bonds_found':
       return 'cards';
     case 'full_set':
     case 'cosmetics_owned':
@@ -102,6 +106,7 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'skills_learned':
     case 'keystones':
     case 'circles_open':
+    case 'challenge_completions':
     case 'ascensions':
     case 'offline_hours':
       return 'journey';

@@ -6,6 +6,7 @@ import { advanceChunked } from './tick';
 import type { CardDrop, TierUp } from './report';
 import { xpToNextLevel } from './cards';
 import { settleAchievements } from './achievements';
+import { advanceTrips } from './expeditions';
 import { cloneState, type GameState } from './state';
 
 /** Base offline cap (8 hours). The offline.capHours modifiers can raise it. */
@@ -80,13 +81,13 @@ export function simulateOffline(
 
   const capMs = offlineCapMs(state, content);
   const simulatedMs = Math.min(elapsedMs, capMs);
-  // Offline progress fights the floor the player left it on and never pushes deeper
-  // (DESIGN.md §6 Offline on floors).
-  const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS, {
-    noPush: true,
-  });
+  // Offline progress plays by the same rules as online (DESIGN.md §6 Offline on floors): it farms
+  // the farmed floor, and it climbs only where auto-challenge is on.
+  const result = advanceChunked(state, content, simulatedMs, rng, OFFLINE_CHUNK_MS);
   // The session itself counts (Night Owl), then whatever it earned unlocks.
   const recorded = cloneState(result.state);
+  // Expedition trips run through all of the time away, outside the cap (DESIGN.md §15).
+  advanceTrips(recorded, (elapsedMs - simulatedMs) / 1000);
   recorded.stats.longestOfflineMs = Math.max(recorded.stats.longestOfflineMs, simulatedMs);
   const unlocked = settleAchievements(recorded, content);
   result.state = recorded;

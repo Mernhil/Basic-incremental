@@ -21,6 +21,7 @@ import {
   formatSeedTable,
   formatSummary,
   formatTable,
+  formatTableUpdate,
   runSim,
   summarizeRuns,
   type SimProfile,
@@ -217,6 +218,10 @@ Median DPS vs first dungeon: ${medianDps.join(', ')}`);
   console.log(`\n${formatGuard(outputs.map((o) => ({ seed: o.seed, runs: o.runs })))}`);
   console.log(`
 ${formatProgress(outputs, hours)}`);
+  console.log(`
+The table update's systems (active profile):
+
+${formatTableUpdate(outputs, hours)}`);
   if (strict && !bandsPass(summary)) process.exit(1);
 }
 
