@@ -368,6 +368,23 @@
       }
     },
     {
+      "id": "challenger",
+      "name": "Challenger",
+      "description": "Complete an Ascension challenge.",
+      "condition": {
+        "kind": "challenge_completions",
+        "amount": 1
+      },
+      "reward": {
+        "resources": [
+          {
+            "resource": "star_dust",
+            "amount": "10"
+          }
+        ]
+      }
+    },
+    {
       "id": "night_owl",
       "name": "Night Owl",
       "description": "Collect 8 hours of offline progress at once.",
