@@ -315,7 +315,12 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
       if (!id || !base || !def) return undefined;
       // in the fan a support's effect is read in the pop-out, not on the card face
       const props: CardProps = base;
-      return { id, name: def.name, effect: def.support.description, props };
+      return {
+        id,
+        name: def.name,
+        effect: def.job === 'fighting' ? def.support.description : '',
+        props,
+      };
     };
     const cards = [
       card(main, 'main'),

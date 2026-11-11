@@ -148,22 +148,21 @@ describe('goal rules (DESIGN.md §10)', () => {
     expect(goal.etaSeconds).toBeCloseTo(400 / (4 / 3));
   });
 
-  it('has the next boss medal with kills left times the time per kill', () => {
+  it('has the next star of the stage being fought, with kills left times the time per kill', () => {
     const state = fighter();
-    state.combat.kills['mossy_cellar'] = 50;
-    state.mastery.bossTiers['mossy_cellar'] = 1;
+    state.combat.stageKills['mossy_cellar:normal:1'] = 50;
     state.clearedDungeons = ['mossy_cellar'];
-    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar')!;
-    expect(goal).toMatchObject({ title: 'Root Warden medal: Silver', page: 'dungeons' });
+    const goal = find(allGoals(state, content), 'boss_mastery:mossy_cellar:normal:1')!;
+    expect(goal).toMatchObject({ title: 'Root Warden star: Silver', page: 'dungeons' });
     expect(goal.progress).toBeCloseTo(40 / 90);
     expect(goal.etaSeconds).toBeCloseTo(50 * secondsPerKill(state, content, 'mossy_cellar')!);
   });
 
   it('has a star bar goal once some copies are held, with no ETA', () => {
     const state = fighter();
-    // ★4 -> ★5 takes 2 copies of a Common; one is held.
-    expect(content.cardRules.starBar.needs.common[3]).toBe(2);
-    state.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 4, starFill: 1 };
+    // ★4 -> ★5 takes 1 copy of a Common (pinned); half of it is held.
+    expect(content.cardRules.starBar.needs.common.wood).toBe(1);
+    state.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 4, starFill: 0.5 };
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
     expect(goal).toMatchObject({
       title: "Fill Ember Squire's star bar for ★5",

@@ -9,13 +9,15 @@ import {
   loadoutCostCap,
   rewardTrack,
   settleAccount,
+  stageKey,
+  totalStageStarLevels,
   skillPoints,
   skillTree,
   trackReward,
   weaponCircles,
   type GameState,
 } from '../src/game';
-import { content, freshState, newGame } from './helpers';
+import { content, floorsContent, freshState, newGame } from './helpers';
 
 const A = content.account;
 const node = (id: string) => A.tree.find((n) => n.id === id)!;
@@ -70,7 +72,6 @@ describe('no account level cap (DESIGN.md §10)', () => {
     const s = newGame();
     s.account.level = 5000;
     expect(loadoutCostCap(s, content, 'fighting')).toBe(A.loadoutCostCapTop);
-    expect(loadoutCostCap(s, content, 'logging')).toBeGreaterThan(A.loadoutCostCapTop);
   });
 });
 
@@ -84,6 +85,19 @@ describe('skill points are derived (DESIGN.md §10)', () => {
     expect(skillPoints(s, content).total).toBe(
       3 * A.levels.skillPointsPerLevel + 2 * A.levels.pointsPerAchievement,
     );
+  });
+});
+
+describe('stage stars give skill points', () => {
+  it('each stage star level is a skill point', () => {
+    const s = withPoints(0);
+    const key = stageKey('mossy_cellar', 'normal', 10);
+    expect(skillPoints(s, floorsContent).total).toBe(0);
+    s.combat.stageKills[key] = floorsContent.combat.stageStars.kills[0]!;
+    const levels = totalStageStarLevels(s, floorsContent);
+    expect(levels).toBeGreaterThan(0);
+    expect(skillPoints(s, floorsContent).total).toBe(levels * A.levels.pointsPerStageStar);
+    expect(skillPoints(s, floorsContent).available).toBeGreaterThan(0);
   });
 });
 

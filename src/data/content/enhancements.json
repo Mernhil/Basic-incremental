@@ -264,14 +264,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-5",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.02",
             "scope": {
               "job": "logging"
             }
@@ -341,14 +341,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-6",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.024",
             "scope": {
               "job": "logging"
             }
@@ -418,14 +418,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-7",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.028",
             "scope": {
               "job": "logging"
             }
@@ -495,14 +495,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-9",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.036",
             "scope": {
               "job": "logging"
             }
@@ -572,14 +572,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-5",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.02",
             "scope": {
               "job": "mining"
             }
@@ -649,14 +649,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-6",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.024",
             "scope": {
               "job": "mining"
             }
@@ -726,14 +726,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-8",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.032",
             "scope": {
               "job": "mining"
             }
@@ -803,14 +803,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-10",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
             "scope": {
               "job": "mining"
             }
@@ -1152,14 +1152,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-5",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.02",
             "scope": {
               "job": "logging"
             }
@@ -1229,14 +1229,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-7",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.028",
             "scope": {
               "job": "logging"
             }
@@ -1306,14 +1306,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-9",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.036",
             "scope": {
               "job": "logging"
             }
@@ -1383,14 +1383,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-5",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.02",
             "scope": {
               "job": "mining"
             }
@@ -1460,14 +1460,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-6",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.024",
             "scope": {
               "job": "mining"
             }
@@ -1537,14 +1537,14 @@
         ]
       },
       {
-        "id": "thrift",
-        "name": "Thrift",
+        "id": "keen",
+        "name": "Keen Eye",
         "cost": 3,
         "modifiers": [
           {
-            "stat": "cost.multiplier",
-            "kind": "percent",
-            "value": "-10",
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
             "scope": {
               "job": "mining"
             }

@@ -10,6 +10,7 @@ import {
   jobProductionPerSecond,
   loadoutHealth,
   producersOf,
+  productionStageView,
   stageReadout,
   trialStatus,
   type GameState,
@@ -34,8 +35,8 @@ import './home.css';
 /**
  * Home (UI_RULES.md §2, "Home"): a command centre of three equal pixel panels side by side, Fight,
  * Logging and Mining. Each panel has its title with a short line on the right, an inset scene
- * (the job's main card at 1x with the boss, or with its three tiles), one big
- * number, its gauge and its lines, and a gold button that opens the page. The goal tracker sits
+ * (the fighting main card at 1x with the boss, or the job's strongest worker with its three
+ * tiles), one big number, its gauge (the fullest worker gauge of the job) and its lines, and a gold button that opens the page. The goal tracker sits
  * above, in the shell.
  */
 
@@ -221,18 +222,29 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
 
   let fightKey = '';
 
-  /** A panel's main card at 1x, redrawn only when the card or its rank changes. */
-  function drawCard(panel: Panel, s: GameState, job: 'fighting' | ProductionJob, mods: Mods): void {
-    const id = s.cards.loadouts[job].main;
+  /**
+   * A panel's card at 1x, redrawn only when the card or its rank changes: the fighting main card,
+   * or a production job's strongest worker (DESIGN.md §4 Workers).
+   */
+  function drawCard(
+    panel: Panel,
+    s: GameState,
+    id: string | null,
+    mods: Mods,
+    worker = false,
+  ): void {
     const owned = id ? s.cards.owned[id] : undefined;
     const key = JSON.stringify([id, owned?.tier, owned?.stars, owned?.level, s.weaponSkins]);
     if (key === panel.cardKey) return;
     panel.cardKey = key;
-    const props = id ? loadoutProps(content, s, id, 'main', mods) : null;
+    const base = id ? loadoutProps(content, s, id, 'main', mods) : null;
+    const props = base && worker ? { ...base, label: COPY.home.worker } : base;
     panel.slot.classList.toggle('is-empty', !props);
     if (!props) {
       panel.card = null;
-      panel.slot.replaceChildren(h('span', 'hm-empty', COPY.table.emptyMain));
+      panel.slot.replaceChildren(
+        h('span', 'hm-empty', worker ? COPY.home.noWorker : COPY.table.emptyMain),
+      );
       return;
     }
     if (panel.card) panel.card.update(props);
@@ -252,7 +264,7 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     // until the normal enemies have art.
     const foe = dungeon ? bossStatus(s, content, mods)?.enemy.name : undefined;
     const bossName = foe ?? dungeon?.boss.name ?? trial?.target.name ?? COPY.home.noBoss;
-    drawCard(fight, s, 'fighting', mods);
+    drawCard(fight, s, s.cards.loadouts.fighting.main, mods);
 
     const key = `${art ?? ''}:${level}`;
     if (key !== fightKey) {
@@ -332,7 +344,13 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
 
   function renderJob(s: GameState, job: ProductionJob, mods: Mods, refresh: boolean): void {
     const ui = jobs[job];
-    drawCard(ui, s, job, mods);
+    const view = productionStageView(s, content, job, mods);
+    const working = view.targets.filter((t) => t.worker);
+    const lead = working.reduce<(typeof working)[number] | null>(
+      (best, t) => (!best || t.worker!.power > best.worker!.power ? t : best),
+      null,
+    );
+    drawCard(ui, s, lead?.worker?.cardId ?? null, mods, true);
     if (refresh || !rowCache[job]) {
       const rows = productionRows(s, content, job, 1, mods);
       rowCache[job] = rows;
@@ -387,9 +405,14 @@ export function createHomePage(page: HTMLElement, ctx: HomeContext): { render():
     set(ui.where, COPY.home.readyToBuy(readyCount[job]));
     set(ui.bigNumber, fmt(total));
     set(ui.bigLabel, COPY.home.gemsPerSecond);
-    const bv = burstView(s, content, job, mods);
-    const n = Math.min(bv.size, Math.floor(bv.gauge));
-    setMeter(ui.meter, bv.fraction, COPY.home.gaugeCount(n, bv.size));
+    // the fullest worker gauge of the job
+    const full = working.reduce<(typeof working)[number] | null>(
+      (best, t) => (!best || t.gauge > best.gauge ? t : best),
+      null,
+    );
+    const size = full?.burst.size ?? 1;
+    const fraction = full?.gauge ?? 0;
+    setMeter(ui.meter, fraction, COPY.home.gaugeCount(Math.floor(fraction * size), size));
     ui.go.setAttribute(
       'aria-label',
       `${COPY.home.openProduction}: ${COPY.production[job].title}, ${COPY.production.gemsPerSecond(fmt(total))}`,

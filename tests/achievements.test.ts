@@ -99,11 +99,13 @@ describe('achievements (DESIGN.md §10)', () => {
     const state = newGame();
     const squire = state.cards.owned['ember_squire']!;
     state.cards.owned['ember_squire'] = { ...squire, tier: 'gold', stars: 6 };
-    // Fighting has three cards, so the full loadout is a logging one: Feller leads, three supports.
-    state.cards.loadouts.logging = {
-      main: 'apprentice_feller',
-      supports: ['grove_keeper', 'elder_treant', 'moonwood_dryad'],
-    };
+    // A full fighting loadout: the Squire leads, three supports.
+    const supports = content.cards
+      .filter((c) => c.job === 'fighting' && c.id !== 'ember_squire')
+      .slice(0, 3)
+      .map((c) => c.id);
+    for (const id of supports) state.cards.owned[id] = { ...squire };
+    state.cards.loadouts.fighting = { main: 'ember_squire', supports };
     for (const c of content.cosmetics.filter((x) => x.set === 'gilded_tradition')) {
       state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
       state.cosmetics.loadout.slots[c.slot] = { id: c.id, level: 1 };
@@ -180,14 +182,12 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     expect(copy).toMatchObject({ affordable: true, left: null });
   });
 
-  it('sells a copy of every Common and Uncommon card and of no Rare or better card', () => {
-    // Only the rarities that use copies for stars (DESIGN.md §5, Star fill in the shard shop).
+  it('sells a copy of every card, at any rarity', () => {
+    // Every rarity uses copies for stars now (DESIGN.md §5, Star fill in the shard shop).
     const sold = content.shardShop.flatMap((i) =>
       i.reward.kind === 'card' ? [i.reward.card] : [],
     );
-    const wanted = content.cards
-      .filter((c) => c.rarity === 'common' || c.rarity === 'uncommon')
-      .map((c) => c.id);
+    const wanted = content.cards.map((c) => c.id);
     expect([...sold].sort()).toEqual([...wanted].sort());
   });
 

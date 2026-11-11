@@ -11,7 +11,7 @@ import {
 
 /**
  * Dungeon floors (DESIGN.md §6 Dungeon floors, Normal enemies, Difficulty tiers, Endless depths):
- * what stands on each floor of a dungeon, before Ascension growth and modifiers, and where the
+ * what stands on each floor of a dungeon, before modifiers, and where the
  * player is in each dungeon.
  *
  * A dungeon is a stack of floors. A normal floor is a wave of 3 to 5 of the dungeon's normal
@@ -32,7 +32,7 @@ import {
 /** What a floor holds. */
 export type FloorKind = 'wave' | 'miniboss' | 'boss';
 
-/** One enemy of a floor, before Ascension growth and modifiers. */
+/** One enemy of a floor, before modifiers. */
 export interface FloorEnemy {
   /** The enemy's id (`dungeons.json`): one of the dungeon's enemies, or its boss. */
   id: string;
@@ -57,9 +57,13 @@ export interface DifficultyScale {
   purse: number;
   /** Units of every material drop. */
   material: number;
+  /** The fighting wage per second (DESIGN.md §6 Harder modes pay more). */
+  wage: number;
+  /** Card XP, per second fought and per kill. */
+  xp: number;
 }
 
-/** A floor of a dungeon, before Ascension growth and modifiers. */
+/** A floor of a dungeon, before modifiers. */
 export interface FloorSpec {
   kind: FloorKind;
   difficulty: Difficulty;
@@ -117,7 +121,7 @@ export function floorCount(dungeon: Dungeon, difficulty: Difficulty = 'normal'):
 
 /** What a difficulty multiplies on top of Normal; the endless depths start from Nightmare's. */
 export function difficultyScale(content: Content, difficulty: Difficulty): DifficultyScale {
-  if (difficulty === 'normal') return { hp: 1, attack: 1, purse: 1, material: 1 };
+  if (difficulty === 'normal') return { hp: 1, attack: 1, purse: 1, material: 1, wage: 1, xp: 1 };
   return content.combat.difficulties[difficulty === 'hard' ? 'hard' : 'nightmare'];
 }
 
@@ -257,7 +261,7 @@ function floorScaleDecimal(
 }
 
 /**
- * What stands on a floor of a dungeon, before Ascension growth and modifiers. The same floor
+ * What stands on a floor of a dungeon, before modifiers. The same floor
  * always holds the same wave (its size and enemy types come from the dungeon, difficulty and
  * floor alone), so nothing about it needs saving.
  */
@@ -363,4 +367,63 @@ export function floorSpec(
     attack: part(bossAttack, scale * config.waveAttackShare, config.waveAttackShare),
     enemies,
   };
+}
+
+// ---- stages (DESIGN.md §6 Stage stars, Overflow) ------------------------------------------------
+
+/** The difficulties that have stages with stars: the endless depths have none. */
+export const STAR_DIFFICULTIES = [
+  'normal',
+  'hard',
+  'nightmare',
+] as const satisfies readonly Difficulty[];
+export type StarDifficulty = (typeof STAR_DIFFICULTIES)[number];
+
+export function isStarDifficulty(difficulty: Difficulty): difficulty is StarDifficulty {
+  return (STAR_DIFFICULTIES as readonly Difficulty[]).includes(difficulty);
+}
+
+/**
+ * Whether a floor is a stage: a mini-boss floor or the last-floor boss of Normal, Hard or
+ * Nightmare. Wave floors and the endless depths are not.
+ */
+export function isStageFloor(
+  content: Content,
+  dungeon: Dungeon,
+  difficulty: Difficulty,
+  floor: number,
+): boolean {
+  if (!isStarDifficulty(difficulty)) return false;
+  if (!Number.isInteger(floor) || floor < 1 || floor > floorCount(dungeon, difficulty)) {
+    return false;
+  }
+  return floorKind(content, dungeon, floor, difficulty) !== 'wave';
+}
+
+/** The stage floors of a dungeon, top to bottom (the same on every star difficulty). */
+export function stageFloors(content: Content, dungeon: Dungeon): number[] {
+  const floors: number[] = [];
+  for (let f = 1; f <= dungeon.floors; f++) {
+    if (floorKind(content, dungeon, f) !== 'wave') floors.push(f);
+  }
+  return floors;
+}
+
+/**
+ * The stage a floor's overflow switch belongs to (DESIGN.md §6 Overflow): a stage's own; on a
+ * wave floor, the next stage below it; in the endless depths, the Nightmare last-floor boss's.
+ */
+export function overflowStage(
+  content: Content,
+  dungeon: Dungeon,
+  difficulty: Difficulty,
+  floor: number,
+): StageRef {
+  if (!isStarDifficulty(difficulty)) {
+    return { dungeonId: dungeon.id, difficulty: 'nightmare', floor: dungeon.floors };
+  }
+  const every = content.combat.floors.miniBossEvery;
+  const at = Math.min(dungeon.floors, Math.max(1, Math.floor(floor)));
+  const below = Math.min(dungeon.floors, Math.ceil(at / every) * every);
+  return { dungeonId: dungeon.id, difficulty, floor: below };
 }

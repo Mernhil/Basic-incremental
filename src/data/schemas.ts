@@ -53,6 +53,8 @@ export const resourceSchema = z.strictObject({
   /** Amount a brand-new game starts with (default 0). Money starts with enough for the first
    *  damage levels (DESIGN.md §3). */
   startAmount: decimal.optional(),
+  /** Kept through an Ascension although its kind is reset by one (star dust belongs to the collection, DESIGN.md §5). */
+  keptOnAscend: z.boolean().optional(),
 });
 
 const costSchema = z.strictObject({ resource: id, amount: positiveDecimal });
@@ -118,12 +120,10 @@ export const mineSchema = z.strictObject({
   level: producerLevelSchema,
 });
 
-/** How a production main card strikes (DESIGN.md §4): a look and a rhythm, never extra output. */
+/** How a worker strikes its place (DESIGN.md §4 Workers play the field): a look and a rhythm,
+ *  never extra output. */
 export const HARVEST_STYLES = ['steady', 'chop', 'flurry', 'volley'] as const;
 export type HarvestStyle = (typeof HARVEST_STYLES)[number];
-/** Which unlocked kinds a strike lands on: the next one in turn, a random one, or every one. */
-export const HARVEST_TARGETING = ['sweep', 'random', 'all'] as const;
-export type HarvestTargeting = (typeof HARVEST_TARGETING)[number];
 
 export const harvestPatternSchema = z.strictObject({
   /** Name of the strike's look, for the stage to pick an animation. */
@@ -132,21 +132,8 @@ export const harvestPatternSchema = z.strictObject({
   intervalSeconds: z.number().positive(),
   /** Strikes in one cycle, spread evenly over it. */
   strikes: z.number().int().min(1).max(8),
-  targeting: z.enum(HARVEST_TARGETING),
 });
 export type HarvestPattern = z.output<typeof harvestPatternSchema>;
-
-export const productionSchema = z.strictObject({
-  harvest: z.strictObject({
-    /** Pattern of a job with no main card. */
-    default: z.strictObject({ logging: harvestPatternSchema, mining: harvestPatternSchema }),
-    /** Base harvest crit (the `harvest.*` stats change it). 0 keeps the output exactly as before. */
-    crit: z.strictObject({
-      chance: z.number().min(0).max(1),
-      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
-    }),
-  }),
-});
 
 export const JOBS = ['mining', 'logging', 'fighting'] as const;
 /** Mythic and Void are one top rarity with two sides, equal in power (DESIGN.md §5). */
@@ -161,6 +148,40 @@ export const RARITIES = [
 ] as const;
 export type Rarity = (typeof RARITIES)[number];
 export type Job = (typeof JOBS)[number];
+
+const positiveNumber = z.number().positive();
+
+export const productionSchema = z.strictObject({
+  harvest: z.strictObject({
+    /** Base harvest crit; the `harvest.*` stats change it, read at a worker's place. A place
+     *  with no worker has no crits. */
+    crit: z.strictObject({
+      chance: z.number().min(0).max(1),
+      damage: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+    }),
+  }),
+  /** Workers (DESIGN.md §4 Workers, Worker slots). */
+  workers: z.strictObject({
+    /** Worker slots: `base` plus `perAscension` per Ascension, at most `perProducer` on one tree
+     *  kind or mine type (so never more than that many times the trees and mines). */
+    slots: z.strictObject({
+      base: z.number().int().min(0),
+      perAscension: z.number().int().min(0),
+      perProducer: z.number().int().min(1),
+    }),
+    /** A worker's power by rarity; × the card's level, star and tier power (`cardStatPower`) it
+     *  multiplies its place's output. */
+    rarityPower: z.strictObject({
+      common: positiveNumber,
+      uncommon: positiveNumber,
+      rare: positiveNumber,
+      epic: positiveNumber,
+      legendary: positiveNumber,
+      mythic: positiveNumber,
+      void: positiveNumber,
+    }),
+  }),
+});
 
 // ---- modifiers ---------------------------------------------------------------------------------
 
@@ -312,10 +333,6 @@ const cardEffectSchema = z.strictObject({
 });
 export type CardEffect = z.output<typeof cardEffectSchema>;
 
-/**
- * A collectible card (DESIGN.md §5). Every card can lead its job (`main`) or sit in one of
- * its 3 support slots (`support`); only the effect of the slot it is in applies.
- */
 /** Card elements (DESIGN.md §12): each picks the card's element effect. */
 export const ELEMENTS = ['fire', 'storm', 'light', 'nature', 'earth', 'crystal', 'void'] as const;
 export type CardElement = (typeof ELEMENTS)[number];
@@ -359,20 +376,43 @@ export const itemsSchema = z.strictObject({
 export type ItemType = z.output<typeof itemTypeSchema>;
 export type ItemsData = z.output<typeof itemsSchema>;
 
-export const cardSchema = z.strictObject({
+const cardBase = {
   id,
   name,
-  job: z.enum(JOBS),
   rarity: z.enum(RARITIES),
   element: z.enum(ELEMENTS),
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
-  /** Used when the card leads its job's loadout. Logging and mining mains also set how it
-   *  strikes (`harvest`, DESIGN.md §4). */
-  main: cardEffectSchema.extend({ harvest: harvestPatternSchema.optional() }),
+};
+
+/** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
+export const fightingCardSchema = z.strictObject({
+  ...cardBase,
+  job: z.literal('fighting'),
+  /** Used when the card leads the fighting loadout. */
+  main: cardEffectSchema,
   /** Used when the card is in one of the 3 support slots. */
   support: cardEffectSchema,
 });
+
+/**
+ * A logging or mining card is a worker (DESIGN.md §4 Workers): it works one tree kind or mine
+ * type, and its one ability acts on that place only (the game scopes its modifiers to it). The
+ * modifiers apply as written: the card's power multiplies the place's output by itself.
+ */
+export const workerCardSchema = z.strictObject({
+  ...cardBase,
+  job: z.enum(['logging', 'mining']),
+  worker: z.strictObject({
+    /** Player-facing summary, e.g. "+10% output here". */
+    description: z.string().min(1),
+    /** How the card strikes its place. */
+    harvest: harvestPatternSchema,
+    modifiers: z.array(modifierSchema).default([]),
+  }),
+});
+
+export const cardSchema = z.discriminatedUnion('job', [fightingCardSchema, workerCardSchema]);
 
 const count = z.number().int().min(0);
 const atLeastOne = decimal.refine((d) => d.gte(1), { message: 'must be at least 1' });
@@ -455,12 +495,14 @@ export const cardRulesSchema = z.strictObject({
   mainGrowth: perJob(z.array(modifierSchema)),
   /**
    * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
-   * saved fill, and star n → n + 1 takes `needs[n - 1]` of it (5 steps, ★1→2 … ★5→6; 0 = free).
-   * A star-up costs only the fill.
+   * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
+   * that tier: a fraction at low tiers, 1 at the rarity's top tier. Star dust pays for the missing
+   * part: `dust[rarity][tier]` is the dust price of one whole copy.
    */
   starBar: z.strictObject({
     fillPerDuplicate: perRarity(z.number().positive()),
-    needs: perRarity(z.array(z.number().min(0)).length(MAX_STARS - 1)),
+    needs: perRarity(perTier(z.number().positive())),
+    dust: perRarity(perTier(z.number().positive())),
   }),
   /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
    *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must
@@ -521,15 +563,10 @@ export const dungeonSchema = z.strictObject({
     /** Which boss drawing to use; a boss without one shows a plain labelled placeholder. */
     art: z.enum(BOSS_ARTS).optional(),
     hp: positiveDecimal,
-    /**
-     * Every enemy of the dungeon (waves, mini-bosses and the boss; HP and attack alike) is
-     * multiplied by (1 + this) for every Ascension (DESIGN.md §6 Harder each Ascension).
-     */
-    hpScalingPerPrestige: z.number().min(0).max(1),
     /** The HP is shown as this many stacked bars ("x N" lives). */
     hpBars: z.number().int().min(1).max(100).default(10),
-    /** The boss hits the fighting loadout back (DESIGN.md §6). Damage grows with prestige
-     *  like the HP (hpScalingPerPrestige). */
+    /** The boss hits the fighting loadout back (DESIGN.md §6). Enemies do not grow with
+     *  Ascension. */
     attack: z.strictObject({
       damage: positiveDecimal,
       intervalSeconds: z.number().gt(0),
@@ -673,15 +710,8 @@ export const progressionSchema = z.strictObject({
       .refine(increasing, { message: 'thresholds must increase' }),
     perTier: z.array(masteryBonusSchema),
   }),
-  /** E3: medal tier from kills per dungeon (boss), kept through prestige. */
-  bossMastery: z.strictObject({
-    thresholds: z
-      .array(z.number().int().min(1))
-      .length(MASTERY_TIERS)
-      .refine(increasing, { message: 'thresholds must increase' }),
-    perTier: z.array(masteryBonusSchema),
-  }),
-  /** E3: special dungeons take their medal tier from their best score (0..1) instead. */
+  /** E3: a special dungeon's medal tier comes from its best score (0..1), kept through prestige.
+   *  Dungeons have stage stars instead (`combat.json` `stageStars`, DESIGN.md §6). */
   trialMastery: z.strictObject({
     thresholds: z
       .array(z.number().gt(0).max(1))
@@ -732,6 +762,44 @@ const difficultySchema = z.strictObject({
   attack: z.number().min(1),
   purse: z.number().min(1),
   material: z.number().int().min(1),
+  /** The fighting wage per second (crystals, and Money in the first dungeon; DESIGN.md §6 Harder
+   *  modes pay more). */
+  wage: z.number().min(1),
+  /** Card XP, per second fought and per kill. */
+  xp: z.number().min(1),
+});
+
+/** One value per stage star level (Wood .. Mythic, DESIGN.md §6 Stage stars). */
+export const STAGE_STAR_LEVELS = 6;
+
+const stageStarsSchema = z.strictObject({
+  /** Kills on a stage (one tier of one dungeon) that reach each star level, increasing. */
+  kills: z
+    .array(z.number().int().min(1))
+    .length(STAGE_STAR_LEVELS)
+    .refine(increasing, { message: 'kill counts must increase' }),
+  /** Damage on that stage per star level: 0.05 = +5% a level. */
+  damagePerLevel: z.number().min(0),
+  /** Loot on that stage per star level (Money purses and material chances): 0.1 = +10%. */
+  lootPerLevel: z.number().min(0),
+  /** The star level (1-based) from which the stage's overflow switch can be turned on. */
+  overflowFromLevel: z.number().int().min(1).max(STAGE_STAR_LEVELS),
+  /** The one-time chest of each level: amounts per resource per level, times the tier's factor. */
+  chests: z.strictObject({
+    rewards: z.array(
+      z.strictObject({
+        resource: id,
+        amounts: z
+          .array(decimal.refine((d) => d.gte(0), { message: 'must not be negative' }))
+          .length(STAGE_STAR_LEVELS),
+      }),
+    ),
+    difficulty: z.strictObject({
+      normal: z.number().min(0),
+      hard: z.number().min(0),
+      nightmare: z.number().min(0),
+    }),
+  }),
 });
 
 export const combatSchema = z.strictObject({
@@ -804,6 +872,11 @@ export const combatSchema = z.strictObject({
     hard: difficultySchema,
     nightmare: difficultySchema,
   }),
+  /**
+   * Stage stars (DESIGN.md §6): every mini-boss floor and last-floor boss of Normal, Hard and
+   * Nightmare is a stage with six star levels earned by kills there.
+   */
+  stageStars: stageStarsSchema,
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
   crit: z.strictObject({
     chance: z.number().min(0).max(1),
@@ -1607,6 +1680,9 @@ export type CostCurve = z.output<typeof costCurveSchema>;
 export type ProductionConfig = z.output<typeof productionSchema>;
 export type ProductionJob = 'logging' | 'mining';
 export type Card = z.output<typeof cardSchema>;
+export type FightingCard = z.output<typeof fightingCardSchema>;
+export type WorkerCard = z.output<typeof workerCardSchema>;
+export type WorkerAbility = WorkerCard['worker'];
 export type CardRules = z.output<typeof cardRulesSchema>;
 export type RankTier = (typeof RANK_TIERS)[number];
 export type Dungeon = z.output<typeof dungeonSchema>;

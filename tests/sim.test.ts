@@ -42,10 +42,12 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
   return state;
 };
 
-/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and leads its job. */
+/** Owns `id` (a copy of the starting squire's record, so a card of any rarity is in play) and
+ *  leads the fighting loadout, or works the job's first tree or mine. */
 const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'mining'): void => {
   state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
-  state.cards.loadouts[job]!.main = id;
+  if (job === 'fighting') state.cards.loadouts.fighting.main = id;
+  else state.production.workers[job === 'logging' ? 'oak' : 'copper_quarry'] = [id];
 };
 
 describe('balance sim: greedy buyer', () => {
@@ -177,7 +179,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
   it('buys a star-up from the star bar alone: it needs no Cores to share', () => {
     const state = freshState();
     const feller = state.cards.owned['apprentice_feller']!;
-    feller.starFill = content.cardRules.starBar.needs.common[0]!;
+    feller.starFill = content.cardRules.starBar.needs.common.wood;
     const { bought } = greedyBuy(state, content);
     expect(bought).toContain('star:apprentice_feller');
   });
@@ -441,16 +443,13 @@ describe('balance sim: run', () => {
     expect(MILESTONES.map((m) => m.targetHours)).toContain(40);
   });
 
-  it('counts the first ★6 only for a card whose stars cost copies', () => {
+  it('counts the first ★6 of any card, since every star now takes copies', () => {
     const star6 = MILESTONES.find((m) => m.id === 'first_star6')!;
     const log = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
     const shipped = loadContent();
     const state = freshState();
-    // A Rare star bar needs no copies in the shipped data, so its ★6 does not count.
-    expect(shipped.cardRules.starBar.needs.rare.every((n) => n === 0)).toBe(true);
-    state.cards.owned['gem_cutter'] = { ...state.cards.owned['ember_squire']!, stars: 6 };
     expect(star6.reached(state, shipped, log)).toBe(false);
-    state.cards.owned['ember_squire']!.stars = 6; // a Common: its stars took copies
+    state.cards.owned['gem_cutter'] = { ...state.cards.owned['ember_squire']!, stars: 6 };
     expect(star6.reached(state, shipped, log)).toBe(true);
   });
 

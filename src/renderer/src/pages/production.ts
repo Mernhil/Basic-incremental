@@ -1,8 +1,11 @@
 import type { Content } from '../../../data';
 import {
   PRODUCTION_JOBS,
+  assignWorker,
   collectModifiers,
   defaultRng,
+  productionStageView,
+  workerChoices,
   buyMineLevels,
   buyTreeLevels,
   unlockTree,
@@ -11,6 +14,8 @@ import {
   type Modifier,
   type Producer,
   type ProductionJob,
+  type ProductionStageView,
+  type StageTarget,
   type TierUp,
   producersOf,
 } from '../../../game';
@@ -19,14 +24,15 @@ import { mineTile, svg, treeTile } from '../art/gems';
 import { h } from '../shell/shell';
 import { hide as hideTip } from '../shell/tooltip';
 import type { CoinTarget } from '../stage/arena';
-import { createHarvestParty, type HarvestParty } from '../stage/harvestParty';
+import { createWorkerCell, type WorkerCell } from '../stage/harvestParty';
 import { playHit } from '../theme/effects';
 import { flash, reducedMotion, shake, slowDown } from '../stage/motion';
 import {
   harvestMoments,
-  lungeVector,
+  pickOptions,
   strikeLook,
   strikeNumberKind,
+  workerKey,
   type BurstMoment,
   type StrikeMoment,
 } from './productionStageModel';
@@ -50,13 +56,13 @@ import './production.css';
 
 /**
  * Production page (DESIGN.md §4, §11), the pixel ledger: two stacked bands, Logging and Mining,
- * each a pixel frame. On the left of a band the job's main card at 1x in its loadout fan with the
- * harvest gauge under it; on the right the column headers, one row per tree kind or mine type (tile,
- * name and level, output, a segmented bar to the next ×2, the next-buy wait, the buy button; a
- * locked kind is a greyed row with its unlock), then the supports as one line of chips and the
- * burst count. The ×1 / ×10 / ×100 / Max toggle lives in the goals strip (`setBuySlot`). The
- * upgrade shelf is a drawer over the bottom: one line when closed. Every strike slides the band's
- * card toward the row it hit and pops "+n" on that row; a harvest burst runs a wave down the band.
+ * each a pixel frame: the title and the worker slots in use, the column headers, then one row per
+ * tree kind or mine type: its worker (the card working it and its harvest gauge; a click opens the
+ * worker picker under the row, DESIGN.md §4 Workers), tile, name and level, output, a segmented
+ * bar to the next ×2, the next-buy wait and the buy button. A locked kind is a greyed row with its
+ * unlock. The ×1 / ×10 / ×100 / Max toggle lives in the goals strip (`setBuySlot`). The upgrade
+ * shelf is a drawer over the bottom: one line when closed. Every strike nudges the worker toward
+ * its tile and pops "+n" on that row; a harvest burst runs a wave over the places that burst.
  */
 
 export interface PageContext {
@@ -85,6 +91,8 @@ const DRAWER_KEY = 'bi.productionDrawer';
 interface RowRef {
   row: ProductionRow;
   li: HTMLElement;
+  worker: WorkerCell;
+  workerKey: string;
   tile: HTMLElement;
   art: HTMLElement;
   level: HTMLElement;
@@ -103,9 +111,11 @@ interface RowRef {
 interface BandRef {
   el: HTMLElement;
   rate: HTMLElement;
+  slots: HTMLElement;
   list: HTMLElement;
   flash: HTMLElement;
-  party: HarvestParty;
+  /** The last stage view: each place's worker, pattern and gauge. */
+  view: ProductionStageView;
 }
 
 function readStored(key: string): string | null {
@@ -217,32 +227,33 @@ export function createProductionPage(
 
   function buildBand(job: ProductionJob): BandRef {
     const t = COPY.production[job];
-    const party = createHarvestParty(content, ctx.state, job);
     const el = h('section', `pp-band px-panel pp-band--${job}`);
     el.dataset['job'] = job;
     el.setAttribute('aria-label', COPY.production.bandLabel(t.title));
+    const top = h('div', 'pp-band__top');
     const title = h('h2', 'pp-band__title pp-panel__title px-display', t.title);
+    const slots = h('span', 'pp-band__slots bi-num');
+    slots.title = COPY.production.slotsHint;
+    top.append(title, slots);
     const head = h('div', 'pp-head');
     head.setAttribute('aria-hidden', 'true');
     const rate = h('span', 'pp-head__rate px-display');
     const cost = h('span', 'pp-head__cost');
     cost.append(h('span', '', COPY.production.columns.cost), rate);
     head.append(
+      h('span', 'pp-head__worker', COPY.production.workerColumn),
       h('span', 'pp-head__who', COPY.production.columns.producer),
       h('span', 'pp-head__mid', COPY.production.columns.output),
       h('span', 'pp-head__next', COPY.production.columns.next),
       cost,
     );
-    const fanEl = h('div', 'pp-band__fan');
-    fanEl.append(party.el);
     const list = h('ul', 'pp-list');
     list.setAttribute('aria-label', t.tilesLabel);
-    const foot = h('div', 'pp-foot');
-    foot.append(party.supportsEl, party.burstEl);
     const flashEl = h('div', 'pp-flash');
     flashEl.setAttribute('aria-hidden', 'true');
-    el.append(title, head, fanEl, list, foot, flashEl);
-    return { el, rate, list, flash: flashEl, party };
+    el.append(top, head, list, flashEl);
+    const view = productionStageView(ctx.state(), content, job);
+    return { el, rate, slots, list, flash: flashEl, view };
   }
   for (const job of PRODUCTION_JOBS) {
     bands[job] = buildBand(job);
@@ -259,6 +270,9 @@ export function createProductionPage(
     const locked = row.kind !== 'active';
     const li = h('li', `pp-r${locked ? ' pp-r--locked' : ''}`);
     li.dataset['key'] = row.key;
+    // the card working this place and its gauge; a click opens the worker picker under the row
+    const worker = createWorkerCell(row.name, () => togglePick(row.id));
+    worker.el.dataset['key'] = `worker-${row.id}`;
     // tile, name and level
     const who = h('div', 'pp-r__who');
     const tile = h('div', 'pp-r__tile');
@@ -294,6 +308,8 @@ export function createProductionPage(
     const ref: RowRef = {
       row,
       li,
+      worker,
+      workerKey: '',
       tile,
       art,
       level,
@@ -338,7 +354,7 @@ export function createProductionPage(
       ref.unlock = { btn, label, price, have };
       cell.append(btn);
     }
-    li.append(who, mid, ...(locked ? [] : [next]), cell);
+    li.append(worker.el, who, mid, ...(locked ? [] : [next]), cell);
     return ref;
   }
 
@@ -355,7 +371,95 @@ export function createProductionPage(
         }),
       );
     }
+    placePicker();
     if (focusKey) page.querySelector<HTMLElement>(`[data-key="${focusKey}"]`)?.focus();
+  }
+
+  // ---- the worker picker: opens under the row whose worker cell was clicked ----
+  let picking: string | null = null;
+  const pickEl = h('li', 'pp-pick');
+
+  function togglePick(producerId: string): void {
+    picking = picking === producerId ? null : producerId;
+    drawPicker();
+    update(`worker-${producerId}`);
+  }
+
+  /** Puts the picker under its row (or takes it away). */
+  function placePicker(): void {
+    const ref = picking ? [...refs.values()].find((r) => r.row.id === picking) : undefined;
+    if (!ref || ref.row.kind !== 'active') {
+      picking = null;
+      pickEl.remove();
+      return;
+    }
+    if (pickEl.previousElementSibling !== ref.li) ref.li.after(pickEl);
+  }
+
+  function drawPicker(): void {
+    if (!picking) {
+      pickEl.replaceChildren();
+      return;
+    }
+    const placeId = picking;
+    const ref = [...refs.values()].find((r) => r.row.id === placeId);
+    const placeName = ref?.row.name ?? placeId;
+    const options = pickOptions(workerChoices(ctx.state(), content, placeId));
+    const head = h('div', 'pp-pick__head');
+    const actions = h('span', 'pp-pick__actions');
+    const working = options.some((o) => o.current);
+    if (working) {
+      const away = h('button', 'button button--ghost', COPY.production.pickRemove);
+      away.type = 'button';
+      away.dataset['key'] = `pick-away-${placeId}`;
+      away.addEventListener('click', () => place(placeId, null));
+      actions.append(away);
+    }
+    const close = h('button', 'button button--ghost', COPY.production.pickClose);
+    close.type = 'button';
+    close.dataset['key'] = `pick-close-${placeId}`;
+    close.addEventListener('click', () => togglePick(placeId));
+    actions.append(close);
+    head.append(h('span', '', COPY.production.pickTitle(placeName)), actions);
+    const list = h('ul', 'pp-pick__list');
+    for (const o of options) {
+      const li = h('li');
+      const b = h('button', 'pp-pick__opt');
+      b.type = 'button';
+      b.dataset['key'] = `pick-${placeId}-${o.id}`;
+      if (o.current) b.setAttribute('aria-current', 'true');
+      if (o.disabled) b.setAttribute('aria-disabled', 'true');
+      const sw = h('i');
+      sw.dataset['rarity'] = o.rarity;
+      sw.setAttribute('aria-hidden', 'true');
+      b.append(
+        sw,
+        h('b', '', o.name),
+        h('span', 'pp-pick__power bi-num', o.power),
+        h('span', 'pp-pick__note', o.note),
+      );
+      b.addEventListener('click', () => {
+        if (o.disabled || o.current) return;
+        place(placeId, o.id);
+      });
+      li.append(b);
+      list.append(li);
+    }
+    pickEl.replaceChildren(
+      head,
+      options.length > 0 ? list : h('p', 'pp-pick__empty', COPY.production.pickNone),
+    );
+  }
+
+  /** Puts a card to work on a place (or sends its worker away) and closes the picker. */
+  function place(placeId: string, cardId: string | null): void {
+    const result = assignWorker(ctx.state(), content, placeId, cardId);
+    if (!result.ok) return;
+    ctx.sound?.('buy');
+    ctx.apply(result.state);
+    picking = null;
+    drawPicker();
+    update(`worker-${placeId}`);
   }
 
   /** The bar to the next ×2: `total` segments, the first `filled` lit. */
@@ -374,6 +478,10 @@ export function createProductionPage(
     const s = ctx.state();
     const count = buyCount();
     for (const job of PRODUCTION_JOBS) {
+      const view = bands[job].view;
+      const byKind = new Map<number, StageTarget>(view.targets.map((t) => [t.kind, t]));
+      const canAdd = view.slots.used < view.slots.total;
+      set(bands[job].slots, COPY.production.slots(view.slots.used, view.slots.total));
       const value = jobRateValue(s, content, job, mods);
       set(bands[job].rate, COPY.production.rate(value));
       bands[job].rate.setAttribute('aria-label', COPY.production.gemsPerSecond(value));
@@ -381,6 +489,9 @@ export function createProductionPage(
         const ref = refs.get(refKey(job, row.kindIndex));
         if (!ref) continue;
         ref.row = row;
+        const target = row.kind === 'active' ? (byKind.get(row.kindIndex) ?? null) : null;
+        ref.worker.update(target, picking === row.id, canAdd);
+        if (target) ref.workerKey = workerKey(target);
         set(ref.level, row.levelText);
         if (row.kind === 'active') {
           set(ref.value, row.outputValue);
@@ -441,13 +552,14 @@ export function createProductionPage(
       logging: productionRows(s, content, 'logging', count, mods),
       mining: productionRows(s, content, 'mining', count, mods),
     };
+    for (const job of PRODUCTION_JOBS) bands[job].view = productionStageView(s, content, job, mods);
     const sig = signature(rowsByJob);
     if (sig !== last) {
       last = sig;
       build(rowsByJob, focusKey);
     }
     refreshRows(rowsByJob, mods);
-    for (const job of PRODUCTION_JOBS) bands[job].party.update();
+    placePicker();
     shelf.update();
     const chips = shelfChips(s, content, mods, 'production');
     const sum = shelfSummary(chips);
@@ -480,21 +592,22 @@ export function createProductionPage(
 
   // ---- show events: all of it happens in the band of the job that made it ----
 
-  /** One strike: the band's card slides toward the row, the row is hit, "+n" pops on it. */
+  /** The pattern look of the worker on a place (steady when it has none). */
+  function lookAt(job: ProductionJob, kind: number) {
+    const target = bands[job].view.targets.find((t) => t.kind === kind);
+    return strikeLook(target?.pattern ?? { style: 'steady' });
+  }
+
+  /** One strike: the place's worker nudges toward its tile, the row is hit, "+n" pops on it. */
   function strike(job: ProductionJob, m: StrikeMoment): void {
     const ref = refs.get(refKey(job, m.kind));
     const band = bands[job];
     if (!ref) return;
     const box = band.el.getBoundingClientRect();
     if (box.width === 0) return;
-    const view = band.party.view();
-    const look = strikeLook(view.pattern);
-    const slot = band.party.mainSlot();
-    if (slot) {
-      const v = lungeVector(centreOf(slot), centreOf(ref.tile), look, 56);
-      band.party.lunge(look, v.dx, v.dy);
-    }
-    band.party.pulse(m.supports);
+    const view = band.view;
+    const look = lookAt(job, m.kind);
+    ref.worker.strike(look);
     replay(ref.art, 'is-harvest', 400);
     replay(ref.li, 'is-hit', 420);
     const fx = ref.tile.querySelector<HTMLElement>('.pp-fx');
@@ -530,14 +643,14 @@ export function createProductionPage(
     }
   }
 
-  /** The burst: a wave down the band's rows, a flash on the band, one big total over its rows. */
+  /** The burst: a wave over the places that burst, a flash on the band, one big total. */
   function burst(job: ProductionJob, b: BurstMoment): void {
     const band = bands[job];
-    band.party.burst();
-    band.party.pulse(b.supports);
     for (const p of b.kinds) {
       const ref = refs.get(refKey(job, p.kind));
-      if (ref) window.setTimeout(() => replay(ref.li, 'is-wave', 500), p.kind * 70);
+      if (!ref) continue;
+      ref.worker.burst();
+      window.setTimeout(() => replay(ref.li, 'is-wave', 500), p.kind * 70);
     }
     flash(band.flash);
     slowDown(band.el, 450, 0.4);
@@ -569,13 +682,14 @@ export function createProductionPage(
     if (!visible()) return;
     for (const job of PRODUCTION_JOBS) {
       const moments = harvestMoments(events, job);
-      const look = strikeLook(bands[job].party.view().pattern);
-      moments.strikes.forEach((m, i) =>
-        window.setTimeout(() => strike(job, m), i * look.staggerMs),
-      );
+      let at = 0;
+      for (const m of moments.strikes) {
+        window.setTimeout(() => strike(job, m), at);
+        at += lookAt(job, m.kind).staggerMs;
+      }
       if (moments.burst) {
         const b = moments.burst;
-        window.setTimeout(() => burst(job, b), moments.strikes.length * look.staggerMs);
+        window.setTimeout(() => burst(job, b), at);
       }
     }
   });

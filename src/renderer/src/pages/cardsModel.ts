@@ -69,6 +69,8 @@ export interface WeaponView {
     text: string;
     /** "×1.6 → ×2" */
     impact: string;
+    /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
+    dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
   /** The next tier-up, or null at the weapon's top tier. */
   tierUp: {
@@ -125,8 +127,12 @@ export interface CardEntry {
   /** The star bar's fill (copies waiting for the next star). */
   duplicates: number;
   cost: number;
+  /** A fighting card's main ability, or a worker's ability. */
   mainAbility: string;
+  /** A fighting card's support effect; empty for a worker (it has one ability). */
   supportEffect: string;
+  /** A worker's workplace name ("Oak"), or null when it works nowhere or is a fighting card. */
+  workplace: string | null;
   /** The bottom plate of the card face (ability, speed, level, progress). */
   face: CardFace;
   role: LoadoutRole | null;
@@ -138,8 +144,9 @@ export interface CardEntry {
   weapon: WeaponView | null;
 }
 
+/** The fighting loadout (the only job with one, DESIGN.md §5 Loadouts). */
 export interface JobLoadout {
-  job: Job;
+  job: 'fighting';
   /** Card ids: index 0 is the main card, 1..3 the supports (null = empty). */
   slots: Array<string | null>;
   cost: number;
@@ -199,7 +206,7 @@ export interface CardsModel {
   entries(state: GameState): CardEntry[];
   /** One card's entry (cheaper than `entries` when a panel follows a single card), or null. */
   entry(state: GameState, id: string): CardEntry | null;
-  loadout(state: GameState, job: Job): JobLoadout;
+  loadout(state: GameState, job: 'fighting'): JobLoadout;
   shards(state: GameState): string;
   /** Changes in what the page shows structurally (not per-tick numbers). */
   signature(state: GameState): string;
@@ -210,7 +217,7 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'tier'): ModelResult;
+  upgrade(state: GameState, id: string, kind: 'star' | 'tier' | 'dust'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

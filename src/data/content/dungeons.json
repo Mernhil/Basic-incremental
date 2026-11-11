@@ -28,7 +28,6 @@
       "name": "Root Warden",
       "art": "root_warden",
       "hp": "12900",
-      "hpScalingPerPrestige": 0.1,
       "hpBars": 5,
       "attack": {
         "damage": "15",
@@ -109,7 +108,6 @@
       "name": "Cinder Lich",
       "art": "cinder_lich",
       "hp": "300000",
-      "hpScalingPerPrestige": 0.1,
       "hpBars": 8,
       "attack": {
         "damage": "250",
@@ -199,7 +197,6 @@
       "name": "Glacier Colossus",
       "art": "glacier_colossus",
       "hp": "7000000",
-      "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
       "attack": {
         "damage": "6800",
@@ -281,7 +278,6 @@
       "id": "storm_roc",
       "name": "Storm Roc",
       "hp": "161000000",
-      "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
       "attack": {
         "damage": "156400",
@@ -363,7 +359,6 @@
       "id": "dawn_hierophant",
       "name": "Dawn Hierophant",
       "hp": "3703000000",
-      "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
       "attack": {
         "damage": "3597200",
@@ -445,7 +440,6 @@
       "id": "unmade_king",
       "name": "The Unmade King",
       "hp": "85169000000",
-      "hpScalingPerPrestige": 0.1,
       "hpBars": 12,
       "attack": {
         "damage": "82735600",

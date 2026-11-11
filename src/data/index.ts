@@ -492,8 +492,12 @@ function checkModifiers(
   );
   c.sets.forEach((x, i) => check(`sets.json › [${i}] › modifiers`, x.modifiers));
   c.cards.forEach((x, i) => {
-    check(`cards.json › [${i}] › main › modifiers`, x.main.modifiers);
-    check(`cards.json › [${i}] › support › modifiers`, x.support.modifiers);
+    if (x.job === 'fighting') {
+      check(`cards.json › [${i}] › main › modifiers`, x.main.modifiers);
+      check(`cards.json › [${i}] › support › modifiers`, x.support.modifiers);
+    } else {
+      check(`cards.json › [${i}] › worker › modifiers`, x.worker.modifiers);
+    }
   });
   for (const job of JOBS) {
     check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
@@ -711,17 +715,21 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
   const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
-  // Logging and mining mains say how they strike; fighting mains have no harvest pattern (11.15).
+  // A worker ability acts on its own place: the game adds the place, data never names one.
   c.cards.forEach((card, i) => {
-    const has = card.main.harvest !== undefined;
-    if (card.job === 'fighting' && has) {
-      issues.push(`cards.json › [${i}] › main › harvest: fighting cards do not harvest`);
-    }
-    if (card.job !== 'fighting' && !has) {
-      issues.push(
-        `cards.json › [${i}] › main › harvest: a ${card.job} card needs a harvest pattern`,
-      );
-    }
+    if (card.job === 'fighting') return;
+    card.worker.modifiers.forEach((m, j) => {
+      if (m.scope?.producer !== undefined || m.scope?.resource !== undefined) {
+        issues.push(
+          `cards.json › [${i}] › worker › modifiers › [${j}] › scope: a worker ability acts on its own place`,
+        );
+      }
+      if (m.scope?.job !== undefined && m.scope.job !== card.job) {
+        issues.push(
+          `cards.json › [${i}] › worker › modifiers › [${j}] › scope › job: not the card's job`,
+        );
+      }
+    });
   });
   c.cardRules.startCards.forEach((id, i) => {
     const where = `cardRules.json › startCards › [${i}]`;

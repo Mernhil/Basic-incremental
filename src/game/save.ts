@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import type { Content } from '../data';
-import { JOBS, MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
+import { MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
 import { Decimal, decimalToString, isDecimalString } from './num';
 import { SaveError } from './saveError';
@@ -20,7 +20,7 @@ import {
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
-import { applyFreeStars, cardTopTier, levelCap } from './cards';
+import { cardTopTier, levelCap } from './cards';
 import { isWeaponSkinAvailable } from './wardrobe';
 import { fitSkillsToPoints } from './account';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
@@ -65,7 +65,6 @@ export const serializedStateSchema = z.object({
   }),
   clearedDungeons: z.array(z.string()),
   combat: z.object({
-    kills: counts,
     /** v24: floors per dungeon and difficulty (DESIGN.md §6). */
     floors: z.record(
       z.string(),
@@ -89,7 +88,9 @@ export const serializedStateSchema = z.object({
     stageChests: stageCounts,
     overflow: z.record(z.string(), z.boolean()),
   }),
-  bursts: z.object({ fighting: gaugeSchema, logging: gaugeSchema, mining: gaugeSchema }),
+  /** The fighting gauge. Format 26 saves written before the workers kept the old logging and
+   *  mining gauges here too; parsing strips them (they moved to `production.harvestGauges`). */
+  bursts: z.object({ fighting: gaugeSchema }),
   activeDungeonId: z.string().nullable(),
   bossHp: decimalText.nullable(),
   pity: counts,
@@ -123,11 +124,9 @@ export const serializedStateSchema = z.object({
         enhancements: z.array(z.string()),
       }),
     ),
-    loadouts: z.object({
-      mining: cardLoadoutSchema,
-      logging: cardLoadoutSchema,
-      fighting: cardLoadoutSchema,
-    }),
+    /** Only fighting has a loadout; the old logging and mining ones are stripped on parse
+     *  (their main cards became workers in the format 26 migration). */
+    loadouts: z.object({ fighting: cardLoadoutSchema }),
     shards: z.number().int().min(0),
     /** v26: cards marked to hunt (DESIGN.md §7 Wishlist). */
     wishlist: z.array(z.string()),
@@ -200,7 +199,6 @@ export function serializeState(state: GameState): SerializedState {
     production: serializeProduction(state.production),
     clearedDungeons: [...state.clearedDungeons],
     combat: {
-      kills: { ...state.combat.kills },
       floors: cloneFloors(state.combat.floors),
       training: { ...state.combat.training },
       trialAttempt: {
@@ -293,7 +291,6 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     ),
   };
   state.combat = {
-    kills: { ...saved.combat.kills },
     // Dungeons that left the game are dropped; a floor past a dungeon's last is read back inside
     // its range (floors.ts `floorPosition`).
     floors: cloneFloors(
@@ -550,10 +547,9 @@ function deserializeMastery(
   state.mastery = {
     harvested,
     gemTiers: keep(saved.gemTiers ?? {}, (id) => isProductionGem(content, id)),
-    bossTiers: keep(
-      saved.bossTiers ?? {},
-      (id) => content.dungeonById.has(id) || content.trialById.has(id),
-    ),
+    // Dungeons have stage stars instead of medals (DESIGN.md §6): only the special dungeons'
+    // medals are kept.
+    bossTiers: keep(saved.bossTiers ?? {}, (id) => content.trialById.has(id)),
   };
   if (!saved.gemTiers || !saved.bossTiers) settleMastery(state, content);
 }
@@ -610,24 +606,21 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
         content.enhancements.cards[id]?.some((x) => x.id === o),
       ),
     };
-    // Stars that cost nothing apply by themselves (DESIGN.md §5): a Rare or better card saved
-    // below ★6 takes them on load. Same format, nothing else changes.
-    applyFreeStars(content, content.cardById.get(id)!.rarity, owned[id]);
   }
-  const loadouts = {} as CardState['loadouts'];
-  for (const job of JOBS) {
-    const seen = new Set<string>();
-    const keep = (id: string | null | undefined): string | null => {
-      if (!id || !owned[id] || content.cardById.get(id)?.job !== job || seen.has(id)) return null;
-      seen.add(id);
-      return id;
-    };
-    const loadout = emptyCardLoadout();
-    loadout.main = keep(saved.loadouts[job].main);
-    for (let i = 0; i < SUPPORT_SLOTS; i++)
-      loadout.supports[i] = keep(saved.loadouts[job].supports[i]);
-    loadouts[job] = loadout;
+  const seen = new Set<string>();
+  const keep = (id: string | null | undefined): string | null => {
+    if (!id || !owned[id] || content.cardById.get(id)?.job !== 'fighting' || seen.has(id)) {
+      return null;
+    }
+    seen.add(id);
+    return id;
+  };
+  const fighting = emptyCardLoadout();
+  fighting.main = keep(saved.loadouts.fighting.main);
+  for (let i = 0; i < SUPPORT_SLOTS; i++) {
+    fighting.supports[i] = keep(saved.loadouts.fighting.supports[i]);
   }
+  const loadouts: CardState['loadouts'] = { fighting };
   // Unknown cards and repeats are dropped from the wishlist; a marked card need not be owned.
   const wishlist = [...new Set(saved.wishlist)].filter((id) => content.cardById.has(id));
   return { owned, loadouts, shards: saved.shards, wishlist };

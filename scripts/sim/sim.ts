@@ -28,9 +28,16 @@
  * in every 30 minutes (the game stays open in between, nothing is bought or re-aimed) and is
  * offline 8 hours a day, taking the game's own offline progress on return.
  */
-import { JOBS, RANK_TIERS, RARITIES, type Content, type Job } from '../../src/data';
+import { RANK_TIERS, RARITIES, type Content } from '../../src/data';
 import {
   advance,
+  activeWorkers,
+  assignWorker,
+  producerLevel,
+  producersOf,
+  workerPower,
+  workerSlots,
+  PRODUCTION_JOBS,
   type OwnedCard,
   buyMineLevel,
   buyTraining,
@@ -65,6 +72,8 @@ import {
   isDifficultyUnlocked,
   setDifficulty,
   setFloorMode,
+  setOverflow,
+  stageStars,
   DIFFICULTIES,
   type Difficulty,
   setActiveDungeon,
@@ -192,14 +201,8 @@ export const MILESTONES: Milestone[] = [
     id: 'first_star6',
     label: 'First ★6 from copies',
     targetHours: 7,
-    // A ★6 earned with duplicates: a card whose rarity still needs copies per star (Common and
-    // Uncommon; Rare and up star up for free, DESIGN.md §5 Star bar).
-    reached: (s, c) =>
-      Object.entries(s.cards.owned).some(([id, owned]) => {
-        const rarity = c.cardById.get(id)?.rarity;
-        const needs = rarity ? c.cardRules.starBar.needs[rarity] : undefined;
-        return owned.stars >= 6 && (needs ?? []).some((n) => n > 0);
-      }),
+    // Every card starts at ★1, so any ★6 was earned with copies (DESIGN.md §5 Stars).
+    reached: (s) => Object.values(s.cards.owned).some((owned) => owned.stars >= 6),
   },
   {
     id: 'first_prestige',
@@ -970,38 +973,89 @@ export function equipSets(state: GameState, content: Content): GameState {
   return current;
 }
 
-/** Puts each job's strongest cards in its loadout (rarity, then power) within the cost cap. */
+/**
+ * Puts the strongest fighting cards in the loadout (rarity, then power) within the cost cap, and
+ * the strongest workers on the best trees and mines (`placeBestWorkers`).
+ */
 export function optimizeLoadouts(state: GameState, content: Content): GameState {
   let current = state;
-  for (const job of JOBS as readonly Job[]) {
-    const cap = loadoutCostCap(current, content, job);
-    const ranked = content.cards
-      .filter((c) => c.job === job && current.cards.owned[c.id])
-      .sort(
-        (a, b) =>
-          RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) ||
-          cardPower(content, current.cards.owned[b.id]!) -
-            cardPower(content, current.cards.owned[a.id]!),
-      );
-    const loadout: CardLoadout = emptyCardLoadout();
-    let cost = 0;
-    let support = 0;
-    for (const card of ranked) {
-      const c = cardCost(content, card.id);
-      if (cost + c > cap) continue;
-      if (loadout.main === null) loadout.main = card.id;
-      else if (support < loadout.supports.length) loadout.supports[support++] = card.id;
-      else break;
-      cost += c;
-    }
-    const current_ = current.cards.loadouts[job];
-    if (
-      current_.main === loadout.main &&
-      current_.supports.every((id, i) => id === loadout.supports[i])
-    ) {
-      continue;
-    }
+  const job = 'fighting' as const;
+  const cap = loadoutCostCap(current, content, job);
+  const ranked = content.cards
+    .filter((c) => c.job === job && current.cards.owned[c.id])
+    .sort(
+      (a, b) =>
+        RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) ||
+        cardPower(content, current.cards.owned[b.id]!) -
+          cardPower(content, current.cards.owned[a.id]!),
+    );
+  const loadout: CardLoadout = emptyCardLoadout();
+  let cost = 0;
+  let support = 0;
+  for (const card of ranked) {
+    const c = cardCost(content, card.id);
+    if (cost + c > cap) continue;
+    if (loadout.main === null) loadout.main = card.id;
+    else if (support < loadout.supports.length) loadout.supports[support++] = card.id;
+    else break;
+    cost += c;
+  }
+  const now = current.cards.loadouts.fighting;
+  if (now.main !== loadout.main || !now.supports.every((id, i) => id === loadout.supports[i])) {
     const result = setLoadout(current, content, job, loadout);
+    if (result.ok) current = result.state;
+  }
+  return placeBestWorkers(current, content);
+}
+
+/**
+ * The workers the sim wants (DESIGN.md §4 Workers): per job, the strongest owned cards (by worker
+ * power) on the unlocked places with the highest level rate, best with best. The slots are shared,
+ * so they go to the jobs in turn (the best logging place, the best mine, the second best ...).
+ */
+export function bestWorkers(state: GameState, content: Content): Record<string, string[]> {
+  const perJob = PRODUCTION_JOBS.map((job) => {
+    const cards = content.cards
+      .filter((c) => c.job === job && state.cards.owned[c.id])
+      .map((c) => ({ id: c.id, power: workerPower(content, c.id, state.cards.owned[c.id]!) }))
+      .sort((a, b) => b.power - a.power);
+    const places = producersOf(content, job)
+      .filter((p) => isProducerUnlocked(state, content, job, p.id))
+      .map((p) => ({
+        id: p.id,
+        rate: producerRate(p, job, [], producerLevel(state, job, p.id)).toNumber(),
+      }))
+      .sort((a, b) => b.rate - a.rate);
+    return places.slice(0, cards.length).map((p, i) => [p.id, cards[i]!.id] as const);
+  });
+  const out: Record<string, string[]> = {};
+  let free = workerSlots(state, content);
+  for (let i = 0; free > 0 && perJob.some((pairs) => i < pairs.length); i++) {
+    for (const pairs of perJob) {
+      const pair = pairs[i];
+      if (!pair || free <= 0) continue;
+      out[pair[0]] = [pair[1]];
+      free -= 1;
+    }
+  }
+  return out;
+}
+
+/** Puts the sim's chosen workers to work (`bestWorkers`), when they differ from today's. */
+export function placeBestWorkers(state: GameState, content: Content): GameState {
+  const want = bestWorkers(state, content);
+  const now = activeWorkers(state, content);
+  const same = (a: Record<string, string[]>, b: Record<string, string[]>): boolean =>
+    Object.keys(a).length === Object.keys(b).length &&
+    Object.entries(a).every(([place, ids]) => b[place]?.join() === ids.join());
+  if (same(want, now)) return state;
+  let current = state;
+  for (const place of Object.keys(now)) {
+    const result = assignWorker(current, content, place, null);
+    if (result.ok) current = result.state;
+  }
+  for (const [place, ids] of Object.entries(want)) {
+    const result = assignWorker(current, content, place, ids[0]!);
     if (result.ok) current = result.state;
   }
   return current;
@@ -1298,6 +1352,21 @@ export function choosePush(state: GameState, content: Content): GameState {
   return result.ok ? result.state : state;
 }
 
+/**
+ * Overflow (DESIGN.md §6): the player turns on every stage's overflow switch as soon as the stage
+ * reaches the star level that opens it, so no damage is wasted. (Package 10 teaches the rest.)
+ */
+export function chooseOverflow(state: GameState, content: Content): GameState {
+  let next = state;
+  for (const key of Object.keys(state.combat.stageKills)) {
+    const info = stageStars(next, content, key);
+    if (!info || !info.overflowUnlocked || info.overflowOn) continue;
+    const result = setOverflow(next, content, key, true);
+    if (result.ok) next = result.state;
+  }
+  return next;
+}
+
 // ---- running -----------------------------------------------------------------------------------
 
 export interface SimOptions {
@@ -1444,6 +1513,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         if (tier.ok) state = tier.state;
       }
       state = choosePush(state, content);
+      state = chooseOverflow(state, content);
       sinceChoose = 0;
     }
     const dt = idle
@@ -1754,9 +1824,7 @@ export function formatSummary(result: SimResult, content: Content): string {
             .join(', ')}`,
       )
       .join('; ')}`,
-    `Boss and mini-boss kills: ${s.stats.bossKills} (last-floor bosses: ${Object.entries(
-      s.combat.kills,
-    )
+    `Boss and mini-boss kills: ${s.stats.bossKills} (stages: ${Object.entries(s.combat.stageKills)
       .map(([d, k]) => `${d} ${k}`)
       .join(', ')})`,
     `DPS vs Mossy Cellar: ${result.dpsSamples

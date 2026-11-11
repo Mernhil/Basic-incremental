@@ -32,7 +32,7 @@ export interface TierUp {
 }
 
 /**
- * One harvest strike for the stage (DESIGN.md §4): "the card chops tree 2 for +14". The
+ * One harvest strike for the stage (DESIGN.md §4): "the worker chops its tree for +14". The
  * economy is the expected value; these are the discrete moments that add up to it. When many
  * strikes land on one kind in a report they are merged: `strikes` counts them.
  */
@@ -50,10 +50,10 @@ export interface HarvestEvent {
   strikes: number;
   /** How many of them were crits; `crits > 0` means show the crit look. */
   crits: number;
-  /** The bonus harvest of a full harvest gauge (one event per unlocked kind). */
+  /** The bonus harvest of a full harvest gauge (one event per place whose gauge fired). */
   burst: boolean;
-  /** Support card ids whose effect helps this job's harvest. */
-  supports: string[];
+  /** The card working the place (the one that struck). */
+  worker: string;
 }
 
 /** Most harvest events a merged report keeps before folding strikes of the same kind together. */
@@ -73,7 +73,6 @@ export function pushHarvest(into: HarvestEvent[], event: HarvestEvent): void {
       same.amount = same.amount.add(event.amount);
       same.strikes += event.strikes;
       same.crits += event.crits;
-      for (const id of event.supports) if (!same.supports.includes(id)) same.supports.push(id);
       return;
     }
   }
@@ -250,8 +249,7 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   for (const event of add.bossAttacks) pushBossAttack(into.bossAttacks, { ...event });
   for (const event of add.playerHits) pushPlayerHit(into.playerHits, { ...event });
   into.tierUps.push(...add.tierUps);
-  for (const event of add.harvests)
-    pushHarvest(into.harvests, { ...event, supports: [...event.supports] });
+  for (const event of add.harvests) pushHarvest(into.harvests, { ...event });
   into.achievements.push(...add.achievements);
   if (add.accountLevel) {
     into.accountLevel = {

@@ -112,3 +112,50 @@ export function floorParts(input: FloorReadoutInput): FloorPart[] {
   if (input.bestFloor > 0) parts.push({ kind: 'best', best: input.bestFloor });
   return parts;
 }
+
+/** What the stage line needs (DESIGN.md §6 Stage stars): the stage the floor belongs to. */
+export interface StageLineInput {
+  /** The stage's floor. */
+  floor: number;
+  /** Its star level, 0..6, and kills so far. */
+  level: number;
+  kills: number;
+  /** Kills that reach the next level; null at the top. */
+  nextKills: number | null;
+  /** The floor being fought is this stage itself (not a wave floor or depth above it). */
+  here: boolean;
+}
+
+/** The stage line: which stage, its star level and the kills still needed for the next one. */
+export interface StageLine {
+  floor: number;
+  here: boolean;
+  level: number;
+  /** Kills left to the next level; null at the top level. */
+  toNext: number | null;
+}
+
+export function stageLine(input: StageLineInput): StageLine {
+  return {
+    floor: input.floor,
+    here: input.here,
+    level: input.level,
+    toNext: input.nextKills === null ? null : Math.max(0, input.nextKills - input.kills),
+  };
+}
+
+/** The overflow switch of a stage: locked before its star level opens it, then off or on. */
+export type OverflowSwitch = 'locked' | 'off' | 'on';
+
+export function overflowSwitch(info: {
+  overflowUnlocked: boolean;
+  overflowOn: boolean;
+}): OverflowSwitch {
+  if (!info.overflowUnlocked) return 'locked';
+  return info.overflowOn ? 'on' : 'off';
+}
+
+/** The stars of a dungeon on the map as "earned of the most it can have". */
+export function starTotal(levels: number, maxLevels: number): { levels: number; max: number } {
+  return { levels: Math.max(0, Math.min(levels, maxLevels)), max: Math.max(0, maxLevels) };
+}

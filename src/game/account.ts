@@ -7,11 +7,13 @@ import type {
   RewardTrackEntry,
   SkillNode,
 } from '../data';
-import { JOBS, RANK_TIERS, MAX_STARS } from '../data';
+import { RANK_TIERS, MAX_STARS } from '../data';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, finalPrice, pay, type Price } from './production';
 import type { TickReport } from './report';
+import { cardsAtWork } from './cards';
+import { totalStageStarLevels } from './stageStars';
 import { cloneState, type GameState, type OwnedCard } from './state';
 import { grantCosmetic } from './wardrobe';
 
@@ -133,15 +135,6 @@ export interface SkillPoints {
   available: number;
 }
 
-/**
- * Stage star levels earned, for the skill points they give (DESIGN.md §6, §10).
- * STUB until package 3 (stage stars) merges: the orchestrator wires this to
- * `totalStageStarLevels(state, content)`. Until then stage stars give no points.
- */
-function stageStarLevels(): number {
-  return 0;
-}
-
 const skillNode = (content: Content, id: string): SkillNode | undefined =>
   content.account.tree.find((n) => n.id === id);
 
@@ -163,7 +156,7 @@ function pointsEarned(state: GameState, content: Content): number {
   const { levels } = content.account;
   return (
     (state.account.level - 1) * levels.skillPointsPerLevel +
-    stageStarLevels() * levels.pointsPerStageStar +
+    totalStageStarLevels(state, content) * levels.pointsPerStageStar +
     Object.keys(state.achievements).length * levels.pointsPerAchievement
   );
 }
@@ -553,19 +546,19 @@ export function accountModifiers(state: GameState, content: Content): Modifier[]
       });
     }
   }
-  const inLoadout = new Set<string>();
-  for (const job of JOBS) {
-    const l = state.cards.loadouts[job];
-    for (const id of [l.main, ...l.supports]) if (id) inLoadout.add(id);
-  }
-  for (const cardId of inLoadout) {
+  // A worker's enhancements act at its own place only (DESIGN.md §4 Worker abilities).
+  for (const { cardId, scope } of cardsAtWork(state, content)) {
     const owned = state.cards.owned[cardId];
     if (!owned || enhancementBudget(content, owned) <= 0) continue;
     for (const optionId of owned.enhancements) {
       const option = optionsOf(content, cardId).find((o) => o.id === optionId);
       if (!option) continue;
       for (const m of option.modifiers) {
-        out.push({ ...m, source: { kind: 'enhancement', id: `${cardId}:${optionId}` } });
+        out.push({
+          ...m,
+          ...(scope ? { scope: { ...m.scope, ...scope } } : {}),
+          source: { kind: 'enhancement', id: `${cardId}:${optionId}` },
+        });
       }
     }
   }
