@@ -4,6 +4,7 @@ import { Decimal } from './num';
 import {
   canAfford,
   ceilPrice,
+  effectiveGrowth,
   isProducerUnlocked,
   mineLevel,
   pay,
@@ -63,7 +64,7 @@ function curveTerms(
   context: StatContext,
 ): (n: number) => Decimal {
   const ctx = { ...context, resource: curve.resource };
-  const growth = Decimal.max(statValue('cost.growth', curve.growth, modifiers, ctx), 1);
+  const growth = effectiveGrowth(curve.growth, modifiers, ctx);
   const multiplier = Decimal.max(statValue('cost.multiplier', 1, modifiers, ctx), 0);
   return (n) => ceilPrice(curve.base.mul(growth.pow(n)).mul(multiplier));
 }

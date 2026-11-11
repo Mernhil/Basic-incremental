@@ -15,6 +15,8 @@ import {
   formatTable,
   shouldAscend,
   fillEnhancements,
+  buildOrder,
+  heir,
   markWishlist,
   chooseDungeon,
   ascendNow,
@@ -95,7 +97,7 @@ describe('balance sim: greedy buyer', () => {
 
   it('ascends once the gain is worth it, then spends the Starlight', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     expect(shouldAscend(state, content)).toBe(true);
     expect(shouldAscend(freshState(), content)).toBe(false);
     const rich = freshState();
@@ -311,10 +313,26 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
         .filter((id) => content.cardById.get(id)!.rarity !== 'common')
         .every((id) => !state.cards.owned[id]),
     ).toBe(true);
-    // a card it comes to own leaves the list
+    // a Rare it comes to own is the heir of the Common lead (capped at Wood): hunted alone
     const id = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'rare')!;
     state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
-    expect(markWishlist(state, content).cards.wishlist).not.toContain(id);
+    const rares = markWishlist(state, content).cards.wishlist.filter(
+      (x) => content.cardById.get(x)!.rarity === 'rare',
+    );
+    expect(rares).toEqual([id]);
+    // a card it comes to own and does not build leaves the list
+    const other = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'uncommon')!;
+    state.cards.owned[other] = { ...state.cards.owned['ember_squire']! };
+    expect(markWishlist(state, content).cards.wishlist).not.toContain(other);
+  });
+
+  it('builds the heir of a lead at its top tier: the rarest card owned', () => {
+    const state = freshState();
+    // Ember Squire is a Common: Wood is its top tier, so a rarer card is built next.
+    state.cards.owned['dawnblade_regent'] = { ...state.cards.owned['ember_squire']! };
+    state.cards.owned['storm_duelist'] = { ...state.cards.owned['ember_squire']! };
+    expect(heir(state, content)).toBe('dawnblade_regent');
+    expect(buildOrder(state, content).slice(0, 2)).toEqual(['ember_squire', 'dawnblade_regent']);
   });
 
   it('equips a complete cosmetic set for its bonus', () => {
@@ -335,7 +353,7 @@ describe('balance sim: where to fight', () => {
     squire.level = 20;
     squire.starFill = 1;
     // Strong enough to kill the Cinder Lich in good time.
-    expect(chooseDungeon(state, withDps(1e6, content))).toBe('ember_crypt');
+    expect(chooseDungeon(state, withDps(1e7, content))).toBe('ember_crypt');
   });
 
   it('keeps farming Cores while the next boss would take over ten minutes to kill', () => {

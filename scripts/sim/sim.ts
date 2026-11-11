@@ -101,6 +101,7 @@ import {
   buyShardItem,
   tierUp,
   tierUpCheck,
+  cardStatPower,
   treeUnlockCost,
   unlockTree,
   averageDps,
@@ -1274,6 +1275,7 @@ export function fillEnhancements(state: GameState, content: Content): GameState 
  * The cards the player is building, most important first (DESIGN.md §5 Stars): the fighting lead,
  * its supports in slot order, then the cards at work by worker power. Every one of them gains from
  * copies and star dust; a card at ★6 gains nothing until its tier-up, so `needsStars` leaves it out.
+ * A lead at its rarity's top tier can grow no further, so its heir (`heir`) comes right after it.
  */
 export function buildOrder(state: GameState, content: Content): string[] {
   const loadout = state.cards.loadouts.fighting;
@@ -1282,6 +1284,7 @@ export function buildOrder(state: GameState, content: Content): string[] {
     if (id && state.cards.owned[id] && !out.includes(id)) out.push(id);
   };
   add(loadout.main);
+  add(heir(state, content));
   for (const id of loadout.supports) add(id);
   const working = [
     ...Object.values(activeWorkers(state, content)).flat(),
@@ -1293,6 +1296,29 @@ export function buildOrder(state: GameState, content: Content): string[] {
   );
   for (const id of working) add(id);
   return out;
+}
+
+/**
+ * The card that takes over from a lead at its rarity's top tier (`buildOrder`): the rarest owned
+ * fighting card above the lead's rarity, the strongest of them; null while the lead can still tier
+ * up or nothing rarer is owned.
+ */
+export function heir(state: GameState, content: Content): string | null {
+  const main = state.cards.loadouts.fighting.main;
+  const lead = main ? content.cardById.get(main) : undefined;
+  if (!main || !lead) return null;
+  if (tierUpCheck(state, content, main)?.available) return null;
+  const rank = (id: string): number => RARITIES.indexOf(content.cardById.get(id)!.rarity);
+  const rarer = content.cards
+    .filter((c) => c.job === 'fighting' && state.cards.owned[c.id] && rank(c.id) > rank(main))
+    .map((c) => c.id)
+    .sort(
+      (a, b) =>
+        rank(b) - rank(a) ||
+        cardStatPower(content, state.cards.owned[b]!) -
+          cardStatPower(content, state.cards.owned[a]!),
+    );
+  return rarer[0] ?? null;
 }
 
 /** Whether another star is open to the card now: below ★6 (copies past it become shards). */
@@ -1353,10 +1379,11 @@ export function spendShards(state: GameState, content: Content): GameState {
 }
 
 /**
- * Marks the cards the sim hunts on the Card Portal's wishlist (DESIGN.md §7). Per rarity, up to the
- * limit: first the cards it is building of that rarity that still need stars (the build order, so
- * the fighting lead first: a pull of its rarity becomes a copy of it), then cards it does not own
- * yet, fighting cards first. A card that reaches ★6 or that it comes to own leaves the list.
+ * Marks the cards the sim hunts on the Card Portal's wishlist (DESIGN.md §7). Per rarity: the first
+ * card it is building of that rarity that still needs stars, alone (the build order, so the
+ * fighting lead first: every pull of its rarity becomes a copy of it); with none, up to the limit
+ * of cards it does not own yet, fighting cards first. A card that reaches ★6 or that it comes to
+ * own leaves the list.
  */
 export function markWishlist(state: GameState, content: Content): GameState {
   const portal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
@@ -1373,7 +1400,9 @@ export function markWishlist(state: GameState, content: Content): GameState {
       .map((e) => content.cardById.get(e.itemId)!)
       .sort((a, b) => Number(b.job === 'fighting') - Number(a.job === 'fighting'))
       .map((c) => c.id);
-    for (const id of [...built, ...missing].slice(0, portal.wishlistPerRarity)) want.add(id);
+    // A card it builds takes every pull of its rarity: a second mark would halve its copies.
+    const marks = built.length > 0 ? built.slice(0, 1) : missing;
+    for (const id of marks.slice(0, portal.wishlistPerRarity)) want.add(id);
   }
   const now = state.cards.wishlist;
   if (now.length === want.size && now.every((id) => want.has(id))) return state;

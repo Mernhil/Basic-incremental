@@ -101,7 +101,7 @@ describe('account XP (DESIGN.md §10a, 12.4)', () => {
     expect(pulled.state.account.xp.eq(A.xp.perPull)).toBe(true);
 
     const run = freshState();
-    run.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    run.mastery.harvested['oak_gem'] = new Decimal(1e14);
     const ascended = ascend(run, content);
     if (!ascended.ok) throw new Error(ascended.reason);
     expect(ascended.state.account.xp.eq(A.xp.perAscension)).toBe(true);
@@ -268,7 +268,7 @@ describe('account tree (DESIGN.md §10a)', () => {
   it('the free respec comes back with each ascension', () => {
     const state = withPoints(4);
     state.account.freeRespecsUsed = 1;
-    state.mastery.harvested['oak_gem'] = new Decimal(1e9);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.account.freeRespecsUsed).toBe(0);

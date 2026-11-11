@@ -23,7 +23,7 @@
     "heirloom": 140
   },
   "xpCurve": {
-    "base": "10",
+    "base": "60",
     "growth": "1.12"
   },
   "xp": {
@@ -48,7 +48,16 @@
       "mythic": 5,
       "heirloom": 7
     },
-    "starMultiplier": [1.25, 1.6, 2, 2.6, 3.5]
+    "starMultiplier": [1.25, 1.6, 2, 2.6, 3.5],
+    "statTier": {
+      "wood": 1,
+      "bronze": 3.5,
+      "silver": 12.25,
+      "gold": 43,
+      "prismatic": 151,
+      "mythic": 529,
+      "heirloom": 1852
+    }
   },
   "mainGrowth": {
     "fighting": [
@@ -283,7 +292,7 @@
         },
         {
           "resource": "storm_core",
-          "amount": "263"
+          "amount": "400"
         },
         {
           "resource": "moonwillow_gem",
@@ -309,7 +318,7 @@
         },
         {
           "resource": "storm_core",
-          "amount": "263"
+          "amount": "400"
         },
         {
           "resource": "grotto_gem",
@@ -335,7 +344,7 @@
         },
         {
           "resource": "storm_core",
-          "amount": "263"
+          "amount": "400"
         },
         {
           "resource": "grotto_gem",
@@ -556,7 +565,7 @@
         "heirloom": 1
       },
       "uncommon": {
-        "wood": 0.5,
+        "wood": 0.25,
         "bronze": 1,
         "silver": 1,
         "gold": 1,
@@ -565,8 +574,8 @@
         "heirloom": 1
       },
       "rare": {
-        "wood": 0.25,
-        "bronze": 0.5,
+        "wood": 0.125,
+        "bronze": 0.25,
         "silver": 1,
         "gold": 1,
         "prismatic": 1,
@@ -574,38 +583,38 @@
         "heirloom": 1
       },
       "epic": {
-        "wood": 0.25,
-        "bronze": 0.25,
-        "silver": 0.5,
+        "wood": 0.03125,
+        "bronze": 0.0625,
+        "silver": 0.125,
         "gold": 1,
         "prismatic": 1,
         "mythic": 1,
         "heirloom": 1
       },
       "legendary": {
-        "wood": 0.125,
-        "bronze": 0.25,
-        "silver": 0.25,
-        "gold": 0.5,
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
+        "gold": 0.25,
         "prismatic": 1,
         "mythic": 1,
         "heirloom": 1
       },
       "mythic": {
-        "wood": 0.125,
-        "bronze": 0.125,
-        "silver": 0.25,
-        "gold": 0.25,
-        "prismatic": 0.5,
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
+        "gold": 0.125,
+        "prismatic": 0.25,
         "mythic": 1,
         "heirloom": 1
       },
       "void": {
-        "wood": 0.125,
-        "bronze": 0.125,
-        "silver": 0.25,
-        "gold": 0.25,
-        "prismatic": 0.5,
+        "wood": 0.015625,
+        "bronze": 0.03125,
+        "silver": 0.0625,
+        "gold": 0.125,
+        "prismatic": 0.25,
         "mythic": 1,
         "heirloom": 1
       }

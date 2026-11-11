@@ -149,7 +149,7 @@ describe('star dust (DESIGN.md §5)', () => {
     expect(content.resourceById.get('star_dust')!.keptOnAscend).toBe(true);
     const state = fresh();
     state.resources['star_dust'] = new Decimal(42);
-    state.mastery.harvested['oak_gem'] = new Decimal(1e12);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
     const result = ascend(state, content);
     if (!result.ok) throw new Error(result.reason);
     expect(result.state.resources['star_dust']!.toNumber()).toBe(42);

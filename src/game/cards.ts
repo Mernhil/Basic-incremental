@@ -275,13 +275,14 @@ export function cardPower(content: Content, owned: OwnedCard): number {
 
 /**
  * The power of a card's base stats (damage and health): (1 + perLevel × (level − 1)) × the star
- * multiplier (×1 at ★1, then ×1.25 … ×3.5 at ★2 … ★6) × the tier's multiplier. Card effects use
- * `cardPower` instead.
+ * multiplier (×1 at ★1, then ×1.25 … ×3.5 at ★2 … ★6) × the tier's stat step (`statTier`, at
+ * least ★6 over ★1, so a tier-up never weakens the card). Card effects use `cardPower` instead,
+ * with the smaller `tier` step.
  */
 export function cardStatPower(content: Content, owned: OwnedCard): number {
   const p = content.cardRules.power;
   const star = owned.stars <= 1 ? 1 : p.starMultiplier[owned.stars - 2]!;
-  return (1 + p.perLevel * (owned.level - 1)) * star * p.tier[owned.tier];
+  return (1 + p.perLevel * (owned.level - 1)) * star * p.statTier[owned.tier];
 }
 
 /** The weapon identity's factor on base damage or health (DESIGN.md §5); 1 off the fighting types. */

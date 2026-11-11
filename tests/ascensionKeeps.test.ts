@@ -17,7 +17,7 @@ import { content, freshState } from './helpers';
  */
 function richRun(): GameState {
   const s = freshState();
-  s.mastery.harvested['oak_gem'] = new Decimal(1e9);
+  s.mastery.harvested['oak_gem'] = new Decimal(1e14);
   s.production.treeLevels = { oak: 12 };
   s.production.mineLevels = { copper_quarry: 9 };
   s.production.tools = { logging_yield: 3 };
