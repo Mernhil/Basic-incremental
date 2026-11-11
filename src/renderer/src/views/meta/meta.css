@@ -1,8 +1,188 @@
-/* Package 9d: the Upgrades view, the two upgrade shelves side by side. The other views keep their
-   pages' own styles (pages/*.css). */
+/* Package 9d: the views' shared look and the Upgrades view. The Skill Tree, Achievements, Shop
+   and Settings keep their pages' own styles (pages/*.css), with the view-level fits below. */
 
+/* the view's height: the page fills what is under the title bar, panels scroll inside */
+.mv-fit {
+  /* the body's padding is 4 px above and 40 px below: a 28 px bleed leaves 12 px of table under it */
+  --mv-h: calc(100vh - var(--header-h, 64px) - var(--view-bar-h, 56px) - 16px);
+  max-width: none;
+  margin-bottom: -28px;
+}
+.mv-subtitle {
+  font-size: 14px;
+  color: var(--bi-frame-ink-muted);
+  white-space: nowrap;
+}
+
+/* ---- Upgrades (mockup 4m) ---- */
 .mv-upgrades {
-  max-width: 1280px;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-  align-items: start;
+  --mv-h: calc(100vh - var(--header-h, 64px) - var(--view-bar-h, 56px) - 16px);
+  max-width: none;
+  margin-bottom: -28px;
+  height: var(--mv-h);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: calc(var(--fs, 4px) * 5);
+  padding: var(--fs, 4px);
+  box-sizing: border-box;
+}
+.mv-up-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 16px;
+  min-height: 0;
+}
+.mv-up-panel--permanent {
+  background: var(--px-raised);
+}
+.mv-up-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.mv-up-title {
+  margin: 0;
+  font-size: 18px;
+  color: var(--bi-chrome-accent);
+}
+.mv-up-note {
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
+.mv-up-grid {
+  margin: 0;
+  padding: var(--fs-sm, 2px);
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: calc(var(--fs-sm, 2px) * 3);
+  overflow-y: auto;
+  min-height: 0;
+}
+.mv-up-tile {
+  display: grid;
+  min-width: 0;
+}
+.mv-up-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  text-align: left;
+  font: inherit;
+}
+button.mv-up-body {
+  cursor: pointer;
+}
+button.mv-up-body[aria-disabled='true'] {
+  cursor: default;
+}
+.mv-up-text {
+  display: grid;
+  min-width: 0;
+}
+.mv-up-name {
+  font-size: 14px;
+  font-weight: 700;
+}
+.mv-up-effect {
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+.mv-up-price,
+.mv-up-bought {
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.mv-up-bought {
+  color: var(--bi-good, #4ade80);
+}
+.mv-up-tile--owned .mv-up-name,
+.mv-up-tile--owned .mv-up-effect {
+  opacity: 0.8;
+}
+.mv-up-empty {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
+.mv-up-tile.is-bought .mv-up-body {
+  animation: mv-up-pop 0.6s ease-out;
+}
+@keyframes mv-up-pop {
+  40% {
+    transform: scale(1.03);
+  }
+}
+.mv-up-foot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
+.mv-up-lifetime {
+  color: var(--bi-frame-ink);
+}
+@media (max-width: 1100px) {
+  .mv-up-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mv-up-tile.is-bought .mv-up-body {
+    animation: none;
+  }
+}
+
+/* ---- Skill Tree (mockup 4j): the stage fills the view, the side panel scrolls ---- */
+.mv-skills,
+.mv-shop {
+  height: var(--mv-h);
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+.mv-skills .sk-wrap {
+  min-height: 0;
+  box-sizing: border-box;
+  grid-template-rows: minmax(0, 1fr);
+}
+.mv-skills .sk-frame {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  min-height: 0;
+}
+.mv-skills .sk-frame > .frame__body {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+}
+.mv-skills .sk-stage {
+  height: auto;
+  min-height: 0;
+}
+.mv-skills .sk-detail {
+  min-height: 0;
+  overflow-y: auto;
+}
+@media (max-width: 1100px) {
+  .mv-skills,
+  .mv-shop {
+    height: auto;
+  }
+  .mv-skills .sk-stage {
+    height: 480px;
+  }
+}
+.mv-skills .sk-zoom__hint {
+  display: none;
 }

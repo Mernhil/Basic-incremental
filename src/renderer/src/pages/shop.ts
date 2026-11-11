@@ -71,6 +71,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     signText: string,
   ): { el: HTMLElement; body: HTMLElement; sign: HTMLElement; count: HTMLElement } {
     const el = h('section', `shop-stall ${cls}`);
+    el.dataset.deal = '';
     const sign = h('h2', 'shop-sign');
     const name = h('span', 'shop-sign__name px-display', signText);
     const count = h('em', 'shop-sign__count px-display bi-num');

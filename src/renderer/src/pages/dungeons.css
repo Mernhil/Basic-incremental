@@ -1,407 +1,316 @@
-/* Dungeons page (DESIGN.md §11, A1 D): the arena fills the page, the drawer slides up over its
-   bottom. Theme colours from the frame-* and chrome-* tokens; tier hues identify dungeons. */
+/* The panels of the dungeon full view (UI_RULES.md §2 The dungeon full view, The duel in detail;
+   mockup 4g for Dungeons). Frames come from theme/frames.css (.px-panel, .px-tile, .px-well,
+   .px-btn); the star pips use the weapon ladder's colours. */
 
-.shell-page--stage {
-  max-width: none;
-  margin: -20px -26px -56px;
-  height: calc(100vh - var(--header-h, 64px));
-  display: block;
-}
-/* under the quest scroll the stage starts right below it */
-.shell-main:has(> .shell-quest:not([hidden])) .shell-page--stage {
-  --quest-h: 44px;
-  margin-top: -16px;
-  height: calc(100vh - var(--header-h, 64px) - var(--quest-h));
-}
-.dp-stage {
-  --dp-tier-1: #7fae68;
-  --dp-tier-2: #e08a55;
-  --dp-tier-3: #8fc0e0;
-  --dp-tier-special: #c9a7f0;
-  --bar-h: 52px;
-  position: relative;
-  height: 100%;
-  min-height: 480px;
-  overflow: hidden;
-}
-
-/* ---- drawer: the handle bar along the bottom, the panes slide up over the arena ---- */
-.dp-drawer {
-  grid-template-rows: var(--bar-h) auto;
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 8;
-  display: grid;
-  max-height: 72%;
-  translate: 0 calc(100% - var(--bar-h));
-  transition: translate 0.32s cubic-bezier(0.2, 0.8, 0.3, 1);
-  color: var(--bi-frame-ink);
-}
-.dp-drawer.is-open {
-  translate: 0 0;
-}
-.dp-drawer__bar {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 0 18px;
-  min-width: 0;
-}
-/* "▲ Mossy Cellar": the dungeon being fought, plain text that opens the drawer */
-.dp-handle {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: none;
-  max-width: 34%;
-  padding: 6px 10px;
-  border: 0;
-  background: none;
-  color: var(--bi-chrome-ink);
-  font-family: var(--bi-font-display);
-  font-variant-ligatures: none;
-  font-size: 19px;
-  font-weight: 600;
-  line-height: 1.2;
-  cursor: pointer;
-}
-.dp-handle__name {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.dp-handle:hover {
-  color: var(--bi-chrome-accent);
-}
-.dp-handle:focus-visible,
-.dp-floor__fight:focus-visible,
-.dp-medal:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
-}
-/* a pixel triangle: three steps of whole pixels; flipped when the drawer is open (scale, no rotation) */
-.dp-handle__chev {
-  --s: var(--fs-sm, 2px);
-  flex: none;
-  width: calc(var(--s) * 7);
-  height: calc(var(--s) * 4);
-  background: currentColor;
-  clip-path: polygon(
-    43% 0,
-    57% 0,
-    57% 25%,
-    71% 25%,
-    71% 50%,
-    86% 50%,
-    86% 75%,
-    100% 75%,
-    100% 100%,
-    0 100%,
-    0 75%,
-    14% 75%,
-    14% 50%,
-    29% 50%,
-    29% 25%,
-    43% 25%
-  );
-  transition: scale 0.25s;
-}
-.dp-drawer.is-open .dp-handle__chev {
-  scale: 1 -1;
-}
-.dp-tabs {
-  display: flex;
-  gap: 14px;
-}
-.dp-tab {
-  padding: 6px 14px;
-  font-size: 14px;
-}
-.dp-status {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: right;
-  font-size: 13px;
-  color: var(--bi-frame-ink-muted);
-}
-.dp-drawer__body {
-  min-height: 0;
-  overflow-y: auto;
-  padding: 6px 18px 20px;
-}
-.dp-pane[hidden] {
-  display: none;
-}
-/* Dungeons pane: the floors, and what the active one drops */
-.dp-pane--dungeons {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 22px;
-}
-.dp-pane--weapon,
-.dp-pane--upgrades {
-  max-width: 880px;
-}
-.dp-pane--upgrades .shelf__list {
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-}
-.dp-col {
-  display: grid;
-  align-content: start;
-  gap: 10px;
-  min-width: 0;
-}
-.dp-col__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.dp-col__title {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-}
-.dp-col__note,
 .dp-note {
-  margin: 0;
-  font-size: 12px;
-  color: var(--bi-frame-ink-muted);
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--px-muted);
 }
 
-/* floors: a compact rail */
-.dp-floors {
+/* ---- Dungeons: the list on the left, the picked dungeon's map on the right ---- */
+.dp-dun {
+  display: grid;
+  grid-template-columns: minmax(230px, 300px) 1fr;
+  gap: 18px;
+  align-items: start;
+  min-height: 100%;
+}
+.dp-dun__list {
+  display: grid;
+  gap: 14px;
+  padding: 10px;
+  align-content: start;
+}
+.dp-list {
+  display: grid;
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
+}
+.dp-list--trials {
+  padding-top: 10px;
+  border-top: var(--fs-sm) solid var(--px-lo);
+}
+.dp-row {
   display: grid;
-  gap: 6px;
-}
-.dp-floor {
-  --dp-hue: var(--dp-tier-1);
-  display: grid;
-  grid-template-columns: 38px minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 8px 5px 6px;
-  border-radius: 9px;
-  background: var(--bi-frame-title-bg);
-  box-shadow:
-    inset 0 0 0 1px var(--bi-frame-title-line),
-    inset 3px 0 0 var(--dp-hue);
-  color: var(--bi-frame-title-ink);
-}
-.dp-floor[data-tier='2'] {
-  --dp-hue: var(--dp-tier-2);
-}
-.dp-floor[data-tier='3'] {
-  --dp-hue: var(--dp-tier-3);
-}
-.dp-floor[data-tier='special'] {
-  --dp-hue: var(--dp-tier-special);
-}
-.dp-floor--branch {
-  margin-left: 22px;
-}
-.dp-floor--active {
-  box-shadow:
-    inset 0 0 0 2px var(--bi-chrome-accent),
-    inset 3px 0 0 var(--dp-hue);
-}
-.dp-floor--locked {
-  opacity: 0.7;
-}
-.dp-floor__art {
-  width: 38px;
-  height: 38px;
-  border-radius: 8px;
-  background: rgba(0, 0, 0, 0.25);
-}
-.dp-floor__art svg {
+  grid-template-columns: 1fr auto;
+  gap: 2px 8px;
   width: 100%;
-  height: 100%;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
 }
-.dp-floor__info {
-  display: grid;
-  min-width: 0;
+html .dp-row.is-picked:not(#_px) {
+  --px-edge: var(--px-gold);
+  --px-top: var(--px-gold);
 }
-.dp-floor__name {
+.dp-row.is-locked {
+  cursor: default;
+  opacity: 0.55;
+}
+.dp-row__name {
   font-size: 13.5px;
-  font-weight: 700;
+  font-weight: 800;
 }
-.dp-floor__meta,
-.dp-floor__opens {
-  font-size: 11.5px;
-  color: var(--bi-frame-ink-muted);
-}
-.dp-floor__fight {
-  padding: 5px 12px;
+.dp-row__stars {
+  display: flex;
+  align-items: center;
   font-size: 12.5px;
+  font-weight: 800;
+  color: var(--px-gold);
 }
-.dp-tag--fighting {
-  padding: 2px 8px;
-  border-radius: 999px;
+.dp-row__meta {
+  grid-column: 1 / -1;
   font-size: 11.5px;
-  font-weight: 700;
-  background: var(--bi-chrome-accent);
-  color: var(--bi-chrome-bg);
+  color: var(--px-muted);
 }
-
-/* boss mastery medal (DESIGN.md §6, A12 D) */
+.dp-row:focus-visible,
+.dp-tier:focus-visible,
+.dp-switch:focus-visible,
+.dp-fight:focus-visible {
+  outline: var(--fs-sm) solid var(--px-gold);
+  outline-offset: 3px;
+}
 .dp-medal {
-  /* the 48 px medal at a whole device scale (DESIGN.md §12) */
-  --one: calc(48px / var(--dpr));
-  display: grid;
-  width: max(var(--one), round(nearest, 48px, var(--one)));
-  aspect-ratio: 1;
-  margin: -6px 0;
+  display: inline-block;
+  width: 22px;
+  height: 22px;
 }
 .dp-medal svg {
   width: 100%;
   height: 100%;
 }
-.dp-medal[data-tier='0'] {
-  opacity: 0.45;
+
+.dp-dun__map {
+  display: grid;
+  gap: 14px;
+  padding: 12px 14px;
+  align-content: start;
+  min-width: 0;
 }
-.dp-medal:focus-visible {
-  outline: 2px solid var(--bi-chrome-accent);
-  outline-offset: 2px;
+.dp-map__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+.dp-map__title {
+  margin: 0;
+  font-size: 22px;
+  color: var(--px-gold);
+}
+.dp-tiers {
+  display: flex;
+  gap: 6px;
+}
+.dp-tier {
+  padding: 4px 10px;
+  font-size: 12.5px;
+}
+.dp-fight {
+  margin-left: auto;
+  padding: 5px 14px;
+  font-size: 13px;
 }
 
-/* drops */
+/* the stage map: a row per stage, a column per tier */
+.dp-grid {
+  display: grid;
+  gap: 8px;
+}
+.dp-grid__row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.1fr) repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  align-items: stretch;
+}
+.dp-grid__th {
+  font-size: 18px;
+  color: var(--px-gold);
+}
+.dp-grid__label {
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  font-size: 12.5px;
+}
+.dp-grid__label span {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: color-mix(in srgb, var(--px-gold) 55%, var(--px-muted));
+}
+.dp-cell {
+  display: grid;
+  gap: 4px;
+  padding: 7px 9px;
+  font-size: 11.5px;
+}
+.dp-cell.is-locked {
+  opacity: 0.6;
+}
+.dp-pips {
+  display: flex;
+  gap: 4px;
+}
+.dp-pip {
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+/* the ladder: Wood, Bronze, Silver, Gold, Prismatic, Mythic */
+.dp-pip.is-on[data-level='1'] {
+  background: #8a6a45;
+}
+.dp-pip.is-on[data-level='2'] {
+  background: #c98b52;
+}
+.dp-pip.is-on[data-level='3'] {
+  background: #c9ced8;
+}
+.dp-pip.is-on[data-level='4'] {
+  background: #f2c14b;
+}
+.dp-pip.is-on[data-level='5'] {
+  background: #7fd8f2;
+}
+.dp-pip.is-on[data-level='6'] {
+  background: #f27ab4;
+}
+.dp-cell__kills {
+  color: var(--px-ink);
+}
+.dp-cell__note {
+  color: var(--px-muted);
+}
+.dp-cell__note:empty {
+  display: none;
+}
+.dp-cell__flow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--px-muted);
+}
+.dp-cell__flow[hidden] {
+  display: none;
+}
+/* the Overflow switch: a pixel track with a knob, green when on */
+.dp-switch {
+  position: relative;
+  width: 30px;
+  height: 14px;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.dp-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 10px;
+  height: 10px;
+  background: var(--px-muted);
+  transition: transform 0.15s var(--deal-ease, ease-out);
+}
+.dp-switch[aria-checked='true'] {
+  background: color-mix(in srgb, #6fdc8c 45%, var(--px-lo));
+}
+.dp-switch[aria-checked='true']::after {
+  transform: translateX(16px);
+  background: #6fdc8c;
+}
+.dp-grid__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 12px;
+  margin: 4px 0 0;
+  font-size: 11.5px;
+  color: var(--px-muted);
+}
+.dp-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.dp-grid__note {
+  margin-left: auto;
+}
+
+/* the drops of the dungeon being fought */
+.dp-loot {
+  display: grid;
+  gap: 8px;
+}
+.dp-loot:empty {
+  display: none;
+}
+.dp-loot__title {
+  margin: 0;
+  font-size: 13px;
+  color: var(--px-gold);
+}
 .dp-drops {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  gap: 4px;
 }
 .dp-drop {
   display: flex;
   justify-content: space-between;
   gap: 10px;
-  font-size: 13px;
-  padding: 4px 8px;
-  border-radius: 7px;
-  background: color-mix(in srgb, var(--bi-frame-title-bg) 55%, transparent);
+  padding: 5px 9px;
+  font-size: 12px;
 }
-.dp-drop--rare {
-  box-shadow: inset 2px 0 0 var(--bi-tick-crit, #ffb02e);
+.dp-drop--rare span:first-child {
+  color: var(--px-gold);
+  font-weight: 700;
 }
 .dp-pity {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 4px 8px;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 8px;
   font-size: 12px;
-  color: var(--bi-frame-ink-muted);
-}
-.dp-pity b {
-  color: var(--bi-frame-ink);
 }
 .dp-pity__track {
-  grid-column: 1 / -1;
-  height: 6px;
-  border-radius: 3px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.35);
+  height: 8px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
 }
 .dp-pity__track i {
   display: block;
   height: 100%;
-  background: var(--bi-tick-crit, #ffb02e);
+  background: var(--px-gold);
+  transform-origin: left;
 }
 
-/* the arena sits above the drawer bar */
-.dp-stage > .ar {
-  position: absolute;
-  inset: 0 0 var(--bar-h) 0;
-  height: auto;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  :root:not([data-motion='full']) .dp-drawer,
-  :root:not([data-motion='full']) .dp-handle__chev {
-    transition: none;
-  }
-}
-:root[data-motion='reduced'] .dp-drawer,
-:root[data-motion='reduced'] .dp-handle__chev {
-  transition: none;
-}
-/* a narrow window drops the status line; the tabs keep the room */
-@media (max-width: 960px) {
-  .dp-status {
-    display: none;
-  }
-}
-
-/* The interim floor controls (UI_RULES §2): plain text, the Push / Farm toggle, the difficulty. */
-.dp-fl {
+/* ---- Weapon and Training ---- */
+.dp-weapon,
+.dp-training {
   display: grid;
-  gap: 6px;
-  margin: 0 0 10px;
-  padding: 8px 10px;
-  border: 1px solid var(--bi-frame-edge, rgb(255 255 255 / 0.12));
+  gap: 12px;
+  align-content: start;
 }
-.dp-fl__where {
-  margin: 0;
-  font-size: 13.5px;
-  color: var(--bi-frame-ink);
-}
-.dp-fl__row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.dp-fl__opt {
-  padding: 5px 14px;
-  font-size: 12.5px;
-}
-.dp-fl__label,
-.dp-fl__hint {
-  margin: 0;
-  font-size: 11.5px;
-  color: var(--bi-frame-ink-muted);
+.dp-sub {
+  margin: 8px 0 0;
+  font-size: 18px;
+  color: var(--px-gold);
 }
 
-/* The stage line (DESIGN.md §6 Stage stars; UI_RULES §2 Stage stars, interim). */
-.dp-fl__stage {
-  margin: 0;
-  font-size: 12.5px;
-  color: var(--bi-frame-ink);
-}
-
-/* The stage map: a plain table, a row per dungeon and a column per tier. */
-.dp-map {
-  margin: 12px 0 0;
-}
-.dp-map__table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11.5px;
-  color: var(--bi-frame-ink);
-}
-.dp-map__table th,
-.dp-map__table td {
-  padding: 3px 6px;
-  text-align: left;
-  border-bottom: 1px solid var(--bi-frame-edge, rgb(255 255 255 / 0.12));
-}
-.dp-map__table thead th {
-  color: var(--bi-frame-ink-muted);
-  font-weight: normal;
-}
-.dp-map__table tr.is-locked {
-  opacity: 0.45;
-}
-.dp-map__table td:last-child,
-.dp-map__table th:last-child {
-  white-space: nowrap;
+@media (max-width: 1100px) {
+  .dp-dun {
+    grid-template-columns: 1fr;
+  }
 }

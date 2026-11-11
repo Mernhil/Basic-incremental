@@ -48,7 +48,15 @@ export function createChallengesPanel(
     li.dataset.status = view.status;
     li.dataset.challenge = view.id;
     const name = h('strong', 'shop-challenge__name', view.name);
-    const stickers = h('span', 'shop-challenge__stickers', t.stickers(view.completions, view.max));
+    // a sticker pip for every completion (UI_RULES §2 Shop view); the count stays as text for readers
+    const stickers = h('span', 'shop-challenge__stickers');
+    stickers.append(h('span', 'sr-only', t.stickers(view.completions, view.max)));
+    for (let i = 0; i < view.max; i++) {
+      const pip = h('i', 'shop-challenge__pip');
+      pip.setAttribute('aria-hidden', 'true');
+      pip.classList.toggle('is-done', i < view.completions);
+      stickers.append(pip);
+    }
     const rule = h('span', 'shop-challenge__rule', view.rule);
     const lines: HTMLElement[] = [h('div', 'shop-challenge__head'), rule];
     lines[0]!.append(name, stickers);

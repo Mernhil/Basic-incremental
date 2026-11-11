@@ -25,7 +25,6 @@ import {
 } from '../src/game';
 import { devSetFloor } from '../src/game/dev';
 import { chooseFight, MILESTONES } from '../scripts/sim/sim';
-import { floorParts } from '../src/renderer/src/pages/dungeonsModel';
 import {
   constantRng,
   floorsContent,
@@ -326,21 +325,6 @@ describe('endless depths', () => {
     const start = on(inCellar(content), content, 3, 'endless');
     const away = simulateOffline(start, content, 0, 600_000, createSeededRng(1));
     expect(floorPosition(away.state, cellar)).toMatchObject({ floor: 3, difficulty: 'endless' });
-  });
-
-  it('reads as a depth on the interim floor line', () => {
-    const parts = floorParts({
-      floor: 12,
-      floors: Infinity,
-      floorKind: 'wave',
-      wave: { index: 1, size: 3 },
-      bestFloor: 30,
-    });
-    expect(parts).toEqual([
-      { kind: 'depth', depth: 12 },
-      { kind: 'enemy', index: 1, size: 3 },
-      { kind: 'best', best: 30 },
-    ]);
   });
 });
 
