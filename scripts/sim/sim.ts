@@ -194,14 +194,8 @@ export const MILESTONES: Milestone[] = [
     id: 'first_star6',
     label: 'First ★6 from copies',
     targetHours: 7,
-    // A ★6 earned with duplicates: a card whose rarity still needs copies per star (Common and
-    // Uncommon; Rare and up star up for free, DESIGN.md §5 Star bar).
-    reached: (s, c) =>
-      Object.entries(s.cards.owned).some(([id, owned]) => {
-        const rarity = c.cardById.get(id)?.rarity;
-        const needs = rarity ? c.cardRules.starBar.needs[rarity] : undefined;
-        return owned.stars >= 6 && (needs ?? []).some((n) => n > 0);
-      }),
+    // Every card starts at ★1, so any ★6 was earned with copies (DESIGN.md §5 Stars).
+    reached: (s) => Object.values(s.cards.owned).some((owned) => owned.stars >= 6),
   },
   {
     id: 'first_prestige',

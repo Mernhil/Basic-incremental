@@ -53,6 +53,8 @@ export const resourceSchema = z.strictObject({
   /** Amount a brand-new game starts with (default 0). Money starts with enough for the first
    *  damage levels (DESIGN.md §3). */
   startAmount: decimal.optional(),
+  /** Kept through an Ascension although its kind is reset by one (star dust belongs to the collection, DESIGN.md §5). */
+  keptOnAscend: z.boolean().optional(),
 });
 
 const costSchema = z.strictObject({ resource: id, amount: positiveDecimal });
@@ -455,12 +457,14 @@ export const cardRulesSchema = z.strictObject({
   mainGrowth: perJob(z.array(modifierSchema)),
   /**
    * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
-   * saved fill, and star n → n + 1 takes `needs[n - 1]` of it (5 steps, ★1→2 … ★5→6; 0 = free).
-   * A star-up costs only the fill.
+   * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
+   * that tier: a fraction at low tiers, 1 at the rarity's top tier. Star dust pays for the missing
+   * part: `dust[rarity][tier]` is the dust price of one whole copy.
    */
   starBar: z.strictObject({
     fillPerDuplicate: perRarity(z.number().positive()),
-    needs: perRarity(z.array(z.number().min(0)).length(MAX_STARS - 1)),
+    needs: perRarity(perTier(z.number().positive())),
+    dust: perRarity(perTier(z.number().positive())),
   }),
   /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
    *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must

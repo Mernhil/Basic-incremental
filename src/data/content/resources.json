@@ -125,7 +125,8 @@
     "id": "star_dust",
     "name": "Star Dust",
     "kind": "material",
-    "tier": 3
+    "tier": 3,
+    "keptOnAscend": true
   },
   {
     "id": "starlight",

@@ -20,7 +20,7 @@ import {
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
-import { applyFreeStars, cardTopTier, levelCap } from './cards';
+import { cardTopTier, levelCap } from './cards';
 import { isWeaponSkinAvailable } from './wardrobe';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
@@ -607,9 +607,6 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
         content.enhancements.cards[id]?.some((x) => x.id === o),
       ),
     };
-    // Stars that cost nothing apply by themselves (DESIGN.md §5): a Rare or better card saved
-    // below ★6 takes them on load. Same format, nothing else changes.
-    applyFreeStars(content, content.cardById.get(id)!.rarity, owned[id]);
   }
   const loadouts = {} as CardState['loadouts'];
   for (const job of JOBS) {

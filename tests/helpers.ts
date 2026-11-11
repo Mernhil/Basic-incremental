@@ -1,4 +1,4 @@
-import { JOBS, loadContent, type Content } from '../src/data';
+import { JOBS, RANK_TIERS, RARITIES, loadContent, type Content } from '../src/data';
 import {
   createInitialState,
   Decimal,
@@ -37,19 +37,14 @@ function pinProductionRates(bundled: Content): Content {
 }
 
 /**
- * The star bar pinned to copies for every rarity (the shipped one lets Rare and up star up for free,
- * DESIGN.md §5 Star bar), so the star bar, shard and tier-up rule tests have copies to count.
+ * The star bar pinned to one whole copy per star at every rarity and tier (the shipped one asks a
+ * fraction of a copy at low tiers, DESIGN.md §5 Star bar), so the star bar, shard and tier-up rule
+ * tests have whole copies to count. The shipped table is tested in cardsFromStart.test.ts.
  */
 function pinStarBar(bundled: Content): Content {
-  const needs = {
-    common: [1, 1, 1, 2, 2],
-    uncommon: [1, 1, 1, 1, 2],
-    rare: [1, 1, 1, 1, 1],
-    epic: [1, 0, 1, 1, 1],
-    legendary: [1, 0, 1, 1, 1],
-    mythic: [1, 0, 1, 0, 1],
-    void: [1, 0, 1, 0, 1],
-  };
+  const needs = Object.fromEntries(
+    RARITIES.map((r) => [r, Object.fromEntries(RANK_TIERS.map((t) => [t, 1]))]),
+  ) as unknown as Content['cardRules']['starBar']['needs'];
   return {
     ...bundled,
     cardRules: { ...bundled.cardRules, starBar: { ...bundled.cardRules.starBar, needs } },

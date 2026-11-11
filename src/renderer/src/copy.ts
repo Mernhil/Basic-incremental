@@ -898,7 +898,12 @@ export const COPY = {
     xpLabel: (pct: number) => `${pct}% of the way to the next level`,
     xpFull: 'XP full',
     xpOf: (now: string, need: string) => `${now} / ${need} XP`,
-    starLine: (fill: number, need: number, next: number) => `${fill} / ${need} copies to ★${next}`,
+    /** Copies come in fractions at low tiers (0.25, 0.5), so the numbers are shown trimmed. */
+    starLine: (fill: number, need: number, next: number) =>
+      `${+fill.toFixed(3)} / ${+need.toFixed(3)} copies to ★${next}`,
+    /** The star dust button: tops up what the star bar lacks. */
+    dustStar: (next: number, cost: number, have: number) =>
+      `Star ★${next} with ${cost} Star Dust (you have ${have})`,
     allStars: 'All six stars',
     impact: (from: number, to: number) => `×${from} → ×${to}`,
     addStar: (next: number) => `Add star ★${next}`,
