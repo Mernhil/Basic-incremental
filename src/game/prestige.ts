@@ -124,7 +124,8 @@ export function ascend(
   // Gems, Money, Cores and the rest start over; Starlight and the premium crystals are kept
   // (DESIGN.md §3), like the pity counters that go with them.
   for (const resource of content.resources) {
-    if (resource.kind === 'prestige' || resource.kind === 'crystal') continue;
+    if (resource.kind === 'prestige' || resource.kind === 'crystal' || resource.keptOnAscend)
+      continue;
     next.resources[resource.id] = startingAmount(content, resource.id);
   }
   next.resources[currency] = (state.resources[currency] ?? new Decimal(0)).add(preview.gain);

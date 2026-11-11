@@ -130,7 +130,8 @@ describe('ascend', () => {
     expect(s.production.treeLevels).toEqual({});
     for (const [id, amount] of Object.entries(s.resources)) {
       const kind = content.resourceById.get(id)!.kind;
-      if (kind === 'prestige' || kind === 'crystal') continue;
+      if (kind === 'prestige' || kind === 'crystal' || content.resourceById.get(id)!.keptOnAscend)
+        continue;
       // Gems, Money and Cores start over (Money from its starting amount).
       const start = content.resourceById.get(id)!.startAmount?.toNumber() ?? 0;
       expect(amount.toNumber(), id).toBe(start);
