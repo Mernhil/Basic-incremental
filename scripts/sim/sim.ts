@@ -49,6 +49,9 @@ import {
   PRODUCTION_JOBS,
   type OwnedCard,
   buyMineLevel,
+  buyMineLevels,
+  curveMaxAffordable,
+  MAX_BULK_LEVELS,
   buyTraining,
   buyTool,
   toolLines,
@@ -71,6 +74,7 @@ import {
   treeLevel,
   treeLevelCost,
   buyTreeLevel,
+  buyTreeLevels,
   mineLevelCost,
   productionPerSecond,
   producerRate,
@@ -585,6 +589,13 @@ export interface Candidate {
    */
   deferMoney?: boolean;
   buy: (state: GameState, content: Content, modifiers: Modifier[], rng: Rng) => GameState | null;
+  /** Mine and tree levels: buys as many levels as `budget` pays for (the game's bulk buy) and says how many, or null. */
+  bulk?: (
+    state: GameState,
+    content: Content,
+    modifiers: Modifier[],
+    budget: Decimal,
+  ) => { state: GameState; count: number } | null;
 }
 
 /**
@@ -757,6 +768,13 @@ function economyCandidates(
       prices: [price],
       gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
       buy: (s, c, m) => okState(buyMineLevel(s, c, mine.id, m)),
+      bulk: (s, c, m, budget) => {
+        const ctx = { job: 'mining' as const, producer: mine.id, resource: mine.resource };
+        const max = curveMaxAffordable(mine.level.cost, mineLevel(s, mine.id), budget, m, ctx);
+        if (max.count < 1) return null;
+        const r = okState(buyMineLevels(s, c, mine.id, max.count, m));
+        return r && { state: r, count: max.count };
+      },
     });
   }
   for (const tree of content.trees) {
@@ -776,6 +794,13 @@ function economyCandidates(
       prices: [price],
       gain: PRODUCTION_VALUE * (now > 0 ? ((next - now) / now) * share : 1),
       buy: (s, c, m) => okState(buyTreeLevel(s, c, tree.id, m)),
+      bulk: (s, c, m, budget) => {
+        const ctx = { job: 'logging' as const, producer: tree.id, resource: tree.resource };
+        const max = curveMaxAffordable(tree.level.cost, treeLevel(s, tree.id), budget, m, ctx);
+        if (max.count < 1) return null;
+        const r = okState(buyTreeLevels(s, c, tree.id, max.count, m));
+        return r && { state: r, count: max.count };
+      },
     });
   }
   // Training (DESIGN.md §6): the repeatable fighting upgrades, valued by what they raise.
@@ -1086,6 +1111,63 @@ function pickPurchase(
   return picks;
 }
 
+/** Marks a line in `bought` whose bulk buy hit MAX_BULK_LEVELS. */
+const MAXED = ':max';
+
+/** Levels of one economy line bought in a row before the buyer ranks everything again. */
+export const ECONOMY_RUN = 25;
+
+/**
+ * After an economy purchase the buyer takes more levels of the same line, up to ECONOMY_RUN, while
+ * what is held stays above what it reserves for card upgrades. When those levels were still cheap
+ * (each under 1/ECONOMY_RUN of what is left to spend), a mine or tree then takes as many levels
+ * as 1/ECONOMY_RUN of what is left pays for, through the game's bulk buy. A speed-up: the gain of
+ * one more level of the best line barely moves between two levels, and ranking every candidate
+ * again after each level made the passes after a big Ascension, which buy millions of mine levels
+ * once Money runs away, take hours. A bulk buy that hits the game's cap (MAX_BULK_LEVELS) ends
+ * that line for the pass, like a player who clicks Max once per look: when level prices stop
+ * growing, the levels on offer never run out.
+ */
+export function buyAgain(
+  state: GameState,
+  content: Content,
+  candidate: Candidate,
+  modifiers: Modifier[],
+  rng: Rng,
+  reserved: Map<string, Decimal>,
+  bought: string[],
+): GameState {
+  const left = (s: GameState, resource: string): Decimal =>
+    have(s, resource).sub(reserved.get(resource) ?? 0);
+  let current = state;
+  let cheap = false;
+  for (let i = 1; i < ECONOMY_RUN; i++) {
+    const next = candidate.buy(current, content, modifiers, rng);
+    if (!next) return current;
+    if (candidate.prices.some((p) => left(next, p.resource).lt(0))) return current;
+    bought.push(candidate.id);
+    cheap = candidate.prices.every((p) =>
+      have(current, p.resource)
+        .sub(have(next, p.resource))
+        .mul(ECONOMY_RUN)
+        .lte(left(next, p.resource)),
+    );
+    current = next;
+  }
+  const price = candidate.prices[0];
+  if (!cheap || !candidate.bulk || !price || candidate.prices.length !== 1) return current;
+  const many = candidate.bulk(
+    current,
+    content,
+    modifiers,
+    left(current, price.resource).div(ECONOMY_RUN),
+  );
+  if (!many) return current;
+  // A Max that hits the game's bulk cap: this line is done for the pass (see greedyBuy).
+  bought.push(many.count >= MAX_BULK_LEVELS ? `${candidate.id}${MAXED}` : candidate.id);
+  return many.state;
+}
+
 /** Most purchases in one pass (a safety valve). */
 const MAX_BUYS_PER_PASS = 500;
 
@@ -1101,14 +1183,28 @@ export function greedyBuy(
   let current = chooseRespec(state, content);
   const bought: string[] = [];
   let candidates: Candidate[] = [];
+  const maxed = new Set<string>();
   for (let i = 0; i < MAX_BUYS_PER_PASS; i++) {
     const modifiers = collectModifiers(current, content);
     let next: GameState | null = null;
     candidates = buyerCandidates(current, content, modifiers);
     for (const candidate of pickPurchase(current, content, candidates)) {
+      if (maxed.has(candidate.id)) continue;
       next = candidate.buy(current, content, modifiers, rng);
       if (next) {
         bought.push(candidate.id);
+        if (candidate.kind === 'economy') {
+          next = buyAgain(
+            next,
+            content,
+            candidate,
+            modifiers,
+            rng,
+            reservations(current, candidates),
+            bought,
+          );
+          if (bought[bought.length - 1] === `${candidate.id}${MAXED}`) maxed.add(candidate.id);
+        }
         break;
       }
     }

@@ -1,7 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, activeWorkers, forgeWorker, stageKey, type GameState } from '../src/game';
 import {
+  Decimal,
+  activeWorkers,
+  collectModifiers,
+  createSeededRng,
+  forgeWorker,
+  isProducerUnlocked,
+  mineLevel,
+  mineLevelCost,
+  stageKey,
+  type GameState,
+} from '../src/game';
+import {
+  ECONOMY_RUN,
   ascendNow,
+  buyAgain,
+  buyerCandidates,
   buildOrder,
   chooseLead,
   chooseAutomation,
@@ -231,5 +245,27 @@ describe('sim player: lead and Ascension', () => {
     const tracker = { peakRate: 0 };
     expect(ascendNow({ gain: 20, minimum: 10, runSeconds: 3600, earned: 10 }, tracker)).toBe(false);
     expect(ascendNow({ gain: 30, minimum: 10, runSeconds: 3700, earned: 10 }, tracker)).toBe(true);
+  });
+});
+
+describe('sim player: runs of one economy line', () => {
+  const run = (ore: number): number => {
+    const state = freshState();
+    const mine = content.mines.find((m) => isProducerUnlocked(state, content, 'mining', m.id))!;
+    const paidIn = mineLevelCost(state, content, mine.id)!.resource;
+    state.resources[paidIn] = new Decimal(ore);
+    const modifiers = collectModifiers(state, content);
+    const candidate = buyerCandidates(state, content, modifiers).find(
+      (c) => c.id === `mine:${mine.id}`,
+    )!;
+    const after = buyAgain(state, content, candidate, modifiers, createSeededRng(1), new Map(), []);
+    return mineLevel(after, mine.id) - mineLevel(state, mine.id);
+  };
+
+  it('buys more levels of the best line while they stay cheap beside what is left', () => {
+    // a modest purse stops the run within ECONOMY_RUN levels (it runs out or levels get dear)
+    expect(run(1e3)).toBeLessThanOrEqual(ECONOMY_RUN);
+    // a huge purse then bulk-buys as many levels as a 1/ECONOMY_RUN share of it pays for
+    expect(run(1e300)).toBeGreaterThan(ECONOMY_RUN);
   });
 });
