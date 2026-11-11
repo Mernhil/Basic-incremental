@@ -23,6 +23,7 @@ import {
   chooseAutoChallenge,
   chooseFight,
   focusChoice,
+  nextChallengeKey,
   runExpeditions,
   teamForChallenge,
   trainingFeed,
@@ -368,6 +369,30 @@ describe('sim player: floor Challenges and the team of four', () => {
     const hopeless = withBossAttack(real, 'mossy_cellar', 800, 2);
     expect(margin(state, hopeless)).toBeLessThan(CHALLENGE_TRY_MARGIN);
     expect(chooseAutoChallenge(state, hopeless, 1000, null).tried).toBe(false);
+  });
+});
+
+describe('sim player: a lost Challenge', () => {
+  it('believes a defeat over the estimate until the team has grown', () => {
+    const real = loadContent();
+    const state = freshState();
+    state.combat.floors['mossy_cellar'] = {
+      difficulty: 'normal',
+      autoChallenge: true,
+      tiers: { normal: { floor: 9, best: 9 } },
+    };
+    state.activeDungeonId = 'mossy_cellar';
+    const easy = withBossAttack(withDps(1e6, real), 'mossy_cellar', 0, 2);
+    const margin = challengeMargin(state, easy, 'mossy_cellar', collectModifiers(state, easy))!;
+    expect(margin).toBeGreaterThan(CHALLENGE_WIN);
+    const cellar = real.dungeonById.get('mossy_cellar')!;
+    const key = nextChallengeKey(state, easy)!;
+    // Lost at this very margin: auto-challenge off, though the estimate says it wins.
+    const after = chooseAutoChallenge(state, easy, 0, null, { key, margin });
+    expect(floorPosition(after.state, cellar).autoChallenge).toBe(false);
+    // Lost long ago at a far smaller margin: the team has grown, it is on again.
+    const grown = chooseAutoChallenge(state, easy, 0, null, { key, margin: margin / 2 });
+    expect(floorPosition(grown.state, cellar).autoChallenge).toBe(true);
   });
 });
 

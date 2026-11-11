@@ -2264,6 +2264,25 @@ function climbTarget(
   return best && { id: best.id, difficulty: best.difficulty };
 }
 
+/** A lost Challenge floor counts as won again once the margin has grown this much past its loss. */
+export const CHALLENGE_REGROWTH = 1.1;
+
+/** A Challenge lost: which one (`nextChallengeKey`) and the margin it was lost at. */
+export interface ChallengeLoss {
+  key: string;
+  margin: number;
+}
+
+/** The next Challenge of the active dungeon as "dungeon:difficulty:floor", or null. */
+export function nextChallengeKey(state: GameState, content: Content): string | null {
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  if (!dungeon) return null;
+  const position = floorPosition(state, dungeon);
+  return position.challengeFloor === null
+    ? null
+    : `${dungeon.id}:${position.difficulty}:${position.challengeFloor}`;
+}
+
 /** A lost Challenge the estimate calls hopeless is tried again by hand at most this often (s). */
 export const CHALLENGE_RETRY_SECONDS = 900;
 
@@ -2275,18 +2294,26 @@ export const CHALLENGE_RETRY_SECONDS = 900;
  * presses the Challenge button itself once every CHALLENGE_RETRY_SECONDS while the Challenge is
  * close (margin at least CHALLENGE_TRY_MARGIN), since the estimate leaves out what the real fight
  * may still give (crits, level-ups); `lastTry` is when it last pressed it (sim seconds, or null).
+ * A floor it has lost (`lost`: the Challenge's key and the margin it was lost at) does not count
+ * as won again until the margin has grown CHALLENGE_REGROWTH past that: the player believes the
+ * defeat over the estimate.
  */
 export function chooseAutoChallenge(
   state: GameState,
   content: Content,
   now = 0,
   lastTry: number | null = null,
+  lost: ChallengeLoss | null = null,
 ): { state: GameState; tried: boolean } {
   const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
   if (!dungeon) return { state, tried: false };
   const margin = challengeMargin(state, content, dungeon.id, collectModifiers(state, content));
   if (margin === null) return { state, tried: false };
-  const on = margin >= CHALLENGE_WIN;
+  const beaten =
+    lost !== null &&
+    lost.key === nextChallengeKey(state, content) &&
+    margin < lost.margin * CHALLENGE_REGROWTH;
+  const on = margin >= CHALLENGE_WIN && !beaten;
   const set = setAutoChallenge(state, content, dungeon.id, on);
   const next = set.ok ? set.state : state;
   if (on || margin < CHALLENGE_TRY_MARGIN) return { state: next, tried: false };
@@ -2569,6 +2596,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     ]),
   );
   let lastTry: number | null = null;
+  let lost: ChallengeLoss | null = null;
   let challengeStartedAt = 0;
   let completionsSeen: Record<string, number> = {};
   const progress: ProgressSample[] = [];
@@ -2700,7 +2728,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         if (tier.ok) state = tier.state;
       }
       state = optimizeLoadouts(state, content);
-      const challenge = chooseAutoChallenge(state, content, t, lastTry);
+      const challenge = chooseAutoChallenge(state, content, t, lastTry, lost);
       state = challenge.state;
       if (challenge.tried) {
         lastTry = t;
@@ -2734,7 +2762,15 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     // again and again is not, or a farm with overflow would re-choose every step.
     for (const c of report.challenges) {
       if (c.won) table.challengesWon++;
-      else table.challengesLost++;
+      else {
+        table.challengesLost++;
+        const key = `${c.dungeonId}:${c.difficulty}:${c.floor}`;
+        const margin =
+          challengeMargin(state, content, c.dungeonId, collectModifiers(state, content)) ?? 0;
+        // The same floor lost again: the bar stays where it was first lost, or higher.
+        const prev = lost as ChallengeLoss | null;
+        lost = { key, margin: prev?.key === key ? Math.max(prev.margin, margin) : margin };
+      }
     }
     for (const [id, amount] of Object.entries(report.materials)) {
       if (cores.has(id)) table.fightMaterials += amount;
