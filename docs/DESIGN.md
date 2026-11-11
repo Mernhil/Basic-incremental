@@ -473,6 +473,9 @@ Defaults by Claude, 2026-11-10 (Scope 3, the dungeon release, to confirm):
 - §6 Floor numbers: a wave at 20% of the HP and 50% of the attack a boss would have on its floor, a mini-boss at 60% and 80%, enemy weights 0.7 / 1 / 1.5, drops by share of the boss's HP, the rare item only from the last-floor boss.
 - §6 (`[Default]`) Dungeon 4 is called Stormwrack Cove (the user asked for a cursed-sea theme and left the name open).
 - §6 the Shadow Slime exists only as one side-view picture that is not on a pixel grid; its front-facing redraw needs PixelLab (which costs money) and the user's yes, so the Void's light enemy shows the labelled placeholder until then.
+- §12 (asset packs) the Elie Studio licence allows use inside a finished game but not standalone redistribution of the assets, modified or not, and this repository is public: the cut sprites and the Learn references are committed in it. Coin_Gems and the achievement badges sheet came with no licence file and no author, so their terms are unconfirmed. Both need the user's decision (keep, make the repository private, or replace) before release.
+- §12 the five sticker styles a to e are green (the sheet's own colours), bronze, silver, gold and prismatic; the plan's stone step was left out so the approved green stays the starter (a `[Default]`).
+- §6 the small packs (Bloodroot, Obsidian Crab and the 84 to 128 px Elie canvases) are drawn at their native size and look small next to the 125 px bodies; doubling them needs the user's yes.
 - UI_RULES §2 the interim floors readout and controls on the Dungeons screen.
 - §14 the pacing targets for the first Hard and Nightmare clears and Dungeons 4 to 6.
 
