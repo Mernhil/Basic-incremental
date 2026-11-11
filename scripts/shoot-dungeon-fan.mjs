@@ -43,7 +43,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="dungeons"]');
+await page.click('[data-open="dungeon"]');
 await page.waitForSelector('.ar__fan .lf-slot--support .bi-card');
 await page.waitForTimeout(800);
 // a support's peek: its free edge (the right edge of s1, the left edge of s0), not its middle

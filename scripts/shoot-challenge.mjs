@@ -45,7 +45,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button, .wb button')?.click());
-await page.click('.shell-rail__item[data-page="dungeons"]');
+await page.click('[data-open="dungeon"]');
 await page.waitForSelector('[data-key="arena-challenge"]');
 await page.setViewportSize({ width: 1280, height: 720 }).catch(() => undefined);
 await page.waitForTimeout(1500);

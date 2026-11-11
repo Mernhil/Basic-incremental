@@ -1,0 +1,25 @@
+/* Package 9a: the arena in the table's centre window and in the dungeon view. The arena is the
+   Dungeons page as it was (pages/dungeons.css); these rules only fit it to its two homes. */
+
+/* in the window: the arena fills it, without the drawer (its controls live in the full view) */
+.dv-window > .dv-arena.shell-page--stage {
+  margin: 0;
+  height: 100%;
+  max-width: none;
+}
+.dv-window .dp-stage {
+  min-height: 0;
+}
+.dv-window .dp-drawer {
+  display: none;
+}
+
+/* in the view: the arena fills the view's body under its title bar */
+.dv-view > .dv-arena.shell-page--stage {
+  margin: -4px -26px -40px;
+  height: calc(100vh - var(--header-h, 64px) - var(--view-bar-h, 56px));
+  max-width: none;
+}
+.vh-body > .shell-page.dv-view {
+  display: block;
+}

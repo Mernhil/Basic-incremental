@@ -48,7 +48,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="dungeons"]');
+await page.click('[data-open="dungeon"]');
 await page.waitForSelector('.ar__fan .lf-slot--main .bi-card');
 if (await page.evaluate(() => document.querySelector('.dp-drawer')?.classList.contains('is-open')))
   await page.click('.dp-handle');

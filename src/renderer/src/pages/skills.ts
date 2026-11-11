@@ -527,6 +527,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     });
     conf.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
+        e.preventDefault();
         confirming = false;
         build('respec');
       }

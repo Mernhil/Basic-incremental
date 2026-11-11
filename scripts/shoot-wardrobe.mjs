@@ -81,7 +81,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="wardrobe"]');
+await page.click('[data-open="wardrobe"]');
 await page.waitForSelector('.wd-stage .bi-card');
 await page.waitForTimeout(1500);
 await page.screenshot({ path: `${out}/wardrobe.png` });
@@ -107,7 +107,7 @@ await shootCard(`${out}/max-filigree-still.png`);
 await page.emulateMedia({ reducedMotion: 'no-preference' });
 
 // pull ten from the Wardrobe Gate and reveal all
-await page.click('.shell-rail__item[data-page="summon"]');
+await page.click('[data-open="summon"]');
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${out}/summon-shelf.png` });
 const ten = page.locator('.sm-portal[data-portal="wardrobe_gate"] .sm-pull').nth(1);

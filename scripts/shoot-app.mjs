@@ -14,7 +14,7 @@ await page.waitForTimeout(1400); // let a hit and its tick numbers appear
 await page.screenshot({ path: out });
 const info = await page.evaluate(() => ({
   title: document.querySelector('.shell-brand__name')?.textContent,
-  page: document.querySelector('.shell-rail__item[aria-current]')?.dataset.page,
+  page: document.querySelector('.vh-view:not([hidden])')?.dataset.view ?? 'table',
   bars: document.querySelector('.bi-hpstack__count')?.textContent,
   hp: document.querySelector('.bi-hpstack__text')?.textContent,
   away: document.querySelector('.away') !== null,

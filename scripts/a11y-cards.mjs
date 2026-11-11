@@ -12,7 +12,7 @@ const page = browser
   .flatMap((c) => c.pages())
   .find((p) => !p.url().startsWith('devtools'));
 await page.waitForSelector('.shell');
-await page.click('.shell-rail__item[data-page="cards"]');
+await page.click('[data-open="cards"]');
 await page.click('#cards-tab-collection');
 await page.waitForSelector('.cp-tile');
 await page.click('[data-key="tile-storm_duelist"]');

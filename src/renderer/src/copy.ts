@@ -100,6 +100,9 @@ export const COPY = {
     },
   },
   table: {
+    /** The dock of piles along the bottom of the table (UI_RULES.md §2). */
+    dock: 'Table',
+    open: (name: string) => `Open ${name}`,
     boss: 'Boss',
     health: 'Loadout health',
     knockedOut: (s: number) => `Knocked out · back in ${s}s`,
@@ -114,6 +117,25 @@ export const COPY = {
     mines: (n: number) => (n === 1 ? '1 mine' : `${n} mines`),
     locked: (by: string) => `Unlocks from ${by}`,
     perSecond: (amount: string) => `${amount}/s`,
+  },
+  /** The full views over the table (UI_RULES.md §2, A full view). */
+  view: {
+    back: '← Table',
+    backLabel: 'Back to the table',
+    titles: {
+      dungeon: 'Dungeon',
+      logging: 'Logging',
+      mining: 'Mining',
+      cards: 'Cards',
+      summon: 'Summon',
+      wardrobe: 'Wardrobe',
+      skills: 'Skill Tree',
+      achievements: 'Achievements',
+      shop: 'Shop',
+      forge: 'Forge',
+      upgrades: 'Upgrades',
+      settings: 'Settings',
+    },
   },
   shell: {
     title: 'Basic Incremental',
@@ -958,10 +980,11 @@ export const COPY = {
     heirloom: (card: string) => `${card} claimed its Heirloom!`,
     heirloomDetail: (item: string) => `It now wields ${item}.`,
     goals: 'Goals',
+    goalsButton: (n: number) => (n > 0 ? `Goals, ${n} shown` : 'Goals'),
     ready: 'ready',
     eta: (d: string) => `~${d}`,
     goalLabel: (title: string, pct: number, eta: string) =>
-      `${title}, ${pct}% done${eta ? `, ${eta}` : ''}. Open its page.`,
+      `${title}, ${pct}% done${eta ? `, ${eta}` : ''}. Open its view.`,
     medal: (metal: string) => `${metal} medal`,
     noMedal: 'No medal yet',
     nextKills: (have: number, need: number) =>

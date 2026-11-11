@@ -63,7 +63,7 @@ async function setup(globals, extra = {}) {
   await page.evaluate(() => document.querySelector('.away button')?.click());
 }
 const go = async (id) => {
-  await page.click(`.shell-rail__item[data-page="${id}"]`);
+  await page.click(`[data-open="${id}"]`);
   await page.waitForTimeout(700);
 };
 

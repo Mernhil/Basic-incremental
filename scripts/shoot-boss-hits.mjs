@@ -47,7 +47,7 @@ async function setup(dungeon, playMs, { strong = false } = {}) {
   await page.reload();
   await page.waitForSelector('.shell');
   await page.evaluate(() => document.querySelector('.away button')?.click());
-  await page.click('.shell-rail__item[data-page="dungeons"]');
+  await page.click('[data-open="dungeon"]');
 }
 
 const state = () =>

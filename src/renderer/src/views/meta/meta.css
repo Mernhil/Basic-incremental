@@ -1,0 +1,8 @@
+/* Package 9d: the Upgrades view, the two upgrade shelves side by side. The other views keep their
+   pages' own styles (pages/*.css). */
+
+.mv-upgrades {
+  max-width: 1280px;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  align-items: start;
+}

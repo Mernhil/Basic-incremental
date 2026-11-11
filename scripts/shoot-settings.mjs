@@ -19,7 +19,7 @@ await page.setViewportSize({ width: 1440, height: 1000 }).catch(() => undefined)
 await page.waitForSelector('.shell');
 
 const prefsBefore = await page.evaluate(() => localStorage.getItem('bi.ui'));
-await page.click('.shell-rail__item[data-page="settings"]');
+await page.click('[data-open="settings"]');
 await page.waitForTimeout(400);
 await page.screenshot({ path: `${out}/settings.png` });
 

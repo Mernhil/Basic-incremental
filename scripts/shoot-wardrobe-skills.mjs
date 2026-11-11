@@ -78,7 +78,7 @@ for (const [w, h] of [
   [1920, 1080],
 ]) {
   await page.setViewportSize({ width: w, height: h });
-  await page.click('.shell-rail__item[data-page="wardrobe"]');
+  await page.click('[data-open="wardrobe"]');
   await page.click('[data-key="tab-cosmetics"]');
   await page.waitForSelector('.wd-stage .bi-card');
   await page.waitForTimeout(900);
@@ -86,7 +86,7 @@ for (const [w, h] of [
   await page.click('[data-key="tab-skins"]');
   await page.waitForTimeout(1000);
   await page.screenshot({ path: `${out}/wardrobe-skins-${w}.png` });
-  await page.click('.shell-rail__item[data-page="skills"]');
+  await page.click('[data-open="skills"]');
   await page.waitForTimeout(700);
   await page.screenshot({ path: `${out}/skills-${w}.png` });
 }

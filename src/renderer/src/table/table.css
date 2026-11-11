@@ -1,0 +1,212 @@
+/* The table (UI_RULES.md §2, "The table", "Table layout and scale"; mockup 4a): the dungeon
+   window in the centre, the two wings beside it, the dock of piles along the bottom. Sizes are the
+   [Default] table layout; colours from the table, frame and chrome tokens. The pieces' contents
+   belong to the view packages (views/*); this file draws only the frames around them. */
+
+.tbl {
+  --wing-w: 216px;
+  --dock-h: 132px;
+  --tbl-gap: 16px;
+  position: relative;
+  min-height: 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: var(--wing-w) minmax(0, 1fr) var(--wing-w);
+  grid-template-rows: minmax(0, 1fr) var(--dock-h);
+  grid-template-areas:
+    'left window right'
+    'dock dock dock';
+  column-gap: var(--tbl-gap);
+  padding: 10px var(--tbl-gap) 0;
+  overflow: hidden;
+}
+
+/* ---- pieces: the window and the wings ---- */
+.tbl-piece {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+.tbl-piece:focus {
+  outline: none;
+}
+.tbl-piece__body {
+  height: 100%;
+  min-height: 0;
+}
+.tbl-wing--left {
+  grid-area: left;
+}
+.tbl-wing--right {
+  grid-area: right;
+}
+.tbl-window {
+  grid-area: window;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--bi-frame-bg) 70%, #000);
+  box-shadow:
+    0 0 0 var(--fs) var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-hi);
+}
+.tbl-piece:hover .tbl-open,
+.tbl-open:focus-visible {
+  opacity: 1;
+}
+/* the corner open button: the keyboard's way in, and a hint for the mouse */
+.tbl-open {
+  position: absolute;
+  z-index: 3;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  opacity: 0.7;
+}
+/* the window's button sits top-left, clear of the arena's readouts on the right */
+.tbl-window .tbl-open {
+  left: 8px;
+  right: auto;
+}
+.tbl-wing .tbl-open {
+  top: 2px;
+  right: 0;
+}
+.tbl-open svg {
+  width: 14px;
+  height: 14px;
+  fill: currentColor;
+  shape-rendering: crispEdges;
+}
+
+/* ---- the dock of piles ---- */
+.tbl-dock {
+  grid-area: dock;
+  margin: 0 calc(var(--tbl-gap) * -1);
+  background: color-mix(in srgb, var(--bi-table-bg, #17131f) 70%, #000);
+  box-shadow: 0 calc(var(--fs) * -1) 0 0 var(--px-edge);
+  display: grid;
+  align-items: center;
+}
+.tbl-dock__list {
+  margin: 0;
+  padding: 0 var(--tbl-gap);
+  list-style: none;
+  display: flex;
+  justify-content: space-around;
+  gap: 4px;
+}
+.tbl-pile {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 132px;
+  padding: 0 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--bi-on-table);
+  font: inherit;
+  cursor: pointer;
+}
+.tbl-pile:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+/* a small stack of cards: two card backs behind the one with the plaque */
+.tbl-pile__stack {
+  --stack-w: 72px;
+  --stack-h: 74px;
+  position: relative;
+  width: var(--stack-w);
+  height: var(--stack-h);
+  margin-bottom: 4px;
+}
+.tbl-pile__stack::before,
+.tbl-pile__stack::after,
+.tbl-pile__card {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--px-raised);
+  box-shadow:
+    0 0 0 var(--fs-sm) var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-hi),
+    inset 0 calc(var(--fs-sm) * -1) 0 0 var(--px-lo);
+}
+.tbl-pile__stack::before {
+  translate: 6px 6px;
+  filter: brightness(0.6);
+}
+.tbl-pile__stack::after {
+  translate: 3px 3px;
+  filter: brightness(0.8);
+}
+.tbl-pile__card {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  border-top: var(--fs-sm) solid var(--bi-chrome-accent);
+}
+/* the 64-pixel plaque at a whole device scale, never under 1x (ui/pixelScale.ts rounding) */
+.tbl-pile__card svg {
+  --pq-n: max(1, round(down, calc(64 * var(--dpr) / 64), 1));
+  width: calc(64px * var(--pq-n) / var(--dpr));
+  height: calc(64px * var(--pq-n) / var(--dpr));
+  image-rendering: pixelated;
+  filter: saturate(0.8) brightness(0.9);
+}
+.tbl-pile:hover .tbl-pile__card,
+.tbl-pile:focus-visible .tbl-pile__card {
+  translate: 0 -3px;
+}
+.tbl-pile:hover .tbl-pile__card svg,
+.tbl-pile:focus-visible .tbl-pile__card svg {
+  filter: none;
+}
+.tbl-pile__name {
+  font-size: 18px;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+.tbl-pile__hint {
+  min-height: 1.3em;
+  font-size: 12px;
+  color: var(--px-muted, var(--bi-on-table));
+  white-space: nowrap;
+}
+.tbl-pile__hint.is-ready {
+  color: var(--bi-good, #6fdc8c);
+}
+
+/* ---- smaller windows (Table layout and scale) ---- */
+@media (max-width: 1179px) {
+  .tbl {
+    --wing-w: 184px;
+  }
+  .tbl-pile {
+    width: 104px;
+  }
+}
+@media (max-height: 699px) {
+  .tbl {
+    --dock-h: 104px;
+  }
+  .tbl-pile__stack {
+    --stack-w: 68px;
+    --stack-h: 68px;
+    margin-bottom: 2px;
+  }
+  .tbl-pile__hint {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tbl-pile:hover .tbl-pile__card,
+  .tbl-pile:focus-visible .tbl-pile__card {
+    translate: none;
+  }
+}

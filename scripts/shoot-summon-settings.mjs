@@ -39,7 +39,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="summon"]');
+await page.click('[data-open="summon"]');
 await page.waitForSelector('.sm-table');
 
 const sizes = [
@@ -96,7 +96,7 @@ await page.waitForTimeout(600);
 await page.mouse.move(700, 5);
 await page.screenshot({ path: `${out}/summon-wardrobe-hand-1280x720.png` });
 
-await page.click('.shell-rail__item[data-page="settings"]');
+await page.click('[data-open="settings"]');
 await page.waitForSelector('.set-grid');
 await shoot('settings');
 console.log('errors', errors);
