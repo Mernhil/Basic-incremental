@@ -4,6 +4,7 @@ import { COPY } from '../copy';
 import { revealSound, type RevealView } from '../pages/summonModel';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
+import { createCircle } from './revealCircle';
 import { reducedMotion } from './motion';
 import { dealIn } from '../table/motion';
 import './reveal.css';
@@ -50,9 +51,28 @@ export function showReveal(opts: RevealOptions): void {
   dialog.setAttribute('role', 'dialog');
   dialog.setAttribute('aria-modal', 'true');
   dialog.setAttribute('aria-label', COPY.summon.revealTitle(opts.portalName));
-  const swirl = document.createElement('div');
-  swirl.className = 'rv__swirl';
-  swirl.setAttribute('aria-hidden', 'true');
+  const ten = views.length > 1;
+  // the stage holds the circle, the deck (a pull of several) and the fan of cards; one whole
+  // card scale for all of it (a ten-pull deals 132 px cards, a single pull one big card)
+  const stageBox = document.createElement('div');
+  stageBox.className = 'rv__stage';
+  fitCard(stageBox, {
+    want: ten ? 132 : 264,
+    max: () => (ten ? Math.floor((window.innerWidth * 0.94 - 24) / 8.9) : Infinity),
+  });
+  const swirl = createCircle();
+  let deck: HTMLElement | null = null;
+  if (ten) {
+    deck = document.createElement('div');
+    deck.className = 'rv__deck';
+    deck.setAttribute('aria-hidden', 'true');
+    for (let d = 0; d < 4; d++) {
+      const layer = document.createElement('i');
+      layer.className = 'rv-slot__back';
+      layer.style.setProperty('--d', String(d));
+      deck.append(layer);
+    }
+  }
   const row = document.createElement('ol');
   row.className = 'rv__row';
   const status = document.createElement('p');
@@ -73,7 +93,11 @@ export function showReveal(opts: RevealOptions): void {
   done.textContent = COPY.summon.done;
   done.hidden = true;
   actions.append(skip, done);
-  dialog.append(swirl, row, status, hint, actions);
+  row.style.setProperty('--n', String(views.length));
+  stageBox.append(swirl);
+  if (deck) stageBox.append(deck);
+  stageBox.append(row);
+  dialog.append(stageBox, status, hint, actions);
   overlay.append(dialog);
   document.body.append(overlay);
 
@@ -82,8 +106,6 @@ export function showReveal(opts: RevealOptions): void {
   const slots = views.map((v, i) => {
     const li = document.createElement('li');
     li.className = 'rv-slot';
-    // a ten-pull deals small cards, a single pull one big card; both whole pixel scales (§12)
-    fitCard(li, { want: views.length > 1 ? 132 : 264 });
     li.dataset['orb'] = v.orb;
     li.dataset['rarity'] = v.rarity;
     // a rare card glows in its own rarity colour while it lies face down
@@ -269,7 +291,7 @@ export function showReveal(opts: RevealOptions): void {
   window.setTimeout(
     () => {
       overlay.classList.add('is-ready');
-      dealIn(slots, { from: swirl.getBoundingClientRect() });
+      dealIn(slots, { from: (deck ?? swirl).getBoundingClientRect() });
     },
     still ? 0 : 700,
   );
