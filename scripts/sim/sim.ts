@@ -28,7 +28,7 @@
  * in every 30 minutes (the game stays open in between, nothing is bought or re-aimed) and is
  * offline 8 hours a day, taking the game's own offline progress on return.
  */
-import { RANK_TIERS, RARITIES, type Content } from '../../src/data';
+import { RANK_TIERS, RARITIES, type Content, type SkillNode } from '../../src/data';
 import {
   advance,
   activeWorkers,
@@ -49,6 +49,7 @@ import {
   toolLines,
   trainingLines,
   cardPower,
+  cardBaseDamage,
   collectModifiers,
   createInitialState,
   createSeededRng,
@@ -86,6 +87,9 @@ import {
   setLoadout,
   starUp,
   starUpCheck,
+  starDustCost,
+  starUpWithDust,
+  buyShardItem,
   tierUp,
   tierUpCheck,
   treeUnlockCost,
@@ -104,6 +108,16 @@ import {
   chooseEnhancement,
   resetEnhancements,
   setWishlisted,
+  autobuyerOwned,
+  setAutomation,
+  depthYield,
+  workersPerPlace,
+  forgeRecipe,
+  statValue,
+  respecInfo,
+  respecSkills,
+  skillPoints,
+  stageKey,
   cosmeticMaxLevel,
   cosmeticUpgradeCheck,
   upgradeCosmetic,
@@ -139,6 +153,8 @@ export interface SimLog {
   ascensions: number[];
   /** Seconds spent fighting each dungeon / trial. */
   fought: Record<string, number>;
+  /** Star dust spent on stars. */
+  dustSpent?: number;
 }
 
 const tierAtLeast = (state: GameState, tier: (typeof RANK_TIERS)[number]): boolean =>
@@ -409,6 +425,115 @@ export function skillPriority(content: Content): string[] {
   return out;
 }
 
+/**
+ * What one unit of a skill's stat is worth to the player, as a share of its power: per 1 for a
+ * percent modifier (5 = +5%) and per 1 for a flat one. Damage is the yardstick (+1% damage = 0.01);
+ * production counts at PRODUCTION_VALUE, as the buyer values it; anything unlisted a little.
+ */
+const SKILL_WEIGHT: Record<string, number> = {
+  'combat.damage': 0.01,
+  'combat.health': 0.005,
+  'combat.critChance': 1,
+  'combat.critDamage': 0.1,
+  'combat.defence': 0.003,
+  'burst.power': 0.01,
+  'burst.fill': 0.003,
+  'burst.interval': 0.005,
+  'production.rate': 0.0035,
+  'worker.power': 0.0035,
+  'production.levelBonus': 0.002,
+  'cost.growth': 0.01,
+  'drops.crystalMultiplier': 0.003,
+  'drops.materialChance': 0.003,
+  'prestige.gain': 0.004,
+  'stars.damage': 0.002,
+  'xp.card': 0.002,
+};
+
+/**
+ * Whether a skill acts now (DESIGN.md §10 Hidden weapon circles): a branch skill always; a fighting
+ * circle only while the loadout's main card carries that weapon type; the pickaxe and logging axe
+ * circles while a card carrying it is at work.
+ */
+function skillActive(state: GameState, content: Content, node: SkillNode): boolean {
+  if (!node.circle) return true;
+  const kindOf = (id: string | null): string | undefined =>
+    id ? content.cardById.get(id)?.item.kind : undefined;
+  if (kindOf(state.cards.loadouts.fighting.main) === node.circle) return true;
+  return Object.values(activeWorkers(state, content))
+    .flat()
+    .some((id) => kindOf(id) === node.circle);
+}
+
+/** What one rank of a skill is worth now (0 for a circle skill that does not act). */
+export function skillValue(state: GameState, content: Content, node: SkillNode): number {
+  if (!skillActive(state, content, node)) return 0;
+  return node.perRank.reduce(
+    (sum, m) => sum + Math.abs(num(new Decimal(m.value))) * (SKILL_WEIGHT[m.stat] ?? 0.001),
+    0,
+  );
+}
+
+/**
+ * The skill to buy next (DESIGN.md §10): among the nodes it can buy now, the most value per skill
+ * point, where a node also counts half of the best node it opens (so a path to a keystone or a
+ * large skill is walked). Ties go to the branch priority order (`skillPriority`).
+ */
+export function nextSkill(state: GameState, content: Content): string | null {
+  const nodes = skillTree(state, content);
+  const value = new Map(nodes.map((n) => [n.node.id, skillValue(state, content, n.node)]));
+  const order = skillPriority(content);
+  let best: { id: string; score: number; rank: number } | null = null;
+  for (const info of nodes) {
+    if (!info.canBuy) continue;
+    const id = info.node.id;
+    const opens = nodes
+      .filter((n) => n.rank === 0 && n.node.requires.includes(id))
+      .map((n) => (value.get(n.node.id) ?? 0) / n.node.cost);
+    const own = value.get(id) ?? 0;
+    if (own === 0 && opens.every((v) => v === 0)) continue;
+    const score = own / info.node.cost + 0.5 * Math.max(0, ...opens);
+    const rank = order.indexOf(id) < 0 ? order.length : order.indexOf(id);
+    if (
+      !best ||
+      score > best.score + 1e-12 ||
+      (Math.abs(score - best.score) <= 1e-12 && rank < best.rank)
+    ) {
+      best = { id, score, rank };
+    }
+  }
+  return best?.id ?? null;
+}
+
+/** Skill points in skills that do nothing now at which the player respecs. */
+export const RESPEC_WASTED_POINTS = 3;
+/** Most of the Starlight in hand a paid respec may cost. */
+const RESPEC_PRICE_SHARE = 0.1;
+
+/**
+ * Respec (DESIGN.md §10): when at least RESPEC_WASTED_POINTS skill points sit in weapon circle
+ * skills that do not act (the lead changed weapon type), the player refunds every point, free once
+ * per Ascension, else when it costs at most a tenth of the Starlight in hand; the buyer then spends
+ * them again by value.
+ */
+export function chooseRespec(state: GameState, content: Content): GameState {
+  let wasted = 0;
+  for (const node of content.account.tree) {
+    const rank = state.account.skills[node.id] ?? 0;
+    if (rank > 0 && !skillActive(state, content, node)) wasted += rank * node.cost;
+  }
+  if (wasted < RESPEC_WASTED_POINTS) return state;
+  const modifiers = collectModifiers(state, content);
+  const info = respecInfo(state, content, modifiers);
+  const affordable =
+    info.free ||
+    (info.price !== null &&
+      info.price.amount.lte(have(state, info.price.resource).mul(RESPEC_PRICE_SHARE)));
+  if (!affordable) return state;
+  const result = respecSkills(state, content, modifiers);
+  return result.ok ? result.state : state;
+}
+
 /** Starlight shop items the buyer buys (cheapest level first); the offline cap is useless here. */
 const STARLIGHT_SKIP = new Set(['long_night']);
 
@@ -533,6 +658,21 @@ const num = (d: Decimal): number => d.toNumber();
  */
 export const PRODUCTION_VALUE = 0.35;
 
+/** `productionPerSecond`, remembered per state and modifier list like `incomeOf`. */
+const productions = new WeakMap<GameState, WeakMap<readonly Modifier[], Record<string, Decimal>>>();
+
+function productionOf(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+): Record<string, Decimal> {
+  let byModifiers = productions.get(state);
+  if (!byModifiers) productions.set(state, (byModifiers = new WeakMap()));
+  let out = byModifiers.get(modifiers);
+  if (!out) byModifiers.set(modifiers, (out = productionPerSecond(state, content, modifiers)));
+  return out;
+}
+
 /** Weighted production per second of every unlocked gem: Σ rate × Starlight tier weight. */
 function weightedProduction(
   state: GameState,
@@ -542,7 +682,7 @@ function weightedProduction(
 ): number {
   const weights = content.prestige.gain.tierWeights;
   let total = 0;
-  for (const [id, rate] of Object.entries(productionPerSecond(state, content, modifiers))) {
+  for (const [id, rate] of Object.entries(productionOf(state, content, modifiers))) {
     if (resources && !resources.includes(id)) continue;
     const tier = content.resourceById.get(id)?.tier ?? 1;
     total += num(rate) * num(weights[Math.min(tier, weights.length) - 1]!);
@@ -557,6 +697,34 @@ const TRAINING_VALUE: Record<string, number> = {
   'combat.health': 0.5,
   'burst.fill': 0.3,
 };
+
+/** Share of a place's output its harvest gauge bursts add at a strike speed of 1 (10 s every 30). */
+const BURST_SHARE = 1 / 3;
+
+/**
+ * The relative rise of a job's output one tool line level gives (DESIGN.md §4 Tool lines): yield
+ * multiplies the output; strike speed fills the harvest gauge faster (its bursts are about a third
+ * of the output) and digs faster; crit chance and crit damage raise the expected harvest,
+ * 1 + chance × (damage − 1), the one by the other.
+ */
+export function toolGain(
+  stat: string,
+  now: Decimal,
+  after: Decimal,
+  job: (typeof PRODUCTION_JOBS)[number],
+  modifiers: readonly Modifier[],
+): number {
+  const rise = num(now) > 0 ? num(after) / num(now) - 1 : 0;
+  if (stat === 'production.rate') return rise;
+  if (stat === 'harvest.speed') return (rise * BURST_SHARE) / (1 + BURST_SHARE);
+  const chance = num(statValue('harvest.critChance', 0, modifiers, { job }));
+  const damage = num(statValue('harvest.critDamage', 2, modifiers, { job }));
+  const expected = 1 + chance * (damage - 1);
+  const delta = num(after) - num(now);
+  if (stat === 'harvest.critChance') return (delta * (damage - 1)) / expected;
+  if (stat === 'harvest.critDamage') return (delta * chance) / expected;
+  return 0;
+}
 
 /** The economy purchases (mine and tree levels, training, shelf upgrades) with their gains. */
 function economyCandidates(
@@ -616,18 +784,20 @@ function economyCandidates(
       buy: (s, c, m) => okState(buyTraining(s, c, t.line.id, 1, m)),
     });
   }
-  // Tool lines (DESIGN.md §4): yield counts as production, speed a little, the crit lines by the
-  // expected output they add (a placeholder valuation until the balance run).
-  for (const job of ['logging', 'mining'] as const) {
+  // Tool lines (DESIGN.md §4): each by how much it raises its job's output (`toolGain`).
+  for (const job of PRODUCTION_JOBS) {
+    const jobShare =
+      totalProduction > 0
+        ? weightedProduction(
+            state,
+            content,
+            modifiers,
+            producersOf(content, job).map((p) => p.resource),
+          ) / totalProduction
+        : 0.5;
     for (const t of toolLines(state, content, job, 1, modifiers)) {
-      const delta = num(t.after) - num(t.now);
-      const rise = t.line.stat === 'production.rate' ? delta / Math.max(num(t.now), 1e-9) : 0;
       const gain =
-        t.line.stat === 'production.rate'
-          ? PRODUCTION_VALUE * 0.5 * rise
-          : t.line.stat === 'harvest.speed'
-            ? PRODUCTION_VALUE * 0.1 * (delta / Math.max(num(t.now), 1e-9))
-            : PRODUCTION_VALUE * 0.5 * delta;
+        PRODUCTION_VALUE * jobShare * toolGain(t.line.stat, t.now, t.after, job, modifiers);
       out.push({
         id: `tool:${t.line.id}`,
         kind: 'economy',
@@ -701,18 +871,15 @@ export function buyerCandidates(
       });
     }
   }
-  // Account tree: the first node of the priority list it can buy (no resource price).
-  const nodes = skillTree(state, content);
-  for (const id of skillPriority(content)) {
-    const info = nodes.find((n) => n.node.id === id);
-    if (!info?.canBuy) continue;
+  // Account tree: the node worth the most per point (`nextSkill`; no resource price).
+  const skill = skillPoints(state, content).available > 0 ? nextSkill(state, content) : null;
+  if (skill) {
     out.push({
-      id: `skill:${id}`,
+      id: `skill:${skill}`,
       kind: 'skill',
       prices: [],
-      buy: (s, c) => okState(buySkill(s, c, id)),
+      buy: (s, c) => okState(buySkill(s, c, skill)),
     });
-    break;
   }
   // Starlight shop: the cheapest level of the useful items.
   const offers = starlightShop(state, content, modifiers)
@@ -925,17 +1092,15 @@ export function greedyBuy(
   state: GameState,
   content: Content,
   rng: Rng = createSeededRng(1),
-): { state: GameState; bought: string[] } {
-  let current = state;
+): { state: GameState; bought: string[]; dustSpent: number } {
+  let current = chooseRespec(state, content);
   const bought: string[] = [];
+  let candidates: Candidate[] = [];
   for (let i = 0; i < MAX_BUYS_PER_PASS; i++) {
     const modifiers = collectModifiers(current, content);
     let next: GameState | null = null;
-    for (const candidate of pickPurchase(
-      current,
-      content,
-      buyerCandidates(current, content, modifiers),
-    )) {
+    candidates = buyerCandidates(current, content, modifiers);
+    for (const candidate of pickPurchase(current, content, candidates)) {
       next = candidate.buy(current, content, modifiers, rng);
       if (next) {
         bought.push(candidate.id);
@@ -950,10 +1115,14 @@ export function greedyBuy(
     }
   }
   if (bought.length > 0) current = optimizeLoadouts(current, content);
+  const dust = spendStarDust(current, content);
+  const shards = spendShards(dust.state, content);
+  current = shards === current ? current : optimizeLoadouts(shards, content);
   current = fillEnhancements(current, content);
   current = equipSets(current, content);
   current = markWishlist(current, content);
-  return { state: current, bought };
+  current = chooseAutomation(current, content, candidates);
+  return { state: current, bought, dustSpent: dust.spent };
 }
 
 /** The value the buyer gives an enhancement option. */
@@ -1001,20 +1170,109 @@ export function fillEnhancements(state: GameState, content: Content): GameState 
 }
 
 /**
- * Marks the cards the sim is building on the Card Portal's wishlist (DESIGN.md §7): per rarity, up
- * to the limit of cards it does not own yet, fighting cards first (they fill the loadout) and then
- * the workers, in catalogue order. A card it owns leaves the list.
+ * The cards the player is building, most important first (DESIGN.md §5 Stars): the fighting lead,
+ * its supports in slot order, then the cards at work by worker power. Every one of them gains from
+ * copies and star dust; a card at ★6 gains nothing until its tier-up, so `needsStars` leaves it out.
+ */
+export function buildOrder(state: GameState, content: Content): string[] {
+  const loadout = state.cards.loadouts.fighting;
+  const out: string[] = [];
+  const add = (id: string | null | undefined): void => {
+    if (id && state.cards.owned[id] && !out.includes(id)) out.push(id);
+  };
+  add(loadout.main);
+  for (const id of loadout.supports) add(id);
+  const working = [
+    ...Object.values(activeWorkers(state, content)).flat(),
+    ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
+  ].sort(
+    (a, b) =>
+      workerPower(content, b, state.cards.owned[b]!) -
+      workerPower(content, a, state.cards.owned[a]!),
+  );
+  for (const id of working) add(id);
+  return out;
+}
+
+/** Whether another star is open to the card now: below ★6 (copies past it become shards). */
+const needsStars = (state: GameState, id: string): boolean =>
+  (state.cards.owned[id]?.stars ?? 6) < 6;
+
+/**
+ * Star dust (DESIGN.md §5 Star dust): it is rare, so it goes to the first card of the build order
+ * that still needs stars, the fighting lead first, and is saved for that card while it is short.
+ * Dust pays only what the star bar lacks, so a top-up never wastes a copy already in the bar.
+ */
+export function spendStarDust(
+  state: GameState,
+  content: Content,
+): { state: GameState; spent: number } {
+  let current = state;
+  let spent = 0;
+  const target = buildOrder(current, content).find((id) => needsStars(current, id));
+  if (!target) return { state: current, spent };
+  for (let i = 0; i < 6 && needsStars(current, target); i++) {
+    const cost = starDustCost(current, content, target);
+    if (cost === null || cost === 0) break; // the bar pays it: the buyer's star-up takes it
+    const result = starUpWithDust(current, content, target);
+    if (!result.ok) break;
+    current = result.state;
+    spent += cost;
+  }
+  return { state: current, spent };
+}
+
+/**
+ * Card shards buy copies (DESIGN.md §10 Shard shop): the player buys copies of the first card of
+ * the build order that still needs stars, so shards from maxed duplicates star the card being built.
+ */
+export function spendShards(state: GameState, content: Content): GameState {
+  let current = state;
+  const target = buildOrder(current, content).find((id) => needsStars(current, id));
+  const offer = target
+    ? content.shardShop.find((i) => i.reward.kind === 'card' && i.reward.card === target)
+    : undefined;
+  if (!target || !offer) return current;
+  for (
+    let i = 0;
+    i < 50 && current.cards.shards >= offer.price && needsStars(current, target);
+    i++
+  ) {
+    const result = buyShardItem(current, content, offer.id);
+    if (!result.ok) break;
+    current = result.state;
+    // the copy fills the bar: take the stars it pays for
+    for (let s = 0; s < 6; s++) {
+      const up = starUp(current, content, target);
+      if (!up.ok) break;
+      current = up.state;
+    }
+  }
+  return current;
+}
+
+/**
+ * Marks the cards the sim hunts on the Card Portal's wishlist (DESIGN.md §7). Per rarity, up to the
+ * limit: first the cards it is building of that rarity that still need stars (the build order, so
+ * the fighting lead first: a pull of its rarity becomes a copy of it), then cards it does not own
+ * yet, fighting cards first. A card that reaches ★6 or that it comes to own leaves the list.
  */
 export function markWishlist(state: GameState, content: Content): GameState {
   const portal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
   if (!portal) return state;
   const want = new Set<string>();
+  const inPool = new Set(portal.pool.map((e) => e.itemId));
+  const building = buildOrder(state, content).filter(
+    (id) => inPool.has(id) && needsStars(state, id),
+  );
   for (const rarity of RARITIES) {
+    const built = building.filter((id) => content.cardById.get(id)!.rarity === rarity);
     const missing = portal.pool
       .filter((e) => e.rarity === rarity && !state.cards.owned[e.itemId])
       .map((e) => content.cardById.get(e.itemId)!)
-      .sort((a, b) => Number(b.job === 'fighting') - Number(a.job === 'fighting'));
-    for (const card of missing.slice(0, portal.wishlistPerRarity)) want.add(card.id);
+      .sort((a, b) => Number(b.job === 'fighting') - Number(a.job === 'fighting'))
+      .map((c) => c.id);
+    for (const id of [...built, ...missing].slice(0, portal.wishlistPerRarity)) want.add(id);
   }
   const now = state.cards.wishlist;
   if (now.length === want.size && now.every((id) => want.has(id))) return state;
@@ -1046,8 +1304,39 @@ export function equipSets(state: GameState, content: Content): GameState {
   return current;
 }
 
+/** A new lead must hit this much harder than the one leading now (a player does not swap for 1%). */
+export const LEAD_SWAP_MARGIN = 1.1;
+
 /**
- * Puts the strongest fighting cards in the loadout (rarity, then power) within the cost cap, and
+ * The fighting lead (DESIGN.md §5 Base stats by rarity): the card that hits hardest now, its base
+ * damage at its rarity, tier, stars and level, within the cost cap. A rarer card at Wood ★1 can
+ * hit less hard than a starred card of a lower rarity, so rarity alone does not decide; the lead
+ * leading now is kept unless another beats it by LEAD_SWAP_MARGIN.
+ */
+export function chooseLead(state: GameState, content: Content, cap: number): string | null {
+  const damage = (id: string): number => num(cardBaseDamage(content, id, state.cards.owned[id]!));
+  let best: string | null = null;
+  for (const card of content.cards) {
+    if (card.job !== 'fighting' || !state.cards.owned[card.id]) continue;
+    if (cardCost(content, card.id) > cap) continue;
+    if (best === null || damage(card.id) > damage(best)) best = card.id;
+  }
+  const now = state.cards.loadouts.fighting.main;
+  if (
+    best !== null &&
+    now !== null &&
+    now !== best &&
+    state.cards.owned[now] &&
+    cardCost(content, now) <= cap &&
+    damage(best) < damage(now) * LEAD_SWAP_MARGIN
+  )
+    return now;
+  return best;
+}
+
+/**
+ * Puts the hardest-hitting card in the lead (`chooseLead`) and the strongest others (rarity, then
+ * power) in the supports within the cost cap, and
  * the strongest workers on the best trees and mines (`placeBestWorkers`).
  */
 export function optimizeLoadouts(state: GameState, content: Content): GameState {
@@ -1063,9 +1352,11 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
           cardPower(content, current.cards.owned[a.id]!),
     );
   const loadout: CardLoadout = emptyCardLoadout();
-  let cost = 0;
+  loadout.main = chooseLead(current, content, cap);
+  let cost = loadout.main ? cardCost(content, loadout.main) : 0;
   let support = 0;
   for (const card of ranked) {
+    if (card.id === loadout.main) continue;
     const c = cardCost(content, card.id);
     if (cost + c > cap) continue;
     if (loadout.main === null) loadout.main = card.id;
@@ -1081,69 +1372,179 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
   return placeBestWorkers(current, content);
 }
 
+/** One worker the sim would place: a slot of a tree or mine, the card, and what it brings in. */
+interface WorkerPick {
+  place: string;
+  card: string;
+  /** Weighted output the card makes there: the place's value × the card's power. */
+  value: number;
+}
+
 /**
- * The workers the sim wants (DESIGN.md §4 Workers): per job, the strongest owned cards (by worker
- * power) on the unlocked places with the highest level rate, best with best. The slots are shared,
- * so they go to the jobs in turn (the best logging place, the best mine, the second best ...).
+ * What a tree or mine is worth to the player per unit of worker power: its level rate × the yield
+ * of the layer or age it has reached × the Starlight tier weight of its gem (the weight the buyer
+ * values production by, so a Moonwillow gem counts for a hundred Oak gems).
  */
-export function bestWorkers(state: GameState, content: Content): Record<string, string[]> {
-  const perJob = PRODUCTION_JOBS.map((job) => {
+function placeValue(
+  state: GameState,
+  content: Content,
+  job: (typeof PRODUCTION_JOBS)[number],
+  producer: ReturnType<typeof producersOf>[number],
+): number {
+  const weights = content.prestige.gain.tierWeights;
+  const tier = content.resourceById.get(producer.resource)?.tier ?? 1;
+  const weight = num(weights[Math.min(tier, weights.length) - 1]!);
+  const rate = producerRate(producer, job, [], producerLevel(state, job, producer.id));
+  return num(rate) * num(depthYield(state, content, producer.id)) * weight;
+}
+
+/**
+ * The workers the sim wants (DESIGN.md §4 Workers, Worker slots), richest first. Per job, every
+ * open slot (a place's second slot from the Starlight shop counts as a slot of its own) is ranked
+ * by its place's value and paired with the job's cards by worker power, best with best, which is
+ * what puts the most output to work. The shared slots then go to the pairs worth the most, of
+ * either job.
+ */
+export function workerPicks(state: GameState, content: Content): WorkerPick[] {
+  const pairs: WorkerPick[] = [];
+  for (const job of PRODUCTION_JOBS) {
     const cards = content.cards
       .filter((c) => c.job === job && state.cards.owned[c.id])
       .map((c) => ({ id: c.id, power: workerPower(content, c.id, state.cards.owned[c.id]!) }))
       .sort((a, b) => b.power - a.power);
-    const places = producersOf(content, job)
+    const slots = producersOf(content, job)
       .filter((p) => isProducerUnlocked(state, content, job, p.id))
-      .map((p) => ({
-        id: p.id,
-        rate: producerRate(p, job, [], producerLevel(state, job, p.id)).toNumber(),
-      }))
-      .sort((a, b) => b.rate - a.rate);
-    return places.slice(0, cards.length).map((p, i) => [p.id, cards[i]!.id] as const);
-  });
-  const out: Record<string, string[]> = {};
-  let free = workerSlots(state, content);
-  for (let i = 0; free > 0 && perJob.some((pairs) => i < pairs.length); i++) {
-    for (const pairs of perJob) {
-      const pair = pairs[i];
-      if (!pair || free <= 0) continue;
-      out[pair[0]] = [pair[1]];
-      free -= 1;
-    }
+      .flatMap((p) => {
+        const value = placeValue(state, content, job, p);
+        return Array.from({ length: workersPerPlace(state, content, p.id) }, () => ({
+          id: p.id,
+          value,
+        }));
+      })
+      .sort((a, b) => b.value - a.value);
+    slots.slice(0, cards.length).forEach((slot, i) => {
+      pairs.push({ place: slot.id, card: cards[i]!.id, value: slot.value * cards[i]!.power });
+    });
   }
+  return pairs.sort((a, b) => b.value - a.value).slice(0, workerSlots(state, content));
+}
+
+/** The workers the sim wants as place id -> card ids (`workerPicks`). */
+export function bestWorkers(state: GameState, content: Content): Record<string, string[]> {
+  return toAssignment(workerPicks(state, content));
+}
+
+function toAssignment(picks: readonly WorkerPick[]): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const p of picks) (out[p.place] ??= []).push(p.card);
   return out;
 }
 
-/** Puts the sim's chosen workers to work (`bestWorkers`), when they differ from today's. */
+/**
+ * A worker in the forge beats a worker on a tree or mine when the weakest place worker brings in
+ * less than this share of what all the places bring in (the forge's star dust is the only way to
+ * star a card besides copies, DESIGN.md §4 The forge).
+ */
+export const FORGE_SWAP_SHARE = 0.05;
+
+/**
+ * Puts the sim's chosen workers to work (`workerPicks`) and runs the forge (`forgePlan`): the forge
+ * takes a slot left over, or the slot of the weakest place worker when that worker adds little.
+ */
 export function placeBestWorkers(state: GameState, content: Content): GameState {
-  return keepForgeWorker(placePlaceWorkers(state, content), content);
+  let picks = workerPicks(state, content);
+  const plan = forgePlan(state, content);
+  let forgeCard: string | null = null;
+  if (plan.run) {
+    const total = picks.reduce((a, p) => a + p.value, 0);
+    const weakest = picks[picks.length - 1];
+    const busy = new Set(picks.map((p) => p.card));
+    const idle = content.cards
+      .filter((c) => c.job !== 'fighting' && state.cards.owned[c.id] && !busy.has(c.id))
+      .sort(
+        (a, b) =>
+          workerPower(content, b.id, state.cards.owned[b.id]!) -
+          workerPower(content, a.id, state.cards.owned[a.id]!),
+      )[0];
+    if (picks.length < workerSlots(state, content) && idle) forgeCard = idle.id;
+    else if (weakest && weakest.value < total * FORGE_SWAP_SHARE) {
+      forgeCard = weakest.card;
+      picks = picks.slice(0, -1);
+    }
+  }
+  return placeForge(
+    placePlaceWorkers(state, content, toAssignment(picks)),
+    content,
+    plan,
+    forgeCard,
+  );
 }
 
-/** Sets the forge to its first recipe and, with a slot spare, puts the best idle production card to work in it. */
-export function keepForgeWorker(state: GameState, content: Content): GameState {
+/** What the forge should do: the recipe to make, and whether to run it now. */
+export interface ForgePlan {
+  recipe: string | null;
+  run: boolean;
+}
+
+/**
+ * The forge (DESIGN.md §4 The forge). The recipe is the first one whose output a card is waiting
+ * for (star dust while a card being built needs stars), else the first recipe. It runs only while
+ * its gems are coming in and spare: the gems of a craft are in hand over and above what the
+ * fighting lead's next tier-up asks of them, so the forge never eats a tier-up.
+ */
+export function forgePlan(state: GameState, content: Content): ForgePlan {
+  const recipes = content.production.forge.recipes;
+  if (recipes.length === 0) return { recipe: null, run: false };
+  const wantsDust = buildOrder(state, content).some((id) => needsStars(state, id));
+  const recipe = recipes.find((r) => wantsDust && r.output.resource === 'star_dust') ?? recipes[0]!;
+  const lead = state.cards.loadouts.fighting.main;
+  const tierNeeds = lead ? (tierUpCheck(state, content, lead)?.requirements ?? []) : [];
+  const spare = recipe.inputs.every((input) => {
+    const kept = tierNeeds.find((r) => r.kind === 'resource' && r.resource === input.resource);
+    return have(state, input.resource)
+      .sub(kept?.need ?? 0)
+      .gte(input.amount);
+  });
+  const produced = recipe.inputs.every((input) =>
+    PRODUCTION_JOBS.some((job) =>
+      producersOf(content, job).some(
+        (p) => p.resource === input.resource && isProducerUnlocked(state, content, job, p.id),
+      ),
+    ),
+  );
+  return { recipe: recipe.id, run: wantsDust && produced && spare };
+}
+
+/** Sets the forge's recipe and puts `card` in it (or sends its worker away when it should not run). */
+function placeForge(
+  state: GameState,
+  content: Content,
+  plan: ForgePlan,
+  card: string | null,
+): GameState {
   let current = state;
-  const recipe = content.production.forge.recipes[0];
-  if (recipe && current.production.forge.recipe === null) {
-    const set = setForgeRecipe(current, content, recipe.id);
+  if (plan.recipe !== null && forgeRecipe(current, content)?.id !== plan.recipe) {
+    const set = setForgeRecipe(current, content, plan.recipe);
     if (set.ok) current = set.state;
   }
+  const want = plan.run ? card : null;
+  if (current.production.forge.worker === want) return current;
   if (
-    forgeWorker(current, content) ||
-    workersUsed(current, content) >= workerSlots(current, content)
+    want === null &&
+    forgeWorker(current, content) === null &&
+    current.production.forge.worker === null
   )
     return current;
-  const busy = new Set(Object.values(activeWorkers(current, content)).flat());
-  const best = content.cards
-    .filter((c) => c.job !== 'fighting' && current.cards.owned[c.id] && !busy.has(c.id))
-    .map((c) => ({ id: c.id, power: workerPower(content, c.id, current.cards.owned[c.id]!) }))
-    .sort((a, b) => b.power - a.power)[0];
-  if (!best) return current;
-  const hired = assignForgeWorker(current, content, best.id);
+  const hired = assignForgeWorker(current, content, want);
   return hired.ok ? hired.state : current;
 }
 
-function placePlaceWorkers(state: GameState, content: Content): GameState {
-  const want = bestWorkers(state, content);
+/** Puts the wanted workers on the trees and mines, when they differ from today's. */
+function placePlaceWorkers(
+  state: GameState,
+  content: Content,
+  want: Record<string, string[]>,
+): GameState {
   const now = activeWorkers(state, content);
   const same = (a: Record<string, string[]>, b: Record<string, string[]>): boolean =>
     Object.keys(a).length === Object.keys(b).length &&
@@ -1155,8 +1556,10 @@ function placePlaceWorkers(state: GameState, content: Content): GameState {
     if (result.ok) current = result.state;
   }
   for (const [place, ids] of Object.entries(want)) {
-    const result = assignWorker(current, content, place, ids[0]!);
-    if (result.ok) current = result.state;
+    for (const id of ids) {
+      const result = assignWorker(current, content, place, id);
+      if (result.ok) current = result.state;
+    }
   }
   return current;
 }
@@ -1175,15 +1578,23 @@ export interface AscendTracker {
   peakRate: number;
 }
 
+/**
+ * A run is cashed in once its gain reaches this many times all the Starlight earned so far, even
+ * while its Starlight per hour still rises: with enemies that no longer grow (DESIGN.md §6) the
+ * economy can keep speeding up for a whole day, and an Ascension also opens a worker slot and a
+ * ring of the skill tree (§9).
+ */
+export const ASCEND_MULTIPLE = 3;
+
 /** Share of the peak rate below which the run is past its peak. */
-const PAST_PEAK = 0.9;
+const PAST_PEAK = 0.98;
 
 /**
  * The ascension rule: the first one is taken as soon as the gain reaches the minimum (the
  * player wants the first Starlight shop levels, and the Starlight formula makes the minimum the
  * pacing lever, DESIGN.md §9). After that the gain must at least match all the Starlight earned
- * so far, and the run's Starlight per second must have dropped to 90% of its peak or less (more
- * run time no longer pays).
+ * so far, and either the run's Starlight per second has dropped to 98% of its peak or less (more
+ * run time no longer pays) or the gain is ASCEND_MULTIPLE times all the Starlight earned.
  */
 export function ascendNow(
   now: { gain: number; minimum: number; runSeconds: number; earned?: number },
@@ -1193,6 +1604,7 @@ export function ascendNow(
   if (now.earned === 0) return true;
   // Each later Ascension must be worth at least all the Starlight earned so far (a doubling).
   if (now.earned !== undefined && now.gain < now.earned) return false;
+  if (now.earned !== undefined && now.gain >= now.earned * ASCEND_MULTIPLE) return true;
   const rate = now.gain / now.runSeconds;
   if (rate > tracker.peakRate) {
     tracker.peakRate = rate;
@@ -1328,22 +1740,14 @@ export function chooseFight(
       t.tiers.some((tier) => tier.rewards.some((r) => wanted.has(r.resource))),
   );
   if (trialFarm && (options.trialShare ?? 0) < TRIAL_FARM_SHARE) return normal(trialFarm.id);
-  // The lead card's missing Core first (a Moss Core for a Bronze tier-up is farmed in Mossy Cellar).
+  // The lead card's missing Core first, where it comes fastest (`fastestFarm`).
   for (const resource of wantedList) {
-    const farm = killable.find((d) => d.drops.material.resource === resource);
-    if (farm) return normal(farm.id);
-    // Else the dungeon that drops it as an extra fastest (the Ember Crypt's Frost Cores and
-    // Sigils, DESIGN.md §3).
-    let best: { id: string; rate: number } | null = null;
-    for (const d of killable) {
-      const extra = d.drops.extraMaterials.find((e) => e.resource === resource);
-      const spk = perFloor(d.id);
-      if (!extra || spk === null || spk <= 0) continue;
-      const rate = (extra.chance * (extra.min + extra.max)) / 2 / spk;
-      if (!best || rate > best.rate) best = { id: d.id, rate };
-    }
-    if (best) return normal(best.id);
+    const farm = fastestFarm(state, content, resource, modifiers);
+    if (farm) return farm;
   }
+  // A stage a few minutes from its next star level: its chest, star dust and skill point.
+  const stars = starFarm(state, content, modifiers);
+  if (stars) return stars;
   // Nothing is waiting: climb the tiers and the endless depths.
   const climb = climbTarget(state, content, modifiers);
   if (climb) return climb;
@@ -1353,6 +1757,86 @@ export function chooseFight(
     (d) => isDungeonUnlocked(state, content, d.id) && !isDungeonCleared(state, d.id),
   );
   return normal(open?.id ?? content.dungeons[0]?.id ?? null);
+}
+
+/** The tiers the player can fight in a dungeon now: unlocked and holding their current floor. */
+function heldTiers(
+  state: GameState,
+  content: Content,
+  dungeonId: string,
+  modifiers: readonly Modifier[],
+): Difficulty[] {
+  const dungeon = content.dungeonById.get(dungeonId);
+  if (!dungeon || !isDungeonUnlocked(state, content, dungeonId)) return [];
+  return DIFFICULTIES.filter(
+    (d) =>
+      isDifficultyUnlocked(state, dungeon, d) && holds(state, content, dungeonId, modifiers, d),
+  );
+}
+
+/**
+ * Where a wanted dungeon material comes fastest (DESIGN.md §6 Harder modes pay more): every tier of
+ * every dungeon the loadout holds is priced with the game's own income per second at the floor it
+ * would fight there, so a harder tier that is killed as fast wins with its bigger drops, and the
+ * Normal floors win while they are the only ones killed quickly. Null when no fight drops it.
+ */
+export function fastestFarm(
+  state: GameState,
+  content: Content,
+  resource: string,
+  modifiers: Modifier[] = collectModifiers(state, content),
+): FightChoice | null {
+  if (!content.dungeons.some((d) => dropsResource(d, resource))) return null;
+  let best: (FightChoice & { rate: number }) | null = null;
+  for (const dungeon of content.dungeons) {
+    if (!dropsResource(dungeon, resource)) continue;
+    for (const difficulty of heldTiers(state, content, dungeon.id, modifiers)) {
+      const at = setActiveDungeon(state, content, dungeon.id);
+      if (!at.ok) continue;
+      const tier = setDifficulty(at.state, content, dungeon.id, difficulty);
+      if (!tier.ok) continue;
+      const rate = num(incomePerSecond(tier.state, content, resource, modifiers));
+      if (rate > 0 && (!best || rate > best.rate)) best = { id: dungeon.id, difficulty, rate };
+    }
+  }
+  return best && { id: best.id, difficulty: best.difficulty };
+}
+
+const dropsResource = (d: Content['dungeons'][number], resource: string): boolean =>
+  d.drops.material.resource === resource ||
+  d.drops.extraMaterials.some((e) => e.resource === resource);
+
+/** A stage is farmed for its next star level when that takes at most this long, in seconds. */
+export const STAR_FARM_SECONDS = 900;
+
+/**
+ * Stage stars (DESIGN.md §6): a stage whose next star level is at most STAR_FARM_SECONDS of kills
+ * away is worth a detour (a chest, star dust from Gold up, a skill point, more damage and loot
+ * there). The player cannot pick a floor, so only the last-floor boss of a tier it stands on the
+ * last floor of is farmed; the quickest one wins.
+ */
+export function starFarm(
+  state: GameState,
+  content: Content,
+  modifiers: Modifier[] = collectModifiers(state, content),
+): FightChoice | null {
+  let best: (FightChoice & { seconds: number }) | null = null;
+  for (const dungeon of content.dungeons) {
+    for (const difficulty of heldTiers(state, content, dungeon.id, modifiers)) {
+      if (difficulty === 'endless') continue;
+      const position = floorPosition(state, dungeon, difficulty);
+      if (position.floor !== position.floors) continue;
+      const info = stageStars(state, content, stageKey(dungeon.id, difficulty, position.floor));
+      if (!info || info.nextKills === null) continue;
+      const spk = secondsPerKill(state, content, dungeon.id, modifiers, position.floor, difficulty);
+      if (spk === null || !Number.isFinite(spk)) continue;
+      const seconds = (info.nextKills - info.kills) * spk;
+      if (seconds <= STAR_FARM_SECONDS && (!best || seconds < best.seconds)) {
+        best = { id: dungeon.id, difficulty, seconds };
+      }
+    }
+  }
+  return best && { id: best.id, difficulty: best.difficulty };
 }
 
 /** The dungeon or special dungeon `chooseFight` picks. */
@@ -1467,13 +1951,44 @@ export function chooseOverflow(state: GameState, content: Content): GameState {
   return next;
 }
 
+/**
+ * Autobuyers (DESIGN.md §15, §9): the player switches on every autobuyer it owns. They buy the
+ * cheapest tree or mine level between the player's own visits, so while the player saves Money for
+ * a tier-up the reserve is 100% (they buy nothing) and otherwise 0%.
+ */
+export function chooseAutomation(
+  state: GameState,
+  content: Content,
+  /** The buyer's last candidates (they say what it saves for); computed when not given. */
+  candidates?: readonly Candidate[],
+): GameState {
+  const owned = {
+    treeLevels: autobuyerOwned(state, content, 'treeLevels'),
+    mineLevels: autobuyerOwned(state, content, 'mineLevels'),
+  };
+  if (!owned.treeLevels && !owned.mineLevels) return state;
+  const reserved = reservations(state, candidates ?? buyerCandidates(state, content));
+  const reservePercent = (reserved.get('money') ?? new Decimal(0)).gt(0) ? 100 : 0;
+  const a = state.automation;
+  if (
+    a.treeLevels === owned.treeLevels &&
+    a.mineLevels === owned.mineLevels &&
+    a.reservePercent === reservePercent
+  )
+    return state;
+  return setAutomation(state, { ...owned, reservePercent });
+}
+
 // ---- running -----------------------------------------------------------------------------------
 
 export interface SimOptions {
   hours: number;
   seed?: number;
-  /** Seconds of play per step (the buyer acts between steps). */
+  /** Seconds of play per step (the buyer acts between steps) during the opening. */
   stepSeconds?: number;
+  /** Seconds per step after the opening (LATE_FROM_HOURS); default LATE_STEP_SECONDS. The game
+   *  itself gives the same totals for any split of time, so only how often the player acts changes. */
+  lateStepSeconds?: number;
   /** Called every `probeSeconds` of sim time with the state (for timelines and tuning). */
   probe?: (state: GameState, t: number) => void;
   probeSeconds?: number;
@@ -1507,12 +2022,97 @@ export interface SimResult {
   pullSamples: Array<[number, number, number]>;
   /** Every run (the stretch between two Ascensions) with its run milestone times. */
   runs: RunRecord[];
+  /** What the balance run reads beside the milestones, once an hour (`progressOf`). */
+  progress: ProgressSample[];
+  /** Sim seconds when a weapon was fully maxed (`maxedWeapon`), or null. */
+  maxedWeaponAt: number | null;
+}
+
+/** One hourly reading of the systems the balance run tunes (DESIGN.md §14 The balance update's sim). */
+export interface ProgressSample {
+  /** Sim seconds. */
+  t: number;
+  /** Stage star levels reached over every stage and tier, and chests paid. */
+  starLevels: number;
+  chests: number;
+  /** Skill points earned and spent. */
+  skillEarned: number;
+  skillSpent: number;
+  /** Star dust earned (held plus spent) and spent. */
+  dustEarned: number;
+  dustSpent: number;
+  /** Workers at work (trees, mines and the forge) and the slots there are. */
+  workers: number;
+  slots: number;
+  /** What it fights: "dungeon difficulty floor" (or the trial), and the best weapon so far. */
+  fight: string;
+  bestWeapon: string;
+}
+
+/** The top of the weapon ladder (DESIGN.md §14 A maxed weapon): a Mythic or Void Heirloom at ★6. */
+export function maxedWeapon(state: GameState, content: Content): boolean {
+  return Object.entries(state.cards.owned).some(([id, c]) => {
+    const rarity = content.cardById.get(id)?.rarity;
+    return (rarity === 'mythic' || rarity === 'void') && c.tier === 'heirloom' && c.stars >= 6;
+  });
+}
+
+/** How far the best fighting weapon got, as "Name tier ★n" (the highest tier, then stars). */
+export function bestWeapon(state: GameState, content: Content): string {
+  let best: { id: string; rank: number } | null = null;
+  for (const [id, c] of Object.entries(state.cards.owned)) {
+    if (content.cardById.get(id)?.job !== 'fighting') continue;
+    const rank = RANK_TIERS.indexOf(c.tier) * 10 + c.stars;
+    if (!best || rank > best.rank) best = { id, rank };
+  }
+  if (!best) return '-';
+  const c = state.cards.owned[best.id]!;
+  return `${content.cardById.get(best.id)?.name ?? best.id} ${c.tier} ★${c.stars}`;
+}
+
+/** The reading of `ProgressSample` for a state. */
+export function progressOf(
+  state: GameState,
+  content: Content,
+  t: number,
+  dustSpent: number,
+): ProgressSample {
+  let starLevels = 0;
+  let chests = 0;
+  for (const key of Object.keys(state.combat.stageKills)) {
+    const info = stageStars(state, content, key);
+    if (!info) continue;
+    starLevels += info.level;
+    chests += info.chestsPaid;
+  }
+  const points = skillPoints(state, content);
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  const at = dungeon ? floorPosition(state, dungeon) : null;
+  return {
+    t,
+    starLevels,
+    chests,
+    skillEarned: points.total,
+    skillSpent: points.spent,
+    dustEarned: num(have(state, 'star_dust')) + dustSpent,
+    dustSpent,
+    workers: workersUsed(state, content),
+    slots: workerSlots(state, content),
+    fight: at ? `${dungeon!.id} ${at.difficulty} ${at.floor}` : (state.activeDungeonId ?? '-'),
+    bestWeapon: bestWeapon(state, content),
+  };
 }
 
 /** How often the fight target is re-chosen without a kill, in seconds. */
 const RECHOOSE_SECONDS = 300;
 /** How often the ascension rule is checked, in seconds. */
 const ASCEND_CHECK_SECONDS = 60;
+/** The opening, played in short steps: its milestones are minutes apart. */
+export const LATE_FROM_HOURS = 2;
+/** Seconds per step after the opening: the player acts every 15 s (a cheap 2-3x speed-up). */
+export const LATE_STEP_SECONDS = 15;
+/** How often the progress of the tuned systems is read, in seconds. */
+const PROGRESS_SAMPLE_SECONDS = 3600;
 /** How often the fighting DPS is sampled for the report, in seconds. */
 const DPS_SAMPLE_SECONDS = 900;
 
@@ -1523,9 +2123,12 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     ? { ...bundled, portals: bundled.allPortals }
     : bundled;
   const rng: Rng = createSeededRng(options.seed ?? 1);
-  const step = options.stepSeconds ?? 5;
+  const early = options.stepSeconds ?? 5;
+  const late = options.lateStepSeconds ?? Math.max(early, LATE_STEP_SECONDS);
   const total = Math.round(options.hours * 3600);
-  const log: SimLog = { summons: 0, levelAt: {}, ascensions: [], fought: {} };
+  const log: SimLog = { summons: 0, levelAt: {}, ascensions: [], fought: {}, dustSpent: 0 };
+  const progress: ProgressSample[] = [];
+  let maxedWeaponAt: number | null = null;
   const hits: Record<string, number | null> = Object.fromEntries(
     MILESTONES.map((m) => [m.id, null]),
   );
@@ -1538,8 +2141,9 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
   const dpsSamples: Array<[number, number]> = [];
   const pullSamples: Array<[number, number, number]> = [];
   let t = 0;
-  const countSummons = (bought: string[]): void => {
-    for (const id of bought) if (id.startsWith('summon:')) log.summons++;
+  const countSummons = (buys: { bought: string[]; dustSpent: number }): void => {
+    for (const id of buys.bought) if (id.startsWith('summon:')) log.summons++;
+    log.dustSpent = (log.dustSpent ?? 0) + buys.dustSpent;
   };
   // Run milestones (the Ascension guard): observed only, they never change what the player does.
   const newRun = (start: number): RunRecord => ({
@@ -1571,7 +2175,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (acting) {
       const buys = greedyBuy(state, content, rng);
       state = buys.state;
-      countSummons(buys.bought);
+      countSummons(buys);
     }
     if (acting && sinceAscendCheck >= ASCEND_CHECK_SECONDS) {
       sinceAscendCheck = 0;
@@ -1588,7 +2192,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         if (result.ok) {
           const after = greedyBuy(result.state, content, rng);
           state = after.state;
-          countSummons(after.bought);
+          countSummons(after);
           log.ascensions.push(t);
           runs[runs.length - 1]!.end = t;
           runs.push(newRun(t));
@@ -1623,7 +2227,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
           IDLE_CHECKIN_SECONDS - sinceCheckin,
           IDLE_AWAKE_SECONDS - (t % DAY_SECONDS),
         )
-      : Math.min(step, total - t);
+      : Math.min(t < LATE_FROM_HOURS * 3600 ? early : late, total - t);
     const { state: next, report } = advance(state, content, dt * 1000, rng);
     state = next;
     if (state.activeDungeonId) {
@@ -1654,12 +2258,27 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         state.portals['wardrobe_gate']?.pulls ?? 0,
       ]);
     }
+    if (t % PROGRESS_SAMPLE_SECONDS < dt) {
+      progress.push(
+        progressOf(state, content, t - (t % PROGRESS_SAMPLE_SECONDS), log.dustSpent ?? 0),
+      );
+    }
     if (options.probe && options.probeSeconds && t % options.probeSeconds < dt) {
       options.probe(state, t - (t % options.probeSeconds));
     }
     recordProgress();
   }
-  return { hits, simSeconds: t, state, log, dpsSamples, pullSamples, runs };
+  return {
+    hits,
+    simSeconds: t,
+    state,
+    log,
+    dpsSamples,
+    pullSamples,
+    runs,
+    progress,
+    maxedWeaponAt,
+  };
 
   /** Notes the milestones, run milestones and account levels the state has reached by now. */
   function recordProgress(): void {
@@ -1673,6 +2292,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         run.hits[m.id] = t - run.start;
       }
     }
+    if (maxedWeaponAt === null && maxedWeapon(state, content)) maxedWeaponAt = t;
     for (let level = 2; level <= state.account.level; level++) {
       log.levelAt[level] ??= t;
     }
@@ -1887,6 +2507,70 @@ export function formatGuard(
   return [head, ...lines].join('\n');
 }
 
+/** The hours at which the progress table reads the runs: a few early, then every 50 h. */
+export function progressHours(hours: number): number[] {
+  const early = [1, 2, 5, 10, 20, 30, 40];
+  const late =
+    hours > 40 ? Array.from({ length: Math.floor(hours / 50) }, (_, i) => (i + 1) * 50) : [];
+  return [...early, ...late].filter((h, i, all) => h <= hours && all.indexOf(h) === i);
+}
+
+const median = (values: readonly number[]): number => {
+  const sorted = [...values].sort((a, b) => a - b);
+  return sorted.length === 0 ? 0 : sorted[Math.floor(sorted.length / 2)]!;
+};
+
+/**
+ * What the balance run needs beside the milestones (DESIGN.md §14 The balance update's sim), over
+ * every seed: the hours to a fully maxed weapon (or the best weapon each seed got), then the
+ * medians of stage star levels and chests, skill points earned and spent, star dust earned and
+ * spent and workers at work at each reading hour.
+ */
+export function formatProgress(
+  runs: ReadonlyArray<{
+    seed: number;
+    progress: readonly ProgressSample[];
+    maxedWeaponAt: number | null;
+  }>,
+  hours: number,
+): string {
+  const maxed = runs.map((r) => r.maxedWeaponAt).filter((x): x is number => x !== null);
+  const lines = [
+    `Fully maxed weapon (Mythic or Void Heirloom ★6, at most 200 h): ${
+      maxed.length === 0
+        ? `no seed in ${hours} h`
+        : `${maxed.length}/${runs.length} seeds, median of those ${hoursText(median(maxed))}`
+    }`,
+    `Best weapon at the end: ${runs
+      .map((r) => `seed ${r.seed} ${r.progress[r.progress.length - 1]?.bestWeapon ?? '-'}`)
+      .join('; ')}`,
+    '',
+    '| Hour | Stage star levels | Chests paid | Skill points earned / spent | Star dust earned / spent | Workers / slots |',
+    '|---|---|---|---|---|---|',
+  ];
+  for (const h of progressHours(hours)) {
+    const at = runs
+      .map((r) => r.progress.find((p) => p.t === h * 3600))
+      .filter((p): p is ProgressSample => p !== undefined);
+    if (at.length === 0) continue;
+    const m = (f: (p: ProgressSample) => number): string => String(Math.round(median(at.map(f))));
+    lines.push(
+      `| ${h} | ${m((p) => p.starLevels)} | ${m((p) => p.chests)} | ${m((p) => p.skillEarned)} / ${m((p) => p.skillSpent)} | ${m((p) => p.dustEarned)} / ${m((p) => p.dustSpent)} | ${m((p) => p.workers)} / ${m((p) => p.slots)} |`,
+    );
+  }
+  lines.push('', '(medians over the seeds)');
+  return lines.join('\n');
+}
+
+/** Where one run fought, and its best weapon, at each reading hour. */
+export function formatFightTimeline(progress: readonly ProgressSample[], hours: number): string {
+  return progressHours(hours)
+    .map((h) => progress.find((p) => p.t === h * 3600))
+    .filter((p): p is ProgressSample => p !== undefined)
+    .map((p) => `${p.t / 3600} h: ${p.fight} (${p.bestWeapon})`)
+    .join('; ');
+}
+
 /** One line per job and a few totals, to read alongside the table. */
 export function formatSummary(result: SimResult, content: Content): string {
   const s = result.state;
@@ -1946,5 +2630,16 @@ export function formatSummary(result: SimResult, content: Content): string {
       .map((l) => `${l}: ${l in result.log.levelAt ? hoursText(result.log.levelAt[l]!) : '-'}`)
       .join(', ')}`,
     `Achievements: ${Object.keys(s.achievements).length} / ${content.achievements.length}`,
+    `Fought over time: ${formatFightTimeline(result.progress, result.simSeconds / 3600)}`,
+    `Workers: ${Object.entries(activeWorkers(s, content))
+      .map(([place, ids]) => `${place} ${ids.join(' + ')}`)
+      .join(
+        ', ',
+      )}; forge ${forgeWorker(s, content) ?? 'idle'} (${s.production.forge.recipe ?? 'no recipe'}); tools ${
+      Object.entries(s.production.tools)
+        .map(([id, l]) => `${id} ${l}`)
+        .join(', ') || 'none'
+    }`,
+    `Wishlist: ${s.cards.wishlist.join(', ') || 'empty'}; star dust ${num(have(s, 'star_dust')).toFixed(0)} held, ${(result.log.dustSpent ?? 0).toFixed(0)} spent`,
   ].join('\n');
 }

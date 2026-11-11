@@ -1,5 +1,6 @@
 /**
- * `npm run sim -- [--hours 40] [--seeds 5] [--seed 1] [--step 5] [--profile both] [--strict]`:
+ * `npm run sim -- [--hours 40] [--seeds 5] [--seed 1] [--step 5] [--late-step 15] [--profile both]
+ *  [--strict]`:
  * runs the balance sim for several seeds (one child process each, as many at once as the machine
  * has cores) and prints, per DESIGN.md §14 milestone, the target, the median sim time, the spread
  * (min-max), the worst seed, how many runs reached it and the band check (median within 25% of
@@ -14,6 +15,8 @@ import { loadContent } from '../../src/data';
 import {
   bandsPass,
   formatGuard,
+  LATE_STEP_SECONDS,
+  formatProgress,
   formatRunTable,
   formatSeedTable,
   formatSummary,
@@ -49,6 +52,7 @@ const hours = arg('hours', 40);
 const seeds = Math.floor(arg('seeds', 5));
 const firstSeed = arg('seed', 1);
 const step = arg('step', 5);
+const lateStep = arg('late-step', Math.max(step, LATE_STEP_SECONDS));
 const profile = profileArg();
 const strict = process.argv.includes('--strict');
 const worker = process.argv.includes('--worker');
@@ -59,19 +63,29 @@ interface WorkerOutput {
   dps: SimResult['dpsSamples'];
   pulls: SimResult['pullSamples'];
   runs: SimResult['runs'];
+  progress: SimResult['progress'];
+  maxedWeaponAt: SimResult['maxedWeaponAt'];
   simSeconds: number;
   summary: string;
 }
 
 function runOne(seed: number, as: SimProfile): WorkerOutput {
   const content = loadContent();
-  const result = runSim(content, { hours, seed, stepSeconds: step, profile: as });
+  const result = runSim(content, {
+    hours,
+    seed,
+    stepSeconds: step,
+    lateStepSeconds: lateStep,
+    profile: as,
+  });
   return {
     seed,
     hits: result.hits,
     dps: result.dpsSamples,
     pulls: result.pullSamples,
     runs: result.runs,
+    progress: result.progress,
+    maxedWeaponAt: result.maxedWeaponAt,
     simSeconds: result.simSeconds,
     summary: `${formatTable(result)}\n\n${formatSummary(result, content)}`,
   };
@@ -90,6 +104,8 @@ function runChild(seed: number, as: SimProfile): Promise<WorkerOutput> {
       String(hours),
       '--step',
       String(step),
+      '--late-step',
+      String(lateStep),
       '--profile',
       as,
     ];
@@ -189,7 +205,7 @@ Median DPS vs first dungeon: ${medianDps.join(', ')}`);
     console.log(typical.summary);
   }
   console.log(
-    `\n(${hours} h simulated for seeds ${seedList.join(', ')}, step ${step} s, in ${((Date.now() - started) / 1000).toFixed(1)} s)`,
+    `\n(${hours} h simulated for seeds ${seedList.join(', ')}, step ${step} s (${lateStep} s after 2 h), in ${((Date.now() - started) / 1000).toFixed(1)} s)`,
   );
   // After the closing line, so the part above stays comparable with older sim outputs.
   if (typical) {
@@ -199,6 +215,8 @@ Median DPS vs first dungeon: ${medianDps.join(', ')}`);
     console.log(formatRunTable(typical.runs));
   }
   console.log(`\n${formatGuard(outputs.map((o) => ({ seed: o.seed, runs: o.runs })))}`);
+  console.log(`
+${formatProgress(outputs, hours)}`);
   if (strict && !bandsPass(summary)) process.exit(1);
 }
 
