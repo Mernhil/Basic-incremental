@@ -1,6 +1,7 @@
 import { COSMETIC_SLOTS, JOBS, RANK_TIERS, RARITIES, contentSchemas } from './schemas';
 import type {
   AscensionChallenge,
+  ScrollsConfig,
   Bond,
   ExpeditionsConfig,
   Card,
@@ -68,6 +69,7 @@ import bondsJson from './content/bonds.json';
 import expeditionsJson from './content/expeditions.json';
 import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
+import scrollsJson from './content/scrolls.json';
 
 export * from './schemas';
 
@@ -148,6 +150,8 @@ export interface Content {
   /** Duel skills: each weapon type's leaning and the cards that break it (DESIGN.md §6 card duel). */
   skills: SkillsConfig;
   skillById: ReadonlyMap<string, Skill>;
+  /** Scroll sources besides the first clears and chests, and the reveal show (DESIGN.md §3, §7). */
+  scrolls: ScrollsConfig;
 }
 
 export type RawContent = { [K in keyof typeof contentSchemas]: unknown };
@@ -213,6 +217,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     expeditions,
     challenges,
     skills,
+    scrolls,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -326,6 +331,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     challenges,
     skills,
     skillById: new Map(skills.skills.map((x) => [x.id, x])),
+    scrolls,
   };
 }
 
@@ -1056,15 +1062,15 @@ function checkReferences(
   });
 
   c.dungeons.forEach((dungeon, i) => {
-    // Every dungeon pays Money and every crystal: Money by the kill, crystals as a wage
+    // Every dungeon pays Money by the kill; scrolls come as first-clear purses, chests and floor wins
     // (DESIGN.md §3, §7).
     const dropped = new Set<string>();
     dungeon.drops.currencies.forEach((drop, j) => {
       const where = `dungeons.json › [${i}] › drops › currencies › [${j}] › resource`;
       const res = resources.get(drop.resource);
       if (!res) issues.push(`${where}: unknown resource "${drop.resource}"`);
-      else if (res.kind !== 'currency' && res.kind !== 'crystal') {
-        issues.push(`${where}: "${drop.resource}" is ${res.kind}, expected currency or crystal`);
+      else if (res.kind !== 'currency' && res.kind !== 'scroll') {
+        issues.push(`${where}: "${drop.resource}" is ${res.kind}, expected currency or scroll`);
       }
       if (dropped.has(drop.resource)) issues.push(`${where}: duplicate "${drop.resource}"`);
       dropped.add(drop.resource);
@@ -1082,8 +1088,8 @@ function checkReferences(
         const res = resources.get(entry.resource);
         const where = `dungeons.json › [${i}] › drops › ${field} › [${j}] › resource`;
         if (!res) issues.push(`${where}: unknown resource "${entry.resource}"`);
-        else if (res.kind !== 'currency' && res.kind !== 'crystal') {
-          issues.push(`${where}: "${entry.resource}" is ${res.kind}, expected currency or crystal`);
+        else if (res.kind !== 'currency' && res.kind !== 'scroll') {
+          issues.push(`${where}: "${entry.resource}" is ${res.kind}, expected currency or scroll`);
         }
       });
     paid(dungeon.drops.wages, 'wages');
@@ -1094,7 +1100,7 @@ function checkReferences(
     }
     for (const w of waged) dropped.add(w);
     for (const r of c.resources) {
-      if ((r.kind === 'currency' || r.kind === 'crystal') && !dropped.has(r.id)) {
+      if (r.kind === 'currency' && !dropped.has(r.id)) {
         issues.push(`dungeons.json › [${i}] › drops › currencies: "${r.id}" is not dropped`);
       }
     }
@@ -1112,9 +1118,9 @@ function checkReferences(
       issues.push(
         `portals.json › [${i}] › cost › resource: unknown resource "${portal.cost.resource}"`,
       );
-    } else if (res.kind !== 'crystal') {
+    } else if (res.kind !== 'scroll') {
       issues.push(
-        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected crystal`,
+        `portals.json › [${i}] › cost › resource: "${portal.cost.resource}" is ${res.kind}, expected scroll`,
       );
     }
     // Pity and the 10-pull guarantee pick from the pool at or above their rarity.
@@ -1244,6 +1250,7 @@ export function bundledRawContent(): RawContent {
     expeditions: expeditionsJson,
     challenges: challengesJson,
     skills: skillsJson,
+    scrolls: scrollsJson,
   };
 }
 

@@ -532,19 +532,18 @@ describe('clearing', () => {
     const started = startFloorChallenge(below.state, content);
     if (!started.ok) throw new Error(started.reason);
     const start = started.state;
-    const crystals = (s: GameState) => s.resources['summon_crystal']!;
-    const purse = cellar.drops.firstClear.find((p) => p.resource === 'summon_crystal')!.amount;
-    const wage = cellar.drops.wages.find((w) => w.resource === 'summon_crystal')!.perSecond;
+    const crystals = (s: GameState) => s.resources['summon_scroll']!;
+    const purse = cellar.drops.firstClear.find((p) => p.resource === 'summon_scroll')!.amount;
+    // winning the boss's Challenge is also the first win of that floor: its lump comes with the purse
+    const lump = content.scrolls.floorFirstWin.boss.summon;
     const first = run(start, content, 1.5);
     expect(first.report.cleared).toEqual(['mossy_cellar']);
     expect(crystals(first.state).sub(crystals(start)).toNumber()).toBeCloseTo(
-      purse.add(wage.mul(1.5)).toNumber(),
+      purse.add(lump).toNumber(),
     );
     const again = run(first.state, content, 1.5);
     expect(again.report.bossKills).toBeGreaterThan(0);
-    expect(crystals(again.state).sub(crystals(first.state)).toNumber()).toBeCloseTo(
-      wage.mul(1.5).toNumber(),
-    );
+    expect(crystals(again.state).sub(crystals(first.state)).toNumber()).toBe(0);
   });
 });
 

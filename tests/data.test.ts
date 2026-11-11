@@ -101,7 +101,7 @@ describe('bundled content', () => {
       ['Hollow of the Void', 'The Unmade King'],
     ]);
     expect(content.cosmetics.length).toBeGreaterThan(7);
-    expect(content.portals).toHaveLength(2); // Card Portal and Wardrobe Gate (open with the Wardrobe)
+    expect(content.portals).toHaveLength(3); // Card Portal, Wardrobe Gate and Legacy Gate
     expect(content.dungeons.map((d) => d.boss.name)).toEqual([
       'Root Warden',
       'Cinder Lich',
@@ -361,7 +361,7 @@ describe('card ranks and portals', () => {
     portal.pool[0]!.itemId = 'holo_hex'; // a cosmetic in a cards portal
     portal.pool[1]!.itemId = 'missing_card';
     const issues = issuesFor(bad);
-    expect(issues.some((i) => i.includes('is tree_gem, expected crystal'))).toBe(true);
+    expect(issues.some((i) => i.includes('is tree_gem, expected scroll'))).toBe(true);
     expect(
       issues.some((i) => i.includes('pool › [0] › itemId') && i.includes('not a known card')),
     ).toBe(true);
@@ -380,7 +380,7 @@ describe('card ranks and portals', () => {
 
   it('has the beta Card Portal: a 10-pull at ten singles, Legendary+ at 90, Rare+ per 10-pull', () => {
     const portal = loadContent().portals.find((p) => p.id === 'card_portal')!;
-    expect(portal.cost.resource).toBe('summon_crystal');
+    expect(portal.cost.resource).toBe('summon_scroll');
     expect(portal.cost.ten.eq(portal.cost.single.mul(10))).toBe(true);
     expect(portal.pity).toEqual({ rarity: 'legendary', threshold: 90 });
     expect(portal.tenPullGuarantee).toBe('rare');
@@ -389,12 +389,12 @@ describe('card ranks and portals', () => {
   it('checks the prestige currency, reward cosmetics and shop modifier scopes', () => {
     const bad = raw();
     const p = bad.prestige as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    p['currency'] = 'summon_crystal';
+    p['currency'] = 'summon_scroll';
     p['rewards'][0].cosmetics = ['nope'];
     p['shop'][0].perLevel[0].scope = { dungeon: 'nowhere' };
     const issues = issuesFor(bad);
     expect(issues).toContain(
-      'prestige.json › currency: "summon_crystal" is crystal, expected prestige',
+      'prestige.json › currency: "summon_scroll" is scroll, expected prestige',
     );
     expect(issues).toContain(
       'prestige.json › rewards › [0] › cosmetics › [0]: unknown cosmetic "nope"',
@@ -582,12 +582,13 @@ describe('production data', () => {
 });
 
 describe('the three loops (DESIGN.md §3)', () => {
-  it('has Money, two crystals and a Frost Sigil that is a material', () => {
+  it('has Money, two scrolls and a Frost Sigil that is a material', () => {
     const c = loadContent();
     const kind = (id: string) => c.resourceById.get(id)!.kind;
     expect(kind('money')).toBe('currency');
-    expect(kind('summon_crystal')).toBe('crystal');
-    expect(kind('glamour_crystal')).toBe('crystal');
+    expect(kind('summon_scroll')).toBe('scroll');
+    expect(kind('glamour_scroll')).toBe('scroll');
+    expect(c.resourceById.get('summon_crystal')).toBeUndefined();
     expect(kind('frost_sigil')).toBe('material');
     expect(c.resourceById.get('money')!.name).toBe('Money');
     expect(c.resourceById.get('money')!.startAmount!.gt(0)).toBe(true);
@@ -604,32 +605,32 @@ describe('the three loops (DESIGN.md §3)', () => {
     }
   });
 
-  it('makes the portals cost a crystal', () => {
+  it('makes the portals cost a scroll', () => {
     const c = loadContent();
     expect(c.allPortals.map((p) => [p.id, p.cost.resource])).toEqual([
-      ['card_portal', 'summon_crystal'],
-      ['wardrobe_gate', 'glamour_crystal'],
-      ['legacy_gate', 'glamour_crystal'],
+      ['card_portal', 'summon_scroll'],
+      ['wardrobe_gate', 'glamour_scroll'],
+      ['legacy_gate', 'glamour_scroll'],
     ]);
   });
 
-  it('refuses a dungeon that leaves out a crystal or drops a gem', () => {
+  it('refuses a dungeon that leaves out Money or drops a gem', () => {
     const bad = raw();
     type Drops = { currencies: { resource: string }[]; wages: { resource: string }[] };
     const drops = (bad.dungeons as { drops: Drops }[])[1]!.drops;
-    drops.wages = drops.wages.filter((x) => x.resource !== 'glamour_crystal');
+    drops.currencies = drops.currencies.filter((x) => x.resource !== 'money');
     drops.currencies.push({ resource: 'oak_gem', min: 1, max: 2 } as never);
     const issues = issuesFor(bad);
-    expect(issues.join(String.fromCharCode(10))).toContain('"glamour_crystal" is not dropped');
+    expect(issues.join(String.fromCharCode(10))).toContain('"money" is not dropped');
     expect(issues.join(String.fromCharCode(10))).toContain(
-      '"oak_gem" is tree_gem, expected currency or crystal',
+      '"oak_gem" is tree_gem, expected currency or scroll',
     );
   });
 
   it('refuses tier-ups paid in other currencies, without Money or without both production loops', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['tierUp'].bronze.logging[1].resource = 'summon_crystal';
+    rules['tierUp'].bronze.logging[1].resource = 'summon_scroll';
     rules['tierUp'].gold.fighting = rules['tierUp'].gold.fighting.filter(
       (x: { resource: string }) => x.resource !== 'money',
     );

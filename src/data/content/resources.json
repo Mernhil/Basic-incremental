@@ -73,19 +73,6 @@
     "startAmount": "100"
   },
   {
-    "id": "summon_crystal",
-    "name": "Summon Crystal",
-    "kind": "crystal",
-    "tier": 1,
-    "startAmount": "300"
-  },
-  {
-    "id": "glamour_crystal",
-    "name": "Glamour Crystal",
-    "kind": "crystal",
-    "tier": 2
-  },
-  {
     "id": "summon_scroll",
     "name": "Summon Scroll",
     "kind": "scroll",

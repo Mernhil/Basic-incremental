@@ -73,7 +73,7 @@ describe('balance sim: greedy buyer', () => {
     expect(Number.isFinite(oak!.eta!)).toBe(true);
     // Plots, slots and expansions are gone.
     expect(candidates.some((c) => c.id.startsWith('expand:'))).toBe(false);
-    // Nothing earns Glamour Crystals before a kill, so a Wardrobe Gate pull is out of reach.
+    // Nothing earns Glamour Scrolls before a kill, so a Wardrobe Gate pull is out of reach.
     const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate');
     expect(gate?.eta === null || gate!.eta! > 0).toBe(true);
   });
@@ -88,7 +88,7 @@ describe('balance sim: greedy buyer', () => {
   });
 
   it('summons from a portal once a pull is affordable', () => {
-    const state = rich(freshState(), 'summon_crystal', 10 * CRYSTAL_UNIT);
+    const state = rich(freshState(), 'summon_scroll', 10 * CRYSTAL_UNIT);
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('summon:card_portal');
     expect(after.portals['card_portal']?.pulls).toBe(1);
@@ -129,25 +129,27 @@ describe('balance sim: greedy buyer', () => {
   it('does nothing when nothing is affordable', () => {
     // no Money and no crystals (a new game holds one pull)
     const state = rich(freshState(), 'money', 0);
-    state.resources['summon_crystal'] = new Decimal(0);
+    state.resources['summon_scroll'] = new Decimal(0);
     const { bought } = greedyBuy(state, levelPointsOnly(content));
     expect(bought).toEqual([]);
   });
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
-  it('spends Money on the economy and leaves the gems to the card upgrades waiting for them', () => {
+  it('spends Money on the economy, its spare gems on training, and leaves the Cores to the card upgrades', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 6;
     squire.level = 40;
     state.resources['moss_core'] = new Decimal(10);
-    state.resources['iron_gem'] = new Decimal(600);
+    state.resources['copper_gem'] = new Decimal(6000);
     state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought.some((id) => id.startsWith('mine:') || id.startsWith('tree:'))).toBe(true);
-    expect(after.resources['iron_gem']!.toNumber()).toBe(600);
+    // Training is paid in gems (DESIGN.md §6): the spare Copper Gems go into Sharpen.
+    expect(bought).toContain('train:sharpen');
+    expect(after.resources['copper_gem']!.toNumber()).toBeLessThan(6000);
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
@@ -253,7 +255,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
     state.resources['money'] = new Decimal(1e9);
-    state.resources['summon_crystal'] = new Decimal(0); // no pull mixed in
+    state.resources['summon_scroll'] = new Decimal(0); // no pull mixed in
     const { bought } = greedyBuy(state, content);
     expect(bought).not.toContain('tier:geode_golem');
     state.resources['frost_core'] = new Decimal(coreCost!.amount).mul(2);
@@ -665,14 +667,16 @@ describe('balance sim: idle profile', () => {
   }, 30_000);
 
   it('buys only at its check-ins, every 30 minutes', () => {
-    // The starter pull is spent at the first check-in (t = 0); crystals earned afterwards wait
-    // for the next one.
+    // The starter pull and the daily scrolls are spent at the first check-in (t = 0); scrolls
+    // earned afterwards wait for the next one.
+    const daily = loadContent().scrolls.daily;
+    const first = Math.floor(daily.summon.toNumber() + 1) + Math.floor(daily.glamour.toNumber());
     const before = runSim(loadContent(), { hours: 0.45, seed: 1, profile: 'idle' });
     expect(before.simSeconds).toBe(0.45 * 3600);
     expect(before.simSeconds).toBeLessThan(IDLE_CHECKIN_SECONDS);
-    expect(before.log.summons).toBe(1);
+    expect(before.log.summons).toBe(first);
     const after = runSim(loadContent(), { hours: 0.55, seed: 1, profile: 'idle' });
-    expect(after.log.summons).toBeGreaterThan(1);
+    expect(after.log.summons).toBeGreaterThan(first);
   }, 30_000);
 
   it("is offline for 8 hours after 16 hours awake, on the game's own offline progress", () => {

@@ -79,9 +79,8 @@ const V27_SCROLLS = { summon_scroll: 'summon_crystal', glamour_scroll: 'glamour_
  * - the fight gets the enemy being fought (the first), no Challenge running, no auto-challenge
  *   wait and no damage on any team card; the HP of the floor being fought is dropped (`bossHp`
  *   becomes one enemy's HP), so the floor starts fresh;
- * - the crystals held become scrolls at the pull price (300 crystals a scroll, rounded down). The
- *   crystals stay too while the portals still take them; the package that moves the portals to
- *   scrolls drops them in this same step;
+ * - the crystals held become scrolls at the pull price (300 crystals a scroll, rounded down) and
+ *   the crystals are dropped: the portals, wages and rewards all pay scrolls now;
  * - no Focus Portal kind, daily reward, presets, bonds, expeditions or Ascension challenges yet.
  */
 function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
@@ -93,6 +92,7 @@ function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
     const crystals = typeof held === 'string' && isDecimalString(held) ? new Decimal(held) : null;
     resources[scroll] =
       crystals && crystals.gt(0) ? crystals.div(V27_CRYSTALS_PER_SCROLL).floor().toString() : '0';
+    delete resources[crystal];
   }
   return {
     ...state,

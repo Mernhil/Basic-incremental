@@ -344,7 +344,9 @@ export function serializeState(state: GameState): SerializedState {
 export function deserializeState(saved: SerializedState, content: Content): GameState {
   const base = createInitialState(content);
   const state = cloneState(base);
-  for (const [id, text] of Object.entries(saved.resources)) state.resources[id] = new Decimal(text);
+  for (const [id, text] of Object.entries(saved.resources)) {
+    if (content.resourceById.has(id)) state.resources[id] = new Decimal(text);
+  }
   // Unknown ids (removed from the game) are dropped.
   state.clearedDungeons = saved.clearedDungeons.filter(
     (id) => content.dungeonById.has(id) || content.trialById.has(id),

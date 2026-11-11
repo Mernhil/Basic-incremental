@@ -31,7 +31,7 @@ await page.evaluate(
       content.cardById.has(id),
     );
     s.cards.owned['dawnblade_regent'].enhancements = ['edge'];
-    s.resources['summon_crystal'] = new g.Decimal(1000);
+    s.resources['summon_scroll'] = new g.Decimal(1000);
     await window.api.writeSave(g.createSaveText(s, Date.now()));
   },
   { data: fsUrl('src/data/index.ts'), game: fsUrl('src/game/index.ts') },

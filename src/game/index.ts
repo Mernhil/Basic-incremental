@@ -225,7 +225,25 @@ export {
   type PullFailure,
   type PortalInfo,
   type CosmeticGain,
+  /** The Focus Portal (a view of the Card Portal aimed at one item type): its id, and a portal's pool and counters. */
+  FOCUS_PORTAL_ID,
+  resolvePortal,
 } from './portals';
+
+// ---- Scrolls, the Focus Portal's choice, the daily reward and the reveal show (DESIGN.md §3, §7) ----
+
+export {
+  floorFirstWinScrolls,
+  payFloorFirstWin,
+  localDay,
+  dailyAvailable,
+  claimDaily,
+  focusKinds,
+  setFocusKind,
+  revealPlan,
+  type ScrollLump,
+  type RevealPlan,
+} from './summon';
 
 // ---- Progression layer (DESIGN.md §4, §6, §10, §12): the contract with the UI, one line each ---------------
 

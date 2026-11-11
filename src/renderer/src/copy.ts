@@ -146,7 +146,7 @@ export const COPY = {
     summon: {
       label: 'Summon',
       frame: 'Portals',
-      empty: 'Spend crystals from dungeons to summon new cards and cosmetics.',
+      empty: 'Spend scrolls to summon new cards and cosmetics.',
     },
     skills: {
       label: 'Skill Tree',
@@ -574,7 +574,7 @@ export const COPY = {
       mastery: 'Gem mastery',
       medals: 'Boss medals',
       portal_pity: 'Portal pity',
-      crystals: 'Crystals',
+      crystals: 'Scrolls',
       starlight: 'Starlight',
       workers: 'Workers',
       forge: 'The forge',
@@ -742,17 +742,35 @@ export const COPY = {
     handTitle: 'Your last hand',
     handEmpty: 'Draw from a deck and the cards you get will wait here.',
     handLabel: (n: number) => `Your last hand, ${n} ${n === 1 ? 'card' : 'cards'}`,
+    focusLine: 'Cards of one item type · same price, rates and pity as the Card Portal',
+    focusPick: 'Item type',
+    focusPickLabel: 'Item type the Focus Portal pulls',
+    focusNone: 'Choose an item type to pull from this portal',
+    focusKind: (name: string, on: boolean) =>
+      on ? `${name}, chosen. Click to clear` : `${name}. Click to choose`,
+    focusHunting: (name: string) => `Pulling: ${name}`,
+    oddsFocus: 'The Focus Portal has the Card Portal rates and shares its pity.',
+    dailyTitle: 'Daily scrolls',
+    dailyClaim: 'Claim',
+    dailyClaimed: 'Claimed today',
+    dailyLabel: (summon: string, glamour: string) =>
+      `Claim the daily scrolls: ${summon} Summon, ${glamour} Glamour`,
+    dailyGives: (summon: string, glamour: string) => `+${summon} Summon, +${glamour} Glamour`,
     gate: 'Wardrobe Gate',
     gateLocked: 'Opens with the Wardrobe',
     gateAbout: 'Pulls cosmetic sets and items. Duplicates feed their upgrade levels.',
     revealTitle: (portal: string) => `${portal} reveal`,
     next: 'Click or press Space to reveal the next',
     skipAll: 'Skip all',
+    entranceHint: 'Click to continue',
+    entranceLabel: (name: string, rarity: string) => `Best card of the pull: ${name}, ${rarity}`,
+    glowing: 'Glowing face-down card',
     done: 'Done',
     isNew: 'New!',
     duplicate: (n: number) => `Duplicate (${n})`,
     shards: (n: number) => `+${n} shards`,
     copy: (n: number) => `Copy (${n})`,
+    payback: (amount: string) => `Owned · +${amount} back`,
     byPity: 'Pity',
     byGuarantee: '×10 guarantee',
     hidden: 'Face-down card',
@@ -781,7 +799,7 @@ export const COPY = {
       `${name}${worn ? ', equipped' : ''}${picked ? ', previewing' : ''}`,
     applied: (name: string) => `${name} applied.`,
     failed: 'That skin cannot be worn right now.',
-    none: 'You own no weapon skins yet. Legacy skins come with the Legacy Gate in a later release.',
+    none: 'You own no weapon skins yet. Pull them from the Legacy Gate on the Summon page.',
     level: 'Level',
     hitsEvery: 'Hits every',
   },
@@ -1092,7 +1110,7 @@ export const COPY = {
   /** Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer. */
   training: {
     title: 'Training',
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
     level: (n: number) => `Lv ${n}`,
     effect: (times: string, what: string) => `×${times} ${what}`,
     toGo: (mult: string, levels: number) =>
@@ -1119,7 +1137,7 @@ export const COPY = {
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
   },
   buy: {
     countLabel: 'Buy amount',

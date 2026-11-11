@@ -1,4 +1,5 @@
 import type { BurstJob, Content, Dungeon, Trial } from '../data';
+import { payFloorFirstWin } from './summon';
 import { cardBaseDamage, fightingXpPerKill, fightingXpPerSecond, grantLoadoutXp } from './cards';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
@@ -585,12 +586,12 @@ export function bossStatus(
   };
 }
 
-/** The multiplier stat a currency's drops use: Money or crystals (DESIGN.md §3). */
+/** The multiplier stat a currency's drops use: Money or scrolls (DESIGN.md §3). */
 function currencyMultiplierStat(
   content: Content,
   resource: string,
 ): 'drops.moneyMultiplier' | 'drops.crystalMultiplier' {
-  return content.resourceById.get(resource)?.kind === 'crystal'
+  return content.resourceById.get(resource)?.kind === 'scroll'
     ? 'drops.crystalMultiplier'
     : 'drops.moneyMultiplier';
 }
@@ -1436,6 +1437,19 @@ function fightDungeon(
     // down to the floor won. Clearing (DESIGN.md §6): the Normal last-floor boss died. The last
     // floor of a tier also opens the next one (floors.ts `isDifficultyUnlocked`).
     const tier = ensureTier(next, dungeon);
+    // The first win of a floor pays its scroll lump (DESIGN.md §3 scrolls).
+    if (tier.best < stage.floor) {
+      for (const lump of payFloorFirstWin(
+        next,
+        content,
+        dungeon.id,
+        stage.difficulty,
+        stage.floor,
+      )) {
+        report.currencies[lump.resource] =
+          (report.currencies[lump.resource] ?? 0) + lump.amount.toNumber();
+      }
+    }
     tier.best = Math.max(tier.best, stage.floor);
     tier.floor = stage.floor;
     next.combat.challenge = null;

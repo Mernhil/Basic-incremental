@@ -46,24 +46,16 @@
         {
           "resource": "money",
           "perSecond": "50"
-        },
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.5"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.4"
         }
       ],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "300"
+          "resource": "summon_scroll",
+          "amount": "1"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "150"
+          "resource": "glamour_scroll",
+          "amount": "0.5"
         }
       ],
       "currencies": [
@@ -124,24 +116,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.6"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.45"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "900"
+          "resource": "summon_scroll",
+          "amount": "3"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "600"
+          "resource": "glamour_scroll",
+          "amount": "2"
         }
       ],
       "currencies": [
@@ -215,24 +198,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "1500"
+          "resource": "summon_scroll",
+          "amount": "5"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "900"
+          "resource": "glamour_scroll",
+          "amount": "3"
         }
       ],
       "currencies": [
@@ -298,24 +272,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "2100"
+          "resource": "summon_scroll",
+          "amount": "7"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "1200"
+          "resource": "glamour_scroll",
+          "amount": "4"
         }
       ],
       "currencies": [
@@ -381,24 +346,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "2700"
+          "resource": "summon_scroll",
+          "amount": "9"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "1500"
+          "resource": "glamour_scroll",
+          "amount": "5"
         }
       ],
       "currencies": [
@@ -464,24 +420,15 @@
         "chance": 0.005,
         "pityThreshold": 200
       },
-      "wages": [
-        {
-          "resource": "summon_crystal",
-          "perSecond": "0.7"
-        },
-        {
-          "resource": "glamour_crystal",
-          "perSecond": "0.55"
-        }
-      ],
+      "wages": [],
       "firstClear": [
         {
-          "resource": "summon_crystal",
-          "amount": "3300"
+          "resource": "summon_scroll",
+          "amount": "11"
         },
         {
-          "resource": "glamour_crystal",
-          "amount": "1800"
+          "resource": "glamour_scroll",
+          "amount": "6"
         }
       ],
       "currencies": [

@@ -53,7 +53,7 @@ function row(state: GameState, t: number): string {
   const crit = critFactor(critStats(content, modifiers, 'mossy_cellar')).toNumber();
   const cm = computeStat('drops.crystalMultiplier', 1, modifiers, {
     ...ctx,
-    resource: 'summon_crystal',
+    resource: 'summon_scroll',
   });
   const cmParts = [...new Set(cm.applied.map((m) => m.source.kind))].join('/');
   const extra = ` crystals=x${cm.value.toNumber().toFixed(2)}(${cmParts}) eff/base=x${(eff / Math.max(base, 1)).toFixed(1)} sig=x${sig.toFixed(2)} (power ${b.power.toFixed(1)} fill ${b.fill.toFixed(2)}) crit=x${crit.toFixed(2)}`;

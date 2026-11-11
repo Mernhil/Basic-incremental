@@ -84,6 +84,8 @@ export function chapterOf(condition: AchievementCondition): ChapterId {
     case 'cleared':
     case 'stage_stars':
     case 'dungeon_starred':
+    case 'tier_cleared':
+    case 'endless_depth':
     case 'star_total':
     case 'boss_mastery':
       return 'battle';

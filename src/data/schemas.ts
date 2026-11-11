@@ -20,7 +20,7 @@ export type CardElement = (typeof ELEMENTS)[number];
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
- * and pays for tree and mine levels, the upgrade shelf and tier-ups; `crystal` (Summon / Glamour Crystal)
+ * and pays for tree and mine levels, the upgrade shelf and tier-ups; `scroll` (Summon / Glamour Scroll)
  * is the premium tier that pays for summons and is kept through an ascension; `prestige`
  * (Starlight) is the prestige currency, kept too.
  */
@@ -29,9 +29,8 @@ export const RESOURCE_KINDS = [
   'mine_gem',
   'material',
   'currency',
-  'crystal',
   'prestige',
-  /** Summon and Glamour Scrolls (DESIGN.md §3): one scroll pays one pull. Save format 27. */
+  /** Summon and Glamour Scrolls (DESIGN.md §3): one scroll pays one pull; kept through an ascension. */
   'scroll',
 ] as const;
 
@@ -1437,7 +1436,20 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
     count: z.number().int().min(1).default(1),
   }),
   /** A dungeon with every stage of every star difficulty at `level` or more. */
-  z.strictObject({ kind: z.literal('dungeon_starred'), level: z.number().int().min(1).max(6) }),
+  /** A dungeon with every stage of every star difficulty (or only `difficulty`) at `level` or more. */
+  z.strictObject({
+    kind: z.literal('dungeon_starred'),
+    level: z.number().int().min(1).max(6),
+    difficulty: z.enum(['normal', 'hard', 'nightmare']).optional(),
+  }),
+  /** Dungeons whose last-floor boss was beaten on `difficulty` (`count`, default every dungeon). */
+  z.strictObject({
+    kind: z.literal('tier_cleared'),
+    difficulty: z.enum(['hard', 'nightmare']),
+    count: z.number().int().min(1).optional(),
+  }),
+  /** The deepest endless depth reached in any dungeon. */
+  z.strictObject({ kind: z.literal('endless_depth'), depth: z.number().int().min(1) }),
   /** Star levels earned over all stages. */
   z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
   /** Workers at work on trees and mines now. */
@@ -2037,6 +2049,35 @@ export const ascensionChallengeSchema = z.strictObject({
 });
 export type AscensionChallenge = z.output<typeof ascensionChallengeSchema>;
 
+/**
+ * Where scrolls come from besides the dungeons' first clears, the stage chests, goals and
+ * achievements (DESIGN.md §3 Crystal wage / scrolls): the lump a floor pays the first time it is
+ * won, by floor kind and difficulty, the daily reward, and when the reveal show glows and gives
+ * its entrance. Amounts are scrolls (they may be a fraction of one).
+ */
+const scrollLumpSchema = z.strictObject({ summon: positiveDecimal, glamour: positiveDecimal });
+export const scrollsSchema = z.strictObject({
+  /** Paid when a floor is won for the first time (the best floor of its difficulty rises). */
+  floorFirstWin: z.strictObject({
+    wave: scrollLumpSchema,
+    miniboss: scrollLumpSchema,
+    boss: scrollLumpSchema,
+    /** Multiplies the lump by difficulty. */
+    difficulty: z.strictObject({
+      normal: z.number().gt(0),
+      hard: z.number().gt(0),
+      nightmare: z.number().gt(0),
+      endless: z.number().gt(0),
+    }),
+  }),
+  /** The daily reward, claimed once per local day. */
+  daily: scrollLumpSchema,
+  /** The reveal show (DESIGN.md §7 Reveal): from which rarity a face-down card glows, and from
+   *  which the best card of a pull gets the full-screen entrance. */
+  reveal: z.strictObject({ glowFrom: z.enum(RARITIES), entranceFrom: z.enum(RARITIES) }),
+});
+export type ScrollsConfig = z.output<typeof scrollsSchema>;
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -2077,6 +2118,7 @@ export const contentSchemas = {
   expeditions: expeditionsSchema,
   challenges: z.array(ascensionChallengeSchema),
   skills: skillsFileSchema,
+  scrolls: scrollsSchema,
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;
