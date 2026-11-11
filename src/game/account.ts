@@ -460,12 +460,25 @@ function spentOn(content: Content, cardId: string, owned: OwnedCard): number {
   return owned.enhancements.reduce((a, id) => a + (options.find((o) => o.id === id)?.cost ?? 0), 0);
 }
 
+/** The card level that opens an option (0 = open from the start). */
+export function optionUnlockLevel(content: Content, option: EnhancementOption): number {
+  return option.milestone * content.enhancements.milestoneEvery;
+}
+
 export interface CardEnhancementInfo {
   unlocked: boolean;
   unlockRank: Rank;
   budget: number;
   spent: number;
-  options: { option: EnhancementOption; chosen: boolean; canChoose: boolean }[];
+  options: {
+    option: EnhancementOption;
+    chosen: boolean;
+    /** The card level that opens it (0 = open from the start). */
+    unlockLevel: number;
+    /** The card is at that level. */
+    open: boolean;
+    canChoose: boolean;
+  }[];
 }
 
 /** A card's enhancement star chart: budget, spent and each option. Null when not owned. */
@@ -485,14 +498,22 @@ export function cardEnhancements(
     spent,
     options: optionsOf(content, cardId).map((option) => {
       const chosen = owned.enhancements.includes(option.id);
-      return { option, chosen, canChoose: !chosen && spent + option.cost <= budget };
+      const unlockLevel = optionUnlockLevel(content, option);
+      const open = owned.level >= unlockLevel;
+      return {
+        option,
+        chosen,
+        unlockLevel,
+        open,
+        canChoose: !chosen && open && budget > 0 && spent + option.cost <= budget,
+      };
     }),
   };
 }
 
 export type EnhanceResult =
   | { ok: true; state: GameState }
-  | { ok: false; reason: 'unknown' | 'not-owned' | 'locked' | 'already' | 'over-budget' };
+  | { ok: false; reason: 'unknown' | 'not-owned' | 'locked' | 'level' | 'already' | 'over-budget' };
 
 /** Picks one enhancement option for a card, within its budget. */
 export function chooseEnhancement(
@@ -507,6 +528,7 @@ export function chooseEnhancement(
   if (!option) return { ok: false, reason: 'unknown' };
   const budget = enhancementBudget(content, owned);
   if (budget <= 0) return { ok: false, reason: 'locked' };
+  if (owned.level < optionUnlockLevel(content, option)) return { ok: false, reason: 'level' };
   if (owned.enhancements.includes(optionId)) return { ok: false, reason: 'already' };
   if (spentOn(content, cardId, owned) + option.cost > budget) {
     return { ok: false, reason: 'over-budget' };
@@ -552,7 +574,7 @@ export function accountModifiers(state: GameState, content: Content): Modifier[]
     if (!owned || enhancementBudget(content, owned) <= 0) continue;
     for (const optionId of owned.enhancements) {
       const option = optionsOf(content, cardId).find((o) => o.id === optionId);
-      if (!option) continue;
+      if (!option || owned.level < optionUnlockLevel(content, option)) continue;
       for (const m of option.modifiers) {
         out.push({
           ...m,

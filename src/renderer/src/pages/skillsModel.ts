@@ -411,7 +411,8 @@ const STAR_SPOTS = [
   [100, 20],
 ] as const;
 
-export type StarState = 'chosen' | 'open' | 'blocked' | 'locked';
+/** `level`: a milestone option the card has not reached the level of yet. */
+export type StarState = 'chosen' | 'open' | 'blocked' | 'locked' | 'level';
 
 export interface StarView {
   id: string;
@@ -421,6 +422,12 @@ export interface StarView {
   costText: string;
   x: number;
   y: number;
+  /** Drawn on the chart: the options open from the start. Milestone options show in the list only
+   *  (the chart's night sky is one fixed picture with room for five stars). */
+  onChart: boolean;
+  /** The card level that opens it (0 = from the start) and, when it is not reached, the words. */
+  unlockLevel: number;
+  levelText: string;
   state: StarState;
   label: string;
 }
@@ -434,7 +441,7 @@ export interface StarChartView {
   /** Budget pips: chosen points lit, the rest open. */
   pips: boolean[];
   stars: StarView[];
-  /** Lines between consecutive stars; lit when both ends are chosen. */
+  /** Lines between consecutive stars on the chart; lit when both ends are chosen. */
   links: { x1: number; y1: number; x2: number; y2: number; lit: boolean }[];
   canReset: boolean;
 }
@@ -442,15 +449,19 @@ export interface StarChartView {
 const TIER_NAME: Record<Rank['tier'], string> = TIER_LABELS;
 
 export function starChartView(info: CardEnhancementInfo): StarChartView {
-  const stars = info.options.map((o, i): StarView => {
-    const spot = STAR_SPOTS[i % STAR_SPOTS.length]!;
+  let onChart = 0;
+  const stars = info.options.map((o): StarView => {
+    const spot = STAR_SPOTS[o.unlockLevel === 0 ? onChart++ % STAR_SPOTS.length : 0]!;
     const state: StarState = !info.unlocked
       ? 'locked'
       : o.chosen
         ? 'chosen'
-        : o.canChoose
-          ? 'open'
-          : 'blocked';
+        : !o.open
+          ? 'level'
+          : o.canChoose
+            ? 'open'
+            : 'blocked';
+    const levelText = o.unlockLevel > 0 && !o.open ? COPY.enhance.opensAtLevel(o.unlockLevel) : '';
     const effect = o.option.modifiers.map(effectText).join(', ');
     const costText = COPY.enhance.cost(o.option.cost);
     const stateText = {
@@ -458,6 +469,7 @@ export function starChartView(info: CardEnhancementInfo): StarChartView {
       blocked: COPY.enhance.overBudget,
       open: COPY.enhance.open,
       locked: COPY.enhance.lockedStar,
+      level: levelText,
     }[state];
     return {
       id: o.option.id,
@@ -467,12 +479,16 @@ export function starChartView(info: CardEnhancementInfo): StarChartView {
       costText,
       x: spot[0],
       y: spot[1],
+      onChart: o.unlockLevel === 0,
+      unlockLevel: o.unlockLevel,
+      levelText,
       state,
       label: COPY.enhance.starLabel(o.option.name, effect, costText, stateText),
     };
   });
-  const links = stars.slice(1).map((s, i) => {
-    const a = stars[i]!;
+  const sky = stars.filter((s) => s.onChart);
+  const links = sky.slice(1).map((s, i) => {
+    const a = sky[i]!;
     return {
       x1: a.x,
       y1: a.y,

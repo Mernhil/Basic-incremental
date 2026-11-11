@@ -1,5 +1,5 @@
 import { RARITIES, type Content, type Rarity } from '../../../data';
-import { type PortalInfo, type PullResult } from '../../../game';
+import { type GameState, type PortalInfo, type PullResult, type WishlistInfo } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
@@ -110,6 +110,57 @@ export function oddsTable(views: readonly PortalView[]): OddsTable {
     }),
   );
   return { columns: views.map((v) => ({ id: v.id, name: column(v) })), rows };
+}
+
+/** The Wishlist panel of a card portal (DESIGN.md §7): the pool's cards by rarity, with the marks. */
+export interface WishlistPanelView {
+  active: boolean;
+  /** "Hunting: Name, Name" under the deck, or "No card marked". */
+  hunting: string;
+  about: string;
+  rows: {
+    rarity: Rarity;
+    name: string;
+    countText: string;
+    label: string;
+    full: boolean;
+    cards: { id: string; name: string; marked: boolean; label: string; blocked: boolean }[];
+  }[];
+}
+
+export function wishlistPanelView(
+  info: WishlistInfo,
+  state: GameState,
+  content: Content,
+): WishlistPanelView {
+  const t = COPY.summon;
+  const nameOf = (id: string): string => content.cardById.get(id)?.name ?? id;
+  const limit = info.byRarity[0]?.limit ?? 0;
+  const marked = state.cards.wishlist.filter((id) =>
+    info.byRarity.some((r) => r.cards.some((c) => c.itemId === id)),
+  );
+  return {
+    active: info.active,
+    hunting: marked.length ? t.wishlistHunting(marked.map(nameOf).join(', ')) : t.wishlistNone,
+    about: t.wishlistAbout(limit),
+    rows: info.byRarity.map((r) => {
+      const full = r.marked >= r.limit;
+      return {
+        rarity: r.rarity,
+        name: rarityName(content, r.rarity),
+        countText: t.wishlistCount(r.marked, r.limit),
+        label: t.wishlistRow(rarityName(content, r.rarity), r.marked, r.limit),
+        full,
+        cards: r.cards.map((c) => ({
+          id: c.itemId,
+          name: nameOf(c.itemId),
+          marked: c.marked,
+          blocked: !c.marked && full,
+          label: t.wishlistCard(nameOf(c.itemId), c.marked, full),
+        })),
+      };
+    }),
+  };
 }
 
 /** Fewest and most card layers a deck shows. */

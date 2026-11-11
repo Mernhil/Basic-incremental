@@ -399,6 +399,7 @@
       "rarity": "legendary",
       "threshold": 90
     },
+    "wishlistPerRarity": 2,
     "tenPullGuarantee": "rare",
     "reveal": {
       "upgradeFlashChance": 0.25

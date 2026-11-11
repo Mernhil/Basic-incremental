@@ -535,7 +535,13 @@ html .cp-sort .cp-select:not(#_px) {
 .cp-option:disabled {
   cursor: default;
 }
+.cp-option__level {
+  display: block;
+  font-size: 11px;
+  color: #ffd968;
+}
 .cp-option.is-blocked,
+.cp-option.is-level,
 .cp-option.is-locked {
   opacity: 0.55;
 }

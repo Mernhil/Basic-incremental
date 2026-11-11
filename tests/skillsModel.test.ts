@@ -164,36 +164,53 @@ describe('respec', () => {
 
 describe('enhancement star chart', () => {
   const cardId = Object.keys(content.enhancements.cards)[0]!;
-  const own = (s: GameState, tier: 'bronze' | 'silver' | 'gold', chosen: string[] = []) => {
+  const own = (
+    s: GameState,
+    tier: 'wood' | 'bronze' | 'silver' | 'gold',
+    chosen: string[] = [],
+    level = 1,
+  ) => {
     s.cards.owned[cardId] = {
       tier,
       stars: 1,
-      level: 1,
+      level,
       xp: new Decimal(0),
       starFill: 0,
       enhancements: chosen,
     };
   };
 
-  it('is locked below Silver ★1', () => {
+  // a content where Wood has no points: the card shows its chart locked
+  const closed = {
+    ...content,
+    enhancements: {
+      ...content.enhancements,
+      budget: { ...content.enhancements.budget, wood: 0 },
+      unlockRank: { tier: 'bronze' as const, stars: 1 },
+    },
+  };
+
+  it('is locked below its unlock rank', () => {
     const s = freshState();
-    own(s, 'bronze');
-    const v = starChartView(cardEnhancements(s, content, cardId)!);
+    own(s, 'wood');
+    const v = starChartView(cardEnhancements(s, closed, cardId)!);
     expect(v.unlocked).toBe(false);
-    expect(v.lockedText).toContain('Silver ★1');
+    expect(v.lockedText).toContain('Bronze ★1');
     expect(v.stars.every((x) => x.state === 'locked')).toBe(true);
     expect(v.canReset).toBe(false);
   });
 
   it('chooses and resets through the Cards model, with readable refusals', () => {
-    const model = createCardsModel(content);
     const s = freshState();
-    own(s, 'bronze');
+    own(s, 'wood');
     const option = content.enhancements.cards[cardId]![0]!.id;
-    const refused = model.enhance(s, cardId, option);
-    expect(refused).toEqual({ ok: false, reason: 'Enhancements unlock at Silver ★1.' });
+    const refused = createCardsModel(closed).enhance(s, cardId, option);
+    expect(refused).toEqual({ ok: false, reason: 'Enhancements are not open for this card yet.' });
 
+    const model = createCardsModel(content);
     own(s, 'gold');
+    const early = model.enhance(s, cardId, content.enhancements.cards[cardId]!.at(-1)!.id);
+    expect(early).toEqual({ ok: false, reason: 'That option opens at a higher card level.' });
     const chosen = model.enhance(s, cardId, option);
     if (!chosen.ok) throw new Error(chosen.reason);
     expect(model.chart(chosen.state, cardId)!.stars[0]!.state).toBe('chosen');
@@ -205,7 +222,7 @@ describe('enhancement star chart', () => {
 
   it('lights chosen stars, the budget pips and the links between chosen stars', () => {
     const s = freshState();
-    const options = content.enhancements.cards[cardId]!;
+    const options = content.enhancements.cards[cardId]!.filter((o) => o.milestone === 0);
     own(s, 'gold', [options[0]!.id]);
     const v = starChartView(cardEnhancements(s, content, cardId)!);
     const budget = content.enhancements.budget.gold;
@@ -219,12 +236,29 @@ describe('enhancement star chart', () => {
       if (i === 0) continue;
       expect(v.stars[i]!.state).toBe(options[0]!.cost + o.cost <= budget ? 'open' : 'blocked');
     }
+    const onChart = v.stars.filter((x) => x.onChart);
+    expect(onChart).toHaveLength(options.length);
     expect(v.links).toHaveLength(options.length - 1);
     expect(v.links.some((l) => l.lit)).toBe(false);
     expect(v.canReset).toBe(true);
-    for (const st of v.stars) {
+    for (const st of onChart) {
       expect(st.x).toBeGreaterThan(0);
       expect(st.y).toBeGreaterThan(0);
     }
+  });
+
+  it('shows a milestone option as locked with the level that opens it, and open once reached', () => {
+    const s = freshState();
+    own(s, 'gold', [], 19);
+    const v = starChartView(cardEnhancements(s, content, cardId)!);
+    const milestone = v.stars.find((x) => x.unlockLevel === 20)!;
+    expect(milestone.state).toBe('level');
+    expect(milestone.onChart).toBe(false);
+    expect(milestone.levelText).toBe('Opens at level 20');
+    expect(milestone.label).toContain('Opens at level 20');
+    own(s, 'gold', [], 20);
+    const open = starChartView(cardEnhancements(s, content, cardId)!);
+    expect(open.stars.find((x) => x.unlockLevel === 20)!.state).toBe('open');
+    expect(open.stars.find((x) => x.unlockLevel === 40)!.levelText).toBe('Opens at level 40');
   });
 });

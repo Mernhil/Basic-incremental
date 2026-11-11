@@ -623,6 +623,22 @@ export const COPY = {
     noteCopy: '+1 copy',
     handSummary: (pulls: number, news: number, copies: number) =>
       `${pulls} ${pulls === 1 ? 'pull' : 'pulls'} · ${news} new · ${copies} ${copies === 1 ? 'copy' : 'copies'}`,
+    wishlistTitle: 'Wishlist',
+    wishlistAbout: (n: number) =>
+      `Mark up to ${n} cards per rarity to hunt. A pull of that rarity then lands on one of your marked cards. The chance of each rarity, the price and the pity stay the same.`,
+    wishlistRow: (rarity: string, marked: number, limit: number) =>
+      `${rarity}: ${marked} of ${limit} marked`,
+    wishlistCount: (marked: number, limit: number) => `${marked} / ${limit}`,
+    wishlistCard: (name: string, marked: boolean, full: boolean) =>
+      marked
+        ? `${name}, marked. Click to unmark`
+        : full
+          ? `${name}, not marked. This rarity is full: unmark a card first`
+          : `${name}, not marked. Click to mark`,
+    wishlistHunting: (names: string) => `Hunting: ${names}`,
+    wishlistNone: 'No card marked',
+    wishlistFull: 'This rarity has no room left. Unmark a card first.',
+    oddsWishlist: 'Wishlist on: a pull of a rarity with a marked card lands on a marked card.',
     handTitle: 'Your last hand',
     handEmpty: 'Draw from a deck and the cards you get will wait here.',
     handLabel: (n: number) => `Your last hand, ${n} ${n === 1 ? 'card' : 'cards'}`,
@@ -1154,6 +1170,7 @@ export const COPY = {
     overBudget: 'Not enough points left',
     open: 'Click to choose',
     lockedStar: 'Locked',
+    opensAtLevel: (level: number) => `Opens at level ${level}`,
     starLabel: (name: string, effect: string, cost: string, state: string) =>
       `${name}: ${effect}, ${cost}. ${state}`,
     reset: 'Reset (free)',
@@ -1162,7 +1179,8 @@ export const COPY = {
     reasons: {
       unknown: 'That option does not exist.',
       'not-owned': 'Own this card first.',
-      locked: 'Enhancements unlock at Silver ★1.',
+      locked: 'Enhancements are not open for this card yet.',
+      level: 'That option opens at a higher card level.',
       already: 'Already chosen.',
       'over-budget': 'Not enough points left. Reset to choose again.',
     },

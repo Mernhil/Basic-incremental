@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, cloneState, cosmeticMaxLevel, floorPosition, type GameState } from '../src/game';
+import {
+  Decimal,
+  cardEnhancements,
+  cloneState,
+  cosmeticMaxLevel,
+  floorPosition,
+  type GameState,
+} from '../src/game';
 import {
   buyerCandidates,
   greedyBuy,
@@ -8,6 +15,7 @@ import {
   formatTable,
   shouldAscend,
   fillEnhancements,
+  markWishlist,
   chooseDungeon,
   ascendNow,
   summarizeRuns,
@@ -267,12 +275,39 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
 
   it('picks the best enhancement set for the budget, rebuilt when the budget grows', () => {
     const state = freshState();
-    state.cards.owned['ember_squire']!.tier = 'silver';
-    const silver = fillEnhancements(state, content);
-    expect(silver.cards.owned['ember_squire']!.enhancements).toEqual(['edge']);
+    const wood = fillEnhancements(state, content);
+    expect(wood.cards.owned['ember_squire']!.enhancements).toEqual(['edge']);
+    wood.cards.owned['ember_squire']!.tier = 'silver';
+    const silver = fillEnhancements(wood, content);
+    expect([...silver.cards.owned['ember_squire']!.enhancements].sort()).toEqual([
+      'bulwark',
+      'edge',
+    ]);
     silver.cards.owned['ember_squire']!.tier = 'gold';
+    silver.cards.owned['ember_squire']!.level = 20;
     const gold = fillEnhancements(silver, content);
-    expect([...gold.cards.owned['ember_squire']!.enhancements].sort()).toEqual(['bulwark', 'edge']);
+    // the budget grows and the first milestone option has opened
+    expect(gold.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThanOrEqual(2);
+    expect(cardEnhancements(gold, content, 'ember_squire')!.spent).toBeLessThanOrEqual(
+      content.enhancements.budget.gold,
+    );
+  });
+
+  it('marks the cards it is building on the wishlist: unowned, up to the limit per rarity', () => {
+    const state = markWishlist(freshState(), content);
+    const portal = content.portals.find((p) => p.id === 'card_portal')!;
+    expect(state.cards.wishlist.length).toBeGreaterThan(0);
+    for (const rarity of ['common', 'rare', 'legendary']) {
+      const marked = state.cards.wishlist.filter(
+        (id) => content.cardById.get(id)!.rarity === rarity,
+      );
+      expect(marked.length).toBeLessThanOrEqual(portal.wishlistPerRarity);
+    }
+    expect(state.cards.wishlist.every((id) => !state.cards.owned[id])).toBe(true);
+    // a card it comes to own leaves the list
+    const id = state.cards.wishlist[0]!;
+    state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
+    expect(markWishlist(state, content).cards.wishlist).not.toContain(id);
   });
 
   it('equips a complete cosmetic set for its bonus', () => {
