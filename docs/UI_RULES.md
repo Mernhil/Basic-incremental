@@ -80,6 +80,8 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
   - A plain stage map follows the dungeon list: a table with a row per dungeon (locked ones greyed out), a column per tier listing each stage as "F10 ★3", and the dungeon's star total.
   - The boss medals are gone from the dungeon rows; the Glimmer Trial keeps its medal.
 
+- [Default · in game] **Team health, interim** (Claude, 2026-11-11; DESIGN §6 card duel). Until the duel's look (table update 9a), the arena lists the team under the party health bar: a row per card with its name, its health in percent and a thin bar; a marker on the card the enemy hits next; a card that is out is greyed and reads "Out". The tooltip names its skill, role and health. The red hit numbers land on the card the game says was hit.
+
 - [Built] **Settings** has reduced motion, number format, autosave interval, export / import, sound volumes and Report an issue.
 - [Built] Settings layout and options: four panels (Display, Sound, Save, Help); reduced motion follows Windows by default; number formats scientific (default), suffixes or engineering, numbers under a million always in full; autosave every 10 s to 5 min (30 s default). These preferences are stored per player, not in the save.
 - [Built] **Sharp cards.** The Cards collection shows the full card, the same card as everywhere else, at a whole scale: 132 × 186 (1x) four across on a standard window, 2x (264 × 372) four across when they fit (a 1080p window), fewer across and reflowing when the window is narrow (Review gate pick "Full card, 1x", 2026-11-08). Card text is real text, with a floor of 11 CSS px on the small card; its job label is left to the filters. Next to the grid, the detail panel shows the card at 2x with the weapon panel on it (DESIGN §5), the card's abilities and cost, its enhancements and the loadout buttons.
@@ -94,6 +96,7 @@ Defaults by Claude, 2026-11-10 (to be replaced by the floors UI, Scope 3 phase 4
 
 - §2 Floors, interim: the plain-text floor line, the Challenge row, banner, button and auto-challenge switch, the difficulty selector and the labelled placeholder for enemies without art.
 - §2 Stage stars, interim: the stage line, the Overflow toggle and the plain stage map table.
+- §2 Team health, interim: the plain per-card health rows under the party health.
 
 Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
 

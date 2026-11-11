@@ -1,12 +1,6 @@
 import type { BurstJob, Content, Dungeon, Trial } from '../data';
 import { payFloorFirstWin } from './summon';
-import {
-  cardBaseDamage,
-  cardHealth,
-  fightingXpPerKill,
-  fightingXpPerSecond,
-  grantLoadoutXp,
-} from './cards';
+import { cardBaseDamage, fightingXpPerKill, fightingXpPerSecond, grantLoadoutXp } from './cards';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
 import { rollBossDrop, rollEnemyDrops, rollMaterialDrop, type DropTable } from './drops';
@@ -43,7 +37,28 @@ import {
 } from './modifiers';
 import { Decimal } from './num';
 import { clearDungeon, type Price } from './production';
-import { pushPlayerHit, type TickReport } from './report';
+import { pushPlayerHit, pushSkill, type TickReport } from './report';
+import {
+  buildTeam,
+  cardRun,
+  damageTaken,
+  DUE_HIT_SECONDS,
+  enemyTarget,
+  gaugeAt,
+  healTeam,
+  isStanding,
+  nextHealAt,
+  secondsToDealTeam,
+  secondsToHits,
+  standingCards,
+  teamAverageDps,
+  teamHealthLeft,
+  teamHitRate,
+  teamLethalAttack,
+  teamMaxHealth,
+  weakenFactor,
+  type TeamCard,
+} from './duel';
 import type { Rng } from './rng';
 import {
   overflowActive,
@@ -235,7 +250,7 @@ export function startFloorChallenge(state: GameState, content: Content): CombatR
 /** A Challenge begins (a state being built): fresh floor, full health, timer at 0. */
 function beginChallenge(next: GameState, dungeonId: string, difficulty: Difficulty): void {
   freshFloor(next);
-  next.combat.loadoutDamage = new Decimal(0);
+  next.combat.cardDamage = {};
   next.combat.challenge = { dungeonId, difficulty, elapsedSeconds: 0 };
 }
 
@@ -742,9 +757,12 @@ export function burstView(
   job: 'fighting',
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BurstView {
-  const stats = burstStats(content, job, modifiers);
-  const gauge = Math.min(state.bursts[job].gauge, stats.size);
-  return { gauge, size: stats.size, fraction: gauge / stats.size, stats };
+  // The main card's own gauge, on the play-time clock like its hits (DESIGN.md §6 card duel).
+  const lead = buildTeam(state, content, modifiers, state.activeDungeonId)[0]!;
+  const base = burstStats(content, job, modifiers);
+  const stats = { ...base, interval: lead.interval, size: lead.size, fill: lead.fill };
+  const fraction = gaugeAt(lead, state.stats.playTimeMs / 1000);
+  return { gauge: fraction * lead.size, size: lead.size, fraction, stats };
 }
 
 /**
@@ -804,7 +822,8 @@ export function secondsPerKill(
 ): number | null {
   const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
   if (!stage) return null;
-  const avg = averageDps(state, content, dungeonId, modifiers).mul(
+  const team = buildTeam(state, content, modifiers, dungeonId);
+  const avg = teamAverageDps(team).mul(
     stageDamageFactor(state, content, stage.dungeon, stage.difficulty, stage.floor, modifiers),
   );
   if (avg.lte(0)) return null;
@@ -812,14 +831,14 @@ export function secondsPerKill(
     return stage.hp.div(avg).toNumber();
   }
   // Overflow off (DESIGN.md §6 Each enemy has its own HP): a hit stops at the kill, so each enemy
-  // takes whole hits of its own.
-  const interval = burstStats(content, 'fighting', modifiers).interval;
-  const hit = avg.mul(interval);
+  // takes whole hits of its own, the team's hits at their average.
+  const rate = teamHitRate(team);
+  const hit = avg.div(rate);
   let hits = 0;
   for (const enemy of stage.enemies) {
     hits += Math.max(1, Math.ceil(enemy.hp.div(hit).toNumber() - EPSILON));
   }
-  return hits * interval;
+  return hits / rate;
 }
 
 // ---- live stage readouts (DESIGN.md §11) --------------------------------------------------------
@@ -834,10 +853,8 @@ export function averageDps(
   dungeonId: string | null = state.activeDungeonId,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Decimal {
-  const dps = effectiveDamage(state, content, dungeonId, modifiers);
-  return averageDamage(dps, burstStats(content, 'fighting', modifiers)).mul(
-    critFactor(critStats(content, modifiers, dungeonId)),
-  );
+  // Every team card's own average, summed (DESIGN.md §6 card duel).
+  return teamAverageDps(buildTeam(state, content, modifiers, dungeonId));
 }
 
 /** Floors cleared per minute in a dungeon (60 / seconds per floor), or null without kills. */
@@ -898,7 +915,9 @@ export function stageReadout(
   const stage = spk !== null ? here : null;
   const survival = dungeon ? survivalSeconds(state, content, dungeon.id, modifiers) : null;
   return {
-    dps: effectiveDamage(state, content, id, modifiers).mul(factor),
+    dps: buildTeam(state, content, modifiers, id)
+      .reduce((a, c) => a.add(c.hit.div(c.interval)), new Decimal(0))
+      .mul(factor),
     averageDps: avg,
     killsPerMinute: spk === null || spk <= 0 ? null : 60 / spk,
     secondsPerKill: spk,
@@ -983,21 +1002,17 @@ export function trialStatus(state: GameState, content: Content): TrialStatus | n
 /** Most a defence stat can block, in percent. */
 const MAX_DEFENCE = 90;
 
-/** Fighting loadout's health pool: the sum of its cards' health, read through `combat.health`. */
+/**
+ * The fighting team's max health: every team card's own health summed (DESIGN.md §6 card duel;
+ * the cards' health go through `combat.health` together and each card keeps its share).
+ */
 export function loadoutMaxHealth(
   state: GameState,
   content: Content,
   modifiers: readonly Modifier[],
   dungeonId?: string,
 ): Decimal {
-  const l = state.cards.loadouts.fighting;
-  let sum = new Decimal(0);
-  for (const id of [l.main, ...l.supports]) {
-    const owned = id ? state.cards.owned[id] : undefined;
-    if (id && owned) sum = sum.add(cardHealth(content, id, owned));
-  }
-  const ctx: StatContext = dungeonId ? { dungeon: dungeonId } : {};
-  return Decimal.max(computeStat('combat.health', sum, modifiers, ctx).value, 0);
+  return teamMaxHealth(buildTeam(state, content, modifiers, dungeonId ?? null));
 }
 
 /** Percent of boss damage blocked (0..90), from `combat.defence`. */
@@ -1066,11 +1081,14 @@ export function loadoutHealth(
 ): LoadoutHealth {
   const id = state.activeDungeonId ?? undefined;
   const dungeon = id ? content.dungeonById.get(id) : undefined;
-  const max = loadoutMaxHealth(state, content, modifiers, id);
+  const team = buildTeam(state, content, modifiers, id ?? null);
+  const max = teamMaxHealth(team);
   const ko = state.combat.knockoutSeconds;
-  const current = ko > 0 ? new Decimal(0) : Decimal.max(max.sub(state.combat.loadoutDamage), 0);
+  const current = ko > 0 ? new Decimal(0) : teamHealthLeft(state, team);
   const stage = dungeon ? fightStage(state, content, dungeon.id, modifiers) : null;
-  const incoming = stage ? stage.attack.div(stage.intervalSeconds) : new Decimal(0);
+  const incoming = stage
+    ? stage.attack.mul(weakenFactor(state, team)).div(stage.intervalSeconds)
+    : new Decimal(0);
   return { max, current, knockoutSeconds: ko, incoming };
 }
 
@@ -1100,10 +1118,11 @@ export function bossAttackView(
     ? fightStage(state, content, state.activeDungeonId, modifiers)
     : null;
   if (!stage || state.combat.knockoutSeconds > 0) return null;
-  if (loadoutMaxHealth(state, content, modifiers, stage.dungeon.id).lte(0)) return null;
+  const team = buildTeam(state, content, modifiers, stage.dungeon.id);
+  if (!enemyTarget(state, team)) return null;
   const pattern = content.combat.bossPattern;
   const interval = stage.intervalSeconds;
-  const damages = attackDamages(stage.attack, pattern);
+  const damages = attackDamages(stage.attack.mul(weakenFactor(state, team)), pattern);
   if (damages.normal.lte(0)) return null;
   const clock = state.stats.playTimeMs / 1000;
   const landed = bossAttacksBy(clock, interval);
@@ -1131,14 +1150,17 @@ export function secondsToKnockoutNow(
     ? fightStage(state, content, state.activeDungeonId, modifiers)
     : null;
   if (!stage || state.combat.knockoutSeconds > 0) return null;
-  const max = loadoutMaxHealth(state, content, modifiers, stage.dungeon.id);
-  const pattern = content.combat.bossPattern;
-  const normal = stage.attack;
-  if (max.lte(0) || normal.lte(0)) return null;
+  const team = buildTeam(state, content, modifiers, stage.dungeon.id);
+  if (!enemyTarget(state, team) || stage.attack.lte(0)) return null;
   const interval = stage.intervalSeconds;
   const clock = state.stats.playTimeMs / 1000;
-  const pool = Decimal.max(max.sub(state.combat.loadoutDamage), 0);
-  const lethal = lethalBossAttack(pool, normal, bossAttacksBy(clock, interval), pattern);
+  const lethal = teamLethalAttack(
+    state.combat.cardDamage,
+    team,
+    stage.attack,
+    bossAttacksBy(clock, interval),
+    content.combat.bossPattern,
+  );
   return Math.max(0, lethal * interval - clock);
 }
 
@@ -1158,13 +1180,22 @@ export function survivalSeconds(
 ): number | null {
   const stage = fightStage(state, content, dungeonId, modifiers, floor, difficulty);
   if (!stage) return null;
-  const max = loadoutMaxHealth(state, content, modifiers, dungeonId);
+  const team = buildTeam(state, content, modifiers, dungeonId);
   const pattern = content.combat.bossPattern;
   const normal = stage.attack;
-  if (max.lte(0) || normal.lte(0)) return null;
+  if (teamMaxHealth(team).lte(0) || normal.lte(0)) return null;
+  // The enemy takes the cards down one at a time, guards first (DESIGN.md §6 card duel); a
+  // debuffer's weaken counts while it stands. Heals are left out, so this is a floor.
+  const down: Record<string, Decimal> = {};
+  const view = { ...state, combat: { ...state.combat, cardDamage: down } };
+  let attacks = 0;
+  for (let target = enemyTarget(view, team); target; target = enemyTarget(view, team)) {
+    const hit = normal.mul(weakenFactor(view, team));
+    attacks += meanAttacksToKnockout(target.maxHealth, hit, pattern);
+    down[target.id] = target.maxHealth;
+  }
   // A fight starts between two hits: on average half an interval before the next one.
-  const attacks = meanAttacksToKnockout(max, normal, pattern) - 0.5;
-  return attacks * stage.intervalSeconds;
+  return (attacks - 0.5) * stage.intervalSeconds;
 }
 
 /**
@@ -1206,7 +1237,7 @@ export function advanceCombat(
 ): void {
   const id = next.activeDungeonId;
   if (!id || !isDungeonUnlocked(next, content, id)) return;
-  // A knocked-out loadout sits out first, whatever is active (DESIGN.md §6).
+  // A knocked-out team sits out first, whatever is active (DESIGN.md §6).
   let left = seconds;
   if (next.combat.knockoutSeconds > 0) {
     const wait = Math.min(left, next.combat.knockoutSeconds);
@@ -1215,7 +1246,7 @@ export function advanceCombat(
     left -= wait;
     if (next.combat.knockoutSeconds <= EPSILON) {
       next.combat.knockoutSeconds = 0;
-      next.combat.loadoutDamage = new Decimal(0);
+      next.combat.cardDamage = {};
     } else return;
   }
   const dungeon = content.dungeonById.get(id);
@@ -1223,43 +1254,65 @@ export function advanceCombat(
   // A rare drop joins the collection and its cosmetic bonus counts at once: the fight stops
   // there and carries on with fresh modifiers, so any split of time deals the same damage.
   for (let resume = 0; left > EPSILON && resume <= MAX_FIGHT_EVENTS_PER_ADVANCE; resume++) {
-    // Crits add their expected damage to every hit and signature attack.
-    const dps = effectiveDamage(next, content, id, mods).mul(
-      critFactor(critStats(content, mods, id)),
-    );
-    if (dps.lte(0)) return;
-    const stats = burstStats(content, 'fighting', mods);
+    // Each team card fights on its own (DESIGN.md §6 card duel; duel.ts).
+    const team = buildTeam(next, content, mods, id);
+    if (teamAverageDps(team).lte(0)) return;
+    // This call covers the last `seconds` of play time; `left` of them are still to fight.
+    const start = next.stats.playTimeMs / 1000 - left;
     if (!dungeon) {
       const trial = content.trialById.get(id);
-      if (trial) fightTrial(next, content, trial, dps, stats, left, report, mods);
+      if (trial) fightTrial(next, content, trial, team, start, left, report, mods);
       return;
     }
-    left = fightDungeon(next, content, dungeon, dps, stats, left, rng, report, mods);
+    left = fightDungeon(next, content, dungeon, team, start, left, rng, report, mods);
     if (left > EPSILON) mods = collectModifiers(next, content);
   }
 }
 
 /**
- * The damage of a run of hits (`hits` normal hits of dps x interval plus `bursts` signature
- * attacks), listed on the report for the stage. Returns the total dealt.
+ * The hits of `cards` in the play-time window (from, to], listed on the report for the stage with
+ * the skills that fired (DESIGN.md §6 card duel): each card's normal hits, its signature attacks
+ * (a healer's heal instead, which deals nothing here) and the damage dealt, times `factor`.
  */
-function recordPlayerHits(
+function landTeamHits(
   report: TickReport,
   target: string,
-  dps: Decimal,
-  stats: BurstStats,
-  run: { hits: number; bursts: number },
-): Decimal {
-  const hit = hitDamage(dps, stats);
-  const signature = signatureDamage(dps, stats);
-  pushPlayerHit(report.playerHits, { target, damage: hit, hits: run.hits, signature: false });
-  pushPlayerHit(report.playerHits, {
-    target,
-    damage: signature,
-    hits: run.bursts,
-    signature: true,
-  });
-  return hit.mul(run.hits).add(signature.mul(run.bursts));
+  cards: readonly TeamCard[],
+  from: number,
+  to: number,
+  factor: number,
+): { dealt: Decimal; hits: number } {
+  let dealt = new Decimal(0);
+  let hits = 0;
+  for (const card of cards) {
+    const run = cardRun(card, from, to);
+    if (run.hits <= 0) continue;
+    hits += run.hits;
+    const hit = factor === 1 ? card.hit : card.hit.mul(factor);
+    pushPlayerHit(report.playerHits, {
+      target,
+      damage: hit,
+      hits: run.hits,
+      signature: false,
+      cardId: card.id,
+    });
+    dealt = dealt.add(hit.mul(run.hits));
+    if (run.bursts <= 0) continue;
+    report.bursts.fighting += run.bursts;
+    const kind = card.heal > 0 ? 'heal' : 'strike';
+    pushSkill(report.skills, { cardId: card.id, skillId: card.skill.id, kind, count: run.bursts });
+    if (kind === 'heal') continue;
+    const signature = factor === 1 ? card.signature : card.signature.mul(factor);
+    pushPlayerHit(report.playerHits, {
+      target,
+      damage: signature,
+      hits: run.bursts,
+      signature: true,
+      cardId: card.id,
+    });
+    dealt = dealt.add(signature.mul(run.bursts));
+  }
+  return { dealt, hits };
 }
 
 /** Most knockouts handled in one advance (each costs knockoutSeconds, so this is generous). */
@@ -1267,92 +1320,55 @@ const MAX_KNOCKOUTS_PER_ADVANCE = 100_000;
 /** Safety valve: never resolve more fight events (floor clears, knockouts) in one advance(). */
 const MAX_FIGHT_EVENTS_PER_ADVANCE = 200_000;
 
-/** The least time a fight event takes: a hit that is already due lands after this. */
-const DUE_HIT_SECONDS = 1e-6;
-
 /**
- * Seconds until the hits of a gauge have dealt `hp`, or null when the hits landing within
- * `maxSeconds` do not get there. Hits land one per interval, each `dps` x interval, with a
- * signature attack on every full gauge: the same damage `advanceGauge` and `recordPlayerHits`
- * give for that time.
- */
-function secondsToDeal(
-  gauge: BurstGauge,
-  stats: BurstStats,
-  dps: Decimal,
-  hp: Decimal,
-  maxSeconds: number,
-): number | null {
-  if (!(maxSeconds > 0)) return null;
-  const hit = hitDamage(dps, stats);
-  const signature = signatureDamage(dps, stats);
-  const dealtBy = (hits: number): Decimal =>
-    hit
-      .mul(hits)
-      .add(signature.mul(Math.floor((gauge.gauge + hits * stats.fill) / stats.size + EPSILON)));
-  const most = Math.floor((gauge.timer + maxSeconds) / stats.interval + EPSILON);
-  if (most < 1 || dealtBy(most).lt(hp)) return null;
-  let low = 1;
-  let high = most;
-  while (low < high) {
-    const mid = Math.floor((low + high) / 2);
-    if (dealtBy(mid).gte(hp)) high = mid;
-    else low = mid + 1;
-  }
-  // A hit already due (the timer is at or past the interval, as after a change of lead card)
-  // still takes a moment, so the fight always moves on.
-  return Math.min(maxSeconds, Math.max(DUE_HIT_SECONDS, low * stats.interval - gauge.timer));
-}
-
-/**
- * A dungeon fight (DESIGN.md §6 Farming and Challenge). The loadout farms its floor on a loop, or
- * fights a Challenge of the next floor; the floor's enemies take our hits one at a time and the
- * floor hits back. Time is split at the events that change the fight:
+ * A dungeon fight (DESIGN.md §6 Farming and Challenge, card duel). The team farms its floor on a
+ * loop, or fights a Challenge of the next floor; the floor's enemies stand one at a time and take
+ * every standing card's hits (duel.ts: each card hits on its own clock), and the floor hits back,
+ * one card at a time: the first standing guard, else the first standing card from the left. Time
+ * is split at the events that change the fight:
  * - an enemy dies: with overflow off (DESIGN.md §6 Each enemy has its own HP) the hit stops at the
  *   kill and the next enemy stands at full HP; with it on the floor is one pool and the leftover
  *   carries on, while farming even into the floor started again;
- * - the floor is cleared: the loadout's health refills; farming starts the floor again; a
- *   Challenge is won (the best floor, the farming and the Victory);
+ * - the floor is cleared: every card comes back at full health; farming starts the floor again;
+ *   a Challenge is won (the best floor, the farming and the Victory);
  * - a stage reaches a new star level: its damage bonus applies from the next hit on;
- * - the health runs out: farming, the loadout is knocked out, drops a floor and sits out; in a
+ * - a card's health runs out: it is knocked out and stops attacking until the floor is cleared,
+ *   and the next card takes the hits;
+ * - a healer's signature: every standing card heals its share;
+ * - the last card falls: farming, the team is knocked out, drops a floor and sits out; in a
  *   Challenge, the Challenge is lost and farming goes on at full health;
  * - a Challenge's timer runs out: it is lost;
  * - auto-challenge (DESIGN.md §6 Auto-challenge) starts the next Challenge after every win and
  *   when the wait after a loss is over.
- *
- * Package 7 (the card duel) plugs in here: the health is one pool (`max`, `loadoutDamage`, the
- * floor's attacks through `lethalBossAttack` / `bossDamageBetween`); per-card health replaces those
- * reads with the team's cards (the first standing card takes each attack, the fight is lost when
- * all are out), and per-card attacks replace `baseDps` / `fightFor` with each card's own hits.
- * The events (kill, clear, loss, win) stay as they are.
  */
 function fightDungeon(
   next: GameState,
   content: Content,
   dungeon: Dungeon,
-  baseDps: Decimal,
-  stats: BurstStats,
+  team: readonly TeamCard[],
+  start: number,
   seconds: number,
   rng: Rng,
   report: TickReport,
   modifiers: readonly Modifier[],
 ): number {
+  // The floor's attacks and the cards' hits sit on the play-time clock (bossAttacks.ts, duel.ts):
+  // this fight is the play time from `start`, so any split of time lands the same hits.
+  let clock = start;
   /**
-   * Fights `stage` for `t` seconds at `dps`: the hits that land, the card XP and the wages, both
-   * grown by the stage's difficulty (DESIGN.md §6 Harder modes pay more). Returns the damage.
+   * The standing cards fight `stage` for `t` seconds from the clock: the hits that land, the card
+   * XP and the wages, both grown by the stage's difficulty (DESIGN.md §6 Harder modes pay more).
+   * Returns the damage and the hits.
    */
   const fightFor = (
     t: number,
-    dps: Decimal,
+    cards: readonly TeamCard[],
+    factor: number,
     stage: FightStage,
-  ): { dealt: Decimal; hits: number; timer: number } => {
-    const timer = next.bursts.fighting.timer;
-    if (t <= EPSILON) return { dealt: new Decimal(0), hits: 0, timer };
-    const run = advanceGauge(next.bursts.fighting, t, stats);
-    next.bursts.fighting = run.gauge;
-    report.bursts.fighting += run.bursts;
-    // Damage lands in chunks: one hit per interval, held until it lands (DESIGN.md §6).
-    const dealt = recordPlayerHits(report, dungeon.id, dps, stats, run);
+  ): { dealt: Decimal; hits: number } => {
+    if (t <= EPSILON) return { dealt: new Decimal(0), hits: 0 };
+    // Damage lands in chunks: each card's hits at its interval (DESIGN.md §6).
+    const landed = landTeamHits(report, dungeon.id, cards, clock, clock + t, factor);
     // Card XP for the time fought, never for a knockout (DESIGN.md §5).
     grantLoadoutXp(
       next,
@@ -1367,7 +1383,19 @@ function fightDungeon(
       addResource(next, wage.resource, paid);
       report.currencies[wage.resource] = (report.currencies[wage.resource] ?? 0) + paid.toNumber();
     }
-    return { dealt, hits: run.hits, timer };
+    return landed;
+  };
+  /** The healers among `cards` heal for the signatures they fired in (from, to]. */
+  const applyHeals = (cards: readonly TeamCard[], from: number, to: number): void => {
+    for (const card of cards) {
+      if (card.heal <= 0 || !isStanding(next, card)) continue;
+      healTeam(next, team, card.heal, cardRun(card, from, to).bursts);
+    }
+  };
+  /** An attack's damage lands on a card's health. */
+  const hurt = (card: TeamCard, amount: Decimal): void => {
+    if (amount.lte(0)) return;
+    next.combat.cardDamage[card.id] = damageTaken(next, card.id).add(amount);
   };
   const drops = effectiveDrops(dungeon, modifiers, content);
   const stages = new Map<string, FightStage>();
@@ -1380,19 +1408,15 @@ function fightDungeon(
     }
     return stage;
   };
-  const max = loadoutMaxHealth(next, content, modifiers, dungeon.id);
   const pattern = content.combat.bossPattern;
   const ko = content.combat.knockoutSeconds;
   const rareItem = dungeon.drops.rare.itemId;
   const raresAtStart = report.drops[rareItem] ?? 0;
   let left = seconds;
   let knockouts = 0;
-  // The floor's attacks sit on the play-time clock (bossAttacks.ts): this fight is its last
-  // `seconds`, so any split of time lands the same hits.
-  let clock = next.stats.playTimeMs / 1000 - seconds;
   /** Attacks up to this number are settled (landed, or skipped by a knockout or a clear). */
   let settled = 0;
-  /** Set when a kill came with the attack that empties the health: that attack still lands. */
+  /** Set when a kill came with the attack that knocks a card out: that attack still lands. */
   let pendingDone: number | null = null;
 
   /** Time passes: the span, the play-time clock, the Challenge's timer and the wait. */
@@ -1402,10 +1426,11 @@ function fightDungeon(
     if (next.combat.challenge) next.combat.challenge.elapsedSeconds += t;
     countDownWait(next, t);
   };
-  /** The floor was cleared `clears` times: health refills; a Challenge is won. */
+  /** The floor was cleared `clears` times: every card is back at full health; a Challenge is won. */
   const onCleared = (stage: FightStage, clears: number): void => {
-    // The loadout catches its breath between floors: its health refills (DESIGN.md §6).
-    next.combat.loadoutDamage = new Decimal(0);
+    // The team catches its breath between floors: every card comes back, at full health
+    // (DESIGN.md §6 card duel).
+    next.combat.cardDamage = {};
     report.floorsCleared += clears;
     if (!next.combat.challenge) return;
     // Victory (DESIGN.md §6 Farming and Challenge): the best floor rises and the farming moves
@@ -1454,7 +1479,7 @@ function fightDungeon(
     });
     next.combat.challenge = null;
     freshFloor(next);
-    next.combat.loadoutDamage = new Decimal(0);
+    next.combat.cardDamage = {};
     if (floorPosition(next, dungeon).autoChallenge) {
       next.combat.challengeWaitSeconds = content.combat.challenge.autoWaitSeconds;
     }
@@ -1515,62 +1540,88 @@ function fightDungeon(
     const horizon = Math.min(left, timerLeft, waitLeft);
     // The stage's star levels add their damage there; overflow decides whether a kill's leftover
     // damage carries on (DESIGN.md §6 Stage stars, Overflow).
-    const dps = baseDps.mul(
-      stageDamageFactor(next, content, dungeon, stage.difficulty, stage.floor, modifiers),
+    const factor = stageDamageFactor(
+      next,
+      content,
+      dungeon,
+      stage.difficulty,
+      stage.floor,
+      modifiers,
     );
     const overflow = overflowActive(next, content, dungeon, stage.difficulty, stage.floor);
+    // Who fights and who is hit (DESIGN.md §6 card duel): the standing cards hit; the enemy hits
+    // its target, weakened by the standing debuffers.
+    const standing = standingCards(next, team);
+    if (standing.length === 0) {
+      // Nobody stands (a state from outside the fight): the team starts the floor again.
+      next.combat.cardDamage = {};
+      continue;
+    }
+    const target = enemyTarget(next, team);
     const interval = stage.intervalSeconds;
-    const normal = stage.attack;
-    const attacked = max.gt(0) && normal.gt(0);
+    const normal = stage.attack.mul(weakenFactor(next, team));
+    const attacked = target !== null && normal.gt(0);
+    const lastCard =
+      attacked && team.filter((c) => c.maxHealth.gt(0) && isStanding(next, c)).length === 1;
+    // A healer's signature changes the health: it ends the span.
+    const healAt = attacked ? nextHealAt(standing, clock) : Infinity;
+    const segment = Math.min(horizon, Math.max(DUE_HIT_SECONDS, healAt - clock));
     const done = pendingDone ?? Math.max(settled, bossAttacksBy(clock, interval));
     pendingDone = null;
-    const last = bossAttacksBy(clock + horizon, interval);
-    const pool = Decimal.max(max.sub(next.combat.loadoutDamage), 0);
-    const lethal = attacked ? lethalBossAttack(pool, normal, done, pattern) : Infinity;
+    const last = bossAttacksBy(clock + segment, interval);
+    const frontLeft = target
+      ? Decimal.max(target.maxHealth.sub(damageTaken(next, target.id)), 0)
+      : new Decimal(0);
+    const lethal = attacked ? lethalBossAttack(frontLeft, normal, done, pattern) : Infinity;
     const falls = lethal <= last;
-    const untilDown = falls ? Math.min(horizon, Math.max(0, lethal * interval - clock)) : horizon;
+    const untilDown = falls ? Math.min(segment, Math.max(0, lethal * interval - clock)) : segment;
 
     // Farming in bulk: nothing can change for the rest of the span but the kills, so it is
-    // resolved in one go, up to the kill that gives the stage its next star level. Either nothing
-    // hits back (no health to lose, or a floor that deals no damage) and the kills follow from the
-    // damage alone, or every hit kills and the attacks between two floor clears cannot empty a
-    // full pool. With overflow off that is every hit killing the floor's strongest enemy (one
-    // kill a hit); with it on, every hit clearing the floor, or the damage alone without attacks.
-    const hit = hitDamage(dps, stats);
+    // resolved in one go, up to the kill that gives the stage its next star level. Every card
+    // stands, and either nothing hits back and the kills follow from the damage alone, or every
+    // hit kills and the attacks between two floor clears cannot knock the target out. With
+    // overflow off that is every hit killing the floor's strongest enemy (one kill a hit); with it
+    // on, every hit clearing the floor, or the damage alone without attacks.
     const size = stage.enemies.length;
     const strongest = stage.enemies.reduce((m, e) => Decimal.max(m, e.hp), new Decimal(0));
+    const minHit = standing.reduce((m, c) => Decimal.min(m, c.hit), standing[0]!.hit).mul(factor);
+    const fastest = standing.reduce((m, c) => Math.min(m, c.interval), Infinity);
     const holds = (hitsPerClear: number): boolean => {
       if (!attacked) return true;
-      const perHit = Math.ceil((hitsPerClear * stats.interval) / interval) + 1;
+      // The team lands `hitsPerClear` hits at least as fast as its fastest card alone.
+      const perClear = Math.ceil((hitsPerClear * fastest) / interval) + 1;
       const worst = normal.mul(
-        perHit * pattern.lightMultiplier +
-          Math.ceil(perHit / pattern.attacksPerCycle) * pattern.slamMultiplier,
+        perClear * pattern.lightMultiplier +
+          Math.ceil(perClear / pattern.attacksPerCycle) * pattern.slamMultiplier,
       );
-      return next.combat.loadoutDamage.add(worst).lt(max);
+      return damageTaken(next, target!.id).add(worst).lt(target!.maxHealth);
     };
     const bulk =
       !run &&
-      (overflow ? !attacked || (hit.gte(stage.hp) && holds(1)) : hit.gte(strongest) && holds(size));
+      standing.length === team.length &&
+      (overflow
+        ? !attacked || (minHit.gte(stage.hp) && holds(1))
+        : minHit.gte(strongest) && holds(size));
     if (bulk) {
-      let span = horizon;
+      let span = segment;
       const need = killsToNextStar(next, content, stage);
       if (need !== null) {
         // With overflow off each hit is one kill; with it on the kills follow the damage.
         const at = overflow
-          ? secondsToDeal(
-              next.bursts.fighting,
-              stats,
-              dps,
+          ? secondsToDealTeam(
+              standing,
+              clock,
               stageHpLeft(next, stage).add(stage.hp.mul(need - 1)),
-              horizon,
+              segment,
+              factor,
             )
-          : Math.max(DUE_HIT_SECONDS, need * stats.interval - next.bursts.fighting.timer);
+          : secondsToHits(standing, clock, need, segment);
         if (at !== null && at < span) span = at;
       }
       const end = bossAttacksBy(clock + span, interval);
-      const fought = fightFor(span, dps, stage);
+      const fought = fightFor(span, standing, factor, stage);
       let clears = 0;
-      /** Hits from the start of the span to the last floor clear. */
+      /** Seconds from the start of the span to the last floor clear. */
       let toLastClear = 0;
       if (overflow) {
         clears = damageFloor(
@@ -1584,7 +1635,7 @@ function fightDungeon(
           report,
           modifiers,
         );
-        toLastClear = clears > 0 ? fought.hits : 0;
+        if (clears > 0) toLastClear = secondsToHits(standing, clock, fought.hits, span) ?? span;
       } else if (fought.hits > 0) {
         // One kill a hit, in the wave's order, round and round the floor.
         const from = enemyIndexOn(next, stage);
@@ -1593,78 +1644,124 @@ function fightDungeon(
           Math.max(0, Math.floor((x - j + size - 1) / size));
         const kills = stage.enemies.map((_, j) => upTo(to, j) - upTo(from, j));
         clears = Math.floor(to / size);
-        toLastClear = clears * size - from;
+        if (clears > 0) {
+          toLastClear = secondsToHits(standing, clock, clears * size - from, span) ?? span;
+        }
         next.combat.enemyIndex = to % size;
         next.bossHp = null;
         killEnemies(next, content, stage, drops, kills, rng, report, modifiers);
       }
       if (clears > 0) onCleared(stage, clears);
       if (attacked) {
-        recordBossAttacks(report, dungeon.id, done, end, normal, interval, pattern, false);
-        // Each clear refilled the pool: only the attacks since the last one are still on it.
+        recordBossAttacks(
+          report,
+          dungeon.id,
+          done,
+          end,
+          normal,
+          interval,
+          pattern,
+          false,
+          target!.id,
+        );
+        // Each clear refilled the health: only the attacks since the last one are still on it.
         const since =
-          clears > 0
-            ? Math.max(
-                done,
-                bossAttacksBy(clock + toLastClear * stats.interval - fought.timer, interval),
-              )
-            : done;
-        const taken = bossDamageBetween(since, end, normal, pattern);
-        next.combat.loadoutDamage = clears > 0 ? taken : next.combat.loadoutDamage.add(taken);
+          clears > 0 ? Math.max(done, bossAttacksBy(clock + toLastClear, interval)) : done;
+        hurt(target!, bossDamageBetween(since, end, normal, pattern));
       }
       settled = Math.max(done, end);
+      const from = clock;
       pass(span);
+      applyHeals(standing, from, clock);
       continue;
     }
 
-    // The next kill, when it comes before the health runs out (or the timer, or the wait).
-    const target = overflow ? stageHpLeft(next, stage) : enemyHpLeft(next, stage);
-    const toKill = secondsToDeal(next.bursts.fighting, stats, dps, target, untilDown);
+    // The next kill, when it comes before the target falls (or the timer, the wait or a heal).
+    const enemyHp = overflow ? stageHpLeft(next, stage) : enemyHpLeft(next, stage);
+    const toKill = secondsToDealTeam(standing, clock, enemyHp, untilDown, factor);
     if (toKill !== null) {
-      const fought = fightFor(toKill, dps, stage);
+      const fought = fightFor(toKill, standing, factor, stage);
       const at = bossAttacksBy(clock + toKill, interval);
-      // An attack that lands with the kill does not empty the health first.
+      // An attack that lands with the kill does not knock the target out first.
       const landed = Math.min(at, lethal - 1);
       if (attacked) {
-        recordBossAttacks(report, dungeon.id, done, landed, normal, interval, pattern, false);
-        next.combat.loadoutDamage = next.combat.loadoutDamage.add(
-          bossDamageBetween(done, landed, normal, pattern),
+        recordBossAttacks(
+          report,
+          dungeon.id,
+          done,
+          landed,
+          normal,
+          interval,
+          pattern,
+          false,
+          target!.id,
         );
+        hurt(target!, bossDamageBetween(done, landed, normal, pattern));
       }
+      const from = clock;
       pass(toKill);
       const cleared = overflow
         ? landOnPool(stage, fought.dealt, !!run)
         : landOnEnemy(stage, fought.dealt);
+      if (!cleared) applyHeals(standing, from, clock);
       // A clear refills the health, so the attack that came with it is spent; after a kill that
       // leaves the floor standing it still lands.
       settled = cleared ? Math.max(landed, at) : landed;
       if (!cleared && landed < at) pendingDone = landed;
       continue;
     }
-    // No kill before the horizon or the knockout: the damage stays on the enemy.
-    const fought = fightFor(untilDown, dps, stage);
+    // No kill before the span ends or the target falls: the damage stays on the enemy.
+    const fought = fightFor(untilDown, standing, factor, stage);
     if (overflow) landOnPool(stage, fought.dealt, !!run);
     else landOnEnemy(stage, fought.dealt);
+    const from = clock;
     pass(untilDown);
     if (!falls) {
       if (attacked) {
-        next.combat.loadoutDamage = next.combat.loadoutDamage.add(
-          bossDamageBetween(done, last, normal, pattern),
+        hurt(target!, bossDamageBetween(done, last, normal, pattern));
+        recordBossAttacks(
+          report,
+          dungeon.id,
+          done,
+          last,
+          normal,
+          interval,
+          pattern,
+          false,
+          target!.id,
         );
-        recordBossAttacks(report, dungeon.id, done, last, normal, interval, pattern, false);
       }
       settled = Math.max(done, last);
+      applyHeals(standing, from, clock);
       continue;
     }
-    // The health runs dry on the attack that lands at `lethal`.
-    recordBossAttacks(report, dungeon.id, done, lethal, normal, interval, pattern, true);
+    // The target's health runs dry on the attack that lands at `lethal`: it is knocked out and
+    // stops attacking until the floor is cleared (DESIGN.md §6 card duel).
+    recordBossAttacks(
+      report,
+      dungeon.id,
+      done,
+      lethal,
+      normal,
+      interval,
+      pattern,
+      lastCard,
+      target!.id,
+    );
     settled = lethal;
+    next.combat.cardDamage[target!.id] = target!.maxHealth;
+    report.cardKnockouts.push(target!.id);
+    if (!lastCard) {
+      applyHeals(standing, from, clock);
+      continue;
+    }
+    // Every card is out: the fight is lost.
     if (run) {
       // A Challenge is lost; farming goes on at full health (DESIGN.md §6 Farming and Challenge).
       loseChallenge(stage, 'health');
       continue;
     }
-    // Knocked out while farming: the floor heals, the farming drops a floor and the loadout sits
+    // Knocked out while farming: the floor heals, the farming drops a floor and the team sits
     // out; hits during it do not land (DESIGN.md §6).
     freshFloor(next);
     ensureTier(next, dungeon).floor = Math.max(1, position.floor - 1);
@@ -1675,10 +1772,12 @@ function fightDungeon(
     settled = Math.max(lethal, bossAttacksBy(clock, interval));
     if (wait + EPSILON < ko || knockouts >= MAX_KNOCKOUTS_PER_ADVANCE) {
       next.combat.knockoutSeconds = ko - wait;
-      next.combat.loadoutDamage = max;
+      for (const card of team) {
+        if (card.maxHealth.gt(0)) next.combat.cardDamage[card.id] = card.maxHealth;
+      }
       return 0;
     }
-    next.combat.loadoutDamage = new Decimal(0);
+    next.combat.cardDamage = {};
   }
   return 0;
 }
@@ -1940,21 +2039,21 @@ function fightTrial(
   state: GameState,
   content: Content,
   trial: Trial,
-  dps: Decimal,
-  stats: BurstStats,
+  team: readonly TeamCard[],
+  start: number,
   seconds: number,
   report: TickReport,
   modifiers: readonly Modifier[],
 ): void {
   let remaining = seconds;
+  let clock = start;
   let attempts = 0;
   let { elapsedSeconds, dealt } = state.combat.trialAttempt;
   while (remaining > EPSILON && attempts < MAX_TRIAL_ATTEMPTS_PER_ADVANCE) {
     const step = Math.min(remaining, trial.durationSeconds - elapsedSeconds);
-    const run = advanceGauge(state.bursts.fighting, step, stats);
-    state.bursts.fighting = run.gauge;
-    report.bursts.fighting += run.bursts;
-    dealt = dealt.add(recordPlayerHits(report, trial.id, dps, stats, run));
+    // The whole team hits the target, each card on its own clock (DESIGN.md §6 card duel).
+    dealt = dealt.add(landTeamHits(report, trial.id, team, clock, clock + step, 1).dealt);
+    clock += step;
     // Card XP for the time fought (DESIGN.md §5), at the tier 1 rate.
     grantLoadoutXp(
       state,

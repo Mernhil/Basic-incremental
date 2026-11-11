@@ -125,6 +125,8 @@ describe('v26 -> v27 (the table update)', () => {
     for (const p of Object.values(floors as Record<string, Record<string, unknown>>)) {
       delete p['mode'];
     }
+    // The shared health pool is gone: each team card's own health replaced it (package 7).
+    delete (expected['combat'] as Record<string, unknown>)['loadoutDamage'];
     // the crystals became scrolls: the save no longer holds them
     const kept = expected['resources'] as Record<string, unknown>;
     delete kept['summon_crystal'];

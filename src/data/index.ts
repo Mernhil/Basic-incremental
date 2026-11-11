@@ -37,6 +37,8 @@ import type {
   ItemsData,
   ItemType,
   RankTier,
+  Skill,
+  SkillsConfig,
 } from './schemas';
 import resourcesJson from './content/resources.json';
 import treesJson from './content/trees.json';
@@ -66,6 +68,7 @@ import itemsJson from './content/items.json';
 import bondsJson from './content/bonds.json';
 import expeditionsJson from './content/expeditions.json';
 import challengesJson from './content/challenges.json';
+import skillsJson from './content/skills.json';
 import scrollsJson from './content/scrolls.json';
 
 export * from './schemas';
@@ -144,6 +147,9 @@ export interface Content {
   expeditions: ExpeditionsConfig;
   /** Ascension challenges (DESIGN.md §15). Not built. */
   challenges: AscensionChallenge[];
+  /** Duel skills: each weapon type's leaning and the cards that break it (DESIGN.md §6 card duel). */
+  skills: SkillsConfig;
+  skillById: ReadonlyMap<string, Skill>;
   /** Scroll sources besides the first clears and chests, and the reveal show (DESIGN.md §3, §7). */
   scrolls: ScrollsConfig;
 }
@@ -210,6 +216,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     bonds,
     expeditions,
     challenges,
+    skills,
     scrolls,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
@@ -239,6 +246,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     }
   }
   checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
+  checkSkills({ cards, skills }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -321,8 +329,32 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     bondById: new Map(bonds.map((b) => [b.id, b])),
     expeditions,
     challenges,
+    skills,
+    skillById: new Map(skills.skills.map((x) => [x.id, x])),
     scrolls,
   };
+}
+
+/**
+ * skills.json (DESIGN.md §6 card duel): skill ids are unique, every weapon and card names a
+ * skill that exists, and every card named is a fighting card.
+ */
+function checkSkills(c: { cards: Card[]; skills: SkillsConfig }, issues: string[]): void {
+  const ids = new Set<string>();
+  c.skills.skills.forEach((skill, i) => {
+    if (ids.has(skill.id)) issues.push(`skills.json › skills › [${i}]: duplicate id "${skill.id}"`);
+    ids.add(skill.id);
+  });
+  for (const [weapon, skill] of Object.entries(c.skills.weapons)) {
+    if (!ids.has(skill)) issues.push(`skills.json › weapons › ${weapon}: unknown skill "${skill}"`);
+  }
+  for (const [cardId, skill] of Object.entries(c.skills.cards)) {
+    const card = c.cards.find((x) => x.id === cardId);
+    if (!card) issues.push(`skills.json › cards › ${cardId}: unknown card`);
+    else if (card.job !== 'fighting')
+      issues.push(`skills.json › cards › ${cardId}: not a fighting card`);
+    if (!ids.has(skill)) issues.push(`skills.json › cards › ${cardId}: unknown skill "${skill}"`);
+  }
 }
 
 /**
@@ -1217,6 +1249,7 @@ export function bundledRawContent(): RawContent {
     bonds: bondsJson,
     expeditions: expeditionsJson,
     challenges: challengesJson,
+    skills: skillsJson,
     scrolls: scrollsJson,
   };
 }

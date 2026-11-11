@@ -9,6 +9,9 @@ export * from './drops';
 export * from './report';
 export * from './tick';
 export * from './combat';
+/** The card duel (DESIGN.md §6): the team's rules and the selectors the duel's UI reads. */
+export * from './duel';
+export * from './duelView';
 export * from './floors';
 /** Stage stars and overflow (DESIGN.md §6): `stageStarLevel` and `totalStageStarLevels` feed the skill points. */
 export * from './stageStars';

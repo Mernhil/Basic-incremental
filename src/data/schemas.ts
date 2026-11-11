@@ -1914,6 +1914,62 @@ export const bondSchema = z
   .refine((b) => b.cards[0] !== b.cards[1], { message: 'a bond pairs two different cards' });
 export type Bond = z.output<typeof bondSchema>;
 
+/** The fighting item types: the weapons a duel role leans on (DESIGN.md §6 card duel). */
+export const WEAPON_KINDS = [
+  'sword',
+  'greatsword',
+  'spear',
+  'lance',
+  'dagger',
+  'hammer',
+  'bow',
+  'staff',
+  'scythe',
+] as const;
+
+/** What a card's signature attack does in the duel (DESIGN.md §6 card duel). */
+export const skillSignatureSchema = z.discriminatedUnion('kind', [
+  /** Strikes the enemy for the weapon's signature power (the existing signature attack). */
+  z.strictObject({ kind: z.literal('strike') }),
+  /** Heals every standing team card by `share` of its own max health, instead of striking. */
+  z.strictObject({ kind: z.literal('heal'), share: z.number().gt(0).max(1) }),
+]);
+
+/**
+ * A duel skill (DESIGN.md §6 card duel, skills.json): the role a card fights in and what its
+ * signature attack does. Every number is a multiplier on the card's own stats; 1 = unchanged.
+ */
+export const skillSchema = z.strictObject({
+  id,
+  name,
+  /** The role, for the UI: fighter, striker, tank, healer, debuffer, glass_cannon. */
+  role: z.enum(['fighter', 'striker', 'tank', 'healer', 'debuffer', 'glass_cannon']),
+  description: z.string().min(1),
+  /** Enemies hit a standing guard before the other cards. */
+  guard: z.boolean().default(false),
+  /** Multiplies the card's damage and its health. */
+  damage: z.number().gt(0).default(1),
+  health: z.number().gt(0).default(1),
+  /** While the card stands, the enemy's attacks deal this share less (several multiply). */
+  weaken: z.number().min(0).max(0.9).default(0),
+  signature: skillSignatureSchema,
+});
+export type Skill = z.output<typeof skillSchema>;
+
+/** skills.json: the skills, the one each weapon type leans to, and cards that break the leaning. */
+export const skillsFileSchema = z.strictObject({
+  skills: z.array(skillSchema).min(1),
+  weapons: z.strictObject(
+    Object.fromEntries(WEAPON_KINDS.map((k) => [k, id])) as Record<
+      (typeof WEAPON_KINDS)[number],
+      typeof id
+    >,
+  ),
+  /** Card id -> its own skill (a unique may break its weapon's leaning). */
+  cards: z.record(id, id).default({}),
+});
+export type SkillsConfig = z.output<typeof skillsFileSchema>;
+
 /**
  * An expedition place (DESIGN.md §15 Expeditions), opened by clearing its dungeon. Its rewards
  * (that area's materials, some gems and card XP) are added by the package that builds the rule.
@@ -2061,6 +2117,7 @@ export const contentSchemas = {
   bonds: z.array(bondSchema),
   expeditions: expeditionsSchema,
   challenges: z.array(ascensionChallengeSchema),
+  skills: skillsFileSchema,
   scrolls: scrollsSchema,
 } as const;
 

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_KINDS, RARITIES } from '../src/data';
 import {
-  averageDps,
+  averageDamage,
   burstStats,
+  cardHealth,
   collectModifiers,
+  critFactor,
   critStats,
-  loadoutMaxHealth,
+  effectiveDamage,
   newOwnedCard,
 } from '../src/game';
 import { bareState, content } from './helpers';
@@ -13,7 +15,11 @@ import { bareState, content } from './helpers';
 /** DESIGN §5 Weapon identities: every fighting type has its own shape and the same total power. */
 const KINDS = ITEM_KINDS.filter((k) => !['pickaxe', 'logging_axe'].includes(k));
 
-/** A game whose fighting main is the card of this type and rarity, fresh, no supports. */
+/**
+ * A game whose fighting main is the card of this type and rarity, fresh, no supports. The numbers
+ * are the weapon's kit (its main ability and its factors); the duel skills of skills.json trade
+ * on top of it (a healer's signature heals instead of striking; DESIGN.md §6 card duel).
+ */
 function lead(kind: string, rarity: string) {
   const card = content.cards.find(
     (c) => c.job === 'fighting' && c.item.kind === kind && c.rarity === rarity,
@@ -24,8 +30,11 @@ function lead(kind: string, rarity: string) {
   const mods = collectModifiers(state, content);
   return {
     card,
-    dps: averageDps(state, content, null, mods),
-    health: loadoutMaxHealth(state, content, mods),
+    dps: averageDamage(
+      effectiveDamage(state, content, null, mods),
+      burstStats(content, 'fighting', mods),
+    ).mul(critFactor(critStats(content, mods))),
+    health: cardHealth(content, card.id, state.cards.owned[card.id]!),
     crit: critStats(content, mods),
     burst: burstStats(content, 'fighting', mods),
   };

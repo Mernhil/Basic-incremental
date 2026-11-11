@@ -60,7 +60,9 @@ const run = (s: GameState, seconds: number, c: Content = content) =>
 const sum = (r: TickReport, pick: (e: TickReport['bossAttacks'][number]) => number) =>
   r.bossAttacks.reduce((n, e) => n + pick(e), 0);
 const damageOf = (r: TickReport) => r.bossAttacks.reduce((n, e) => n + e.damage.toNumber(), 0);
-const taken = (s: GameState) => s.combat.loadoutDamage.toNumber();
+/** Damage the team has taken: the starting team is the Ember Squire alone (DESIGN.md §6 card duel). */
+const taken = (s: GameState) =>
+  Object.values(s.combat.cardDamage).reduce((n, d) => n + d.toNumber(), 0);
 
 describe('the attack pattern', () => {
   const pattern = content.combat.bossPattern;
@@ -187,7 +189,7 @@ describe('online equals offline', () => {
 describe('knockout timing', () => {
   it('knocks the loadout out on the hit that empties the pool (a light hit)', () => {
     const start = inCappedCellar();
-    start.combat.loadoutDamage = pool(start).sub(0.7); // 0.7 left: the 2nd light hit empties it
+    start.combat.cardDamage = { ember_squire: pool(start).sub(0.7) }; // 0.7 left: the 2nd light hit empties it
     const before = run(start, 19.9);
     expect(before.report.knockouts).toBe(0);
     expect(taken(before.state)).toBeCloseTo(pool(start).toNumber() - 0.3);
@@ -202,7 +204,7 @@ describe('knockout timing', () => {
 
   it('knocks the loadout out on a slam when only a slam can finish it', () => {
     const start = inCappedCellar();
-    start.combat.loadoutDamage = pool(start).sub(3); // five lights take 2, the slam takes 4
+    start.combat.cardDamage = { ember_squire: pool(start).sub(3) }; // five lights take 2, the slam takes 4
     expect(run(start, 59.9).report.knockouts).toBe(0);
     const after = run(start, 60.1);
     expect(after.report.knockouts).toBe(1);
@@ -213,7 +215,7 @@ describe('knockout timing', () => {
 
   it('deals no further hits while knocked out, then starts again at full health', () => {
     const start = inCappedCellar();
-    start.combat.loadoutDamage = pool(start).sub(0.1);
+    start.combat.cardDamage = { ember_squire: pool(start).sub(0.1) };
     const ko = content.combat.knockoutSeconds;
     const out = run(start, 10 + ko / 2);
     expect(out.state.combat.knockoutSeconds).toBeGreaterThan(0);
@@ -232,7 +234,7 @@ describe('knockout timing', () => {
 
   it('survives a light hit that leaves a sliver, and falls to the next one', () => {
     const start = inCappedCellar();
-    start.combat.loadoutDamage = pool(start).sub(0.5);
+    start.combat.cardDamage = { ember_squire: pool(start).sub(0.5) };
     expect(run(start, 10.1).report.knockouts).toBe(0);
     expect(run(start, 20.1).report.knockouts).toBe(1);
   });

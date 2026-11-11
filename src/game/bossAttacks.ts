@@ -121,6 +121,7 @@ export function recordBossAttacks(
   intervalSeconds: number,
   pattern: BossPattern,
   lethal: boolean,
+  cardId = '',
 ): void {
   if (upto <= after) return;
   const single = (k: number, knockout: boolean): BossAttackEvent => ({
@@ -130,6 +131,7 @@ export function recordBossAttacks(
     attacks: 1,
     knockout,
     nextSlamSeconds: (nextBossSlam(k, pattern) - k) * intervalSeconds,
+    cardId,
   });
   const lastLight = lethal ? upto - 1 : upto;
   const count = lastLight - after;
@@ -145,6 +147,7 @@ export function recordBossAttacks(
       attacks: n,
       knockout: false,
       nextSlamSeconds,
+      cardId,
     });
     if (lights > 0) pushBossAttack(report.bossAttacks, merged(lights, false));
     if (slams > 0) pushBossAttack(report.bossAttacks, merged(slams, true));

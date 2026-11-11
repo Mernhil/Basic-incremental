@@ -1,0 +1,112 @@
+{
+  "skills": [
+    {
+      "id": "cleave",
+      "name": "Cleave",
+      "role": "fighter",
+      "description": "Balanced: the signature attack strikes the enemy",
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "sunder",
+      "name": "Sunder",
+      "role": "striker",
+      "description": "Heavy hits; the signature attack strikes the enemy",
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "piercing_lunge",
+      "name": "Piercing Lunge",
+      "role": "striker",
+      "description": "Quick, critical hits; the signature attack strikes the enemy",
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "reap",
+      "name": "Reap",
+      "role": "striker",
+      "description": "Critical hits; the signature attack strikes the enemy",
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "volley",
+      "name": "Volley",
+      "role": "striker",
+      "description": "Huge crits, little health; the signature attack strikes the enemy",
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "flurry",
+      "name": "Flurry",
+      "role": "striker",
+      "description": "Fast hits that fill the gauge twice as fast; the signature strikes the enemy",
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "bulwark_charge",
+      "name": "Bulwark Charge",
+      "role": "tank",
+      "description": "Guards the team: enemies hit it first; the signature strikes the enemy",
+      "guard": true,
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "quake",
+      "name": "Quake",
+      "role": "tank",
+      "description": "Tanky big hits: enemies hit it first; the signature strikes the enemy",
+      "guard": true,
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "mend",
+      "name": "Mend",
+      "role": "healer",
+      "description": "The signature heals every standing card by 30% of its health instead of striking",
+      "signature": { "kind": "heal", "share": 0.3 }
+    },
+    {
+      "id": "hex",
+      "name": "Hex",
+      "role": "debuffer",
+      "description": "While it stands, enemies deal 20% less damage; it deals 20% less itself",
+      "damage": 0.8,
+      "weaken": 0.2,
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "arcane_bolt",
+      "name": "Arcane Bolt",
+      "role": "glass_cannon",
+      "description": "Glass cannon: 50% more damage, half the health",
+      "damage": 1.5,
+      "health": 0.5,
+      "signature": { "kind": "strike" }
+    },
+    {
+      "id": "dawn_grace",
+      "name": "Dawn Grace",
+      "role": "healer",
+      "description": "A lance that heals: the signature heals every standing card by 25% of its health",
+      "signature": { "kind": "heal", "share": 0.25 }
+    }
+  ],
+  "weapons": {
+    "sword": "cleave",
+    "greatsword": "sunder",
+    "spear": "piercing_lunge",
+    "lance": "bulwark_charge",
+    "dagger": "flurry",
+    "hammer": "quake",
+    "bow": "volley",
+    "staff": "mend",
+    "scythe": "reap"
+  },
+  "cards": {
+    "bronze_mystic": "arcane_bolt",
+    "silver_mage": "arcane_bolt",
+    "kaleido_weaver": "hex",
+    "hex_warlock": "hex",
+    "seraph_lancer": "dawn_grace"
+  }
+}

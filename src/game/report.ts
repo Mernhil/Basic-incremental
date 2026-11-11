@@ -99,6 +99,37 @@ export interface PlayerHitEvent {
   hits: number;
   /** A signature attack (full burst gauge) rather than a normal hit. */
   signature: boolean;
+  /** The team card that hit (DESIGN.md §6 card duel); '' for bare hands. */
+  cardId: string;
+}
+
+/**
+ * A team card's skill fired (DESIGN.md §6 card duel): its signature attack struck or healed, for
+ * the skill banners. Merged per card and kind when there are many: `count` counts them.
+ */
+export interface SkillEvent {
+  cardId: string;
+  skillId: string;
+  kind: 'strike' | 'heal';
+  count: number;
+}
+
+/** Adds a skill event, folding it into the last one of the same card and kind. */
+export function pushSkill(into: SkillEvent[], event: SkillEvent): void {
+  if (event.count <= 0) return;
+  const last = into[into.length - 1];
+  if (last && last.cardId === event.cardId && last.kind === event.kind) {
+    last.count += event.count;
+    return;
+  }
+  if (into.length >= MAX_REPORT_PLAYER_HITS) {
+    const same = into.find((e) => e.cardId === event.cardId && e.kind === event.kind);
+    if (same) {
+      same.count += event.count;
+      return;
+    }
+  }
+  into.push(event);
 }
 
 /** Most player hit events a merged report keeps before folding hits of one kind together. */
@@ -108,7 +139,10 @@ export const MAX_REPORT_PLAYER_HITS = 64;
 export function pushPlayerHit(into: PlayerHitEvent[], event: PlayerHitEvent): void {
   if (event.hits <= 0) return;
   if (into.length >= MAX_REPORT_PLAYER_HITS) {
-    const same = into.find((e) => e.target === event.target && e.signature === event.signature);
+    const same = into.find(
+      (e) =>
+        e.target === event.target && e.signature === event.signature && e.cardId === event.cardId,
+    );
     if (same) {
       const total = same.damage.mul(same.hits).add(event.damage.mul(event.hits));
       same.hits += event.hits;
@@ -138,6 +172,9 @@ export interface BossAttackEvent {
   /** Seconds from this attack (the last one, when merged) until the next slam lands, for the
    *  wind-up; a slam itself looks a whole cycle ahead. */
   nextSlamSeconds: number;
+  /** The team card the attack hit (DESIGN.md §6 card duel); '' when unknown. Merged events
+   *  keep the last one. */
+  cardId: string;
 }
 
 /** Most boss attack events a merged report keeps before folding attacks of one kind together. */
@@ -152,6 +189,7 @@ export function pushBossAttack(into: BossAttackEvent[], event: BossAttackEvent):
       same.attacks += event.attacks;
       same.knockout = false; // a merged event is no single lethal hit
       same.nextSlamSeconds = event.nextSlamSeconds;
+      same.cardId = event.cardId;
       return;
     }
   }
@@ -212,6 +250,11 @@ export interface TickReport {
   bossAttacks: BossAttackEvent[];
   /** Our hits on the boss or trial target, in order (merged when there are many). */
   playerHits: PlayerHitEvent[];
+  /** Team cards' skills that fired, in order (DESIGN.md §6 card duel; merged when many). */
+  skills: SkillEvent[];
+  /** Team cards knocked out one by one (their health ran out), in order; a whole-team knockout
+   *  is `knockouts`. */
+  cardKnockouts: string[];
   /** Mastery tiers reached (gem mastery and boss medals), in order. */
   tierUps: TierUp[];
   /** Harvest strikes and harvest bursts of the production main cards, in order (11.15). */
@@ -242,6 +285,8 @@ export function emptyReport(): TickReport {
     challenges: [],
     bossAttacks: [],
     playerHits: [],
+    skills: [],
+    cardKnockouts: [],
     tierUps: [],
     harvests: [],
     achievements: [],
@@ -271,6 +316,8 @@ export function mergeReports(into: TickReport, add: TickReport): TickReport {
   into.cardDrops.push(...add.cardDrops);
   for (const event of add.bossAttacks) pushBossAttack(into.bossAttacks, { ...event });
   for (const event of add.playerHits) pushPlayerHit(into.playerHits, { ...event });
+  for (const event of add.skills) pushSkill(into.skills, { ...event });
+  into.cardKnockouts.push(...add.cardKnockouts);
   into.tierUps.push(...add.tierUps);
   for (const event of add.harvests) pushHarvest(into.harvests, { ...event });
   into.achievements.push(...add.achievements);
