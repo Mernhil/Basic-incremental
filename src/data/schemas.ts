@@ -69,8 +69,26 @@ export const costCurveSchema = z.strictObject({
   growth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
 });
 
+/**
+ * Depth and growth of a tree kind (ages) or mine type (layers) (DESIGN.md §4 Depth and growth).
+ * Layer `n` (1-based) has hardness `hardness x hardnessGrowth^(n-1)` that the worker's digging
+ * (`digRate` hardness per second at worker power 1) breaks; each layer below the first multiplies
+ * the place's yield by `yieldGrowth`. There are as many layers as `names`; the last one is never
+ * broken. Reset on Ascension.
+ */
+export const depthSchema = z.strictObject({
+  /** The age or layer names, shallowest first (at least two). */
+  names: z.array(name).min(2),
+  hardness: positiveDecimal,
+  hardnessGrowth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+  yieldGrowth: decimal.refine((d) => d.gte(1), { message: 'must be at least 1' }),
+  digRate: positiveDecimal,
+});
+export type DepthDef = z.output<typeof depthSchema>;
+
 /** Shared by trees (logging) and mines (mining). Each unlocked one produces once. */
 const producerFields = {
+  depth: depthSchema,
   id,
   name,
   tier,

@@ -167,6 +167,16 @@ export const COPY = {
     settings: { label: 'Settings', frame: '', empty: '' },
   },
   production: {
+    /** Depth and growth (DESIGN.md §4): the age of a tree, the layer of a mine. */
+    depth: {
+      logging: (n: number, name: string) => `Age ${n} · ${name}`,
+      mining: (n: number, name: string) => `Layer ${n} · ${name}`,
+      deepest: 'deepest',
+      yield: (mult: string) => `×${mult} yield`,
+      next: (mult: string) => `next ×${mult}`,
+      noWorker: 'no worker, no digging',
+      tip: (broken: string, hardness: string) => `${broken} of ${hardness} broken`,
+    },
     logging: {
       title: 'Logging',
       tilesLabel: 'Trees',

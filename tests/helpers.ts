@@ -23,8 +23,17 @@ function pinProductionRates(bundled: Content): Content {
     iron_deeps: '0.25',
     crystal_grotto: '0.1',
   };
-  const pin = <T extends { id: string; baseRate: Decimal }>(list: T[]): T[] =>
-    list.map((p) => ({ ...p, baseRate: new Decimal(rates[p.id] ?? p.baseRate) }));
+  const pin = <
+    T extends { id: string; baseRate: Decimal; depth: Content['trees'][number]['depth'] },
+  >(
+    list: T[],
+  ): T[] =>
+    list.map((p) => ({
+      ...p,
+      baseRate: new Decimal(rates[p.id] ?? p.baseRate),
+      // no digging: rule tests count exact output; depth tests use `shippedContent`
+      depth: { ...p.depth, digRate: new Decimal('1e-30') },
+    }));
   const trees = pin(bundled.trees);
   const mines = pin(bundled.mines);
   return {

@@ -1,4 +1,5 @@
 import type { Content, CostCurve, Mine, ProductionJob, Tree } from '../data';
+import { depthYield, digPerSecond } from './depth';
 import { milestoneInfo, milestoneMultiplier, type MilestoneInfo } from './milestones';
 import { collectModifiers, statValue, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
@@ -361,9 +362,11 @@ export interface WorkSite {
   producer: Producer;
   /** Card ids working it (empty: the plain level rate, no strikes, no gauge, no crits). */
   workers: string[];
-  /** Output per second without crits: the level rate × the workers' power. */
+  /** Output per second without crits: the level rate × the workers' power × its layer's yield. */
   rate: Decimal;
   crit: HarvestCrit;
+  /** Hardness of its current layer or age broken per second by the workers (0 with none). */
+  dig: Decimal;
   /** Strike and gauge speed, 1 = the card's own rhythm (1 with no worker). */
   speed: number;
 }
@@ -383,16 +386,19 @@ export function workSites(
   return unlockedProducers(state, content, job).map((producer) => {
     const ids = workers[producer.id] ?? [];
     const level = producerLevel(state, job, producer.id);
+    const power = placePower(state, content, producer.id);
+    const speed = ids.length > 0 ? harvestSpeed(job, modifiers, producer) : 1;
     return {
       job,
       kind: all.indexOf(producer),
       producer,
       workers: ids,
-      rate: producerRate(producer, job, modifiers, level).mul(
-        placePower(state, content, producer.id),
-      ),
+      rate: producerRate(producer, job, modifiers, level)
+        .mul(power)
+        .mul(depthYield(state, content, producer.id)),
+      dig: digPerSecond(state, content, producer.id, ids.length > 0 ? power : 0, speed),
       crit: ids.length > 0 ? harvestCrit(content, job, modifiers, producer) : NO_HARVEST_CRIT,
-      speed: ids.length > 0 ? harvestSpeed(job, modifiers, producer) : 1,
+      speed,
     };
   });
 }

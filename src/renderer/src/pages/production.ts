@@ -42,6 +42,7 @@ import { createThrottle, popText } from '../stage/math';
 import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
+import { fmt } from '../settings/numberFormat';
 import { createShelf, type Shelf } from '../ui/shelf';
 import { createToolLinesPanel, type ToolLinesPanel } from '../ui/toolLines';
 import { amountText } from '../settings/coins';
@@ -105,6 +106,9 @@ interface RowRef {
   next: HTMLElement;
   nextText: HTMLElement;
   nextSub: HTMLElement;
+  depthName: HTMLElement;
+  depthFill: HTMLElement;
+  depthText: HTMLElement;
   buy?: BuyButton;
   unlock?: { btn: HTMLButtonElement; label: HTMLElement; price: HTMLElement; have: HTMLElement };
 }
@@ -303,12 +307,20 @@ export function createProductionPage(
     const track = h('div', 'pp-seg');
     track.setAttribute('aria-hidden', 'true');
     const x2 = h('span', 'pp-r__x2 bi-num');
+    const depthLine = h('div', 'pp-r__depth');
+    const depthName = h('span', 'pp-r__depthName bi-num');
+    const depthBar = h('div', 'pp-dep');
+    depthBar.setAttribute('aria-hidden', 'true');
+    const depthFill = h('i');
+    depthBar.append(depthFill);
+    const depthText = h('span', 'pp-r__depthText bi-num');
+    depthLine.append(depthName, depthBar, depthText);
     if (locked) {
       mid.append(h('span', 'pp-r__note', row.note));
     } else {
       const line = h('div', 'pp-r__line');
       line.append(value, unit);
-      mid.append(line, track, x2);
+      mid.append(line, track, x2, depthLine);
     }
     // next buy
     const next = h('div', 'pp-r__next');
@@ -331,6 +343,9 @@ export function createProductionPage(
       next,
       nextText,
       nextSub,
+      depthName,
+      depthFill,
+      depthText,
     };
     // buy
     const cell = h('div', 'pp-r__buy');
@@ -501,7 +516,27 @@ export function createProductionPage(
         ref.row = row;
         const target = row.kind === 'active' ? (byKind.get(row.kindIndex) ?? null) : null;
         ref.worker.update(target, picking === row.id, canAdd);
-        if (target) ref.workerKey = workerKey(target);
+        if (target) {
+          ref.workerKey = workerKey(target);
+          const d = target.depth;
+          const t = COPY.production.depth;
+          set(
+            ref.depthName,
+            row.job === 'logging' ? t.logging(d.layer, d.name) : t.mining(d.layer, d.name),
+          );
+          ref.depthFill.style.width = `${Math.round(d.fraction * 100)}%`;
+          ref.depthFill.parentElement!.title = d.atMax
+            ? t.deepest
+            : target.dig.gt(0)
+              ? t.tip(fmt(d.progress), fmt(d.hardness))
+              : t.noWorker;
+          set(
+            ref.depthText,
+            d.nextYieldMultiplier
+              ? t.next(fmt(d.nextYieldMultiplier.div(d.yieldMultiplier)))
+              : t.deepest,
+          );
+        }
         set(ref.level, row.levelText);
         if (row.kind === 'active') {
           set(ref.value, row.outputValue);

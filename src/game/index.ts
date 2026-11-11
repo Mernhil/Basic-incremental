@@ -14,6 +14,7 @@ export * from './floors';
 export * from './stageStars';
 export * from './training';
 export * from './toolLines';
+export * from './depth';
 export * from './loop';
 export * from './offline';
 export * from './migrations';

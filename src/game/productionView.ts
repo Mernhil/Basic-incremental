@@ -1,5 +1,6 @@
 import type { Card, Content, HarvestPattern, ProductionJob, Rarity, Rank } from '../data';
 import { cardRank } from './cards';
+import { depthInfo, type DepthInfo } from './depth';
 import { harvestBurstStats, harvestGauge, strikePeriodSeconds, workerPattern } from './harvest';
 import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -61,6 +62,10 @@ export interface StageTarget {
   burst: { power: Decimal; fillPerTick: number; size: number };
   /** Progress to the next strike, 0..1, and the seconds left. Derived from play time. */
   nextStrike: { progress: number; inSeconds: number };
+  /** Its layer or age, the bar to the next and the yield it gives (DESIGN.md §4 Depth). */
+  depth: DepthInfo;
+  /** Hardness broken per second by its workers (0 with none). */
+  dig: Decimal;
   /** Harvest crit chance (0..1) and multiplier at this place. */
   crit: { chance: number; damage: Decimal };
 }
@@ -125,6 +130,8 @@ function targetView(
       periodMs > 0
         ? { progress: into / periodMs, inSeconds: (periodMs - into) / 1000 }
         : { progress: 0, inSeconds: 0 },
+    depth: depthInfo(state, content, site.producer.id)!,
+    dig: site.dig,
     crit: { chance: site.crit.chance, damage: site.crit.damage },
   };
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { depthDef } from './depth';
 import type { Content } from '../data';
 import { MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
@@ -676,12 +677,18 @@ function deserializeWorkers(
   state.production.harvestGauges = Object.fromEntries(
     known(saved.harvestGauges).map(([id, g]) => [id, { ...g }]),
   );
-  // Tool lines and forge recipes are not in the content yet (package 6): kept as saved.
-  state.production.tools = { ...saved.tools };
+  // Tool lines the content no longer has are dropped.
+  state.production.tools = Object.fromEntries(
+    Object.entries(saved.tools).filter(([id]) => content.production.tools.some((t) => t.id === id)),
+  );
   state.production.depth = Object.fromEntries(
     known(saved.depth).map(([id, d]) => [
       id,
-      { layer: d.layer, progress: new Decimal(d.progress) },
+      {
+        // a layer past the deepest one (a retuned tree) comes back to the deepest
+        layer: Math.max(1, Math.min(d.layer, depthDef(content, id)?.names.length ?? 1)),
+        progress: Decimal.max(new Decimal(d.progress), 0),
+      },
     ]),
   );
   state.production.forge = {
