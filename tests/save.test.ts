@@ -427,7 +427,7 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
       copper_quarry: { layer: 1, progress: new Decimal(0) },
     };
     state.production.forge = {
-      recipe: 'gems_to_dust',
+      recipe: 'star_dust',
       progress: new Decimal('12.5'),
       worker: null,
     };
@@ -511,10 +511,16 @@ describe('save format v26: the balance update state (DESIGN.md §4 to §10)', ()
 
   it('keeps an owned card that works nowhere else as the forge worker', () => {
     const json = JSON.parse(createSaveText(balanceState(), NOW));
-    json.state.production.forge.worker = 'ember_squire';
-    expect(readSave(JSON.stringify(json), content).state.production.forge.worker).toBe(
-      'ember_squire',
+    json.state.cards.owned['elder_treant'] = structuredClone(
+      json.state.cards.owned['apprentice_feller'],
     );
+    json.state.production.forge.worker = 'elder_treant';
+    expect(readSave(JSON.stringify(json), content).state.production.forge.worker).toBe(
+      'elder_treant',
+    );
+    // a fighting card never works the forge
+    json.state.production.forge.worker = 'ember_squire';
+    expect(readSave(JSON.stringify(json), content).state.production.forge.worker).toBeNull();
     json.state.production.forge.worker = 'pebble_prospector';
     expect(readSave(JSON.stringify(json), content).state.production.forge.worker).toBeNull();
   });

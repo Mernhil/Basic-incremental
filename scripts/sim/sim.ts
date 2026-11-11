@@ -32,7 +32,11 @@ import { RANK_TIERS, RARITIES, type Content } from '../../src/data';
 import {
   advance,
   activeWorkers,
+  assignForgeWorker,
   assignWorker,
+  forgeWorker,
+  setForgeRecipe,
+  workersUsed,
   producerLevel,
   producersOf,
   workerPower,
@@ -1066,6 +1070,33 @@ export function bestWorkers(state: GameState, content: Content): Record<string, 
 
 /** Puts the sim's chosen workers to work (`bestWorkers`), when they differ from today's. */
 export function placeBestWorkers(state: GameState, content: Content): GameState {
+  return keepForgeWorker(placePlaceWorkers(state, content), content);
+}
+
+/** Sets the forge to its first recipe and, with a slot spare, puts the best idle production card to work in it. */
+export function keepForgeWorker(state: GameState, content: Content): GameState {
+  let current = state;
+  const recipe = content.production.forge.recipes[0];
+  if (recipe && current.production.forge.recipe === null) {
+    const set = setForgeRecipe(current, content, recipe.id);
+    if (set.ok) current = set.state;
+  }
+  if (
+    forgeWorker(current, content) ||
+    workersUsed(current, content) >= workerSlots(current, content)
+  )
+    return current;
+  const busy = new Set(Object.values(activeWorkers(current, content)).flat());
+  const best = content.cards
+    .filter((c) => c.job !== 'fighting' && current.cards.owned[c.id] && !busy.has(c.id))
+    .map((c) => ({ id: c.id, power: workerPower(content, c.id, current.cards.owned[c.id]!) }))
+    .sort((a, b) => b.power - a.power)[0];
+  if (!best) return current;
+  const hired = assignForgeWorker(current, content, best.id);
+  return hired.ok ? hired.state : current;
+}
+
+function placePlaceWorkers(state: GameState, content: Content): GameState {
   const want = bestWorkers(state, content);
   const now = activeWorkers(state, content);
   const same = (a: Record<string, string[]>, b: Record<string, string[]>): boolean =>

@@ -3,6 +3,7 @@ import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels }
 import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { advanceForge } from './forge';
 import { addDigging, depthDue, settleDepth } from './depth';
 import { advanceHarvestGauges, recordStrikes } from './harvest';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
@@ -169,6 +170,9 @@ function advanceSpan(
     modifiers,
     PRODUCTION_JOBS.flatMap((job) => sites[job]),
   );
+
+  // The forge turns the gems of the step into what its recipe makes.
+  advanceForge(next, content, seconds);
 
   // Card XP: each worker gains XP per unit its own place harvested (normal output and bursts);
   // every gem harvested counts toward its mastery and the account.

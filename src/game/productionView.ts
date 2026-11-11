@@ -8,6 +8,7 @@ import { harvestCritFactor, producersOf, workSites, type WorkSite } from './prod
 import type { GameState } from './state';
 import { jobAttackEffect, resolveCard, jobNumberStyle, type ResolvedCard } from './theme';
 import {
+  forgeWorker,
   producerJob,
   workerAt,
   workerPower,
@@ -192,7 +193,8 @@ export function workerChoices(
   for (const card of content.cards) {
     const owned = state.cards.owned[card.id];
     if (card.job !== job || !owned) continue;
-    const workplace = workplaceOf(state, content, card.id);
+    const inForge = forgeWorker(state, content) === card.id;
+    const workplace = inForge ? 'forge' : workplaceOf(state, content, card.id);
     out.push({
       cardId: card.id,
       name: card.name,
@@ -202,7 +204,7 @@ export function workerChoices(
       power: workerPower(content, card.id, owned),
       abilityText: card.worker.description,
       workplace,
-      workplaceName: workplace ? (names.get(workplace) ?? null) : null,
+      workplaceName: workplace ? (inForge ? 'Forge' : (names.get(workplace) ?? null)) : null,
       here: workplace === producerId,
       needsSlot: workplace === null && !placeTaken && !freeSlot,
     });

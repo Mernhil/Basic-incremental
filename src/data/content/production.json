@@ -142,5 +142,29 @@
       "mythic": 3.5,
       "void": 3.5
     }
+  },
+  "forge": {
+    "speed": "1",
+    "recipes": [
+      {
+        "id": "star_dust",
+        "name": "Star Dust",
+        "inputs": [
+          {
+            "resource": "moonwillow_gem",
+            "amount": "20000"
+          },
+          {
+            "resource": "grotto_gem",
+            "amount": "20000"
+          }
+        ],
+        "output": {
+          "resource": "star_dust",
+          "amount": "1"
+        },
+        "work": "3600"
+      }
+    ]
   }
 }

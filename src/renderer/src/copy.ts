@@ -977,6 +977,21 @@ export const COPY = {
     buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
     oneTime: 'One-time upgrades',
   },
+  /** The forge (DESIGN.md §4 The forge). */
+  forge: {
+    title: 'Forge',
+    recipes: 'Recipes',
+    workerLabel: 'Worker',
+    noneWorker: 'No worker',
+    recipe: (inputs: string, output: string) => `${inputs} → ${output}`,
+    worker: (name: string, power: string, at: string | null, rank: string) =>
+      `${name} (${rank}) · power ${power}${at ? ` · works at ${at}` : ''}`,
+    noRecipe: 'Pick a recipe.',
+    noWorker: 'Needs a worker and a free slot.',
+    waitingForGems: 'Waiting for gems.',
+    making: (wait: string) => `Next in ${wait}`,
+    speed: (work: string) => `${work} work/s`,
+  },
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,

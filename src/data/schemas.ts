@@ -203,7 +203,25 @@ export const toolLineSchema = z
   );
 export type ToolLine = z.output<typeof toolLineSchema>;
 
+/**
+ * A forge recipe (DESIGN.md §4 The forge): `inputs` are spent and `output` made each time the
+ * worker has done `work` (progress per second is the forge's `speed` × the worker's power).
+ */
+export const forgeRecipeSchema = z.strictObject({
+  id,
+  name,
+  inputs: z.array(costSchema).min(1),
+  output: costSchema,
+  work: positiveDecimal,
+});
+export type ForgeRecipe = z.output<typeof forgeRecipeSchema>;
+
 export const productionSchema = z.strictObject({
+  /** The forge (DESIGN.md §4 The forge): its recipes and its progress per second at power 1. */
+  forge: z.strictObject({
+    speed: positiveDecimal,
+    recipes: z.array(forgeRecipeSchema).min(1),
+  }),
   /** The tool lines of both jobs (DESIGN.md §4 Tool lines), in the order the page shows them. */
   tools: z.array(toolLineSchema).min(1),
   harvest: z.strictObject({

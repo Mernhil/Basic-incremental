@@ -44,6 +44,7 @@ import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
 import { fmt } from '../settings/numberFormat';
 import { createShelf, type Shelf } from '../ui/shelf';
+import { createForgePanel } from '../ui/forge';
 import { createToolLinesPanel, type ToolLinesPanel } from '../ui/toolLines';
 import { amountText } from '../settings/coins';
 import {
@@ -273,6 +274,13 @@ export function createProductionPage(
     bands[job] = buildBand(job);
     bandsEl.append(bands[job].el);
   }
+  const forge = createForgePanel({
+    content,
+    state: ctx.state,
+    apply: ctx.apply,
+    sound: ctx.sound,
+  });
+  bandsEl.append(forge.el);
 
   // ---- rows ----
   function priceOf(v: { offer: { price: { amount: Decimal; resource: string } } }): string {
@@ -605,6 +613,7 @@ export function createProductionPage(
     }
     refreshRows(rowsByJob, mods);
     for (const job of PRODUCTION_JOBS) toolPanels[job].update();
+    forge.update();
     placePicker();
     shelf.update();
     const chips = shelfChips(s, content, mods, 'production');

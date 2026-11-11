@@ -691,11 +691,18 @@ function deserializeWorkers(
       },
     ]),
   );
+  // A recipe that left the game is dropped with its progress; a forge worker is a production card.
+  const recipe = content.production.forge.recipes.some((r) => r.id === saved.forge.recipe)
+    ? saved.forge.recipe
+    : null;
   state.production.forge = {
-    recipe: saved.forge.recipe,
-    progress: new Decimal(saved.forge.progress),
+    recipe,
+    progress: recipe ? new Decimal(saved.forge.progress) : new Decimal(0),
     worker:
-      forgeWorker && state.cards.owned[forgeWorker] && !working.has(forgeWorker)
+      forgeWorker &&
+      state.cards.owned[forgeWorker] &&
+      content.cardById.get(forgeWorker)?.job !== 'fighting' &&
+      !working.has(forgeWorker)
         ? forgeWorker
         : null,
   };
