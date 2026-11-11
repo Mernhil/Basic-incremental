@@ -1,16 +1,22 @@
-/* UI_RULES.md §2 "Toasts": a column hanging from the header's lower edge, centred on the table.
-   The dock, the header and the ends of a view's title bar (← Table, its own controls) stay clear;
-   a toast never takes a click. */
+/* UI_RULES.md §2 "Toasts": a column under the header at the left of the dungeon window (the
+   table's padding, the left wing and the gap, then 10 px in), the same spot when a view is open.
+   It stops short of the enemy card in the centre and of the damage tag on its top left, and
+   never reaches the dock or the header; a toast never takes a click. */
 .st-toasts {
+  --toast-left: calc(16px + 216px + 16px + 10px);
   position: fixed;
   top: calc(var(--header-h, 64px) + 6px);
-  left: 50%;
-  translate: -50% 0;
-  width: min(280px, calc(100vw - 32px));
+  left: var(--toast-left);
+  width: clamp(180px, calc(50vw - 150px - var(--toast-left)), 240px);
   z-index: 60;
   display: grid;
   gap: 6px;
   pointer-events: none;
+}
+@media (max-width: 1179px) {
+  .st-toasts {
+    --toast-left: calc(16px + 184px + 16px + 10px);
+  }
 }
 .st-toast {
   display: grid;
