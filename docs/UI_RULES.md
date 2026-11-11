@@ -76,7 +76,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 - [Default · in game] **Table layout and scale** (Claude, 2026-11-11). Sizes are CSS px; at 150% Windows scale every CSS px is 1.5 device pixels and pixel art keeps whole device-pixel scales (Whole pixel scales, §1).
   - Header 64 px. Dock 132 px. The wings are 216 px wide with 16 px from the window's edges; the dungeon window takes the width between them, with 16 px gaps.
   - At 1280 × 720 CSS px (a 1280 × 720 window at 100%, or a 1920 × 1080 window at 150%) the dungeon window is about 816 × 492.
-  - Below 1180 px wide the wings narrow to 184 px and drop the worker and depth line; below 760 px tall the dock is 104 px high, with smaller stacks and no hint line.
+  - Below 1180 px wide the wings narrow to 184 px and drop the worker and depth line; below 700 px tall the dock is 104 px high, with smaller stacks and no hint line.
   - The smallest window is 1024 × 640 (the Electron window's `minWidth` and `minHeight`); the table fits it without scrolling, and a full view scrolls inside.
 - [Default · in game] **Piles without their own plaque** (Claude, 2026-11-11). The Forge pile wears the Production plaque and the Upgrades pile the Settings plaque, as in mockup 4a, until their own plaques are drawn.
 - [Differs] **Live table.** The dungeon window and the wings are live: the fight runs in the window and the wings' numbers move. Built: the window runs today's arena in its own rendering and the wings are plain plates; their looks belong to the view packages (table update 9a and 9b).
