@@ -704,7 +704,7 @@ export function buyerCandidates(
   }
   // Starlight shop: the cheapest level of the useful items.
   const offers = starlightShop(state, content, modifiers)
-    .filter((o) => o.price && !STARLIGHT_SKIP.has(o.item.id))
+    .filter((o) => o.price && !o.locked && !STARLIGHT_SKIP.has(o.item.id))
     .sort((a, b) => num(a.price!.amount) - num(b.price!.amount));
   const cheapest = offers[0];
   if (cheapest) {

@@ -558,3 +558,18 @@ html .shop-body .shop-ascend.px-display:not(#_px) {
     animation: none;
   }
 }
+
+/* Autobuyer switches under the Starlight lines */
+.shop-auto {
+  display: grid;
+  gap: 6px;
+  margin-top: 10px;
+}
+.shop-auto__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.shop-auto__reserve {
+  width: 4.5em;
+}
