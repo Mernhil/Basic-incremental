@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   Decimal,
   activeWorkers,
+  cloneState,
   collectModifiers,
   createSeededRng,
+  floorPosition,
   forgeWorker,
   isProducerUnlocked,
   mineLevel,
@@ -11,7 +13,22 @@ import {
   stageKey,
   type GameState,
 } from '../src/game';
+import { loadContent, type Content } from '../src/data';
 import {
+  CHALLENGE_RETRY_SECONDS,
+  CHALLENGE_TRY_MARGIN,
+  CHALLENGE_WIN,
+  ascendOrChallenge,
+  challengeMargin,
+  chooseAutoChallenge,
+  chooseFight,
+  focusChoice,
+  nextChallengeKey,
+  runExpeditions,
+  teamForChallenge,
+  trainingFeed,
+  trainingValue,
+  wantsCardsNow,
   ECONOMY_RUN,
   ascendNow,
   buyAgain,
@@ -33,7 +50,14 @@ import {
   toolGain,
   workerPicks,
 } from '../scripts/sim/sim';
-import { content, freshState, withDps } from './helpers';
+import {
+  content,
+  freshState,
+  withAutoChallenge,
+  withBossAttack,
+  withBossHp,
+  withDps,
+} from './helpers';
 
 /** Owns `id` as a copy of the squire's record (Wood ★1 Lv 1), optionally changed. */
 const own = (
@@ -271,5 +295,205 @@ describe('sim player: runs of one economy line', () => {
     expect(run(1e3)).toBeLessThanOrEqual(ECONOMY_RUN);
     // a huge purse then bulk-buys as many levels as a 1/ECONOMY_RUN share of it pays for
     expect(run(1e300)).toBeGreaterThan(ECONOMY_RUN);
+  });
+});
+
+// ---- the table update's systems (DESIGN.md §14 The sim player's choices) ------------------------
+
+describe('sim player: floor Challenges and the team of four', () => {
+  const real = loadContent();
+  /** Mossy Cellar on floor 9 of 10 (its boss floor is the next Challenge), a team of Commons. */
+  const atBossWall = (): GameState => {
+    const state = freshState();
+    for (const id of ['rusty_brute', 'militia_picket', 'alley_cutpurse', 'hedge_acolyte']) {
+      own(state, id, { level: 20 });
+    }
+    // An Uncommon hammer: a guard with more health than any of them.
+    own(state, 'bronze_forgehand', { level: 40, tier: 'bronze', stars: 6 });
+    state.cards.owned['ember_squire']!.level = 20;
+    state.cards.loadouts.fighting = {
+      main: 'ember_squire',
+      supports: ['rusty_brute', 'militia_picket', 'alley_cutpurse'],
+    };
+    state.combat.floors['mossy_cellar'] = {
+      difficulty: 'normal',
+      autoChallenge: false,
+      tiers: { normal: { floor: 9, best: 9 } },
+    };
+    state.activeDungeonId = 'mossy_cellar';
+    state.account.level = 30; // room under the cost cap for any four of them
+    return state;
+  };
+  const margin = (state: GameState, c: Content): number =>
+    challengeMargin(state, c, 'mossy_cellar', collectModifiers(state, c))!;
+
+  it('counts the Challenge timer: a team that lasts but is too slow does not win', () => {
+    // The boss hits for nothing, so the team lasts for ever; with a billion HP it is far too slow.
+    const harmless = withBossAttack(real, 'mossy_cellar', 0, 2);
+    expect(margin(atBossWall(), withBossHp(harmless, 'mossy_cellar', 1e9))).toBeLessThan(1);
+    expect(margin(atBossWall(), harmless)).toBeGreaterThan(1);
+  });
+
+  it('fields a guard when the damage team falls before it wins the next Challenge', () => {
+    const hard = withBossAttack(real, 'mossy_cellar', 400, 2);
+    const state = atBossWall();
+    expect(margin(state, hard)).toBeLessThan(CHALLENGE_WIN);
+    const team = teamForChallenge(state, hard);
+    expect(team.cards.loadouts.fighting.supports).toContain('bronze_forgehand');
+    expect(margin(team, hard)).toBeGreaterThanOrEqual(CHALLENGE_WIN);
+    // A team that already wins is left as it is.
+    expect(teamForChallenge(state, withBossAttack(real, 'mossy_cellar', 50, 2))).toBe(state);
+  });
+
+  it('leaves auto-challenge on only while it wins, and tries a close Challenge by hand now and then', () => {
+    const cellar = real.dungeonById.get('mossy_cellar')!;
+    // Wins: auto-challenge on, nothing pressed.
+    const easy = withBossAttack(real, 'mossy_cellar', 50, 2);
+    const on = chooseAutoChallenge(withAutoChallenge(atBossWall(), false), easy, 0, null);
+    expect(floorPosition(on.state, cellar).autoChallenge).toBe(true);
+    expect(on.tried).toBe(false);
+    // Close: auto-challenge off, the Challenge button pressed, and not again within the wait.
+    // (No guard here: the team is the damage team.)
+    const state = withAutoChallenge(atBossWall(), true);
+    delete state.cards.owned['bronze_forgehand'];
+    const close = withBossAttack(real, 'mossy_cellar', 200, 2);
+    expect(margin(state, close)).toBeGreaterThan(CHALLENGE_TRY_MARGIN);
+    expect(margin(state, close)).toBeLessThan(CHALLENGE_WIN);
+    const tried = chooseAutoChallenge(state, close, 1000, null);
+    expect(floorPosition(tried.state, cellar).autoChallenge).toBe(false);
+    expect(tried.tried).toBe(true);
+    expect(tried.state.combat.challenge).not.toBeNull();
+    const again = chooseAutoChallenge(state, close, 1000 + CHALLENGE_RETRY_SECONDS - 1, 1000);
+    expect(again.tried).toBe(false);
+    // Hopeless: off, and not even tried.
+    const hopeless = withBossAttack(real, 'mossy_cellar', 800, 2);
+    expect(margin(state, hopeless)).toBeLessThan(CHALLENGE_TRY_MARGIN);
+    expect(chooseAutoChallenge(state, hopeless, 1000, null).tried).toBe(false);
+  });
+});
+
+describe('sim player: a lost Challenge', () => {
+  it('believes a defeat over the estimate until the team has grown', () => {
+    const real = loadContent();
+    const state = freshState();
+    state.combat.floors['mossy_cellar'] = {
+      difficulty: 'normal',
+      autoChallenge: true,
+      tiers: { normal: { floor: 9, best: 9 } },
+    };
+    state.activeDungeonId = 'mossy_cellar';
+    const easy = withBossAttack(withDps(1e6, real), 'mossy_cellar', 0, 2);
+    const margin = challengeMargin(state, easy, 'mossy_cellar', collectModifiers(state, easy))!;
+    expect(margin).toBeGreaterThan(CHALLENGE_WIN);
+    const cellar = real.dungeonById.get('mossy_cellar')!;
+    const key = nextChallengeKey(state, easy)!;
+    // Lost at this very margin: auto-challenge off, though the estimate says it wins.
+    const after = chooseAutoChallenge(state, easy, 0, null, { key, margin });
+    expect(floorPosition(after.state, cellar).autoChallenge).toBe(false);
+    // Lost long ago at a far smaller margin: the team has grown, it is on again.
+    const grown = chooseAutoChallenge(state, easy, 0, null, { key, margin: margin / 2 });
+    expect(floorPosition(grown.state, cellar).autoChallenge).toBe(true);
+  });
+});
+
+describe('sim player: training in gems', () => {
+  const real = loadContent();
+  it('values health like damage while health is what loses it the next Challenge', () => {
+    const state = freshState();
+    state.combat.floors['mossy_cellar'] = {
+      difficulty: 'normal',
+      autoChallenge: false,
+      tiers: { normal: { floor: 9, best: 9 } },
+    };
+    state.activeDungeonId = 'mossy_cellar';
+    const at = (c: Content): number =>
+      trainingValue(state, c, 'combat.health', collectModifiers(state, c));
+    expect(at(withBossAttack(real, 'mossy_cellar', 1e6, 2))).toBe(1);
+    expect(at(withBossAttack(real, 'mossy_cellar', 0, 2))).toBe(0.5);
+  });
+
+  it('counts the training a gem pays for in the value of its mine or tree', () => {
+    const state = freshState();
+    const modifiers = collectModifiers(state, content);
+    const sharpen = content.training.find((t) => t.stat === 'combat.damage')!;
+    // The gem Sharpen costs feeds damage; a gem no line costs feeds nothing.
+    expect(trainingFeed(state, content, sharpen.cost.resource, modifiers)).toBeGreaterThan(0);
+    expect(trainingFeed(state, content, 'grotto_gem', modifiers)).toBe(0);
+  });
+});
+
+describe('sim player: scrolls and the Focus Portal', () => {
+  it('pulls one at a time only while a team or worker slot waits for a card', () => {
+    const state = freshState();
+    state.resources['summon_scroll'] = new Decimal(3);
+    const ids = (s: GameState): string[] => buyerCandidates(s, content).map((c) => c.id);
+    expect(wantsCardsNow(state, content)).toBe(true);
+    expect(ids(state)).toContain('summon:card_portal');
+    // Every slot filled: it saves for 10-pulls.
+    for (const id of ['rusty_brute', 'militia_picket', 'alley_cutpurse']) own(state, id);
+    state.cards.loadouts.fighting.supports = ['rusty_brute', 'militia_picket', 'alley_cutpurse'];
+    const full = placeBestWorkers(state, content);
+    expect(wantsCardsNow(full, content)).toBe(false);
+    expect(ids(full)).not.toContain('summon:card_portal');
+    expect(ids(full)).toContain('summon:card_portal:10');
+  });
+
+  it('aims the Focus Portal at the one item type it is missing, unless the wishlist already does', () => {
+    const state = freshState();
+    const kind = 'bow';
+    for (const card of content.cards)
+      if (card.item.kind !== kind) own(state, card.id, { stars: 6 });
+    state.cards.wishlist = [];
+    const choice = focusChoice(state, content, new Set());
+    expect(choice.kind).toBe(kind);
+    expect(choice.value).toBeGreaterThan(choice.cardValue);
+    // The wishlist marks the missing bows: every Card Portal pull of their rarities goes to them.
+    expect(focusChoice(markWishlist(state, content), content, new Set()).kind).toBeNull();
+  });
+});
+
+describe('sim player: expeditions', () => {
+  it('sends an idle card to the place of its element, keeps guards home, collects finished trips', () => {
+    const state = freshState();
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
+    own(state, 'rusty_brute'); // a fire striker, idle
+    own(state, 'bronze_forgehand'); // a guard: kept home for the team
+    const sent = runExpeditions(state, content, 1);
+    expect(sent.state.expeditions.trips).toEqual([
+      { cardId: 'rusty_brute', placeId: 'ember_catacombs', hours: 1, elapsedSeconds: 0 },
+    ]);
+    const done = cloneState(sent.state);
+    done.expeditions.trips[0]!.elapsedSeconds = 3600;
+    const back = runExpeditions(done, content, 1);
+    expect(back.income.trips).toBe(1);
+    expect(back.income.materials).toBeGreaterThan(0);
+    expect(back.state.expeditions.completed).toBe(1);
+  });
+});
+
+describe('sim player: Ascension challenges', () => {
+  const real = loadContent();
+  /** After a first Ascension, with a run worth ascending. */
+  const ready = (): GameState => {
+    const state = freshState();
+    state.prestigeCount = 1;
+    state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'frostspire_vault'];
+    state.mastery.harvested['oak_gem'] = new Decimal(1e20);
+    return state;
+  };
+
+  it('starts the challenge whose target its team already wins, else ascends plainly', () => {
+    const run = ascendOrChallenge(ready(), withDps(1e9, real));
+    expect(run.ok && run.state.ascensionChallenges.active).toBe(real.challenges[0]!.id);
+    const plain = ascendOrChallenge(ready(), withDps(1e-3, real));
+    expect(plain.ok && plain.state.ascensionChallenges.active).toBeNull();
+    expect(plain.ok && plain.state.prestigeCount).toBe(2);
+  });
+
+  it('climbs the target of a challenge run first', () => {
+    const state = ready();
+    state.ascensionChallenges.active = real.challenges[0]!.id;
+    const target = real.challenges[0]!.targets[0]!;
+    expect(chooseFight(state, real)).toEqual({ id: target.dungeon, difficulty: target.difficulty });
   });
 });
