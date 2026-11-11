@@ -2072,6 +2072,19 @@ export const scrollsSchema = z.strictObject({
   }),
   /** The daily reward, claimed once per local day. */
   daily: scrollLumpSchema,
+  /** The field cache (DESIGN.md §3 Scrolls): a lump paid every `everyMinutes` of play time while a
+   *  dungeon is fought, times the difficulty of the dungeon being fought. */
+  fieldCache: z.strictObject({
+    everyMinutes: z.number().gt(0),
+    summon: positiveDecimal,
+    glamour: positiveDecimal,
+    difficulty: z.strictObject({
+      normal: z.number().gt(0),
+      hard: z.number().gt(0),
+      nightmare: z.number().gt(0),
+      endless: z.number().gt(0),
+    }),
+  }),
   /** The reveal show (DESIGN.md §7 Reveal): from which rarity a face-down card glows, and from
    *  which the best card of a pull gets the full-screen entrance. */
   reveal: z.strictObject({ glowFrom: z.enum(RARITIES), entranceFrom: z.enum(RARITIES) }),

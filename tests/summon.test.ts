@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   Decimal,
   FOCUS_PORTAL_ID,
+  advance,
   claimDaily,
+  fieldCacheScrolls,
   dailyAvailable,
   focusKinds,
   floorFirstWinScrolls,
@@ -201,5 +203,53 @@ describe('reveal show plan', () => {
 
   it('picks the first of equal best cards', () => {
     expect(revealPlan(['epic', 'common', 'epic'], cfg).best).toBe(0);
+  });
+});
+
+describe('the field cache (DESIGN.md §3 Scrolls)', () => {
+  const cache = real.scrolls.fieldCache;
+  const periodMs = cache.everyMinutes * 60_000;
+  const fighting = (difficulty: 'normal' | 'hard' = 'normal'): GameState => {
+    const state = freshState();
+    state.activeDungeonId = 'mossy_cellar';
+    state.combat.floors['mossy_cellar'] = {
+      difficulty,
+      autoChallenge: false,
+      tiers: { normal: { floor: 1, best: 1 }, hard: { floor: 1, best: 0 } },
+    };
+    return state;
+  };
+  const summonOf = (lumps: { resource: string; amount: Decimal }[]): number =>
+    lumps.find((l) => l.resource === 'summon_scroll')?.amount.toNumber() ?? 0;
+
+  it('pays one lump per whole period of play time, however the time is split', () => {
+    const state = fighting();
+    expect(summonOf(fieldCacheScrolls(state, real, 0, periodMs - 1))).toBe(0);
+    expect(summonOf(fieldCacheScrolls(state, real, 0, periodMs))).toBe(cache.summon.toNumber());
+    const whole = summonOf(fieldCacheScrolls(state, real, 0, 3.5 * periodMs));
+    let split = 0;
+    for (let t = 0; t < 3.5 * periodMs; t += 7_000) {
+      split += summonOf(fieldCacheScrolls(state, real, t, Math.min(t + 7_000, 3.5 * periodMs)));
+    }
+    expect(whole).toBe(3 * cache.summon.toNumber());
+    expect(split).toBeCloseTo(whole);
+  });
+
+  it('pays more on a harder tier and nothing with no dungeon fought', () => {
+    const normal = summonOf(fieldCacheScrolls(fighting('normal'), real, 0, periodMs));
+    const hard = summonOf(fieldCacheScrolls(fighting('hard'), real, 0, periodMs));
+    expect(hard).toBeGreaterThan(normal);
+    const idle = fighting();
+    idle.activeDungeonId = null;
+    expect(fieldCacheScrolls(idle, real, 0, 10 * periodMs)).toEqual([]);
+  });
+
+  it('is paid by the game step', () => {
+    const state = fighting();
+    const before = state.resources['summon_scroll'] ?? new Decimal(0);
+    const after = advance(state, real, periodMs, constantRng(0.5)).state;
+    expect(after.resources['summon_scroll']!.sub(before).toNumber()).toBeGreaterThanOrEqual(
+      cache.summon.toNumber(),
+    );
   });
 });

@@ -19,6 +19,7 @@ import { PRODUCTION_JOBS, siteOutput, workSites, type WorkSite } from './product
 import { emptyReport, mergeReports, type TickReport } from './report';
 import type { Rng } from './rng';
 import { cloneState, type GameState } from './state';
+import { payFieldCache } from './summon';
 
 /**
  * Card level-ups happen only when play time reaches a whole multiple of this (DESIGN.md §5).
@@ -149,6 +150,8 @@ function advanceSpan(
   next.stats.playTimeMs += dtMs;
   // Expedition trips are plain timers (DESIGN.md §15).
   advanceTrips(next, seconds);
+  // The field cache: a scroll lump on every whole period of play time spent fighting (DESIGN.md §3).
+  payFieldCache(next, content, fromMs, fromMs + dtMs, modifiers);
 
   // Production (DESIGN.md §4 Workers): every unlocked tree kind and mine type yields its level
   // rate × its worker's power per second, once; each worker strikes its own place (events only)

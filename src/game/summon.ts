@@ -72,6 +72,60 @@ export function payFloorFirstWin(
   return lumps;
 }
 
+// ---- the field cache --------------------------------------------------------------------------
+
+/**
+ * The field cache (DESIGN.md §3 Scrolls): every `everyMinutes` of play time while a dungeon (or the
+ * Glimmer Trial) is fought pays a lump of both scrolls, times the difficulty being fought (the
+ * trial counts as Normal) and `drops.crystalMultiplier`. It is paid on whole multiples of the
+ * period on the play-time clock, so any split of time pays the same; it does not grow with kill
+ * speed. Returns the lumps paid between `fromMs` and `toMs` (`state` is read, not changed).
+ */
+export function fieldCacheScrolls(
+  state: GameState,
+  content: Content,
+  fromMs: number,
+  toMs: number,
+  modifiers: readonly Modifier[] = [],
+): ScrollLump[] {
+  const config = content.scrolls.fieldCache;
+  const dungeonId = state.activeDungeonId;
+  if (dungeonId === null || toMs <= fromMs) return [];
+  const periodMs = config.everyMinutes * 60_000;
+  const caches = Math.floor(toMs / periodMs) - Math.floor(fromMs / periodMs);
+  if (caches <= 0) return [];
+  const isFloorDungeon = content.dungeonById.has(dungeonId);
+  const difficulty: Difficulty = isFloorDungeon
+    ? (state.combat.floors[dungeonId]?.difficulty ?? 'normal')
+    : 'normal';
+  const factor = config.difficulty[difficulty] * caches;
+  return (
+    [
+      [SUMMON_SCROLL, config.summon],
+      [GLAMOUR_SCROLL, config.glamour],
+    ] as const
+  ).map(([resource, base]) => ({
+    resource,
+    amount: statValue('drops.crystalMultiplier', base.mul(factor), modifiers, {
+      dungeon: dungeonId,
+      resource,
+    }),
+  }));
+}
+
+/** Pays the field caches due between `fromMs` and `toMs` into `state` (mutates it). */
+export function payFieldCache(
+  state: GameState,
+  content: Content,
+  fromMs: number,
+  toMs: number,
+  modifiers: readonly Modifier[] = [],
+): ScrollLump[] {
+  const lumps = fieldCacheScrolls(state, content, fromMs, toMs, modifiers);
+  for (const lump of lumps) addResource(state, lump.resource, lump.amount);
+  return lumps;
+}
+
 // ---- the daily reward -------------------------------------------------------------------------
 
 /** A date as the local "YYYY-MM-DD" the save keeps. */

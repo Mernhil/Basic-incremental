@@ -235,6 +235,8 @@ export {
 export {
   floorFirstWinScrolls,
   payFloorFirstWin,
+  fieldCacheScrolls,
+  payFieldCache,
   localDay,
   dailyAvailable,
   claimDaily,

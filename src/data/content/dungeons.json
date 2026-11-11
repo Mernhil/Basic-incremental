@@ -29,10 +29,10 @@
       "art": "root_warden",
       "weakness": "fire",
       "resistance": "nature",
-      "hp": "45000",
+      "hp": "70000",
       "hpBars": 5,
       "attack": {
-        "damage": "61",
+        "damage": "95",
         "intervalSeconds": 3
       }
     },
@@ -61,8 +61,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 3490,
-          "max": 5250
+          "min": 5430,
+          "max": 8170
         }
       ],
       "extraMaterials": [],
@@ -259,10 +259,10 @@
       "name": "Storm Roc",
       "weakness": "earth",
       "resistance": "storm",
-      "hp": "800000000",
+      "hp": "1500000000",
       "hpBars": 12,
       "attack": {
-        "damage": "720000",
+        "damage": "1350000",
         "intervalSeconds": 2
       }
     },
@@ -286,8 +286,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 61900000,
-          "max": 93100000
+          "min": 116000000,
+          "max": 174600000
         }
       ],
       "extraMaterials": [
@@ -333,10 +333,10 @@
       "name": "Dawn Hierophant",
       "weakness": "void",
       "resistance": "light",
-      "hp": "3000000000",
+      "hp": "6000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "2700000",
+        "damage": "5400000",
         "intervalSeconds": 2
       }
     },
@@ -360,8 +360,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 233000000,
-          "max": 350000000
+          "min": 466000000,
+          "max": 700000000
         }
       ],
       "extraMaterials": [
@@ -407,10 +407,10 @@
       "name": "The Unmade King",
       "weakness": "light",
       "resistance": "void",
-      "hp": "6000000000",
+      "hp": "20000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "5410000",
+        "damage": "18000000",
         "intervalSeconds": 2
       }
     },
@@ -434,8 +434,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 465000000,
-          "max": 696000000
+          "min": 1550000000,
+          "max": 2320000000
         }
       ],
       "extraMaterials": [

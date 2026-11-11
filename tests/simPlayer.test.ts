@@ -356,7 +356,7 @@ describe('sim player: floor Challenges and the team of four', () => {
     // (No guard here: the team is the damage team.)
     const state = withAutoChallenge(atBossWall(), true);
     delete state.cards.owned['bronze_forgehand'];
-    const close = withBossAttack(real, 'mossy_cellar', 200, 2);
+    const close = withBossAttack(real, 'mossy_cellar', 170, 2);
     expect(margin(state, close)).toBeGreaterThan(CHALLENGE_TRY_MARGIN);
     expect(margin(state, close)).toBeLessThan(CHALLENGE_WIN);
     const tried = chooseAutoChallenge(state, close, 1000, null);
