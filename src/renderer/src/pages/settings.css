@@ -413,3 +413,32 @@
   animation-iteration-count: 1 !important;
   transition-duration: 1ms !important;
 }
+
+/* Credits (UI_RULES §2 Settings): one row per asset pack, required credits first */
+.set-credits__lead {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.set-credits__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  max-height: 220px;
+  overflow: auto;
+  display: grid;
+  gap: 8px;
+}
+.set-credits__row {
+  display: grid;
+  gap: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+.set-credits__row[data-required='true'] b {
+  color: var(--px-gold);
+}
+.set-credits__licence,
+.set-credits__url {
+  color: var(--px-muted);
+}

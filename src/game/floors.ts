@@ -342,8 +342,7 @@ export function floorSpec(
   // Each difficulty has its own waves (Normal keeps the dungeon's own seed).
   const seed = seedOf(dungeon.id) + DIFFICULTIES.indexOf(difficulty) * 7919;
   if (kind === 'miniboss') {
-    const type =
-      dungeon.enemies[Math.floor(floor / config.miniBossEvery) % dungeon.enemies.length]!;
+    const type = dungeon.miniBoss;
     const share = scale * config.miniBossHpShare;
     const hp = part(bossHp, share, config.miniBossHpShare);
     return {
@@ -354,7 +353,7 @@ export function floorSpec(
       enemies: [
         {
           id: type.id,
-          name: `${config.miniBossPrefix} ${type.name}`,
+          name: type.name,
           kind: 'miniboss',
           hp,
           dropScale: share,

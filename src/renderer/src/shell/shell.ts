@@ -102,6 +102,8 @@ export interface Shell {
 export function createShell(opts: {
   /** How a currency counts in coins (Money), or null for a plain number (DESIGN.md §3 Coins). */
   coins?: (id: string, amount: Decimal) => CoinAmount | null;
+  /** The picture of a coin of the ladder (its still), for the Money chip. */
+  coinArt?: (coinId: string) => string;
   version: string;
   currencies: Currency[];
   levelTip: TipContent;
@@ -251,7 +253,16 @@ export function createShell(opts: {
         const item = currencyItems.get(id);
         const label = item?.querySelector<HTMLElement>('.shell-currency__name');
         if (label && label.textContent !== coin.coin.name) label.textContent = coin.coin.name;
-        if (item && item.dataset['coin'] !== coin.coin.id) item.dataset['coin'] = coin.coin.id;
+        if (item && item.dataset['coin'] !== coin.coin.id) {
+          item.dataset['coin'] = coin.coin.id;
+          const glyph = currencyGlyphs.get(id);
+          const art = opts.coinArt?.(coin.coin.id);
+          if (glyph && art) {
+            glyph.innerHTML = art;
+            // the coins that fly to this chip spin (stage/fly.ts)
+            glyph.dataset['spin'] = `money-${coin.coin.id}`;
+          }
+        }
       }
     }
   });

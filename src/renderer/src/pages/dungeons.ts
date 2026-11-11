@@ -289,7 +289,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       label.setAttribute('role', 'rowheader');
       label.append(
         h('b', '', DUEL_COPY.stageFloor(stage.floor)),
-        h('span', '', stage.kind === 'boss' ? d.boss.name : COPY.dungeons.miniBoss),
+        h('span', '', stage.kind === 'boss' ? d.boss.name : d.miniBoss.name),
       );
       row.append(label);
       for (const tier of STAR_DIFFICULTIES) row.append(cell(d, tier, stage.floor));

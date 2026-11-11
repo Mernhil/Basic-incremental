@@ -1,5 +1,5 @@
 import type { Resource } from '../../../data';
-import { spriteImage } from '../art/pixel/sprites';
+import { animatedSpriteHtml, spriteImage } from '../art/pixel/sprites';
 
 /**
  * Resource icons, in ONE place (DESIGN.md §11). Every resource has a swappable icon id; the
@@ -45,18 +45,23 @@ const V = (name: string, fallback: string): string => `var(--res-${name},${fallb
 
 /**
  * Pixel icons (32 x 32, `hand/res-*.png`, user-approved 2026-11-09): Money is a coin stack, the Summon
- * Crystal a clean blue shard cluster, the Glamour Crystal a pink gem cluster. Starlight stays a
+ * and Glamour Crystals the pack's floating sparkle gem, blue and pink (the loop plays while the
+ * crystal glows). Starlight stays a
  * placeholder until its set is drawn.
  */
 const ICON_MARKUP: Partial<Record<ResourceIconId, string>> = {
   coin: px('res-money'),
-  'crystal-summon': px('res-summon'),
-  'crystal-glamour': px('res-glamour'),
+  'crystal-summon': px('res-summon') + animatedSpriteHtml('res-summon', 1, 'bi-res-spin'),
+  'crystal-glamour': px('res-glamour') + animatedSpriteHtml('res-glamour', 1, 'bi-res-spin'),
   starlight:
     `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">` +
     `<path d="M12 2.5l2.2 7.3 7.3 2.2-7.3 2.2-2.2 7.3-2.2-7.3L2.5 12l7.3-2.2z" fill="${V('starlight', '#f3dc9a')}"/>` +
     `</svg>`,
 };
+
+/** A coin of the ladder (`money-<id>`, 16 x 16 at 2x in the 32 box): its still, for the header. */
+export const moneyCoinArt = (coinId: string): string =>
+  `<svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">${spriteImage(`money-${coinId}`, 0, 0, 32, 32, 'bi-res')}</svg>`;
 
 /** The placeholder drawing for an icon id, or null when the id is drawn elsewhere (gems). */
 export const iconMarkup = (id: ResourceIconId): string | null => ICON_MARKUP[id] ?? null;

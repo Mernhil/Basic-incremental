@@ -705,7 +705,23 @@ export const dungeonSchema = z.strictObject({
    * The normal enemies of the dungeon's waves (DESIGN.md §6 Normal enemies). `hpWeight` sets how
    * a wave's HP is shared among its enemies, so each type has its own HP and purse.
    */
-  enemies: z.array(z.strictObject({ id, name, hpWeight: z.number().gt(0).default(1) })).min(1),
+  enemies: z
+    .array(
+      z.strictObject({
+        id,
+        name,
+        hpWeight: z.number().gt(0).default(1),
+        /** The enemy's picture, `foe-<sprite>` in `art/pixel/hand` (ASSET_RULES section 5); none
+         *  shows the plain labelled placeholder. */
+        sprite: id.optional(),
+      }),
+    )
+    .min(1),
+  /**
+   * The mini-boss of every 10th floor (DESIGN.md section 6, The enemy roster): its own character,
+   * not a copy of a normal enemy. It fights with the mini-boss shares of `combat.json` `floors`.
+   */
+  miniBoss: z.strictObject({ id, name, sprite: id.optional() }),
   /**
    * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
    * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
@@ -717,6 +733,8 @@ export const dungeonSchema = z.strictObject({
     name,
     /** Which boss drawing to use; a boss without one shows a plain labelled placeholder. */
     art: z.enum(BOSS_ARTS).optional(),
+    /** A boss picture cut from an asset pack (`foe-<sprite>`), used when there is no `art`. */
+    sprite: id.optional(),
     /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
     weakness: z.enum(ELEMENTS),
     resistance: z.enum(ELEMENTS),
@@ -1029,7 +1047,7 @@ export const combatSchema = z.strictObject({
    * dungeon's boss: floor `f` of `n` is worth `hpGrowth^(f - n)` of the boss's HP and attack. A
    * normal floor is a wave of `waveSize` enemies sharing `waveHpShare` of that HP and attacking
    * for `waveAttackShare` of that attack; every `miniBossEvery`-th floor holds a mini-boss (one of
-   * the dungeon's enemies, named with `miniBossPrefix`) with the mini-boss shares; the last floor
+   * the dungeon's `miniBoss` character) with the mini-boss shares; the last floor
    * holds the boss itself. An enemy's drops are the boss's, scaled by its share of the boss's HP.
    */
   floors: z.strictObject({
@@ -1042,7 +1060,8 @@ export const combatSchema = z.strictObject({
     miniBossEvery: z.number().int().min(2),
     miniBossHpShare: z.number().gt(0).max(1),
     miniBossAttackShare: z.number().gt(0),
-    miniBossPrefix: z.string().min(1),
+    /** Unused since the mini-boss became its own character (`dungeons.json` `miniBoss`). */
+    miniBossPrefix: z.string().min(1).optional(),
     /**
      * Deeper pays more (DESIGN.md §6): on top of following HP, an enemy's Money purse is
      * multiplied by this for every floor it stands below the first (the boss on floor `n` pays
@@ -1899,6 +1918,22 @@ export const coinSchema = z.strictObject({
 export type Coin = z.output<typeof coinSchema>;
 
 /**
+ * An asset pack the game uses (ASSET_RULES.md section 5): its name, author, itch.io link (empty
+ * when the pack does not give it), the licence in one line and what it is used for. Settings >
+ * Help > Credits lists them, the ones whose licence requires credit first.
+ */
+export const creditSchema = z.strictObject({
+  id,
+  name,
+  author: z.string(),
+  url: z.string(),
+  licence: z.string().min(1),
+  creditRequired: z.boolean(),
+  usedFor: z.string().min(1),
+});
+export type Credit = z.output<typeof creditSchema>;
+
+/**
  * A bond (DESIGN.md §15 Bonds): two specific cards in the same loadout unlock a small named bonus.
  * Content of the table update (save format 27); the rule is not built yet.
  */
@@ -2114,6 +2149,7 @@ export const contentSchemas = {
   enhancements: enhancementsSchema,
   upgrades: upgradesFileSchema,
   training: z.array(trainingSchema).min(1),
+  credits: z.array(creditSchema).min(1),
   coins: z
     .array(coinSchema)
     .min(1)
