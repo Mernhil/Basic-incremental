@@ -2108,7 +2108,15 @@ export function progressOf(
   };
 }
 
-/** How often the fight target is re-chosen without a kill, in seconds. */
+/** Where the player fights: dungeon, tier and floor (or the trial), as one text. */
+function whereFighting(state: GameState, content: Content): string {
+  const dungeon = state.activeDungeonId ? content.dungeonById.get(state.activeDungeonId) : null;
+  if (!dungeon) return state.activeDungeonId ?? '-';
+  const at = floorPosition(state, dungeon);
+  return `${dungeon.id}:${at.difficulty}:${at.floor}`;
+}
+
+/** How often the fight target is re-chosen without a move, in seconds. */
 const RECHOOSE_SECONDS = 300;
 /** How often the ascension rule is checked, in seconds. */
 const ASCEND_CHECK_SECONDS = 60;
@@ -2233,6 +2241,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
           IDLE_AWAKE_SECONDS - (t % DAY_SECONDS),
         )
       : Math.min(t < LATE_FROM_HOURS * 3600 ? early : late, total - t);
+    const before = whereFighting(state, content);
     const { state: next, report } = advance(state, content, dt * 1000, rng);
     state = next;
     if (state.activeDungeonId) {
@@ -2245,8 +2254,10 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     sinceChoose += dt;
     sinceAscendCheck += dt;
     sinceCheckin += dt;
+    // A kill that moves the player (a floor pushed) is a new place to choose from; a boss farmed
+    // again and again is not, or a farm with overflow would re-choose every step.
     if (
-      report.bossKills > 0 ||
+      whereFighting(state, content) !== before ||
       report.knockouts > 0 ||
       report.trialAttempts > 0 ||
       report.cleared.length > 0
