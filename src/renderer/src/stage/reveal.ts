@@ -5,6 +5,7 @@ import { revealSound, type RevealView } from '../pages/summonModel';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
 import { reducedMotion } from './motion';
+import { dealIn } from '../table/motion';
 import './reveal.css';
 
 /**
@@ -14,7 +15,9 @@ import './reveal.css';
  * jumps to its real colour, and each flips inside its frame. Click (or Space / Enter) reveals the
  * next in `plan.order`; the best card of a pull of several comes last with a full-screen
  * entrance first. Skip all reveals the rest at once; Done closes. Reduced motion keeps the same
- * steps with no animation.
+ * steps with no animation. The cards are dealt out of the portal one by one with the table's
+ * motion E tokens (table update 9c, UI_RULES.md §2 "The reveal show's deal"); the look of the show
+ * (swirl, orbs, glow, entrance) is still the user's pick, and lives in this file and reveal.css.
  */
 
 export interface RevealOptions {
@@ -263,7 +266,13 @@ export function showReveal(opts: RevealOptions): void {
   skip.addEventListener('click', skipAll);
   done.addEventListener('click', close);
   // the portal swirls first, then the first card can be revealed
-  window.setTimeout(() => overlay.classList.add('is-ready'), still ? 0 : 700);
+  window.setTimeout(
+    () => {
+      overlay.classList.add('is-ready');
+      dealIn(slots, { from: swirl.getBoundingClientRect() });
+    },
+    still ? 0 : 700,
+  );
   queueMicrotask(() => skip.focus());
 }
 
