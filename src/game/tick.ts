@@ -3,6 +3,8 @@ import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels }
 import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { bondsDue, settleBonds } from './bonds';
+import { advanceTrips } from './expeditions';
 import { settleChallenges } from './challenges';
 import { autobuyDue, settleAutobuyers } from './autobuyers';
 import { recordLuckyStrikes } from './lucky';
@@ -74,6 +76,7 @@ export function advance(
     settleDepth(current, content);
     settleAutobuyers(current, content);
     settleAccount(current, content, report);
+    settleBonds(current, content);
     settleAchievements(current, content, report);
     remaining -= until;
   }
@@ -132,6 +135,7 @@ function levelUpDue(
     masteryDue(ahead, content) ||
     depthDue(ahead, content) ||
     autobuyDue(ahead, content) ||
+    bondsDue(ahead, content) ||
     accountLevelDue(ahead, content) ||
     achievementsDue(ahead, content)
   );
@@ -151,6 +155,8 @@ function advanceSpan(
   const modifiers = collectModifiers(state, content);
   const fromMs = state.stats.playTimeMs;
   next.stats.playTimeMs += dtMs;
+  // Expedition trips are plain timers (DESIGN.md §15).
+  advanceTrips(next, seconds);
 
   // Production (DESIGN.md §4 Workers): every unlocked tree kind and mine type yields its level
   // rate × its worker's power per second, once; each worker strikes its own place (events only)

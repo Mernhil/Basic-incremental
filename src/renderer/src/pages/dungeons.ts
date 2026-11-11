@@ -15,7 +15,7 @@ import {
   isDungeonUnlocked,
   loadoutHealth,
   secondsPerKill,
-  setActiveDungeon,
+  pickDungeon,
   setDifficulty,
   setFloorMode,
   trialRewards,
@@ -614,7 +614,7 @@ export function createDungeonsPage(page: HTMLElement, ctx: StagePageContext): { 
       btn.dataset.key = `fight-${entry.id}`;
       btn.setAttribute('aria-label', COPY.dungeons.fightLabel(entry.name));
       btn.addEventListener('click', () => {
-        const result = setActiveDungeon(ctx.state(), content, entry.id);
+        const result = pickDungeon(ctx.state(), content, entry.id);
         if (!result.ok) return;
         ctx.apply(result.state);
         render();

@@ -6,6 +6,7 @@ import { advanceChunked } from './tick';
 import type { CardDrop, TierUp } from './report';
 import { xpToNextLevel } from './cards';
 import { settleAchievements } from './achievements';
+import { advanceTrips } from './expeditions';
 import { cloneState, type GameState } from './state';
 
 /** Base offline cap (8 hours). The offline.capHours modifiers can raise it. */
@@ -87,6 +88,8 @@ export function simulateOffline(
   });
   // The session itself counts (Night Owl), then whatever it earned unlocks.
   const recorded = cloneState(result.state);
+  // Expedition trips run through all of the time away, outside the cap (DESIGN.md §15).
+  advanceTrips(recorded, (elapsedMs - simulatedMs) / 1000);
   recorded.stats.longestOfflineMs = Math.max(recorded.stats.longestOfflineMs, simulatedMs);
   const unlocked = settleAchievements(recorded, content);
   result.state = recorded;

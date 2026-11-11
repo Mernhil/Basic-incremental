@@ -10,6 +10,7 @@ import { upgradeModifiers } from './upgrades';
 import { trainingModifiers } from './training';
 import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
+import { bondModifiers } from './bonds';
 import { challengeModifiers, restrictModifiers, restrictedView } from './challenges';
 
 /**
@@ -34,6 +35,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'upgrade',
   /** Elements in combat: weakness, resistance and matching workers (DESIGN.md §6). */
   'element',
+  /** Bonds: a named pair of cards at work together (DESIGN.md §15). */
+  'bond',
   /** Ascension challenges: a run's rule and the rewards earned (DESIGN.md §15). */
   'challenge',
 ] as const;
@@ -227,6 +230,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // The loadout's elements against each boss.
   out.push(...elementModifiers(view, content));
+
+  // Named pairs of cards at work together.
+  out.push(...bondModifiers(state, content));
 
   // Ascension challenges: rewards earned, the active rule's penalties, Training taken away.
   out.push(...challengeModifiers(state, content));

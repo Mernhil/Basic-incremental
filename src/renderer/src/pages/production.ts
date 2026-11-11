@@ -55,6 +55,7 @@ import {
   type ProductionRow,
 } from './productionModel';
 import { shelfChips } from './shelfModel';
+import { createPresetsPanel, type Panel } from './tablePanels';
 import './production.css';
 
 /**
@@ -231,6 +232,7 @@ export function createProductionPage(
   const refs = new Map<string, RowRef>();
   const bands = {} as Record<ProductionJob, BandRef>;
   const toolPanels = {} as Record<ProductionJob, ToolLinesPanel>;
+  const presetPanels = {} as Record<ProductionJob, Panel>;
   const refKey = (job: ProductionJob, kind: number): string => `${job}:${kind}`;
 
   function buildBand(job: ProductionJob): BandRef {
@@ -267,7 +269,9 @@ export function createProductionPage(
       sound: ctx.sound,
     });
     toolPanels[job] = tools;
-    el.append(top, head, list, tools.el, flashEl);
+    const presets = createPresetsPanel(ctx, job);
+    presetPanels[job] = presets;
+    el.append(top, presets.el, head, list, tools.el, flashEl);
     const view = productionStageView(ctx.state(), content, job);
     return { el, rate, slots, list, flash: flashEl, view };
   }
@@ -620,7 +624,10 @@ export function createProductionPage(
       build(rowsByJob, focusKey);
     }
     refreshRows(rowsByJob, mods);
-    for (const job of PRODUCTION_JOBS) toolPanels[job].update();
+    for (const job of PRODUCTION_JOBS) {
+      toolPanels[job].update();
+      presetPanels[job].update();
+    }
     forge.update();
     placePicker();
     shelf.update();
