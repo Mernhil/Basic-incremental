@@ -41,7 +41,7 @@ A weapon circle skill (`account.json` `circles`) is added to the list only while
 - `computeStat(stat, base, modifiers, context)` returns the value plus the modifiers that applied, in order, for tooltip breakdowns.
 - `statValue(...)` returns only the value.
 - Game helpers that already use it: `producerRate`, `curvePrice` (mine and tree levels), `treeUnlockCost`, `baseDamage`, `damageStat` / `effectiveDamage`, `bossMaxHp`, `effectiveDrops`, `burstStats`, `trialRewards`, `offlineCapMs`, `loadoutCostCap`, `cardDropChance`, `fightingXpPerKill` / `fightingXpPerSecond` / `productionXpPerUnit` (`xp.card`), `starUpCost` / `tierUpCost` (`cost.multiplier`).
-- Prices: exponential prices read `cost.growth` for the growth factor (never below 1), then every price is scaled by `cost.multiplier` (base 1, never below 0) and rounded up. Both get the job, producer and resource in their context.
+- Prices: exponential prices read `cost.growth` for the growth factor: its modifiers act on the part above 1 (a −10% cut turns ×1.2 into ×1.18) and together take at most half of it (`effectiveGrowth`, `MAX_GROWTH_CUT`), so a price always grows; then every price is scaled by `cost.multiplier` (base 1, never below 0) and rounded up. Both get the job, producer and resource in their context.
 
 ## Adding a stat
 
