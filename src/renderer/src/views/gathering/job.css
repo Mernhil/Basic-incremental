@@ -1,0 +1,507 @@
+/* Package 9b: the Logging and Mining views (mockups 4c, 4e): a large plate per place on the left,
+   the side column (tool lines, workers, upgrades) on the right. Panels and buttons come from the
+   shared pixel recipe (theme/frames.css); tiles at whole device scales (ASSET_RULES.md §5). */
+
+.gv-job {
+  --pp-job: var(--bi-chrome-logging, var(--bi-chrome-accent));
+  --pp-rarity: #9aa4b4;
+}
+.gv-job--mining {
+  --pp-job: var(--bi-chrome-mining, var(--bi-chrome-accent));
+}
+.gv-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 400px);
+  gap: 20px;
+  align-items: start;
+}
+.gv-places {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+.gv-total {
+  position: absolute;
+  top: -50px;
+  left: 120px;
+  margin: 0;
+  font-size: 16px;
+  color: var(--bi-on-table, var(--bi-frame-ink-muted));
+}
+.gv-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(228px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.gv-plate {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  min-width: 0;
+}
+.gv-plate__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+.gv-tile {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+.gv-tile__art {
+  /* the 64 art px of the tile at a whole device scale, nearest to 112 CSS px (ASSET_RULES.md §5) */
+  --one: calc(64px / var(--dpr));
+  --tile: max(var(--one), round(nearest, 112px, var(--one)));
+  --art-px: calc(var(--tile) / 64);
+  width: var(--tile);
+  aspect-ratio: 1;
+  animation: gv-bob 4.2s steps(1, end) var(--d, 0s) infinite;
+}
+.gv-tile__art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.gv-tile__art.is-harvest {
+  animation: gv-hop 0.4s steps(1, end);
+}
+.gv-plate.is-locked .gv-tile__art {
+  filter: grayscale(1) brightness(0.65);
+  animation: none;
+}
+.gv-plate__id {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.gv-plate__name {
+  font-size: 15px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.gv-plate__level {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-plate__rate {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.gv-plate__value {
+  font-size: 24px;
+  color: var(--bi-chrome-accent);
+}
+.gv-plate__unit {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-plate__note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-plate__x2,
+.gv-depth__text {
+  justify-self: end;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-plate__lucky {
+  position: absolute;
+  top: calc(var(--fs-sm) * -1);
+  right: 12px;
+  z-index: 1;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--px-gold-ink);
+  background: var(--px-gold);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  animation: gv-lucky 0.9s steps(2, end) infinite alternate;
+}
+.gv-plate__lucky[hidden] {
+  display: none;
+}
+.gv-depth {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 8px;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink);
+}
+.gv-depth__name {
+  font-weight: 700;
+}
+.gv-depth .pp-dep {
+  grid-column: 1 / -1;
+}
+.gv-plate.is-wave {
+  animation: gv-wave 0.5s ease-out;
+}
+.pp-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* the segmented bar to the next ×2, and the depth bar */
+.pp-seg {
+  display: flex;
+  gap: var(--fs-sm);
+  height: calc(var(--fs-sm) * 4);
+  background: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.pp-seg i {
+  flex: 1;
+  background: var(--px-lo);
+}
+.pp-seg i.is-on {
+  background: var(--bi-chrome-accent);
+}
+.pp-dep {
+  height: calc(var(--fs-sm) * 3);
+  background: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.pp-dep i {
+  display: block;
+  height: 100%;
+  background: color-mix(in srgb, var(--bi-chrome-accent) 55%, #8a5cff);
+}
+
+/* the worker block: a mini card (the item's art on the rarity's colour), name, power, gauge */
+.gv-worker {
+  padding: 8px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  gap: 5px;
+}
+.gv-worker .pp-w__btn {
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-areas:
+    'art name'
+    'art sub';
+  column-gap: 10px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.gv-worker .pp-w__btn:hover {
+  background: transparent;
+}
+.gv-worker .pp-w__btn:focus-visible {
+  outline-offset: 4px;
+}
+.pp-w__art {
+  grid-area: art;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 72px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--pp-rarity) 30%, var(--px-lo));
+  box-shadow: 0 0 0 var(--fs-sm) var(--pp-rarity);
+}
+.pp-w__art svg,
+.pp-w__art img {
+  width: 90%;
+  height: 90%;
+  image-rendering: pixelated;
+}
+.gv-worker.is-empty {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.gv-worker.is-empty .pp-w__btn {
+  display: block;
+  padding: 10px;
+  border: var(--fs-sm) dashed var(--px-muted);
+  text-align: center;
+}
+.gv-worker.is-empty .pp-w__art {
+  display: none;
+}
+.pp-w__gl {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.pp-w__gl[hidden] {
+  display: none;
+}
+.gv-worker .pp-w__sub,
+.gv-worker .pp-w__name {
+  white-space: normal;
+}
+
+/* the buy button: the shared recipe, this layout */
+.gv-buy {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px 12px 11px;
+  animation: none;
+}
+.gv-buy .buy-btn__top {
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.gv-buy .buy-btn__price {
+  font-family: var(--bi-font-display);
+  font-variant-ligatures: none;
+  font-weight: 600;
+  font-size: 17px;
+}
+.gv-buy .buy-btn__preview {
+  font-size: 11.5px;
+  opacity: 0.9;
+}
+.gv-buy .buy-btn__fill {
+  height: var(--fs-sm);
+}
+
+/* the worker picker: a panel over the plates */
+.gv-pick {
+  display: grid;
+  gap: 10px;
+  padding: 12px 14px;
+}
+.gv-pick[hidden] {
+  display: none;
+}
+.gv-pick__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.gv-pick__actions {
+  display: flex;
+  gap: 8px;
+}
+.gv-pick .pp-pick__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 8px;
+}
+
+/* the side column */
+.gv-side {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.gv-panel {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px 16px;
+}
+.gv-panel__title {
+  margin: 0;
+  font-size: 19px;
+  color: var(--bi-chrome-accent);
+}
+.gv-ready {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-ready:empty {
+  display: none;
+}
+.gv-slots__row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.gv-slots {
+  margin: 0;
+  font-weight: 700;
+}
+.gv-slots__rule,
+.gv-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gv-chips {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.gv-chip {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.gv-chip[aria-disabled='true'] {
+  cursor: default;
+}
+
+/* a job's tool lines, compact: name and level, the effect, the buy button at the right */
+.gv-panel .tr,
+.fv-panel .tr {
+  margin: 0;
+}
+:is(.gv-panel, .fv-panel) .tr__head {
+  align-items: baseline;
+}
+:is(.gv-panel, .fv-panel) .tr__head .dp-col__title {
+  margin: 0;
+  font-family: var(--bi-font-display);
+  font-size: 19px;
+  color: var(--bi-chrome-accent);
+}
+:is(.gv-panel, .fv-panel) :is(.dp-col__note, .tr__track, .tr__togo) {
+  display: none;
+}
+:is(.gv-panel, .fv-panel) .tr__row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    'who buy'
+    'mid buy';
+  gap: 2px 12px;
+  padding: 6px 0;
+  border: 0;
+  border-bottom: var(--fs-sm) solid var(--px-edge);
+}
+:is(.gv-panel, .fv-panel) .tr__row:last-child {
+  border-bottom: 0;
+}
+:is(.gv-panel, .fv-panel) .tr__who {
+  grid-area: who;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+:is(.gv-panel, .fv-panel) .tr__mid {
+  grid-area: mid;
+}
+:is(.gv-panel, .fv-panel) .tr__row > .buy-btn {
+  grid-area: buy;
+  min-width: 128px;
+  width: auto;
+}
+
+/* tiles bob and hop by whole art pixels; nothing is scaled or rotated */
+@keyframes gv-bob {
+  50% {
+    translate: 0 calc(var(--art-px) * -1);
+  }
+}
+@keyframes gv-hop {
+  30%,
+  60% {
+    translate: 0 calc(var(--art-px) * -3);
+  }
+}
+@keyframes gv-wave {
+  35% {
+    translate: 0 -4px;
+    filter: brightness(1.25);
+  }
+}
+@keyframes gv-lucky {
+  to {
+    filter: brightness(1.35);
+  }
+}
+.pp-flash {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+}
+.pp-flash.st-flash {
+  animation: gv-flash 0.26s ease-out;
+}
+@keyframes gv-flash {
+  0% {
+    opacity: 0.4;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 1099px) {
+  .gv-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root:not([data-motion='full'])
+    :is(.gv-tile__art, .gv-plate.is-wave, .gv-plate__lucky, .pp-flash.st-flash) {
+    animation: none;
+  }
+}
+:root[data-motion='reduced']
+  :is(.gv-tile__art, .gv-plate.is-wave, .gv-plate__lucky, .pp-flash.st-flash) {
+  animation: none;
+}
+
+/* the three worker presets, compact: a name field and three small buttons each */
+.gv-workers .tp-presets {
+  padding: 0;
+}
+.gv-workers .tp-presets__row {
+  display: grid;
+  gap: 6px;
+}
+.gv-workers .tp-label {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.gv-workers .tp-preset {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  gap: 6px;
+}
+.gv-workers .tp-preset__name {
+  width: auto;
+}
+.gv-workers .tp-preset .button {
+  padding: 3px 8px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.gv-workers .tp-status {
+  min-height: 0;
+  font-size: 12px;
+}
+
+/* an empty place: the call to put a card there, name over reason */
+.gv-worker.is-empty .pp-w__btn {
+  display: grid;
+  gap: 2px;
+}
+.gv-worker.is-empty .pp-w__sub {
+  color: var(--bi-frame-ink-muted);
+}

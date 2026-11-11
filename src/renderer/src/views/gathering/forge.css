@@ -1,0 +1,193 @@
+/* Package 9b: the Forge view (mockup 4f): recipes, the recipe being forged with its worker, and
+   the tool lines of both jobs (their compact rows are styled in job.css). */
+
+.fv-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(0, 1.5fr) minmax(340px, 1.3fr);
+  gap: 20px;
+  align-items: start;
+}
+.fv-panel {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 16px;
+  min-width: 0;
+}
+.fv-tools {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.fv-title {
+  margin: 0;
+  font-size: 19px;
+  color: var(--bi-chrome-accent);
+}
+.fv-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.fv-recipes__list {
+  display: grid;
+  gap: 10px;
+}
+.fv-recipe {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  text-align: left;
+  font: inherit;
+  font-size: 12px;
+  color: var(--bi-frame-ink);
+  background: var(--px-lo);
+  border: 0;
+  cursor: pointer;
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.fv-recipe b {
+  font-size: 14px;
+}
+.fv-recipe span {
+  color: var(--bi-frame-ink-muted);
+}
+.fv-recipe.is-on {
+  box-shadow: 0 0 0 var(--fs-sm) var(--bi-chrome-accent);
+}
+.fv-recipe.is-placeholder {
+  cursor: default;
+  opacity: 0.6;
+}
+.fv-recipe:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 3px;
+}
+.fv-recipes__foot {
+  margin-top: 12px;
+}
+.fv-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 6px 0;
+}
+.fv-flow[hidden],
+.fv-bar[hidden],
+.fv-progress[hidden],
+.fv-stock[hidden] {
+  display: none;
+}
+.fv-flow__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.fv-flow__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+}
+.fv-flow__icon svg {
+  width: 100%;
+  height: 100%;
+}
+.fv-flow__op {
+  font-size: 20px;
+  color: var(--bi-chrome-accent);
+}
+.fv-bar {
+  height: calc(var(--fs-sm) * 5);
+  background-color: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.fv-bar i {
+  display: block;
+  height: 100%;
+  background: var(--bi-chrome-accent);
+  /* segment ticks over the fill */
+  -webkit-mask-image: repeating-linear-gradient(
+    90deg,
+    #000 0,
+    #000 calc(4% - var(--fs-sm)),
+    transparent calc(4% - var(--fs-sm)),
+    transparent 4%
+  );
+}
+.fv-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
+}
+.fv-progress__crafts {
+  font-weight: 700;
+  color: var(--bi-frame-ink);
+}
+.fv-worker {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+.fv-worker__art {
+  display: grid;
+  place-items: center;
+  width: 96px;
+  height: 132px;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--pp-rarity, #9aa4b4);
+}
+.fv-worker__art svg,
+.fv-worker__art img {
+  width: 90%;
+  height: 90%;
+  image-rendering: pixelated;
+}
+.fv-worker__art.is-empty {
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.fv-worker__text {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.fv-worker__name {
+  font-size: 16px;
+}
+.fv-pick {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 6px;
+}
+.fv-pick[hidden] {
+  display: none;
+}
+.fv-pick .pp-pick__opt {
+  grid-template-areas: 'name';
+  grid-template-columns: minmax(0, 1fr);
+}
+.fv-stock {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0 0;
+}
+.fv-stock__value {
+  font-weight: 700;
+}
+
+@media (max-width: 1099px) {
+  .fv-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

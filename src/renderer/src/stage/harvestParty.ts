@@ -9,7 +9,7 @@ import './harvestParty.css';
  * or mine as a chip (rarity swatch, name, level and power) with its harvest gauge under it, or an
  * empty cell to put a card to work. A click asks the page to open the worker picker for the row.
  * The page tells it when to strike and burst; it owns only this DOM. Plain working UI in the
- * ledger's chip style: no card art (the one-table redesign brings the cards to the rows).
+ * block style: the item's art on the rarity's colour, a mini card (UI_RULES.md §2 Worker blocks).
  */
 
 const STRIKE_CLASSES = [
@@ -22,7 +22,7 @@ const STRIKE_CLASSES = [
 export interface WorkerCell {
   el: HTMLElement;
   /** Redraws from the row's stage target (null for a locked row: the cell stays empty). */
-  update(target: StageTarget | null, picking: boolean, canAdd: boolean): void;
+  update(target: StageTarget | null, picking: boolean, canAdd: boolean, art?: string): void;
   /** A strike: the chip nudges toward the tile with the pattern's look. */
   strike(look: StrikeLook): void;
   /** The burst moment on the chip. */
@@ -36,7 +36,8 @@ export function createWorkerCell(placeName: string, onPick: () => void): WorkerC
   const btn = document.createElement('button');
   btn.type = 'button';
   btn.className = 'pp-w__btn';
-  const swatch = document.createElement('i');
+  const swatch = document.createElement('span');
+  swatch.className = 'pp-w__art';
   swatch.setAttribute('aria-hidden', 'true');
   const name = document.createElement('b');
   name.className = 'pp-w__name';
@@ -53,16 +54,19 @@ export function createWorkerCell(placeName: string, onPick: () => void): WorkerC
   gauge.setAttribute('aria-valuemax', '100');
   const fill = document.createElement('i');
   gauge.append(fill);
-  el.append(btn, gauge);
+  const gaugeText = document.createElement('span');
+  gaugeText.className = 'pp-w__gl bi-num';
+  el.append(btn, gauge, gaugeText);
 
   let has = false;
+  let artShown = '';
   const set = (node: HTMLElement, text: string): void => {
     if (node.textContent !== text) node.textContent = text;
   };
 
   return {
     el,
-    update(target, picking, canAdd) {
+    update(target, picking, canAdd, art = '') {
       const w = target?.worker ?? null;
       has = Boolean(w);
       // a locked row keeps the cell's column, empty
@@ -73,6 +77,10 @@ export function createWorkerCell(placeName: string, onPick: () => void): WorkerC
       set(name, text.name);
       set(sub, text.sub);
       swatch.dataset['rarity'] = w?.rarity ?? '';
+      if (artShown !== art) {
+        artShown = art;
+        swatch.innerHTML = art;
+      }
       btn.setAttribute(
         'aria-label',
         w
@@ -80,6 +88,7 @@ export function createWorkerCell(placeName: string, onPick: () => void): WorkerC
           : COPY.production.noWorkerLabel(placeName),
       );
       gauge.hidden = !w;
+      gaugeText.hidden = !w;
       if (w && target) {
         const pct = gaugePercent(target.gauge);
         fill.style.width = `${pct}%`;
