@@ -8,7 +8,7 @@
  * corner gems; Prismatic cycles its crystal band through the rainbow, with the shine, twinkles and
  * sparks orbiting just outside. Under reduced motion both are still.
  */
-import type { RankTier } from '../../../data';
+import type { RankTier, Rarity } from '../../../data';
 import { INK } from './kit';
 import { defineLive, liveCanvas, liveMarkup, loadPixels, type LiveLayer } from './pixel/live';
 import { rgbOf } from './pixel/raster';
@@ -59,9 +59,12 @@ export function twinklePx(
   }
 }
 
-function frameLayer(tier: 'gold' | 'prismatic'): (host: HTMLElement) => Promise<LiveLayer> {
+function frameLayer(
+  name: string,
+  tier: 'gold' | 'prismatic',
+): (host: HTMLElement) => Promise<LiveLayer> {
   return async (host) => {
-    const s = sprite(`frame-${tier}`)!;
+    const s = sprite(name)!;
     const base = await loadPixels(s.url);
     const cv = host.querySelector('canvas')!;
     const ctx = cv.getContext('2d')!;
@@ -148,18 +151,27 @@ function frameLayer(tier: 'gold' | 'prismatic'): (host: HTMLElement) => Promise<
     };
   };
 }
-defineLive('frame-gold', frameLayer('gold'));
-defineLive('frame-prismatic', frameLayer('prismatic'));
+defineLive('frame-gold', frameLayer('frame-gold', 'gold'));
+defineLive('frame-prismatic', frameLayer('frame-prismatic', 'prismatic'));
+// the top frames keep the Gold motion (shine sweep, twinkling corners) on their own pictures
+for (const n of ['mythic', 'void', 'heirloom-mythic', 'heirloom-void'])
+  defineLive(`frame-${n}`, frameLayer(`frame-${n}`, 'gold'));
+
+/** The frame picture for a tier. Mythic and the Heirloom have a Mythic and a Void version, picked
+ *  by the card's side (its rarity), like the item art. */
+export function frameName(tier: RankTier, side?: Rarity): string {
+  if (tier === 'mythic') return side === 'void' ? 'frame-void' : 'frame-mythic';
+  if (tier === 'heirloom') return side === 'void' ? 'frame-heirloom-void' : 'frame-heirloom-mythic';
+  return `frame-${tier}`;
+}
 
 /** The frame markup for a tier, over a 176 x 248 card (its svg viewBox). */
-export function cardFrame(tier: RankTier): string {
-  const name = `frame-${tier}`;
+export function cardFrame(tier: RankTier, side?: Rarity): string {
+  const name = frameName(tier, side);
   const s = sprite(name);
   if (!s) return '';
   const still = spriteImage(name, VX, VY, VW, VH, 'bi-frame__px');
-  if (tier !== 'gold' && tier !== 'prismatic') return still;
+  if (tier === 'wood' || tier === 'bronze' || tier === 'silver') return still;
   // the still sprite stays underneath, so the frame shows before the first tick and when paused
-  return (
-    still + liveMarkup(`frame-${tier}`, VX, VY, VW, VH, liveCanvas('bi-frame__live', s.w, s.h))
-  );
+  return still + liveMarkup(name, VX, VY, VW, VH, liveCanvas('bi-frame__live', s.w, s.h));
 }
