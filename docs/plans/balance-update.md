@@ -26,22 +26,44 @@
 
 ## Interfaces
 
-The foundation package creates these and replaces this section's "planned" shapes with the real names. Every later package reads them from here.
+Built by package 1 (save format 26). This section is exact: every later package learns the state from here. Everything below is exported through `src/game/index.ts`. Nothing reads these fields yet; each package that builds a system starts reading and writing its own.
 
-Planned state, save format 26 (`src/game/state.ts`):
+**Save format 26.** `CURRENT_SAVE_VERSION = 26` in `src/game/save.ts`. Nobody bumps it again in this update (rule 4): a package that needs another field adds it to `state.ts` (type, initial value, `clone*`), to `serializedStateSchema`, `serializeState` and `deserializeState` in `save.ts`, and to `v25ToV26` in `migrations.ts`, then lists it here.
 
-- `production.workers: Record<string, string[]>` — tree or mine id to the card ids working it.
-- `production.harvestGauges: Record<string, BurstGauge>` — tree or mine id to its worker's harvest gauge (replaces the logging and mining entries of `bursts`).
-- `production.tools: Record<string, number>` — tool line id to level; reset on Ascension.
-- `production.depth: Record<string, { layer: number; progress: Decimal }>` — tree or mine id to its layer or age; reset on Ascension.
-- `production.forge: { recipe: string | null; progress: Decimal; worker: string | null }`.
-- `cards.wishlist: string[]` — marked card ids.
-- `combat.stageKills: Record<string, number>`, `combat.stageChests: Record<string, number>` (star levels already paid, 0 to 6) and `combat.overflow: Record<string, boolean>`, all keyed by `stageKey(dungeonId, difficulty, floor)` exported from `src/game/floors.ts`.
-- `automation: { treeLevels: boolean; mineLevels: boolean; reservePercent: number }`.
-- Resource `star_dust` in `resources.json`.
-- Derived, never saved: worker slots (2 plus one per Ascension, up to one per tree and mine, plus second slots from the Starlight shop), skill points (account level plus stage star levels plus achievements), which weapon circles are open (from the tiers of the owned cards of that item type).
+**`GameState` (`src/game/state.ts`), new fields:**
 
-Migration 25 to 26: each production job's main card becomes the worker of that job's first tree or mine; the old harvest gauges move to that worker; `combat.kills[dungeon]` becomes the stage kills of that dungeon's Normal last floor; cards keep the stars they have; everything else starts empty.
+| Field                      | Type                                                                                       | New game                                                                                                                                                             | Ascension (`resetProduction`, `ascend`) |
+| -------------------------- | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `production.workers`       | `Record<string, string[]>`: tree or mine id → card ids working it, in slot order           | `initialWorkers(content)`: each logging and mining start card on its job's first tree / mine, today `{ oak: ['apprentice_feller'], copper_quarry: ['cave_digger'] }` | kept                                    |
+| `production.harvestGauges` | `Record<string, BurstGauge>` (`{ gauge: number; timer: number }`): tree or mine id → gauge | `{}` (missing = empty gauge)                                                                                                                                         | reset to `{}`                           |
+| `production.tools`         | `Record<string, number>`: tool line id → level                                             | `{}` (missing = level 0)                                                                                                                                             | reset to `{}`                           |
+| `production.depth`         | `Record<string, DepthProgress>`: tree or mine id → `{ layer: number; progress: Decimal }`  | `{}` (missing = layer 1, nothing broken); `layer` is 1-based, `progress` is hardness broken on that layer                                                            | reset to `{}`                           |
+| `production.forge`         | `ForgeState`: `{ recipe: string \| null; progress: Decimal; worker: string \| null }`      | `initialForge()` = `{ recipe: null, progress: 0, worker: null }`                                                                                                     | kept                                    |
+| `cards.wishlist`           | `string[]`: marked card ids, in the order marked, owned or not                             | `[]`                                                                                                                                                                 | kept                                    |
+| `combat.stageKills`        | `Record<string, number>`: stage key → kills on that stage, ever                            | `{}`                                                                                                                                                                 | kept                                    |
+| `combat.stageChests`       | `Record<string, number>`: stage key → star levels whose chest is paid, 0..6                | `{}` (missing = 0)                                                                                                                                                   | kept                                    |
+| `combat.overflow`          | `Record<string, boolean>`: stage key → overflow switch on                                  | `{}` (missing = off)                                                                                                                                                 | kept                                    |
+| `automation` (top level)   | `AutomationState`: `{ treeLevels: boolean; mineLevels: boolean; reservePercent: number }`  | `initialAutomation()` = `{ treeLevels: false, mineLevels: false, reservePercent: 0 }`; `reservePercent` is 0..100 of the Money held                                  | kept                                    |
+
+Types and helpers exported from `state.ts`: `DepthProgress`, `ForgeState`, `AutomationState`, `initialForge()`, `initialAutomation()`, `initialWorkers(content)`; `cloneState`, `cloneProduction`, `cloneCombat` and `cloneCards` copy every new container.
+
+**Stage keys (`src/game/floors.ts`).** `stageKey(dungeonId: string, difficulty: Difficulty, floor: number): string` returns `"<dungeonId>:<difficulty>:<floor>"`, for example `"mossy_cellar:normal:10"`. `parseStageKey(key: string): StageRef | null` reads it back as `{ dungeonId, difficulty, floor }` and returns null for anything `stageKey` cannot have written (wrong part count, unknown difficulty, floor not a positive integer without leading zeros). `Difficulty` is `'normal' | 'hard' | 'nightmare' | 'endless'`; stage stars use the first three (DESIGN §6), and the key format accepts `endless` so overflow on the depths can use it if package 3 wants it. The text is saved, so changing it needs a migration.
+
+**Loading a format 26 save (`deserializeState`).** Unknown dungeon ids and keys that are not stage keys are dropped from `stageKills`, `stageChests` and `overflow`; a chest count above 6 becomes 6. Unknown tree and mine ids are dropped from `workers`, `harvestGauges` and `depth`. A worker is dropped when the card is unknown, not owned, of the wrong job (a logging card works trees, a mining card works mines) or already working somewhere else (the first place in save order keeps it); an empty list is dropped. `forge.worker` is kept only for an owned card that works nowhere else. Unknown cards and repeats leave the wishlist. `tools` and `forge.recipe` are kept as saved: there is no content to check them against yet (package 6 adds that check when it adds the content). Slot counts are not enforced on load: they are derived, so package 4 checks them.
+
+**Resource.** `star_dust` in `resources.json`: name "Star Dust", kind `material`, tier 3, starts at 0. As a material it is reset by an Ascension today (`ascend` resets every resource that is not `crystal` or `prestige`), which matches DESIGN §9 as written ("Money and materials start again"); package 2 or 9 changes that only if the design says so.
+
+**Migration 25 to 26 (`v25ToV26` in `src/game/migrations.ts`).** Reads only the save, never the content (snapshots: first tree `oak`, first mine `copper_quarry`, Normal floors 10 / 20 / 30 / 40 / 50 / 60 for the six dungeons).
+
+- `cards.loadouts.logging.main`, if any, becomes `production.workers.oak = [main]`; `cards.loadouts.mining.main` becomes `production.workers.copper_quarry = [main]`. Supports are not moved. A job with no main card gets no worker.
+- `bursts.logging` is copied to `production.harvestGauges.oak` and `bursts.mining` to `production.harvestGauges.copper_quarry`, only when that job got a worker and the gauge is not empty (`gauge` or `timer` above 0).
+- Each `combat.kills[dungeonId] > 0` of the six dungeons becomes `combat.stageKills["<dungeonId>:normal:<last floor>"]`; other ids (the Glimmer Trial) are skipped.
+- `cards` is untouched (stars, tiers, levels, star bars, loadouts) apart from `wishlist: []`.
+- `production.tools = {}`, `production.depth = {}`, `production.forge = { recipe: null, progress: '0', worker: null }`, `combat.stageChests = {}`, `combat.overflow = {}`, `automation = { treeLevels: false, mineLevels: false, reservePercent: 0 }`. No chest counts as paid, so package 3 decides what the star levels earned by migrated kills pay.
+- The old fields stay and the game still reads them: `cards.loadouts.logging` / `.mining` and `bursts.logging` / `.mining` (package 4 removes them and their reads), `combat.kills` and `mastery.bossTiers` (package 3 removes the medals). A package that removes one of them deletes it from `serializedStateSchema` too; the format stays 26, because zod strips unknown keys on parse, so a format 26 save that still holds the removed field loads fine.
+- `tests/fixtures/saves/v25-dev-tools.save.txt` is a real format 25 save written by the 0.5.5 code; `tests/migrations.test.ts` loads it.
+
+**Derived, never saved:** worker slots (2 plus one per Ascension, up to one per tree and mine, plus second slots from the Starlight shop), skill points (account level plus stage star levels plus achievements), which weapon circles are open (from the tiers of the owned cards of that item type), star levels of a stage (from `stageKills` and the kill counts in `combat.json`).
 
 ## Waves and packages
 
