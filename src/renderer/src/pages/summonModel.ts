@@ -248,10 +248,11 @@ export function revealViews(results: readonly PullResult[], content: Content): R
     else if (g.kind === 'duplicate') tags.push(t.duplicate(g.duplicates));
     else if (g.kind === 'shards') tags.push(t.shards(g.shards));
     else if (g.kind === 'copy') tags.push(t.copy(g.copies));
+    else if (g.kind === 'payback') tags.push(t.payback(fmt(g.amount)));
     const gain =
       g.kind === 'new'
         ? 'new'
-        : g.kind === 'duplicate' || g.kind === 'copy'
+        : g.kind === 'duplicate' || g.kind === 'copy' || g.kind === 'payback'
           ? 'copy'
           : g.kind === 'shards'
             ? 'shards'
@@ -263,6 +264,7 @@ export function revealViews(results: readonly PullResult[], content: Content): R
       name:
         content.cardById.get(r.itemId)?.name ??
         content.cosmeticById.get(r.itemId)?.name ??
+        content.legacySkinById.get(r.itemId)?.skin.name ??
         r.itemId,
       rarity: r.rarity,
       rarityName: rarityName(content, r.rarity),

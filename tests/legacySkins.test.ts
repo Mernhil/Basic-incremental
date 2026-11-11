@@ -82,12 +82,12 @@ describe('legacy skins content', () => {
     ]);
   });
 
-  it('declares the Legacy Gate disabled, priced like the Wardrobe Gate', () => {
-    expect(baseContent.portals.some((p) => p.id === GATE)).toBe(false);
+  it('declares the Legacy Gate open, priced like the Wardrobe Gate', () => {
+    expect(baseContent.portals.some((p) => p.id === GATE)).toBe(true);
     const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
     const wardrobe = baseContent.allPortals.find((p) => p.id === 'wardrobe_gate')!;
     expect(gate.kind).toBe('skins');
-    expect(gate.enabled).toBe(false);
+    expect(gate.enabled).toBe(true);
     expect(gate.cost).toEqual(wardrobe.cost);
     expect(gate.pity).toEqual(wardrobe.pity);
     expect(gate.tenPullGuarantee).toBe(wardrobe.tenPullGuarantee);
@@ -232,11 +232,8 @@ describe('legacyWeaponArt (what a card draws)', () => {
 });
 
 describe('Legacy Gate pulls', () => {
-  it('is not pullable while disabled', () => {
-    expect(pull(withGlamour(100), baseContent, GATE, 1, constantRng(0))).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
+  it('is pullable now that the gate is open', () => {
+    expect(pull(withGlamour(100), baseContent, GATE, 1, constantRng(0)).ok).toBe(true);
   });
 
   it('a new skin becomes owned and is marked new', () => {

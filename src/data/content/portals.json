@@ -810,7 +810,7 @@
     "id": "legacy_gate",
     "name": "Legacy Gate",
     "kind": "skins",
-    "enabled": false,
+    "enabled": true,
     "cost": {
       "resource": "glamour_crystal",
       "single": "300",

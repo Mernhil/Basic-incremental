@@ -17,7 +17,8 @@ import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
 import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
-import { cardFaceProps } from './loadoutCards';
+import { ITEM_VIEWBOX } from '../art/items';
+import { cardFaceProps, weaponArtMarkup } from './loadoutCards';
 import type { PageContext } from './production';
 import {
   handSummary,
@@ -247,6 +248,15 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     spaceHand();
   }
 
+  /** A legacy skin's picture for the reveal and the hand (null for any other item). */
+  function skinPicture(itemId: string): HTMLElement | null {
+    const entry = content.legacySkinById.get(itemId);
+    if (!entry) return null;
+    const box = h('span', 'sm-skin');
+    box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${weaponArtMarkup(entry.weapon, entry.skin.art)}</svg>`;
+    return box;
+  }
+
   function doPull(portalId: string, count: PullCount): void {
     if (busy) return;
     const result = pull(ctx.state(), content, portalId, count, defaultRng);
@@ -263,7 +273,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       face: content.cardById.has(view.itemId) ? cardFaceProps(content, after, view.itemId) : null,
       picture: content.cosmeticById.has(view.itemId)
         ? cosmeticSwatch(content, view.itemId, after.cosmetics.owned[view.itemId]?.level ?? 1)
-        : null,
+        : skinPicture(view.itemId),
     }));
     renderHand();
     showReveal({
@@ -274,7 +284,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       picture: (id) =>
         content.cosmeticById.has(id)
           ? cosmeticSwatch(content, id, after.cosmetics.owned[id]?.level ?? 1)
-          : null,
+          : skinPicture(id),
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
@@ -296,7 +306,10 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   function crestIcon(kind: string): HTMLElement {
     const icon = h('span', 'sm-plate__icon');
     icon.setAttribute('aria-hidden', 'true');
-    icon.innerHTML = svg(navPlaque(kind === 'cosmetics' ? 'wardrobe' : 'summon'), PLAQUE_VIEWBOX);
+    icon.innerHTML = svg(
+      navPlaque(kind === 'cosmetics' || kind === 'skins' ? 'wardrobe' : 'summon'),
+      PLAQUE_VIEWBOX,
+    );
     return icon;
   }
 

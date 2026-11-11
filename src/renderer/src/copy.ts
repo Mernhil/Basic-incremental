@@ -753,6 +753,7 @@ export const COPY = {
     duplicate: (n: number) => `Duplicate (${n})`,
     shards: (n: number) => `+${n} shards`,
     copy: (n: number) => `Copy (${n})`,
+    payback: (amount: string) => `Owned · +${amount} back`,
     byPity: 'Pity',
     byGuarantee: '×10 guarantee',
     hidden: 'Face-down card',
@@ -781,7 +782,7 @@ export const COPY = {
       `${name}${worn ? ', equipped' : ''}${picked ? ', previewing' : ''}`,
     applied: (name: string) => `${name} applied.`,
     failed: 'That skin cannot be worn right now.',
-    none: 'You own no weapon skins yet. Legacy skins come with the Legacy Gate in a later release.',
+    none: 'You own no weapon skins yet. Pull them from the Legacy Gate on the Summon page.',
     level: 'Level',
     hitsEvery: 'Hits every',
   },
@@ -1085,7 +1086,7 @@ export const COPY = {
   /** Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer. */
   training: {
     title: 'Training',
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
     level: (n: number) => `Lv ${n}`,
     effect: (times: string, what: string) => `×${times} ${what}`,
     toGo: (mult: string, levels: number) =>
@@ -1112,7 +1113,7 @@ export const COPY = {
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
   },
   buy: {
     countLabel: 'Buy amount',

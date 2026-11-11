@@ -951,6 +951,9 @@ export function buyerCandidates(
   }
   // Summons: a 10-pull when affordable, else a single pull.
   for (const portal of content.portals) {
+    // The Legacy Gate's skins are looks only: the sim player leaves them (and their pity and
+    // rarity milestones) alone, as it does the cosmetics' looks it cannot value.
+    if (portal.kind === 'skins') continue;
     for (const count of [10, 1] as const) {
       out.push({
         id: count === 10 ? `summon:${portal.id}:10` : `summon:${portal.id}`,

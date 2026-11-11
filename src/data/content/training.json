@@ -5,9 +5,9 @@
     "effect": "damage",
     "stat": "combat.damage",
     "cost": {
-      "resource": "money",
-      "base": "500",
-      "growth": "1.6"
+      "resource": "copper_gem",
+      "base": "1000",
+      "growth": "1.8"
     },
     "ratePercent": "4",
     "milestones": {
@@ -21,9 +21,9 @@
     "effect": "health",
     "stat": "combat.health",
     "cost": {
-      "resource": "money",
-      "base": "500",
-      "growth": "1.6"
+      "resource": "ironbark_gem",
+      "base": "150",
+      "growth": "1.8"
     },
     "ratePercent": "4",
     "milestones": {
@@ -37,9 +37,9 @@
     "effect": "Money per kill",
     "stat": "drops.moneyMultiplier",
     "cost": {
-      "resource": "money",
-      "base": "1000",
-      "growth": "1.7"
+      "resource": "iron_gem",
+      "base": "150",
+      "growth": "1.8"
     },
     "ratePercent": "4",
     "milestones": {
@@ -53,9 +53,9 @@
     "effect": "signature gauge per hit",
     "stat": "burst.fill",
     "cost": {
-      "resource": "money",
-      "base": "2000",
-      "growth": "1.6"
+      "resource": "oak_gem",
+      "base": "1500",
+      "growth": "1.8"
     },
     "ratePercent": "2",
     "milestones": {
