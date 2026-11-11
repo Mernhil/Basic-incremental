@@ -110,6 +110,8 @@ describe('the star bar by rarity and tier (DESIGN.md §5)', () => {
 describe('star dust (DESIGN.md §5)', () => {
   const withCard = (fill: number, dust: number) => {
     const state = addCard(fresh(), content, 'grove_keeper')!.state;
+    // Bronze: a Rare's Wood star costs under one dust, so halving its fill would not show.
+    state.cards.owned['grove_keeper']!.tier = 'bronze';
     state.cards.owned['grove_keeper']!.starFill = fill;
     state.resources['star_dust'] = new Decimal(dust);
     return state;
@@ -119,7 +121,7 @@ describe('star dust (DESIGN.md §5)', () => {
     const state = withCard(0, 1000);
     const price = starDustCost(state, content, 'grove_keeper')!;
     expect(price).toBeGreaterThan(0);
-    const half = withCard(starFillNeeded(content, 'rare', 1, 'wood')! / 2, 1000);
+    const half = withCard(starFillNeeded(content, 'rare', 1, 'bronze')! / 2, 1000);
     expect(starDustCost(half, content, 'grove_keeper')!).toBeLessThan(price);
     const up = starUpWithDust(state, content, 'grove_keeper');
     if (!up.ok) throw new Error(up.reason);

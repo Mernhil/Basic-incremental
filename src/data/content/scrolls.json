@@ -1,10 +1,16 @@
 {
   "floorFirstWin": {
-    "wave": { "summon": "0.25", "glamour": "0.125" },
-    "miniboss": { "summon": "1", "glamour": "0.5" },
-    "boss": { "summon": "3", "glamour": "1.5" },
+    "wave": { "summon": "0.1", "glamour": "0.05" },
+    "miniboss": { "summon": "0.5", "glamour": "0.25" },
+    "boss": { "summon": "1.5", "glamour": "0.75" },
     "difficulty": { "normal": 1, "hard": 2, "nightmare": 4, "endless": 2 }
   },
-  "daily": { "summon": "5", "glamour": "2.5" },
+  "daily": { "summon": "3", "glamour": "1.5" },
+  "fieldCache": {
+    "everyMinutes": 10,
+    "summon": "1.25",
+    "glamour": "0.625",
+    "difficulty": { "normal": 1, "hard": 1.25, "nightmare": 1.5, "endless": 1.5 }
+  },
   "reveal": { "glowFrom": "rare", "entranceFrom": "rare" }
 }
