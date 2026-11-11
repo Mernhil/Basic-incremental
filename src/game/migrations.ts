@@ -1,5 +1,6 @@
 import { Decimal, isDecimalString } from './num';
 import { SaveError } from './saveError';
+import { farmableDungeon, fillTeam } from './migrationTeam';
 
 /** Upgrades the state payload from version N to N + 1. Must not mutate its input. */
 export type MigrationStep = (state: Record<string, unknown>) => Record<string, unknown>;
@@ -76,16 +77,21 @@ const V27_SCROLLS = { summon_scroll: 'summon_crystal', glamour_scroll: 'glamour_
  * v26 -> v27: the table update (user, 2026-11-11; `docs/plans/table-update.md` Interfaces). Adds
  * the state of the rules it builds, all inert until their packages read it:
  * - every dungeon gets an auto-challenge switch, on where it was pushing (`mode` stays for now);
- * - the fight gets the enemy being fought (the first), no Challenge running, no auto-challenge
+ * - the fight gets the enemy being fought (the first), no knockout wait carried over, no Challenge running, no auto-challenge
  *   wait and no damage on any team card; the HP of the floor being fought is dropped (`bossHp`
  *   becomes one enemy's HP), so the floor starts fresh;
  * - the crystals held become scrolls at the pull price (300 crystals a scroll, rounded down) and
  *   the crystals are dropped: the portals, wages and rewards all pay scrolls now;
+ * - the empty support slots of the fighting loadout fill with the best owned fighting cards, and a
+ *   player on a dungeon with nothing beaten moves to the last dungeon with a beaten floor
+ *   (DESIGN.md §6 "An old save gets its team and a floor it can farm", `migrationTeam.ts`);
  * - no Focus Portal kind, daily reward, presets, bonds, expeditions or Ascension challenges yet.
  */
 function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
   const combat = isRecord(state['combat']) ? state['combat'] : {};
   const floors = isRecord(combat['floors']) ? combat['floors'] : {};
+  const account = isRecord(state['account']) ? state['account'] : {};
+  const accountLevel = typeof account['level'] === 'number' ? account['level'] : 1;
   const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
   for (const [scroll, crystal] of Object.entries(V27_SCROLLS)) {
     const held = resources[crystal];
@@ -97,6 +103,8 @@ function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
   return {
     ...state,
     resources,
+    cards: isRecord(state['cards']) ? fillTeam(state['cards'], accountLevel) : state['cards'],
+    activeDungeonId: farmableDungeon(state['activeDungeonId'], floors),
     bossHp: null,
     combat: {
       ...combat,
@@ -107,6 +115,7 @@ function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
         ]),
       ),
       enemyIndex: 0,
+      knockoutSeconds: 0,
       challenge: null,
       challengeWaitSeconds: 0,
       cardDamage: {},
