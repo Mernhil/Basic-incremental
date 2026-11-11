@@ -1034,7 +1034,7 @@ export const COPY = {
     kpmTip: 'Floors cleared per minute at your average damage.',
     ttk: 'Time to clear',
     idleTitle: 'No fight',
-    idle: 'Nothing is being fought. Open the drawer below and choose a dungeon.',
+    idle: 'Nothing is being fought. Open Dungeons and choose where to fight.',
     knockedOut: 'Knocked out · back in',
     fallIn: 'You fall in',
     fallEarly: (gap: string) => `${gap} before the floor does`,

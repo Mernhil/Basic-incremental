@@ -2,70 +2,82 @@ import type { Content } from '../../../data';
 import {
   Decimal,
   barMoment,
+  bossAttackView,
   bossStatus,
-  floorChallengeView,
-  nextFloorChallenge,
-  type BarLook,
-  burstView,
   collectModifiers,
   defaultRng,
+  duelEnemy,
+  duelFightKey,
+  duelSheet,
+  emptyDuelLog,
+  floorChallengeView,
   formatDuration,
   loadoutHealth,
+  nextFloorChallenge,
+  recordDuel,
   resolveGlobal,
-  teamView,
   stageReadout,
+  teamView,
   trialStatus,
+  type BarLook,
+  type DuelLog,
   type GameState,
-  bossMastery,
-  bossAttackView,
+  type TeamCardView,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { bossArt, sentinelLevel } from '../art/bosses';
-import { floorParts, type FloorPart } from '../pages/dungeonsModel';
-import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
-import { medalTip } from '../pages/progressionModel';
-import {
-  barsGone,
-  challengeButton,
-  challengeVerdict,
-  healthPercent,
-  signatureCount,
-} from '../pages/dungeonsModel';
-import { playHit } from '../theme/effects';
-import type { CardProps } from '../ui/card';
-import { createLoadoutFan, type FanCard } from '../ui/loadoutFan';
-import { isCrystal } from '../ui/resourceIcons';
-import { createHpStack, type HpStackView } from '../ui/hpStack';
-import { formatRate } from '../pages/buyModel';
-import { refitCards } from '../ui/pixelFit';
+import { pixelNumberMarkup } from '../art/cosmetics';
+import { barsGone, challengeButton, challengeVerdict, healthPercent } from '../pages/dungeonsModel';
 import { loadoutKey, loadoutProps } from '../pages/loadoutCards';
+import { formatRate } from '../pages/buyModel';
 import { attachTooltip } from '../shell/tooltip';
-import { backgroundFor } from './arenaBackground';
-import { flyCoins } from './fly';
-import type { Director } from './director';
-import { flash, jitter, onFrame, reducedMotion, replay, shake, slowDown } from './motion';
+import { dealTokens, reducedMotion as calm } from '../table/motion';
+import { playHit } from '../theme/effects';
+import { createCard } from '../ui/card';
+import { createHpStack, type HpStackView } from '../ui/hpStack';
+import { fitCard, screenDpr } from '../ui/pixelFit';
+import { isCrystal } from '../ui/resourceIcons';
+import { DUEL_COPY } from '../views/dungeon/copy';
 import {
-  edgeStrength,
-  fallBanner,
-  windupProgress,
-  windupSeconds,
-  type ChunkSpan,
-} from './bossHitModel';
+  HOP_ART_PX,
+  clock,
+  deckBacks,
+  duelDoing,
+  enemyDamage,
+  enemyMoment,
+  feedLines,
+  floorPips,
+  handCardWant,
+  handSize,
+  handSlot,
+  hopMs,
+  numberStyle,
+  pipKind,
+  queuePlates,
+  sheetRows,
+  showPlates,
+  slotColour,
+  type Plate,
+} from '../views/dungeon/duelModel';
+import { backgroundFor } from './arenaBackground';
+import { edgeStrength, fallBanner, windupProgress, windupSeconds } from './bossHitModel';
+import type { Director } from './director';
+import { flyCoins } from './fly';
+import { onFrame, replay, shake } from './motion';
 import { popText } from './math';
 import { popNumber } from './numbers';
 import { toast } from './toast';
 import './arena.css';
 
 /**
- * The dungeon arena (DESIGN.md §6, §11; UI_RULES.md §2 "Dungeons arena layout", option "Hero fan").
- * It fills the page under the goals strip. The dungeon's background (a room drawn in CSS, picked by
- * the dungeon's `background` id) is behind everything. The party fan stands on the left with the
- * signature gauge and the party health bar under it; the boss stands right of centre with its name,
- * stacked HP bar and ×N count above it; three readout chips stack in the top-right corner.
- * Reacts to the director's show events while it is on screen. Boss hits (DESIGN.md §6): before a
- * slam the screen edges pulse harder as the game's wind-up runs, each hit drops a chunk off the
- * health bar, and a "You fall in" banner shows when the loadout would fall before the boss does.
+ * The card duel (DESIGN.md §6 What the duel shows; UI_RULES.md §2 The duel's layout, Duel motion,
+ * The duel in detail). First person: the team's hand of four cards fanned along the bottom, one
+ * enemy at a time as a card ahead with the face-down deck of the wave to its right, the damage
+ * tag and hit feed on the enemy's top left, the stat sheet on the right and the skill plates
+ * sliding in beside the enemy. One element: the table's dungeon window and the dungeon full view
+ * move it between them, so the fight never restarts. Show only: it reads the state and the
+ * director's reports and never changes the game.
  */
 
 /** What the arena needs from the header: where coins land, and the pulse when they do. */
@@ -79,136 +91,111 @@ export interface ArenaContext {
   state: () => GameState;
   director: Director;
   coins: CoinTarget;
-  /** True while the arena is on screen. */
+  /** True while the duel is on screen. */
   active: () => boolean;
-  /** Plays a named sound (stage/sound wiring); optional. */
   sound?: (id: string) => void;
-  /** Starts the next Challenge (DESIGN.md §6 Farming and Challenge); optional. */
+  /** Starts the next Challenge (DESIGN.md §6 Farming and Challenge). */
   challenge?: () => void;
+  /** Turns the dungeon's auto-challenge switch. */
+  toggleAuto?: () => void;
 }
 
-interface Slot {
-  wrap: HTMLElement;
-  /** The card's props, null for an empty slot. */
-  card: object | null;
+export interface Arena {
+  el: HTMLElement;
+  update(): void;
+  /** Re-reads the duel's size (after it moved between the window and the view). */
+  refit(): void;
 }
 
-const SUPPORTS = 3;
-
-/** CSS px the arena keeps for the bars under the fan and the card frame's bleed. */
-const FAN_RESERVE = 170;
-/** Art pixels the whole fan is wide (the main card plus three peeks) and the card is tall. */
-const FAN_ART = { w: 180, h: 186 } as const;
-
-/** One part of the interim floor line as text ("Floor 3 / 10", "Enemy 2 / 4", "Boss", "best 5"). */
-export function floorPartText(part: FloorPart): string {
-  switch (part.kind) {
-    case 'floor':
-      return COPY.dungeons.floorOf(part.floor, part.floors);
-    case 'depth':
-      return COPY.dungeons.depthOf(part.depth);
-    case 'enemy':
-      return COPY.dungeons.enemyOf(part.index, part.size);
-    case 'miniboss':
-      return COPY.dungeons.miniBoss;
-    case 'boss':
-      return COPY.dungeons.bossFloor;
-    case 'best':
-      return COPY.dungeons.bestFloor(part.best);
-  }
+interface HandSlot {
+  cardId: string;
+  slot: number;
+  el: HTMLElement;
+  body: HTMLElement;
+  glow: HTMLElement;
+  grey: HTMLElement;
+  hpFill: HTMLElement;
+  hpTrack: HTMLElement;
+  tag: HTMLElement;
+  out: boolean;
+  fraction: number;
+  tip: string;
+  hopMs: number;
 }
 
-export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): void } {
+const div = (cls: string): HTMLElement => {
+  const d = document.createElement('div');
+  d.className = cls;
+  return d;
+};
+const span = (cls: string, text = ''): HTMLElement => {
+  const s = document.createElement('span');
+  s.className = cls;
+  s.textContent = text;
+  return s;
+};
+const setText = (node: HTMLElement, text: string): void => {
+  if (node.textContent !== text) node.textContent = text;
+};
+
+export function createArena(ctx: ArenaContext): Arena {
   const { content } = ctx;
   const play = (id: string): void => ctx.sound?.(id);
 
   const el = document.createElement('section');
-  el.className = 'ar';
-  const flashEl = div('ar__flash');
+  el.className = 'ar du';
+  el.setAttribute('aria-label', COPY.arena.idleTitle);
 
-  // ---- the room: wall, bricks, two torches and the plank floor, all drawn in CSS ----
+  // ---- the room behind the fight (the dungeon's background, CSS until art exists) ----
   const scene = div('ar__scene');
   scene.setAttribute('aria-hidden', 'true');
   const torch = (side: 'l' | 'r'): HTMLElement => {
     const t = div(`ar__torch ar__torch--${side}`);
-    for (const part of ['glow', 'stick', 'cup', 'flame']) {
-      t.append(div(`ar__torch-${part}`));
-    }
+    for (const part of ['glow', 'stick', 'cup', 'flame']) t.append(div(`ar__torch-${part}`));
     return t;
   };
   scene.append(div('ar__wall'), div('ar__bricks'), torch('l'), torch('r'), div('ar__floor'));
 
-  // ---- the three readout chips, top-right ----
-  const readouts = document.createElement('dl');
-  readouts.className = 'ar__readouts';
-  const readout = (label: string, tip: string): HTMLElement => {
-    const box = div('ar__readout');
-    const dt = document.createElement('dt');
-    dt.textContent = label;
-    const dd = document.createElement('dd');
-    dd.className = 'bi-num';
-    box.append(dt, dd);
-    box.tabIndex = 0;
-    attachTooltip(box, tip);
-    readouts.append(box);
-    return dd;
-  };
-  const dpsOut = readout(COPY.arena.dps, COPY.arena.dpsTip);
-  const kpmOut = readout(COPY.arena.kpm, COPY.arena.kpmTip);
-  const ttkOut = readout(COPY.arena.ttk, COPY.dungeons.perKillTip);
+  // ---- top: the plate and the floor's pips ----
+  const top = div('du-top');
+  const plate = div('du-plate px-panel');
+  const plateText = span('du-plate__text');
+  plate.append(plateText);
+  const pips = div('du-pips');
+  pips.setAttribute('role', 'img');
+  top.append(plate, pips);
+  const verdict = div('du-verdict px-panel');
+  verdict.setAttribute('role', 'status');
+  verdict.hidden = true;
+  let verdictTimer = 0;
 
-  // ---- the boss: its name, stacked HP bar and small line above it, then the boss itself ----
-  const bossBox = div('ar__boss');
-  const head = div('ar__head');
-  const name = document.createElement('h2');
-  name.className = 'ar__name px-display';
-  // the boss mastery medal beside the name (DESIGN.md §6)
-  const medal = div('ar__medal');
-  medal.tabIndex = 0;
-  medal.setAttribute('role', 'img');
-  let medalTier = -1;
-  attachTooltip(medal, () => {
-    const id = ctx.state().activeDungeonId;
-    const info = id ? bossMastery(ctx.state(), content, id) : null;
-    return info ? medalTip(info) : '';
-  });
-  const nameRow = div('ar__name-row');
-  nameRow.append(name, medal);
-  const hp: HpStackView = createHpStack();
-  hp.el.classList.add('ar__hp');
-  hp.el.tabIndex = 0;
-  let hpTip = '';
-  attachTooltip(hp.el, () => hpTip);
-  const line = div('ar__line');
-  const lineWhere = document.createElement('span');
-  lineWhere.className = 'ar__line-where';
-  const lineGone = document.createElement('span');
-  lineGone.className = 'ar__line-gone';
-  line.append(lineWhere, lineGone);
-  const trial = div('ar__trial');
-  trial.hidden = true;
-  // "You fall in": only while the loadout would fall before it kills the boss
+  // ---- left column: what the team is doing, the readouts, the fall pill, the controls ----
+  const left = div('du-left');
+  const readout = (cls: string, tip?: string): HTMLElement => {
+    const r = div(`du-read px-panel ${cls}`);
+    if (tip) {
+      r.tabIndex = 0;
+      attachTooltip(r, tip);
+    }
+    left.append(r);
+    return r;
+  };
+  const doingEl = readout('du-read--doing');
+  const fpmEl = readout('du-read--fpm', COPY.arena.kpmTip);
+  const dpsEl = readout('du-read--dps', COPY.arena.dpsTip);
+  const teamEl = readout('du-read--team');
+  let teamTip = '';
+  teamEl.tabIndex = 0;
+  attachTooltip(teamEl, () => teamTip);
   const fall = div('ar__fall');
   fall.hidden = true;
   fall.tabIndex = 0;
   let fallNow: string | null = null;
   attachTooltip(fall, () => COPY.arena.fallTip(fallNow));
-  // The Challenge (DESIGN.md §6 Farming and Challenge): its timer while one runs, and the button
-  // that starts the next one while farming.
-  const chal = div('ar__chal');
-  const chalMeter = div('ar-meter ar-meter--challenge');
-  const chalLabel = document.createElement('span');
-  chalLabel.textContent = COPY.arena.challengeTimer;
-  const chalLeft = document.createElement('b');
-  chalLeft.className = 'bi-num';
-  const chalTrack = div('ar-meter__track');
-  const chalFill = document.createElement('i');
-  chalTrack.append(chalFill);
-  chalMeter.append(chalLabel, chalLeft, chalTrack);
-  chalMeter.setAttribute('role', 'timer');
+  const ctrl = div('du-ctrl');
   const chalBtn = document.createElement('button');
   chalBtn.type = 'button';
-  chalBtn.className = 'px-btn px-btn--gold ar__chal-btn';
+  chalBtn.className = 'px-btn px-btn--gold du-ctrl__btn';
   chalBtn.dataset['key'] = 'arena-challenge';
   chalBtn.addEventListener('click', () => ctx.challenge?.());
   attachTooltip(chalBtn, () => {
@@ -216,298 +203,651 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const next = id ? nextFloorChallenge(ctx.state(), content, id) : null;
     return next ? COPY.dungeons.challengeTip(next.durationSeconds) : COPY.dungeons.lastFloorTip;
   });
-  chal.append(chalMeter, chalBtn);
-  head.append(nameRow, hp.el, trial, line, chal, fall);
+  const autoBtn = document.createElement('button');
+  autoBtn.type = 'button';
+  autoBtn.className = 'px-btn px-btn--dark du-ctrl__btn';
+  autoBtn.dataset['key'] = 'arena-auto';
+  autoBtn.addEventListener('click', () => ctx.toggleAuto?.());
+  attachTooltip(autoBtn, () => COPY.dungeons.autoTip);
+  const chalMeter = div('du-timer');
+  const chalFill = document.createElement('i');
+  chalMeter.append(chalFill);
+  chalMeter.setAttribute('aria-hidden', 'true');
+  ctrl.append(chalBtn, autoBtn);
+  left.append(fall, chalMeter, ctrl);
 
-  // Victory or Defeat: a banner across the arena when a Challenge ends.
-  const verdict = div('ar__verdict');
-  verdict.setAttribute('role', 'status');
-  verdict.hidden = true;
-  let verdictTimer = 0;
+  // ---- the enemy ahead: the card, its tag and feed, the plates beside it, the deck ----
+  const foeZone = div('du-zone');
+  const foe = document.createElement('article');
+  foe.className = 'du-foe';
+  foe.setAttribute('aria-label', DUEL_COPY.enemy);
+  const foeTag = div('du-tag du-tag--foe');
+  const foeTagText = span('sr-only');
+  const foeTagPx = span('du-tag__px');
+  foeTagPx.setAttribute('aria-hidden', 'true');
+  foeTag.append(foeTagText, foeTagPx);
+  const foeHead = document.createElement('header');
+  foeHead.className = 'du-foe__head';
+  const foeName = document.createElement('h2');
+  foeName.className = 'du-foe__name';
+  const foeKind = span('du-foe__kind');
+  foeHead.append(foeName, foeKind);
+  const foeArt = div('du-foe__art');
+  const foeBody = div('du-foe__body');
+  const foeFx = div('du-foe__fx');
+  foeArt.append(foeBody, foeFx);
+  const hp: HpStackView = createHpStack();
+  hp.el.classList.add('du-foe__hp');
+  hp.el.tabIndex = 0;
+  let hpTip = '';
+  attachTooltip(hp.el, () => hpTip);
+  const trial = div('du-foe__trial');
+  trial.hidden = true;
+  foe.append(foeHead, foeArt, hp.el, trial);
+  const feed = document.createElement('ol');
+  feed.className = 'du-feed';
+  feed.setAttribute('aria-label', DUEL_COPY.feed);
+  const plates = div('du-plates');
+  plates.setAttribute('aria-live', 'polite');
+  const deck = div('du-deck');
+  const deckStack = div('du-deck__stack');
+  const deckLabel = span('du-deck__label');
+  deck.append(deckStack, deckLabel);
+  // the damage: the hit feed, then the tag on the enemy card's top left corner
+  const damage = div('du-damage');
+  damage.append(feed, foeTag);
+  foeZone.append(plates, foe, damage, deck);
 
-  const boss = div('ar-boss');
-  const bob = div('ar-boss__bob');
-  const body = div('ar-boss__body');
-  const fxBox = div('ar-boss__fx');
-  const shadow = div('ar-boss__shadow');
-  bob.append(body);
-  boss.append(shadow, bob, fxBox);
-  bossBox.append(head, boss);
-
-  // ---- the party: the fan on the left, the signature gauge and the party health under it ----
-  const party = div('ar__party');
-  // the party as a fan: the main card in front, the supports behind it (ui/loadoutFan.ts)
-  const arenaHeight = (): number => el.clientHeight || window.innerHeight - 160;
-  const fan = createLoadoutFan({
-    // 2x wherever the arena has room for it: the cards matter as much as the enemy
-    // (UI_RULES.md §2). `max` below steps it down to the grid size only on a window too small.
-    want: () => 264,
-    // the fan may take a third of the window, and no more height than the arena has to give
-    max: () =>
-      Math.min(
-        window.innerWidth * 0.34,
-        Math.max(0, arenaHeight() - FAN_RESERVE) * (FAN_ART.w / FAN_ART.h),
-      ),
-    popWant: 264,
-    popMax: () => (window.innerHeight >= 700 ? 300 : 200),
-    label: COPY.arena.partyLabel,
-    popLabel: COPY.production.showCard,
-    emptyLabel: COPY.table.emptySlot,
-  });
-  fan.el.classList.add('ar__fan');
-  // the bars read the fan's card scale (one art pixel in CSS px) to line up under the main card
-  const syncScale = (): void => {
-    for (const v of ['--card-n', '--card-k']) {
-      const value = fan.el.style.getPropertyValue(v);
-      if (value && party.style.getPropertyValue(v) !== value) party.style.setProperty(v, value);
-    }
+  // ---- right: the stat sheet ----
+  const sheet = document.createElement('section');
+  sheet.className = 'du-sheet px-panel';
+  const sheetTitle = document.createElement('h3');
+  sheetTitle.className = 'du-sheet__title';
+  sheetTitle.textContent = DUEL_COPY.sheet;
+  const sheetRowsEl = document.createElement('ul');
+  sheetRowsEl.className = 'du-sheet__rows';
+  const sheetFoot = document.createElement('dl');
+  sheetFoot.className = 'du-sheet__foot';
+  const footRow = (label: string): HTMLElement => {
+    const dt = document.createElement('dt');
+    dt.textContent = label;
+    const dd = document.createElement('dd');
+    dd.className = 'du-sheet__num';
+    sheetFoot.append(dt, dd);
+    return dd;
   };
-  new MutationObserver(syncScale).observe(fan.el, { attributes: true, attributeFilter: ['style'] });
-  syncScale();
-  // the arena's height decides how big the fan can stand: refit when it changes (first layout, resize)
-  new ResizeObserver(() => refitCards()).observe(el);
+  const totalEl = footRow(DUEL_COPY.sheetTotal);
+  const perSecEl = footRow(DUEL_COPY.sheetPerSecond);
+  const bestEl = footRow(DUEL_COPY.sheetBest);
+  sheet.append(sheetTitle, sheetRowsEl, sheetFoot);
 
-  const meters = div('ar__meters');
-  const gauge = div('ar-gauge');
-  const gaugeText = div('ar-gauge__text');
-  const gaugeLabel = document.createElement('span');
-  gaugeLabel.textContent = COPY.dungeons.burst;
-  const gaugeCount = document.createElement('b');
-  gaugeCount.className = 'bi-num';
-  gaugeText.append(gaugeLabel, gaugeCount);
-  const gaugeTrack = div('ar-gauge__track');
-  gaugeTrack.setAttribute('role', 'meter');
-  gaugeTrack.setAttribute('aria-valuemin', '0');
-  gaugeTrack.setAttribute('aria-valuemax', '100');
-  const gaugeFill = document.createElement('i');
-  gaugeTrack.append(gaugeFill);
-  gauge.append(gaugeTrack, gaugeText);
-
-  const health = div('ar__health');
-  const healthText = div('ar-gauge__text');
-  const healthLabel = document.createElement('span');
-  healthLabel.textContent = COPY.arena.partyHealth;
-  const healthPct = document.createElement('b');
-  healthPct.className = 'bi-num';
-  healthText.append(healthLabel, healthPct);
-  const healthTrack = div('ar-bar');
-  healthTrack.setAttribute('role', 'meter');
-  healthTrack.setAttribute('aria-valuemin', '0');
-  healthTrack.setAttribute('aria-valuemax', '100');
-  const healthFill = document.createElement('i');
-  healthTrack.append(healthFill);
-  health.append(healthTrack, healthText);
-  let healthTip = '';
-  health.tabIndex = 0;
-  attachTooltip(health, () => healthTip);
-  // each team card's own health, plain and interim until the duel's look (DESIGN.md §6 card duel)
-  const teamList = div('ar__team');
-  teamList.setAttribute('role', 'list');
-  teamList.setAttribute('aria-label', COPY.arena.teamLabel);
-  const teamRows = new Map<
-    string,
-    { row: HTMLElement; fill: HTMLElement; text: HTMLElement; tip: string }
-  >();
-  meters.append(gauge, health, teamList);
-
-  const ko = div('ar__ko');
+  // ---- the hand ----
+  const hand = div('du-hand');
+  hand.setAttribute('role', 'list');
+  hand.setAttribute('aria-label', DUEL_COPY.hand);
+  const ko = div('du-ko');
   ko.setAttribute('role', 'status');
   ko.hidden = true;
-  party.append(fan.el, meters, ko);
 
-  // boss hits: the screen edges pulse before a slam, and flash once when it lands
+  // the wind-up before a slam, a slam's flash, the screen flash
   const edge = div('ar__edge');
   edge.setAttribute('aria-hidden', 'true');
   const slamFlash = div('ar__slam-flash');
   slamFlash.setAttribute('aria-hidden', 'true');
-
-  const empty = div('ar__empty');
+  const empty = div('du-empty px-panel');
   empty.textContent = COPY.arena.idle;
 
-  el.append(scene, readouts, bossBox, party, empty, verdict, flashEl, edge, slamFlash);
+  el.append(scene, top, verdict, left, foeZone, sheet, hand, ko, empty, edge, slamFlash);
 
-  let slots: Slot[] = [];
+  // ---- sizes: the hand's whole scale follows the duel's height ----
+  const fitHand = (): void => {
+    const h = el.clientHeight || 480;
+    const { want, max } = handCardWant(h);
+    fitCard(hand, { want, max: () => max });
+  };
+  fitHand();
+  new ResizeObserver(() => fitHand()).observe(el);
+
+  // ---- numbers: the game's pixel numerals at whole device pixels ----
+  let numStyle = '';
+  const readStyle = (): string => {
+    const worn = getComputedStyle(document.documentElement).getPropertyValue('--bi-num-px');
+    numStyle = numberStyle(worn);
+    return numStyle;
+  };
+  /** Draws `text` as pixel numerals into `host`, `px` CSS px per numeral pixel (rounded). */
+  const pxNum = (host: HTMLElement, text: string, px: number): void => {
+    const dpr = screenDpr();
+    const scale = Math.max(1, Math.round(px * dpr)) / dpr;
+    const key = `${numStyle}|${scale}|${text}`;
+    if (host.dataset['px'] === key) return;
+    host.dataset['px'] = key;
+    const markup = pixelNumberMarkup(numStyle || readStyle(), text, scale);
+    if (markup) host.innerHTML = markup;
+    else host.textContent = text;
+  };
+
+  // ---- state kept between renders ----
+  let log: DuelLog = emptyDuelLog();
+  let slots: HandSlot[] = [];
+  let builtTeam = '';
   let builtFor: string | null | undefined;
-  let builtParty = '';
+  let foeKey: { dungeon: string; difficulty: string; key: string } | null = null;
   let lastLook: BarLook | null = null;
-  let lastBarIndex = -1;
-  let lastFraction = 1;
-  let bossArtKey = '';
-
-  // The wind-up follows the game's attack clock: each update() takes the time to the next attack
-  // from bossAttackView and the frame loop counts down from there, so the pulse stays smooth
-  // between the game's steps and lines up with the hit that arrives in the report.
+  let artKey = '';
+  let plateQueue: Plate[] = [];
+  let plateId = 1;
+  const plateEls = new Map<number, HTMLElement>();
   let windup: { at: number; nextAttack: number; nextIsSlam: boolean; interval: number } | null =
     null;
   let edgeShown = 0;
-  const setEdge = (value: number): void => {
-    const v = Math.round(value * 100) / 100;
-    if (v === edgeShown) return;
-    edgeShown = v;
-    edge.style.opacity = String(v);
-  };
+  let lastStep = 0;
+
+  const live = (): boolean => ctx.active() && Boolean(builtFor);
+
   onFrame((_dt, now) => {
     if (!windup || !ctx.active()) {
-      setEdge(0);
+      if (edgeShown !== 0) {
+        edgeShown = 0;
+        edge.style.opacity = '0';
+      }
       return;
     }
     const remaining = windup.nextAttack - (now - windup.at) / 1000;
     const progress = windupProgress(windup.nextIsSlam, remaining, windup.interval);
-    setEdge(edgeStrength(progress, windupSeconds(windup.interval), reducedMotion()));
+    const v =
+      Math.round(edgeStrength(progress, windupSeconds(windup.interval), calm()) * 100) / 100;
+    if (v !== edgeShown) {
+      edgeShown = v;
+      edge.style.opacity = String(v);
+    }
   });
 
-  function buildParty(s: GameState): void {
-    builtParty = loadoutKey(s);
+  // ---- the hand ----
+  function buildHand(s: GameState, team: TeamCardView[]): void {
+    builtTeam = loadoutKey(s) + team.map((c) => c.cardId).join(',');
     const mods = collectModifiers(s, content);
-    const { main, supports } = s.cards.loadouts.fighting;
-    const card = (id: string | null, role: 'main' | 'support'): FanCard | undefined => {
-      const base = id ? loadoutProps(content, s, id, role, mods) : null;
-      const def = id ? content.cardById.get(id) : undefined;
-      if (!id || !base || !def) return undefined;
-      // in the fan a support's effect is read in the pop-out, not on the card face
-      const props: CardProps = base;
-      return {
-        id,
-        name: def.name,
-        effect: def.job === 'fighting' ? def.support.description : '',
-        props,
+    hand.replaceChildren();
+    const count = team.length;
+    const size = handSize(count);
+    hand.style.setProperty('--hand-w', String(size.w));
+    hand.style.setProperty('--hand-h', String(size.h));
+    slots = team.map((c, i) => {
+      const at = handSlot(i, count);
+      const wrap = div('du-card');
+      wrap.dataset['slot'] = String(i);
+      wrap.dataset['colour'] = slotColour(i);
+      wrap.style.setProperty('--x', String(at.x));
+      wrap.style.setProperty('--y', String(at.y));
+      wrap.setAttribute('role', 'listitem');
+      wrap.tabIndex = 0;
+      const body = div('du-card__body');
+      const props = loadoutProps(content, s, c.cardId, i === 0 ? 'main' : 'support', mods);
+      if (props) body.append(createCard(props).el);
+      const glow = div('du-card__glow');
+      const grey = div('du-card__grey');
+      const hpTrack = div('du-card__hp');
+      const hpFill = document.createElement('i');
+      hpTrack.append(hpFill);
+      const tag = div('du-tag du-tag--card');
+      const mark = div('du-card__mark');
+      mark.setAttribute('aria-hidden', 'true');
+      wrap.append(glow, body, grey, hpTrack, tag, mark);
+      hand.append(wrap);
+      const entry: HandSlot = {
+        cardId: c.cardId,
+        slot: i,
+        el: wrap,
+        body,
+        glow,
+        grey,
+        hpFill,
+        hpTrack,
+        tag,
+        out: c.knockedOut,
+        fraction: c.fraction,
+        tip: '',
+        hopMs: hopMs(c.hitSeconds),
       };
-    };
-    const cards = [
-      card(main, 'main'),
-      ...supports.slice(0, SUPPORTS).map((c) => card(c, 'support')),
-    ];
-    fan.setCards(cards[0] ?? null, cards.slice(1));
-    slots = cards.map((c, i) => ({
-      wrap: i === 0 ? fan.mainEl : ((c && fan.supportSlot(c.id)) ?? div('ar-slot--none')),
-      card: c ? c.props : null,
-    }));
-    gauge.hidden = !cards[0];
+      attachTooltip(wrap, () => entry.tip);
+      wrap.classList.toggle('is-out', c.knockedOut);
+      grey.style.opacity = c.knockedOut ? '1' : '0';
+      return entry;
+    });
   }
 
-  function setBossArt(s: GameState): void {
+  function updateHand(team: TeamCardView[]): void {
+    for (const c of team) {
+      const slot = slots.find((x) => x.cardId === c.cardId);
+      if (!slot) continue;
+      const name = content.cardById.get(c.cardId)?.name ?? c.cardId;
+      // its own health: the bar closes at once; the piece lost comes away pale and falls off
+      if (c.fraction < slot.fraction - 0.002 && !calm())
+        dropChunk(slot.hpTrack, slot.fraction, c.fraction);
+      slot.fraction = c.fraction;
+      slot.hpFill.style.width = `${(c.fraction * 100).toFixed(1)}%`;
+      slot.hpTrack.dataset['level'] = c.fraction < 0.25 ? 'low' : c.fraction < 0.5 ? 'mid' : 'high';
+      slot.hopMs = hopMs(c.hitSeconds);
+      slot.el.classList.toggle('is-targeted', c.targeted);
+      // a knocked-out card fades to grey and stays grey until the floor is won
+      if (c.knockedOut !== slot.out) {
+        slot.out = c.knockedOut;
+        slot.el.classList.toggle('is-out', c.knockedOut);
+        fadeTo(slot.grey, c.knockedOut ? 1 : 0, c.knockedOut ? 400 : 200);
+      }
+      const dealt = log.perCard[c.cardId] ?? new Decimal(0);
+      pxNum(slot.tag, fmt(dealt), 1);
+      slot.tip = [
+        DUEL_COPY.cardTip(
+          name,
+          c.skill.name,
+          c.skill.role.replace('_', ' '),
+          c.skill.description,
+          fmt(c.health),
+          fmt(c.maxHealth),
+        ),
+        ...(c.knockedOut ? [DUEL_COPY.cardOut] : []),
+        ...(c.targeted ? [DUEL_COPY.targeted] : []),
+      ].join(' ');
+      slot.el.setAttribute('aria-label', `${name}, ${healthPercent(c.fraction)}% health`);
+    }
+  }
+
+  function fadeTo(node: HTMLElement, opacity: number, ms: number): void {
+    const from = getComputedStyle(node).opacity;
+    node.style.opacity = String(opacity);
+    if (calm() || !live()) return;
+    node.animate([{ opacity: from }, { opacity }], { duration: ms, easing: 'linear' });
+  }
+
+  function dropChunk(track: HTMLElement, from: number, to: number): void {
+    const chunk = document.createElement('i');
+    chunk.className = 'ar-chunk';
+    chunk.style.setProperty('--to', (to * 100).toFixed(3));
+    chunk.style.setProperty('--size', ((from - to) * 100).toFixed(3));
+    track.append(chunk);
+    for (const old of Array.from(track.querySelectorAll('.ar-chunk')).slice(0, -6)) old.remove();
+    window.setTimeout(() => chunk.remove(), 700);
+  }
+
+  // ---- the enemy ----
+  function setFoeArt(s: GameState): void {
     const id = s.activeDungeonId;
     const dungeon = id ? content.dungeonById.get(id) : undefined;
     const t = id ? content.trialById.get(id) : undefined;
-    let key = '';
-    let markup = '';
     if (dungeon) {
-      // The dungeon's boss has its drawing; normal enemies and mini-bosses show a plain labelled
-      // placeholder until their art is made (DESIGN.md §6 Normal enemies).
       const enemy = bossStatus(s, content)?.enemy;
-      // A boss without a drawing (a dungeon whose theme is not decided) gets the same box.
       const art = dungeon.boss.art;
       if (enemy && (enemy.kind !== 'boss' || !art)) {
-        const key_ = `enemy:${enemy.kind}:${enemy.id}`;
-        if (key_ === bossArtKey) return;
-        bossArtKey = key_;
-        body.replaceChildren(enemyPlaceholder(enemy.name, enemy.kind));
+        const key = `enemy:${enemy.kind}:${enemy.id}`;
+        if (key === artKey) return;
+        artKey = key;
+        const box = div(`ar-enemy ar-enemy--${enemy.kind}`);
+        box.append(span('ar-enemy__name', enemy.name));
+        foeBody.replaceChildren(box);
         return;
       }
-      if (art) {
-        key = art;
-        markup = bossArt(art);
+      if (art && artKey !== art) {
+        artKey = art;
+        foeBody.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(art)}</svg>`;
       }
-    } else if (t) {
-      const status = trialStatus(s, content);
-      const level = sentinelLevel(Math.min(status?.score ?? 0, 1));
-      key = `${t.target.art}:${level}`;
-      markup = bossArt(t.target.art, level);
+      return;
     }
-    if (key === bossArtKey) return;
-    bossArtKey = key;
-    body.innerHTML = markup
-      ? `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${markup}</svg>`
-      : '';
-  }
-
-  /** A normal enemy or mini-boss without art: a plain box with its name. */
-  function enemyPlaceholder(label: string, kind: string): HTMLElement {
-    const box = div(`ar-enemy ar-enemy--${kind}`);
-    const text = document.createElement('span');
-    text.className = 'ar-enemy__name';
-    text.textContent = label;
-    box.append(text);
-    return box;
-  }
-
-  function build(s: GameState): void {
-    builtFor = s.activeDungeonId;
-    bossArtKey = '';
-    lastLook = null;
-    chal.hidden = true;
-    lastBarIndex = -1;
-    const id = s.activeDungeonId;
-    const dungeon = id ? content.dungeonById.get(id) : undefined;
-    const t = id ? content.trialById.get(id) : undefined;
-    const fighting = Boolean(dungeon ?? t);
-    el.classList.toggle('ar--idle', !fighting);
-    el.classList.toggle('ar--trial', Boolean(t));
-    // the room behind the fight: the dungeon names it, unknown ids get the default
-    scene.className = `ar__scene ${backgroundFor(dungeon?.background).cls}`;
-    bossBox.hidden = !fighting;
-    party.hidden = !fighting;
-    readouts.hidden = !fighting;
-    hp.el.hidden = !dungeon; // a special dungeon shows its time and score instead
-    line.classList.toggle('ar__line--solo', !dungeon);
-    empty.hidden = fighting;
-    trial.hidden = !t;
-    const foe = dungeon ? bossStatus(s, content)?.enemy.name : undefined;
-    name.textContent = foe ?? dungeon?.boss.name ?? t?.target.name ?? COPY.arena.idleTitle;
-    lineWhere.textContent = '';
-    lineGone.textContent = '';
-    medalTier = -1;
-    el.setAttribute('aria-label', dungeon?.name ?? t?.name ?? COPY.arena.idleTitle);
-    boss.setAttribute('aria-label', foe ?? dungeon?.boss.name ?? t?.target.name ?? '');
-    boss.setAttribute('role', 'img');
-    trial.replaceChildren();
     if (t) {
-      trial.append(meterRow(COPY.dungeons.attempt, 'time'), meterRow(COPY.dungeons.score, 'score'));
+      const level = sentinelLevel(Math.min(trialStatus(s, content)?.score ?? 0, 1));
+      const key = `${t.target.art}:${level}`;
+      if (key === artKey) return;
+      artKey = key;
+      foeBody.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(t.target.art, level)}</svg>`;
     }
-    setBossArt(s);
-    buildParty(s);
   }
 
   function meterRow(label: string, kind: string): HTMLElement {
     const row = div(`ar-meter ar-meter--${kind}`);
-    const l = document.createElement('span');
-    l.textContent = label;
-    const v = document.createElement('b');
-    v.className = 'bi-num';
+    const b = document.createElement('b');
     const track = div('ar-meter__track');
     track.append(document.createElement('i'));
-    row.append(l, v, track);
+    row.append(span('', label), b, track);
     return row;
   }
-
   function setMeter(kind: string, fraction: number, text: string): void {
     const row = trial.querySelector<HTMLElement>(`.ar-meter--${kind}`);
     if (!row) return;
-    row.querySelector('b')!.textContent = text;
+    setText(row.querySelector('b')!, text);
     row.querySelector<HTMLElement>('i')!.style.width =
       `${(Math.min(1, Math.max(0, fraction)) * 100).toFixed(1)}%`;
   }
 
+  /** The kill's walk: the old card drops away, the hand steps twice, the next card is dealt. */
+  function walk(kind: 'walk' | 'deal'): void {
+    if (!live() || calm()) return;
+    const t = dealTokens();
+    // fast kills: the newest card wins; an old ghost or deal never piles up
+    for (const old of Array.from(foeZone.querySelectorAll('.du-foe--ghost'))) old.remove();
+    for (const a of foe.getAnimations()) a.cancel();
+    const now = performance.now();
+    if (kind === 'walk') {
+      const ghost = foe.cloneNode(true) as HTMLElement;
+      ghost.classList.add('du-foe--ghost');
+      ghost.removeAttribute('aria-label');
+      ghost.setAttribute('aria-hidden', 'true');
+      foeZone.append(ghost);
+      ghost
+        .animate(
+          [
+            { transform: 'translateY(0)', opacity: 1 },
+            { transform: 'translateY(24px)', opacity: 0 },
+          ],
+          { duration: t.exitDur, easing: t.exitEase, fill: 'forwards' },
+        )
+        .finished.then(
+          () => ghost.remove(),
+          () => ghost.remove(),
+        );
+      // the hand steps twice, at most once a second so a fast wave does not jitter it
+      if (now - lastStep > 1000) {
+        lastStep = now;
+        hand.animate(
+          [
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(4px)' },
+            { transform: 'translateY(0)' },
+            { transform: 'translateY(4px)' },
+            { transform: 'translateY(0)' },
+          ],
+          { duration: t.dur, easing: 'ease-in-out' },
+        );
+      }
+    }
+    // the next enemy comes off the deck: from the deck's place, small and clear, to its own
+    const a = foe.getBoundingClientRect();
+    const b = deck.getBoundingClientRect();
+    const dx = b.width > 0 ? (b.left + b.width / 2 - (a.left + a.width / 2)) * t.reach : 0;
+    foe.animate(
+      [
+        { transform: `translate(${dx}px, 0) scale(${t.scale})`, opacity: 0 },
+        { transform: 'none', opacity: 1 },
+      ],
+      {
+        duration: t.dur,
+        easing: t.ease,
+        delay: kind === 'walk' ? t.exitDur : 0,
+        fill: 'backwards',
+      },
+    );
+  }
+
+  function updateFoe(s: GameState, mods: ReturnType<typeof collectModifiers>): void {
+    const id = s.activeDungeonId;
+    const dungeon = id ? content.dungeonById.get(id) : undefined;
+    const trialDef = id ? content.trialById.get(id) : undefined;
+    if (dungeon) {
+      const status = bossStatus(s, content, mods);
+      const view = duelEnemy(s, content, mods);
+      if (!status || !view) return;
+      const key = {
+        dungeon: dungeon.id,
+        difficulty: status.difficulty,
+        key: `${status.difficulty}:${status.floor}:${status.wave.index}:${status.enemy.id}`,
+      };
+      const moment = enemyMoment(foeKey, key);
+      foeKey = key;
+      setFoeArt(s);
+      foe.dataset['kind'] = view.enemy.kind;
+      setText(foeName, view.enemy.name);
+      setText(
+        foeKind,
+        view.enemy.kind === 'boss'
+          ? DUEL_COPY.bossKind
+          : view.enemy.kind === 'miniboss'
+            ? DUEL_COPY.miniKind
+            : '',
+      );
+      foe.setAttribute('aria-label', `${DUEL_COPY.enemy}: ${view.enemy.name}`);
+      hp.update(
+        status.bars,
+        fmt(status.hp),
+        fmt(status.maxHp),
+        status.hp.div(status.maxHp).toNumber(),
+      );
+      const gone = barsGone(status.enemy.hpBars, status.bars.remaining);
+      hpTip = `${COPY.arena.bossTip(fmt(status.hp), fmt(status.maxHp))} · ${COPY.arena.barsGone(gone.gone, gone.total)}`;
+      const look = { key: key.key, remaining: status.bars.remaining };
+      if (barMoment(lastLook, look, false) === 'shatter' && live() && !calm())
+        replay(hp.el.querySelector('.bi-hpstack__count'), 'is-ticking', 500);
+      lastLook = look;
+      const dealt = enemyDamage(view.hp, view.maxHp);
+      if (dealt.gt(0)) {
+        foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
+        // the table's window is smaller: its tag a size down
+        pxNum(foeTagPx, fmt(dealt), el.closest('.dv-window') ? 2 : 3);
+      } else if (foeTagPx.dataset['px']) {
+        foeTagText.textContent = '';
+        foeTagPx.replaceChildren();
+        delete foeTagPx.dataset['px'];
+      }
+      // the deck: one back per enemy to come (the boss last)
+      const backs = deckBacks(view.waiting.length);
+      if (deckStack.childElementCount !== backs) {
+        deckStack.replaceChildren(...Array.from({ length: backs }, () => div('du-back')));
+      }
+      deck.classList.toggle('is-empty', backs === 0);
+      deck.dataset['boss'] = String(view.waiting.some((w) => w.kind === 'boss'));
+      setText(deckLabel, view.waiting.length > 0 ? DUEL_COPY.toCome(view.waiting.length) : '');
+      // the pips: every enemy of the floor
+      const stage = [
+        ...Array.from({ length: view.index - 1 }, () => 'enemy' as const),
+        pipKind(view.enemy.kind),
+        ...view.waiting.map((w) => pipKind(w.kind)),
+      ];
+      const list = floorPips(view.index, stage);
+      const sig = list.map((p) => `${p.kind}:${p.state}`).join(',');
+      if (pips.dataset['sig'] !== sig) {
+        pips.dataset['sig'] = sig;
+        pips.replaceChildren(
+          ...list.map((p) => {
+            const i = document.createElement('i');
+            i.className = `du-pip du-pip--${p.kind} is-${p.state}`;
+            return i;
+          }),
+        );
+        pips.setAttribute('aria-label', DUEL_COPY.pips(view.index, view.size));
+      }
+      if (moment !== 'same') walk(moment);
+    } else if (trialDef) {
+      setFoeArt(s);
+      foe.dataset['kind'] = 'boss';
+      setText(foeName, trialDef.target.name);
+      setText(foeKind, COPY.dungeons.special);
+      const t = trialStatus(s, content);
+      if (t) {
+        setMeter(
+          'time',
+          1 - t.elapsedSeconds / t.durationSeconds,
+          COPY.dungeons.timeLeft(formatDuration((t.durationSeconds - t.elapsedSeconds) * 1000)),
+        );
+        setMeter('score', Math.min(1, t.score), `${Math.round(t.score * 100)}%`);
+      }
+      foeTagText.textContent = '';
+      foeTagPx.replaceChildren();
+      delete foeTagPx.dataset['px'];
+      deckStack.replaceChildren();
+      setText(deckLabel, '');
+      pips.replaceChildren();
+      delete pips.dataset['sig'];
+    }
+  }
+
+  // ---- the feed, the sheet, the plates ----
+  function updateLog(order: string[]): void {
+    const lines = feedLines(log.feed, order);
+    const sig = lines
+      .map((l) => `${l.slot}:${l.damage.toString()}:${l.hits}:${l.signature}`)
+      .join('|');
+    if (feed.dataset['sig'] !== sig) {
+      feed.dataset['sig'] = sig;
+      feed.replaceChildren(
+        ...lines.map((l) => {
+          const li = document.createElement('li');
+          li.className = `du-feed__line${l.signature ? ' is-signature' : ''}`;
+          li.dataset['colour'] = l.slot >= 0 ? slotColour(l.slot) : 'none';
+          const text = `+${popText(l.damage)}${l.hits > 1 ? ` ${DUEL_COPY.times(l.hits)}` : ''}`;
+          const sr = span('sr-only', text);
+          const px = span('du-feed__px');
+          px.setAttribute('aria-hidden', 'true');
+          pxNum(px, `+${popText(l.damage)}`, 1);
+          li.append(sr, px);
+          if (l.hits > 1) li.append(span('du-feed__times', DUEL_COPY.times(l.hits)));
+          return li;
+        }),
+      );
+    }
+    const rows = sheetRows(log.perCard, order);
+    if (sheetRowsEl.childElementCount !== rows.length) {
+      sheetRowsEl.replaceChildren(
+        ...rows.map((r) => {
+          const li = document.createElement('li');
+          li.className = 'du-sheet__row';
+          li.dataset['colour'] = slotColour(r.slot);
+          const bar = document.createElement('i');
+          li.append(span('du-sheet__name'), span('du-sheet__num'), bar);
+          return li;
+        }),
+      );
+    }
+    rows.forEach((r, i) => {
+      const li = sheetRowsEl.children[i] as HTMLElement;
+      li.dataset['colour'] = slotColour(r.slot);
+      setText(li.children[0] as HTMLElement, content.cardById.get(r.cardId)?.name ?? r.cardId);
+      setText(li.children[1] as HTMLElement, fmt(r.damage));
+      (li.children[2] as HTMLElement).style.transform = `scaleX(${r.bar.toFixed(3)})`;
+    });
+    const sheetNow = duelSheet(log);
+    setText(totalEl, fmt(sheetNow.total));
+    setText(perSecEl, fmt(sheetNow.perSecond));
+    setText(bestEl, fmt(sheetNow.best));
+  }
+
+  function updatePlates(now: number): void {
+    const r = showPlates(plateQueue, now);
+    plateQueue = r.queue;
+    const ids = new Set(r.showing.map((p) => p.id));
+    for (const [id, node] of plateEls) {
+      if (ids.has(id)) continue;
+      plateEls.delete(id);
+      if (calm() || !ctx.active()) node.remove();
+      else
+        node
+          .animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(-12px)' }], {
+            duration: 180,
+            easing: 'ease-in',
+            fill: 'forwards',
+          })
+          .finished.then(
+            () => node.remove(),
+            () => node.remove(),
+          );
+    }
+    for (const p of r.showing) {
+      if (plateEls.has(p.id)) continue;
+      const slot = slots.find((x) => x.cardId === p.cardId)?.slot ?? -1;
+      const skill = content.skillById.get(p.skillId);
+      const node = div(`du-skill px-panel${p.kind === 'heal' ? ' du-skill--heal' : ''}`);
+      node.dataset['colour'] = slot >= 0 ? slotColour(slot) : 'none';
+      const title = document.createElement('b');
+      title.textContent = skill?.name ?? (p.kind === 'heal' ? DUEL_COPY.heal : p.skillId);
+      const who = span('du-skill__who', content.cardById.get(p.cardId)?.name ?? '');
+      node.append(title, who);
+      if (p.count > 1) node.append(span('du-skill__times', DUEL_COPY.times(p.count)));
+      plates.append(node);
+      plateEls.set(p.id, node);
+      if (!calm() && ctx.active()) {
+        const t = dealTokens();
+        node.animate(
+          [
+            { transform: 'translateX(-40px)', opacity: 0 },
+            { transform: 'none', opacity: 1 },
+          ],
+          { duration: t.dur * 0.7, easing: t.ease },
+        );
+      }
+    }
+  }
+
+  // ---- the whole duel ----
+  function build(s: GameState): void {
+    builtFor = s.activeDungeonId;
+    artKey = '';
+    lastLook = null;
+    foeKey = null;
+    const id = s.activeDungeonId;
+    const dungeon = id ? content.dungeonById.get(id) : undefined;
+    const t = id ? content.trialById.get(id) : undefined;
+    const fighting = Boolean(dungeon ?? t);
+    el.classList.toggle('du--idle', !fighting);
+    el.classList.toggle('du--trial', Boolean(t));
+    scene.className = `ar__scene ${backgroundFor(dungeon?.background).cls}`;
+    for (const part of [top, left, foeZone, sheet, hand]) part.hidden = !fighting;
+    empty.hidden = fighting;
+    hp.el.hidden = !dungeon;
+    trial.hidden = !t;
+    trial.replaceChildren();
+    if (t)
+      trial.append(meterRow(COPY.dungeons.attempt, 'time'), meterRow(COPY.dungeons.score, 'score'));
+    el.setAttribute('aria-label', dungeon?.name ?? t?.name ?? COPY.arena.idleTitle);
+    readStyle();
+  }
+
   function update(): void {
     const s = ctx.state();
-    el.classList.toggle('ar--calm', reducedMotion());
+    el.classList.toggle('ar--calm', calm());
     if (s.activeDungeonId !== builtFor) build(s);
-    else if (loadoutKey(s) !== builtParty) buildParty(s);
     const id = s.activeDungeonId;
     if (!id) return;
     const mods = collectModifiers(s, content);
     const dungeon = content.dungeonById.get(id);
     const trialDef = content.trialById.get(id);
+    const team = teamView(s, content, mods);
+    const teamKey = loadoutKey(s) + team.map((c) => c.cardId).join(',');
+    if (teamKey !== builtTeam) buildHand(s, team);
     const r = stageReadout(s, content, mods);
-    const view = dungeon ? bossAttackView(s, content, mods) : null;
-    windup = view
-      ? {
-          at: performance.now(),
-          nextAttack: view.nextAttackSeconds,
-          nextIsSlam: view.nextIsSlam,
-          interval: view.intervalSeconds,
-        }
-      : null;
+    const status = dungeon ? bossStatus(s, content, mods) : null;
+    const run = dungeon ? floorChallengeView(s, content) : null;
+    const lh = loadoutHealth(s, content, mods);
+
+    // the plate
+    const parts: string[] = [];
+    if (dungeon && status) {
+      parts.push(dungeon.name);
+      const floor =
+        status.difficulty === 'endless'
+          ? COPY.dungeons.depthOf(status.floor)
+          : COPY.dungeons.floorOf(status.floor, status.floors);
+      parts.push(
+        status.difficulty === 'normal' || status.difficulty === 'endless'
+          ? floor
+          : `${COPY.dungeons.difficulty[status.difficulty] ?? status.difficulty} ${floor}`,
+      );
+      if (run) parts.push(clock(run.secondsLeft));
+    } else if (trialDef) {
+      parts.push(trialDef.name, DUEL_COPY.doing['trial']!);
+    }
+    setText(plateText, DUEL_COPY.plate(parts));
+    plate.classList.toggle('is-challenge', Boolean(run));
+
+    // the left column
+    const doing = duelDoing({
+      trial: Boolean(trialDef),
+      challenge: Boolean(run),
+      knockoutSeconds: lh.knockoutSeconds,
+    });
+    const tier = status ? (COPY.dungeons.difficulty[status.difficulty] ?? status.difficulty) : '';
+    setText(doingEl, [tier, DUEL_COPY.doing[doing] ?? ''].filter(Boolean).join(' · '));
+    doingEl.dataset['doing'] = doing;
+    setText(fpmEl, DUEL_COPY.floorsPerMinute(formatRate(r.killsPerMinute)));
+    setText(dpsEl, DUEL_COPY.dps(fmt(r.averageDps)));
+    setText(teamEl, DUEL_COPY.team(fmt(lh.current), fmt(lh.max)));
+    teamTip = COPY.hp.value(fmt(lh.current), fmt(lh.max));
     const banner = dungeon ? fallBanner(r) : null;
     fall.hidden = !banner;
     if (banner) {
@@ -521,301 +861,161 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
         fall.replaceChildren(`${COPY.arena.fallIn} `, b, `, ${earlyText}`);
       }
     }
-    setText(dpsOut, fmt(r.averageDps));
-    setText(kpmOut, formatRate(r.killsPerMinute));
-    setText(ttkOut, r.secondsPerKill === null ? '—' : formatDuration(r.secondsPerKill * 1000));
-    const mastery = bossMastery(s, content, id);
-    medal.hidden = !mastery;
-    if (mastery && mastery.tier !== medalTier) {
-      medalTier = mastery.tier;
-      medal.innerHTML = svg(masteryMedal(mastery.tier), MEDAL_VIEWBOX);
-      medal.dataset['tier'] = String(mastery.tier);
-      medal.setAttribute('aria-label', medalTip(mastery));
-    }
-
-    if (dungeon) {
-      const status = bossStatus(s, content, mods);
-      // the interim floor readout (UI_RULES §2): dungeon, difficulty, floor, what stands on it
+    // the controls (the full view shows them): the Challenge button, its timer, the auto switch
+    const next = dungeon ? nextFloorChallenge(s, content, dungeon.id) : null;
+    const button = challengeButton({
+      running: run !== null,
+      hasNext: next !== null,
+      knockoutSeconds: s.combat.knockoutSeconds,
+    });
+    ctrl.hidden = !dungeon;
+    chalBtn.hidden = !dungeon || button === 'none' || Boolean(run);
+    chalMeter.hidden = !run;
+    if (run)
+      chalFill.style.transform = `scaleX(${(run.secondsLeft / run.durationSeconds).toFixed(3)})`;
+    if (next && !run) {
       setText(
-        lineWhere,
-        [
-          dungeon.name,
-          ...(status
-            ? [
-                COPY.dungeons.difficulty[status.difficulty] ?? status.difficulty,
-                ...floorParts(status).map(floorPartText),
-              ]
-            : []),
-        ].join(' · '),
+        chalBtn,
+        next.auto && next.waitSeconds > 0
+          ? COPY.dungeons.autoWait(formatDuration(Math.ceil(next.waitSeconds) * 1000))
+          : status?.difficulty === 'endless'
+            ? COPY.dungeons.challengeDepth(next.floor)
+            : COPY.dungeons.challenge(next.floor),
       );
-      if (status) {
-        // the enemy our hits are on: its name and picture follow the wave
-        setText(name, status.enemy.name);
-        if (boss.getAttribute('aria-label') !== status.enemy.name) {
-          boss.setAttribute('aria-label', status.enemy.name);
-        }
-        setBossArt(s);
-        const fraction = status.bars.fraction;
-        hp.update(
-          status.bars,
-          fmt(status.hp),
-          fmt(status.maxHp),
-          status.hp.div(status.maxHp).toNumber(),
-        );
-        hpTip = COPY.arena.bossTip(fmt(status.hp), fmt(status.maxHp));
-        const gone = barsGone(status.enemy.hpBars, status.bars.remaining);
-        setText(lineGone, COPY.arena.barsGone(gone.gone, gone.total));
-        // a hit took a piece of the bar: it comes away pale, holds, then falls off
-        if (status.bars.index === lastBarIndex && fraction < lastFraction - 0.002) {
-          dropChunk(hp.el, { from: lastFraction, to: fraction }, false);
-        }
-        lastBarIndex = status.bars.index;
-        lastFraction = fraction;
-        // a bar ran out: it shatters and the counter ticks down; the death plays only on the kill
-        // the game reports (DESIGN.md §6 A boss dies once, the 'kill' event below)
-        const look = {
-          key: `${status.difficulty}:${status.floor}:${status.wave.index}:${status.enemy.id}`,
-          remaining: status.bars.remaining,
-        };
-        if (barMoment(lastLook, look, false) === 'shatter') shatter();
-        lastLook = look;
-        // the Challenge: its timer while it runs, the button while farming
-        const run = floorChallengeView(s, content);
-        const next = nextFloorChallenge(s, content, dungeon.id);
-        const button = challengeButton({
-          running: run !== null,
-          hasNext: next !== null,
-          knockoutSeconds: s.combat.knockoutSeconds,
-        });
-        chal.hidden = button === 'none';
-        chalMeter.hidden = !run;
-        chalBtn.hidden = Boolean(run) || !ctx.challenge;
-        if (run) {
-          setText(
-            chalLeft,
-            COPY.dungeons.timeLeft(formatDuration(Math.ceil(run.secondsLeft) * 1000)),
-          );
-          chalFill.style.width = `${((run.secondsLeft / run.durationSeconds) * 100).toFixed(1)}%`;
-        } else if (next) {
-          const label =
-            next.auto && next.waitSeconds > 0
-              ? COPY.dungeons.autoWait(formatDuration(Math.ceil(next.waitSeconds) * 1000))
-              : status.difficulty === 'endless'
-                ? COPY.dungeons.challengeDepth(next.floor)
-                : COPY.dungeons.challenge(next.floor);
-          setText(chalBtn, label);
-          chalBtn.disabled = button !== 'ready';
-        }
-      }
-    } else if (trialDef) {
-      setText(lineWhere, [trialDef.name, COPY.dungeons.special].join(' · '));
-      const t = trialStatus(s, content);
-      if (t) {
-        setMeter(
-          'time',
-          1 - t.elapsedSeconds / t.durationSeconds,
-          COPY.dungeons.timeLeft(formatDuration((t.durationSeconds - t.elapsedSeconds) * 1000)),
-        );
-        setMeter('score', Math.min(1, t.score), `${Math.round(t.score * 100)}%`);
-      }
-      setBossArt(s);
+      chalBtn.disabled = button !== 'ready';
     }
+    const auto = status?.autoChallenge ?? false;
+    setText(autoBtn, auto ? DUEL_COPY.autoOn : DUEL_COPY.autoOff);
+    autoBtn.setAttribute('aria-pressed', String(auto));
+    autoBtn.classList.toggle('px-btn--gold', auto);
+    autoBtn.classList.toggle('px-btn--dark', !auto);
 
-    // shared health and knockout
-    const lh = loadoutHealth(s, content, mods);
-    const max = Decimal.max(lh.max, 1e-9);
-    const hpFraction = Math.min(1, Math.max(0, lh.current.div(max).toNumber()));
-    const pct = healthPercent(hpFraction);
-    healthFill.style.width = `${(hpFraction * 100).toFixed(2)}%`;
-    healthTrack.dataset['level'] = hpFraction < 0.25 ? 'low' : hpFraction < 0.5 ? 'mid' : 'high';
-    healthTrack.setAttribute('aria-valuenow', String(pct));
-    healthTrack.setAttribute('aria-label', COPY.arena.partyHealthLabel(pct));
-    setText(healthPct, `${pct}%`);
-    healthTip = COPY.hp.value(fmt(lh.current), fmt(lh.max));
+    // the wind-up before a slam
+    const view = dungeon ? bossAttackView(s, content, mods) : null;
+    windup = view
+      ? {
+          at: performance.now(),
+          nextAttack: view.nextAttackSeconds,
+          nextIsSlam: view.nextIsSlam,
+          interval: view.intervalSeconds,
+        }
+      : null;
+
+    updateFoe(s, mods);
+    updateHand(team);
+    updateLog(team.map((c) => c.cardId));
+    updatePlates(performance.now());
+
+    // a whole-team knockout: the countdown over the hand
     const out = lh.knockoutSeconds > 0;
-    party.classList.toggle('is-ko', out);
+    hand.classList.toggle('is-ko', out);
     ko.hidden = !out;
     if (out) {
-      const secs = Math.ceil(lh.knockoutSeconds);
-      ko.innerHTML = '';
-      const big = document.createElement('b');
-      big.className = 'bi-num';
-      big.textContent = String(secs);
-      const small = document.createElement('span');
-      small.textContent = COPY.arena.knockedOut;
-      ko.append(small, big);
-    }
-
-    // each card's own health: a row per team card, greyed when it is out
-    const cards = teamView(s, content, mods);
-    const seen = new Set<string>();
-    for (const c of cards) {
-      seen.add(c.cardId);
-      let r = teamRows.get(c.cardId);
-      if (!r) {
-        const row = div('ar-teamrow');
-        row.setAttribute('role', 'listitem');
-        row.tabIndex = 0;
-        const text = div('ar-teamrow__text');
-        const track = div('ar-bar ar-teamrow__bar');
-        const fill = document.createElement('i');
-        track.append(fill);
-        row.append(text, track);
-        const entry = { row, fill, text, tip: '' };
-        attachTooltip(row, () => entry.tip);
-        teamRows.set(c.cardId, entry);
-        r = entry;
+      const secs = String(Math.ceil(lh.knockoutSeconds));
+      if (ko.dataset['s'] !== secs) {
+        ko.dataset['s'] = secs;
+        const big = document.createElement('b');
+        pxNum(big, secs, 4);
+        ko.replaceChildren(span('', COPY.arena.knockedOut), big);
       }
-      teamList.append(r.row);
-      const pct = healthPercent(c.fraction);
-      const name = content.cardById.get(c.cardId)?.name ?? c.cardId;
-      setText(
-        r.text,
-        c.knockedOut ? `${name} ${COPY.arena.teamOut}` : COPY.arena.teamRow(name, pct),
-      );
-      r.fill.style.width = `${(c.fraction * 100).toFixed(1)}%`;
-      r.row.classList.toggle('is-out', c.knockedOut);
-      r.row.classList.toggle('is-targeted', c.targeted);
-      r.row.title = c.targeted ? COPY.arena.teamTargeted : '';
-      r.tip = COPY.arena.teamTip(
-        c.skill.name,
-        c.skill.role.replace('_', ' '),
-        c.skill.description,
-        fmt(c.health),
-        fmt(c.maxHealth),
-      );
     }
-    for (const [id, r] of teamRows) {
-      if (seen.has(id)) continue;
-      r.row.remove();
-      teamRows.delete(id);
-    }
+  }
 
-    // signature gauge under the main card: whole points of the gauge, "n / 20"
-    const gv = burstView(s, content, 'fighting', mods);
-    const sig = signatureCount(gv.gauge, gv.size);
-    gaugeFill.style.width = `${(gv.fraction * 100).toFixed(1)}%`;
-    gaugeTrack.style.setProperty('--segments', String(sig.size));
-    gauge.classList.toggle('is-full', gv.fraction > 0.92);
-    setText(gaugeCount, COPY.arena.signatureCount(sig.n, sig.size));
-    gaugeTrack.setAttribute('aria-valuenow', String(Math.round(gv.fraction * 100)));
-    gaugeTrack.setAttribute(
-      'aria-label',
-      `${COPY.dungeons.burst}: ${COPY.arena.signatureCount(sig.n, sig.size)}`,
+  // ---- the director's reports ----
+  const hop = (slot: HandSlot): void => {
+    if (calm() || slot.out) return;
+    const dpr = screenDpr();
+    const n = Number(hand.style.getPropertyValue('--card-n')) || 1;
+    const lift = (HOP_ART_PX * n) / dpr;
+    slot.body.animate(
+      [
+        { transform: 'translateY(0)' },
+        { transform: `translateY(${-lift}px)`, offset: 0.45 },
+        { transform: 'translateY(0)' },
+      ],
+      { duration: slot.hopMs, easing: 'cubic-bezier(0.3, 0.7, 0.4, 1)' },
     );
-  }
-
-  function shatter(): void {
-    if (!ctx.active()) return;
-    const track = hp.el.querySelector<HTMLElement>('.bi-hpstack__track');
-    replay(hp.el.querySelector('.bi-hpstack__count'), 'is-ticking', 500);
-    if (!track || reducedMotion()) return;
-    const shards = div('ar-shards');
-    for (let i = 0; i < 9; i++) {
-      const shard = document.createElement('i');
-      shard.style.setProperty('--sx', `${jitter(-60, 60).toFixed(0)}px`);
-      shard.style.setProperty('--sy', `${jitter(-40, 30).toFixed(0)}px`);
-      shard.style.setProperty('--sr', `${jitter(-180, 180).toFixed(0)}deg`);
-      shard.style.left = `${(i / 8) * 100}%`;
-      shards.append(shard);
-    }
-    track.append(shards);
-    window.setTimeout(() => shards.remove(), 700);
-  }
-
-  // ---- show events ----
-  /** A point on the boss, as 0..1 of the arena (for floating numbers); the right of centre by default. */
-  const bossPoint = (xs: [number, number], ys: [number, number]): { x: number; y: number } => {
-    const a = el.getBoundingClientRect();
-    const b = body.getBoundingClientRect();
-    if (a.width === 0 || b.width === 0) return { x: jitter(0.58, 0.72), y: jitter(0.3, 0.45) };
-    return {
-      x: (b.left + b.width * jitter(xs[0], xs[1]) - a.left) / a.width,
-      y: (b.top + b.height * jitter(ys[0], ys[1]) - a.top) / a.height,
-    };
-  };
-  const live = (): boolean => ctx.active() && builtFor !== null && builtFor !== undefined;
-
-  ctx.director.on('hit', (e) => {
-    if (!live()) return;
-    const effect = resolveGlobal(content, ctx.state().cosmetics.loadout).attack.visual.effects
-      ?.fighting;
-    if (effect)
-      playHit(effect, fxBox, { rng: defaultRng, target: null, intervalSeconds: e.interval });
-    replay(body, 'is-hit', 220);
-    replay(slots[0]?.wrap, 'is-lunging', 360);
-    if (e.big) shake(el);
-    const p = bossPoint([0.3, 0.7], [0.12, 0.4]);
-    popNumber(el, {
-      kind: e.crit ? 'crit' : 'hit',
-      text: popText(e.damage),
-      ...p,
-      scale: e.scale * (e.crit ? 1.25 : 1),
+    slot.glow.animate([{ opacity: 0 }, { opacity: 1, offset: 0.35 }, { opacity: 0 }], {
+      duration: slot.hopMs * 1.4,
+      easing: 'ease-out',
     });
-    play(e.crit ? 'crit' : 'hit');
-  });
+  };
 
-  ctx.director.on('signature', (e) => {
+  ctx.director.on('duel', (e) => {
+    const key = duelFightKey(e.after, content);
+    log = recordDuel(log, e.report, e.seconds, key);
+    if (e.report.skills.length > 0) {
+      const q = queuePlates(plateQueue, [...e.report.skills], performance.now(), plateId);
+      plateQueue = q.queue.slice(-6);
+      plateId = q.nextId;
+    }
     if (!live()) return;
-    flash(flashEl);
-    shake(el, true);
-    slowDown(el);
-    replay(body, 'is-hit', 220);
-    for (const s of slots) if (s.card) replay(s.wrap, 'is-lunging', 420);
-    const p = bossPoint([0.5, 0.5], [0.02, 0.08]);
-    popNumber(el, { kind: 'signature', text: popText(e.damage), ...p, scale: 2.4 });
-    play('signature');
+    const effect = resolveGlobal(content, e.after.cosmetics.loadout).attack.visual.effects
+      ?.fighting;
+    const hitters = new Set<string>();
+    for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
+    for (const id of hitters) {
+      const slot = slots.find((x) => x.cardId === id);
+      if (!slot) continue;
+      hop(slot);
+      if (effect && !calm())
+        playHit(effect, foeFx, {
+          rng: defaultRng,
+          target: null,
+          intervalSeconds: slot.hopMs / 400,
+        });
+    }
+    if (hitters.size > 0) play('hit');
   });
-
-  // A hit's piece of a health bar comes away pale where the fill closed over it, holds a moment
-  // like a trailing segment, then falls off (DESIGN.md §6). The fill itself closes at once.
-  function dropChunk(bar: HTMLElement, span: ChunkSpan, slam: boolean): void {
-    const track = bar.querySelector<HTMLElement>('.bi-hpstack__track, .ar-bar');
-    if (!track || span.from <= span.to) return;
-    const chunk = document.createElement('i');
-    chunk.className = `ar-chunk${slam ? ' ar-chunk--slam' : ''}`;
-    chunk.style.setProperty('--to', (span.to * 100).toFixed(3));
-    chunk.style.setProperty('--size', ((span.from - span.to) * 100).toFixed(3));
-    track.append(chunk);
-    for (const old of Array.from(track.querySelectorAll('.ar-chunk')).slice(0, -12)) old.remove();
-    window.setTimeout(() => chunk.remove(), slam ? 1200 : 700);
-  }
 
   ctx.director.on('bossAttack', (e) => {
     if (!live()) return;
-    dropChunk(health, e.span, e.slam);
-    if (e.slam && !reducedMotion()) {
-      replay(slamFlash, 'is-hit', 460);
-      shake(el, true);
-    }
     const slot = slots[e.target];
-    replay(boss, e.slam ? 'is-slamming' : 'is-attacking', 480);
+    if (!calm()) {
+      // the enemy card dips toward the card it hits
+      const a = foe.getBoundingClientRect();
+      const b = slot?.el.getBoundingClientRect();
+      const dx =
+        b && a.width
+          ? Math.max(-24, Math.min(24, (b.left + b.width / 2 - a.left - a.width / 2) * 0.08))
+          : 0;
+      foe.animate(
+        [
+          { transform: 'none' },
+          { transform: `translate(${dx}px, ${e.slam ? 18 : 10}px)`, offset: 0.4 },
+          { transform: 'none' },
+        ],
+        { duration: e.slam ? 420 : 300, easing: 'ease-out' },
+      );
+      if (e.slam) {
+        replay(slamFlash, 'is-hit', 460);
+        shake(el, true);
+      }
+    }
     window.setTimeout(
       () => {
-        // a slam hits the whole party; a light hit one card: the card goes red for a moment
-        const hurt = e.slam ? slots.filter((x) => x.card) : slot?.card ? [slot] : [];
-        for (const x of hurt) replay(x.wrap, 'is-hurt', 400);
+        const hurt = e.slam ? slots : slot ? [slot] : [];
+        if (!calm()) for (const x of hurt) replay(x.body, 'is-hurt', 400);
         play('bossHit');
-        if (!slot?.card) return;
+        if (!slot) return;
         const a = el.getBoundingClientRect();
-        const b = slot.wrap.getBoundingClientRect();
+        const b = slot.el.getBoundingClientRect();
         if (a.width === 0) return;
         popNumber(el, {
           kind: 'hurt',
           text: `-${popText(e.damage)}`,
           x: (b.left + b.width / 2 - a.left) / a.width,
-          y: (b.top + b.height * 0.3 - a.top) / a.height,
-          scale: e.slam ? 1.9 : 1,
+          y: (b.top - a.top) / a.height,
+          scale: e.slam ? 1.6 : 1,
         });
       },
-      e.slam ? 200 : 160,
+      e.slam ? 200 : 140,
     );
   });
 
   ctx.director.on('knockout', () => {
     if (!live()) return;
-    shake(el, true);
-    replay(party, 'is-knocked', 700);
+    if (!calm()) shake(el, true);
     play('knockout');
   });
 
@@ -834,18 +1034,28 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     const title = document.createElement('b');
     title.className = 'px-display';
     title.textContent = shown.kind === 'victory' ? COPY.arena.victory : COPY.arena.defeat;
-    const sub = document.createElement('span');
-    sub.className = 'bi-num';
-    sub.textContent =
+    const sub = span(
+      '',
       shown.kind === 'victory'
         ? COPY.arena.victoryLine(floor)
         : [
             shown.reason === 'health' ? COPY.arena.defeatHealth : COPY.arena.defeatTimer,
             ...(shown.showHpLeft ? [COPY.arena.defeatLeft(fmt(e.enemyHpLeft))] : []),
-          ].join(' · ');
+          ].join(' · '),
+    );
     verdict.replaceChildren(title, sub);
     verdict.dataset['kind'] = shown.kind;
     verdict.hidden = false;
+    if (!calm()) {
+      const t = dealTokens();
+      verdict.animate(
+        [
+          { transform: 'translateY(-12px)', opacity: 0 },
+          { transform: 'none', opacity: 1 },
+        ],
+        { duration: t.dur, easing: t.ease },
+      );
+    }
     window.clearTimeout(verdictTimer);
     verdictTimer = window.setTimeout(
       () => (verdict.hidden = true),
@@ -856,14 +1066,11 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
 
   ctx.director.on('kill', (e) => {
     if (!live()) return;
-    replay(boss, 'is-popping', 700);
     play('kill');
-    // the drops burst out low on the boss and settle on the floor in front of it
-    const b = body.getBoundingClientRect();
-    const from = { x: b.left + b.width / 2, y: b.top + b.height * 0.72 };
+    const b = foeArt.getBoundingClientRect();
+    const from = { x: b.left + b.width / 2, y: b.top + b.height * 0.7 };
     for (const loot of e.loot) {
       const n = Math.max(1, Math.min(6, Math.round(loot.amount.toNumber())));
-      // crystal pickups get a bigger moment: larger, brighter pieces and their own chime
       const crystal = isCrystal(ctx.content.resourceById.get(loot.resource));
       flyCoins({
         from,
@@ -879,23 +1086,20 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
     }
     for (const item of e.rare) {
       const beam = div('ar-beam');
-      boss.append(beam);
+      foeArt.append(beam);
       window.setTimeout(() => beam.remove(), 1600);
-      slowDown(el, 700, 0.25);
       toast(COPY.arena.rareDrop, item, 'rare');
       play('rare');
     }
   });
 
-  return { el, update };
-}
-
-function div(cls: string): HTMLElement {
-  const d = document.createElement('div');
-  d.className = cls;
-  return d;
-}
-
-function setText(node: HTMLElement, text: string): void {
-  if (node.textContent !== text) node.textContent = text;
+  return {
+    el,
+    update,
+    refit: () => {
+      fitHand();
+      readStyle();
+      delete foeTagPx.dataset['px'];
+    },
+  };
 }
