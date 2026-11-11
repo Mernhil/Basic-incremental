@@ -43,6 +43,7 @@ import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
 import { createShelf, type Shelf } from '../ui/shelf';
+import { createToolLinesPanel, type ToolLinesPanel } from '../ui/toolLines';
 import { amountText } from '../settings/coins';
 import {
   jobRateValue,
@@ -223,6 +224,7 @@ export function createProductionPage(
   let last = '';
   const refs = new Map<string, RowRef>();
   const bands = {} as Record<ProductionJob, BandRef>;
+  const toolPanels = {} as Record<ProductionJob, ToolLinesPanel>;
   const refKey = (job: ProductionJob, kind: number): string => `${job}:${kind}`;
 
   function buildBand(job: ProductionJob): BandRef {
@@ -251,7 +253,15 @@ export function createProductionPage(
     list.setAttribute('aria-label', t.tilesLabel);
     const flashEl = h('div', 'pp-flash');
     flashEl.setAttribute('aria-hidden', 'true');
-    el.append(top, head, list, flashEl);
+    const tools = createToolLinesPanel({
+      content,
+      job,
+      state: ctx.state,
+      apply: ctx.apply,
+      sound: ctx.sound,
+    });
+    toolPanels[job] = tools;
+    el.append(top, head, list, tools.el, flashEl);
     const view = productionStageView(ctx.state(), content, job);
     return { el, rate, slots, list, flash: flashEl, view };
   }
@@ -559,6 +569,7 @@ export function createProductionPage(
       build(rowsByJob, focusKey);
     }
     refreshRows(rowsByJob, mods);
+    for (const job of PRODUCTION_JOBS) toolPanels[job].update();
     placePicker();
     shelf.update();
     const chips = shelfChips(s, content, mods, 'production');

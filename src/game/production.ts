@@ -340,6 +340,19 @@ export function harvestCritFactor(crit: HarvestCrit): Decimal {
   return crit.damage.sub(1).mul(crit.chance).add(1);
 }
 
+/**
+ * How fast a worked place strikes and fills its harvest gauge: 1 plus the `harvest.speed` modifiers
+ * (the strike speed tool line) read at that place. Never below 0.
+ */
+export function harvestSpeed(
+  job: ProductionJob,
+  modifiers: readonly Modifier[],
+  producer?: Producer,
+): number {
+  const ctx = producer ? producerContext(producer, job) : { job };
+  return Math.max(0, statValue('harvest.speed', 1, modifiers, ctx).toNumber());
+}
+
 /** One unlocked tree kind or mine type at work: its rate, crits and workers. */
 export interface WorkSite {
   job: ProductionJob;
@@ -351,6 +364,8 @@ export interface WorkSite {
   /** Output per second without crits: the level rate × the workers' power. */
   rate: Decimal;
   crit: HarvestCrit;
+  /** Strike and gauge speed, 1 = the card's own rhythm (1 with no worker). */
+  speed: number;
 }
 
 /**
@@ -377,6 +392,7 @@ export function workSites(
         placePower(state, content, producer.id),
       ),
       crit: ids.length > 0 ? harvestCrit(content, job, modifiers, producer) : NO_HARVEST_CRIT,
+      speed: ids.length > 0 ? harvestSpeed(job, modifiers, producer) : 1,
     };
   });
 }

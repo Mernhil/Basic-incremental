@@ -151,7 +151,43 @@ export type Job = (typeof JOBS)[number];
 
 const positiveNumber = z.number().positive();
 
+/** The stats a tool line can raise (DESIGN.md §4 Tool lines). */
+export const TOOL_STATS = [
+  'production.rate',
+  'harvest.speed',
+  'harvest.critChance',
+  'harvest.critDamage',
+] as const;
+
+/**
+ * A tool line of a production job (DESIGN.md §4 Tool lines): repeatable, bought with Money like a
+ * Training line. Yield and strike speed multiply their stat by (1 + ratePercent% x level) x the
+ * milestones (`milestones` required); crit chance adds ratePercent percentage points a level and
+ * crit damage adds ratePercent/100 to the crit multiplier a level (no milestones). The job is the
+ * scope. Reset on Ascension.
+ */
+export const toolLineSchema = z
+  .strictObject({
+    id,
+    name,
+    job: z.enum(['logging', 'mining']),
+    /** What it raises, as the words after the amount ("yield"). */
+    effect: z.string().min(1),
+    stat: z.enum(TOOL_STATS),
+    cost: costCurveSchema,
+    ratePercent: decimal.refine((d) => d.gt(0), { message: 'must be above 0' }),
+    milestones: milestoneSchema.optional(),
+  })
+  .refine(
+    (t) =>
+      (t.stat === 'production.rate' || t.stat === 'harvest.speed') === (t.milestones !== undefined),
+    { message: 'yield and speed lines need milestones, crit lines have none' },
+  );
+export type ToolLine = z.output<typeof toolLineSchema>;
+
 export const productionSchema = z.strictObject({
+  /** The tool lines of both jobs (DESIGN.md §4 Tool lines), in the order the page shows them. */
+  tools: z.array(toolLineSchema).min(1),
   harvest: z.strictObject({
     /** Base harvest crit; the `harvest.*` stats change it, read at a worker's place. A place
      *  with no worker has no crits. */
@@ -238,6 +274,8 @@ export const STATS = [
   'harvest.critChance',
   /** Output multiplier of a harvest crit (at least 1). Scope: job. */
   'harvest.critDamage',
+  /** Strike and harvest-gauge speed of a worked place, base 1 (at least 0). Scope: job, producer. */
+  'harvest.speed',
   /** Special dungeon reward units per score tier reached (floored). Scope: dungeon, resource. */
   'trial.reward',
   /** Fighting loadout health pool (DESIGN.md §6): the sum of the cards' health. Scope: dungeon. */

@@ -967,6 +967,11 @@ export const COPY = {
     buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
     oneTime: 'One-time upgrades',
   },
+  /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
+  tools: {
+    title: (job: string) => `${job} tools`,
+    note: 'Bought with Money, again and again. Resets on Ascension.',
+  },
   buy: {
     countLabel: 'Buy amount',
     counts: { 1: '×1', 10: '×10', 100: '×100', max: 'Max' },

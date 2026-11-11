@@ -41,6 +41,8 @@ import {
   type OwnedCard,
   buyMineLevel,
   buyTraining,
+  buyTool,
+  toolLines,
   trainingLines,
   cardPower,
   collectModifiers,
@@ -596,6 +598,27 @@ function economyCandidates(
       gain: (TRAINING_VALUE[t.line.stat] ?? 0.3) * rise,
       buy: (s, c, m) => okState(buyTraining(s, c, t.line.id, 1, m)),
     });
+  }
+  // Tool lines (DESIGN.md §4): yield counts as production, speed a little, the crit lines by the
+  // expected output they add (a placeholder valuation until the balance run).
+  for (const job of ['logging', 'mining'] as const) {
+    for (const t of toolLines(state, content, job, 1, modifiers)) {
+      const delta = num(t.after) - num(t.now);
+      const rise = t.line.stat === 'production.rate' ? delta / Math.max(num(t.now), 1e-9) : 0;
+      const gain =
+        t.line.stat === 'production.rate'
+          ? PRODUCTION_VALUE * 0.5 * rise
+          : t.line.stat === 'harvest.speed'
+            ? PRODUCTION_VALUE * 0.1 * (delta / Math.max(num(t.now), 1e-9))
+            : PRODUCTION_VALUE * 0.5 * delta;
+      out.push({
+        id: `tool:${t.line.id}`,
+        kind: 'economy',
+        prices: [t.offer.price],
+        gain,
+        buy: (s, c, m) => okState(buyTool(s, c, t.line.id, 1, m)),
+      });
+    }
   }
   // The upgrade shelf: one-time multipliers; the gain is the relative rise of what they touch.
   for (const item of upgradeShelf(state, content, modifiers)) {

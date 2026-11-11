@@ -105,8 +105,9 @@ function targetView(
 ): StageTarget {
   const id = site.workers[0] ?? null;
   const pattern = id ? workerPattern(content, id) : null;
-  const stats = harvestBurstStats(content, site, modifiers);
-  const periodMs = pattern ? strikePeriodSeconds(pattern) * 1000 : 0;
+  const stats = harvestBurstStats(content, site, modifiers, site.speed);
+  const periodMs =
+    pattern && site.speed > 0 ? (strikePeriodSeconds(pattern) * 1000) / site.speed : 0;
   const into = periodMs > 0 ? state.stats.playTimeMs % periodMs : 0;
   const gauge = id ? Math.min(harvestGauge(state, site.producer.id).gauge, stats.size) : 0;
   return {
