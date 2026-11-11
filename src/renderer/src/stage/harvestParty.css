@@ -80,22 +80,22 @@
   font-weight: 400;
   color: var(--bi-frame-ink-muted);
 }
-:is(.pp-w, .pp-pick) [data-rarity='uncommon'] {
+:is(.pp-w, .pp-pick, .fv-worker) [data-rarity='uncommon'] {
   --pp-rarity: #6fdc8c;
 }
-:is(.pp-w, .pp-pick) [data-rarity='rare'] {
+:is(.pp-w, .pp-pick, .fv-worker) [data-rarity='rare'] {
   --pp-rarity: #4f86e0;
 }
-:is(.pp-w, .pp-pick) [data-rarity='epic'] {
+:is(.pp-w, .pp-pick, .fv-worker) [data-rarity='epic'] {
   --pp-rarity: #9a6ae0;
 }
-:is(.pp-w, .pp-pick) [data-rarity='legendary'] {
+:is(.pp-w, .pp-pick, .fv-worker) [data-rarity='legendary'] {
   --pp-rarity: #e0a43a;
 }
-:is(.pp-w, .pp-pick) [data-rarity='mythic'] {
+:is(.pp-w, .pp-pick, .fv-worker) [data-rarity='mythic'] {
   --pp-rarity: #ff3fb4;
 }
-:is(.pp-w, .pp-pick) [data-rarity='void'] {
+:is(.pp-w, .pp-pick, .fv-worker) [data-rarity='void'] {
   --pp-rarity: #6b7280;
 }
 
