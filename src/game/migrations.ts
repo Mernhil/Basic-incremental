@@ -110,6 +110,7 @@ function v26ToV27(state: Record<string, unknown>): Record<string, unknown> {
       challenge: null,
       challengeWaitSeconds: 0,
       cardDamage: {},
+      cardsOut: [],
     },
     summon: { focusKind: null, dailyClaimedDay: null },
     presets: {
