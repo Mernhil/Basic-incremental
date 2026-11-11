@@ -42,7 +42,10 @@ import { createThrottle, popText } from '../stage/math';
 import { replay } from '../stage/motion';
 import { popGain, popNumber } from '../stage/numbers';
 import { buyCount, createBuyButton, createBuyToggle, onBuyCount, type BuyButton } from '../ui/buy';
+import { fmt } from '../settings/numberFormat';
 import { createShelf, type Shelf } from '../ui/shelf';
+import { createForgePanel } from '../ui/forge';
+import { createToolLinesPanel, type ToolLinesPanel } from '../ui/toolLines';
 import { amountText } from '../settings/coins';
 import {
   jobRateValue,
@@ -104,6 +107,10 @@ interface RowRef {
   next: HTMLElement;
   nextText: HTMLElement;
   nextSub: HTMLElement;
+  lucky: HTMLElement;
+  depthName: HTMLElement;
+  depthFill: HTMLElement;
+  depthText: HTMLElement;
   buy?: BuyButton;
   unlock?: { btn: HTMLButtonElement; label: HTMLElement; price: HTMLElement; have: HTMLElement };
 }
@@ -223,6 +230,7 @@ export function createProductionPage(
   let last = '';
   const refs = new Map<string, RowRef>();
   const bands = {} as Record<ProductionJob, BandRef>;
+  const toolPanels = {} as Record<ProductionJob, ToolLinesPanel>;
   const refKey = (job: ProductionJob, kind: number): string => `${job}:${kind}`;
 
   function buildBand(job: ProductionJob): BandRef {
@@ -251,7 +259,15 @@ export function createProductionPage(
     list.setAttribute('aria-label', t.tilesLabel);
     const flashEl = h('div', 'pp-flash');
     flashEl.setAttribute('aria-hidden', 'true');
-    el.append(top, head, list, flashEl);
+    const tools = createToolLinesPanel({
+      content,
+      job,
+      state: ctx.state,
+      apply: ctx.apply,
+      sound: ctx.sound,
+    });
+    toolPanels[job] = tools;
+    el.append(top, head, list, tools.el, flashEl);
     const view = productionStageView(ctx.state(), content, job);
     return { el, rate, slots, list, flash: flashEl, view };
   }
@@ -259,6 +275,13 @@ export function createProductionPage(
     bands[job] = buildBand(job);
     bandsEl.append(bands[job].el);
   }
+  const forge = createForgePanel({
+    content,
+    state: ctx.state,
+    apply: ctx.apply,
+    sound: ctx.sound,
+  });
+  bandsEl.append(forge.el);
 
   // ---- rows ----
   function priceOf(v: { offer: { price: { amount: Decimal; resource: string } } }): string {
@@ -293,12 +316,22 @@ export function createProductionPage(
     const track = h('div', 'pp-seg');
     track.setAttribute('aria-hidden', 'true');
     const x2 = h('span', 'pp-r__x2 bi-num');
+    const lucky = h('span', 'pp-r__lucky bi-num');
+    lucky.hidden = true;
+    const depthLine = h('div', 'pp-r__depth');
+    const depthName = h('span', 'pp-r__depthName bi-num');
+    const depthBar = h('div', 'pp-dep');
+    depthBar.setAttribute('aria-hidden', 'true');
+    const depthFill = h('i');
+    depthBar.append(depthFill);
+    const depthText = h('span', 'pp-r__depthText bi-num');
+    depthLine.append(depthName, depthBar, depthText);
     if (locked) {
       mid.append(h('span', 'pp-r__note', row.note));
     } else {
       const line = h('div', 'pp-r__line');
-      line.append(value, unit);
-      mid.append(line, track, x2);
+      line.append(value, unit, lucky);
+      mid.append(line, track, x2, depthLine);
     }
     // next buy
     const next = h('div', 'pp-r__next');
@@ -321,6 +354,10 @@ export function createProductionPage(
       next,
       nextText,
       nextSub,
+      lucky,
+      depthName,
+      depthFill,
+      depthText,
     };
     // buy
     const cell = h('div', 'pp-r__buy');
@@ -491,7 +528,31 @@ export function createProductionPage(
         ref.row = row;
         const target = row.kind === 'active' ? (byKind.get(row.kindIndex) ?? null) : null;
         ref.worker.update(target, picking === row.id, canAdd);
-        if (target) ref.workerKey = workerKey(target);
+        if (target) {
+          ref.workerKey = workerKey(target);
+          const lucky = target.lucky;
+          ref.lucky.hidden = !lucky;
+          if (lucky)
+            set(ref.lucky, COPY.production.lucky(lucky.name, Math.ceil(lucky.secondsLeft)));
+          const d = target.depth;
+          const t = COPY.production.depth;
+          set(
+            ref.depthName,
+            row.job === 'logging' ? t.logging(d.layer, d.name) : t.mining(d.layer, d.name),
+          );
+          ref.depthFill.style.width = `${Math.round(d.fraction * 100)}%`;
+          ref.depthFill.parentElement!.title = d.atMax
+            ? t.deepest
+            : target.dig.gt(0)
+              ? t.tip(fmt(d.progress), fmt(d.hardness))
+              : t.noWorker;
+          set(
+            ref.depthText,
+            d.nextYieldMultiplier
+              ? t.next(fmt(d.nextYieldMultiplier.div(d.yieldMultiplier)))
+              : t.deepest,
+          );
+        }
         set(ref.level, row.levelText);
         if (row.kind === 'active') {
           set(ref.value, row.outputValue);
@@ -559,6 +620,8 @@ export function createProductionPage(
       build(rowsByJob, focusKey);
     }
     refreshRows(rowsByJob, mods);
+    for (const job of PRODUCTION_JOBS) toolPanels[job].update();
+    forge.update();
     placePicker();
     shelf.update();
     const chips = shelfChips(s, content, mods, 'production');

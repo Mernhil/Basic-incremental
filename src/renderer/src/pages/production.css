@@ -457,3 +457,100 @@ html .pp-drawer .pp-drawer__handle {
 :root[data-motion='reduced'] .pp-tile__art {
   animation: none;
 }
+
+/* depth and growth: the layer or age and the bar to the next (DESIGN.md §4) */
+.pp-r__depth {
+  display: grid;
+  grid-template-columns: auto minmax(40px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.pp-dep {
+  height: calc(var(--fs-sm) * 3);
+  background: var(--px-edge);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.pp-dep i {
+  display: block;
+  height: 100%;
+  background: var(--pp-job);
+  opacity: 0.7;
+}
+
+/* the forge: recipes, a worker and the bar to the next craft (DESIGN.md §4) */
+.pp-forge {
+  --pp-job: var(--bi-chrome-accent);
+  display: grid;
+  gap: 8px;
+}
+.pp-forge__recipes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pp-forge__recipe {
+  display: grid;
+  gap: 2px;
+  text-align: left;
+  padding: 6px 10px;
+  font: inherit;
+  color: var(--bi-frame-ink);
+  background: var(--px-lo);
+  border: 2px solid var(--px-edge);
+  cursor: pointer;
+}
+.pp-forge__recipe span {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.pp-forge__recipe.is-on {
+  border-color: var(--pp-job);
+}
+.pp-forge__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--bi-frame-ink-muted);
+}
+.pp-forge__worker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pp-forge__bar {
+  height: calc(var(--fs-sm) * 4);
+}
+
+/* a lucky strike on show: a golden tree or a rich vein (DESIGN.md §4) */
+.pp-r__lucky {
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bi-frame-ink);
+  background: var(--pp-job);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  animation: pp-lucky 0.9s steps(2, end) infinite alternate;
+}
+@keyframes pp-lucky {
+  to {
+    filter: brightness(1.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-r__lucky {
+    animation: none;
+  }
+}
+.pp-forge {
+  grid-template-areas: none;
+  grid-template-rows: none;
+  align-content: start;
+  align-self: start;
+}
+.pp-forge > * {
+  grid-area: auto;
+}

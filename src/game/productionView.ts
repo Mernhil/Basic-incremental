@@ -1,5 +1,7 @@
 import type { Card, Content, HarvestPattern, ProductionJob, Rarity, Rank } from '../data';
 import { cardRank } from './cards';
+import { luckyWindow, type LuckyWindow } from './lucky';
+import { depthInfo, type DepthInfo } from './depth';
 import { harvestBurstStats, harvestGauge, strikePeriodSeconds, workerPattern } from './harvest';
 import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -7,6 +9,7 @@ import { harvestCritFactor, producersOf, workSites, type WorkSite } from './prod
 import type { GameState } from './state';
 import { jobAttackEffect, resolveCard, jobNumberStyle, type ResolvedCard } from './theme';
 import {
+  forgeWorker,
   producerJob,
   workerAt,
   workerPower,
@@ -61,6 +64,12 @@ export interface StageTarget {
   burst: { power: Decimal; fillPerTick: number; size: number };
   /** Progress to the next strike, 0..1, and the seconds left. Derived from play time. */
   nextStrike: { progress: number; inSeconds: number };
+  /** Its layer or age, the bar to the next and the yield it gives (DESIGN.md §4 Depth). */
+  depth: DepthInfo;
+  /** Hardness broken per second by its workers (0 with none). */
+  dig: Decimal;
+  /** The lucky strike showing on it now (DESIGN.md §4 Lucky strikes), or null. */
+  lucky: LuckyWindow | null;
   /** Harvest crit chance (0..1) and multiplier at this place. */
   crit: { chance: number; damage: Decimal };
 }
@@ -105,8 +114,9 @@ function targetView(
 ): StageTarget {
   const id = site.workers[0] ?? null;
   const pattern = id ? workerPattern(content, id) : null;
-  const stats = harvestBurstStats(content, site, modifiers);
-  const periodMs = pattern ? strikePeriodSeconds(pattern) * 1000 : 0;
+  const stats = harvestBurstStats(content, site, modifiers, site.speed);
+  const periodMs =
+    pattern && site.speed > 0 ? (strikePeriodSeconds(pattern) * 1000) / site.speed : 0;
   const into = periodMs > 0 ? state.stats.playTimeMs % periodMs : 0;
   const gauge = id ? Math.min(harvestGauge(state, site.producer.id).gauge, stats.size) : 0;
   return {
@@ -124,6 +134,9 @@ function targetView(
       periodMs > 0
         ? { progress: into / periodMs, inSeconds: (periodMs - into) / 1000 }
         : { progress: 0, inSeconds: 0 },
+    depth: depthInfo(state, content, site.producer.id)!,
+    dig: site.dig,
+    lucky: luckyWindow(content, state, site.producer.id, state.stats.playTimeMs),
     crit: { chance: site.crit.chance, damage: site.crit.damage },
   };
 }
@@ -184,7 +197,8 @@ export function workerChoices(
   for (const card of content.cards) {
     const owned = state.cards.owned[card.id];
     if (card.job !== job || !owned) continue;
-    const workplace = workplaceOf(state, content, card.id);
+    const inForge = forgeWorker(state, content) === card.id;
+    const workplace = inForge ? 'forge' : workplaceOf(state, content, card.id);
     out.push({
       cardId: card.id,
       name: card.name,
@@ -194,7 +208,7 @@ export function workerChoices(
       power: workerPower(content, card.id, owned),
       abilityText: card.worker.description,
       workplace,
-      workplaceName: workplace ? (names.get(workplace) ?? null) : null,
+      workplaceName: workplace ? (inForge ? 'Forge' : (names.get(workplace) ?? null)) : null,
       here: workplace === producerId,
       needsSlot: workplace === null && !placeTaken && !freeSlot,
     });

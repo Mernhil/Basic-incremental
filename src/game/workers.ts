@@ -124,9 +124,62 @@ export function workplaceOf(state: GameState, content: Content, cardId: string):
   return null;
 }
 
-/** Workers working now. */
+/**
+ * The card working the forge (DESIGN.md §4 The forge), or null: a production card that is owned,
+ * works no tree or mine and fits in a free slot. The forge is filled after the places, so a slot
+ * count that drops sends its worker away first.
+ */
+export function forgeWorker(state: GameState, content: Content): string | null {
+  const id = state.production.forge.worker;
+  const card = id ? content.cardById.get(id) : undefined;
+  if (!id || !card || card.job === 'fighting' || !state.cards.owned[id]) return null;
+  const placed = Object.values(activeWorkers(state, content));
+  if (placed.some((ids) => ids.includes(id))) return null;
+  const used = placed.reduce((n, ids) => n + ids.length, 0);
+  return used < workerSlots(state, content) ? id : null;
+}
+
+/** Workers working now: the places' workers and the forge's. */
 export function workersUsed(state: GameState, content: Content): number {
-  return Object.values(activeWorkers(state, content)).reduce((n, ids) => n + ids.length, 0);
+  const placed = Object.values(activeWorkers(state, content)).reduce((n, ids) => n + ids.length, 0);
+  return placed + (forgeWorker(state, content) ? 1 : 0);
+}
+
+/**
+ * Puts a production card to work in the forge, or with `cardId` null sends its worker away. A card
+ * working a tree or mine moves; a new worker needs a free slot (the forge's own worker, if any, is
+ * replaced and frees its slot).
+ */
+export function assignForgeWorker(
+  state: GameState,
+  content: Content,
+  cardId: string | null,
+): WorkerResult {
+  const next = cloneState(state);
+  if (cardId === null) {
+    next.production.forge.worker = null;
+    return { ok: true, state: next };
+  }
+  const card = content.cardById.get(cardId);
+  if (!card) return fail('unknown');
+  if (!state.cards.owned[cardId]) return fail('not-owned');
+  if (card.job === 'fighting') return fail('wrong-job');
+  const workers = activeWorkers(state, content);
+  const from = Object.keys(workers).find((place) => workers[place]!.includes(cardId)) ?? null;
+  if (from === null && forgeWorker(state, content) !== cardId) {
+    const placed = Object.values(workers).reduce((n, ids) => n + ids.length, 0);
+    if (placed >= workerSlots(state, content)) return fail('no-slot');
+  }
+  if (from !== null) {
+    const rest = workers[from]!.filter((id) => id !== cardId);
+    if (rest.length > 0) workers[from] = rest;
+    else delete workers[from];
+    next.production.workers = Object.fromEntries(
+      Object.entries(workers).map(([place, ids]) => [place, [...ids]]),
+    );
+  }
+  next.production.forge.worker = cardId;
+  return { ok: true, state: next };
 }
 
 /**
@@ -145,6 +198,12 @@ export function assignWorker(
   const job = producerJob(content, producerId);
   if (!job) return fail('unknown');
   if (!isProducerUnlocked(state, content, job, producerId)) return fail('locked');
+  if (cardId !== null && state.production.forge.worker === cardId) {
+    // the card leaves the forge for this place
+    const away = cloneState(state);
+    away.production.forge.worker = null;
+    return assignWorker(away, content, producerId, cardId);
+  }
   const workers = activeWorkers(state, content);
   const here = workers[producerId] ?? [];
 
@@ -175,6 +234,7 @@ export function assignWorker(
     if (rest.length > 0) workers[from] = rest;
     else delete workers[from];
   } else if (replaced === null) {
+    // the places come first: a full house sends the forge's worker away, never a place's
     const used = Object.values(workers).reduce((n, ids) => n + ids.length, 0);
     if (used > workerSlots(state, content)) return fail('no-slot');
   }

@@ -303,6 +303,19 @@ function checkProduction(
   issues: string[],
 ): void {
   const resources = new Map(c.resources.map((r) => [r.id, r]));
+  c.production.forge.recipes.forEach((recipe, i) => {
+    const where = `production.json › forge › recipes › [${i}]`;
+    for (const r of [...recipe.inputs, recipe.output])
+      if (!resources.has(r.resource)) issues.push(`${where}: unknown resource "${r.resource}"`);
+    if (c.production.forge.recipes.findIndex((o) => o.id === recipe.id) !== i)
+      issues.push(`${where}: duplicate recipe id "${recipe.id}"`);
+  });
+  c.production.tools.forEach((tool, i) => {
+    if (!resources.has(tool.cost.resource))
+      issues.push(
+        `production.json › tools › [${i}] › cost: unknown resource "${tool.cost.resource}"`,
+      );
+  });
   const checkCost = (where: string, resource: string, kind: Resource['kind']): void => {
     const res = resources.get(resource);
     if (!res) issues.push(`${where}: unknown resource "${resource}"`);

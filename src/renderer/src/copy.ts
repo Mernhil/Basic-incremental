@@ -172,6 +172,18 @@ export const COPY = {
     settings: { label: 'Settings', frame: '', empty: '' },
   },
   production: {
+    /** A lucky strike showing (DESIGN.md §4 Lucky strikes). */
+    lucky: (name: string, seconds: number) => `${name}! ${seconds} s`,
+    /** Depth and growth (DESIGN.md §4): the age of a tree, the layer of a mine. */
+    depth: {
+      logging: (n: number, name: string) => `Age ${n} · ${name}`,
+      mining: (n: number, name: string) => `Layer ${n} · ${name}`,
+      deepest: 'deepest',
+      yield: (mult: string) => `×${mult} yield`,
+      next: (mult: string) => `next ×${mult}`,
+      noWorker: 'no worker, no digging',
+      tip: (broken: string, hardness: string) => `${broken} of ${hardness} broken`,
+    },
     logging: {
       title: 'Logging',
       tilesLabel: 'Trees',
@@ -1011,6 +1023,26 @@ export const COPY = {
     preview: (from: string, to: string) => `×${from} → ×${to}`,
     buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
     oneTime: 'One-time upgrades',
+  },
+  /** The forge (DESIGN.md §4 The forge). */
+  forge: {
+    title: 'Forge',
+    recipes: 'Recipes',
+    workerLabel: 'Worker',
+    noneWorker: 'No worker',
+    recipe: (inputs: string, output: string) => `${inputs} → ${output}`,
+    worker: (name: string, power: string, at: string | null, rank: string) =>
+      `${name} (${rank}) · power ${power}${at ? ` · works at ${at}` : ''}`,
+    noRecipe: 'Pick a recipe.',
+    noWorker: 'Needs a worker and a free slot.',
+    waitingForGems: 'Waiting for gems.',
+    making: (wait: string) => `Next in ${wait}`,
+    speed: (work: string) => `${work} work/s`,
+  },
+  /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
+  tools: {
+    title: (job: string) => `${job} tools`,
+    note: 'Bought with Money, again and again. Resets on Ascension.',
   },
   buy: {
     countLabel: 'Buy amount',

@@ -32,7 +32,11 @@ import { RANK_TIERS, RARITIES, type Content } from '../../src/data';
 import {
   advance,
   activeWorkers,
+  assignForgeWorker,
   assignWorker,
+  forgeWorker,
+  setForgeRecipe,
+  workersUsed,
   producerLevel,
   producersOf,
   workerPower,
@@ -41,6 +45,8 @@ import {
   type OwnedCard,
   buyMineLevel,
   buyTraining,
+  buyTool,
+  toolLines,
   trainingLines,
   cardPower,
   collectModifiers,
@@ -598,6 +604,27 @@ function economyCandidates(
       buy: (s, c, m) => okState(buyTraining(s, c, t.line.id, 1, m)),
     });
   }
+  // Tool lines (DESIGN.md §4): yield counts as production, speed a little, the crit lines by the
+  // expected output they add (a placeholder valuation until the balance run).
+  for (const job of ['logging', 'mining'] as const) {
+    for (const t of toolLines(state, content, job, 1, modifiers)) {
+      const delta = num(t.after) - num(t.now);
+      const rise = t.line.stat === 'production.rate' ? delta / Math.max(num(t.now), 1e-9) : 0;
+      const gain =
+        t.line.stat === 'production.rate'
+          ? PRODUCTION_VALUE * 0.5 * rise
+          : t.line.stat === 'harvest.speed'
+            ? PRODUCTION_VALUE * 0.1 * (delta / Math.max(num(t.now), 1e-9))
+            : PRODUCTION_VALUE * 0.5 * delta;
+      out.push({
+        id: `tool:${t.line.id}`,
+        kind: 'economy',
+        prices: [t.offer.price],
+        gain,
+        buy: (s, c, m) => okState(buyTool(s, c, t.line.id, 1, m)),
+      });
+    }
+  }
   // The upgrade shelf: one-time multipliers; the gain is the relative rise of what they touch.
   for (const item of upgradeShelf(state, content, modifiers)) {
     if (item.status !== 'available') continue;
@@ -1077,6 +1104,33 @@ export function bestWorkers(state: GameState, content: Content): Record<string, 
 
 /** Puts the sim's chosen workers to work (`bestWorkers`), when they differ from today's. */
 export function placeBestWorkers(state: GameState, content: Content): GameState {
+  return keepForgeWorker(placePlaceWorkers(state, content), content);
+}
+
+/** Sets the forge to its first recipe and, with a slot spare, puts the best idle production card to work in it. */
+export function keepForgeWorker(state: GameState, content: Content): GameState {
+  let current = state;
+  const recipe = content.production.forge.recipes[0];
+  if (recipe && current.production.forge.recipe === null) {
+    const set = setForgeRecipe(current, content, recipe.id);
+    if (set.ok) current = set.state;
+  }
+  if (
+    forgeWorker(current, content) ||
+    workersUsed(current, content) >= workerSlots(current, content)
+  )
+    return current;
+  const busy = new Set(Object.values(activeWorkers(current, content)).flat());
+  const best = content.cards
+    .filter((c) => c.job !== 'fighting' && current.cards.owned[c.id] && !busy.has(c.id))
+    .map((c) => ({ id: c.id, power: workerPower(content, c.id, current.cards.owned[c.id]!) }))
+    .sort((a, b) => b.power - a.power)[0];
+  if (!best) return current;
+  const hired = assignForgeWorker(current, content, best.id);
+  return hired.ok ? hired.state : current;
+}
+
+function placePlaceWorkers(state: GameState, content: Content): GameState {
   const want = bestWorkers(state, content);
   const now = activeWorkers(state, content);
   const same = (a: Record<string, string[]>, b: Record<string, string[]>): boolean =>

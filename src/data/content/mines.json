@@ -18,6 +18,13 @@
         "multiplier": "2"
       }
     },
+    "depth": {
+      "names": ["Topsoil", "Clay", "Gravel", "Stone", "Bedrock", "Deep rock", "Old vein", "Heart"],
+      "hardness": "600",
+      "hardnessGrowth": "2.2",
+      "yieldGrowth": "1.6",
+      "digRate": "1"
+    },
     "element": "earth"
   },
   {
@@ -39,6 +46,13 @@
         "multiplier": "2"
       }
     },
+    "depth": {
+      "names": ["Topsoil", "Clay", "Gravel", "Stone", "Bedrock", "Deep rock", "Old vein", "Heart"],
+      "hardness": "2400",
+      "hardnessGrowth": "2.2",
+      "yieldGrowth": "1.6",
+      "digRate": "1"
+    },
     "element": "earth"
   },
   {
@@ -59,6 +73,13 @@
         "every": 25,
         "multiplier": "2"
       }
+    },
+    "depth": {
+      "names": ["Topsoil", "Clay", "Gravel", "Stone", "Bedrock", "Deep rock", "Old vein", "Heart"],
+      "hardness": "9000",
+      "hardnessGrowth": "2.2",
+      "yieldGrowth": "1.6",
+      "digRate": "1"
     },
     "element": "crystal"
   }

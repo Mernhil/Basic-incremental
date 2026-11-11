@@ -3,6 +3,9 @@ import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels }
 import { advanceCombat, type FightOptions } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { recordLuckyStrikes } from './lucky';
+import { advanceForge } from './forge';
+import { addDigging, depthDue, settleDepth } from './depth';
 import { advanceHarvestGauges, recordStrikes } from './harvest';
 import { countHarvest, masteryDue, settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
@@ -66,6 +69,7 @@ export function advance(
     current = advanceSpan(current, content, until, rng, report, options);
     settleCardLevels(current, content, report);
     settleMastery(current, content, report);
+    settleDepth(current, content);
     settleAccount(current, content, report);
     settleAchievements(current, content, report);
     remaining -= until;
@@ -123,6 +127,7 @@ function levelUpDue(
   return (
     Object.values(ahead.cards.owned).some((owned) => hasPendingLevel(content, owned)) ||
     masteryDue(ahead, content) ||
+    depthDue(ahead, content) ||
     accountLevelDue(ahead, content) ||
     achievementsDue(ahead, content)
   );
@@ -151,10 +156,12 @@ function advanceSpan(
   ) as Record<(typeof PRODUCTION_JOBS)[number], WorkSite[]>;
   for (const job of PRODUCTION_JOBS) {
     recordStrikes(state, content, job, fromMs, fromMs + dtMs, modifiers, report, sites[job]);
+    recordLuckyStrikes(content, job, fromMs, fromMs + dtMs, report, sites[job]);
     for (const site of sites[job]) {
       const resource = site.producer.resource;
       const current = next.resources[resource] ?? new Decimal(0);
       next.resources[resource] = current.add(siteOutput(site).mul(seconds));
+      addDigging(next, content, site.producer.id, site.dig, seconds);
     }
   }
   const burstSeconds = advanceHarvestGauges(
@@ -165,6 +172,9 @@ function advanceSpan(
     modifiers,
     PRODUCTION_JOBS.flatMap((job) => sites[job]),
   );
+
+  // The forge turns the gems of the step into what its recipe makes.
+  advanceForge(next, content, seconds);
 
   // Card XP: each worker gains XP per unit its own place harvested (normal output and bursts);
   // every gem harvested counts toward its mastery and the account.

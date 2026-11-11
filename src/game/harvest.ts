@@ -2,7 +2,7 @@ import type { Content, HarvestPattern, ProductionJob, WorkerCard } from '../data
 import { advanceGauge, type BurstStats } from './combat';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { harvestCritFactor, workSites, type WorkSite } from './production';
+import { siteOutput, workSites, type WorkSite } from './production';
 import { pushHarvest, type HarvestEvent, type TickReport } from './report';
 import type { BurstGauge, GameState } from './state';
 
@@ -63,7 +63,8 @@ export function recordStrikes(
     const worker = site.workers[0];
     const pattern = worker ? workerPattern(content, worker) : null;
     if (!worker || !pattern) continue;
-    const periodMs = strikePeriodSeconds(pattern) * 1000;
+    if (site.speed <= 0) continue;
+    const periodMs = (strikePeriodSeconds(pattern) * 1000) / site.speed;
     const first = Math.floor(fromMs / periodMs + EPSILON);
     const last = Math.floor(toMs / periodMs + EPSILON);
     const count = last - first;
@@ -100,6 +101,7 @@ export function harvestBurstStats(
   content: Content,
   site: Pick<WorkSite, 'job' | 'producer'>,
   modifiers: readonly Modifier[] = [],
+  speed = 1,
 ): BurstStats {
   const config = content.combat.bursts[site.job];
   const ctx = { job: site.job, producer: site.producer.id, resource: site.producer.resource };
@@ -108,7 +110,7 @@ export function harvestBurstStats(
   return {
     interval: Math.max(0.05, num('burst.interval', config.intervalSeconds)),
     size: Math.max(1, num('burst.size', config.gaugeSize)),
-    fill: Math.max(0, num('burst.fill', config.fill)),
+    fill: Math.max(0, num('burst.fill', config.fill)) * speed,
     power: Decimal.max(statValue('burst.power', config.power, modifiers, ctx), 0),
   };
 }
@@ -138,14 +140,14 @@ export function advanceHarvestGauges(
     const worker = site.workers[0];
     if (!worker) continue;
     const id = site.producer.id;
-    const stats = harvestBurstStats(content, site, modifiers);
+    const stats = harvestBurstStats(content, site, modifiers, site.speed);
     const run = advanceGauge(harvestGauge(next, id), seconds, stats);
     next.production.harvestGauges[id] = run.gauge;
     if (run.bursts === 0) continue;
     report.bursts[site.job] += run.bursts;
     const burstSeconds = stats.power.mul(run.bursts);
     harvested[id] = burstSeconds;
-    const amount = site.rate.mul(harvestCritFactor(site.crit)).mul(burstSeconds);
+    const amount = siteOutput(site).mul(burstSeconds);
     const resource = site.producer.resource;
     next.resources[resource] = (next.resources[resource] ?? new Decimal(0)).add(amount);
     pushHarvest(report.harvests, {

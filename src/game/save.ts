@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { depthDef } from './depth';
 import type { Content } from '../data';
 import { MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
@@ -676,19 +677,32 @@ function deserializeWorkers(
   state.production.harvestGauges = Object.fromEntries(
     known(saved.harvestGauges).map(([id, g]) => [id, { ...g }]),
   );
-  // Tool lines and forge recipes are not in the content yet (package 6): kept as saved.
-  state.production.tools = { ...saved.tools };
+  // Tool lines the content no longer has are dropped.
+  state.production.tools = Object.fromEntries(
+    Object.entries(saved.tools).filter(([id]) => content.production.tools.some((t) => t.id === id)),
+  );
   state.production.depth = Object.fromEntries(
     known(saved.depth).map(([id, d]) => [
       id,
-      { layer: d.layer, progress: new Decimal(d.progress) },
+      {
+        // a layer past the deepest one (a retuned tree) comes back to the deepest
+        layer: Math.max(1, Math.min(d.layer, depthDef(content, id)?.names.length ?? 1)),
+        progress: Decimal.max(new Decimal(d.progress), 0),
+      },
     ]),
   );
+  // A recipe that left the game is dropped with its progress; a forge worker is a production card.
+  const recipe = content.production.forge.recipes.some((r) => r.id === saved.forge.recipe)
+    ? saved.forge.recipe
+    : null;
   state.production.forge = {
-    recipe: saved.forge.recipe,
-    progress: new Decimal(saved.forge.progress),
+    recipe,
+    progress: recipe ? new Decimal(saved.forge.progress) : new Decimal(0),
     worker:
-      forgeWorker && state.cards.owned[forgeWorker] && !working.has(forgeWorker)
+      forgeWorker &&
+      state.cards.owned[forgeWorker] &&
+      content.cardById.get(forgeWorker)?.job !== 'fighting' &&
+      !working.has(forgeWorker)
         ? forgeWorker
         : null,
   };

@@ -13,6 +13,10 @@ export * from './floors';
 /** Stage stars and overflow (DESIGN.md §6): `stageStarLevel` and `totalStageStarLevels` feed the skill points. */
 export * from './stageStars';
 export * from './training';
+export * from './toolLines';
+export * from './depth';
+export * from './forge';
+export * from './lucky';
 export * from './loop';
 export * from './offline';
 export * from './migrations';
