@@ -65,7 +65,8 @@ export function createWorkerCell(placeName: string, onPick: () => void): WorkerC
     update(target, picking, canAdd) {
       const w = target?.worker ?? null;
       has = Boolean(w);
-      el.hidden = target === null;
+      // a locked row keeps the cell's column, empty
+      el.style.visibility = target === null ? 'hidden' : '';
       el.classList.toggle('is-empty', !w);
       btn.setAttribute('aria-expanded', String(picking));
       const text = workerCellText(target, canAdd);

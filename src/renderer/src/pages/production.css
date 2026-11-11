@@ -9,7 +9,7 @@
   /* shell-page--stage (dungeons.css) makes the page full-bleed and as tall as the window */
   --pp-bar-h: 40px;
   /* the columns of the column headers and of every row */
-  --pp-cols: 236px minmax(0, 1fr) 112px 196px;
+  --pp-cols: 168px 220px minmax(0, 1fr) 112px 196px;
   --pp-gap: 14px;
 }
 .pp-screen {
@@ -34,36 +34,40 @@
   grid-auto-rows: minmax(min-content, 1fr);
 }
 
-/* ---- a band: title and column headers on top, the fan on the left, rows and supports on the right ---- */
+/* ---- a band: the title and worker slots, the column headers, then the rows; each row starts with
+   the card working it (stage/harvestParty.css) ---- */
 .pp-band {
   --pp-job: var(--bi-chrome-logging, var(--bi-chrome-accent));
   position: relative;
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  grid-template-rows: auto 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto 1fr;
   grid-template-areas:
-    'title head'
-    'fan list'
-    'fan foot';
-  column-gap: var(--pp-gap);
+    'top'
+    'head'
+    'list';
   padding: 6px 14px 10px;
+}
+.pp-band__top {
+  grid-area: top;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pp-band__slots {
+  font-size: 12px;
+  color: var(--bi-frame-ink-muted);
 }
 .pp-band--mining {
   --pp-job: var(--bi-chrome-mining, var(--bi-chrome-accent));
 }
 .pp-band__title {
-  grid-area: title;
   align-self: center;
   margin: 0;
   font-size: 20px;
   line-height: 1.2;
   color: var(--bi-frame-ink);
-}
-.pp-band__fan {
-  grid-area: fan;
-  align-self: center;
-  /* the card frame bleeds about 11 art pixels past the card box */
-  padding-top: 14px;
 }
 .pp-head {
   grid-area: head;
@@ -97,15 +101,6 @@
   display: grid;
   grid-auto-rows: minmax(64px, 1fr);
   min-width: 0;
-}
-.pp-foot {
-  grid-area: foot;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-width: 0;
-  padding-top: 8px;
 }
 
 /* ---- rows: no box of their own, a thin line between them ---- */
@@ -202,7 +197,7 @@
   min-width: 0;
 }
 .pp-r--locked .pp-r__mid {
-  grid-column: 2 / 4;
+  grid-column: 3 / 5;
 }
 .pp-r__line {
   display: flex;
@@ -441,7 +436,7 @@ html .pp-drawer .pp-drawer__handle {
 /* ---- room: a narrower window trims the columns; a taller one gives the rows the extra height ---- */
 @media (max-width: 1100px) {
   .pp-page {
-    --pp-cols: 200px minmax(0, 1fr) 96px 172px;
+    --pp-cols: 150px 190px minmax(0, 1fr) 96px 172px;
     --pp-gap: 10px;
   }
 }

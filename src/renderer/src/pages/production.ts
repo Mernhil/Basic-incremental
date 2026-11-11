@@ -559,6 +559,7 @@ export function createProductionPage(
       build(rowsByJob, focusKey);
     }
     refreshRows(rowsByJob, mods);
+    placePicker();
     shelf.update();
     const chips = shelfChips(s, content, mods, 'production');
     const sum = shelfSummary(chips);

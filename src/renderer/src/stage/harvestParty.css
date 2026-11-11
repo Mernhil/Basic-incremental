@@ -10,9 +10,6 @@
   gap: 6px;
   min-width: 0;
 }
-.pp-w[hidden] {
-  display: none;
-}
 .pp-w__btn {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
