@@ -1,4 +1,5 @@
 import type { Content, ForgeRecipe } from '../data';
+import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { cloneState, type GameState } from './state';
 import { forgeWorker, workerPower } from './workers';
@@ -24,11 +25,19 @@ export function forgeRecipe(state: GameState, content: Content): ForgeRecipe | n
 }
 
 /** Progress per second: the forge's speed × the worker's power; 0 with no worker. */
-export function forgeSpeed(state: GameState, content: Content): Decimal {
+export function forgeSpeed(
+  state: GameState,
+  content: Content,
+  modifiers?: readonly Modifier[],
+): Decimal {
   const worker = forgeWorker(state, content);
   const owned = worker ? state.cards.owned[worker] : undefined;
   if (!worker || !owned) return new Decimal(0);
-  return content.production.forge.speed.mul(workerPower(content, worker, owned));
+  const base = content.production.forge.speed.mul(workerPower(content, worker, owned));
+  return Decimal.max(
+    statValue('forge.speed', base, modifiers ?? collectModifiers(state, content)),
+    0,
+  );
 }
 
 /** Whole crafts the gems in stock pay for. */
@@ -95,22 +104,28 @@ export function setForgeRecipe(
  */
 export function advanceForge(next: GameState, content: Content, seconds: number): void {
   const recipe = forgeRecipe(next, content);
-  const speed = forgeSpeed(next, content);
-  if (!recipe || speed.lte(0) || seconds <= 0) return;
+  if (!recipe || seconds <= 0 || !forgeWorker(next, content)) return;
+  const modifiers = collectModifiers(next, content);
+  const speed = forgeSpeed(next, content, modifiers);
+  if (speed.lte(0)) return;
   const forge = next.production.forge;
   let progress = forge.progress.add(speed.mul(seconds));
   // (a hair above the whole number: split steps add seconds in floats)
   const done = progress.div(recipe.work).add(1e-9).floor();
   const crafts = Decimal.min(done, craftsInStock(next, recipe));
   if (crafts.gt(0)) {
+    // the skill tree gives some of the inputs back (`forge.refund`) and widens the output
+    const kept = Decimal.min(Decimal.max(statValue('forge.refund', 0, modifiers), 0), 0.9)
+      .neg()
+      .add(1);
     for (const input of recipe.inputs) {
       next.resources[input.resource] = (next.resources[input.resource] ?? new Decimal(0)).sub(
-        input.amount.mul(crafts),
+        input.amount.mul(crafts).mul(kept),
       );
     }
     const out = recipe.output.resource;
     next.resources[out] = (next.resources[out] ?? new Decimal(0)).add(
-      recipe.output.amount.mul(crafts),
+      recipe.output.amount.mul(crafts).mul(Decimal.max(statValue('forge.yield', 1, modifiers), 0)),
     );
     progress = progress.sub(recipe.work.mul(crafts));
   }

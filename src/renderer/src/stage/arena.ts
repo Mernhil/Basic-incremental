@@ -532,7 +532,7 @@ export function createArena(ctx: ArenaContext): { el: HTMLElement; update(): voi
           1 - t.elapsedSeconds / t.durationSeconds,
           COPY.dungeons.timeLeft(formatDuration((t.durationSeconds - t.elapsedSeconds) * 1000)),
         );
-        setMeter('score', t.score, `${Math.round(t.score * 100)}%`);
+        setMeter('score', Math.min(1, t.score), `${Math.round(t.score * 100)}%`);
       }
       setBossArt(s);
     }

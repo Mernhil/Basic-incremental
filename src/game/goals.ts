@@ -1,5 +1,8 @@
 import { type Content, type GoalKind, type GoalPage, type GoalRule } from '../data';
+import { skillPoints } from './account';
 import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
+import { toolLines } from './toolLines';
+import { activeWorkers, forgeWorker, workerSlots, workersUsed } from './workers';
 import { starUpCheck, tierUpCheck } from './cards';
 import {
   averageDps,
@@ -322,14 +325,16 @@ const gemMasteryRule: RuleFn = (state, content, modifiers) =>
     .filter((r) => r.kind === 'tree_gem' || r.kind === 'mine_gem')
     .flatMap((r) => {
       const m = gemMastery(state, content, r.id);
-      if (m.tier >= MAX_MASTERY_TIER || !m.nextThreshold) return [];
+      if (!m.nextThreshold) return [];
       const income = incomePerSecond(state, content, r.id, modifiers);
       if (m.total.lte(0) && income.lte(0)) return [];
       const missing = m.nextThreshold.sub(m.total);
       return [
         {
           targetId: r.id,
-          title: `${r.name} mastery: ${metalName(m.tier + 1)}`,
+          title: `${r.name} mastery: ${
+            m.tier + 1 > MAX_MASTERY_TIER ? `tier ${m.tier + 1}` : metalName(m.tier + 1)
+          }`,
           progress: m.progress,
           etaSeconds: missing.lte(0) ? 0 : income.gt(0) ? missing.div(income).toNumber() : null,
         },
@@ -462,7 +467,74 @@ const ascensionRule: RuleFn = (state, content, modifiers) => {
   ];
 };
 
+/**
+ * The cheapest next level of a tool line of each job (DESIGN.md §4 Tool lines): progress is the
+ * Money held over its price, the ETA the time to earn the rest.
+ */
+const toolLineRule: RuleFn = (state, content, modifiers) =>
+  PRODUCTION_JOBS.flatMap((job) => {
+    const next = toolLines(state, content, job, 1, modifiers).sort((a, b) =>
+      a.offer.price.amount.cmp(b.offer.price.amount),
+    )[0];
+    if (!next) return [];
+    const price = next.offer.price;
+    return [
+      {
+        targetId: next.line.id,
+        title: `${next.line.name}: level ${next.level + 1}`,
+        progress: priceProgress(state, [price]),
+        etaSeconds: secondsToAfford(state, content, [price], modifiers),
+      },
+    ];
+  });
+
+/** A free worker slot with an owned production card that is not at work: put it to work. */
+const workerSlotRule: RuleFn = (state, content) => {
+  if (workersUsed(state, content) >= workerSlots(state, content)) return [];
+  const working = new Set([
+    ...Object.values(activeWorkers(state, content)).flat(),
+    ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
+  ]);
+  const idle = content.cards.find(
+    (c) => c.job !== 'fighting' && state.cards.owned[c.id] && !working.has(c.id),
+  );
+  if (!idle) return [];
+  return [{ targetId: idle.id, title: `Put ${idle.name} to work`, progress: 0.5, etaSeconds: 0 }];
+};
+
+/** Skill points waiting in the account tree. */
+const skillPointsRule: RuleFn = (state, content) => {
+  const { available } = skillPoints(state, content);
+  if (available <= 0) return [];
+  return [
+    {
+      targetId: 'skills',
+      title: available === 1 ? 'Spend 1 skill point' : `Spend ${available} skill points`,
+      // a reminder, not a target: it never outranks a goal that is ready to do
+      progress: 0.9,
+      etaSeconds: 0,
+    },
+  ];
+};
+
+/** The wishlist is empty: a pull of a marked card's rarity lands on a marked card. */
+const wishlistRule: RuleFn = (state) =>
+  state.cards.wishlist.length > 0 || Object.keys(state.cards.owned).length === 0
+    ? []
+    : [
+        {
+          targetId: 'wishlist',
+          title: 'Mark a card on your wishlist',
+          progress: 0.5,
+          etaSeconds: 0,
+        },
+      ];
+
 const RULES: Record<GoalKind, RuleFn> = {
+  tool_line: toolLineRule,
+  worker_slot: workerSlotRule,
+  skill_points: skillPointsRule,
+  wishlist: wishlistRule,
   first_summon: firstSummon,
   clear_dungeon: clearDungeon,
   clear_trial: clearTrial,

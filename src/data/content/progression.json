@@ -1,6 +1,6 @@
 {
   "gemMastery": {
-    "thresholds": ["1e3", "1e5", "1e7", "1e9"],
+    "thresholds": ["1e3", "1e5", "1e7", "1e9", "1e11", "1e13", "1e15", "1e17"],
     "perTier": [
       {
         "stat": "production.rate",
@@ -75,6 +75,23 @@
       "kind": "ascension",
       "page": "shop",
       "minProgress": 0.25
+    },
+    {
+      "kind": "tool_line",
+      "page": "production",
+      "minProgress": 0.25
+    },
+    {
+      "kind": "worker_slot",
+      "page": "production"
+    },
+    {
+      "kind": "skill_points",
+      "page": "skills"
+    },
+    {
+      "kind": "wishlist",
+      "page": "summon"
     }
   ]
 }

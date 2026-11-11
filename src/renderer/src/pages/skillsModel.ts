@@ -29,17 +29,19 @@ import { effectText } from '../shell/modifierText';
 // ---- constellation geometry ---------------------------------------------------------------------
 
 /** The constellation's drawing box (SVG viewBox units); the centre star sits at CENTRE. */
-export const SKY = { x: -760, y: -640, w: 1520, h: 1280 } as const;
+export const SKY = { x: -1100, y: -1100, w: 2200, h: 2200 } as const;
 export const CENTRE = { x: 0, y: 0 } as const;
 /** Radius of each ring of the branches (ring 0 is open from the start, ring N with Ascension N). */
-export const RING_RADIUS = [170, 270, 370, 470] as const;
+export const RING_RADIUS = [330, 430, 530, 630] as const;
 /** Where the branch name sits, past the outer ring. */
-const LABEL_R = 548;
+const LABEL_R = 715;
 /** Degrees between two neighbouring gems of a ring, and the widest spread of a branch's ring. */
 const STEP_DEG = 20;
-const SPREAD_DEG = 48;
+/** The room a branch has on a ring: its sector of the circle, less a gap so neighbours never touch. */
+const SECTOR_DEG = 360 / SKILL_BRANCHES.length;
+const GAP_PX = 62;
 /** The weapon circles sit past the branches: their centre radius, outline radius and gem radius. */
-const CIRCLE_CENTRE_R = 650;
+const CIRCLE_CENTRE_R = 930;
 export const CIRCLE_R = 92;
 const CIRCLE_GEM_R = 58;
 
@@ -51,6 +53,11 @@ export const BRANCH_COLOUR: Record<SkillBranch, string> = {
   luck: '#b98cff',
   collection: '#f5c24c',
   automation: '#4fd8c4',
+  workers: '#ff9f5a',
+  forge: '#ff6f91',
+  elements: '#8fa8ff',
+  dungeons: '#d6c06a',
+  ascension: '#e8e1ff',
 };
 
 /** `closed`: its ring has not opened yet, or its weapon circle has not reached its step. */
@@ -179,7 +186,9 @@ function layoutBranch(infos: SkillNodeInfo[]): Map<string, { deg: number; ring: 
     const ordered = own
       .map((i, index) => ({ i, index, key: parentDeg(i) }))
       .sort((a, b) => a.key - b.key || a.index - b.index);
-    const step = ordered.length > 1 ? Math.min(STEP_DEG, SPREAD_DEG / (ordered.length - 1)) : 0;
+    const r = RING_RADIUS[ring] ?? RING_RADIUS.at(-1)!;
+    const spread = ((r * rad(SECTOR_DEG) - GAP_PX) / r) * (180 / Math.PI);
+    const step = ordered.length > 1 ? Math.min(STEP_DEG, spread / (ordered.length - 1)) : 0;
     ordered.forEach(({ i }, n) => {
       out.set(i.node.id, { deg: (n - (ordered.length - 1) / 2) * step, ring });
     });

@@ -389,7 +389,16 @@ export function workSites(
   return unlockedProducers(state, content, job).map((producer) => {
     const ids = workers[producer.id] ?? [];
     const level = producerLevel(state, job, producer.id);
-    const power = placePower(state, content, producer.id);
+    const ctx = producerContext(producer, job);
+    const power =
+      ids.length > 0
+        ? statValue(
+            'worker.power',
+            placePower(state, content, producer.id),
+            modifiers,
+            ctx,
+          ).toNumber()
+        : 1;
     const speed = ids.length > 0 ? harvestSpeed(job, modifiers, producer) : 1;
     return {
       job,
@@ -398,11 +407,13 @@ export function workSites(
       workers: ids,
       rate: producerRate(producer, job, modifiers, level)
         .mul(power)
-        .mul(depthYield(state, content, producer.id)),
-      dig: digPerSecond(state, content, producer.id, ids.length > 0 ? power : 0, speed),
+        .mul(statValue('depth.yield', depthYield(state, content, producer.id), modifiers, ctx)),
+      dig: digPerSecond(state, content, producer.id, ids.length > 0 ? power : 0, speed).mul(
+        statValue('depth.digRate', 1, modifiers, ctx),
+      ),
       crit: ids.length > 0 ? harvestCrit(content, job, modifiers, producer) : NO_HARVEST_CRIT,
       speed,
-      lucky: ids.length > 0 ? luckyFactor(content, job) : new Decimal(1),
+      lucky: ids.length > 0 ? luckyFactor(content, job, modifiers, ctx) : new Decimal(1),
     };
   });
 }

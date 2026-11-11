@@ -333,7 +333,7 @@
         }
       ],
       "material": {
-        "resource": "frost_core",
+        "resource": "storm_core",
         "chance": 0.6,
         "amount": 3
       }
@@ -416,7 +416,7 @@
         }
       ],
       "material": {
-        "resource": "frost_core",
+        "resource": "sanctum_core",
         "chance": 0.6,
         "amount": 4
       }
@@ -499,7 +499,7 @@
         }
       ],
       "material": {
-        "resource": "frost_core",
+        "resource": "void_core",
         "chance": 0.6,
         "amount": 5
       }

@@ -1,4 +1,5 @@
 import type { Content, Dungeon } from '../data';
+import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import {
   floorCount,
@@ -119,16 +120,22 @@ function floorStarLevel(
   return starLevelForKills(content, stageKills(state, stageKey(dungeon.id, difficulty, floor)));
 }
 
-/** What a stage's star levels multiply our damage by there: +5% a level (1 off a stage). */
+/** What a stage's star levels multiply our damage by there: +5% a level (1 off a stage); the
+ *  skill tree's `stars.damage` widens the step when `modifiers` are given. */
 export function stageDamageFactor(
   state: GameState,
   content: Content,
   dungeon: Dungeon,
   difficulty: Difficulty,
   floor: number,
+  modifiers: readonly Modifier[] = [],
 ): number {
   const level = floorStarLevel(state, content, dungeon, difficulty, floor);
-  return 1 + level * content.combat.stageStars.damagePerLevel;
+  if (level === 0) return 1;
+  const step = statValue('stars.damage', content.combat.stageStars.damagePerLevel, modifiers, {
+    dungeon: dungeon.id,
+  });
+  return 1 + level * Math.max(0, step.toNumber());
 }
 
 /** What a stage's star levels multiply its loot by (Money purses, material chances). */
@@ -138,9 +145,14 @@ export function stageLootFactor(
   dungeon: Dungeon,
   difficulty: Difficulty,
   floor: number,
+  modifiers: readonly Modifier[] = [],
 ): number {
   const level = floorStarLevel(state, content, dungeon, difficulty, floor);
-  return 1 + level * content.combat.stageStars.lootPerLevel;
+  if (level === 0) return 1;
+  const step = statValue('stars.loot', content.combat.stageStars.lootPerLevel, modifiers, {
+    dungeon: dungeon.id,
+  });
+  return 1 + level * Math.max(0, step.toNumber());
 }
 
 /**
@@ -183,12 +195,18 @@ export function setOverflow(
 }
 
 /** What the chest of one star level (1..6) pays on a difficulty. */
-export function stageChest(content: Content, difficulty: StarDifficulty, level: number): Price[] {
+export function stageChest(
+  content: Content,
+  difficulty: StarDifficulty,
+  level: number,
+  /** The skill tree's `stars.chest` (1 = as written). */
+  bonus: Decimal = new Decimal(1),
+): Price[] {
   const chests = content.combat.stageStars.chests;
   const factor = chests.difficulty[difficulty];
   const out: Price[] = [];
   for (const reward of chests.rewards) {
-    const amount = (reward.amounts[level - 1] ?? new Decimal(0)).mul(factor).floor();
+    const amount = (reward.amounts[level - 1] ?? new Decimal(0)).mul(factor).mul(bonus).floor();
     if (amount.gt(0)) out.push({ resource: reward.resource, amount });
   }
   return out;
@@ -207,8 +225,12 @@ export function payStageChests(
 ): void {
   const info = stageStars(state, content, key);
   if (!info || info.level <= info.chestsPaid) return;
+  const bonus = Decimal.max(
+    statValue('stars.chest', 1, collectModifiers(state, content), { dungeon: info.dungeonId }),
+    0,
+  );
   for (let level = info.chestsPaid + 1; level <= info.level; level++) {
-    for (const { resource, amount } of stageChest(content, info.difficulty, level)) {
+    for (const { resource, amount } of stageChest(content, info.difficulty, level, bonus)) {
       state.resources[resource] = (state.resources[resource] ?? new Decimal(0)).add(amount);
       const kind = content.resourceById.get(resource)?.kind;
       const into = kind === 'material' ? report.materials : report.currencies;

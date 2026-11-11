@@ -7,6 +7,7 @@ import type {
   RewardTrackEntry,
   SkillNode,
 } from '../data';
+import type { ModifierScope } from '../data';
 import { RANK_TIERS, MAX_STARS } from '../data';
 import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -549,14 +550,42 @@ export function resetEnhancements(state: GameState, content: Content, cardId: st
 // ---- modifiers ---------------------------------------------------------------------------------
 
 /**
+ * Where each weapon type's circle acts now: everywhere (scope null) while the fighting loadout's
+ * main card is of that type, and at the place of each worker whose card is of that type.
+ */
+function circleScopesOf(
+  state: GameState,
+  content: Content,
+): Record<string, (ModifierScope | null)[]> {
+  const out: Record<string, (ModifierScope | null)[]> = {};
+  const main = state.cards.loadouts.fighting.main;
+  const mainKind = main && state.cards.owned[main] ? content.cardById.get(main)?.item.kind : null;
+  if (mainKind) out[mainKind] = [null];
+  for (const { cardId, scope } of cardsAtWork(state, content)) {
+    if (!scope) continue;
+    const kind = content.cardById.get(cardId)?.item.kind;
+    if (kind) (out[kind] ??= []).push(scope);
+  }
+  return out;
+}
+
+/**
  * Account tree ranks (source `skill`), the reward track's cost cap bumps reached (source
  * `account`, id `level_<n>`), and the enhancements of cards in a loadout (source `enhancement`,
  * id `<card>:<option>`). Read by `collectModifiers`.
  */
 export function accountModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
+  const circleScopes = circleScopesOf(state, content);
   for (const node of content.account.tree) {
-    out.push(...skillModifiers(node, state.account.skills[node.id] ?? 0));
+    const mods = skillModifiers(node, state.account.skills[node.id] ?? 0);
+    if (!node.circle) out.push(...mods);
+    // A circle skill belongs to its weapon type: it acts only where a card of that type is at work
+    // (DESIGN.md §10 Hidden weapon circles).
+    else
+      for (const scope of circleScopes[node.circle] ?? []) {
+        out.push(...mods.map((m) => (scope ? { ...m, scope: { ...m.scope, ...scope } } : m)));
+      }
   }
   for (const entry of content.account.rewardTrack) {
     if (entry.costCap > 0 && state.account.level >= entry.level) {

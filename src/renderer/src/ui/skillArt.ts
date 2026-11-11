@@ -1,4 +1,4 @@
-import type { Content } from '../../../data';
+import type { Content, SkillBranch as TreeBranch } from '../../../data';
 import { resolveGlobal, type GameState } from '../../../game';
 import {
   STAR_CHART_VIEWBOX,
@@ -29,13 +29,32 @@ export function nodeStyle(content: Content, state: GameState): SkinStyle {
   return (recipe?.slice('ui-nodes-'.length) ?? 'a') as SkinStyle;
 }
 
+/**
+ * The five branches of the balance update have no gem sprites of their own yet (no new art in that
+ * update): each one borrows the gem of a branch of the same feel.
+ */
+const GEM_OF: Record<TreeBranch, SkillBranch> = {
+  logging: 'logging',
+  mining: 'mining',
+  combat: 'combat',
+  luck: 'luck',
+  collection: 'collection',
+  automation: 'automation',
+  workers: 'logging',
+  forge: 'mining',
+  elements: 'luck',
+  dungeons: 'combat',
+  ascension: 'automation',
+};
+
 /** A pixel gem node (24 px native, keystones 32 px) as a ready-to-place SVG. */
 export function skillGem(
   style: SkinStyle,
-  branch: SkillBranch,
+  treeBranch: TreeBranch,
   state: NodeState,
   keystone = false,
 ): string {
+  const branch = GEM_OF[treeBranch];
   const n = keystone ? 32 : 24;
   return `<svg class="sg${keystone ? ' sg--key' : ''}" viewBox="0 0 ${n} ${n}" aria-hidden="true">${skillNode(style, branch, state, keystone)}</svg>`;
 }

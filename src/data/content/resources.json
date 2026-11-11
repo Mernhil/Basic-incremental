@@ -110,6 +110,24 @@
     "tier": 3
   },
   {
+    "id": "storm_core",
+    "name": "Storm Core",
+    "kind": "material",
+    "tier": 4
+  },
+  {
+    "id": "sanctum_core",
+    "name": "Sanctum Core",
+    "kind": "material",
+    "tier": 5
+  },
+  {
+    "id": "void_core",
+    "name": "Void Core",
+    "kind": "material",
+    "tier": 6
+  },
+  {
     "id": "glimmer_dust",
     "name": "Glimmer Dust",
     "kind": "material",

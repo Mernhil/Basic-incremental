@@ -222,5 +222,38 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   // The loadout's elements against each boss.
   out.push(...elementModifiers(state, content));
 
-  return out;
+  return strengthen(out);
+}
+
+/** A modifier made `factor` times as strong: flat and percent scale, a mult its part above 1. */
+function scaled(m: Modifier, factor: Decimal): Modifier {
+  if (m.kind === 'flat' || m.kind === 'percent') return { ...m, value: m.value.mul(factor) };
+  if (m.kind === 'mult') return { ...m, value: m.value.sub(1).mul(factor).add(1) };
+  return m;
+}
+
+/**
+ * The skill tree's strength stats (DESIGN.md §10): `tool.strength` scales what the tool lines give
+ * (per job); `element.bonus`, `element.resist` and `element.production` what the elements give.
+ * They act on the finished list, so each reads only the skills' own modifiers.
+ */
+function strengthen(list: Modifier[]): Modifier[] {
+  const hasStrength = list.some(
+    (m) =>
+      m.stat === 'tool.strength' ||
+      m.stat === 'element.bonus' ||
+      m.stat === 'element.resist' ||
+      m.stat === 'element.production',
+  );
+  if (!hasStrength) return list;
+  const read = (stat: Stat, context: StatContext = {}): Decimal =>
+    Decimal.max(statValue(stat, 1, list, context), 0);
+  return list.map((m) => {
+    if (m.source.kind === 'upgrade' && m.source.id.startsWith('tool:')) {
+      return scaled(m, read('tool.strength', m.scope?.job ? { job: m.scope.job } : {}));
+    }
+    if (m.source.kind !== 'element') return m;
+    if (m.stat === 'production.rate') return scaled(m, read('element.production'));
+    return scaled(m, read(m.value.lt(0) ? 'element.resist' : 'element.bonus'));
+  });
 }

@@ -247,6 +247,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     const [, coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
     state.resources['frost_core'] = new Decimal(coreCost!.amount);
     state.resources['frost_sigil'] = new Decimal(sigilCost!.amount).mul(2);
+    state.resources['storm_core'] = new Decimal(1e6); // the Gold step also asks Thunderpeak's Core
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
     state.resources['money'] = new Decimal(1e9);
