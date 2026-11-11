@@ -28,6 +28,8 @@ import './skills.css';
 
 export interface SkillsContext extends PageContext {
   sound?: (id: SoundId) => void;
+  /** The view's title-bar subtitle ("21 of 275 learned"), set on every rebuild. */
+  subtitle?: (learned: number, total: number) => void;
 }
 
 /** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
@@ -268,8 +270,12 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   }
 
   function sky(v: TreeView): HTMLElement {
-    const { el, body } = frame(t.tree, t.learnedOf(v.learned, v.total));
-    el.classList.add('sk-frame');
+    // the title and the learned count are in the view's title bar (UI_RULES §2, table update 9d)
+    const el = h('section', 'frame sk-frame');
+    el.setAttribute('aria-label', t.tree);
+    el.dataset.deal = '';
+    const body = h('div', 'frame__body');
+    el.append(body);
     const stage = h('div', 'sk-stage');
     const box = h('div', 'sk-sky');
     const art = svgEl('svg', {
@@ -445,6 +451,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       n ? t.branchRank(t.branchShort[n.branch], n.rank, n.maxRank) : undefined,
     );
     el.classList.add('sk-detail');
+    el.dataset.deal = '';
     const points = h('div', 'sk-points');
     points.append(
       h('span', 'sk-points__label', t.pointsHeading),
@@ -547,6 +554,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       selected = (v.nodes.find((n) => n.canBuy) ?? v.nodes[0])?.id ?? null;
     }
     wrap.replaceChildren(sky(v), sidePanel(v));
+    ctx.subtitle?.(v.learned, v.total);
     status.textContent = message;
     if (focusKey) {
       const target =
