@@ -6,8 +6,6 @@ import {
   collectModifiers,
   createSaveText,
   Decimal,
-  effectiveDamage,
-  effectiveDrops,
   gemMastery,
   METALS,
   MODIFIER_SOURCE_KINDS,
