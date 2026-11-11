@@ -129,8 +129,6 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   // the panels carry the sighted headings; the page name stays for screen readers
   root.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
   const grid = h('div', 'set-grid');
-  const left = h('div', 'set-col');
-  const right = h('div', 'set-col');
 
   // ---- Display ----
   const display = frame(COPY.settings.display);
@@ -346,9 +344,9 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   });
   help.body.append(h('p', 'set-lead', COPY.settings.reportText), reportBtn, reportMsg, details);
 
-  left.append(display.el, saveFrame.el);
-  right.append(sound, help.el);
-  grid.append(left, right);
+  // two by two (UI_RULES §2 Settings grid): Display and Sound over Save and Help
+  for (const panel of [display.el, sound, saveFrame.el, help.el]) panel.dataset.deal = '';
+  grid.append(display.el, sound, saveFrame.el, help.el);
   root.append(grid);
 
   let savedText = '';

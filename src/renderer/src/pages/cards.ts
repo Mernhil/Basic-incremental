@@ -3,6 +3,9 @@ import { resolveCard, TIER_LABELS, type GameState, type TierUp } from '../../../
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
+import { dealDelay, dealIn, dealTokens } from '../table/motion';
+import { COLLECTION_COPY as T } from '../views/collection/copy';
+import { teamRows, type TeamRow } from '../views/collection/teamsModel';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
 import { createWeaponPanel } from '../ui/weaponPanel';
@@ -82,12 +85,14 @@ export interface CardsPageContext extends PageContext {
   model: CardsModel;
   /** Plays tier-up moments (star / tier ups, evolutions). */
   onTierUps?: (list: TierUp[]) => void;
+  /** Puts the tab bar in the view's title bar (the table style); without it the tabs sit in the page. */
+  setTools?: (el: HTMLElement | null) => void;
 }
 
 export function createCardsPage(
   page: HTMLElement,
   ctx: CardsPageContext,
-): { render(): void; show(tab: Tab, job?: Job): void } {
+): { render(): void; show(tab: Tab, job?: Job): void; opened(from: HTMLElement | null): void } {
   const { content, model } = ctx;
   /** Weapon types in their `items.json` order, for the collection groups. */
   const itemOrder: readonly string[] = content.items.types.map((type) => type.kind);
@@ -139,8 +144,12 @@ export function createCardsPage(
   });
   const status = h('p', 'cp-status');
   status.setAttribute('role', 'status');
-  // the tab bar lives inside the panel's top row (Collection and Loadouts alike, UI rework 2.2)
+  // the tab bar lives in the title bar (the table style) or inside the panel's top row
   page.append(panel, status);
+  ctx.setTools?.(tabBar);
+  const tabsInPage = (head: HTMLElement): void => {
+    if (!ctx.setTools) head.append(tabBar);
+  };
 
   function switchTab(next: Tab, job?: Job): void {
     tab = next;
@@ -205,9 +214,10 @@ export function createCardsPage(
     if (tab === 'bonds' || tab === 'trips') {
       const side: Panel = (tab === 'bonds' ? createBondsPanel : createExpeditionsPanel)(ctx);
       const head = h('div', 'cp-head');
-      head.append(tabBar);
+      tabsInPage(head);
       const wrap = h('div', 'cp-loadouts');
-      wrap.append(head, side.el);
+      side.el.dataset['deal'] = '';
+      wrap.append(...(head.childElementCount ? [head] : []), side.el);
       ticks.push(() => side.update());
       panel.replaceChildren(wrap);
     } else {
@@ -229,13 +239,17 @@ export function createCardsPage(
   function collection(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-wrap');
     const owned = entries.filter((e) => e.owned).length;
-    const el = h('section', 'frame cp-collection');
+    const el = h('section', 'cp-collection');
     el.setAttribute('aria-label', COPY.cards.collectionTab);
 
     // the top rows: the tabs and the shard count, then the filters, sort and found count
     const head = h('div', 'cp-head');
-    head.append(tabBar, h('span', 'cp-shards bi-num', COPY.cards.shardsLabel(model.shards(state))));
+    tabsInPage(head);
+    const shards = h('span', 'cp-shards bi-num', COPY.cards.shardsLabel(model.shards(state)));
+    if (!head.childElementCount) shards.classList.add('cp-shards--tool');
+    else head.append(shards);
     const bar = h('div', 'cp-toolbar');
+    bar.dataset['deal'] = '';
     const chips = h('div', 'cp-chips');
     chips.setAttribute('role', 'group');
     chips.setAttribute('aria-label', COPY.cards.filters);
@@ -276,6 +290,7 @@ export function createCardsPage(
     const count = h('span', 'cp-count bi-num', COPY.cards.found(owned, entries.length));
     const tools = h('div', 'cp-tools');
     tools.append(sortLabel, count);
+    if (shards.classList.contains('cp-shards--tool')) tools.prepend(shards);
     bar.append(chips, tools);
 
     // grid
@@ -357,7 +372,7 @@ export function createCardsPage(
       if (g.title) heading(g.title, g.key);
       g.list.forEach(cell);
     }
-    el.append(head, bar, grid);
+    el.append(...(head.childElementCount ? [head] : []), bar, grid);
     const pick = entries.find((e) => e.id === selected);
     wrap.append(el, pick ? detailPanel(state, pick) : h('div'));
     return wrap;
@@ -391,6 +406,7 @@ export function createCardsPage(
     if (e.owned && e.role) parts.push(COPY.cards.role[e.role.slot]);
     const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
+    el.dataset['deal'] = '';
 
     // the card at 2x with its large level badge, and the weapon panel's tiles beside it
     // (DESIGN.md §5, §11); the card's whole scale is picked on this row
@@ -684,14 +700,15 @@ export function createCardsPage(
   function loadouts(state: GameState, entries: CardEntry[]): HTMLElement {
     const wrap = h('div', 'cp-loadouts');
     const head = h('div', 'cp-head');
-    head.append(tabBar);
-    wrap.append(head);
+    tabsInPage(head);
+    if (head.childElementCount) wrap.append(head);
     const byId = new Map(entries.map((e) => [e.id, e]));
     // Only fighting has a loadout; logging and mining cards work on the Production page.
     for (const job of ['fighting'] as const) {
       const lo = model.loadout(state, job);
       const { el, body } = frame(COPY.cards.jobLoadout(JOB_NAMES[job]));
       el.classList.add('cp-job');
+      el.dataset['deal'] = '';
       const meter = h('div', 'cp-level');
       const row = h('div', 'cp-level__row');
       row.append(
@@ -774,7 +791,30 @@ export function createCardsPage(
       if (picking !== null) body.append(picker(state, entries, lo, picking, slotName));
       wrap.append(el);
     }
+    wrap.append(teamsPanel(teamRows(state, content)));
     return wrap;
+  }
+
+  /** The team each dungeon remembers (DESIGN.md §15 Loadout presets), under the slots. */
+  function teamsPanel(rows: TeamRow[]): HTMLElement {
+    const { el, body } = frame(T.teamsTitle);
+    el.classList.add('cp-teams');
+    el.dataset['deal'] = '';
+    body.append(h('p', 'cp-teams__about', T.teamsAbout));
+    const list = h('ul', 'cp-teams__list');
+    for (const r of rows) {
+      const li = h('li', `cp-team${r.active ? ' is-active' : ''}${r.overCap ? ' is-over' : ''}`);
+      li.append(
+        h('b', 'cp-team__dungeon', r.dungeonName),
+        h('span', 'cp-team__cards', r.cards.length ? r.cards.join(', ') : T.teamEmpty),
+        h('span', 'cp-team__cost bi-num', COPY.cards.costValue(r.cost, r.cap)),
+      );
+      if (r.active) li.append(h('span', 'cp-team__tag', T.teamActive));
+      else if (r.overCap) li.append(h('span', 'cp-team__tag', T.teamOver));
+      list.append(li);
+    }
+    body.append(list);
+    return el;
   }
 
   return {
@@ -785,6 +825,22 @@ export function createCardsPage(
     },
     show(next, job) {
       switchTab(next, job);
+    },
+    opened(from) {
+      // the grid's cards are dealt out of the pile, after the toolbar and the detail panel (motion E)
+      const body = page.parentElement;
+      if (!body) return;
+      if (model.signature(ctx.state()) !== last) build();
+      const limit = body.getBoundingClientRect().bottom;
+      const tiles = [...page.querySelectorAll<HTMLElement>('.cp-grid .cp-cell, .cp-slots .cp-slot')]
+        .filter((c) => c.getBoundingClientRect().top < limit)
+        .slice(0, 16);
+      const rect = from?.isConnected ? from.getBoundingClientRect() : null;
+      const t = dealTokens();
+      dealIn(tiles, {
+        from: rect && rect.width > 0 ? rect : null,
+        delay: dealDelay(2, t) + 60,
+      });
     },
   };
 }

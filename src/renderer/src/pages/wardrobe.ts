@@ -43,6 +43,7 @@ import {
   type SlotView,
 } from './wardrobeModel';
 import { fitCard } from '../ui/pixelFit';
+import { dealDelay, dealIn, dealTokens } from '../table/motion';
 import { createWeaponSkinsTab } from './weaponSkinsTab';
 import './wardrobe.css';
 
@@ -65,7 +66,10 @@ const LEFT: readonly CosmeticSlot[] = ['border', 'finish', 'attack', 'tick'];
 const RIGHT: readonly CosmeticSlot[] = ['number', 'table', 'cursor'];
 const t = COPY.wardrobe;
 
-export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { render(): void } {
+export function createWardrobePage(
+  page: HTMLElement,
+  ctx: WardrobeContext,
+): { render(): void; opened(from: HTMLElement | null): void } {
   const { content } = ctx;
   let slot: CosmeticSlot = 'border';
   let selected: string | null = null;
@@ -106,6 +110,8 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
     tabs.append(b);
   }
   skinsRoot.hidden = true;
+  skinsRoot.dataset['deal'] = '';
+  tabs.dataset['deal'] = '';
   wrap.classList.add('wd--inv');
   page.append(wrap, status, skinsRoot);
   // the equipped Wardrobe style draws the plates, tiles and ladder (wardrobeSkin.ts)
@@ -153,6 +159,7 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
     // Left: everything, filtered. Right: the selected item, then the card wearing it.
     const main = inventory(items);
     const side = h('div', 'wd-side');
+    side.dataset['deal'] = '';
     // The item with its Equip and Upgrade buttons leads, so they are on screen at once.
     if (item) {
       side.append(
@@ -392,11 +399,14 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
   // ---- item row --------------------------------------------------------------------------------
   /** The inventory: the filter chips, then one grid of every item the filter lets through. */
   function inventory(items: WardrobeItem[]): HTMLElement {
-    const { el: box, body } = frame(t.inventory);
-    box.classList.add('wd-inventory');
+    // no frame: the chips and the tiles sit on the table (UI_RULES.md §2, "The Wardrobe view")
+    const box = h('div', 'wd-inventory');
+    const body = box;
+    body.append(h('h2', 'sr-only', t.inventory));
     const tiles = inventoryTiles(itemTiles(items, content, 'all', previewCard), filter);
     const owned = tiles.filter((i) => i.owned).length;
     const el = h('section', 'wd-items');
+    el.dataset['deal'] = '';
     const head = h('div', 'wd-items__head');
     const heading = h('h3', 'px-display wd-items__title', t.inventoryFilters[filter]);
     heading.id = 'wd-items-title';
@@ -630,6 +640,21 @@ export function createWardrobePage(page: HTMLElement, ctx: WardrobeContext): { r
   }
 
   return {
+    opened(from) {
+      // the grid's tiles are dealt out of the pile after the chips and the item panel (motion E)
+      const body = page.parentElement;
+      if (!body || filter === 'skins') return;
+      if (signature(ctx.state()) !== last) build();
+      const limit = body.getBoundingClientRect().bottom;
+      const tiles = [...wrap.querySelectorAll<HTMLElement>('.wd-grid > li')]
+        .filter((c) => c.getBoundingClientRect().top < limit)
+        .slice(0, 16);
+      const rect = from?.isConnected ? from.getBoundingClientRect() : null;
+      dealIn(tiles, {
+        from: rect && rect.width > 0 ? rect : null,
+        delay: dealDelay(2, dealTokens()) + 60,
+      });
+    },
     render() {
       if (filter === 'skins') {
         skinsTab.render();

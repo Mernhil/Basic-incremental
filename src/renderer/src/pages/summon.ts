@@ -81,11 +81,15 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   const { content } = ctx;
   // the panel carries the sighted headings; the page name stays for screen readers
   page.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
-  const table = h('div', 'sm-table px-panel');
+  const table = h('div', 'sm-table');
   // the deck backs and the hand's cards are 1x: 132 CSS px on a 100 % screen, whole device pixels
   fitCard(table, { want: 132 });
   page.append(table);
-  const top = h('div', 'sm-top');
+  // the three columns, each dealt in as one section of the view (motion E), the hand across the bottom
+  const colDecks = h('div', 'sm-col sm-col--decks');
+  const colWish = h('div', 'sm-col sm-col--wish');
+  const colOdds = h('div', 'sm-col sm-col--odds');
+  for (const col of [colDecks, colWish, colOdds]) col.dataset['deal'] = '';
 
   const decks = new Map<string, DeckUi>();
   const views = new Map<string, PortalView>();
@@ -97,7 +101,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   let wishActive = false;
 
   // ---- odds table (every portal side by side) ----
-  const odds = h('section', 'sm-odds px-well');
+  const odds = h('section', 'sm-odds px-panel');
   odds.setAttribute('aria-label', COPY.summon.oddsTitle);
   const oddsBody = h('table', 'sm-odds__table');
   oddsBody.setAttribute('aria-label', COPY.summon.oddsTableLabel);
@@ -148,7 +152,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   // ---- the wishlist (the Card Portal's cards, marked to hunt) ----
-  const wish = h('section', 'sm-wish px-well');
+  const wish = h('section', 'sm-wish px-panel');
   wish.setAttribute('aria-label', COPY.summon.wishlistTitle);
   wish.hidden = true;
   const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
@@ -206,7 +210,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   // ---- the last hand ----
-  const handBox = h('section', 'sm-hand');
+  const handBox = h('section', 'sm-hand px-panel');
+  handBox.dataset['deal'] = '';
   const handHead = h('header', 'sm-hand__head');
   const handSum = h('p', 'sm-hand__summary bi-num');
   handHead.append(h('h2', 'sm-hand__title px-display', COPY.summon.handTitle), handSum);
@@ -317,7 +322,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
 
   // ---- decks ----
   function deckShell(kind: string, locked: boolean): HTMLElement {
-    const root = h('article', 'sm-deck');
+    const root = h('article', 'sm-deck px-panel');
     root.dataset['kind'] = kind;
     if (locked) root.classList.add('is-locked');
     return root;
@@ -454,10 +459,12 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   if (left) left.classList.add('sm-deck--left');
   focusDeck?.classList.add('sm-deck--focus');
   for (const r of rest) r.classList.add('sm-deck--right');
-  top.append(...(left ? [left] : []), ...(focusDeck ? [focusDeck] : []), odds, ...rest);
+  colDecks.append(...(left ? [left] : []), ...(focusDeck ? [focusDeck] : []), ...rest);
+  colWish.append(wish);
+  colOdds.append(odds);
 
   // ---- the daily scrolls ----
-  const daily = h('section', 'sm-daily');
+  const daily = h('section', 'sm-daily px-panel');
   const dailyGives = h('p', 'sm-daily__gives bi-num');
   const dailyBtn = h('button', 'px-btn');
   dailyBtn.type = 'button';
@@ -471,7 +478,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     if (result.ok) ctx.apply(result.state);
     render();
   });
-  table.append(daily, top, wish, handBox);
+  colDecks.prepend(daily);
+  table.append(colDecks, colWish, colOdds, handBox);
   renderHand();
 
   function render(): void {

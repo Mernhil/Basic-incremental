@@ -708,7 +708,32 @@ html .wd-stage:not(#_px) {
   color: var(--bi-frame-ink-muted);
 }
 .wd-inventory .wd-grid {
-  max-height: calc(100vh - 330px);
+  max-height: calc(100vh - 250px);
   overflow-y: auto;
   padding: 6px;
+}
+
+/* ---- the table style (UI_RULES.md §2, "The Wardrobe view", mockup 4i; table update 9c) ----
+   No frame round the inventory: the chips and the tiles sit on the table, the item's panel is the
+   one framed block. A tile lifts on hover (transform only). */
+.wd-inventory {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.wd-inventory .wd-chips {
+  margin: 0;
+}
+.wd-tile {
+  transition: transform 140ms var(--deal-ease, ease-out);
+}
+@media (hover: hover) {
+  .wd-tile:hover {
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wd-tile {
+    transition: none;
+  }
 }

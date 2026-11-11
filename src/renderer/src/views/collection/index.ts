@@ -24,13 +24,14 @@ export const collectionViews: ViewPackage = {
           return { text: T.owned(owned, ctx.content.cards.length) };
         },
       },
-      mount: (host, ctx) =>
+      mount: (host, ctx, api) =>
         createCardsPage(host, {
           content: ctx.content,
           model: ctx.cards,
           state: ctx.state,
           apply: ctx.apply,
           onTierUps: ctx.onTierUps,
+          setTools: api.setTools,
         }),
     },
     {

@@ -30,15 +30,17 @@ export function createAchievementsPage(
   const t = COPY.achievements;
 
   const panelBook = h('div', 'ac-panel px-panel');
+  panelBook.dataset.deal = '';
   page.append(panelBook);
 
   // ---- sticker book ----
   const book = h('section', 'ac-book');
   book.setAttribute('aria-labelledby', 'ac-book-title');
   const head = h('header', 'ac-book__head');
-  const title = h('h2', 'ac-book__title px-display', t.book);
+  // the title and the count are in the view's title bar (UI_RULES §2, table update 9d)
+  const title = h('h2', 'ac-book__title px-display sr-only', t.book);
   title.id = 'ac-book-title';
-  const summary = h('p', 'ac-book__summary bi-num');
+  const summary = h('p', 'ac-book__summary bi-num sr-only');
   const meter = h('span', 'ac-book__meter');
   meter.setAttribute('aria-hidden', 'true');
   const meterFill = h('i');
