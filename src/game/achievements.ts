@@ -3,7 +3,7 @@ import { skillPointsSpent, weaponCircles } from './account';
 import { grantCard } from './cards';
 import { Decimal } from './num';
 import { isProducerUnlocked, mineLevel, producersOf } from './production';
-import { stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
+import { floorCount, floorPosition, stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
 import { stageStarLevel, totalStageStarLevels } from './stageStars';
 import { activeWorkers, forgeWorker } from './workers';
 import type { TickReport } from './report';
@@ -115,13 +115,27 @@ function measure(
     case 'dungeon_starred': {
       const done = content.dungeons.some((d) =>
         stageFloors(content, d).every((floor) =>
-          STAR_DIFFICULTIES.every(
+          (condition.difficulty ? [condition.difficulty] : STAR_DIFFICULTIES).every(
             (diff) =>
               stageStarLevel(state, content, stageKey(d.id, diff, floor)) >= condition.level,
           ),
         ),
       );
       return { value: done ? 1 : 0, target: 1 };
+    }
+    case 'tier_cleared': {
+      const beaten = content.dungeons.filter(
+        (d) =>
+          floorPosition(state, d, condition.difficulty).best >= floorCount(d, condition.difficulty),
+      ).length;
+      return { value: beaten, target: condition.count ?? content.dungeons.length };
+    }
+    case 'endless_depth': {
+      const deepest = Math.max(
+        0,
+        ...content.dungeons.map((d) => floorPosition(state, d, 'endless').best),
+      );
+      return { value: deepest, target: condition.depth };
     }
     case 'star_total':
       return { value: totalStageStarLevels(state, content), target: condition.amount };

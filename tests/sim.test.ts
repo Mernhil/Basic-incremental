@@ -136,18 +136,20 @@ describe('balance sim: greedy buyer', () => {
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
-  it('spends Money on the economy and leaves the gems to the card upgrades waiting for them', () => {
+  it('spends Money on the economy, its spare gems on training, and leaves the Cores to the card upgrades', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 6;
     squire.level = 40;
     state.resources['moss_core'] = new Decimal(10);
-    state.resources['iron_gem'] = new Decimal(600);
+    state.resources['copper_gem'] = new Decimal(6000);
     state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought.some((id) => id.startsWith('mine:') || id.startsWith('tree:'))).toBe(true);
-    expect(after.resources['iron_gem']!.toNumber()).toBe(600);
+    // Training is paid in gems (DESIGN.md §6): the spare Copper Gems go into Sharpen.
+    expect(bought).toContain('train:sharpen');
+    expect(after.resources['copper_gem']!.toNumber()).toBeLessThan(6000);
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 

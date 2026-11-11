@@ -24,6 +24,10 @@
   --rv-back: #b53a82;
   --rv-back-lo: #5c1747;
 }
+.rv[data-kind='skins'] {
+  --rv-back: #1f8a78;
+  --rv-back-lo: #0b4339;
+}
 .rv.is-leaving {
   opacity: 0;
   transition: opacity 0.25s;

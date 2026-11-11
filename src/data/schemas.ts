@@ -1418,7 +1418,20 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
     count: z.number().int().min(1).default(1),
   }),
   /** A dungeon with every stage of every star difficulty at `level` or more. */
-  z.strictObject({ kind: z.literal('dungeon_starred'), level: z.number().int().min(1).max(6) }),
+  /** A dungeon with every stage of every star difficulty (or only `difficulty`) at `level` or more. */
+  z.strictObject({
+    kind: z.literal('dungeon_starred'),
+    level: z.number().int().min(1).max(6),
+    difficulty: z.enum(['normal', 'hard', 'nightmare']).optional(),
+  }),
+  /** Dungeons whose last-floor boss was beaten on `difficulty` (`count`, default every dungeon). */
+  z.strictObject({
+    kind: z.literal('tier_cleared'),
+    difficulty: z.enum(['hard', 'nightmare']),
+    count: z.number().int().min(1).optional(),
+  }),
+  /** The deepest endless depth reached in any dungeon. */
+  z.strictObject({ kind: z.literal('endless_depth'), depth: z.number().int().min(1) }),
   /** Star levels earned over all stages. */
   z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
   /** Workers at work on trees and mines now. */
