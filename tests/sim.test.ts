@@ -294,7 +294,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     );
   });
 
-  it('marks the cards it is building on the wishlist: unowned, up to the limit per rarity', () => {
+  it('marks the cards it is building on the wishlist, then unowned ones, up to the limit per rarity', () => {
     const state = markWishlist(freshState(), content);
     const portal = content.portals.find((p) => p.id === 'card_portal')!;
     expect(state.cards.wishlist.length).toBeGreaterThan(0);
@@ -304,9 +304,15 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
       );
       expect(marked.length).toBeLessThanOrEqual(portal.wishlistPerRarity);
     }
-    expect(state.cards.wishlist.every((id) => !state.cards.owned[id])).toBe(true);
+    // the lead (a Common below ★6) is hunted for its copies; the rest are cards it does not own
+    expect(state.cards.wishlist).toContain('ember_squire');
+    expect(
+      state.cards.wishlist
+        .filter((id) => content.cardById.get(id)!.rarity !== 'common')
+        .every((id) => !state.cards.owned[id]),
+    ).toBe(true);
     // a card it comes to own leaves the list
-    const id = state.cards.wishlist[0]!;
+    const id = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'rare')!;
     state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
     expect(markWishlist(state, content).cards.wishlist).not.toContain(id);
   });
