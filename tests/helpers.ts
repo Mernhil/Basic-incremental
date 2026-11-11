@@ -220,3 +220,15 @@ export function withBossHp(
   );
   return { ...base, dungeons, dungeonById: new Map(dungeons.map((d) => [d.id, d])) };
 }
+
+/**
+ * The same content where only account levels give skill points: `freshState` counts every
+ * achievement as unlocked, and each would give a point (DESIGN.md §10), so exact skill point tests
+ * use this.
+ */
+export function levelPointsOnly(base: Content = content): Content {
+  return {
+    ...base,
+    account: { ...base.account, levels: { ...base.account.levels, pointsPerAchievement: 0 } },
+  };
+}

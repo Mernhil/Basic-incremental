@@ -5,6 +5,7 @@ import {
   respecSkills,
   skillPoints,
   skillTree,
+  weaponCircles,
 } from '../../../game';
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
@@ -28,6 +29,11 @@ import './skills.css';
 export interface SkillsContext extends PageContext {
   sound?: (id: SoundId) => void;
 }
+
+/** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
+const START_SCALE = 1.15;
+const MIN_SCALE = 0.8;
+const MAX_SCALE = 2.4;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const svgEl = (tag: string, attrs: Record<string, string | number>): SVGElement => {
@@ -57,6 +63,10 @@ function starField(): SVGElement {
   return g;
 }
 
+/** The gem art knows locked, open and owned: a closed gem is drawn locked, a maxed one owned. */
+const gemState = (n: NodeView): 'locked' | 'open' | 'owned' =>
+  n.state === 'maxed' ? 'owned' : n.state === 'closed' ? 'locked' : n.state;
+
 export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { render(): void } {
   const { content } = ctx;
   const t = COPY.skills;
@@ -73,7 +83,12 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
 
   const view = (): TreeView => {
     const s = ctx.state();
-    return treeView(content, skillTree(s, content), skillPoints(s, content));
+    return treeView(
+      content,
+      skillTree(s, content),
+      skillPoints(s, content),
+      weaponCircles(s, content),
+    );
   };
   const respec = () => {
     const s = ctx.state();
@@ -86,6 +101,9 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       s.cosmetics.loadout.slots.nodes,
       s.account.skills,
       s.account.level,
+      s.prestigeCount,
+      weaponCircles(s, content).map((c) => c.step),
+      Object.keys(s.achievements).length,
       r.enabled,
       r.free,
       r.priceText,
@@ -127,6 +145,128 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   }
 
   // ---- the constellation ----
+
+  /** Pan and zoom of the sky: pixels per sky unit and the box's offset in the stage. */
+  const camera = { scale: START_SCALE, x: 0, y: 0, placed: false };
+  const clampScale = (s: number): number => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
+
+  /** Sizes and places the sky box in its stage from the camera (gems keep their pixel size). */
+  function applyCamera(stage: HTMLElement, box: HTMLElement): void {
+    const rect = stage.getBoundingClientRect();
+    if (!camera.placed && rect.width > 0) {
+      // first view: the centre star in the middle of the stage
+      camera.x = rect.width / 2 + SKY.x * camera.scale;
+      camera.y = rect.height / 2 + SKY.y * camera.scale;
+      camera.placed = true;
+    }
+    box.style.width = `${SKY.w * camera.scale}px`;
+    box.style.height = `${SKY.h * camera.scale}px`;
+    box.style.left = `${camera.x}px`;
+    box.style.top = `${camera.y}px`;
+  }
+
+  /** Zooms to `scale`, keeping the point under (cx, cy) of the stage where it is. */
+  function zoomAt(
+    stage: HTMLElement,
+    box: HTMLElement,
+    scale: number,
+    cx: number,
+    cy: number,
+  ): void {
+    const next = clampScale(scale);
+    const k = next / camera.scale;
+    camera.x = cx - (cx - camera.x) * k;
+    camera.y = cy - (cy - camera.y) * k;
+    camera.scale = next;
+    applyCamera(stage, box);
+  }
+
+  function enablePanZoom(stage: HTMLElement, box: HTMLElement): void {
+    let drag: {
+      id: number;
+      sx: number;
+      sy: number;
+      cx: number;
+      cy: number;
+      moved: boolean;
+    } | null = null;
+    stage.addEventListener(
+      'wheel',
+      (e) => {
+        e.preventDefault();
+        const r = stage.getBoundingClientRect();
+        zoomAt(
+          stage,
+          box,
+          camera.scale * Math.exp(-e.deltaY * 0.0015),
+          e.clientX - r.left,
+          e.clientY - r.top,
+        );
+      },
+      { passive: false },
+    );
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.button !== 0 || (e.target as HTMLElement).closest('.sk-zoom')) return;
+      drag = {
+        id: e.pointerId,
+        sx: e.clientX,
+        sy: e.clientY,
+        cx: camera.x,
+        cy: camera.y,
+        moved: false,
+      };
+    });
+    stage.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.sx;
+      const dy = e.clientY - drag.sy;
+      if (!drag.moved && Math.hypot(dx, dy) < 5) return;
+      if (!drag.moved) {
+        drag.moved = true;
+        stage.setPointerCapture(e.pointerId);
+        stage.classList.add('is-panning');
+      }
+      camera.x = drag.cx + dx;
+      camera.y = drag.cy + dy;
+      applyCamera(stage, box);
+    });
+    const end = (e: PointerEvent): void => {
+      if (!drag || e.pointerId !== drag.id) return;
+      // a drag is not a click on the gem it ended over
+      if (drag.moved) {
+        stage.addEventListener('click', (c) => c.stopPropagation(), { capture: true, once: true });
+      }
+      drag = null;
+      stage.classList.remove('is-panning');
+    };
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
+  }
+
+  function zoomButtons(stage: HTMLElement, box: HTMLElement): HTMLElement {
+    const bar = h('div', 'sk-zoom');
+    const mk = (text: string, label: string, go: () => void): void => {
+      const b = h('button', 'button button--ghost sk-zoom__btn', text);
+      b.type = 'button';
+      b.setAttribute('aria-label', label);
+      b.addEventListener('click', go);
+      bar.append(b);
+    };
+    const mid = (): [number, number] => {
+      const r = stage.getBoundingClientRect();
+      return [r.width / 2, r.height / 2];
+    };
+    mk('+', t.zoomIn, () => zoomAt(stage, box, camera.scale * 1.25, ...mid()));
+    mk('−', t.zoomOut, () => zoomAt(stage, box, camera.scale / 1.25, ...mid()));
+    mk('⌂', t.zoomReset, () => {
+      camera.scale = START_SCALE;
+      camera.placed = false;
+      applyCamera(stage, box);
+    });
+    bar.append(h('span', 'sk-zoom__hint', t.panHint));
+    return bar;
+  }
+
   function sky(v: TreeView): HTMLElement {
     const { el, body } = frame(t.tree, t.learnedOf(v.learned, v.total));
     el.classList.add('sk-frame');
@@ -138,6 +278,17 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       'aria-hidden': 'true',
     });
     art.append(starField());
+    // the rings: an open ring is a faint circle, a closed one dashed and dimmer
+    for (const r of v.rings) {
+      art.append(
+        svgEl('circle', {
+          class: `sk-ring${r.open ? '' : ' is-closed'}`,
+          cx: CENTRE.x,
+          cy: CENTRE.y,
+          r: r.radius,
+        }),
+      );
+    }
     // faint rays behind each branch
     for (const b of v.branches) {
       art.append(
@@ -148,6 +299,17 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
           x2: b.x,
           y2: b.y,
           stroke: b.colour,
+        }),
+      );
+    }
+    // the weapon circles: a dim outline while hidden
+    for (const c of v.circles) {
+      art.append(
+        svgEl('circle', {
+          class: `sk-circle${c.revealed ? '' : ' is-hidden'}`,
+          cx: c.x,
+          cy: c.y,
+          r: c.radius,
         }),
       );
     }
@@ -165,6 +327,27 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       );
     }
     box.append(art);
+
+    // ring notes ("Opens with Ascension 2") on the closed rings, between two branches
+    for (const r of v.rings) {
+      if (!r.note) continue;
+      const note = h('span', 'sk-ring-note', r.note);
+      const a = (-60 * Math.PI) / 180;
+      note.style.left = px(CENTRE.x + r.radius * Math.cos(a));
+      note.style.top = py(CENTRE.y + r.radius * Math.sin(a));
+      box.append(note);
+    }
+
+    // circle names under their outline
+    for (const c of v.circles) {
+      const label = h('span', `sk-circle-label${c.revealed ? '' : ' is-hidden'}`);
+      label.style.left = px(c.x);
+      label.style.top = py(c.y + c.radius + 12);
+      label.append(c.revealed ? `${c.name} · ${c.stepText}` : '?');
+      label.setAttribute('role', 'img');
+      label.setAttribute('aria-label', c.label);
+      box.append(label);
+    }
 
     // branch labels with learned / total (HTML, so the text stays sharp at every size)
     for (const b of v.branches) {
@@ -196,8 +379,12 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     list.setAttribute('aria-label', t.tree);
     for (const n of v.nodes) list.append(nodeEl(n));
     box.append(list);
-    stage.append(box);
+    stage.append(box, zoomButtons(stage, box));
+    enablePanZoom(stage, box);
     body.append(stage);
+    // the stage has no size until it is in the page: place the sky once it is
+    queueMicrotask(() => applyCamera(stage, box));
+    applyCamera(stage, box);
     return el;
   }
 
@@ -205,7 +392,10 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     const li = h('li', 'sk-node-slot');
     li.style.left = px(n.x);
     li.style.top = py(n.y);
-    const b = h('button', `sk-node is-${n.state}${n.canBuy ? ' can-buy' : ''}`);
+    const b = h(
+      'button',
+      `sk-node is-${n.state}${n.canBuy ? ' can-buy' : ''}${n.kind === 'large' ? ' is-large' : ''}`,
+    );
     b.type = 'button';
     b.dataset.node = n.id;
     b.dataset.key = `node-${n.id}`;
@@ -213,12 +403,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     b.setAttribute('aria-label', n.label);
     b.setAttribute('aria-pressed', String(n.id === selected));
     const gem = h('span', 'sk-node__gem');
-    gem.innerHTML = skillGem(
-      nodeStyle(content, ctx.state()),
-      n.branch,
-      n.state === 'maxed' ? 'owned' : n.state,
-      n.keystone,
-    );
+    gem.innerHTML = skillGem(nodeStyle(content, ctx.state()), n.branch, gemState(n), n.keystone);
     b.classList.toggle('is-key', n.keystone);
     b.append(gem);
     // the rank sits on the gem's corner once it has one
@@ -274,12 +459,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     el.style.setProperty('--gem', n.colour);
     const art = h('div', 'sk-art');
     const gem = h('span', `sk-detail__gem is-${n.state}`);
-    gem.innerHTML = skillGem(
-      nodeStyle(content, ctx.state()),
-      n.branch,
-      n.state === 'maxed' ? 'owned' : n.state,
-      n.keystone,
-    );
+    gem.innerHTML = skillGem(nodeStyle(content, ctx.state()), n.branch, gemState(n), n.keystone);
     gem.classList.toggle('is-key', n.keystone);
     const text = h('div', 'sk-art__text');
     const effect = n.state === 'maxed' ? n.now : n.next;

@@ -24,7 +24,14 @@ import {
   type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
-import { content, CRYSTAL_UNIT, floorsContent, freshState, withDps } from './helpers';
+import {
+  content,
+  CRYSTAL_UNIT,
+  floorsContent,
+  freshState,
+  levelPointsOnly,
+  withDps,
+} from './helpers';
 
 /** First level price of a mine or tree (the shipped numbers are tuning, DESIGN.md §4). */
 const firstLevel = (kind: 'mine' | 'tree', id: string): number =>
@@ -104,7 +111,7 @@ describe('balance sim: greedy buyer', () => {
     const state = freshState();
     state.account.level = 3;
     state.cards.owned['ember_squire']!.tier = 'silver';
-    const { state: after, bought } = greedyBuy(state, content);
+    const { state: after, bought } = greedyBuy(state, levelPointsOnly(content));
     expect(bought.filter((id) => id.startsWith('skill:'))).toHaveLength(2);
     expect(after.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThan(0);
   });
@@ -113,7 +120,7 @@ describe('balance sim: greedy buyer', () => {
     // no Money and no crystals (a new game holds one pull)
     const state = rich(freshState(), 'money', 0);
     state.resources['summon_crystal'] = new Decimal(0);
-    const { bought } = greedyBuy(state, content);
+    const { bought } = greedyBuy(state, levelPointsOnly(content));
     expect(bought).toEqual([]);
   });
 });
@@ -254,8 +261,8 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
   it('spends skill points by priority (Might before the data order)', () => {
     const state = freshState();
     state.account.level = 3;
-    const { state: after } = greedyBuy(state, content);
-    expect(after.account.skills).toEqual({ might: 2 });
+    const { state: after } = greedyBuy(state, levelPointsOnly(content));
+    expect(after.account.skills).toEqual({ combat_s1: 2 });
   });
 
   it('picks the best enhancement set for the budget, rebuilt when the budget grows', () => {

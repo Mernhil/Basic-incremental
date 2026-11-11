@@ -433,14 +433,22 @@ describe('card ranks and portals', () => {
   it('checks the account tree, reward track and enhancement lists', () => {
     const bad = raw();
     const account = bad.account as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    account['tree'][1].requires = ['nowhere'];
-    account['tree'][0].perRank[0].scope = { dungeon: 'nowhere' };
+    account['skeleton'][1].requires = ['nowhere'];
+    account['branches'][0].small[0].perRank[0].scope = { dungeon: 'nowhere' };
     account['rewardTrack'][0].cosmetics = ['nope'];
+    account['rewardRepeat'].resources[0].resource = 'nothing';
+    account['circles'][0].skills[1].requires = ['sword_nowhere'];
     const enh = bad.enhancements as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     delete enh['cards']['core_titan'];
     enh['cards']['nobody'] = enh['cards']['ember_squire'];
     const issues = issuesFor(bad);
-    expect(issues).toContain('account.json › tree › [1] › requires › [0]: unknown node "nowhere"');
+    expect(issues).toContain(
+      'account.json › tree › [1] › requires › [0]: unknown node "logging_nowhere"',
+    );
+    expect(issues).toContain(
+      'account.json › rewardRepeat › resources › [0]: unknown resource "nothing"',
+    );
+    expect(issues.some((i) => i.includes('unknown node "sword_nowhere"'))).toBe(true);
     expect(issues).toContain(
       'account.json › tree › [0] › perRank › [0] › scope › dungeon: unknown dungeon "nowhere"',
     );
