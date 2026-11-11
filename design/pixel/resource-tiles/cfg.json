@@ -1,0 +1,3 @@
+{"title":"Tiles, round 1: Oak and Copper Quarry","scale":4,"groups":[
+{"title":"Oak (first item is today's)","items":[{"src":"current-oak.png","name":"today"},{"src":"oak-1-island.png"},{"src":"oak-2-stump.png"},{"src":"oak-3-planter.png"},{"src":"oak-4-pedestal.png"},{"src":"oak-5-glow.png"}]},
+{"title":"Copper Quarry (first item is today's)","items":[{"src":"current-copper.png","name":"today"},{"src":"copper-1-outcrop.png"},{"src":"copper-2-cart.png"},{"src":"copper-3-pickaxe.png"}]}]}
