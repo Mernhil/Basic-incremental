@@ -373,3 +373,5 @@ export {
   nextBossSlam,
   type BossPattern,
 } from './bossAttacks';
+export * from './elements';
+export * from './cardStats';

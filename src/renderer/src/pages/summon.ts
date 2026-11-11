@@ -3,6 +3,8 @@ import {
   defaultRng,
   portalInfo,
   pull,
+  setWishlisted,
+  wishlistView,
   type GameState,
   type PullCount,
 } from '../../../game';
@@ -23,6 +25,7 @@ import {
   oddsTable,
   portalView,
   revealViews,
+  wishlistPanelView,
   type HandCardView,
   type PortalView,
   type RevealView,
@@ -56,6 +59,8 @@ type DeckUi = {
   pityBar: HTMLElement;
   pityFill: HTMLElement;
   line: HTMLElement;
+  /** "Hunting: ..." under the deck (card portal with a wishlist only). */
+  hunt: HTMLElement | null;
   single: PullButton;
   ten: PullButton;
 };
@@ -76,6 +81,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   let hand: HandEntry[] = [];
   let handViews: RevealView[] = [];
   let oddsKey = '';
+  let wishKey = '';
+  let wishActive = false;
 
   // ---- odds table (every portal side by side) ----
   const odds = h('section', 'sm-odds px-well');
@@ -119,7 +126,66 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     }
     oddsBody.replaceChildren(thead, tbody);
     const notes = [...new Set(list.map((v) => v.guarantee))];
+    if (wishActive) notes.push(COPY.summon.oddsWishlist);
     oddsNote.replaceChildren(...notes.map((n) => h('span', '', n)));
+  }
+
+  // ---- the wishlist (the Card Portal's cards, marked to hunt) ----
+  const wish = h('section', 'sm-wish px-well');
+  wish.setAttribute('aria-label', COPY.summon.wishlistTitle);
+  wish.hidden = true;
+  const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
+
+  function renderWishlist(): void {
+    if (!wishPortal) return;
+    const s = ctx.state();
+    const info = wishlistView(s, content, wishPortal.id);
+    if (!info) return;
+    const v = wishlistPanelView(info, s, content);
+    wishActive = v.active;
+    const hunt = decks.get(wishPortal.id)?.hunt;
+    if (hunt) set(hunt, v.hunting);
+    const key = JSON.stringify(v);
+    if (key === wishKey) return;
+    wishKey = key;
+    wish.hidden = false;
+    const focused = (document.activeElement as HTMLElement | null)?.dataset['wish'];
+    const rows = v.rows.map((r) => {
+      const row = h('div', 'sm-wish__row');
+      row.dataset['rarity'] = r.rarity;
+      row.setAttribute('role', 'group');
+      row.setAttribute('aria-label', r.label);
+      const head = h('span', 'sm-wish__rarity');
+      head.append(h('i', 'sm-odds__swatch'), h('span', '', r.name));
+      head.append(h('b', 'sm-wish__count bi-num', r.countText));
+      const list = h('span', 'sm-wish__cards');
+      for (const c of r.cards) {
+        const b = h(
+          'button',
+          `sm-wish__card px-btn px-btn--quiet${c.marked ? ' is-marked' : ''}`,
+          c.name,
+        );
+        b.type = 'button';
+        b.dataset['wish'] = c.id;
+        b.setAttribute('aria-pressed', String(c.marked));
+        b.setAttribute('aria-label', c.label);
+        b.classList.toggle('is-blocked', c.blocked);
+        b.addEventListener('click', () => {
+          const result = setWishlisted(ctx.state(), content, c.id, !c.marked, wishPortal.id);
+          if (result.ok) ctx.apply(result.state);
+          render();
+        });
+        list.append(b);
+      }
+      row.append(head, list);
+      return row;
+    });
+    wish.replaceChildren(
+      h('h2', 'sm-wish__title px-display', COPY.summon.wishlistTitle),
+      h('p', 'sm-wish__about', v.about),
+      ...rows,
+    );
+    if (focused) wish.querySelector<HTMLElement>(`[data-wish="${focused}"]`)?.focus();
   }
 
   // ---- the last hand ----
@@ -286,7 +352,10 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     const ten = pullButton(COPY.summon.pullTen, true, () => doPull(portalId, 10));
     buttons.append(single.el, ten.el);
     root.append(h('h2', 'sm-deck__name px-display', portal.name), line, stack, pity, buttons);
-    decks.set(portalId, { root, stack, pityValue, pityBar, pityFill, line, single, ten });
+    const hunt =
+      portal.kind === 'cards' && portal.wishlistPerRarity > 0 ? h('p', 'sm-deck__hunt') : null;
+    if (hunt) line.after(hunt);
+    decks.set(portalId, { root, stack, pityValue, pityBar, pityFill, line, hunt, single, ten });
     return root;
   }
 
@@ -314,7 +383,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   if (left) left.classList.add('sm-deck--left');
   for (const r of rest) r.classList.add('sm-deck--right');
   top.append(...(left ? [left] : []), odds, ...rest);
-  table.append(top, handBox);
+  table.append(top, wish, handBox);
   renderHand();
 
   function render(): void {
@@ -351,6 +420,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         b.el.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
       }
     }
+    renderWishlist();
     renderOdds();
   }
 

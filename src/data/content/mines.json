@@ -24,7 +24,8 @@
       "hardnessGrowth": "2.2",
       "yieldGrowth": "1.6",
       "digRate": "1"
-    }
+    },
+    "element": "earth"
   },
   {
     "id": "iron_deeps",
@@ -51,7 +52,8 @@
       "hardnessGrowth": "2.2",
       "yieldGrowth": "1.6",
       "digRate": "1"
-    }
+    },
+    "element": "earth"
   },
   {
     "id": "crystal_grotto",
@@ -78,6 +80,7 @@
       "hardnessGrowth": "2.2",
       "yieldGrowth": "1.6",
       "digRate": "1"
-    }
+    },
+    "element": "crystal"
   }
 ]

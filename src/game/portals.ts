@@ -5,7 +5,7 @@ import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { canAfford, finalPrice, pay, type Price } from './production';
 import type { CardGain } from './report';
 import type { Rng } from './rng';
-import type { GameState, PortalCounters } from './state';
+import { cloneState, type GameState, type PortalCounters } from './state';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 
@@ -82,17 +82,52 @@ export function pityThreshold(portal: Portal, modifiers: readonly Modifier[] = [
 
 type PoolEntry = Portal['pool'][number];
 
-/** Picks by weight among the entries at or above `min` (the whole pool when null). */
-function pick(portal: Portal, min: Rarity | null, rng: Rng): PoolEntry {
+/**
+ * Picks by weight among the entries at or above `min` (the whole pool when null). With a
+ * `wishlist`, a pick that lands on a rarity with marked cards is redirected to one of them,
+ * chosen with the pool's weights among the marked cards of that rarity (DESIGN.md §7 Wishlist).
+ * The redirect reuses what is left of the same roll (where it fell inside the entry it hit, which
+ * is uniform and independent of the rarity), so it draws nothing extra: the chance of each rarity
+ * and the whole random stream are the same with and without a wishlist.
+ */
+function pick(
+  portal: Portal,
+  min: Rarity | null,
+  rng: Rng,
+  wishlist: ReadonlySet<string> | null = null,
+): PoolEntry {
   const entries = min ? portal.pool.filter((e) => atLeast(e.rarity, min)) : portal.pool;
   const list = entries.length > 0 ? entries : portal.pool;
   const total = list.reduce((a, e) => a + e.weight, 0);
   let roll = rng() * total;
+  let hit = list[list.length - 1]!;
+  let inside = 0.999999;
   for (const entry of list) {
+    if (roll < entry.weight) {
+      hit = entry;
+      inside = roll / entry.weight;
+      break;
+    }
     roll -= entry.weight;
-    if (roll < 0) return entry;
   }
-  return list[list.length - 1]!;
+  if (!wishlist) return hit;
+  const marked = portal.pool.filter((e) => e.rarity === hit.rarity && wishlist.has(e.itemId));
+  if (marked.length === 0) return hit;
+  let target = inside * marked.reduce((a, e) => a + e.weight, 0);
+  for (const entry of marked) {
+    if (target < entry.weight) return entry;
+    target -= entry.weight;
+  }
+  return marked[marked.length - 1]!;
+}
+
+/** The marked cards of a portal's pool, or null when the portal has no wishlist or none is marked. */
+function wishlistOf(state: GameState, portal: Portal): ReadonlySet<string> | null {
+  if (portal.kind !== 'cards' || portal.wishlistPerRarity <= 0) return null;
+  const marked = new Set(
+    state.cards.wishlist.filter((id) => portal.pool.some((e) => e.itemId === id)),
+  );
+  return marked.size > 0 ? marked : null;
 }
 
 /** Adds one pulled item to the collection (mutates `state`, a fresh copy). */
@@ -142,16 +177,17 @@ export function pull(
     portal.pool[0]!.rarity,
   );
   let { pity, pulls, pityHits } = counters(state, portalId);
+  const wishlist = wishlistOf(state, portal);
   let guaranteeMet = false;
   const results: PullResult[] = [];
   for (let i = 0; i < count; i++) {
     const byPity = pity + 1 >= threshold;
     const needsGuarantee = count === 10 && i === count - 1 && !guaranteeMet && !byPity;
     const entry = byPity
-      ? pick(portal, portal.pity.rarity, rng)
+      ? pick(portal, portal.pity.rarity, rng, wishlist)
       : needsGuarantee
-        ? pick(portal, portal.tenPullGuarantee, rng)
-        : pick(portal, null, rng);
+        ? pick(portal, portal.tenPullGuarantee, rng, wishlist)
+        : pick(portal, null, rng, wishlist);
     const flash = rng() < portal.reveal.upgradeFlashChance && entry.rarity !== lowest;
     const orb = flash ? RARITIES[rarityRank(entry.rarity) - 1]! : entry.rarity;
     results.push({
@@ -170,6 +206,73 @@ export function pull(
   next.portals[portalId] = { pity, pulls, pityHits };
   grantAccountXp(next, content, content.account.xp.perPull.mul(count), modifiers);
   return { ok: true, state: next, results };
+}
+
+export type WishlistFailure = 'unknown' | 'full';
+
+/**
+ * Marks or unmarks a card of a card portal's pool (DESIGN.md §7 Wishlist). At most
+ * `wishlistPerRarity` cards per rarity can be marked; the order marked is kept. Unmarking always
+ * works; marking an already marked card changes nothing.
+ */
+export function setWishlisted(
+  state: GameState,
+  content: Content,
+  cardId: string,
+  marked: boolean,
+  portalId = 'card_portal',
+): { ok: true; state: GameState } | { ok: false; reason: WishlistFailure } {
+  const portal = content.portals.find((p) => p.id === portalId);
+  const entry = portal?.pool.find((e) => e.itemId === cardId);
+  if (!portal || !entry || portal.kind !== 'cards') return { ok: false, reason: 'unknown' };
+  const has = state.cards.wishlist.includes(cardId);
+  if (marked === has) return { ok: true, state };
+  if (marked) {
+    const same = state.cards.wishlist.filter(
+      (id) => portal.pool.find((e) => e.itemId === id)?.rarity === entry.rarity,
+    ).length;
+    if (same >= portal.wishlistPerRarity) return { ok: false, reason: 'full' };
+  }
+  const next = cloneState(state);
+  next.cards.wishlist = marked
+    ? [...state.cards.wishlist, cardId]
+    : state.cards.wishlist.filter((id) => id !== cardId);
+  return { ok: true, state: next };
+}
+
+/** A portal's wishlist for the Summon page: the pool's cards by rarity with what is marked. */
+export interface WishlistInfo {
+  /** At least one card of this portal is marked: pulls are redirected. */
+  active: boolean;
+  byRarity: {
+    rarity: Rarity;
+    limit: number;
+    marked: number;
+    cards: { itemId: string; marked: boolean }[];
+  }[];
+}
+
+/** Null for an unknown portal or one with no wishlist. */
+export function wishlistView(
+  state: GameState,
+  content: Content,
+  portalId: string,
+): WishlistInfo | null {
+  const portal = content.portals.find((p) => p.id === portalId);
+  if (!portal || portal.kind !== 'cards' || portal.wishlistPerRarity <= 0) return null;
+  const set = state.cards.wishlist;
+  const byRarity = RARITIES.filter((r) => portal.pool.some((e) => e.rarity === r)).map((rarity) => {
+    const cards = portal.pool
+      .filter((e) => e.rarity === rarity)
+      .map((e) => ({ itemId: e.itemId, marked: set.includes(e.itemId) }));
+    return {
+      rarity,
+      limit: portal.wishlistPerRarity,
+      marked: cards.filter((c) => c.marked).length,
+      cards,
+    };
+  });
+  return { active: byRarity.some((r) => r.marked > 0), byRarity };
 }
 
 export interface PortalInfo {

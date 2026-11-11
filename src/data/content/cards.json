@@ -359,7 +359,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -368,6 +368,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -392,7 +410,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -401,6 +419,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -1156,7 +1183,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -1165,6 +1192,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -1189,7 +1225,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -1198,6 +1234,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -1222,7 +1267,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -1231,6 +1276,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -1255,7 +1309,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -1264,6 +1318,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -1293,7 +1356,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -1302,6 +1365,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -1331,7 +1403,7 @@
       "kind": "spear"
     },
     "main": {
-      "description": "Steady hits every 0.8 s",
+      "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -1340,6 +1412,15 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2142,7 +2223,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2151,6 +2232,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2175,7 +2274,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2184,6 +2283,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2208,7 +2325,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2217,6 +2334,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2241,7 +2376,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2250,6 +2385,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2274,7 +2427,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2283,6 +2436,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2312,7 +2483,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2321,6 +2492,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2350,7 +2539,7 @@
       "kind": "bow"
     },
     "main": {
-      "description": "Steady hits every 1.2 s",
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2359,6 +2548,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2690,7 +2897,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2699,6 +2906,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2723,7 +2948,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2732,6 +2957,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2756,7 +2999,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2765,6 +3008,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2789,7 +3050,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2798,6 +3059,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2827,7 +3106,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2836,6 +3115,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
@@ -2865,7 +3162,7 @@
       "kind": "scythe"
     },
     "main": {
-      "description": "Steady hits every 1 s",
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
@@ -2874,6 +3171,24 @@
           "scope": {
             "job": "fighting"
           }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },

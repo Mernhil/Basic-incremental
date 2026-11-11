@@ -3,6 +3,11 @@
  * "save" (never "file" or "data"), "boss", "bars" for HP, "Export save" / "Import save".
  * Written with the ux-copy guidelines: verb-first actions, errors say what happened and what to do.
  */
+/** The share of the next star the bar holds, as a whole percent. */
+export function starPercent(fill: number, need: number): number {
+  return need <= 0 ? 100 : Math.min(100, Math.floor((fill / need) * 100 + 1e-9));
+}
+
 export const COPY = {
   update: {
     message: 'Update ready — restart to install',
@@ -290,6 +295,27 @@ export const COPY = {
     mainAbility: 'Main ability',
     supportEffect: 'Support effect',
     workerAbility: 'Worker ability',
+    /** Stat tiles on every card (DESIGN.md §5 Show the stats). */
+    stats: {
+      damage: 'Damage / s',
+      output: 'Output',
+      health: 'Health',
+      hit: 'Hits every',
+      strike: 'Strikes every',
+      crits: 'Crits',
+      seconds: (n: number) => `${+n.toFixed(2)} s`,
+      crit: (chance: number, damage: string) => `${+(chance * 100).toFixed(1)}% · ×${damage}`,
+      outputValue: (power: string) => `×${power}`,
+      damageTip: 'Average damage per second as the main card: hits, signature attacks and crits.',
+      outputTip: 'The multiplier this worker gives its tree or mine.',
+      compare: (name: string, parts: string[]) => `vs ${name}: ${parts.join(', ')}`,
+      compareMain: 'equipped main',
+      comparePart: (percent: number, what: string) =>
+        `${percent >= 0 ? '+' : '−'}${Math.abs(Math.round(percent * 100))}% ${what}`,
+      same: 'about the same',
+      equipped: 'This is the equipped main card.',
+      working: 'This is the card working that place.',
+    },
     worksAt: 'Works at',
     notWorking: 'Not working',
     workerHint: 'Put it to work on a tree or mine on the Production page.',
@@ -635,6 +661,22 @@ export const COPY = {
     noteCopy: '+1 copy',
     handSummary: (pulls: number, news: number, copies: number) =>
       `${pulls} ${pulls === 1 ? 'pull' : 'pulls'} · ${news} new · ${copies} ${copies === 1 ? 'copy' : 'copies'}`,
+    wishlistTitle: 'Wishlist',
+    wishlistAbout: (n: number) =>
+      `Mark up to ${n} cards per rarity to hunt. A pull of that rarity then lands on one of your marked cards. The chance of each rarity, the price and the pity stay the same.`,
+    wishlistRow: (rarity: string, marked: number, limit: number) =>
+      `${rarity}: ${marked} of ${limit} marked`,
+    wishlistCount: (marked: number, limit: number) => `${marked} / ${limit}`,
+    wishlistCard: (name: string, marked: boolean, full: boolean) =>
+      marked
+        ? `${name}, marked. Click to unmark`
+        : full
+          ? `${name}, not marked. This rarity is full: unmark a card first`
+          : `${name}, not marked. Click to mark`,
+    wishlistHunting: (names: string) => `Hunting: ${names}`,
+    wishlistNone: 'No card marked',
+    wishlistFull: 'This rarity has no room left. Unmark a card first.',
+    oddsWishlist: 'Wishlist on: a pull of a rarity with a marked card lands on a marked card.',
     handTitle: 'Your last hand',
     handEmpty: 'Draw from a deck and the cards you get will wait here.',
     handLabel: (n: number) => `Your last hand, ${n} ${n === 1 ? 'card' : 'cards'}`,
@@ -932,8 +974,11 @@ export const COPY = {
     xpLabel: (pct: number) => `${pct}% of the way to the next level`,
     xpFull: 'XP full',
     xpOf: (now: string, need: string) => `${now} / ${need} XP`,
-    /** Copies come in fractions at low tiers (0.25, 0.5), so the numbers are shown trimmed. */
+    /** Stars cost fractions of a copy, so the bar reads as a share of the next star. */
     starLine: (fill: number, need: number, next: number) =>
+      `${starPercent(fill, need)}% to ★${next}`,
+    /** The exact numbers, in the tooltip. */
+    starTitle: (fill: number, need: number, next: number) =>
       `${+fill.toFixed(3)} / ${+need.toFixed(3)} copies to ★${next}`,
     /** The star dust button: tops up what the star bar lacks. */
     dustStar: (next: number, cost: number, have: number) =>
@@ -1186,6 +1231,7 @@ export const COPY = {
     overBudget: 'Not enough points left',
     open: 'Click to choose',
     lockedStar: 'Locked',
+    opensAtLevel: (level: number) => `Opens at level ${level}`,
     starLabel: (name: string, effect: string, cost: string, state: string) =>
       `${name}: ${effect}, ${cost}. ${state}`,
     reset: 'Reset (free)',
@@ -1194,7 +1240,8 @@ export const COPY = {
     reasons: {
       unknown: 'That option does not exist.',
       'not-owned': 'Own this card first.',
-      locked: 'Enhancements unlock at Silver ★1.',
+      locked: 'Enhancements are not open for this card yet.',
+      level: 'That option opens at a higher card level.',
       already: 'Already chosen.',
       'over-budget': 'Not enough points left. Reset to choose again.',
     },

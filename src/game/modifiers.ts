@@ -9,6 +9,7 @@ import { accountModifiers } from './account';
 import { upgradeModifiers } from './upgrades';
 import { trainingModifiers } from './training';
 import { toolModifiers } from './toolLines';
+import { elementModifiers } from './elements';
 
 /**
  * The shared modifier pipeline (DESIGN.md §14). Every tunable number goes through
@@ -30,6 +31,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'account',
   /** Upgrade shelf purchases (DESIGN.md §4). */
   'upgrade',
+  /** Elements in combat: weakness, resistance and matching workers (DESIGN.md §6). */
+  'element',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -215,6 +218,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   out.push(...upgradeModifiers(state, content));
   out.push(...trainingModifiers(state, content));
   out.push(...toolModifiers(state, content));
+
+  // The loadout's elements against each boss.
+  out.push(...elementModifiers(state, content));
 
   return out;
 }

@@ -458,3 +458,90 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
   font-size: 14px;
   line-height: 1.2;
 }
+
+/* ---- the wishlist: the Card Portal's cards by rarity, marked to hunt (DESIGN.md §7) ---- */
+.sm-deck__hunt {
+  margin: 0;
+  max-width: 28ch;
+  font-size: 13px;
+  text-align: center;
+  color: var(--px-muted);
+}
+.sm-wish {
+  display: grid;
+  gap: 6px;
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding: 10px 14px;
+  box-sizing: border-box;
+}
+.sm-wish[hidden] {
+  display: none;
+}
+.sm-wish__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.1;
+}
+.sm-wish__about {
+  margin: 0;
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.sm-wish__row {
+  --rc: var(--sm-common);
+  display: grid;
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+  align-items: start;
+  gap: 10px;
+}
+@media (max-width: 800px) {
+  .sm-wish__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.sm-wish__row[data-rarity='uncommon'] {
+  --rc: var(--sm-uncommon);
+}
+.sm-wish__row[data-rarity='rare'] {
+  --rc: var(--sm-rare);
+}
+.sm-wish__row[data-rarity='epic'] {
+  --rc: var(--sm-epic);
+}
+.sm-wish__row[data-rarity='legendary'] {
+  --rc: var(--sm-legendary);
+}
+.sm-wish__row[data-rarity='mythic'] {
+  --rc: var(--sm-mythic);
+}
+.sm-wish__row[data-rarity='void'] {
+  --rc: var(--sm-void);
+}
+.sm-wish__rarity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+.sm-wish__count {
+  margin-left: auto;
+  color: var(--px-muted);
+}
+.sm-wish__cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.sm-wish__card {
+  padding: 3px 8px;
+  font-size: 13px;
+}
+.sm-wish__card.is-marked {
+  color: #ffd968;
+  box-shadow: inset 0 0 0 var(--fs-sm) var(--rc);
+}
+.sm-wish__card.is-blocked {
+  opacity: 0.5;
+}

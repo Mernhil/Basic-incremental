@@ -50,9 +50,18 @@ describe('weapon panel model', () => {
     const w = view('ember_squire', { stars: 3, starFill: 4 })!;
     const [, , mult3, mult4] = [1, ...content.cardRules.power.starMultiplier];
     expect(w.starBar?.fill).toBe(4);
-    expect(w.starBar?.text).toBe(`4 / ${w.starBar?.need} copies to ★4`);
+    // A star costs fractions of a copy, so the bar reads as a share of the next star.
+    expect(w.starBar?.text).toBe('100% to ★4');
+    expect(w.starBar?.title).toBe(`4 / ${w.starBar?.need} copies to ★4`);
     expect(w.starBar?.impact).toBe(`×${mult3} → ×${mult4}`);
     expect(w.starBar?.gauge).toBeCloseTo(Math.min(1, 4 / w.starBar!.need));
+  });
+
+  it('shows a part-filled bar as a percentage, exact numbers in the title', () => {
+    const w = view('ember_squire', { stars: 1, starFill: 0.05 })!;
+    const need = w.starBar!.need;
+    expect(w.starBar?.text).toBe(`${Math.floor((0.05 / need) * 100)}% to ★2`);
+    expect(w.starBar?.title).toBe(`0.05 / ${+need.toFixed(3)} copies to ★2`);
   });
 
   it('has no star bar at six stars', () => {

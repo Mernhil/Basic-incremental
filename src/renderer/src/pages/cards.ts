@@ -431,7 +431,17 @@ export function createCardsPage(
       fact(COPY.cards.workerAbility, e.mainAbility);
       fact(COPY.cards.worksAt, e.workplace ?? COPY.cards.notWorking);
     }
-    body.append(main, facts);
+    // damage, health, hit speed and crits, with the compare line (DESIGN.md §5 Show the stats)
+    const stats = h('dl', 'cp-stats');
+    for (const t of e.stats.tiles) {
+      const d = h('div', 'px-tile cp-fact');
+      if (t.title) d.title = t.title;
+      d.append(h('dt', '', t.label), h('dd', '', t.value));
+      stats.append(d);
+    }
+    body.append(main, stats);
+    if (e.stats.compare) body.append(h('p', 'cp-compare', e.stats.compare));
+    body.append(facts);
 
     if (e.owned) {
       const chart = model.chart(state, e.id);
@@ -482,6 +492,13 @@ export function createCardsPage(
   const pixelState = (st: StarView['state']): 'owned' | 'open' | 'locked' =>
     st === 'chosen' ? 'owned' : st === 'open' ? 'open' : 'locked';
 
+  /** An option's name, with the card level that opens it under it while that is not reached. */
+  function optionName(s: StarView): HTMLElement {
+    const name = h('span', 'cp-option__name', s.name);
+    if (s.levelText) name.append(h('span', 'cp-option__level', s.levelText));
+    return name;
+  }
+
   function enhanceBox(id: string, v: StarChartView): HTMLElement {
     const t = COPY.enhance;
     const box = h('section', `cp-enhance${v.unlocked ? '' : ' is-locked'}`);
@@ -502,14 +519,15 @@ export function createCardsPage(
 
     // the chart: the pixel sky of the equipped nodes style, with a button laid over each star
     const style = nodeStyle(ctx.content, ctx.state());
+    const sky = v.stars.filter((s) => s.onChart);
     const chart = h('div', 'cp-chart');
     chart.style.aspectRatio = `${CHART.w} / ${CHART.h}`;
     chart.innerHTML = chartSky(
       style,
-      v.stars.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
-      v.stars.slice(1).map((_, i) => [i, i + 1] as const),
+      sky.map((s) => ({ x: s.x, y: s.y, state: pixelState(s.state) })),
+      sky.slice(1).map((_, i) => [i, i + 1] as const),
     );
-    for (const s of v.stars) {
+    for (const s of sky) {
       const star = h('button', `cp-star is-${s.state}`);
       star.type = 'button';
       star.tabIndex = -1; // the list below is the keyboard way in
@@ -551,7 +569,7 @@ export function createCardsPage(
       mark.innerHTML = chartStar(style, pixelState(s.state));
       b.append(
         mark,
-        h('span', 'cp-option__name', s.name),
+        optionName(s),
         h('span', 'cp-option__effect bi-num', s.effect),
         h('span', 'cp-option__cost bi-num', s.costText),
       );

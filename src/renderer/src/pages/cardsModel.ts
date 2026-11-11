@@ -15,6 +15,8 @@ export interface Requirement {
   met: boolean;
   /** "3 of 7", "Lv 28 / 28", "done" ... */
   value: string;
+  /** The exact numbers behind a shortened value (the star bar's percent). */
+  title?: string;
 }
 
 export interface UpgradeStep {
@@ -65,8 +67,10 @@ export interface WeaponView {
     /** fill / need, 0..1. */
     gauge: number;
     ready: boolean;
-    /** "4 / 7 copies to ★4" */
+    /** "40% to ★4" */
     text: string;
+    /** The exact numbers for the tooltip: "0.05 / 0.125 copies to ★2". */
+    title: string;
     /** "×1.6 → ×2" */
     impact: string;
     /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
@@ -98,6 +102,13 @@ export interface WeaponView {
   } | null;
   /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
   endNote: string | null;
+}
+
+/** The four stat tiles of a card and the line comparing it with the card it would replace. */
+export interface StatTiles {
+  tiles: Array<{ label: string; value: string; title: string }>;
+  /** "vs Ember Squire: +12% damage, −8% health"; the card's own note when there is nothing to compare. */
+  compare: string;
 }
 
 export interface LoadoutRole {
@@ -142,6 +153,8 @@ export interface CardEntry {
   tier: UpgradeStep | null;
   /** The weapon panel's data (level ring, star bar, tier-up cost); null when not owned. */
   weapon: WeaponView | null;
+  /** The stat tiles with their compare line (DESIGN.md §5 Show the stats). */
+  stats: StatTiles;
 }
 
 /** The fighting loadout (the only job with one, DESIGN.md §5 Loadouts). */
