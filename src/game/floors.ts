@@ -16,13 +16,13 @@ import {
  * A dungeon is a stack of floors. A normal floor is a wave of 3 to 5 of the dungeon's normal
  * enemies, every 10th floor holds a mini-boss and the last floor holds the dungeon's boss. A
  * floor's strength is measured against the boss (`combat.json` `floors`): floor `f` of `n` is
- * worth `hpGrowth^(f - n)` of the boss's HP and attack, so the ladder is steady and ends on the
- * boss as it is in `dungeons.json`.
+ * worth `floorGrowth^(f - n)` of the boss's HP and attack (`floorGrowth`, the dungeon's floor
+ * rate), so the ladder is steady and ends on the boss as it is in `dungeons.json`.
  *
  * Every dungeon has three difficulty tiers with their own floors: Normal, then Hard and
  * Nightmare, which multiply every enemy and every drop (`combat.json` `difficulties`). Beating a
  * tier's last-floor boss unlocks the next one, and beating Nightmare unlocks the dungeon's
- * endless depths: floors without end below the Nightmare boss, each `hpGrowth` above the one
+ * endless depths: floors without end below the Nightmare boss, each `floorGrowth` above the one
  * before, with a mini-boss on every 10th.
  *
  * Pure: no state is changed here. The fight itself is in combat.ts.
@@ -251,9 +251,17 @@ const seedOf = (id: string): number => {
 };
 
 /**
+ * A dungeon's floor rate (DESIGN.md §3 Ladders): its own `floorGrowth` from `dungeons.json`
+ * (Dungeons 4 to 6 climb more gently), else `combat.json` `floors.hpGrowth`.
+ */
+export function floorGrowth(content: Content, dungeon: Dungeon): number {
+  return dungeon.floorGrowth ?? content.combat.floors.hpGrowth;
+}
+
+/**
  * The floor's worth against the boss of its difficulty, as a multiple of that boss's HP and
- * attack: `hpGrowth^(floor - floors)`, so the last floor is exactly the boss. An endless depth
- * `d` is `hpGrowth^d`: the first depth is one step above the Nightmare boss.
+ * attack: `floorGrowth^(floor - floors)`, so the last floor is exactly the boss. An endless depth
+ * `d` is `floorGrowth^d`: the first depth is one step above the Nightmare boss.
  */
 export function floorScale(
   content: Content,
@@ -262,7 +270,7 @@ export function floorScale(
   difficulty: Difficulty = 'normal',
 ): number {
   const from = difficulty === 'endless' ? 0 : floorCount(dungeon, difficulty);
-  return Math.pow(content.combat.floors.hpGrowth, floor - from);
+  return Math.pow(floorGrowth(content, dungeon), floor - from);
 }
 
 /** Past this an endless depth's worth no longer fits a plain number. */
@@ -281,7 +289,7 @@ function floorScaleDecimal(
   const scale = floorScale(content, dungeon, floor, difficulty);
   if (scale < MAX_PLAIN_SCALE) return new Decimal(scale);
   const from = difficulty === 'endless' ? 0 : floorCount(dungeon, difficulty);
-  return Decimal.pow(content.combat.floors.hpGrowth, floor - from);
+  return Decimal.pow(floorGrowth(content, dungeon), floor - from);
 }
 
 /**

@@ -127,7 +127,7 @@ function pinNoElements(bundled: Content): Content {
 /**
  * The numbers the rule tests were written against, pinned so the balance run (DESIGN.md §14) can
  * tune them without moving those tests: the Mossy Cellar's boss (12,900 HP, 15 damage every 3 s,
- * purses of 1,000 to 1,500), Hard and Nightmare at a thousand times the tier below (purses half as
+ * purses of 1,000 to 1,500), the wave and mini-boss shares of the floors, Hard and Nightmare at a thousand times the tier below (purses half as
  * much again a tier), the card XP curve from 10 XP, and base stats stepping by tier as card effects do. Balance tests read the shipped numbers from `loadContent()`.
  */
 function pinRuleNumbers(bundled: Content): Content {
@@ -149,6 +149,15 @@ function pinRuleNumbers(bundled: Content): Content {
         }
       : d,
   );
+  // The floor shares of table update balance pass 2: a run of more than ENEMY_DROP_ROLLS kills is
+  // paid at its average, so the split tests count on these waves staying few enough per span.
+  const floors = {
+    ...bundled.combat.floors,
+    waveHpShare: 0.08,
+    waveAttackShare: 0.5,
+    miniBossHpShare: 0.6,
+    miniBossAttackShare: 0.55,
+  };
   const power = { ...bundled.cardRules.power, statTier: bundled.cardRules.power.tier };
   const xpCurve = { ...bundled.cardRules.xpCurve, base: new Decimal(10) };
   const difficulties = {
@@ -160,7 +169,7 @@ function pinRuleNumbers(bundled: Content): Content {
     dungeons,
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
     cardRules: { ...bundled.cardRules, power, xpCurve },
-    combat: { ...bundled.combat, difficulties },
+    combat: { ...bundled.combat, difficulties, floors },
   };
 }
 
