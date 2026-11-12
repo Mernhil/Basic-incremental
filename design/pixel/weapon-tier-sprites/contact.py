@@ -6,7 +6,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 src, out = Path(sys.argv[1]), Path(sys.argv[2])
 out.mkdir(parents=True, exist_ok=True)
-TYPES = ["sword", "greatsword", "spear", "lance", "hammer", "scythe", "pickaxe", "logging_axe"]
+TYPES = ["sword", "greatsword", "spear", "lance", "hammer", "scythe", "pickaxe", "logging_axe", "bow", "staff"]
 ALL = ["sword", "greatsword", "spear", "lance", "dagger", "hammer", "bow", "staff", "scythe", "pickaxe", "logging_axe"]
 try:
     F = ImageFont.truetype("arial.ttf", 15); FB = ImageFont.truetype("arialbd.ttf", 20)

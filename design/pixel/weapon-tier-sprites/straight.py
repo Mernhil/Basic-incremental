@@ -101,21 +101,21 @@ def trace(alpha: np.ndarray) -> str:
 
 # --- the top-tier sheets (Prismatic T5, Mythic and Void T6, Heirloom) ---------------------------------
 # one sheet per type: three rows of looks, named on the sheet (the names are in the PR description)
-TOP_TYPES = ["sword", "greatsword", "spear", "lance", "hammer", "scythe", "pickaxe", "logging_axe"]
+TOP_TYPES = ["sword", "greatsword", "spear", "lance", "hammer", "scythe", "pickaxe", "logging_axe", "bow", "staff"]
 TOP_ROWS = [("t5", 5), ("t6m", 6), ("t6v", 6)]  # art suffix and the number of looks (BASE, +1 ...) of each row
 HEIRLOOM_ORDER = ["sword", "greatsword", "spear", "lance", "dagger", "hammer",
                   "bow", "staff", "scythe", "pickaxe", "logging_axe"]  # top row 6, bottom row 5
 HEIRLOOM_SHEETS = {"hm": "heirloom_mythic_side", "hv": "heirloom_void_side"}  # blue = Mythic side, purple = Void side
 
 
-def solid_pictures(sheet: Image.Image, merge: int, drop_text: bool):
+def solid_pictures(sheet: Image.Image, merge: int, drop_text: bool, text_dil: int = 3):
     """The weapons of a transparent sheet: [(box, RGBA)] with the sheet's low-alpha noise gone, one pixel of
     fringe trimmed and the edge softened (same as `keyed`). Text (dark, small) is dropped; a fragment that is
     not text (a floating crystal, a ribbon) is merged into the weapon it belongs to by dilating `merge` px."""
     a = np.array(sheet.convert("RGBA"))
     solid = a[..., 3] >= 128
     if drop_text:  # first the captions and titles: small grey blobs, found before anything is merged
-        lab0, _ = ndi.label(ndi.binary_dilation(solid, iterations=3))
+        lab0, _ = ndi.label(ndi.binary_dilation(solid, iterations=text_dil))
         for i, sl in enumerate(ndi.find_objects(lab0)):
             m = (lab0[sl] == i + 1) & solid[sl]
             rgb = a[sl][..., :3][m].astype(int)
@@ -170,7 +170,7 @@ def main_top() -> None:
     outlines = json.loads((HAND / "outlines.json").read_text())
     for t in TOP_TYPES:
         sheet = Image.open(cut.SRC / f"{t}.webp")
-        rows = rows_of(solid_pictures(sheet, 9, True), [n for _, n in TOP_ROWS])
+        rows = rows_of(solid_pictures(sheet, 9, True, 1 if t == "bow" else 3), [n for _, n in TOP_ROWS])  # the bow's captions sit close under its tips
         pics = [c for row in rows for _, c in row]
         scale = min(TARGET_H[t] / max(c.height for c in pics), 0.84 * CW / max(c.width for c in pics))
         for (suffix, _), row in zip(TOP_ROWS, rows):

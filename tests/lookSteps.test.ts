@@ -26,6 +26,8 @@ const TOP = [
   'scythe',
   'pickaxe',
   'logging_axe',
+  'bow',
+  'staff',
 ] as const;
 const ALL = [
   'sword',
@@ -68,7 +70,7 @@ describe('weapon look steps (DESIGN.md §5)', () => {
       for (const kind of ['spear', 'pickaxe', 'staff'] as const)
         expect(lookStep(content, kind, tier, 6), `${kind} ${tier}`).toBe(0);
     for (const tier of ['prismatic', 'mythic'] as const)
-      for (const kind of ['dagger', 'bow', 'staff'] as const)
+      for (const kind of ['dagger'] as const)
         expect(lookStep(content, kind, tier, 6), `${kind} ${tier}`).toBe(0);
     for (const kind of ALL) expect(lookStep(content, kind, 'heirloom', 6)).toBe(0);
   });
@@ -94,7 +96,7 @@ describe('weapon look steps (DESIGN.md §5)', () => {
       for (const t of ['t1', 't2', 't3', 't4']) expect(sprite(`item-${kind}-${t}`)).toBeTruthy();
   });
 
-  it('has the 17 top-tier pictures of each of eight types and one Heirloom picture per side of all 11', () => {
+  it('has the 17 top-tier pictures of each of ten types and one Heirloom picture per side of all 11', () => {
     for (const kind of TOP) {
       for (const [t, n] of [
         ['t5', 5],
@@ -107,7 +109,7 @@ describe('weapon look steps (DESIGN.md §5)', () => {
         expect(sprite(`item-${kind}-${t}`), `${kind} old ${t}`).toBeUndefined();
       }
     }
-    for (const kind of ['dagger', 'bow', 'staff'] as const)
+    for (const kind of ['dagger'] as const)
       for (const t of ['t5', 't6m', 't6v']) expect(sprite(`item-${kind}-${t}`)).toBeTruthy();
     for (const kind of ALL)
       for (const side of ['hm', 'hv']) {
@@ -141,7 +143,7 @@ describe('weapon look steps (DESIGN.md §5)', () => {
       expect(itemArt(kind, 'epic', 'gold', 'epic', undefined, 3)).toBe(
         itemArt(kind, 'epic', 'gold'),
       );
-    for (const kind of ['dagger', 'bow', 'staff'] as const)
+    for (const kind of ['dagger'] as const)
       expect(itemArt(kind, 'mythic', 'mythic', 'mythic', undefined, 5)).toBe(
         itemArt(kind, 'mythic', 'mythic', 'mythic'),
       );
