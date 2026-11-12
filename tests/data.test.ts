@@ -90,8 +90,9 @@ describe('bundled content', () => {
       ['Iron Deeps', 'mossy_cellar'],
       ['Crystal Grotto', 'ember_crypt'],
     ]);
-    // 11 beta cards plus the weapon-skins test card (`reaper_test`).
-    expect(content.cards).toHaveLength(77);
+    // The 77 base cards (11 of every rarity, one weapon type each; the Rare scythe is `reaper_test`)
+    // plus the 45 cards of the Heirloom candidates (DESIGN.md §5, tests/heirloomCards.test.ts).
+    expect(content.cards).toHaveLength(122);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -250,8 +251,12 @@ describe('content validation errors', () => {
 describe('card ranks and portals', () => {
   it('has the 76 beta cards of DESIGN.md §5, §6 per job, each with a main and support effect', () => {
     const loaded = loadContent();
-    // The Rare scythe (`reaper_test`, once the weapon-skins test card) is not a beta card.
-    const content = { ...loaded, cards: loaded.cards.filter((c) => c.id !== 'reaper_test') };
+    // The Rare scythe (`reaper_test`, once the weapon-skins test card) and the 45 cards with an
+    // Heirloom of their own are not beta cards.
+    const content = {
+      ...loaded,
+      cards: loaded.cards.filter((c) => c.id !== 'reaper_test' && !c.heirloomArt),
+    };
     expect(loaded.cardById.get('reaper_test')?.name).toBe('Dusk Reaper');
     expect(content.cards).toHaveLength(76);
     // Fighting has every weapon type at every rarity (63, minus the test card); logging and mining keep seven each.

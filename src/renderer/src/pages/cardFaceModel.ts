@@ -51,6 +51,7 @@ export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Mod
       card.item.kind,
       lookTier(card.rarity, info.rank?.tier ?? 'wood'),
       card.rarity,
+      card,
     ),
     speed: COPY.card.hitsEvery(secondsText(hitSeconds(content, info, mods))),
     level: owned && cap !== null ? { value: owned.level, cap } : null,

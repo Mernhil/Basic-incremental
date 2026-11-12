@@ -76,7 +76,7 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
       lead: atCap ? COPY.weapon.costs : COPY.weapon.reach(cap),
       costs,
       action: heirloom
-        ? COPY.weapon.reveal(itemName(content, card.item.kind, 'heirloom', card.rarity))
+        ? COPY.weapon.reveal(itemName(content, card.item.kind, 'heirloom', card.rarity, card))
         : COPY.weapon.tierUpTo(toName),
       ready: check.met,
       missing: phase === 'short' ? COPY.weapon.missing(missing.join(', ')) : '',
@@ -97,14 +97,14 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
   } else if (rank.tier === 'mythic') {
     endNote = COPY.weapon.topPending(
       tierLabel(rank.tier, card.rarity),
-      itemName(content, card.item.kind, rank.tier, card.rarity),
+      itemName(content, card.item.kind, rank.tier, card.rarity, card),
     );
   } else {
     endNote = COPY.weapon.topEnd(tierLabel(rank.tier, card.rarity));
   }
 
   return {
-    weapon: itemName(content, card.item.kind, lookTier(card.rarity, rank.tier), card.rarity),
+    weapon: itemName(content, card.item.kind, lookTier(card.rarity, rank.tier), card.rarity, card),
     tier: rank.tier,
     tierName: tierLabel(rank.tier, card.rarity),
     level: owned.level,

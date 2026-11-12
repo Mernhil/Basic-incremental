@@ -512,6 +512,13 @@ const cardBase = {
   element: z.enum(ELEMENTS),
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
+  /**
+   * A Mythic or Void card with its own Heirloom (DESIGN.md §5 More weapons from the Heirloom
+   * candidates): the letter of its recoloured picture `item-<type>-<hm|hv>-<letter>` (b, c or d)
+   * and the Heirloom's own name. Both or neither; without them the card keeps its type's Heirloom.
+   */
+  heirloomArt: z.enum(['b', 'c', 'd']).optional(),
+  heirloomName: name.optional(),
 };
 
 /** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */

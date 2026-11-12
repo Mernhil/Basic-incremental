@@ -135,8 +135,17 @@ export const cardSide = (rarity: Rarity): 'mythic' | 'void' =>
 /**
  * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T4
  * "<material> <type>", T5 "Prismatic <name> <type>", T6 by the card's side, then the Heirloom.
+ * Pass the card as `card` and a card with its own Heirloom (`heirloomName` in cards.json, DESIGN.md
+ * §5 More weapons from the Heirloom candidates) names it at the Heirloom tier; every other tier,
+ * and every card without one, keeps the type's names.
  */
-export function itemName(content: Content, kind: ItemKind, tier: RankTier, rarity: Rarity): string {
+export function itemName(
+  content: Content,
+  kind: ItemKind,
+  tier: RankTier,
+  rarity: Rarity,
+  card?: { heirloomName?: string },
+): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
   switch (tier) {
@@ -150,7 +159,7 @@ export function itemName(content: Content, kind: ItemKind, tier: RankTier, rarit
     case 'mythic':
       return type[cardSide(rarity)];
     case 'heirloom':
-      return type.heirloom[cardSide(rarity)];
+      return card?.heirloomName ?? type.heirloom[cardSide(rarity)];
   }
 }
 
@@ -186,7 +195,7 @@ export function cardItem(
   const rarity = weaponLookRarity(card.rarity, tier);
   return {
     kind: card.item.kind,
-    name: itemName(content, card.item.kind, tier, card.rarity),
+    name: itemName(content, card.item.kind, tier, card.rarity, card),
     heirloom: tier === 'heirloom',
     rarity,
   };

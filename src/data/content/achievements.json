@@ -1801,6 +1801,411 @@
       "stock": null
     },
     {
+      "id": "copy_jade_vanguard",
+      "reward": {
+        "kind": "card",
+        "card": "jade_vanguard"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_violet_herald",
+      "reward": {
+        "kind": "card",
+        "card": "violet_herald"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_moon_reaver",
+      "reward": {
+        "kind": "card",
+        "card": "moon_reaver"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_crown_warden",
+      "reward": {
+        "kind": "card",
+        "card": "crown_warden"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_jade_regent",
+      "reward": {
+        "kind": "card",
+        "card": "jade_regent"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_cobalt_tyrant",
+      "reward": {
+        "kind": "card",
+        "card": "cobalt_tyrant"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_spore_tyrant",
+      "reward": {
+        "kind": "card",
+        "card": "spore_tyrant"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_gloom_maw",
+      "reward": {
+        "kind": "card",
+        "card": "gloom_maw"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_molten_pikeman",
+      "reward": {
+        "kind": "card",
+        "card": "molten_pikeman"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_rose_sentinel",
+      "reward": {
+        "kind": "card",
+        "card": "rose_sentinel"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_royal_impaler",
+      "reward": {
+        "kind": "card",
+        "card": "royal_impaler"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_cinder_serpent",
+      "reward": {
+        "kind": "card",
+        "card": "cinder_serpent"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_blood_serpent",
+      "reward": {
+        "kind": "card",
+        "card": "blood_serpent"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_azure_cavalier",
+      "reward": {
+        "kind": "card",
+        "card": "azure_cavalier"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_midnight_rider",
+      "reward": {
+        "kind": "card",
+        "card": "midnight_rider"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_plague_rider",
+      "reward": {
+        "kind": "card",
+        "card": "plague_rider"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_rose_phantom",
+      "reward": {
+        "kind": "card",
+        "card": "rose_phantom"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_sky_gleamer",
+      "reward": {
+        "kind": "card",
+        "card": "sky_gleamer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_jade_stalker",
+      "reward": {
+        "kind": "card",
+        "card": "jade_stalker"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_bloodletter",
+      "reward": {
+        "kind": "card",
+        "card": "bloodletter"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_violet_viper",
+      "reward": {
+        "kind": "card",
+        "card": "violet_viper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_frost_viper",
+      "reward": {
+        "kind": "card",
+        "card": "frost_viper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_stormforger",
+      "reward": {
+        "kind": "card",
+        "card": "stormforger"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_verdant_smith",
+      "reward": {
+        "kind": "card",
+        "card": "verdant_smith"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_amethyst_smith",
+      "reward": {
+        "kind": "card",
+        "card": "amethyst_smith"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_iron_butcher",
+      "reward": {
+        "kind": "card",
+        "card": "iron_butcher"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_dawn_archer",
+      "reward": {
+        "kind": "card",
+        "card": "dawn_archer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_night_hunter",
+      "reward": {
+        "kind": "card",
+        "card": "night_hunter"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_abyss_hunter",
+      "reward": {
+        "kind": "card",
+        "card": "abyss_hunter"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_ember_stalker",
+      "reward": {
+        "kind": "card",
+        "card": "ember_stalker"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_orchid_oracle",
+      "reward": {
+        "kind": "card",
+        "card": "orchid_oracle"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_rift_mystic",
+      "reward": {
+        "kind": "card",
+        "card": "rift_mystic"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_azure_gleaner",
+      "reward": {
+        "kind": "card",
+        "card": "azure_gleaner"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_bog_reaper",
+      "reward": {
+        "kind": "card",
+        "card": "bog_reaper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_hollow_reaper",
+      "reward": {
+        "kind": "card",
+        "card": "hollow_reaper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_frost_reaper",
+      "reward": {
+        "kind": "card",
+        "card": "frost_reaper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_azure_delver",
+      "reward": {
+        "kind": "card",
+        "card": "azure_delver"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_emerald_seer",
+      "reward": {
+        "kind": "card",
+        "card": "emerald_seer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_ruby_gnawer",
+      "reward": {
+        "kind": "card",
+        "card": "ruby_gnawer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_void_burrower",
+      "reward": {
+        "kind": "card",
+        "card": "void_burrower"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_amber_gnawer",
+      "reward": {
+        "kind": "card",
+        "card": "amber_gnawer"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_tidal_warden",
+      "reward": {
+        "kind": "card",
+        "card": "tidal_warden"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_dusk_feller",
+      "reward": {
+        "kind": "card",
+        "card": "dusk_feller"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_rime_feller",
+      "reward": {
+        "kind": "card",
+        "card": "rime_feller"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_blight_feller",
+      "reward": {
+        "kind": "card",
+        "card": "blight_feller"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
       "id": "summon_scrolls",
       "reward": {
         "kind": "resource",

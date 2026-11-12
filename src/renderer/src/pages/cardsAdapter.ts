@@ -13,7 +13,6 @@ import {
   levelCap,
   loadoutInfo,
   lookTier,
-  weaponLookRarity,
   setLoadoutSlot,
   starUp,
   starUpWithDust,
@@ -31,7 +30,7 @@ import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
 import { COPY, starPercent } from '../copy';
 import { statTiles } from './statsModel';
-import { itemArt } from '../art/items';
+import { cardTierArt } from '../art/items';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
 import { weaponView } from './weaponModel';
@@ -66,7 +65,7 @@ export function previewTiers(content: Content, cardId: string, from: RankTier): 
  * the preview gets its art, so a card with an Heirloom picture of its own can be given it here.
  */
 export function previewArt(card: Card, tier: RankTier): string {
-  return itemArt(card.item.kind, card.rarity, tier, card.rarity);
+  return cardTierArt(card, tier);
 }
 
 /**
@@ -161,14 +160,7 @@ export function createCardsModel(
       emblem: JOB_EMBLEM[card.job],
       itemKind: card.item.kind,
       itemType: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
-      item:
-        art?.(card.id, owned) ??
-        itemArt(
-          card.item.kind,
-          weaponLookRarity(card.rarity, lookTier(card.rarity, rank.tier)),
-          lookTier(card.rarity, rank.tier),
-          card.rarity,
-        ),
+      item: art?.(card.id, owned) ?? cardTierArt(card, lookTier(card.rarity, rank.tier)),
       element: card.element,
       owned: owned !== null,
       rank,
@@ -208,7 +200,7 @@ export function createCardsModel(
         index,
         own: index === 0,
         tierName: tierLabel(tier, card.rarity),
-        itemName: itemName(content, card.item.kind, tier, card.rarity),
+        itemName: itemName(content, card.item.kind, tier, card.rarity, card),
         item:
           index === 0
             ? (art?.(id, state.cards.owned[id] ?? null) ?? previewArt(card, tier))
