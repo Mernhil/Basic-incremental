@@ -65,12 +65,17 @@ export function configureCardLevels(content: Content): void {
 function markLevels(el: HTMLElement, resolved: ResolvedCard): void {
   for (const slot of ['border', 'finish'] as const) {
     const r = resolved.slots[slot];
+    if (!r) continue; // a slot with no items yet
     const max = levelContent ? cosmeticMaxLevel(levelContent, r.cosmetic) : Infinity;
     const top = r.worn && !r.cosmetic.starter && r.level >= max;
     el.toggleAttribute(`data-max-${slot}`, top);
     if (r.cosmetic.starter) delete el.dataset[`lv${slot === 'border' ? 'Border' : 'Finish'}`];
     else el.dataset[`lv${slot === 'border' ? 'Border' : 'Finish'}`] = String(r.level);
   }
+  // a worn border replaces the base frame (DESIGN.md §5 The base frame, §8): the frame picture is
+  // hidden by CSS while the card wears one it can show
+  const border = resolved.slots.border;
+  el.toggleAttribute('data-border-worn', border.worn && !border.cosmetic.starter);
   if (el.hasAttribute('data-max-border') || el.hasAttribute('data-max-finish')) watchAmbient(el);
 }
 

@@ -58,8 +58,6 @@ await rmPage.goto(url.replace('#', '?rm=1#'));
 await rmPage.waitForSelector('.bi-card');
 await rmPage.selectOption('[data-testid="pick-border"]', 'gilded_filigree');
 await rmPage.selectOption('[data-testid="level-border"]', '3');
-await rmPage.selectOption('[data-testid="pick-finish"]', 'aurora_veil');
-await rmPage.selectOption('[data-testid="level-finish"]', '3');
 await rmPage.waitForTimeout(1500);
 const looping = await rmPage.evaluate(() =>
   document

@@ -4,7 +4,6 @@ import {
   advanceChunked,
   Decimal,
   emptyReport,
-  jobAttackEffect,
   mergeReports,
   newOwnedCard,
   productionPerSecond,
@@ -211,17 +210,5 @@ describe('productionStageView', () => {
     const view = productionStageView(logging(null, 3), content, 'logging');
     expect(view.targets.map((t) => t.producer)).toEqual(TREES);
     expect(view.targets.every((t) => t.worker === null && t.pattern === null)).toBe(true);
-  });
-});
-
-describe('job attack effects', () => {
-  it('the attack cosmetic resolves to the logging and mining variant', () => {
-    const state = bareState();
-    expect(jobAttackEffect(content, state.cosmetics.loadout, 'logging')).toBe(
-      content.starterBySlot.attack.levels[0]!.effects!.logging,
-    );
-    expect(jobAttackEffect(content, state.cosmetics.loadout, 'mining')).toBe(
-      content.starterBySlot.attack.levels[0]!.effects!.mining,
-    );
   });
 });

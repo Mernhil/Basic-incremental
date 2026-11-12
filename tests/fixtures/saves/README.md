@@ -13,3 +13,8 @@ Real save files, kept exactly as the game wrote them, for the migration tests.
   after its dev cheats (5M Money, 3,650 Summon and 950 Glamour Crystals, Ember Squire at Wood ★6
   Lv 20, Mossy Cellar cleared), one 10-pull and ten minutes in the Ember Crypt (Mossy Cellar
   pushing, Ember Crypt farming after a knockout, the autobuyer reserve at 25%).
+- `v27-removed-cosmetics.save.txt`: save format 27 for the cosmetics cleanup (format 28). It is the
+  0.6.0 fixture above carried to format 27 by the real migrations, with removed cosmetics added to
+  it the way a 0.7.2 player could hold them: owned and worn attack, finish, tick, number and Prism
+  Pointer items (global and on two cards), Aurora Veil at level 3, and the bow skins
+  `legacy-bow-56` and `legacy-bow-58` owned (56 worn). It was made by a script, not by the game.

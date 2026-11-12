@@ -1125,7 +1125,6 @@ export const combatSchema = z.strictObject({
 export const COSMETIC_SLOTS = [
   'border',
   'finish',
-  'attack',
   'tick',
   'number',
   'table',
@@ -1160,7 +1159,6 @@ export const SLOT_TOKENS = {
     'panel-ink-muted',
   ],
   finish: ['finish-a', 'finish-b', 'finish-c', 'finish-opacity', 'finish-speed'],
-  attack: ['attack-edge', 'attack-glow', 'attack-particle'],
   /* tick-outline: the sticker numerals' white ring; tick-hurt: boss hits on the cards;
      tick-gain: "+n" gains rising off plots and slots. */
   tick: [
@@ -1237,8 +1235,6 @@ const effectId = recipeId;
 const cosmeticLevelSchema = z.strictObject({
   tokens: z.record(z.string(), tokenValue).default({}),
   recipes: z.array(recipeId).default([]),
-  /** Attack slot: the animation used for each job. */
-  effects: z.strictObject({ fighting: effectId, mining: effectId, logging: effectId }).optional(),
   /** Tick slot: the floating-number animation. */
   effect: effectId.optional(),
 });
@@ -1277,13 +1273,6 @@ export const cosmeticSchema = z
       }
     });
     const first = c.levels[0]!;
-    if (c.slot === 'attack' && !first.effects) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['levels', 0, 'effects'],
-        message: 'attack items need an effect per job',
-      });
-    }
     if (c.slot === 'tick' && !first.effect) {
       ctx.addIssue({
         code: 'custom',

@@ -72,7 +72,7 @@ describe('level-up toast', () => {
     expect(v.lines[0]).toBe('+3 skill points');
     expect(v.lines).toContain(`+${lv10Crystals()} Summon Scroll`);
     expect(v.lines).toContain('+1 loadout cost cap');
-    expect(v.lines).toContain(content.cosmeticById.get('holo_hex')!.name);
+    expect(v.lines).toContain(content.cosmeticById.get('gilded_plate')!.name);
     expect(v.big).toBe(true);
   });
 

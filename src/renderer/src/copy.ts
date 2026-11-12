@@ -861,9 +861,8 @@ export const COPY = {
     slots: {
       border: 'Border',
       finish: 'Finish',
-      attack: 'Attack',
-      tick: 'Tick',
-      number: 'Numbers',
+      tick: 'Damage numbers',
+      number: 'Number style',
       table: 'Table',
       cursor: 'Cursor',
       starlight: 'Starlight coin',
@@ -871,6 +870,12 @@ export const COPY = {
       nodes: 'Skill nodes',
       wardrobe: 'Wardrobe style',
     },
+    coming: 'Coming soon',
+    comingSlot: (slot: string) => `${slot}: coming soon`,
+    comingNote: (slot: string) =>
+      slot === 'finish'
+        ? 'Card finishes are coming back as a new batch.'
+        : 'New damage number styles are coming.',
     slotLabel: (slot: string, item: string, level: number) => `${slot}: ${item}, level ${level}`,
     onThisCard: 'This card only',
     blockedSlot: (item: string, rank: string) => `${item} is wearable from ${rank}`,
@@ -939,7 +944,6 @@ export const COPY = {
     starterBack: 'Back to the starter',
     breakdownTitle: (stat: string) => `Cosmetic bonuses to ${stat}`,
     breakdownTotal: 'Total',
-    playAttack: 'Play attack',
     clearTry: 'Stop preview',
     slotItems: {
       border: 'Borders',

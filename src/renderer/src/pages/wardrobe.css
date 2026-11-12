@@ -737,3 +737,32 @@ html .wd-stage:not(#_px) {
     transition: none;
   }
 }
+
+/* a category with no items yet (finish, damage numbers): a muted plate that says it is coming */
+.wd-slot--coming {
+  grid-template-columns: minmax(0, 1fr);
+  cursor: default;
+  opacity: 0.6;
+  border: 2px dashed var(--px-ink-muted, currentColor);
+  background: transparent;
+}
+.wd-slot--coming .wd-slot__name {
+  font-style: italic;
+}
+.wd-coming {
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.wd-coming__row {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 2px dashed var(--px-ink-muted, currentColor);
+  color: var(--px-ink-muted, inherit);
+}
+.wd-coming__row strong {
+  color: var(--px-ink);
+}

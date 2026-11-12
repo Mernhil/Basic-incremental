@@ -2,10 +2,8 @@ import type { CosmeticSlot } from '../../../data';
 import {
   collectModifiers,
   cosmeticLadder,
-  defaultRng,
   equipCosmetic,
   resolveCard,
-  resolveGlobal,
   unequipCosmetic,
   upgradeCosmetic,
   wardrobeItems,
@@ -17,7 +15,6 @@ import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
 import { playUpgradeMoment } from '../stage/tierUp';
 import { applyScopedGlobalTheme } from '../theme/apply';
-import { playHit, showTick } from '../theme/effects';
 import { createCard } from '../ui/card';
 import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { skinStyle } from '../ui/skins';
@@ -30,6 +27,7 @@ import {
   isCardSlot,
   itemDetail,
   INVENTORY_FILTERS,
+  comingSlots,
   inventoryTiles,
   itemTiles,
   type InventoryFilter,
@@ -50,7 +48,7 @@ import './wardrobe.css';
 /**
  * Wardrobe page (DESIGN.md §8; UI_RULES.md §2, "Shell look" and the Wardrobe screen pick): the
  * Mannequin panel holds the preview card at 2x wearing the selection, the slots on its two sides
- * as plates (four on the left, three on the right, the four interface styles under them), and the
+ * as plates (three on the left, three on the right, the four interface styles under them), and the
  * selected slot's items as a row of tiles below; the selected item's panel sits beside it (owned
  * buff, set count, upgrade ladder and cost, Upgrade and Equip). All rules come from game.
  */
@@ -62,7 +60,7 @@ export interface WardrobeContext extends PageContext {
 }
 
 /** The slots drawn as plates around the card, left and right; the rest are interface styles. */
-const LEFT: readonly CosmeticSlot[] = ['border', 'finish', 'attack', 'tick'];
+const LEFT: readonly CosmeticSlot[] = ['border', 'finish', 'tick'];
 const RIGHT: readonly CosmeticSlot[] = ['number', 'table', 'cursor'];
 const t = COPY.wardrobe;
 
@@ -243,7 +241,6 @@ export function createWardrobePage(
       // the card stands alone in the side column (the slot plates are gone from the inventory)
       max: () => (stage.clientWidth > 0 ? Math.max(132, stage.clientWidth - 40) : 1e6),
     });
-    let art: HTMLElement | null = null;
     const props = previewCard ? cardFaceProps(content, state, previewCard) : null;
     if (props && previewCard) {
       const card = content.cardById.get(previewCard)!;
@@ -255,7 +252,6 @@ export function createWardrobePage(
           rarity: card.rarity,
         }),
       });
-      art = view.art;
       const fit = h('div', 'wd-card');
       fit.append(view.el);
       centre.append(fit);
@@ -263,26 +259,12 @@ export function createWardrobePage(
       centre.append(h('p', 'frame__muted wd-nocard', t.noCards));
     }
 
-    const play = h('button', 'button button--ghost wd-play', t.playAttack);
-    play.type = 'button';
-    play.dataset.key = 'play';
-    play.disabled = !art;
-    const playAttack = (): void => {
-      if (!art) return;
-      const g = resolveGlobal(content, loadout);
-      const effect = g.attack.visual.effects?.fighting;
-      if (effect) playHit(effect, art, { rng: defaultRng });
-      showTick(art, '128', { rng: defaultRng });
-    };
-    play.addEventListener('click', playAttack);
-
     const leftCol = h('div', 'wd-col wd-col--left');
     leftCol.append(left);
     const rightCol = h('div', 'wd-col wd-col--right');
     rightCol.append(right);
     if (ui.childElementCount) rightCol.append(h('p', 'wd-col__head', t.interfaceStyle), ui);
     const tools = h('div', 'wd-tools');
-    tools.append(play);
     if (trying) {
       const note = h('div', 'wd-trying');
       note.append(h('strong', '', t.trying(trying.name)), h('span', '', t.tryingNote));
@@ -298,15 +280,9 @@ export function createWardrobePage(
     }
     leftCol.append(tools);
     stage.append(leftCol, centre, rightCol);
-    if (playOnBuild && art) {
-      playOnBuild = false;
-      window.setTimeout(playAttack, 120);
-    }
     body.append(stage);
     return el;
   }
-  let playOnBuild = false;
-
   function setChips(state: GameState): HTMLElement {
     const sets = h('ul', 'wd-sets');
     sets.setAttribute('aria-label', t.sets);
@@ -353,6 +329,17 @@ export function createWardrobePage(
 
   function slotButton(s: SlotView, compact = false): HTMLElement {
     const li = h('li');
+    if (s.itemId === null) {
+      // a slot with no items yet: a plate that says it is coming (nothing to pick)
+      const soon = h('div', 'wd-slot wd-slot--coming');
+      soon.dataset.key = `slot-${s.slot}`;
+      soon.setAttribute('aria-label', t.comingSlot(s.label));
+      const text = h('span', 'wd-slot__text');
+      text.append(h('span', 'wd-slot__label', s.label), h('span', 'wd-slot__name', t.coming));
+      soon.append(text);
+      li.append(soon);
+      return li;
+    }
     const on = slot === s.slot;
     const b = h('button', `wd-slot${on ? ' is-on' : ''}${compact ? ' wd-slot--mini' : ''}`);
     b.type = 'button';
@@ -414,7 +401,11 @@ export function createWardrobePage(
 
     const list = h('ul', 'wd-grid');
     list.setAttribute('aria-labelledby', heading.id);
-    if (tiles.length === 0) el.append(h('p', 'frame__muted', t.inventoryEmpty));
+    // slots with no items yet are categories waiting for a batch: say so instead of an empty grid
+    const waiting = comingSlots(content, filter);
+    if (tiles.length === 0 && waiting.length === 0) {
+      el.append(h('p', 'frame__muted', t.inventoryEmpty));
+    }
     for (const tile of tiles) {
       const li = h('li');
       const b = h(
@@ -443,13 +434,22 @@ export function createWardrobePage(
         selected = tile.id;
         slot = tile.slot;
         message = '';
-        playOnBuild = tile.slot === 'attack' || tile.slot === 'tick' || tile.slot === 'number';
         build(`tile-${tile.id}`);
       });
       li.append(b);
       list.append(li);
     }
     el.append(head, list);
+    if (waiting.length > 0) {
+      const soon = h('ul', 'wd-coming');
+      soon.dataset.key = 'coming';
+      for (const s of waiting) {
+        const li = h('li', 'wd-coming__row');
+        li.append(h('strong', '', t.slots[s]), h('span', '', t.comingNote(s)));
+        soon.append(li);
+      }
+      el.append(soon);
+    }
     body.append(tabs, el);
     return box;
   }

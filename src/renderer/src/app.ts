@@ -97,7 +97,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   const loop = new GameLoop(state, content, defaultRng, startedAt);
   const applyTheme = (): void => {
     applyGlobalTheme(content, loop.state.cosmetics.loadout);
-    setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick.visual.effect);
+    setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick?.visual.effect);
     setPixelTick(getComputedStyle(document.documentElement).getPropertyValue('--bi-tick-px'));
     refreshPixelNumbers();
     shellRef?.setCurrencyArt(prestigeId, starlightSvg());

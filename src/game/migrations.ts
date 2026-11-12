@@ -65,6 +65,9 @@ export const MIGRATIONS: MigrationTable = {
   25: v25ToV26,
   /** v26 -> v27: the table update (0.7.0): stage battles, the card duel, scrolls and the rest. */
   26: v26ToV27,
+  /** v27 -> v28: the cosmetics review (0.7.3): the attack slot, every finish, tick and number item,
+   *  the Prism Pointer and three bow skins are gone; owned ones are refunded. */
+  27: v27ToV28,
 };
 
 /** Crystals one pull cost when save format 27 was made (a snapshot): a scroll is worth this. */
@@ -840,4 +843,142 @@ export function migrateState(
     current = step(current as Record<string, unknown>);
   }
   return current;
+}
+
+/** The cosmetics that left the game at save format 28 (a snapshot): the attack slot, every finish, tick and number item, and the Prism Pointer. */
+const V28_REMOVED_COSMETICS: ReadonlySet<string> = new Set([
+  'gn_finish',
+  'gn_attack',
+  'gn_tick',
+  'gn_number',
+  'gt_finish',
+  'gt_attack',
+  'gt_tick',
+  'gt_number',
+  'aurora_veil',
+  'holo_hex',
+  'holo_waves',
+  'prism_pointer',
+  'verdant_finish',
+  'verdant_attack',
+  'verdant_tick',
+  'verdant_number',
+  'vine_finish',
+  'vine_attack',
+  'vine_tick',
+  'vine_number',
+  'fern_finish',
+  'fern_attack',
+  'fern_tick',
+  'fern_number',
+  'moss_finish',
+  'moss_attack',
+  'moss_tick',
+  'moss_number',
+  'blossom_finish',
+  'blossom_attack',
+  'blossom_tick',
+  'blossom_number',
+  'core_pulse',
+  'power_veins',
+  'hex_core',
+  'magma_strata',
+  'starburst',
+  'forge_number',
+  'forge_attack',
+  'forge_tick',
+  'woodcraft_number',
+  'woodcraft_attack',
+  'woodcraft_tick',
+  'starmap_number',
+  'starmap_attack',
+  'starmap_tick',
+  'candy_number',
+  'candy_attack',
+  'candy_tick',
+  'rune_number',
+  'rune_attack',
+  'rune_tick',
+]);
+/** The four free starters among them: owned by every save, so nothing is refunded for them. */
+const V28_REMOVED_STARTERS: ReadonlySet<string> = new Set([
+  'gn_attack',
+  'gn_finish',
+  'gn_tick',
+  'gn_number',
+]);
+/** The legacy bow skins that left the game at save format 28 (a snapshot). */
+const V28_REMOVED_SKINS: ReadonlySet<string> = new Set([
+  'legacy-bow-56',
+  'legacy-bow-57',
+  'legacy-bow-58',
+]);
+/** What each removed item refunds, per copy owned: the Legacy Gate's duplicate payback, a fifth of a Glamour Scroll (DESIGN.md §7, §8). */
+const V28_REFUND_SCROLLS = new Decimal(0.2);
+
+/**
+ * v27 -> v28: the cosmetics review (DESIGN.md §8). Removed cosmetics and the three removed bow
+ * skins are unequipped and dropped from the owned lists, and each owned copy (the item and its
+ * duplicates; not the free starters) pays back a fifth of a Glamour Scroll. The attack slot's
+ * loadout entries go with it.
+ */
+function v27ToV28(state: Record<string, unknown>): Record<string, unknown> {
+  const cosmetics = isRecord(state['cosmetics']) ? state['cosmetics'] : {};
+  const owned = isRecord(cosmetics['owned']) ? cosmetics['owned'] : {};
+  const loadout = isRecord(cosmetics['loadout']) ? cosmetics['loadout'] : {};
+  let refunded = new Decimal(0);
+
+  const keptOwned: Record<string, unknown> = {};
+  for (const [id, entry] of Object.entries(owned)) {
+    if (!V28_REMOVED_COSMETICS.has(id)) {
+      keptOwned[id] = entry;
+      continue;
+    }
+    if (V28_REMOVED_STARTERS.has(id)) continue;
+    const copies = isRecord(entry) && typeof entry['copies'] === 'number' ? entry['copies'] : 0;
+    refunded = refunded.add(V28_REFUND_SCROLLS.mul(1 + Math.max(0, copies)));
+  }
+
+  const worn = (eq: unknown): boolean =>
+    isRecord(eq) && typeof eq['id'] === 'string' && V28_REMOVED_COSMETICS.has(eq['id']);
+  const cleanSlots = (slots: unknown): Record<string, unknown> =>
+    Object.fromEntries(
+      Object.entries(isRecord(slots) ? slots : {}).filter(
+        ([slot, eq]) => slot !== 'attack' && !worn(eq),
+      ),
+    );
+  const cleanCards: Record<string, unknown> = {};
+  for (const [card, slots] of Object.entries(isRecord(loadout['cards']) ? loadout['cards'] : {})) {
+    const kept = cleanSlots(slots);
+    if (Object.keys(kept).length > 0) cleanCards[card] = kept;
+  }
+
+  const legacy = Array.isArray(state['legacySkins']) ? state['legacySkins'] : [];
+  const keptSkins = legacy.filter((id) => !(typeof id === 'string' && V28_REMOVED_SKINS.has(id)));
+  refunded = refunded.add(V28_REFUND_SCROLLS.mul(legacy.length - keptSkins.length));
+  const worn_skins = isRecord(state['weaponSkins']) ? state['weaponSkins'] : {};
+  const weaponSkins = Object.fromEntries(
+    Object.entries(worn_skins).filter(
+      ([, skin]) => !(typeof skin === 'string' && V28_REMOVED_SKINS.has(skin)),
+    ),
+  );
+
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  if (refunded.gt(0)) {
+    const held = resources['glamour_scroll'];
+    const had =
+      typeof held === 'string' && isDecimalString(held) ? new Decimal(held) : new Decimal(0);
+    resources['glamour_scroll'] = had.add(refunded).toString();
+  }
+  return {
+    ...state,
+    resources,
+    legacySkins: keptSkins,
+    weaponSkins,
+    cosmetics: {
+      ...cosmetics,
+      owned: keptOwned,
+      loadout: { ...loadout, slots: cleanSlots(loadout['slots']), cards: cleanCards },
+    },
+  };
 }

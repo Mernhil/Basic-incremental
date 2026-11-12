@@ -149,7 +149,7 @@
         "dungeon": "mossy_cellar"
       },
       "reward": {
-        "cosmetics": ["holo_hex"]
+        "cosmetics": ["gilded_plate"]
       }
     },
     {
@@ -161,7 +161,7 @@
         "dungeon": "ember_crypt"
       },
       "reward": {
-        "cosmetics": ["holo_waves"]
+        "cosmetics": ["nodes_b"]
       }
     },
     {
@@ -173,7 +173,7 @@
         "dungeon": "frostspire_vault"
       },
       "reward": {
-        "cosmetics": ["prism_pointer"]
+        "cosmetics": ["starlight_c"]
       }
     },
     {
@@ -185,7 +185,7 @@
         "dungeon": "glimmer_trial"
       },
       "reward": {
-        "cosmetics": ["gt_finish"]
+        "cosmetics": ["wardrobe_d"]
       }
     },
     {
@@ -231,7 +231,7 @@
         "amount": 1
       },
       "reward": {
-        "cosmetics": ["gt_attack"]
+        "cosmetics": ["fern_cursor"]
       }
     },
     {
@@ -272,7 +272,7 @@
         "stars": 6
       },
       "reward": {
-        "cosmetics": ["gt_tick"]
+        "cosmetics": ["vine_table"]
       }
     },
     {
@@ -329,7 +329,7 @@
         "amount": 10
       },
       "reward": {
-        "cosmetics": ["gt_number"]
+        "cosmetics": ["nodes_d"]
       }
     },
     {

@@ -5,7 +5,6 @@ import {
   bossAttackView,
   bossStatus,
   collectModifiers,
-  defaultRng,
   duelEnemy,
   duelFightKey,
   duelSheet,
@@ -15,7 +14,6 @@ import {
   loadoutHealth,
   nextFloorChallenge,
   recordDuel,
-  resolveGlobal,
   stageReadout,
   teamView,
   trialStatus,
@@ -34,7 +32,6 @@ import { loadoutKey, loadoutProps } from '../pages/loadoutCards';
 import { formatRate } from '../pages/buyModel';
 import { attachTooltip } from '../shell/tooltip';
 import { dealTokens, reducedMotion as calm } from '../table/motion';
-import { playHit } from '../theme/effects';
 import { createCard } from '../ui/card';
 import { createHpStack, type HpStackView } from '../ui/hpStack';
 import { fitCard, screenDpr } from '../ui/pixelFit';
@@ -987,20 +984,12 @@ export function createArena(ctx: ArenaContext): Arena {
       plateId = q.nextId;
     }
     if (!live()) return;
-    const effect = resolveGlobal(content, e.after.cosmetics.loadout).attack.visual.effects
-      ?.fighting;
     const hitters = new Set<string>();
     for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
     for (const id of hitters) {
       const slot = slots.find((x) => x.cardId === id);
       if (!slot) continue;
       hop(slot);
-      if (effect && !calm())
-        playHit(effect, foeFx, {
-          rng: defaultRng,
-          target: null,
-          intervalSeconds: slot.hopMs / 400,
-        });
     }
     if (hitters.size > 0) play('hit');
   });

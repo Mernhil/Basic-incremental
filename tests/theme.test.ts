@@ -73,16 +73,22 @@ describe('equipping', () => {
     const loadout = equip(content, emptyLoadout(), 'table', { id: 'gt_table', level: 1 });
     const { vars } = globalVars(resolveGlobal(content, loadout));
     expect(vars['--bi-table-bg']).toBe('#111a35');
-    expect(vars['--bi-num-weight']).toBe('600'); // other slots unchanged
+    expect(vars['--bi-num-weight']).toBeUndefined(); // no number items yet: the CSS defaults apply
   });
 
   it('merges upgrade levels: later tokens win, recipes accumulate', () => {
-    const veil = content.cosmeticById.get('aurora_veil')!;
-    expect(levelVisual(veil, 1).recipes).toEqual(['holo-aurora']);
-    const top = levelVisual(veil, 3);
-    expect(top.recipes).toEqual(['holo-aurora', 'holo-aurora-flow', 'holo-sparkle']);
-    expect(top.tokens['finish-opacity']).toBe('0.55');
-    expect(top.tokens['finish-a']).toBeDefined(); // inherited from level 1
+    const plate = content.cosmeticById.get('gilded_plate')!;
+    expect(levelVisual(plate, 1).recipes).toEqual(['inner-gilt']);
+    expect(levelVisual(plate, 1).tokens['border-color']).toBeUndefined();
+    const top = levelVisual(plate, 3);
+    expect(top.recipes).toEqual([
+      'inner-gilt',
+      'flourish-corners',
+      'ambient-motes',
+      'ambient-pair',
+    ]);
+    expect(top.tokens['border-color']).toBeDefined(); // added by level 2
+    expect(top.tokens['plate-bg']).toBeDefined(); // kept from level 1
   });
 
   it('rejects wrong slots, unknown ids, bad levels and global exclusives', () => {
@@ -124,10 +130,15 @@ describe('wear rules (rank needed to wear, not to own)', () => {
     expect(gold.vars['--bi-plate-bg']).toBe('#d9b35a');
   });
 
-  it('only shows finishes from Prismatic 1', () => {
-    const holo = equip(content, emptyLoadout(), 'finish', { id: 'holo_hex', level: 1 });
-    expect(resolveCard(content, holo, cardAt(r('gold', 6))).slots.finish.worn).toBe(false);
-    expect(resolveCard(content, holo, cardAt(r('prismatic', 1))).recipes).toContain('holo-hex');
+  it('has no finish items yet: a card resolves a border only, and the finish rule waits', () => {
+    const card = resolveCard(content, emptyLoadout(), cardAt(r('prismatic', 6)));
+    expect(card.slots.finish).toBeUndefined();
+    expect(Object.keys(card.slots)).toEqual(['border']);
+    expect(content.wearRules.finish).toEqual({ tier: 'prismatic', stars: 1 });
+    expect(content.starterBySlot.finish).toBeUndefined();
+    expect(content.starterBySlot.tick).toBeUndefined();
+    expect(content.starterBySlot.number).toBeUndefined();
+    expect(resolveGlobal(content, emptyLoadout()).finish).toBeUndefined();
   });
 });
 
@@ -174,8 +185,8 @@ describe('set detection', () => {
     const sets = detectSets(content, emptyLoadout());
     expect(sets.find((s) => s.set === 'gilded_nocturne')).toEqual({
       set: 'gilded_nocturne',
-      equipped: 7,
-      total: 7,
+      equipped: 3,
+      total: 3,
       complete: true,
     });
     expect(sets.find((s) => s.set === 'gilded_tradition')!.equipped).toBe(0);
@@ -189,11 +200,11 @@ describe('set detection', () => {
       false,
     );
 
-    for (const slot of ['border', 'finish', 'attack', 'tick', 'number', 'cursor'] as const) {
+    for (const slot of ['border', 'cursor'] as const) {
       loadout = equip(content, loadout, slot, { id: `gt_${slot}`, level: 1 });
     }
     tradition = detectSets(content, loadout).find((s) => s.set === 'gilded_tradition')!;
-    expect(tradition).toMatchObject({ equipped: 7, total: 7, complete: true });
+    expect(tradition).toMatchObject({ equipped: 3, total: 3, complete: true });
   });
 });
 
@@ -203,7 +214,8 @@ describe('loading and registry checks', () => {
       slots: {
         border: { id: 'nope', level: 1 },
         table: { id: 'gt_table', level: 1 },
-        finish: { id: 'aurora_veil', level: 9 },
+        tick: { id: 'gt_tick', level: 1 },
+        cursor: { id: 'gt_cursor', level: 9 },
       },
       cards: {
         [MAIN]: { border: { id: 'ember_crown', level: 1 } },
@@ -211,17 +223,16 @@ describe('loading and registry checks', () => {
       },
     };
     const clean = sanitizeLoadout(content, dirty);
-    expect(clean.slots).toEqual({ table: { id: 'gt_table', level: 1 } });
+    expect(clean.slots).toEqual({ table: { id: 'gt_table', level: 1 } }); // a removed item and a level above the max go
     expect(Object.keys(clean.cards)).toEqual([MAIN]);
   });
 
-  it('reports recipes and effects the renderer does not implement', () => {
+  it('reports recipes the renderer does not implement', () => {
     const problems = missingVisuals(content, {
       recipes: new Set(['cursor-gilded']),
-      effects: new Set(['rise']),
+      effects: new Set<string>(),
     });
     expect(problems.some((p) => p.includes('unknown recipe "filigree-1"'))).toBe(true);
-    expect(problems.some((p) => p.includes('unknown effect "heavy-hit"'))).toBe(true);
     expect(problems.some((p) => p.includes('rarity "mythic"'))).toBe(true);
   });
 });
@@ -266,7 +277,7 @@ describe('invalid cosmetic data is rejected', () => {
     }
   };
   type RawItem = Record<string, unknown> & {
-    levels: { tokens: Record<string, string>; effects?: unknown }[];
+    levels: { tokens: Record<string, string> }[];
   };
   const item = (bad: RawContent, id: string) =>
     (bad.cosmetics as RawItem[]).find((c) => c['id'] === id)!;
@@ -283,13 +294,10 @@ describe('invalid cosmetic data is rejected', () => {
     expect(issues(bad).join('\n')).toContain('must not contain');
   });
 
-  it('rejects attack items without per-job effects and exclusives in global slots', () => {
+  it('rejects exclusives in global slots', () => {
     const bad = raw();
-    delete item(bad, 'gt_attack').levels[0]!.effects;
     item(bad, 'gt_table')['exclusiveCard'] = MAIN;
-    const text = issues(bad).join('\n');
-    expect(text).toContain('attack items need an effect per job');
-    expect(text).toContain('only card slots');
+    expect(issues(bad).join(' ')).toContain('only card slots');
   });
 
   it('requires exactly one starter per slot and one style per rarity', () => {
@@ -321,7 +329,7 @@ describe('token inheritance', () => {
   });
 
   it('does not inherit the starter recipes', () => {
-    const prism = equip(content, emptyLoadout(), 'cursor', { id: 'prism_pointer', level: 1 });
-    expect(resolveGlobal(content, prism).cursor.visual.recipes).toEqual(['cursor-prism']);
+    const crimson = equip(content, emptyLoadout(), 'cursor', { id: 'gt_cursor', level: 1 });
+    expect(resolveGlobal(content, crimson).cursor.visual.recipes).toEqual(['cursor-crimson']);
   });
 });

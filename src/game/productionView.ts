@@ -7,7 +7,7 @@ import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { harvestCritFactor, producersOf, workSites, type WorkSite } from './production';
 import type { GameState } from './state';
-import { jobAttackEffect, resolveCard, jobNumberStyle, type ResolvedCard } from './theme';
+import { resolveCard, type ResolvedCard } from './theme';
 import {
   forgeWorker,
   producerJob,
@@ -81,9 +81,6 @@ export interface ProductionStageView {
   targets: StageTarget[];
   /** Worker slots in use and in all (both jobs share them). */
   slots: { used: number; total: number };
-  /** Animation ids from the equipped cosmetics for this job's strikes and numbers. */
-  attackEffect: string | null;
-  tickEffect: string | null;
 }
 
 function stageCard(state: GameState, content: Content, cardId: string): StageCard | null {
@@ -154,8 +151,6 @@ export function productionStageView(
     job,
     targets: sites.map((site) => targetView(state, content, site, total, modifiers)),
     slots: { used: workersUsed(state, content), total: workerSlots(state, content) },
-    attackEffect: jobAttackEffect(content, state.cosmetics.loadout, job),
-    tickEffect: jobNumberStyle(content, state.cosmetics.loadout).tickEffect,
   };
 }
 

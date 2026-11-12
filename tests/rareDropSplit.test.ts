@@ -34,7 +34,7 @@ describe('rare drop damage bonus is split-invariant', () => {
       s = step.state;
       reports.push(step.report);
     }
-    expect(s.inventory['holo_hex'] ?? 0).toBeGreaterThan(1);
+    expect(s.inventory['gilded_plate'] ?? 0).toBeGreaterThan(1);
     const longTotal = total([long.report]);
     const shortTotal = total(reports);
     expect(longTotal.sub(shortTotal).abs().div(shortTotal).toNumber()).toBeLessThan(1e-9);

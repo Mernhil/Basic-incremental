@@ -45,7 +45,7 @@
           "amount": "1"
         }
       ],
-      "cosmetics": ["holo_hex"]
+      "cosmetics": ["gilded_plate"]
     },
     {
       "level": 15,
@@ -65,7 +65,7 @@
           "amount": "4"
         }
       ],
-      "cosmetics": ["holo_waves", "wardrobe_c"]
+      "cosmetics": ["nodes_b", "wardrobe_c"]
     },
     {
       "level": 25,
@@ -85,7 +85,7 @@
           "amount": "6"
         }
       ],
-      "cosmetics": ["prism_pointer", "nodes_c"]
+      "cosmetics": ["starlight_c", "nodes_c"]
     },
     {
       "level": 35,
@@ -105,7 +105,7 @@
           "amount": "80"
         }
       ],
-      "cosmetics": ["aurora_veil", "wardrobe_d"]
+      "cosmetics": ["nodes_c", "wardrobe_d"]
     },
     {
       "level": 45,

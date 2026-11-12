@@ -147,7 +147,8 @@ export interface Content {
   /** Legacy skin id -> the weapon kind it is worn on and the skin (weaponSkins.json). */
   legacySkinById: ReadonlyMap<string, { weapon: string; skin: WeaponSkin }>;
   /** The starter item of each slot (validated: exactly one per slot). */
-  starterBySlot: Readonly<Record<CosmeticSlot, Cosmetic>>;
+  /** The starter of each slot that has items; a slot with no items yet (finish, tick, number) has none. */
+  starterBySlot: Readonly<Partial<Record<CosmeticSlot, Cosmetic>>>;
   /** Bonds between pairs of cards (DESIGN.md §15 Bonds). Save format 27; the rule is not built. */
   bonds: Bond[];
   bondById: ReadonlyMap<string, Bond>;
@@ -284,8 +285,11 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   const openDungeons = options.unreleased ? dungeons : dungeons.filter((d) => d.enabled);
 
   const starterBySlot = Object.fromEntries(
-    COSMETIC_SLOTS.map((slot) => [slot, cosmetics.find((c) => c.starter && c.slot === slot)!]),
-  ) as Record<CosmeticSlot, Cosmetic>;
+    COSMETIC_SLOTS.flatMap((slot) => {
+      const starter = cosmetics.find((c) => c.starter && c.slot === slot);
+      return starter ? [[slot, starter]] : [];
+    }),
+  ) as Partial<Record<CosmeticSlot, Cosmetic>>;
 
   return {
     resources,
@@ -505,8 +509,11 @@ function checkProduction(
 
 function checkCosmetics(cosmetics: Cosmetic[], rarities: RarityStyle[], issues: string[]): void {
   for (const slot of COSMETIC_SLOTS) {
-    const starters = cosmetics.filter((c) => c.starter && c.slot === slot);
-    if (starters.length !== 1) {
+    // A slot with no items yet is an empty category (finish, tick, number); one with items has
+    // exactly one starter.
+    const items = cosmetics.filter((c) => c.slot === slot);
+    const starters = items.filter((c) => c.starter);
+    if (items.length > 0 && starters.length !== 1) {
       issues.push(
         `cosmetics.json: slot "${slot}" needs exactly one starter item, found ${starters.length}`,
       );

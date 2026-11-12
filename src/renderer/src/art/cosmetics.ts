@@ -29,30 +29,6 @@ export function starlightCoin(styleId: SkinStyle | string): string {
   return spriteImage(`cos-starlight-${styleId}`, 0, 0, 48, 48);
 }
 
-// ---- attacks ---------------------------------------------------------------------------------
-
-export interface AttackSheet {
-  sprite: SpriteInfo;
-  frames: number;
-  /** One frame's size in pixels (square). */
-  size: number;
-  /** Frame durations in ms: snap, held hit, thin, break. */
-  durations: readonly number[];
-}
-
-type AttackMeta = { levels: number; frames: number; size: number };
-const ATTACKS = COSMETIC_META.attacks as unknown as Record<string, AttackMeta>;
-
-/** The baked slash of an attack effect id (`px-slash-<style>-<level>`), or undefined. */
-export function attackSheet(effectId: string): AttackSheet | undefined {
-  const m = /^px-slash-([a-z]+)-(\d+)$/.exec(effectId);
-  if (!m) return undefined;
-  const a = ATTACKS[m[1]!];
-  const s = sprite(`cos-atk-${m[1]}-${m[2]}`);
-  if (!a || !s) return undefined;
-  return { sprite: s, frames: a.frames, size: a.size, durations: [50, 130, 90, 110] };
-}
-
 // ---- pixel numerals ----------------------------------------------------------------------------
 
 /** 5 x 7 numeral font (also the suffixes the number formats use). '#' is a lit pixel. */

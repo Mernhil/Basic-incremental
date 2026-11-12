@@ -18,7 +18,7 @@ import { ITEM_VIEWBOX } from '../art/items';
 import { animatedSpriteHtml, sprite } from '../art/pixel/sprites';
 import { h } from '../shell/shell';
 import { icon, type IconName } from '../shell/icons';
-import { starlightSvg } from '../ui/skins';
+import { skinStyle, starlightSvg } from '../ui/skins';
 import { hide as hideTip } from '../shell/tooltip';
 import { reducedMotion } from '../stage/motion';
 import { showReveal } from '../stage/reveal';
@@ -335,6 +335,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   const ring = h('span', 'shop-ring__sprite');
   ring.innerHTML = animatedSpriteHtml('shop-ring', 1);
   const ringCoin = h('span', 'shop-ring__coin');
+  // the coin follows the Starlight style worn in the Wardrobe (redrawn when it changes, in `render`)
+  let coinStyle = skinStyle('starlight');
   ringCoin.innerHTML = starlightSvg();
   ringWrap.append(ring, ringCoin);
 
@@ -469,6 +471,11 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   function render(): void {
     const s = ctx.state();
     const mods = collectModifiers(s, content);
+    const worn = skinStyle('starlight');
+    if (worn !== coinStyle) {
+      coinStyle = worn;
+      ringCoin.innerHTML = starlightSvg();
+    }
 
     challenges.render();
 

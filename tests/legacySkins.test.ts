@@ -42,25 +42,25 @@ const owning = (...ids: string[]): GameState => {
 const LEGACY_COUNTS: Record<string, number> = {
   sword: 1,
   hammer: 2,
-  bow: 10,
+  bow: 7,
   staff: 1,
   scythe: 13,
 };
 
 describe('legacy skins content', () => {
-  it('holds exactly the legacy skins: 27 across five item types, keyed by item type', () => {
+  it('holds exactly the legacy skins: 24 across five item types, keyed by item type', () => {
     expect(baseContent.weaponSkins.map((w) => [w.weapon, w.skins.length])).toEqual(
       Object.entries(LEGACY_COUNTS),
     );
     const all = baseContent.weaponSkins.flatMap((w) => w.skins);
-    expect(all).toHaveLength(27);
+    expect(all).toHaveLength(24);
     for (const w of baseContent.weaponSkins) {
       expect(w.baseArt).toBeUndefined();
       expect(baseContent.itemTypeByKind.has(w.weapon)).toBe(true);
       expect(w.skins.every((s) => s.legacy === true && s.rarity !== undefined)).toBe(true);
     }
-    expect(new Set(all.map((s) => s.id)).size).toBe(27);
-    expect(new Set(all.map((s) => s.name)).size).toBe(27);
+    expect(new Set(all.map((s) => s.id)).size).toBe(24);
+    expect(new Set(all.map((s) => s.name)).size).toBe(24);
   });
 
   it('lists the staff skin: Night Herald, Void', () => {
@@ -281,7 +281,7 @@ describe('Legacy Gate pulls', () => {
   it('lists every skin in the odds at its own rarity', () => {
     const info = portalInfo(freshState(), content, GATE)!;
     const staffOdds = info.rates.byItem.filter((i) => i.itemId.startsWith('legacy-staff-'));
-    expect(info.rates.byItem).toHaveLength(27);
+    expect(info.rates.byItem).toHaveLength(24);
     expect(staffOdds.map((i) => [i.itemId, i.rarity]).sort()).toEqual([
       ['legacy-staff-03', 'void'],
     ]);
@@ -314,9 +314,6 @@ describe('legacy bow skins content', () => {
   const set = baseContent.weaponSkinsByWeapon.get('bow')!;
   const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
   const BOWS = [
-    ['legacy-bow-56', 'item-bow-rare', 'rare'],
-    ['legacy-bow-57', 'item-bow-mythic', 'mythic'],
-    ['legacy-bow-58', 'item-bow-epic-0-red', 'epic'],
     ['legacy-bow-59', 'item-bow-mythic-6-red', 'mythic'],
     ['legacy-bow-01', 'skin-bow-01', 'epic'],
     ['legacy-bow-30', 'skin-bow-30', 'mythic'],
@@ -326,11 +323,11 @@ describe('legacy bow skins content', () => {
     ['legacy-bow-17', 'skin-bow-17', 'mythic'],
   ];
 
-  it('lists 10 distinct legacy bow skins at their rarity', () => {
+  it('lists 7 distinct legacy bow skins at their rarity', () => {
     expect(set.baseArt).toBeUndefined();
     expect(set.skins.map((s) => [s.id, s.art, s.rarity])).toEqual(BOWS);
     expect(set.skins.every((s) => s.legacy === true)).toBe(true);
-    expect(new Set(set.skins.map((s) => s.name)).size).toBe(10);
+    expect(new Set(set.skins.map((s) => s.name)).size).toBe(7);
   });
 
   it('puts every bow skin in the Legacy Gate pool at its rarity', () => {
@@ -360,11 +357,11 @@ describe('legacy scythe skins content', () => {
     expect(set.skins.every((s) => s.rarity === 'void')).toBe(true);
   });
 
-  it('pools all 27 legacy skins in the Legacy Gate with the documented rarity counts', () => {
-    expect(gate.pool).toHaveLength(27);
+  it('pools all 24 legacy skins in the Legacy Gate with the documented rarity counts', () => {
+    expect(gate.pool).toHaveLength(24);
     const counts: Record<string, number> = {};
     for (const p of gate.pool) counts[p.rarity] = (counts[p.rarity] ?? 0) + 1;
-    expect(counts).toEqual({ rare: 1, epic: 2, mythic: 9, void: 15 });
+    expect(counts).toEqual({ epic: 1, mythic: 8, void: 15 });
     const skinIds = baseContent.weaponSkins.flatMap((w) => w.skins.map((s) => s.id)).sort();
     expect(gate.pool.map((p) => p.itemId).sort()).toEqual(skinIds);
   });

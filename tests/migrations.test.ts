@@ -637,7 +637,7 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
   });
 
   it('loads at the current format with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(27);
+    expect(CURRENT_SAVE_VERSION).toBe(28);
     const loaded = readSave(v21Save(), content);
     // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
     expect(loaded.state.weaponSkins).toEqual({
@@ -842,7 +842,7 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.automation).toEqual({ treeLevels: false, mineLevels: false, reservePercent: 0 });
     // Saved again, it is format 26 and loads to the same state.
     const again = readSave(createSaveText(state, 1), floorsContent);
-    expect(JSON.parse(createSaveText(state, 1)).version).toBe(27);
+    expect(JSON.parse(createSaveText(state, 1)).version).toBe(28);
     expect(again.state).toEqual(state);
   });
 });

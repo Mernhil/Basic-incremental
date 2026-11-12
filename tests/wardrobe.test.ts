@@ -42,7 +42,7 @@ const gateOpen: Content = { ...content, portals: content.allPortals };
 
 describe('upgrade levels (DESIGN.md §8)', () => {
   it('caps levels by rarity; starters keep their own level count', () => {
-    expect(cosmeticMaxLevel(content, cosmetic('holo_hex'))).toBe(3); // rare
+    expect(cosmeticMaxLevel(content, cosmetic('gilded_plate'))).toBe(3); // rare
     expect(cosmeticMaxLevel(content, cosmetic('gilded_filigree'))).toBe(4); // epic
     expect(cosmeticMaxLevel(content, cosmetic('gt_border'))).toBe(5); // legendary
     expect(cosmeticMaxLevel(content, cosmetic('ember_crown'))).toBe(6); // mythic (as void)
@@ -71,8 +71,8 @@ describe('upgrade levels (DESIGN.md §8)', () => {
   });
 
   it('needs a duplicate and the step material to level up', () => {
-    const state = owning('holo_hex');
-    const check = cosmeticUpgradeCheck(state, content, 'holo_hex')!;
+    const state = owning('gilded_plate');
+    const check = cosmeticUpgradeCheck(state, content, 'gilded_plate')!;
     expect(check.toLevel).toBe(2);
     expect(check.step).toBe('accent');
     const material = rules.materials.accent;
@@ -91,32 +91,32 @@ describe('upgrade levels (DESIGN.md §8)', () => {
   });
 
   it('spends the copy and material, raises the level and keeps worn copies in step', () => {
-    let state = owning('holo_hex');
-    state.cosmetics.owned['holo_hex']!.copies = 2;
+    let state = owning('gilded_plate');
+    state.cosmetics.owned['gilded_plate']!.copies = 2;
     state.resources['glimmer_dust'] = new Decimal(1000);
-    state = ok(equipCosmetic(state, content, 'holo_hex'));
-    const result = upgradeCosmetic(state, content, 'holo_hex');
+    state = ok(equipCosmetic(state, content, 'gilded_plate'));
+    const result = upgradeCosmetic(state, content, 'gilded_plate');
     if (!result.ok) throw new Error(result.reason);
-    const owned = result.state.cosmetics.owned['holo_hex']!;
+    const owned = result.state.cosmetics.owned['gilded_plate']!;
     expect(owned).toEqual({ level: 2, copies: 1 });
-    expect(result.state.cosmetics.loadout.slots.finish).toEqual({ id: 'holo_hex', level: 2 });
+    expect(result.state.cosmetics.loadout.slots.border).toEqual({ id: 'gilded_plate', level: 2 });
     expect(result.state.resources['glimmer_dust']!.lt(1000)).toBe(true);
     expect(result.maxed).toBe(false);
   });
 
   it('refuses unowned items, missing requirements and the max level', () => {
-    expect(upgradeCosmetic(freshState(), content, 'holo_hex')).toEqual({
+    expect(upgradeCosmetic(freshState(), content, 'gilded_plate')).toEqual({
       ok: false,
       reason: 'not-owned',
     });
-    expect(upgradeCosmetic(owning('holo_hex'), content, 'holo_hex')).toEqual({
+    expect(upgradeCosmetic(owning('gilded_plate'), content, 'gilded_plate')).toEqual({
       ok: false,
       reason: 'requirements',
     });
-    const top = owning('holo_hex');
-    top.cosmetics.owned['holo_hex']!.level = 3;
-    expect(upgradeCosmetic(top, content, 'holo_hex')).toEqual({ ok: false, reason: 'maxed' });
-    expect(cosmeticUpgradeCheck(top, content, 'holo_hex')!.available).toBe(false);
+    const top = owning('gilded_plate');
+    top.cosmetics.owned['gilded_plate']!.level = 3;
+    expect(upgradeCosmetic(top, content, 'gilded_plate')).toEqual({ ok: false, reason: 'maxed' });
+    expect(cosmeticUpgradeCheck(top, content, 'gilded_plate')!.available).toBe(false);
   });
 });
 
@@ -211,10 +211,10 @@ describe('equipping (DESIGN.md §8)', () => {
 
 describe('the wardrobe grid', () => {
   it('lists every cosmetic with ownership, level, max, copies, source and where it is worn', () => {
-    const state = ok(equipCosmetic(owning('holo_hex'), content, 'holo_hex'));
+    const state = ok(equipCosmetic(owning('gilded_plate'), content, 'gilded_plate'));
     const items = wardrobeItems(state, content);
     expect(items).toHaveLength(content.cosmetics.length);
-    const hex = items.find((i) => i.cosmetic.id === 'holo_hex')!;
+    const hex = items.find((i) => i.cosmetic.id === 'gilded_plate')!;
     expect(hex).toMatchObject({
       owned: true,
       level: 1,
@@ -232,9 +232,9 @@ describe('the wardrobe grid', () => {
 
   it('names a source for every cosmetic (starter, dungeon, prestige or portal)', () => {
     expect(cosmeticSource(content, 'gn_border')).toBe('starter');
-    expect(cosmeticSource(content, 'holo_waves')).toBe('dungeon');
-    expect(cosmeticSource(content, 'gilded_plate')).toBe('prestige');
-    expect(cosmeticSource(content, 'gt_finish')).toBe('achievement');
+    expect(cosmeticSource(content, 'nodes_b')).toBe('dungeon');
+    expect(cosmeticSource(content, 'gilded_filigree')).toBe('prestige');
+    expect(cosmeticSource(content, 'gt_border')).toBe('achievement');
     expect(cosmeticSource(content, 'ember_crown')).toBe('portal');
     for (const c of content.cosmetics) expect(cosmeticSource(content, c.id), c.id).not.toBeNull();
   });
@@ -243,10 +243,10 @@ describe('the wardrobe grid', () => {
 describe('dungeon cosmetic drops are owned', () => {
   it('a rare drop that is a cosmetic goes into the wardrobe (a copy when owned)', () => {
     const state = freshState();
-    // rng 0: every chance roll succeeds, so the first kill drops Holo Hex.
+    // rng 0: every chance roll succeeds, so the first kill drops Gilded Plate.
     const { state: after, report } = advance(state, withDps(1e6, content), 5_000, constantRng(0));
     expect(report.bossKills).toBeGreaterThan(0);
-    expect(after.cosmetics.owned['holo_hex']).toEqual({
+    expect(after.cosmetics.owned['gilded_plate']).toEqual({
       level: 1,
       copies: report.bossKills - 1,
     });
@@ -295,10 +295,10 @@ describe('the Wardrobe Gate (DESIGN.md §7)', () => {
 
 describe('saving (save format v11)', () => {
   it('keeps levels above the drawn levels, up to the rarity max', () => {
-    const state = owning('holo_hex');
-    state.cosmetics.owned['holo_hex'] = { level: 3, copies: 4 };
+    const state = owning('gilded_plate');
+    state.cosmetics.owned['gilded_plate'] = { level: 3, copies: 4 };
     const loaded = readSave(createSaveText(state, 1), content).state;
-    expect(loaded.cosmetics.owned['holo_hex']).toEqual({ level: 3, copies: 4 });
+    expect(loaded.cosmetics.owned['gilded_plate']).toEqual({ level: 3, copies: 4 });
   });
 
   it('migrates v10 -> v11: cosmetic rare drops held in the inventory become owned', () => {
@@ -312,7 +312,7 @@ describe('saving (save format v11)', () => {
     });
     expect(migrated['cosmetics']).toEqual({
       loadout: { slots: {}, cards: {} },
-      owned: { gn_border: { level: 1, copies: 1 }, holo_hex: { level: 1, copies: 2 } },
+      owned: { gn_border: { level: 1, copies: 1 }, holo_hex: { level: 1, copies: 2 } }, // the format 10 snapshot of the drops
     });
   });
 });
