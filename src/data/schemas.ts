@@ -1892,24 +1892,30 @@ export const weaponSkinSetSchema = z.strictObject({
 });
 
 /**
- * Weapon look steps (lookSteps.json, DESIGN.md §5 Look steps by stars): the item types whose picture
- * grows inside a tier, and for each tier the stars at which each look starts (the first look starts at
- * ★1). A tier with no entry, and every other item type, has one picture.
+ * Weapon look steps (lookSteps.json, DESIGN.md §5 Look steps by stars): for each tier, the item types
+ * whose picture grows inside it and the stars at which each look starts (the first look starts at ★1).
+ * A tier with no entry, and a type that is not listed for a tier, has one picture there. Mythic is
+ * both T6 sides; the Heirloom has one picture.
  */
+const lookTierSteps = z.strictObject({
+  stars: z.array(z.number().int().min(1).max(MAX_STARS)).min(1),
+  kinds: z.array(z.enum(ITEM_KINDS)).min(1),
+});
 export const lookStepsSchema = z
   .strictObject({
-    kinds: z.array(z.enum(ITEM_KINDS)).min(1),
     steps: z.strictObject({
-      wood: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
-      bronze: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
-      silver: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
-      gold: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
+      wood: lookTierSteps.optional(),
+      bronze: lookTierSteps.optional(),
+      silver: lookTierSteps.optional(),
+      gold: lookTierSteps.optional(),
+      prismatic: lookTierSteps.optional(),
+      mythic: lookTierSteps.optional(),
     }),
   })
   .refine(
     (f) =>
       Object.values(f.steps).every(
-        (list) => list![0] === 1 && list!.every((n, i) => i === 0 || n > list![i - 1]!),
+        (t) => t!.stars[0] === 1 && t!.stars.every((n, i) => i === 0 || n > t!.stars[i - 1]!),
       ),
     { message: 'each tier starts its first look at ★1 and each next look needs more stars' },
   );
