@@ -26,12 +26,9 @@ import { BOSS_VB, bossVector, shardVector } from '../vector/bosses';
 import {
   EVOLUTIONS,
   EVOLUTION_WINDOW,
-  ART_RARITIES,
-  ITEM_KINDS_DRAWN,
   RARITY_WINDOW,
   ROOTBLOOM_CRYSTALS,
   evolutionVector,
-  itemVector,
   rootbloomCrystal,
 } from '../vector/items';
 import { FRAME_SCALE, FRAME_VB, TIER_ORDER, frameVector } from '../vector/frame';
@@ -161,16 +158,6 @@ const drawn = (name: string): boolean => !HAND.has(name);
 
 export async function bakeItems(): Promise<Baked[]> {
   const res: Baked[] = [];
-  for (const kind of ITEM_KINDS_DRAWN)
-    for (const r of ART_RARITIES) {
-      if (!drawn(`item-${kind}-${r}`)) continue;
-      const markup = itemVector(kind, r);
-      res.push(
-        out(`item-${kind}-${r}`, await cardItem(markup, RARITY_WINDOW[r]), {
-          outline: largestPath(markup),
-        }),
-      );
-    }
   for (const id of EVOLUTIONS) {
     if (!drawn(`evo-${id}`)) continue;
     const markup = evolutionVector(id);
