@@ -14,6 +14,8 @@ import { availableParallelism } from 'node:os';
 import { loadContent } from '../../src/data';
 import {
   bandsPass,
+  formatFightPace,
+  formatLevels,
   formatGuard,
   LATE_STEP_SECONDS,
   formatProgress,
@@ -66,6 +68,7 @@ interface WorkerOutput {
   runs: SimResult['runs'];
   progress: SimResult['progress'];
   maxedWeaponAt: SimResult['maxedWeaponAt'];
+  fights: SimResult['fights'];
   simSeconds: number;
   summary: string;
 }
@@ -87,6 +90,7 @@ function runOne(seed: number, as: SimProfile): WorkerOutput {
     runs: result.runs,
     progress: result.progress,
     maxedWeaponAt: result.maxedWeaponAt,
+    fights: result.fights,
     simSeconds: result.simSeconds,
     summary: `${formatTable(result)}\n\n${formatSummary(result, content)}`,
   };
@@ -222,6 +226,14 @@ ${formatProgress(outputs, hours)}`);
 The table update's systems (active profile):
 
 ${formatTableUpdate(outputs, hours)}`);
+  console.log(`
+Fight pace (active profile, every seed):
+
+${formatFightPace(outputs, loadContent())}`);
+  console.log(`
+Levels (active profile, medians):
+
+${formatLevels(outputs, hours)}`);
   if (strict && !bandsPass(summary)) process.exit(1);
 }
 

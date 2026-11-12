@@ -40,7 +40,7 @@
       "hp": "70000",
       "hpBars": 5,
       "attack": {
-        "damage": "95",
+        "damage": "62",
         "intervalSeconds": 3
       }
     },
@@ -119,10 +119,10 @@
       "art": "cinder_lich",
       "weakness": "light",
       "resistance": "fire",
-      "hp": "2500000",
+      "hp": "3500000",
       "hpBars": 8,
       "attack": {
-        "damage": "2810",
+        "damage": "2560",
         "intervalSeconds": 2.5
       }
     },
@@ -146,8 +146,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 194000,
-          "max": 290000
+          "min": 272000,
+          "max": 406000
         }
       ],
       "extraMaterials": [
@@ -209,10 +209,10 @@
       "art": "glacier_colossus",
       "weakness": "storm",
       "resistance": "crystal",
-      "hp": "400000000",
+      "hp": "480000000",
       "hpBars": 12,
       "attack": {
-        "damage": "360000",
+        "damage": "281000",
         "intervalSeconds": 2
       }
     },
@@ -236,8 +236,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 31000000,
-          "max": 46600000
+          "min": 37200000,
+          "max": 55900000
         }
       ],
       "extraMaterials": [
@@ -292,10 +292,10 @@
       "sprite": "abyssal_anchor_leviathan",
       "weakness": "earth",
       "resistance": "storm",
-      "hp": "1500000000",
+      "hp": "1950000000",
       "hpBars": 12,
       "attack": {
-        "damage": "1350000",
+        "damage": "1140000",
         "intervalSeconds": 2
       }
     },
@@ -319,8 +319,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 116000000,
-          "max": 174600000
+          "min": 151000000,
+          "max": 227000000
         }
       ],
       "extraMaterials": [
@@ -375,10 +375,10 @@
       "sprite": "sanctuary_archangel",
       "weakness": "void",
       "resistance": "light",
-      "hp": "6000000000",
+      "hp": "9000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "5400000",
+        "damage": "5270000",
         "intervalSeconds": 2
       }
     },
@@ -402,8 +402,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 466000000,
-          "max": 700000000
+          "min": 699000000,
+          "max": 1050000000
         }
       ],
       "extraMaterials": [
@@ -458,10 +458,10 @@
       "sprite": "faceless_void_reaper",
       "weakness": "light",
       "resistance": "void",
-      "hp": "20000000000",
+      "hp": "32000000000",
       "hpBars": 12,
       "attack": {
-        "damage": "18000000",
+        "damage": "18700000",
         "intervalSeconds": 2
       }
     },
@@ -485,8 +485,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 1550000000,
-          "max": 2320000000
+          "min": 2480000000,
+          "max": 3710000000
         }
       ],
       "extraMaterials": [

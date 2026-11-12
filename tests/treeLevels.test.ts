@@ -30,7 +30,7 @@ describe('tree levels (DESIGN.md §4)', () => {
     for (const tree of content.trees) {
       expect(tree.level.cost.resource).toBe('money');
       expect(tree.level.ratePercent.gt(0)).toBe(true);
-      expect(tree.level.milestones).toEqual({ every: 25, multiplier: new Decimal(2) });
+      expect(tree.level.milestones).toEqual({ every: 15, multiplier: new Decimal(2) });
     }
   });
 
@@ -54,13 +54,13 @@ describe('tree levels (DESIGN.md §4)', () => {
     expect(lv5.eq(base.mul(factor))).toBe(true);
   });
 
-  it('doubles the output at every 25th level', () => {
+  it('doubles the output at every 15th level', () => {
     const mods = collectModifiers(freshState(), content);
-    const at24 = producerRate(oak, 'logging', mods, 24);
-    const at25 = producerRate(oak, 'logging', mods, 25);
+    const at24 = producerRate(oak, 'logging', mods, 14);
+    const at25 = producerRate(oak, 'logging', mods, 15);
     const lin = (n: number) => oak.level.ratePercent.mul(n).div(100).add(1);
-    expect(at24.eq(oak.baseRate.mul(lin(24)))).toBe(true);
-    expect(at25.eq(oak.baseRate.mul(lin(25)).mul(2))).toBe(true);
+    expect(at24.eq(oak.baseRate.mul(lin(14)))).toBe(true);
+    expect(at25.eq(oak.baseRate.mul(lin(15)).mul(2))).toBe(true);
   });
 
   it('feeds the level into the job output', () => {
@@ -113,7 +113,7 @@ describe('tree levels (DESIGN.md §4)', () => {
 
   it('reports the milestones crossed as tree tier-ups', () => {
     const state = rich();
-    const r = buyTreeLevels(state, content, 'oak', 25);
+    const r = buyTreeLevels(state, content, 'oak', 15);
     expect(r.ok && r.tierUps).toEqual([
       { kind: 'tree_milestone', id: 'oak', from: 0, to: 1, metal: 'bronze' },
     ]);
@@ -135,17 +135,17 @@ describe('tree levels (DESIGN.md §4)', () => {
 
   it('shows the next milestone like the mines', () => {
     const state = freshState();
-    state.production.treeLevels['oak'] = 30;
+    state.production.treeLevels['oak'] = 20;
     const info = treeLevelMilestone(state, content, 'oak')!;
     expect(info.reached).toBe(1);
-    expect(info.nextLevel).toBe(50);
+    expect(info.nextLevel).toBe(30);
     expect(treeLevelMilestone(state, content, 'nope')).toBeNull();
   });
 
   it('grows the tree tile one stage per milestone and resets with the run', () => {
     const state = freshState();
     expect(tileStage(state, content, 'logging', 'oak')).toBe(0);
-    state.production.treeLevels['oak'] = 50;
+    state.production.treeLevels['oak'] = 30;
     expect(tileStage(state, content, 'logging', 'oak')).toBe(2);
     expect(tileStage(state, content, 'logging', 'ironbark')).toBe(0);
     const after = resetProduction(state);

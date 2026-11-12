@@ -577,13 +577,19 @@ describe('balance sim: run', () => {
     // The shipped numbers, not the pinned test content. A new game holds one pull (DESIGN.md §3),
     // so the first summon comes in the first step; the opening running ahead of its §14 targets
     // is accepted until the Scope 3 retune (DESIGN.md §16), but never behind them.
-    const result = runSim(loadContent(), { hours: 1, seed: 1, stepSeconds: 10 });
-    expect(result.hits['first_summon']).not.toBeNull();
-    expect(result.hits['first_summon']!).toBeLessThanOrEqual(60);
+    // The first clear follows the first pulls, so one seed is pull luck: the median of three
+    // seeds is held to the target (the sim's band, DESIGN.md §14 Sim bands).
+    const shipped = loadContent();
     const clear = MILESTONES.find((m) => m.id === 'clear_d1')!;
-    expect(result.hits['clear_d1']).not.toBeNull();
-    expect(targetRatio(clear, result.hits['clear_d1']! / 3600)).toBeLessThan(125);
-  }, 30_000);
+    const ratios = [1, 2, 3].map((seed) => {
+      const result = runSim(shipped, { hours: 1, seed, stepSeconds: 10 });
+      expect(result.hits['first_summon']).not.toBeNull();
+      expect(result.hits['first_summon']!).toBeLessThanOrEqual(60);
+      expect(result.hits['clear_d1']).not.toBeNull();
+      return targetRatio(clear, result.hits['clear_d1']! / 3600);
+    });
+    expect([...ratios].sort((x, y) => x - y)[1]!).toBeLessThan(125);
+  }, 90_000);
 
   it('samples the fighting DPS every quarter hour for the tuning report', () => {
     const result = runSim(content, { hours: 1.1, seed: 1, stepSeconds: 10 });
