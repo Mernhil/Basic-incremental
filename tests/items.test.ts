@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_KINDS, RARITIES, loadContent } from '../src/data';
-import { itemArt } from '../src/renderer/src/art/items';
+import { FULL_ART_BOX, FULL_ART_VIEWBOX, itemArt } from '../src/renderer/src/art/items';
 import { EVOLUTIONS, evolutionVector, itemVector } from '../src/renderer/src/art/vector/items';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
@@ -36,12 +36,33 @@ describe('signature items (DESIGN.md §12)', () => {
     expect(itemArt('spear', 'rare', 'gold')).not.toBe(itemArt('spear', 'rare', 'wood'));
   });
 
-  it('shows the sprite in the 200 x 240 item box, pixelated', () => {
-    const art = itemArt('sword', 'legendary');
+  it('shows a pixel sprite in the 200 x 240 item box, pixelated (spear, staff and pickaxe keep theirs)', () => {
+    const art = itemArt('spear', 'legendary');
     expect(art).toMatch(/^<g class="bi-item">/);
     expect(art).toContain('<image');
     expect(art).toContain('width="200" height="240"');
     expect(art).toContain('image-rendering:pixelated');
+  });
+
+  it("shows the user's straight pictures on the card canvas, smooth, with their traced outline (ASSET_RULES §5)", () => {
+    for (const kind of [
+      'sword',
+      'greatsword',
+      'dagger',
+      'hammer',
+      'lance',
+      'bow',
+      'scythe',
+      'logging_axe',
+    ] as const)
+      for (const tier of ['wood', 'bronze', 'silver', 'gold'] as const) {
+        const art = itemArt(kind, 'legendary', tier);
+        expect(art, `${kind} ${tier}`).toMatch(/^<g class="bi-item bi-item--full">/);
+        expect(art).toContain('image-rendering:auto');
+        expect(art).toContain(`width="${FULL_ART_BOX.w}" height="${FULL_ART_BOX.h}"`);
+        expect(art, 'outline for the element effects').toContain('bi-item__outline');
+      }
+    expect(FULL_ART_VIEWBOX).toBe('11.29 -7 177.42 250');
   });
 
   it('adds parts with rarity in the source drawing: Common plain, Rare a gem, Legendary a ribbon, Void shards', () => {

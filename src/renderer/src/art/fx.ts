@@ -107,8 +107,11 @@ class Fx {
     const vb = itemSvg?.viewBox.baseVal;
     if (!itemSvg || !vb || !vb.width) return false;
     const k = Math.min(w / vb.width, h / vb.height);
-    const gw = Math.round(vb.width / 2);
-    const gh = Math.round(vb.height / 2);
+    // a full-art card (a straight picture) draws its effect pixels at the card grid scale: 1.34 units
+    // each; the 100 x 120 sprites at 2 units, one effect pixel per art pixel
+    const unit = this.art.closest('.bi-card--fullart') ? 1.34 : 2;
+    const gw = Math.round(vb.width / unit);
+    const gh = Math.round(vb.height / unit);
     const ox = (w - vb.width * k) / 2;
     const oy = (h - vb.height * k) / 2;
     for (const c of [this.glow, this.back, this.front]) {

@@ -1903,6 +1903,29 @@ export const weaponSkinSetSchema = z.strictObject({
 });
 
 /**
+ * Weapon look steps (lookSteps.json, DESIGN.md §5 Look steps by stars): the item types whose picture
+ * grows inside a tier, and for each tier the stars at which each look starts (the first look starts at
+ * ★1). A tier with no entry, and every other item type, has one picture.
+ */
+export const lookStepsSchema = z
+  .strictObject({
+    kinds: z.array(z.enum(ITEM_KINDS)).min(1),
+    steps: z.strictObject({
+      wood: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
+      bronze: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
+      silver: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
+      gold: z.array(z.number().int().min(1).max(MAX_STARS)).min(1).optional(),
+    }),
+  })
+  .refine(
+    (f) =>
+      Object.values(f.steps).every(
+        (list) => list![0] === 1 && list!.every((n, i) => i === 0 || n > list![i - 1]!),
+      ),
+    { message: 'each tier starts its first look at ★1 and each next look needs more stars' },
+  );
+
+/**
  * A training line of the Dungeons drawer (DESIGN.md §6 Training): a fighting upgrade bought again
  * and again with Money, like a tree or mine level. Level `n` multiplies `stat` (for the fighting
  * job) by (1 + ratePercent% x n) x milestones.multiplier^(n / milestones.every, rounded down).
@@ -2175,6 +2198,7 @@ export const contentSchemas = {
       },
     ),
   weaponSkins: z.array(weaponSkinSetSchema),
+  lookSteps: lookStepsSchema,
   items: itemsSchema,
   /** Save format 27 (the table update): content for rules not built yet. */
   bonds: z.array(bondSchema),
@@ -2184,6 +2208,7 @@ export const contentSchemas = {
   scrolls: scrollsSchema,
 } as const;
 
+export type LookSteps = z.output<typeof lookStepsSchema>;
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;
 export type WeaponSkinSet = z.output<typeof weaponSkinSetSchema>;
 export type Upgrade = z.output<typeof upgradeSchema>;

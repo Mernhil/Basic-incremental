@@ -20,10 +20,27 @@ export const ITEM_BOX = { w: 200, h: 240 } as const;
 export const outlinePath = (d: string | undefined): string =>
   d ? `<path class="bi-item__outline" d="${d}" fill="none" stroke="none"/>` : '';
 
+/**
+ * The user's straight pictures (ASSET_RULES §5) are canvases of the card's own proportion (132 : 186),
+ * far bigger than the 100 x 120 sprites, with the weapon centred on a transparent background. In
+ * item-box units the canvas is drawn 177.4 x 250 around the box, which fits the art window of the
+ * small views (shop, summon, skins); a card draws it over the whole card (full art) by taking
+ * `FULL_ART_VIEWBOX`, the same rectangle, as its item view box.
+ */
+export const FULL_ART_BOX = { x: 11.29, y: -7, w: 177.42, h: 250 } as const;
+export const FULL_ART_VIEWBOX = `${FULL_ART_BOX.x} ${FULL_ART_BOX.y} ${FULL_ART_BOX.w} ${FULL_ART_BOX.h}`;
+/** A sprite this wide is a straight picture (the pixel sprites are 100 px wide). */
+const STRAIGHT_MIN_W = 300;
+
 /** Markup for a baked item-box sprite (card items and weapon skins), with its traced outline; a sprite with a palette-cycling strip plays it (art/pixel/animate.ts). */
 export function itemBoxSprite(name: string, cls = ''): string {
   const s = sprite(name);
   if (!s) return '';
+  if (s.w >= STRAIGHT_MIN_W) {
+    // a straight picture: smooth scaling, full-art canvas, the silhouette traced from its alpha
+    const { x, y, w, h } = FULL_ART_BOX;
+    return `<g class="bi-item bi-item--full${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}<image href="${s.url}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="none" style="image-rendering:auto" data-sprite="${name}"/></g>`;
+  }
   return `<g class="bi-item${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}${animatedSpriteImage(name, 0, 0, ITEM_BOX.w, ITEM_BOX.h)}</g>`;
 }
 
@@ -45,7 +62,9 @@ const T6_ART = { mythic: 't6m', void: 't6v' } as const;
  * The Heirloom has its own picture per type and side (`item-<type>-hm` Mythic, `-hv` Void). `side`
  * is the card's own rarity, which picks the Mythic or Void version at T6 and the Heirloom. A caller
  * with no tier (the gallery) shows the Wood picture. The card's rarity no longer changes the
- * picture: the tier does (DESIGN.md §5, Item types).
+ * picture: the tier does (DESIGN.md §5, Item types). From Wood to Gold an item type with concept-sheet
+ * pictures (`item-<type>-t<tier>-<step>`, ASSET_RULES §5) shows its `step` (0 BASE, 1 +1, 2 +2, 3 FINAL,
+ * from `lookStep`); the other types have one picture per tier and ignore it.
  */
 export function itemArt(
   kind: ItemKind,
@@ -53,6 +72,7 @@ export function itemArt(
   tier?: RankTier,
   side?: Rarity,
   heirloomArt?: string,
+  step = 0,
 ): string {
   if (tier === 'heirloom') {
     const base = `item-${kind}-${side === 'void' ? 'hv' : 'hm'}`;
@@ -61,18 +81,22 @@ export function itemArt(
   }
   const drawn =
     tier === 'mythic' ? T6_ART[side === 'void' ? 'void' : 'mythic'] : TIER_ART[tier ?? 'wood'];
-  return itemBoxSprite(`item-${kind}-${drawn}`);
+  const plain = `item-${kind}-${drawn}`;
+  const stepped = `${plain}-${step}`;
+  return itemBoxSprite(sprite(stepped) ? stepped : plain);
 }
 
 /**
  * The item picture of a card at a tier: the one call a card face, tile or preview makes. A card with
  * its own Heirloom (`heirloomArt` in cards.json, DESIGN.md §5 More weapons from the Heirloom
  * candidates) shows it at the Heirloom tier; below it, and for every card without one, the type's
- * tier pictures and original Heirloom (`itemArt` with the card's rarity as its side).
+ * tier pictures and original Heirloom (`itemArt` with the card's rarity as its side). `step` is the
+ * look inside the tier (`lookStep` from the card's stars); the Next tier preview leaves it at BASE.
  */
 export function cardTierArt(
   card: Pick<Card, 'rarity' | 'heirloomArt'> & { item: { kind: ItemKind } },
   tier?: RankTier,
+  step = 0,
 ): string {
-  return itemArt(card.item.kind, card.rarity, tier, card.rarity, card.heirloomArt);
+  return itemArt(card.item.kind, card.rarity, tier, card.rarity, card.heirloomArt, step);
 }
