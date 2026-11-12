@@ -20,7 +20,7 @@ import { content } from './helpers';
 /** The shipped numbers: the play-through tests below need the real floors. */
 const real = loadContent();
 
-/** Save format 27: the state of the table update (docs/plans/table-update.md, Interfaces). */
+/** Save format 27: the state of the table update. */
 const step = MIGRATIONS[26]!;
 type Out = Record<string, Record<string, unknown>>;
 

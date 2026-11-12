@@ -1,4 +1,4 @@
-// Screenshots the itch asset packs in the game (docs/plans/itch-assets.md): the duel with a normal
+// Screenshots the itch asset packs in the game: the duel with a normal
 // enemy, a mini-boss and the boss of each dungeon, the header coins, the Achievements book and
 // Settings > Help > Credits, at 1280 x 720. It replaces the dev save, so use a profile:
 // `BI_PROFILE=itchart npx electron-vite dev -- --remote-debugging-port=9440`, then

@@ -74,7 +74,7 @@ export const V27_CRYSTALS_PER_SCROLL = 300;
 const V27_SCROLLS = { summon_scroll: 'summon_crystal', glamour_scroll: 'glamour_crystal' } as const;
 
 /**
- * v26 -> v27: the table update (user, 2026-11-11; `docs/plans/table-update.md` Interfaces). Adds
+ * v26 -> v27: the table update (user, 2026-11-11). Adds
  * the state of the rules it builds, all inert until their packages read it:
  * - every dungeon gets an auto-challenge switch, on where it was pushing (`mode` stays for now);
  * - the fight gets the enemy being fought (the first), no knockout wait carried over, no Challenge running, no auto-challenge

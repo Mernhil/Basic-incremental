@@ -6,7 +6,7 @@ import type { CoinTarget } from '../stage/arena';
 import type { Director } from '../stage/director';
 
 /**
- * The table's contract (UI_RULES.md §2 "The table"; docs/plans/table-update.md, Interfaces,
+ * The table's contract (UI_RULES.md §2 "The table";
  * "Table shell"). The shell (package 8) owns `src/renderer/src/table/` and `shell/`; each view
  * package owns one folder under `src/renderer/src/views/` and talks to the shell only through the
  * types below. A view package never edits a file outside its folder to add a view.
