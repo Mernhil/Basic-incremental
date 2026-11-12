@@ -13250,6 +13250,7764 @@
           }
         ]
       }
+    ],
+    "jade_vanguard": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "violet_herald": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "moon_reaver": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "crown_warden": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "jade_regent": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "cobalt_tyrant": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "spore_tyrant": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "gloom_maw": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "molten_pikeman": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "rose_sentinel": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "royal_impaler": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "cinder_serpent": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "blood_serpent": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "azure_cavalier": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "midnight_rider": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "plague_rider": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "rose_phantom": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "sky_gleamer": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "jade_stalker": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "bloodletter": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "violet_viper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "frost_viper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "stormforger": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "verdant_smith": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "amethyst_smith": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "iron_butcher": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "dawn_archer": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "night_hunter": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "abyss_hunter": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "ember_stalker": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "orchid_oracle": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "rift_mystic": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "azure_gleaner": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "bog_reaper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "hollow_reaper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "frost_reaper": [
+      {
+        "id": "edge",
+        "name": "Keen Edge",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "precision",
+        "name": "Precision",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.critChance",
+            "kind": "flat",
+            "value": "0.03"
+          }
+        ]
+      },
+      {
+        "id": "surge",
+        "name": "Surge",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "24",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bulwark",
+        "name": "Bulwark",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "combat.health",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "32",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_guard",
+        "name": "Hardened Hide",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "combat.defence",
+            "kind": "flat",
+            "value": "4.8"
+          }
+        ]
+      },
+      {
+        "id": "m_crit",
+        "name": "Deadly Aim",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "combat.critDamage",
+            "kind": "flat",
+            "value": "0.32"
+          }
+        ]
+      },
+      {
+        "id": "m_money",
+        "name": "Windfall",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "drops.moneyMultiplier",
+            "kind": "percent",
+            "value": "16"
+          }
+        ]
+      },
+      {
+        "id": "m_burst",
+        "name": "Heavy Signature",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "3.2",
+            "scope": {
+              "job": "fighting"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_crystal",
+        "name": "Crystal Glint",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "drops.crystalMultiplier",
+            "kind": "percent",
+            "value": "12.8"
+          }
+        ]
+      },
+      {
+        "id": "m_core",
+        "name": "Core Hunter",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "drops.materialChance",
+            "kind": "percent",
+            "value": "24"
+          }
+        ]
+      },
+      {
+        "id": "m_power",
+        "name": "Colossus",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "combat.damage",
+            "kind": "percent",
+            "value": "19.2"
+          }
+        ]
+      }
+    ],
+    "azure_delver": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "40",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.5",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "2",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "60",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.06",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "50",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "emerald_seer": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "40",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.5",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "2",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "60",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.06",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "50",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "ruby_gnawer": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "40",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.5",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "2",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "60",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.06",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "50",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "void_burrower": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "40",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.5",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "2",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "60",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.06",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "50",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "amber_gnawer": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "20",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "6",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.04",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "40",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.5",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "2",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "60",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "30",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "10",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.06",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "50",
+            "scope": {
+              "job": "mining"
+            }
+          }
+        ]
+      }
+    ],
+    "tidal_warden": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "18",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "5.4",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.036",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "36",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "1.8",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "54",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "9",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.054",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
+    ],
+    "dusk_feller": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "18",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "5.4",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.036",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "36",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "1.8",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "54",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "9",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.054",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
+    ],
+    "rime_feller": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "18",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "5.4",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.036",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "36",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "1.8",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "54",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "9",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.054",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
+    ],
+    "blight_feller": [
+      {
+        "id": "yield",
+        "name": "Rich Yield",
+        "cost": 4,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "18",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "rhythm",
+        "name": "Steady Rhythm",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "bounty",
+        "name": "Big Bounty",
+        "cost": 5,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "5.4",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "keen",
+        "name": "Keen Eye",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.036",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "veteran",
+        "name": "Veteran",
+        "cost": 3,
+        "milestone": 0,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "36",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_edge",
+        "name": "Sharp Tools",
+        "cost": 4,
+        "milestone": 1,
+        "modifiers": [
+          {
+            "stat": "harvest.critDamage",
+            "kind": "flat",
+            "value": "0.45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_fill",
+        "name": "Deep Rhythm",
+        "cost": 5,
+        "milestone": 2,
+        "modifiers": [
+          {
+            "stat": "burst.fill",
+            "kind": "flat",
+            "value": "1.8",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_learn",
+        "name": "Tireless",
+        "cost": 4,
+        "milestone": 3,
+        "modifiers": [
+          {
+            "stat": "xp.card",
+            "kind": "percent",
+            "value": "54",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_yield",
+        "name": "Master Yield",
+        "cost": 5,
+        "milestone": 4,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "27",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_haul",
+        "name": "Big Haul",
+        "cost": 5,
+        "milestone": 5,
+        "modifiers": [
+          {
+            "stat": "burst.power",
+            "kind": "flat",
+            "value": "9",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_eye",
+        "name": "Eagle Eye",
+        "cost": 4,
+        "milestone": 6,
+        "modifiers": [
+          {
+            "stat": "harvest.critChance",
+            "kind": "flat",
+            "value": "0.054",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      },
+      {
+        "id": "m_grand",
+        "name": "Grand Yield",
+        "cost": 6,
+        "milestone": 7,
+        "modifiers": [
+          {
+            "stat": "production.rate",
+            "kind": "percent",
+            "value": "45",
+            "scope": {
+              "job": "logging"
+            }
+          }
+        ]
+      }
     ]
   }
 }

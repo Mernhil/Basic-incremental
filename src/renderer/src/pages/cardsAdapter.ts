@@ -1,16 +1,18 @@
-import type { Content, Rank } from '../../../data';
+import { RANK_TIERS, type Card, type Content, type Rank, type RankTier } from '../../../data';
 import {
   SUPPORT_SLOTS,
   cardCollection,
   cardEnhancements,
   cardInfo,
+  cardTopTier,
+  itemName,
+  tierLabel,
   chooseEnhancement,
   resetEnhancements,
   collectModifiers,
   levelCap,
   loadoutInfo,
   lookTier,
-  weaponLookRarity,
   setLoadoutSlot,
   starUp,
   starUpWithDust,
@@ -28,7 +30,7 @@ import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
 import { COPY, starPercent } from '../copy';
 import { statTiles } from './statsModel';
-import { itemArt } from '../art/items';
+import { cardTierArt } from '../art/items';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
 import { weaponView } from './weaponModel';
@@ -47,6 +49,24 @@ const TIER_NAMES: Record<Rank['tier'], string> = TIER_LABELS;
 const BASE_RANK: Rank = { tier: 'wood', stars: 1 };
 /** Placeholder emblems until the graphics overhaul brings per-card art (see ui/card.ts). */
 const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', mining: 'pick' };
+
+/**
+ * The tiers the Next tier preview steps through: the card's own tier, then each tier up to the
+ * highest its rarity allows (DESIGN §5 Rarity caps the tier; the Heirloom for a Mythic or Void
+ * card whose item type has it open). A card at its top tier has just the one.
+ */
+export function previewTiers(content: Content, cardId: string, from: RankTier): RankTier[] {
+  const top = RANK_TIERS.indexOf(cardTopTier(content, cardId));
+  return RANK_TIERS.slice(Math.max(0, RANK_TIERS.indexOf(from)), top + 1);
+}
+
+/**
+ * The picture of a card's item at a tier (T6 and the Heirloom by the card's side). The one place
+ * the preview gets its art, so a card with an Heirloom picture of its own can be given it here.
+ */
+export function previewArt(card: Card, tier: RankTier): string {
+  return cardTierArt(card, tier);
+}
 
 /**
  * `art` draws a card's item (the renderer passes one that shows unique ★6 evolutions); without
@@ -140,14 +160,7 @@ export function createCardsModel(
       emblem: JOB_EMBLEM[card.job],
       itemKind: card.item.kind,
       itemType: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
-      item:
-        art?.(card.id, owned) ??
-        itemArt(
-          card.item.kind,
-          weaponLookRarity(card.rarity, lookTier(card.rarity, rank.tier)),
-          lookTier(card.rarity, rank.tier),
-          card.rarity,
-        ),
+      item: art?.(card.id, owned) ?? cardTierArt(card, lookTier(card.rarity, rank.tier)),
       element: card.element,
       owned: owned !== null,
       rank,
@@ -174,6 +187,27 @@ export function createCardsModel(
     cardCollection(state, content, undefined, collectModifiers(state, content));
 
   return {
+    preview(state, id, step) {
+      const card = content.cardById.get(id);
+      if (!card) return null;
+      const own = state.cards.owned[id]?.tier ?? 'wood';
+      const tiers = previewTiers(content, id, lookTier(card.rarity, own));
+      if (tiers.length < 2) return null;
+      const index = ((Math.trunc(step) % tiers.length) + tiers.length) % tiers.length;
+      const tier = tiers[index]!;
+      return {
+        count: tiers.length,
+        index,
+        own: index === 0,
+        tierName: tierLabel(tier, card.rarity),
+        itemName: itemName(content, card.item.kind, tier, card.rarity, card),
+        item:
+          index === 0
+            ? (art?.(id, state.cards.owned[id] ?? null) ?? previewArt(card, tier))
+            : previewArt(card, tier),
+        ownTierName: tierLabel(tiers[0]!, card.rarity),
+      };
+    },
     entries: (state) => all(state).map((i) => entry(i, state)),
     entry(state, id) {
       const info = cardInfo(state, content, id);

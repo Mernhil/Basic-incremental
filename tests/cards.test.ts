@@ -594,7 +594,7 @@ describe('views for the Cards page', () => {
     expect(regent).toMatchObject({ owned: null, rank: null, slot: null, cost: 9, starUp: null });
     expect(regent.mainModifiers.map((m) => m.stat)).toEqual(['burst.interval', 'burst.power']);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(77);
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(122);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',
@@ -603,6 +603,12 @@ describe('views for the Cards page', () => {
       'pebble_prospector',
       'prism_delver',
       'lodestone_seer',
+      // the Heirloom-candidate pickaxes follow, in cards.json order (DESIGN.md §5)
+      'azure_delver',
+      'emerald_seer',
+      'ruby_gnawer',
+      'void_burrower',
+      'amber_gnawer',
     ]);
   });
 });

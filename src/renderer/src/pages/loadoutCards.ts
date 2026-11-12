@@ -11,7 +11,7 @@ import {
 } from '../../../game';
 import { COPY } from '../copy';
 import { evolutionArt } from '../art/evolutions';
-import { itemArt, itemBoxSprite } from '../art/items';
+import { cardTierArt, itemArt, itemBoxSprite } from '../art/items';
 import type { CardProps } from '../ui/card';
 import { cardFaceOf } from './cardFaceModel';
 
@@ -39,12 +39,7 @@ export function cardItemArt(
     const markup = skin ? skinMarkup(skin) : '';
     if (markup) return markup;
   }
-  return itemArt(
-    item?.kind ?? card.item.kind,
-    item?.rarity ?? card.rarity,
-    lookTier(card.rarity, owned?.tier ?? 'wood'),
-    card.rarity,
-  );
+  return cardTierArt(card, lookTier(card.rarity, owned?.tier ?? 'wood'));
 }
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */

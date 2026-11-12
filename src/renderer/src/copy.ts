@@ -316,6 +316,14 @@ export const COPY = {
     levelValue: (lv: number, cap: number) => `${lv} / ${cap}`,
     atCap: 'At its level cap. Tier up to raise it.',
     toCap: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'} to the cap`,
+    /** The Next tier preview under the detail card (UI_RULES §2). */
+    preview: {
+      next: 'Next tier',
+      back: (tier: string) => `Back to ${tier}`,
+      label: (tier: string) => `Preview: ${tier}`,
+      hint: 'A look at what this card can become. Nothing changes.',
+      tip: (item: string, tier: string) => `Preview of ${item} at ${tier}`,
+    },
     lockedDetail: 'Not found yet. Cards come from the Card Portal on the Summon page.',
     mainAbility: 'Main ability',
     supportEffect: 'Support effect',

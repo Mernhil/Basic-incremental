@@ -1,0 +1,452 @@
+[
+  {
+    "label": "1b",
+    "type": "sword",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-sword-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-sword-m1.png",
+    "paletteName": "Emerald Frost",
+    "hint": "Sun blade turned jade green with a mint-teal flame edge."
+  },
+  {
+    "label": "1d",
+    "type": "sword",
+    "side": "mythic",
+    "letter": "d",
+    "file": "item-sword-hm-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-sword-m3.png",
+    "paletteName": "Amethyst Dawn",
+    "hint": "Radiant blade in violet with magenta rays."
+  },
+  {
+    "label": "2d",
+    "type": "sword",
+    "side": "void",
+    "letter": "d",
+    "file": "item-sword-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-sword-v3.png",
+    "paletteName": "Blood Moon",
+    "hint": "Starry night blade in deep crimson."
+  },
+  {
+    "label": "3b",
+    "type": "greatsword",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-greatsword-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-greatsword-m1.png",
+    "paletteName": "Royal Violet",
+    "hint": "Blue greatsword in royal violet, gold trim kept."
+  },
+  {
+    "label": "3c",
+    "type": "greatsword",
+    "side": "mythic",
+    "letter": "c",
+    "file": "item-greatsword-hm-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-greatsword-m2.png",
+    "paletteName": "Jade Court",
+    "hint": "Blue greatsword in jade green with warm trim."
+  },
+  {
+    "label": "4b",
+    "type": "greatsword",
+    "side": "void",
+    "letter": "b",
+    "file": "item-greatsword-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-greatsword-v1.png",
+    "paletteName": "Cobalt Bone",
+    "hint": "Red toothed blade in cold cobalt blue over bone."
+  },
+  {
+    "label": "4c",
+    "type": "greatsword",
+    "side": "void",
+    "letter": "c",
+    "file": "item-greatsword-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-greatsword-v2.png",
+    "paletteName": "Verdant Rot",
+    "hint": "Spore-green blade with bone teeth."
+  },
+  {
+    "label": "4d",
+    "type": "greatsword",
+    "side": "void",
+    "letter": "d",
+    "file": "item-greatsword-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-greatsword-v3.png",
+    "paletteName": "Violet Maw",
+    "hint": "Bone-fanged blade in bruised violet."
+  },
+  {
+    "label": "5b",
+    "type": "spear",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-spear-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-spear-m1.png",
+    "paletteName": "Sunfire Gold",
+    "hint": "Icy winged spear flipped to molten gold."
+  },
+  {
+    "label": "5d",
+    "type": "spear",
+    "side": "mythic",
+    "letter": "d",
+    "file": "item-spear-hm-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-spear-m3.png",
+    "paletteName": "Rose Quartz",
+    "hint": "Frost spear in soft rose pink."
+  },
+  {
+    "label": "6b",
+    "type": "spear",
+    "side": "void",
+    "letter": "b",
+    "file": "item-spear-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-spear-v1.png",
+    "paletteName": "Royal Purple",
+    "hint": "Serpent spear in royal purple."
+  },
+  {
+    "label": "6c",
+    "type": "spear",
+    "side": "void",
+    "letter": "c",
+    "file": "item-spear-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-spear-v2.png",
+    "paletteName": "Ember Orange",
+    "hint": "Serpent spear glowing ember orange."
+  },
+  {
+    "label": "6d",
+    "type": "spear",
+    "side": "void",
+    "letter": "d",
+    "file": "item-spear-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-spear-v3.png",
+    "paletteName": "Crimson Coil",
+    "hint": "Serpent spear in deep crimson."
+  },
+  {
+    "label": "7b",
+    "type": "lance",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-lance-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-lance-m1.png",
+    "paletteName": "Azure Valor",
+    "hint": "Sunrider banner lance in azure blue."
+  },
+  {
+    "label": "8b",
+    "type": "lance",
+    "side": "void",
+    "letter": "b",
+    "file": "item-lance-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-lance-v1.png",
+    "paletteName": "Midnight Violet",
+    "hint": "Bone-and-banner lance in midnight violet."
+  },
+  {
+    "label": "8d",
+    "type": "lance",
+    "side": "void",
+    "letter": "d",
+    "file": "item-lance-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-lance-v3.png",
+    "paletteName": "Venom Green",
+    "hint": "Doom lance banner in toxic green."
+  },
+  {
+    "label": "9b",
+    "type": "dagger",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-dagger-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-dagger-m1.png",
+    "paletteName": "Rosewater",
+    "hint": "Golden fang dagger in rose and pink."
+  },
+  {
+    "label": "9c",
+    "type": "dagger",
+    "side": "mythic",
+    "letter": "c",
+    "file": "item-dagger-hm-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-dagger-m2.png",
+    "paletteName": "Azure Gleam",
+    "hint": "Fang dagger in bright azure."
+  },
+  {
+    "label": "9d",
+    "type": "dagger",
+    "side": "mythic",
+    "letter": "d",
+    "file": "item-dagger-hm-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-dagger-m3.png",
+    "paletteName": "Jade Gleam",
+    "hint": "Fang dagger in cool jade."
+  },
+  {
+    "label": "10b",
+    "type": "dagger",
+    "side": "void",
+    "letter": "b",
+    "file": "item-dagger-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-dagger-v1.png",
+    "paletteName": "Crimson Venom",
+    "hint": "Dripping dagger in blood red."
+  },
+  {
+    "label": "10c",
+    "type": "dagger",
+    "side": "void",
+    "letter": "c",
+    "file": "item-dagger-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-dagger-v2.png",
+    "paletteName": "Violet Venom",
+    "hint": "Dripping dagger in poisonous violet."
+  },
+  {
+    "label": "10d",
+    "type": "dagger",
+    "side": "void",
+    "letter": "d",
+    "file": "item-dagger-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-dagger-v3.png",
+    "paletteName": "Cobalt Venom",
+    "hint": "Dripping dagger in icy cobalt."
+  },
+  {
+    "label": "11b",
+    "type": "hammer",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-hammer-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-hammer-m1.png",
+    "paletteName": "Azure Storm",
+    "hint": "Starred hammer in storm blue."
+  },
+  {
+    "label": "11c",
+    "type": "hammer",
+    "side": "mythic",
+    "letter": "c",
+    "file": "item-hammer-hm-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-hammer-m2.png",
+    "paletteName": "Verdant Forge",
+    "hint": "Starred hammer in forge green."
+  },
+  {
+    "label": "11d",
+    "type": "hammer",
+    "side": "mythic",
+    "letter": "d",
+    "file": "item-hammer-hm-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-hammer-m3.png",
+    "paletteName": "Violet Forge",
+    "hint": "Starred hammer in violet flame."
+  },
+  {
+    "label": "12b",
+    "type": "hammer",
+    "side": "void",
+    "letter": "b",
+    "file": "item-hammer-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-hammer-v1.png",
+    "paletteName": "Blood Iron",
+    "hint": "Frost-lit anvil hammer in blood-red iron."
+  },
+  {
+    "label": "13c",
+    "type": "bow",
+    "side": "mythic",
+    "letter": "c",
+    "file": "item-bow-hm-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-bow-m2.png",
+    "paletteName": "Golden Dawn",
+    "hint": "Star bow turned warm gold."
+  },
+  {
+    "label": "14b",
+    "type": "bow",
+    "side": "void",
+    "letter": "b",
+    "file": "item-bow-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-bow-v1.png",
+    "paletteName": "Crimson Night",
+    "hint": "Thorned bow in dark crimson."
+  },
+  {
+    "label": "14c",
+    "type": "bow",
+    "side": "void",
+    "letter": "c",
+    "file": "item-bow-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-bow-v2.png",
+    "paletteName": "Teal Abyss",
+    "hint": "Thorned bow in deep sea teal."
+  },
+  {
+    "label": "14d",
+    "type": "bow",
+    "side": "void",
+    "letter": "d",
+    "file": "item-bow-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-bow-v3.png",
+    "paletteName": "Ember Gloom",
+    "hint": "Winged bow in smouldering amber."
+  },
+  {
+    "label": "15b",
+    "type": "staff",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-staff-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-staff-m1.png",
+    "paletteName": "Azure Orchid",
+    "hint": "Blossom staff in blue petals with gold leaves."
+  },
+  {
+    "label": "16c",
+    "type": "staff",
+    "side": "void",
+    "letter": "c",
+    "file": "item-staff-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-staff-v2.png",
+    "paletteName": "Magenta Void",
+    "hint": "Swirling orb staff in magenta."
+  },
+  {
+    "label": "17d",
+    "type": "scythe",
+    "side": "mythic",
+    "letter": "d",
+    "file": "item-scythe-hm-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-scythe-m3.png",
+    "paletteName": "Azure Mercy",
+    "hint": "Golden scythe in azure steel."
+  },
+  {
+    "label": "18b",
+    "type": "scythe",
+    "side": "void",
+    "letter": "b",
+    "file": "item-scythe-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-scythe-v1.png",
+    "paletteName": "Emerald Grim",
+    "hint": "Skull scythe with an emerald blade."
+  },
+  {
+    "label": "18c",
+    "type": "scythe",
+    "side": "void",
+    "letter": "c",
+    "file": "item-scythe-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-scythe-v2.png",
+    "paletteName": "Violet Grim",
+    "hint": "Skull scythe with a violet blade."
+  },
+  {
+    "label": "18d",
+    "type": "scythe",
+    "side": "void",
+    "letter": "d",
+    "file": "item-scythe-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-scythe-v3.png",
+    "paletteName": "Azure Grim",
+    "hint": "Skull scythe with an azure blade."
+  },
+  {
+    "label": "19b",
+    "type": "pickaxe",
+    "side": "mythic",
+    "letter": "b",
+    "file": "item-pickaxe-hm-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-pickaxe-m1.png",
+    "paletteName": "Azure Heart",
+    "hint": "Heart pickaxe in azure with gold trim."
+  },
+  {
+    "label": "19c",
+    "type": "pickaxe",
+    "side": "mythic",
+    "letter": "c",
+    "file": "item-pickaxe-hm-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-pickaxe-m2.png",
+    "paletteName": "Emerald Silver",
+    "hint": "Heart pickaxe in emerald with silver trim."
+  },
+  {
+    "label": "20b",
+    "type": "pickaxe",
+    "side": "void",
+    "letter": "b",
+    "file": "item-pickaxe-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-pickaxe-v1.png",
+    "paletteName": "Crimson Fang",
+    "hint": "Jaw pickaxe in crimson."
+  },
+  {
+    "label": "20c",
+    "type": "pickaxe",
+    "side": "void",
+    "letter": "c",
+    "file": "item-pickaxe-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-pickaxe-v2.png",
+    "paletteName": "Violet Fang",
+    "hint": "Jaw pickaxe in violet."
+  },
+  {
+    "label": "20d",
+    "type": "pickaxe",
+    "side": "void",
+    "letter": "d",
+    "file": "item-pickaxe-hv-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-pickaxe-v3.png",
+    "paletteName": "Amber Fang",
+    "hint": "Jaw pickaxe in amber."
+  },
+  {
+    "label": "21c",
+    "type": "logging_axe",
+    "side": "mythic",
+    "letter": "c",
+    "file": "item-logging_axe-hm-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-logging_axe-m2.png",
+    "paletteName": "Tidal Bronze",
+    "hint": "Vine axe in tidal blue with bronze."
+  },
+  {
+    "label": "21d",
+    "type": "logging_axe",
+    "side": "mythic",
+    "letter": "d",
+    "file": "item-logging_axe-hm-d.png",
+    "source": ".claude/skills/pixel-art/references/style/h-logging_axe-m3.png",
+    "paletteName": "Violet Bronze",
+    "hint": "Vine axe in violet with bronze."
+  },
+  {
+    "label": "22b",
+    "type": "logging_axe",
+    "side": "void",
+    "letter": "b",
+    "file": "item-logging_axe-hv-b.png",
+    "source": ".claude/skills/pixel-art/references/style/h-logging_axe-v1.png",
+    "paletteName": "Frozen Teal",
+    "hint": "Rotted axe in frost blue and teal."
+  },
+  {
+    "label": "22c",
+    "type": "logging_axe",
+    "side": "void",
+    "letter": "c",
+    "file": "item-logging_axe-hv-c.png",
+    "source": ".claude/skills/pixel-art/references/style/h-logging_axe-v2.png",
+    "paletteName": "Plum Rot",
+    "hint": "Rotted axe in crimson and plum."
+  }
+]

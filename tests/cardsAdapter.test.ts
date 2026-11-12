@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { addCard } from '../src/game';
-import { createCardsModel } from '../src/renderer/src/pages/cardsAdapter';
+import { addCard, itemName } from '../src/game';
+import { createCardsModel, previewArt, previewTiers } from '../src/renderer/src/pages/cardsAdapter';
 import { slotChoices } from '../src/renderer/src/pages/cardsModel';
 import { content, freshState } from './helpers';
 
@@ -107,5 +107,57 @@ describe('Cards page model', () => {
       0,
     );
     expect(current.find((c) => c.id === epic.id)!.current).toBe(true);
+  });
+});
+
+describe('Next tier preview', () => {
+  const byRarity = (r: string) => content.cards.find((c) => c.rarity === r)!;
+
+  it('steps from the own tier up to the highest the rarity allows', () => {
+    const top: Record<string, string> = {
+      common: 'wood',
+      uncommon: 'bronze',
+      rare: 'silver',
+      epic: 'gold',
+      legendary: 'prismatic',
+      mythic: 'heirloom',
+      void: 'heirloom',
+    };
+    for (const [rarity, last] of Object.entries(top)) {
+      const tiers = previewTiers(content, byRarity(rarity).id, 'wood');
+      expect(tiers[0]).toBe('wood');
+      expect(tiers[tiers.length - 1]).toBe(last);
+    }
+    expect(previewTiers(content, byRarity('epic').id, 'silver')).toEqual(['silver', 'gold']);
+  });
+
+  it('cycles round to the own tier and never touches the state', () => {
+    const card = byRarity('legendary');
+    const state = freshState();
+    const before = JSON.stringify(state);
+    const stops = [0, 1, 2, 3, 4, 5].map((i) => model.preview(state, card.id, i));
+    expect(stops.slice(0, 5).map((p) => p!.tierName)).toEqual([
+      'Wood',
+      'Bronze',
+      'Silver',
+      'Gold',
+      'Prismatic',
+    ]);
+    expect(stops[0]!.own).toBe(true);
+    expect(stops[5]!.own).toBe(true); // back to the own tier
+    expect(stops[4]!.itemName).toBe(itemName(content, card.item.kind, 'prismatic', 'legendary'));
+    expect(stops[1]!.item).not.toBe(stops[0]!.item);
+    expect(JSON.stringify(state)).toBe(before);
+  });
+
+  it('shows the Void side at T6 and the Heirloom, and has nothing for a Common', () => {
+    const card = byRarity('void');
+    const stops = [5, 6].map((i) => model.preview(freshState(), card.id, i)!);
+    expect(stops[0]!.tierName).toBe('Void');
+    expect(stops[0]!.itemName).toBe(itemName(content, card.item.kind, 'mythic', 'void'));
+    expect(stops[1]!.tierName).toBe('Heirloom');
+    expect(stops[1]!.item).toBe(previewArt(card, 'heirloom'));
+    expect(model.preview(freshState(), byRarity('common').id, 1)).toBeNull();
+    expect(model.preview(freshState(), 'nope', 1)).toBeNull();
   });
 });

@@ -7,7 +7,7 @@
  * hidden copy of the item's outline rides along so the element effects (`fx.ts`) can still trace
  * the real shape.
  */
-import type { ItemKind, Rarity, RankTier } from '../../../data';
+import type { Card, ItemKind, Rarity, RankTier } from '../../../data';
 import { animatedSpriteImage, sprite } from './pixel/sprites';
 import { ITEM_KINDS_DRAWN, ITEM_VIEWBOX, makeBlade } from './vector/items';
 
@@ -47,9 +47,32 @@ const T6_ART = { mythic: 't6m', void: 't6v' } as const;
  * with no tier (the gallery) shows the Wood picture. The card's rarity no longer changes the
  * picture: the tier does (DESIGN.md §5, Item types).
  */
-export function itemArt(kind: ItemKind, _rarity: Rarity, tier?: RankTier, side?: Rarity): string {
-  if (tier === 'heirloom') return itemBoxSprite(`item-${kind}-${side === 'void' ? 'hv' : 'hm'}`);
+export function itemArt(
+  kind: ItemKind,
+  _rarity: Rarity,
+  tier?: RankTier,
+  side?: Rarity,
+  heirloomArt?: string,
+): string {
+  if (tier === 'heirloom') {
+    const base = `item-${kind}-${side === 'void' ? 'hv' : 'hm'}`;
+    // a card's own recoloured Heirloom (`item-<type>-<hm|hv>-<letter>`), else the type's original
+    return itemBoxSprite(heirloomArt ? `${base}-${heirloomArt}` : base);
+  }
   const drawn =
     tier === 'mythic' ? T6_ART[side === 'void' ? 'void' : 'mythic'] : TIER_ART[tier ?? 'wood'];
   return itemBoxSprite(`item-${kind}-${drawn}`);
+}
+
+/**
+ * The item picture of a card at a tier: the one call a card face, tile or preview makes. A card with
+ * its own Heirloom (`heirloomArt` in cards.json, DESIGN.md §5 More weapons from the Heirloom
+ * candidates) shows it at the Heirloom tier; below it, and for every card without one, the type's
+ * tier pictures and original Heirloom (`itemArt` with the card's rarity as its side).
+ */
+export function cardTierArt(
+  card: Pick<Card, 'rarity' | 'heirloomArt'> & { item: { kind: ItemKind } },
+  tier?: RankTier,
+): string {
+  return itemArt(card.item.kind, card.rarity, tier, card.rarity, card.heirloomArt);
 }

@@ -957,6 +957,34 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       );
     }
   });
+  // A card's own Heirloom (DESIGN.md §5): picture letter and name together, on a Mythic or Void
+  // card, one picture per (type, side, letter), every Heirloom name unique.
+  const names = new Map<string, string>();
+  const claim = (name: string, where: string): void => {
+    const was = names.get(name.toLowerCase());
+    if (was) issues.push(`${where}: Heirloom name "${name}" is also ${was}`);
+    else names.set(name.toLowerCase(), where);
+  };
+  c.items.types.forEach((t, i) => {
+    claim(t.heirloom.mythic, `items.json › types › [${i}] › heirloom › mythic`);
+    claim(t.heirloom.void, `items.json › types › [${i}] › heirloom › void`);
+  });
+  const pictures = new Set<string>();
+  c.cards.forEach((card, i) => {
+    const where = `cards.json › [${i}]`;
+    if (!card.heirloomArt && !card.heirloomName) return;
+    if (!card.heirloomArt || !card.heirloomName) {
+      issues.push(`${where}: heirloomArt and heirloomName go together`);
+      return;
+    }
+    if (card.rarity !== 'mythic' && card.rarity !== 'void') {
+      issues.push(`${where} › heirloomArt: only a Mythic or Void card has its own Heirloom`);
+    }
+    const picture = `${card.item.kind}/${card.rarity}/${card.heirloomArt}`;
+    if (pictures.has(picture)) issues.push(`${where} › heirloomArt: "${picture}" is used twice`);
+    pictures.add(picture);
+    claim(card.heirloomName, `${where} › heirloomName`);
+  });
 }
 
 /** Dungeons and trials must point at existing things of the right kind. */
