@@ -62,57 +62,201 @@ P = {
  '22c': ('Plum Rot', 'Rotted axe in crimson and plum.', [R(-60,45,345),R(45,120,290)], None),
 }
 
-# ---- role palettes: contrast recolours of 20 labels ------------------------------------
-# Q(h, l, s, box, **out): match on source hue (-60..300 degrees), lightness, saturation (each a
-# (lo, hi) range) and optional box (x0, y0, x1, y1); out: hh = new hue, sm = saturation multiplier,
-# sa = absolute saturation (overrides sm), dl = lightness delta. First matching rule wins;
-# unmatched pixels stay as they are. Ink (l < 0.09) and white glints (l > 0.93) never change.
-def Q(h=None, l=None, s=None, box=None, **out): return (dict(h=h, l=l, s=s, box=box), out)
-def _in(v, r): return r is None or r[0] <= v < r[1]
+# ---- part palettes: contrast recolours of 20 labels ------------------------------------
+# Each weapon is split into its PARTS by position and shape (polygons, circles, lines along the
+# shaft, y/x bands), refined where the source already separates a part by feature (neutral iron,
+# bright shards, red eyes). Each part gets its own colour ramp K(...). Parts are tried in order,
+# the first match wins, the last entry of a sprite is its fallback. The source's lightness
+# is kept (shading and the pixel structure survive); hue shifts along the ramp from the
+# shadow hue to the highlight hue so it reads as painted, and saturation fades in highlights.
+class Pr:
+    def __init__(s, f): s.f = f
+    def __call__(s, x, y, l, sat, h): return s.f(x, y, l, sat, h)
+    def __and__(s, o): return Pr(lambda *a: s.f(*a) and o.f(*a))
+    def __or__(s, o): return Pr(lambda *a: s.f(*a) or o.f(*a))
+    def __invert__(s): return Pr(lambda *a: not s.f(*a))
+def circ(cx, cy, r): return Pr(lambda x, y, l, s, h: (x-cx)**2 + (y-cy)**2 <= r*r)
+def poly(pts):
+    def f(x, y, l, s, h):
+        ins = False; n = len(pts); j = n - 1
+        for i in range(n):
+            xi, yi = pts[i]; xj, yj = pts[j]
+            if (yi > y) != (yj > y) and x < (xj-xi)*(y-yi)/(yj-yi) + xi: ins = not ins
+            j = i
+        return ins
+    return Pr(f)
+def _sd(p, q, x, y):
+    dx, dy = q[0]-p[0], q[1]-p[1]; n = (dx*dx + dy*dy) ** .5
+    return ((x-p[0])*dy - (y-p[1])*dx) / n   # signed distance from line p-q
+def _seg(p, q, x, y):
+    dx, dy = q[0]-p[0], q[1]-p[1]; t = max(0, min(1, ((x-p[0])*dx + (y-p[1])*dy) / (dx*dx + dy*dy)))
+    return ((x-p[0]-t*dx)**2 + (y-p[1]-t*dy)**2) ** .5
+def near(p, q, w): return Pr(lambda x, y, l, s, h: _seg(p, q, x, y) <= w)
+def side(p, q, lo, hi=999): return Pr(lambda x, y, l, s, h: lo <= _sd(p, q, x, y) < hi)
+def X(a, b): return Pr(lambda x, y, l, s, h: a <= x < b)
+def Y(a, b): return Pr(lambda x, y, l, s, h: a <= y < b)
+def L(a, b): return Pr(lambda x, y, l, s, h: a <= l < b)
+def S(a, b): return Pr(lambda x, y, l, s, h: a <= s < b)
+def H(a, b): return Pr(lambda x, y, l, s, h: a <= h < b)
+ALL = Pr(lambda *a: True)
+def K(hd, hl, sat, g=1.0, dl=0.0):
+    """Colour ramp: hue hd in the shadows to hl in the highlights, saturation sat, lightness l*g+dl."""
+    return (hd, hl, sat, g, dl)
+def _ang(a, b, t):
+    d = ((b - a + 180) % 360) - 180
+    return (a + d * t) % 360
+def paint(col, l):
+    hd, hl, sat, g, dl = col
+    t = max(0, min(1, (l - .15) / .7))
+    hue = _ang(hd, hl, t)
+    nl = max(.1, min(.96, l * g + dl))
+    ns = max(0, min(1, sat * (1 - max(0, l - .72) * 1.6)))
+    r, gg, b = colorsys.hls_to_rgb(hue / 360, nl, ns)
+    return (round(r*255), round(gg*255), round(b*255), 255)
+
+# blade/shape polygons used by several labels
+BL1B = poly([(40,62),(40,48),(50,40),(56,28),(66,18),(78,8),(94,6),(94,28),(86,40),(78,52),(68,64),(58,70),(48,68)])
+BL1D = poly([(46,58),(48,44),(56,32),(66,20),(78,10),(90,8),(93,12),(92,26),(84,38),(74,50),(62,60),(52,64)])
+BL9B = poly([(46,56),(52,48),(64,40),(76,28),(84,14),(88,8),(93,14),(93,38),(80,56),(66,68),(56,70)])
+BL9C = poly([(44,46),(58,36),(70,22),(80,10),(93,8),(92,26),(80,44),(66,58),(54,64),(48,60)])
+BL9D = poly([(44,48),(56,42),(68,32),(78,20),(88,8),(91,12),(90,30),(78,46),(66,60),(54,62)])
+
+# per label: (paletteName, hint, [(part name, region, colour), ...])
 ROLES = {
- '1b': ('Crimson + Glacier Cyan', 'Ruby-red sun and flame body with a cold glacier-cyan lit blade.', [
-     Q(l=(.58,1), hh=188, sm=.8), Q(hh=352)]),
- '1d': ('Violet + Acid Lime', 'Deep violet sun and rays with pale acid-lime lit feathers.', [
-     Q(l=(.56,1), hh=85, sm=.85), Q(hh=272)]),
- '6b': ('Violet + Acid Green', 'Deep violet serpent body with bright acid-green energy tendrils.', [
-     Q(l=(.5,1), s=(.2,1.01), hh=88, sm=1.3), Q(l=(0,.3), hh=268, sa=.5), Q(l=(.3,.5), hh=282, sa=.55)]),
- '7b': ('Steel Blue + Amber', 'Cold steel-blue lance and banner with a hot red-orange tip and amber glints.', [
-     Q(h=(-60,12), hh=10), Q(l=(.62,1), hh=38), Q(hh=212, sm=.85)]),
- '8b': ('Purple + Pale Gold', 'Royal purple banner and spearhead over teal-black cloth with pale gold bone and stripes.', [
-     Q(s=(0,.2), hh=190, sa=.3), Q(h=(-60,12), hh=282, sm=1.3), Q(h=(12,100), hh=52, sm=1.4)]),
- '9b': ('Crimson + Ice Cyan', 'Deep crimson hilt and guard with a pale ice-cyan blade.', [
-     Q(l=(.55,1), hh=190, sm=.9), Q(hh=350)]),
- '9c': ('Deep Teal + Coral Rose', 'Deep teal hilt and guard with a pale coral-rose blade.', [
-     Q(l=(.55,1), hh=355, sm=.9), Q(hh=178)]),
- '9d': ('Violet + Mint', 'Deep violet hilt and guard with a pale mint blade.', [
-     Q(l=(.62,1), hh=100, sm=1.0, dl=-.08), Q(hh=272, sm=1.15)]),
- '11b': ('Steel Blue + Hot Pink', 'Steel-blue iron head, ivory bands, hot pink star and flames.', [
-     Q(s=(0,.2), hh=215, sa=.3), Q(h=(-60,12), hh=338), Q(l=(.6,1), hh=335), Q(hh=48, sa=.4, dl=.1)]),
- '11c': ('Teal + Violet + Amber', 'Deep teal-green iron with violet bands and an amber-yellow star and flames.', [
-     Q(s=(0,.2), hh=165, sa=.35), Q(h=(-60,12), hh=52), Q(l=(.6,1), hh=55), Q(hh=275, sm=1.1)]),
- '11d': ('Crimson + Cyan + Navy', 'Crimson bands over navy iron with a cyan star and flames.', [
-     Q(s=(0,.2), hh=228, sa=.3), Q(h=(-60,12), hh=188), Q(l=(.6,1), hh=185, sm=.9), Q(hh=352, sm=.8, dl=-.05)]),
- '14b': ('Crimson + Cyan', 'Crimson thorned limbs with a cyan eye glow and ivory string.', [
-     Q(l=(.6,1), s=(.2,1.01), hh=185), Q(s=(0,.2), l=(.3,1), hh=45, sa=.3), Q(hh=350, sa=.55)]),
- '14c': ('Teal + Gold', 'Deep teal thorned limbs with a golden eye glow and cream string.', [
-     Q(l=(.6,1), s=(.2,1.01), hh=42), Q(s=(0,.2), l=(.3,1), hh=48, sa=.3), Q(hh=178, sa=.55)]),
- '15b': ('Azure + Violet + Gold', 'Azure petals and violet leaves on golden wood.', [
-     Q(h=(-60,-5), hh=208), Q(h=(75,160), hh=275, sm=1.2)]),
- '17d': ('Magenta + Pale Cyan', 'Deep magenta-violet shaft and wrap with a pale ice-cyan blade.', [
-     Q(h=(-60,10), hh=330), Q(l=(.58,1), hh=190, sm=.85), Q(l=(.3,.58), hh=315, sm=.95), Q(hh=262, sm=.9)]),
- '20b': ('Crimson + Bone Gold', 'Crimson jaw head with pale bone-gold fangs.', [
-     Q(l=(.5,1), s=(.2,1.01), hh=48, sa=.55), Q(l=(0,.33), hh=350, sa=.5), Q(hh=355, sm=1.1)]),
- '20c': ('Violet + Acid Lime', 'Violet jaw head with acid-lime fangs.', [
-     Q(l=(.5,1), s=(.2,1.01), hh=88), Q(l=(0,.33), hh=272, sa=.5), Q(hh=285)]),
- '20d': ('Burnt Orange + Ice Blue', 'Burnt-orange jaw head with ice-blue fangs.', [
-     Q(l=(.5,1), s=(.2,1.01), hh=205, sm=.9), Q(l=(0,.33), hh=24, sa=.55), Q(hh=30)]),
- '21c': ('Steel Blue + Amber Runes', 'Steel-blue axe head and haft with glowing amber runes.', [
-     Q(h=(75,160), hh=34, sm=1.8, dl=.08), Q(h=(5,75), hh=212, sm=1.3)]),
- '21d': ('Wine + Aqua Runes', 'Wine-red axe head and haft with glowing aqua runes.', [
-     Q(h=(75,160), hh=175, sm=1.8, dl=.08), Q(h=(5,75), hh=350, sm=1.5)]),
+ '1b': ('Teal blade, crimson sun, blue gem, gold grip', 'Ice-pale blade with a teal flame edge, crimson sun rays, a sapphire gem and pommel, and a gold grip.', [
+     ('gem', circ(42,72,7.5), K(222,205,.85,.95)),
+     ('blade core', BL1B & L(.66,1), K(190,170,.35,1.0)),
+     ('blade edge', BL1B, K(176,165,.85,.85)),
+     ('pommel', circ(15,104,10), K(222,205,.85,.95)),
+     ('grip', near((33,84),(17,99),6.5), K(38,50,.85,1.0)),
+     ('sun rays', ALL, K(352,8,.8,.85))]),
+ '1d': ('Violet blade, lime highlights, cobalt sun, magenta gem', 'Violet feather blade lit with lime, cobalt sun rays, a magenta gem, a bronze grip and a lime pommel.', [
+     ('gem', circ(44,68,7.5), K(318,335,.85,1.0)),
+     ('blade lit', BL1D & L(.76,1), K(82,95,.8,1.0)),
+     ('blade', BL1D, K(272,285,.7,.9)),
+     ('pommel', circ(14,103,10), K(82,95,.8,1.0)),
+     ('grip', near((34,84),(16,99),7), K(25,38,.6,.8)),
+     ('sun rays', ALL, K(215,205,.7,.95))]),
+ '6b': ('Orchid head, amber core, lime tendrils, indigo coils', 'Orchid spearhead with an amber glowing core, acid-lime tendrils and an indigo serpent body.', [
+     ('core', circ(62,47,6) & L(.45,1), K(40,55,.9,1.1)),
+     ('head', poly([(60,26),(76,8),(92,6),(93,30),(82,38),(70,46),(58,44)]), K(318,335,.7,.95)),
+     ('barbs', poly([(62,36),(84,34),(84,64),(62,64)]), K(318,335,.7,.95)),
+     ('tendrils', poly([(28,46),(62,50),(62,72),(40,74)]) & L(.42,1), K(88,100,.85,1.05)),
+     ('claws', Y(88,120), K(40,48,.7,1.3)),
+     ('coils', ALL, K(250,262,.55,1.0))]),
+ '7b': ('Teal banner, silver blade, gold socket, violet bell, crimson shaft', 'Teal banner, silver-ice spearhead, gold socket and butt, a violet bell guard and a crimson shaft.', [
+     ('banner', side((14,104),(86,12),9) & Y(20,66), K(182,172,.75,.88)),
+     ('blade', Y(0,24) & X(60,95), K(205,190,.3,1.05)),
+     ('socket', Y(24,40) & X(66,95), K(42,52,.85,1.0)),
+     ('bell', circ(32,82,15) & Y(66,97), K(272,282,.6,.95)),
+     ('butt', X(0,26) & Y(90,120), K(42,50,.8,1.0)),
+     ('shaft', ALL, K(352,8,.75,.85))]),
+ '8b': ('Slate cloth, cyan trim, violet shaft, pale gold bone, amber eyes', 'Slate banner cloth with cyan trim, a violet shaft and spearhead, pale gold bone skull and stripes with amber eyes.', [
+     ('eyes', (circ(24,76,5.5) | circ(38,80,5.5)) & S(.3,1.01), K(38,48,.95,1.3)),
+     ('cloth trim', side((12,105),(88,12),-999,-7) & Y(28,120) & X(52,100) & S(.25,1.01), K(185,175,.85,1.3)),
+     ('cloth', side((12,105),(88,12),-999,-7) & Y(28,120) & X(52,100), K(215,225,.28,1.1)),
+     ('bone', S(0,.5) & L(.45,1), K(48,52,.55,1.0)),
+     ('shaft', ALL, K(272,285,.65,1.1))]),
+ '9b': ('Ice-cyan blade, crimson guard, gold gem, navy grip', 'Pale ice-cyan blade, crimson guard, a gold gem, a navy grip and a gold pommel.', [
+     ('gem', circ(47,64,3.2), K(48,55,.9,1.1)),
+     ('blade', BL9B, K(186,172,.55,1.0)),
+     ('pommel', circ(15,103,9), K(42,52,.8,1.0)),
+     ('grip', poly([(18,76),(36,70),(42,78),(30,94),(18,96)]), K(225,235,.45,.9)),
+     ('guard', ALL, K(352,10,.75,.85))]),
+ '9c': ('Rose blade, teal guard, amber gem, cobalt grip', 'Pale rose blade, deep teal guard, an amber gem and pommel, and a cobalt grip.', [
+     ('gem', circ(41,59,3), K(38,48,.95,1.1)),
+     ('blade', BL9C, K(345,358,.6,1.0)),
+     ('pommel', circ(13,103,7.5), K(38,48,.95,1.1)),
+     ('grip', poly([(20,76),(38,66),(46,70),(36,92),(20,96)]), K(222,212,.6,.9)),
+     ('guard', ALL, K(180,170,.75,.85))]),
+ '9d': ('Mint blade, violet guard, magenta gem, bronze grip', 'Pale mint blade, violet guard, a magenta gem and pommel, and a bronze grip.', [
+     ('gem', circ(46,63,3), K(330,340,.9,1.1)),
+     ('blade', BL9D, K(150,140,.5,1.0)),
+     ('pommel', circ(12,104,8), K(330,340,.9,1.1)),
+     ('grip', poly([(18,80),(38,70),(44,76),(34,94),(20,96)]), K(26,36,.6,.8)),
+     ('guard', ALL, K(270,282,.6,.9))]),
+ '11b': ('Steel iron, silver bands, pink flames, ice star, crimson handle', 'Steel-blue iron head, pale silver bands, hot pink flames, an ice-white star, a crimson handle and an emerald pommel.', [
+     ('pommel', circ(18,101,10), K(150,160,.7,1.0)),
+     ('handle', Y(74,120) & X(0,44), K(355,10,.55,.9)),
+     ('star', circ(53,43,10) & L(.55,1), K(185,175,.7,1.05)),
+     ('flames', H(-60,30) & S(.4,1.01), K(325,340,.85,1.0)),
+     ('iron', S(0,.22), K(215,222,.28,1.25)),
+     ('bands', ALL, K(48,55,.5,1.05))]),
+ '11c': ('Violet iron, teal bands, amber flames, magenta star, bronze handle', 'Violet iron head, teal bands, amber flames, a magenta star, a bronze handle and a cyan pommel.', [
+     ('pommel', circ(18,101,10), K(190,185,.8,1.0)),
+     ('handle', Y(74,120) & X(0,44), K(25,38,.55,.85)),
+     ('star', circ(56,40,10) & L(.55,1), K(320,330,.6,1.05)),
+     ('flames', H(-60,30) & S(.4,1.01), K(52,60,.9,1.0)),
+     ('iron', S(0,.22), K(268,275,.3,1.3)),
+     ('bands', ALL, K(170,180,.7,.95))]),
+ '11d': ('Maroon iron, violet bands, cyan flames, gold star, navy handle', 'Crimson-maroon iron head, violet bands, cold cyan flames, a gold star and pommel, and a navy handle.', [
+     ('pommel', circ(20,98,10), K(45,52,.7,1.0)),
+     ('handle', Y(74,120) & X(0,44), K(228,238,.45,.95)),
+     ('star', circ(55,43,10) & L(.55,1), K(50,56,.8,1.1)),
+     ('flames', H(-60,30) & S(.4,1.01), K(195,188,.85,1.0)),
+     ('iron', S(0,.22), K(352,358,.4,1.3)),
+     ('bands', ALL, K(280,290,.5,1.05))]),
+ '14b': ('Crimson limbs, cyan runes, teal riser, amber eye, gold string', 'Crimson limbs with cyan rune lines, a deep teal riser, an amber eye and a pale gold string.', [
+     ('eye', circ(37,53,4.5), K(40,52,.95,1.5)),
+     ('string', near((88,36),(40,102),2.6) & Y(34,110), K(46,52,.7,1.7)),
+     ('runes', L(.5,1) & S(.25,1.01), K(185,178,.8,1.1)),
+     ('riser', Y(46,72), K(200,210,.55,1.3)),
+     ('limbs', ALL, K(350,8,.6,1.25))]),
+ '14c': ('Violet limbs, lime runes, copper riser, cyan eye, pink string', 'Violet limbs with acid-lime runes, a copper-brown riser, a cyan eye and a rose string.', [
+     ('eye', circ(44,47,5), K(185,180,.95,1.4)),
+     ('string', near((88,32),(38,102),2.8) & Y(26,110), K(335,345,.7,1.5)),
+     ('runes', L(.5,1) & S(.25,1.01), K(78,90,.9,1.1)),
+     ('riser', Y(40,70), K(22,32,.55,1.4)),
+     ('limbs', ALL, K(268,280,.55,1.35))]),
+ '15b': ('Azure petals, amber gem, violet ring, teal leaves, plum wood', 'Azure petals, an amber gem, a violet ring, teal leaves and a plum-brown stem.', [
+     ('gem', circ(66,33,6.5), K(30,42,.95,1.1)),
+     ('petals', H(-60,-5), K(205,198,.8,.95)),
+     ('ring', H(30,60) & S(.4,1.01), K(272,285,.55,1.15)),
+     ('leaves', H(60,170), K(168,178,.65,1.0)),
+     ('wood', ALL, K(345,10,.35,.9))]),
+ '17d': ('Teal blade, violet crest, rose gems, navy shaft', 'Ice-teal blade, violet crest wings, rose gems, a navy shaft and an ivory tuft.', [
+     ('gems', (circ(70,32,6) | circ(60,47,4.5)) & H(-60,30), K(338,348,.9,1.0)),
+     ('blade lit', Y(0,34) & X(0,58) & L(.72,1), K(186,178,.45,1.0)),
+     ('blade', Y(0,34) & X(0,58), K(175,165,.8,.85)),
+     ('crest', Y(8,52) & X(52,100), K(275,285,.6,1.0)),
+     ('tuft', Y(92,120) & X(0,30), K(48,52,.5,1.0)),
+     ('shaft', ALL, K(225,235,.55,.9))]),
+ '20b': ('Crimson head, bone fangs, cyan eye, slate handle, emerald pommel', 'Crimson jaw head, ivory fangs, a cyan eye, a slate handle with gold bands and an emerald pommel.', [
+     ('pommel', circ(15,104,9.5), K(150,160,.75,1.1)),
+     ('eye', circ(60,44,6), K(190,180,.9,1.2)),
+     ('bands', near((16,103),(48,63),9) & Y(58,100) & L(.45,1), K(45,50,.7,1.2)),
+     ('handle', near((16,103),(48,63),9) & Y(58,100), K(255,265,.35,1.3)),
+     ('fangs', L(.52,1), K(48,52,.5,1.05)),
+     ('head', ALL, K(350,358,.65,1.1))]),
+ '20c': ('Violet head, lime fangs, bronze handle, rose pommel', 'Violet jaw head, acid-lime fangs, a bronze handle with gold bands and a rose pommel.', [
+     ('pommel', circ(15,104,9.5), K(335,345,.7,1.2)),
+     ('bands', near((16,103),(50,60),9) & Y(56,100) & L(.45,1), K(40,48,.7,1.15)),
+     ('handle', near((16,103),(50,60),9) & Y(56,100), K(25,35,.5,1.3)),
+     ('fangs', L(.52,1), K(86,95,.9,1.0)),
+     ('head', ALL, K(272,285,.55,1.15))]),
+ '20d': ('Orange head, ice-blue fangs, green handle, crimson pommel', 'Burnt-orange jaw head, ice-blue fangs, a deep green handle with pale gold bands and a crimson pommel.', [
+     ('pommel', circ(15,104,9.5), K(355,5,.8,1.2)),
+     ('bands', near((18,103),(50,62),9) & Y(58,100) & L(.45,1), K(48,52,.6,1.2)),
+     ('handle', near((18,103),(50,62),9) & Y(58,100), K(160,150,.45,1.3)),
+     ('fangs', L(.52,1), K(205,195,.7,1.0)),
+     ('head', ALL, K(24,32,.65,1.15))]),
+ '21c': ('Steel rim, amber runes, wine head, teal handle, gold vines', 'Steel-blue rim, glowing amber runes, a wine-red head, a teal handle, gold vines and a sapphire pommel.', [
+     ('pommel', Y(92,120) & X(0,35), K(222,210,.8,1.0)),
+     ('vines', near((14,104),(52,62),9) & Y(56,120) & H(70,170), K(46,54,.75,1.1)),
+     ('handle', near((14,104),(52,62),9) & Y(56,120), K(180,190,.55,.9)),
+     ('runes', H(80,170), K(30,45,.95,1.2)),
+     ('rim', H(35,80), K(210,200,.35,1.15)),
+     ('head', ALL, K(348,358,.5,.95))]),
+ '21d': ('Aqua rim, orange runes, plum head, slate handle, rose vines', 'Turquoise rim, glowing orange runes, a plum head, a slate handle, rose vines and an aqua pommel.', [
+     ('pommel', Y(96,120) & X(0,25), K(178,185,.7,1.0)),
+     ('runes', H(80,170) & L(.52,1), K(25,40,.95,1.2)),
+     ('vines', near((12,104),(50,56),9) & Y(52,120) & H(70,170), K(350,5,.65,1.15)),
+     ('handle', near((12,104),(50,56),9) & Y(52,120), K(215,225,.3,1.1)),
+     ('rim', H(35,80), K(172,182,.65,1.0)),
+     ('head', ALL, K(285,295,.4,1.0))]),
 }
 
-def recolour_roles(im, rules):
+def recolour_roles(im, parts):
     out = im.copy(); px = out.load()
     for y in range(im.height):
         for x in range(im.width):
@@ -122,15 +266,9 @@ def recolour_roles(im, rules):
             if l < 0.09 or l > 0.93: continue
             hd = h * 360
             if hd >= 300: hd -= 360
-            for m, o in rules:
-                if not (_in(hd, m['h']) and _in(l, m['l']) and _in(s, m['s'])): continue
-                bx = m['box']
-                if bx and not (bx[0] <= x < bx[2] and bx[1] <= y < bx[3]): continue
-                ns = o['sa'] if 'sa' in o else min(1, s * o.get('sm', 1.0))
-                nl = min(.96, max(.1, l + o.get('dl', 0.0)))
-                nr, ng, nb = colorsys.hls_to_rgb(o['hh'] / 360, nl, ns)
-                px[x, y] = (round(nr*255), round(ng*255), round(nb*255), 255)
-                break
+            for _, reg, col in parts:
+                if reg(x, y, l, s, hd):
+                    px[x, y] = paint(col, l); break
     return out
 
 INFO = {k: v[:2] for k, v in {**P, **ROLES}.items()}

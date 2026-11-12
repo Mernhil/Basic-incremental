@@ -6,8 +6,8 @@
     "letter": "b",
     "file": "item-sword-hm-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-sword-m1.png",
-    "paletteName": "Crimson + Glacier Cyan",
-    "hint": "Ruby-red sun and flame body with a cold glacier-cyan lit blade."
+    "paletteName": "Teal blade, crimson sun, blue gem, gold grip",
+    "hint": "Ice-pale blade with a teal flame edge, crimson sun rays, a sapphire gem and pommel, and a gold grip."
   },
   {
     "label": "1d",
@@ -16,8 +16,8 @@
     "letter": "d",
     "file": "item-sword-hm-d.png",
     "source": ".claude/skills/pixel-art/references/style/h-sword-m3.png",
-    "paletteName": "Violet + Acid Lime",
-    "hint": "Deep violet sun and rays with pale acid-lime lit feathers."
+    "paletteName": "Violet blade, lime highlights, cobalt sun, magenta gem",
+    "hint": "Violet feather blade lit with lime, cobalt sun rays, a magenta gem, a bronze grip and a lime pommel."
   },
   {
     "label": "2d",
@@ -106,8 +106,8 @@
     "letter": "b",
     "file": "item-spear-hv-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-spear-v1.png",
-    "paletteName": "Violet + Acid Green",
-    "hint": "Deep violet serpent body with bright acid-green energy tendrils."
+    "paletteName": "Orchid head, amber core, lime tendrils, indigo coils",
+    "hint": "Orchid spearhead with an amber glowing core, acid-lime tendrils and an indigo serpent body."
   },
   {
     "label": "6c",
@@ -136,8 +136,8 @@
     "letter": "b",
     "file": "item-lance-hm-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-lance-m1.png",
-    "paletteName": "Steel Blue + Amber",
-    "hint": "Cold steel-blue lance and banner with a hot red-orange tip and amber glints."
+    "paletteName": "Teal banner, silver blade, gold socket, violet bell, crimson shaft",
+    "hint": "Teal banner, silver-ice spearhead, gold socket and butt, a violet bell guard and a crimson shaft."
   },
   {
     "label": "8b",
@@ -146,8 +146,8 @@
     "letter": "b",
     "file": "item-lance-hv-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-lance-v1.png",
-    "paletteName": "Purple + Pale Gold",
-    "hint": "Royal purple banner and spearhead over teal-black cloth with pale gold bone and stripes."
+    "paletteName": "Slate cloth, cyan trim, violet shaft, pale gold bone, amber eyes",
+    "hint": "Slate banner cloth with cyan trim, a violet shaft and spearhead, pale gold bone skull and stripes with amber eyes."
   },
   {
     "label": "8d",
@@ -166,8 +166,8 @@
     "letter": "b",
     "file": "item-dagger-hm-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-dagger-m1.png",
-    "paletteName": "Crimson + Ice Cyan",
-    "hint": "Deep crimson hilt and guard with a pale ice-cyan blade."
+    "paletteName": "Ice-cyan blade, crimson guard, gold gem, navy grip",
+    "hint": "Pale ice-cyan blade, crimson guard, a gold gem, a navy grip and a gold pommel."
   },
   {
     "label": "9c",
@@ -176,8 +176,8 @@
     "letter": "c",
     "file": "item-dagger-hm-c.png",
     "source": ".claude/skills/pixel-art/references/style/h-dagger-m2.png",
-    "paletteName": "Deep Teal + Coral Rose",
-    "hint": "Deep teal hilt and guard with a pale coral-rose blade."
+    "paletteName": "Rose blade, teal guard, amber gem, cobalt grip",
+    "hint": "Pale rose blade, deep teal guard, an amber gem and pommel, and a cobalt grip."
   },
   {
     "label": "9d",
@@ -186,8 +186,8 @@
     "letter": "d",
     "file": "item-dagger-hm-d.png",
     "source": ".claude/skills/pixel-art/references/style/h-dagger-m3.png",
-    "paletteName": "Violet + Mint",
-    "hint": "Deep violet hilt and guard with a pale mint blade."
+    "paletteName": "Mint blade, violet guard, magenta gem, bronze grip",
+    "hint": "Pale mint blade, violet guard, a magenta gem and pommel, and a bronze grip."
   },
   {
     "label": "10b",
@@ -226,8 +226,8 @@
     "letter": "b",
     "file": "item-hammer-hm-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-hammer-m1.png",
-    "paletteName": "Steel Blue + Hot Pink",
-    "hint": "Steel-blue iron head, ivory bands, hot pink star and flames."
+    "paletteName": "Steel iron, silver bands, pink flames, ice star, crimson handle",
+    "hint": "Steel-blue iron head, pale silver bands, hot pink flames, an ice-white star, a crimson handle and an emerald pommel."
   },
   {
     "label": "11c",
@@ -236,8 +236,8 @@
     "letter": "c",
     "file": "item-hammer-hm-c.png",
     "source": ".claude/skills/pixel-art/references/style/h-hammer-m2.png",
-    "paletteName": "Teal + Violet + Amber",
-    "hint": "Deep teal-green iron with violet bands and an amber-yellow star and flames."
+    "paletteName": "Violet iron, teal bands, amber flames, magenta star, bronze handle",
+    "hint": "Violet iron head, teal bands, amber flames, a magenta star, a bronze handle and a cyan pommel."
   },
   {
     "label": "11d",
@@ -246,8 +246,8 @@
     "letter": "d",
     "file": "item-hammer-hm-d.png",
     "source": ".claude/skills/pixel-art/references/style/h-hammer-m3.png",
-    "paletteName": "Crimson + Cyan + Navy",
-    "hint": "Crimson bands over navy iron with a cyan star and flames."
+    "paletteName": "Maroon iron, violet bands, cyan flames, gold star, navy handle",
+    "hint": "Crimson-maroon iron head, violet bands, cold cyan flames, a gold star and pommel, and a navy handle."
   },
   {
     "label": "12b",
@@ -276,8 +276,8 @@
     "letter": "b",
     "file": "item-bow-hv-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-bow-v1.png",
-    "paletteName": "Crimson + Cyan",
-    "hint": "Crimson thorned limbs with a cyan eye glow and ivory string."
+    "paletteName": "Crimson limbs, cyan runes, teal riser, amber eye, gold string",
+    "hint": "Crimson limbs with cyan rune lines, a deep teal riser, an amber eye and a pale gold string."
   },
   {
     "label": "14c",
@@ -286,8 +286,8 @@
     "letter": "c",
     "file": "item-bow-hv-c.png",
     "source": ".claude/skills/pixel-art/references/style/h-bow-v2.png",
-    "paletteName": "Teal + Gold",
-    "hint": "Deep teal thorned limbs with a golden eye glow and cream string."
+    "paletteName": "Violet limbs, lime runes, copper riser, cyan eye, pink string",
+    "hint": "Violet limbs with acid-lime runes, a copper-brown riser, a cyan eye and a rose string."
   },
   {
     "label": "14d",
@@ -306,8 +306,8 @@
     "letter": "b",
     "file": "item-staff-hm-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-staff-m1.png",
-    "paletteName": "Azure + Violet + Gold",
-    "hint": "Azure petals and violet leaves on golden wood."
+    "paletteName": "Azure petals, amber gem, violet ring, teal leaves, plum wood",
+    "hint": "Azure petals, an amber gem, a violet ring, teal leaves and a plum-brown stem."
   },
   {
     "label": "16c",
@@ -326,8 +326,8 @@
     "letter": "d",
     "file": "item-scythe-hm-d.png",
     "source": ".claude/skills/pixel-art/references/style/h-scythe-m3.png",
-    "paletteName": "Magenta + Pale Cyan",
-    "hint": "Deep magenta-violet shaft and wrap with a pale ice-cyan blade."
+    "paletteName": "Teal blade, violet crest, rose gems, navy shaft",
+    "hint": "Ice-teal blade, violet crest wings, rose gems, a navy shaft and an ivory tuft."
   },
   {
     "label": "18b",
@@ -386,8 +386,8 @@
     "letter": "b",
     "file": "item-pickaxe-hv-b.png",
     "source": ".claude/skills/pixel-art/references/style/h-pickaxe-v1.png",
-    "paletteName": "Crimson + Bone Gold",
-    "hint": "Crimson jaw head with pale bone-gold fangs."
+    "paletteName": "Crimson head, bone fangs, cyan eye, slate handle, emerald pommel",
+    "hint": "Crimson jaw head, ivory fangs, a cyan eye, a slate handle with gold bands and an emerald pommel."
   },
   {
     "label": "20c",
@@ -396,8 +396,8 @@
     "letter": "c",
     "file": "item-pickaxe-hv-c.png",
     "source": ".claude/skills/pixel-art/references/style/h-pickaxe-v2.png",
-    "paletteName": "Violet + Acid Lime",
-    "hint": "Violet jaw head with acid-lime fangs."
+    "paletteName": "Violet head, lime fangs, bronze handle, rose pommel",
+    "hint": "Violet jaw head, acid-lime fangs, a bronze handle with gold bands and a rose pommel."
   },
   {
     "label": "20d",
@@ -406,8 +406,8 @@
     "letter": "d",
     "file": "item-pickaxe-hv-d.png",
     "source": ".claude/skills/pixel-art/references/style/h-pickaxe-v3.png",
-    "paletteName": "Burnt Orange + Ice Blue",
-    "hint": "Burnt-orange jaw head with ice-blue fangs."
+    "paletteName": "Orange head, ice-blue fangs, green handle, crimson pommel",
+    "hint": "Burnt-orange jaw head, ice-blue fangs, a deep green handle with pale gold bands and a crimson pommel."
   },
   {
     "label": "21c",
@@ -416,8 +416,8 @@
     "letter": "c",
     "file": "item-logging_axe-hm-c.png",
     "source": ".claude/skills/pixel-art/references/style/h-logging_axe-m2.png",
-    "paletteName": "Steel Blue + Amber Runes",
-    "hint": "Steel-blue axe head and haft with glowing amber runes."
+    "paletteName": "Steel rim, amber runes, wine head, teal handle, gold vines",
+    "hint": "Steel-blue rim, glowing amber runes, a wine-red head, a teal handle, gold vines and a sapphire pommel."
   },
   {
     "label": "21d",
@@ -426,8 +426,8 @@
     "letter": "d",
     "file": "item-logging_axe-hm-d.png",
     "source": ".claude/skills/pixel-art/references/style/h-logging_axe-m3.png",
-    "paletteName": "Wine + Aqua Runes",
-    "hint": "Wine-red axe head and haft with glowing aqua runes."
+    "paletteName": "Aqua rim, orange runes, plum head, slate handle, rose vines",
+    "hint": "Turquoise rim, glowing orange runes, a plum head, a slate handle, rose vines and an aqua pommel."
   },
   {
     "label": "22b",
