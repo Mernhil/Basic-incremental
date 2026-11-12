@@ -42,6 +42,8 @@ export interface TeamCardView {
   /** Its own average damage per second (hits, signature and crits at their expected value). */
   averageDps: Decimal;
   hitSeconds: number;
+  /** Its chance that a hit crits, 0..1 (the stage rolls it for show only). */
+  critChance: number;
   /** Its signature gauge, 0..1. */
   gauge: number;
 }
@@ -80,6 +82,7 @@ export function teamView(
       targeted: target?.id === card.id,
       averageDps: cardAverageDps(card),
       hitSeconds: card.interval,
+      critChance: card.crit.chance,
       gauge: gaugeAt(card, clock),
     };
   });

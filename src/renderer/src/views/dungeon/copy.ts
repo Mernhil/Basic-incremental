@@ -33,6 +33,8 @@ export const DUEL_COPY = {
   heal: 'Heal',
   plate2: (skill: string, card: string) => `${skill} · ${card}`,
   times: (n: number) => `×${n}`,
+  critWord: 'CRIT!',
+  breakWord: 'BREAK!',
   panels: {
     dungeons: 'Dungeons',
     weapon: 'Weapon',
