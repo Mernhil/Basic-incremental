@@ -21,9 +21,12 @@ import {
 import type { LiveLayer } from './pixel/live';
 import { FRAME_MS, stripStyle } from './pixel/animate';
 import { spriteImage, sprite, strip } from './pixel/sprites';
+import ZOOM from './foeZoom.json';
 
 export const FOE_W = 160;
 export const FOE_H = 172;
+/** The row the feet stand on in the canvas (scripts/art/cut-pack.py), the origin of a zoom. */
+const FOE_GROUND = 166;
 
 /** Whether a foe picture (still and idle strip) exists for this sprite id. */
 export const hasFoeSprite = (id: string | undefined): boolean =>
@@ -36,6 +39,13 @@ const FX: Readonly<Record<string, { glow: string; kind: FxKind }>> = {
   sanctuary_archangel: { glow: '#ffe9a0', kind: 'angel' },
   faceless_void_reaper: { glow: '#9a5cff', kind: 'void' },
 };
+
+/**
+ * The whole-number zoom a small pack enemy is drawn at (1 for the rest), so every enemy fills its
+ * card about as much as the 120 px bodies do. Made by `scripts/art/foe-zoom.py`.
+ */
+export const foeZoom = (id: string): number =>
+  FX[id] ? 1 : ((ZOOM as Record<string, number>)[id] ?? 1);
 
 interface Speck {
   x: number;
@@ -177,7 +187,10 @@ export function foeHtml(id: string, scale: number): string {
   const h = FOE_H * scale;
   const fx = FX[id];
   if (!fx) {
-    return `<div class="bi-px-anim bi-foe" data-sprite="foe-${id}" aria-hidden="true" style="width:${w}px;height:${h}px;${stripStyle(s)}"></div>`;
+    const z = foeZoom(id);
+    const zoom =
+      z > 1 ? `transform:scale(${z});transform-origin:50% ${(FOE_GROUND / FOE_H) * 100}%;` : '';
+    return `<div class="bi-px-anim bi-foe" data-sprite="foe-${id}" aria-hidden="true" style="width:${w}px;height:${h}px;${zoom}${stripStyle(s)}"></div>`;
   }
   const inner =
     liveCanvas('bi-foe__aura', FOE_W, FOE_H, 'filter:blur(4px)') +
