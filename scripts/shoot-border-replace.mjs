@@ -1,5 +1,5 @@
 // Screenshots the cosmetics cleanup (DESIGN.md §5 The base frame, §8): Legendary cards at Gold and
-// Prismatic wearing three different borders in the Cards panel, a duel hand and the Wardrobe
+// Bronze wearing three different borders in the Cards panel, a duel hand and the Wardrobe
 // preview, at 100% and 150%, plus the Wardrobe with its empty categories. It replaces the save of
 // the profile it runs against, so use a profile of its own:
 // `BI_PROFILE=cleanup npx electron-vite dev -- --remote-debugging-port=9444`, then
@@ -26,8 +26,8 @@ page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 await page.waitForSelector('.shell');
 
 const BORDERS = ['gt_border', 'verdant_border', 'blossom_border'];
-const GOLD = ['dawnblade_regent', 'prism_paladin', 'shard_strider'];
-const PRISM = ['mirror_cavalier', 'whisper_assassin', 'facet_crusher'];
+const GOLD = ['dawnblade_regent', 'whisper_assassin', 'facet_crusher']; // sword, dagger, hammer
+const PRISM = ['prism_paladin', 'mirror_cavalier', 'rainbow_sniper']; // greatsword, lance, bow (Bronze)
 
 /** Writes a save whose fighting team is `team` (a Gold row or a Prismatic row). */
 async function writeSave(team) {
@@ -41,7 +41,7 @@ async function writeSave(team) {
         s.cards.owned[id] = { ...g.newOwnedCard(), tier, stars, level: 60 };
       };
       gold.forEach((id) => own(id, 'gold', 3));
-      prism.forEach((id) => own(id, 'prismatic', 3));
+      prism.forEach((id) => own(id, 'bronze', 3));
       for (const b of borders) g.grantCosmetic(s, b);
       [...gold, ...prism].forEach((id, i) => {
         const r = g.equipCosmetic(s, content, borders[i % 3], id);
@@ -98,7 +98,7 @@ for (const scale of [1, 1.5]) {
   const tag = scale === 1 ? '100' : '150';
   for (const [name, team] of [
     ['gold', GOLD],
-    ['prismatic', PRISM],
+    ['bronze', PRISM],
   ]) {
     await writeSave(team);
     await boot(scale);
