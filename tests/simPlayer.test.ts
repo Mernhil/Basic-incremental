@@ -301,7 +301,9 @@ describe('sim player: runs of one economy line', () => {
 // ---- the table update's systems (DESIGN.md §14 The sim player's choices) ------------------------
 
 describe('sim player: floor Challenges and the team of four', () => {
-  const real = loadContent();
+  // The boss HP these margins were set against, so tuning the dungeon data does not move them
+  // (the tests below pin the boss attack the same way).
+  const real = withBossHp(loadContent(), 'mossy_cellar', 70000);
   /** Mossy Cellar on floor 9 of 10 (its boss floor is the next Challenge), a team of Commons. */
   const atBossWall = (): GameState => {
     const state = freshState();

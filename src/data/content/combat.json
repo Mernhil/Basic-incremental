@@ -32,15 +32,15 @@
   },
   "floors": {
     "hpGrowth": 1.12,
-    "waveHpShare": 0.08,
-    "waveAttackShare": 0.5,
+    "waveHpShare": 0.06,
+    "waveAttackShare": 0.6,
     "waveSize": {
       "min": 3,
       "max": 5
     },
     "miniBossEvery": 10,
-    "miniBossHpShare": 0.6,
-    "miniBossAttackShare": 0.55,
+    "miniBossHpShare": 0.7,
+    "miniBossAttackShare": 0.45,
     "miniBossPrefix": "Great",
     "purseFloorBonus": 1.02
   },

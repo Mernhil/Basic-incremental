@@ -103,13 +103,16 @@ describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', ()
     const farmed = state.combat.floors[state.activeDungeonId!]!.tiers['normal']!;
     expect(farmed.best).toBeGreaterThan(0);
     expect(state.combat.knockoutSeconds).toBe(0); // the old save was parked mid-knockout
-    const dropped: number[] = [];
+    let knockouts = 0;
+    let out = false;
     for (let s = 0; s < 120; s++) {
       state = advance(state, real, 1000, () => 0.5).state;
-      if (state.combat.knockoutSeconds > 0) dropped.push(s);
+      if (state.combat.knockoutSeconds > 0 && !out) knockouts++;
+      out = state.combat.knockoutSeconds > 0;
     }
-    // At most one stumble on a boss floor, then it farms: nothing in the last minute.
-    expect(dropped.filter((s) => s >= 60)).toEqual([]);
+    // At most one stumble on the boss floor (it drops one floor), then it farms: no loop.
+    expect(knockouts).toBeLessThanOrEqual(1);
+    expect(state.combat.knockoutSeconds).toBe(0);
     expect(state.combat.floors[state.activeDungeonId!]!.tiers['normal']!.floor).toBeGreaterThan(0);
   });
 

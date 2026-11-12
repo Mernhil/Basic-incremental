@@ -709,6 +709,13 @@ export const dungeonSchema = z.strictObject({
    */
   floors: z.number().int().min(1),
   /**
+   * The dungeon's floor rate (DESIGN.md §3 Ladders): each floor is this many times the HP and
+   * attack of the one above, through its difficulty tiers and endless depths. Left out, the
+   * dungeon uses `combat.json` `floors.hpGrowth` (Dungeons 1 to 3); Dungeons 4 to 6 set a
+   * gentler one.
+   */
+  floorGrowth: z.number().min(1).optional(),
+  /**
    * The normal enemies of the dungeon's waves (DESIGN.md §6 Normal enemies). `hpWeight` sets how
    * a wave's HP is shared among its enemies, so each type has its own HP and purse.
    */
