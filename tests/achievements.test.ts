@@ -72,7 +72,7 @@ describe('achievements (DESIGN.md §10)', () => {
     const state = newGame();
     state.clearedDungeons = ['mossy_cellar'];
     const after = checkAchievements(state, content).state;
-    expect(after.cosmetics.owned['holo_hex']).toEqual({ level: 1, copies: 0 });
+    expect(after.cosmetics.owned['gilded_plate']).toEqual({ level: 1, copies: 0 });
   });
 
   it('detects harvests by job, kills, unlocks, clears and pulls', () => {
@@ -110,6 +110,10 @@ describe('achievements (DESIGN.md §10)', () => {
       state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
       state.cosmetics.loadout.slots[c.slot] = { id: c.id, level: 1 };
     }
+    // four more items (Gilded Tradition has three pieces now) so Fashionista's ten are owned
+    for (const id of ['gilded_plate', 'gilded_filigree', 'nodes_b', 'nodes_c']) {
+      state.cosmetics.owned[id] = { level: 1, copies: 0 };
+    }
     state.prestigeCount = 1;
     state.mastery.gemTiers = { oak_gem: 3 };
     state.mastery.bossTiers = { mossy_cellar: 2 };
@@ -129,7 +133,7 @@ describe('achievements (DESIGN.md §10)', () => {
       ]),
     );
     expect(got).not.toContain('prismatic_dawn');
-    // The 7 Gilded Tradition items plus the 3 UI-skin pieces that Dressed Up, Medalist and Gem Adept
+    // The 3 Gilded Tradition items, 4 more owned items and the 3 UI-skin pieces that Dressed Up, Medalist and Gem Adept
     // grant make the 10 non-starter items Fashionista needs.
     expect(got).toContain('fashionista');
   });

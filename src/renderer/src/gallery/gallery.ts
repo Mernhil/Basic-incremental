@@ -11,6 +11,7 @@ import {
   type CardElement,
 } from '../../../data';
 import {
+  defaultRng,
   detectSets,
   emptyLoadout,
   equip,
@@ -23,8 +24,7 @@ import { createCard, type CardView } from '../ui/card';
 import { itemArt } from '../art/items';
 import { COPY } from '../copy';
 import { installArtDefs } from '../art/defs';
-import { playHit, showTick } from '../theme/effects';
-import { defaultRng, resolveGlobal } from '../../../game';
+import { showTick } from '../theme/effects';
 import './gallery.css';
 
 /**
@@ -36,7 +36,6 @@ import './gallery.css';
 const SLOT_LABELS: Record<CosmeticSlot, string> = {
   border: 'Card border',
   finish: 'Card finish',
-  attack: 'Attack',
   tick: 'Tick damage',
   number: 'Numbers',
   table: 'Table',
@@ -79,6 +78,7 @@ export function renderGallery(root: HTMLElement = document.body): void {
   // ---- pickers ----
   for (const slot of COSMETIC_SLOTS) {
     const items = content.cosmetics.filter((c) => c.slot === slot && !c.exclusiveCard);
+    if (items.length === 0) continue; // a slot with no items yet (finish, tick, number)
     const field = el('label', 'gallery__field');
     field.append(el('span', '', SLOT_LABELS[slot]));
     const item = select(
@@ -94,7 +94,7 @@ export function renderGallery(root: HTMLElement = document.body): void {
       );
       level.disabled = cosmetic.levels.length === 1;
     };
-    item.value = content.starterBySlot[slot].id;
+    item.value = content.starterBySlot[slot]?.id ?? '';
     syncLevels();
     item.addEventListener('change', () => {
       syncLevels();
@@ -292,10 +292,7 @@ export function renderGallery(root: HTMLElement = document.body): void {
   fxSection.append(fxRow);
   page.append(fxSection);
   window.setInterval(() => {
-    const effects = resolveGlobal(content, loadout).attack.visual.effects;
     for (const { job, stage } of stages) {
-      if (effects)
-        playHit(effects[job], stage, { rng: defaultRng, target: stage.querySelector('svg') });
       showTick(stage, job === 'fighting' ? '12.4K' : '+3', {
         rng: defaultRng,
         crit: defaultRng() < 0.2,

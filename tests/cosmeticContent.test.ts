@@ -71,13 +71,6 @@ const MOON = {
   luna: { id: 'luna_moths', name: 'Luna Moths', motion: 'pop', corner: 'shards' },
   wreath: { id: 'moon_wreath', name: 'Moon Wreath', motion: 'fountain', corner: 'pauldron' },
 } as const;
-const CORE = {
-  corepulse: { id: 'core_pulse', name: 'Core Pulse', motion: 'pair' },
-  veins: { id: 'power_veins', name: 'Power Veins', motion: 'pop' },
-  hexcore: { id: 'hex_core', name: 'Hex Core', motion: 'orbit' },
-  strata: { id: 'magma_strata', name: 'Magma Strata', motion: 'fountain' },
-  starburst: { id: 'starburst', name: 'Starburst', motion: 'rail' },
-} as const;
 const LOOSE = {
   forge: { motion: 'pop', corner: 'pauldron' },
   woodcraft: { motion: 'rail', corner: 'knot' },
@@ -95,24 +88,24 @@ describe('the four UI-skin slots', () => {
     e: 'mythic',
   };
 
-  it('are global slots after the seven card and screen slots', () => {
-    expect(COSMETIC_SLOTS.slice(0, 7)).toEqual([
+  it('are global slots after the six card and screen slots (there is no attack slot)', () => {
+    expect(COSMETIC_SLOTS.slice(0, 6)).toEqual([
       'border',
       'finish',
-      'attack',
       'tick',
       'number',
       'table',
       'cursor',
     ]);
-    expect(COSMETIC_SLOTS.slice(7)).toEqual([...SKINS]);
+    expect(COSMETIC_SLOTS.slice(6)).toEqual([...SKINS]);
+    expect(COSMETIC_SLOTS).not.toContain('attack');
   });
 
   for (const skin of SKINS) {
     it(`${skin}: option A is the starter, B to E are items in their rarity`, () => {
       const items = content.cosmetics.filter((c) => c.slot === skin);
       expect(items).toHaveLength(5);
-      const starter = content.starterBySlot[skin];
+      const starter = content.starterBySlot[skin]!;
       expect(starter.levels).toHaveLength(1);
       expect(starter.levels[0]!.recipes).toEqual([`ui-${skin}-a`]);
       for (const style of ['b', 'c', 'd', 'e']) {
@@ -129,23 +122,23 @@ describe('the four UI-skin slots', () => {
     });
   }
 
-  it('spread their sources over prestige, achievements, the reward track and the shard shop', () => {
+  it('spread their sources over prestige, achievements, the reward track, the shard shop and the dungeons (the rare drops that replaced the finishes)', () => {
     const source = (id: string) => cosmeticSource(content, id);
     expect(source('starlight_b')).toBe('prestige');
-    expect(source('starlight_c')).toBe('prestige');
+    expect(source('starlight_c')).toBe('dungeon');
     expect(source('starlight_d')).toBe('shop');
     expect(source('starlight_e')).toBe('shop');
     expect(source('sticker_b')).toBe('achievement');
-    expect(source('sticker_c')).toBe('achievement');
+    expect(source('sticker_c')).toBe('dungeon');
     expect(source('sticker_d')).toBe('shop');
     expect(source('sticker_e')).toBe('achievement');
-    expect(source('nodes_b')).toBe('achievement');
-    expect(source('nodes_c')).toBe('track');
-    expect(source('nodes_d')).toBe('track');
+    expect(source('nodes_b')).toBe('dungeon');
+    expect(source('nodes_c')).toBe('dungeon');
+    expect(source('nodes_d')).toBe('achievement');
     expect(source('nodes_e')).toBe('shop');
     expect(source('wardrobe_b')).toBe('achievement');
-    expect(source('wardrobe_c')).toBe('track');
-    expect(source('wardrobe_d')).toBe('track');
+    expect(source('wardrobe_c')).toBe('dungeon');
+    expect(source('wardrobe_d')).toBe('achievement');
     expect(source('wardrobe_e')).toBe('shop');
   });
 
@@ -167,11 +160,9 @@ describe('the five garden sets (B2)', () => {
     describe(spec.name, () => {
       const items = content.cosmetics.filter((c) => c.set === spec.set);
 
-      it('is a Legendary set: one item per slot, five levels each, with a set bonus', () => {
+      it('is a Legendary set: a border, a table and a cursor, five levels each, with a set bonus', () => {
         expect(content.setById.get(spec.set)?.modifiers.length).toBeGreaterThan(0);
-        expect(items.map((c) => c.slot).sort()).toEqual(
-          ['attack', 'border', 'cursor', 'finish', 'number', 'table', 'tick'].sort(),
-        );
+        expect(items.map((c) => c.slot).sort()).toEqual(['border', 'cursor', 'table'].sort());
         for (const c of items) {
           expect(c.rarity).toBe('legendary');
           expect(c.starter).toBe(false);
@@ -185,16 +176,8 @@ describe('the five garden sets (B2)', () => {
         for (const c of items) {
           c.levels.forEach((level, i) => {
             const n = i + 1;
-            if (c.slot === 'attack') {
-              expect(level.effects).toEqual({
-                fighting: `px-slash-${style}-${n}`,
-                logging: `px-slash-${style}-${n}`,
-                mining: 'heavy-hit',
-              });
-            } else {
-              const prefix = PREFIX[c.slot as keyof typeof PREFIX];
-              expect(level.recipes, `${c.id} L${n}`).toContain(`${prefix}-${style}-${n}`);
-            }
+            const prefix = PREFIX[c.slot as keyof typeof PREFIX];
+            expect(level.recipes, `${c.id} L${n}`).toContain(`${prefix}-${style}-${n}`);
           });
         }
       });
@@ -203,16 +186,14 @@ describe('the five garden sets (B2)', () => {
         const border = items.find((c) => c.slot === 'border')!;
         expect(lastRecipes(border)).toContain(`ambient-${spec.rail}`);
         expect(lastRecipes(border)).toContain(`corner-${spec.corner}`);
-        const finish = items.find((c) => c.slot === 'finish')!;
-        expect(lastRecipes(finish)).toContain(`ambient-${spec.fin}-f`);
       });
 
-      it('applies its bonus when all seven pieces are worn', () => {
+      it('applies its bonus when all three pieces are worn', () => {
         let state = freshState();
         for (const c of items) state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
         for (const c of items) state = ok(equipCosmetic(state, content, c.id));
         const info = setBonuses(state, content).find((s) => s.set.id === spec.set)!;
-        expect(info).toMatchObject({ equipped: 7, total: 7, complete: true });
+        expect(info).toMatchObject({ equipped: 3, total: 3, complete: true });
         const mods = collectModifiers(state, content).filter(
           (m) => m.source.kind === 'set' && m.source.id === spec.set,
         );
@@ -247,50 +228,20 @@ describe('Moonwood Dryad borders (B3)', () => {
   }
 });
 
-describe('Core Titan finishes (B4)', () => {
-  for (const [style, spec] of Object.entries(CORE)) {
-    it(`${spec.name}: Mythic, six levels, exclusive to the Titan`, () => {
-      const c = byId(spec.id);
-      expect(c.name).toBe(spec.name);
-      expect([c.slot, c.rarity, c.exclusiveCard, c.set]).toEqual([
-        'finish',
-        'mythic',
-        'core_titan',
-        null,
-      ]);
-      expect(c.levels).toHaveLength(6);
-      c.levels.forEach((_, i) => expect(recipesAt(c, i + 1)).toContain(`fn-${style}-${i + 1}`));
-      expect(lastRecipes(c)).toContain(`ambient-${spec.motion}-f`);
-      expect(cosmeticSource(content, c.id)).toBe('portal');
-    });
-  }
-});
-
-describe('the 20 loose items (B5)', () => {
+describe('the 5 loose borders (B5)', () => {
   for (const [style, spec] of Object.entries(LOOSE)) {
     const slot = (s: string) => byId(`${style}_${s}`);
 
-    it(`${style}: Common border and numbers, Epic attack and tick, in no set`, () => {
+    it(`${style}: a Common border in no set, from the Wardrobe Gate`, () => {
       const border = slot('border');
-      const number = slot('number');
-      const attack = slot('attack');
-      const tick = slot('tick');
-      expect([border.rarity, number.rarity]).toEqual(['common', 'common']);
-      expect([attack.rarity, tick.rarity]).toEqual(['epic', 'epic']);
-      for (const c of [border, number, attack, tick]) {
-        expect(c.set).toBeNull();
-        expect(c.exclusiveCard).toBeNull();
-        expect(c.levels, c.id).toHaveLength(cosmeticMaxLevel(content, c));
-        // From the Wardrobe Gate; three of the Epic ones are also a dungeon's rare item
-        // (Thunderpeak Aerie, Sunken Sanctum, Hollow of the Void), which is the source named.
-        expect(['portal', 'dungeon']).toContain(cosmeticSource(content, c.id));
-      }
-      expect([border.slot, number.slot, attack.slot, tick.slot]).toEqual([
+      expect([border.slot, border.rarity, border.set, border.exclusiveCard]).toEqual([
         'border',
-        'number',
-        'attack',
-        'tick',
+        'common',
+        null,
+        null,
       ]);
+      expect(border.levels).toHaveLength(cosmeticMaxLevel(content, border));
+      expect(cosmeticSource(content, border.id)).toBe('portal');
     });
 
     it(`${style}: levels name the recipes, the border ends with its motion and corner`, () => {
@@ -299,46 +250,26 @@ describe('the 20 loose items (B5)', () => {
       expect(recipesAt(border, 2)).toContain(`bd-${style}-2`);
       expect(lastRecipes(border)).toContain(`ambient-${spec.motion}`);
       expect(lastRecipes(border)).toContain(`corner-${spec.corner}`);
-      const number = slot('number');
-      expect(recipesAt(number, 1)).toContain(`num-${style}-1`);
-      expect(recipesAt(number, 2)).toContain(`num-${style}-2`);
-      const tick = slot('tick');
-      tick.levels.forEach((_, i) =>
-        expect(recipesAt(tick, i + 1)).toContain(`tk-${style}-${i + 1}`),
-      );
-      expect(tick.levels[0]!.effect).toBe('rise');
-      const attack = slot('attack');
-      attack.levels.forEach((l, i) =>
-        expect(l.effects).toEqual({
-          fighting: `px-slash-${style}-${i + 1}`,
-          logging: `px-slash-${style}-${i + 1}`,
-          mining: 'heavy-hit',
-        }),
-      );
     });
   }
 });
 
 describe('the B8 / B9 spread over the existing items', () => {
-  it('adds each existing border or finish motion (and corner) at its max level', () => {
+  it('adds each existing border motion (and corner) at its max level', () => {
     expect(lastRecipes(byId('gilded_filigree'))).toContain('ambient-rail');
     expect(lastRecipes(byId('gilded_plate'))).toContain('ambient-pair');
     expect(lastRecipes(byId('gt_border'))).toContain('ambient-pop');
     expect(lastRecipes(byId('ember_crown'))).toContain('ambient-fountain');
     expect(lastRecipes(byId('ember_crown'))).toContain('corner-wings');
-    expect(lastRecipes(byId('aurora_veil'))).toContain('ambient-orbit-f');
-    expect(lastRecipes(byId('holo_hex'))).toContain('ambient-fountain-f');
-    expect(lastRecipes(byId('holo_waves'))).toContain('ambient-rail-f');
-    expect(lastRecipes(byId('gt_finish'))).toContain('ambient-pop-f');
   });
 });
 
 describe('the Wardrobe Gate pool and sources', () => {
   const gate = content.allPortals.find((p) => p.id === 'wardrobe_gate')!;
 
-  it('covers the rarities its items use, from Common to Mythic', () => {
+  it('covers the rarities its items use: Common, Legendary and Mythic (the Rare and Epic loose items were finishes and ticks)', () => {
     const rarities = new Set(gate.pool.map((e) => e.rarity));
-    for (const r of ['common', 'rare', 'epic', 'legendary', 'mythic'] as const) {
+    for (const r of ['common', 'legendary', 'mythic'] as const) {
       expect(rarities.has(r), r).toBe(true);
     }
     // Exotic is gone: Mythic and Void are the top two rarities.
@@ -350,12 +281,11 @@ describe('the Wardrobe Gate pool and sources', () => {
     const ids = new Set(gate.pool.map((e) => e.itemId));
     const portalItems = content.cosmetics.filter((c) => cosmeticSource(content, c.id) === 'portal');
     for (const c of portalItems) expect(ids.has(c.id), c.id).toBe(true);
-    expect(gate.pool.length).toBe(11 + 35 + 5 + 5 + 20);
+    expect(gate.pool.length).toBe(29);
     const total = gate.pool.reduce((a, e) => a + e.weight, 0);
     const share = (r: Rarity) =>
       gate.pool.filter((e) => e.rarity === r).reduce((a, e) => a + e.weight, 0) / total;
-    expect(share('common')).toBeGreaterThan(share('rare'));
-    expect(share('rare')).toBeGreaterThan(share('epic'));
+    expect(share('common')).toBeGreaterThan(share('legendary'));
     expect(share('legendary')).toBeGreaterThan(share('mythic'));
   });
 

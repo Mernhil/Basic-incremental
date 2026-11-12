@@ -56,7 +56,7 @@ describe('save round-trip', () => {
     expect(loaded.state.resources['oak_gem']!.eq(new Decimal('1.5e500'))).toBe(true);
     expect(loaded.state.combat.trialAttempt.dealt.eq(new Decimal('3e400'))).toBe(true);
     expect(loaded.state.combat.stageKills).toEqual({ 'mossy_cellar:normal:1': 2 });
-    expect(loaded.state.inventory['holo_hex']).toBe(2);
+    expect(loaded.state.inventory['gilded_plate']).toBe(2);
     expect(loaded.state.pity['root_warden']).toBe(17);
     expect(loaded.state.bossHp!.eq(state.bossHp!)).toBe(true);
   });
@@ -185,12 +185,12 @@ describe('save format v2: cosmetics', () => {
   it('drops cosmetics that no longer exist and clamps levels', () => {
     const json = JSON.parse(createSaveText(freshState(), NOW));
     json.state.cosmetics.owned['removed_item'] = { level: 1, copies: 1 };
-    json.state.cosmetics.owned['aurora_veil'] = { level: 9, copies: 0 };
+    json.state.cosmetics.owned['gilded_filigree'] = { level: 9, copies: 0 };
     json.state.cosmetics.loadout.slots.border = { id: 'removed_item', level: 1 };
     const loaded = readSave(JSON.stringify(json), content);
     expect(loaded.state.cosmetics.owned['removed_item']).toBeUndefined();
     // Epic: max level 4 (DESIGN.md §8).
-    expect(loaded.state.cosmetics.owned['aurora_veil']!.level).toBe(4);
+    expect(loaded.state.cosmetics.owned['gilded_filigree']!.level).toBe(4);
     expect(loaded.state.cosmetics.loadout.slots.border).toBeUndefined();
   });
 });
@@ -238,7 +238,7 @@ describe('save format v3: production', () => {
         activeDungeonId: 'example_dungeon',
         bossHp: '42',
         pity: { example_boss: 12 },
-        inventory: { holo_hex: 1 },
+        inventory: { gilded_plate: 1 },
         prestigeCount: 0,
         cosmetics: { loadout: { slots: {}, cards: {} }, owned: {} },
         stats: { playTimeMs: 1000, bossKills: 3 },

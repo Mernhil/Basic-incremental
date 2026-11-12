@@ -37,30 +37,6 @@
     "weapon": "bow",
     "skins": [
       {
-        "id": "legacy-bow-56",
-        "name": "Wrapped Longbow",
-        "art": "item-bow-rare",
-        "cost": 0,
-        "legacy": true,
-        "rarity": "rare"
-      },
-      {
-        "id": "legacy-bow-57",
-        "name": "Rune Recurve",
-        "art": "item-bow-mythic",
-        "cost": 0,
-        "legacy": true,
-        "rarity": "mythic"
-      },
-      {
-        "id": "legacy-bow-58",
-        "name": "Flameglade Bow",
-        "art": "item-bow-epic-0-red",
-        "cost": 0,
-        "legacy": true,
-        "rarity": "epic"
-      },
-      {
         "id": "legacy-bow-59",
         "name": "Thornflame Bow",
         "art": "item-bow-mythic-6-red",

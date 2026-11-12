@@ -84,10 +84,6 @@ export function cosmeticSwatch(content: Content, cosmeticId: string, level: numb
   for (const [k, v] of Object.entries(cssVars(visual.tokens))) el.style.setProperty(k, v);
   for (const r of visual.recipes) el.classList.add(`r-${r}`);
   switch (cosmetic.slot) {
-    case 'attack':
-      el.innerHTML =
-        '<svg class="cs-slash" viewBox="0 0 60 60"><path d="M10 50 Q30 34 52 8" /><path class="cs-slash__core" d="M10 50 Q30 34 52 8" /></svg>';
-      break;
     case 'tick':
       el.innerHTML = '<b class="cs-tick">128</b>';
       break;

@@ -164,7 +164,7 @@ describe('game numbers go through the pipeline', () => {
   it('owned production buffs raise production', () => {
     const base = advance(freshState(), content, 1000, constantRng(0.5)).state;
     const buffed = freshState();
-    buffed.cosmetics.owned['aurora_veil'] = { level: 1, copies: 1 }; // +1% production
+    buffed.cosmetics.owned['gt_table'] = { level: 1, copies: 1 }; // +1% production
     const after = advance(buffed, content, 1000, constantRng(0.5)).state;
     const wood = 'oak_gem';
     expect(approxEq(after.resources[wood]!, base.resources[wood]!.mul(1.01))).toBe(true);

@@ -128,7 +128,7 @@ describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', ()
 
 describe('v26 -> v27 (the table update)', () => {
   it('is the current format', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(27);
+    expect(CURRENT_SAVE_VERSION).toBe(28);
   });
 
   it('turns the crystals held into scrolls at the pull price, rounded down, and drops the crystals', () => {
@@ -204,7 +204,8 @@ describe('v26 -> v27 (the table update)', () => {
 
     // The new parts are what the migration gave.
     expect(state.resources['summon_scroll']!.toString()).toBe('5'); // 1,526 crystals
-    expect(state.resources['glamour_scroll']!.toString()).toBe('3'); // 1,044.5 crystals
+    // 1,044.5 crystals, and the save owned Gilded Numerals and Hex Lattice, which format 28 refunds at 0.2 each
+    expect(state.resources['glamour_scroll']!.toString()).toBe('3.4');
     expect(state.combat.floors['mossy_cellar']!.autoChallenge).toBe(true);
     expect(state.combat.floors['ember_crypt']!.autoChallenge).toBe(false);
     expect(state.combat.enemyIndex).toBe(0);
@@ -238,14 +239,19 @@ describe('v26 -> v27 (the table update)', () => {
     const kept = expected['resources'] as Record<string, unknown>;
     delete kept['summon_crystal'];
     delete kept['glamour_crystal'];
+    // Format 28 took the removed cosmetics (the four starters, Gilded Numerals, Hex Lattice) out.
+    const ownedCosmetics = (expected['cosmetics'] as { owned: Record<string, unknown> }).owned;
+    for (const id of ['gn_attack', 'gn_finish', 'gn_tick', 'gn_number', 'gt_tick', 'holo_hex']) {
+      delete ownedCosmetics[id];
+    }
     // The team was filled and the player moved off the dungeon with nothing beaten (below).
     const exp = expected as { cards: { loadouts: { fighting: { supports: unknown[] } } } };
     exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.supports;
     expect(again).toEqual({ ...expected, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
-    // Saved again it is format 27 and loads to the same state.
+    // Saved again it is the current format and loads to the same state.
     const resaved = createSaveText(state, 1);
-    expect(JSON.parse(resaved).version).toBe(27);
+    expect(JSON.parse(resaved).version).toBe(28);
     expect(readSave(resaved, content).state).toEqual(state);
   });
 });

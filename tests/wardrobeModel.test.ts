@@ -46,16 +46,15 @@ function ownCard(state: GameState, id: string): GameState {
 }
 
 describe('wardrobe slots', () => {
-  it('lists the eleven slots with the starter set on a new game', () => {
+  it('lists the ten slots with the starter set on a new game; finish, tick and number are coming', () => {
     const s = freshState();
     const card = defaultPreview(s, content);
     const slots = slotViews(s, content, card, card ? resolveCardFor(s, content, card) : null);
     expect(slots.map((x) => x.label)).toEqual([
       'Border',
       'Finish',
-      'Attack',
-      'Tick',
-      'Numbers',
+      'Damage numbers',
+      'Number style',
       'Table',
       'Cursor',
       'Starlight coin',
@@ -64,6 +63,9 @@ describe('wardrobe slots', () => {
       'Wardrobe style',
     ]);
     expect(slots[0]).toMatchObject({ name: 'Knight Plate', level: 1, blocked: null });
+    for (const slot of ['finish', 'tick', 'number']) {
+      expect(slots.find((x) => x.slot === slot)).toMatchObject({ itemId: null, level: 0 });
+    }
   });
 
   it('says from which rank a chosen border is worn', () => {
@@ -82,26 +84,28 @@ describe('wardrobe slots', () => {
 describe('wardrobe grid', () => {
   it('filters by slot and puts owned items first', () => {
     const s = freshState();
-    grantCosmetic(s, 'holo_hex');
-    const tiles = itemTiles(wardrobeItems(s, content), content, 'finish', null);
-    expect(tiles.every((x) => x.slot === 'finish')).toBe(true);
+    grantCosmetic(s, 'gilded_plate');
+    const tiles = itemTiles(wardrobeItems(s, content), content, 'border', null);
+    expect(tiles.every((x) => x.slot === 'border')).toBe(true);
     // owned first (rarest first), then the rest
-    expect(tiles.slice(0, 2).map((x) => x.id)).toEqual(['holo_hex', 'gn_finish']);
+    expect(tiles.slice(0, 2).map((x) => x.id)).toEqual(['gilded_plate', 'gn_border']);
     expect(tiles.at(-1)!.levelText).toBe('Not owned');
     expect(tiles[0]!.levelText).toBe('Lv 1/3');
   });
 
   it('marks what is equipped and what can be upgraded', () => {
     const s = freshState();
-    grantCosmetic(s, 'holo_hex');
-    grantCosmetic(s, 'holo_hex');
+    grantCosmetic(s, 'gilded_plate');
+    grantCosmetic(s, 'gilded_plate');
     s.resources['glimmer_dust'] = new Decimal(1e6);
     const tile = itemTiles(wardrobeItems(s, content), content, 'all', null).find(
-      (x) => x.id === 'holo_hex',
+      (x) => x.id === 'gilded_plate',
     )!;
     expect(tile).toMatchObject({ copies: 1, upgradable: true, equipped: false });
     expect(tile.aria).toContain('Ready to upgrade');
-    const starter = itemTiles(wardrobeItems(s, content), content, 'all', null)[0]!;
+    const starter = itemTiles(wardrobeItems(s, content), content, 'all', null).find(
+      (x) => x.id === 'gn_border',
+    )!;
     expect(starter.equipped).toBe(true);
   });
 });
@@ -131,9 +135,9 @@ describe('selected item', () => {
 
   it('notes the max level instead of an upgrade', () => {
     const s = freshState();
-    grantCosmetic(s, 'holo_hex');
-    s.cosmetics.owned['holo_hex'] = { level: 3, copies: 0 };
-    const d = detail(s, 'holo_hex', null);
+    grantCosmetic(s, 'gilded_plate');
+    s.cosmetics.owned['gilded_plate'] = { level: 3, copies: 0 };
+    const d = detail(s, 'gilded_plate', null);
     expect(d.upgrade).toBeNull();
     expect(d.maxedNote).toBe('Max level 3 reached.');
   });
@@ -186,7 +190,7 @@ describe('selected item', () => {
     const drop = content.dungeons.find((d) => content.cosmeticById.has(d.drops.rare.itemId ?? ''));
     if (drop) {
       expect(sourceText(content, drop.drops.rare.itemId!, 'dungeon')).toBe(
-        `Rare drop in ${drop.name}, or the Wardrobe Gate`,
+        `Rare drop in ${drop.name}`,
       );
     }
   });
@@ -198,8 +202,8 @@ describe('preview', () => {
     const choices = previewChoices(s, content);
     expect(choices.length).toBeGreaterThan(0);
     const card = defaultPreview(s, content)!;
-    const loadout = tryOnLoadout(s, content, 'holo_hex', card);
-    expect(loadout.cards[card]?.finish?.id).toBe('holo_hex');
+    const loadout = tryOnLoadout(s, content, 'gilded_plate', card);
+    expect(loadout.cards[card]?.border?.id).toBe('gilded_plate');
     expect(s.cosmetics.loadout.cards[card]).toBeUndefined();
     const global = tryOnLoadout(s, content, 'gt_table', card);
     expect(global.slots.table?.id).toBe('gt_table');
@@ -228,10 +232,10 @@ describe('sets and buffs', () => {
   it('counts set pieces and lists the missing ones', () => {
     const s = freshState();
     const [nocturne, tradition] = setViews(s, content);
-    expect(nocturne).toMatchObject({ count: '7/7', complete: true, bonus: [] });
-    expect(tradition).toMatchObject({ count: '0/7', complete: false });
+    expect(nocturne).toMatchObject({ count: '3/3', complete: true, bonus: [] });
+    expect(tradition).toMatchObject({ count: '0/3', complete: false });
     expect(tradition!.bonus).toEqual(['+3% damage', '+3% production']);
-    expect(tradition!.missing).toHaveLength(7);
+    expect(tradition!.missing).toHaveLength(3);
   });
 
   it('breaks down every cosmetic bonus to a stat', () => {

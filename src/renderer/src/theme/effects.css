@@ -1,5 +1,5 @@
-/* One-shot hit effects spawned by effects.ts inside a stage element (the boss art window). The
-   hits themselves are pixel canvases; colours come from the attack cosmetic (--bi-attack-*). */
+/* Floating numbers spawned by effects.ts inside a stage element; colours follow the tick and number
+   cosmetics (--bi-tick-*, --bi-num-*). */
 
 .bi-fx-layer {
   position: absolute;
@@ -11,50 +11,6 @@
 .bi-fx {
   position: absolute;
   inset: 0;
-}
-
-/* the target reacts to a hit (pixel rules: one flash frame, a whole-pixel knockback, no squash) */
-.bi-react-flinch {
-  animation: bi-react-flinch 0.26s steps(1, end);
-}
-@keyframes bi-react-flinch {
-  0% {
-    filter: brightness(2.2);
-    transform: translateX(2px);
-  }
-  25% {
-    filter: none;
-    transform: translateX(2px);
-  }
-  60% {
-    filter: none;
-    transform: translateX(-1px);
-  }
-  100% {
-    filter: none;
-    transform: none;
-  }
-}
-.bi-react-thud {
-  animation: bi-react-thud 0.26s steps(1, end);
-}
-@keyframes bi-react-thud {
-  0% {
-    filter: brightness(2);
-    transform: translateY(2px);
-  }
-  25% {
-    filter: none;
-    transform: translateY(2px);
-  }
-  60% {
-    filter: none;
-    transform: translateY(-1px);
-  }
-  100% {
-    filter: none;
-    transform: none;
-  }
 }
 
 /* tick numbers: rise and fade */
@@ -102,7 +58,7 @@
   }
 }
 
-/* reduced motion: no attack effects (they are not spawned); ticks appear in place and fade */
+/* reduced motion: ticks appear in place and fade */
 @media (prefers-reduced-motion: reduce) {
   .bi-tick {
     animation: bi-tick-fade 1.1s linear forwards;
@@ -115,9 +71,5 @@
     100% {
       opacity: 0;
     }
-  }
-  .bi-react-flinch,
-  .bi-react-thud {
-    animation: none;
   }
 }

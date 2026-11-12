@@ -107,6 +107,9 @@ body {
   z-index: 3;
 }
 /* the frame (art/frame.ts): tier ornaments on every card; the plate rim is the knight-plate recipe */
+.bi-card[data-border-worn] .bi-card__frame {
+  display: none; /* a worn border replaces the base frame, never draws over it */
+}
 .bi-card__frame {
   position: absolute;
   inset: 0;
@@ -454,4 +457,19 @@ body {
   border-radius: inherit;
   background: linear-gradient(90deg, var(--rar), #fff3);
   background-color: var(--rar);
+}
+
+/* The tick and number slots have no items yet (DESIGN.md §8), so the numbers' look is these
+   defaults (the old starter's values); an item of those slots overrides them on the element. */
+:root {
+  --bi-tick-color: #f3dc9a;
+  --bi-tick-stroke: #2b1a05;
+  --bi-tick-crit: #ffb02e;
+  --bi-tick-size: 22px;
+  --bi-tick-outline: #ffffff;
+  --bi-tick-hurt: #ff4d4d;
+  --bi-tick-gain: #8af06a;
+  --bi-num-font: 'Outfit', 'Segoe UI', sans-serif;
+  --bi-num-weight: 600;
+  --bi-num-color: #e9eef7;
 }

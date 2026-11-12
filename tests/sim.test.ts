@@ -114,11 +114,11 @@ describe('balance sim: greedy buyer', () => {
 
   it('upgrades a cosmetic once it has the copy and the material, and equips it', () => {
     const state = freshState();
-    state.cosmetics.owned['holo_hex'] = { level: 1, copies: 1 };
+    state.cosmetics.owned['gilded_plate'] = { level: 1, copies: 1 };
     state.resources['glimmer_dust'] = new Decimal(1000);
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought).toContain('cosmetic:holo_hex');
-    expect(after.cosmetics.owned['holo_hex']!.level).toBe(2);
+    expect(bought).toContain('cosmetic:gilded_plate');
+    expect(after.cosmetics.owned['gilded_plate']!.level).toBe(2);
     expect(MILESTONES.find((m) => m.id === 'max_cosmetic')?.pending).toBeUndefined();
   });
 
@@ -269,7 +269,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
 
   it('saves the Glimmer Dust for the cosmetic closest to its top level', () => {
     const state = freshState();
-    state.cosmetics.owned['holo_hex'] = { level: 2, copies: 1 }; // next step: accent, 600 Dust
+    state.cosmetics.owned['gilded_plate'] = { level: 2, copies: 1 }; // next step: accent, 600 Dust
     state.cosmetics.owned['holo_waves'] = { level: 1, copies: 1 }; // next step: shape, 300 Dust
     state.resources['glimmer_dust'] = new Decimal(400);
     const { bought } = greedyBuy(state, content);
@@ -348,7 +348,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
       state.cosmetics.owned[c.id] = { level: 1, copies: 0 };
     }
     const { state: after } = greedyBuy(state, content);
-    expect(after.cosmetics.loadout.slots['attack']?.id).toBe('gt_attack');
+    expect(after.cosmetics.loadout.slots['border']?.id).toBe('gt_border');
   });
 });
 
@@ -389,7 +389,7 @@ describe('balance sim: where to fight', () => {
   it('farms the cleared Glimmer Trial for cosmetic materials only within its time share', () => {
     const state = freshState();
     state.clearedDungeons = ['mossy_cellar', 'ember_crypt', 'glimmer_trial'];
-    state.cosmetics.owned['holo_hex'] = { level: 1, copies: 1 };
+    state.cosmetics.owned['gilded_plate'] = { level: 1, copies: 1 };
     expect(chooseDungeon(state, content, { trialShare: 0 })).toBe('glimmer_trial');
     expect(chooseDungeon(state, content, { trialShare: 0.9 })).not.toBe('glimmer_trial');
   });
@@ -553,8 +553,8 @@ describe('balance sim: run', () => {
     };
     state.cards.owned['moonwood_dryad']!.tier = 'prismatic'; // Mythic: it can go on to T6
     state.cards.owned['moonwood_dryad']!.stars = 6;
-    state.cosmetics.owned['holo_hex'] = {
-      level: cosmeticMaxLevel(content, content.cosmeticById.get('holo_hex')!),
+    state.cosmetics.owned['gilded_plate'] = {
+      level: cosmeticMaxLevel(content, content.cosmeticById.get('gilded_plate')!),
       copies: 0,
     };
     expect(exhausted.reached(state, content, log)).toBe(false);

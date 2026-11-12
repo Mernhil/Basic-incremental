@@ -4,7 +4,6 @@ import {
   buyTreeLevels,
   buyUpgrade,
   collectModifiers,
-  defaultRng,
   producersOf,
   productionStageView,
   unlockTree,
@@ -43,10 +42,9 @@ import { hide as hideTip } from '../../shell/tooltip';
 import { centreOf, flyCoins } from '../../stage/fly';
 import { createWorkerCell, type WorkerCell } from '../../stage/harvestParty';
 import { createThrottle, popText } from '../../stage/math';
-import { flash, reducedMotion, replay, shake, slowDown } from '../../stage/motion';
+import { flash, replay, shake, slowDown } from '../../stage/motion';
 import { popGain, popNumber } from '../../stage/numbers';
 import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
-import { playHit } from '../../theme/effects';
 import {
   buyCount,
   createBuyButton,
@@ -560,14 +558,6 @@ export function createJobView(
     const look = lookAt(m.kind);
     ref.worker.strike(look);
     replay(ref.art, 'is-harvest', 400);
-    const fx = ref.tile.querySelector<HTMLElement>('.pp-fx');
-    if (fx && view.attackEffect && !reducedMotion()) {
-      try {
-        playHit(view.attackEffect, fx, { rng: defaultRng, target: ref.art });
-      } catch {
-        /* an unknown effect id must not stop the harvest */
-      }
-    }
     if (look.shake || m.crit) shake(places);
     const r = ref.tile.getBoundingClientRect();
     const x = (r.left + r.width / 2 - box.left) / box.width;

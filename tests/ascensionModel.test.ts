@@ -74,7 +74,7 @@ describe('ascension gate', () => {
     const v = gateView(ascensionPreview(r.state, content), r.state, content);
     expect(v.nth).toBe('Ascension 2');
     expect(v.canAscend).toBe(false);
-    expect(v.rewards.map((x) => x.id)).toEqual(['aurora_veil']);
+    expect(v.rewards.map((x) => x.id)).toEqual(['nodes_c']);
   });
 });
 

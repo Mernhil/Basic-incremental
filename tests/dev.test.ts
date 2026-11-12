@@ -101,11 +101,11 @@ describe('dev cheats (dev builds only)', () => {
   });
 
   it('grants a cosmetic (new, then a copy)', () => {
-    const once = devGrantCosmetic(freshState(), content, 'holo_hex');
-    expect(once.ok && once.state.cosmetics.owned['holo_hex']).toEqual({ level: 1, copies: 0 });
+    const once = devGrantCosmetic(freshState(), content, 'gilded_plate');
+    expect(once.ok && once.state.cosmetics.owned['gilded_plate']).toEqual({ level: 1, copies: 0 });
     if (!once.ok) return;
-    const twice = devGrantCosmetic(once.state, content, 'holo_hex');
-    expect(twice.ok && twice.state.cosmetics.owned['holo_hex']!.copies).toBe(1);
+    const twice = devGrantCosmetic(once.state, content, 'gilded_plate');
+    expect(twice.ok && twice.state.cosmetics.owned['gilded_plate']!.copies).toBe(1);
     expect(devGrantCosmetic(freshState(), content, 'nothing').ok).toBe(false);
   });
 

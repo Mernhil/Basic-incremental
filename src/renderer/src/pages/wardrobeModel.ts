@@ -127,7 +127,8 @@ export function tryOnLoadout(
 export interface SlotView {
   slot: CosmeticSlot;
   label: string;
-  itemId: string;
+  /** The worn item, or null for a slot with no items yet (it shows as "coming"). */
+  itemId: string | null;
   name: string;
   rarity: Rarity;
   level: number;
@@ -148,6 +149,18 @@ export function slotViews(
   return SLOT_ORDER.map((slot) => {
     const onCard = isCardSlot(slot) && resolved ? resolved.slots[slot] : null;
     const r = onCard ?? global[slot];
+    if (!r) {
+      return {
+        slot,
+        label: t.slots[slot],
+        itemId: null,
+        name: '',
+        rarity: 'common',
+        level: 0,
+        perCard: false,
+        blocked: null,
+      };
+    }
     const blocked = onCard?.blocked ?? null;
     const need = blocked ? wearRankOf(content, blocked.id) : null;
     return {
@@ -265,10 +278,22 @@ export type InventoryFilter = (typeof INVENTORY_FILTERS)[number];
 
 const FILTER_SLOTS: Partial<Record<InventoryFilter, readonly string[]>> = {
   frames: ['border', 'finish'],
-  effects: ['attack', 'tick', 'number'],
+  effects: ['tick', 'number'],
   table: ['table', 'cursor'],
 };
 const CARD_AND_TABLE = new Set(Object.values(FILTER_SLOTS).flat());
+
+/**
+ * The slots with no items yet that a filter chip covers (finish, tick, number today), which the
+ * inventory names as "coming" instead of showing an empty grid. `all` covers every empty slot;
+ * the chips with no slots of their own (worn, upgrade, skins, interface) cover none.
+ */
+export function comingSlots(content: Content, filter: InventoryFilter): CosmeticSlot[] {
+  const covered = filter === 'all' ? SLOT_ORDER : (FILTER_SLOTS[filter] ?? []);
+  return SLOT_ORDER.filter(
+    (slot) => covered.includes(slot) && !content.cosmetics.some((c) => c.slot === slot),
+  );
+}
 
 /** The tiles a filter chip lets through, in the order they came. */
 export function inventoryTiles(tiles: readonly ItemTile[], filter: InventoryFilter): ItemTile[] {
@@ -529,7 +554,7 @@ export function setViews(state: GameState, content: Content): SetView[] {
     count: `${s.equipped}/${s.total}`,
     bonus: s.set.modifiers.map(buffText),
     missing: content.cosmetics
-      .filter((c) => c.set === s.set.id && global[c.slot].cosmetic.id !== c.id)
+      .filter((c) => c.set === s.set.id && global[c.slot]?.cosmetic.id !== c.id)
       .map((c) => c.name),
   }));
 }

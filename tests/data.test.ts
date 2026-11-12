@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import {
   bundledRawContent,
   ContentValidationError,
@@ -363,7 +365,7 @@ describe('card ranks and portals', () => {
     const bad = raw();
     const portal = (bad.portals as PortalRaw[])[0]!;
     portal.cost.resource = 'oak_gem';
-    portal.pool[0]!.itemId = 'holo_hex'; // a cosmetic in a cards portal
+    portal.pool[0]!.itemId = 'gilded_plate'; // a cosmetic in a cards portal
     portal.pool[1]!.itemId = 'missing_card';
     const issues = issuesFor(bad);
     expect(issues.some((i) => i.includes('is tree_gem, expected scroll'))).toBe(true);
@@ -414,12 +416,12 @@ describe('card ranks and portals', () => {
     const gate = (bad.portals as PortalRaw[]).find((p) => p['id'] === 'wardrobe_gate')!;
     gate.pool = (gate.pool as { itemId: string; rarity: string }[])
       .filter((e) => e.itemId !== 'ember_crown')
-      .map((e) => (e.itemId === 'holo_hex' ? { ...e, rarity: 'epic' } : e));
+      .map((e) => (e.itemId === 'gt_border' ? { ...e, rarity: 'epic' } : e));
     const file = bad.achievements as { shardShop: { id: string }[] };
     file.shardShop = file.shardShop.filter((i) => i.id !== 'ember_crown');
     const issues = issuesFor(bad);
     expect(issues.some((i) => i.includes('"ember_crown" has no source'))).toBe(true);
-    expect(issues.some((i) => i.includes('"holo_hex" is rare, not epic'))).toBe(true);
+    expect(issues.some((i) => i.includes('"gt_border" is legendary, not epic'))).toBe(true);
   });
 
   it('checks what achievements and the shard shop name', () => {
@@ -502,15 +504,16 @@ describe('card ranks and portals', () => {
 describe('the starter table defines every table token', () => {
   it('so the screen shell never falls back to a missing value', async () => {
     const { SLOT_TOKENS } = await import('../src/data');
-    const defined = Object.keys(loadContent().starterBySlot.table.levels[0]!.tokens);
+    const defined = Object.keys(loadContent().starterBySlot.table!.levels[0]!.tokens);
     for (const key of SLOT_TOKENS.table) expect(defined).toContain(key);
   });
 
-  it('and the starter tick item defines every tick token (outline, hurt and gain included)', async () => {
+  it('and the tick defaults define every tick token (outline, hurt and gain included)', async () => {
     const { SLOT_TOKENS } = await import('../src/data');
-    const tokens = loadContent().starterBySlot.tick.levels[0]!.tokens;
-    for (const key of SLOT_TOKENS.tick) expect(Object.keys(tokens)).toContain(key);
-    expect(tokens['tick-outline']).toBe('#ffffff');
+    // the tick slot has no items yet: the defaults sit in theme/base.css instead
+    expect(loadContent().starterBySlot.tick).toBeUndefined();
+    const css = readFileSync(resolve(__dirname, '../src/renderer/src/theme/base.css'), 'utf8');
+    for (const key of SLOT_TOKENS.tick) expect(css).toContain(`--bi-${key}:`);
   });
 });
 

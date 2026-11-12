@@ -66,21 +66,6 @@
 .cs > .cs-table {
   position: relative;
 }
-.cs-slash {
-  width: 78%;
-  fill: none;
-  stroke-linecap: round;
-}
-.cs-slash path {
-  stroke: var(--bi-attack-edge, #f3dc9a);
-  stroke-width: 7;
-  filter: drop-shadow(0 0 4px var(--bi-attack-glow, rgba(255, 222, 150, 0.9)));
-}
-.cs-slash .cs-slash__core {
-  stroke: var(--bi-attack-particle, #fff6d6);
-  stroke-width: 2.5;
-  filter: none;
-}
 .cs-tick {
   font-size: calc(var(--cs) * 0.32);
   font-weight: 900;

@@ -46,7 +46,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "holo_hex",
+        "itemId": "gilded_plate",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -128,7 +128,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "holo_waves",
+        "itemId": "nodes_b",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -218,7 +218,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "prism_pointer",
+        "itemId": "starlight_c",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -302,7 +302,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "forge_tick",
+        "itemId": "nodes_c",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -386,7 +386,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "starmap_attack",
+        "itemId": "sticker_c",
         "chance": 0.005,
         "pityThreshold": 200
       },
@@ -470,7 +470,7 @@
     },
     "drops": {
       "rare": {
-        "itemId": "rune_attack",
+        "itemId": "wardrobe_c",
         "chance": 0.005,
         "pityThreshold": 200
       },

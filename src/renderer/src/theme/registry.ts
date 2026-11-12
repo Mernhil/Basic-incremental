@@ -40,7 +40,7 @@ export const BASE_RECIPES = [
   'cursor-prism',
 ] as const;
 
-export const BASE_EFFECTS = ['slash-sparks', 'slash-chips', 'heavy-hit', 'rise'] as const;
+export const BASE_EFFECTS = ['rise'] as const;
 
 export const RECIPES: readonly string[] = [...BASE_RECIPES, ...PIXEL_RECIPES];
 export const EFFECTS: readonly string[] = [...BASE_EFFECTS, ...PIXEL_EFFECTS];

@@ -942,9 +942,8 @@
 /* ===== pixel borders and finishes (beta art batch, DESIGN.md §8, §12) =========================
    Each level of a pixel border or finish is one baked layer on the card's frame grid (183 x 237,
    the frame sprite's grid), placed exactly like the frame. Levels stack like every recipe: the
-   highest level's rule comes last in the generated block below, so it wins. Borders sit above the
-   tier frame (the layers are already cut around the sockets, crest and bottom gem, so the tier
-   ornaments still read on top) and below the rank footer; finishes sit on the finish layer under
+   highest level's rule comes last in the generated block below, so it wins. A worn border replaces the base
+   frame (base.css hides it, DESIGN.md §8), so its layers are the frame; they sit below the rank footer; finishes sit on the finish layer under
    the card text. */
 [class*='r-bd-'] .bi-card__deco {
   z-index: 4;

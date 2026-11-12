@@ -6,7 +6,6 @@ import {
   type CardSlot,
   type Content,
   type Cosmetic,
-  type Job,
   type CosmeticSlot,
   type Rank,
   type Rarity,
@@ -33,7 +32,6 @@ export interface CosmeticLoadout {
 export interface Visual {
   tokens: Record<string, string>;
   recipes: string[];
-  effects?: { fighting: string; mining: string; logging: string };
   effect?: string;
 }
 
@@ -104,7 +102,6 @@ export function levelVisual(cosmetic: Cosmetic, level: number): Visual {
     for (const recipe of step.recipes) {
       if (!visual.recipes.includes(recipe)) visual.recipes.push(recipe);
     }
-    if (step.effects) visual.effects = step.effects;
     if (step.effect) visual.effect = step.effect;
   }
   return visual;
@@ -117,7 +114,7 @@ export function levelVisual(cosmetic: Cosmetic, level: number): Visual {
 export function slotVisual(content: Content, cosmetic: Cosmetic, level: number): Visual {
   const own = levelVisual(cosmetic, level);
   const starter = content.starterBySlot[cosmetic.slot];
-  if (starter.id === cosmetic.id) return own;
+  if (!starter || starter.id === cosmetic.id) return own;
   return { ...own, tokens: { ...levelVisual(starter, 1).tokens, ...own.tokens } };
 }
 
@@ -209,25 +206,36 @@ export function sanitizeLoadout(content: Content, loadout: CosmeticLoadout): Cos
 
 // ---- resolving ------------------------------------------------------------------------------
 
-function resolveEquipped(content: Content, slot: CosmeticSlot, eq: Equipped | undefined) {
+/** What a slot shows: the worn item, else the slot's starter. Null for a slot with no items yet. */
+function resolveEquipped(
+  content: Content,
+  slot: CosmeticSlot,
+  eq: Equipped | undefined,
+): { cosmetic: Cosmetic; level: number } | null {
   const starter = content.starterBySlot[slot];
   const cosmetic = (eq && content.cosmeticById.get(eq.id)) || starter;
+  if (!cosmetic) return null;
   const level =
     cosmetic === starter ? 1 : Math.min(eq?.level ?? 1, cosmeticMaxLevel(content, cosmetic));
   return { cosmetic, level };
 }
 
-/** Every slot as chosen globally (card slots here are the default for cards). */
-export function resolveGlobal(
-  content: Content,
-  loadout: CosmeticLoadout,
-): Record<CosmeticSlot, ResolvedSlot> {
-  const out = {} as Record<CosmeticSlot, ResolvedSlot>;
+export type ResolvedGlobal = Record<FilledSlot, ResolvedSlot> &
+  Partial<Record<CosmeticSlot, ResolvedSlot>>;
+
+/**
+ * Every slot as chosen globally (card slots here are the default for cards). A slot with no items
+ * yet (finish, tick, number) is left out.
+ */
+export function resolveGlobal(content: Content, loadout: CosmeticLoadout): ResolvedGlobal {
+  const out: Partial<Record<CosmeticSlot, ResolvedSlot>> = {};
   for (const slot of COSMETIC_SLOTS) {
-    const { cosmetic, level } = resolveEquipped(content, slot, loadout.slots[slot]);
+    const resolved = resolveEquipped(content, slot, loadout.slots[slot]);
+    if (!resolved) continue;
+    const { cosmetic, level } = resolved;
     out[slot] = { slot, cosmetic, level, visual: slotVisual(content, cosmetic, level), worn: true };
   }
-  return out;
+  return out as ResolvedGlobal;
 }
 
 export interface CardContext {
@@ -236,8 +244,13 @@ export interface CardContext {
   rarity: Rarity;
 }
 
+/** The slots that always have items; the others (finish, tick, number) are empty categories until their new batch. */
+export type FilledSlot = Exclude<CosmeticSlot, 'finish' | 'tick' | 'number'>;
+
 export interface ResolvedCard {
-  slots: Record<CardSlot, ResolvedSlot>;
+  /** The card slots that have items (today the border). */
+  slots: Record<Extract<CardSlot, FilledSlot>, ResolvedSlot> &
+    Partial<Record<CardSlot, ResolvedSlot>>;
   /** CSS custom properties for this card: card-slot tokens plus rarity tokens. */
   vars: Record<string, string>;
   /** Recipe class names for this card (card slots and rarity). */
@@ -253,13 +266,15 @@ export function resolveCard(
   loadout: CosmeticLoadout,
   card: CardContext,
 ): ResolvedCard {
-  const slots = {} as Record<CardSlot, ResolvedSlot>;
+  const slots: Partial<Record<CardSlot, ResolvedSlot>> = {};
   const vars: Record<string, string> = {};
   const recipes: string[] = [];
 
   for (const slot of CARD_SLOTS) {
     const chosen = loadout.cards[card.id]?.[slot] ?? loadout.slots[slot];
-    let { cosmetic, level } = resolveEquipped(content, slot, chosen);
+    const resolved = resolveEquipped(content, slot, chosen);
+    if (!resolved) continue;
+    let { cosmetic, level } = resolved;
     let worn = true;
     let blocked: Cosmetic | undefined;
     const needs = wearRequirement(content, cosmetic);
@@ -267,7 +282,7 @@ export function resolveCard(
     if (wrongCard || (needs && !meetsRank(card.rank, needs))) {
       blocked = cosmetic;
       worn = false;
-      cosmetic = content.starterBySlot[slot];
+      cosmetic = content.starterBySlot[slot]!;
       level = 1;
     }
     const visual = slotVisual(content, cosmetic, level);
@@ -281,48 +296,35 @@ export function resolveCard(
     Object.assign(vars, cssVars(rarity.tokens, 'rarity-'));
     recipes.push(...rarity.recipes);
   }
-  return { slots, vars, recipes: [...new Set(recipes)] };
+  return { slots: slots as ResolvedCard['slots'], vars, recipes: [...new Set(recipes)] };
 }
 
-/**
- * The attack animation id the equipped attack cosmetic uses for a job (DESIGN.md §4): logging
- * and mining cards strike with the same cosmetic slot as fighting cards, each job has its own
- * variant. Null when the item lists none.
- */
-export function jobAttackEffect(
-  content: Content,
-  loadout: CosmeticLoadout,
-  job: Job,
-): string | null {
-  const { cosmetic, level } = resolveEquipped(content, 'attack', loadout.slots.attack);
-  return levelVisual(cosmetic, level).effects?.[job] ?? null;
-}
-
-/** The equipped tick animation id and number style id, for a job's floating "+n" (same for every job). */
+/** The equipped tick animation id and number style id, for a job's floating "+n" (same for every job). Null for a slot with no items yet. */
 export function jobNumberStyle(
   content: Content,
   loadout: CosmeticLoadout,
-): { tick: string; tickEffect: string | null; number: string } {
+): { tick: string | null; tickEffect: string | null; number: string | null } {
   const tick = resolveEquipped(content, 'tick', loadout.slots.tick);
   const number = resolveEquipped(content, 'number', loadout.slots.number);
   return {
-    tick: tick.cosmetic.id,
-    tickEffect: levelVisual(tick.cosmetic, tick.level).effect ?? null,
-    number: number.cosmetic.id,
+    tick: tick?.cosmetic.id ?? null,
+    tickEffect: tick ? (levelVisual(tick.cosmetic, tick.level).effect ?? null) : null,
+    number: number?.cosmetic.id ?? null,
   };
 }
 
-/** CSS custom properties for the global (non-card) look: table, numbers, ticks, attack, cursor. */
-export function globalVars(resolved: Record<CosmeticSlot, ResolvedSlot>): {
+/** CSS custom properties for the global (non-card) look: table, numbers, ticks, cursor. */
+export function globalVars(resolved: Partial<Record<CosmeticSlot, ResolvedSlot>>): {
   vars: Record<string, string>;
   recipes: string[];
 } {
   const vars: Record<string, string> = {};
   const recipes: string[] = [];
   for (const slot of COSMETIC_SLOTS) {
-    if (isCardSlot(slot)) continue;
-    Object.assign(vars, cssVars(resolved[slot].visual.tokens));
-    recipes.push(...resolved[slot].visual.recipes);
+    const r = resolved[slot];
+    if (isCardSlot(slot) || !r) continue;
+    Object.assign(vars, cssVars(r.visual.tokens));
+    recipes.push(...r.visual.recipes);
   }
   return { vars, recipes };
 }
@@ -351,7 +353,7 @@ export function detectSets(content: Content, loadout: CosmeticLoadout): SetStatu
     if (c.set) sets.set(c.set, [...(sets.get(c.set) ?? []), c]);
   }
   return [...sets].map(([set, items]) => {
-    const equipped = items.filter((item) => resolved[item.slot].cosmetic.id === item.id).length;
+    const equipped = items.filter((item) => resolved[item.slot]?.cosmetic.id === item.id).length;
     return { set, equipped, total: items.length, complete: equipped === items.length };
   });
 }
@@ -376,10 +378,7 @@ export function missingVisuals(
     c.levels.forEach((level, i) => {
       const where = `cosmetic "${c.id}" level ${i + 1}`;
       checkRecipes(where, level.recipes);
-      const effects = [
-        ...(level.effects ? Object.values(level.effects) : []),
-        ...(level.effect ? [level.effect] : []),
-      ];
+      const effects = level.effect ? [level.effect] : [];
       for (const e of effects) {
         if (!known.effects.has(e)) problems.push(`${where}: unknown effect "${e}"`);
       }
