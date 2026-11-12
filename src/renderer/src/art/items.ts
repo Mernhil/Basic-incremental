@@ -89,7 +89,8 @@ export function itemArt(
 /**
  * The item picture of a card at a tier: the one call a card face, tile or preview makes. A card with
  * its own Heirloom (`heirloomArt` in cards.json, DESIGN.md §5 More weapons from the Heirloom
- * candidates) shows it at the Heirloom tier; below it, and for every card without one, the type's
+ * candidates) shows it at every tier, as the placeholder for its other upgrades in place of the
+ * type's wooden to Mythic pictures (user, 2026-11-13); every card without one shows the type's
  * tier pictures and original Heirloom (`itemArt` with the card's rarity as its side). `step` is the
  * look inside the tier (`lookStep` from the card's stars); the Next tier preview leaves it at BASE.
  */
@@ -98,5 +99,7 @@ export function cardTierArt(
   tier?: RankTier,
   step = 0,
 ): string {
-  return itemArt(card.item.kind, card.rarity, tier, card.rarity, card.heirloomArt, step);
+  // a card's own weapon is its picture at every tier until its other upgrades are drawn
+  const shown = card.heirloomArt ? 'heirloom' : tier;
+  return itemArt(card.item.kind, card.rarity, shown, card.rarity, card.heirloomArt, step);
 }
