@@ -742,46 +742,127 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   font-weight: 800;
 }
 
-/* the skill plates: compact, sliding in from the left beside the enemy, never over it */
+/* the skill banners: a slanted banner sliding in from the left with the weapon, the card, the
+   skill's name large and what it does (the user's fight prototype); two at most */
 .du-plates {
   position: absolute;
-  top: 48%;
-  right: calc(100% + 22px);
+  top: calc(var(--du-top) + 200px);
+  left: 0;
+  z-index: 5;
+  font-size: clamp(11px, min(1.05cqw, 2.2cqh), 20px);
   display: grid;
-  justify-items: end;
-  gap: 6px;
+  gap: 10px;
   pointer-events: none;
 }
 .du-skill {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  box-sizing: border-box;
+  width: 28em;
+  max-width: 60cqw;
+  padding: 0.4em 0.9em 0.4em 0.6em;
+  border-radius: 0 14px 14px 0;
+  transform: rotate(-4deg);
+  transform-origin: 0 50%;
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--du-c), #0d0b14 30%, #0d0b14 86%, transparent);
+}
+.du-skill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    90deg,
+    transparent 0 46px,
+    rgb(255 255 255 / 0.14) 46px 50px
+  );
+}
+.du-skill--heal {
+  --du-c: var(--du-green);
+}
+.du-skill__icon {
+  position: relative;
+  flex: none;
+  width: 2.4em;
+  height: 3em;
+  filter: drop-shadow(0 0 10px var(--du-c));
+}
+.du-skill__icon > * {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 200px;
+  height: 240px;
+  transform: scale(0.25);
+  transform-origin: 0 0;
+}
+@container (max-width: 1400px) {
+  .du-skill__icon > * {
+    transform: scale(0.18);
+  }
+}
+@container (max-width: 900px) {
+  .du-skill__icon > * {
+    transform: scale(0.14);
+  }
+}
+.du-skill__text {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: 1px;
-  padding: 4px 10px;
-  min-width: 120px;
-  max-width: 190px;
-  font-size: 12px;
-  --px-edge: var(--du-c);
+  min-width: 0;
 }
-html .du-skill:not(#_px) {
-  --px-top: var(--du-c);
-}
-html .du-skill--heal:not(#_px) {
-  --px-bg: color-mix(in srgb, var(--du-green) 22%, var(--px-body));
+.du-skill__who {
+  font-size: 0.65em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--du-c);
 }
 .du-skill b {
-  font-size: 13px;
+  font-family: var(--bi-font-display);
+  font-size: 2.2em;
+  font-style: italic;
+  font-weight: 900;
+  line-height: 1.1;
+  color: #fff;
+  white-space: nowrap;
+  text-shadow:
+    0 3px 0 #000,
+    0 0 18px var(--du-c);
+}
+.du-skill__desc {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: #e8e2d4;
+}
+.du-skill__times {
+  font-size: 0.6em;
   font-weight: 800;
   color: var(--du-c);
 }
-.du-skill--heal b {
-  color: var(--du-green);
+
+/* CRIT! and BREAK!: words that pop in big on the enemy card, settle and fade */
+.du-word {
+  position: absolute;
+  z-index: 6;
+  pointer-events: none;
+  font-family: var(--bi-font-display);
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: 2px;
+  white-space: nowrap;
+  -webkit-text-stroke: 0.14em #000;
+  paint-order: stroke fill;
 }
-.du-skill__who {
-  font-size: 11px;
-  color: var(--px-muted);
+.du-word--crit {
+  font-size: clamp(22px, min(3cqw, 6cqh), 58px);
+  color: #ff7fb0;
 }
-.du-skill__times {
-  font-size: 11px;
-  font-weight: 800;
+.du-word--break {
+  font-size: clamp(26px, min(3.8cqw, 7.6cqh), 74px);
+  color: var(--du-gold);
 }
 
 /* the face-down deck of the enemies to come, right of the enemy */
@@ -847,47 +928,77 @@ html .du-skill--heal:not(#_px) {
 }
 
 /* ---- the stat sheet ---- */
+/* every size in the sheet is in em, and the font follows the duel (width and height), so it
+   shrinks with the window: 20px in a 1920 px duel, 11px in the table's window */
 .du-sheet {
   position: absolute;
   top: var(--du-top);
   right: 16px;
   z-index: 3;
-  width: clamp(150px, 21cqw, 220px);
-  padding: 8px 10px 10px;
+  width: 21em;
+  max-width: 44cqw;
+  padding: 0.7em 0.9em 0.8em;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: clamp(11px, min(1.05cqw, 2.2cqh), 20px);
 }
 .du-sheet__title {
-  margin: 0 0 6px;
+  margin: 0 0 0.45em;
   font-family: var(--bi-font-display);
-  font-size: 14px;
+  font-size: 1.3em;
   color: var(--du-gold);
 }
 .du-sheet__rows {
   display: grid;
-  gap: 5px;
-  margin: 0 0 8px;
+  gap: 0.8em;
+  margin: 0 0 0.7em;
   padding: 0;
   list-style: none;
 }
+/* a round health gauge per card, then its name, damage and share bar */
 .du-sheet__row {
   display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2px 6px;
+  grid-template-columns: 2.7em 1fr auto;
+  align-items: center;
+  gap: 0.15em 0.6em;
 }
-.du-sheet__name {
+.du-sheet__row::before {
+  content: attr(data-hp);
+  grid-column: 1;
+  grid-row: 1 / 3;
+  display: grid;
+  place-items: center;
+  width: 2.7em;
+  height: 2.7em;
+  border-radius: 50%;
+  font-size: 0.65em;
+  font-weight: 800;
+  background:
+    radial-gradient(circle, var(--px-lo) 0 57%, transparent 58%),
+    conic-gradient(var(--du-c) calc(var(--hp, 100) * 1%), rgb(255 255 255 / 0.14) 0);
+}
+.du-sheet__row.is-out::before {
+  filter: grayscale(1);
+  opacity: 0.6;
+}
+.du-sheet__row > .du-sheet__name {
+  grid-column: 2;
+  grid-row: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.du-sheet__num {
+.du-sheet__row > .du-sheet__num {
+  grid-column: 3;
+  grid-row: 1;
+  font-size: 1.1em;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 .du-sheet__row > i {
-  grid-column: 1 / -1;
+  grid-column: 2 / -1;
+  grid-row: 2;
   display: block;
-  height: 4px;
+  height: max(4px, 0.3em);
   background: var(--du-c);
   transform-origin: left;
   transform: scaleX(0);
@@ -896,24 +1007,17 @@ html .du-skill--heal:not(#_px) {
 .du-sheet__foot {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 2px 6px;
+  gap: 0.4em 0.6em;
   margin: 0;
-  padding-top: 6px;
+  padding-top: 0.6em;
   border-top: var(--fs-sm) solid var(--px-lo);
   color: var(--px-muted);
 }
 .du-sheet__foot dd {
   margin: 0;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
   color: var(--px-ink);
-}
-@container (max-width: 900px) {
-  .du-sheet {
-    width: 164px;
-    font-size: 11px;
-  }
-  .du-sheet__title {
-    font-size: 13px;
-  }
 }
 
 /* ---- the hand: four cards along the bottom, close, whole inside the window ---- */
@@ -999,45 +1103,6 @@ html .du-skill--heal:not(#_px) {
   inset: 0;
   background: rgb(10 8 14 / 0.45);
   mix-blend-mode: normal;
-}
-.du-card__hp {
-  position: absolute;
-  left: calc(var(--du-u) * 6);
-  right: calc(var(--du-u) * 6);
-  top: calc(var(--du-u) * -9);
-  z-index: 3;
-  height: calc(var(--du-u) * 4);
-  min-height: 4px;
-  background: var(--px-lo);
-  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
-}
-.du-card__hp > i {
-  display: block;
-  height: 100%;
-  background: var(--du-green);
-}
-.du-card__hp[data-level='mid'] > i {
-  background: var(--du-gold);
-}
-.du-card__hp[data-level='low'] > i {
-  background: var(--bi-hp-0);
-}
-/* the bar spans the part of the card that shows (the next card covers its right edge) */
-.du-card:not(:last-child) .du-card__hp {
-  right: calc(var(--du-u) * 26);
-}
-.du-card.is-out .du-card__hp {
-  opacity: 0.4;
-}
-.du-tag--card {
-  top: calc(var(--du-u) * -27);
-  right: calc(var(--du-u) * 4);
-  padding: 3px 4px;
-  background: color-mix(in srgb, var(--du-c) 30%, var(--px-lo));
-  box-shadow: 0 0 0 var(--fs-sm) var(--du-c);
-}
-.du-tag--card:empty {
-  display: none;
 }
 /* the card the enemy hits next: a small red marker over it */
 .du-card__mark {
