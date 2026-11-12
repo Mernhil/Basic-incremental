@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import type { Content } from '../src/data';
+import { loadContent, type Content } from '../src/data';
 import rawCombat from '../src/data/content/combat.json';
 import rawDungeons from '../src/data/content/dungeons.json';
 import { combatSchema, dungeonSchema } from '../src/data/schemas';
@@ -26,6 +26,7 @@ import {
   parseStageKey,
   readSave,
   floorChallengeView,
+  floorGrowth,
   initialProgress,
   nextFloorChallenge,
   setActiveDungeon,
@@ -105,6 +106,30 @@ describe('what a floor holds', () => {
     // ... and the floors differ from each other somewhere down the dungeon.
     const all = Array.from({ length: 9 }, (_, i) => names(i + 1).join(','));
     expect(new Set(all).size).toBeGreaterThan(1);
+  });
+
+  it('climbs Dungeons 4 to 6 at their own gentler floor rate, the others at hpGrowth (DESIGN.md §3 Ladders)', () => {
+    const shipped = loadContent();
+    const { hpGrowth } = shipped.combat.floors;
+    for (const dungeon of shipped.dungeons) {
+      const rate = floorGrowth(shipped, dungeon);
+      const late = ['thunderpeak_aerie', 'sunken_sanctum', 'void_hollow'].includes(dungeon.id);
+      if (late) expect(rate).toBeLessThan(hpGrowth);
+      else expect(rate).toBe(hpGrowth);
+      const at = (floor: number, difficulty: 'normal' | 'endless' = 'normal') =>
+        floorSpec(shipped, dungeon, difficulty, floor);
+      expect(at(2).hp.div(at(1).hp).toNumber()).toBeCloseTo(rate, 9);
+      expect(at(2, 'endless').hp.div(at(1, 'endless').hp).toNumber()).toBeCloseTo(rate, 9);
+      expect(at(dungeon.floors).hp.eq(dungeon.boss.hp)).toBe(true);
+    }
+    // The first floor of each later dungeon sits above the boss before it, not below.
+    for (let i = 3; i < shipped.dungeons.length; i++) {
+      const dungeon = shipped.dungeons[i]!;
+      const worth = dungeon.boss.hp.div(
+        Decimal.pow(floorGrowth(shipped, dungeon), dungeon.floors - 1),
+      );
+      expect(worth.gt(shipped.dungeons[i - 1]!.boss.hp)).toBe(true);
+    }
   });
 
   it('grows the floors at one steady rate that ends on the boss as the data has it', () => {

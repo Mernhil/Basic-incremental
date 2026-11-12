@@ -3,6 +3,7 @@ import {
   allGoals,
   curveBulkPrice,
   Decimal,
+  fightStage,
   incomePerSecond,
   newOwnedCard,
   nextGoals,
@@ -39,8 +40,15 @@ describe('incomePerSecond', () => {
   it('counts the active dungeon drops per kill and its wages per second', () => {
     const state = fighter();
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
-    // Moss Cores: 10% of 1 per kill.
-    expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
+    // Moss Cores: the boss's chance and amount, at the floor's share of the boss's HP.
+    const moss = content.dungeonById.get('mossy_cellar')!.drops.material;
+    const worth = fightStage(state, content, 'mossy_cellar')!.enemies.reduce(
+      (sum, e) => sum + e.dropScale,
+      0,
+    );
+    expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(
+      (moss.chance * moss.amount * worth) / spk,
+    );
     // Scrolls come in lumps, never as income (DESIGN.md §3).
     expect(incomePerSecond(state, content, 'summon_scroll').toNumber()).toBe(0);
   });

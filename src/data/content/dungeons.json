@@ -37,10 +37,10 @@
       "art": "root_warden",
       "weakness": "fire",
       "resistance": "nature",
-      "hp": "70000",
+      "hp": "98000",
       "hpBars": 5,
       "attack": {
-        "damage": "62",
+        "damage": "58.9",
         "intervalSeconds": 3
       }
     },
@@ -69,14 +69,14 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 5430,
-          "max": 8170
+          "min": 7602,
+          "max": 11438
         }
       ],
       "extraMaterials": [],
       "material": {
         "resource": "moss_core",
-        "chance": 0.5,
+        "chance": 0.7,
         "amount": 1
       }
     }
@@ -119,10 +119,10 @@
       "art": "cinder_lich",
       "weakness": "light",
       "resistance": "fire",
-      "hp": "3500000",
+      "hp": "5600000",
       "hpBars": 8,
       "attack": {
-        "damage": "2560",
+        "damage": "1920",
         "intervalSeconds": 2.5
       }
     },
@@ -146,8 +146,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 272000,
-          "max": 406000
+          "min": 435200,
+          "max": 649600
         }
       ],
       "extraMaterials": [
@@ -166,7 +166,7 @@
       ],
       "material": {
         "resource": "cinder_core",
-        "chance": 0.4,
+        "chance": 0.64,
         "amount": 1
       }
     }
@@ -209,10 +209,10 @@
       "art": "glacier_colossus",
       "weakness": "storm",
       "resistance": "crystal",
-      "hp": "480000000",
+      "hp": "648000000",
       "hpBars": 12,
       "attack": {
-        "damage": "281000",
+        "damage": "225000",
         "intervalSeconds": 2
       }
     },
@@ -236,8 +236,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 37200000,
-          "max": 55900000
+          "min": 50220000,
+          "max": 75465000
         }
       ],
       "extraMaterials": [
@@ -249,7 +249,7 @@
       ],
       "material": {
         "resource": "frost_core",
-        "chance": 0.6,
+        "chance": 0.81,
         "amount": 2
       }
     }
@@ -260,6 +260,7 @@
     "tier": 4,
     "unlockedBy": "frostspire_vault",
     "floors": 40,
+    "floorGrowth": 1.02,
     "enemies": [
       {
         "id": "spark_wisp",
@@ -292,10 +293,10 @@
       "sprite": "abyssal_anchor_leviathan",
       "weakness": "earth",
       "resistance": "storm",
-      "hp": "1950000000",
+      "hp": "3020000000",
       "hpBars": 12,
       "attack": {
-        "damage": "1140000",
+        "damage": "684000",
         "intervalSeconds": 2
       }
     },
@@ -319,8 +320,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 151000000,
-          "max": 227000000
+          "min": 234050000,
+          "max": 351850000
         }
       ],
       "extraMaterials": [
@@ -332,7 +333,7 @@
       ],
       "material": {
         "resource": "storm_core",
-        "chance": 0.6,
+        "chance": 0.93,
         "amount": 3
       }
     }
@@ -343,6 +344,7 @@
     "tier": 5,
     "unlockedBy": "thunderpeak_aerie",
     "floors": 50,
+    "floorGrowth": 1.02,
     "enemies": [
       {
         "id": "lantern_moth",
@@ -375,10 +377,10 @@
       "sprite": "sanctuary_archangel",
       "weakness": "void",
       "resistance": "light",
-      "hp": "9000000000",
+      "hp": "15300000000",
       "hpBars": 12,
       "attack": {
-        "damage": "5270000",
+        "damage": "3160000",
         "intervalSeconds": 2
       }
     },
@@ -402,8 +404,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 699000000,
-          "max": 1050000000
+          "min": 1188300000,
+          "max": 1785000000
         }
       ],
       "extraMaterials": [
@@ -415,7 +417,7 @@
       ],
       "material": {
         "resource": "sanctum_core",
-        "chance": 0.6,
+        "chance": 1,
         "amount": 4
       }
     }
@@ -426,6 +428,7 @@
     "tier": 6,
     "unlockedBy": "sunken_sanctum",
     "floors": 60,
+    "floorGrowth": 1.02,
     "enemies": [
       {
         "id": "shade_mote",
@@ -458,10 +461,10 @@
       "sprite": "faceless_void_reaper",
       "weakness": "light",
       "resistance": "void",
-      "hp": "32000000000",
+      "hp": "51200000000",
       "hpBars": 12,
       "attack": {
-        "damage": "18700000",
+        "damage": "12200000",
         "intervalSeconds": 2
       }
     },
@@ -485,8 +488,8 @@
       "currencies": [
         {
           "resource": "money",
-          "min": 2480000000,
-          "max": 3710000000
+          "min": 3968000000,
+          "max": 5936000000
         }
       ],
       "extraMaterials": [
@@ -498,7 +501,7 @@
       ],
       "material": {
         "resource": "void_core",
-        "chance": 0.6,
+        "chance": 0.96,
         "amount": 5
       }
     }
