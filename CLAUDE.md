@@ -31,7 +31,7 @@ Windows desktop incremental game (Electron + TypeScript, repo https://github.com
 9. Save format changes always need a version bump and a migration.
 10. Verify changes (lint, tests, build, and a run or screenshot for UI) before saying something is done.
 
-Optional helpers: `.claude/agents/` holds `ui`, `pixel-art` and `mechanics` agents and `.claude/skills/pixel-art/` the pixel-art skill. Use them when they save time; nothing requires routing through them. PixelLab (the `pixellab` MCP server) is the default tool for art; free asset packs the user picked are allowed too (user, 2026-11-11: "only more of a suggestion"), each listed in `src/data/content/credits.json` with its licence. If PixelLab's tools are not loaded in the session, do that art in a session that has them.
+Optional helpers: `.claude/agents/` holds `ui`, `pixel-art` and `mechanics` agents and `.claude/skills/pixel-art/` the pixel-art skill. Use them when they save time; nothing requires routing through them. The default art source is the user's own pictures (ChatGPT, Gemini), used as they are: cut out, background removed, scaled to fit, never converted to a pixel grid, redrawn or recoloured (user, 2026-11-12: "no need for pixelart conversion any more"; `docs/ASSET_RULES.md` §5 Straight pictures). Free asset packs the user picked are allowed too (user, 2026-11-11), each listed in `src/data/content/credits.json` with its licence. PixelLab (the `pixellab` MCP server) is only for art the user has no picture for and says may be made that way; it costs the user money, so ask first.
 
 ## GitHub workflow
 

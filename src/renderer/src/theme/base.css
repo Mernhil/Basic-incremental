@@ -365,6 +365,14 @@ body {
   background: none;
   box-shadow: none;
 }
+/* a straight picture (art/items.ts FULL_ART_BOX) is a canvas of the whole card: full art, the frame and
+   the plates stay on top */
+.bi-card--fullart:not(.bi-card--boss) .bi-card__art {
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
 .bi-card:not(.bi-card--boss) .bi-card__head {
   position: absolute;
   top: 10px;
