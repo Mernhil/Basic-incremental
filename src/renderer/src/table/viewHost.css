@@ -80,6 +80,9 @@
 .vh-body > .shell-page.shell-page--stage {
   margin: -4px -26px -40px;
   height: calc(100vh - var(--header-h, 64px) - var(--view-bar-h));
+  /* a stage page fills the view at any window size (the generic page cap of 1400px would leave
+     the duel left of centre on a wide screen) */
+  max-width: none;
 }
 .vh-body > .shell-page.shell-page--cards {
   height: calc(100vh - var(--header-h, 64px) - var(--view-bar-h) - 24px);
