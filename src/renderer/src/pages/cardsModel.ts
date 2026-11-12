@@ -215,7 +215,31 @@ export function slotChoices(
 export type ModelResult =
   { ok: true; state: GameState; tierUps?: TierUp[] } | { ok: false; reason: string };
 
+/**
+ * One stop of the Next tier preview (UI_RULES §2, DESIGN §5): a tier's picture and item name for
+ * a card. View state only; the card, its stats and the save never change.
+ */
+export interface TierPreview {
+  /** Stops in the cycle, the card's own tier first; 1 means there is nothing to preview. */
+  count: number;
+  /** This stop, 0 = the card's own tier. */
+  index: number;
+  /** True at the card's own tier. */
+  own: boolean;
+  /** The tier's on-screen name ("Gold", "Void" for a Void card's T6). */
+  tierName: string;
+  /** The item's name at that tier ("Prismatic Dancer Sword"). */
+  itemName: string;
+  /** The picture markup (art/items.ts), in the item box. */
+  item: string;
+  /** The name of the card's own tier, for the "back" label. */
+  ownTierName: string;
+}
+
 export interface CardsModel {
+  /** The preview stop `step` presses after the card's own tier (wraps round), or null when the
+   *  card has no higher tier to show. Works for cards not found yet (they start at Wood). */
+  preview(state: GameState, id: string, step: number): TierPreview | null;
   entries(state: GameState): CardEntry[];
   /** One card's entry (cheaper than `entries` when a panel follows a single card), or null. */
   entry(state: GameState, id: string): CardEntry | null;
