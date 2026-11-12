@@ -114,7 +114,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
   - The duel fills the dungeon window on the table and the dungeon full view, the same fight moved between them so it never restarts; its background comes from the dungeon (DESIGN.md §6).
   - Top centre: a plate with the dungeon, the floor and, during a Challenge, its time left; under it a pip per enemy of the floor, the boss's pip a gold diamond.
   - The enemy being fought is one card at the top centre: its name, its picture, its stacked HP bar with ×N bars left, and a gold frame for the boss. The damage tag sits on its top left with the hit feed to the tag's left, and the face-down deck of the enemies to come to its right.
-  - The hand of four cards along the bottom, close and cut by the bottom edge, each with its health bar and its damage tag.
+  - The hand of four cards along the bottom, close, the whole hand inside the window 8 px above the bottom edge so the name and level plates show (user, 2026-11-12: the hand cut by the bottom edge looked broken), each with its health bar and its damage tag. The cards take the largest whole scale that fits under the enemy card; only a duel too short for the smallest scale cuts the hand.
   - Left column: the difficulty and what the team is doing, floors per minute, damage per second and the team's health; the "You fall in" pill under them.
   - Right: the stat sheet, "This fight".
   - In the dungeon window the duel shows without its controls; in the full view the Challenge button and the auto-challenge switch sit in the left column and the panel buttons at the bottom right.
