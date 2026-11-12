@@ -20,7 +20,7 @@ export type CardElement = (typeof ELEMENTS)[number];
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
- * and pays for tree and mine levels, the upgrade shelf and tier-ups; `crystal` (Summon / Glamour Crystal)
+ * and pays for tree and mine levels, the upgrade shelf and tier-ups; `scroll` (Summon / Glamour Scroll)
  * is the premium tier that pays for summons and is kept through an ascension; `prestige`
  * (Starlight) is the prestige currency, kept too.
  */
@@ -29,8 +29,9 @@ export const RESOURCE_KINDS = [
   'mine_gem',
   'material',
   'currency',
-  'crystal',
   'prestige',
+  /** Summon and Glamour Scrolls (DESIGN.md §3): one scroll pays one pull; kept through an ascension. */
+  'scroll',
 ] as const;
 
 /** A colour as #rrggbb. */
@@ -389,6 +390,8 @@ export const STATS = [
   'stars.damage',
   /** The loot each star level adds on its stage, base 1. Scope: dungeon. */
   'stars.loot',
+  /** Expedition slots (DESIGN.md §15 Expeditions): base 1, the account tree and the Starlight shop add. */
+  'expedition.slots',
 ] as const;
 export type Stat = (typeof STATS)[number];
 
@@ -702,7 +705,23 @@ export const dungeonSchema = z.strictObject({
    * The normal enemies of the dungeon's waves (DESIGN.md §6 Normal enemies). `hpWeight` sets how
    * a wave's HP is shared among its enemies, so each type has its own HP and purse.
    */
-  enemies: z.array(z.strictObject({ id, name, hpWeight: z.number().gt(0).default(1) })).min(1),
+  enemies: z
+    .array(
+      z.strictObject({
+        id,
+        name,
+        hpWeight: z.number().gt(0).default(1),
+        /** The enemy's picture, `foe-<sprite>` in `art/pixel/hand` (ASSET_RULES section 5); none
+         *  shows the plain labelled placeholder. */
+        sprite: id.optional(),
+      }),
+    )
+    .min(1),
+  /**
+   * The mini-boss of every 10th floor (DESIGN.md section 6, The enemy roster): its own character,
+   * not a copy of a normal enemy. It fights with the mini-boss shares of `combat.json` `floors`.
+   */
+  miniBoss: z.strictObject({ id, name, sprite: id.optional() }),
   /**
    * Which arena background this dungeon fights in (DESIGN.md §6, Arena backgrounds). Optional: a
    * dungeon without one, or with an id the renderer has no art for yet, gets the default brick
@@ -714,6 +733,8 @@ export const dungeonSchema = z.strictObject({
     name,
     /** Which boss drawing to use; a boss without one shows a plain labelled placeholder. */
     art: z.enum(BOSS_ARTS).optional(),
+    /** A boss picture cut from an asset pack (`foe-<sprite>`), used when there is no `art`. */
+    sprite: id.optional(),
     /** The boss's weak and resisted elements (DESIGN.md §6 Elements in combat). */
     weakness: z.enum(ELEMENTS),
     resistance: z.enum(ELEMENTS),
@@ -991,6 +1012,18 @@ export const combatSchema = z.strictObject({
   /** How long a knocked-out loadout sits out before the fight restarts (DESIGN.md §6). */
   knockoutSeconds: z.number().gt(0),
   /**
+   * The Challenge (DESIGN.md §6 Farming and Challenge, Auto-challenge): seconds on its timer by
+   * what the floor holds, and how long auto-challenge waits after a loss before it tries again.
+   */
+  challenge: z.strictObject({
+    timerSeconds: z.strictObject({
+      wave: z.number().gt(0),
+      miniboss: z.number().gt(0),
+      boss: z.number().gt(0),
+    }),
+    autoWaitSeconds: z.number().min(0),
+  }),
+  /**
    * How a boss's attacks are shaped (DESIGN.md §6). In every `attacksPerCycle` attacks all but
    * the last are light (`lightMultiplier` of an attack's damage) and the last is a slam
    * (`slamMultiplier`). A cycle must add up to `attacksPerCycle` normal attacks, so the damage
@@ -1014,7 +1047,7 @@ export const combatSchema = z.strictObject({
    * dungeon's boss: floor `f` of `n` is worth `hpGrowth^(f - n)` of the boss's HP and attack. A
    * normal floor is a wave of `waveSize` enemies sharing `waveHpShare` of that HP and attacking
    * for `waveAttackShare` of that attack; every `miniBossEvery`-th floor holds a mini-boss (one of
-   * the dungeon's enemies, named with `miniBossPrefix`) with the mini-boss shares; the last floor
+   * the dungeon's `miniBoss` character) with the mini-boss shares; the last floor
    * holds the boss itself. An enemy's drops are the boss's, scaled by its share of the boss's HP.
    */
   floors: z.strictObject({
@@ -1027,7 +1060,8 @@ export const combatSchema = z.strictObject({
     miniBossEvery: z.number().int().min(2),
     miniBossHpShare: z.number().gt(0).max(1),
     miniBossAttackShare: z.number().gt(0),
-    miniBossPrefix: z.string().min(1),
+    /** Unused since the mini-boss became its own character (`dungeons.json` `miniBoss`). */
+    miniBossPrefix: z.string().min(1).optional(),
     /**
      * Deeper pays more (DESIGN.md §6): on top of following HP, an enemy's Money purse is
      * multiplied by this for every floor it stands below the first (the boss on floor `n` pays
@@ -1363,8 +1397,11 @@ export const prestigeSchema = z.strictObject({
       perLevel: z.array(modifierSchema).default([]),
       /** A rule a level opens instead of a modifier (DESIGN.md §9 More to buy with Starlight):
        *  `second_worker_slots` (each level gives the next tree or mine a second worker slot, only
-       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15). */
-      grants: z.enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines']).optional(),
+       *  once every place has its first), `autobuyer_trees`, `autobuyer_mines` (§15), `expedition_slot` (each level one more expedition
+       *  slot, §15). */
+      grants: z
+        .enum(['second_worker_slots', 'autobuyer_trees', 'autobuyer_mines', 'expedition_slot'])
+        .optional(),
     }),
   ),
   /** Cosmetics granted by the n-th ascension (a duplicate becomes a copy). */
@@ -1404,6 +1441,8 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('cosmetics_owned'), amount: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('skill_points_spent'), amount: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('ascensions'), amount: z.number().int().min(1) }),
+  /** Ascension challenge completions in all (DESIGN.md §15). */
+  z.strictObject({ kind: z.literal('challenge_completions'), amount: z.number().int().min(1) }),
   z.strictObject({ kind: z.literal('offline_hours'), hours: z.number().positive() }),
   z.strictObject({ kind: z.literal('gem_mastery'), tier: z.number().int().min(1).max(4) }),
   z.strictObject({ kind: z.literal('boss_mastery'), tier: z.number().int().min(1).max(4) }),
@@ -1416,7 +1455,20 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
     count: z.number().int().min(1).default(1),
   }),
   /** A dungeon with every stage of every star difficulty at `level` or more. */
-  z.strictObject({ kind: z.literal('dungeon_starred'), level: z.number().int().min(1).max(6) }),
+  /** A dungeon with every stage of every star difficulty (or only `difficulty`) at `level` or more. */
+  z.strictObject({
+    kind: z.literal('dungeon_starred'),
+    level: z.number().int().min(1).max(6),
+    difficulty: z.enum(['normal', 'hard', 'nightmare']).optional(),
+  }),
+  /** Dungeons whose last-floor boss was beaten on `difficulty` (`count`, default every dungeon). */
+  z.strictObject({
+    kind: z.literal('tier_cleared'),
+    difficulty: z.enum(['hard', 'nightmare']),
+    count: z.number().int().min(1).optional(),
+  }),
+  /** The deepest endless depth reached in any dungeon. */
+  z.strictObject({ kind: z.literal('endless_depth'), depth: z.number().int().min(1) }),
   /** Star levels earned over all stages. */
   z.strictObject({ kind: z.literal('star_total'), amount: z.number().int().min(1) }),
   /** Workers at work on trees and mines now. */
@@ -1427,6 +1479,10 @@ export const achievementConditionSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('depth'), layer: z.number().int().min(2) }),
   /** The forge has a worker and a recipe. */
   z.strictObject({ kind: z.literal('forge_working') }),
+  /** Bonds discovered (DESIGN.md §15 Bonds). */
+  z.strictObject({ kind: z.literal('bonds_found'), count: z.number().int().min(1) }),
+  /** Expedition trips collected (DESIGN.md §15 Expeditions). */
+  z.strictObject({ kind: z.literal('expeditions_done'), count: z.number().int().min(1) }),
   /** Cards marked on the wishlist. */
   z.strictObject({ kind: z.literal('wishlist'), count: z.number().int().min(1) }),
   /** Marked cards that are owned now. */
@@ -1861,6 +1917,215 @@ export const coinSchema = z.strictObject({
 });
 export type Coin = z.output<typeof coinSchema>;
 
+/**
+ * An asset pack the game uses (ASSET_RULES.md section 5): its name, author, itch.io link (empty
+ * when the pack does not give it), the licence in one line and what it is used for. Settings >
+ * Help > Credits lists them, the ones whose licence requires credit first.
+ */
+export const creditSchema = z.strictObject({
+  id,
+  name,
+  author: z.string(),
+  url: z.string(),
+  licence: z.string().min(1),
+  creditRequired: z.boolean(),
+  usedFor: z.string().min(1),
+});
+export type Credit = z.output<typeof creditSchema>;
+
+/**
+ * A bond (DESIGN.md §15 Bonds): two specific cards in the same loadout unlock a small named bonus.
+ * Content of the table update (save format 27); the rule is not built yet.
+ */
+export const bondSchema = z
+  .strictObject({
+    id,
+    name,
+    /** The two card ids, in the order the Codex shows them. */
+    cards: z.tuple([id, id]),
+    /** What it gives while both cards are in the same loadout. */
+    modifiers: z.array(modifierSchema).min(1),
+  })
+  .refine((b) => b.cards[0] !== b.cards[1], { message: 'a bond pairs two different cards' });
+export type Bond = z.output<typeof bondSchema>;
+
+/** The fighting item types: the weapons a duel role leans on (DESIGN.md §6 card duel). */
+export const WEAPON_KINDS = [
+  'sword',
+  'greatsword',
+  'spear',
+  'lance',
+  'dagger',
+  'hammer',
+  'bow',
+  'staff',
+  'scythe',
+] as const;
+
+/** What a card's signature attack does in the duel (DESIGN.md §6 card duel). */
+export const skillSignatureSchema = z.discriminatedUnion('kind', [
+  /** Strikes the enemy for the weapon's signature power (the existing signature attack). */
+  z.strictObject({ kind: z.literal('strike') }),
+  /** Heals every standing team card by `share` of its own max health, instead of striking. */
+  z.strictObject({ kind: z.literal('heal'), share: z.number().gt(0).max(1) }),
+]);
+
+/**
+ * A duel skill (DESIGN.md §6 card duel, skills.json): the role a card fights in and what its
+ * signature attack does. Every number is a multiplier on the card's own stats; 1 = unchanged.
+ */
+export const skillSchema = z.strictObject({
+  id,
+  name,
+  /** The role, for the UI: fighter, striker, tank, healer, debuffer, glass_cannon. */
+  role: z.enum(['fighter', 'striker', 'tank', 'healer', 'debuffer', 'glass_cannon']),
+  description: z.string().min(1),
+  /** Enemies hit a standing guard before the other cards. */
+  guard: z.boolean().default(false),
+  /** Multiplies the card's damage and its health. */
+  damage: z.number().gt(0).default(1),
+  health: z.number().gt(0).default(1),
+  /** While the card stands, the enemy's attacks deal this share less (several multiply). */
+  weaken: z.number().min(0).max(0.9).default(0),
+  signature: skillSignatureSchema,
+});
+export type Skill = z.output<typeof skillSchema>;
+
+/** skills.json: the skills, the one each weapon type leans to, and cards that break the leaning. */
+export const skillsFileSchema = z.strictObject({
+  skills: z.array(skillSchema).min(1),
+  weapons: z.strictObject(
+    Object.fromEntries(WEAPON_KINDS.map((k) => [k, id])) as Record<
+      (typeof WEAPON_KINDS)[number],
+      typeof id
+    >,
+  ),
+  /** Card id -> its own skill (a unique may break its weapon's leaning). */
+  cards: z.record(id, id).default({}),
+});
+export type SkillsConfig = z.output<typeof skillsFileSchema>;
+
+/**
+ * An expedition place (DESIGN.md §15 Expeditions), opened by clearing its dungeon. Its rewards
+ * (that area's materials, some gems and card XP) are added by the package that builds the rule.
+ */
+export const expeditionPlaceSchema = z.strictObject({
+  id,
+  name,
+  /** The dungeon whose first clear opens the place. */
+  dungeon: id,
+  /** Cards of this element bring back double. */
+  element: z.enum(ELEMENTS),
+  /** What a trip brings back, per hour of the trip (DESIGN.md §15 [Default]). */
+  rewards: z.strictObject({
+    /** The area's materials, whole units an hour. */
+    materials: z.array(z.strictObject({ resource: id, perHour: z.number().positive() })).min(1),
+    /** Gems: seconds of the gem's tree or mine output (at its current level) an hour. */
+    gems: z
+      .array(z.strictObject({ resource: id, secondsPerHour: z.number().positive() }))
+      .default([]),
+    /** Card XP an hour, as a share of the levels the card is on (0.1 = a tenth of a level). */
+    cardXpLevels: z.number().min(0),
+  }),
+});
+export type ExpeditionPlace = z.output<typeof expeditionPlaceSchema>;
+
+export const expeditionsSchema = z.strictObject({
+  /** The trip lengths a player can pick, in hours, shortest first. */
+  durationsHours: z
+    .array(z.number().positive())
+    .min(1)
+    .refine((list) => list.every((h, i) => i === 0 || h > list[i - 1]!), {
+      message: 'durations go from shortest to longest, each once',
+    }),
+  places: z.array(expeditionPlaceSchema),
+});
+export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
+
+/** What a challenge takes away (src/game/challenges.ts applies each through the modifier pipeline). */
+export const CHALLENGE_RESTRICTIONS = [
+  /** The fighting loadout's supports give no effect and no health. */
+  'no_supports',
+  /** Only Common cards count in the fighting loadout (effects, health, and the main's damage). */
+  'commons_only',
+  /** Training gives nothing. */
+  'no_training',
+  /** Only one worker works. */
+  'one_worker',
+] as const;
+export type ChallengeRestriction = (typeof CHALLENGE_RESTRICTIONS)[number];
+
+/**
+ * An Ascension challenge (DESIGN.md §15): an Ascension run under a rule, completed by clearing a
+ * target, up to three times with harder targets, each completion giving a permanent reward. The
+ * rule is in words (`rule`), as named restrictions and as penalty modifiers.
+ */
+export const ascensionChallengeSchema = z.strictObject({
+  id,
+  name,
+  /** The rule in words, as the side portal shows it. */
+  rule: z.string().min(1),
+  /** What the run loses, by name (see CHALLENGE_RESTRICTIONS). */
+  restrictions: z.array(z.enum(CHALLENGE_RESTRICTIONS)).default([]),
+  /** Modifiers that apply only while the challenge is the run's rule (source `challenge`). */
+  penalties: z.array(modifierSchema).default([]),
+  /** One target per completion, easiest first: the floor to reach in a dungeon tier under the rule. */
+  targets: z
+    .array(
+      z.strictObject({
+        dungeon: id,
+        difficulty: z.enum(['normal', 'hard', 'nightmare']).default('normal'),
+        floor: z.number().int().min(1),
+      }),
+    )
+    .length(3),
+  /** The permanent reward of each completion. */
+  rewards: z.array(z.array(modifierSchema).min(1)).length(3),
+});
+export type AscensionChallenge = z.output<typeof ascensionChallengeSchema>;
+
+/**
+ * Where scrolls come from besides the dungeons' first clears, the stage chests, goals and
+ * achievements (DESIGN.md §3 Crystal wage / scrolls): the lump a floor pays the first time it is
+ * won, by floor kind and difficulty, the daily reward, and when the reveal show glows and gives
+ * its entrance. Amounts are scrolls (they may be a fraction of one).
+ */
+const scrollLumpSchema = z.strictObject({ summon: positiveDecimal, glamour: positiveDecimal });
+export const scrollsSchema = z.strictObject({
+  /** Paid when a floor is won for the first time (the best floor of its difficulty rises). */
+  floorFirstWin: z.strictObject({
+    wave: scrollLumpSchema,
+    miniboss: scrollLumpSchema,
+    boss: scrollLumpSchema,
+    /** Multiplies the lump by difficulty. */
+    difficulty: z.strictObject({
+      normal: z.number().gt(0),
+      hard: z.number().gt(0),
+      nightmare: z.number().gt(0),
+      endless: z.number().gt(0),
+    }),
+  }),
+  /** The daily reward, claimed once per local day. */
+  daily: scrollLumpSchema,
+  /** The field cache (DESIGN.md §3 Scrolls): a lump paid every `everyMinutes` of play time while a
+   *  dungeon is fought, times the difficulty of the dungeon being fought. */
+  fieldCache: z.strictObject({
+    everyMinutes: z.number().gt(0),
+    summon: positiveDecimal,
+    glamour: positiveDecimal,
+    difficulty: z.strictObject({
+      normal: z.number().gt(0),
+      hard: z.number().gt(0),
+      nightmare: z.number().gt(0),
+      endless: z.number().gt(0),
+    }),
+  }),
+  /** The reveal show (DESIGN.md §7 Reveal): from which rarity a face-down card glows, and from
+   *  which the best card of a pull gets the full-screen entrance. */
+  reveal: z.strictObject({ glowFrom: z.enum(RARITIES), entranceFrom: z.enum(RARITIES) }),
+});
+export type ScrollsConfig = z.output<typeof scrollsSchema>;
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -1884,6 +2149,7 @@ export const contentSchemas = {
   enhancements: enhancementsSchema,
   upgrades: upgradesFileSchema,
   training: z.array(trainingSchema).min(1),
+  credits: z.array(creditSchema).min(1),
   coins: z
     .array(coinSchema)
     .min(1)
@@ -1896,6 +2162,12 @@ export const contentSchemas = {
     ),
   weaponSkins: z.array(weaponSkinSetSchema),
   items: itemsSchema,
+  /** Save format 27 (the table update): content for rules not built yet. */
+  bonds: z.array(bondSchema),
+  expeditions: expeditionsSchema,
+  challenges: z.array(ascensionChallengeSchema),
+  skills: skillsFileSchema,
+  scrolls: scrollsSchema,
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;

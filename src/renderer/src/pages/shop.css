@@ -573,3 +573,76 @@ html .shop-body .shop-ascend.px-display:not(#_px) {
 .shop-auto__reserve {
   width: 4.5em;
 }
+
+/* Ascension challenges: portal cards under Kept and Reset, a sticker pip for each completion */
+.shop-challenges {
+  width: 100%;
+  padding: 8px 10px 10px;
+  text-align: left;
+}
+.shop-challenges .shop-head {
+  margin: 0 0 6px;
+  color: var(--px-ink);
+}
+.shop-challenge-list {
+  display: grid;
+  gap: calc(var(--fs-sm) * 4);
+  margin: 10px 0 0;
+  padding: var(--fs-sm);
+  list-style: none;
+}
+.shop-challenge {
+  display: grid;
+  gap: 2px;
+  padding: 8px 10px;
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--px-muted);
+  background: var(--px-raised);
+  box-shadow:
+    0 0 0 var(--fs-sm) var(--px-edge),
+    inset 0 var(--fs-sm) 0 0 var(--px-hi);
+}
+.shop-challenge__stickers {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+}
+.shop-challenge__pip {
+  width: 12px;
+  height: 12px;
+  background: var(--px-lo);
+  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+}
+.shop-challenge__pip.is-done {
+  background: var(--px-gold);
+}
+.shop-challenge[data-status='active'] {
+  color: var(--px-ink);
+}
+.shop-challenge__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--px-ink);
+}
+.shop-challenge__button {
+  justify-self: start;
+  margin-top: 4px;
+}
+
+/* ---- in the view (table update 9d): the counters fill the view and scroll under their boards --- */
+.mv-shop > .shop-table {
+  min-height: 0;
+  box-sizing: border-box;
+  align-items: stretch;
+  grid-template-rows: minmax(0, 1fr);
+}
+.mv-shop .shop-stall {
+  min-height: 0;
+}
+.mv-shop .shop-stall > .shop-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}

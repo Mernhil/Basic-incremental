@@ -12,9 +12,9 @@
         "base": "200",
         "growth": "1.13"
       },
-      "ratePercent": "10",
+      "ratePercent": "5",
       "milestones": {
-        "every": 25,
+        "every": 15,
         "multiplier": "2"
       }
     },
@@ -49,9 +49,9 @@
         "base": "2500",
         "growth": "1.14"
       },
-      "ratePercent": "10",
+      "ratePercent": "5",
       "milestones": {
-        "every": 25,
+        "every": 15,
         "multiplier": "2"
       }
     },
@@ -86,9 +86,9 @@
         "base": "30000",
         "growth": "1.15"
       },
-      "ratePercent": "10",
+      "ratePercent": "5",
       "milestones": {
-        "every": 25,
+        "every": 15,
         "multiplier": "2"
       }
     },

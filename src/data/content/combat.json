@@ -21,6 +21,10 @@
     }
   },
   "knockoutSeconds": 10,
+  "challenge": {
+    "timerSeconds": { "wave": 30, "miniboss": 45, "boss": 60 },
+    "autoWaitSeconds": 60
+  },
   "bossPattern": {
     "attacksPerCycle": 6,
     "lightMultiplier": 0.4,
@@ -28,7 +32,7 @@
   },
   "floors": {
     "hpGrowth": 1.12,
-    "waveHpShare": 0.2,
+    "waveHpShare": 0.08,
     "waveAttackShare": 0.5,
     "waveSize": {
       "min": 3,
@@ -36,7 +40,7 @@
     },
     "miniBossEvery": 10,
     "miniBossHpShare": 0.6,
-    "miniBossAttackShare": 0.8,
+    "miniBossAttackShare": 0.55,
     "miniBossPrefix": "Great",
     "purseFloorBonus": 1.02
   },
@@ -66,12 +70,12 @@
     "chests": {
       "rewards": [
         {
-          "resource": "summon_crystal",
-          "amounts": ["30", "60", "150", "300", "600", "1200"]
+          "resource": "summon_scroll",
+          "amounts": ["0.1", "0.2", "0.5", "1", "2", "4"]
         },
         {
-          "resource": "glamour_crystal",
-          "amounts": ["15", "30", "75", "150", "300", "600"]
+          "resource": "glamour_scroll",
+          "amounts": ["0.05", "0.1", "0.25", "0.5", "1", "2"]
         },
         {
           "resource": "star_dust",

@@ -25,6 +25,7 @@ import { showReveal } from '../stage/reveal';
 import { toast } from '../stage/toast';
 import { gateView, rewardView, starlightViews, type RewardView } from './ascensionModel';
 import { shardGainView, shardOfferViews, shardsText, type OfferArt } from './achievementsModel';
+import { createChallengesPanel } from './challengesPanel';
 import { cardFaceProps, cardItemArt } from './loadoutCards';
 import type { PageContext } from './production';
 import './shop.css';
@@ -70,6 +71,7 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     signText: string,
   ): { el: HTMLElement; body: HTMLElement; sign: HTMLElement; count: HTMLElement } {
     const el = h('section', `shop-stall ${cls}`);
+    el.dataset.deal = '';
     const sign = h('h2', 'shop-sign');
     const name = h('span', 'shop-sign__name px-display', signText);
     const count = h('em', 'shop-sign__count px-display bi-num');
@@ -226,8 +228,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
 
   /** Pixel supply icons by resource: one per supply line, in the order the shop sells them. */
   const SUPPLY_SPRITES: Record<string, string> = {
-    summon_crystal: 'shop-sup1',
-    glamour_crystal: 'shop-sup2',
+    summon_scroll: 'shop-sup1',
+    glamour_scroll: 'shop-sup2',
     frost_core: 'shop-sup3',
     glimmer_dust: 'shop-sup4',
     facet_shard: 'shop-sup5',
@@ -392,7 +394,11 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
     tile.append(h('h3', 'shop-head', head), list);
     lists.append(tile);
   }
-  gate.append(ringWrap, ready, confirm, done, lists);
+  const challenges = createChallengesPanel(ctx, content, () => {
+    mode = 'ready';
+    render();
+  });
+  gate.append(ringWrap, ready, confirm, done, lists, challenges.el);
 
   function setMode(next: Mode, focus = false): void {
     mode = next;
@@ -463,6 +469,8 @@ export function createShopPage(page: HTMLElement, ctx: ShopContext): { render():
   function render(): void {
     const s = ctx.state();
     const mods = collectModifiers(s, content);
+
+    challenges.render();
 
     // ---- ascension ----
     if (mode !== 'walking') {

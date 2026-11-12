@@ -3,7 +3,9 @@ import {
   averageDamage,
   averageDps,
   burstStats,
+  buildTeam,
   buyMineLevels,
+  collectModifiers,
   critFactor,
   critStats,
   Decimal,
@@ -42,7 +44,9 @@ describe('live stage readouts (DESIGN.md §11)', () => {
     const state = freshState();
     state.bossHp = content.dungeons[0]!.boss.hp.div(2);
     const r = stageReadout(state, content);
-    expect(r.dps.eq(effectiveDamage(state, content))).toBe(true);
+    // The team's hits without signatures: here the one card, crits at their expected value.
+    const lead = buildTeam(state, content, collectModifiers(state, content), 'mossy_cellar')[0]!;
+    expect(r.dps.toNumber()).toBeCloseTo(lead.hit.div(lead.interval).toNumber(), 6);
     expect(r.averageDps.eq(averageDps(state, content))).toBe(true);
     expect(r.secondsPerKill).toBeCloseTo(secondsPerKill(state, content, 'mossy_cellar')!, 9);
     expect(r.killsPerMinute).toBeCloseTo(60 / r.secondsPerKill!, 9);

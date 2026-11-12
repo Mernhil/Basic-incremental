@@ -27,8 +27,8 @@ await page.evaluate(
     const content = d.loadContent();
     const s = g.createInitialState(content);
     s.clearedDungeons = ['mossy_cellar'];
-    s.resources.summon_crystal = s.resources.summon_crystal.mul(0).add(1000);
-    s.resources.glamour_crystal = s.resources.glamour_crystal.mul(0).add(230);
+    s.resources.summon_scroll = s.resources.summon_scroll.mul(0).add(1000);
+    s.resources.glamour_scroll = s.resources.glamour_scroll.mul(0).add(230);
     s.resources.money = s.resources.money.mul(0).add(5e6);
     s.portals.card_portal = { pity: 62, pulls: 62, pityHits: 0 };
     s.portals.wardrobe_gate = { pity: 21, pulls: 21, pityHits: 0 };
@@ -39,7 +39,7 @@ await page.evaluate(
 await page.reload();
 await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
-await page.click('.shell-rail__item[data-page="summon"]');
+await page.click('[data-open="summon"]');
 await page.waitForSelector('.sm-table');
 
 const sizes = [
@@ -96,7 +96,7 @@ await page.waitForTimeout(600);
 await page.mouse.move(700, 5);
 await page.screenshot({ path: `${out}/summon-wardrobe-hand-1280x720.png` });
 
-await page.click('.shell-rail__item[data-page="settings"]');
+await page.click('[data-open="settings"]');
 await page.waitForSelector('.set-grid');
 await shoot('settings');
 console.log('errors', errors);

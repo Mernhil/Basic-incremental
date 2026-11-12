@@ -1,19 +1,27 @@
+/* UI_RULES.md §2 "Toasts": a column under the header at the left of the dungeon window (the
+   table's padding, the left wing and the gap, then 10 px in), the same spot when a view is open.
+   It stops short of the enemy card in the centre and of the damage tag on its top left, and
+   never reaches the dock or the header; a toast never takes a click. */
 .st-toasts {
+  --toast-left: calc(16px + 216px + 16px + 10px);
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  top: calc(var(--header-h, 64px) + 6px);
+  left: var(--toast-left);
+  width: clamp(180px, calc(50vw - 150px - var(--toast-left)), 240px);
   z-index: 60;
   display: grid;
-  gap: 8px;
-  justify-items: end;
+  gap: 6px;
   pointer-events: none;
+}
+@media (max-width: 1179px) {
+  .st-toasts {
+    --toast-left: calc(16px + 184px + 16px + 10px);
+  }
 }
 .st-toast {
   display: grid;
   gap: 2px;
-  min-width: 220px;
-  max-width: 340px;
-  padding: 10px 14px 10px 16px;
+  padding: 8px 12px 8px 14px;
   border-radius: 10px;
   background: var(--bi-tip-bg, #1b2130);
   color: var(--bi-tip-ink, #e9eef7);
@@ -22,7 +30,7 @@
     inset 4px 0 0 var(--bi-chrome-accent, #f3dc9a),
     0 8px 24px rgba(0, 0, 0, 0.45);
   font-size: 13px;
-  animation: st-toast-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+  animation: st-toast-in var(--deal-dur, 440ms) var(--deal-ease, ease-out) both;
 }
 .st-toast strong {
   font-size: 14px;
@@ -55,23 +63,25 @@
 }
 .st-toast.is-leaving {
   opacity: 0;
-  translate: 12px 0;
+  translate: 0 -8px;
   transition:
-    opacity 0.3s,
-    translate 0.3s;
+    opacity var(--deal-exit-dur, 220ms) var(--deal-exit-ease, ease-in),
+    translate var(--deal-exit-dur, 220ms) var(--deal-exit-ease, ease-in);
 }
 @keyframes st-toast-in {
   from {
     opacity: 0;
-    translate: 24px 0;
+    translate: 0 -16px;
+    scale: var(--deal-scale, 0.92);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .st-toast {
-    animation-name: st-toast-fade;
+    animation: st-toast-fade var(--deal-fade-reduced, 120ms) linear both;
   }
   .st-toast.is-leaving {
     translate: 0 0;
+    transition: opacity var(--deal-fade-reduced, 120ms) linear;
   }
   @keyframes st-toast-fade {
     from {

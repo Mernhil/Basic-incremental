@@ -1,8 +1,16 @@
 import {
+  claimDaily,
   collectModifiers,
+  dailyAvailable,
   defaultRng,
+  FOCUS_PORTAL_ID,
+  focusKinds,
+  localDay,
   portalInfo,
   pull,
+  resolvePortal,
+  revealPlan,
+  setFocusKind,
   setWishlisted,
   wishlistView,
   type GameState,
@@ -10,6 +18,7 @@ import {
 } from '../../../game';
 import { navPlaque, PLAQUE_VIEWBOX, svg } from '../art/gems';
 import { COPY } from '../copy';
+import { fmt } from '../settings/numberFormat';
 import { h } from '../shell/shell';
 import { hide as hideTip } from '../shell/tooltip';
 import { showReveal } from '../stage/reveal';
@@ -17,7 +26,8 @@ import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
 import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
-import { cardFaceProps } from './loadoutCards';
+import { ITEM_VIEWBOX } from '../art/items';
+import { cardFaceProps, weaponArtMarkup } from './loadoutCards';
 import type { PageContext } from './production';
 import {
   handSummary,
@@ -61,6 +71,8 @@ type DeckUi = {
   line: HTMLElement;
   /** "Hunting: ..." under the deck (card portal with a wishlist only). */
   hunt: HTMLElement | null;
+  /** The Focus Portal's item type buttons and the line saying what it pulls. */
+  focus: { box: HTMLElement; line: HTMLElement } | null;
   single: PullButton;
   ten: PullButton;
 };
@@ -69,11 +81,15 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   const { content } = ctx;
   // the panel carries the sighted headings; the page name stays for screen readers
   page.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
-  const table = h('div', 'sm-table px-panel');
+  const table = h('div', 'sm-table');
   // the deck backs and the hand's cards are 1x: 132 CSS px on a 100 % screen, whole device pixels
   fitCard(table, { want: 132 });
   page.append(table);
-  const top = h('div', 'sm-top');
+  // the three columns, each dealt in as one section of the view (motion E), the hand across the bottom
+  const colDecks = h('div', 'sm-col sm-col--decks');
+  const colWish = h('div', 'sm-col sm-col--wish');
+  const colOdds = h('div', 'sm-col sm-col--odds');
+  for (const col of [colDecks, colWish, colOdds]) col.dataset['deal'] = '';
 
   const decks = new Map<string, DeckUi>();
   const views = new Map<string, PortalView>();
@@ -85,7 +101,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   let wishActive = false;
 
   // ---- odds table (every portal side by side) ----
-  const odds = h('section', 'sm-odds px-well');
+  const odds = h('section', 'sm-odds px-panel');
   odds.setAttribute('aria-label', COPY.summon.oddsTitle);
   const oddsBody = h('table', 'sm-odds__table');
   oddsBody.setAttribute('aria-label', COPY.summon.oddsTableLabel);
@@ -93,7 +109,11 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   odds.append(h('h2', 'sm-odds__title px-display', COPY.summon.oddsTitle), oddsBody, oddsNote);
 
   function renderOdds(): void {
-    const list = [...decks.keys()].map((id) => views.get(id)).filter((v): v is PortalView => !!v);
+    // the Focus Portal has the Card Portal's rates: it gets a note, not a column
+    const list = [...decks.keys()]
+      .filter((id) => id !== FOCUS_PORTAL_ID)
+      .map((id) => views.get(id))
+      .filter((v): v is PortalView => !!v);
     const t = oddsTable(list);
     const key = JSON.stringify(t);
     if (key === oddsKey) return;
@@ -126,12 +146,13 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     }
     oddsBody.replaceChildren(thead, tbody);
     const notes = [...new Set(list.map((v) => v.guarantee))];
+    if (decks.has(FOCUS_PORTAL_ID)) notes.push(COPY.summon.oddsFocus);
     if (wishActive) notes.push(COPY.summon.oddsWishlist);
     oddsNote.replaceChildren(...notes.map((n) => h('span', '', n)));
   }
 
   // ---- the wishlist (the Card Portal's cards, marked to hunt) ----
-  const wish = h('section', 'sm-wish px-well');
+  const wish = h('section', 'sm-wish px-panel');
   wish.setAttribute('aria-label', COPY.summon.wishlistTitle);
   wish.hidden = true;
   const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
@@ -189,7 +210,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   // ---- the last hand ----
-  const handBox = h('section', 'sm-hand');
+  const handBox = h('section', 'sm-hand px-panel');
+  handBox.dataset['deal'] = '';
   const handHead = h('header', 'sm-hand__head');
   const handSum = h('p', 'sm-hand__summary bi-num');
   handHead.append(h('h2', 'sm-hand__title px-display', COPY.summon.handTitle), handSum);
@@ -247,6 +269,15 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     spaceHand();
   }
 
+  /** A legacy skin's picture for the reveal and the hand (null for any other item). */
+  function skinPicture(itemId: string): HTMLElement | null {
+    const entry = content.legacySkinById.get(itemId);
+    if (!entry) return null;
+    const box = h('span', 'sm-skin');
+    box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${weaponArtMarkup(entry.weapon, entry.skin.art)}</svg>`;
+    return box;
+  }
+
   function doPull(portalId: string, count: PullCount): void {
     if (busy) return;
     const result = pull(ctx.state(), content, portalId, count, defaultRng);
@@ -254,7 +285,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     busy = true;
     hideTip();
     ctx.apply(result.state);
-    const portal = content.portals.find((p) => p.id === portalId)!;
+    const portal = resolvePortal(ctx.state(), content, portalId)!.portal;
     const after = result.state;
     const reveal = revealViews(result.results, content);
     handViews = reveal;
@@ -263,18 +294,22 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       face: content.cardById.has(view.itemId) ? cardFaceProps(content, after, view.itemId) : null,
       picture: content.cosmeticById.has(view.itemId)
         ? cosmeticSwatch(content, view.itemId, after.cosmetics.owned[view.itemId]?.level ?? 1)
-        : null,
+        : skinPicture(view.itemId),
     }));
     renderHand();
     showReveal({
       portalName: portal.name,
       kind: portal.kind,
       views: reveal,
+      plan: revealPlan(
+        reveal.map((v) => v.rarity),
+        content.scrolls.reveal,
+      ),
       face: (id) => (content.cardById.has(id) ? cardFaceProps(content, after, id) : null),
       picture: (id) =>
         content.cosmeticById.has(id)
           ? cosmeticSwatch(content, id, after.cosmetics.owned[id]?.level ?? 1)
-          : null,
+          : skinPicture(id),
       ...(ctx.sound ? { sound: ctx.sound } : {}),
       onClose: () => {
         busy = false;
@@ -287,7 +322,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
 
   // ---- decks ----
   function deckShell(kind: string, locked: boolean): HTMLElement {
-    const root = h('article', 'sm-deck');
+    const root = h('article', 'sm-deck px-panel');
     root.dataset['kind'] = kind;
     if (locked) root.classList.add('is-locked');
     return root;
@@ -296,7 +331,10 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   function crestIcon(kind: string): HTMLElement {
     const icon = h('span', 'sm-plate__icon');
     icon.setAttribute('aria-hidden', 'true');
-    icon.innerHTML = svg(navPlaque(kind === 'cosmetics' ? 'wardrobe' : 'summon'), PLAQUE_VIEWBOX);
+    icon.innerHTML = svg(
+      navPlaque(kind === 'cosmetics' || kind === 'skins' ? 'wardrobe' : 'summon'),
+      PLAQUE_VIEWBOX,
+    );
     return icon;
   }
 
@@ -331,7 +369,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   }
 
   function portalDeck(portalId: string): HTMLElement {
-    const portal = content.portals.find((p) => p.id === portalId)!;
+    const portal = resolvePortal(ctx.state(), content, portalId)!.portal;
     const root = deckShell(portal.kind, false);
     root.dataset['portal'] = portalId;
     const stack = buildStack(portal.kind);
@@ -353,9 +391,44 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     buttons.append(single.el, ten.el);
     root.append(h('h2', 'sm-deck__name px-display', portal.name), line, stack, pity, buttons);
     const hunt =
-      portal.kind === 'cards' && portal.wishlistPerRarity > 0 ? h('p', 'sm-deck__hunt') : null;
+      portalId !== FOCUS_PORTAL_ID && portal.kind === 'cards' && portal.wishlistPerRarity > 0
+        ? h('p', 'sm-deck__hunt')
+        : null;
     if (hunt) line.after(hunt);
-    decks.set(portalId, { root, stack, pityValue, pityBar, pityFill, line, hunt, single, ten });
+    let focus: DeckUi['focus'] = null;
+    if (portalId === FOCUS_PORTAL_ID) {
+      // plain controls: one button per item type, the chosen one marked (clear it with a second click)
+      const box = h('div', 'sm-focus');
+      box.setAttribute('role', 'group');
+      box.setAttribute('aria-label', COPY.summon.focusPickLabel);
+      const chosenLine = h('p', 'sm-deck__focus');
+      for (const k of focusKinds(content)) {
+        const b = h('button', 'sm-focus__kind px-btn px-btn--quiet', k.name);
+        b.type = 'button';
+        b.dataset['focus'] = k.kind;
+        b.addEventListener('click', () => {
+          const now = ctx.state().summon.focusKind;
+          const result = setFocusKind(ctx.state(), content, now === k.kind ? null : k.kind);
+          if (result.ok) ctx.apply(result.state);
+          render();
+        });
+        box.append(b);
+      }
+      line.after(chosenLine, box);
+      focus = { box, line: chosenLine };
+    }
+    decks.set(portalId, {
+      root,
+      stack,
+      pityValue,
+      pityBar,
+      pityFill,
+      line,
+      hunt,
+      focus,
+      single,
+      ten,
+    });
     return root;
   }
 
@@ -375,15 +448,38 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
 
   // the Wardrobe Gate opens with the Wardrobe (DESIGN.md §7); until then it shows as locked
   const gateOpen = content.portals.some((p) => p.kind === 'cosmetics');
+  // the Focus Portal stands beside the Card Portal (DESIGN.md §7)
+  const hasFocus = content.portals.some((p) => p.id === 'card_portal');
   const slots = [
     ...content.portals.map((p) => portalDeck(p.id)),
     ...(gateOpen ? [] : [lockedDeck()]),
   ];
+  const focusDeck = hasFocus ? portalDeck(FOCUS_PORTAL_ID) : null;
   const [left, ...rest] = slots;
   if (left) left.classList.add('sm-deck--left');
+  focusDeck?.classList.add('sm-deck--focus');
   for (const r of rest) r.classList.add('sm-deck--right');
-  top.append(...(left ? [left] : []), odds, ...rest);
-  table.append(top, wish, handBox);
+  colDecks.append(...(left ? [left] : []), ...(focusDeck ? [focusDeck] : []), ...rest);
+  colWish.append(wish);
+  colOdds.append(odds);
+
+  // ---- the daily scrolls ----
+  const daily = h('section', 'sm-daily px-panel');
+  const dailyGives = h('p', 'sm-daily__gives bi-num');
+  const dailyBtn = h('button', 'px-btn');
+  dailyBtn.type = 'button';
+  daily.append(h('h2', 'sm-daily__title px-display', COPY.summon.dailyTitle), dailyGives, dailyBtn);
+  const dailyAmounts = (): [string, string] => [
+    fmt(content.scrolls.daily.summon),
+    fmt(content.scrolls.daily.glamour),
+  ];
+  dailyBtn.addEventListener('click', () => {
+    const result = claimDaily(ctx.state(), content, localDay(new Date()));
+    if (result.ok) ctx.apply(result.state);
+    render();
+  });
+  colDecks.prepend(daily);
+  table.append(colDecks, colWish, colOdds, handBox);
   renderHand();
 
   function render(): void {
@@ -420,8 +516,42 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         b.el.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
       }
     }
+    renderFocus(s);
+    renderDaily(s);
     renderWishlist();
     renderOdds();
+  }
+
+  function renderFocus(s: GameState): void {
+    const focus = decks.get(FOCUS_PORTAL_ID)?.focus;
+    if (!focus) return;
+    const chosen = s.summon.focusKind;
+    const kinds = focusKinds(content);
+    set(
+      focus.line,
+      chosen
+        ? COPY.summon.focusHunting(kinds.find((k) => k.kind === chosen)?.name ?? chosen)
+        : COPY.summon.focusNone,
+    );
+    for (const b of focus.box.querySelectorAll<HTMLButtonElement>('button')) {
+      const on = b.dataset['focus'] === chosen;
+      b.classList.toggle('is-chosen', on);
+      b.setAttribute('aria-pressed', String(on));
+      b.setAttribute('aria-label', COPY.summon.focusKind(b.textContent ?? '', on));
+      b.disabled = busy;
+    }
+  }
+
+  function renderDaily(s: GameState): void {
+    const [summon, glamour] = dailyAmounts();
+    const ready = dailyAvailable(s, localDay(new Date()));
+    set(dailyGives, COPY.summon.dailyGives(summon, glamour));
+    set(dailyBtn, ready ? COPY.summon.dailyClaim : COPY.summon.dailyClaimed);
+    dailyBtn.disabled = !ready || busy;
+    dailyBtn.setAttribute(
+      'aria-label',
+      ready ? COPY.summon.dailyLabel(summon, glamour) : COPY.summon.dailyClaimed,
+    );
   }
 
   return { render };

@@ -129,8 +129,6 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   // the panels carry the sighted headings; the page name stays for screen readers
   root.querySelector<HTMLElement>('.shell-page__title')?.classList.add('sr-only');
   const grid = h('div', 'set-grid');
-  const left = h('div', 'set-col');
-  const right = h('div', 'set-col');
 
   // ---- Display ----
   const display = frame(COPY.settings.display);
@@ -344,11 +342,31 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
     window.open(buildIssueUrl(issueInfo()), '_blank');
     reportMsg.textContent = COPY.settings.reportOpened;
   });
-  help.body.append(h('p', 'set-lead', COPY.settings.reportText), reportBtn, reportMsg, details);
+  // Credits: every asset pack used (credits.json), the ones whose licence requires credit first
+  const creditsBox = h('details', 'set-details set-credits');
+  creditsBox.append(h('summary', '', COPY.settings.credits));
+  creditsBox.append(h('p', 'set-credits__lead', COPY.settings.creditsLead));
+  const creditList = h('ul', 'set-credits__list');
+  for (const c of deps.content.credits) {
+    const row = h('li', 'set-credits__row');
+    const title = h('b', '', c.author ? `${c.name}, ${c.author}` : c.name);
+    row.append(title, h('span', '', c.usedFor), h('span', 'set-credits__licence', c.licence));
+    if (c.creditRequired) row.dataset['required'] = 'true';
+    if (c.url) row.append(h('span', 'set-credits__url', c.url));
+    creditList.append(row);
+  }
+  creditsBox.append(creditList);
+  help.body.append(
+    h('p', 'set-lead', COPY.settings.reportText),
+    reportBtn,
+    reportMsg,
+    details,
+    creditsBox,
+  );
 
-  left.append(display.el, saveFrame.el);
-  right.append(sound, help.el);
-  grid.append(left, right);
+  // two by two (UI_RULES §2 Settings grid): Display and Sound over Save and Help
+  for (const panel of [display.el, sound, saveFrame.el, help.el]) panel.dataset.deal = '';
+  grid.append(display.el, sound, saveFrame.el, help.el);
   root.append(grid);
 
   let savedText = '';

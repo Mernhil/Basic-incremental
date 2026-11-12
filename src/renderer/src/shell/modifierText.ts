@@ -14,6 +14,8 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   achievement: 'Achievement',
   mastery: 'Mastery',
   element: 'Element',
+  bond: 'Bond',
+  challenge: 'Ascension challenge',
   account: 'Account level', // compile fix (mechanics): reward track cost cap bumps
   upgrade: 'Upgrade', // compile fix (mechanics): upgrade shelf purchases (DESIGN §4)
 };
@@ -41,7 +43,7 @@ const STAT_NAMES: Partial<Record<Modifier['stat'], string>> = {
   'combat.critChance': 'crit chance',
   'combat.critDamage': 'crit damage',
   'drops.rareChance': 'rare drop chance',
-  'drops.crystalMultiplier': 'Summon and Glamour Crystal drops',
+  'drops.crystalMultiplier': 'Summon and Glamour Scroll drops',
   'drops.moneyMultiplier': 'Money drops',
   'drops.currencyAmount': 'Money and crystals per kill',
   'drops.materialChance': 'Core drop chance',

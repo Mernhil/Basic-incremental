@@ -13,8 +13,8 @@ import { h } from './shell';
 
 /** Crystal and material tints until they get their own coins (pixel-art request). */
 const RESOURCE_TINT: Record<string, string> = {
-  summon_crystal: '#6fbf5a',
-  glamour_crystal: '#e2773e',
+  summon_scroll: '#6fbf5a',
+  glamour_scroll: '#e2773e',
   frost_sigil: '#6cb8e8',
 };
 const DEFAULT_TINT = '#c9a14a';
@@ -112,7 +112,10 @@ export function createRewardTrack(
   }
 
   panel.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') hide(true);
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      hide(true);
+    }
   });
   // a click anywhere outside the scroll and the badge rolls it back up
   document.addEventListener('pointerdown', (e) => {

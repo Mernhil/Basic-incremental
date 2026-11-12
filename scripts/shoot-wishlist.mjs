@@ -31,7 +31,7 @@ await page.evaluate(
       content.cardById.has(id),
     );
     s.cards.owned['dawnblade_regent'].enhancements = ['edge'];
-    s.resources['summon_crystal'] = new g.Decimal(1000);
+    s.resources['summon_scroll'] = new g.Decimal(1000);
     await window.api.writeSave(g.createSaveText(s, Date.now()));
   },
   { data: fsUrl('src/data/index.ts'), game: fsUrl('src/game/index.ts') },
@@ -41,11 +41,11 @@ await page.waitForSelector('.shell');
 await page.evaluate(() => document.querySelector('.away button')?.click());
 await page.addStyleTag({ content: '.st-toast, .st-toasts { display: none !important; }' });
 await page.setViewportSize({ width: 1440, height: 1000 });
-await page.click('.shell-rail__item[data-page="summon"]');
+await page.click('[data-open="summon"]');
 await page.waitForSelector('.sm-wish:not([hidden])');
 await page.waitForTimeout(800);
 await page.screenshot({ path: `${out}/summon-wishlist.png` });
-await page.click('.shell-rail__item[data-page="cards"]');
+await page.click('[data-open="cards"]');
 await page.waitForSelector('.cp-tile');
 await page.click('[data-key="tile-dawnblade_regent"]');
 await page.waitForTimeout(400);

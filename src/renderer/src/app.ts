@@ -26,17 +26,17 @@ import { COPY } from './copy';
 import { coinAmount, isMoney } from './settings/coins';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
-import { iconMarkup, isCrystal, isHeaderResource, resourceIconId } from './ui/resourceIcons';
-import { createShell, h, PAGES, placeholderPage, type Currency } from './shell/shell';
-import { createProductionPage } from './pages/production';
-import { createDungeonsPage } from './pages/dungeons';
-import { createHomePage } from './pages/home';
-import { createSummonPage } from './pages/summon';
-import { createShopPage } from './pages/shop';
-import { createWardrobePage } from './pages/wardrobe';
-import { createCardsPage } from './pages/cards';
-import { createAchievementsPage } from './pages/achievements';
-import { createSkillsPage } from './pages/skills';
+import {
+  iconMarkup,
+  isCrystal,
+  isHeaderResource,
+  moneyCoinArt,
+  resourceIconId,
+} from './ui/resourceIcons';
+import { createShell, h, type Currency } from './shell/shell';
+import { createTable } from './table/table';
+import { allPieces, allViews } from './table/registry';
+import type { TableContext, ViewId } from './table/contract';
 import { levelBadge, levelUpView, trackView } from './pages/accountModel';
 import { createRewardTrack } from './shell/rewardTrack';
 import { tipTable } from './shell/tooltip';
@@ -44,7 +44,7 @@ import { unlockToast } from './pages/achievementsModel';
 import { toast } from './stage/toast';
 import { createCardsModel } from './pages/cardsAdapter';
 import { cardItemArt, loadoutProps } from './pages/loadoutCards';
-import { goalRows } from './pages/progressionModel';
+import { goalRows, type GoalRow } from './pages/progressionModel';
 import { createQuestScroll } from './shell/quest';
 import { playTierUps } from './stage/tierUp';
 import { gemCoin, svg } from './art/gems';
@@ -56,7 +56,6 @@ import { installPixelNumbers, refreshPixelNumbers } from './ui/pixelNumbers';
 import { showWelcomeBack } from './stage/welcome';
 import { initSound, playSound } from './sound/engine';
 import { createMuteToggle } from './sound/controls';
-import { createSettingsPage } from './pages/settings';
 import { onPrefs, prefs } from './settings/prefs';
 
 const TICK_INTERVAL_MS = 100;
@@ -113,7 +112,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     mine_gem: 'ore',
     material: 'material',
     currency: 'material',
-    crystal: 'portal',
+    scroll: 'portal',
     prestige: 'starlight', // swapped for the equipped Starlight coin through `art`
   } as const;
   installArtDefs();
@@ -135,7 +134,6 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       tip: () => `${r.name}: ${fmt(loop.state.resources[r.id] ?? new Decimal(0))}`,
     };
   });
-  const pages: Partial<Record<string, { render(): void }>> = {};
   // the account level tooltip: XP, points to spend, and what the badge opens
   const levelTip = (): HTMLElement => {
     const v = levelBadge(accountInfo(loop.state, content));
@@ -157,8 +155,8 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     version,
     currencies,
     coins: (id, amount) => (isMoney(content, id) ? coinAmount(content.coins, amount) : null),
+    coinArt: moneyCoinArt,
     levelTip,
-    onShow: (id) => pages[id]?.render(),
     onLevel: () => {
       if (track.isOpen()) track.close();
       else track.open(trackView(content, rewardTrack(loop.state, content)), levelOf());
@@ -176,26 +174,11 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   shell.setLevel(levelBadge(accountInfo(loop.state, content)));
   shellRef = shell;
   installPixelNumbers(shell.el);
-  for (const p of PAGES) {
-    if (
-      ![
-        'home',
-        'skills',
-        'settings',
-        'production',
-        'dungeons',
-        'cards',
-        'summon',
-        'shop',
-        'wardrobe',
-        'achievements',
-      ].includes(p.id)
-    )
-      placeholderPage(shell.page(p.id as Exclude<typeof p.id, 'home'>), p.id as never);
-  }
+  // the one table (UI_RULES.md §2, "The table"): the window, the wings, the dock and the views
+  const table = createTable();
+  shell.main.append(table.el);
   const app = shell.notices;
   const director = createDirector(content, () => loop.state);
-  const visible = (id: string) => () => shell.current() === id && !document.hidden;
 
   if (best.errors.length > 0) {
     const warning = h(
@@ -225,13 +208,32 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         loadoutProps(content, loop.state, id, 'main', collectModifiers(loop.state, content)),
     });
 
-  // the quest scroll under the header (E8); goals are worked out once a second
-  const quest = createQuestScroll(shell.quest, (page) => shell.show(page));
+  // the goal list under the header's Goals button (DESIGN.md §10); a goal opens its view.
+  // Goals worked out once a second.
+  const goalView = (row: GoalRow): ViewId | null => {
+    switch (row.page) {
+      case 'production':
+        return content.mineById.has(row.id.slice(row.id.indexOf(':') + 1)) ? 'mining' : 'logging';
+      case 'dungeons':
+        return 'dungeon';
+      case 'home':
+        return null;
+      default:
+        return row.page;
+    }
+  };
+  const quest = createQuestScroll(shell.goals, (row) => {
+    const id = goalView(row);
+    if (id) table.open(id, shell.goalsButton);
+    else table.host.close();
+  });
   let questAt = 0;
   const renderQuest = (now: number): void => {
     if (now - questAt < 1000) return;
     questAt = now;
-    quest.update(goalRows(nextGoals(loop.state, content, 3)));
+    const rows = goalRows(nextGoals(loop.state, content, 3));
+    quest.update(rows);
+    shell.setGoals(rows.length);
   };
 
   // achievement unlocks (DESIGN.md §11): a toast and the sticker sound wherever they happen;
@@ -267,97 +269,40 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     void save(); // purchases are saved right away, not at the next autosave
   };
 
-  pages['home'] = createHomePage(shell.page('home'), {
-    content,
-    state: () => loop.state,
-    director,
-    visible: visible('home'),
-    open: (id) => shell.show(id),
-  });
-  pages['production'] = createProductionPage(shell.page('production'), {
-    content,
-    state: () => loop.state,
-    apply: applyAndSave,
-    director,
-    coins: shell,
-    visible: visible('production'),
-    sound: playSound,
-    onTierUps,
-    setBuySlot: (el) => shell.setQuestSlot('production', el),
-  });
-  // one card view model for the Cards page and the dungeon drawer's weapon panel
+  // one card view model for the Cards view and the dungeon's weapon panel
   const cardsModel = createCardsModel(content, (id, owned) =>
     cardItemArt(content, id, owned, loop.state),
   );
-  pages['cards'] = createCardsPage(shell.page('cards'), {
+  let lastSavedAt: number | null = null;
+  const tableCtx: TableContext = {
     content,
-    model: cardsModel,
-    state: () => loop.state,
-    apply: applyAndSave,
-    onTierUps,
-  });
-  pages['summon'] = createSummonPage(shell.page('summon'), {
-    content,
-    state: () => loop.state,
-    apply: applyAndSave,
-    sound: playSound,
-  });
-  // The Shop page (DESIGN.md §11): market stalls for the Starlight shop, Shard shop and Ascension
-  pages['shop'] = createShopPage(shell.page('shop'), {
-    content,
-    state: () => loop.state,
-    apply: applyAndSave,
-    sound: playSound,
-  });
-  pages['wardrobe'] = createWardrobePage(shell.page('wardrobe'), {
-    content,
-    state: () => loop.state,
-    apply: applyAndSave,
-    sound: playSound,
-    onLoadoutChange: applyTheme,
-  });
-  pages['achievements'] = createAchievementsPage(shell.page('achievements'), {
-    content,
-    state: () => loop.state,
-    apply: applyAndSave,
-    sound: playSound,
-  });
-  pages['skills'] = createSkillsPage(shell.page('skills'), {
-    content,
-    state: () => loop.state,
-    apply: applyAndSave,
-    sound: playSound,
-  });
-  pages['dungeons'] = createDungeonsPage(shell.page('dungeons'), {
-    content,
-    cards: cardsModel,
     state: () => loop.state,
     apply: applyAndSave,
     director,
     coins: shell,
-    visible: visible('dungeons'),
     sound: playSound,
     onTierUps,
-  });
-
-  // Settings (DESIGN.md §11): display, sound, save, help
-  let lastSavedAt: number | null = null;
-  pages['settings'] = createSettingsPage(shell.page('settings'), {
-    content,
-    state: () => loop.state,
+    cards: cardsModel,
+    applyTheme,
     version,
-    exportText: () => {
-      step();
-      return exportSaveString(loop.state, Date.now());
+    save: {
+      exportText: () => {
+        step();
+        return exportSaveString(loop.state, Date.now());
+      },
+      replace: (imported) => {
+        loop.reset(imported, Date.now());
+        applyTheme();
+        rendered();
+        void save();
+      },
+      lastSavedAt: () => lastSavedAt,
     },
-    replace: (imported) => {
-      loop.reset(imported, Date.now());
-      applyTheme();
-      rendered();
-      void save();
-    },
-    lastSavedAt: () => lastSavedAt,
-  });
+    open: (id) => table.open(id),
+    close: () => table.host.close(),
+    current: () => table.host.current(),
+  };
+  table.build(allViews(), allPieces(), tableCtx);
 
   const details = createDetailsPanel({
     content,
@@ -391,7 +336,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     shell.setLevel(levelBadge(accountInfo(s, content)));
     details.update();
     renderQuest(performance.now());
-    pages[shell.current()]?.render();
+    table.render(performance.now());
   };
 
   /** Steps the loop, announces first clears and hands the report to the stage director. */
@@ -468,5 +413,6 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   }
 
   rendered();
+  table.enter();
   await save(); // a fresh game gets a save file right away
 }

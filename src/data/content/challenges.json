@@ -1,0 +1,296 @@
+[
+  {
+    "id": "lone_wolf",
+    "name": "Lone Wolf",
+    "rule": "No supports: only your main card fights.",
+    "restrictions": ["no_supports"],
+    "penalties": [],
+    "targets": [
+      {
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 12
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 20
+      }
+    ],
+    "rewards": [
+      [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "8"
+        }
+      ],
+      [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
+        }
+      ],
+      [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "common_folk",
+    "name": "Common Folk",
+    "rule": "Only Common cards count in the fighting loadout.",
+    "restrictions": ["commons_only"],
+    "penalties": [],
+    "targets": [
+      {
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 20
+      }
+    ],
+    "rewards": [
+      [
+        {
+          "stat": "xp.card",
+          "kind": "percent",
+          "value": "10"
+        }
+      ],
+      [
+        {
+          "stat": "xp.card",
+          "kind": "percent",
+          "value": "15"
+        }
+      ],
+      [
+        {
+          "stat": "xp.card",
+          "kind": "percent",
+          "value": "25"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "untrained",
+    "name": "Untrained",
+    "rule": "Training gives nothing.",
+    "restrictions": ["no_training"],
+    "penalties": [],
+    "targets": [
+      {
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 15
+      },
+      {
+        "dungeon": "frostspire_vault",
+        "difficulty": "normal",
+        "floor": 15
+      }
+    ],
+    "rewards": [
+      [
+        {
+          "stat": "drops.moneyMultiplier",
+          "kind": "mult",
+          "value": "1.1"
+        }
+      ],
+      [
+        {
+          "stat": "drops.moneyMultiplier",
+          "kind": "mult",
+          "value": "1.15"
+        }
+      ],
+      [
+        {
+          "stat": "drops.moneyMultiplier",
+          "kind": "mult",
+          "value": "1.25"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "drought",
+    "name": "Drought",
+    "rule": "Production is halved.",
+    "restrictions": [],
+    "penalties": [
+      {
+        "stat": "production.rate",
+        "kind": "mult",
+        "value": "0.5"
+      }
+    ],
+    "targets": [
+      {
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 20
+      }
+    ],
+    "rewards": [
+      [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "10"
+        }
+      ],
+      [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "15"
+        }
+      ],
+      [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "25"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "glass_cannon",
+    "name": "Glass Cannon",
+    "rule": "Card health is a quarter of normal.",
+    "restrictions": [],
+    "penalties": [
+      {
+        "stat": "combat.health",
+        "kind": "mult",
+        "value": "0.25"
+      }
+    ],
+    "targets": [
+      {
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 12
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 20
+      }
+    ],
+    "rewards": [
+      [
+        {
+          "stat": "combat.health",
+          "kind": "percent",
+          "value": "10"
+        }
+      ],
+      [
+        {
+          "stat": "combat.health",
+          "kind": "percent",
+          "value": "15"
+        }
+      ],
+      [
+        {
+          "stat": "combat.health",
+          "kind": "percent",
+          "value": "25"
+        }
+      ]
+    ]
+  },
+  {
+    "id": "single_post",
+    "name": "Single Post",
+    "rule": "Only one worker works.",
+    "restrictions": ["one_worker"],
+    "penalties": [],
+    "targets": [
+      {
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      {
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 20
+      }
+    ],
+    "rewards": [
+      [
+        {
+          "stat": "worker.power",
+          "kind": "percent",
+          "value": "10"
+        }
+      ],
+      [
+        {
+          "stat": "worker.power",
+          "kind": "percent",
+          "value": "15"
+        }
+      ],
+      [
+        {
+          "stat": "worker.power",
+          "kind": "percent",
+          "value": "25"
+        }
+      ]
+    ]
+  }
+]

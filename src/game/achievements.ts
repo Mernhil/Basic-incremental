@@ -3,8 +3,9 @@ import { skillPointsSpent, weaponCircles } from './account';
 import { grantCard } from './cards';
 import { Decimal } from './num';
 import { isProducerUnlocked, mineLevel, producersOf } from './production';
-import { stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
+import { floorCount, floorPosition, stageFloors, STAR_DIFFICULTIES, stageKey } from './floors';
 import { stageStarLevel, totalStageStarLevels } from './stageStars';
+import { totalChallengeCompletions } from './challenges';
 import { activeWorkers, forgeWorker } from './workers';
 import type { TickReport } from './report';
 import { cloneState, type GameState } from './state';
@@ -87,6 +88,8 @@ function measure(
     }
     case 'skill_points_spent':
       return { value: skillPointsSpent(state, content), target: condition.amount };
+    case 'challenge_completions':
+      return { value: totalChallengeCompletions(state, content), target: condition.amount };
     case 'ascensions':
       return { value: state.prestigeCount, target: condition.amount };
     case 'offline_hours':
@@ -115,13 +118,27 @@ function measure(
     case 'dungeon_starred': {
       const done = content.dungeons.some((d) =>
         stageFloors(content, d).every((floor) =>
-          STAR_DIFFICULTIES.every(
+          (condition.difficulty ? [condition.difficulty] : STAR_DIFFICULTIES).every(
             (diff) =>
               stageStarLevel(state, content, stageKey(d.id, diff, floor)) >= condition.level,
           ),
         ),
       );
       return { value: done ? 1 : 0, target: 1 };
+    }
+    case 'tier_cleared': {
+      const beaten = content.dungeons.filter(
+        (d) =>
+          floorPosition(state, d, condition.difficulty).best >= floorCount(d, condition.difficulty),
+      ).length;
+      return { value: beaten, target: condition.count ?? content.dungeons.length };
+    }
+    case 'endless_depth': {
+      const deepest = Math.max(
+        0,
+        ...content.dungeons.map((d) => floorPosition(state, d, 'endless').best),
+      );
+      return { value: deepest, target: condition.depth };
     }
     case 'star_total':
       return { value: totalStageStarLevels(state, content), target: condition.amount };
@@ -145,6 +162,10 @@ function measure(
         state.production.forge.recipe !== null && forgeWorker(state, content) !== null;
       return { value: working ? 1 : 0, target: 1 };
     }
+    case 'bonds_found':
+      return { value: state.discoveredBonds.length, target: condition.count };
+    case 'expeditions_done':
+      return { value: state.expeditions.completed, target: condition.count };
     case 'wishlist':
       return { value: state.cards.wishlist.length, target: condition.count };
     case 'wishlist_owned':

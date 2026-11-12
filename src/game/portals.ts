@@ -9,6 +9,11 @@ import { cloneState, type GameState, type PortalCounters } from './state';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 
+/** The Focus Portal (DESIGN.md §7): the Card Portal aimed at one item type. */
+export const FOCUS_PORTAL_ID = 'focus_portal';
+/** The portal whose price, rates and pity the Focus Portal shares. */
+export const FOCUS_BASE_PORTAL_ID = 'card_portal';
+
 /**
  * Summon portals (DESIGN.md §7, "Beta portals"): one engine for every portal (the Card Portal now,
  * the Wardrobe Gate with the Wardrobe). A single pull costs `cost.single`, a 10-pull `cost.ten`;
@@ -50,13 +55,54 @@ export type PullFailure =
   /** Not 1 or 10. */
   | 'invalid-count'
   /** Not enough of the portal resource. */
-  | 'unaffordable';
+  | 'unaffordable'
+  /** The Focus Portal has no item type chosen. */
+  | 'no-focus';
 
 export type PullOutcome =
   { ok: true; state: GameState; results: PullResult[] } | { ok: false; reason: PullFailure };
 
 const rarityRank = (r: Rarity): number => RARITIES.indexOf(r);
 const atLeast = (r: Rarity, min: Rarity): boolean => rarityRank(r) >= rarityRank(min);
+
+/** A portal as pulls see it: the pool to draw from, and the portal that holds its price, pity and counters. */
+export interface ResolvedPortal {
+  /** The portal to draw from (the Focus Portal's pool is cut to its item type). */
+  portal: Portal;
+  /** Where the price, the pity threshold, the rates' scope and the counters live. */
+  base: Portal;
+}
+
+/**
+ * Finds a portal by id. The Focus Portal is not in `portals.json`: it is the Card Portal with
+ * its pool cut to the cards of the chosen item type, each rarity keeping the whole chance it has
+ * in the Card Portal (so the rarity rates are the same), and it shares that portal's counters
+ * (DESIGN.md §7 Focus Portal details). With no type chosen its pool is empty.
+ */
+export function resolvePortal(
+  state: GameState,
+  content: Content,
+  portalId: string,
+): ResolvedPortal | null {
+  if (portalId !== FOCUS_PORTAL_ID) {
+    const portal = content.portals.find((p) => p.id === portalId);
+    return portal ? { portal, base: portal } : null;
+  }
+  const base = content.portals.find((p) => p.id === FOCUS_BASE_PORTAL_ID);
+  if (!base) return null;
+  const kind = state.summon.focusKind;
+  const matches = (itemId: string): boolean =>
+    kind !== null && content.cardById.get(itemId)?.item.kind === kind;
+  const pool: Portal['pool'] = [];
+  for (const rarity of RARITIES) {
+    const ofRarity = base.pool.filter((e) => e.rarity === rarity);
+    const hits = ofRarity.filter((e) => matches(e.itemId));
+    if (hits.length === 0) continue;
+    const total = ofRarity.reduce((a, e) => a + e.weight, 0);
+    for (const e of hits) pool.push({ ...e, weight: total / hits.length });
+  }
+  return { portal: { ...base, id: FOCUS_PORTAL_ID, name: 'Focus Portal', pool }, base };
+}
 
 function counters(state: GameState, portalId: string): PortalCounters {
   return state.portals[portalId] ?? { pity: 0, pulls: 0, pityHits: 0 };
@@ -146,7 +192,7 @@ function grantLegacySkin(state: GameState, portal: Portal, skinId: string): Skin
     return { kind: 'new' };
   }
   const resource = portal.cost.resource;
-  const amount = new Decimal(portal.cost.single).mul(portal.duplicatePayback).round();
+  const amount = new Decimal(portal.cost.single).mul(portal.duplicatePayback);
   state.resources[resource] = (state.resources[resource] ?? new Decimal(0)).add(amount);
   return { kind: 'payback', resource, amount };
 }
@@ -164,19 +210,21 @@ export function pull(
   rng: Rng,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): PullOutcome {
-  const portal = content.portals.find((p) => p.id === portalId);
-  if (!portal) return { ok: false, reason: 'unknown' };
+  const resolved = resolvePortal(state, content, portalId);
+  if (!resolved) return { ok: false, reason: 'unknown' };
+  const { portal, base } = resolved;
   if (count !== 1 && count !== 10) return { ok: false, reason: 'invalid-count' };
-  const price = pullPrice(portal, count, modifiers);
+  if (portal.pool.length === 0) return { ok: false, reason: 'no-focus' };
+  const price = pullPrice(base, count, modifiers);
   if (!canAfford(state, [price])) return { ok: false, reason: 'unaffordable' };
 
   const next = pay(state, [price]);
-  const threshold = pityThreshold(portal, modifiers);
+  const threshold = pityThreshold(base, modifiers);
   const lowest = portal.pool.reduce<Rarity>(
     (low, e) => (rarityRank(e.rarity) < rarityRank(low) ? e.rarity : low),
     portal.pool[0]!.rarity,
   );
-  let { pity, pulls, pityHits } = counters(state, portalId);
+  let { pity, pulls, pityHits } = counters(state, base.id);
   const wishlist = wishlistOf(state, portal);
   let guaranteeMet = false;
   const results: PullResult[] = [];
@@ -203,7 +251,7 @@ export function pull(
     pulls += 1;
     if (byPity) pityHits += 1;
   }
-  next.portals[portalId] = { pity, pulls, pityHits };
+  next.portals[base.id] = { pity, pulls, pityHits };
   grantAccountXp(next, content, content.account.xp.perPull.mul(count), modifiers);
   return { ok: true, state: next, results };
 }
@@ -300,15 +348,17 @@ export function portalInfo(
   portalId: string,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): PortalInfo | null {
-  const portal = content.portals.find((p) => p.id === portalId);
-  if (!portal) return null;
+  const resolved = resolvePortal(state, content, portalId);
+  if (!resolved) return null;
+  const { portal, base } = resolved;
   const offer = (count: PullCount) => {
-    const price = pullPrice(portal, count, modifiers);
-    return { price, affordable: canAfford(state, [price]) };
+    const price = pullPrice(base, count, modifiers);
+    // a Focus Portal with no item type chosen has nothing to pull
+    return { price, affordable: portal.pool.length > 0 && canAfford(state, [price]) };
   };
-  const c = counters(state, portalId);
-  const threshold = pityThreshold(portal, modifiers);
-  const total = portal.pool.reduce((a, e) => a + e.weight, 0);
+  const c = counters(state, base.id);
+  const threshold = pityThreshold(base, modifiers);
+  const total = portal.pool.reduce((a, e) => a + e.weight, 0) || 1;
   const byRarity = RARITIES.map((rarity) => ({
     rarity,
     chance:

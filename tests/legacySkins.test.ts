@@ -30,7 +30,7 @@ function gateContent(): Content {
 const content = gateContent();
 
 const withGlamour = (n: number, base: GameState = freshState()): GameState => {
-  base.resources['glamour_crystal'] = new Decimal(n * CRYSTAL_UNIT);
+  base.resources['glamour_scroll'] = new Decimal(n * CRYSTAL_UNIT);
   return base;
 };
 const owning = (...ids: string[]): GameState => {
@@ -82,12 +82,12 @@ describe('legacy skins content', () => {
     ]);
   });
 
-  it('declares the Legacy Gate disabled, priced like the Wardrobe Gate', () => {
-    expect(baseContent.portals.some((p) => p.id === GATE)).toBe(false);
+  it('declares the Legacy Gate open, priced like the Wardrobe Gate', () => {
+    expect(baseContent.portals.some((p) => p.id === GATE)).toBe(true);
     const gate = baseContent.allPortals.find((p) => p.id === GATE)!;
     const wardrobe = baseContent.allPortals.find((p) => p.id === 'wardrobe_gate')!;
     expect(gate.kind).toBe('skins');
-    expect(gate.enabled).toBe(false);
+    expect(gate.enabled).toBe(true);
     expect(gate.cost).toEqual(wardrobe.cost);
     expect(gate.pity).toEqual(wardrobe.pity);
     expect(gate.tenPullGuarantee).toBe(wardrobe.tenPullGuarantee);
@@ -232,11 +232,8 @@ describe('legacyWeaponArt (what a card draws)', () => {
 });
 
 describe('Legacy Gate pulls', () => {
-  it('is not pullable while disabled', () => {
-    expect(pull(withGlamour(100), baseContent, GATE, 1, constantRng(0))).toEqual({
-      ok: false,
-      reason: 'unknown',
-    });
+  it('is pullable now that the gate is open', () => {
+    expect(pull(withGlamour(100), baseContent, GATE, 1, constantRng(0)).ok).toBe(true);
   });
 
   it('a new skin becomes owned and is marked new', () => {
@@ -244,10 +241,10 @@ describe('Legacy Gate pulls', () => {
     if (!out.ok) throw new Error(out.reason);
     expect(out.results[0]!.gain).toEqual({ kind: 'new' });
     expect(out.state.legacySkins).toEqual([out.results[0]!.itemId]);
-    expect(out.state.resources['glamour_crystal']!.toNumber()).toBe(0);
+    expect(out.state.resources['glamour_scroll']!.toNumber()).toBe(0);
   });
 
-  it('a duplicate pays back 20% of a single pull in Glamour Crystals and owns it once', () => {
+  it('a duplicate pays back 20% of a single pull in Glamour Scrolls and owns it once', () => {
     const first = pull(withGlamour(20), content, GATE, 1, constantRng(0));
     if (!first.ok) throw new Error(first.reason);
     const id = first.results[0]!.itemId;
@@ -257,17 +254,17 @@ describe('Legacy Gate pulls', () => {
     const gain = second.results[0]!.gain;
     expect(gain.kind).toBe('payback');
     if (gain.kind !== 'payback') return;
-    expect(gain.resource).toBe('glamour_crystal');
+    expect(gain.resource).toBe('glamour_scroll');
     expect(gain.amount.toNumber()).toBe(2 * CRYSTAL_UNIT);
     expect(second.state.legacySkins).toEqual([id]);
-    expect(second.state.resources['glamour_crystal']!.toNumber()).toBe(2 * CRYSTAL_UNIT);
+    expect(second.state.resources['glamour_scroll']!.toNumber()).toBe(2 * CRYSTAL_UNIT);
   });
 
   it('a ten-pull of one skin is one new and nine paybacks', () => {
     const out = pull(withGlamour(100), content, GATE, 10, constantRng(0));
     if (!out.ok) throw new Error(out.reason);
     expect(out.results.map((r) => r.gain.kind)).toEqual(['new', ...Array(9).fill('payback')]);
-    expect(out.state.resources['glamour_crystal']!.toNumber()).toBe(18 * CRYSTAL_UNIT);
+    expect(out.state.resources['glamour_scroll']!.toNumber()).toBeCloseTo(18 * CRYSTAL_UNIT, 9);
   });
 
   it('counts pity on its own portal', () => {

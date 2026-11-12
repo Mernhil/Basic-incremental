@@ -1,0 +1,7 @@
+/* Package 9b: the views mount a `.shell-page` that is a plain block; the job views lay out their
+   own plates and side column (job.css) and the Forge its three panels (forge.css). */
+.vh-body > .shell-page.gv-job,
+.vh-body > .shell-page.gv-forge {
+  display: block;
+  max-width: none;
+}

@@ -30,7 +30,7 @@ import {
   formatRunTable,
   RUN_MILESTONES,
   IDLE_CHECKIN_SECONDS,
-  choosePush,
+  chooseAutoChallenge,
   type RunRecord,
 } from '../scripts/sim/sim';
 import { loadContent } from '../src/data';
@@ -73,22 +73,27 @@ describe('balance sim: greedy buyer', () => {
     expect(Number.isFinite(oak!.eta!)).toBe(true);
     // Plots, slots and expansions are gone.
     expect(candidates.some((c) => c.id.startsWith('expand:'))).toBe(false);
-    // Nothing earns Glamour Crystals before a kill, so a Wardrobe Gate pull is out of reach.
-    const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate');
+    // Nothing earns Glamour Scrolls before a kill, so a Wardrobe Gate 10-pull is out of reach.
+    const gate = candidates.find((c) => c.id === 'summon:wardrobe_gate:10');
     expect(gate?.eta === null || gate!.eta! > 0).toBe(true);
   });
 
-  it('buys the cheapest affordable purchase first, then keeps buying', () => {
-    // The price of an Oak level buys it (the best gain per Money); a mine level costs less.
+  it('buys the best gain per Money first, then keeps buying', () => {
+    // The price of an Oak level buys a level of the line with the best gain per Money. The
+    // Copper Quarry's gems also pay for Sharpen (`trainingFeed`), which puts it just ahead.
     const state = rich(freshState(), 'money', firstLevel('tree', 'oak'));
+    const money = buyerCandidates(state, content).filter(
+      (c) => c.kind === 'economy' && c.prices[0]!.resource === 'money',
+    );
+    const per = (c: (typeof money)[number]): number => c.gain! / c.prices[0]!.amount.toNumber();
+    const best = [...money].sort((a, b) => per(b) - per(a))[0]!;
     const { state: after, bought } = greedyBuy(state, content);
-    expect(bought).toContain('tree:oak');
-    expect(after.production.treeLevels['oak']).toBe(1);
-    expect(after.resources['money']!.toNumber()).toBe(0);
+    expect(bought.find((id) => /^(mine|tree|tool):/.test(id))).toBe(best.id);
+    expect(after.resources['money']!.lt(state.resources['money']!)).toBe(true);
   });
 
   it('summons from a portal once a pull is affordable', () => {
-    const state = rich(freshState(), 'summon_crystal', 10 * CRYSTAL_UNIT);
+    const state = rich(freshState(), 'summon_scroll', 10 * CRYSTAL_UNIT);
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought).toContain('summon:card_portal');
     expect(after.portals['card_portal']?.pulls).toBe(1);
@@ -129,25 +134,27 @@ describe('balance sim: greedy buyer', () => {
   it('does nothing when nothing is affordable', () => {
     // no Money and no crystals (a new game holds one pull)
     const state = rich(freshState(), 'money', 0);
-    state.resources['summon_crystal'] = new Decimal(0);
+    state.resources['summon_scroll'] = new Decimal(0);
     const { bought } = greedyBuy(state, levelPointsOnly(content));
     expect(bought).toEqual([]);
   });
 });
 
 describe('balance sim: smarter buyer (Phase 9)', () => {
-  it('spends Money on the economy and leaves the gems to the card upgrades waiting for them', () => {
+  it('spends Money on the economy, its spare gems on training, and leaves the Cores to the card upgrades', () => {
     const state = freshState();
     const squire = state.cards.owned['ember_squire']!;
     squire.stars = 6;
     squire.level = 40;
     state.resources['moss_core'] = new Decimal(10);
-    state.resources['iron_gem'] = new Decimal(600);
+    state.resources['copper_gem'] = new Decimal(6000);
     state.resources['money'] = new Decimal(1e5);
     state.clearedDungeons = ['mossy_cellar'];
     const { state: after, bought } = greedyBuy(state, content);
     expect(bought.some((id) => id.startsWith('mine:') || id.startsWith('tree:'))).toBe(true);
-    expect(after.resources['iron_gem']!.toNumber()).toBe(600);
+    // Training is paid in gems (DESIGN.md §6): the spare Copper Gems go into Sharpen.
+    expect(bought).toContain('train:sharpen');
+    expect(after.resources['copper_gem']!.toNumber()).toBeLessThan(6000);
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
@@ -253,7 +260,7 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     state.resources['moonwillow_gem'] = new Decimal(1e6);
     state.resources['grotto_gem'] = new Decimal(1e6);
     state.resources['money'] = new Decimal(1e9);
-    state.resources['summon_crystal'] = new Decimal(0); // no pull mixed in
+    state.resources['summon_scroll'] = new Decimal(0); // no pull mixed in
     const { bought } = greedyBuy(state, content);
     expect(bought).not.toContain('tier:geode_golem');
     state.resources['frost_core'] = new Decimal(coreCost!.amount).mul(2);
@@ -537,7 +544,7 @@ describe('balance sim: run', () => {
     const first = content.dungeons[0]!;
     state.combat.floors[first.id] = {
       difficulty: 'normal',
-      mode: 'farm',
+      autoChallenge: false,
       tiers: {
         normal: { floor: first.floors, best: first.floors },
         hard: { floor: first.floors, best: first.floors },
@@ -570,13 +577,19 @@ describe('balance sim: run', () => {
     // The shipped numbers, not the pinned test content. A new game holds one pull (DESIGN.md §3),
     // so the first summon comes in the first step; the opening running ahead of its §14 targets
     // is accepted until the Scope 3 retune (DESIGN.md §16), but never behind them.
-    const result = runSim(loadContent(), { hours: 1, seed: 1, stepSeconds: 10 });
-    expect(result.hits['first_summon']).not.toBeNull();
-    expect(result.hits['first_summon']!).toBeLessThanOrEqual(60);
+    // The first clear follows the first pulls, so one seed is pull luck: the median of three
+    // seeds is held to the target (the sim's band, DESIGN.md §14 Sim bands).
+    const shipped = loadContent();
     const clear = MILESTONES.find((m) => m.id === 'clear_d1')!;
-    expect(result.hits['clear_d1']).not.toBeNull();
-    expect(targetRatio(clear, result.hits['clear_d1']! / 3600)).toBeLessThan(125);
-  }, 30_000);
+    const ratios = [1, 2, 3].map((seed) => {
+      const result = runSim(shipped, { hours: 1, seed, stepSeconds: 10 });
+      expect(result.hits['first_summon']).not.toBeNull();
+      expect(result.hits['first_summon']!).toBeLessThanOrEqual(60);
+      expect(result.hits['clear_d1']).not.toBeNull();
+      return targetRatio(clear, result.hits['clear_d1']! / 3600);
+    });
+    expect([...ratios].sort((x, y) => x - y)[1]!).toBeLessThan(125);
+  }, 90_000);
 
   it('samples the fighting DPS every quarter hour for the tuning report', () => {
     const result = runSim(content, { hours: 1.1, seed: 1, stepSeconds: 10 });
@@ -665,14 +678,16 @@ describe('balance sim: idle profile', () => {
   }, 30_000);
 
   it('buys only at its check-ins, every 30 minutes', () => {
-    // The starter pull is spent at the first check-in (t = 0); crystals earned afterwards wait
-    // for the next one.
+    // The starter pull and the daily scrolls are spent at the first check-in (t = 0); scrolls
+    // earned afterwards wait for the next one.
+    const first = runSim(loadContent(), { hours: 0.01, seed: 1, profile: 'idle' }).log.summons;
+    expect(first).toBeGreaterThan(0);
     const before = runSim(loadContent(), { hours: 0.45, seed: 1, profile: 'idle' });
     expect(before.simSeconds).toBe(0.45 * 3600);
     expect(before.simSeconds).toBeLessThan(IDLE_CHECKIN_SECONDS);
-    expect(before.log.summons).toBe(1);
+    expect(before.log.summons).toBe(first);
     const after = runSim(loadContent(), { hours: 0.55, seed: 1, profile: 'idle' });
-    expect(after.log.summons).toBeGreaterThan(1);
+    expect(after.log.summons).toBeGreaterThan(first);
   }, 30_000);
 
   it("is offline for 8 hours after 16 hours awake, on the game's own offline progress", () => {
@@ -690,23 +705,23 @@ describe('balance sim: idle profile', () => {
 });
 
 describe('balance sim: floors', () => {
-  it('pushes again once the next floor is one the loadout wins, and not into a wall', () => {
+  it('turns auto-challenge back on once the next floor is one the loadout wins, not into a wall', () => {
     const floors = floorsContent;
     const knocked = (): GameState => {
       const state = freshState();
       state.combat.floors['mossy_cellar'] = {
         difficulty: 'normal',
-        mode: 'farm',
+        autoChallenge: false,
         tiers: { normal: { floor: 3, best: 3 } },
       };
       return state;
     };
-    // A strong loadout wins floor 4 with room to spare: back to pushing.
-    const strong = choosePush(knocked(), withDps(1e6, floors));
-    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).mode).toBe('push');
+    // A strong loadout wins floor 4 with room to spare: auto-challenge goes back on.
+    const strong = chooseAutoChallenge(knocked(), withDps(1e6, floors)).state;
+    expect(floorPosition(strong, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(true);
     // A bare-handed one would fall first: it keeps farming.
-    const weak = choosePush(knocked(), withDps(0.01, floors));
-    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).mode).toBe('farm');
+    const weak = chooseAutoChallenge(knocked(), withDps(0.01, floors)).state;
+    expect(floorPosition(weak, floors.dungeonById.get('mossy_cellar')!).autoChallenge).toBe(false);
   });
 
   it('reaches the Ember Crypt through the ten floors of the Mossy Cellar', () => {

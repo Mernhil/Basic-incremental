@@ -29,10 +29,7 @@ await page.bringToFront();
 await page.waitForSelector('.shell');
 if (!flags.has('--keep'))
   await page.evaluate(() => document.querySelector('.away button, .wb__collect')?.click());
-await page.evaluate(
-  (id) => document.querySelector(`.shell-rail__item[data-page="${id}"]`)?.click(),
-  pageId,
-);
+await page.evaluate((id) => document.querySelector(`[data-open="${id}"]`)?.click(), pageId);
 if (flags.has('--fight')) {
   await page.evaluate(() => {
     if (document.querySelector('.dp-floor--active')) return;

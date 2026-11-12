@@ -9,6 +9,9 @@ export * from './drops';
 export * from './report';
 export * from './tick';
 export * from './combat';
+/** The card duel (DESIGN.md §6): the team's rules and the selectors the duel's UI reads. */
+export * from './duel';
+export * from './duelView';
 export * from './floors';
 /** Stage stars and overflow (DESIGN.md §6): `stageStarLevel` and `totalStageStarLevels` feed the skill points. */
 export * from './stageStars';
@@ -53,8 +56,12 @@ export * from './goals';
 export * from './portals';
 export * from './autobuyers';
 export * from './prestige';
+export * from './challenges';
 export * from './wardrobe';
 export * from './achievements';
+export * from './presets';
+export * from './bonds';
+export * from './expeditions';
 export * from './account';
 export * from './upgrades';
 export { METALS, type Metal } from '../data';
@@ -218,7 +225,27 @@ export {
   type PullFailure,
   type PortalInfo,
   type CosmeticGain,
+  /** The Focus Portal (a view of the Card Portal aimed at one item type): its id, and a portal's pool and counters. */
+  FOCUS_PORTAL_ID,
+  resolvePortal,
 } from './portals';
+
+// ---- Scrolls, the Focus Portal's choice, the daily reward and the reveal show (DESIGN.md §3, §7) ----
+
+export {
+  floorFirstWinScrolls,
+  payFloorFirstWin,
+  fieldCacheScrolls,
+  payFieldCache,
+  localDay,
+  dailyAvailable,
+  claimDaily,
+  focusKinds,
+  setFocusKind,
+  revealPlan,
+  type ScrollLump,
+  type RevealPlan,
+} from './summon';
 
 // ---- Progression layer (DESIGN.md §4, §6, §10, §12): the contract with the UI, one line each ---------------
 

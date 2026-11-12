@@ -41,13 +41,8 @@ describe('incomePerSecond', () => {
     const spk = secondsPerKill(state, content, 'mossy_cellar')!;
     // Moss Cores: 10% of 1 per kill.
     expect(incomePerSecond(state, content, 'moss_core').toNumber()).toBeCloseTo(0.1 / spk);
-    // Summon Crystals: the wage, paid every second of fighting (DESIGN.md §3).
-    const wage = content.dungeonById
-      .get('mossy_cellar')!
-      .drops.wages.find((w) => w.resource === 'summon_crystal')!;
-    expect(incomePerSecond(state, content, 'summon_crystal').toNumber()).toBeCloseTo(
-      wage.perSecond.toNumber(),
-    );
+    // Scrolls come in lumps, never as income (DESIGN.md §3).
+    expect(incomePerSecond(state, content, 'summon_scroll').toNumber()).toBe(0);
   });
 
   it('is 0 for a resource nothing gives', () => {
@@ -116,12 +111,12 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has the next mine milestone with the price of the levels left', () => {
     const state = bareState();
-    state.production.mineLevels['copper_quarry'] = 20;
+    state.production.mineLevels['copper_quarry'] = 27;
     const goal = find(allGoals(state, realContent), 'mine_milestone:copper_quarry')!;
-    expect(goal).toMatchObject({ title: 'Copper Quarry Lv 25 (×2)', page: 'production' });
+    expect(goal).toMatchObject({ title: 'Copper Quarry Lv 30 (×2)', page: 'production' });
     expect(goal.progress).toBeCloseTo(0.8);
     const mine = content.mineById.get('copper_quarry')!;
-    const price = curveBulkPrice(mine.level.cost, 20, 5).amount.toNumber();
+    const price = curveBulkPrice(mine.level.cost, 27, 3).amount.toNumber();
     state.resources['money'] = new Decimal(0);
     const income = incomePerSecond(state, realContent, 'money').toNumber();
     expect(

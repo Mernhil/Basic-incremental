@@ -1,10 +1,10 @@
-/* Summon page, "Deck and Table" (DESIGN.md §7; UI_RULES.md §2, "Shell look"): one pixel panel with
-   the Card Portal deck on the left, the odds table in the middle, the Wardrobe Gate deck on the
-   right and the last hand below. The frames, wells, tiles and buttons come from theme/frames.css
+/* Summon view, three columns on the table (DESIGN.md §7; UI_RULES.md §2, "The Summon view", mockup
+   4h): the decks as piles on the left, the wishlist in the middle, the odds on the right, the last
+   hand across the bottom. The frames, wells, tiles and buttons come from theme/frames.css
    (.px-panel, .px-well, .px-tile, .px-btn); this file is the layout. The deck backs and the hand's
    cards are at 1x: --u is one art pixel in CSS px, a whole number of device pixels (fitCard() sets
-   --card-n and --card-k on .sm-table). Pixelify Sans only at 18 px and up (.px-display). The page
-   has no motion of its own. */
+   --card-n and --card-k on .sm-table). Pixelify Sans only at 18 px and up (.px-display). The view
+   host deals the three columns and the hand in (`data-deal`); the page has no motion of its own. */
 
 .shell-page:has(> .sm-table) {
   max-width: none;
@@ -20,39 +20,61 @@
   --sm-mythic: #ff4fb8;
   --sm-void: #8a5cff;
   display: grid;
-  gap: 4px;
-  /* the frame's outer edge bleeds one step outside the box */
+  grid-template-columns: minmax(380px, 1fr) minmax(0, 1.2fr) minmax(250px, 0.62fr);
+  align-items: start;
+  gap: 16px;
+  /* the panels' outer edges bleed one step outside their boxes */
   margin: var(--fs);
-  padding: 8px 20px 8px;
   box-sizing: border-box;
 }
-.sm-top {
+.sm-col {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(250px, 330px) minmax(0, 1fr);
-  align-items: start;
-  gap: 20px;
-  /* on a wide window the decks stay near the odds table */
-  width: 100%;
-  max-width: 1320px;
-  margin-inline: auto;
+  gap: 14px;
+  min-width: 0;
+  align-content: start;
 }
-@media (max-width: 1060px) {
-  .sm-top {
+.sm-hand {
+  grid-column: 1 / -1;
+}
+@media (max-width: 1180px) {
+  .sm-table {
     grid-template-columns: minmax(0, 1fr);
-    justify-items: center;
   }
 }
-.sm-deck--left {
-  grid-column: 1;
+
+/* ---- the daily scrolls and the Focus Portal's item type (plain controls) ---- */
+.sm-daily {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+  padding: 10px 14px;
 }
-.sm-deck--right {
-  grid-column: 3;
+.sm-daily__title {
+  margin: 0;
+  font-size: 16px;
 }
-@media (max-width: 1060px) {
-  .sm-deck--left,
-  .sm-deck--right {
-    grid-column: 1;
-  }
+.sm-daily__gives {
+  margin: 0;
+}
+.sm-focus {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 4px 0;
+}
+.sm-focus__kind {
+  padding: 3px 8px;
+  font-size: 13px;
+}
+.sm-focus__kind.is-chosen {
+  color: #ffd968;
+  box-shadow: inset 0 0 0 var(--fs-sm) #ffd968;
+}
+.sm-deck__focus {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: 13px;
 }
 
 /* ---- a deck ---- */
@@ -61,15 +83,31 @@
   --sm-back-lo: #1b2a73;
   --sm-back-hi: #8fb0ff;
   display: grid;
-  justify-items: center;
-  gap: 2px;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: 14px;
+  row-gap: 4px;
+  align-content: start;
+  justify-items: start;
   min-width: 0;
-  text-align: center;
+  padding: 12px 14px;
+  text-align: left;
+}
+.sm-deck > * {
+  grid-column: 2;
+}
+.sm-deck > .sm-stack {
+  grid-column: 1;
+  grid-row: 1 / span 12;
 }
 .sm-deck[data-kind='cosmetics'] {
   --sm-back: #b53a82;
   --sm-back-lo: #5c1747;
   --sm-back-hi: #ff9fd0;
+}
+.sm-deck[data-kind='skins'] {
+  --sm-back: #1f8a78;
+  --sm-back-lo: #0b4339;
+  --sm-back-hi: #8fe8d2;
 }
 .sm-deck__name {
   margin: 0;
@@ -79,7 +117,6 @@
 .sm-deck__line,
 .sm-deck__locked {
   margin: 0;
-  max-width: 300px;
   font-size: 14px;
   line-height: 1.3;
   color: var(--px-muted);
@@ -207,7 +244,7 @@
 .sm-pity {
   display: grid;
   gap: 3px;
-  width: min(100%, 230px);
+  width: 100%;
   margin-top: 4px;
   font-size: 14px;
   line-height: 1.25;
@@ -233,9 +270,9 @@
 
 /* ---- buttons ---- */
 .sm-deck__buttons {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
+  display: grid;
+  gap: 8px;
+  width: 100%;
   margin-top: 4px;
 }
 .sm-pull {
@@ -243,7 +280,7 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-width: 104px;
+  width: 100%;
   min-height: 34px;
   padding: 3px 12px;
   box-sizing: border-box;
@@ -271,25 +308,13 @@
 
 /* ---- the odds table ---- */
 .sm-odds {
-  grid-column: 2;
-  align-self: start;
-  margin-top: 40px;
-  padding: 10px 16px 12px;
+  box-sizing: border-box;
+  padding: 10px 14px 12px;
   font-size: 14px;
-}
-@media (max-width: 1060px) {
-  .sm-odds {
-    grid-column: 1;
-    width: 100%;
-    max-width: 330px;
-    box-sizing: border-box;
-    margin-top: 0;
-    order: 3;
-  }
 }
 .sm-odds__title {
   margin: 0 0 6px;
-  text-align: center;
+  text-align: left;
   font-size: 20px;
   line-height: 1.2;
 }
@@ -364,6 +389,7 @@
   display: grid;
   gap: 8px;
   min-width: 0;
+  padding: 10px 14px 14px;
 }
 .sm-hand__head {
   display: flex;
@@ -462,17 +488,12 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 /* ---- the wishlist: the Card Portal's cards by rarity, marked to hunt (DESIGN.md §7) ---- */
 .sm-deck__hunt {
   margin: 0;
-  max-width: 28ch;
   font-size: 13px;
-  text-align: center;
   color: var(--px-muted);
 }
 .sm-wish {
   display: grid;
   gap: 6px;
-  width: 100%;
-  max-width: 1320px;
-  margin-inline: auto;
   padding: 10px 14px;
   box-sizing: border-box;
 }
@@ -492,14 +513,9 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 .sm-wish__row {
   --rc: var(--sm-common);
   display: grid;
-  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 10px;
-}
-@media (max-width: 800px) {
-  .sm-wish__row {
-    grid-template-columns: minmax(0, 1fr);
-  }
+  gap: 4px;
 }
 .sm-wish__row[data-rarity='uncommon'] {
   --rc: var(--sm-uncommon);
@@ -544,4 +560,15 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 }
 .sm-wish__card.is-blocked {
   opacity: 0.5;
+}
+
+/* A legacy skin's picture in the reveal and the hand (the Legacy Gate). */
+.sm-skin {
+  display: inline-block;
+  width: 150px;
+  height: 130px;
+}
+.sm-skin svg {
+  width: 100%;
+  height: 100%;
 }

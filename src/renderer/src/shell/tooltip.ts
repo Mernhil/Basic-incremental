@@ -21,7 +21,10 @@ function ensureTip(): HTMLDivElement {
   tipEl.hidden = true;
   document.body.append(tipEl);
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') hide();
+    if (event.key !== 'Escape' || !tipEl || tipEl.hidden) return;
+    // a showing tooltip takes Esc first; the open view closes on the next one (UI_RULES.md §2)
+    event.preventDefault();
+    hide();
   });
   window.addEventListener('blur', hide);
   return tipEl;

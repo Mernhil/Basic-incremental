@@ -177,8 +177,8 @@ describe('mine types and levels', () => {
     const growth = quarry.growth.toNumber();
     expect(state.resources['money']!.eq(base * 10 - base - Math.ceil(base * growth))).toBe(true);
     expect(state.production.mineLevels['copper_quarry']).toBe(2);
-    // 0.5 * (1 + 2 * 10%) = 0.6
-    expect(productionPerSecond(state, content)['copper_gem']!.eq(0.6)).toBe(true);
+    // 0.5 * (1 + 2 * 5%) = 0.55
+    expect(productionPerSecond(state, content)['copper_gem']!.eq(0.55)).toBe(true);
     expect(mineLevelCost(state, content, 'iron_deeps')!.resource).toBe('money');
   });
 
@@ -194,7 +194,7 @@ describe('mine types and levels', () => {
   it('read production.levelBonus before production.rate', () => {
     const mine = content.mineById.get('copper_quarry')!;
     const mods = [
-      mod('production.levelBonus', 'flat', '10', { producer: 'copper_quarry' }), // 20% a level
+      mod('production.levelBonus', 'flat', '15', { producer: 'copper_quarry' }), // 20% a level
       mod('production.rate', 'mult', '2'),
     ];
     // 0.5 * (1 + 3 * 20%) * 2 = 1.6

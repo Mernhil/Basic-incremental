@@ -38,13 +38,13 @@ function expectedGain(points: number): number {
 function progressedRun(): GameState {
   const state = runWith(1e13, 1e11);
   state.resources['oak_gem'] = new Decimal(5000);
-  state.resources['summon_crystal'] = new Decimal(40);
+  state.resources['summon_scroll'] = new Decimal(40);
   state.resources['moss_core'] = new Decimal(7);
   state.production.mineLevels = { copper_quarry: 30 };
   state.production.unlockedTrees = ['ironbark'];
   state.clearedDungeons = ['mossy_cellar'];
   state.combat.stageKills = { 'mossy_cellar:normal:1': 120 };
-  state.combat.loadoutDamage = new Decimal(50);
+  state.combat.cardDamage = { ember_squire: new Decimal(50) };
   state.bursts.fighting = { gauge: 12, timer: 0.5 };
   state.production.harvestGauges = { oak: { gauge: 12, timer: 0.5 } };
   state.bossHp = new Decimal(123);
@@ -132,7 +132,7 @@ describe('ascend', () => {
     expect(s.production.treeLevels).toEqual({});
     for (const [id, amount] of Object.entries(s.resources)) {
       const kind = content.resourceById.get(id)!.kind;
-      if (kind === 'prestige' || kind === 'crystal' || content.resourceById.get(id)!.keptOnAscend)
+      if (kind === 'prestige' || kind === 'scroll' || content.resourceById.get(id)!.keptOnAscend)
         continue;
       // Gems, Money and Cores start over (Money from its starting amount).
       const start = content.resourceById.get(id)!.startAmount?.toNumber() ?? 0;
@@ -143,19 +143,19 @@ describe('ascend', () => {
     // the workers stay where they are (DESIGN.md §4)
     expect(s.production.workers).toEqual(before.production.workers);
     expect(s.bossHp).toBeNull();
-    expect(s.combat.loadoutDamage.toNumber()).toBe(0);
+    expect(s.combat.cardDamage).toEqual({});
     expect(s.prestigeCount).toBe(1);
   });
 
   it('keeps the premium crystals, and sends Money back to its starting amount (DESIGN.md §3)', () => {
     const before = progressedRun();
     before.resources['money'] = new Decimal('4e9');
-    before.resources['glamour_crystal'] = new Decimal(75);
+    before.resources['glamour_scroll'] = new Decimal(75);
     const result = ascend(before, content);
     if (!result.ok) throw new Error(result.reason);
     const s = result.state;
-    expect(s.resources['summon_crystal']!.toNumber()).toBe(40);
-    expect(s.resources['glamour_crystal']!.toNumber()).toBe(75);
+    expect(s.resources['summon_scroll']!.toNumber()).toBe(40);
+    expect(s.resources['glamour_scroll']!.toNumber()).toBe(75);
     expect(s.resources['money']!.eq(content.resourceById.get('money')!.startAmount!)).toBe(true);
     expect(s.resources['moss_core']!.toNumber()).toBe(0);
     expect(s.resources['frost_sigil']!.toNumber()).toBe(0); // a material now, so it starts over

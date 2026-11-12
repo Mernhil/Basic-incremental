@@ -1,0 +1,87 @@
+/* The view host (UI_RULES.md §2, "A full view"): each full view covers the table under the header,
+   with a title bar (← Table, the name, the view's own controls) and a body that scrolls. Colours
+   from the table and frame tokens, so a table cosmetic re-skins it. */
+
+.vh-layer {
+  --view-bar-h: 56px;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+}
+.vh-layer[hidden] {
+  display: none;
+}
+/* the backdrop only fades (motion E): the table colour, so the table is hidden under the view */
+.vh-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bi-table-bg, #17131f);
+  background-image: radial-gradient(
+    80% 55% at 50% 0%,
+    var(--bi-table-glow, transparent),
+    transparent 70%
+  );
+}
+.vh-view {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: var(--view-bar-h) minmax(0, 1fr);
+}
+.vh-view[hidden] {
+  display: none;
+}
+.vh-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 20px;
+  min-width: 0;
+}
+.vh-back {
+  flex: none;
+  padding: 6px 14px;
+  font-size: 14px;
+}
+.vh-title {
+  margin: 0;
+  font-size: 24px;
+  color: var(--bi-chrome-accent);
+  white-space: nowrap;
+}
+.vh-title:focus {
+  outline: none;
+}
+.vh-title:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 4px;
+}
+.vh-tools {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+/* the body keeps the old main area's padding and scrolling, so pages mount as they were */
+.vh-body {
+  overflow-anchor: none;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 4px 26px 40px;
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  scrollbar-color: var(--px-hi) var(--px-lo);
+}
+.vh-body > .shell-page {
+  min-width: 0;
+}
+/* pages that fill the window (the arena, the job ledger, Cards): as tall as the view's body */
+.vh-body > .shell-page.shell-page--stage {
+  margin: -4px -26px -40px;
+  height: calc(100vh - var(--header-h, 64px) - var(--view-bar-h));
+}
+.vh-body > .shell-page.shell-page--cards {
+  height: calc(100vh - var(--header-h, 64px) - var(--view-bar-h) - 24px);
+  margin-bottom: -28px;
+}

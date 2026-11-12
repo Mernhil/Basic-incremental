@@ -23,41 +23,25 @@ describe('signature items (DESIGN.md §12)', () => {
     expect(byId['core_titan']).toEqual(['void', 'pickaxe']);
   });
 
-  it('shows the interim baked sprite for types with old art, at every rarity, with a traced outline', () => {
-    const drawn = [
-      'sword',
-      'greatsword',
-      'staff',
-      'hammer',
-      'bow',
-      'pickaxe',
-      'logging_axe',
-      'dagger',
-    ] as const;
-    for (const kind of drawn)
+  it('shows the Wood picture, for every type when no tier is given (the gallery)', () => {
+    for (const kind of ITEM_KINDS)
       for (const r of RARITIES) {
         const art = itemArt(kind, r);
         expect(art, `${kind} ${r}`).toContain('<image');
-        expect(art, `${kind} ${r}`).toContain('class="bi-item__outline"');
+        expect(art, `${kind} ${r}`).not.toContain('placeholder');
+        expect(art).toBe(itemArt(kind, r, 'wood'));
       }
-    // The old ladder has no Uncommon: it shows the Common look.
-    expect(itemArt('sword', 'uncommon')).toBe(itemArt('sword', 'common'));
+    // the card's rarity does not change the picture: the tier does
+    expect(itemArt('sword', 'uncommon')).toBe(itemArt('sword', 'legendary'));
+    expect(itemArt('spear', 'rare', 'gold')).not.toBe(itemArt('spear', 'rare', 'wood'));
   });
 
-  it('shows a labelled placeholder for the types with no pictures yet', () => {
-    for (const kind of ['spear', 'lance', 'scythe'] as const) {
-      expect(itemArt(kind, 'rare')).toContain('bi-item--placeholder');
-      expect(itemArt(kind, 'rare')).toContain(kind.toUpperCase());
-    }
-  });
-
-  it('shows the sprite in the 200 x 240 item box, pixelated, with the outline effects trace', () => {
+  it('shows the sprite in the 200 x 240 item box, pixelated', () => {
     const art = itemArt('sword', 'legendary');
     expect(art).toMatch(/^<g class="bi-item">/);
     expect(art).toContain('<image');
     expect(art).toContain('width="200" height="240"');
     expect(art).toContain('image-rendering:pixelated');
-    expect(art).toContain('class="bi-item__outline"');
   });
 
   it('adds parts with rarity in the source drawing: Common plain, Rare a gem, Legendary a ribbon, Void shards', () => {

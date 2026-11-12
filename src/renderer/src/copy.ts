@@ -80,6 +80,9 @@ export const COPY = {
     report: 'Report an issue',
     reportOpened: 'Opened GitHub in your browser.',
     reportPreview: 'See what is included',
+    credits: 'Credits',
+    creditsLead: 'The art packs this game uses. Thank you to the artists.',
+    creditRequired: 'Credit required',
     summary: (playTime: string, ascensions: number, dungeon: string | null) =>
       `${playTime} played, ${ascensions === 1 ? '1 ascension' : `${ascensions} ascensions`}, ${
         dungeon ? `furthest dungeon ${dungeon}` : 'no dungeon cleared'
@@ -100,6 +103,9 @@ export const COPY = {
     },
   },
   table: {
+    /** The dock of piles along the bottom of the table (UI_RULES.md §2). */
+    dock: 'Table',
+    open: (name: string) => `Open ${name}`,
     boss: 'Boss',
     health: 'Loadout health',
     knockedOut: (s: number) => `Knocked out · back in ${s}s`,
@@ -114,6 +120,25 @@ export const COPY = {
     mines: (n: number) => (n === 1 ? '1 mine' : `${n} mines`),
     locked: (by: string) => `Unlocks from ${by}`,
     perSecond: (amount: string) => `${amount}/s`,
+  },
+  /** The full views over the table (UI_RULES.md §2, A full view). */
+  view: {
+    back: '← Table',
+    backLabel: 'Back to the table',
+    titles: {
+      dungeon: 'Dungeon',
+      logging: 'Logging',
+      mining: 'Mining',
+      cards: 'Cards',
+      summon: 'Summon',
+      wardrobe: 'Wardrobe',
+      skills: 'Skill Tree',
+      achievements: 'Achievements',
+      shop: 'Shop',
+      forge: 'Forge',
+      upgrades: 'Upgrades',
+      settings: 'Settings',
+    },
   },
   shell: {
     title: 'Basic Incremental',
@@ -146,7 +171,7 @@ export const COPY = {
     summon: {
       label: 'Summon',
       frame: 'Portals',
-      empty: 'Spend crystals from dungeons to summon new cards and cosmetics.',
+      empty: 'Spend scrolls to summon new cards and cosmetics.',
     },
     skills: {
       label: 'Skill Tree',
@@ -438,12 +463,22 @@ export const COPY = {
     miniBoss: 'Mini-boss',
     bossFloor: 'Boss',
     floorsTitle: 'Floors',
-    modeLabel: 'Push or farm',
-    push: 'Push',
-    farm: 'Farm',
-    pushTip: 'Push: every win moves you down a floor.',
-    farmTip: 'Farm: stay on this floor. A knockout drops you one floor and switches to Farm.',
-    lastFloorTip: 'This is the last floor: the boss is farmed here.',
+    challengeLabel: 'Farming and Challenge',
+    challenge: (floor: number) => `Challenge floor ${floor}`,
+    challengeDepth: (depth: number) => `Challenge depth ${depth}`,
+    challengeRunning: 'Challenge under way',
+    challengeTip: (seconds: number) =>
+      `Fight the next floor at full health. Kill every enemy within ${seconds} s to win it and farm it from then on. A loss costs nothing: try again at once.`,
+    autoChallenge: 'Auto-challenge',
+    autoOn: 'Auto-challenge: on',
+    autoOff: 'Auto-challenge: off',
+    autoTip:
+      'On: the next Challenge starts by itself after every win, and a minute after a loss. Off: keep farming until you press Challenge.',
+    farming: (floor: string) => `Farming ${floor}`,
+    challengeLeft: (floor: string, left: string) => `Challenge ${floor} · ${left} left`,
+    autoWait: (left: string) => `Auto-challenge again in ${left}`,
+    farmTip: 'You farm your best beaten floor on a loop. A knockout drops the farming one floor.',
+    lastFloorTip: 'This is the last floor: the boss is farmed here, nothing deeper to challenge.',
     difficultyLabel: 'Difficulty',
     opens: (list: string) => `First clear opens ${list}`,
     perKillDrop: (res: string) => `${res} per boss kill`,
@@ -513,6 +548,32 @@ export const COPY = {
     /** The chip of a Starlight line that is at its top level. */
     max: 'Max',
   },
+  challenges: {
+    title: 'Ascension challenges',
+    intro:
+      'A challenge is an Ascension run with a rule. Reach its target floor under the rule, up to three times with harder targets, and keep a reward for good. Leaving a challenge ends the rule and earns nothing.',
+    closed: 'Challenges open after your first Ascension.',
+    stickers: (done: number, max: number) => `${done} of ${max} done`,
+    target: (dungeon: string, difficulty: string, floor: number) =>
+      `Target: reach floor ${floor} of ${dungeon} (${difficulty})`,
+    progress: (dungeon: string, difficulty: string, floor: number, target: number) =>
+      `Running: floor ${floor} of ${target} in ${dungeon} (${difficulty})`,
+    reward: (text: string) => `Reward: ${text}`,
+    earned: (text: string) => `Kept: ${text}`,
+    allDone: 'All three done.',
+    start: 'Ascend into it',
+    confirm: 'Click again to ascend',
+    leave: 'Leave (the rule ends)',
+    toast: (name: string) => `${name} begins`,
+    toastDetail: 'You ascended into a challenge run.',
+    problems: {
+      unknown: 'Unknown challenge.',
+      locked: 'Opens after your first Ascension.',
+      maxed: 'All three done.',
+      'dungeon-locked': 'The target dungeon is not open yet.',
+      'too-early': 'Not enough Starlight to ascend yet.',
+    } as Record<string, string>,
+  },
   ascension: {
     gate: 'Ascension',
     gateLabel: 'The Ascension gate, with everything you keep drifting into it',
@@ -538,7 +599,7 @@ export const COPY = {
       mastery: 'Gem mastery',
       medals: 'Boss medals',
       portal_pity: 'Portal pity',
-      crystals: 'Crystals',
+      crystals: 'Scrolls',
       starlight: 'Starlight',
       workers: 'Workers',
       forge: 'The forge',
@@ -706,17 +767,35 @@ export const COPY = {
     handTitle: 'Your last hand',
     handEmpty: 'Draw from a deck and the cards you get will wait here.',
     handLabel: (n: number) => `Your last hand, ${n} ${n === 1 ? 'card' : 'cards'}`,
+    focusLine: 'Cards of one item type · same price, rates and pity as the Card Portal',
+    focusPick: 'Item type',
+    focusPickLabel: 'Item type the Focus Portal pulls',
+    focusNone: 'Choose an item type to pull from this portal',
+    focusKind: (name: string, on: boolean) =>
+      on ? `${name}, chosen. Click to clear` : `${name}. Click to choose`,
+    focusHunting: (name: string) => `Pulling: ${name}`,
+    oddsFocus: 'The Focus Portal has the Card Portal rates and shares its pity.',
+    dailyTitle: 'Daily scrolls',
+    dailyClaim: 'Claim',
+    dailyClaimed: 'Claimed today',
+    dailyLabel: (summon: string, glamour: string) =>
+      `Claim the daily scrolls: ${summon} Summon, ${glamour} Glamour`,
+    dailyGives: (summon: string, glamour: string) => `+${summon} Summon, +${glamour} Glamour`,
     gate: 'Wardrobe Gate',
     gateLocked: 'Opens with the Wardrobe',
     gateAbout: 'Pulls cosmetic sets and items. Duplicates feed their upgrade levels.',
     revealTitle: (portal: string) => `${portal} reveal`,
     next: 'Click or press Space to reveal the next',
     skipAll: 'Skip all',
+    entranceHint: 'Click to continue',
+    entranceLabel: (name: string, rarity: string) => `Best card of the pull: ${name}, ${rarity}`,
+    glowing: 'Glowing face-down card',
     done: 'Done',
     isNew: 'New!',
     duplicate: (n: number) => `Duplicate (${n})`,
     shards: (n: number) => `+${n} shards`,
     copy: (n: number) => `Copy (${n})`,
+    payback: (amount: string) => `Owned · +${amount} back`,
     byPity: 'Pity',
     byGuarantee: '×10 guarantee',
     hidden: 'Face-down card',
@@ -745,7 +824,7 @@ export const COPY = {
       `${name}${worn ? ', equipped' : ''}${picked ? ', previewing' : ''}`,
     applied: (name: string) => `${name} applied.`,
     failed: 'That skin cannot be worn right now.',
-    none: 'You own no weapon skins yet. Legacy skins come with the Legacy Gate in a later release.',
+    none: 'You own no weapon skins yet. Pull them from the Legacy Gate on the Summon page.',
     level: 'Level',
     hitsEvery: 'Hits every',
   },
@@ -904,10 +983,11 @@ export const COPY = {
     heirloom: (card: string) => `${card} claimed its Heirloom!`,
     heirloomDetail: (item: string) => `It now wields ${item}.`,
     goals: 'Goals',
+    goalsButton: (n: number) => (n > 0 ? `Goals, ${n} shown` : 'Goals'),
     ready: 'ready',
     eta: (d: string) => `~${d}`,
     goalLabel: (title: string, pct: number, eta: string) =>
-      `${title}, ${pct}% done${eta ? `, ${eta}` : ''}. Open its page.`,
+      `${title}, ${pct}% done${eta ? `, ${eta}` : ''}. Open its view.`,
     medal: (metal: string) => `${metal} medal`,
     noMedal: 'No medal yet',
     nextKills: (have: number, need: number) =>
@@ -957,13 +1037,21 @@ export const COPY = {
     kpmTip: 'Floors cleared per minute at your average damage.',
     ttk: 'Time to clear',
     idleTitle: 'No fight',
-    idle: 'Nothing is being fought. Open the drawer below and choose a dungeon.',
+    idle: 'Nothing is being fought. Open Dungeons and choose where to fight.',
     knockedOut: 'Knocked out · back in',
     fallIn: 'You fall in',
     fallEarly: (gap: string) => `${gap} before the floor does`,
     fallTip: (now: string | null) =>
       `Your full health lasts this long against this floor, and you would fall before you clear it. ${now ? `With the health you have now: ${now}.` : ''}`.trim(),
     rareDrop: 'Rare drop!',
+    challengeTimer: 'Challenge',
+    challengeButton: 'Challenge',
+    victory: 'Victory!',
+    victoryLine: (floor: string) => `${floor} beaten`,
+    defeat: 'Defeat',
+    defeatTimer: 'Time ran out',
+    defeatHealth: 'Your health ran out',
+    defeatLeft: (hp: string) => `${hp} enemy HP left`,
     drawer: 'Upgrades and floors',
     drawerOpen: 'Show upgrades and floors',
     drawerClose: 'Hide upgrades and floors',
@@ -974,6 +1062,13 @@ export const COPY = {
     /** The Hero fan arena (UI rework 2.3): the bars, the drawer tabs and the handle's status line. */
     partyHealth: 'Party health',
     partyHealthLabel: (pct: number) => `Party health ${pct}%`,
+    /** The team's cards, each with its own health (DESIGN.md §6 card duel; plain, interim). */
+    teamLabel: 'Team health',
+    teamRow: (name: string, pct: number) => `${name} ${pct}%`,
+    teamOut: 'Out',
+    teamTargeted: 'The enemy hits this card next',
+    teamTip: (skill: string, role: string, desc: string, hp: string, max: string) =>
+      `${skill} (${role}): ${desc}. ${hp} / ${max} health`,
     signatureCount: (n: number, size: number) => `${n} / ${size}`,
     barsGone: (gone: number, total: number) => `${gone} of ${total} bars gone`,
     bossTip: (hp: string, max: string) => `${hp} / ${max} HP`,
@@ -1041,7 +1136,7 @@ export const COPY = {
   /** Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer. */
   training: {
     title: 'Training',
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
     level: (n: number) => `Lv ${n}`,
     effect: (times: string, what: string) => `×${times} ${what}`,
     toGo: (mult: string, levels: number) =>
@@ -1068,7 +1163,7 @@ export const COPY = {
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,
-    note: 'Bought with Money, again and again. Resets on Ascension.',
+    note: 'Bought with gems, again and again. Resets on Ascension.',
   },
   buy: {
     countLabel: 'Buy amount',
