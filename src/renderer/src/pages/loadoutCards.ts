@@ -3,6 +3,7 @@ import {
   cardInfo,
   cardItem,
   legacyWeaponArt,
+  lookStep,
   lookTier,
   resolveCard,
   type CardRole,
@@ -39,7 +40,8 @@ export function cardItemArt(
     const markup = skin ? skinMarkup(skin) : '';
     if (markup) return markup;
   }
-  return cardTierArt(card, lookTier(card.rarity, owned?.tier ?? 'wood'));
+  const tier = lookTier(card.rarity, owned?.tier ?? 'wood');
+  return cardTierArt(card, tier, lookStep(content, card.item.kind, tier, owned?.stars ?? 1));
 }
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */

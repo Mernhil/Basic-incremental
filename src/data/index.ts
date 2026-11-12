@@ -35,6 +35,7 @@ import type {
   WearRules,
   WeaponSkin,
   WeaponSkinSet,
+  LookSteps,
   ItemsData,
   ItemType,
   RankTier,
@@ -66,6 +67,7 @@ import trainingJson from './content/training.json';
 import coinsJson from './content/coins.json';
 import creditsJson from './content/credits.json';
 import weaponSkinsJson from './content/weaponSkins.json';
+import lookStepsJson from './content/lookSteps.json';
 import itemsJson from './content/items.json';
 import bondsJson from './content/bonds.json';
 import expeditionsJson from './content/expeditions.json';
@@ -117,6 +119,8 @@ export interface Content {
   upgrades: UpgradesConfig;
   /** Weapon skins: alternate art per weapon kind (weaponSkins.json). */
   weaponSkins: WeaponSkinSet[];
+  /** The item types whose picture grows with the stars, and the stars of each step (lookSteps.json). */
+  lookSteps: LookSteps;
   /** Item types: names per tier and which Heirlooms are open (items.json). */
   items: ItemsData;
   /** Item type by kind. */
@@ -217,6 +221,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     coins,
     credits,
     weaponSkins,
+    lookSteps,
     items,
     bonds,
     expeditions,
@@ -308,6 +313,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     enhancements,
     upgrades,
     weaponSkins,
+    lookSteps,
     items,
     itemTypeByKind: new Map(items.types.map((t) => [t.kind, t])),
     resourceById: new Map(resources.map((r) => [r.id, r])),
@@ -1280,6 +1286,7 @@ export function bundledRawContent(): RawContent {
     coins: coinsJson,
     credits: creditsJson,
     weaponSkins: weaponSkinsJson,
+    lookSteps: lookStepsJson,
     items: itemsJson,
     bonds: bondsJson,
     expeditions: expeditionsJson,
