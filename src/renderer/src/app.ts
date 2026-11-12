@@ -26,7 +26,13 @@ import { COPY } from './copy';
 import { coinAmount, isMoney } from './settings/coins';
 import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
 import { createDetailsPanel } from './shell/details';
-import { iconMarkup, isCrystal, isHeaderResource, resourceIconId } from './ui/resourceIcons';
+import {
+  iconMarkup,
+  isCrystal,
+  isHeaderResource,
+  moneyCoinArt,
+  resourceIconId,
+} from './ui/resourceIcons';
 import { createShell, h, type Currency } from './shell/shell';
 import { createTable } from './table/table';
 import { allPieces, allViews } from './table/registry';
@@ -149,6 +155,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
     version,
     currencies,
     coins: (id, amount) => (isMoney(content, id) ? coinAmount(content.coins, amount) : null),
+    coinArt: moneyCoinArt,
     levelTip,
     onLevel: () => {
       if (track.isOpen()) track.close();

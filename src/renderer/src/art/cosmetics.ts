@@ -10,6 +10,7 @@
  * drafts. Everything is whole pixels; callers scale by whole numbers with `image-rendering:
  * pixelated`.
  */
+import { OCTAGON_BADGES } from './pixel/badges.gen';
 import { COSMETIC_META } from './pixel/cosmetics.gen';
 import { PIXELATED, sprite, spriteImage, type SpriteInfo } from './pixel/sprites';
 import { INK } from './pixel/raster';
@@ -349,6 +350,12 @@ export function stickerArt(
   chapter: StickerChapter,
   unlocked: boolean,
 ): string {
+  // the achievement badges (art/pixel/hand/badge-*, ASSET_RULES section 5): 32 x 32 at 2x, centred
+  // in the 74 box; a locked one is the blank base, dimmed
+  const badge = unlocked
+    ? `badge-${styleId}-${achievementId}`
+    : `badge-locked-${OCTAGON_BADGES.has(achievementId) ? 'octagon' : 'round'}`;
+  if (sprite(badge)) return spriteImage(badge, 5, 5, 64, 64);
   const base = spriteImage(`cos-sticker-${styleId}-${unlocked ? chapter : 'locked'}`, 0, 0, 74, 74);
   if (!unlocked || !STICKERS.achievements.includes(achievementId)) return base;
   const [wx, wy] = STICKERS.window;

@@ -31,7 +31,7 @@ Windows desktop incremental game (Electron + TypeScript, repo https://github.com
 9. Save format changes always need a version bump and a migration.
 10. Verify changes (lint, tests, build, and a run or screenshot for UI) before saying something is done.
 
-Optional helpers: `.claude/agents/` holds `ui`, `pixel-art` and `mechanics` agents and `.claude/skills/pixel-art/` the pixel-art skill. Use them when they save time; nothing requires routing through them. All art is made with PixelLab (the `pixellab` MCP server); if its tools are not loaded in the session, do the art in a session that has them.
+Optional helpers: `.claude/agents/` holds `ui`, `pixel-art` and `mechanics` agents and `.claude/skills/pixel-art/` the pixel-art skill. Use them when they save time; nothing requires routing through them. PixelLab (the `pixellab` MCP server) is the default tool for art; free asset packs the user picked are allowed too (user, 2026-11-11: "only more of a suggestion"), each listed in `src/data/content/credits.json` with its licence. If PixelLab's tools are not loaded in the session, do that art in a session that has them.
 
 ## GitHub workflow
 
