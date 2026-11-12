@@ -26,8 +26,14 @@ describe('arena backgrounds (DESIGN.md §6)', () => {
     for (const d of loadContent().dungeons) {
       expect(backgroundFor(d.background).cls).toMatch(/^ar-bg--[a-z0-9-]+$/);
     }
-    // until art exists, the table is empty and everything is the default
-    expect(Object.keys(ARENA_BACKGROUNDS)).toEqual([]);
+    // Dungeons 4 to 6 have a room of their own, each different; 1 to 3 draw the default
+    const own = loadContent().dungeons.map((d) => backgroundFor(d.background).cls);
+    expect(Object.keys(ARENA_BACKGROUNDS).sort()).toEqual(
+      ['sunken_sanctum', 'thunderpeak_aerie', 'void_hollow'].sort(),
+    );
+    expect(own.slice(0, 3)).toEqual(Array(3).fill(DEFAULT_BACKGROUND.cls));
+    expect(new Set(own.slice(3)).size).toBe(3);
+    expect(own.slice(3)).not.toContain(DEFAULT_BACKGROUND.cls);
   });
 
   it('new art drops in as one table entry, with no other change', () => {

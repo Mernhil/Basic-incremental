@@ -1129,3 +1129,140 @@ html .du-skill--heal:not(#_px) {
 .ar--calm .du-sheet__row > i {
   transition: none;
 }
+
+/* ---- the rooms of Dungeons 4 to 6: the brick room re-tinted and given a mood of its own (DESIGN.md §6, Three new dungeons).
+   Each class only sets the room's tokens, the torch colours and one overlay (::after), so the layout never changes. ---- */
+.ar-bg--cove {
+  --ar-wall: #12303a;
+  --ar-mortar: #0a1a22;
+  --ar-brick-lit: rgba(110, 220, 220, 0.22);
+  --ar-floor: #1d3a44;
+  --ar-seam: #0a1a20;
+  --ar-plank-lit: rgba(120, 210, 215, 0.2);
+  --ar-grain: rgba(5, 15, 20, 0.6);
+}
+.ar-bg--cove .ar__torch {
+  --o: #1aa6a0;
+  --y: #6ff0e0;
+  --w: #e6ffff;
+}
+.ar-bg--cove .ar__torch-glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(70, 230, 220, 0.28),
+    rgba(30, 150, 160, 0.1) 55%,
+    transparent
+  );
+}
+/* sea mist and drifting wave lines low on the wall */
+.ar-bg--cove::after {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0 0;
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0 calc(var(--ar-u) * 6),
+      rgba(140, 235, 235, 0.14) calc(var(--ar-u) * 6) calc(var(--ar-u) * 7)
+    ),
+    linear-gradient(180deg, transparent, rgba(40, 140, 150, 0.3));
+  animation: ar-cove-drift 3.2s steps(8, jump-none) infinite alternate;
+}
+@keyframes ar-cove-drift {
+  to {
+    transform: translateY(calc(var(--ar-u) * 2));
+  }
+}
+
+.ar-bg--sanctum {
+  --ar-wall: #8a7f6a;
+  --ar-mortar: #5a5142;
+  --ar-brick-lit: rgba(255, 244, 205, 0.4);
+  --ar-floor: #b9ad92;
+  --ar-seam: #6f6552;
+  --ar-plank-lit: rgba(255, 250, 225, 0.38);
+  --ar-grain: rgba(80, 70, 50, 0.5);
+}
+.ar-bg--sanctum .ar__torch {
+  --o: #e8b030;
+  --y: #ffe680;
+  --w: #ffffff;
+}
+.ar-bg--sanctum .ar__torch-glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(255, 235, 150, 0.34),
+    rgba(255, 215, 110, 0.12) 55%,
+    transparent
+  );
+}
+/* shafts of holy light falling from the top of the hall */
+.ar-bg--sanctum::after {
+  content: '';
+  position: absolute;
+  inset: 0 0 20% 0;
+  background:
+    linear-gradient(105deg, transparent 12%, rgba(255, 240, 180, 0.2) 18%, transparent 26%),
+    linear-gradient(105deg, transparent 38%, rgba(255, 240, 180, 0.16) 44%, transparent 54%),
+    linear-gradient(105deg, transparent 64%, rgba(255, 240, 180, 0.2) 70%, transparent 80%);
+  animation: ar-sanctum-rays 4s steps(6, jump-none) infinite alternate;
+}
+@keyframes ar-sanctum-rays {
+  to {
+    opacity: 0.55;
+  }
+}
+
+.ar-bg--void {
+  --ar-wall: #1c1030;
+  --ar-mortar: #0a0516;
+  --ar-brick-lit: rgba(170, 110, 255, 0.2);
+  --ar-floor: #120a22;
+  --ar-seam: #6a30c0;
+  --ar-plank-lit: rgba(160, 100, 255, 0.14);
+  --ar-grain: rgba(0, 0, 0, 0.7);
+}
+.ar-bg--void .ar__torch {
+  --o: #6a2cc8;
+  --y: #b784ff;
+  --w: #f0e0ff;
+}
+.ar-bg--void .ar__torch-glow {
+  background: radial-gradient(
+    closest-side,
+    rgba(160, 90, 255, 0.34),
+    rgba(100, 50, 200, 0.12) 55%,
+    transparent
+  );
+}
+/* a violet rift glowing in the dark and motes rising from the floor */
+.ar-bg--void::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(40% 55% at 50% 72%, rgba(150, 80, 255, 0.28), transparent),
+    radial-gradient(
+      circle at 20% 80%,
+      rgba(200, 150, 255, 0.5) 0 calc(var(--ar-u) / 2),
+      transparent calc(var(--ar-u) / 2)
+    ),
+    radial-gradient(
+      circle at 78% 66%,
+      rgba(200, 150, 255, 0.5) 0 calc(var(--ar-u) / 2),
+      transparent calc(var(--ar-u) / 2)
+    );
+  animation: ar-void-pulse 3.6s steps(6, jump-none) infinite alternate;
+}
+@keyframes ar-void-pulse {
+  to {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ar-bg--cove::after,
+  .ar-bg--sanctum::after,
+  .ar-bg--void::after {
+    animation: none;
+  }
+}
