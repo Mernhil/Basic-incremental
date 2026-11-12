@@ -96,9 +96,9 @@ describe('bundled content', () => {
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
       ['Frostspire Vault', 'Glacier Colossus'],
-      ['Thunderpeak Aerie', 'Storm Roc'],
-      ['Sunken Sanctum', 'Dawn Hierophant'],
-      ['Hollow of the Void', 'The Unmade King'],
+      ['Stormwrack Cove', 'Abyssal Anchor Leviathan'],
+      ['Sunken Sanctum', 'Sanctuary Archangel'],
+      ['Hollow of the Void', 'Faceless Void Reaper'],
     ]);
     expect(content.cosmetics.length).toBeGreaterThan(7);
     expect(content.portals).toHaveLength(3); // Card Portal, Wardrobe Gate and Legacy Gate
@@ -106,9 +106,9 @@ describe('bundled content', () => {
       'Root Warden',
       'Cinder Lich',
       'Glacier Colossus',
-      'Storm Roc',
-      'Dawn Hierophant',
-      'The Unmade King',
+      'Abyssal Anchor Leviathan',
+      'Sanctuary Archangel',
+      'Faceless Void Reaper',
     ]);
     expect(content.trials.map((t) => t.name)).toEqual(['The Glimmer Trial']);
   });

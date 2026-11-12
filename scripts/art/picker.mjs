@@ -89,8 +89,8 @@ h1{font-size:clamp(28px,4vw,42px);margin:0 0 10px}
 .grp h3{margin:0;font-size:18px;display:flex;align-items:baseline;gap:10px}
 .num{display:inline-grid;place-items:center;min-width:34px;height:34px;padding:0 6px;border-radius:8px;background:var(--ink);color:var(--bg);font-weight:800}
 .grp p{margin:0;color:var(--muted);font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,max-content));gap:10px}
-.tile{all:unset;box-sizing:border-box;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:30px 8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;text-align:center}
+.grid{display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px}
+.tile{all:unset;box-sizing:border-box;flex:none;min-width:150px;max-width:100%;overflow-x:auto;cursor:pointer;position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:30px 8px 10px;background:var(--panel);border:1px solid var(--line);border-radius:10px;text-align:center}
 .tile:focus-visible{outline:3px solid var(--gold);outline-offset:2px}.tile:hover{border-color:var(--gold)}
 .tile[aria-pressed="true"]{background:var(--keepbg);border:2px solid var(--keep);padding:29px 7px 9px}
 .tile[aria-pressed="true"]::after{content:"Keep";position:absolute;top:7px;right:8px;font-size:12px;font-weight:800;color:var(--keep)}
@@ -99,7 +99,7 @@ h1{font-size:clamp(28px,4vw,42px);margin:0 0 10px}
 .tile[data-learn="true"]::before{content:"Learn";position:absolute;top:7px;right:8px;font-size:12px;font-weight:800;color:var(--gold)}
 .tile[aria-pressed="true"][data-learn="true"]::after{right:52px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.pic{display:block;image-rendering:pixelated;background-color:var(--well);background-image:conic-gradient(var(--well) 25%,var(--well2) 0 50%,var(--well) 0 75%,var(--well2) 0);background-size:20px 20px;border-radius:4px;max-width:100%}
+.pic{display:block;image-rendering:pixelated;background-color:var(--well);background-image:conic-gradient(var(--well) 25%,var(--well2) 0 50%,var(--well) 0 75%,var(--well2) 0);background-size:20px 20px;border-radius:4px;max-width:none;flex:none}
 .sp{background-repeat:no-repeat;animation:play var(--dur,.88s) steps(var(--n,8)) infinite}
 @keyframes play{from{background-position:0 0}to{background-position:var(--end,-800px) 0}}
 @media (prefers-reduced-motion:reduce){.sp{animation:none}}

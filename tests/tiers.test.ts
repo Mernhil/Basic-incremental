@@ -346,14 +346,24 @@ describe('the three new dungeons', () => {
     const shipped = loadContent();
     const later = shipped.dungeons.slice(3);
     expect(later.map((d) => [d.id, d.name, d.floors, d.unlockedBy])).toEqual([
-      ['thunderpeak_aerie', 'Thunderpeak Aerie', 40, 'frostspire_vault'],
+      ['thunderpeak_aerie', 'Stormwrack Cove', 40, 'frostspire_vault'],
       ['sunken_sanctum', 'Sunken Sanctum', 50, 'thunderpeak_aerie'],
       ['void_hollow', 'Hollow of the Void', 60, 'sunken_sanctum'],
     ]);
     expect(later.map((d) => [d.boss.name, ...d.enemies.map((e) => e.name)])).toEqual([
-      ['Storm Roc', 'Spark Wisp', 'Gale Harpy', 'Thunder Ram'],
-      ['Dawn Hierophant', 'Lantern Moth', 'Gilded Acolyte', 'Marble Sentinel'],
-      ['The Unmade King', 'Shade Mote', 'Hollow Stalker', 'Rift Maw'],
+      [
+        'Abyssal Anchor Leviathan',
+        'Abyssal Sharkfang Raider',
+        'Gothic Corsair',
+        'Obsidian Crab Green',
+      ],
+      [
+        'Sanctuary Archangel',
+        'Golden Cross Novice Priestess',
+        'Ivory Sun Priestess',
+        'Cathedral Reliquary',
+      ],
+      ['Faceless Void Reaper', 'Shadow Slime', 'Hooded Rogue Assassin', 'Bloodroot Black'],
     ]);
     expect(later.map((d) => d.background)).toEqual(later.map((d) => d.id));
     expect(shipped.allDungeons).toHaveLength(6);

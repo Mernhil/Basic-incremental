@@ -1,3 +1,4 @@
+import { animatedSpriteHtml } from '../art/pixel/sprites';
 import { jitter, reducedMotion, stageHidden } from './motion';
 import './fly.css';
 
@@ -62,7 +63,8 @@ export function flyCoins(opts: FlyOptions): void {
   for (let i = 0; i < n; i++) {
     const coin = document.createElement('span');
     coin.className = `st-coin${opts.cls ? ` ${opts.cls}` : ''}`;
-    coin.innerHTML = target.innerHTML;
+    const spin = target.dataset['spin'];
+    coin.innerHTML = (spin && animatedSpriteHtml(spin, 2)) || target.innerHTML;
     coin.style.left = `${opts.from.x}px`;
     coin.style.top = `${opts.from.y}px`;
     flyLayer().append(coin);

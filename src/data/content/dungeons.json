@@ -8,20 +8,28 @@
     "enemies": [
       {
         "id": "moss_slime",
-        "name": "Moss Slime",
-        "hpWeight": 1
+        "name": "Woodland Stalker Wolf",
+        "hpWeight": 1,
+        "sprite": "woodland_stalker_wolf"
       },
       {
         "id": "root_sprite",
-        "name": "Root Sprite",
-        "hpWeight": 0.7
+        "name": "Bloodroot",
+        "hpWeight": 0.7,
+        "sprite": "bloodroot"
       },
       {
         "id": "bramble_beast",
-        "name": "Bramble Beast",
-        "hpWeight": 1.5
+        "name": "Plague Doctor",
+        "hpWeight": 1.5,
+        "sprite": "plague_doctor"
       }
     ],
+    "miniBoss": {
+      "id": "plague_lantern_keeper",
+      "name": "Plague Lantern Keeper",
+      "sprite": "plague_lantern_keeper"
+    },
     "background": "mossy_cellar",
     "boss": {
       "id": "root_warden",
@@ -82,20 +90,28 @@
     "enemies": [
       {
         "id": "ember_bat",
-        "name": "Ember Bat",
-        "hpWeight": 0.7
+        "name": "Obsidian Crab Red",
+        "hpWeight": 0.7,
+        "sprite": "obsidian_crab_red"
       },
       {
         "id": "cinder_imp",
-        "name": "Cinder Imp",
-        "hpWeight": 1
+        "name": "Fire Witch",
+        "hpWeight": 1,
+        "sprite": "fire_witch"
       },
       {
         "id": "magma_crawler",
-        "name": "Magma Crawler",
-        "hpWeight": 1.5
+        "name": "Bloodroot Ember",
+        "hpWeight": 1.5,
+        "sprite": "bloodroot_ember"
       }
     ],
+    "miniBoss": {
+      "id": "blood_duchess",
+      "name": "Blood Duchess",
+      "sprite": "blood_duchess"
+    },
     "background": "ember_crypt",
     "boss": {
       "id": "cinder_lich",
@@ -164,20 +180,28 @@
     "enemies": [
       {
         "id": "frost_imp",
-        "name": "Frost Imp",
-        "hpWeight": 1
+        "name": "Ivory Direwolf",
+        "hpWeight": 1,
+        "sprite": "ivory_direwolf"
       },
       {
         "id": "ice_wisp",
-        "name": "Ice Wisp",
-        "hpWeight": 0.7
+        "name": "Ice Sorceress",
+        "hpWeight": 0.7,
+        "sprite": "ice_sorceress"
       },
       {
         "id": "snow_wolf",
-        "name": "Snow Wolf",
-        "hpWeight": 1.5
+        "name": "Obsidian Crab Blue",
+        "hpWeight": 1.5,
+        "sprite": "obsidian_crab_blue"
       }
     ],
+    "miniBoss": {
+      "id": "glacierbreaker_knight",
+      "name": "Glacierbreaker Knight",
+      "sprite": "glacierbreaker_knight"
+    },
     "background": "frostspire_vault",
     "boss": {
       "id": "glacier_colossus",
@@ -232,31 +256,40 @@
   },
   {
     "id": "thunderpeak_aerie",
-    "name": "Thunderpeak Aerie",
+    "name": "Stormwrack Cove",
     "tier": 4,
     "unlockedBy": "frostspire_vault",
     "floors": 40,
     "enemies": [
       {
         "id": "spark_wisp",
-        "name": "Spark Wisp",
-        "hpWeight": 0.7
+        "name": "Abyssal Sharkfang Raider",
+        "hpWeight": 0.7,
+        "sprite": "abyssal_sharkfang_raider"
       },
       {
         "id": "gale_harpy",
-        "name": "Gale Harpy",
-        "hpWeight": 1
+        "name": "Gothic Corsair",
+        "hpWeight": 1,
+        "sprite": "gothic_corsair"
       },
       {
         "id": "thunder_ram",
-        "name": "Thunder Ram",
-        "hpWeight": 1.5
+        "name": "Obsidian Crab Green",
+        "hpWeight": 1.5,
+        "sprite": "obsidian_crab_green"
       }
     ],
+    "miniBoss": {
+      "id": "drowned_leviathanbeard_high_admiral",
+      "name": "Drowned Leviathanbeard High Admiral",
+      "sprite": "drowned_leviathanbeard_high_admiral"
+    },
     "background": "thunderpeak_aerie",
     "boss": {
       "id": "storm_roc",
-      "name": "Storm Roc",
+      "name": "Abyssal Anchor Leviathan",
+      "sprite": "abyssal_anchor_leviathan",
       "weakness": "earth",
       "resistance": "storm",
       "hp": "1950000000",
@@ -313,24 +346,33 @@
     "enemies": [
       {
         "id": "lantern_moth",
-        "name": "Lantern Moth",
-        "hpWeight": 0.7
+        "name": "Golden Cross Novice Priestess",
+        "hpWeight": 0.7,
+        "sprite": "golden_cross_novice_priestess"
       },
       {
         "id": "gilded_acolyte",
-        "name": "Gilded Acolyte",
-        "hpWeight": 1
+        "name": "Ivory Sun Priestess",
+        "hpWeight": 1,
+        "sprite": "ivory_sun_priestess"
       },
       {
         "id": "marble_sentinel",
-        "name": "Marble Sentinel",
-        "hpWeight": 1.5
+        "name": "Cathedral Reliquary",
+        "hpWeight": 1.5,
+        "sprite": "cathedral_reliquary"
       }
     ],
+    "miniBoss": {
+      "id": "holy_judiciar",
+      "name": "Holy Judiciar",
+      "sprite": "holy_judiciar"
+    },
     "background": "sunken_sanctum",
     "boss": {
       "id": "dawn_hierophant",
-      "name": "Dawn Hierophant",
+      "name": "Sanctuary Archangel",
+      "sprite": "sanctuary_archangel",
       "weakness": "void",
       "resistance": "light",
       "hp": "9000000000",
@@ -387,24 +429,33 @@
     "enemies": [
       {
         "id": "shade_mote",
-        "name": "Shade Mote",
-        "hpWeight": 0.7
+        "name": "Shadow Slime",
+        "hpWeight": 0.7,
+        "sprite": "shadow_slime"
       },
       {
         "id": "hollow_stalker",
-        "name": "Hollow Stalker",
-        "hpWeight": 1
+        "name": "Hooded Rogue Assassin",
+        "hpWeight": 1,
+        "sprite": "hooded_rogue_assassin"
       },
       {
         "id": "rift_maw",
-        "name": "Rift Maw",
-        "hpWeight": 1.5
+        "name": "Bloodroot Black",
+        "hpWeight": 1.5,
+        "sprite": "bloodroot_black"
       }
     ],
+    "miniBoss": {
+      "id": "gothic_bloodhunter",
+      "name": "Gothic Bloodhunter",
+      "sprite": "gothic_bloodhunter"
+    },
     "background": "void_hollow",
     "boss": {
       "id": "unmade_king",
-      "name": "The Unmade King",
+      "name": "Faceless Void Reaper",
+      "sprite": "faceless_void_reaper",
       "weakness": "light",
       "resistance": "void",
       "hp": "32000000000",

@@ -28,6 +28,7 @@ import type {
   Tree,
   Trial,
   Coin,
+  Credit,
   Training,
   Upgrade,
   UpgradesConfig,
@@ -63,6 +64,7 @@ import enhancementsJson from './content/enhancements.json';
 import upgradesJson from './content/upgrades.json';
 import trainingJson from './content/training.json';
 import coinsJson from './content/coins.json';
+import creditsJson from './content/credits.json';
 import weaponSkinsJson from './content/weaponSkins.json';
 import itemsJson from './content/items.json';
 import bondsJson from './content/bonds.json';
@@ -128,6 +130,8 @@ export interface Content {
   trainingById: ReadonlyMap<string, Training>;
   /** The coins Money is shown in, smallest first (DESIGN.md §3 Coins). */
   coins: Coin[];
+  /** The asset packs used, required credits first (Settings > Help > Credits). */
+  credits: Credit[];
   treeById: ReadonlyMap<string, Tree>;
   mineById: ReadonlyMap<string, Mine>;
   cardById: ReadonlyMap<string, Card>;
@@ -211,6 +215,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     upgrades,
     training,
     coins,
+    credits,
     weaponSkins,
     items,
     bonds,
@@ -312,6 +317,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     training,
     trainingById: new Map(training.map((t) => [t.id, t])),
     coins,
+    credits,
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
@@ -1244,6 +1250,7 @@ export function bundledRawContent(): RawContent {
     upgrades: upgradesJson,
     training: trainingJson,
     coins: coinsJson,
+    credits: creditsJson,
     weaponSkins: weaponSkinsJson,
     items: itemsJson,
     bonds: bondsJson,

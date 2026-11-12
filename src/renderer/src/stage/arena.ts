@@ -27,6 +27,7 @@ import {
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { bossArt, sentinelLevel } from '../art/bosses';
+import { FOE_H, FOE_W, foeHtml, hasFoeSprite } from '../art/foes';
 import { pixelNumberMarkup } from '../art/cosmetics';
 import { barsGone, challengeButton, challengeVerdict, healthPercent } from '../pages/dungeonsModel';
 import { loadoutKey, loadoutProps } from '../pages/loadoutCards';
@@ -335,6 +336,27 @@ export function createArena(ctx: ArenaContext): Arena {
   let foeKey: { dungeon: string; difficulty: string; key: string } | null = null;
   let lastLook: BarLook | null = null;
   let artKey = '';
+  /** The pack sprite shown in the enemy card (art/foes.ts), or '' for the other pictures. */
+  let foeSprite = '';
+  let foeScale = 0;
+  /** Draws the foe sprite at the largest whole device-pixel scale the card's art box holds. */
+  function fitFoe(): void {
+    if (!foeSprite) return;
+    const box = foeBody.getBoundingClientRect();
+    if (box.width < 1 || box.height < 1) return;
+    const dpr = screenDpr();
+    const device = Math.max(1, Math.floor(Math.min(box.width / FOE_W, box.height / FOE_H) * dpr));
+    const key = `${foeSprite}:${device}:${dpr}`;
+    if (foeBody.dataset['foe'] === key) return;
+    foeBody.dataset['foe'] = key;
+    foeScale = device / dpr;
+    foeBody.innerHTML = foeHtml(foeSprite, foeScale);
+  }
+  function clearFoe(): void {
+    foeSprite = '';
+    delete foeBody.dataset['foe'];
+  }
+  new ResizeObserver(() => fitFoe()).observe(foeBody);
   let plateQueue: Plate[] = [];
   let plateId = 1;
   const plateEls = new Map<number, HTMLElement>();
@@ -482,6 +504,18 @@ export function createArena(ctx: ArenaContext): Arena {
         const key = `enemy:${enemy.kind}:${enemy.id}`;
         if (key === artKey) return;
         artKey = key;
+        const sprite =
+          enemy.kind === 'boss'
+            ? dungeon.boss.sprite
+            : enemy.kind === 'miniboss'
+              ? dungeon.miniBoss.sprite
+              : dungeon.enemies.find((e) => e.id === enemy.id)?.sprite;
+        if (hasFoeSprite(sprite)) {
+          foeSprite = sprite!;
+          fitFoe();
+          return;
+        }
+        clearFoe();
         const box = div(`ar-enemy ar-enemy--${enemy.kind}`);
         box.append(span('ar-enemy__name', enemy.name));
         foeBody.replaceChildren(box);
@@ -489,6 +523,7 @@ export function createArena(ctx: ArenaContext): Arena {
       }
       if (art && artKey !== art) {
         artKey = art;
+        clearFoe();
         foeBody.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(art)}</svg>`;
       }
       return;
@@ -498,6 +533,7 @@ export function createArena(ctx: ArenaContext): Arena {
       const key = `${t.target.art}:${level}`;
       if (key === artKey) return;
       artKey = key;
+      clearFoe();
       foeBody.innerHTML = `<svg viewBox="-6 -8 112 112" aria-hidden="true" focusable="false">${bossArt(t.target.art, level)}</svg>`;
     }
   }
@@ -778,6 +814,7 @@ export function createArena(ctx: ArenaContext): Arena {
   function build(s: GameState): void {
     builtFor = s.activeDungeonId;
     artKey = '';
+    clearFoe();
     lastLook = null;
     foeKey = null;
     const id = s.activeDungeonId;

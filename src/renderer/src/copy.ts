@@ -80,6 +80,9 @@ export const COPY = {
     report: 'Report an issue',
     reportOpened: 'Opened GitHub in your browser.',
     reportPreview: 'See what is included',
+    credits: 'Credits',
+    creditsLead: 'The art packs this game uses. Thank you to the artists.',
+    creditRequired: 'Credit required',
     summary: (playTime: string, ascensions: number, dungeon: string | null) =>
       `${playTime} played, ${ascensions === 1 ? '1 ascension' : `${ascensions} ascensions`}, ${
         dungeon ? `furthest dungeon ${dungeon}` : 'no dungeon cleared'
