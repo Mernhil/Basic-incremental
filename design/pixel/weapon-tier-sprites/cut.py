@@ -5,7 +5,7 @@ import numpy as np
 from PIL import Image
 from scipy import ndimage as ndi
 
-SRC=Path(sys.argv[1]); OUT=Path(sys.argv[2]); OUT.mkdir(parents=True,exist_ok=True)
+SRC=Path(sys.argv[1]) if __name__ == '__main__' else None  # set by straight.py when imported
 TYPES=["sword","greatsword","dagger","hammer","lance","bow","scythe","logging_axe"]
 FILE={"logging_axe":"logging_axe","scythe":"scythe","hammer":"hammer","sword":"sword","lance":"lance","bow":"bow","greatsword":"greatsword","dagger":"dagger"}
 STEPS=[("t1",0),("t2",0),("t2",1),("t3",0),("t3",1),("t3",2),("t4",0),("t4",1),("t4",2),("t4",3)]
@@ -61,23 +61,29 @@ def cells(name):
     for r,g in enumerate(found): assert len(g)==ROWLEN[r],(name,r,len(g))
     return im,found
 
-meta={}
-for t in TYPES:
-    im,found=cells(t)
-    boxes=[b for row in found for b in row]
-    assert len(boxes)==10
-    s=min(min(BOXW/(b[2]-b[0]),BOXH/(b[3]-b[1])) for b in boxes)
-    bgc=tuple(int(v) for v in np.median(np.array(im).reshape(-1,3),axis=0))
-    meta[t]={"scale":s,"boxes":[list(map(int,b[:4])) for b in boxes],"bg":bgc}
-    sheet=Image.new("RGB",(5*CW*K,2*CH*K),bgc)
-    for i,b in enumerate(boxes):
-        crop=im.crop(b[:4])
-        keep=ndi.binary_dilation(b[4],iterations=3)  # only this weapon's own pixels, never a neighbour's
-        arr=np.array(crop); arr[~keep]=bgc; crop=Image.fromarray(arr)
-        w,h=round(crop.width*s*K),round(crop.height*s*K)
-        crop=crop.resize((w,h),Image.LANCZOS)
-        ox,oy=(i%5)*CW*K,(i//5)*CH*K
-        sheet.paste(crop,(ox+(CW*K-w)//2,oy+(CH*K-h)//2))
-    sheet.save(OUT/f"in-{t}.png")
-    print(t,round(s,3),sheet.size,bgc)
-(OUT/"layout.json").write_text(json.dumps(meta,indent=1))
+def main():
+    OUT=Path(sys.argv[2]); OUT.mkdir(parents=True,exist_ok=True)
+    meta={}
+    for t in TYPES:
+        im,found=cells(t)
+        boxes=[b for row in found for b in row]
+        assert len(boxes)==10
+        s=min(min(BOXW/(b[2]-b[0]),BOXH/(b[3]-b[1])) for b in boxes)
+        bgc=tuple(int(v) for v in np.median(np.array(im).reshape(-1,3),axis=0))
+        meta[t]={"scale":s,"boxes":[list(map(int,b[:4])) for b in boxes],"bg":bgc}
+        sheet=Image.new("RGB",(5*CW*K,2*CH*K),bgc)
+        for i,b in enumerate(boxes):
+            crop=im.crop(b[:4])
+            keep=ndi.binary_dilation(b[4],iterations=3)  # only this weapon's own pixels, never a neighbour's
+            arr=np.array(crop); arr[~keep]=bgc; crop=Image.fromarray(arr)
+            w,h=round(crop.width*s*K),round(crop.height*s*K)
+            crop=crop.resize((w,h),Image.LANCZOS)
+            ox,oy=(i%5)*CW*K,(i//5)*CH*K
+            sheet.paste(crop,(ox+(CW*K-w)//2,oy+(CH*K-h)//2))
+        sheet.save(OUT/f"in-{t}.png")
+        print(t,round(s,3),sheet.size,bgc)
+    (OUT/"layout.json").write_text(json.dumps(meta,indent=1))
+
+
+if __name__ == '__main__':
+    main()

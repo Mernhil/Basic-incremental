@@ -20,10 +20,27 @@ export const ITEM_BOX = { w: 200, h: 240 } as const;
 export const outlinePath = (d: string | undefined): string =>
   d ? `<path class="bi-item__outline" d="${d}" fill="none" stroke="none"/>` : '';
 
+/**
+ * The user's straight pictures (ASSET_RULES §5) are canvases of the card's own proportion (132 : 186),
+ * far bigger than the 100 x 120 sprites, with the weapon centred on a transparent background. In
+ * item-box units the canvas is drawn 177.4 x 250 around the box, which fits the art window of the
+ * small views (shop, summon, skins); a card draws it over the whole card (full art) by taking
+ * `FULL_ART_VIEWBOX`, the same rectangle, as its item view box.
+ */
+export const FULL_ART_BOX = { x: 11.29, y: -7, w: 177.42, h: 250 } as const;
+export const FULL_ART_VIEWBOX = `${FULL_ART_BOX.x} ${FULL_ART_BOX.y} ${FULL_ART_BOX.w} ${FULL_ART_BOX.h}`;
+/** A sprite this wide is a straight picture (the pixel sprites are 100 px wide). */
+const STRAIGHT_MIN_W = 300;
+
 /** Markup for a baked item-box sprite (card items and weapon skins), with its traced outline; a sprite with a palette-cycling strip plays it (art/pixel/animate.ts). */
 export function itemBoxSprite(name: string, cls = ''): string {
   const s = sprite(name);
   if (!s) return '';
+  if (s.w >= STRAIGHT_MIN_W) {
+    // a straight picture: smooth scaling, full-art canvas, the silhouette traced from its alpha
+    const { x, y, w, h } = FULL_ART_BOX;
+    return `<g class="bi-item bi-item--full${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}<image href="${s.url}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="none" style="image-rendering:auto" data-sprite="${name}"/></g>`;
+  }
   return `<g class="bi-item${cls ? ` ${cls}` : ''}">${outlinePath(s.outline)}${animatedSpriteImage(name, 0, 0, ITEM_BOX.w, ITEM_BOX.h)}</g>`;
 }
 

@@ -2,7 +2,7 @@ import type { Rank, Rarity } from '../../../data';
 import { TIER_LABELS, type ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
 import type { FrameTier } from '../art/vector/frame';
-import { ITEM_VIEWBOX } from '../art/items';
+import { FULL_ART_VIEWBOX, ITEM_VIEWBOX } from '../art/items';
 import { attachElementFx, type CardElement } from '../art/fx';
 import { effectStrength } from '../art/fxGeometry';
 import { applyCardTheme } from '../theme/apply';
@@ -136,6 +136,10 @@ export function createCard(initial: CardProps): CardView {
       itemMarkup = p.item;
       itemSvg.innerHTML = p.item ?? '';
       el.classList.toggle('bi-card--item', Boolean(p.item));
+      // a straight picture is a whole-card canvas (full art, DESIGN.md §5): the item layer covers the card
+      const full = Boolean(p.item?.includes('bi-item--full'));
+      el.classList.toggle('bi-card--fullart', full);
+      itemSvg.setAttribute('viewBox', full ? FULL_ART_VIEWBOX : ITEM_VIEWBOX);
     }
     if (!p.item) emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
     // the bottom plate (DESIGN.md §5 full-art layout): ability and speed, level and rarity, bar
