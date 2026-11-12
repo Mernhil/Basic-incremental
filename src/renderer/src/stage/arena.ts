@@ -46,6 +46,8 @@ import {
   enemyMoment,
   feedLines,
   floorPips,
+  HAND,
+  foeRoom,
   handCardWant,
   handSize,
   handSlot,
@@ -301,7 +303,10 @@ export function createArena(ctx: ArenaContext): Arena {
   const fitHand = (): void => {
     const h = el.clientHeight || 480;
     const { want, max } = handCardWant(h);
-    fitCard(hand, { want, max: () => max });
+    const n = fitCard(hand, { want, max: () => max });
+    // the enemy card gives way to the hand, so the whole hand stands inside the duel
+    const handPx = (n / screenDpr()) * (HAND.cardH + HAND.drop);
+    el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx))}px`);
   };
   fitHand();
   new ResizeObserver(() => fitHand()).observe(el);

@@ -20,7 +20,8 @@
   color: var(--bi-chrome-ink);
   background: var(--bi-chrome-rail-bg);
   /* the enemy card: its height follows the duel, its width the card shape */
-  --du-foe-h: clamp(170px, 46cqh, 300px);
+  /* --du-foe-room: what the hand leaves the enemy card (stage/arena.ts fitHand) */
+  --du-foe-h: clamp(170px, min(46cqh, var(--du-foe-room, 9999px)), 300px);
   --du-foe-w: calc(var(--du-foe-h) * 0.74);
   --du-top: 66px;
   /* the room's torches stand either side of the enemy */
@@ -915,7 +916,7 @@ html .du-skill--heal:not(#_px) {
   }
 }
 
-/* ---- the hand: four cards along the bottom, close, cut by the edge ---- */
+/* ---- the hand: four cards along the bottom, close, whole inside the window ---- */
 .du-hand {
   /* one art pixel in CSS px (whole device pixels); --card-n comes from fitCard */
   --du-u: calc(var(--card-n) / var(--dpr) * 1px);
@@ -925,10 +926,11 @@ html .du-skill--heal:not(#_px) {
   width: calc(var(--du-u) * var(--hand-w, 468));
   height: calc(var(--du-u) * var(--hand-h, 194));
   translate: calc(var(--du-u) * var(--hand-w, 468) / -2) 0;
-  /* the hand stands with about a fifth of it under the bottom edge */
+  /* the whole hand stands inside, 8 px above the bottom edge; only a duel too short for the
+     smallest scale pushes it under the edge */
   top: max(
     calc(var(--du-top) + var(--du-foe-h) + 34px),
-    calc(100cqh - var(--du-u) * var(--hand-h, 194) * 0.82)
+    calc(100cqh - var(--du-u) * var(--hand-h, 194) - 8px)
   );
 }
 .du-card {
@@ -1108,7 +1110,7 @@ html .du-skill--heal:not(#_px) {
 /* the window: a tighter duel (the table's centre is about 816 x 492) */
 .dv-window .ar {
   --du-top: 60px;
-  --du-foe-h: clamp(150px, 44cqh, 240px);
+  --du-foe-h: clamp(150px, min(44cqh, var(--du-foe-room, 9999px)), 240px);
 }
 @container (max-width: 760px) {
   .du-left {

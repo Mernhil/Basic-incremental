@@ -12,6 +12,8 @@ import {
   feedLines,
   floorPips,
   handCardWant,
+  foeRoom,
+  DUEL_FOE_MIN,
   handSize,
   handSlot,
   hopMs,
@@ -45,9 +47,20 @@ describe('the hand', () => {
   });
 
   it('wants a card from the duel height, never more than 55% of it', () => {
-    const { want, max } = handCardWant(492);
-    expect(want).toBeCloseTo((492 * 0.42 * 132) / 186);
+    const { want, max } = handCardWant(1000);
+    expect(want).toBeCloseTo((1000 * 0.42 * 132) / 186);
     expect(max).toBeGreaterThan(want);
+  });
+
+  it('never wants a hand taller than the room under the enemy card', () => {
+    for (const h of [640, 700, 888, 1010, 1400]) {
+      const { want, max } = handCardWant(h);
+      const room = foeRoom(h, 0) - DUEL_FOE_MIN;
+      expect(room).toBe(h - (66 + 170 + 34) - 12 - 8);
+      const handH = (cardW: number): number => (cardW / 132) * (186 + 8);
+      expect(handH(want)).toBeLessThanOrEqual(room + 1e-6);
+      expect(handH(max)).toBeLessThanOrEqual(room + 1e-6);
+    }
   });
 
   it('hops over 40% of the hit interval, clamped to 160..420 ms', () => {

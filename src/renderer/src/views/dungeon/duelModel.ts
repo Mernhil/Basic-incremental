@@ -41,14 +41,37 @@ export function handSize(count: number): { w: number; h: number } {
   };
 }
 
+/** The duel's layout in CSS px, as `stage/arena.css` has it: --du-top, the gap, the enemy's floor. */
+export const DUEL_TOP = 66;
+export const DUEL_GAP = 34;
+export const DUEL_FOE_MIN = 170;
+
+/** CSS px kept clear above the hand for its damage tags, so they never touch the enemy card. */
+export const HAND_TAGS = 12;
+
+/** CSS px the enemy card may be tall in a duel `height` tall over a hand `handPx` tall. */
+export function foeRoom(height: number, handPx: number): number {
+  return height - DUEL_TOP - DUEL_GAP - HAND_TAGS - HAND_MARGIN - handPx;
+}
+
+/** CSS px the duel keeps free under the hand, so the whole hand stands inside the window. */
+export const HAND_MARGIN = 8;
+
 /**
  * CSS px wide a hand card wants to be in a duel `height` CSS px tall, and the most it may take:
- * the hand stands about 42% of the height (its bottom is cut by the edge) and never more than 55%.
- * The screen scale then rounds it to a whole scale (`fitCard`).
+ * the hand stands about 42% of the height and never more than 55%, and never taller than the room
+ * under the enemy card at its smallest, so the whole hand shows (user, 2026-11-12). The screen
+ * scale then rounds it to a whole scale (`fitCard`) and the enemy card gives way (`foeRoom`);
+ * only a duel too short for the smallest scale cuts the hand.
  */
 export function handCardWant(height: number): { want: number; max: number } {
   const ratio = HAND.cardW / HAND.cardH;
-  return { want: height * 0.42 * ratio, max: height * 0.55 * ratio };
+  const room = Math.max(0, foeRoom(height, 0) - DUEL_FOE_MIN);
+  const cardRoom = (room * HAND.cardH) / (HAND.cardH + HAND.drop);
+  return {
+    want: Math.min(height * 0.42, cardRoom) * ratio,
+    max: Math.min(height * 0.55, cardRoom) * ratio,
+  };
 }
 
 /** The hop of a card that hits: 40% of its hit interval, clamped to 160..420 ms. */

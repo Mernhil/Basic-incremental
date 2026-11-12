@@ -1,6 +1,6 @@
 {
   "name": "basic-incremental",
-  "version": "0.7.3",
+  "version": "0.7.4",
   "description": "Basic incremental - a Windows desktop incremental game",
   "private": true,
   "author": "Mernhil",
