@@ -28,6 +28,7 @@ HAND = ROOT / "src/renderer/src/art/pixel/hand"
 spec = importlib.util.spec_from_file_location("post1", ROOT / "design/pixel/concept-sheet-1/post.py")
 P = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(P)
+P.INK = (4, 4, 8)  # the near-black ink outline of the other tier pictures (item-sword-t4 and the rest)
 
 TYPES = ["sword", "greatsword", "dagger", "hammer", "lance", "bow", "scythe", "logging_axe"]
 STEPS = [("t1", 0), ("t2", 0), ("t2", 1), ("t3", 0), ("t3", 1), ("t3", 2), ("t4", 0), ("t4", 1), ("t4", 2), ("t4", 3)]
@@ -36,7 +37,8 @@ STRING = (228, 214, 176)  # the bow string
 
 
 def key(a: np.ndarray, bg, tol: int = 30, everywhere: bool = False) -> np.ndarray:
-    """Clears the sheet background: pixels near its colour that connect to the cell border."""
+    """Clears the sheet background: pixels near its colour, also the pockets the weapon encloses (a guard
+    loop, inside a bow string), so they are see-through like the outside."""
     h, w = a.shape[:2]
     near = np.abs(a[..., :3].astype(int) - np.array(bg)).sum(-1) < tol
     seen = near.copy() if everywhere else np.zeros((h, w), bool)
@@ -121,7 +123,7 @@ def main() -> None:
         for i in range(10):
             x, y = (i % 5) * 100, (i // 5) * 120
             a = np.array(sheet.crop((x, y, x + 100, y + 120)), dtype=np.uint8)
-            a = P.drop_specks(key(a, bg, everywhere=(t == 'bow')), 12)
+            a = P.drop_specks(key(a, bg, everywhere=True), 12)
             if t == "bow":  # the converter's broken string is dropped; the string is drawn again below
                 from scipy import ndimage as ndi
 
