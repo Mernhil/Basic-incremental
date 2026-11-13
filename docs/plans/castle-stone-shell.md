@@ -82,7 +82,7 @@ The paid pieces are new art. They are shown to the user at 4× on a picker page 
    - `node scripts/a11y-shell.mjs` must pass on every page.
    - `gn_table` (Plum Pixel) loses `starter`, stays Common, and leaves the set or stays in it, whichever keeps the Gilded Nocturne set rules (set detection only counts non-starter items) behaving as today. Check `src/game/theme.ts` and its tests.
    - Starter-token inheritance: the other tables inherit missing tokens from the starter, which is now Castle Stone. Take screenshots of all six other tables before and after. If any changes, give it the tokens it used to inherit, so it looks the same as today.
-7. **Save format 30** (CLAUDE.md rule 9). Bump `CURRENT_SAVE_VERSION`.
+7. **Save format 31** (CLAUDE.md rule 9; main is at 30 since 0.7.8). Bump `CURRENT_SAVE_VERSION`.
    - The migration adds `gn_table` to `cosmetics.owned`, and so does a new game's base state, so everyone can switch back to it.
    - [Default] A save that explicitly wears `gn_table` has that slot cleared, so it shows the new starter. A test covers both cases.
 8. **Tavern Wood.** Repeat steps 2 and 6 for 1a: art in `art/shell/tavern/`, the item `tavern_table`, Legendary, no set, one level, Wardrobe Gate pool (DESIGN §8 Default).
