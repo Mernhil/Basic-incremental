@@ -138,8 +138,7 @@ function progressText(entry: AchievementEntry): string {
     const metal = (n: number): string => COPY.achievements.metals[n] ?? String(n);
     return COPY.achievements.of(metal(value), metal(entry.target));
   }
-  const count = (n: number): string =>
-    n < 1e6 ? Math.floor(n).toLocaleString('en-US') : fmt(new Decimal(n));
+  const count = (n: number): string => fmt(Math.floor(n));
   return COPY.achievements.of(count(value), count(entry.target));
 }
 
@@ -266,7 +265,7 @@ export interface ShardOfferView {
 }
 
 /** Shards in hand, for the shop header. */
-export const shardsText = (state: GameState): string => state.cards.shards.toLocaleString('en-US');
+export const shardsText = (state: GameState): string => fmt(state.cards.shards);
 
 export function shardOfferViews(
   offers: readonly ShardOffer[],

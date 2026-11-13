@@ -26,8 +26,8 @@ const removedIds = (): string[] => {
 };
 
 describe('v27 -> v28 (the cosmetics cleanup)', () => {
-  it('is the current format, and the fixture is format 27', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(28);
+  it('is an older format than the current one, and the fixture is format 27', () => {
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThan(27);
     expect(JSON.parse(fixture).version).toBe(27);
   });
 

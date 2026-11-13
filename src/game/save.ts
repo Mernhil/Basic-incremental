@@ -34,7 +34,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 28;
+export const CURRENT_SAVE_VERSION = 29;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -92,7 +92,8 @@ export const serializedStateSchema = z.object({
     /** v25: training levels (DESIGN.md §6 Training). */
     training: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
-    trialBest: z.record(z.string(), z.number().min(0).max(1)),
+    /** The best share of the target's HP dealt: 1 is 100%; the score has no cap (DESIGN.md §6). */
+    trialBest: z.record(z.string(), z.number().min(0).finite()),
     knockoutSeconds: z.number().min(0),
     /** v26: stage stars and overflow, keyed by `stageKey` (DESIGN.md §6). */
     stageKills: stageCounts,

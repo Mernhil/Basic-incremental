@@ -1,8 +1,6 @@
 import type { Content } from '../../../data';
-import { CURRENT_SAVE_VERSION, Decimal, formatDuration, type GameState } from '../../../game';
+import { CURRENT_SAVE_VERSION, formatDuration, type GameState } from '../../../game';
 import { COPY } from '../copy';
-import { formatNumber } from '../settings/numberFormat';
-import type { NumberStyle } from '../settings/prefs';
 import type { SaveSummary } from '../settings/issueReport';
 
 /** Play time, ascensions, hardest dungeon cleared and save version of a game state. */
@@ -30,19 +28,6 @@ export function summaryLine(s: SaveSummary): string {
 export interface Choice<T> {
   value: T;
   label: string;
-  /** Extra line under the label (the number style example). */
-  example?: string;
-}
-
-const EXAMPLE = new Decimal(12_345_678);
-
-export function numberChoices(): Choice<NumberStyle>[] {
-  const choices: Choice<NumberStyle>[] = [
-    { value: 'suffix', label: COPY.settings.numSuffix },
-    { value: 'scientific', label: COPY.settings.numScientific },
-    { value: 'engineering', label: COPY.settings.numEngineering },
-  ];
-  return choices.map((c) => ({ ...c, example: formatNumber(EXAMPLE, c.value) }));
 }
 
 /** "10 s", "1 min", "5 min". */

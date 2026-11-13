@@ -60,7 +60,7 @@ export function forgeView(state: GameState, content: Content): ForgeView {
       cardId: card.id,
       label: t.worker(
         card.name,
-        workerPower(content, card.id, owned).toFixed(2),
+        fmt(workerPower(content, card.id, owned)),
         at ? (names.get(at) ?? at) : null,
         owned.tier,
       ),

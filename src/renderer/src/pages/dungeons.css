@@ -153,14 +153,26 @@ html .dp-row.is-picked:not(#_px) {
 }
 .dp-pips {
   display: flex;
-  gap: 4px;
+  gap: 2px;
 }
+/* a star: the five-point shape cut from a square, dark until its level is earned */
 .dp-pip {
   display: block;
-  width: 10px;
-  height: 10px;
-  background: var(--px-lo);
-  box-shadow: 0 0 0 var(--fs-sm) var(--px-edge);
+  width: 14px;
+  height: 14px;
+  background: var(--px-edge);
+  clip-path: polygon(
+    50% 0%,
+    62% 36%,
+    100% 38%,
+    70% 60%,
+    81% 100%,
+    50% 76%,
+    19% 100%,
+    30% 60%,
+    0% 38%,
+    38% 36%
+  );
 }
 /* the ladder: Wood, Bronze, Silver, Gold, Prismatic, Mythic */
 .dp-pip.is-on[data-level='1'] {

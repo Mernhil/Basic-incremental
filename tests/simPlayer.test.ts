@@ -302,8 +302,8 @@ describe('sim player: runs of one economy line', () => {
 
 describe('sim player: floor Challenges and the team of four', () => {
   // The boss HP these margins were set against, so tuning the dungeon data does not move them
-  // (the tests below pin the boss attack the same way).
-  const real = withBossHp(loadContent(), 'mossy_cellar', 70000);
+  // (the tests below pin the boss attack the same way; on the readable scale of DESIGN.md §14).
+  const real = withBossHp(loadContent(), 'mossy_cellar', 1700);
   /** Mossy Cellar on floor 9 of 10 (its boss floor is the next Challenge), a team of Commons. */
   const atBossWall = (): GameState => {
     const state = freshState();
@@ -337,20 +337,20 @@ describe('sim player: floor Challenges and the team of four', () => {
   });
 
   it('fields a guard when the damage team falls before it wins the next Challenge', () => {
-    const hard = withBossAttack(real, 'mossy_cellar', 400, 2);
+    const hard = withBossAttack(real, 'mossy_cellar', 120, 2);
     const state = atBossWall();
     expect(margin(state, hard)).toBeLessThan(CHALLENGE_WIN);
     const team = teamForChallenge(state, hard);
     expect(team.cards.loadouts.fighting.supports).toContain('bronze_forgehand');
     expect(margin(team, hard)).toBeGreaterThanOrEqual(CHALLENGE_WIN);
     // A team that already wins is left as it is.
-    expect(teamForChallenge(state, withBossAttack(real, 'mossy_cellar', 50, 2))).toBe(state);
+    expect(teamForChallenge(state, withBossAttack(real, 'mossy_cellar', 21, 2))).toBe(state);
   });
 
   it('leaves auto-challenge on only while it wins, and tries a close Challenge by hand now and then', () => {
     const cellar = real.dungeonById.get('mossy_cellar')!;
     // Wins: auto-challenge on, nothing pressed.
-    const easy = withBossAttack(real, 'mossy_cellar', 50, 2);
+    const easy = withBossAttack(real, 'mossy_cellar', 21, 2);
     const on = chooseAutoChallenge(withAutoChallenge(atBossWall(), false), easy, 0, null);
     expect(floorPosition(on.state, cellar).autoChallenge).toBe(true);
     expect(on.tried).toBe(false);
@@ -358,7 +358,7 @@ describe('sim player: floor Challenges and the team of four', () => {
     // (No guard here: the team is the damage team.)
     const state = withAutoChallenge(atBossWall(), true);
     delete state.cards.owned['bronze_forgehand'];
-    const close = withBossAttack(real, 'mossy_cellar', 170, 2);
+    const close = withBossAttack(real, 'mossy_cellar', 85, 2);
     expect(margin(state, close)).toBeGreaterThan(CHALLENGE_TRY_MARGIN);
     expect(margin(state, close)).toBeLessThan(CHALLENGE_WIN);
     const tried = chooseAutoChallenge(state, close, 1000, null);
@@ -368,7 +368,7 @@ describe('sim player: floor Challenges and the team of four', () => {
     const again = chooseAutoChallenge(state, close, 1000 + CHALLENGE_RETRY_SECONDS - 1, 1000);
     expect(again.tried).toBe(false);
     // Hopeless: off, and not even tried.
-    const hopeless = withBossAttack(real, 'mossy_cellar', 800, 2);
+    const hopeless = withBossAttack(real, 'mossy_cellar', 220, 2);
     expect(margin(state, hopeless)).toBeLessThan(CHALLENGE_TRY_MARGIN);
     expect(chooseAutoChallenge(state, hopeless, 1000, null).tried).toBe(false);
   });

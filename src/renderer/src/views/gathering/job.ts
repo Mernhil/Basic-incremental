@@ -430,7 +430,13 @@ export function createJobView(
         set(ref.value, row.outputValue);
         if (row.milestone) {
           setSegments(ref, row.milestone.segments);
-          set(ref.x2, T.x2In(row.milestone.segments.total - row.milestone.segments.filled));
+          set(
+            ref.x2,
+            T.multIn(
+              row.milestone.mult,
+              row.milestone.segments.total - row.milestone.segments.filled,
+            ),
+          );
           ref.track.title = row.milestone.label;
         }
         if (row.buy && ref.buy) {

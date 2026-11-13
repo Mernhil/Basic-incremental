@@ -637,7 +637,7 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
   });
 
   it('loads at the current format with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(28);
+    expect(CURRENT_SAVE_VERSION).toBe(29);
     const loaded = readSave(v21Save(), content);
     // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
     expect(loaded.state.weaponSkins).toEqual({
@@ -679,7 +679,9 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
       const gained = (loaded.state.resources[resource] ?? new Decimal(0)).sub(
         before.resources[resource] ?? new Decimal(0),
       );
-      expect(gained.toString(), resource).toBe(amount.toString());
+      // the Money and gems the save held moved to the readable scale first (format 29), so the
+      // refund is counted to the nearest hundredth of a percent
+      expect(gained.sub(amount).abs().lte(amount.mul(1e-4)), resource).toBe(true);
     }
     // Resources only the Wood step would have paid stay untouched.
     for (const cost of content.cardRules.tierUp.wood['fighting']) {
@@ -842,7 +844,7 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.automation).toEqual({ treeLevels: false, mineLevels: false, reservePercent: 0 });
     // Saved again, it is format 26 and loads to the same state.
     const again = readSave(createSaveText(state, 1), floorsContent);
-    expect(JSON.parse(createSaveText(state, 1)).version).toBe(28);
+    expect(JSON.parse(createSaveText(state, 1)).version).toBe(CURRENT_SAVE_VERSION);
     expect(again.state).toEqual(state);
   });
 });

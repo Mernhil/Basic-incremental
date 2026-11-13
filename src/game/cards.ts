@@ -136,8 +136,9 @@ export const cardSide = (rarity: Rarity): 'mythic' | 'void' =>
  * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T4
  * "<material> <type>", T5 "Prismatic <name> <type>", T6 by the card's side, then the Heirloom.
  * Pass the card as `card` and a card with its own Heirloom (`heirloomName` in cards.json, DESIGN.md
- * §5 More weapons from the Heirloom candidates) names it at the Heirloom tier; every other tier,
- * and every card without one, keeps the type's names.
+ * §5 More weapons from the Heirloom candidates) is named by it at every tier: the card's weapon is
+ * that one weapon, shown as its own picture until its lower-tier pictures are drawn (user,
+ * 2026-11-13). Every card without one keeps the type's names.
  */
 export function itemName(
   content: Content,
@@ -148,6 +149,7 @@ export function itemName(
 ): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
+  if (card?.heirloomName) return card.heirloomName;
   switch (tier) {
     case 'wood':
     case 'bronze':
@@ -159,7 +161,7 @@ export function itemName(
     case 'mythic':
       return type[cardSide(rarity)];
     case 'heirloom':
-      return card?.heirloomName ?? type.heirloom[cardSide(rarity)];
+      return type.heirloom[cardSide(rarity)];
   }
 }
 

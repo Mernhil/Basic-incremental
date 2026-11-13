@@ -9,20 +9,20 @@
     "level": {
       "cost": {
         "resource": "money",
-        "base": "200",
-        "growth": "1.13"
+        "base": "57",
+        "growth": "1.109"
       },
       "ratePercent": "5",
       "milestones": {
         "every": 15,
-        "multiplier": "2"
+        "multiplier": "1.15"
       }
     },
     "depth": {
       "names": ["Sapling", "Young", "Grown", "Mature", "Old", "Ancient", "Elder", "Primeval"],
       "hardness": "600",
-      "hardnessGrowth": "2.2",
-      "yieldGrowth": "1.6",
+      "hardnessGrowth": "1.95",
+      "yieldGrowth": "1.15",
       "digRate": "1"
     },
     "art": {
@@ -46,20 +46,20 @@
     "level": {
       "cost": {
         "resource": "money",
-        "base": "2500",
-        "growth": "1.14"
+        "base": "480",
+        "growth": "1.117"
       },
       "ratePercent": "5",
       "milestones": {
         "every": 15,
-        "multiplier": "2"
+        "multiplier": "1.15"
       }
     },
     "depth": {
       "names": ["Sapling", "Young", "Grown", "Mature", "Old", "Ancient", "Elder", "Primeval"],
       "hardness": "2400",
-      "hardnessGrowth": "2.2",
-      "yieldGrowth": "1.6",
+      "hardnessGrowth": "1.95",
+      "yieldGrowth": "1.15",
       "digRate": "1"
     },
     "art": {
@@ -83,20 +83,20 @@
     "level": {
       "cost": {
         "resource": "money",
-        "base": "30000",
-        "growth": "1.15"
+        "base": "4000",
+        "growth": "1.126"
       },
       "ratePercent": "5",
       "milestones": {
         "every": 15,
-        "multiplier": "2"
+        "multiplier": "1.15"
       }
     },
     "depth": {
       "names": ["Sapling", "Young", "Grown", "Mature", "Old", "Ancient", "Elder", "Primeval"],
       "hardness": "9000",
-      "hardnessGrowth": "2.2",
-      "yieldGrowth": "1.6",
+      "hardnessGrowth": "1.95",
+      "yieldGrowth": "1.15",
       "digRate": "1"
     },
     "art": {

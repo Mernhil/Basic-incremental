@@ -200,6 +200,11 @@ body {
     radial-gradient(circle at 50% 40%, rgba(147, 166, 187, 0.22), transparent 70%), #0d121b;
   box-shadow: inset 0 0 0 1px var(--bi-art-line, rgba(217, 179, 90, 0.5));
 }
+/* the window shows rows 16 to 220 of the item's 240: a weapon drawn into the strips above or below
+   (85 of the pixel sprites are) is not cut by the window, it runs under the plates like full art */
+.bi-card--item:not(.bi-card--boss) .bi-card__art {
+  overflow: visible;
+}
 .bi-card__emblem {
   width: 56%;
   height: 56%;

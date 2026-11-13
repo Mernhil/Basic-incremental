@@ -7,6 +7,7 @@ import {
   stageFloors,
   stageKey,
   STAR_DIFFICULTIES,
+  V29_SCALE,
   type GameState,
 } from '../src/game';
 
@@ -128,7 +129,7 @@ function pinNoElements(bundled: Content): Content {
  * The numbers the rule tests were written against, pinned so the balance run (DESIGN.md §14) can
  * tune them without moving those tests: the Mossy Cellar's boss (12,900 HP, 15 damage every 3 s,
  * purses of 1,000 to 1,500), the wave and mini-boss shares of the floors, Hard and Nightmare at a thousand times the tier below (purses half as
- * much again a tier), the card XP curve from 10 XP, and base stats stepping by tier as card effects do. Balance tests read the shipped numbers from `loadContent()`.
+ * much again a tier), the card XP curve from 10 XP, base stats stepping by tier as card effects do, a Common card's base damage of 200 and health of 100 (the other rarities keep the shipped ratios to it) and a worker's XP of 1 a log and 2 an ore. Balance tests read the shipped numbers from `loadContent()`.
  */
 function pinRuleNumbers(bundled: Content): Content {
   const dungeons = bundled.dungeons.map((d) =>
@@ -160,6 +161,19 @@ function pinRuleNumbers(bundled: Content): Content {
   };
   const power = { ...bundled.cardRules.power, statTier: bundled.cardRules.power.tier };
   const xpCurve = { ...bundled.cardRules.xpCurve, base: new Decimal(10) };
+  const scaled = <T extends Record<string, Decimal>>(stats: T, common: number): T =>
+    Object.fromEntries(
+      Object.entries(stats).map(([r, v]) => [
+        r,
+        r === 'common' ? new Decimal(common) : v.div(stats['common']!).mul(common),
+      ]),
+    ) as T;
+  const baseDamage = scaled(bundled.cardRules.baseDamage, 200);
+  const health = scaled(bundled.cardRules.health, 100);
+  const xp = {
+    ...bundled.cardRules.xp,
+    perUnit: { logging: new Decimal(1), mining: new Decimal(2) },
+  };
   const difficulties = {
     hard: { ...bundled.combat.difficulties.hard, hp: 1000, attack: 1000, purse: 1500 },
     nightmare: { ...bundled.combat.difficulties.nightmare, hp: 1e6, attack: 1e6, purse: 2.25e6 },
@@ -168,7 +182,7 @@ function pinRuleNumbers(bundled: Content): Content {
     ...bundled,
     dungeons,
     dungeonById: new Map(dungeons.map((d) => [d.id, d])),
-    cardRules: { ...bundled.cardRules, power, xpCurve },
+    cardRules: { ...bundled.cardRules, power, xpCurve, baseDamage, health, xp },
     combat: { ...bundled.combat, difficulties, floors },
   };
 }
@@ -224,11 +238,14 @@ export function withDps(dps: Decimal | number | string, base: Content = plainCon
   const baseDamage = Object.fromEntries(
     Object.keys(base.cardRules.baseDamage).map((rarity) => [
       rarity,
-      common.mul(
-        base.cardRules.baseDamage[rarity as keyof typeof base.cardRules.baseDamage].div(
-          base.cardRules.baseDamage.common,
-        ),
-      ),
+      // the Common value exactly (a ratio of 1 can come back as 0.999… in floating point)
+      rarity === 'common'
+        ? common
+        : common.mul(
+            base.cardRules.baseDamage[rarity as keyof typeof base.cardRules.baseDamage].div(
+              base.cardRules.baseDamage.common,
+            ),
+          ),
     ]),
   ) as Content['cardRules']['baseDamage'];
   return {
@@ -322,4 +339,20 @@ export function levelPointsOnly(base: Content = content): Content {
     ...base,
     account: { ...base.account, levels: { ...base.account.levels, pointsPerAchievement: 0 } },
   };
+}
+
+/**
+ * An amount of a save older than format 29 as the readable-numbers update moves it (DESIGN.md §14
+ * Readable numbers, `V29_SCALE`): Money through the level-price map, gems through the gem map,
+ * anything else as it was. Old-save tests compare what they load with this.
+ */
+export function toV29(resource: string, amount: number): number {
+  if (amount <= 0) return 0;
+  if (resource === 'money')
+    return amount < 1
+      ? amount * V29_SCALE.moneyFactor
+      : V29_SCALE.moneyFactor * Math.pow(amount, V29_SCALE.k);
+  if (resource.endsWith('_gem'))
+    return V29_SCALE.gemAnchor * Math.pow(amount / V29_SCALE.gemAnchor, V29_SCALE.gem);
+  return amount;
 }

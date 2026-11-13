@@ -6,13 +6,13 @@
     "stat": "combat.damage",
     "cost": {
       "resource": "copper_gem",
-      "base": "1000",
-      "growth": "1.8"
+      "base": "200",
+      "growth": "1.491"
     },
-    "ratePercent": "4",
+    "ratePercent": "3.4",
     "milestones": {
       "every": 25,
-      "multiplier": "2"
+      "multiplier": "1.8"
     }
   },
   {
@@ -22,13 +22,13 @@
     "stat": "combat.health",
     "cost": {
       "resource": "ironbark_gem",
-      "base": "150",
-      "growth": "1.8"
+      "base": "55",
+      "growth": "1.491"
     },
-    "ratePercent": "4",
+    "ratePercent": "3.4",
     "milestones": {
       "every": 25,
-      "multiplier": "2"
+      "multiplier": "1.8"
     }
   },
   {
@@ -38,13 +38,13 @@
     "stat": "drops.moneyMultiplier",
     "cost": {
       "resource": "iron_gem",
-      "base": "150",
-      "growth": "1.8"
+      "base": "55",
+      "growth": "1.491"
     },
-    "ratePercent": "4",
+    "ratePercent": "3.4",
     "milestones": {
       "every": 25,
-      "multiplier": "2"
+      "multiplier": "1.8"
     }
   },
   {
@@ -54,13 +54,13 @@
     "stat": "burst.fill",
     "cost": {
       "resource": "oak_gem",
-      "base": "1500",
-      "growth": "1.8"
+      "base": "260",
+      "growth": "1.491"
     },
-    "ratePercent": "2",
+    "ratePercent": "1.7",
     "milestones": {
       "every": 25,
-      "multiplier": "1.25"
+      "multiplier": "1.21"
     }
   }
 ]

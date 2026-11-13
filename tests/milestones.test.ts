@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  approxEq,
   Decimal,
   growthStage,
   mineLevelMilestone,
@@ -55,16 +56,16 @@ describe('level milestones (DESIGN.md §4)', () => {
     expect(growthStage(x2, 1000)).toBe(4);
   });
 
-  it('is data-driven per line: every mine level has x2 every 15 levels', () => {
+  it('is data-driven per line: every mine level has x1.15 every 15 levels', () => {
     for (const mine of content.mines) {
       expect(mine.level.milestones.every).toBe(15);
-      expect(mine.level.milestones.multiplier.toNumber()).toBe(2);
+      expect(mine.level.milestones.multiplier.toNumber()).toBe(1.15);
     }
   });
 
-  it('doubles a mine level line at level 15', () => {
+  it('multiplies a mine level line at level 15', () => {
     const plain = quarry.baseRate.mul(1 + (15 * 5) / 100);
-    expect(producerRate(quarry, 'mining', [], 15).eq(plain.mul(2))).toBe(true);
+    expect(approxEq(producerRate(quarry, 'mining', [], 15), plain.mul(1.15))).toBe(true);
   });
 
   it('resets mine level milestones with the production reset of a prestige', () => {

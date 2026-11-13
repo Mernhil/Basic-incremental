@@ -68,8 +68,15 @@ export interface ProductionRow {
   /** Active rows: the number ("52.8") and its unit ("Oak Gem/s") apart, for the big figure. */
   outputValue: string;
   outputUnit: string;
-  /** Next milestone: "Lv 75: ×2", "×2 in 19", the bar fill 0..1 and its segments. Null when locked. */
-  milestone: { label: string; toGo: string; progress: number; segments: MilestoneSegments } | null;
+  /** Next milestone: "Lv 75: ×1.3", its multiplier "1.3", "×1.3 in 19", the bar fill 0..1 and its
+   *  segments. Null when locked. */
+  milestone: {
+    label: string;
+    mult: string;
+    toGo: string;
+    progress: number;
+    segments: MilestoneSegments;
+  } | null;
   /** Active rows: the wait or "ready" for the chosen buy amount. Null when locked. */
   nextBuy: NextBuyView | null;
   /** Locked rows: what the middle column says ("Unlock for 2,000 Ironbark Gem", "Clear X to unlock"). */
@@ -186,7 +193,8 @@ export function productionRows(
         milestone: m
           ? {
               label: buy!.milestone,
-              toGo: COPY.production.x2In(m.levelsToNext),
+              mult: fmt(m.nextMultiplier),
+              toGo: COPY.production.multIn(fmt(m.nextMultiplier), m.levelsToNext),
               progress: Math.min(1, Math.max(0, m.progress)),
               segments: milestoneSegments(m.levelsToNext, m.progress),
             }

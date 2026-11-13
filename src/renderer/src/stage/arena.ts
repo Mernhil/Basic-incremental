@@ -1,6 +1,5 @@
 import type { Content } from '../../../data';
 import {
-  Decimal,
   barMoment,
   bossAttackView,
   bossStatus,
@@ -13,8 +12,12 @@ import {
   formatDuration,
   loadoutHealth,
   nextFloorChallenge,
+  overflowStage,
   recordDuel,
+  stageKey,
   stageReadout,
+  stageStars,
+  STAGE_STAR_NAMES,
   teamView,
   trialStatus,
   type BarLook,
@@ -114,11 +117,10 @@ interface HandSlot {
   body: HTMLElement;
   glow: HTMLElement;
   grey: HTMLElement;
-  hpFill: HTMLElement;
-  hpTrack: HTMLElement;
-  tag: HTMLElement;
   out: boolean;
   fraction: number;
+  /** Chance a hit crits (the CRIT! word is rolled for show). */
+  crit: number;
   tip: string;
   hopMs: number;
 }
@@ -184,6 +186,20 @@ export function createArena(ctx: ArenaContext): Arena {
   const fpmEl = readout('du-read--fpm', COPY.arena.kpmTip);
   const dpsEl = readout('du-read--dps', COPY.arena.dpsTip);
   const teamEl = readout('du-read--team');
+  // the stars of the stage being fought (DESIGN.md §6 Stage stars): six pips and the kills to the next
+  const starsEl = readout('du-read--stars', COPY.dungeons.stageTip);
+  const starPips = span('du-stars');
+  starPips.setAttribute('role', 'img');
+  const starPipEls = Array.from({ length: 6 }, (_, i) => {
+    const p = document.createElement('i');
+    p.className = 'dp-pip';
+    p.dataset['level'] = String(i + 1);
+    return p;
+  });
+  starPips.append(...starPipEls);
+  const starText = span('du-stars__text');
+  starsEl.append(starPips, starText);
+  starsEl.hidden = true;
   let teamTip = '';
   teamEl.tabIndex = 0;
   attachTooltip(teamEl, () => teamTip);
@@ -256,7 +272,7 @@ export function createArena(ctx: ArenaContext): Arena {
   // the damage: the hit feed, then the tag on the enemy card's top left corner
   const damage = div('du-damage');
   damage.append(feed, foeTag);
-  foeZone.append(plates, foe, damage, deck);
+  foeZone.append(foe, damage, deck);
 
   // ---- right: the stat sheet ----
   const sheet = document.createElement('section');
@@ -297,7 +313,7 @@ export function createArena(ctx: ArenaContext): Arena {
   const empty = div('du-empty px-panel');
   empty.textContent = COPY.arena.idle;
 
-  el.append(scene, top, verdict, left, foeZone, sheet, hand, ko, empty, edge, slamFlash);
+  el.append(scene, top, verdict, left, foeZone, plates, sheet, hand, ko, empty, edge, slamFlash);
 
   // ---- sizes: the hand's whole scale follows the duel's height ----
   const fitHand = (): void => {
@@ -410,13 +426,9 @@ export function createArena(ctx: ArenaContext): Arena {
       if (props) body.append(createCard(props).el);
       const glow = div('du-card__glow');
       const grey = div('du-card__grey');
-      const hpTrack = div('du-card__hp');
-      const hpFill = document.createElement('i');
-      hpTrack.append(hpFill);
-      const tag = div('du-tag du-tag--card');
       const mark = div('du-card__mark');
       mark.setAttribute('aria-hidden', 'true');
-      wrap.append(glow, body, grey, hpTrack, tag, mark);
+      wrap.append(glow, body, grey, mark);
       hand.append(wrap);
       const entry: HandSlot = {
         cardId: c.cardId,
@@ -425,11 +437,9 @@ export function createArena(ctx: ArenaContext): Arena {
         body,
         glow,
         grey,
-        hpFill,
-        hpTrack,
-        tag,
         out: c.knockedOut,
         fraction: c.fraction,
+        crit: c.critChance,
         tip: '',
         hopMs: hopMs(c.hitSeconds),
       };
@@ -445,12 +455,9 @@ export function createArena(ctx: ArenaContext): Arena {
       const slot = slots.find((x) => x.cardId === c.cardId);
       if (!slot) continue;
       const name = content.cardById.get(c.cardId)?.name ?? c.cardId;
-      // its own health: the bar closes at once; the piece lost comes away pale and falls off
-      if (c.fraction < slot.fraction - 0.002 && !calm())
-        dropChunk(slot.hpTrack, slot.fraction, c.fraction);
+      // its own health shows as the round gauge in the stat sheet
       slot.fraction = c.fraction;
-      slot.hpFill.style.width = `${(c.fraction * 100).toFixed(1)}%`;
-      slot.hpTrack.dataset['level'] = c.fraction < 0.25 ? 'low' : c.fraction < 0.5 ? 'mid' : 'high';
+      slot.crit = c.critChance;
       slot.hopMs = hopMs(c.hitSeconds);
       slot.el.classList.toggle('is-targeted', c.targeted);
       // a knocked-out card fades to grey and stays grey until the floor is won
@@ -459,8 +466,6 @@ export function createArena(ctx: ArenaContext): Arena {
         slot.el.classList.toggle('is-out', c.knockedOut);
         fadeTo(slot.grey, c.knockedOut ? 1 : 0, c.knockedOut ? 400 : 200);
       }
-      const dealt = log.perCard[c.cardId] ?? new Decimal(0);
-      pxNum(slot.tag, fmt(dealt), 1);
       slot.tip = [
         DUEL_COPY.cardTip(
           name,
@@ -477,21 +482,37 @@ export function createArena(ctx: ArenaContext): Arena {
     }
   }
 
+  /** CRIT! and BREAK!: a word that pops in big on the enemy card, settles and fades. */
+  function popWord(text: string, kind: 'crit' | 'break'): void {
+    if (calm() || !live()) return;
+    const w = span(`du-word du-word--${kind}`, text);
+    w.setAttribute('aria-hidden', 'true');
+    const jx = kind === 'crit' ? 0.55 + Math.random() * 0.2 : 0.1 + Math.random() * 0.15;
+    const jy = kind === 'crit' ? 0.5 + Math.random() * 0.15 : 0.12 + Math.random() * 0.1;
+    w.style.left = `${(jx * 100).toFixed(1)}%`;
+    w.style.top = `${(jy * 100).toFixed(1)}%`;
+    foeZone.append(w);
+    const r = 'rotate(-8deg)';
+    w.animate(
+      [
+        { transform: `scale(3) ${r}`, opacity: 0 },
+        { transform: `scale(1) ${r}`, opacity: 1, offset: 0.18 },
+        { transform: `scale(1.05) ${r}`, opacity: 1, offset: 0.75 },
+        { transform: `scale(1.3) ${r}`, opacity: 0 },
+      ],
+      { duration: kind === 'crit' ? 620 : 1000 },
+    ).finished.then(
+      () => w.remove(),
+      () => w.remove(),
+    );
+    for (const old of Array.from(foeZone.querySelectorAll('.du-word')).slice(0, -4)) old.remove();
+  }
+
   function fadeTo(node: HTMLElement, opacity: number, ms: number): void {
     const from = getComputedStyle(node).opacity;
     node.style.opacity = String(opacity);
     if (calm() || !live()) return;
     node.animate([{ opacity: from }, { opacity }], { duration: ms, easing: 'linear' });
-  }
-
-  function dropChunk(track: HTMLElement, from: number, to: number): void {
-    const chunk = document.createElement('i');
-    chunk.className = 'ar-chunk';
-    chunk.style.setProperty('--to', (to * 100).toFixed(3));
-    chunk.style.setProperty('--size', ((from - to) * 100).toFixed(3));
-    track.append(chunk);
-    for (const old of Array.from(track.querySelectorAll('.ar-chunk')).slice(0, -6)) old.remove();
-    window.setTimeout(() => chunk.remove(), 700);
   }
 
   // ---- the enemy ----
@@ -653,17 +674,20 @@ export function createArena(ctx: ArenaContext): Arena {
       const look = { key: key.key, remaining: status.bars.remaining };
       if (barMoment(lastLook, look, false) === 'shatter' && live() && !calm())
         replay(hp.el.querySelector('.bi-hpstack__count'), 'is-ticking', 500);
+      if (barMoment(lastLook, look, false) === 'shatter') popWord(DUEL_COPY.breakWord, 'break');
       lastLook = look;
       const dealt = enemyDamage(view.hp, view.maxHp);
+      // the table's window is smaller: its tag a size down
+      const tagPx = el.closest('.dv-window') ? 2 : 3;
       if (dealt.gt(0)) {
         foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
-        // the table's window is smaller: its tag a size down
-        pxNum(foeTagPx, fmt(dealt), el.closest('.dv-window') ? 2 : 3);
-      } else if (foeTagPx.dataset['px']) {
+        pxNum(foeTagPx, fmt(dealt), tagPx);
+      } else {
+        // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
         foeTagText.textContent = '';
-        foeTagPx.replaceChildren();
-        delete foeTagPx.dataset['px'];
+        pxNum(foeTagPx, '0', tagPx);
       }
+      foeTag.classList.toggle('is-empty', !dealt.gt(0));
       // the deck: one back per enemy to come (the boss last)
       const backs = deckBacks(view.waiting.length);
       if (deckStack.childElementCount !== backs) {
@@ -756,6 +780,11 @@ export function createArena(ctx: ArenaContext): Arena {
     rows.forEach((r, i) => {
       const li = sheetRowsEl.children[i] as HTMLElement;
       li.dataset['colour'] = slotColour(r.slot);
+      const own = slots.find((x) => x.cardId === r.cardId);
+      const pct = Math.round((own?.fraction ?? 1) * 100);
+      li.style.setProperty('--hp', String(pct));
+      li.dataset['hp'] = `${pct}%`;
+      li.classList.toggle('is-out', own?.out === true);
       setText(li.children[0] as HTMLElement, content.cardById.get(r.cardId)?.name ?? r.cardId);
       setText(li.children[1] as HTMLElement, fmt(r.damage));
       (li.children[2] as HTMLElement).style.transform = `scaleX(${r.bar.toFixed(3)})`;
@@ -790,20 +819,26 @@ export function createArena(ctx: ArenaContext): Arena {
       if (plateEls.has(p.id)) continue;
       const slot = slots.find((x) => x.cardId === p.cardId)?.slot ?? -1;
       const skill = content.skillById.get(p.skillId);
-      const node = div(`du-skill px-panel${p.kind === 'heal' ? ' du-skill--heal' : ''}`);
+      const node = div(`du-skill${p.kind === 'heal' ? ' du-skill--heal' : ''}`);
       node.dataset['colour'] = slot >= 0 ? slotColour(slot) : 'none';
       const title = document.createElement('b');
       title.textContent = skill?.name ?? (p.kind === 'heal' ? DUEL_COPY.heal : p.skillId);
       const who = span('du-skill__who', content.cardById.get(p.cardId)?.name ?? '');
-      node.append(title, who);
-      if (p.count > 1) node.append(span('du-skill__times', DUEL_COPY.times(p.count)));
+      const icon = div('du-skill__icon');
+      const sprite = slots.find((x) => x.cardId === p.cardId)?.el.querySelector('.bi-px-anim');
+      if (sprite) icon.append(sprite.cloneNode(true));
+      const text = div('du-skill__text');
+      const desc = span('du-skill__desc', skill?.description ?? '');
+      text.append(who, title, desc);
+      if (p.count > 1) text.append(span('du-skill__times', DUEL_COPY.times(p.count)));
+      node.append(icon, text);
       plates.append(node);
       plateEls.set(p.id, node);
       if (!calm() && ctx.active()) {
         const t = dealTokens();
         node.animate(
           [
-            { transform: 'translateX(-40px)', opacity: 0 },
+            { transform: 'translateX(-40%)', opacity: 0 },
             { transform: 'none', opacity: 1 },
           ],
           { duration: t.dur * 0.7, easing: t.ease },
@@ -887,6 +922,25 @@ export function createArena(ctx: ArenaContext): Arena {
     setText(dpsEl, DUEL_COPY.dps(fmt(r.averageDps)));
     setText(teamEl, DUEL_COPY.team(fmt(lh.current), fmt(lh.max)));
     teamTip = COPY.hp.value(fmt(lh.current), fmt(lh.max));
+    const stageRef =
+      dungeon && status ? overflowStage(content, dungeon, status.difficulty, status.floor) : null;
+    const stars = stageRef
+      ? stageStars(s, content, stageKey(stageRef.dungeonId, stageRef.difficulty, stageRef.floor))
+      : null;
+    starsEl.hidden = !stars;
+    if (stars) {
+      starPipEls.forEach((p, i) => p.classList.toggle('is-on', i < stars.level));
+      starPips.setAttribute(
+        'aria-label',
+        COPY.dungeons.starLevel(stars.level, STAGE_STAR_NAMES[stars.level] ?? ''),
+      );
+      setText(
+        starText,
+        stars.nextKills === null
+          ? DUEL_COPY.starsDone
+          : DUEL_COPY.starsNext(stars.kills, stars.nextKills),
+      );
+    }
     const banner = dungeon ? fallBanner(r) : null;
     fall.hidden = !banner;
     if (banner) {
@@ -991,10 +1045,16 @@ export function createArena(ctx: ArenaContext): Arena {
     if (!live()) return;
     const hitters = new Set<string>();
     for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
+    let critRolled = false;
     for (const id of hitters) {
       const slot = slots.find((x) => x.cardId === id);
       if (!slot) continue;
       hop(slot);
+      const n = e.report.playerHits.find((h) => h.cardId === id)?.hits ?? 1;
+      if (!critRolled && Math.random() < 1 - (1 - slot.crit) ** n) {
+        critRolled = true;
+        popWord(DUEL_COPY.critWord, 'crit');
+      }
     }
     if (hitters.size > 0) play('hit');
   });
