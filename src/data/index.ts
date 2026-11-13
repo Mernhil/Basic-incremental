@@ -31,6 +31,7 @@ import type {
   Trial,
   Coin,
   Credit,
+  ShellArtTable,
   Training,
   Upgrade,
   UpgradesConfig,
@@ -68,6 +69,7 @@ import upgradesJson from './content/upgrades.json';
 import trainingJson from './content/training.json';
 import coinsJson from './content/coins.json';
 import creditsJson from './content/credits.json';
+import shellArtJson from './content/shellArt.json';
 import weaponSkinsJson from './content/weaponSkins.json';
 import lookStepsJson from './content/lookSteps.json';
 import itemsJson from './content/items.json';
@@ -139,6 +141,8 @@ export interface Content {
   coins: Coin[];
   /** The asset packs used, required credits first (Settings > Help > Credits). */
   credits: Credit[];
+  /** Picture frames per table (shell pictures). */
+  shellArt: ShellArtTable[];
   treeById: ReadonlyMap<string, Tree>;
   mineById: ReadonlyMap<string, Mine>;
   cardById: ReadonlyMap<string, Card>;
@@ -228,6 +232,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     training,
     coins,
     credits,
+    shellArt,
     weaponSkins,
     lookSteps,
     items,
@@ -337,6 +342,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     trainingById: new Map(training.map((t) => [t.id, t])),
     coins,
     credits,
+    shellArt: shellArt.tables,
     treeById: new Map(trees.map((t) => [t.id, t])),
     mineById: new Map(mines.map((m) => [m.id, m])),
     cardById: new Map(cards.map((x) => [x.id, x])),
@@ -772,7 +778,7 @@ function checkCosmeticSources(
     ...c.portals.filter((p) => p.kind === 'cosmetics').flatMap((p) => p.pool.map((e) => e.itemId)),
   ]);
   c.cosmetics.forEach((x, i) => {
-    if (!x.starter && !sourced.has(x.id)) {
+    if (!x.starter && !x.ownedAtStart && !sourced.has(x.id)) {
       issues.push(
         `cosmetics.json › [${i}]: "${x.id}" has no source (put it in the Wardrobe Gate pool)`,
       );
@@ -1391,6 +1397,7 @@ export function bundledRawContent(): RawContent {
     training: trainingJson,
     coins: coinsJson,
     credits: creditsJson,
+    shellArt: shellArtJson,
     weaponSkins: weaponSkinsJson,
     lookSteps: lookStepsJson,
     items: itemsJson,

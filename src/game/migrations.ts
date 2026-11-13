@@ -74,7 +74,27 @@ export const MIGRATIONS: MigrationTable = {
   /** v29 -> v30: Heirlooms leave the ladder (0.8.0): a card at the Heirloom tier goes back to its
    *  Mythic or Void tier at ★6; its Heirloom becomes its own card when the save is read. */
   29: v29ToV30,
+  /** v30 -> v31: the Castle Stone shell (0.8.1): Castle Stone is the starter table and Plum Pixel an
+   *  owned one; a save that wore Plum Pixel explicitly shows the new starter (the slot is cleared). */
+  30: v30ToV31,
 };
+
+/** v30 -> v31 (DESIGN.md �8 Plum Pixel and Tavern Wood tables): see the table above. */
+function v30ToV31(state: Record<string, unknown>): Record<string, unknown> {
+  const cosmetics = isRecord(state['cosmetics']) ? { ...state['cosmetics'] } : {};
+  const owned = isRecord(cosmetics['owned']) ? { ...cosmetics['owned'] } : {};
+  if (!isRecord(owned['gn_table'])) owned['gn_table'] = { level: 1, copies: 1 };
+  cosmetics['owned'] = owned;
+  const loadout: Record<string, unknown> = isRecord(cosmetics['loadout'])
+    ? { ...cosmetics['loadout'] }
+    : { cards: {} };
+  const slots = isRecord(loadout['slots']) ? { ...loadout['slots'] } : {};
+  const worn = slots['table'];
+  if (isRecord(worn) && worn['id'] === 'gn_table') delete slots['table'];
+  loadout['slots'] = slots;
+  cosmetics['loadout'] = loadout;
+  return { ...state, cosmetics };
+}
 
 /** The Mythic/Void level cap when save format 30 was made (a snapshot). */
 const V30_MYTHIC_CAP = 120;

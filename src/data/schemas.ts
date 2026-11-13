@@ -1268,6 +1268,8 @@ export const cosmeticSchema = z
     exclusiveCard: id.nullable(),
     /** The one item per slot a new game starts with and falls back to. */
     starter: z.boolean().default(false),
+    /** Owned by every new game and every save from format 31 on, without being the slot's starter. */
+    ownedAtStart: z.boolean().default(false),
     /** Small permanent buffs granted just for owning it (worn or not). */
     ownedModifiers: z.array(modifierSchema).default([]),
     /**
@@ -1968,6 +1970,35 @@ export const coinSchema = z.strictObject({
 export type Coin = z.output<typeof coinSchema>;
 
 /**
+ * Picture frames of a table (UI_RULES.md §2 Shell look, ASSET_RULES.md §5 Shell pictures). Each
+ * table with shell pictures lists, per piece, its file in `src/renderer/src/art/shell/<dir>/`, its
+ * size and its 9-slice insets in art pixels (top, right, bottom, left), and whether the middle is
+ * drawn (`fill`). `scale` is the CSS px per art px at 100 % (a whole number of device pixels at
+ * every Windows scale is worked out by the recipe).
+ */
+export const shellArtPieceSchema = z.strictObject({
+  file: z.string().regex(/^[a-z0-9_]+\.png$/),
+  width: z.number().int().min(1),
+  height: z.number().int().min(1),
+  slice: z.tuple([
+    z.number().int().min(0),
+    z.number().int().min(0),
+    z.number().int().min(0),
+    z.number().int().min(0),
+  ]),
+  fill: z.boolean(),
+});
+export const shellArtTableSchema = z.strictObject({
+  id,
+  dir: z.string().regex(/^[a-z0-9_]+$/),
+  scale: z.number().int().min(1).max(4),
+  pieces: z.record(z.string().regex(/^[a-z0-9_]+$/), shellArtPieceSchema),
+});
+export const shellArtSchema = z.strictObject({ tables: z.array(shellArtTableSchema).min(1) });
+export type ShellArtPiece = z.output<typeof shellArtPieceSchema>;
+export type ShellArtTable = z.output<typeof shellArtTableSchema>;
+
+/**
  * An asset pack the game uses (ASSET_RULES.md section 5): its name, author, itch.io link (empty
  * when the pack does not give it), the licence in one line and what it is used for. Settings >
  * Help > Credits lists them, the ones whose licence requires credit first.
@@ -2274,6 +2305,7 @@ export const contentSchemas = {
   upgrades: upgradesFileSchema,
   training: z.array(trainingSchema).min(1),
   credits: z.array(creditSchema).min(1),
+  shellArt: shellArtSchema,
   coins: z
     .array(coinSchema)
     .min(1)

@@ -1,0 +1,249 @@
+{
+  "tables": [
+    {
+      "id": "stone",
+      "dir": "stone",
+      "scale": 2,
+      "pieces": {
+        "blue_chip": {
+          "file": "blue_chip.png",
+          "width": 51,
+          "height": 13,
+          "slice": [5, 5, 5, 5],
+          "fill": true
+        },
+        "btn_gold": {
+          "file": "btn_gold.png",
+          "width": 125,
+          "height": 32,
+          "slice": [8, 13, 8, 13],
+          "fill": true
+        },
+        "checkbox": {
+          "file": "checkbox.png",
+          "width": 36,
+          "height": 37,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "checkbox_on": {
+          "file": "checkbox_on.png",
+          "width": 36,
+          "height": 37,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "chip": {
+          "file": "chip.png",
+          "width": 45,
+          "height": 16,
+          "slice": [4, 8, 4, 8],
+          "fill": true
+        },
+        "details_button": {
+          "file": "details_button.png",
+          "width": 55,
+          "height": 16,
+          "slice": [6, 6, 6, 6],
+          "fill": true
+        },
+        "dock": {
+          "file": "dock.png",
+          "width": 478,
+          "height": 46,
+          "slice": [6, 5, 7, 5],
+          "fill": true
+        },
+        "fight_sheet": {
+          "file": "fight_sheet.png",
+          "width": 74,
+          "height": 88,
+          "slice": [10, 6, 10, 6],
+          "fill": true
+        },
+        "goals_button": {
+          "file": "goals_button.png",
+          "width": 53,
+          "height": 16,
+          "slice": [6, 6, 6, 6],
+          "fill": true
+        },
+        "gold_chip": {
+          "file": "gold_chip.png",
+          "width": 59,
+          "height": 14,
+          "slice": [5, 5, 5, 5],
+          "fill": true
+        },
+        "header": {
+          "file": "header.png",
+          "width": 478,
+          "height": 23,
+          "slice": [6, 4, 6, 3],
+          "fill": true
+        },
+        "info_tile": {
+          "file": "info_tile.png",
+          "width": 75,
+          "height": 23,
+          "slice": [6, 9, 6, 9],
+          "fill": true
+        },
+        "level_badge": {
+          "file": "level_badge.png",
+          "width": 25,
+          "height": 27,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "pillar_l_foot": {
+          "file": "pillar_l_foot.png",
+          "width": 28,
+          "height": 47,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "pillar_l_tile": {
+          "file": "pillar_l_tile.png",
+          "width": 28,
+          "height": 21,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "pillar_r_foot": {
+          "file": "pillar_r_foot.png",
+          "width": 28,
+          "height": 47,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "pillar_r_tile": {
+          "file": "pillar_r_tile.png",
+          "width": 28,
+          "height": 21,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "pink_chip": {
+          "file": "pink_chip.png",
+          "width": 41,
+          "height": 13,
+          "slice": [5, 5, 5, 5],
+          "fill": true
+        },
+        "row_slate": {
+          "file": "row_slate.png",
+          "width": 78,
+          "height": 23,
+          "slice": [7, 8, 7, 8],
+          "fill": true
+        },
+        "row_wood": {
+          "file": "row_wood.png",
+          "width": 81,
+          "height": 22,
+          "slice": [7, 8, 7, 8],
+          "fill": true
+        },
+        "slider_knob": {
+          "file": "slider_knob.png",
+          "width": 36,
+          "height": 36,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "slider_track": {
+          "file": "slider_track.png",
+          "width": 234,
+          "height": 25,
+          "slice": [6, 8, 6, 8],
+          "fill": true
+        },
+        "socket": {
+          "file": "socket.png",
+          "width": 26,
+          "height": 30,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "sound_button": {
+          "file": "sound_button.png",
+          "width": 18,
+          "height": 16,
+          "slice": [6, 6, 6, 6],
+          "fill": true
+        },
+        "stat_plate": {
+          "file": "stat_plate.png",
+          "width": 55,
+          "height": 20,
+          "slice": [7, 8, 7, 8],
+          "fill": true
+        },
+        "tab": {
+          "file": "tab.png",
+          "width": 62,
+          "height": 19,
+          "slice": [5, 10, 3, 5],
+          "fill": true
+        },
+        "tooltip": {
+          "file": "tooltip.png",
+          "width": 231,
+          "height": 80,
+          "slice": [14, 14, 14, 14],
+          "fill": false
+        },
+        "torch_l": {
+          "file": "torch_l.png",
+          "width": 28,
+          "height": 59,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "torch_r": {
+          "file": "torch_r.png",
+          "width": 28,
+          "height": 59,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "well": {
+          "file": "well.png",
+          "width": 102,
+          "height": 16,
+          "slice": [4, 4, 4, 4],
+          "fill": true
+        },
+        "window_lintel": {
+          "file": "window_lintel.png",
+          "width": 292,
+          "height": 27,
+          "slice": [9, 26, 9, 25],
+          "fill": true
+        },
+        "wing_banner": {
+          "file": "wing_banner.png",
+          "width": 78,
+          "height": 26,
+          "slice": [0, 0, 0, 0],
+          "fill": false
+        },
+        "wing_frame": {
+          "file": "wing_frame.png",
+          "width": 92,
+          "height": 200,
+          "slice": [0, 7, 29, 7],
+          "fill": true
+        },
+        "xp_bar": {
+          "file": "xp_bar.png",
+          "width": 100,
+          "height": 14,
+          "slice": [6, 6, 6, 6],
+          "fill": true
+        }
+      }
+    }
+  ]
+}
