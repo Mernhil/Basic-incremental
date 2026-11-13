@@ -52,6 +52,8 @@ export const DUEL_COPY = {
     toNext === null
       ? `${formatShort(kills)} kills · all stars`
       : `${formatShort(kills)} kills · ${formatShort(toNext)} to next`,
+  starsDone: 'All stars',
+  starsNext: (kills: number, next: number) => `${formatShort(kills)} / ${formatShort(next)} kills`,
   starLegend: 'Star levels',
   starNote: 'Each level: a chest, +5% damage and +10% loot on that stage, a skill point',
   rowMeta: (boss: string, parts: string[]) => [boss, ...parts].join(' · '),

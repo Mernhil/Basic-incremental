@@ -456,6 +456,18 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   font-weight: 700;
   white-space: nowrap;
 }
+.du-read--stars {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.du-read--stars[hidden] {
+  display: none;
+}
+.du-stars {
+  display: flex;
+  gap: 2px;
+}
 .du-read--doing[data-doing='challenge'] {
   color: var(--du-gold);
 }
