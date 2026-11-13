@@ -80,8 +80,10 @@ for (const table of TABLES) {
       document.documentElement.style.setProperty(`--bi-${k}`, v);
   }, tokens);
   for (const id of pages) {
-    await page.click(`[data-open="${id}"]`);
+    await page.click(`[data-open="${id}"]`, { force: true });
     const result = await page.evaluate(measure, CHECKS);
+    await page.keyboard.press('Escape'); // a view is open over the table, which is inert until it closes
+    await page.waitForTimeout(800);
     checked++;
     for (const [sel, { ratio, sample }] of Object.entries(result)) {
       if (ratio < 4.5) failures.push(`${table} / ${id}: ${sel} ${ratio}:1 (${sample})`);

@@ -34,6 +34,8 @@ export const BASE_RECIPES = [
   // rarity
   'neon',
   'chrome',
+  // table pictures (art/shell/<dir>/, content/shellArt.json): the id after `shell-` is a shellArt table
+  'shell-stone',
   // cursor
   'cursor-gilded',
   'cursor-crimson',

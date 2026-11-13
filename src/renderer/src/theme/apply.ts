@@ -12,8 +12,56 @@ import './base.css';
 import './rank.css';
 import './recipes.css';
 import './frames.css';
+import './shellPictures.css';
 
 const RECIPE_PREFIX = 'r-';
+
+/** The table pictures (UI_RULES.md �2 Shell look): every file of art/shell/<dir>/, by path. */
+const SHELL_URLS = import.meta.glob<string>('../art/shell/*/*.png', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+});
+const shellVarsOnRoot = new WeakMap<HTMLElement, string[]>();
+
+/**
+ * A table that wears a `shell-<id>` recipe and has pictures in the shell art data gets, per piece,
+ * `--sh-<piece>-url` (the image), `--sh-<piece>-slice` (the 9-slice insets in art pixels, with
+ * `fill` when the middle is drawn), `--sh-<piece>-t/-r/-b/-l` (the insets as numbers), `--sh-<piece>-bw` (the four border widths, whole
+ * device pixels) and
+ * `--sh-<piece>-w/-h` (the image size). shellPictures.css draws them at a whole number of device
+ * pixels per art pixel. Other tables get none of it.
+ */
+function applyShellArt(content: Content, recipes: string[], root: HTMLElement): void {
+  for (const name of shellVarsOnRoot.get(root) ?? []) root.style.removeProperty(name);
+  const names: string[] = [];
+  const recipe = recipes.find((r) => r.startsWith('shell-'));
+  const table = recipe ? content.shellArt.find((t) => `shell-${t.id}` === recipe) : undefined;
+  if (table) {
+    root.style.setProperty('--shell-scale', String(table.scale));
+    names.push('--shell-scale');
+    for (const [piece, p] of Object.entries(table.pieces)) {
+      const url = SHELL_URLS[`../art/shell/${table.dir}/${p.file}`];
+      if (!url) continue;
+      const vars: Record<string, string> = {
+        [`--sh-${piece}-url`]: `url("${url}")`,
+        [`--sh-${piece}-slice`]: `${p.slice.join(' ')}${p.fill ? ' fill' : ''}`,
+        [`--sh-${piece}-t`]: String(p.slice[0]),
+        [`--sh-${piece}-r`]: String(p.slice[1]),
+        [`--sh-${piece}-b`]: String(p.slice[2]),
+        [`--sh-${piece}-l`]: String(p.slice[3]),
+        [`--sh-${piece}-bw`]: `calc(${p.slice[0]} * var(--as)) calc(${p.slice[1]} * var(--as)) calc(${p.slice[2]} * var(--as)) calc(${p.slice[3]} * var(--as))`,
+        [`--sh-${piece}-w`]: String(p.width),
+        [`--sh-${piece}-h`]: String(p.height),
+      };
+      for (const [k, v] of Object.entries(vars)) {
+        root.style.setProperty(k, v);
+        names.push(k);
+      }
+    }
+  }
+  shellVarsOnRoot.set(root, names);
+}
 
 /** Throws if cosmetic data names a recipe or effect the renderer does not implement. */
 export function assertVisualsImplemented(content: Content): void {
@@ -49,6 +97,7 @@ export function applyGlobalTheme(
 ): void {
   const { vars, recipes } = globalVars(resolveGlobal(content, loadout));
   applied.set(root, setVisuals(root, vars, recipes, applied.get(root) ?? []));
+  applyShellArt(content, recipes, root);
 }
 
 let levelContent: Content | null = null;

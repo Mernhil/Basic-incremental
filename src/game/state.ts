@@ -504,7 +504,10 @@ export function createInitialState(content: Content): GameState {
     cosmetics: {
       loadout: { slots: {}, cards: {} },
       owned: Object.fromEntries(
-        Object.values(content.starterBySlot).map((c) => [c.id, { level: 1, copies: 1 }]),
+        [
+          ...Object.values(content.starterBySlot),
+          ...content.cosmetics.filter((c) => c.ownedAtStart),
+        ].map((c) => [c.id, { level: 1, copies: 1 }]),
       ),
     },
   };

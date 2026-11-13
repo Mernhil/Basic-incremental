@@ -281,7 +281,7 @@ export type CosmeticSource =
 export function cosmeticSource(content: Content, cosmeticId: string): CosmeticSource | null {
   const cosmetic = content.cosmeticById.get(cosmeticId);
   if (!cosmetic) return null;
-  if (cosmetic.starter) return 'starter';
+  if (cosmetic.starter || cosmetic.ownedAtStart) return 'starter';
   if (content.dungeons.some((d) => d.drops.rare.itemId === cosmeticId)) return 'dungeon';
   if (content.prestige.rewards.some((r) => r.cosmetics.includes(cosmeticId))) return 'prestige';
   if (content.achievements.some((a) => a.reward.cosmetics.includes(cosmeticId))) {
