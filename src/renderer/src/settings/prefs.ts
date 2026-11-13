@@ -1,27 +1,22 @@
 /**
- * Display and save preferences of the Settings page (DESIGN.md §11): reduced motion, number
- * format and the autosave interval. Stored per player in localStorage next to the sound settings.
+ * Display and save preferences of the Settings page (DESIGN.md §11): reduced motion and the
+ * autosave interval (numbers have one format and no setting). Stored per player in localStorage next to the sound settings.
  */
 
 /** `system` follows the Windows animation setting; `reduced` and `full` override it. */
 export type MotionPref = 'system' | 'reduced' | 'full';
-/** How numbers of a million and up are written. Below a million every style is the same. */
-export type NumberStyle = 'suffix' | 'scientific' | 'engineering';
 
 export interface UiPrefs {
   motion: MotionPref;
-  numbers: NumberStyle;
   /** Seconds between autosaves; one of AUTOSAVE_CHOICES. */
   autosaveSeconds: number;
 }
 
 export const MOTION_PREFS: readonly MotionPref[] = ['system', 'reduced', 'full'];
-export const NUMBER_STYLES: readonly NumberStyle[] = ['suffix', 'scientific', 'engineering'];
 export const AUTOSAVE_CHOICES: readonly number[] = [10, 30, 60, 120, 300];
 
 export const DEFAULT_PREFS: UiPrefs = {
   motion: 'system',
-  numbers: 'scientific',
   autosaveSeconds: 30,
 };
 
@@ -42,7 +37,6 @@ export function parsePrefs(raw: string | null): UiPrefs {
   }
   return {
     motion: pick(data['motion'], MOTION_PREFS, DEFAULT_PREFS.motion),
-    numbers: pick(data['numbers'], NUMBER_STYLES, DEFAULT_PREFS.numbers),
     autosaveSeconds: pick(data['autosaveSeconds'], AUTOSAVE_CHOICES, DEFAULT_PREFS.autosaveSeconds),
   };
 }
@@ -54,7 +48,12 @@ let current: UiPrefs = load();
 
 function load(): UiPrefs {
   try {
-    return parsePrefs(localStorage.getItem(PREFS_STORE_KEY));
+    const raw = localStorage.getItem(PREFS_STORE_KEY);
+    const parsed = parsePrefs(raw);
+    // The old number-format choice is gone: drop it from what is stored.
+    if (raw !== null && raw.includes('"numbers"'))
+      localStorage.setItem(PREFS_STORE_KEY, JSON.stringify(parsed));
+    return parsed;
   } catch {
     return parsePrefs(null);
   }

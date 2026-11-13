@@ -44,7 +44,22 @@ import {
   type Modifier,
   type OwnedCard,
 } from '../src/game';
-import { bareState, constantRng, plainContent as content, freshState, withDps } from './helpers';
+import { bareState, constantRng, plainContent, freshState, withDps } from './helpers';
+
+/** The rules counted here in small units: a worker's XP is 1 a Oak Gem and 2 a Copper Gem, as the
+ *  tests were written (the shipped per-unit XP is tuning, DESIGN.md §5). */
+const content = {
+  ...plainContent,
+  cardRules: {
+    ...plainContent.cardRules,
+    xp: {
+      ...plainContent.cardRules.xp,
+      perUnit: { logging: new Decimal(1), mining: new Decimal(2) },
+    },
+  },
+};
+/** The card's power at level 11: ten small level bumps. */
+const lv11Power = 1 + 10 * content.cardRules.power.perLevel;
 
 const rng = constantRng(0.5);
 
@@ -260,15 +275,16 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
       main: 'storm_duelist',
       supports: ['ember_squire', null, null],
     });
-    // An Epic main deals 4x a Common's base damage, plus the Squire support +5%.
-    expect(effectiveDamage(state, content).eq(base.mul(4).mul(1.05))).toBe(true);
+    // An Epic main deals its rarity's share of a Common's base damage, plus the Squire support +5%.
+    const epic = content.cardRules.baseDamage.epic.div(content.cardRules.baseDamage.common);
+    expect(approxEq(effectiveDamage(state, content), base.mul(epic).mul(1.05))).toBe(true);
     expect(fighting(state).interval).toBe(0.5); // Duelist main: a hit every 0.5 s
   });
 
   it('scales bonuses with level, stars and tier, with a big step at ★6 and per tier', () => {
     const at = (card: Partial<OwnedCard>) => cardPower(content, { ...newOwnedCard(), ...card });
     expect(at({})).toBe(1);
-    expect(at({ level: 11 })).toBeCloseTo(1.2);
+    expect(at({ level: 11 })).toBeCloseTo(lv11Power);
     expect(at({ stars: 6 }) - at({ stars: 5 })).toBeGreaterThan(
       at({ stars: 5 }) - at({ stars: 4 }) * 2,
     );
@@ -277,24 +293,29 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
 
     const lv11 = { ...newOwnedCard(), level: 11 };
     const support = cardEffectModifiers(content, 'storm_duelist', 'support', lv11);
-    expect(support[0]!.value.toNumber()).toBeCloseTo(12 * 1.2); // +12% damage at power 1.2
+    expect(support[0]!.value.toNumber()).toBeCloseTo(12 * lv11Power); // +12% damage at the level-11 power
     const main = cardEffectModifiers(content, 'storm_duelist', 'main', lv11);
     // The fill ×2 is a `mult` that stays fixed; main growth adds +2% fill. Damage grows through
     // the card's base damage instead (DESIGN.md §5), so there is no damage percent here.
     expect(main.find((m) => m.stat === 'burst.fill' && m.kind === 'mult')!.value.eq(2)).toBe(true);
     const growth = main.filter((m) => m.kind === 'percent');
     expect(growth.map((m) => [m.stat, Math.round(m.value.toNumber() * 1000) / 1000])).toEqual([
-      ['burst.fill', 2],
+      ['burst.fill', Math.round(10 * (lv11Power - 1) * 1000) / 1000],
     ]);
   });
 
   it('gives each card health by rarity, scaled by its power', () => {
     const base = newOwnedCard();
-    expect(cardHealth(content, 'ember_squire', base).eq(100)).toBe(true);
+    const { common, legendary } = content.cardRules.health;
+    expect(cardHealth(content, 'ember_squire', base).eq(common)).toBe(true);
     // Weapon identities (DESIGN.md §5): the greatsword's health factor is 1.05.
-    expect(cardHealth(content, 'dawnblade_regent', base).toNumber()).toBeCloseTo(700 * 1.05);
+    expect(cardHealth(content, 'dawnblade_regent', base).toNumber()).toBeCloseTo(
+      legendary.toNumber() * 1.05,
+    );
     const silver = { ...base, tier: 'silver' as const, level: 11 };
-    expect(cardHealth(content, 'ember_squire', silver).toNumber()).toBeCloseTo(100 * 1.2 * 1.5);
+    expect(cardHealth(content, 'ember_squire', silver).toNumber()).toBeCloseTo(
+      common.toNumber() * lv11Power * 1.5,
+    );
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);
   });
 
@@ -302,7 +323,7 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     const state = own(bareState(), 'apprentice_feller', { level: 11 });
     expect(workSites(state, content, 'logging')[0]!.rate.eq(1)).toBe(true);
     state.production.workers = { oak: ['apprentice_feller'] };
-    expect(workSites(state, content, 'logging')[0]!.rate.toNumber()).toBeCloseTo(1.2);
+    expect(workSites(state, content, 'logging')[0]!.rate.toNumber()).toBeCloseTo(lv11Power);
   });
 
   it('lists nothing for cards in the wrong job or not owned', () => {

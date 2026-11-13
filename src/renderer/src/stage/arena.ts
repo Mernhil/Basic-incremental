@@ -12,8 +12,12 @@ import {
   formatDuration,
   loadoutHealth,
   nextFloorChallenge,
+  overflowStage,
   recordDuel,
+  stageKey,
   stageReadout,
+  stageStars,
+  STAGE_STAR_NAMES,
   teamView,
   trialStatus,
   type BarLook,
@@ -182,6 +186,20 @@ export function createArena(ctx: ArenaContext): Arena {
   const fpmEl = readout('du-read--fpm', COPY.arena.kpmTip);
   const dpsEl = readout('du-read--dps', COPY.arena.dpsTip);
   const teamEl = readout('du-read--team');
+  // the stars of the stage being fought (DESIGN.md §6 Stage stars): six pips and the kills to the next
+  const starsEl = readout('du-read--stars', COPY.dungeons.stageTip);
+  const starPips = span('du-stars');
+  starPips.setAttribute('role', 'img');
+  const starPipEls = Array.from({ length: 6 }, (_, i) => {
+    const p = document.createElement('i');
+    p.className = 'dp-pip';
+    p.dataset['level'] = String(i + 1);
+    return p;
+  });
+  starPips.append(...starPipEls);
+  const starText = span('du-stars__text');
+  starsEl.append(starPips, starText);
+  starsEl.hidden = true;
   let teamTip = '';
   teamEl.tabIndex = 0;
   attachTooltip(teamEl, () => teamTip);
@@ -659,15 +677,17 @@ export function createArena(ctx: ArenaContext): Arena {
       if (barMoment(lastLook, look, false) === 'shatter') popWord(DUEL_COPY.breakWord, 'break');
       lastLook = look;
       const dealt = enemyDamage(view.hp, view.maxHp);
+      // the table's window is smaller: its tag a size down
+      const tagPx = el.closest('.dv-window') ? 2 : 3;
       if (dealt.gt(0)) {
         foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
-        // the table's window is smaller: its tag a size down
-        pxNum(foeTagPx, fmt(dealt), el.closest('.dv-window') ? 2 : 3);
-      } else if (foeTagPx.dataset['px']) {
+        pxNum(foeTagPx, fmt(dealt), tagPx);
+      } else {
+        // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
         foeTagText.textContent = '';
-        foeTagPx.replaceChildren();
-        delete foeTagPx.dataset['px'];
+        pxNum(foeTagPx, '0', tagPx);
       }
+      foeTag.classList.toggle('is-empty', !dealt.gt(0));
       // the deck: one back per enemy to come (the boss last)
       const backs = deckBacks(view.waiting.length);
       if (deckStack.childElementCount !== backs) {
@@ -902,6 +922,25 @@ export function createArena(ctx: ArenaContext): Arena {
     setText(dpsEl, DUEL_COPY.dps(fmt(r.averageDps)));
     setText(teamEl, DUEL_COPY.team(fmt(lh.current), fmt(lh.max)));
     teamTip = COPY.hp.value(fmt(lh.current), fmt(lh.max));
+    const stageRef =
+      dungeon && status ? overflowStage(content, dungeon, status.difficulty, status.floor) : null;
+    const stars = stageRef
+      ? stageStars(s, content, stageKey(stageRef.dungeonId, stageRef.difficulty, stageRef.floor))
+      : null;
+    starsEl.hidden = !stars;
+    if (stars) {
+      starPipEls.forEach((p, i) => p.classList.toggle('is-on', i < stars.level));
+      starPips.setAttribute(
+        'aria-label',
+        COPY.dungeons.starLevel(stars.level, STAGE_STAR_NAMES[stars.level] ?? ''),
+      );
+      setText(
+        starText,
+        stars.nextKills === null
+          ? DUEL_COPY.starsDone
+          : DUEL_COPY.starsNext(stars.kills, stars.nextKills),
+      );
+    }
     const banner = dungeon ? fallBanner(r) : null;
     fall.hidden = !banner;
     if (banner) {

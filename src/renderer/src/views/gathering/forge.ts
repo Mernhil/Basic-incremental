@@ -262,7 +262,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     set(workerName, card && owned ? card.name : COPY.forge.noneWorker);
     set(
       workerPowerEl,
-      card && owned ? T.forgeWorkerPower(workerPower(content, card.id, owned).toFixed(2)) : '',
+      card && owned ? T.forgeWorkerPower(fmt(workerPower(content, card.id, owned))) : '',
     );
     const art = card && owned && id ? itemSvg(cardItemArt(content, id, owned, s)) : '';
     if (art !== artSig) {

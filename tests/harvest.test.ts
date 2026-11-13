@@ -157,7 +157,7 @@ describe('harvest crits', () => {
     const plain = advance(state, content, 4000, rng);
     const lucky = advance(state, crit, 4000, rng);
     const gained = (s: GameState) => s.resources['oak_gem']!.sub(state.resources['oak_gem']!);
-    expect(gained(lucky.state).div(gained(plain.state)).eq(3)).toBe(true);
+    expect(gained(lucky.state).div(gained(plain.state)).toNumber()).toBeCloseTo(3, 9);
     expect(logs(lucky.report).every((h) => h.crits === h.strikes)).toBe(true);
     expect(logs(lucky.report)[0]!.amount.eq(logs(plain.report)[0]!.amount.mul(3))).toBe(true);
   });

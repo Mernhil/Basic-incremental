@@ -71,7 +71,7 @@ describe('stage math', () => {
   it('writes floating numbers without noisy decimals', () => {
     expect(popText(d(398.82))).toBe('399');
     expect(popText(d(4.26))).toBe('4.3');
-    expect(popText(d(12345))).toBe('12,345');
+    expect(popText(d(12345))).toBe('12.3k');
   });
 });
 

@@ -18,3 +18,10 @@ Real save files, kept exactly as the game wrote them, for the migration tests.
   it the way a 0.7.2 player could hold them: owned and worn attack, finish, tick, number and Prism
   Pointer items (global and on two cards), Aurora Veil at level 3, and the bow skins
   `legacy-bow-56` and `legacy-bow-58` owned (56 worn). It was made by a script, not by the game.
+- `v28-late-game.save.txt`: save format 28, a late game for the readable-numbers rescale (format
+  29). It is the state the 0.7.5 balance sim reached after 30 hours on seed 3 (7 Ascensions,
+  account level 143, the Frostspire Vault on Hard, cards up to Prismatic), written with
+  `createSaveText`. Two sim-only values were set to what the game accepts: the daily reward day
+  (`summon.dailyClaimedDay`, the sim's own day label) is null, and the Glimmer Trial's best score
+  is 1 (the sim had scored 617%, which the 0.7.5 save schema refuses past 100%). Made by a script,
+  not by the game.

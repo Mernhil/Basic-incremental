@@ -127,8 +127,8 @@ describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', ()
 });
 
 describe('v26 -> v27 (the table update)', () => {
-  it('is the current format', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(28);
+  it('is an older format than the current one', () => {
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThan(27);
   });
 
   it('turns the crystals held into scrolls at the pull price, rounded down, and drops the crystals', () => {
@@ -247,11 +247,17 @@ describe('v26 -> v27 (the table update)', () => {
     // The team was filled and the player moved off the dungeon with nothing beaten (below).
     const exp = expected as { cards: { loadouts: { fighting: { supports: unknown[] } } } };
     exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.supports;
-    expect(again).toEqual({ ...expected, bossHp: null, activeDungeonId: 'mossy_cellar' });
+    // Format 29 moved the numbers onto the readable scale (DESIGN.md §14 Readable numbers).
+    const scaled = MIGRATIONS[28]!(expected) as Record<string, unknown>;
+    const scaledCombat = scaled['combat'] as Record<string, unknown>;
+    for (const key of Object.keys(scaledCombat)) if (!(key in combat)) delete scaledCombat[key];
+    delete (scaled['resources'] as Record<string, unknown>)['summon_scroll'];
+    delete (scaled['resources'] as Record<string, unknown>)['glamour_scroll'];
+    expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
     const resaved = createSaveText(state, 1);
-    expect(JSON.parse(resaved).version).toBe(28);
+    expect(JSON.parse(resaved).version).toBe(CURRENT_SAVE_VERSION);
     expect(readSave(resaved, content).state).toEqual(state);
   });
 });

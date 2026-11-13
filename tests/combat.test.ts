@@ -184,7 +184,9 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(boss.dungeon.id).toBe(mossy.id);
     expect(boss.maxHp.eq(mossy.boss.hp)).toBe(true);
     // 10 s of the Ember Squire's base damage.
-    expect(boss.hp.eq(mossy.boss.hp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(true);
+    expect(approxEq(boss.hp, mossy.boss.hp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(
+      true,
+    );
     expect(boss.bars.remaining).toBe(mossy.boss.hpBars);
     expect(boss.kills).toBe(0);
     expect(bossStatus(ok(setActiveDungeon(state, content, null)), content)).toBeNull();

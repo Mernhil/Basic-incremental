@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { accountInfo, formatDecimal, rewardTrack, xpToNextAccountLevel } from '../src/game';
+import { accountInfo, formatShort, rewardTrack, xpToNextAccountLevel } from '../src/game';
 import { levelBadge, levelUpView, trackView } from '../src/renderer/src/pages/accountModel';
 import { content as bundled, freshState, levelPointsOnly } from './helpers';
 
@@ -18,7 +18,7 @@ describe('account level badge', () => {
     const v = levelBadge(accountInfo(s, content));
     expect(v.level).toBe(1);
     expect(v.fraction).toBe(0);
-    expect(v.xpText).toBe(`0 / ${formatDecimal(xpToNextAccountLevel(content, 1))} XP`);
+    expect(v.xpText).toBe(`0 / ${formatShort(xpToNextAccountLevel(content, 1))} XP`);
     expect(v.points).toBe(0);
     expect(v.pointsText).toBe('');
     expect(v.label).toContain('No skill points to spend');

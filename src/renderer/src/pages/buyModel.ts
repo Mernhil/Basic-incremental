@@ -141,6 +141,6 @@ export function bestLine<T extends Pick<BuyLineView, 'available' | 'offer' | 'ga
 /** Kills per minute as the readout shows it. */
 export function formatRate(n: number | null): string {
   if (n === null || !Number.isFinite(n)) return '—';
-  if (n >= 100) return Math.round(n).toLocaleString('en-US');
+  if (n >= 100) return fmt(Math.round(n));
   return n >= 10 ? n.toFixed(0) : n.toFixed(1);
 }
