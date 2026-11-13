@@ -1133,6 +1133,8 @@ export function buyerCandidates(
   // come, a 10-pull when there are ten.
   for (const count of [10, 1] as const) {
     const price = heirloomPullPrice(content, count, modifiers);
+    // only once the scrolls are in hand: they come in lumps, so there is no wait to work out
+    if (have(state, price.resource).lt(price.amount)) continue;
     out.push({
       id: count === 10 ? 'summon:heirloom_gate:10' : 'summon:heirloom_gate',
       kind: 'summon',

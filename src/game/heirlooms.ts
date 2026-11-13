@@ -444,6 +444,8 @@ export function heirloomSkill(state: GameState, content: Content, cardId: string
  */
 export function heirloomTreeModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
+  // collectModifiers is hot: nothing bought in any tree means nothing to look up
+  if (Object.keys(state.heirlooms.trees).length === 0) return out;
   const main = state.cards.loadouts.fighting.main;
   for (const { cardId, scope } of cardsAtWork(state, content)) {
     const tree = content.heirloomTreeByCard.get(cardId);
