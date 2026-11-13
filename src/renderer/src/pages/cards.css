@@ -892,11 +892,17 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   font-size: 13px;
   color: var(--px-muted);
 }
-/* the stage: the card in the middle, six gems around it, the paths drawn behind */
+/* the stage: the card in the middle of a 3 x 3 grid, the capstone above it, the two paths up its
+   sides, the root below; the paths are drawn behind from stone to stone (cards.ts), and every
+   label sits on the side no path leaves from, so no line crosses one */
 .cp-arch {
   position: relative;
-  min-height: 600px;
-  margin: 4px 0 8px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  column-gap: 14px;
+  row-gap: 4px;
+  margin: 0 0 4px;
 }
 .cp-arch__lines {
   position: absolute;
@@ -904,12 +910,12 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   width: 100%;
   height: 100%;
   overflow: visible;
+  pointer-events: none;
 }
 .cp-arch__lines line {
   stroke: var(--px-muted);
   stroke-width: 2;
   stroke-dasharray: 4 4;
-  vector-effect: non-scaling-stroke;
   opacity: 0.6;
 }
 .cp-arch__lines line.is-on {
@@ -917,40 +923,96 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   stroke-dasharray: none;
   opacity: 1;
 }
-.cp-arch__card {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: calc(176px * var(--card-k));
-}
-.cp-gem {
-  position: absolute;
+.cp-arch__top,
+.cp-arch__bottom {
+  /* across the three columns, so a long capstone label never widens the card column */
+  grid-column: 1 / -1;
   display: grid;
   justify-items: center;
-  gap: 2px;
-  width: 150px;
+}
+.cp-arch__top {
+  grid-row: 1;
+  /* clear of the crown over the card */
+  margin-bottom: 10px;
+}
+.cp-arch__bottom {
+  grid-row: 3;
+}
+.cp-arch__side {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* the larger node level with the card's top, the smaller one with its foot */
+  padding: 28px 0 22px;
+  min-width: 0;
+}
+.cp-arch__side > [data-key^='gem-large'] {
+  order: -1;
+}
+.cp-arch__side--left {
+  grid-column: 1;
+  align-items: flex-end;
+}
+.cp-arch__side--right {
+  grid-column: 3;
+  align-items: flex-start;
+}
+.cp-arch__card {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  width: calc(176px * var(--card-k));
+  /* room for the ★6 crown over the card */
+  padding-top: calc(22px * var(--card-k));
+}
+.cp-gem {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
   padding: 0;
   border: 0;
   background: none;
   color: inherit;
   font: inherit;
-  transform: translate(-50%, -18px);
   cursor: default;
+}
+.cp-gem--left {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.cp-gem--right {
+  text-align: left;
+}
+.cp-gem--above {
+  flex-direction: column-reverse;
+  text-align: center;
+  gap: 4px;
+}
+.cp-gem--below {
+  flex-direction: column;
+  text-align: center;
+  gap: 4px;
 }
 .cp-gem.is-affordable {
   cursor: pointer;
 }
 .cp-gem__stone {
-  width: 26px;
-  height: 26px;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 6px;
   transform: rotate(45deg);
   background: transparent;
   box-shadow: inset 0 0 0 2px var(--px-muted);
 }
 .cp-gem--cap .cp-gem__stone {
-  width: 38px;
-  height: 38px;
+  width: 30px;
+  height: 30px;
 }
 .cp-gem.is-open .cp-gem__stone {
   box-shadow: inset 0 0 0 2px var(--px-gold);
@@ -980,9 +1042,12 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 }
 .cp-gem__label {
   display: grid;
-  margin-top: 6px;
-  text-align: center;
+  min-width: 0;
+  max-width: 170px;
   line-height: 1.2;
+}
+.cp-gem--above .cp-gem__label {
+  max-width: 300px;
 }
 .cp-gem__name {
   font-size: 13px;

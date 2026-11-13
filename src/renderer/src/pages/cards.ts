@@ -477,14 +477,19 @@ export function createCardsPage(
     return wrap;
   }
 
-  /** The gems of a tree around the card: where each node sits on the stage (percent). */
-  const GEM_AT: Record<string, [number, number]> = {
-    capstone: [50, 3],
-    large_a: [13, 33],
-    large_b: [87, 33],
-    small_a: [13, 72],
-    small_b: [87, 72],
-    root: [50, 90],
+  /**
+   * Where each node of a tree sits around the card (UI_RULES §2, pick 2e): the capstone above it,
+   * the two paths up its sides (the larger node over the smaller one), the root below it. Each
+   * label sits on the side no path leaves from, so no line crosses a label: outward for the side
+   * gems, above the capstone, below the root.
+   */
+  const GEM_SLOT: Record<string, { area: 'top' | 'left' | 'right' | 'bottom'; label: string }> = {
+    capstone: { area: 'top', label: 'above' },
+    large_a: { area: 'left', label: 'left' },
+    small_a: { area: 'left', label: 'left' },
+    large_b: { area: 'right', label: 'right' },
+    small_b: { area: 'right', label: 'right' },
+    root: { area: 'bottom', label: 'below' },
   };
 
   function heirloomDetail(state: GameState, e: CardEntry): HTMLElement {
@@ -497,45 +502,30 @@ export function createCardsPage(
     el.dataset['deal'] = '';
     if (tree) body.append(treeHead(e, tree));
     const stage = h('div', 'cp-arch');
+    const areas = {
+      top: h('div', 'cp-arch__top'),
+      left: h('div', 'cp-arch__side cp-arch__side--left'),
+      right: h('div', 'cp-arch__side cp-arch__side--right'),
+      bottom: h('div', 'cp-arch__bottom'),
+    };
     const cardBox = h('div', 'cp-arch__card');
-    watchFit(cardBox, {
-      want: CARD_WANT.detail,
-      max: () => Math.min(264, Math.max(132, innerWidth(stage) - 2 * 170)),
-    });
+    // the card at 1x (176 CSS px), so the gems and their labels have room on both sides
+    watchFit(cardBox, { want: 176, max: () => 176 });
     cardBox.append(cardEl(e, state));
-    stage.append(cardBox);
+    stage.append(areas.top, areas.left, cardBox, areas.right, areas.bottom);
     if (tree) {
-      const lines = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-      lines.setAttribute('class', 'cp-arch__lines');
-      lines.setAttribute('viewBox', '0 0 100 100');
-      lines.setAttribute('preserveAspectRatio', 'none');
-      lines.setAttribute('aria-hidden', 'true');
-      const bought = new Set(tree.nodes.filter((n) => n.state === 'bought').map((n) => n.node.id));
-      for (const n of tree.tree.nodes) {
-        for (const r of n.requires) {
-          const a = GEM_AT[r];
-          const z = GEM_AT[n.id];
-          if (!a || !z) continue;
-          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-          line.setAttribute('x1', String(a[0]));
-          line.setAttribute('y1', String(a[1]));
-          line.setAttribute('x2', String(z[0]));
-          line.setAttribute('y2', String(z[1]));
-          line.setAttribute('class', bought.has(r) && bought.has(n.id) ? 'is-on' : '');
-          lines.append(line);
-        }
-      }
-      stage.prepend(lines);
+      const stones = new Map<string, HTMLElement>();
       for (const n of tree.nodes) {
-        const at = GEM_AT[n.node.id];
-        if (!at) continue;
+        const slot = GEM_SLOT[n.node.id];
+        if (!slot) continue;
         const name = n.node.name ?? COPY.cards.gemName[n.node.id] ?? n.node.id;
         const stateWord = COPY.cards.gemState[n.state] ?? n.state;
-        const gem = h('button', `cp-gem is-${n.state}${n.affordable ? ' is-affordable' : ''}`);
+        const gem = h(
+          'button',
+          `cp-gem cp-gem--${slot.label} is-${n.state}${n.affordable ? ' is-affordable' : ''}`,
+        );
         gem.type = 'button';
         gem.dataset.key = `gem-${n.node.id}`;
-        gem.style.left = `${at[0]}%`;
-        gem.style.top = `${at[1]}%`;
         if (n.node.id === 'capstone') gem.classList.add('cp-gem--cap');
         gem.setAttribute(
           'aria-label',
@@ -544,6 +534,7 @@ export function createCardsPage(
         gem.disabled = !n.affordable;
         const diamond = h('i', 'cp-gem__stone');
         diamond.setAttribute('aria-hidden', 'true');
+        stones.set(n.node.id, diamond);
         const label = h('span', 'cp-gem__label');
         label.setAttribute('aria-hidden', 'true');
         label.append(
@@ -559,8 +550,50 @@ export function createCardsPage(
           const r = buyHeirloomNode(ctx.state(), content, e.id, n.node.id);
           if (r.ok) act({ ok: true, state: r.state }, `gem-${n.node.id}`);
         });
-        stage.append(gem);
+        areas[slot.area].append(gem);
       }
+      // the paths: drawn from stone edge to stone edge once laid out, again on every resize
+      const svgNs = 'http://www.w3.org/2000/svg';
+      const lines = document.createElementNS(svgNs, 'svg');
+      lines.setAttribute('class', 'cp-arch__lines');
+      lines.setAttribute('aria-hidden', 'true');
+      stage.prepend(lines);
+      const bought = new Set(tree.nodes.filter((n) => n.state === 'bought').map((n) => n.node.id));
+      const draw = (): void => {
+        const box = stage.getBoundingClientRect();
+        if (box.width === 0) return;
+        lines.setAttribute('viewBox', `0 0 ${box.width} ${box.height}`);
+        const centre = (id: string): { x: number; y: number; r: number } | null => {
+          const s = stones.get(id)?.getBoundingClientRect();
+          if (!s) return null;
+          // a diamond's corner is half its diagonal from its centre
+          return {
+            x: s.left - box.left + s.width / 2,
+            y: s.top - box.top + s.height / 2,
+            r: s.width / 2 + 3,
+          };
+        };
+        lines.replaceChildren();
+        for (const n of tree.tree.nodes) {
+          for (const req of n.requires) {
+            const a = centre(req);
+            const z = centre(n.id);
+            if (!a || !z) continue;
+            const len = Math.hypot(z.x - a.x, z.y - a.y) || 1;
+            const ux = (z.x - a.x) / len;
+            const uy = (z.y - a.y) / len;
+            const line = document.createElementNS(svgNs, 'line');
+            line.setAttribute('x1', String(a.x + ux * a.r));
+            line.setAttribute('y1', String(a.y + uy * a.r));
+            line.setAttribute('x2', String(z.x - ux * z.r));
+            line.setAttribute('y2', String(z.y - uy * z.r));
+            if (bought.has(req) && bought.has(n.id)) line.setAttribute('class', 'is-on');
+            lines.append(line);
+          }
+        }
+      };
+      requestAnimationFrame(draw);
+      if (typeof ResizeObserver !== 'undefined') new ResizeObserver(draw).observe(stage);
     }
     body.append(stage);
     if (!e.owned) body.append(h('p', 'frame__muted px-tile cp-locked', COPY.cards.heirloomLocked));
