@@ -51,6 +51,9 @@ export const DUEL_COPY = {
     toNext === null
       ? `${kills.toLocaleString('en-US')} kills · all stars`
       : `${kills.toLocaleString('en-US')} kills · ${toNext.toLocaleString('en-US')} to next`,
+  starsDone: 'All stars',
+  starsNext: (kills: number, next: number) =>
+    `${kills.toLocaleString('en-US')} / ${next.toLocaleString('en-US')} kills`,
   starLegend: 'Star levels',
   starNote: 'Each level: a chest, +5% damage and +10% loot on that stage, a skill point',
   rowMeta: (boss: string, parts: string[]) => [boss, ...parts].join(' · '),
