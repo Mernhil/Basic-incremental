@@ -242,6 +242,12 @@
   .sm-cell__count {
     font-size: 11px;
   }
+  .sm-board__side {
+    font-size: 12px;
+  }
+  .sm-hand__back:nth-child(n + 4) {
+    display: none;
+  }
   .sm-cell__stars {
     font-size: 8px;
     letter-spacing: 0;
@@ -646,6 +652,8 @@
   background: #1f8a78;
 }
 .sm-hand__emptytext {
+  flex: 1 1 220px;
+  min-width: 180px;
   margin: 0;
   font-size: 14px;
   color: var(--px-muted);
