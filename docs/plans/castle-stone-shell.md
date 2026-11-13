@@ -18,7 +18,25 @@ The rules are already written: DESIGN §8 (Starter set; Plum Pixel and Tavern Wo
 - The same assets are in the user's PixelLab account:
   - UI asset ids: 1b template `1530d78f-6d35-4d11-8953-e98e386e76be`, 1a template `e4cd5643-8e9f-44ee-b35e-a64320f59f99`.
   - ZIP: `https://api.pixellab.ai/mcp/ui-assets/<id>/zip`.
-- **PixelLab has 0 generations until 2026-12-08.** Spend none. `pixelart_workbench` and `update_ui_asset` (9-slices) are free; everything else must come from the existing parts.
+- **PixelLab budget: at most 500 generations for this whole UI rework** (user, 2026-11-13: "lets not waste too many the absolute limit for the whole ui rework is 500"). The account had 2,496.4 left on 2026-11-13 (Tier 2, resets 2026-12-08).
+  - Before each paid call, write its price (the tool descriptions give it) and the running total in a log, `design/options/ui-medieval/spend.md` (local).
+  - Check `get_balance` at the start and the end; the PR states the total spent.
+  - Never go past 500. If the work needs more, stop and ask the user.
+  - Free first: `pixelart_workbench`, `vfx_workbench` and `update_ui_asset` (9-slices, splitting) cost nothing, so cleaning, erasing and cutting are always done with them.
+  - Never regenerate the 1a or 1b pictures the user picked (memory: ask before changing approved art).
+  - Paid calls are allowed only for the pieces listed under "Paid pieces" below.
+
+## Paid pieces (planned about 200 of the 500)
+
+| What                                                                                                                                                                                                                                         | Tool                                                                        | Estimate                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Hover, pressed and disabled states for the remaining 1b buttons and plates (Details, sound, Tools, the wing plates, the chips), one call per group so they match                                                                             | `create_ui_states` on the split 1b elements                                 | 3 calls × 10–25 ≈ 50                                                             |
+| The pieces the full views need that the mockup does not have: tabs and chips, a toggle and a checkbox, a scrollbar, a slider, a dialog with a title bar, a tooltip, a progress bar. Pass the 1b full picture as `style_image` so they match. | `create_ui_asset` with `elements`, at 256 × 256 (10 each) or 341 × 341 (15) | 3–4 sheets ≈ 45                                                                  |
+| Their states                                                                                                                                                                                                                                 | `create_ui_states`                                                          | ≈ 15                                                                             |
+| The same three groups for 1a Tavern Wood                                                                                                                                                                                                     | as above                                                                    | ≈ 90                                                                             |
+| **Planned total**                                                                                                                                                                                                                            |                                                                             | **≈ 200**, leaving about 300 of the cap for a retry when a sheet comes out wrong |
+
+The paid pieces are new art. They are shown to the user at 4× on a picker page (CLAUDE.md, Workflow) before they go into the game.
 
 ## Part mapping (1b; 1a uses the same names)
 
@@ -48,7 +66,8 @@ The rules are already written: DESIGN §8 (Starter set; Plum Pixel and Tavern Wo
    - Read CLAUDE.md, PROJECT_OVERVIEW, UI_RULES, ASSET_RULES §5 and §6, and DESIGN §8.
 2. **Clean the parts (free).** For each 1b part in the mapping, erase the placeholder text, figures and rune letters with `pixelart_workbench`, filling with the part's own face colour. Nothing is recoloured, redrawn or upscaled.
    - Save the results to `src/renderer/src/art/shell/stone/<piece>.png`, one file per game piece, with clean names.
-   - Show the cleaned parts to the user in chat at 4× before wiring them in.
+   - Make the "Paid pieces" (above) for 1b, inside the budget, and log each call.
+   - Show the cleaned parts and the new pieces to the user together, on one picker page at 4×, before wiring them in.
 3. **Shell art as data** (CLAUDE.md rule 6). Add `src/data/content/shellArt.json`, validated by a schema in `src/data/schemas.ts`. Each table that has picture frames lists, per piece, its image and 9-slice insets in art pixels, and whether its middle stretches or tiles. Use `update_ui_asset(nine_slice=…)` only if it helps to read the insets; it is free.
 4. **Recipe.** Add a table recipe `shell-pictures` (registry plus a new `theme/shellPictures.css` imported next to `frames.css`).
    - When the worn table has shell art, the `.px-panel` / `.px-tile` / `.px-btn` / `.px-well` recipe and the header, dock, wings, window, floor plate, sheet and enemy card switch from the box-shadow pixel frame to `border-image` 9-slices.
@@ -83,4 +102,4 @@ The rules are already written: DESIGN §8 (Starter set; Plum Pixel and Tavern Wo
 
 ## Paired prompt (for a new Code session; Sonnet, medium effort; switch to Opus if the CSS gets stuck)
 
-> Implement `docs/plans/castle-stone-shell.md` on the existing branch `ui/castle-stone-shell` in the worktree `C:/bi-castle-stone` (create it from that branch if it is missing). The user approved it on 2026-11-13: PixelLab mockup 1b Castle Stone becomes the default look of the whole game in the same layout, Plum Pixel stays as an owned table, and 1a Tavern Wood becomes an unlockable table. The rules are already in DESIGN §8, UI_RULES §2 Shell look and ASSET_RULES §5 Shell pictures. Follow the plan's steps in order and run them to the end without asking for a go-ahead per step. The exceptions are the two show-and-wait points: the cleaned parts (step 2) and the final screenshots before merge (step 10). PixelLab has 0 generations: use only the free tools (`pixelart_workbench`, `update_ui_asset`), never a paid one.
+> Implement `docs/plans/castle-stone-shell.md` on the existing branch `ui/castle-stone-shell` in the worktree `C:/bi-castle-stone` (create it from that branch if it is missing). The user approved it on 2026-11-13: PixelLab mockup 1b Castle Stone becomes the default look of the whole game in the same layout, Plum Pixel stays as an owned table, and 1a Tavern Wood becomes an unlockable table. The rules are already in DESIGN §8, UI_RULES §2 Shell look and ASSET_RULES §5 Shell pictures. Follow the plan's steps in order and run them to the end without asking for a go-ahead per step. The exceptions are the two show-and-wait points: the cleaned parts (step 2) and the final screenshots before merge (step 10). PixelLab: at most 500 generations for the whole UI rework (user's hard cap). Spend only on the plan's "Paid pieces", log every paid call with its price and running total, show the new pieces to the user before using them, and stop and ask before going past 500.
