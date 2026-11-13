@@ -123,7 +123,7 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
     }
   });
 
-  it('names the Heirloom after the card, only at the Heirloom tier', () => {
+  it('names the weapon after the card at every tier', () => {
     const card = withArt[0]!;
     const type = content.itemTypeByKind.get(card.item.kind)!;
     expect(itemName(content, card.item.kind, 'heirloom', card.rarity, card)).toBe(
@@ -132,7 +132,10 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
     expect(itemName(content, card.item.kind, 'heirloom', card.rarity)).toBe(
       type.heirloom[card.rarity === 'void' ? 'void' : 'mythic'],
     );
-    expect(itemName(content, card.item.kind, 'mythic', card.rarity, card)).toBe(
+    // its own weapon at every tier, as the placeholder for its other upgrades (user, 2026-11-13)
+    expect(itemName(content, card.item.kind, 'mythic', card.rarity, card)).toBe(card.heirloomName);
+    expect(itemName(content, card.item.kind, 'wood', card.rarity, card)).toBe(card.heirloomName);
+    expect(itemName(content, card.item.kind, 'mythic', card.rarity)).toBe(
       type[card.rarity === 'void' ? 'void' : 'mythic'],
     );
     const owned = { ...newOwnedCard(), tier: 'heirloom' as const };
@@ -150,9 +153,9 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
       const art = cardTierArt(c, 'heirloom');
       expect(art, c.id).toContain(name);
       expect(art, c.id).not.toBe(itemArt(c.item.kind, c.rarity, 'heirloom', c.rarity));
-      // below the Heirloom a card keeps the type's tier pictures
-      expect(cardTierArt(c, 'wood')).toBe(itemArt(c.item.kind, c.rarity, 'wood', c.rarity));
-      expect(cardTierArt(c, 'mythic')).toBe(itemArt(c.item.kind, c.rarity, 'mythic', c.rarity));
+      // below the Heirloom it shows the same picture, never the type's wooden to Mythic ones
+      expect(cardTierArt(c, 'wood')).toBe(art);
+      expect(cardTierArt(c, 'mythic')).toBe(art);
     }
     const plain = content.cards.find((c) => c.id === 'dawn_champion')!;
     expect(cardTierArt(plain, 'heirloom')).toBe(itemArt('sword', 'mythic', 'heirloom', 'mythic'));
