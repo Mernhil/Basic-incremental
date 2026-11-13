@@ -20,9 +20,12 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 
 ## 2. Interface and screens
 
-- [Built] **Shell look** (user, 2026-11-10). The table and every full view use the starter table's pixel-frame shell (DESIGN.md §8).
-  - Panels are pixel frames: a dark edge with notched corners, a light top edge and a dark bottom edge, and no rounded corners. The frame step is a whole number of device pixels (about 4 CSS px at 100%).
-  - Buttons have the same notched shape: gold when they can be used, dark plum when not.
+- [Differs] **Shell look** (user, 2026-11-10; the castle stone look, user 2026-11-13: picked PixelLab mockup 1b). The table and every full view use the starter table's shell, **Castle Stone** (DESIGN.md §8), the layout unchanged (mockup 4a):
+  - Panels, plates, buttons, the header bar, the dock and the dungeon window's border are drawn from the 1b picture parts (grey stone with chiselled bevels, blue runes, cloth banners on the wing titles, torches on the window's pillars), as 9-slice images at a whole number of device pixels per art pixel; their middles stretch or tile, their edges never scale unevenly (ASSET_RULES §5 Shell pictures).
+  - The dock piles sit in the 1b hexagon stone sockets, each pile's own icon inside.
+  - Buttons: the 1b button stone; hover and pressed use the PixelLab states where they exist (the menu socket and the Goals button) and a brighter or one-step-lower face elsewhere; an unusable button is dimmed.
+  - The cards, their frames and the enemy art keep their own look; the 1b mockup's placeholder cards and figures are not used.
+  - Today the shell is Plum Pixel's: pixel frames with a dark edge and notched corners, a light top edge and a dark bottom edge, no rounded corners, a step of a whole number of device pixels (about 4 CSS px at 100%), gold buttons when usable and dark plum when not. That recipe stays for the Plum Pixel table and the other token-only tables.
   - Pixelify Sans is used only at 18 px and up, for headings and large numbers. All other text, small numbers included, is Atkinson Hyperlegible.
   - Colours, fonts and frame values are table tokens (ASSET_RULES.md §6), so another table item can re-skin all of it.
   - The floating-number cosmetics are not part of the shell and keep their own look.
@@ -174,6 +177,7 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 
 ## 4. Changelog
 
+- 2026-11-13 — Medieval shell (user, PixelLab mockup 1b): the Shell look becomes Castle Stone picture frames in the same layout; Plum Pixel's pixel frames stay for its own table (§2).
 - 2026-11-11 — Itch asset packs (user): the arena shows the enemy's sprite instead of the labelled box, and Settings > Help gets a Credits section (§2).
 - 2026-11-13 — User: the stage stars are back on the fight (a line in the left column) and the star pips are star shapes, not squares.
 - 2026-11-12 — Table update balance pass 2 (Claude default): toasts moved to a column under the header at the left of the dungeon window, the same spot in a view, so they never cover the enemy card (§2 Toasts).
