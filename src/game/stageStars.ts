@@ -212,6 +212,12 @@ export function stageChest(
       content.resourceById.get(reward.resource)?.kind === 'scroll' ? scaled : scaled.floor();
     if (amount.gt(0)) out.push({ resource: reward.resource, amount });
   }
+  // The Mythic chest (the last star level) on Nightmare also pays Heirloom Scrolls (DESIGN.md §3
+  // Where Heirloom Scrolls come from).
+  if (difficulty === 'nightmare' && level === chests.rewards[0]?.amounts.length) {
+    const scrolls = content.heirlooms.scrolls.nightmareMythicChest;
+    if (scrolls.gt(0)) out.push({ resource: 'heirloom_scroll', amount: scrolls });
+  }
   return out;
 }
 

@@ -13,7 +13,7 @@ import {
   tileStage,
   type OwnedCard,
 } from '../src/game';
-import { RANK_TIERS, type Content } from '../src/data';
+import { RANK_TIERS } from '../src/data';
 import { bareState, constantRng, content, freshState } from './helpers';
 
 describe('tile stages (DESIGN.md §12)', () => {
@@ -72,18 +72,6 @@ function cardAt(tier: OwnedCard['tier'], stars: number, level = 200): OwnedCard 
   return { ...newOwnedCard(), tier, stars, level, starFill: 5 };
 }
 
-/** The bundled content with the Heirloom opened for the given item types (items.json). */
-function withHeirloomOpen(...kinds: string[]): Content {
-  const types = content.items.types.map((t) =>
-    kinds.includes(t.kind) ? { ...t, heirloomOpen: true } : t,
-  );
-  return {
-    ...content,
-    items: { ...content.items, types },
-    itemTypeByKind: new Map(types.map((t) => [t.kind, t])),
-  };
-}
-
 describe('card tier and heirloom tier-ups', () => {
   it('reports a card tier-up with the metal of its new tier index', () => {
     const state = freshState();
@@ -106,16 +94,11 @@ describe('card tier and heirloom tier-ups', () => {
     ]);
   });
 
-  it('reports the heirloom moment when a tier-up reaches the Heirloom tier', () => {
-    const open = withHeirloomOpen('pickaxe');
+  it('reports no tier-up past Mythic or Void: the ladder ends there', () => {
     const state = freshState();
     state.cards.owned['core_titan'] = cardAt('mythic', 6, 120);
     for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
-    const result = tierUp(state, open, 'core_titan');
-    expect(result.ok && result.tierUps).toEqual([
-      { kind: 'card_tier', id: 'core_titan', from: 5, to: 6, metal: 'prismatic' },
-      { kind: 'heirloom', id: 'core_titan', from: 0, to: 1, metal: 'prismatic' },
-    ]);
+    expect(tierUp(state, content, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
   });
 
   it('reports no heirloom moment when a card reaches Gold ★6', () => {

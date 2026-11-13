@@ -49,7 +49,7 @@ export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Mod
     ability: itemName(
       content,
       card.item.kind,
-      lookTier(card.rarity, info.rank?.tier ?? 'wood'),
+      card.heirloom ? 'heirloom' : lookTier(card.rarity, info.rank?.tier ?? 'wood'),
       card.rarity,
       card,
     ),

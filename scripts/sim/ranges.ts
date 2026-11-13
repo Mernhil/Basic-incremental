@@ -160,8 +160,9 @@ export function endOfContent(state: GameState, content: Content): GameState {
   const next = cloneState(state);
   next.cards.owned = { ...next.cards.owned };
   next.prestige.shop = { ...next.prestige.shop };
+  // four fighting Heirloom cards (DESIGN.md §5 Heirlooms)
   const tops = content.cards
-    .filter((c) => c.job === 'fighting' && (c.rarity === 'mythic' || c.rarity === 'void'))
+    .filter((c) => c.job === 'fighting' && c.heirloom)
     .slice(0, 4)
     .map((c) => c.id);
   for (const id of tops) {

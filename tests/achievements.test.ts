@@ -195,7 +195,8 @@ describe('shard shop (DESIGN.md §5, §11)', () => {
     const sold = content.shardShop.flatMap((i) =>
       i.reward.kind === 'card' ? [i.reward.card] : [],
     );
-    const wanted = content.cards.map((c) => c.id);
+    // Heirloom cards come only from the Heirloom Gate (DESIGN.md §5 An Heirloom card).
+    const wanted = content.cards.filter((c) => !c.heirloom).map((c) => c.id);
     expect([...sold].sort()).toEqual([...wanted].sort());
   });
 

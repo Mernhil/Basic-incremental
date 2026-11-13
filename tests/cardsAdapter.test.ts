@@ -120,8 +120,8 @@ describe('Next tier preview', () => {
       rare: 'silver',
       epic: 'gold',
       legendary: 'prismatic',
-      mythic: 'heirloom',
-      void: 'heirloom',
+      mythic: 'mythic',
+      void: 'mythic',
     };
     for (const [rarity, last] of Object.entries(top)) {
       const tiers = previewTiers(content, byRarity(rarity).id, 'wood');
@@ -150,13 +150,13 @@ describe('Next tier preview', () => {
     expect(JSON.stringify(state)).toBe(before);
   });
 
-  it('shows the Void side at T6 and the Heirloom, and has nothing for a Common', () => {
+  it('stops at the Void side at T6, and has nothing for a Common', () => {
     const card = byRarity('void');
     const stops = [5, 6].map((i) => model.preview(freshState(), card.id, i)!);
     expect(stops[0]!.tierName).toBe('Void');
     expect(stops[0]!.itemName).toBe(itemName(content, card.item.kind, 'mythic', 'void'));
-    expect(stops[1]!.tierName).toBe('Heirloom');
-    expect(stops[1]!.item).toBe(previewArt(card, 'heirloom'));
+    expect(stops[0]!.item).toBe(previewArt(card, 'mythic'));
+    expect(stops[1]!.own).toBe(true); // back to the own tier: there is no step after T6
     expect(model.preview(freshState(), byRarity('common').id, 1)).toBeNull();
     expect(model.preview(freshState(), 'nope', 1)).toBeNull();
   });

@@ -88,6 +88,13 @@
     "keptOnAscend": true
   },
   {
+    "id": "heirloom_scroll",
+    "name": "Heirloom Scroll",
+    "kind": "scroll",
+    "tier": 3,
+    "keptOnAscend": true
+  },
+  {
     "id": "moss_core",
     "name": "Moss Core",
     "kind": "material",

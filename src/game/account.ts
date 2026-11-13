@@ -13,7 +13,7 @@ import { statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { canAfford, finalPrice, pay, type Price } from './production';
 import type { TickReport } from './report';
-import { cardsAtWork } from './cards';
+import { cardsAtWork, rankAtLeast } from './cards';
 import { totalStageStarLevels } from './stageStars';
 import { cloneState, type GameState, type OwnedCard } from './state';
 import { grantCosmetic } from './wardrobe';
@@ -259,18 +259,20 @@ export interface WeaponCircle {
  */
 export function weaponCircles(state: GameState, content: Content): WeaponCircle[] {
   const steps = content.account.circleSteps;
-  const best = new Map<string, number>();
+  // Each step needs a rank (a tier and the stars inside it): the keystone opens at ★6 of Mythic or
+  // Void, and an owned Heirloom card of the type counts above every ladder rank.
+  const reachedOf = new Map<string, number>();
   for (const [id, owned] of Object.entries(state.cards.owned)) {
     const kind = content.cardById.get(id)?.item.kind;
     if (!kind) continue;
-    best.set(kind, Math.max(best.get(kind) ?? -1, RANK_TIERS.indexOf(owned.tier)));
-  }
-  return content.items.types.map((t) => {
-    const tier = best.get(t.kind) ?? -1;
     let reached = -1;
     steps.forEach((s, i) => {
-      if (tier >= RANK_TIERS.indexOf(s.tier)) reached = i;
+      if (rankAtLeast({ tier: owned.tier, stars: owned.stars }, s)) reached = i;
     });
+    reachedOf.set(kind, Math.max(reachedOf.get(kind) ?? -1, reached));
+  }
+  return content.items.types.map((t) => {
+    const reached = reachedOf.get(t.kind) ?? -1;
     return {
       kind: t.kind,
       noun: t.noun,

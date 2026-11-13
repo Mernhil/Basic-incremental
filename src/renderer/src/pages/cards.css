@@ -823,3 +823,256 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 .cp-team.is-over .cp-team__tag {
   color: #ff8a8a;
 }
+
+/* ---- the Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e): the 22
+   Heirloom cards by weapon type on the left, the selected one large with its tree as gems in an
+   arch around it on the right ---- */
+.cp-wrap--heirlooms {
+  --cp-detail-w: 640px;
+}
+@media (max-width: 1500px) {
+  .cp-wrap--heirlooms {
+    --cp-detail-w: 520px;
+  }
+}
+.cp-grid--heirlooms {
+  grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + 10px));
+  gap: 14px 18px;
+  justify-content: start;
+}
+.cp-hgroup {
+  display: grid;
+  gap: 4px;
+}
+.cp-hgroup .cp-group__title {
+  font-size: 12px;
+}
+.cp-hgroup__cards {
+  display: flex;
+  gap: 10px;
+  /* room for the ★6 crowns above the cards */
+  padding-top: calc(28px * var(--card-k));
+}
+.cp-cell--heirloom {
+  display: grid;
+  gap: 3px;
+  width: calc(176px * var(--card-k));
+}
+.cp-shardbar {
+  display: block;
+  height: 6px;
+}
+.cp-shardbar > i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold);
+}
+.cp-shardtext {
+  font-size: 12px;
+  color: var(--px-muted);
+  white-space: nowrap;
+}
+
+.cp-treehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cp-treehead__name {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+}
+.cp-treehead__name b {
+  font-size: 20px;
+}
+.cp-treehead__name span {
+  font-size: 13px;
+  color: var(--px-muted);
+}
+/* the stage: the card in the middle of a 3 x 3 grid, the capstone above it, the two paths up its
+   sides, the root below; the paths are drawn behind from stone to stone (cards.ts), and every
+   label sits on the side no path leaves from, so no line crosses one */
+.cp-arch {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  column-gap: 14px;
+  row-gap: 4px;
+  margin: 0 0 4px;
+}
+.cp-arch__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+.cp-arch__lines line {
+  stroke: var(--px-muted);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+  opacity: 0.6;
+}
+.cp-arch__lines line.is-on {
+  stroke: var(--px-gold);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+.cp-arch__top,
+.cp-arch__bottom {
+  /* across the three columns, so a long capstone label never widens the card column */
+  grid-column: 1 / -1;
+  display: grid;
+  justify-items: center;
+}
+.cp-arch__top {
+  grid-row: 1;
+  /* clear of the crown over the card */
+  margin-bottom: 10px;
+}
+.cp-arch__bottom {
+  grid-row: 3;
+}
+.cp-arch__side {
+  grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  /* the larger node level with the card's top, the smaller one with its foot */
+  padding: 28px 0 22px;
+  min-width: 0;
+}
+.cp-arch__side > [data-key^='gem-large'] {
+  order: -1;
+}
+.cp-arch__side--left {
+  grid-column: 1;
+  align-items: flex-end;
+}
+.cp-arch__side--right {
+  grid-column: 3;
+  align-items: flex-start;
+}
+.cp-arch__card {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  width: calc(176px * var(--card-k));
+  /* room for the ★6 crown over the card */
+  padding-top: calc(22px * var(--card-k));
+}
+.cp-gem {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: default;
+}
+.cp-gem--left {
+  flex-direction: row-reverse;
+  text-align: right;
+}
+.cp-gem--right {
+  text-align: left;
+}
+.cp-gem--above {
+  flex-direction: column-reverse;
+  text-align: center;
+  gap: 4px;
+}
+.cp-gem--below {
+  flex-direction: column;
+  text-align: center;
+  gap: 4px;
+}
+.cp-gem.is-affordable {
+  cursor: pointer;
+}
+.cp-gem__stone {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  margin: 6px;
+  transform: rotate(45deg);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--px-muted);
+}
+.cp-gem--cap .cp-gem__stone {
+  width: 30px;
+  height: 30px;
+}
+.cp-gem.is-open .cp-gem__stone {
+  box-shadow: inset 0 0 0 2px var(--px-gold);
+}
+.cp-gem.is-affordable .cp-gem__stone {
+  background: color-mix(in srgb, var(--px-gold) 30%, transparent);
+  animation: cp-gem-ready 1.6s ease-in-out infinite;
+}
+.cp-gem.is-bought .cp-gem__stone {
+  background: linear-gradient(135deg, #fff1a8, var(--px-gold) 45%, #b8741a);
+  box-shadow: 0 0 0 2px var(--px-edge);
+}
+.cp-gem.is-affordable:hover .cp-gem__stone,
+.cp-gem:focus-visible .cp-gem__stone {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+@keyframes cp-gem-ready {
+  50% {
+    filter: brightness(1.4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-gem.is-affordable .cp-gem__stone {
+    animation: none;
+  }
+}
+.cp-gem__label {
+  display: grid;
+  min-width: 0;
+  max-width: 170px;
+  line-height: 1.2;
+}
+.cp-gem--above .cp-gem__label {
+  max-width: 300px;
+}
+.cp-gem__name {
+  font-size: 13px;
+}
+.cp-gem__what {
+  font-size: 11px;
+  color: var(--px-muted);
+}
+.cp-gem.is-locked .cp-gem__label {
+  opacity: 0.7;
+}
+.cp-shardline {
+  display: grid;
+  gap: 4px;
+}
+.cp-shardline__top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.cp-shardline__track {
+  height: 10px;
+}
+.cp-shardline__track > i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold);
+}

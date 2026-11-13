@@ -10,12 +10,13 @@ const entryOf = (id: string) =>
     .find((e) => e.id === id);
 
 describe('header and details split', () => {
-  it('puts only Money and the two crystals in the header', () => {
+  it('puts only Money and the three scrolls in the header', () => {
     const header = content.resources.filter(isHeaderResource).map((r) => r.id);
-    expect(header).toEqual(['money', 'summon_scroll', 'glamour_scroll']);
+    expect(header).toEqual(['money', 'summon_scroll', 'glamour_scroll', 'heirloom_scroll']);
     expect(content.resources.filter(isCrystal).map((r) => r.id)).toEqual([
       'summon_scroll',
       'glamour_scroll',
+      'heirloom_scroll',
     ]);
   });
 

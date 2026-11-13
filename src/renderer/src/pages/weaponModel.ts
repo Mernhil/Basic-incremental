@@ -93,12 +93,10 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
               : COPY.weapon.needsMany(missing.length),
     };
   } else if (rank.tier === 'heirloom') {
-    endNote = COPY.weapon.fullyUpgraded;
+    // An Heirloom card (DESIGN.md §5): no tier-up; its stars come from the gate's shards.
+    endNote = rank.stars >= MAX_STARS ? COPY.weapon.fullyUpgraded : COPY.weapon.heirloomStars;
   } else if (rank.tier === 'mythic') {
-    endNote = COPY.weapon.topPending(
-      tierLabel(rank.tier, card.rarity),
-      itemName(content, card.item.kind, rank.tier, card.rarity, card),
-    );
+    endNote = COPY.weapon.topLadder(tierLabel(rank.tier, card.rarity));
   } else {
     endNote = COPY.weapon.topEnd(tierLabel(rank.tier, card.rarity));
   }

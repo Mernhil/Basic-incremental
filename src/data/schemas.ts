@@ -424,8 +424,9 @@ export type ModifierData = z.output<typeof modifierSchema>;
 
 /**
  * Card tiers, lowest first (DESIGN.md §5): T1 Wood, T2 Bronze, T3 Silver, T4 Gold, T5 Prismatic,
- * T6 `mythic` (shown as Mythic or Void by the card's side), then the Heirloom, which is open
- * only for an item type whose Heirloom art is approved (items.json).
+ * T6 `mythic` (shown as Mythic or Void by the card's side). The ladder ends there. `heirloom` is
+ * the fixed tier of the 22 Heirloom cards only (DESIGN.md §5 Heirlooms, An Heirloom card): no
+ * ladder card reaches it.
  */
 export const RANK_TIERS = [
   'wood',
@@ -481,7 +482,7 @@ export const ITEM_KINDS = [
   'logging_axe',
 ] as const;
 export type ItemKind = (typeof ITEM_KINDS)[number];
-/** One item type's names and whether its Heirloom is open (items.json; DESIGN.md §5). */
+/** One item type's names (items.json; DESIGN.md §5). */
 export const itemTypeSchema = z.strictObject({
   kind: z.enum(ITEM_KINDS),
   job: z.enum(['fighting', 'mining', 'logging']),
@@ -492,10 +493,8 @@ export const itemTypeSchema = z.strictObject({
   /** T6 names, by the card's side. */
   mythic: name,
   void: name,
-  /** Heirloom names, by the card's side. */
+  /** Heirloom names, by side: the names of the type's two Heirloom cards (DESIGN.md §5 Heirlooms). */
   heirloom: z.strictObject({ mythic: name, void: name }),
-  /** The Heirloom tier opens for the type only once its Heirloom art is approved. */
-  heirloomOpen: z.boolean(),
 });
 export const itemsSchema = z.strictObject({
   /** Material words for T1 to T4 names: "Wooden Sword", "Bronze Sword", "Silver Sword", "Golden Sword". */
@@ -513,12 +512,19 @@ const cardBase = {
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
   /**
-   * A Mythic or Void card with its own Heirloom (DESIGN.md §5 More weapons from the Heirloom
+   * A Mythic or Void card with its own weapon (DESIGN.md §5 More weapons from the Heirloom
    * candidates): the letter of its recoloured picture `item-<type>-<hm|hv>-<letter>` (b, c or d)
-   * and the Heirloom's own name. Both or neither; without them the card keeps its type's Heirloom.
+   * and the weapon's own name, shown at its T6 and, as the placeholder, at every tier. Both or
+   * neither; without them the card shows its type's one model at every tier.
    */
   heirloomArt: z.enum(['b', 'c', 'd']).optional(),
   heirloomName: name.optional(),
+  /**
+   * One of the 22 Heirloom cards (DESIGN.md §5 Heirlooms, An Heirloom card): its type's Heirloom of
+   * its rarity's side, named as in items.json, at the fixed tier `heirloom`. It comes only from the
+   * Heirloom Gate (heirlooms.json), never from a portal, the shard shop or a tier-up.
+   */
+  heirloom: z.boolean().optional(),
 };
 
 /** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
@@ -562,8 +568,8 @@ const perTier = <T extends z.ZodType>(schema: T) =>
     mythic: schema,
     heirloom: schema,
   });
-/** One entry per tier that has a next tier: every tier but the Heirloom. */
-const perTierUp = <T extends z.ZodType>(schema: T) =>
+/** One entry per tier of the upgrade ladder, Wood to Mythic/Void (no Heirloom). */
+const perLadderTier = <T extends z.ZodType>(schema: T) =>
   z.strictObject({
     wood: schema,
     bronze: schema,
@@ -571,6 +577,15 @@ const perTierUp = <T extends z.ZodType>(schema: T) =>
     gold: schema,
     prismatic: schema,
     mythic: schema,
+  });
+/** One entry per tier that has a next tier: Wood to Prismatic (the ladder ends at Mythic/Void). */
+const perTierUp = <T extends z.ZodType>(schema: T) =>
+  z.strictObject({
+    wood: schema,
+    bronze: schema,
+    silver: schema,
+    gold: schema,
+    prismatic: schema,
   });
 const perRarity = <T extends z.ZodType>(schema: T) =>
   z.strictObject({
@@ -596,6 +611,8 @@ export const cardRulesSchema = z.strictObject({
   startCards: z.array(id),
   /** Loadout cost of a card, by rarity (11.4). */
   cost: perRarity(count),
+  /** Loadout cost of an Heirloom card (DESIGN.md §5 An Heirloom card), in place of its rarity's. */
+  heirloomCost: count,
   /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
   costCap: z.strictObject({ base: count, perLevel: count }),
   /** Level cap of each tier (Heirloom 140); stars do not change it (DESIGN.md §5). */
@@ -647,12 +664,12 @@ export const cardRulesSchema = z.strictObject({
    */
   starBar: z.strictObject({
     fillPerDuplicate: perRarity(z.number().positive()),
-    needs: perRarity(perTier(z.number().positive())),
-    dust: perRarity(perTier(z.number().positive())),
+    needs: perRarity(perLadderTier(z.number().positive())),
+    dust: perRarity(perLadderTier(z.number().positive())),
   }),
   /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
    *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must
-   *  be at its level cap. Mythic → Heirloom exists only for item types whose Heirloom is open. */
+   *  be at its level cap. There is no step after Mythic/Void (DESIGN.md §5 Tier). */
   tierUp: perTierUp(perJob(z.array(costSchema).min(1))),
   /** Base health of a card by rarity, multiplied by its power (DESIGN.md §6). The fighting
    *  loadout's health pool sums its cards. */
@@ -1635,8 +1652,15 @@ const accountFileSchema = z.strictObject({
       keystone: skillEffectSchema,
     }),
   ),
-  /** Which card tier opens each step of a weapon circle. */
-  circleSteps: z.array(z.strictObject({ step: z.enum(CIRCLE_STEPS), tier: z.enum(RANK_TIERS) })),
+  /** Which card rank opens each step of a weapon circle: a tier, and the stars inside it (★1 if
+   *  left out). The keystone opens at ★6 of Mythic or Void (DESIGN.md §10 Hidden weapon circles). */
+  circleSteps: z.array(
+    z.strictObject({
+      step: z.enum(CIRCLE_STEPS),
+      tier: z.enum(RANK_TIERS),
+      stars: z.number().int().min(1).max(MAX_STARS).default(1),
+    }),
+  ),
   /** Written-out weapon circles (one item type each), skills in order. */
   circles: z.array(
     z.strictObject({
@@ -2152,6 +2176,80 @@ export const scrollsSchema = z.strictObject({
 });
 export type ScrollsConfig = z.output<typeof scrollsSchema>;
 
+/** One node of an Heirloom tree (DESIGN.md §10 Heirloom trees). */
+export const heirloomNodeSchema = z.strictObject({
+  /** root, small_a, small_b, large_a, large_b, capstone. */
+  id,
+  /** The capstone's own name; the other nodes are named by what they give. */
+  name: name.optional(),
+  /** Tree points it takes. */
+  cost: z.number().int().min(1),
+  /** Nodes of the same tree it can follow: any one of them bought opens it (none = the root). */
+  requires: z.array(id),
+  /** What it gives while the Heirloom is at work (cards.ts `cardsAtWork`). */
+  modifiers: z.array(modifierSchema).default([]),
+  /** The duel skill (skills.json) the Heirloom fights with while this node is bought. */
+  skill: id.optional(),
+  /** Player-facing summary of what it gives. */
+  description: z.string().min(1),
+});
+
+/**
+ * heirlooms.json (DESIGN.md §3 Heirloom Scrolls, §7 Heirloom Gate, §10 Heirloom trees): the gate's
+ * numbers, where Heirloom Scrolls come from, how tree points are earned, and the 22 trees.
+ */
+export const heirloomsSchema = z.strictObject({
+  gate: z.strictObject({
+    id,
+    name,
+    cost: z.strictObject({ resource: id, single: positiveDecimal, ten: positiveDecimal }),
+    /** Chance a pull gives a whole Heirloom (0..1); otherwise shards of one. */
+    wholeChance: z.number().min(0).max(1),
+    /** Shards a shard pull gives, both ends included. */
+    shards: z.strictObject({ min: z.number().int().min(1), max: z.number().int().min(1) }),
+    /** The pull that is a whole Heirloom at the latest (pulls since the last whole one). */
+    pity: z.number().int().min(1),
+    /** Shards that unlock an Heirloom. */
+    unlockShards: z.number().int().min(1),
+    /** Shards for ★2 … ★6. */
+    starShards: z.array(z.number().int().min(1)).length(MAX_STARS - 1),
+    /** A whole Heirloom already unlocked counts as this many of its shards. */
+    wholeRepeatShards: z.number().int().min(1),
+    /** Each Heirloom shard past ★6 becomes this many card shards (the shard shop's). */
+    cardShardsPerOverflow: z.number().int().min(0),
+  }),
+  scrolls: z.strictObject({
+    /** First win of a Nightmare last-floor boss. */
+    nightmareBossFirstWin: decimal,
+    /** Each later Nightmare last-floor boss kill (a fraction is kept). */
+    nightmareBossKill: decimal,
+    /** Every this-many-th endless depth reached for the first time pays `endlessDepth`. */
+    endlessDepthEvery: z.number().int().min(1),
+    endlessDepth: decimal,
+    /** A Mythic stage star chest on Nightmare. */
+    nightmareMythicChest: decimal,
+    /** Each Ascension from this one on (the third = 3) pays `ascension`. */
+    ascensionFrom: z.number().int().min(1),
+    ascension: decimal,
+  }),
+  /** Tree points: one per star and one at each of these levels. */
+  points: z.strictObject({
+    perStar: z.number().int().min(0),
+    levels: z.array(z.number().int().min(1)),
+  }),
+  trees: z.array(
+    z.strictObject({
+      /** The Heirloom card (cards.json, `heirloom: true`). */
+      card: id,
+      name,
+      nodes: z.array(heirloomNodeSchema).min(1),
+    }),
+  ),
+});
+export type HeirloomsConfig = z.output<typeof heirloomsSchema>;
+export type HeirloomTree = HeirloomsConfig['trees'][number];
+export type HeirloomNode = z.output<typeof heirloomNodeSchema>;
+
 export const contentSchemas = {
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
@@ -2195,6 +2293,7 @@ export const contentSchemas = {
   challenges: z.array(ascensionChallengeSchema),
   skills: skillsFileSchema,
   scrolls: scrollsSchema,
+  heirlooms: heirloomsSchema,
 } as const;
 
 export type LookSteps = z.output<typeof lookStepsSchema>;

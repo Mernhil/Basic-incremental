@@ -1,5 +1,12 @@
 import { RARITIES, type Content, type Rarity } from '../../../data';
-import { type GameState, type PortalInfo, type PullResult, type WishlistInfo } from '../../../game';
+import {
+  type GameState,
+  type HeirloomGateInfo,
+  type HeirloomPull,
+  type PortalInfo,
+  type PullResult,
+  type WishlistInfo,
+} from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 
@@ -272,6 +279,138 @@ export function revealViews(results: readonly PullResult[], content: Content): R
       upgrade: r.orb !== r.rarity,
       tags,
       gain,
+    };
+  });
+}
+
+// ---- the Heirloom Gate (DESIGN.md §7 Heirloom Gate; UI_RULES §2 The Summon view, pick 3a) ----
+
+/** The Heirloom Gate's deck: like a portal deck, with its own lines. */
+export interface HeirloomDeckView {
+  name: string;
+  line: string;
+  about: string;
+  resourceId: string;
+  pityText: string;
+  pityCount: number;
+  pityThreshold: number;
+  pityProgress: number;
+  deckLayers: number;
+  single: { amount: string; price: string; affordable: boolean };
+  ten: { amount: string; price: string; affordable: boolean };
+}
+
+/** One cell of the board: an Heirloom with its stars and shard bar. */
+export interface HeirloomCellView {
+  cardId: string;
+  name: string;
+  kind: string;
+  side: 'mythic' | 'void';
+  owned: boolean;
+  stars: number;
+  progress: number;
+  shardsText: string;
+  label: string;
+}
+
+/** The board: 11 types across, a Mythic and a Void row, in the shared type order. */
+export interface HeirloomBoardView {
+  title: string;
+  facts: string;
+  columns: { kind: string; name: string }[];
+  rows: { side: 'mythic' | 'void'; name: string; cells: (HeirloomCellView | null)[] }[];
+  odds: string;
+  pityNote: string;
+}
+
+export function heirloomDeckView(info: HeirloomGateInfo, content: Content): HeirloomDeckView {
+  const t = COPY.summon;
+  const res = (id: string): string => content.resourceById.get(id)?.name ?? id;
+  const offer = (o: HeirloomGateInfo['single']) => ({
+    amount: fmt(o.price.amount),
+    price: `${fmt(o.price.amount)} ${res(o.price.resource)}`,
+    affordable: o.affordable,
+  });
+  return {
+    name: info.name,
+    line: t.heirloomLine(info.pity.threshold),
+    about: t.heirloomAbout(pct(info.wholeChance), info.shards.min, info.shards.max),
+    resourceId: info.single.price.resource,
+    pityText: t.pityOf(info.pity.count, info.pity.threshold),
+    pityCount: info.pity.count,
+    pityThreshold: info.pity.threshold,
+    pityProgress: info.pity.progress,
+    deckLayers: deckLayers(info.pity.progress),
+    single: offer(info.single),
+    ten: offer(info.ten),
+  };
+}
+
+export function heirloomBoardView(info: HeirloomGateInfo, content: Content): HeirloomBoardView {
+  const t = COPY.summon;
+  const gate = content.heirlooms.gate;
+  const cell = (side: 'mythic' | 'void', kind: string): HeirloomCellView | null => {
+    const e = info.entries.find((x) => x.side === side && x.card.item.kind === kind);
+    if (!e) return null;
+    return {
+      cardId: e.card.id,
+      name: e.card.name,
+      kind,
+      side,
+      owned: e.owned !== null,
+      stars: e.stars,
+      progress: e.progress,
+      shardsText: t.heirloomShardsOf(e.shards, e.need),
+      label: t.heirloomCell(e.card.name, e.stars, e.shards, e.need),
+    };
+  };
+  const kinds = content.items.types;
+  return {
+    title: t.heirloomBoardTitle(info.total),
+    facts: t.heirloomBoardFacts(info.unlocked, info.total, gate.unlockShards),
+    columns: kinds.map((k) => ({ kind: k.kind, name: k.noun })),
+    rows: (['mythic', 'void'] as const).map((side) => ({
+      side,
+      name: t.heirloomSide[side] ?? side,
+      cells: kinds.map((k) => cell(side, k.kind)),
+    })),
+    odds: t.heirloomOdds(
+      pct(info.wholeChance),
+      pct(1 - info.wholeChance),
+      info.shards.min,
+      info.shards.max,
+      info.total,
+    ),
+    pityNote: t.heirloomPityNote(info.pity.threshold, gate.cardShardsPerOverflow),
+  };
+}
+
+/** The Heirloom Gate's pulls as reveal views: the Heirloom's card, and what the pull did. */
+export function heirloomRevealViews(
+  results: readonly HeirloomPull[],
+  content: Content,
+): RevealView[] {
+  const t = COPY.summon;
+  return results.map((r) => {
+    const card = content.cardById.get(r.cardId);
+    const rarity = card?.rarity ?? 'mythic';
+    const tags: string[] = [];
+    if (r.whole) tags.push(t.heirloomWhole);
+    else tags.push(t.shards(r.shards));
+    if (r.outcome.unlocked) tags.push(t.heirloomUnlocked);
+    if (r.outcome.starsGained > 0) tags.push(t.heirloomStar(r.stars));
+    if (r.outcome.cardShards > 0) tags.push(t.heirloomCardShards(r.outcome.cardShards));
+    if (r.pity) tags.push(t.byPity);
+    return {
+      itemId: r.cardId,
+      name: card?.name ?? r.cardId,
+      // a shard pull shows one step lower, so a whole Heirloom stands out in the reveal
+      rarity: r.whole ? rarity : 'legendary',
+      rarityName: rarityName(content, rarity),
+      orb: r.whole ? rarity : 'legendary',
+      upgrade: false,
+      tags,
+      gain: r.outcome.unlocked ? 'new' : 'other',
     };
   });
 }

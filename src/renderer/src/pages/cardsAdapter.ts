@@ -53,8 +53,8 @@ const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', min
 
 /**
  * The tiers the Next tier preview steps through: the card's own tier, then each tier up to the
- * highest its rarity allows (DESIGN §5 Rarity caps the tier; the Heirloom for a Mythic or Void
- * card whose item type has it open). A card at its top tier has just the one.
+ * highest its rarity allows (DESIGN §5 Rarity caps the tier; Mythic or Void at most, the Heirloom
+ * is no tier of the ladder). A card at its top tier, and an Heirloom card, has just the one.
  */
 export function previewTiers(content: Content, cardId: string, from: RankTier): RankTier[] {
   const top = RANK_TIERS.indexOf(cardTopTier(content, cardId));
@@ -62,8 +62,8 @@ export function previewTiers(content: Content, cardId: string, from: RankTier): 
 }
 
 /**
- * The picture of a card's item at a tier (T6 and the Heirloom by the card's side). The one place
- * the preview gets its art, so a card with an Heirloom picture of its own can be given it here.
+ * The picture of a card's item at a tier (T6 by the card's side). The one place the preview gets
+ * its art, so a card with its own weapon picture can be given it here.
  */
 export function previewArt(card: Card, tier: RankTier, step = 0): string {
   return cardTierArt(card, tier, step);

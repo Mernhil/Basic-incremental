@@ -5,6 +5,7 @@ import { burstStats, critFactor, critStats, type CritStats } from './combat';
 import { computeStat, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import type { GameState } from './state';
+import { heirloomSkill } from './heirlooms';
 
 /**
  * The card duel's rules (DESIGN.md §6 "The fight is a first-person card duel", "The team of 4 in
@@ -64,8 +65,11 @@ export function teamCardIds(state: GameState, content: Content): string[] {
   return out;
 }
 
-/** The skill a card fights with: its own (a unique), else its weapon type's (skills.json). */
-export function cardSkill(content: Content, cardId: string): Skill {
+/** The skill a card fights with: an Heirloom's tree capstone's (with `state`), else its own (a
+ *  unique), else its weapon type's (skills.json). */
+export function cardSkill(content: Content, cardId: string, state?: GameState): Skill {
+  const fromTree = state ? heirloomSkill(state, content, cardId) : null;
+  if (fromTree) return fromTree;
   const own = content.skills.cards[cardId];
   const card = content.cardById.get(cardId);
   const kind = card?.item.kind as keyof Content['skills']['weapons'] | undefined;
@@ -126,7 +130,7 @@ export function buildTeam(
   const healthFactor = sum.gt(0) ? total.div(sum) : new Decimal(0);
   return ids.map((id, slot): TeamCard => {
     const owned = state.cards.owned[id]!;
-    const skill = cardSkill(content, id);
+    const skill = cardSkill(content, id, state);
     const mods = [...shared, ...cardEffectModifiers(content, id, 'main', owned)];
     const burst = burstStats(content, 'fighting', mods);
     const crit = critStats(content, mods, dungeonId);

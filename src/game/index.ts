@@ -54,6 +54,7 @@ export * from './mastery';
 export * from './stages';
 export * from './goals';
 export * from './portals';
+export * from './heirlooms';
 export * from './autobuyers';
 export * from './prestige';
 export * from './challenges';

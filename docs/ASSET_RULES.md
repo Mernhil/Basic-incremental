@@ -75,7 +75,7 @@ For sword, greatsword, dagger, hammer, lance, bow, scythe and logging axe the T1
 
 - An Heirloom is one fixed item. It never changes, so it has exactly one picture (plus its animation) per side, not a ladder. Every type has a Mythic and a Void Heirloom, shown by the card's side.
 - Its effects and animation are the strongest of its weapon type, above T6: full effects plus its own peculiar effect, its own motion and colours. An Heirloom is the pinnacle of the weapon (user, 2026-11-09).
-- It is separate from the tiered family: it does not have to match the style of the type it belongs to, and it is not a stage of one. An Heirloom sword is not "T7 of the sword"; it is reached by a tier-up after T6 (`DESIGN.md` §5).
+- It is separate from the tiered family: it does not have to match the style of the type it belongs to, and it is not a stage of one. An Heirloom sword is not "T7 of the sword": it is its own card, pulled from the Heirloom Gate, and no tier weapon turns into it (`DESIGN.md` §5 Heirlooms, user, 2026-11-12).
 - Heirlooms are drawn once, in full, and are never recoloured into tiers.
 
 ## 4. Before generating anything

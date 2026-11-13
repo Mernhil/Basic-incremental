@@ -60,7 +60,10 @@ describe('the star bar (DESIGN.md §5)', () => {
     // The shipped table is tuned and tested in cardsFromStart.test.ts; this content pins one whole
     // copy per star, so the rules below count copies.
     for (const rarity of RARITIES) {
-      for (const tier of RANK_TIERS) {
+      for (const tier of RANK_TIERS.slice(0, -1) as Exclude<
+        (typeof RANK_TIERS)[number],
+        'heirloom'
+      >[]) {
         for (const stars of [1, 2, 3, 4, 5]) {
           expect(starFillNeeded(content, rarity, stars, tier), `${rarity} ${tier}`).toBe(
             content.cardRules.starBar.needs[rarity][tier] *
@@ -70,6 +73,7 @@ describe('the star bar (DESIGN.md §5)', () => {
       }
     }
     expect(starFillNeeded(content, 'common', 6, 'wood')).toBeNull();
+    expect(starFillNeeded(content, 'void', 1, 'heirloom')).toBeNull();
   });
 
   it('fills by the rarity of each duplicate and keeps the fill on the card', () => {
@@ -288,27 +292,6 @@ function withRarity(cardId: string, rarity: Rarity): Content {
   return { ...content, cards, cardById: new Map(cards.map((c) => [c.id, c])) };
 }
 
-/** The bundled content with the Heirloom opened for the given item types (items.json). */
-function withHeirloomOpen(...kinds: string[]): Content {
-  const types = content.items.types.map((t) =>
-    kinds.includes(t.kind) ? { ...t, heirloomOpen: true } : t,
-  );
-  return {
-    ...content,
-    items: { ...content.items, types },
-    itemTypeByKind: new Map(types.map((t) => [t.kind, t])),
-  };
-}
-
-/** Like `fund`, against another content (the costs of a tier-up with the Heirloom open). */
-function fundWith(c: Content, state: GameState, id: string): GameState {
-  const card = c.cardById.get(id)!;
-  for (const p of tierUpCost(c, card, state.cards.owned[id]!)) {
-    give(state, p.resource, p.amount.add(5).toString());
-  }
-  return state;
-}
-
 describe('rarity caps the tier (DESIGN.md §5)', () => {
   it('stops each rarity at its tier: Common Wood ... Legendary Prismatic, Mythic and Void Mythic', () => {
     const top: Record<Rarity, string> = {
@@ -317,8 +300,8 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
       rare: 'silver',
       epic: 'gold',
       legendary: 'prismatic',
-      mythic: 'heirloom',
-      void: 'heirloom',
+      mythic: 'mythic',
+      void: 'mythic',
     };
     for (const rarity of RARITIES) {
       expect(cardTopTier(withRarity('ember_squire', rarity), 'ember_squire'), rarity).toBe(
@@ -332,8 +315,9 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
     expect(cardTopTier(content, 'grove_keeper')).toBe('silver'); // Rare
     expect(cardTopTier(content, 'storm_duelist')).toBe('gold'); // Epic
     expect(cardTopTier(content, 'dawnblade_regent')).toBe('prismatic'); // Legendary
-    expect(cardTopTier(content, 'moonwood_dryad')).toBe('heirloom'); // Mythic
-    expect(cardTopTier(content, 'core_titan')).toBe('heirloom'); // Void
+    expect(cardTopTier(content, 'moonwood_dryad')).toBe('mythic'); // Mythic
+    expect(cardTopTier(content, 'core_titan')).toBe('mythic'); // Void
+    expect(cardTopTier(content, 'deepmaw')).toBe('heirloom'); // an Heirloom card
     expect(cardTopTier(content, 'nope')).toBe('wood');
   });
 
@@ -357,8 +341,6 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
     own(state, 'moonwood_dryad', { tier: 'mythic', stars: 5 });
     expect(isMaxRank(content, 'moonwood_dryad', state.cards.owned['moonwood_dryad']!)).toBe(false);
     own(state, 'moonwood_dryad', { tier: 'mythic', stars: 6 });
-    expect(isMaxRank(content, 'moonwood_dryad', state.cards.owned['moonwood_dryad']!)).toBe(false);
-    own(state, 'moonwood_dryad', { tier: 'heirloom', stars: 6 });
     expect(isMaxRank(content, 'moonwood_dryad', state.cards.owned['moonwood_dryad']!)).toBe(true);
   });
 
@@ -381,74 +363,37 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
   });
 });
 
-describe('the Heirloom tier (DESIGN.md §5)', () => {
-  it('is open for every item type (playtest, placeholder art)', () => {
-    for (const t of content.items.types) expect(t.heirloomOpen, t.kind).toBe(true);
-    const state = own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 });
-    expect(tierUpCheck(state, content, 'core_titan')).toMatchObject({ available: true });
-  });
-
-  it('stays shut for an item type whose data closes it', () => {
-    const types = content.items.types.map((t) => ({ ...t, heirloomOpen: false }));
-    const shut: Content = {
-      ...content,
-      items: { ...content.items, types },
-      itemTypeByKind: new Map(types.map((t) => [t.kind, t])),
-    };
-    const state = own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 });
-    expect(tierUpCheck(state, shut, 'core_titan')).toMatchObject({ available: false });
-    expect(tierUp(state, shut, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
-  });
-
-  it('opens after Mythic only for a Mythic or Void card whose item type has it open', () => {
-    const open = withHeirloomOpen('pickaxe');
-    expect(cardTopTier(open, 'core_titan')).toBe('heirloom'); // Void pickaxe
-    expect(cardTopTier(open, 'moonwood_dryad')).toBe('heirloom'); // logging axe
-    expect(cardTopTier(open, 'geode_golem')).toBe('prismatic'); // Legendary pickaxe: no Heirloom
-    const state = own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 });
-    expect(tierUpCheck(state, open, 'core_titan')).toMatchObject({
-      available: true,
-      to: { tier: 'heirloom', stars: 1 },
-    });
-  });
-
-  it('has a level cap of 140 and no step past it', () => {
-    const open = withHeirloomOpen('pickaxe');
-    expect(levelCap(open, { tier: 'heirloom', stars: 1 })).toBe(140);
-    const state = fundWith(
-      open,
+describe('the ladder ends at Mythic / Void; Heirlooms are their own cards (DESIGN.md §5)', () => {
+  it('has no tier-up after Mythic or Void', () => {
+    const state = fund(
       own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 }),
       'core_titan',
     );
-    const after = ok(tierUp(state, open, 'core_titan'));
-    expect(after.cards.owned['core_titan']).toMatchObject({ tier: 'heirloom', level: 120 });
-    expect(tierUpCheck(after, open, 'core_titan')).toMatchObject({ available: false });
-    expect(cardInfo(after, open, 'core_titan')!.levelCap).toBe(140);
+    expect(tierUpCheck(state, content, 'core_titan')).toMatchObject({ available: false });
+    expect(tierUp(state, content, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
+    expect(
+      tierUpCost(content, content.cardById.get('core_titan')!, state.cards.owned['core_titan']!),
+    ).toEqual([]);
   });
 
-  it('tells the Heirloom moment when a card reaches it, and only then', () => {
-    const open = withHeirloomOpen('pickaxe');
-    const state = fundWith(
-      open,
-      own(freshState(), 'core_titan', { tier: 'mythic', level: 120, stars: 6 }),
-      'core_titan',
-    );
-    const result = tierUp(state, open, 'core_titan');
-    expect(result.ok && result.tierUps.map((t) => t.kind)).toEqual(['card_tier', 'heirloom']);
+  it('keeps an Heirloom card at its own tier: level cap 140, no star bar, no tier-up', () => {
+    expect(levelCap(content, { tier: 'heirloom', stars: 1 })).toBe(140);
+    const state = own(freshState(), 'deepmaw', { tier: 'heirloom', level: 140, stars: 3 });
+    expect(tierUpCheck(state, content, 'deepmaw')).toMatchObject({ available: false });
+    expect(starUpCheck(state, content, 'deepmaw')).toMatchObject({ available: false });
+    expect(cardInfo(state, content, 'deepmaw')!.starBar).toBeNull();
+    expect(cardInfo(state, content, 'deepmaw')!.levelCap).toBe(140);
+    own(state, 'deepmaw', { tier: 'heirloom', stars: 6 });
+    expect(cardInfo(state, content, 'deepmaw')!.maxRank).toBe(true);
+  });
+
+  it('reports only the card tier moment on a tier-up', () => {
     const plain = fund(
       own(freshState(), 'dawnblade_regent', { tier: 'gold', level: 80, stars: 6 }),
       'dawnblade_regent',
     );
     const ordinary = tierUp(plain, content, 'dawnblade_regent');
     expect(ordinary.ok && ordinary.tierUps.map((t) => t.kind)).toEqual(['card_tier']);
-  });
-
-  it('counts as fully ranked at Heirloom ★6 once it is open', () => {
-    const open = withHeirloomOpen('pickaxe');
-    const state = own(freshState(), 'core_titan', { tier: 'mythic', stars: 6 });
-    expect(cardInfo(state, open, 'core_titan')!.maxRank).toBe(false);
-    own(state, 'core_titan', { tier: 'heirloom', stars: 6 });
-    expect(cardInfo(state, open, 'core_titan')!.maxRank).toBe(true);
   });
 });
 
@@ -497,7 +442,8 @@ describe('weapon looks for now (DESIGN.md §5)', () => {
       name: 'Void Hollowdeep Pickaxe',
       heirloom: false,
     });
-    expect(at('core_titan', 'heirloom', 1, withHeirloomOpen('pickaxe'))).toMatchObject({
+    expect(cardItem(content, 'deepmaw', null)).toMatchObject({
+      kind: 'pickaxe',
       name: 'Deepmaw',
       heirloom: true,
     });
