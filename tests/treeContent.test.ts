@@ -377,14 +377,15 @@ describe('goals for the new systems', () => {
 });
 
 describe('Cores of the new dungeons', () => {
-  it('each of the top three tier-up steps asks for one of them, and its dungeon drops it', () => {
-    const own: Record<string, string> = {
-      gold: 'storm_core',
-      prismatic: 'sanctum_core',
-      mythic: 'void_core',
-    };
+  it('the Gold and Prismatic steps ask for them (Prismatic for two), and their dungeons drop them', () => {
+    // With the Heirloom step gone the Void Core moved to the Prismatic step (DESIGN.md §5).
+    const own: [string, string][] = [
+      ['gold', 'storm_core'],
+      ['prismatic', 'sanctum_core'],
+      ['prismatic', 'void_core'],
+    ];
     const dropped = new Set(content.dungeons.map((d) => d.drops.material.resource));
-    for (const [tier, core] of Object.entries(own)) {
+    for (const [tier, core] of own) {
       expect(dropped.has(core), core).toBe(true);
       for (const job of ['logging', 'mining', 'fighting'] as const) {
         const costs = content.cardRules.tierUp[tier as 'gold'][job];

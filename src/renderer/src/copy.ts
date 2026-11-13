@@ -1132,8 +1132,8 @@ export const COPY = {
     needsMany: (n: number) => `Missing ${n} items`,
     starOf: (n: number, total: number) => `${n} of ${total} stars`,
     ready: 'Ready. Level and stars carry over.',
-    topPending: (tier: string, weapon: string) =>
-      `${tier} is the top tier for ${weapon} until its Heirloom is drawn.`,
+    topLadder: (tier: string) => `${tier} is the top tier. Heirlooms come from the Heirloom Gate.`,
+    heirloomStars: 'Its stars come from its own shards in the Heirloom Gate.',
     topEnd: (tier: string) => `${tier} is as far as this weapon goes.`,
     fullyUpgraded: 'Fully upgraded. Nothing left to unlock.',
     costTitle: (name: string, have: string, need: string) => `${name}: have ${have}, need ${need}`,

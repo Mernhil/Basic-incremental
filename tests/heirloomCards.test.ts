@@ -20,13 +20,15 @@ const recolours = JSON.parse(
 ) as Recolour[];
 
 const withArt = content.cards.filter((c) => c.heirloomArt);
-const byRarity = (r: Rarity) => content.cards.filter((c) => c.rarity === r);
+// The ladder cards: the 22 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
+const ladder = content.cards.filter((c) => !c.heirloom);
+const byRarity = (r: Rarity) => ladder.filter((c) => c.rarity === r);
 const key = (r: { type: string; side: string; letter: string }) =>
   `${r.type}/${r.side}/${r.letter}`;
 
 describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
   it('takes the roster from 77 to 122: 31 Mythic, 36 Void, 11 of every other rarity', () => {
-    expect(content.cards).toHaveLength(122);
+    expect(ladder).toHaveLength(122);
     expect(withArt).toHaveLength(45);
     expect(withArt.filter((c) => c.rarity === 'mythic')).toHaveLength(20);
     expect(withArt.filter((c) => c.rarity === 'void')).toHaveLength(25);
@@ -116,7 +118,7 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
       expect(item, c.id).toBeTruthy();
       expect(item!.price, c.id).toBe(300);
     }
-    for (const c of content.cards) {
+    for (const c of ladder) {
       expect(
         content.shardShop.some((i) => i.reward.kind === 'card' && i.reward.card === c.id),
       ).toBe(true);

@@ -1,5 +1,9 @@
 {
-  "startCards": ["ember_squire", "apprentice_feller", "cave_digger"],
+  "startCards": [
+    "ember_squire",
+    "apprentice_feller",
+    "cave_digger"
+  ],
   "cost": {
     "common": 2,
     "uncommon": 3,
@@ -48,7 +52,13 @@
       "mythic": 5,
       "heirloom": 7
     },
-    "starMultiplier": [1.21, 1.49, 1.8, 2.25, 2.89],
+    "starMultiplier": [
+      1.21,
+      1.49,
+      1.8,
+      2.25,
+      2.89
+    ],
     "statTier": {
       "wood": 1,
       "bronze": 2.89,
@@ -56,7 +66,7 @@
       "gold": 24.2,
       "prismatic": 70.1,
       "mythic": 203,
-      "heirloom": 587
+      "heirloom": 1630
     }
   },
   "mainGrowth": {
@@ -372,7 +382,11 @@
         },
         {
           "resource": "sanctum_core",
-          "amount": "385"
+          "amount": "193"
+        },
+        {
+          "resource": "void_core",
+          "amount": "193"
         },
         {
           "resource": "moonwillow_gem",
@@ -398,7 +412,11 @@
         },
         {
           "resource": "sanctum_core",
-          "amount": "385"
+          "amount": "193"
+        },
+        {
+          "resource": "void_core",
+          "amount": "193"
         },
         {
           "resource": "grotto_gem",
@@ -424,7 +442,11 @@
         },
         {
           "resource": "sanctum_core",
-          "amount": "385"
+          "amount": "193"
+        },
+        {
+          "resource": "void_core",
+          "amount": "193"
         },
         {
           "resource": "grotto_gem",
@@ -433,86 +455,6 @@
         {
           "resource": "moonwillow_gem",
           "amount": "27000"
-        }
-      ]
-    },
-    "mythic": {
-      "logging": [
-        {
-          "resource": "money",
-          "amount": "7200000"
-        },
-        {
-          "resource": "frost_core",
-          "amount": "770"
-        },
-        {
-          "resource": "frost_sigil",
-          "amount": "1260"
-        },
-        {
-          "resource": "void_core",
-          "amount": "770"
-        },
-        {
-          "resource": "moonwillow_gem",
-          "amount": "60000"
-        },
-        {
-          "resource": "grotto_gem",
-          "amount": "27000"
-        }
-      ],
-      "mining": [
-        {
-          "resource": "money",
-          "amount": "7200000"
-        },
-        {
-          "resource": "frost_core",
-          "amount": "770"
-        },
-        {
-          "resource": "frost_sigil",
-          "amount": "1260"
-        },
-        {
-          "resource": "void_core",
-          "amount": "770"
-        },
-        {
-          "resource": "grotto_gem",
-          "amount": "43000"
-        },
-        {
-          "resource": "moonwillow_gem",
-          "amount": "32000"
-        }
-      ],
-      "fighting": [
-        {
-          "resource": "money",
-          "amount": "7200000"
-        },
-        {
-          "resource": "frost_core",
-          "amount": "770"
-        },
-        {
-          "resource": "frost_sigil",
-          "amount": "1260"
-        },
-        {
-          "resource": "void_core",
-          "amount": "770"
-        },
-        {
-          "resource": "grotto_gem",
-          "amount": "35000"
-        },
-        {
-          "resource": "moonwillow_gem",
-          "amount": "43000"
         }
       ]
     }
@@ -561,8 +503,7 @@
         "silver": 1,
         "gold": 1,
         "prismatic": 1,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       },
       "uncommon": {
         "wood": 0.25,
@@ -570,8 +511,7 @@
         "silver": 1,
         "gold": 1,
         "prismatic": 1,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       },
       "rare": {
         "wood": 0.0625,
@@ -579,8 +519,7 @@
         "silver": 1,
         "gold": 1,
         "prismatic": 1,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       },
       "epic": {
         "wood": 0.015625,
@@ -588,8 +527,7 @@
         "silver": 0.0625,
         "gold": 1,
         "prismatic": 1,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       },
       "legendary": {
         "wood": 0.015625,
@@ -597,8 +535,7 @@
         "silver": 0.0625,
         "gold": 0.25,
         "prismatic": 1,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       },
       "mythic": {
         "wood": 0.015625,
@@ -606,8 +543,7 @@
         "silver": 0.0625,
         "gold": 0.125,
         "prismatic": 0.25,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       },
       "void": {
         "wood": 0.015625,
@@ -615,8 +551,7 @@
         "silver": 0.0625,
         "gold": 0.125,
         "prismatic": 0.25,
-        "mythic": 1,
-        "heirloom": 1
+        "mythic": 1
       }
     },
     "dust": {
@@ -626,8 +561,7 @@
         "silver": 10,
         "gold": 15,
         "prismatic": 20,
-        "mythic": 30,
-        "heirloom": 40
+        "mythic": 30
       },
       "uncommon": {
         "wood": 8,
@@ -635,8 +569,7 @@
         "silver": 16,
         "gold": 24,
         "prismatic": 32,
-        "mythic": 48,
-        "heirloom": 64
+        "mythic": 48
       },
       "rare": {
         "wood": 15,
@@ -644,8 +577,7 @@
         "silver": 30,
         "gold": 45,
         "prismatic": 60,
-        "mythic": 90,
-        "heirloom": 120
+        "mythic": 90
       },
       "epic": {
         "wood": 40,
@@ -653,8 +585,7 @@
         "silver": 80,
         "gold": 120,
         "prismatic": 160,
-        "mythic": 240,
-        "heirloom": 320
+        "mythic": 240
       },
       "legendary": {
         "wood": 100,
@@ -662,8 +593,7 @@
         "silver": 200,
         "gold": 300,
         "prismatic": 400,
-        "mythic": 600,
-        "heirloom": 800
+        "mythic": 600
       },
       "mythic": {
         "wood": 250,
@@ -671,8 +601,7 @@
         "silver": 500,
         "gold": 750,
         "prismatic": 1000,
-        "mythic": 500,
-        "heirloom": 600
+        "mythic": 500
       },
       "void": {
         "wood": 250,
@@ -680,8 +609,7 @@
         "silver": 500,
         "gold": 750,
         "prismatic": 1000,
-        "mythic": 500,
-        "heirloom": 600
+        "mythic": 500
       }
     }
   },
@@ -722,5 +650,6 @@
       "damage": 0.99,
       "health": 0.92
     }
-  }
+  },
+  "heirloomCost": 18
 }

@@ -494,24 +494,24 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     expect(tierUpCost(content, squire, state.cards.owned['ember_squire']!)).toEqual([]);
   });
 
-  it('opens a tier-up past Prismatic only for a Mythic card, then the Heirloom', () => {
+  it('opens a tier-up past Prismatic only for a Mythic or Void card, and none after Mythic', () => {
     const state = freshState();
     own(state, 'dawnblade_regent', { tier: 'prismatic', stars: 6 }); // Legendary stops at Prismatic
     own(state, 'moonwood_dryad', { tier: 'prismatic', stars: 6 }); // Mythic goes on to Mythic
-    own(state, 'core_titan', { tier: 'mythic', stars: 6 }); // Void: the Heirloom is next
+    own(state, 'core_titan', { tier: 'mythic', stars: 6 }); // Void: the ladder ends here
     expect(tierUpCheck(state, content, 'dawnblade_regent')!.available).toBe(false);
     expect(tierUpCheck(state, content, 'moonwood_dryad')!.to).toEqual({ tier: 'mythic', stars: 1 });
-    expect(tierUpCheck(state, content, 'core_titan')!.to).toEqual({ tier: 'heirloom', stars: 1 });
+    expect(tierUpCheck(state, content, 'core_titan')!.available).toBe(false);
   });
 
-  it('prices the six tier-ups in rising Money: Wood the cheap first step, Mythic the biggest', () => {
-    const money = (tier: 'wood' | 'bronze' | 'silver' | 'gold' | 'prismatic' | 'mythic') =>
+  it('prices the five tier-ups in rising Money: Wood the cheap first step, Prismatic the biggest', () => {
+    const money = (tier: 'wood' | 'bronze' | 'silver' | 'gold' | 'prismatic') =>
       content.cardRules.tierUp[tier].fighting
         .find((p) => p.resource === 'money')!
         .amount.toNumber();
-    const order = (['wood', 'bronze', 'silver', 'gold', 'prismatic', 'mythic'] as const).map(money);
+    const order = (['wood', 'bronze', 'silver', 'gold', 'prismatic'] as const).map(money);
     expect(order).toEqual([...order].sort((a, b) => a - b));
-    expect(new Set(order).size).toBe(6);
+    expect(new Set(order).size).toBe(5);
   });
 
   it('uses Cinder Cores + Moonwillow Gem / Grotto Gem, then Frost Cores + Frost Sigils', () => {
@@ -615,7 +615,8 @@ describe('views for the Cards page', () => {
     expect(regent).toMatchObject({ owned: null, rank: null, slot: null, cost: 9, starUp: null });
     expect(regent.mainModifiers.map((m) => m.stat)).toEqual(['burst.interval', 'burst.power']);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(122);
+    // 122 ladder cards and the 22 Heirloom cards.
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(144);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',
@@ -630,6 +631,9 @@ describe('views for the Cards page', () => {
       'ruby_gnawer',
       'void_burrower',
       'amber_gnawer',
+      // then the two Heirloom pickaxes
+      'heartdelver',
+      'deepmaw',
     ]);
   });
 });

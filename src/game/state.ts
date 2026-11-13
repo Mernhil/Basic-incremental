@@ -68,6 +68,34 @@ export interface GameState {
   expeditions: ExpeditionState;
   /** Ascension challenges (DESIGN.md §15). Save format 27; not read yet. Kept through prestige. */
   ascensionChallenges: AscensionChallengeState;
+  /** The Heirloom Gate's counters, Heirloom shards and trees (DESIGN.md §7, §10). Save format 30.
+   *  Kept through prestige. The Heirloom cards themselves are in `cards.owned`. */
+  heirlooms: HeirloomState;
+}
+
+/** Heirlooms (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom trees). */
+export interface HeirloomState {
+  /** Heirloom card id -> shards held toward its unlock or next star. Missing = none. */
+  shards: Record<string, number>;
+  /** Gate pulls since the last whole Heirloom. */
+  pity: number;
+  /** Gate pulls ever. */
+  pulls: number;
+  /** Heirloom card id -> the tree node ids bought, in order. */
+  trees: Record<string, string[]>;
+}
+
+export function initialHeirlooms(): HeirloomState {
+  return { shards: {}, pity: 0, pulls: 0, trees: {} };
+}
+
+export function cloneHeirlooms(h: HeirloomState): HeirloomState {
+  return {
+    shards: { ...h.shards },
+    pity: h.pity,
+    pulls: h.pulls,
+    trees: Object.fromEntries(Object.entries(h.trees).map(([id, t]) => [id, [...t]])),
+  };
 }
 
 /** Summoning state of the table update (DESIGN.md §3 Crystal wage / scrolls, §7 Focus Portal). The
@@ -468,6 +496,7 @@ export function createInitialState(content: Content): GameState {
     discoveredBonds: [],
     expeditions: initialExpeditions(),
     ascensionChallenges: initialAscensionChallenges(),
+    heirlooms: initialHeirlooms(),
     cards: initialCards(content),
     mastery: initialMastery(),
     portals: {},
@@ -513,6 +542,7 @@ export function cloneState(state: GameState): GameState {
       active: state.ascensionChallenges.active,
       completions: { ...state.ascensionChallenges.completions },
     },
+    heirlooms: cloneHeirlooms(state.heirlooms),
     account: { ...state.account, skills: { ...state.account.skills } },
     prestige: {
       runStart: { ...state.prestige.runStart },

@@ -72,8 +72,7 @@ export type CardFailure =
   | 'requirements';
 
 export type CardResult = { ok: true; state: GameState } | { ok: false; reason: CardFailure };
-/** A star-up or tier-up: like CardResult, plus the tier-up moments it caused (a new card tier,
- *  the Heirloom). */
+/** A star-up or tier-up: like CardResult, plus the tier-up moments it caused (a new card tier). */
 export type CardUpgradeResult =
   { ok: true; state: GameState; tierUps: TierUp[] } | { ok: false; reason: CardFailure };
 
@@ -96,13 +95,13 @@ export interface CardItem {
   kind: ItemKind;
   /** The item's name at the card's tier (items.json): "Wooden Sword", "Void Shadow Sword", "Nightfall". */
   name: string;
-  /** True at the Heirloom tier. */
+  /** True for an Heirloom card (DESIGN.md §5 Heirlooms): it shows its Heirloom. */
   heirloom: boolean;
   /** The item rarity to draw: the card's rarity moved up the ladder by its tier (weaponLookRarity). */
   rarity: Rarity;
 }
 
-/** The highest tier each rarity reaches before an Heirloom (DESIGN.md §5 "Rarity caps the tier"). */
+/** The highest tier each rarity reaches on the ladder (DESIGN.md §5 "Rarity caps the tier"). */
 export const RARITY_TIER_CAP: Record<Rarity, RankTier> = {
   common: 'wood',
   uncommon: 'bronze',
@@ -128,13 +127,14 @@ export const TIER_LABELS: Record<RankTier, string> = {
 export const tierLabel = (tier: RankTier, rarity?: Rarity): string =>
   tier === 'mythic' && rarity === 'void' ? 'Void' : TIER_LABELS[tier];
 
-/** The side of a card's T6 and Heirloom: Mythic (heroic) or Void (villainous). */
+/** The side of a card's T6 or an Heirloom: Mythic (heroic) or Void (villainous). */
 export const cardSide = (rarity: Rarity): 'mythic' | 'void' =>
   rarity === 'void' ? 'void' : 'mythic';
 
 /**
  * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T4
- * "<material> <type>", T5 "Prismatic <name> <type>", T6 by the card's side, then the Heirloom.
+ * "<material> <type>", T5 "Prismatic <name> <type>", T6 by the card's side; the Heirloom tier (an
+ * Heirloom card's) is the type's Heirloom of that side.
  * Pass the card as `card` and a card with its own Heirloom (`heirloomName` in cards.json, DESIGN.md
  * §5 More weapons from the Heirloom candidates) is named by it at every tier: the card's weapon is
  * that one weapon, shown as its own picture until its lower-tier pictures are drawn (user,
@@ -202,7 +202,8 @@ export function weaponLookRarity(rarity: Rarity, tier: RankTier): Rarity {
 }
 
 /** The item to draw for a card at its rank: its type's item named for the tier, at the rarity
- *  its tier gives. Not owned = Wood. Null for unknown ids. */
+ *  its tier gives. Not owned = Wood; an Heirloom card is always at the Heirloom tier. Null for
+ *  unknown ids. */
 export function cardItem(
   content: Content,
   cardId: string,
@@ -210,12 +211,12 @@ export function cardItem(
 ): CardItem | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  const tier = lookTier(card.rarity, owned?.tier ?? 'wood');
+  const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
   const rarity = weaponLookRarity(card.rarity, tier);
   return {
     kind: card.item.kind,
     name: itemName(content, card.item.kind, tier, card.rarity, card),
-    heirloom: tier === 'heirloom',
+    heirloom: card.heirloom === true,
     rarity,
   };
 }
@@ -234,41 +235,22 @@ function tierMetalIndex(tier: OwnedCard['tier']): number {
   return RANK_TIERS.indexOf(tier);
 }
 
-/** The Heirloom moment if the card's item became its Heirloom between two ranks. */
-function heirloomTierUps(
-  content: Content,
-  cardId: string,
-  before: OwnedCard,
-  after: OwnedCard,
-): TierUp[] {
-  const was = cardItem(content, cardId, before)?.heirloom ?? false;
-  const now = cardItem(content, cardId, after)?.heirloom ?? false;
-  return !was && now
-    ? [
-        {
-          kind: 'heirloom',
-          id: cardId,
-          from: 0,
-          to: 1,
-          metal: metalOf(tierMetalIndex(after.tier)),
-        },
-      ]
-    : [];
+/** Whether a card is one of the 22 Heirloom cards (DESIGN.md §5 Heirlooms). */
+export function isHeirloomCard(content: Content, cardId: string): boolean {
+  return content.cardById.get(cardId)?.heirloom === true;
 }
 
-/** The highest tier a card can reach: its rarity's cap, plus the Heirloom for a Mythic or Void
- *  card whose item type has its Heirloom open (items.json). */
+/** The highest tier a card can reach: its rarity's cap on the ladder (Mythic/Void at most), or
+ *  the fixed Heirloom tier of an Heirloom card. */
 export function cardTopTier(content: Content, cardId: string): RankTier {
   const card = content.cardById.get(cardId);
   if (!card) return 'wood';
-  const cap = RARITY_TIER_CAP[card.rarity];
-  return cap === 'mythic' && content.itemTypeByKind.get(card.item.kind)?.heirloomOpen
-    ? 'heirloom'
-    : cap;
+  return card.heirloom ? 'heirloom' : RARITY_TIER_CAP[card.rarity];
 }
 
-/** The tier after `tier` for this card, or null at its top tier. */
+/** The tier after `tier` for this card, or null at its top tier (an Heirloom card never tiers up). */
 function nextTierOf(content: Content, cardId: string, tier: RankTier): RankTier | null {
+  if (isHeirloomCard(content, cardId)) return null;
   const next = RANK_TIERS[RANK_TIERS.indexOf(tier) + 1];
   if (!next || RANK_TIERS.indexOf(next) > RANK_TIERS.indexOf(cardTopTier(content, cardId))) {
     return null;
@@ -394,10 +376,11 @@ export function settleCardLevels(state: GameState, content: Content, report: Tic
 
 // ---- cost and loadouts -----------------------------------------------------------------------
 
-/** Loadout cost of a card, by rarity (11.4). 0 for unknown ids. */
+/** Loadout cost of a card, by rarity (11.4); an Heirloom card has its own. 0 for unknown ids. */
 export function cardCost(content: Content, cardId: string): number {
   const card = content.cardById.get(cardId);
-  return card ? content.cardRules.cost[card.rarity] : 0;
+  if (!card) return 0;
+  return card.heirloom ? content.cardRules.heirloomCost : content.cardRules.cost[card.rarity];
 }
 
 /** The fighting loadout's cost cap: base + perLevel × (account level − 1), through
@@ -670,7 +653,8 @@ export function starFillNeeded(
   stars: number,
   tier: RankTier,
 ): number | null {
-  if (stars >= MAX_STARS) return null;
+  // An Heirloom card has no star bar: its stars come from its own shards (heirlooms.ts).
+  if (stars >= MAX_STARS || tier === 'heirloom') return null;
   const { needs, fillPerDuplicate } = content.cardRules.starBar;
   return needs[rarity][tier] * fillPerDuplicate[rarity];
 }
@@ -717,8 +701,11 @@ export function tierUpCost(
   owned: OwnedCard,
   modifiers: readonly Modifier[] = [],
 ): Price[] {
-  if (owned.tier === 'heirloom' || nextTierOf(content, card.id, owned.tier) === null) return [];
-  return content.cardRules.tierUp[owned.tier][card.job].map((c) =>
+  const from = owned.tier;
+  if (from === 'mythic' || from === 'heirloom' || nextTierOf(content, card.id, from) === null) {
+    return [];
+  }
+  return content.cardRules.tierUp[from][card.job].map((c) =>
     finalPrice(c.resource, c.amount, modifiers, { job: card.job }),
   );
 }
@@ -773,7 +760,9 @@ export function starDustCost(state: GameState, content: Content, cardId: string)
   const missing = Math.max(0, need - owned.starFill);
   if (missing === 0) return 0;
   const perCopy = content.cardRules.starBar.fillPerDuplicate[card.rarity];
-  return Math.ceil((missing / perCopy) * content.cardRules.starBar.dust[card.rarity][owned.tier]);
+  const tier = owned.tier;
+  if (tier === 'heirloom') return null;
+  return Math.ceil((missing / perCopy) * content.cardRules.starBar.dust[card.rarity][tier]);
 }
 
 /** Spends the star bar's fill and adds a star. Level and XP stay. Left-over fill carries over. */
@@ -840,11 +829,7 @@ export function tierUp(
   const from = tierMetalIndex(before.tier);
   const to = tierMetalIndex(owned.tier);
   const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];
-  return {
-    ok: true,
-    state: next,
-    tierUps: [...tierUps, ...heirloomTierUps(content, cardId, before, owned)],
-  };
+  return { ok: true, state: next, tierUps };
 }
 
 // ---- gaining cards ---------------------------------------------------------------------------
@@ -858,10 +843,16 @@ export function grantCard(cards: CardState, content: Content, card: Card): CardG
   const owned = cards.owned[card.id];
   if (!owned) {
     const fresh = newOwnedCard();
+    // An Heirloom card sits at its own fixed tier (DESIGN.md §5 An Heirloom card).
+    if (card.heirloom) fresh.tier = 'heirloom';
     cards.owned[card.id] = fresh;
     return { kind: 'new' };
   }
+  // A copy of an owned Heirloom card is never a star (its stars come from the Heirloom Gate's
+  // shards): it pays card shards like a copy past ★6.
   if (
+    card.heirloom ||
+    
     owned.stars >= MAX_STARS ||
     owned.starFill >= starFillToMax(content, card.rarity, owned.stars, owned.tier)
   ) {
@@ -979,7 +970,7 @@ export interface CardInfo {
   slot: { job: LoadoutJob; slot: LoadoutSlot } | null;
   /** A worker: the tree kind or mine type it works, or null. */
   workplace: string | null;
-  /** At its top tier and ★6 (its rarity's cap, or the Heirloom when open). */
+  /** At its top tier and ★6 (its rarity's cap, or an Heirloom card's own tier). */
   maxRank: boolean;
   /** The star bar (fill, need, gauge 0..1); null when not owned or at ★6. */
   starBar: StarBarView | null;

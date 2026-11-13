@@ -248,11 +248,14 @@ describe('v26 -> v27 (the table update)', () => {
     const exp = expected as { cards: { loadouts: { fighting: { supports: unknown[] } } } };
     exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.supports;
     // Format 29 moved the numbers onto the readable scale (DESIGN.md §14 Readable numbers).
-    const scaled = MIGRATIONS[28]!(expected) as Record<string, unknown>;
+    // Format 30 added the Heirloom Gate's state (no Heirloom-tier card in this save).
+    const scaled = MIGRATIONS[29]!(MIGRATIONS[28]!(expected)) as Record<string, unknown>;
+    delete scaled['heirloomMigration'];
     const scaledCombat = scaled['combat'] as Record<string, unknown>;
     for (const key of Object.keys(scaledCombat)) if (!(key in combat)) delete scaledCombat[key];
     delete (scaled['resources'] as Record<string, unknown>)['summon_scroll'];
     delete (scaled['resources'] as Record<string, unknown>)['glamour_scroll'];
+    delete resources['heirloom_scroll'];
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

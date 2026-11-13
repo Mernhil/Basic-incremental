@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { RANK_TIERS, RARITIES, loadContent } from '../src/data';
+import { RANK_TIERS, RARITIES, loadContent, type RankTier } from '../src/data';
 import {
   addCard,
   ascend,
@@ -28,7 +28,7 @@ const fresh = () => createInitialState(content);
 describe('every card starts at Wood ★1 (DESIGN.md §5 Stars)', () => {
   it('a new card of any rarity arrives at ★1 with an empty bar and its wooden weapon', () => {
     for (const card of content.cards) {
-      if (fresh().cards.owned[card.id]) continue;
+      if (fresh().cards.owned[card.id] || card.heirloom) continue;
       const got = addCard(fresh(), content, card.id)!;
       const owned = got.state.cards.owned[card.id]!;
       expect(owned, card.id).toMatchObject({ tier: 'wood', stars: 1, starFill: 0 });
@@ -73,13 +73,13 @@ describe('every card starts at Wood ★1 (DESIGN.md §5 Stars)', () => {
 
 describe('the star bar by rarity and tier (DESIGN.md §5)', () => {
   it('costs a whole copy at the card top tier and less below it, rising by tier', () => {
-    for (const card of content.cards) {
-      const top = cardTopTier(content, card.id);
-      const cap = RARITY_TIER_CAP[card.rarity];
+    for (const card of content.cards.filter((c) => !c.heirloom)) {
+      const top = cardTopTier(content, card.id) as Exclude<RankTier, 'heirloom'>;
+      const cap = RARITY_TIER_CAP[card.rarity] as Exclude<RankTier, 'heirloom'>;
       const needs = content.cardRules.starBar.needs[card.rarity];
       expect(needs[cap], card.id).toBe(1);
       expect(needs[top], card.id).toBe(1);
-      const upTo = RANK_TIERS.slice(0, RANK_TIERS.indexOf(cap) + 1);
+      const upTo = RANK_TIERS.slice(0, RANK_TIERS.indexOf(cap) + 1) as Exclude<RankTier, 'heirloom'>[];
       upTo.forEach((tier, i) => {
         if (i > 0) expect(needs[tier]).toBeGreaterThanOrEqual(needs[upTo[i - 1]!]);
         if (tier !== cap) expect(needs[tier], `${card.rarity} ${tier}`).toBeLessThan(1);
@@ -175,7 +175,7 @@ describe('rarity ratios (DESIGN.md §5 Base damage)', () => {
 describe('the shard shop sells copies of every card (DESIGN.md §5)', () => {
   it('has one entry per card, priced by rarity, rising steeply', () => {
     const price = new Map<string, number>();
-    for (const card of content.cards) {
+    for (const card of content.cards.filter((c) => !c.heirloom)) {
       const items = content.shardShop.filter(
         (i) => i.reward.kind === 'card' && i.reward.card === card.id,
       );

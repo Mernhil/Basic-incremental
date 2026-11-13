@@ -2,6 +2,8 @@ import { COSMETIC_SLOTS, JOBS, RANK_TIERS, RARITIES, contentSchemas } from './sc
 import type {
   AscensionChallenge,
   ScrollsConfig,
+  HeirloomsConfig,
+  HeirloomTree,
   Bond,
   ExpeditionsConfig,
   Card,
@@ -74,6 +76,7 @@ import expeditionsJson from './content/expeditions.json';
 import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
 import scrollsJson from './content/scrolls.json';
+import heirloomsJson from './content/heirlooms.json';
 
 export * from './schemas';
 
@@ -121,7 +124,7 @@ export interface Content {
   weaponSkins: WeaponSkinSet[];
   /** The item types whose picture grows with the stars, and the stars of each step (lookSteps.json). */
   lookSteps: LookSteps;
-  /** Item types: names per tier and which Heirlooms are open (items.json). */
+  /** Item types: names per tier and the names of their two Heirlooms (items.json). */
   items: ItemsData;
   /** Item type by kind. */
   itemTypeByKind: ReadonlyMap<string, ItemType>;
@@ -161,6 +164,10 @@ export interface Content {
   skillById: ReadonlyMap<string, Skill>;
   /** Scroll sources besides the first clears and chests, and the reveal show (DESIGN.md §3, §7). */
   scrolls: ScrollsConfig;
+  /** The Heirloom Gate, Heirloom Scroll sources, tree points and the 22 trees (DESIGN.md §3, §7, §10). */
+  heirlooms: HeirloomsConfig;
+  /** Heirloom card id -> its tree. */
+  heirloomTreeByCard: ReadonlyMap<string, HeirloomTree>;
 }
 
 export type RawContent = { [K in keyof typeof contentSchemas]: unknown };
@@ -229,6 +236,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     challenges,
     skills,
     scrolls,
+    heirlooms,
   } = parsed;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
@@ -258,6 +266,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   }
   checkTableUpdate({ cards, dungeons, bonds, expeditions, challenges, resources }, issues);
   checkSkills({ cards, skills }, issues);
+  checkHeirlooms({ cards, items, skills, heirlooms, resources, portals, enhancements }, issues);
   checkWeaponSkins(weaponSkins, issues);
   checkLegacyGates(weaponSkins, portals, issues);
   checkModifiers(
@@ -348,6 +357,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     skills,
     skillById: new Map(skills.skills.map((x) => [x.id, x])),
     scrolls,
+    heirlooms,
+    heirloomTreeByCard: new Map(heirlooms.trees.map((t) => [t.card, t])),
   };
 }
 
@@ -933,7 +944,8 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
     }
   });
-  for (const tier of RANK_TIERS.slice(0, -1) as Exclude<RankTier, 'heirloom'>[]) {
+  // Tier-ups run Wood → … → Mythic/Void; Mythic/Void and the Heirloom tier have no next step.
+  for (const tier of RANK_TIERS.slice(0, -2) as Exclude<RankTier, 'mythic' | 'heirloom'>[]) {
     for (const job of JOBS) {
       const costs = c.cardRules.tierUp[tier][job];
       if (!costs.some((x) => x.resource === 'money')) {
@@ -970,8 +982,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       );
     }
   });
-  // A card's own Heirloom (DESIGN.md §5): picture letter and name together, on a Mythic or Void
-  // card, one picture per (type, side, letter), every Heirloom name unique.
+  // A card's own weapon (DESIGN.md §5 More weapons from the Heirloom candidates): picture letter and
+  // name together, on a Mythic or Void card only, one picture per (type, side, letter), every name
+  // unique. A card's own picture or name is refused below Mythic/Void, which keeps the one locked
+  // model per type from Wood to Gold (DESIGN.md §5 One model per type from Wood to Gold).
   const names = new Map<string, string>();
   const claim = (name: string, where: string): void => {
     const was = names.get(name.toLowerCase());
@@ -986,6 +1000,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
   c.cards.forEach((card, i) => {
     const where = `cards.json › [${i}]`;
     if (!card.heirloomArt && !card.heirloomName) return;
+    if (card.heirloom) {
+      issues.push(`${where}: an Heirloom card shows its type's Heirloom, not its own weapon`);
+      return;
+    }
     if (!card.heirloomArt || !card.heirloomName) {
       issues.push(`${where}: heirloomArt and heirloomName go together`);
       return;
@@ -998,6 +1016,82 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
     pictures.add(picture);
     claim(card.heirloomName, `${where} › heirloomName`);
   });
+}
+
+/**
+ * heirlooms.json and the 22 Heirloom cards (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom
+ * trees): one Heirloom card per item type and side, named as items.json names that Heirloom, of
+ * its side's rarity and its type's job, in no portal pool, with enhancement options; one tree per
+ * Heirloom card whose nodes need nodes of the same tree, give skills that exist and cost no more
+ * points than an Heirloom earns; the gate's price is a resource.
+ */
+function checkHeirlooms(
+  c: {
+    cards: Card[];
+    items: ItemsData;
+    skills: SkillsConfig;
+    heirlooms: HeirloomsConfig;
+    resources: { id: string }[];
+    portals: Portal[];
+    enhancements: EnhancementsConfig;
+  },
+  issues: string[],
+): void {
+  const heirloomCards = c.cards.filter((x) => x.heirloom);
+  for (const t of c.items.types) {
+    for (const side of ['mythic', 'void'] as const) {
+      const found = heirloomCards.filter((x) => x.item.kind === t.kind && x.rarity === side);
+      if (found.length !== 1) {
+        issues.push(`cards.json: ${found.length} Heirloom cards for ${t.kind} ${side}, needs 1`);
+      } else if (found[0]!.name !== t.heirloom[side]) {
+        issues.push(`cards.json › ${found[0]!.id} › name: the ${t.kind} ${side} Heirloom is "${t.heirloom[side]}"`);
+      }
+    }
+  }
+  const pooled = new Set(c.portals.flatMap((p) => p.pool.map((e) => e.itemId)));
+  for (const card of heirloomCards) {
+    if (card.rarity !== 'mythic' && card.rarity !== 'void') {
+      issues.push(`cards.json › ${card.id} › rarity: an Heirloom is Mythic or Void`);
+    }
+    if (pooled.has(card.id)) issues.push(`portals.json: Heirloom card "${card.id}" is in a pool`);
+    if (!c.enhancements.cards[card.id]) {
+      issues.push(`enhancements.json › cards: no options for Heirloom card "${card.id}"`);
+    }
+  }
+  const { gate, points, trees } = c.heirlooms;
+  if (!c.resources.some((r) => r.id === gate.cost.resource)) {
+    issues.push(`heirlooms.json › gate › cost › resource: unknown resource "${gate.cost.resource}"`);
+  }
+  if (gate.shards.min > gate.shards.max) issues.push('heirlooms.json › gate › shards: min above max');
+  const earned = points.perStar * 6 + points.levels.length;
+  const skillIds = new Set(c.skills.skills.map((x) => x.id));
+  const seen = new Set<string>();
+  trees.forEach((tree, i) => {
+    const where = `heirlooms.json › trees › [${i}]`;
+    if (!heirloomCards.some((x) => x.id === tree.card)) {
+      issues.push(`${where} › card: "${tree.card}" is not an Heirloom card`);
+    }
+    if (seen.has(tree.card)) issues.push(`${where} › card: a second tree for "${tree.card}"`);
+    seen.add(tree.card);
+    const ids = new Set<string>();
+    tree.nodes.forEach((node, j) => {
+      if (ids.has(node.id)) issues.push(`${where} › nodes › [${j}]: duplicate id "${node.id}"`);
+      for (const need of node.requires) {
+        if (!ids.has(need)) {
+          issues.push(`${where} › nodes › [${j}] › requires: "${need}" is not an earlier node`);
+        }
+      }
+      ids.add(node.id);
+      if (node.skill && !skillIds.has(node.skill)) {
+        issues.push(`${where} › nodes › [${j}] › skill: unknown skill "${node.skill}"`);
+      }
+    });
+    const cost = tree.nodes.reduce((a, n) => a + n.cost, 0);
+    if (cost > earned) issues.push(`${where}: costs ${cost} points, an Heirloom earns ${earned}`);
+  });
+  for (const card of heirloomCards) {
+    if (!seen.has(card.id)) issues.push(`heirlooms.json › trees: no tree for "${card.id}"`);
+  }
 }
 
 /** Dungeons and trials must point at existing things of the right kind. */
@@ -1300,6 +1394,7 @@ export function bundledRawContent(): RawContent {
     challenges: challengesJson,
     skills: skillsJson,
     scrolls: scrollsJson,
+    heirlooms: heirloomsJson,
   };
 }
 

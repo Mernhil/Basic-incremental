@@ -150,16 +150,21 @@ describe('weapon panel model', () => {
     expect(w.endNote).toBeNull();
   });
 
-  it('at Mythic the Heirloom is the next step', () => {
-    const w = view('moonwood_dryad', { tier: 'mythic', level: 120 })!;
-    expect(w.tierUp?.heirloom).toBe(true);
-    expect(w.tierUp?.toTier).toBe('heirloom');
+  it('at Mythic the ladder ends and points to the Heirloom Gate', () => {
+    const w = view('moonwood_dryad', { tier: 'mythic', level: 120, stars: 6 })!;
+    expect(w.tierUp).toBeNull();
+    expect(w.endNote).toBe('Mythic is the top tier. Heirlooms come from the Heirloom Gate.');
+    expect(view('core_titan', { tier: 'mythic', level: 120 })!.endNote).toBe(
+      'Void is the top tier. Heirlooms come from the Heirloom Gate.',
+    );
   });
 
-  it('the Heirloom is the final form', () => {
-    const w = view('moonwood_dryad', { tier: 'heirloom', level: 140, stars: 6 })!;
+  it('an Heirloom card has no tier-up; its stars come from the gate', () => {
+    const w = view('deepmaw', { tier: 'heirloom', level: 140, stars: 3 })!;
     expect(w.tier).toBe('heirloom');
     expect(w.tierUp).toBeNull();
-    expect(w.endNote).toBe('Fully upgraded. Nothing left to unlock.');
+    expect(w.endNote).toBe('Its stars come from its own shards in the Heirloom Gate.');
+    const max = view('deepmaw', { tier: 'heirloom', level: 140, stars: 6 })!;
+    expect(max.endNote).toBe('Fully upgraded. Nothing left to unlock.');
   });
 });

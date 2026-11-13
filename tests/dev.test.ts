@@ -78,12 +78,17 @@ describe('dev cheats (dev builds only)', () => {
     ).toBe(false);
   });
 
-  it('sets the Heirloom tier now that every item type has it open', () => {
-    const heirloom = devSetCardRank(freshState(), content, 'core_titan', {
+  it('sets the Heirloom tier for an Heirloom card only', () => {
+    const ladder = devSetCardRank(freshState(), content, 'core_titan', {
       tier: 'heirloom',
       stars: 1,
     });
+    expect(ladder.ok).toBe(false);
+    const heirloom = devSetCardRank(freshState(), content, 'deepmaw', { tier: 'heirloom', stars: 2 });
     expect(heirloom.ok).toBe(true);
+    expect(devSetCardRank(freshState(), content, 'deepmaw', { tier: 'mythic', stars: 2 }).ok).toBe(
+      false,
+    );
     const mythic = devSetCardRank(freshState(), content, 'core_titan', {
       tier: 'mythic',
       stars: 1,

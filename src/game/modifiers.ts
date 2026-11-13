@@ -11,6 +11,7 @@ import { trainingModifiers } from './training';
 import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
 import { bondModifiers } from './bonds';
+import { heirloomTreeModifiers } from './heirlooms';
 import { challengeModifiers, restrictModifiers, restrictedView } from './challenges';
 
 /**
@@ -39,6 +40,8 @@ export const MODIFIER_SOURCE_KINDS = [
   'bond',
   /** Ascension challenges: a run's rule and the rewards earned (DESIGN.md §15). */
   'challenge',
+  /** Heirloom trees: the bought nodes of the Heirlooms at work (DESIGN.md §10 Heirloom trees). */
+  'heirloom',
 ] as const;
 export type ModifierSourceKind = (typeof MODIFIER_SOURCE_KINDS)[number];
 
@@ -222,6 +225,10 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
 
   // Account tree ranks, reward track cost cap bumps, card enhancements.
   out.push(...accountModifiers(view, content));
+
+  // The trees of the Heirlooms at work (DESIGN.md §10 Heirloom trees); after the cards, so a tree's
+  // signature power can stand on its Heirloom's own.
+  out.push(...heirloomTreeModifiers(view, content));
 
   // Upgrade shelf purchases.
   out.push(...upgradeModifiers(state, content));

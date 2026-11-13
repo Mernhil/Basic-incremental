@@ -5,42 +5,54 @@
       "name": "Cleave",
       "role": "fighter",
       "description": "Balanced: the signature attack strikes the enemy",
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "sunder",
       "name": "Sunder",
       "role": "striker",
       "description": "Heavy hits; the signature attack strikes the enemy",
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "piercing_lunge",
       "name": "Piercing Lunge",
       "role": "striker",
       "description": "Quick, critical hits; the signature attack strikes the enemy",
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "reap",
       "name": "Reap",
       "role": "striker",
       "description": "Critical hits; the signature attack strikes the enemy",
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "volley",
       "name": "Volley",
       "role": "striker",
       "description": "Huge crits, little health; the signature attack strikes the enemy",
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "flurry",
       "name": "Flurry",
       "role": "striker",
       "description": "Fast hits that fill the gauge twice as fast; the signature strikes the enemy",
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "bulwark_charge",
@@ -48,7 +60,9 @@
       "role": "tank",
       "description": "Guards the team: enemies hit it first; the signature strikes the enemy",
       "guard": true,
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "quake",
@@ -56,14 +70,19 @@
       "role": "tank",
       "description": "Tanky big hits: enemies hit it first; the signature strikes the enemy",
       "guard": true,
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "mend",
       "name": "Mend",
       "role": "healer",
       "description": "The signature heals every standing card by 30% of its health instead of striking",
-      "signature": { "kind": "heal", "share": 0.3 }
+      "signature": {
+        "kind": "heal",
+        "share": 0.3
+      }
     },
     {
       "id": "hex",
@@ -72,7 +91,9 @@
       "description": "While it stands, enemies deal 20% less damage; it deals 20% less itself",
       "damage": 0.8,
       "weaken": 0.2,
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "arcane_bolt",
@@ -81,14 +102,114 @@
       "description": "Glass cannon: 50% more damage, half the health",
       "damage": 1.5,
       "health": 0.5,
-      "signature": { "kind": "strike" }
+      "signature": {
+        "kind": "strike"
+      }
     },
     {
       "id": "dawn_grace",
       "name": "Dawn Grace",
       "role": "healer",
       "description": "A lance that heals: the signature heals every standing card by 25% of its health",
-      "signature": { "kind": "heal", "share": 0.25 }
+      "signature": {
+        "kind": "heal",
+        "share": 0.25
+      }
+    },
+    {
+      "id": "eclipse",
+      "name": "Eclipse",
+      "role": "debuffer",
+      "description": "Balanced, and while it stands enemies deal 20% less damage; the signature strikes the enemy",
+      "weaken": 0.2,
+      "signature": {
+        "kind": "strike"
+      }
+    },
+    {
+      "id": "oath_of_kings",
+      "name": "Oath of Kings",
+      "role": "tank",
+      "description": "Guards the team with 40% more health: enemies hit it first; the signature strikes the enemy",
+      "guard": true,
+      "health": 1.4,
+      "signature": {
+        "kind": "strike"
+      }
+    },
+    {
+      "id": "howl",
+      "name": "Howl",
+      "role": "glass_cannon",
+      "description": "Glass cannon: 60% more damage, 40% less health",
+      "damage": 1.6,
+      "health": 0.6,
+      "signature": {
+        "kind": "strike"
+      }
+    },
+    {
+      "id": "dawn_charge",
+      "name": "Dawn Charge",
+      "role": "tank",
+      "description": "Guards the team: enemies hit it first; the signature heals every standing card by 25% of its health",
+      "guard": true,
+      "signature": {
+        "kind": "heal",
+        "share": 0.25
+      }
+    },
+    {
+      "id": "doom_charge",
+      "name": "Doom Charge",
+      "role": "tank",
+      "description": "Guards the team with 25% more health: enemies hit it first; the signature strikes the enemy",
+      "guard": true,
+      "health": 1.25,
+      "signature": {
+        "kind": "strike"
+      }
+    },
+    {
+      "id": "venom",
+      "name": "Venom",
+      "role": "debuffer",
+      "description": "Fast hits, and while it stands enemies deal 15% less damage; the signature strikes the enemy",
+      "weaken": 0.15,
+      "signature": {
+        "kind": "strike"
+      }
+    },
+    {
+      "id": "anvil_of_worlds",
+      "name": "Anvil of Worlds",
+      "role": "tank",
+      "description": "Guards the team with 50% more health: enemies hit it first; the signature strikes the enemy",
+      "guard": true,
+      "health": 1.5,
+      "signature": {
+        "kind": "strike"
+      }
+    },
+    {
+      "id": "full_bloom",
+      "name": "Full Bloom",
+      "role": "healer",
+      "description": "The signature heals every standing card by 50% of its health instead of striking",
+      "signature": {
+        "kind": "heal",
+        "share": 0.5
+      }
+    },
+    {
+      "id": "soul_drain",
+      "name": "Soul Drain",
+      "role": "debuffer",
+      "description": "While it stands, enemies deal 30% less damage; the signature strikes the enemy",
+      "weaken": 0.3,
+      "signature": {
+        "kind": "strike"
+      }
     }
   ],
   "weapons": {

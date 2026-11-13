@@ -7,7 +7,12 @@
     "gem": {
       "shape": "round",
       "pattern": "grain",
-      "colors": ["#f4c88e", "#cf8e50", "#9a5e2e", "#5e3416"]
+      "colors": [
+        "#f4c88e",
+        "#cf8e50",
+        "#9a5e2e",
+        "#5e3416"
+      ]
     }
   },
   {
@@ -18,7 +23,12 @@
     "gem": {
       "shape": "pentagon",
       "pattern": "rings",
-      "colors": ["#c8b0a0", "#8e7262", "#5e4638", "#34241a"]
+      "colors": [
+        "#c8b0a0",
+        "#8e7262",
+        "#5e4638",
+        "#34241a"
+      ]
     }
   },
   {
@@ -29,7 +39,12 @@
     "gem": {
       "shape": "star",
       "pattern": "swirl",
-      "colors": ["#f6f4ff", "#cdc8f2", "#9690d0", "#5a5498"]
+      "colors": [
+        "#f6f4ff",
+        "#cdc8f2",
+        "#9690d0",
+        "#5a5498"
+      ]
     }
   },
   {
@@ -40,7 +55,12 @@
     "gem": {
       "shape": "square",
       "pattern": "veins",
-      "colors": ["#ffc78e", "#f08a3c", "#b8581a", "#743210"]
+      "colors": [
+        "#ffc78e",
+        "#f08a3c",
+        "#b8581a",
+        "#743210"
+      ]
     }
   },
   {
@@ -51,7 +71,12 @@
     "gem": {
       "shape": "hexagon",
       "pattern": "veins",
-      "colors": ["#eef2f8", "#aab4c2", "#727c8c", "#464e5a"]
+      "colors": [
+        "#eef2f8",
+        "#aab4c2",
+        "#727c8c",
+        "#464e5a"
+      ]
     }
   },
   {
@@ -62,7 +87,12 @@
     "gem": {
       "shape": "drop",
       "pattern": "veins",
-      "colors": ["#eafaff", "#9adcf2", "#58acd2", "#2a7298"]
+      "colors": [
+        "#eafaff",
+        "#9adcf2",
+        "#58acd2",
+        "#2a7298"
+      ]
     }
   },
   {
@@ -85,6 +115,13 @@
     "name": "Glamour Scroll",
     "kind": "scroll",
     "tier": 2,
+    "keptOnAscend": true
+  },
+  {
+    "id": "heirloom_scroll",
+    "name": "Heirloom Scroll",
+    "kind": "scroll",
+    "tier": 3,
     "keptOnAscend": true
   },
   {

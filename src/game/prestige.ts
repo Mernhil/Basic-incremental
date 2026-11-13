@@ -9,6 +9,7 @@ import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
 import { allPlacesCount } from './workers';
 import { ascensionStartFloor } from './floors';
+import { heirloomScrollsForAscension } from './heirlooms';
 
 /**
  * Prestige, Ascension (DESIGN.md §9). An ascension resets the run (tree and mine
@@ -168,6 +169,13 @@ export function ascend(
     challengeWaitSeconds: 0,
   };
   next.prestigeCount = preview.ascension;
+  // Heirloom Scrolls from the third Ascension on (DESIGN.md §3 Where Heirloom Scrolls come from).
+  const scrolls = heirloomScrollsForAscension(content, preview.ascension);
+  if (scrolls.gt(0)) {
+    next.resources['heirloom_scroll'] = (next.resources['heirloom_scroll'] ?? new Decimal(0)).add(
+      scrolls,
+    );
+  }
   next.prestige = {
     ...next.prestige,
     runStart: { ...state.mastery.harvested },

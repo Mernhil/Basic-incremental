@@ -11,6 +11,7 @@ import {
   cloneBursts,
   cloneCards,
   cloneFloors,
+  cloneHeirlooms,
   DIFFICULTIES,
   emptyCardLoadout,
   SUPPORT_SLOTS,
@@ -27,6 +28,7 @@ import {
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { cardTopTier, levelCap } from './cards';
+import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
 import { isWeaponSkinAvailable } from './wardrobe';
 import { fitSkillsToPoints } from './account';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
@@ -34,7 +36,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 29;
+export const CURRENT_SAVE_VERSION = 30;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -212,6 +214,17 @@ export const serializedStateSchema = z.object({
     active: z.string().nullable(),
     completions: counts,
   }),
+  /** v30: the Heirloom Gate, Heirloom shards and trees (DESIGN.md §7, §10). */
+  heirlooms: z.object({
+    shards: counts,
+    pity: z.number().int().min(0),
+    pulls: z.number().int().min(0),
+    trees: z.record(z.string(), z.array(z.string())),
+  }),
+  /** v30 migration only: the Heirlooms the cards had at the Heirloom tier, made into cards on load. */
+  heirloomMigration: z
+    .array(z.object({ card: z.string(), stars: z.number().int(), level: z.number().int() }))
+    .optional(),
   /** v8. Tiers are missing in saves migrated from v7; loading settles them from the totals. */
   mastery: z.object({
     harvested: z.record(z.string(), decimalText),
@@ -302,6 +315,7 @@ export function serializeState(state: GameState): SerializedState {
       active: state.ascensionChallenges.active,
       completions: { ...state.ascensionChallenges.completions },
     },
+    heirlooms: cloneHeirlooms(state.heirlooms),
     account: {
       xp: decimalToString(state.account.xp),
       level: state.account.level,
@@ -457,6 +471,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   deserializeWorkers(state, saved.production, content);
   state.automation = { ...saved.automation };
   deserializeTableUpdate(state, saved, content);
+  deserializeHeirlooms(state, saved, content);
   deserializeMastery(state, saved.mastery, content);
   // Counters of portals removed from the game are dropped.
   const portalIds = new Set(content.portals.map((p) => p.id));
@@ -663,7 +678,7 @@ function refundClampedTiers(
     const at = RANK_TIERS.indexOf(c.tier);
     for (let k = Math.max(top, 1); k < at; k++) {
       const step = RANK_TIERS[k]!;
-      if (step === 'heirloom') continue;
+      if (step === 'mythic' || step === 'heirloom') continue;
       for (const cost of content.cardRules.tierUp[step][card.job]) {
         state.resources[cost.resource] = (state.resources[cost.resource] ?? new Decimal(0)).add(
           cost.amount,
@@ -716,6 +731,62 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
   // Unknown cards and repeats are dropped from the wishlist; a marked card need not be owned.
   const wishlist = [...new Set(saved.wishlist)].filter((id) => content.cardById.has(id));
   return { owned, loadouts, shards: saved.shards, wishlist };
+}
+
+/**
+ * Rebuilds the Heirlooms (save format 30): shards and trees of known Heirloom cards only, a tree
+ * keeping the known nodes it can still pay for in the order bought. A save migrated from format 29
+ * gets the Heirloom cards its Heirloom-tier cards had (DESIGN.md §5 How a save's Heirlooms move
+ * over): the card of the same type and side, at the same stars and its level up to 140; when two
+ * cards give one Heirloom, the one with more stars sets them and each star of the other becomes
+ * the shards that star costs (its unlock and stars). Needs `state.cards` already rebuilt.
+ */
+function deserializeHeirlooms(state: GameState, saved: SerializedState, content: Content): void {
+  const isHeirloom = (id: string): boolean => content.cardById.get(id)?.heirloom === true;
+  const shards: Record<string, number> = {};
+  for (const [id, n] of Object.entries(saved.heirlooms.shards)) {
+    if (isHeirloom(id) && n > 0) shards[id] = n;
+  }
+  state.heirlooms = {
+    shards,
+    pity: saved.heirlooms.pity,
+    pulls: saved.heirlooms.pulls,
+    trees: {},
+  };
+  const gate = content.heirlooms.gate;
+  const moved = [...(saved.heirloomMigration ?? [])].sort((a, b) => b.stars - a.stars);
+  for (const entry of moved) {
+    const from = content.cardById.get(entry.card);
+    if (!from) continue;
+    const target = content.cards.find(
+      (c) => c.heirloom && c.item.kind === from.item.kind && c.rarity === from.rarity,
+    );
+    if (!target) continue;
+    const stars = Math.max(1, Math.min(MAX_STARS, entry.stars));
+    if (!state.cards.owned[target.id]) {
+      const cap = levelCap(content, { tier: 'heirloom', stars });
+      state.cards.owned[target.id] = {
+        tier: 'heirloom',
+        stars,
+        level: Math.max(1, Math.min(entry.level, cap)),
+        xp: new Decimal(0),
+        starFill: 0,
+        enhancements: [],
+      };
+    } else {
+      const worth = gate.unlockShards + gate.starShards.slice(0, stars - 1).reduce((a, b) => a + b, 0);
+      addHeirloomShards(state, content, target.id, worth);
+    }
+  }
+  // Trees last: the points read the Heirloom cards' stars and levels.
+  for (const [id, nodes] of Object.entries(saved.heirlooms.trees)) {
+    const tree = content.heirloomTreeByCard.get(id);
+    if (!tree || !state.cards.owned[id]) continue;
+    for (const node of nodes) {
+      const bought = buyHeirloomNode(state, content, id, node);
+      if (bought.ok) state.heirlooms.trees[id] = bought.state.heirlooms.trees[id]!;
+    }
+  }
 }
 
 /**
