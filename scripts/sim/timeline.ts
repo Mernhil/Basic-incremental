@@ -14,6 +14,7 @@ import {
   secondsPerKill,
   survivalSeconds,
   type GameState,
+  formatShort,
 } from '../../src/game';
 import { holdAscension, runSim } from './sim';
 
@@ -30,7 +31,7 @@ const content = loadContent();
 
 const sci = (d: Decimal | number): string => {
   const n = typeof d === 'number' ? d : d.toNumber();
-  return n >= 1e4 || (n > 0 && n < 0.1) ? n.toExponential(1) : n.toFixed(n < 10 ? 2 : 0);
+  return formatShort(n);
 };
 
 function row(state: GameState, t: number): string {

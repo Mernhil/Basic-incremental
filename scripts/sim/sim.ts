@@ -149,6 +149,7 @@ import {
   challengeTarget,
   FOCUS_PORTAL_ID,
   setFocusKind,
+  formatShort,
 } from '../../src/game';
 import {
   CHALLENGE_GIVE_UP_SECONDS,
@@ -3326,10 +3327,10 @@ export function formatSummary(result: SimResult, content: Content): string {
       .join(', ')})`,
     `DPS vs Mossy Cellar: ${result.dpsSamples
       .filter(([t]) => [1, 2, 4, 8, 12, 16, 20, 30, 40].includes(t / 3600))
-      .map(([t, d]) => `${t / 3600} h ${d.toExponential(1)}`)
+      .map(([t, d]) => `${t / 3600} h ${formatShort(d)}`)
       .join(', ')}`,
     `Time fought: ${fought || 'none'}`,
-    `Summons: ${result.log.summons} pulls; Money in hand ${num(s.resources['money'] ?? new Decimal(0)).toExponential(1)}, scrolls ${num(s.resources['summon_scroll'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_scroll'] ?? new Decimal(0)).toFixed(0)} glamour`,
+    `Summons: ${result.log.summons} pulls; Money in hand ${formatShort(s.resources['money'] ?? 0)}, scrolls ${num(s.resources['summon_scroll'] ?? new Decimal(0)).toFixed(0)} summon / ${num(s.resources['glamour_scroll'] ?? new Decimal(0)).toFixed(0)} glamour`,
     `Ascensions at: ${result.log.ascensions.map(hoursText).join(', ') || 'none'} (Starlight earned ${s.prestige.starlightEarned.toFixed(0)})`,
     `Tree levels: ${trees}`,
     `Mine levels: ${mines}`,
@@ -3375,7 +3376,7 @@ export function formatTableLog(
     `Floor Challenges: ${table.challengesWon} won, ${table.challengesLost} lost (${all > 0 ? Math.round((table.challengesWon / all) * 100) : 0}%), ${table.manualTries} started by hand; longest stuck ${stuck}`,
     `Team: ${teamRoles(state, content)} (${[state.cards.loadouts.fighting.main, ...state.cards.loadouts.fighting.supports].filter(Boolean).join(', ')})`,
     `Scrolls spent: ${table.summonSpent} Summon (${table.focusPulls} at the Focus Portal), ${table.glamourSpent} Glamour; held ${num(have(state, 'summon_scroll')).toFixed(2)} / ${num(have(state, 'glamour_scroll')).toFixed(2)}`,
-    `Expeditions: ${table.trips} trips, ${table.tripMaterials} Core units (fights ${table.fightMaterials}), ${table.tripGems.toExponential(1)} weighted gems`,
+    `Expeditions: ${table.trips} trips, ${table.tripMaterials} Core units (fights ${table.fightMaterials}), ${formatShort(table.tripGems)} weighted gems`,
     `Ascension challenges: ${table.challengeRuns} runs, ${table.challengesLeft} left, completed ${table.completions.map(([id, at]) => `${id} at ${hoursText(at)}`).join(', ') || 'none'}`,
   ].join('\n');
 }
@@ -3501,7 +3502,7 @@ export function formatLevels(
     if (at.length === 0) continue;
     const m = (f: (p: ProgressSample) => number): number => median(at.map(f));
     lines.push(
-      `| ${h} | ${Math.round(m((p) => p.meanLevel ?? 0))} | ${m((p) => p.gemOutput ?? 0).toExponential(2)} | ${secondsText(m((p) => p.levelWait ?? 0))} |`,
+      `| ${h} | ${Math.round(m((p) => p.meanLevel ?? 0))} | ${formatShort(m((p) => p.gemOutput ?? 0))} | ${secondsText(m((p) => p.levelWait ?? 0))} |`,
     );
   }
   return lines.join('\n');

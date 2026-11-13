@@ -35,8 +35,8 @@ describe('coins (DESIGN.md §3 Coins)', () => {
     const last = content.coins[content.coins.length - 1]!;
     const { coin: c, value } = coinAmount(content.coins, Decimal.pow(10, last.power + 5));
     expect(c.id).toBe(last.id);
-    expect(value).not.toBe('');
-    expect(Number.isNaN(Number(value.replace(/[,.\s]/g, '').replace(/e\+?/i, '')))).toBe(false);
+    // the count goes on in the one short format, never an exponent (UI_RULES §2 Readable numbers)
+    expect(value).toBe('100k');
   });
 
   it('treats negative and fractional amounts as the first coin', () => {

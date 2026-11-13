@@ -1,3 +1,4 @@
+import { formatShort } from '../../game';
 /**
  * All player-facing text for the main screen, in one place so terms stay consistent:
  * "save" (never "file" or "data"), "boss", "bars" for HP, "Export save" / "Import save".
@@ -69,11 +70,6 @@ export const COPY = {
     motionFollows: (on: boolean) =>
       `Follows Windows (${on ? 'on' : 'off'} now). No shake, flash or slow-down; numbers fade in place.`,
     motionFollow: 'Follow Windows',
-    numbers: 'Number format',
-    numbersHint: 'Numbers below a million always show in full.',
-    numSuffix: 'Suffixes',
-    numScientific: 'Scientific',
-    numEngineering: 'Engineering',
     help: 'Help',
     reportText:
       'Found a bug? This opens a new GitHub issue in your browser with the game version, a short save summary and the recent log filled in. You can edit everything before you submit it.',
@@ -256,7 +252,7 @@ export const COPY = {
       next: 'Next buy',
       cost: 'Cost',
     },
-    x2In: (n: number) => `×2 in ${n}`,
+    multIn: (mult: string, n: number) => `×${mult} in ${n}`,
     nextReady: 'ready',
     nextGain: (gain: string) => `×${gain} output`,
     nextToAfford: 'to afford',
@@ -430,7 +426,7 @@ export const COPY = {
     stageBelow: (floor: number) => `Next stage: floor ${floor}`,
     stageDepths: (floor: number) => `Depths follow the Nightmare stage, floor ${floor}`,
     killsToNext: (n: number, name: string) =>
-      n === 1 ? `1 kill to ${name}` : `${n.toLocaleString('en-US')} kills to ${name}`,
+      n === 1 ? `1 kill to ${name}` : `${formatShort(n)} kills to ${name}`,
     allStars: 'every star earned',
     stageTip:
       'Kills on a mini-boss or boss floor earn its stars, separately on each tier. Each star pays a chest once and adds damage and loot on that stage.',
@@ -713,7 +709,7 @@ export const COPY = {
     amount: (n: string) => `×${n}`,
     copyOf: (name: string) => `+1 copy of ${name}`,
     buy: 'Buy',
-    price: (n: number) => `${n.toLocaleString('en-US')} shards`,
+    price: (n: number) => `${formatShort(n)} shards`,
     soldOut: 'Sold out',
     left: (n: number) => (n === 1 ? '1 left' : `${n} left`),
     bought: 'Bought with shards',
@@ -1003,7 +999,7 @@ export const COPY = {
     medal: (metal: string) => `${metal} medal`,
     noMedal: 'No medal yet',
     nextKills: (have: number, need: number) =>
-      `${have.toLocaleString('en-US')} of ${need.toLocaleString('en-US')} kills to the next`,
+      `${formatShort(have)} of ${formatShort(need)} kills to the next`,
     nextScore: (have: number, need: number) => `Best ${have}% of ${need}% for the next`,
     edgeStep: (n: number) => `Step ${n + 1} of 5`,
   },
@@ -1025,7 +1021,7 @@ export const COPY = {
     gain: (amount: string, resource: string) => `+${amount} ${resource}`,
     gainText: (amount: string) => `+${amount}`,
     fights: 'Fights',
-    kills: (n: number) => (n === 1 ? '1 kill' : `${n.toLocaleString('en-US')} kills`),
+    kills: (n: number) => (n === 1 ? '1 kill' : `${formatShort(n)} kills`),
     knockouts: (n: number) => (n === 1 ? 'Knocked out once' : `Knocked out ${n} times`),
     drops: 'Drops',
     drop: (item: string, n: number) => `${item}${n > 1 ? ` ×${n}` : ''}`,
@@ -1115,7 +1111,7 @@ export const COPY = {
       `${+fill.toFixed(3)} / ${+need.toFixed(3)} copies to ★${next}`,
     /** The star dust button: tops up what the star bar lacks. */
     dustStar: (next: number, cost: number, have: number) =>
-      `Star ★${next} with ${cost} Star Dust (you have ${have})`,
+      `Star ★${next} with ${formatShort(cost)} Star Dust (you have ${formatShort(have)})`,
     allStars: 'All six stars',
     impact: (from: number, to: number) => `×${from} → ×${to}`,
     addStar: (next: number) => `Add star ★${next}`,

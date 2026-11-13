@@ -115,11 +115,6 @@
   outline: 2px solid var(--px-gold);
   outline-offset: calc(var(--fs-sm) + 2px);
 }
-.set-seg__example {
-  font-size: 12px;
-  font-weight: 700;
-  opacity: 0.85;
-}
 
 /* the reduced-motion toggle: a pixel track with a square knob */
 .set-toggle-box {
