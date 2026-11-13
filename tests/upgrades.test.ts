@@ -5,6 +5,7 @@ import {
   buyUpgrade,
   collectModifiers,
   createSaveText,
+  approxEq,
   Decimal,
   lifetimeMoney,
   producerRate,
@@ -68,12 +69,13 @@ describe('shelf status', () => {
     const state = freshState();
     state.production.treeLevels['oak'] = 10;
     const entry = item(state, 'keen_axes');
+    const price = content.upgrades.upgrades.find((u) => u.id === 'keen_axes')!.cost.amount;
     expect(entry.cost.resource).toBe('money');
-    expect(entry.cost.amount.eq(1500)).toBe(true);
+    expect(entry.cost.amount.eq(price)).toBe(true);
     expect(entry.canAfford).toBe(false);
-    expect(entry.description).toBe('Oak output x2');
+    expect(entry.description).toBe('Oak output x1.25');
     expect(entry.unlockText).toMatch(/Oak/);
-    withMoney(state, 1500);
+    withMoney(state, price.toNumber());
     expect(item(state, 'keen_axes').canAfford).toBe(true);
   });
 
@@ -82,18 +84,19 @@ describe('shelf status', () => {
     state.production.treeLevels['oak'] = 10;
     const preview = item(state, 'keen_axes').preview!;
     expect(preview.kind).toBe('rate');
-    expect(preview.after.eq(preview.before.mul(2))).toBe(true);
+    expect(approxEq(preview.after, preview.before.mul(1.25))).toBe(true);
   });
 });
 
 describe('buying', () => {
   it('pays Money once and refuses locked, owned, unknown and unaffordable', () => {
+    const price = content.upgrades.upgrades.find((u) => u.id === 'keen_axes')!.cost.amount;
     const state = withMoney(freshState(), 5000);
     expect(buyUpgrade(state, content, 'keen_axes')).toEqual({ ok: false, reason: 'locked' });
     expect(buyUpgrade(state, content, 'nope')).toEqual({ ok: false, reason: 'unknown' });
     state.production.treeLevels['oak'] = 10;
     const ok = buyUpgrade(state, content, 'keen_axes');
-    expect(ok.ok && ok.state.resources['money']!.eq(3500)).toBe(true);
+    expect(ok.ok && ok.state.resources['money']!.eq(new Decimal(5000).sub(price))).toBe(true);
     if (!ok.ok) throw new Error('should buy');
     expect(buyUpgrade(ok.state, content, 'keen_axes')).toEqual({ ok: false, reason: 'owned' });
     const poor = withMoney(freshState(), 10);
@@ -103,12 +106,12 @@ describe('buying', () => {
 });
 
 describe('effects through the modifier pipeline', () => {
-  it('doubles Oak output and labels the source "upgrade"', () => {
+  it('multiplies Oak output and labels the source "upgrade"', () => {
     const state = freshState();
     const before = producerRate(oak, 'logging', collectModifiers(state, content));
     state.upgrades.owned.push('keen_axes');
     const mods = collectModifiers(state, content);
-    expect(producerRate(oak, 'logging', mods).eq(before.mul(2))).toBe(true);
+    expect(approxEq(producerRate(oak, 'logging', mods), before.mul(1.25))).toBe(true);
     expect(mods.some((m) => m.source.kind === 'upgrade' && m.source.id === 'keen_axes')).toBe(true);
   });
 

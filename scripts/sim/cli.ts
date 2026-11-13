@@ -12,6 +12,7 @@
 import { spawn } from 'node:child_process';
 import { availableParallelism } from 'node:os';
 import { loadContent } from '../../src/data';
+import { formatShort } from '../../src/game';
 import {
   bandsPass,
   formatFightPace,
@@ -185,7 +186,7 @@ async function main(): Promise<void> {
       .map((o) => o.dps.find(([t]) => t === h * 3600)?.[1])
       .filter((v): v is number => v !== undefined)
       .sort((a, b) => a - b);
-    return `${h} h ${(values[Math.floor(values.length / 2)] ?? 0).toExponential(1)}`;
+    return `${h} h ${formatShort(values[Math.floor(values.length / 2)] ?? 0)}`;
   });
   console.log(`
 Median DPS vs first dungeon: ${medianDps.join(', ')}`);

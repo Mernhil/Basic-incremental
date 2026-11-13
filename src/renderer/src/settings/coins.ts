@@ -5,8 +5,8 @@ import { fmt } from './numberFormat';
 /**
  * Coins (DESIGN.md §3 Coins): Money is shown in the biggest coin it fills instead of a long or
  * scientific number: 950 is "950 Copper", 12,400,000 is "12.4 Gold". The coins are data
- * (`coins.json`); past the last coin its count simply keeps growing, in the number style of
- * Settings. Display only: the game counts Money as one number.
+ * (`coins.json`); past the last coin its count simply keeps growing, in the one short number
+ * format ("100k Crown"). Display only: the game counts Money as one number.
  */
 
 export interface CoinAmount {
@@ -35,7 +35,7 @@ export function coinAmount(coins: readonly Coin[], amount: Decimal): CoinAmount 
     if (amount.gte(Decimal.pow(10, c.power))) coin = c;
   }
   const count = amount.div(Decimal.pow(10, coin.power));
-  // Past the last coin the count outgrows three digits: the Settings number style takes over.
+  // Past the last coin the count outgrows three digits: the short number format takes over.
   if (count.gte(1000)) return { coin, value: fmt(count.floor()) };
   return { coin, value: threeDigits(count.toNumber()) };
 }

@@ -15,6 +15,7 @@ import {
   collectModifiers,
   computeStat,
   type GameState,
+  formatShort,
 } from '../../src/game';
 import { runSim } from './sim';
 
@@ -57,7 +58,7 @@ function row(state: GameState, t: number): string {
   });
   const cmParts = [...new Set(cm.applied.map((m) => m.source.kind))].join('/');
   const extra = ` crystals=x${cm.value.toNumber().toFixed(2)}(${cmParts}) eff/base=x${(eff / Math.max(base, 1)).toFixed(1)} sig=x${sig.toFixed(2)} (power ${b.power.toFixed(1)} fill ${b.fill.toFixed(2)}) crit=x${crit.toFixed(2)}`;
-  return `${(t / 3600).toFixed(1)}h dps=${dps.toExponential(1)} lead=${main} ${owned?.tier} ★${owned?.stars} Lv${owned?.level} base=${base.toExponential(2)} mult=x${stat.value.toNumber().toFixed(1)} [${parts}] asc=${state.prestigeCount} acct=${state.account.level}${extra}`;
+  return `${(t / 3600).toFixed(1)}h dps=${formatShort(dps)} lead=${main} ${owned?.tier} ★${owned?.stars} Lv${owned?.level} base=${formatShort(base)} mult=x${stat.value.toNumber().toFixed(1)} [${parts}] asc=${state.prestigeCount} acct=${state.account.level}${extra}`;
 }
 
 runSim(content, {

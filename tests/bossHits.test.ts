@@ -31,7 +31,15 @@ import { constantRng, content as bundled, freshState, withBossAttack, withBossHp
  *  tests count in (the shipped numbers are tuning, DESIGN.md §6). */
 // Its HP is out of the loadout's reach, so no kill refills the health while a test counts hits.
 const attacked = withBossAttack(withBossHp(bundled, 'mossy_cellar', 1e12), 'mossy_cellar', 1, 10);
-const content = { ...attacked, combat: { ...attacked.combat, knockoutSeconds: 30 } };
+// and a Common card pinned to 100 health, so the starting loadout has the 100 health counted here.
+const content = {
+  ...attacked,
+  combat: { ...attacked.combat, knockoutSeconds: 30 },
+  cardRules: {
+    ...attacked.cardRules,
+    health: { ...attacked.cardRules.health, common: new Decimal(100) },
+  },
+};
 
 /**
  * Boss hits in chunks (DESIGN.md §6): discrete attacks at the boss's interval, five light hits at

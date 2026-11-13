@@ -40,11 +40,11 @@ describe('sticker book', () => {
 
   it('shows progress, the reward and no date while locked', () => {
     const s = newGame();
-    s.mastery.harvested['oak_gem'] = new Decimal(5000);
+    s.mastery.harvested['oak_gem'] = new Decimal(2500);
     const v = stickerView(entry('lumberjack_1', s), content);
     expect(v.unlocked).toBe(false);
     expect(v.progress).toBeCloseTo(0.5);
-    expect(v.progressText).toBe('5,000 / 10,000');
+    expect(v.progressText).toBe('2500 / 5000');
     expect(v.dateText).toBe('');
     expect(v.rewards).toEqual(['3 Moss Core']);
   });

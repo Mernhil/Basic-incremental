@@ -144,12 +144,16 @@ describe('achievements (DESIGN.md §10)', () => {
 
   it('gives progress for the sticker book', () => {
     const state = newGame();
-    state.mastery.harvested = { oak_gem: new Decimal(5000) };
+    const target = Number(
+      (content.achievements.find((a) => a.id === 'lumberjack_1')!.condition as { amount: unknown })
+        .amount,
+    );
+    state.mastery.harvested = { oak_gem: new Decimal(target / 2) };
     const entry = achievementList(state, content).find((a) => a.achievement.id === 'lumberjack_1')!;
     expect(entry.unlocked).toBe(false);
     expect(entry.progress).toBeCloseTo(0.5, 9);
-    expect(entry.value).toBe(5000);
-    expect(entry.target).toBe(1e4);
+    expect(entry.value).toBe(target / 2);
+    expect(entry.target).toBe(target);
   });
 
   it('reports unlocks in the tick report, on the whole-second grid', () => {

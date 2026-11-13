@@ -46,6 +46,8 @@ const plain: Content = {
 };
 const harmless = (base: Content): Content => withBossAttack(base, 'mossy_cellar', 1e-30, 10);
 const cellar = plain.dungeonById.get('mossy_cellar')!;
+/** The first dungeon's Money wage a second (`dungeons.json`). */
+const WAGE = cellar.drops.wages![0]!.perSecond.toNumber();
 
 const inCellar = (content: Content): GameState => {
   const result = setActiveDungeon(freshState(), content, 'mossy_cellar');
@@ -163,7 +165,7 @@ describe('difficulty tiers', () => {
       const start = on(inCellar(content), content, 10, difficulty);
       const { state, report } = run(start, content, 1.5, constantRng(0));
       return {
-        money: report.currencies['money']! - 50 * 1.5,
+        money: report.currencies['money']! - WAGE * 1.5,
         cores: state.resources['moss_core']!.sub(start.resources['moss_core']!).toNumber(),
         kills: report.bossKills,
       };
@@ -200,7 +202,7 @@ describe('difficulty tiers', () => {
         content,
         'money',
       )
-        .sub(50) // the first dungeon's Money wage
+        .sub(WAGE) // the first dungeon's Money wage
         .toNumber();
     const bonus = plain.combat.floors.purseFloorBonus;
     expect(bonus).toBeGreaterThan(1);
@@ -225,7 +227,7 @@ describe('difficulty tiers', () => {
       state.prestigeCount = prestigeCount;
       return state;
     };
-    const perSecond = (s: GameState) => incomePerSecond(s, content, 'money').sub(50).toNumber();
+    const perSecond = (s: GameState) => incomePerSecond(s, content, 'money').sub(WAGE).toNumber();
     expect(perSecond(at(3)) / perSecond(at(0))).toBeCloseTo(1, 6);
     expect(fightStage(at(2), content, 'mossy_cellar')!.scale.purse).toBe(1);
   });
@@ -282,7 +284,7 @@ describe('endless depths', () => {
   });
 
   it('challenges down the depths and stops where the hit runs out', () => {
-    // A hit worth 1e25: the Nightmare boss has about 1.3e10 HP, and each depth is 1.12 times
+    // A hit worth 1e25: the Nightmare boss is far below it, and each depth is about 1.10 times
     // the one before, so a hit wins depth after depth (one Challenge a hit, overflow on) until the
     // waves outgrow what the Challenge timer leaves room for.
     const content = harmless(withDps(1e25, plain));
@@ -294,7 +296,7 @@ describe('endless depths', () => {
     const position = floorPosition(state, cellar);
     expect(position.floors).toBe(Infinity);
     expect(position.best).toBeGreaterThan(250);
-    expect(position.best).toBeLessThan(400);
+    expect(position.best).toBeLessThan(500);
     expect(position.floor).toBe(position.best);
     expect(report.challenges.some((c) => !c.won)).toBe(true);
     const status = bossStatus(state, content)!;

@@ -18,6 +18,8 @@ import {
 import { bareState, constantRng, content, freshState } from './helpers';
 
 const rng = constantRng(0.5);
+/** The mastery thresholds of the data (DESIGN.md §4 Gem mastery). */
+const T = content.progression.gemMastery.thresholds.map((t) => t.toNumber());
 
 /** A state whose settled tiers match its totals, as after a tick on the 1 s grid. */
 function settled(state: GameState): GameState {
@@ -25,10 +27,11 @@ function settled(state: GameState): GameState {
 }
 
 describe('gem mastery data (DESIGN.md §4)', () => {
-  it('has the decided thresholds and +10% per tier, with more tiers above 1e9', () => {
+  it('has the thresholds of the readable scale and +10% per tier, eight tiers in all', () => {
     const m = content.progression.gemMastery;
+    // 1e3 to 1e17 before readable numbers, mapped onto the new gem scale (DESIGN.md §4)
     expect(m.thresholds.map((t) => t.toNumber())).toEqual([
-      1e3, 1e5, 1e7, 1e9, 1e11, 1e13, 1e15, 1e17,
+      1000, 23_000, 520_000, 12e6, 280e6, 6.3e9, 140e9, 3.3e12,
     ]);
     expect(m.perTier).toEqual([
       expect.objectContaining({ stat: 'production.rate', kind: 'percent', value: new Decimal(10) }),
@@ -51,22 +54,23 @@ describe('gemMastery', () => {
 
   it('reads the settled tier and the linear progress to the next threshold', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(50_500);
+    const total = (T[0]! + T[1]!) / 2;
+    state.mastery.harvested['oak_gem'] = new Decimal(total);
     state.mastery.gemTiers['oak_gem'] = 1;
     const m = gemMastery(state, content, 'oak_gem');
     expect(m).toMatchObject({ tier: 1, metal: 'bronze' });
-    expect(m.nextThreshold?.toNumber()).toBe(1e5);
-    expect(m.progress).toBeCloseTo((50_500 - 1e3) / (1e5 - 1e3));
+    expect(m.nextThreshold?.toNumber()).toBe(T[1]);
+    expect(m.progress).toBeCloseTo((total - T[0]!) / (T[1]! - T[0]!));
   });
 
-  it('keeps the prismatic coin above 1e9 and goes on to the last tier', () => {
+  it('keeps the prismatic coin above the fourth tier and goes on to the last tier', () => {
     const state = freshState();
-    state.mastery.harvested['copper_gem'] = new Decimal(5e9);
+    state.mastery.harvested['copper_gem'] = new Decimal(5 * T[3]!);
     state.mastery.gemTiers['copper_gem'] = 4;
     const at4 = gemMastery(state, content, 'copper_gem');
     expect(at4).toMatchObject({ tier: 4, metal: 'prismatic' });
-    expect(at4.nextThreshold?.toNumber()).toBe(1e11);
-    state.mastery.harvested['copper_gem'] = new Decimal(5e17);
+    expect(at4.nextThreshold?.toNumber()).toBe(T[4]);
+    state.mastery.harvested['copper_gem'] = new Decimal(5 * T[7]!);
     state.mastery.gemTiers['copper_gem'] = 8;
     expect(gemMastery(state, content, 'copper_gem')).toMatchObject({
       tier: 8,
@@ -78,7 +82,7 @@ describe('gemMastery', () => {
 
   it('settles tiers above 4 and gives +10% a tier', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(3e13);
+    state.mastery.harvested['oak_gem'] = new Decimal(3 * T[5]!);
     const s = settled(state);
     expect(s.mastery.gemTiers['oak_gem']).toBe(6);
     const mod = collectModifiers(s, content).find(
@@ -174,7 +178,7 @@ describe('gem tier-ups', () => {
 
   it('jumps several tiers at once when a total passes them', () => {
     const state = bareState();
-    state.mastery.harvested['oak_gem'] = new Decimal(2e7);
+    state.mastery.harvested['oak_gem'] = new Decimal(2 * T[2]!);
     const { report } = advance(state, content, 1000, rng);
     expect(report.tierUps).toEqual([
       { kind: 'gem_mastery', id: 'oak_gem', from: 0, to: 3, metal: 'gold' },

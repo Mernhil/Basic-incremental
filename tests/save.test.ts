@@ -13,7 +13,14 @@ import {
   serializeState,
   V23_CRYSTAL_FACTOR,
 } from '../src/game';
-import { constantRng, bareState, plainContent as content, freshState, withDps } from './helpers';
+import {
+  constantRng,
+  bareState,
+  plainContent as content,
+  freshState,
+  withDps,
+  toV29,
+} from './helpers';
 
 /** Damage that makes the first boss fall twice in 25 s (about 5000 dps at 60,000 HP). */
 const STRONG_DPS = 1 + Math.round((4999 * content.dungeons[0]!.boss.hp.toNumber()) / 60_000);
@@ -245,7 +252,7 @@ describe('save format v3: production', () => {
       },
     };
     const { state } = readSave(JSON.stringify(v2), content);
-    expect(state.resources['oak_gem']!.eq(1234.5)).toBe(true);
+    expect(state.resources['oak_gem']!.toNumber()).toBeCloseTo(toV29('oak_gem', 1234.5), 6);
     expect(state.resources['summon_scroll']!.eq(Math.floor((7 * V23_CRYSTAL_FACTOR) / 300))).toBe(
       true,
     ); // repriced in format 23, then scrolls in format 27
@@ -288,7 +295,7 @@ describe('save format v14: the three loops (DESIGN.md §3)', () => {
     expect(state.account.skills).toEqual({ luck_s1: 2 });
     // Start 100 + two copper levels (15 + 19.5) + a Copper Edge level (10) + the one plot (25),
     // which is paid back once, when plots go away (v16).
-    expect(state.resources['money']!.toNumber()).toBeCloseTo(100 + 34.5 + 10 + 25);
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(toV29('money', 100 + 34.5 + 10 + 25));
   });
 
   it('writes the current version, so a v14 save loads without the refund twice', () => {
@@ -308,8 +315,11 @@ describe('save format v8: mastery', () => {
     json.state.resources.copper_gem = '50';
     json.state.combat.kills = { mossy_cellar: 150 };
     const { state } = readSave(JSON.stringify(json), content);
-    expect(state.mastery.harvested['oak_gem']!.toNumber()).toBe(2e5);
-    expect(state.mastery.harvested['copper_gem']!.toNumber()).toBe(50);
+    expect(state.mastery.harvested['oak_gem']!.toNumber()).toBeCloseTo(toV29('oak_gem', 2e5), 6);
+    expect(state.mastery.harvested['copper_gem']!.toNumber()).toBeCloseTo(
+      toV29('copper_gem', 50),
+      6,
+    );
     expect(state.mastery.gemTiers).toEqual({ oak_gem: 2 });
     // Dungeon medals are gone (DESIGN.md §6 Stage stars): the kills became stage kills.
     expect(state.mastery.bossTiers).toEqual({});
@@ -339,7 +349,7 @@ describe('save format v16: one of each (DESIGN.md §4)', () => {
     json.state.production.mining = { expansions: 2, plots: ['copper_quarry', null, null] };
     const { state } = readSave(JSON.stringify(json), content);
     // Start 100 + plots 25 + 35 + 49 + slots 25 + 35, each paid once.
-    expect(state.resources['money']!.toNumber()).toBe(100 + 109 + 60);
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(toV29('money', 100 + 109 + 60), 6);
   });
 
   it('loads a v15 save: plots and slots are gone, the Money of the expansions comes back', () => {
@@ -366,7 +376,7 @@ describe('save format v16: one of each (DESIGN.md §4)', () => {
     expect(state.production.treeLevels).toEqual({ oak: 4, ironbark: 1 });
     expect(state.production.mineLevels).toEqual({ copper_quarry: 2 });
     // Plots 25 + 35 and one slot 25.
-    expect(state.resources['money']!.toNumber()).toBe(100 + 60 + 25);
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(toV29('money', 100 + 60 + 25), 6);
   });
 
   it('writes the current version, so a v16 save never pays the refund twice', () => {
@@ -388,7 +398,10 @@ describe('save format v17: damage comes from cards (DESIGN.md §5)', () => {
     expect('damageLevels' in state.combat).toBe(false);
     expect(state.upgrades.owned).not.toContain('copper_temper');
     // Copper Edge 10 + 12 + 13, Iron Edge 200, Copper Temper 5,000.
-    expect(state.resources['money']!.toNumber()).toBe(100 + 35 + 200 + 5000);
+    expect(state.resources['money']!.toNumber()).toBeCloseTo(
+      toV29('money', 100 + 35 + 200 + 5000),
+      6,
+    );
   });
 
   it('caps the level of a card above its new cap, so it can tier up at once', () => {

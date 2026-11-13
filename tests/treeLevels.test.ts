@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  approxEq,
   buyTreeLevel,
   buyTreeLevels,
   collectModifiers,
@@ -30,7 +31,7 @@ describe('tree levels (DESIGN.md §4)', () => {
     for (const tree of content.trees) {
       expect(tree.level.cost.resource).toBe('money');
       expect(tree.level.ratePercent.gt(0)).toBe(true);
-      expect(tree.level.milestones).toEqual({ every: 15, multiplier: new Decimal(2) });
+      expect(tree.level.milestones).toEqual({ every: 15, multiplier: new Decimal(1.15) });
     }
   });
 
@@ -54,13 +55,15 @@ describe('tree levels (DESIGN.md §4)', () => {
     expect(lv5.eq(base.mul(factor))).toBe(true);
   });
 
-  it('doubles the output at every 15th level', () => {
+  it('multiplies the output at every 15th level', () => {
     const mods = collectModifiers(freshState(), content);
     const at24 = producerRate(oak, 'logging', mods, 14);
     const at25 = producerRate(oak, 'logging', mods, 15);
     const lin = (n: number) => oak.level.ratePercent.mul(n).div(100).add(1);
     expect(at24.eq(oak.baseRate.mul(lin(14)))).toBe(true);
-    expect(at25.eq(oak.baseRate.mul(lin(15)).mul(2))).toBe(true);
+    expect(approxEq(at25, oak.baseRate.mul(lin(15)).mul(oak.level.milestones.multiplier))).toBe(
+      true,
+    );
   });
 
   it('feeds the level into the job output', () => {

@@ -121,7 +121,7 @@ describe('goal rules (DESIGN.md §10)', () => {
     const state = bareState();
     state.production.mineLevels['copper_quarry'] = 27;
     const goal = find(allGoals(state, realContent), 'mine_milestone:copper_quarry')!;
-    expect(goal).toMatchObject({ title: 'Copper Quarry Lv 30 (×2)', page: 'production' });
+    expect(goal).toMatchObject({ title: 'Copper Quarry Lv 30 (×1.15)', page: 'production' });
     expect(goal.progress).toBeCloseTo(0.8);
     const mine = content.mineById.get('copper_quarry')!;
     const price = curveBulkPrice(mine.level.cost, 27, 3).amount.toNumber();

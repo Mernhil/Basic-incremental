@@ -1,3 +1,4 @@
+import { formatShort } from '../../../../game';
 /** On-screen text of package 9a: the duel and the dungeon full view (DESIGN.md §6 What the duel shows). */
 export const DUEL_COPY = {
   hand: 'Your hand',
@@ -49,11 +50,10 @@ export const DUEL_COPY = {
   stageFloor: (floor: number) => `Floor ${floor}`,
   stageKills: (kills: number, toNext: number | null) =>
     toNext === null
-      ? `${kills.toLocaleString('en-US')} kills · all stars`
-      : `${kills.toLocaleString('en-US')} kills · ${toNext.toLocaleString('en-US')} to next`,
+      ? `${formatShort(kills)} kills · all stars`
+      : `${formatShort(kills)} kills · ${formatShort(toNext)} to next`,
   starsDone: 'All stars',
-  starsNext: (kills: number, next: number) =>
-    `${kills.toLocaleString('en-US')} / ${next.toLocaleString('en-US')} kills`,
+  starsNext: (kills: number, next: number) => `${formatShort(kills)} / ${formatShort(next)} kills`,
   starLegend: 'Star levels',
   starNote: 'Each level: a chest, +5% damage and +10% loot on that stage, a skill point',
   rowMeta: (boss: string, parts: string[]) => [boss, ...parts].join(' · '),

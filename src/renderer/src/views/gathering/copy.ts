@@ -14,7 +14,7 @@ export const GATHERING_COPY = {
   // the job views (mockups 4c, 4e)
   levelLine: (n: number) => `Level ${n}`,
   lockedTag: 'Locked',
-  x2In: (n: number) => `×2 in ${n} ${n === 1 ? 'level' : 'levels'}`,
+  multIn: (mult: string, n: number) => `×${mult} in ${n} ${n === 1 ? 'level' : 'levels'}`,
   ageLine: (n: number, max: number) => `Age ${n} of ${max}`,
   layerLine: (n: number, max: number) => `Layer ${n} of ${max}`,
   nextYield: (mult: string) => `next gives ×${mult} yield`,

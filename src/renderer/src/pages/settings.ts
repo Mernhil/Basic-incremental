@@ -8,13 +8,7 @@ import { reducedMotion } from '../stage/motion';
 import { buildIssueUrl, issueBody, LOG_LINES, systemFromUserAgent } from '../settings/issueReport';
 import { rendererLog } from '../settings/logBuffer';
 import { AUTOSAVE_CHOICES, onPrefs, prefs, setPrefs } from '../settings/prefs';
-import {
-  autosaveLabel,
-  numberChoices,
-  saveSummary,
-  summaryLine,
-  type Choice,
-} from './settingsModel';
+import { autosaveLabel, saveSummary, summaryLine, type Choice } from './settingsModel';
 import './settings.css';
 
 /**
@@ -60,7 +54,6 @@ function segmented<T extends string | number>(
       if (input.checked) set(c.value);
     });
     opt.append(input, h('span', 'set-seg__label', c.label));
-    if (c.example) opt.append(h('span', 'set-seg__example bi-num', c.example));
     inputs.push({ input, value: c.value });
     group.append(opt);
   }
@@ -133,18 +126,8 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   // ---- Display ----
   const display = frame(COPY.settings.display);
   const motion = motionToggle();
-  const numbers = segmented(
-    COPY.settings.numbers,
-    numberChoices(),
-    () => prefs().numbers,
-    (v) => setPrefs({ numbers: v }),
-  );
-  numbers.el.classList.add('set-seg--examples');
   display.body.classList.add('set-body');
-  display.body.append(
-    row(COPY.settings.motion, motion.control, motion.hint),
-    row(COPY.settings.numbers, numbers.el, COPY.settings.numbersHint),
-  );
+  display.body.append(row(COPY.settings.motion, motion.control, motion.hint));
 
   // ---- Sound (the existing panel) ----
   const sound = soundSettingsFrame();
@@ -171,7 +154,6 @@ export function createSettingsPage(root: HTMLElement, deps: SettingsDeps): { ren
   );
   onPrefs(() => {
     motion.sync();
-    numbers.sync();
     autosave.sync();
   });
 

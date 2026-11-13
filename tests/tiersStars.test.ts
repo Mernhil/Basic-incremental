@@ -175,11 +175,11 @@ describe('copies past ★6 become shards', () => {
 });
 
 describe('star impact on base stats', () => {
-  it('multiplies base damage and health by x1.25 / 1.6 / 2 / 2.6 / 3.5 at ★2 to ★6', () => {
+  it('multiplies base damage and health by x1.21 / 1.49 / 1.8 / 2.25 / 2.89 at ★2 to ★6', () => {
     const base = cardBaseDamage(content, 'ember_squire', newOwnedCard());
     const health = cardHealth(content, 'ember_squire', newOwnedCard());
-    expect(content.cardRules.power.starMultiplier).toEqual([1.25, 1.6, 2, 2.6, 3.5]);
-    [1, 1.25, 1.6, 2, 2.6, 3.5].forEach((mult, i) => {
+    expect(content.cardRules.power.starMultiplier).toEqual([1.21, 1.49, 1.8, 2.25, 2.89]);
+    [1, 1.21, 1.49, 1.8, 2.25, 2.89].forEach((mult, i) => {
       const owned = { ...newOwnedCard(), stars: i + 1 };
       expect(cardBaseDamage(content, 'ember_squire', owned).div(base).toNumber()).toBeCloseTo(mult);
       expect(cardHealth(content, 'ember_squire', owned).div(health).toNumber()).toBeCloseTo(mult);
