@@ -698,24 +698,31 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-tag--foe:has(.du-tag__px:empty) {
   display: none;
 }
+/* before the first hit the tag holds its place unseen, so the feed under it stays put */
+.du-tag--foe.is-empty {
+  visibility: hidden;
+}
 
-/* the hit feed: the latest hits, left of the tag, newest on top */
-/* the feed and the tag in a row: the tag overlaps the card's top left corner, the feed left of it */
+/* the hit feed: the latest hits, under the tag, newest on top */
+/* the tag over the feed in one column: the tag overlaps the
+   card's top left corner and neither its coming nor its width moves the feed */
 .du-damage {
   position: absolute;
   top: -12px;
   right: calc(100% - 26px);
   z-index: 4;
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
+  flex-direction: column-reverse;
+  align-items: flex-end;
+  gap: 6px;
   pointer-events: none;
 }
 .du-feed {
   display: grid;
   justify-items: end;
   gap: 4px;
-  margin: 0;
+  /* the lines stop short of the enemy card (the tag overlaps its corner by 26 px) */
+  margin: 0 30px 0 0;
   padding: 0;
   list-style: none;
 }

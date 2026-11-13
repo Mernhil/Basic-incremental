@@ -659,15 +659,17 @@ export function createArena(ctx: ArenaContext): Arena {
       if (barMoment(lastLook, look, false) === 'shatter') popWord(DUEL_COPY.breakWord, 'break');
       lastLook = look;
       const dealt = enemyDamage(view.hp, view.maxHp);
+      // the table's window is smaller: its tag a size down
+      const tagPx = el.closest('.dv-window') ? 2 : 3;
       if (dealt.gt(0)) {
         foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
-        // the table's window is smaller: its tag a size down
-        pxNum(foeTagPx, fmt(dealt), el.closest('.dv-window') ? 2 : 3);
-      } else if (foeTagPx.dataset['px']) {
+        pxNum(foeTagPx, fmt(dealt), tagPx);
+      } else {
+        // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
         foeTagText.textContent = '';
-        foeTagPx.replaceChildren();
-        delete foeTagPx.dataset['px'];
+        pxNum(foeTagPx, '0', tagPx);
       }
+      foeTag.classList.toggle('is-empty', !dealt.gt(0));
       // the deck: one back per enemy to come (the boss last)
       const backs = deckBacks(view.waiting.length);
       if (deckStack.childElementCount !== backs) {
