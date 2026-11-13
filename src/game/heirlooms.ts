@@ -34,7 +34,10 @@ export function heirloomCards(content: Content): Card[] {
 }
 
 /** Shards the next step of an Heirloom takes: its unlock, then ★2 … ★6; null at ★6. */
-export function heirloomShardsNeeded(content: Content, owned: OwnedCard | undefined): number | null {
+export function heirloomShardsNeeded(
+  content: Content,
+  owned: OwnedCard | undefined,
+): number | null {
   const gate = content.heirlooms.gate;
   if (!owned) return gate.unlockShards;
   if (owned.stars >= MAX_STARS) return null;
@@ -326,11 +329,7 @@ function boughtNodes(state: GameState, cardId: string): string[] {
 }
 
 /** Points spent in an Heirloom's tree. */
-export function heirloomPointsSpent(
-  state: GameState,
-  content: Content,
-  cardId: string,
-): number {
+export function heirloomPointsSpent(state: GameState, content: Content, cardId: string): number {
   const tree = content.heirloomTreeByCard.get(cardId);
   if (!tree) return 0;
   return boughtNodes(state, cardId).reduce(
@@ -468,8 +467,20 @@ export function heirloomTreeModifiers(state: GameState, content: Content): Modif
       const source = { kind: 'heirloom' as const, id: `${cardId}:signature` };
       out.push(
         own
-          ? { stat: 'burst.power', kind: 'set', value: own.value.add(signature), scope: own.scope, source }
-          : { stat: 'burst.power', kind: 'flat', value: signature, scope: { job: 'fighting' }, source },
+          ? {
+              stat: 'burst.power',
+              kind: 'set',
+              value: own.value.add(signature),
+              scope: own.scope,
+              source,
+            }
+          : {
+              stat: 'burst.power',
+              kind: 'flat',
+              value: signature,
+              scope: { job: 'fighting' },
+              source,
+            },
       );
     }
   }

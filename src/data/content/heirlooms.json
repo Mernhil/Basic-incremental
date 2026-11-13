@@ -14,13 +14,7 @@
     },
     "pity": 60,
     "unlockShards": 30,
-    "starShards": [
-      10,
-      15,
-      20,
-      25,
-      30
-    ],
+    "starShards": [10, 15, 20, 25, 30],
     "wholeRepeatShards": 30,
     "cardShardsPerOverflow": 10
   },
@@ -35,12 +29,7 @@
   },
   "points": {
     "perStar": 1,
-    "levels": [
-      35,
-      70,
-      105,
-      140
-    ]
+    "levels": [35, 70, 105, 140]
   },
   "trees": [
     {
@@ -63,9 +52,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -78,9 +65,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -93,9 +78,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -108,9 +91,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -124,10 +105,7 @@
           "id": "capstone",
           "name": "High Noon",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "element.bonus",
@@ -167,9 +145,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -182,9 +158,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -197,9 +171,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -212,9 +184,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -228,10 +198,7 @@
           "id": "capstone",
           "name": "Eclipse",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "Balanced, and while it stands enemies deal 20% less damage; the signature strikes the enemy",
           "skill": "eclipse"
@@ -258,9 +225,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -273,9 +238,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -291,9 +254,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -306,9 +267,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -325,10 +284,7 @@
           "id": "capstone",
           "name": "Oath of Kings",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "Guards the team with 40% more health: enemies hit it first; the signature strikes the enemy",
           "skill": "oath_of_kings"
@@ -355,9 +311,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -373,9 +327,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -388,9 +340,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -403,9 +353,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -422,10 +370,7 @@
           "id": "capstone",
           "name": "Howl",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "Glass cannon: 60% more damage, 40% less health",
           "skill": "howl"
@@ -452,9 +397,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -467,9 +410,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -482,9 +423,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -497,9 +436,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -513,10 +450,7 @@
           "id": "capstone",
           "name": "Heaven's Reach",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -553,9 +487,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -568,9 +500,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -583,9 +513,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -598,9 +526,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -614,10 +540,7 @@
           "id": "capstone",
           "name": "Abyssal Pierce",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "element.resist",
@@ -654,9 +577,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -669,9 +590,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -684,9 +603,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -699,9 +616,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -715,10 +630,7 @@
           "id": "capstone",
           "name": "Dawn Charge",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "Guards the team: enemies hit it first; the signature heals every standing card by 25% of its health",
           "skill": "dawn_charge"
@@ -745,9 +657,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -760,9 +670,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -778,9 +686,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -793,9 +699,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -812,10 +716,7 @@
           "id": "capstone",
           "name": "Doom Charge",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -854,9 +755,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -869,9 +768,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -884,9 +781,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -902,9 +797,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -918,10 +811,7 @@
           "id": "capstone",
           "name": "Flash Step",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -956,9 +846,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -974,9 +862,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -989,9 +875,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -1004,9 +888,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1020,10 +902,7 @@
           "id": "capstone",
           "name": "Venom",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1056,9 +935,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -1074,9 +951,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1089,9 +964,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -1104,9 +977,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -1123,10 +994,7 @@
           "id": "capstone",
           "name": "Anvil of Worlds",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "Guards the team with 50% more health: enemies hit it first; the signature strikes the enemy",
           "skill": "anvil_of_worlds"
@@ -1153,9 +1021,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -1171,9 +1037,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -1186,9 +1050,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -1204,9 +1066,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1220,10 +1080,7 @@
           "id": "capstone",
           "name": "Grave Toll",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "burst.power",
@@ -1258,9 +1115,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -1273,9 +1128,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1288,9 +1141,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1303,9 +1154,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "stars.damage",
@@ -1319,10 +1168,7 @@
           "id": "capstone",
           "name": "Constellation",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "stars.damage",
@@ -1359,9 +1205,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1374,9 +1218,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -1389,9 +1231,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1404,9 +1244,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -1420,10 +1258,7 @@
           "id": "capstone",
           "name": "Shadow Volley",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1455,9 +1290,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -1473,9 +1306,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1488,9 +1319,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -1503,9 +1332,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -1522,10 +1349,7 @@
           "id": "capstone",
           "name": "Full Bloom",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "The signature heals every standing card by 50% of its health instead of striking",
           "skill": "full_bloom"
@@ -1555,9 +1379,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1570,9 +1392,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.health",
@@ -1585,9 +1405,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1600,9 +1418,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "burst.fill",
@@ -1619,10 +1435,7 @@
           "id": "capstone",
           "name": "Soul Drain",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [],
           "description": "While it stands, enemies deal 30% less damage; the signature strikes the enemy",
           "skill": "soul_drain"
@@ -1649,9 +1462,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "drops.materialChance",
@@ -1664,9 +1475,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -1679,9 +1488,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "drops.materialChance",
@@ -1694,9 +1501,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1710,10 +1515,7 @@
           "id": "capstone",
           "name": "Harvest of Grace",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "drops.materialChance",
@@ -1750,9 +1552,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1765,9 +1565,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1780,9 +1578,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "combat.damage",
@@ -1795,9 +1591,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "combat.critDamage",
@@ -1811,10 +1605,7 @@
           "id": "capstone",
           "name": "Last Breath",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "combat.critChance",
@@ -1851,9 +1642,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "depth.digRate",
@@ -1866,9 +1655,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "harvest.critChance",
@@ -1881,9 +1668,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "depth.digRate",
@@ -1896,9 +1681,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "depth.yield",
@@ -1912,10 +1695,7 @@
           "id": "capstone",
           "name": "Heart of the Mountain",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "depth.digRate",
@@ -1952,9 +1732,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "harvest.critChance",
@@ -1967,9 +1745,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "lucky.payout",
@@ -1982,9 +1758,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "harvest.critDamage",
@@ -1997,9 +1771,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "lucky.payout",
@@ -2013,10 +1785,7 @@
           "id": "capstone",
           "name": "Bottomless",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "lucky.payout",
@@ -2053,9 +1822,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "xp.card",
@@ -2068,9 +1835,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "harvest.speed",
@@ -2083,9 +1848,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "production.rate",
@@ -2098,9 +1861,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "depth.digRate",
@@ -2114,10 +1875,7 @@
           "id": "capstone",
           "name": "Eldest Ring",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "production.rate",
@@ -2154,9 +1912,7 @@
         {
           "id": "small_a",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "harvest.critChance",
@@ -2169,9 +1925,7 @@
         {
           "id": "small_b",
           "cost": 1,
-          "requires": [
-            "root"
-          ],
+          "requires": ["root"],
           "modifiers": [
             {
               "stat": "harvest.speed",
@@ -2184,9 +1938,7 @@
         {
           "id": "large_a",
           "cost": 2,
-          "requires": [
-            "small_a"
-          ],
+          "requires": ["small_a"],
           "modifiers": [
             {
               "stat": "harvest.critDamage",
@@ -2199,9 +1951,7 @@
         {
           "id": "large_b",
           "cost": 2,
-          "requires": [
-            "small_b"
-          ],
+          "requires": ["small_b"],
           "modifiers": [
             {
               "stat": "production.rate",
@@ -2215,10 +1965,7 @@
           "id": "capstone",
           "name": "Rot Feast",
           "cost": 3,
-          "requires": [
-            "large_a",
-            "large_b"
-          ],
+          "requires": ["large_a", "large_b"],
           "modifiers": [
             {
               "stat": "burst.power",

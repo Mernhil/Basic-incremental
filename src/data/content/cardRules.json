@@ -1,9 +1,5 @@
 {
-  "startCards": [
-    "ember_squire",
-    "apprentice_feller",
-    "cave_digger"
-  ],
+  "startCards": ["ember_squire", "apprentice_feller", "cave_digger"],
   "cost": {
     "common": 2,
     "uncommon": 3,
@@ -52,13 +48,7 @@
       "mythic": 5,
       "heirloom": 7
     },
-    "starMultiplier": [
-      1.21,
-      1.49,
-      1.8,
-      2.25,
-      2.89
-    ],
+    "starMultiplier": [1.21, 1.49, 1.8, 2.25, 2.89],
     "statTier": {
       "wood": 1,
       "bronze": 2.89,
