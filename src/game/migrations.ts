@@ -71,7 +71,48 @@ export const MIGRATIONS: MigrationTable = {
   /** v28 -> v29: readable numbers (0.7.6): Money, gems, lifetime totals, depth progress and
    *  account XP move to the new scale; the fight in progress starts fresh. */
   28: v28ToV29,
+  /** v29 -> v30: Heirlooms leave the ladder (0.8.0): a card at the Heirloom tier goes back to its
+   *  Mythic or Void tier at ★6; its Heirloom becomes its own card when the save is read. */
+  29: v29ToV30,
 };
+
+/** The Mythic/Void level cap when save format 30 was made (a snapshot). */
+const V30_MYTHIC_CAP = 120;
+
+/**
+ * v29 -> v30: Heirlooms leave the upgrade ladder (DESIGN.md §5 Saves keep their Heirlooms). Every
+ * card at the Heirloom tier goes back to the Mythic/Void tier at ★6 with its level up to 120 and
+ * its enhancements; what it had as an Heirloom (stars, level) is listed in `heirloomMigration`,
+ * which `deserializeState` turns into the Heirloom cards (it needs the content to know which
+ * Heirloom a card's type and side give). The Heirloom Gate starts with no pulls and no shards.
+ */
+function v29ToV30(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? { ...state['cards'] } : {};
+  const owned = isRecord(cards['owned']) ? { ...cards['owned'] } : {};
+  const moved: { card: string; stars: number; level: number }[] = [];
+  for (const [id, raw] of Object.entries(owned)) {
+    if (!isRecord(raw) || raw['tier'] !== 'heirloom') continue;
+    const level = typeof raw['level'] === 'number' ? raw['level'] : 1;
+    const stars = typeof raw['stars'] === 'number' ? raw['stars'] : 1;
+    moved.push({ card: id, stars, level });
+    const capped = Math.min(level, V30_MYTHIC_CAP);
+    owned[id] = {
+      ...raw,
+      tier: 'mythic',
+      stars: 6,
+      level: capped,
+      starFill: 0,
+      xp: capped < level ? '0' : raw['xp'],
+    };
+  }
+  cards['owned'] = owned;
+  return {
+    ...state,
+    cards,
+    heirlooms: { shards: {}, pity: 0, pulls: 0, trees: {} },
+    heirloomMigration: moved,
+  };
+}
 
 /** Crystals one pull cost when save format 27 was made (a snapshot): a scroll is worth this. */
 export const V27_CRYSTALS_PER_SCROLL = 300;

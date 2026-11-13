@@ -571,7 +571,8 @@ describe('balance sim: run', () => {
     expect(a.hits['clear_d1']).not.toBeNull();
     expect(a.hits['clear_d1']!).toBeLessThan(3600);
     // Two simulated hours of the real game: slower than a unit test, notably on CI runners.
-  }, 30_000);
+    // two one-hour runs: about 12 s locally and close to 30 s on the CI runner
+  }, 60_000);
 
   it('plays the shipped opening: the starter pull at once, the first clear by its target', () => {
     // The shipped numbers, not the pinned test content. A new game holds one pull (DESIGN.md §3),

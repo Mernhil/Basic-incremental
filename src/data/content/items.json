@@ -16,8 +16,7 @@
       "heirloom": {
         "mythic": "Solaris",
         "void": "Nightfall"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "greatsword",
@@ -29,8 +28,7 @@
       "heirloom": {
         "mythic": "Kingsoath",
         "void": "Grimhowl"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "spear",
@@ -42,8 +40,7 @@
       "heirloom": {
         "mythic": "Skypiercer",
         "void": "Abyss Thorn"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "lance",
@@ -55,8 +52,7 @@
       "heirloom": {
         "mythic": "Sunrider",
         "void": "Doomrider"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "dagger",
@@ -68,8 +64,7 @@
       "heirloom": {
         "mythic": "Lumen Fang",
         "void": "Nightsting"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "hammer",
@@ -81,8 +76,7 @@
       "heirloom": {
         "mythic": "Worldforge",
         "void": "Grave Anvil"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "bow",
@@ -94,8 +88,7 @@
       "heirloom": {
         "mythic": "Starweaver",
         "void": "Umbral String"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "staff",
@@ -107,8 +100,7 @@
       "heirloom": {
         "mythic": "Lifebloom",
         "void": "Soulwell"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "scythe",
@@ -120,8 +112,7 @@
       "heirloom": {
         "mythic": "Graceharvest",
         "void": "Last Breath"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "pickaxe",
@@ -133,8 +124,7 @@
       "heirloom": {
         "mythic": "Heartdelver",
         "void": "Deepmaw"
-      },
-      "heirloomOpen": true
+      }
     },
     {
       "kind": "logging_axe",
@@ -146,8 +136,7 @@
       "heirloom": {
         "mythic": "Elderwarden",
         "void": "Rotfeller"
-      },
-      "heirloomOpen": true
+      }
     }
   ]
 }

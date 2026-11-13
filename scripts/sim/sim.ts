@@ -37,6 +37,11 @@ import { RANK_TIERS, RARITIES, type Content, type SkillNode } from '../../src/da
 import {
   advance,
   activeWorkers,
+  buyHeirloomNode,
+  heirloomCards,
+  heirloomPullPrice,
+  heirloomTreeInfo,
+  pullHeirloomGate,
   assignForgeWorker,
   assignWorker,
   forgeWorker,
@@ -1124,7 +1129,42 @@ export function buyerCandidates(
       });
     }
   }
+  // The Heirloom Gate (DESIGN.md §7): its scrolls buy nothing else, so they are pulled as they
+  // come, a 10-pull when there are ten.
+  for (const count of [10, 1] as const) {
+    const price = heirloomPullPrice(content, count, modifiers);
+    // only once the scrolls are in hand: they come in lumps, so there is no wait to work out
+    if (have(state, price.resource).lt(price.amount)) continue;
+    out.push({
+      id: count === 10 ? 'summon:heirloom_gate:10' : 'summon:heirloom_gate',
+      kind: 'summon',
+      prices: [price],
+      buy: (s, c, m, rng) => okState(pullHeirloomGate(s, c, count, rng, m)),
+    });
+  }
   return out.map((c) => ({ ...c, eta: etaOf(state, content, c.prices, modifiers) }));
+}
+
+/**
+ * Spends every Heirloom's free tree points (DESIGN.md §10 Heirloom trees): the cheapest open node
+ * first, on the path toward the capstone, until nothing open is affordable.
+ */
+export function buyHeirloomTrees(state: GameState, content: Content): GameState {
+  let current = state;
+  for (const card of heirloomCards(content)) {
+    if (!current.cards.owned[card.id]) continue;
+    for (;;) {
+      const tree = heirloomTreeInfo(current, content, card.id);
+      const next = tree?.nodes
+        .filter((n) => n.affordable)
+        .sort((a, b) => a.node.cost - b.node.cost)[0];
+      if (!next) break;
+      const r = buyHeirloomNode(current, content, card.id, next.node.id);
+      if (!r.ok) break;
+      current = r.state;
+    }
+  }
+  return current;
 }
 
 /**
@@ -1387,6 +1427,7 @@ export function greedyBuy(
   const shards = spendShards(dust.state, content);
   current = shards === current ? current : optimizeLoadouts(shards, content);
   current = fillEnhancements(current, content);
+  current = buyHeirloomTrees(current, content);
   current = equipSets(current, content);
   current = markWishlist(current, content);
   current = chooseAutomation(current, content, candidates);
@@ -2479,12 +2520,11 @@ export interface ProgressSample {
   levelWait?: number;
 }
 
-/** The top of the weapon ladder (DESIGN.md §14 A maxed weapon): a Mythic or Void Heirloom at ★6. */
+/** A fully maxed weapon (DESIGN.md §14 A maxed weapon): an Heirloom card at ★6. */
 export function maxedWeapon(state: GameState, content: Content): boolean {
-  return Object.entries(state.cards.owned).some(([id, c]) => {
-    const rarity = content.cardById.get(id)?.rarity;
-    return (rarity === 'mythic' || rarity === 'void') && c.tier === 'heirloom' && c.stars >= 6;
-  });
+  return Object.entries(state.cards.owned).some(
+    ([id, c]) => content.cardById.get(id)?.heirloom === true && c.stars >= 6,
+  );
 }
 
 /** How far the best fighting weapon got, as "Name tier ★n" (the highest tier, then stars). */

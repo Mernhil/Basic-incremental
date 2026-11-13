@@ -150,8 +150,8 @@ export function devSetCardRank(
 ): DevResult {
   if (!content.cardById.has(cardId)) return fail('unknown');
   if (!RANK_TIERS.includes(rank.tier)) return fail('invalid');
-  // The Heirloom is open only for an item type whose Heirloom art is approved (items.json).
-  if (rank.tier === 'heirloom' && cardTopTier(content, cardId) !== 'heirloom')
+  // The Heirloom tier is the fixed tier of the Heirloom cards, and theirs only (DESIGN.md §5).
+  if ((rank.tier === 'heirloom') !== (cardTopTier(content, cardId) === 'heirloom'))
     return fail('invalid');
   if (!Number.isInteger(rank.stars) || rank.stars < 1 || rank.stars > 6) return fail('invalid');
   const next = cloneState(state);

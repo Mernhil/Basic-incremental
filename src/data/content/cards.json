@@ -5284,5 +5284,1001 @@
         }
       ]
     }
+  },
+  {
+    "id": "solaris",
+    "name": "Solaris",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "fire",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "nightfall",
+    "name": "Nightfall",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "sword"
+    },
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "kingsoath",
+    "name": "Kingsoath",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "grimhowl",
+    "name": "Grimhowl",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "greatsword"
+    },
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "skypiercer",
+    "name": "Skypiercer",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "storm",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "abyss_thorn",
+    "name": "Abyss Thorn",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "storm",
+    "item": {
+      "kind": "spear"
+    },
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sunrider",
+    "name": "Sunrider",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "doomrider",
+    "name": "Doomrider",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "lance"
+    },
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lumen_fang",
+    "name": "Lumen Fang",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "nightsting",
+    "name": "Nightsting",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "dagger"
+    },
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "worldforge",
+    "name": "Worldforge",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "fire",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "grave_anvil",
+    "name": "Grave Anvil",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "main": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "starweaver",
+    "name": "Starweaver",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "umbral_string",
+    "name": "Umbral String",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "bow"
+    },
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "lifebloom",
+    "name": "Lifebloom",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "nature",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "soulwell",
+    "name": "Soulwell",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "staff"
+    },
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "graceharvest",
+    "name": "Graceharvest",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "nature",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "last_breath",
+    "name": "Last Breath",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "heartdelver",
+    "name": "Heartdelver",
+    "heirloom": true,
+    "job": "mining",
+    "rarity": "mythic",
+    "element": "crystal",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "deepmaw",
+    "name": "Deepmaw",
+    "heirloom": true,
+    "job": "mining",
+    "rarity": "void",
+    "element": "earth",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "elderwarden",
+    "name": "Elderwarden",
+    "heirloom": true,
+    "job": "logging",
+    "rarity": "mythic",
+    "element": "nature",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "rotfeller",
+    "name": "Rotfeller",
+    "heirloom": true,
+    "job": "logging",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
   }
 ]

@@ -16,6 +16,7 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   element: 'Element',
   bond: 'Bond',
   challenge: 'Ascension challenge',
+  heirloom: 'Heirloom tree',
   account: 'Account level', // compile fix (mechanics): reward track cost cap bumps
   upgrade: 'Upgrade', // compile fix (mechanics): upgrade shelf purchases (DESIGN §4)
 };

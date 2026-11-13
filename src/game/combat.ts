@@ -1,5 +1,6 @@
 import type { BurstJob, Content, Dungeon, Trial } from '../data';
 import { payFloorFirstWin } from './summon';
+import { payHeirloomScrollsForClear } from './heirlooms';
 import { cardBaseDamage, fightingXpPerKill, fightingXpPerSecond, grantLoadoutXp } from './cards';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp, killXp } from './account';
@@ -1434,13 +1435,45 @@ function fightDungeon(
     // (DESIGN.md §6 card duel).
     reviveTeam(next);
     report.floorsCleared += clears;
-    if (!next.combat.challenge) return;
+    if (!next.combat.challenge) {
+      // Farming a Nightmare last-floor boss pays a little Heirloom Scroll a kill.
+      const scrolls = payHeirloomScrollsForClear(
+        next,
+        content,
+        stage.difficulty,
+        stage.kind,
+        stage.floor,
+        false,
+        clears,
+      );
+      if (scrolls.gt(0)) {
+        report.currencies['heirloom_scroll'] =
+          (report.currencies['heirloom_scroll'] ?? 0) + scrolls.toNumber();
+      }
+      return;
+    }
     // Victory (DESIGN.md §6 Farming and Challenge): the best floor rises and the farming moves
     // down to the floor won. Clearing (DESIGN.md §6): the Normal last-floor boss died. The last
     // floor of a tier also opens the next one (floors.ts `isDifficultyUnlocked`).
     const tier = ensureTier(next, dungeon);
+    const first = tier.best < stage.floor;
+    // Heirloom Scrolls (DESIGN.md §3): the first win of a Nightmare last-floor boss and every
+    // tenth endless depth. Later Nightmare boss kills pay theirs below, outside a Challenge too.
+    const heirloomScrolls = payHeirloomScrollsForClear(
+      next,
+      content,
+      stage.difficulty,
+      stage.kind,
+      stage.floor,
+      first,
+      clears,
+    );
+    if (heirloomScrolls.gt(0)) {
+      report.currencies['heirloom_scroll'] =
+        (report.currencies['heirloom_scroll'] ?? 0) + heirloomScrolls.toNumber();
+    }
     // The first win of a floor pays its scroll lump (DESIGN.md §3 scrolls).
-    if (tier.best < stage.floor) {
+    if (first) {
       for (const lump of payFloorFirstWin(
         next,
         content,

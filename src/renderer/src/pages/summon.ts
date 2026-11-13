@@ -2,10 +2,13 @@ import {
   claimDaily,
   collectModifiers,
   dailyAvailable,
+  Decimal,
   defaultRng,
   FOCUS_PORTAL_ID,
   focusKinds,
+  heirloomGateInfo,
   localDay,
+  pullHeirloomGate,
   portalInfo,
   pull,
   resolvePortal,
@@ -26,11 +29,14 @@ import { cosmeticSwatch } from '../ui/cosmeticSwatch';
 import { createCard, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
 import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
-import { ITEM_VIEWBOX } from '../art/items';
+import { cardTierArt, ITEM_VIEWBOX } from '../art/items';
 import { cardFaceProps, weaponArtMarkup } from './loadoutCards';
 import type { PageContext } from './production';
 import {
   handSummary,
+  heirloomBoardView,
+  heirloomDeckView,
+  heirloomRevealViews,
   lastHandView,
   oddsTable,
   portalView,
@@ -43,11 +49,14 @@ import {
 import './summon.css';
 
 /**
- * Summon page (DESIGN.md §7 Beta portals): "Deck and Table" as one pixel panel. Each portal is a
- * deck of card backs at 1x whose edge thickens toward its hard pity, with its pity bar and its
- * Pull 1 / Pull 10 buttons. The odds table in the middle lists every portal side by side; the
- * last hand waits below as real cards. The reveal still opens in a modal. The last hand lives in
- * UI memory only (no save change).
+ * Summon page (DESIGN.md §7; UI_RULES §2 The Summon view, pick 3a): the five gates stacked in a
+ * left column in a fixed order (Card Portal, Focus Portal, Wardrobe Gate, Legacy Gate, Heirloom
+ * Gate). The open gate shows its deck of card backs at 1x (its edge thickens toward its hard pity),
+ * its lines, pity bar and Pull 1 / Pull 10 buttons; the others are short rows that open on a click.
+ * The rest of the view is the open gate's content: the Wishlist and its odds for the card portals,
+ * the odds for the Wardrobe and Legacy Gates, the board of the 22 Heirlooms for the Heirloom Gate.
+ * "Your last hand" runs along the bottom. The reveal opens in a modal. The open gate and the last
+ * hand live in UI memory only (no save change).
  */
 
 export interface SummonContext extends PageContext {
@@ -85,11 +94,24 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   // the deck backs and the hand's cards are 1x: 132 CSS px on a 100 % screen, whole device pixels
   fitCard(table, { want: 132 });
   page.append(table);
-  // the three columns, each dealt in as one section of the view (motion E), the hand across the bottom
+  // two columns, each dealt in as one section of the view (motion E): the gates on the left, the
+  // open gate's content with the last hand under it on the right
   const colDecks = h('div', 'sm-col sm-col--decks');
-  const colWish = h('div', 'sm-col sm-col--wish');
-  const colOdds = h('div', 'sm-col sm-col--odds');
-  for (const col of [colDecks, colWish, colOdds]) col.dataset['deal'] = '';
+  const colMain = h('div', 'sm-col sm-col--main');
+  for (const col of [colDecks, colMain]) col.dataset['deal'] = '';
+  colDecks.setAttribute('aria-label', COPY.summon.gatesLabel);
+  /** The gate whose deck is open: a portal id, `focus_portal`, `heirloom_gate` or the locked gate. */
+  let openGate = content.portals[0]?.id ?? FOCUS_PORTAL_ID;
+  const gates = new Map<
+    string,
+    {
+      root: HTMLElement;
+      row: HTMLButtonElement;
+      rowLine: HTMLElement;
+      rowPity: HTMLElement;
+      deck: HTMLElement;
+    }
+  >();
 
   const decks = new Map<string, DeckUi>();
   const views = new Map<string, PortalView>();
@@ -109,11 +131,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   odds.append(h('h2', 'sm-odds__title px-display', COPY.summon.oddsTitle), oddsBody, oddsNote);
 
   function renderOdds(): void {
-    // the Focus Portal has the Card Portal's rates: it gets a note, not a column
-    const list = [...decks.keys()]
-      .filter((id) => id !== FOCUS_PORTAL_ID)
-      .map((id) => views.get(id))
-      .filter((v): v is PortalView => !!v);
+    // the open gate's odds (the Focus Portal has the Card Portal's rates and gets a note)
+    const list = [views.get(openGate)].filter((v): v is PortalView => !!v);
     const t = oddsTable(list);
     const key = JSON.stringify(t);
     if (key === oddsKey) return;
@@ -146,8 +165,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     }
     oddsBody.replaceChildren(thead, tbody);
     const notes = [...new Set(list.map((v) => v.guarantee))];
-    if (decks.has(FOCUS_PORTAL_ID)) notes.push(COPY.summon.oddsFocus);
-    if (wishActive) notes.push(COPY.summon.oddsWishlist);
+    if (openGate === FOCUS_PORTAL_ID) notes.push(COPY.summon.oddsFocus);
+    if (wishActive && list[0]?.kind === 'cards') notes.push(COPY.summon.oddsWishlist);
     oddsNote.replaceChildren(...notes.map((n) => h('span', '', n)));
   }
 
@@ -211,12 +230,19 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
 
   // ---- the last hand ----
   const handBox = h('section', 'sm-hand px-panel');
-  handBox.dataset['deal'] = '';
   const handHead = h('header', 'sm-hand__head');
   const handSum = h('p', 'sm-hand__summary bi-num');
   handHead.append(h('h2', 'sm-hand__title px-display', COPY.summon.handTitle), handSum);
   const handList = h('ul', 'sm-hand__list');
-  const handEmpty = h('p', 'sm-hand__empty', COPY.summon.handEmpty);
+  // an empty hand shows the open gate's card backs, so the strip is never empty
+  const handEmpty = h('div', 'sm-hand__empty');
+  handEmpty.setAttribute('aria-label', COPY.summon.handEmptyBacks);
+  for (let i = 0; i < 5; i++) {
+    const back = h('i', 'sm-hand__back');
+    back.setAttribute('aria-hidden', 'true');
+    handEmpty.append(back);
+  }
+  handEmpty.append(h('p', 'sm-hand__emptytext', COPY.summon.handEmpty));
   const handRow = h('div', 'sm-hand__row');
   handRow.append(handEmpty, handList);
   handBox.append(handHead, handRow);
@@ -446,22 +472,224 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     return root;
   }
 
+  // ---- the Heirloom Gate (DESIGN.md §7): its deck, and the board of the 22 Heirlooms ----
+  const heirloomId = content.heirlooms.gate.id;
+  let heirloomUi: DeckUi | null = null;
+  let heirloomAbout: HTMLElement | null = null;
+  function heirloomDeck(): HTMLElement {
+    const root = deckShell('heirloom', false);
+    root.dataset['portal'] = heirloomId;
+    const stack = buildStack('heirloom');
+    const line = h('p', 'sm-deck__line');
+    heirloomAbout = h('p', 'sm-deck__about');
+    const pityValue = h('b', 'bi-num');
+    const pityTop = h('div', 'sm-pity__top');
+    pityTop.append(h('span', '', COPY.summon.pityLabel), pityValue);
+    const pityFill = h('i');
+    const pityBar = h('div', 'sm-pity__track px-well');
+    pityBar.setAttribute('role', 'meter');
+    pityBar.setAttribute('aria-valuemin', '0');
+    pityBar.setAttribute('aria-label', COPY.summon.pityMeter(content.heirlooms.gate.name));
+    pityBar.append(pityFill);
+    const pity = h('div', 'sm-pity');
+    pity.append(pityTop, pityBar);
+    const buttons = h('div', 'sm-deck__buttons');
+    const single = pullButton(COPY.summon.pullOne, false, () => doHeirloomPull(1));
+    const ten = pullButton(COPY.summon.pullTen, true, () => doHeirloomPull(10));
+    buttons.append(single.el, ten.el);
+    root.append(
+      h('h2', 'sm-deck__name px-display', content.heirlooms.gate.name),
+      line,
+      heirloomAbout,
+      stack,
+      pity,
+      buttons,
+    );
+    heirloomUi = {
+      root,
+      stack,
+      pityValue,
+      pityBar,
+      pityFill,
+      line,
+      hunt: null,
+      focus: null,
+      single,
+      ten,
+    };
+    return root;
+  }
+
+  const board = h('section', 'sm-board px-panel');
+  const boardTitle = h('h2', 'sm-board__title px-display');
+  const boardFacts = h('p', 'sm-board__facts');
+  const boardGrid = h('div', 'sm-board__grid');
+  boardGrid.setAttribute('role', 'table');
+  const boardPity = h('div', 'sm-board__pity');
+  const boardPityValue = h('b', 'bi-num');
+  const boardPityFill = h('i');
+  const boardPityTrack = h('div', 'sm-pity__track px-well');
+  boardPityTrack.append(boardPityFill);
+  boardPity.append(
+    h('span', 'sm-board__pitylabel px-display', COPY.summon.pityLabel),
+    boardPityTrack,
+    boardPityValue,
+  );
+  const boardOdds = h('p', 'sm-board__odds');
+  board.append(boardTitle, boardFacts, boardGrid, boardPity, boardOdds);
+  let boardKey = '';
+
+  function renderBoard(s: GameState): void {
+    const info = heirloomGateInfo(s, content);
+    const v = heirloomBoardView(info, content);
+    set(boardTitle, v.title);
+    set(boardFacts, v.facts);
+    set(boardOdds, `${v.odds}. ${v.pityNote}`);
+    set(boardPityValue, COPY.summon.pityOf(info.pity.count, info.pity.threshold));
+    boardPityFill.style.width = `${Math.round(info.pity.progress * 100)}%`;
+    const key = JSON.stringify(v.rows);
+    if (key === boardKey) return;
+    boardKey = key;
+    const head = h('div', 'sm-board__row sm-board__row--head');
+    head.setAttribute('role', 'row');
+    head.append(h('span', 'sm-board__side'));
+    for (const c of v.columns) {
+      const th = h('span', 'sm-board__col', c.name);
+      th.setAttribute('role', 'columnheader');
+      head.append(th);
+    }
+    const rows = v.rows.map((r) => {
+      const row = h('div', 'sm-board__row');
+      row.setAttribute('role', 'row');
+      const side = h('span', 'sm-board__side px-display', r.name);
+      side.setAttribute('role', 'rowheader');
+      row.append(side);
+      for (const c of r.cells) {
+        const cell = h('div', 'sm-cell');
+        cell.setAttribute('role', 'cell');
+        if (!c) {
+          row.append(cell);
+          continue;
+        }
+        cell.dataset['side'] = c.side;
+        cell.classList.toggle('is-owned', c.owned);
+        cell.setAttribute('aria-label', c.label);
+        const card = content.cardById.get(c.cardId)!;
+        const pic = h('span', 'sm-cell__pic');
+        pic.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${cardTierArt(card, 'heirloom')}</svg>`;
+        const stars = h('span', 'sm-cell__stars');
+        stars.setAttribute('aria-hidden', 'true');
+        if (c.owned) stars.textContent = '★'.repeat(c.stars) + '☆'.repeat(6 - c.stars);
+        const bar = h('span', 'sm-cell__bar px-well');
+        const fill = h('i');
+        fill.style.width = `${Math.round(c.progress * 100)}%`;
+        bar.append(fill);
+        cell.append(
+          pic,
+          h('b', 'sm-cell__name', c.name),
+          stars,
+          bar,
+          h('span', 'sm-cell__count bi-num', c.shardsText),
+        );
+        row.append(cell);
+      }
+      return row;
+    });
+    boardGrid.replaceChildren(head, ...rows);
+  }
+
+  function doHeirloomPull(count: PullCount): void {
+    if (busy) return;
+    const result = pullHeirloomGate(ctx.state(), content, count, defaultRng);
+    if (!result.ok) return;
+    busy = true;
+    hideTip();
+    ctx.apply(result.state);
+    const after = result.state;
+    const reveal = heirloomRevealViews(result.results, content);
+    handViews = reveal;
+    hand = lastHandView(reveal, content).map((view) => ({
+      view,
+      face: cardFaceProps(content, after, view.itemId) ?? heirloomFace(after, view.itemId),
+      picture: null,
+    }));
+    renderHand();
+    showReveal({
+      portalName: content.heirlooms.gate.name,
+      kind: 'heirloom',
+      views: reveal,
+      plan: revealPlan(
+        reveal.map((v) => v.rarity),
+        content.scrolls.reveal,
+      ),
+      face: (id) => cardFaceProps(content, after, id) ?? heirloomFace(after, id),
+      ...(ctx.sound ? { sound: ctx.sound } : {}),
+      onClose: () => {
+        busy = false;
+        render();
+        heirloomUi?.single.el.focus();
+      },
+    });
+  }
+
+  /** A locked Heirloom's face in the reveal and the hand: its card as it will be when unlocked. */
+  function heirloomFace(s: GameState, cardId: string) {
+    const ghost = structuredClone(s);
+    ghost.cards.owned[cardId] = {
+      tier: 'heirloom',
+      stars: 1,
+      level: 1,
+      xp: new Decimal(0),
+      starFill: 0,
+      enhancements: [],
+    };
+    return cardFaceProps(content, ghost, cardId);
+  }
+
+  // ---- the gate column: the five gates in a fixed order, one open ----
+  /** A gate: its short row (closed) and its deck (open). */
+  function gate(id: string, name: string, deck: HTMLElement): HTMLElement {
+    const root = h('div', 'sm-gate');
+    root.dataset['gate'] = id;
+    const row = h('button', 'sm-gate__row px-panel');
+    row.type = 'button';
+    const rowLine = h('span', 'sm-gate__line');
+    const rowPity = h('span', 'sm-gate__pity bi-num');
+    const chevron = h('span', 'sm-gate__chevron', '▸');
+    chevron.setAttribute('aria-hidden', 'true');
+    const text = h('span', 'sm-gate__text');
+    text.append(h('span', 'sm-gate__name px-display', name), rowLine);
+    row.append(text, rowPity, chevron);
+    row.addEventListener('click', () => {
+      openGate = id;
+      render();
+      deck.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus();
+    });
+    root.append(row, deck);
+    gates.set(id, { root, row, rowLine, rowPity, deck });
+    return root;
+  }
+
   // the Wardrobe Gate opens with the Wardrobe (DESIGN.md §7); until then it shows as locked
   const gateOpen = content.portals.some((p) => p.kind === 'cosmetics');
-  // the Focus Portal stands beside the Card Portal (DESIGN.md §7)
-  const hasFocus = content.portals.some((p) => p.id === 'card_portal');
-  const slots = [
-    ...content.portals.map((p) => portalDeck(p.id)),
-    ...(gateOpen ? [] : [lockedDeck()]),
-  ];
-  const focusDeck = hasFocus ? portalDeck(FOCUS_PORTAL_ID) : null;
-  const [left, ...rest] = slots;
-  if (left) left.classList.add('sm-deck--left');
-  focusDeck?.classList.add('sm-deck--focus');
-  for (const r of rest) r.classList.add('sm-deck--right');
-  colDecks.append(...(left ? [left] : []), ...(focusDeck ? [focusDeck] : []), ...rest);
-  colWish.append(wish);
-  colOdds.append(odds);
+  const byKind = (kind: string) => content.portals.filter((p) => p.kind === kind);
+  const order: [string, string, HTMLElement][] = [];
+  for (const p of byKind('cards')) {
+    order.push([p.id, p.name, portalDeck(p.id)]);
+    // the Focus Portal stands right after the Card Portal (DESIGN.md §7)
+    if (p.id === 'card_portal')
+      order.push([FOCUS_PORTAL_ID, 'Focus Portal', portalDeck(FOCUS_PORTAL_ID)]);
+  }
+  for (const p of byKind('cosmetics')) order.push([p.id, p.name, portalDeck(p.id)]);
+  if (!gateOpen) order.push(['wardrobe_locked', COPY.summon.gate, lockedDeck()]);
+  for (const p of byKind('skins')) order.push([p.id, p.name, portalDeck(p.id)]);
+  order.push([heirloomId, content.heirlooms.gate.name, heirloomDeck()]);
+  for (const [id, name, deck] of order) colDecks.append(gate(id, name, deck));
+
+  // the open gate's content, then the last hand
+  const gateBody = h('div', 'sm-gatebody');
+  gateBody.append(wish, odds);
+  colMain.append(gateBody, board);
 
   // ---- the daily scrolls ----
   const daily = h('section', 'sm-daily px-panel');
@@ -479,7 +707,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     render();
   });
   colDecks.prepend(daily);
-  table.append(colDecks, colWish, colOdds, handBox);
+  colMain.append(handBox);
+  table.append(colDecks, colMain);
   renderHand();
 
   function render(): void {
@@ -518,8 +747,78 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     }
     renderFocus(s);
     renderDaily(s);
+    renderHeirloom(s);
+    renderGates();
     renderWishlist();
     renderOdds();
+  }
+
+  function renderHeirloom(s: GameState): void {
+    if (!heirloomUi) return;
+    const v = heirloomDeckView(heirloomGateInfo(s, content), content);
+    const ui = heirloomUi;
+    ui.stack.style.setProperty('--layers', String(v.deckLayers));
+    ui.stack.setAttribute(
+      'aria-label',
+      COPY.summon.deckLabel(v.name, v.pityCount, v.pityThreshold, 'Heirloom'),
+    );
+    set(ui.line, v.line);
+    if (heirloomAbout) set(heirloomAbout, v.about);
+    set(ui.pityValue, v.pityText);
+    ui.pityFill.style.width = `${Math.round(v.pityProgress * 100)}%`;
+    ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
+    ui.pityBar.setAttribute('aria-valuenow', String(v.pityCount));
+    const resource = content.resourceById.get(v.resourceId);
+    const icon = (resource ? iconMarkup(resourceIconId(resource)) : null) ?? '';
+    for (const [b, o, n] of [
+      [ui.single, v.single, 1],
+      [ui.ten, v.ten, 10],
+    ] as const) {
+      const html = `${icon ? `<span class="sm-pull__icon">${icon}</span>` : ''}${o.amount}`;
+      if (b.cost.dataset['k'] !== html) {
+        b.cost.dataset['k'] = html;
+        b.cost.innerHTML = html;
+      }
+      b.el.disabled = !o.affordable || busy;
+      b.el.classList.toggle('is-affordable', o.affordable);
+      b.el.setAttribute('aria-label', COPY.summon.pullLabel(v.name, n, o.price));
+    }
+    const g = gates.get(heirloomId);
+    if (g) {
+      set(g.rowLine, v.line);
+      set(g.rowPity, v.pityText);
+    }
+    if (openGate === heirloomId) renderBoard(s);
+  }
+
+  /** Opens the chosen gate and closes the others; shows the open gate's content. */
+  function renderGates(): void {
+    if (!gates.has(openGate)) openGate = [...gates.keys()][0] ?? openGate;
+    for (const [id, g] of gates) {
+      const open = id === openGate;
+      g.root.classList.toggle('is-open', open);
+      g.row.hidden = open;
+      g.deck.hidden = !open;
+      g.row.setAttribute('aria-expanded', String(open));
+      const view = views.get(id);
+      if (view) {
+        set(g.rowLine, view.line);
+        set(g.rowPity, view.pityText);
+      } else if (id === 'wardrobe_locked') set(g.rowLine, COPY.summon.gateLocked);
+      g.row.setAttribute(
+        'aria-label',
+        COPY.summon.gateRowLabel(
+          g.row.querySelector('.sm-gate__name')?.textContent ?? id,
+          g.rowLine.textContent ?? '',
+          open,
+        ),
+      );
+    }
+    const kind = openGate === heirloomId ? 'heirloom' : (views.get(openGate)?.kind ?? 'none');
+    table.dataset['gate'] = kind;
+    board.hidden = kind !== 'heirloom';
+    gateBody.hidden = kind === 'heirloom' || kind === 'none';
+    wish.style.display = kind === 'cards' ? '' : 'none';
   }
 
   function renderFocus(s: GameState): void {

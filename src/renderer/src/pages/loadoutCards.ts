@@ -40,7 +40,8 @@ export function cardItemArt(
     const markup = skin ? skinMarkup(skin) : '';
     if (markup) return markup;
   }
-  const tier = lookTier(card.rarity, owned?.tier ?? 'wood');
+  // an Heirloom card shows its Heirloom, owned or not (DESIGN.md §5 An Heirloom card)
+  const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
   return cardTierArt(card, tier, lookStep(content, card.item.kind, tier, owned?.stars ?? 1));
 }
 

@@ -293,7 +293,39 @@ export const COPY = {
   cards: {
     tabs: 'Cards views',
     collectionTab: 'Collection',
+    heirloomsTab: 'Heirlooms',
     loadoutsTab: 'Loadouts',
+    /** The Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e). */
+    heirloomsLabel: 'The 22 Heirlooms',
+    heirloomGroup: (type: string, have: number, total: number) => `${type}: ${have} of ${total}`,
+    heirloomShards: (stars: number, have: number, need: number | null) =>
+      stars === 0
+        ? `${have} / ${need ?? 0} to unlock`
+        : need === null
+          ? 'All stars'
+          : `${have} / ${need} to ★${stars + 1}`,
+    heirloomShardLine: (stars: number) =>
+      stars === 0 ? 'Shards to unlock' : `Shards to ★${stars + 1}`,
+    heirloomSub: (type: string, side: string, element: string) =>
+      `Heirloom ${type} · ${side} · ${element}`,
+    heirloomLocked: 'Not unlocked yet. Its shards come from the Heirloom Gate in Summon.',
+    treePoints: (free: number, earned: number) =>
+      `${free} of ${earned} ${earned === 1 ? 'point' : 'points'} free`,
+    treeNext: (levels: string) => `More points at ★ and at Lv ${levels}`,
+    respec: 'Respec',
+    respecLabel: 'Clear the tree and get its points back (free)',
+    gemState: { bought: 'owned', open: 'open', locked: 'locked' } as Record<string, string>,
+    gemLabel: (name: string, what: string, cost: number, state: string) =>
+      `${name}: ${what}. ${cost} ${cost === 1 ? 'point' : 'points'}, ${state}`,
+    gemCost: (cost: number) => `${cost} pt`,
+    gemName: {
+      root: 'Root',
+      small_a: 'Left path',
+      small_b: 'Right path',
+      large_a: 'Left peak',
+      large_b: 'Right peak',
+      capstone: 'Capstone',
+    } as Record<string, string>,
     found: (n: number, total: number) => `${n} of ${total} found`,
     ownedGroup: (n: number) => `Your cards (${n})`,
     typeGroup: (type: string, have: number, total: number) =>
@@ -805,6 +837,37 @@ export const COPY = {
     hidden: 'Face-down card',
     shown: (name: string, rarity: string, tags: string) =>
       `${name}, ${rarity}${tags ? `, ${tags}` : ''}`,
+    /** The gate column (UI_RULES §2 The Summon view): a closed gate's row and its open toggle. */
+    gatesLabel: 'Gates',
+    gateRowLabel: (name: string, line: string, open: boolean) =>
+      `${name}. ${line}. ${open ? 'Open' : 'Click to open'}`,
+    gateLineSkins: 'Weapon skins',
+    /** The Heirloom Gate (DESIGN.md §7). */
+    heirloomGate: 'Heirloom Gate',
+    heirloomLine: (n: number) => `A whole Heirloom within ${n} pulls`,
+    heirloomAbout: (chance: string, min: number, max: number) =>
+      `${chance} a whole Heirloom, else ${min} to ${max} shards of a random one`,
+    heirloomBoardTitle: (n: number) => `The ${n} Heirlooms`,
+    heirloomBoardFacts: (unlocked: number, total: number, unlock: number) =>
+      `${unlocked} of ${total} unlocked · ${unlock} shards unlock one · its shards then fill its stars`,
+    heirloomOdds: (whole: string, shard: string, min: number, max: number, n: number) =>
+      `${whole} a whole Heirloom · ${shard} ${min} to ${max} shards · each Heirloom 1 in ${n}`,
+    heirloomPityNote: (n: number, cardShards: number) =>
+      `The ${n}th pull without a whole Heirloom gives one. Past ★6 a shard becomes ${cardShards} card shards.`,
+    heirloomCell: (name: string, stars: number, have: number, need: number | null) =>
+      stars === 0
+        ? `${name}, locked, ${have} of ${need ?? 0} shards to unlock`
+        : need === null
+          ? `${name}, ★${stars}, all stars`
+          : `${name}, ★${stars}, ${have} of ${need} shards to ★${stars + 1}`,
+    heirloomShardsOf: (have: number, need: number | null) =>
+      need === null ? 'All stars' : `${have} / ${need}`,
+    heirloomWhole: 'Whole Heirloom!',
+    heirloomUnlocked: 'Unlocked!',
+    heirloomStar: (n: number) => `★${n}!`,
+    heirloomCardShards: (n: number) => `+${n} card shards`,
+    heirloomSide: { mythic: 'Mythic', void: 'Void' } as Record<string, string>,
+    handEmptyBacks: 'No pull yet: the cards you draw will wait here.',
   },
   weaponSkins: {
     tabCosmetics: 'Cosmetics',
@@ -1132,8 +1195,8 @@ export const COPY = {
     needsMany: (n: number) => `Missing ${n} items`,
     starOf: (n: number, total: number) => `${n} of ${total} stars`,
     ready: 'Ready. Level and stars carry over.',
-    topPending: (tier: string, weapon: string) =>
-      `${tier} is the top tier for ${weapon} until its Heirloom is drawn.`,
+    topLadder: (tier: string) => `${tier} is the top tier. Heirlooms come from the Heirloom Gate.`,
+    heirloomStars: 'Its stars come from its own shards in the Heirloom Gate.',
     topEnd: (tier: string) => `${tier} is as far as this weapon goes.`,
     fullyUpgraded: 'Fully upgraded. Nothing left to unlock.',
     costTitle: (name: string, have: string, need: string) => `${name}: have ${have}, need ${need}`,

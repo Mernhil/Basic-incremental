@@ -278,8 +278,9 @@ export function createShell(opts: {
 
   el.append(header, main, notices, track);
 
-  // Below this width the header drops the coin and Details names (the window can shrink to 1024px).
-  const narrow = window.matchMedia('(max-width: 1120px)');
+  // Below this width the header drops the coin, scroll and Details names (the window can shrink to
+  // 1024px); with the Heirloom Scroll's chip the names no longer fit beside four amounts at 1280.
+  const narrow = window.matchMedia('(max-width: 1400px)');
   const applyNarrow = (): void => {
     el.classList.toggle('shell--narrow', narrow.matches);
   };
