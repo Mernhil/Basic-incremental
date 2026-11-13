@@ -1,9 +1,50 @@
 {
-  "kinds": ["sword", "greatsword", "dagger", "hammer", "lance", "bow", "scythe", "logging_axe"],
   "steps": {
-    "wood": [1],
-    "bronze": [1, 4],
-    "silver": [1, 3, 5],
-    "gold": [1, 2, 4, 6]
+    "wood": {
+      "stars": [1],
+      "kinds": ["sword", "greatsword", "dagger", "hammer", "lance", "bow", "scythe", "logging_axe"]
+    },
+    "bronze": {
+      "stars": [1, 4],
+      "kinds": ["sword", "greatsword", "dagger", "hammer", "lance", "bow", "scythe", "logging_axe"]
+    },
+    "silver": {
+      "stars": [1, 3, 5],
+      "kinds": ["sword", "greatsword", "dagger", "hammer", "lance", "bow", "scythe", "logging_axe"]
+    },
+    "gold": {
+      "stars": [1, 2, 4, 6],
+      "kinds": ["sword", "greatsword", "dagger", "hammer", "lance", "bow", "scythe", "logging_axe"]
+    },
+    "prismatic": {
+      "stars": [1, 2, 3, 4, 5],
+      "kinds": [
+        "sword",
+        "greatsword",
+        "spear",
+        "lance",
+        "hammer",
+        "scythe",
+        "pickaxe",
+        "logging_axe",
+        "bow",
+        "staff"
+      ]
+    },
+    "mythic": {
+      "stars": [1, 2, 3, 4, 5, 6],
+      "kinds": [
+        "sword",
+        "greatsword",
+        "spear",
+        "lance",
+        "hammer",
+        "scythe",
+        "pickaxe",
+        "logging_axe",
+        "bow",
+        "staff"
+      ]
+    }
   }
 }
