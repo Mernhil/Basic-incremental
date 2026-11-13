@@ -9,20 +9,20 @@
     "level": {
       "cost": {
         "resource": "money",
-        "base": "150",
-        "growth": "1.13"
+        "base": "45",
+        "growth": "1.109"
       },
       "ratePercent": "5",
       "milestones": {
         "every": 15,
-        "multiplier": "2"
+        "multiplier": "1.15"
       }
     },
     "depth": {
       "names": ["Topsoil", "Clay", "Gravel", "Stone", "Bedrock", "Deep rock", "Old vein", "Heart"],
       "hardness": "600",
-      "hardnessGrowth": "2.2",
-      "yieldGrowth": "1.6",
+      "hardnessGrowth": "1.95",
+      "yieldGrowth": "1.15",
       "digRate": "1"
     },
     "element": "earth"
@@ -37,20 +37,20 @@
     "level": {
       "cost": {
         "resource": "money",
-        "base": "2000",
-        "growth": "1.14"
+        "base": "400",
+        "growth": "1.117"
       },
       "ratePercent": "5",
       "milestones": {
         "every": 15,
-        "multiplier": "2"
+        "multiplier": "1.15"
       }
     },
     "depth": {
       "names": ["Topsoil", "Clay", "Gravel", "Stone", "Bedrock", "Deep rock", "Old vein", "Heart"],
       "hardness": "2400",
-      "hardnessGrowth": "2.2",
-      "yieldGrowth": "1.6",
+      "hardnessGrowth": "1.95",
+      "yieldGrowth": "1.15",
       "digRate": "1"
     },
     "element": "earth"
@@ -65,20 +65,20 @@
     "level": {
       "cost": {
         "resource": "money",
-        "base": "25000",
-        "growth": "1.15"
+        "base": "3400",
+        "growth": "1.126"
       },
       "ratePercent": "5",
       "milestones": {
         "every": 15,
-        "multiplier": "2"
+        "multiplier": "1.15"
       }
     },
     "depth": {
       "names": ["Topsoil", "Clay", "Gravel", "Stone", "Bedrock", "Deep rock", "Old vein", "Heart"],
       "hardness": "9000",
-      "hardnessGrowth": "2.2",
-      "yieldGrowth": "1.6",
+      "hardnessGrowth": "1.95",
+      "yieldGrowth": "1.15",
       "digRate": "1"
     },
     "element": "crystal"

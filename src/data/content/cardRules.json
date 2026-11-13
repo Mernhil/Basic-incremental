@@ -31,12 +31,12 @@
     "perKill": "25",
     "tierGrowth": "4.5",
     "perUnit": {
-      "logging": "1",
-      "mining": "2"
+      "logging": "30",
+      "mining": "60"
     }
   },
   "power": {
-    "perLevel": 0.02,
+    "perLevel": 0.015,
     "perStar": 0.05,
     "star6Bonus": 0.25,
     "tier": {
@@ -48,15 +48,15 @@
       "mythic": 5,
       "heirloom": 7
     },
-    "starMultiplier": [1.25, 1.6, 2, 2.6, 3.5],
+    "starMultiplier": [1.21, 1.49, 1.8, 2.25, 2.89],
     "statTier": {
       "wood": 1,
-      "bronze": 3.5,
-      "silver": 12.25,
-      "gold": 43,
-      "prismatic": 151,
-      "mythic": 529,
-      "heirloom": 1852
+      "bronze": 2.89,
+      "silver": 8.37,
+      "gold": 24.2,
+      "prismatic": 70.1,
+      "mythic": 203,
+      "heirloom": 587
     }
   },
   "mainGrowth": {
@@ -112,7 +112,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "20000"
+          "amount": "5300"
         },
         {
           "resource": "moss_core",
@@ -120,17 +120,17 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "4667"
+          "amount": "2900"
         },
         {
           "resource": "iron_gem",
-          "amount": "1400"
+          "amount": "1300"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "20000"
+          "amount": "5300"
         },
         {
           "resource": "moss_core",
@@ -138,17 +138,17 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "2333"
+          "amount": "1800"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "1400"
+          "amount": "1300"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "20000"
+          "amount": "5300"
         },
         {
           "resource": "moss_core",
@@ -156,11 +156,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "1633"
+          "amount": "1400"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "2800"
+          "amount": "2000"
         }
       ]
     },
@@ -168,7 +168,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "60000"
+          "amount": "13000"
         },
         {
           "resource": "moss_core",
@@ -176,17 +176,17 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "14000"
+          "amount": "6000"
         },
         {
           "resource": "iron_gem",
-          "amount": "4200"
+          "amount": "2700"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "60000"
+          "amount": "13000"
         },
         {
           "resource": "moss_core",
@@ -194,17 +194,17 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "7000"
+          "amount": "3800"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "4200"
+          "amount": "2700"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "60000"
+          "amount": "13000"
         },
         {
           "resource": "moss_core",
@@ -212,11 +212,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "4900"
+          "amount": "2900"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "8400"
+          "amount": "4300"
         }
       ]
     },
@@ -224,7 +224,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "2000000"
+          "amount": "260000"
         },
         {
           "resource": "cinder_core",
@@ -232,17 +232,17 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "100000"
+          "amount": "23000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "20000"
+          "amount": "7700"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "2000000"
+          "amount": "260000"
         },
         {
           "resource": "cinder_core",
@@ -250,17 +250,17 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "40000"
+          "amount": "12000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "30000"
+          "amount": "10000"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "2000000"
+          "amount": "260000"
         },
         {
           "resource": "cinder_core",
@@ -268,11 +268,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "28000"
+          "amount": "9600"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "60000"
+          "amount": "16000"
         }
       ]
     },
@@ -280,7 +280,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "10000000"
+          "amount": "1000000"
         },
         {
           "resource": "frost_core",
@@ -296,17 +296,17 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "400000"
+          "amount": "59000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "120000"
+          "amount": "26000"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "10000000"
+          "amount": "1000000"
         },
         {
           "resource": "frost_core",
@@ -322,17 +322,17 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "240000"
+          "amount": "42000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "160000"
+          "amount": "32000"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "10000000"
+          "amount": "1000000"
         },
         {
           "resource": "frost_core",
@@ -348,11 +348,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "180000"
+          "amount": "34000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "240000"
+          "amount": "42000"
         }
       ]
     },
@@ -360,7 +360,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "50000000"
+          "amount": "4000000"
         },
         {
           "resource": "frost_core",
@@ -376,17 +376,17 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "800000"
+          "amount": "94000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "240000"
+          "amount": "42000"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "50000000"
+          "amount": "4000000"
         },
         {
           "resource": "frost_core",
@@ -402,17 +402,17 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "480000"
+          "amount": "67000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "320000"
+          "amount": "51000"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "50000000"
+          "amount": "4000000"
         },
         {
           "resource": "frost_core",
@@ -428,11 +428,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "360000"
+          "amount": "55000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "480000"
+          "amount": "67000"
         }
       ]
     },
@@ -440,7 +440,7 @@
       "logging": [
         {
           "resource": "money",
-          "amount": "100000000"
+          "amount": "7200000"
         },
         {
           "resource": "frost_core",
@@ -456,17 +456,17 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "1600000"
+          "amount": "150000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "480000"
+          "amount": "67000"
         }
       ],
       "mining": [
         {
           "resource": "money",
-          "amount": "100000000"
+          "amount": "7200000"
         },
         {
           "resource": "frost_core",
@@ -482,17 +482,17 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "960000"
+          "amount": "110000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "640000"
+          "amount": "81000"
         }
       ],
       "fighting": [
         {
           "resource": "money",
-          "amount": "100000000"
+          "amount": "7200000"
         },
         {
           "resource": "frost_core",
@@ -508,23 +508,23 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "720000"
+          "amount": "88000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "960000"
+          "amount": "110000"
         }
       ]
     }
   },
   "health": {
-    "common": "100",
-    "uncommon": "160",
-    "rare": "250",
-    "epic": "400",
-    "legendary": "700",
-    "mythic": "1200",
-    "void": "1200"
+    "common": "50",
+    "uncommon": "74.5",
+    "rare": "109",
+    "epic": "162",
+    "legendary": "260",
+    "mythic": "411",
+    "void": "411"
   },
   "shards": {
     "common": 1,
@@ -536,13 +536,13 @@
     "void": 25
   },
   "baseDamage": {
-    "common": "200",
-    "uncommon": "320",
-    "rare": "500",
-    "epic": "800",
-    "legendary": "1400",
-    "mythic": "2400",
-    "void": "2400"
+    "common": "7.6",
+    "uncommon": "11.324",
+    "rare": "16.568",
+    "epic": "24.624",
+    "legendary": "39.52",
+    "mythic": "62.472",
+    "void": "62.472"
   },
   "starBar": {
     "fillPerDuplicate": {

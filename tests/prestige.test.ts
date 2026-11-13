@@ -113,7 +113,9 @@ describe('ascension preview', () => {
         'starlight',
       ]),
     );
-    expect(preview.gain.toNumber()).toBe(expectedGain(1e13 + 1e11 * 100));
+    expect(preview.gain.toNumber()).toBe(
+      expectedGain(1e13 + 1e11 * content.prestige.gain.tierWeights[2]!.toNumber()),
+    );
     expect(preview.rewards).toEqual(['gilded_plate']);
   });
 });

@@ -22,7 +22,11 @@
   },
   "knockoutSeconds": 10,
   "challenge": {
-    "timerSeconds": { "wave": 30, "miniboss": 45, "boss": 60 },
+    "timerSeconds": {
+      "wave": 30,
+      "miniboss": 45,
+      "boss": 60
+    },
     "autoWaitSeconds": 60
   },
   "bossPattern": {
@@ -31,7 +35,7 @@
     "slamMultiplier": 4
   },
   "floors": {
-    "hpGrowth": 1.12,
+    "hpGrowth": 1.101,
     "waveHpShare": 0.06,
     "waveAttackShare": 0.6,
     "waveSize": {
@@ -46,17 +50,17 @@
   },
   "difficulties": {
     "hard": {
-      "hp": 5000,
-      "attack": 5000,
-      "purse": 7500,
+      "hp": 2000,
+      "attack": 2000,
+      "purse": 3000,
       "material": 2,
       "wage": 1.25,
       "xp": 1.5
     },
     "nightmare": {
-      "hp": 20000,
-      "attack": 20000,
-      "purse": 45000,
+      "hp": 9000,
+      "attack": 9000,
+      "purse": 20250,
       "material": 4,
       "wage": 1.5,
       "xp": 2.25

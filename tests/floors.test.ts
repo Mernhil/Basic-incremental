@@ -767,7 +767,7 @@ describe('save formats 24 and 25: floors', () => {
   it('loads a format 23 save made with the 0.5.3 dev tools', () => {
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v23-dev-tools.save.txt'), 'utf8');
     expect(JSON.parse(text).version).toBe(23);
-    expect(CURRENT_SAVE_VERSION).toBe(28);
+    expect(CURRENT_SAVE_VERSION).toBe(29);
     const { state } = readSave(text, floorsContent);
     // Both cleared dungeons stay cleared, with what they opened ...
     expect(state.clearedDungeons).toEqual(['mossy_cellar', 'ember_crypt']);

@@ -70,7 +70,7 @@
     "name": "Money",
     "kind": "currency",
     "tier": 1,
-    "startAmount": "100"
+    "startAmount": "30"
   },
   {
     "id": "summon_scroll",

@@ -159,8 +159,8 @@ describe('star dust (DESIGN.md §5)', () => {
 });
 
 describe('rarity ratios (DESIGN.md §5 Base damage)', () => {
-  it('base damage and health follow 1 / 1.6 / 2.5 / 4 / 7 / 12', () => {
-    const ratios = [1, 1.6, 2.5, 4, 7, 12];
+  it('base damage and health follow 1 / 1.49 / 2.18 / 3.24 / 5.2 / 8.22', () => {
+    const ratios = [1, 1.49, 2.18, 3.24, 5.2, 8.22];
     const order = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const;
     const rules = content.cardRules;
     order.forEach((r, i) => {
@@ -168,7 +168,7 @@ describe('rarity ratios (DESIGN.md §5 Base damage)', () => {
       expect(rules.health[r].div(rules.health.common).toNumber()).toBeCloseTo(ratios[i]!);
     });
     expect(rules.baseDamage.void.eq(rules.baseDamage.mythic)).toBe(true);
-    expect(cardBaseDamage(content, 'ember_squire', newOwnedCard()).toNumber()).toBe(200);
+    expect(cardBaseDamage(content, 'ember_squire', newOwnedCard()).toNumber()).toBe(7.6);
   });
 });
 

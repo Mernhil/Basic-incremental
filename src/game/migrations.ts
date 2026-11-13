@@ -68,6 +68,9 @@ export const MIGRATIONS: MigrationTable = {
   /** v27 -> v28: the cosmetics review (0.7.3): the attack slot, every finish, tick and number item,
    *  the Prism Pointer and three bow skins are gone; owned ones are refunded. */
   27: v27ToV28,
+  /** v28 -> v29: readable numbers (0.7.6): Money, gems, lifetime totals, depth progress and
+   *  account XP move to the new scale; the fight in progress starts fresh. */
+  28: v28ToV29,
 };
 
 /** Crystals one pull cost when save format 27 was made (a snapshot): a scroll is worth this. */
@@ -980,5 +983,166 @@ function v27ToV28(state: Record<string, unknown>): Record<string, unknown> {
       owned: keptOwned,
       loadout: { ...loadout, slots: cleanSlots(loadout['slots']), cards: cleanCards },
     },
+  };
+}
+
+/**
+ * The scale change of save format 29 (DESIGN.md §14 Readable numbers), a snapshot: how the numbers
+ * of format 28 map to the new scale. Money goes through the same power map as the tree, mine and
+ * tool line prices (base × growth^n, both mapped), so a player who could or could not afford their
+ * next level still can or cannot; lifetime Money through the map of the shelf's lifetime-Money
+ * unlocks; gems and lifetime harvests through the gem map that the training prices, the tier-up
+ * gems and the mastery thresholds were mapped with.
+ */
+export const V29_SCALE = {
+  /** Money and combat compression: x -> moneyFactor × x^k. */
+  k: 0.8475,
+  moneyFactor: 0.638,
+  lifetimeMoneyFactor: 1.32,
+  /** Gems: x -> anchor × (x / anchor)^gem. */
+  gemAnchor: 1000,
+  gem: 0.68,
+  /** Account levels: XP to the next level was 1100 × 1.2^(level − 1). */
+  accountGrowthOld: 1.2,
+  accountGrowthNew: 1.115,
+  /** Depth: a layer's hardness grew by this factor a layer. */
+  hardnessGrowthOld: 2.2,
+  hardnessGrowthNew: 1.95,
+  /** Starlight = ((Σ gems of the run × the gem tier's weight) / divisor) ^ exponent, before and
+   *  after (`prestige.json`); the run's gems are moved so the Starlight they give stays. */
+  starlightOld: { weights: [1, 10, 100], divisor: 6e10, exponent: 0.4 },
+  starlightNew: { weights: [1, 5, 25], divisor: 2.8e7, exponent: 0.45 },
+} as const;
+
+/** The gem tier of each production gem (`resources.json`), for the Starlight weights. */
+const V29_GEM_TIER: Record<string, number> = {
+  oak_gem: 1,
+  copper_gem: 1,
+  ironbark_gem: 2,
+  iron_gem: 2,
+  moonwillow_gem: 3,
+  grotto_gem: 3,
+};
+
+const V29_GEMS = [
+  'oak_gem',
+  'ironbark_gem',
+  'moonwillow_gem',
+  'copper_gem',
+  'iron_gem',
+  'grotto_gem',
+] as const;
+
+function decimalOf(value: unknown): Decimal {
+  return typeof value === 'string' && isDecimalString(value) ? new Decimal(value) : new Decimal(0);
+}
+
+/** `factor × x^k` for x ≥ 1 (amounts under 1 are scaled linearly so nothing jumps). */
+function powerMap(x: Decimal, factor: number, k: number): Decimal {
+  if (x.lte(0)) return new Decimal(0);
+  if (x.lt(1)) return x.mul(factor);
+  return x.pow(k).mul(factor);
+}
+
+const v29Money = (x: Decimal): Decimal => powerMap(x, V29_SCALE.moneyFactor, V29_SCALE.k);
+const v29Gems = (x: Decimal): Decimal =>
+  x.lte(0)
+    ? new Decimal(0)
+    : x.div(V29_SCALE.gemAnchor).pow(V29_SCALE.gem).mul(V29_SCALE.gemAnchor);
+
+/**
+ * v28 -> v29: readable numbers (user, 2026-11-12). Every stored number on the old scale moves to the
+ * new one: Money (power map of the level prices), gems held and harvested for life (the gem map),
+ * the gems a run started from (so the run's Starlight is exactly what it was), lifetime Money (the
+ * map of the lifetime-Money unlocks), the hardness broken on each depth layer (the same share of the
+ * new layer), and the account XP toward the next level (the same share of the new need). Levels,
+ * tiers, stars, floors, kills, Cores, Sigils, scrolls, star dust, Starlight and card XP keep their
+ * numbers. The fight in progress starts fresh: the floor's HP, the team's damage, the knocked-out
+ * cards and a running trial attempt are cleared.
+ */
+function v28ToV29(state: Record<string, unknown>): Record<string, unknown> {
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  if ('money' in resources) resources['money'] = v29Money(decimalOf(resources['money'])).toString();
+  for (const gem of V29_GEMS) {
+    if (gem in resources) resources[gem] = v29Gems(decimalOf(resources[gem])).toString();
+  }
+
+  const mastery = isRecord(state['mastery']) ? { ...state['mastery'] } : {};
+  const harvestedOld = isRecord(mastery['harvested']) ? mastery['harvested'] : {};
+  const harvested: Record<string, string> = {};
+  for (const [id, v] of Object.entries(harvestedOld))
+    harvested[id] = v29Gems(decimalOf(v)).toString();
+  mastery['harvested'] = harvested;
+
+  // The run's own harvest (since the last Ascension): moved with the gem map, then scaled as a
+  // whole so the Starlight it would give is the Starlight it gave before.
+  const prestige = isRecord(state['prestige']) ? { ...state['prestige'] } : {};
+  const runStartOld = isRecord(prestige['runStart']) ? prestige['runStart'] : {};
+  const runOld: Record<string, Decimal> = {};
+  for (const id of Object.keys(harvestedOld)) {
+    runOld[id] = Decimal.max(0, decimalOf(harvestedOld[id]).sub(decimalOf(runStartOld[id])));
+  }
+  const weight = (w: readonly number[], id: string): number =>
+    w[Math.min(V29_GEM_TIER[id] ?? 1, w.length) - 1]!;
+  const { starlightOld: so, starlightNew: sn } = V29_SCALE;
+  let pointsOld = new Decimal(0);
+  let pointsMapped = new Decimal(0);
+  for (const [id, run] of Object.entries(runOld)) {
+    pointsOld = pointsOld.add(run.mul(weight(so.weights, id)));
+    pointsMapped = pointsMapped.add(v29Gems(run).mul(weight(sn.weights, id)));
+  }
+  const starlight = pointsOld.div(so.divisor).pow(so.exponent);
+  const pointsWanted = starlight.pow(1 / sn.exponent).mul(sn.divisor);
+  const scale = pointsMapped.gt(0) ? pointsWanted.div(pointsMapped) : new Decimal(0);
+  const runStart: Record<string, string> = {};
+  for (const [id, run] of Object.entries(runOld)) {
+    // A run's gems are part of the lifetime harvest: where the run needs more, the lifetime grows
+    // to hold it (so the Starlight never drops, and a mastery tier may come a little sooner).
+    const runNew = v29Gems(run).mul(scale);
+    const total = Decimal.max(new Decimal(harvested[id] ?? 0), runNew);
+    harvested[id] = total.toString();
+    runStart[id] = total.sub(runNew).toString();
+  }
+  prestige['runStart'] = runStart;
+
+  const upgrades = isRecord(state['upgrades']) ? { ...state['upgrades'] } : {};
+  upgrades['moneyEarned'] = powerMap(
+    decimalOf(upgrades['moneyEarned']),
+    V29_SCALE.lifetimeMoneyFactor,
+    V29_SCALE.k,
+  ).toString();
+
+  const production = isRecord(state['production']) ? { ...state['production'] } : {};
+  const depthOld = isRecord(production['depth']) ? production['depth'] : {};
+  const depth: Record<string, unknown> = {};
+  for (const [id, d] of Object.entries(depthOld)) {
+    if (!isRecord(d)) continue;
+    const layer = typeof d['layer'] === 'number' ? d['layer'] : 1;
+    const share = Math.pow(V29_SCALE.hardnessGrowthNew / V29_SCALE.hardnessGrowthOld, layer - 1);
+    depth[id] = { ...d, progress: decimalOf(d['progress']).mul(share).toString() };
+  }
+  production['depth'] = depth;
+
+  const account = isRecord(state['account']) ? { ...state['account'] } : {};
+  const level = typeof account['level'] === 'number' ? account['level'] : 1;
+  const needShare = Math.pow(V29_SCALE.accountGrowthNew / V29_SCALE.accountGrowthOld, level - 1);
+  account['xp'] = decimalOf(account['xp']).mul(needShare).toString();
+
+  const combat = isRecord(state['combat']) ? { ...state['combat'] } : {};
+  combat['cardDamage'] = {};
+  combat['cardsOut'] = [];
+  if (isRecord(combat['trialAttempt']))
+    combat['trialAttempt'] = { ...combat['trialAttempt'], dealt: '0' };
+
+  return {
+    ...state,
+    resources,
+    mastery,
+    prestige,
+    upgrades,
+    production,
+    account,
+    combat,
+    bossHp: null,
   };
 }

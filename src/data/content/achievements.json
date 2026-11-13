@@ -41,7 +41,7 @@
       "condition": {
         "kind": "harvested",
         "job": "logging",
-        "amount": "1e4"
+        "amount": "5000"
       },
       "reward": {
         "resources": [
@@ -59,7 +59,7 @@
       "condition": {
         "kind": "harvested",
         "job": "logging",
-        "amount": "1e7"
+        "amount": "500000"
       },
       "reward": {
         "resources": [
@@ -77,7 +77,7 @@
       "condition": {
         "kind": "harvested",
         "job": "mining",
-        "amount": "1e4"
+        "amount": "5000"
       },
       "reward": {
         "resources": [
@@ -95,7 +95,7 @@
       "condition": {
         "kind": "harvested",
         "job": "mining",
-        "amount": "1e7"
+        "amount": "500000"
       },
       "reward": {
         "resources": [

@@ -59,10 +59,10 @@ function leadWith(
 }
 
 describe('base damage by rarity (DESIGN.md §5)', () => {
-  it('follows the rarity ratios: 1, 1.6, 2.5, 4, 7, 12, 12 times the Common value (Mythic = Void)', () => {
+  it('follows the rarity ratios: 1, 1.49, 2.18, 3.24, 5.2, 8.22, 8.22 times the Common value (Mythic = Void)', () => {
     const common = rules.baseDamage.common;
     expect(common.gt(0)).toBe(true);
-    const ratios = [1, 1.6, 2.5, 4, 7, 12, 12];
+    const ratios = [1, 1.49, 2.18, 3.24, 5.2, 8.22, 8.22];
     RARITIES.forEach((rarity, i) => {
       expect(approxEq(rules.baseDamage[rarity], common.mul(ratios[i]!))).toBe(true);
     });

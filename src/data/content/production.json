@@ -8,13 +8,13 @@
       "stat": "production.rate",
       "cost": {
         "resource": "money",
-        "base": "1000",
-        "growth": "1.45"
+        "base": "220",
+        "growth": "1.37"
       },
-      "ratePercent": "8",
+      "ratePercent": "4",
       "milestones": {
         "every": 25,
-        "multiplier": "1.5"
+        "multiplier": "1.1"
       }
     },
     {
@@ -25,13 +25,13 @@
       "stat": "harvest.speed",
       "cost": {
         "resource": "money",
-        "base": "2000",
-        "growth": "1.5"
+        "base": "400",
+        "growth": "1.41"
       },
-      "ratePercent": "4",
+      "ratePercent": "2",
       "milestones": {
         "every": 25,
-        "multiplier": "1.25"
+        "multiplier": "1.08"
       }
     },
     {
@@ -42,8 +42,8 @@
       "stat": "harvest.critChance",
       "cost": {
         "resource": "money",
-        "base": "4000",
-        "growth": "1.55"
+        "base": "720",
+        "growth": "1.45"
       },
       "ratePercent": "0.5"
     },
@@ -55,8 +55,8 @@
       "stat": "harvest.critDamage",
       "cost": {
         "resource": "money",
-        "base": "4000",
-        "growth": "1.5"
+        "base": "720",
+        "growth": "1.41"
       },
       "ratePercent": "5"
     },
@@ -68,13 +68,13 @@
       "stat": "production.rate",
       "cost": {
         "resource": "money",
-        "base": "1000",
-        "growth": "1.45"
+        "base": "220",
+        "growth": "1.37"
       },
-      "ratePercent": "8",
+      "ratePercent": "4",
       "milestones": {
         "every": 25,
-        "multiplier": "1.5"
+        "multiplier": "1.1"
       }
     },
     {
@@ -85,13 +85,13 @@
       "stat": "harvest.speed",
       "cost": {
         "resource": "money",
-        "base": "2000",
-        "growth": "1.5"
+        "base": "400",
+        "growth": "1.41"
       },
-      "ratePercent": "4",
+      "ratePercent": "2",
       "milestones": {
         "every": 25,
-        "multiplier": "1.25"
+        "multiplier": "1.08"
       }
     },
     {
@@ -102,8 +102,8 @@
       "stat": "harvest.critChance",
       "cost": {
         "resource": "money",
-        "base": "4000",
-        "growth": "1.55"
+        "base": "720",
+        "growth": "1.45"
       },
       "ratePercent": "0.5"
     },
@@ -115,8 +115,8 @@
       "stat": "harvest.critDamage",
       "cost": {
         "resource": "money",
-        "base": "4000",
-        "growth": "1.5"
+        "base": "720",
+        "growth": "1.41"
       },
       "ratePercent": "5"
     }
@@ -135,12 +135,12 @@
     },
     "rarityPower": {
       "common": 1,
-      "uncommon": 1.25,
-      "rare": 1.6,
-      "epic": 2,
-      "legendary": 2.6,
-      "mythic": 3.5,
-      "void": 3.5
+      "uncommon": 1.14,
+      "rare": 1.33,
+      "epic": 1.52,
+      "legendary": 1.77,
+      "mythic": 2.12,
+      "void": 2.12
     }
   },
   "forge": {
@@ -152,18 +152,18 @@
         "inputs": [
           {
             "resource": "moonwillow_gem",
-            "amount": "20000"
+            "amount": "7700"
           },
           {
             "resource": "grotto_gem",
-            "amount": "20000"
+            "amount": "7700"
           }
         ],
         "output": {
           "resource": "star_dust",
           "amount": "1"
         },
-        "work": "3600"
+        "work": "2000"
       }
     ]
   },

@@ -19,7 +19,7 @@ describe('tree level views', () => {
     expect(views.map((v) => v.id)).toEqual(['oak']);
     const oak = views[0]!;
     expect(oak.offer.affordable).toBe(true);
-    expect(oak.milestone).toBe('Lv 15: ×2');
+    expect(oak.milestone).toBe('Lv 15: ×1.15');
     expect(oak.preview).toContain('/s');
     expect(oak.label).toBe('Buy ×1');
   });
