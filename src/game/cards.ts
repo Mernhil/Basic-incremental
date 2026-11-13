@@ -852,7 +852,6 @@ export function grantCard(cards: CardState, content: Content, card: Card): CardG
   // shards): it pays card shards like a copy past ★6.
   if (
     card.heirloom ||
-    
     owned.stars >= MAX_STARS ||
     owned.starFill >= starFillToMax(content, card.rarity, owned.stars, owned.tier)
   ) {

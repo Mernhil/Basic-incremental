@@ -774,7 +774,8 @@ function deserializeHeirlooms(state: GameState, saved: SerializedState, content:
         enhancements: [],
       };
     } else {
-      const worth = gate.unlockShards + gate.starShards.slice(0, stars - 1).reduce((a, b) => a + b, 0);
+      const worth =
+        gate.unlockShards + gate.starShards.slice(0, stars - 1).reduce((a, b) => a + b, 0);
       addHeirloomShards(state, content, target.id, worth);
     }
   }

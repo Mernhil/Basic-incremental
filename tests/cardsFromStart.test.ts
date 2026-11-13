@@ -79,7 +79,10 @@ describe('the star bar by rarity and tier (DESIGN.md §5)', () => {
       const needs = content.cardRules.starBar.needs[card.rarity];
       expect(needs[cap], card.id).toBe(1);
       expect(needs[top], card.id).toBe(1);
-      const upTo = RANK_TIERS.slice(0, RANK_TIERS.indexOf(cap) + 1) as Exclude<RankTier, 'heirloom'>[];
+      const upTo = RANK_TIERS.slice(0, RANK_TIERS.indexOf(cap) + 1) as Exclude<
+        RankTier,
+        'heirloom'
+      >[];
       upTo.forEach((tier, i) => {
         if (i > 0) expect(needs[tier]).toBeGreaterThanOrEqual(needs[upTo[i - 1]!]);
         if (tier !== cap) expect(needs[tier], `${card.rarity} ${tier}`).toBeLessThan(1);

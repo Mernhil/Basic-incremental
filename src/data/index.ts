@@ -1044,7 +1044,9 @@ function checkHeirlooms(
       if (found.length !== 1) {
         issues.push(`cards.json: ${found.length} Heirloom cards for ${t.kind} ${side}, needs 1`);
       } else if (found[0]!.name !== t.heirloom[side]) {
-        issues.push(`cards.json › ${found[0]!.id} › name: the ${t.kind} ${side} Heirloom is "${t.heirloom[side]}"`);
+        issues.push(
+          `cards.json › ${found[0]!.id} › name: the ${t.kind} ${side} Heirloom is "${t.heirloom[side]}"`,
+        );
       }
     }
   }
@@ -1060,9 +1062,12 @@ function checkHeirlooms(
   }
   const { gate, points, trees } = c.heirlooms;
   if (!c.resources.some((r) => r.id === gate.cost.resource)) {
-    issues.push(`heirlooms.json › gate › cost › resource: unknown resource "${gate.cost.resource}"`);
+    issues.push(
+      `heirlooms.json › gate › cost › resource: unknown resource "${gate.cost.resource}"`,
+    );
   }
-  if (gate.shards.min > gate.shards.max) issues.push('heirlooms.json › gate › shards: min above max');
+  if (gate.shards.min > gate.shards.max)
+    issues.push('heirlooms.json › gate › shards: min above max');
   const earned = points.perStar * 6 + points.levels.length;
   const skillIds = new Set(c.skills.skills.map((x) => x.id));
   const seen = new Set<string>();

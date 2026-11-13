@@ -60,7 +60,10 @@ describe('the star bar (DESIGN.md §5)', () => {
     // The shipped table is tuned and tested in cardsFromStart.test.ts; this content pins one whole
     // copy per star, so the rules below count copies.
     for (const rarity of RARITIES) {
-      for (const tier of RANK_TIERS.slice(0, -1) as Exclude<(typeof RANK_TIERS)[number], 'heirloom'>[]) {
+      for (const tier of RANK_TIERS.slice(0, -1) as Exclude<
+        (typeof RANK_TIERS)[number],
+        'heirloom'
+      >[]) {
         for (const stars of [1, 2, 3, 4, 5]) {
           expect(starFillNeeded(content, rarity, stars, tier), `${rarity} ${tier}`).toBe(
             content.cardRules.starBar.needs[rarity][tier] *
@@ -368,7 +371,9 @@ describe('the ladder ends at Mythic / Void; Heirlooms are their own cards (DESIG
     );
     expect(tierUpCheck(state, content, 'core_titan')).toMatchObject({ available: false });
     expect(tierUp(state, content, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
-    expect(tierUpCost(content, content.cardById.get('core_titan')!, state.cards.owned['core_titan']!)).toEqual([]);
+    expect(
+      tierUpCost(content, content.cardById.get('core_titan')!, state.cards.owned['core_titan']!),
+    ).toEqual([]);
   });
 
   it('keeps an Heirloom card at its own tier: level cap 140, no star bar, no tier-up', () => {
