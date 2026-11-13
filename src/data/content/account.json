@@ -1,8 +1,8 @@
 {
   "xp": {
     "perUnit": {
-      "logging": "0.0743",
-      "mining": "0.149"
+      "logging": "0.0536",
+      "mining": "0.107"
     },
     "tierWeights": ["1", "5", "25"],
     "perKill": "4",
@@ -13,7 +13,7 @@
   },
   "levels": {
     "xpBase": "1100",
-    "xpGrowth": "1.115",
+    "xpGrowth": "1.12",
     "skillPointsPerLevel": 1,
     "pointsPerAchievement": 1,
     "pointsPerStageStar": 1

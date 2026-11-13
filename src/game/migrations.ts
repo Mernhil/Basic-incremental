@@ -1004,7 +1004,7 @@ export const V29_SCALE = {
   gem: 0.68,
   /** Account levels: XP to the next level was 1100 × 1.2^(level − 1). */
   accountGrowthOld: 1.2,
-  accountGrowthNew: 1.115,
+  accountGrowthNew: 1.12,
   /** Depth: a layer's hardness grew by this factor a layer. */
   hardnessGrowthOld: 2.2,
   hardnessGrowthNew: 1.95,

@@ -324,7 +324,7 @@ export interface CombatState {
   training: Record<string, number>;
   /** The running special-dungeon attempt (only meaningful while a trial is active). */
   trialAttempt: TrialAttempt;
-  /** Special dungeon id -> best score, 0..1. */
+  /** Special dungeon id -> best score: the share of the target's HP dealt, 1 = 100%, no cap. */
   trialBest: Record<string, number>;
   /** Seconds left of a knockout; while above 0 the loadout does not fight. */
   knockoutSeconds: number;

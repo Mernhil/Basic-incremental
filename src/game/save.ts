@@ -92,7 +92,8 @@ export const serializedStateSchema = z.object({
     /** v25: training levels (DESIGN.md §6 Training). */
     training: counts,
     trialAttempt: z.object({ elapsedSeconds: z.number().min(0), dealt: decimalText }),
-    trialBest: z.record(z.string(), z.number().min(0).max(1)),
+    /** The best share of the target's HP dealt: 1 is 100%; the score has no cap (DESIGN.md §6). */
+    trialBest: z.record(z.string(), z.number().min(0).finite()),
     knockoutSeconds: z.number().min(0),
     /** v26: stage stars and overflow, keyed by `stageKey` (DESIGN.md §6). */
     stageKills: stageCounts,

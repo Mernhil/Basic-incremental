@@ -153,6 +153,17 @@ describe('v28 -> v29 (readable numbers)', () => {
     expect(migrated.combat.cardsOut).toEqual([]);
   });
 
+  it('loads and keeps a Glimmer Trial best score over 100% (the score has no cap)', () => {
+    // a format 28 save as 0.7.x wrote it after a 617% attempt (it used to fall back to the backup)
+    const old = JSON.parse(fixture('v28-late-game.save.txt'));
+    old.state.combat.trialBest = { glimmer_trial: 6.17 };
+    const { state } = readSave(JSON.stringify(old), content);
+    expect(state.combat.trialBest['glimmer_trial']).toBe(6.17);
+    // and saved again at the current format
+    const again = readSave(createSaveText(state, 1), content).state;
+    expect(again.combat.trialBest['glimmer_trial']).toBe(6.17);
+  });
+
   it('leaves an empty or fresh save loadable', () => {
     const fresh = JSON.parse(fixture('v27-removed-cosmetics.save.txt'));
     const at28 = MIGRATIONS[27]!(fresh.state);

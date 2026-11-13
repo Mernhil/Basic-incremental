@@ -37,10 +37,10 @@
       "art": "root_warden",
       "weakness": "fire",
       "resistance": "nature",
-      "hp": "3200",
+      "hp": "5030",
       "hpBars": 5,
       "attack": {
-        "damage": "19.4",
+        "damage": "20",
         "intervalSeconds": 3
       }
     },
@@ -119,10 +119,10 @@
       "art": "cinder_lich",
       "weakness": "light",
       "resistance": "fire",
-      "hp": "93600",
+      "hp": "112000",
       "hpBars": 8,
       "attack": {
-        "damage": "463",
+        "damage": "469",
         "intervalSeconds": 2.5
       }
     },

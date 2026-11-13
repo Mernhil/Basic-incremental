@@ -152,11 +152,11 @@
         "inputs": [
           {
             "resource": "moonwillow_gem",
-            "amount": "7700"
+            "amount": "400"
           },
           {
             "resource": "grotto_gem",
-            "amount": "7700"
+            "amount": "400"
           }
         ],
         "output": {

@@ -120,11 +120,11 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "2900"
+          "amount": "1100"
         },
         {
           "resource": "iron_gem",
-          "amount": "1300"
+          "amount": "500"
         }
       ],
       "mining": [
@@ -138,11 +138,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "1800"
+          "amount": "710"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "1300"
+          "amount": "500"
         }
       ],
       "fighting": [
@@ -156,11 +156,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "1400"
+          "amount": "560"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "2000"
+          "amount": "810"
         }
       ]
     },
@@ -176,11 +176,11 @@
         },
         {
           "resource": "ironbark_gem",
-          "amount": "6000"
+          "amount": "2400"
         },
         {
           "resource": "iron_gem",
-          "amount": "2700"
+          "amount": "1100"
         }
       ],
       "mining": [
@@ -194,11 +194,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "3800"
+          "amount": "1500"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "2700"
+          "amount": "1100"
         }
       ],
       "fighting": [
@@ -212,11 +212,11 @@
         },
         {
           "resource": "iron_gem",
-          "amount": "2900"
+          "amount": "1200"
         },
         {
           "resource": "ironbark_gem",
-          "amount": "4300"
+          "amount": "1700"
         }
       ]
     },
@@ -232,11 +232,11 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "23000"
+          "amount": "9200"
         },
         {
           "resource": "grotto_gem",
-          "amount": "7700"
+          "amount": "3100"
         }
       ],
       "mining": [
@@ -250,11 +250,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "12000"
+          "amount": "4900"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "10000"
+          "amount": "4000"
         }
       ],
       "fighting": [
@@ -268,11 +268,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "9600"
+          "amount": "3900"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "16000"
+          "amount": "6500"
         }
       ]
     },
@@ -296,11 +296,11 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "59000"
+          "amount": "24000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "26000"
+          "amount": "10000"
         }
       ],
       "mining": [
@@ -322,11 +322,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "42000"
+          "amount": "17000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "32000"
+          "amount": "13000"
         }
       ],
       "fighting": [
@@ -348,11 +348,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "34000"
+          "amount": "14000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "42000"
+          "amount": "17000"
         }
       ]
     },
@@ -376,11 +376,11 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "94000"
+          "amount": "38000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "42000"
+          "amount": "17000"
         }
       ],
       "mining": [
@@ -402,11 +402,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "67000"
+          "amount": "27000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "51000"
+          "amount": "20000"
         }
       ],
       "fighting": [
@@ -428,11 +428,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "55000"
+          "amount": "22000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "67000"
+          "amount": "27000"
         }
       ]
     },
@@ -456,11 +456,11 @@
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "150000"
+          "amount": "60000"
         },
         {
           "resource": "grotto_gem",
-          "amount": "67000"
+          "amount": "27000"
         }
       ],
       "mining": [
@@ -482,11 +482,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "110000"
+          "amount": "43000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "81000"
+          "amount": "32000"
         }
       ],
       "fighting": [
@@ -508,11 +508,11 @@
         },
         {
           "resource": "grotto_gem",
-          "amount": "88000"
+          "amount": "35000"
         },
         {
           "resource": "moonwillow_gem",
-          "amount": "110000"
+          "amount": "43000"
         }
       ]
     }
