@@ -1,5 +1,15 @@
 import { RANK_TIERS, RARITIES } from '../../../data';
-import { resolveCard, TIER_LABELS, type GameState, type TierUp } from '../../../game';
+import {
+  buyHeirloomNode,
+  heirloomEntry,
+  heirloomTreeInfo,
+  respecHeirloomTree,
+  resolveCard,
+  TIER_LABELS,
+  type GameState,
+  type HeirloomTreeInfo,
+  type TierUp,
+} from '../../../game';
 import { COPY } from '../copy';
 import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip, tipTable } from '../shell/tooltip';
@@ -30,7 +40,7 @@ import './cards.css';
  * and three supports under its cost cap). All rules come from the CardsModel.
  */
 
-type Tab = 'collection' | 'loadouts' | 'bonds' | 'trips';
+type Tab = 'collection' | 'heirlooms' | 'loadouts' | 'bonds' | 'trips';
 type Sort = keyof typeof COPY.cards.sortBy;
 
 const JOB_NAMES: Record<Job, string> = {
@@ -105,6 +115,9 @@ export function createCardsPage(
   let readyOnly = false;
   let sort: Sort = 'rarity';
   let selected: string | null = null;
+  /** The Heirloom selected on the Heirlooms tab. */
+  let selectedHeirloom: string | null = null;
+  const isHeirloom = (id: string): boolean => content.cardById.get(id)?.heirloom === true;
   /** The Enhancements star chart is open under the buttons of the selected card. */
   let enhanceOpen = false;
   /** The Next tier preview: which card and how many presses in (view state only, never saved). */
@@ -121,6 +134,7 @@ export function createCardsPage(
   tabBar.setAttribute('aria-label', COPY.cards.tabs);
   const tabs: Record<Tab, HTMLButtonElement> = {
     collection: h('button', 'cp-tab', COPY.cards.collectionTab),
+    heirlooms: h('button', 'cp-tab', COPY.cards.heirloomsTab),
     loadouts: h('button', 'cp-tab', COPY.cards.loadoutsTab),
     bonds: h('button', 'cp-tab', 'Bonds'),
     trips: h('button', 'cp-tab', 'Expeditions'),
@@ -210,9 +224,17 @@ export function createCardsPage(
       tabs[id].tabIndex = id === tab ? 0 : -1;
     }
     panel.setAttribute('aria-labelledby', tabs[tab].id);
-    const entries = model.entries(state);
+    const all = model.entries(state);
+    // the Collection lists the ladder cards; the Heirlooms have their own tab (DESIGN.md §5)
+    const entries = all.filter((e) => !isHeirloom(e.id));
+    const heirlooms = all.filter((e) => isHeirloom(e.id));
     if (selected === null || !entries.some((e) => e.id === selected)) {
       selected = (entries.find((e) => e.role?.slot === 'main') ?? entries[0])?.id ?? null;
+    }
+    if (selectedHeirloom === null || !heirlooms.some((e) => e.id === selectedHeirloom)) {
+      selectedHeirloom =
+        (heirlooms.find((e) => e.role) ?? heirlooms.find((e) => e.owned) ?? heirlooms[0])?.id ??
+        null;
     }
     if (tab === 'bonds' || tab === 'trips') {
       const side: Panel = (tab === 'bonds' ? createBondsPanel : createExpeditionsPanel)(ctx);
@@ -225,7 +247,11 @@ export function createCardsPage(
       panel.replaceChildren(wrap);
     } else {
       panel.replaceChildren(
-        tab === 'collection' ? collection(state, entries) : loadouts(state, entries),
+        tab === 'collection'
+          ? collection(state, entries)
+          : tab === 'heirlooms'
+            ? heirloomsView(state, heirlooms)
+            : loadouts(state, all),
       );
     }
     status.textContent = message;
@@ -384,6 +410,212 @@ export function createCardsPage(
     return wrap;
   }
 
+  // ---- the Heirlooms (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e) ----
+  function heirloomsView(state: GameState, list: CardEntry[]): HTMLElement {
+    const wrap = h('div', 'cp-wrap cp-wrap--heirlooms');
+    const el = h('section', 'cp-collection');
+    el.setAttribute('aria-label', COPY.cards.heirloomsLabel);
+    const head = h('div', 'cp-head');
+    tabsInPage(head);
+    const grid = h('ul', 'cp-grid cp-grid--heirlooms');
+    watchFit(grid, {
+      want: CARD_WANT.slot,
+      max: () => innerWidth(grid),
+      row: { count: 8, gap: GRID_GAP },
+    });
+    grid.setAttribute('aria-label', COPY.cards.heirloomsLabel);
+    // grouped by weapon type in the shared type order (UI_RULES §2 Grouped by weapon type)
+    for (const kind of itemOrder) {
+      const ofKind = list.filter((e) => e.itemKind === kind);
+      if (ofKind.length === 0) continue;
+      // a type's two Heirlooms together under its heading
+      const li = h('li', 'cp-hgroup');
+      const pair = h('div', 'cp-hgroup__cards');
+      li.append(
+        h(
+          'h3',
+          'cp-group__title',
+          COPY.cards.heirloomGroup(
+            ofKind[0]!.itemType,
+            ofKind.filter((e) => e.owned).length,
+            ofKind.length,
+          ),
+        ),
+      );
+      li.append(pair);
+      grid.append(li);
+      for (const e of ofKind) {
+        const card = content.cardById.get(e.id)!;
+        const info = heirloomEntry(state, content, card);
+        const cell = h('div', 'cp-cell cp-cell--heirloom');
+        const b = h('button', 'cp-tile');
+        b.type = 'button';
+        b.dataset.key = `tile-${e.id}`;
+        b.dataset['heirloom'] = e.id;
+        b.setAttribute('aria-pressed', String(e.id === selectedHeirloom));
+        const shardText = COPY.cards.heirloomShards(info.stars, info.shards, info.need);
+        b.setAttribute('aria-label', COPY.cards.tileLabel(e.name, shardText));
+        b.append(cardEl(e, state));
+        b.addEventListener('click', () => {
+          if (selectedHeirloom !== e.id) enhanceOpen = false;
+          selectedHeirloom = e.id;
+          message = '';
+          build(`tile-${e.id}`);
+        });
+        const bar = h('span', 'cp-shardbar px-well');
+        bar.setAttribute('aria-hidden', 'true');
+        const fill = h('i');
+        fill.style.width = `${Math.round(info.progress * 100)}%`;
+        bar.append(fill);
+        cell.append(b, bar, h('span', 'cp-shardtext bi-num', shardText));
+        pair.append(cell);
+      }
+    }
+    el.append(...(head.childElementCount ? [head] : []), grid);
+    const pick = list.find((e) => e.id === selectedHeirloom);
+    wrap.append(el, pick ? heirloomDetail(state, pick) : h('div'));
+    return wrap;
+  }
+
+  /** The gems of a tree around the card: where each node sits on the stage (percent). */
+  const GEM_AT: Record<string, [number, number]> = {
+    capstone: [50, 3],
+    large_a: [13, 33],
+    large_b: [87, 33],
+    small_a: [13, 72],
+    small_b: [87, 72],
+    root: [50, 90],
+  };
+
+  function heirloomDetail(state: GameState, e: CardEntry): HTMLElement {
+    const card = content.cardById.get(e.id)!;
+    const info = heirloomEntry(state, content, card);
+    const tree = heirloomTreeInfo(state, content, e.id);
+    const side = COPY.summon.heirloomSide[info.side] ?? info.side;
+    const { el, body } = frame(e.name, COPY.cards.heirloomSub(e.itemType, side, cap1(e.element)));
+    el.classList.add('cp-detail', 'cp-heirloom');
+    el.dataset['deal'] = '';
+    if (tree) body.append(treeHead(e, tree));
+    const stage = h('div', 'cp-arch');
+    const cardBox = h('div', 'cp-arch__card');
+    watchFit(cardBox, {
+      want: CARD_WANT.detail,
+      max: () => Math.min(264, Math.max(132, innerWidth(stage) - 2 * 170)),
+    });
+    cardBox.append(cardEl(e, state));
+    stage.append(cardBox);
+    if (tree) {
+      const lines = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      lines.setAttribute('class', 'cp-arch__lines');
+      lines.setAttribute('viewBox', '0 0 100 100');
+      lines.setAttribute('preserveAspectRatio', 'none');
+      lines.setAttribute('aria-hidden', 'true');
+      const bought = new Set(tree.nodes.filter((n) => n.state === 'bought').map((n) => n.node.id));
+      for (const n of tree.tree.nodes) {
+        for (const r of n.requires) {
+          const a = GEM_AT[r];
+          const z = GEM_AT[n.id];
+          if (!a || !z) continue;
+          const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          line.setAttribute('x1', String(a[0]));
+          line.setAttribute('y1', String(a[1]));
+          line.setAttribute('x2', String(z[0]));
+          line.setAttribute('y2', String(z[1]));
+          line.setAttribute('class', bought.has(r) && bought.has(n.id) ? 'is-on' : '');
+          lines.append(line);
+        }
+      }
+      stage.prepend(lines);
+      for (const n of tree.nodes) {
+        const at = GEM_AT[n.node.id];
+        if (!at) continue;
+        const name = n.node.name ?? COPY.cards.gemName[n.node.id] ?? n.node.id;
+        const stateWord = COPY.cards.gemState[n.state] ?? n.state;
+        const gem = h('button', `cp-gem is-${n.state}${n.affordable ? ' is-affordable' : ''}`);
+        gem.type = 'button';
+        gem.dataset.key = `gem-${n.node.id}`;
+        gem.style.left = `${at[0]}%`;
+        gem.style.top = `${at[1]}%`;
+        if (n.node.id === 'capstone') gem.classList.add('cp-gem--cap');
+        gem.setAttribute(
+          'aria-label',
+          COPY.cards.gemLabel(name, n.node.description, n.node.cost, stateWord),
+        );
+        gem.disabled = !n.affordable;
+        const diamond = h('i', 'cp-gem__stone');
+        diamond.setAttribute('aria-hidden', 'true');
+        const label = h('span', 'cp-gem__label');
+        label.setAttribute('aria-hidden', 'true');
+        label.append(
+          h('b', 'cp-gem__name', name),
+          h(
+            'span',
+            'cp-gem__what',
+            `${n.node.description} · ${n.state === 'bought' ? stateWord : COPY.cards.gemCost(n.node.cost)}`,
+          ),
+        );
+        gem.append(diamond, label);
+        gem.addEventListener('click', () => {
+          const r = buyHeirloomNode(ctx.state(), content, e.id, n.node.id);
+          if (r.ok) act({ ok: true, state: r.state }, `gem-${n.node.id}`);
+        });
+        stage.append(gem);
+      }
+    }
+    body.append(stage);
+    if (!e.owned) body.append(h('p', 'frame__muted px-tile cp-locked', COPY.cards.heirloomLocked));
+    // the shard line: toward the unlock, then each star
+    const shard = h('div', 'cp-shardline');
+    const top = h('div', 'cp-shardline__top');
+    top.append(
+      h(
+        'span',
+        '',
+        info.need === null
+          ? COPY.cards.heirloomShards(info.stars, 0, null)
+          : COPY.cards.heirloomShardLine(info.stars),
+      ),
+      h('b', 'bi-num', info.need === null ? '' : `${info.shards} / ${info.need}`),
+    );
+    const track = h('div', 'px-well cp-shardline__track');
+    const fill = h('i');
+    fill.style.width = `${Math.round(info.progress * 100)}%`;
+    track.append(fill);
+    shard.append(top, track);
+    body.append(shard);
+    const stats = h('dl', 'cp-stats');
+    for (const t of e.stats.tiles) {
+      const d = h('div', 'px-tile cp-fact');
+      if (t.title) d.title = t.title;
+      d.append(h('dt', '', t.label), h('dd', '', t.value));
+      stats.append(d);
+    }
+    body.append(stats);
+    if (e.owned) cardActions(state, e, body);
+    return el;
+  }
+
+  function treeHead(e: CardEntry, tree: HeirloomTreeInfo): HTMLElement {
+    const row = h('div', 'cp-treehead');
+    const name = h('p', 'cp-treehead__name');
+    name.append(
+      h('b', 'px-display', tree.tree.name),
+      h('span', 'bi-num', COPY.cards.treePoints(tree.free, tree.earned)),
+    );
+    row.append(name);
+    if (tree.spent > 0) {
+      const b = h('button', 'button button--ghost cp-respec', COPY.cards.respec);
+      b.type = 'button';
+      b.dataset.key = 'respec';
+      b.title = COPY.cards.respecLabel;
+      b.addEventListener('click', () =>
+        act({ ok: true, state: respecHeirloomTree(ctx.state(), e.id) }, 'respec'),
+      );
+      row.append(b);
+    }
+    return row;
+  }
+
   /** A star-up or a tier-up can be taken now. */
   const isReady = (e: CardEntry): boolean => Boolean(e.next?.ready || e.tier?.ready);
 
@@ -516,7 +748,13 @@ export function createCardsPage(
     if (e.stats.compare) body.append(h('p', 'cp-compare', e.stats.compare));
     body.append(facts);
 
-    if (e.owned) {
+    if (e.owned) cardActions(state, e, body);
+    return el;
+  }
+
+  /** The Enhancements toggle and the loadout buttons of an owned card, with the open star chart. */
+  function cardActions(state: GameState, e: CardEntry, body: HTMLElement): void {
+    {
       const chart = model.chart(state, e.id);
       const hasChart = Boolean(chart && chart.stars.length > 0);
       const actions = h('div', 'cp-actions');
@@ -551,7 +789,6 @@ export function createCardsPage(
       body.append(actions);
       if (hasChart && enhanceOpen && chart) body.append(enhanceBox(e.id, chart));
     }
-    return el;
   }
 
   function entryOf(id: string): CardEntry | undefined {

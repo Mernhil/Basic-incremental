@@ -823,3 +823,191 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 .cp-team.is-over .cp-team__tag {
   color: #ff8a8a;
 }
+
+/* ---- the Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e): the 22
+   Heirloom cards by weapon type on the left, the selected one large with its tree as gems in an
+   arch around it on the right ---- */
+.cp-wrap--heirlooms {
+  --cp-detail-w: 640px;
+}
+@media (max-width: 1500px) {
+  .cp-wrap--heirlooms {
+    --cp-detail-w: 520px;
+  }
+}
+.cp-grid--heirlooms {
+  grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + 10px));
+  gap: 14px 18px;
+  justify-content: start;
+}
+.cp-hgroup {
+  display: grid;
+  gap: 4px;
+}
+.cp-hgroup .cp-group__title {
+  font-size: 12px;
+}
+.cp-hgroup__cards {
+  display: flex;
+  gap: 10px;
+  /* room for the ★6 crowns above the cards */
+  padding-top: calc(28px * var(--card-k));
+}
+.cp-cell--heirloom {
+  display: grid;
+  gap: 3px;
+  width: calc(176px * var(--card-k));
+}
+.cp-shardbar {
+  display: block;
+  height: 6px;
+}
+.cp-shardbar > i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold);
+}
+.cp-shardtext {
+  font-size: 12px;
+  color: var(--px-muted);
+  white-space: nowrap;
+}
+
+.cp-treehead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cp-treehead__name {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0;
+}
+.cp-treehead__name b {
+  font-size: 20px;
+}
+.cp-treehead__name span {
+  font-size: 13px;
+  color: var(--px-muted);
+}
+/* the stage: the card in the middle, six gems around it, the paths drawn behind */
+.cp-arch {
+  position: relative;
+  min-height: 600px;
+  margin: 4px 0 8px;
+}
+.cp-arch__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.cp-arch__lines line {
+  stroke: var(--px-muted);
+  stroke-width: 2;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.6;
+}
+.cp-arch__lines line.is-on {
+  stroke: var(--px-gold);
+  stroke-dasharray: none;
+  opacity: 1;
+}
+.cp-arch__card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(176px * var(--card-k));
+}
+.cp-gem {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 150px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  transform: translate(-50%, -18px);
+  cursor: default;
+}
+.cp-gem.is-affordable {
+  cursor: pointer;
+}
+.cp-gem__stone {
+  width: 26px;
+  height: 26px;
+  transform: rotate(45deg);
+  background: transparent;
+  box-shadow: inset 0 0 0 2px var(--px-muted);
+}
+.cp-gem--cap .cp-gem__stone {
+  width: 38px;
+  height: 38px;
+}
+.cp-gem.is-open .cp-gem__stone {
+  box-shadow: inset 0 0 0 2px var(--px-gold);
+}
+.cp-gem.is-affordable .cp-gem__stone {
+  background: color-mix(in srgb, var(--px-gold) 30%, transparent);
+  animation: cp-gem-ready 1.6s ease-in-out infinite;
+}
+.cp-gem.is-bought .cp-gem__stone {
+  background: linear-gradient(135deg, #fff1a8, var(--px-gold) 45%, #b8741a);
+  box-shadow: 0 0 0 2px var(--px-edge);
+}
+.cp-gem.is-affordable:hover .cp-gem__stone,
+.cp-gem:focus-visible .cp-gem__stone {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+@keyframes cp-gem-ready {
+  50% {
+    filter: brightness(1.4);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cp-gem.is-affordable .cp-gem__stone {
+    animation: none;
+  }
+}
+.cp-gem__label {
+  display: grid;
+  margin-top: 6px;
+  text-align: center;
+  line-height: 1.2;
+}
+.cp-gem__name {
+  font-size: 13px;
+}
+.cp-gem__what {
+  font-size: 11px;
+  color: var(--px-muted);
+}
+.cp-gem.is-locked .cp-gem__label {
+  opacity: 0.7;
+}
+.cp-shardline {
+  display: grid;
+  gap: 4px;
+}
+.cp-shardline__top {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.cp-shardline__track {
+  height: 10px;
+}
+.cp-shardline__track > i {
+  display: block;
+  height: 100%;
+  background: var(--px-gold);
+}

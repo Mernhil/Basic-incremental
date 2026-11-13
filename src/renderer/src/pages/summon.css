@@ -1,6 +1,7 @@
-/* Summon view, three columns on the table (DESIGN.md §7; UI_RULES.md §2, "The Summon view", mockup
-   4h): the decks as piles on the left, the wishlist in the middle, the odds on the right, the last
-   hand across the bottom. The frames, wells, tiles and buttons come from theme/frames.css
+/* Summon view on the table (DESIGN.md §7; UI_RULES.md §2, "The Summon view", pick 3a): the five
+   gates stacked in a left column (the open one shows its deck, the others are short rows), the open
+   gate's content on the right (the Wishlist and odds, or the board of the 22 Heirlooms) with the last
+   hand under it. The frames, wells, tiles and buttons come from theme/frames.css
    (.px-panel, .px-well, .px-tile, .px-btn); this file is the layout. The deck backs and the hand's
    cards are at 1x: --u is one art pixel in CSS px, a whole number of device pixels (fitCard() sets
    --card-n and --card-k on .sm-table). Pixelify Sans only at 18 px and up (.px-display). The view
@@ -20,7 +21,7 @@
   --sm-mythic: #ff4fb8;
   --sm-void: #8a5cff;
   display: grid;
-  grid-template-columns: minmax(380px, 1fr) minmax(0, 1.2fr) minmax(250px, 0.62fr);
+  grid-template-columns: minmax(360px, 430px) minmax(0, 1fr);
   align-items: start;
   gap: 16px;
   /* the panels' outer edges bleed one step outside their boxes */
@@ -33,12 +34,217 @@
   min-width: 0;
   align-content: start;
 }
-.sm-hand {
-  grid-column: 1 / -1;
-}
-@media (max-width: 1180px) {
+@media (max-width: 1100px) {
   .sm-table {
-    grid-template-columns: minmax(0, 1fr);
+    grid-template-columns: minmax(300px, 360px) minmax(0, 1fr);
+  }
+}
+
+/* ---- the gate column: one gate open, the others short rows ---- */
+.sm-gate[hidden],
+.sm-gate > [hidden] {
+  display: none;
+}
+.sm-gate.is-open > .sm-deck {
+  box-shadow:
+    0 0 0 var(--fs-sm) var(--px-gold),
+    0 0 0 calc(var(--fs-sm) * 2) var(--px-edge);
+}
+.sm-gate__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 14px;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.sm-gate__row:hover .sm-gate__name,
+.sm-gate__row:focus-visible .sm-gate__name {
+  color: #ffd968;
+}
+.sm-gate__text {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+.sm-gate__name {
+  font-size: 18px;
+  line-height: 1.1;
+}
+.sm-gate__line {
+  font-size: 12px;
+  color: var(--px-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sm-gate__pity {
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.sm-gate__chevron {
+  font-size: 12px;
+  color: var(--px-gold);
+}
+.sm-deck__about {
+  margin: 0;
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.sm-deck[data-kind='heirloom'] {
+  --sm-back: #6b4a12;
+  --sm-back-lo: #2e1d05;
+  --sm-back-hi: #ffd968;
+}
+
+/* ---- the open gate's content ---- */
+.sm-gatebody {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(230px, 0.8fr);
+  align-items: start;
+  gap: 16px;
+}
+.sm-table[data-gate='cosmetics'] .sm-gatebody,
+.sm-table[data-gate='skins'] .sm-gatebody {
+  grid-template-columns: minmax(0, 420px);
+}
+.sm-gatebody[hidden],
+.sm-board[hidden] {
+  display: none;
+}
+
+/* ---- the board of the 22 Heirlooms (11 types across, a Mythic and a Void row) ---- */
+.sm-board {
+  display: grid;
+  gap: 8px;
+  padding: 10px 14px 14px;
+  min-width: 0;
+}
+.sm-board__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.1;
+}
+.sm-board__facts,
+.sm-board__odds {
+  margin: 0;
+  font-size: 13px;
+  color: var(--px-muted);
+}
+.sm-board__grid {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+.sm-board__row {
+  display: grid;
+  grid-template-columns: 52px repeat(11, minmax(0, 1fr));
+  gap: 6px;
+  align-items: stretch;
+}
+.sm-board__row--head {
+  align-items: end;
+}
+.sm-board__col {
+  font-size: 12px;
+  text-align: center;
+  color: var(--px-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sm-board__side {
+  align-self: center;
+  font-size: 16px;
+}
+.sm-cell {
+  --sc: var(--sm-mythic);
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 2px;
+  min-width: 0;
+  padding: 4px 4px 6px;
+  background: var(--px-well, #1b1626);
+  box-shadow: inset 0 0 0 var(--fs-sm) var(--px-edge);
+  opacity: 0.72;
+}
+.sm-cell[data-side='void'] {
+  --sc: var(--sm-void);
+}
+.sm-cell.is-owned {
+  opacity: 1;
+  box-shadow:
+    inset 0 0 0 var(--fs-sm) var(--px-gold),
+    inset 0 0 0 calc(var(--fs-sm) * 2) var(--px-edge);
+}
+.sm-cell__pic {
+  width: 86%;
+  aspect-ratio: 200 / 200;
+  overflow: hidden;
+}
+.sm-cell:not(.is-owned) .sm-cell__pic {
+  filter: grayscale(0.85) brightness(0.8);
+}
+.sm-cell__pic svg {
+  width: 100%;
+  height: 100%;
+}
+.sm-cell__name {
+  max-width: 100%;
+  line-height: 1.25;
+  font-size: 12px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sm-cell__stars {
+  min-height: 1em;
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: #ffd968;
+}
+.sm-cell__bar {
+  width: 100%;
+  height: 6px;
+}
+.sm-cell__bar > i {
+  display: block;
+  height: 100%;
+  background: var(--sc);
+}
+.sm-cell__count {
+  font-size: 12px;
+}
+.sm-board__pity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+}
+.sm-board__pitylabel {
+  font-size: 18px;
+}
+.sm-board__pity .sm-pity__track {
+  height: 14px;
+}
+@media (max-width: 1500px) {
+  .sm-board__row {
+    grid-template-columns: 40px repeat(11, minmax(0, 1fr));
+    gap: 4px;
+  }
+  .sm-board__col,
+  .sm-cell__name,
+  .sm-cell__count {
+    font-size: 11px;
+  }
+  .sm-cell__stars {
+    font-size: 8px;
+    letter-spacing: 0;
   }
 }
 
@@ -412,9 +618,35 @@
   min-height: calc(186 * var(--u));
   min-width: 0;
 }
+/* an empty hand: a row of face-down card backs and a line, so the strip is never empty */
 .sm-hand__empty {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0;
-  padding: 24px 0;
+}
+.sm-hand__back {
+  flex: none;
+  width: calc(132 * var(--u));
+  height: calc(186 * var(--u));
+  background: #3a55c4;
+  opacity: 0.45;
+  box-shadow:
+    inset 0 0 0 calc(3 * var(--u)) var(--px-gold),
+    inset 0 0 0 calc(4 * var(--u)) var(--px-edge),
+    0 0 0 var(--u) var(--px-edge);
+}
+.sm-table[data-gate='heirloom'] .sm-hand__back {
+  background: #6b4a12;
+}
+.sm-table[data-gate='cosmetics'] .sm-hand__back {
+  background: #b53a82;
+}
+.sm-table[data-gate='skins'] .sm-hand__back {
+  background: #1f8a78;
+}
+.sm-hand__emptytext {
+  margin: 0;
   font-size: 14px;
   color: var(--px-muted);
 }
