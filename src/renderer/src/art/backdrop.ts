@@ -10,7 +10,7 @@
  * while the window is visible, and not at all under reduced motion.
  */
 import type { Backdrop } from '../../../game';
-import { sprite } from './pixel/sprites';
+import { sprite, strip } from './pixel/sprites';
 import { BACKDROP, SeaSim, bubbleWobble, fishBob, type SeaBubble, type SeaFish } from './seaSim';
 
 export { BACKDROP };
@@ -41,10 +41,10 @@ const STRIP_FPS = 8;
 function pic(name: string, z: number): string {
   const s = sprite(name);
   if (!s) return '';
-  const strip = s.animated ? sprite(`${name}-anim`) : undefined;
-  if (s.animated && strip) {
-    const n = s.animated.frames;
-    return `<div class="bi-bd__strip" style="background-image:url(${strip.url});background-size:${n * 100}% 100%;width:${s.w}px;height:${s.h}px;z-index:${z};--bd-steps:${n};animation-duration:${n / STRIP_FPS}s"></div>`;
+  const st = strip(name);
+  if (st) {
+    const n = st.frames;
+    return `<div class="bi-bd__strip" style="background-image:url(${st.url});background-size:${n * 100}% 100%;width:${s.w}px;height:${s.h}px;z-index:${z};--bd-steps:${n};animation-duration:${n / STRIP_FPS}s"></div>`;
   }
   return `<img src="${s.url}" alt="" draggable="false" style="left:0;top:0;width:${s.w}px;height:${s.h}px;z-index:${z}">`;
 }

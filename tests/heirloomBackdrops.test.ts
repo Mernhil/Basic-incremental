@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { backdropOf } from '../src/game';
-import { sprite } from '../src/renderer/src/art/pixel/sprites';
+import { sprite, strip } from '../src/renderer/src/art/pixel/sprites';
 import { kitName } from '../src/renderer/src/art/frame';
 import { BACKDROP, SeaSim } from '../src/renderer/src/art/seaSim';
 import { content } from './helpers';
@@ -45,9 +45,8 @@ describe('Heirloom backdrops', () => {
   });
 
   it('plays the villain backdrop as a 40-frame strip', () => {
-    expect(sprite('bg-villain')?.animated).toEqual({ frames: 40 });
-    expect(sprite('bg-villain-anim')).toMatchObject({ w: 136 * 40, h: 160 });
-    expect(sprite('bg-hero')?.animated).toBeUndefined();
+    expect(strip('bg-villain')).toMatchObject({ frames: 40, w: 136, h: 160 });
+    expect(strip('bg-hero')).toBeUndefined();
   });
 
   it('has none for other rarities', () => {
