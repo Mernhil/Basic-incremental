@@ -317,7 +317,7 @@ describe('rarity caps the tier (DESIGN.md §5)', () => {
     expect(cardTopTier(content, 'dawnblade_regent')).toBe('prismatic'); // Legendary
     expect(cardTopTier(content, 'moonwood_dryad')).toBe('mythic'); // Mythic
     expect(cardTopTier(content, 'core_titan')).toBe('mythic'); // Void
-    expect(cardTopTier(content, 'deepmaw')).toBe('heirloom'); // an Heirloom card
+    expect(cardTopTier(content, 'heartdelver')).toBe('heirloom'); // an Heirloom card
     expect(cardTopTier(content, 'nope')).toBe('wood');
   });
 
@@ -378,13 +378,13 @@ describe('the ladder ends at Mythic / Void; Heirlooms are their own cards (DESIG
 
   it('keeps an Heirloom card at its own tier: level cap 140, no star bar, no tier-up', () => {
     expect(levelCap(content, { tier: 'heirloom', stars: 1 })).toBe(140);
-    const state = own(freshState(), 'deepmaw', { tier: 'heirloom', level: 140, stars: 3 });
-    expect(tierUpCheck(state, content, 'deepmaw')).toMatchObject({ available: false });
-    expect(starUpCheck(state, content, 'deepmaw')).toMatchObject({ available: false });
-    expect(cardInfo(state, content, 'deepmaw')!.starBar).toBeNull();
-    expect(cardInfo(state, content, 'deepmaw')!.levelCap).toBe(140);
-    own(state, 'deepmaw', { tier: 'heirloom', stars: 6 });
-    expect(cardInfo(state, content, 'deepmaw')!.maxRank).toBe(true);
+    const state = own(freshState(), 'heartdelver', { tier: 'heirloom', level: 140, stars: 3 });
+    expect(tierUpCheck(state, content, 'heartdelver')).toMatchObject({ available: false });
+    expect(starUpCheck(state, content, 'heartdelver')).toMatchObject({ available: false });
+    expect(cardInfo(state, content, 'heartdelver')!.starBar).toBeNull();
+    expect(cardInfo(state, content, 'heartdelver')!.levelCap).toBe(140);
+    own(state, 'heartdelver', { tier: 'heirloom', stars: 6 });
+    expect(cardInfo(state, content, 'heartdelver')!.maxRank).toBe(true);
   });
 
   it('reports only the card tier moment on a tier-up', () => {
@@ -442,9 +442,9 @@ describe('weapon looks for now (DESIGN.md §5)', () => {
       name: 'Void Hollowdeep Pickaxe',
       heirloom: false,
     });
-    expect(cardItem(content, 'deepmaw', null)).toMatchObject({
+    expect(cardItem(content, 'heartdelver', null)).toMatchObject({
       kind: 'pickaxe',
-      name: 'Deepmaw',
+      name: 'Heartdelver',
       heirloom: true,
     });
     expect(cardItem(content, 'nope', null)).toBeNull();

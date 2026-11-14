@@ -296,7 +296,7 @@ export const COPY = {
     heirloomsTab: 'Heirlooms',
     loadoutsTab: 'Loadouts',
     /** The Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e). */
-    heirloomsLabel: 'The 22 Heirlooms',
+    heirloomsLabel: 'The 11 Heirlooms',
     heirloomGroup: (type: string, have: number, total: number) => `${type}: ${have} of ${total}`,
     heirloomShards: (stars: number, have: number, need: number | null) =>
       stars === 0
@@ -867,6 +867,7 @@ export const COPY = {
     heirloomStar: (n: number) => `★${n}!`,
     heirloomCardShards: (n: number) => `+${n} card shards`,
     heirloomSide: { mythic: 'Mythic', void: 'Void' } as Record<string, string>,
+    heirloomRow: 'Heirlooms',
     handEmptyBacks: 'No pull yet: the cards you draw will wait here.',
   },
   weaponSkins: {

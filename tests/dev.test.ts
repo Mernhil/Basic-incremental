@@ -84,14 +84,14 @@ describe('dev cheats (dev builds only)', () => {
       stars: 1,
     });
     expect(ladder.ok).toBe(false);
-    const heirloom = devSetCardRank(freshState(), content, 'deepmaw', {
+    const heirloom = devSetCardRank(freshState(), content, 'heartdelver', {
       tier: 'heirloom',
       stars: 2,
     });
     expect(heirloom.ok).toBe(true);
-    expect(devSetCardRank(freshState(), content, 'deepmaw', { tier: 'mythic', stars: 2 }).ok).toBe(
-      false,
-    );
+    expect(
+      devSetCardRank(freshState(), content, 'heartdelver', { tier: 'mythic', stars: 2 }).ok,
+    ).toBe(false);
     const mythic = devSetCardRank(freshState(), content, 'core_titan', {
       tier: 'mythic',
       stars: 1,

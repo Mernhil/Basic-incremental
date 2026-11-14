@@ -1920,7 +1920,7 @@
         },
         {
           "id": "greatsword_j",
-          "name": "Kingsoath",
+          "name": "Grimhowl",
           "step": "heirloom",
           "kind": "keystone",
           "requires": ["greatsword_g"],
@@ -2065,7 +2065,7 @@
         },
         {
           "id": "hammer_j",
-          "name": "Worldforge",
+          "name": "Grave Anvil",
           "step": "heirloom",
           "kind": "keystone",
           "requires": ["hammer_g"],
@@ -2215,7 +2215,7 @@
         },
         {
           "id": "dagger_j",
-          "name": "Lumen Fang",
+          "name": "Nightsting",
           "step": "heirloom",
           "kind": "keystone",
           "requires": ["dagger_g"],
@@ -2515,7 +2515,7 @@
         },
         {
           "id": "staff_j",
-          "name": "Lifebloom",
+          "name": "Soulwell",
           "step": "heirloom",
           "kind": "keystone",
           "requires": ["staff_g"],
@@ -2665,7 +2665,7 @@
         },
         {
           "id": "scythe_j",
-          "name": "Graceharvest",
+          "name": "Last Breath",
           "step": "heirloom",
           "kind": "keystone",
           "requires": ["scythe_g"],

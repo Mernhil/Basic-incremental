@@ -313,12 +313,12 @@ export interface HeirloomCellView {
   label: string;
 }
 
-/** The board: 11 types across, a Mythic and a Void row, in the shared type order. */
+/** The board: 11 types across in one row (each Heirloom leans light or dark: its cell's side), in the shared type order. */
 export interface HeirloomBoardView {
   title: string;
   facts: string;
   columns: { kind: string; name: string }[];
-  rows: { side: 'mythic' | 'void'; name: string; cells: (HeirloomCellView | null)[] }[];
+  rows: { name: string; cells: (HeirloomCellView | null)[] }[];
   odds: string;
   pityNote: string;
 }
@@ -349,9 +349,10 @@ export function heirloomDeckView(info: HeirloomGateInfo, content: Content): Heir
 export function heirloomBoardView(info: HeirloomGateInfo, content: Content): HeirloomBoardView {
   const t = COPY.summon;
   const gate = content.heirlooms.gate;
-  const cell = (side: 'mythic' | 'void', kind: string): HeirloomCellView | null => {
-    const e = info.entries.find((x) => x.side === side && x.card.item.kind === kind);
+  const cell = (kind: string): HeirloomCellView | null => {
+    const e = info.entries.find((x) => x.card.item.kind === kind);
     if (!e) return null;
+    const side = e.side;
     return {
       cardId: e.card.id,
       name: e.card.name,
@@ -369,11 +370,7 @@ export function heirloomBoardView(info: HeirloomGateInfo, content: Content): Hei
     title: t.heirloomBoardTitle(info.total),
     facts: t.heirloomBoardFacts(info.unlocked, info.total, gate.unlockShards),
     columns: kinds.map((k) => ({ kind: k.kind, name: k.noun })),
-    rows: (['mythic', 'void'] as const).map((side) => ({
-      side,
-      name: t.heirloomSide[side] ?? side,
-      cells: kinds.map((k) => cell(side, k.kind)),
-    })),
+    rows: [{ name: t.heirloomRow, cells: kinds.map((k) => cell(k.kind)) }],
     odds: t.heirloomOdds(
       pct(info.wholeChance),
       pct(1 - info.wholeChance),

@@ -162,7 +162,7 @@ export function itemName(
     case 'mythic':
       return type[cardSide(rarity)];
     case 'heirloom':
-      return type.heirloom[cardSide(rarity)];
+      return type.heirloom;
   }
 }
 

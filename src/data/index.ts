@@ -993,8 +993,7 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
     else names.set(name.toLowerCase(), where);
   };
   c.items.types.forEach((t, i) => {
-    claim(t.heirloom.mythic, `items.json › types › [${i}] › heirloom › mythic`);
-    claim(t.heirloom.void, `items.json › types › [${i}] › heirloom › void`);
+    claim(t.heirloom, `items.json › types › [${i}] › heirloom`);
   });
   const pictures = new Set<string>();
   c.cards.forEach((card, i) => {
@@ -1019,9 +1018,9 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
 }
 
 /**
- * heirlooms.json and the 22 Heirloom cards (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom
- * trees): one Heirloom card per item type and side, named as items.json names that Heirloom, of
- * its side's rarity and its type's job, in no portal pool, with enhancement options; one tree per
+ * heirlooms.json and the 11 Heirloom cards (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom
+ * trees): one Heirloom card per item type, named as items.json names that Heirloom, of
+ * its lean side's rarity (Mythic or Void) and its type's job, in no portal pool, with enhancement options; one tree per
  * Heirloom card whose nodes need nodes of the same tree, give skills that exist and cost no more
  * points than an Heirloom earns; the gate's price is a resource.
  */
@@ -1039,15 +1038,11 @@ function checkHeirlooms(
 ): void {
   const heirloomCards = c.cards.filter((x) => x.heirloom);
   for (const t of c.items.types) {
-    for (const side of ['mythic', 'void'] as const) {
-      const found = heirloomCards.filter((x) => x.item.kind === t.kind && x.rarity === side);
-      if (found.length !== 1) {
-        issues.push(`cards.json: ${found.length} Heirloom cards for ${t.kind} ${side}, needs 1`);
-      } else if (found[0]!.name !== t.heirloom[side]) {
-        issues.push(
-          `cards.json › ${found[0]!.id} › name: the ${t.kind} ${side} Heirloom is "${t.heirloom[side]}"`,
-        );
-      }
+    const found = heirloomCards.filter((x) => x.item.kind === t.kind);
+    if (found.length !== 1) {
+      issues.push(`cards.json: ${found.length} Heirloom cards for ${t.kind}, needs 1`);
+    } else if (found[0]!.name !== t.heirloom) {
+      issues.push(`cards.json › ${found[0]!.id} › name: the ${t.kind} Heirloom is "${t.heirloom}"`);
     }
   }
   const pooled = new Set(c.portals.flatMap((p) => p.pool.map((e) => e.itemId)));

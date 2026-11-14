@@ -20,7 +20,7 @@ const recolours = JSON.parse(
 ) as Recolour[];
 
 const withArt = content.cards.filter((c) => c.heirloomArt);
-// The ladder cards: the 22 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
+// The ladder cards: the 11 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
 const ladder = content.cards.filter((c) => !c.heirloom);
 const byRarity = (r: Rarity) => ladder.filter((c) => c.rarity === r);
 const key = (r: { type: string; side: string; letter: string }) =>
@@ -48,11 +48,11 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
   it('gives every new card its own card name and its own Heirloom name', () => {
     const cardNames = content.cards.map((c) => c.name.toLowerCase());
     expect(new Set(cardNames).size).toBe(cardNames.length);
-    const original = content.items.types.flatMap((t) => [t.heirloom.mythic, t.heirloom.void]);
+    const original = content.items.types.map((t) => t.heirloom);
     const names = withArt.map((c) => c.heirloomName);
     for (const c of withArt) expect(c.heirloomName, c.id).toBeTruthy();
     const all = [...original, ...names].map((n) => n!.toLowerCase());
-    expect(new Set(all).size).toBe(22 + 45);
+    expect(new Set(all).size).toBe(11 + 45);
     // tiles truncate long names
     for (const c of withArt) expect(c.name.length, c.name).toBeLessThanOrEqual(16);
   });
@@ -131,9 +131,7 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
     expect(itemName(content, card.item.kind, 'heirloom', card.rarity, card)).toBe(
       card.heirloomName,
     );
-    expect(itemName(content, card.item.kind, 'heirloom', card.rarity)).toBe(
-      type.heirloom[card.rarity === 'void' ? 'void' : 'mythic'],
-    );
+    expect(itemName(content, card.item.kind, 'heirloom', card.rarity)).toBe(type.heirloom);
     // its own weapon at Mythic or Void; Wood to Prismatic are the type's one model
     expect(itemName(content, card.item.kind, 'mythic', card.rarity, card)).toBe(card.heirloomName);
     expect(itemName(content, card.item.kind, 'wood', card.rarity, card)).toBe(

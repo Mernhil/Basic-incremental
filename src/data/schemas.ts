@@ -494,7 +494,7 @@ export const itemTypeSchema = z.strictObject({
   mythic: name,
   void: name,
   /** Heirloom names, by side: the names of the type's two Heirloom cards (DESIGN.md §5 Heirlooms). */
-  heirloom: z.strictObject({ mythic: name, void: name }),
+  heirloom: name,
 });
 export const itemsSchema = z.strictObject({
   /** Material words for T1 to T4 names: "Wooden Sword", "Bronze Sword", "Silver Sword", "Golden Sword". */

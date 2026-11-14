@@ -37,15 +37,29 @@ const ownHeirloom = (state: GameState, id: string, stars = 1, level = 1): GameSt
   return state;
 };
 
-describe('the 22 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
-  it('lists one Heirloom card per item type and side, in the shared type order', () => {
+describe('the 11 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
+  it('lists one Heirloom card per item type, in the shared type order', () => {
     const list = heirloomCards(content);
-    expect(list).toHaveLength(22);
+    expect(list).toHaveLength(11);
     expect(list.slice(0, 4).map((c) => c.name)).toEqual([
       'Solaris',
-      'Nightfall',
-      'Kingsoath',
       'Grimhowl',
+      'Skypiercer',
+      'Sunrider',
+    ]);
+    // each leans to the side the user picked (2026-11-14): its card's rarity is Mythic or Void
+    expect(list.map((c) => `${c.name}:${c.rarity}`)).toEqual([
+      'Solaris:mythic',
+      'Grimhowl:void',
+      'Skypiercer:mythic',
+      'Sunrider:mythic',
+      'Nightsting:void',
+      'Grave Anvil:void',
+      'Starweaver:mythic',
+      'Soulwell:void',
+      'Last Breath:void',
+      'Heartdelver:mythic',
+      'Elderwarden:mythic',
     ]);
     for (const c of list) expect(content.heirloomTreeByCard.has(c.id), c.id).toBe(true);
   });
@@ -128,13 +142,13 @@ describe('the Heirloom Gate (DESIGN.md §7)', () => {
     // 2% with a pity at 60 lands a little above 2%.
     expect(whole / 10000).toBeGreaterThan(0.02);
     expect(whole / 10000).toBeLessThan(0.035);
-    expect(heirloomGateInfo(state, content).unlocked).toBe(22);
+    expect(heirloomGateInfo(state, content).unlocked).toBe(11);
   });
 
   it('keeps shards, pity, trees and scrolls through an Ascension', () => {
     const state = ownHeirloom(scrolls(freshState(), 4), 'solaris', 2);
     state.heirlooms = {
-      shards: { nightfall: 12 },
+      shards: { grimhowl: 12 },
       pity: 9,
       pulls: 40,
       trees: { solaris: ['root'] },
@@ -253,14 +267,11 @@ describe('Heirloom trees (DESIGN.md §10 Heirloom trees)', () => {
   });
 
   it('gives the capstone duel skill in place of the type skill while it is bought', () => {
-    const state = ownHeirloom(freshState(), 'worldforge', 6, 140);
-    expect(cardSkill(content, 'worldforge', state).id).toBe('quake');
-    state.heirlooms.trees['worldforge'] = ['root', 'small_a', 'large_a', 'capstone'];
-    expect(cardSkill(content, 'worldforge', state)).toMatchObject({
-      id: 'anvil_of_worlds',
-      guard: true,
-      health: 1.5,
-    });
+    const state = ownHeirloom(freshState(), 'soulwell', 6, 140);
+    const type = cardSkill(content, 'soulwell', state).id;
+    state.heirlooms.trees['soulwell'] = ['root', 'small_a', 'large_a', 'capstone'];
+    expect(type).not.toBe('soul_drain');
+    expect(cardSkill(content, 'soulwell', state).id).toBe('soul_drain');
   });
 });
 
@@ -273,7 +284,7 @@ describe('weapon circles (DESIGN.md §10 Hidden weapon circles)', () => {
     expect(step(state)).toBe('mythic');
     state.cards.owned['core_titan']!.stars = 6;
     expect(step(state)).toBe('heirloom');
-    const other = ownHeirloom(freshState(), 'deepmaw');
+    const other = ownHeirloom(freshState(), 'heartdelver');
     expect(step(other)).toBe('heirloom');
   });
 });
@@ -323,7 +334,7 @@ describe('save format 30 (DESIGN.md §5 Saves keep their Heirlooms)', () => {
   it('round-trips the Heirloom state', () => {
     const state = ownHeirloom(freshState(), 'solaris', 3, 40);
     state.heirlooms = {
-      shards: { solaris: 4, nightfall: 9 },
+      shards: { solaris: 4, grimhowl: 9 },
       pity: 12,
       pulls: 70,
       trees: { solaris: ['root', 'small_b'] },

@@ -36,7 +36,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 31;
+export const CURRENT_SAVE_VERSION = 32;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -758,9 +758,7 @@ function deserializeHeirlooms(state: GameState, saved: SerializedState, content:
   for (const entry of moved) {
     const from = content.cardById.get(entry.card);
     if (!from) continue;
-    const target = content.cards.find(
-      (c) => c.heirloom && c.item.kind === from.item.kind && c.rarity === from.rarity,
-    );
+    const target = content.cards.find((c) => c.heirloom && c.item.kind === from.item.kind);
     if (!target) continue;
     const stars = Math.max(1, Math.min(MAX_STARS, entry.stars));
     if (!state.cards.owned[target.id]) {
