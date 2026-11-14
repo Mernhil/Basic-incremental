@@ -72,6 +72,19 @@ describe('card skins: what a card may wear', () => {
   });
 });
 
+describe('card skins from a later art batch', () => {
+  it('a Leviathan T6 card gives its picture as a skin; a Leviathan Heirloom does not', () => {
+    const batchCard = content.cards.find((c) => c.batch && !c.heirloom && c.item.kind === 'sword')!;
+    const batchHeirloom = content.cards.find(
+      (c) => c.batch && c.heirloom && c.item.kind === 'sword',
+    )!;
+    const state = own(freshState(), PLAIN, batchCard.id, batchHeirloom.id);
+    const ids = cardSkinChoices(state, content, PLAIN).map((c) => c.id);
+    expect(ids).toContain(`card:${batchCard.id}`);
+    expect(ids).not.toContain(`card:${batchHeirloom.id}`);
+  });
+});
+
 describe('card skins: choosing per card', () => {
   it('sets and clears one card without touching another', () => {
     const state = own(freshState(), PLAIN, JADE, VIOLET);

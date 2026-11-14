@@ -119,7 +119,7 @@ export function skinTileMarkup(
   if (pic.kind === 'legacy') return skinMarkup(pic.art);
   if (pic.kind === 'card') {
     const source = content.cardById.get(pic.cardId);
-    return source ? cardTierArt(source, 'heirloom') : '';
+    return source ? cardTierArt(source, 'mythic') : '';
   }
   return cardItemArt(content, cardId, owned);
 }
