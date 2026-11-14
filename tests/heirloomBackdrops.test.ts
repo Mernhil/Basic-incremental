@@ -44,6 +44,12 @@ describe('Heirloom backdrops', () => {
       });
   });
 
+  it('plays the villain backdrop as a 40-frame strip', () => {
+    expect(sprite('bg-villain')?.animated).toEqual({ frames: 40 });
+    expect(sprite('bg-villain-anim')).toMatchObject({ w: 136 * 40, h: 160 });
+    expect(sprite('bg-hero')?.animated).toBeUndefined();
+  });
+
   it('has none for other rarities', () => {
     expect(backdropOf(content, 'solaris', 'gold')).toBeNull();
   });

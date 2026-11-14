@@ -535,6 +535,28 @@ body {
   position: absolute;
   image-rendering: pixelated;
 }
+.bi-bd__strip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  animation: bi-bd-strip linear infinite;
+  animation-timing-function: steps(var(--bd-steps), jump-none);
+}
+@keyframes bi-bd-strip {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bi-bd__strip {
+    animation: none;
+  }
+}
 .bi-bd__bubble {
   left: 0;
   top: 0;

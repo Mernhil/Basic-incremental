@@ -35,11 +35,18 @@ const reduced = (): boolean =>
   typeof window !== 'undefined' &&
   (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
 
+/** A sprite with a strip (`<name>-anim.png`, manifest `animated.frames`) is played at 8 fps by CSS (theme/base.css); frame 0 is the still. */
+const STRIP_FPS = 8;
+
 function pic(name: string, z: number): string {
   const s = sprite(name);
-  return s
-    ? `<img src="${s.url}" alt="" draggable="false" style="left:0;top:0;width:${s.w}px;height:${s.h}px;z-index:${z}">`
-    : '';
+  if (!s) return '';
+  const strip = s.animated ? sprite(`${name}-anim`) : undefined;
+  if (s.animated && strip) {
+    const n = s.animated.frames;
+    return `<div class="bi-bd__strip" style="background-image:url(${strip.url});background-size:${n * 100}% 100%;width:${s.w}px;height:${s.h}px;z-index:${z};--bd-steps:${n};animation-duration:${n / STRIP_FPS}s"></div>`;
+  }
+  return `<img src="${s.url}" alt="" draggable="false" style="left:0;top:0;width:${s.w}px;height:${s.h}px;z-index:${z}">`;
 }
 
 function draw(m: Mounted): void {
