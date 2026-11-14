@@ -5782,5 +5782,1543 @@
         }
       ]
     }
+  },
+  {
+    "id": "pearl_duelist",
+    "name": "Pearl Duelist",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "crystal",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Pearlbrand",
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "brine_corsair",
+    "name": "Brine Corsair",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Saltcutter",
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "surf_crusader",
+    "name": "Surf Crusader",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Wavecleaver",
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "maelstrom_tyrant",
+    "name": "Maelstrom Tyrant",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Drowncleaver",
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_minnow",
+    "name": "Silver Minnow",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "crystal",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Glimmerfin",
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "reef_assassin",
+    "name": "Reef Assassin",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "nature",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Urchin Fang",
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "coral_hoplite",
+    "name": "Coral Hoplite",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "storm",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Coralspire",
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "kraken_impaler",
+    "name": "Kraken Impaler",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Krakenthorn",
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "foam_cavalier",
+    "name": "Foam Cavalier",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Surfpiercer",
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sunken_horseman",
+    "name": "Sunken Horseman",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "storm",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Sunkenlance",
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "anchor_smith",
+    "name": "Anchor Smith",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Anchorfall",
+    "main": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "barnacle_crusher",
+    "name": "Barnacle Crusher",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Barnaclemaul",
+    "main": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "moonlit_angler",
+    "name": "Moonlit Angler",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "storm",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Moonscale",
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "siren_huntress",
+    "name": "Siren Huntress",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Sirensong",
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "tide_oracle",
+    "name": "Tide Oracle",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Tideseer",
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "murk_warlock",
+    "name": "Murk Warlock",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Murkwand",
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "kelp_harvester",
+    "name": "Kelp Harvester",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "nature",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Kelpreap",
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "deep_sovereign",
+    "name": "Deep Sovereign",
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Deepreap",
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+20% damage, +12% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "20"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "12"
+        }
+      ]
+    }
+  },
+  {
+    "id": "reef_prospector",
+    "name": "Reef Prospector",
+    "job": "mining",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Reefpick",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "trench_burrower",
+    "name": "Trench Burrower",
+    "job": "mining",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Trenchpick",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "driftwood_keeper",
+    "name": "Driftwood Keeper",
+    "job": "logging",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Driftfeller",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mangrove_tyrant",
+    "name": "Mangrove Tyrant",
+    "job": "logging",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Mangrovebite",
+    "worker": {
+      "description": "+30% output here, harvest gauge fills 1.5× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "30"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5"
+        }
+      ]
+    }
+  },
+  {
+    "id": "auroratusk",
+    "name": "Auroratusk",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "crystal",
+    "item": {
+      "kind": "sword"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Auroratusk",
+    "main": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "maelfang",
+    "name": "Maelfang",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "greatsword"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Maelfang",
+    "main": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "venomplume",
+    "name": "Venomplume",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "nature",
+    "item": {
+      "kind": "dagger"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Venomplume",
+    "main": {
+      "description": "Fast hits every 0.5 s, gauge fills twice as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bluestrike",
+    "name": "Bluestrike",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "storm",
+    "item": {
+      "kind": "spear"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Bluestrike",
+    "main": {
+      "description": "Steady hits every 0.8 s, +15% crit chance",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "0.8",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.15",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "pearlrider",
+    "name": "Pearlrider",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "item": {
+      "kind": "lance"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Pearlrider",
+    "main": {
+      "description": "Heavy hits every 1.5 s, signature attack ×20",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "20",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "clawbreaker",
+    "name": "Clawbreaker",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Clawbreaker",
+    "main": {
+      "description": "Slow hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mantaglide",
+    "name": "Mantaglide",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "storm",
+    "item": {
+      "kind": "bow"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Mantaglide",
+    "main": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "dreadbloom",
+    "name": "Dreadbloom",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "staff"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Dreadbloom",
+    "main": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "coilreaper",
+    "name": "Coilreaper",
+    "heirloom": true,
+    "job": "fighting",
+    "rarity": "void",
+    "element": "void",
+    "item": {
+      "kind": "scythe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Coilreaper",
+    "main": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "support": {
+      "description": "+25% damage, +15% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "25"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "15"
+        }
+      ]
+    }
+  },
+  {
+    "id": "prismstrike",
+    "name": "Prismstrike",
+    "heirloom": true,
+    "job": "mining",
+    "rarity": "mythic",
+    "element": "crystal",
+    "item": {
+      "kind": "pickaxe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Prismstrike",
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
+  },
+  {
+    "id": "eldershell",
+    "name": "Eldershell",
+    "heirloom": true,
+    "job": "logging",
+    "rarity": "mythic",
+    "element": "nature",
+    "item": {
+      "kind": "logging_axe"
+    },
+    "batch": "leviathan",
+    "heirloomName": "Eldershell",
+    "worker": {
+      "description": "+40% output here, harvest gauge fills 1.75× as fast",
+      "harvest": {
+        "style": "volley",
+        "intervalSeconds": 1.5,
+        "strikes": 2
+      },
+      "modifiers": [
+        {
+          "stat": "production.rate",
+          "kind": "percent",
+          "value": "40"
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.75"
+        }
+      ]
+    }
   }
 ]

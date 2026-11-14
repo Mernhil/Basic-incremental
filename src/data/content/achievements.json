@@ -2206,6 +2206,204 @@
       "stock": null
     },
     {
+      "id": "copy_pearl_duelist",
+      "reward": {
+        "kind": "card",
+        "card": "pearl_duelist"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_brine_corsair",
+      "reward": {
+        "kind": "card",
+        "card": "brine_corsair"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_surf_crusader",
+      "reward": {
+        "kind": "card",
+        "card": "surf_crusader"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_maelstrom_tyrant",
+      "reward": {
+        "kind": "card",
+        "card": "maelstrom_tyrant"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_silver_minnow",
+      "reward": {
+        "kind": "card",
+        "card": "silver_minnow"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_reef_assassin",
+      "reward": {
+        "kind": "card",
+        "card": "reef_assassin"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_coral_hoplite",
+      "reward": {
+        "kind": "card",
+        "card": "coral_hoplite"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_kraken_impaler",
+      "reward": {
+        "kind": "card",
+        "card": "kraken_impaler"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_foam_cavalier",
+      "reward": {
+        "kind": "card",
+        "card": "foam_cavalier"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_sunken_horseman",
+      "reward": {
+        "kind": "card",
+        "card": "sunken_horseman"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_anchor_smith",
+      "reward": {
+        "kind": "card",
+        "card": "anchor_smith"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_barnacle_crusher",
+      "reward": {
+        "kind": "card",
+        "card": "barnacle_crusher"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_moonlit_angler",
+      "reward": {
+        "kind": "card",
+        "card": "moonlit_angler"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_siren_huntress",
+      "reward": {
+        "kind": "card",
+        "card": "siren_huntress"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_tide_oracle",
+      "reward": {
+        "kind": "card",
+        "card": "tide_oracle"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_murk_warlock",
+      "reward": {
+        "kind": "card",
+        "card": "murk_warlock"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_kelp_harvester",
+      "reward": {
+        "kind": "card",
+        "card": "kelp_harvester"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_deep_sovereign",
+      "reward": {
+        "kind": "card",
+        "card": "deep_sovereign"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_reef_prospector",
+      "reward": {
+        "kind": "card",
+        "card": "reef_prospector"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_trench_burrower",
+      "reward": {
+        "kind": "card",
+        "card": "trench_burrower"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_driftwood_keeper",
+      "reward": {
+        "kind": "card",
+        "card": "driftwood_keeper"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
+      "id": "copy_mangrove_tyrant",
+      "reward": {
+        "kind": "card",
+        "card": "mangrove_tyrant"
+      },
+      "price": 300,
+      "stock": null
+    },
+    {
       "id": "summon_scrolls",
       "reward": {
         "kind": "resource",

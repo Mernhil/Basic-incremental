@@ -998,7 +998,26 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
   const pictures = new Set<string>();
   c.cards.forEach((card, i) => {
     const where = `cards.json › [${i}]`;
-    if (!card.heirloomArt && !card.heirloomName) return;
+    if (!card.heirloomArt && !card.heirloomName && !card.batch) return;
+    if (card.batch) {
+      // a later art batch (DESIGN.md §5 Art batches): its own weapon name, the batch's pictures
+      if (card.heirloomArt) issues.push(`${where}: a batch card has no heirloomArt`);
+      if (!card.heirloomName) issues.push(`${where}: a batch card needs its heirloomName`);
+      else {
+        if (card.heirloom && card.heirloomName !== card.name) {
+          issues.push(`${where} › heirloomName: an Heirloom's weapon is named as the card`);
+        }
+        if (!card.heirloom) claim(card.heirloomName, `${where} › heirloomName`);
+        else claim(card.name, `${where} › name`);
+      }
+      if (!card.heirloom && card.rarity !== 'mythic' && card.rarity !== 'void') {
+        issues.push(`${where} › batch: only a Mythic or Void card has its own weapon`);
+      }
+      const picture = `${card.item.kind}/${card.rarity}/${card.batch}/${card.heirloom ? 'h' : 't6'}`;
+      if (pictures.has(picture)) issues.push(`${where} › batch: "${picture}" is used twice`);
+      pictures.add(picture);
+      return;
+    }
     if (card.heirloom) {
       issues.push(`${where}: an Heirloom card shows its type's Heirloom, not its own weapon`);
       return;
@@ -1018,8 +1037,8 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
 }
 
 /**
- * heirlooms.json and the 11 Heirloom cards (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom
- * trees): one Heirloom card per item type, named as items.json names that Heirloom, of
+ * heirlooms.json and the Heirloom cards (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom
+ * trees): one base Heirloom card per item type (and one more per later art batch), named as items.json names that Heirloom, of
  * its lean side's rarity (Mythic or Void) and its type's job, in no portal pool, with enhancement options; one tree per
  * Heirloom card whose nodes need nodes of the same tree, give skills that exist and cost no more
  * points than an Heirloom earns; the gate's price is a resource.
@@ -1037,10 +1056,11 @@ function checkHeirlooms(
   issues: string[],
 ): void {
   const heirloomCards = c.cards.filter((x) => x.heirloom);
+  // the base Heirloom of each type is named in items.json; a later batch's Heirloom names itself
   for (const t of c.items.types) {
-    const found = heirloomCards.filter((x) => x.item.kind === t.kind);
+    const found = heirloomCards.filter((x) => x.item.kind === t.kind && !x.batch);
     if (found.length !== 1) {
-      issues.push(`cards.json: ${found.length} Heirloom cards for ${t.kind}, needs 1`);
+      issues.push(`cards.json: ${found.length} base Heirloom cards for ${t.kind}, needs 1`);
     } else if (found[0]!.name !== t.heirloom) {
       issues.push(`cards.json › ${found[0]!.id} › name: the ${t.kind} Heirloom is "${t.heirloom}"`);
     }
