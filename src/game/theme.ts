@@ -255,6 +255,14 @@ export interface ResolvedCard {
   vars: Record<string, string>;
   /** Recipe class names for this card (card slots and rarity). */
   recipes: string[];
+  /** The sprite name of the card's base border: its art batch's shared border (DESIGN.md §5 The base frame). */
+  baseBorder: string;
+}
+
+/** The base border of a card: its batch's, and the first batch's (Dragon) for a card with no `batch` or an id not in the content. */
+export function baseBorderOf(content: Content, cardId: string): string {
+  const batch = content.cardById.get(cardId)?.batch;
+  return (batch ? content.batchById.get(batch) : undefined)?.border ?? content.batches[0]!.border;
 }
 
 /**
@@ -296,7 +304,12 @@ export function resolveCard(
     Object.assign(vars, cssVars(rarity.tokens, 'rarity-'));
     recipes.push(...rarity.recipes);
   }
-  return { slots: slots as ResolvedCard['slots'], vars, recipes: [...new Set(recipes)] };
+  return {
+    slots: slots as ResolvedCard['slots'],
+    vars,
+    recipes: [...new Set(recipes)],
+    baseBorder: baseBorderOf(content, card.id),
+  };
 }
 
 /** The equipped tick animation id and number style id, for a job's floating "+n" (same for every job). Null for a slot with no items yet. */

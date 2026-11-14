@@ -1,0 +1,4 @@
+[
+  { "id": "dragon", "name": "Dragon", "border": "border-dragon" },
+  { "id": "leviathan", "name": "Leviathan", "border": "border-leviathan" }
+]

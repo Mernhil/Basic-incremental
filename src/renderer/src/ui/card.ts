@@ -110,7 +110,7 @@ export function createCard(initial: CardProps): CardView {
   const rarityWord = q<HTMLElement>('.bi-info__rarity');
   const stars = q<HTMLElement>('.bi-stars');
   const frameSvg = q<SVGElement>('.bi-card__frame');
-  let frameTier = '';
+  let frameBorder = '';
 
   const update = (p: CardProps): void => {
     el.classList.toggle('bi-card--boss', Boolean(p.boss));
@@ -154,11 +154,11 @@ export function createCard(initial: CardProps): CardView {
     el.style.setProperty('--bi-xp', String(face ? Math.min(1, Math.max(0, face.progress)) : 0));
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
-    // the tier is the frame (DESIGN.md §5); bosses have no rank and so no frame
-    const tier = p.boss ? '' : `${p.rank.tier}/${p.rarity === 'void' ? 'void' : 'mythic'}`;
-    if (tier !== frameTier) {
-      frameTier = tier;
-      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.rarity);
+    // the base frame is the card's art batch's border at every tier (DESIGN.md §5); bosses have none
+    const border = p.boss ? '' : p.theme.baseBorder;
+    if (border !== frameBorder) {
+      frameBorder = border;
+      frameSvg.innerHTML = border ? cardFrame(border) : '';
     }
     attachElementFx(
       artBox,

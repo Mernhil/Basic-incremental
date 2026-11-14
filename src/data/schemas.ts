@@ -519,11 +519,11 @@ const cardBase = {
    */
   heirloomArt: z.enum(['b', 'c', 'd']).optional(),
   /**
-   * A card of a later art batch (DESIGN.md §5 Art batches; batch 1 Dragon is the base roster, batch 2
-   * is `leviathan`): its T6 or Heirloom picture is `item-<type>-<batch>-<t6m|t6v|heirloom>` and
+   * A card of a later art batch (DESIGN.md §5 Art batches; batch 1 Dragon is the base roster and has
+   * no `batch`, batch 2 is `leviathan`; an id from batches.json): its T6 or Heirloom picture is `item-<type>-<batch>-<t6m|t6v|heirloom>` and
    * its own weapon's name is `heirloomName` (both or neither). A batch card has no `heirloomArt`.
    */
-  batch: z.enum(['leviathan']).optional(),
+  batch: id.optional(),
   heirloomName: name.optional(),
   /**
    * One of the Heirloom cards (11 Dragon, 11 Leviathan) (DESIGN.md §5 Heirlooms, An Heirloom card): its type's Heirloom of
@@ -2264,7 +2264,20 @@ export type HeirloomsConfig = z.output<typeof heirloomsSchema>;
 export type HeirloomTree = HeirloomsConfig['trees'][number];
 export type HeirloomNode = z.output<typeof heirloomNodeSchema>;
 
+/**
+ * An art batch (DESIGN.md §5 Art batches, The base frame): its one shared base border, worn by every
+ * card of the batch at every tier and by its Heirlooms. The first entry is the base roster's batch
+ * (cards with no `batch`); `border` is the sprite name of its 212 x 256 border picture.
+ */
+export const batchSchema = z.strictObject({
+  id,
+  name,
+  border: z.string().regex(/^border-[a-z0-9-]+$/),
+});
+export type Batch = z.output<typeof batchSchema>;
+
 export const contentSchemas = {
+  batches: z.array(batchSchema).min(1),
   resources: z.array(resourceSchema),
   trees: z.array(treeSchema),
   mines: z.array(mineSchema),
