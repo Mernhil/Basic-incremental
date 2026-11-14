@@ -257,12 +257,38 @@ export interface ResolvedCard {
   recipes: string[];
   /** The sprite name of the card's T6 kit: its art batch's kit (DESIGN.md §5 The base frame). */
   baseKit: string;
+  /** The backdrop an Heirloom of this card shows in its kit's art window; null when its batch has none (DESIGN.md §5 Heirloom backdrops). */
+  backdrop: Backdrop | null;
+}
+
+/** One Heirloom backdrop: the sprite behind the weapon, an optional layer over the moving fish, and the motion's name. */
+export interface Backdrop {
+  bg: string;
+  front?: string;
+  motion?: 'sea';
 }
 
 /** The T6 card kit of a card: its batch's, and the first batch's (Dragon) for a card with no `batch` or an id not in the content. */
 export function baseKitOf(content: Content, cardId: string): string {
   const batch = content.cardById.get(cardId)?.batch;
   return (batch ? content.batchById.get(batch) : undefined)?.kit ?? content.batches[0]!.kit;
+}
+
+/**
+ * The backdrop of an Heirloom card: its batch's, by the card's rarity (`mythic` the light picture,
+ * `void` the dark one). Null for a batch without one and for any other rarity.
+ */
+export function backdropOf(content: Content, cardId: string, rarity: string): Backdrop | null {
+  const card = content.cardById.get(cardId);
+  const batch =
+    (card?.batch ? content.batchById.get(card.batch) : undefined) ?? content.batches[0]!;
+  const b = batch.backdrop;
+  if (!b || (rarity !== 'mythic' && rarity !== 'void')) return null;
+  return {
+    bg: rarity === 'mythic' ? b.mythic : b.void,
+    ...(b.front ? { front: b.front } : {}),
+    ...(b.motion ? { motion: b.motion } : {}),
+  };
 }
 
 /**
@@ -309,6 +335,7 @@ export function resolveCard(
     vars,
     recipes: [...new Set(recipes)],
     baseKit: baseKitOf(content, card.id),
+    backdrop: backdropOf(content, card.id, card.rarity),
   };
 }
 

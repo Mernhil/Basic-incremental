@@ -27,7 +27,8 @@ export const KIT = {
 const UNIT = 176 / 132;
 
 /** The kit a card wears: its tier's to Prismatic, its batch's `kit` at T6 and as an Heirloom. */
-export function kitName(tier: RankTier, batchKit: string): string {
+export function kitName(tier: RankTier, batchKit: string, windowed = false): string {
+  if (tier === 'heirloom' && windowed) return `${batchKit}-window`;
   return tier === 'mythic' || tier === 'heirloom' ? batchKit : `kit-${tier}`;
 }
 
@@ -49,9 +50,9 @@ export function twinklePx(
   }
 }
 
-/** The kit markup over a 176 x 248 card (its svg viewBox); empty when it was never baked. */
-export function cardFrame(tier: RankTier, batchKit: string): string {
-  const name = kitName(tier, batchKit);
+/** The kit markup over (an Heirloom with a backdrop wears the kit with its window cut out, `<kit>-window`) a 176 x 248 card (its svg viewBox); empty when it was never baked. */
+export function cardFrame(tier: RankTier, batchKit: string, windowed = false): string {
+  const name = kitName(tier, batchKit, windowed);
   if (!sprite(name)) return '';
   return spriteImage(
     name,

@@ -1,6 +1,8 @@
 import type { Rank, Rarity } from '../../../data';
 import { TIER_LABELS, type ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
+import { mountBackdrop } from '../art/backdrop';
+import { sprite } from '../art/pixel/sprites';
 import type { FrameTier } from '../art/vector/frame';
 import { FULL_ART_VIEWBOX, ITEM_VIEWBOX } from '../art/items';
 import { attachElementFx, type CardElement } from '../art/fx';
@@ -92,6 +94,7 @@ export function createCard(initial: CardProps): CardView {
     <span class="bi-card__backdrop" aria-hidden="true"></span>
     <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg><svg class="bi-card__item" viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false"></svg></div>
     <span class="bi-card__window" aria-hidden="true"></span>
+    <span class="bi-card__bd" aria-hidden="true"></span>
     <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span><span class="bi-stars" role="img"></span></header>
     <div class="bi-card__hp"></div>
@@ -116,7 +119,9 @@ export function createCard(initial: CardProps): CardView {
   const head = q<HTMLElement>('.bi-card__head');
   const starsSlot = q<HTMLElement>('.bi-info__stars');
   const frameSvg = q<SVGElement>('.bi-card__frame');
+  const bdHost = q<HTMLElement>('.bi-card__bd');
   let frameBorder = '';
+  let backdropKey = '';
 
   // The name plate holds the name only, centred and never cut: the font shrinks to fit the plate, down
   // to a readable size (MIN_NAME_PX on screen), and only then does an ellipsis cut it. Runs on every
@@ -190,10 +195,20 @@ export function createCard(initial: CardProps): CardView {
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
     // the base frame: the tier's frame to Prismatic, the batch's border at T6 and as an Heirloom (DESIGN.md §5); bosses have none
-    const border = p.boss ? '' : `${p.rank.tier}/${p.theme.baseKit}`;
+    // an Heirloom shows its batch's backdrop behind the kit, whose window is then cut out
+    const backdrop =
+      !p.boss && p.rank.tier === 'heirloom' && p.theme.backdrop && sprite(p.theme.backdrop.bg)
+        ? p.theme.backdrop
+        : null;
+    const key = backdrop ? JSON.stringify(backdrop) : '';
+    if (key !== backdropKey) {
+      backdropKey = key;
+      mountBackdrop(bdHost, backdrop);
+    }
+    const border = p.boss ? '' : `${p.rank.tier}/${p.theme.baseKit}/${key}`;
     if (border !== frameBorder) {
       frameBorder = border;
-      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.theme.baseKit);
+      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.theme.baseKit, backdrop !== null);
       el.classList.toggle('bi-card--kit', !p.boss && frameSvg.innerHTML !== '');
       el.classList.toggle(
         'bi-card--kit-t6',

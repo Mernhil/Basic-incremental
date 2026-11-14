@@ -503,8 +503,67 @@ body {
 .bi-card--kit:not([data-border-worn]) .bi-card__deco {
   display: none;
 }
-.bi-card__window {
+.bi-card__window,
+.bi-card__bd {
   display: none;
+}
+/* an Heirloom's backdrop (art/backdrop.ts): the 136 x 160 picture at x 38, y 34 of the kit picture,
+   under the windowed kit and everything else; it and its fish are clipped to that box. 4/3 per art pixel. */
+.bi-card--kit:not([data-border-worn]) .bi-card__bd:not(:empty) {
+  display: block;
+  position: absolute;
+  z-index: 0;
+  left: -2.67px;
+  top: -1.33px;
+  width: 181.33px;
+  height: 213.33px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bi-bd__stage {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 136px;
+  height: 160px;
+  isolation: isolate;
+  transform: scale(1.3333);
+  transform-origin: 0 0;
+}
+.bi-bd__stage img,
+.bi-bd__bubble {
+  position: absolute;
+  image-rendering: pixelated;
+}
+.bi-bd__strip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  image-rendering: pixelated;
+  background-repeat: no-repeat;
+  animation: bi-bd-strip linear infinite;
+  animation-timing-function: steps(var(--bd-steps), jump-none);
+}
+@keyframes bi-bd-strip {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bi-bd__strip {
+    animation: none;
+  }
+}
+.bi-bd__bubble {
+  left: 0;
+  top: 0;
+  z-index: 3;
+  box-sizing: border-box;
+  border: 1px solid rgba(216, 244, 255, 0.8);
+  border-radius: 50%;
 }
 .bi-card--kit:not([data-border-worn]) .bi-card__window {
   display: block;
