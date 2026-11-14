@@ -29,64 +29,13 @@
     ]
   },
   {
-    "id": "castle_stone_table",
-    "name": "Castle Stone",
+    "id": "gn_table",
+    "name": "Plum Pixel",
     "slot": "table",
     "rarity": "common",
     "set": "gilded_nocturne",
     "exclusiveCard": null,
     "starter": true,
-    "ownedModifiers": [],
-    "levels": [
-      {
-        "tokens": {
-          "table-bg": "#1d1626",
-          "table-glow": "rgba(80, 110, 170, 0.22)",
-          "on-table": "#e3ecff",
-          "on-table-muted": "#a9b4d0",
-          "chrome-bg": "#3a4059",
-          "chrome-line": "#0b0a12",
-          "chrome-ink": "#e3ecff",
-          "chrome-ink-muted": "#b4bfdc",
-          "chrome-accent": "#62c8f5",
-          "chrome-accent-lo": "#2f86c0",
-          "frame-bg": "#2f3250",
-          "frame-line": "#0b0a12",
-          "frame-title-bg": "#3a4059",
-          "frame-title-line": "#68728c",
-          "frame-ink": "#e3ecff",
-          "frame-ink-muted": "#b4bfdc",
-          "tip-bg": "#1d1626",
-          "tip-line": "#68728c",
-          "tip-ink": "#e3ecff",
-          "tip-ink-muted": "#b4bfdc",
-          "frame-title-ink": "#e3ecff",
-          "chrome-rail-bg": "#1d1626",
-          "chrome-active-bg": "rgba(98, 200, 245, 0.16)",
-          "chrome-xp": "#62a8f5",
-          "chrome-logging": "#9be05a",
-          "chrome-mining": "#ffb35c",
-          "chrome-burst": "#ff9a4a",
-          "frame-radius": "0",
-          "frame-raised": "#3c4166",
-          "frame-edge": "#0b0a12",
-          "frame-hi": "#8b97b8",
-          "frame-lo": "#1c1e33",
-          "font-ui": "'Atkinson Hyperlegible', 'Segoe UI', sans-serif",
-          "font-display": "'Pixelify Sans', 'Atkinson Hyperlegible', sans-serif"
-        },
-        "recipes": ["shell-stone"]
-      }
-    ]
-  },
-  {
-    "id": "gn_table",
-    "name": "Plum Pixel",
-    "slot": "table",
-    "rarity": "common",
-    "set": null,
-    "exclusiveCard": null,
-    "starter": false,
     "ownedModifiers": [],
     "levels": [
       {
@@ -127,8 +76,7 @@
           "font-display": "'Pixelify Sans', 'Atkinson Hyperlegible', sans-serif"
         }
       }
-    ],
-    "ownedAtStart": true
+    ]
   },
   {
     "id": "gn_cursor",
