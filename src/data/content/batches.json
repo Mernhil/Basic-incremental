@@ -1,4 +1,19 @@
 [
-  { "id": "dragon", "name": "Dragon", "kit": "kit-t6-dragon" },
-  { "id": "leviathan", "name": "Leviathan", "kit": "kit-t6-leviathan" }
+  {
+    "id": "dragon",
+    "name": "Dragon",
+    "kit": "kit-t6-dragon",
+    "backdrop": { "mythic": "bg-hero", "void": "bg-villain" }
+  },
+  {
+    "id": "leviathan",
+    "name": "Leviathan",
+    "kit": "kit-t6-leviathan",
+    "backdrop": {
+      "mythic": "bg-sea",
+      "void": "bg-sea",
+      "front": "bg-sea-front",
+      "motion": "sea"
+    }
+  }
 ]
