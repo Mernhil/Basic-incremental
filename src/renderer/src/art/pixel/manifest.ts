@@ -487,6 +487,7 @@ export const MANIFEST: Record<
   'foe-shadow_slime': { w: 160, h: 172, animated: { frames: 8 } },
   'foe-woodland_stalker_wolf-anim': { w: 1920, h: 172 },
   'foe-woodland_stalker_wolf': { w: 160, h: 172, animated: { frames: 12 } },
+  'frame-wood': { w: 183, h: 237 },
   'item-bow-epic-0-red-anim': { w: 800, h: 120 },
   'item-bow-epic-0-red': { w: 100, h: 120, animated: { frames: 8 } },
   'item-bow-heirloom': {

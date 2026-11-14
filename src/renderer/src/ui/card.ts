@@ -154,11 +154,11 @@ export function createCard(initial: CardProps): CardView {
     el.style.setProperty('--bi-xp', String(face ? Math.min(1, Math.max(0, face.progress)) : 0));
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
-    // the base frame is the card's art batch's border at every tier (DESIGN.md §5); bosses have none
-    const border = p.boss ? '' : p.theme.baseBorder;
+    // the base frame: the tier's frame to Prismatic, the batch's border at T6 and as an Heirloom (DESIGN.md §5); bosses have none
+    const border = p.boss ? '' : `${p.rank.tier}/${p.theme.baseBorder}`;
     if (border !== frameBorder) {
       frameBorder = border;
-      frameSvg.innerHTML = border ? cardFrame(border) : '';
+      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.theme.baseBorder);
     }
     attachElementFx(
       artBox,
