@@ -86,3 +86,53 @@
   min-height: 1.2em;
   margin: 0;
 }
+
+/* locked card skins: greyed, with "Own <card> to unlock" (DESIGN.md §8 Card skins) */
+.ws-tile.is-locked {
+  cursor: not-allowed;
+}
+.ws-tile.is-locked .ws-thumb {
+  opacity: 0.35;
+  filter: grayscale(1);
+}
+.ws-tile.is-locked .ws-tile__name {
+  opacity: 0.7;
+}
+.ws-tile__lock {
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  opacity: 0.85;
+}
+.ws-cardlist {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.ws-cardbtn {
+  display: grid;
+  width: 100%;
+  gap: 2px;
+  padding: 6px 8px;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ws-cardbtn__worn {
+  font-size: 11px;
+  opacity: 0.75;
+}
+.cp-skins {
+  display: grid;
+  gap: 6px;
+  margin: 10px 0 0;
+}
+.cp-skins__grid {
+  margin-top: 4px;
+}
+.cp-skins__note {
+  margin: 0;
+}

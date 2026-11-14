@@ -2,7 +2,7 @@ import type { Content, ItemKind } from '../../../data';
 import {
   cardInfo,
   cardItem,
-  legacyWeaponArt,
+  resolveCardSkin,
   lookTier,
   resolveCard,
   type CardRole,
@@ -14,6 +14,7 @@ import { evolutionArt } from '../art/evolutions';
 import { cardTierArt, itemArt, itemBoxSprite } from '../art/items';
 import type { CardProps } from '../ui/card';
 import { cardFaceOf } from './cardFaceModel';
+import type { SkinPic } from './cardSkinsModel';
 
 /** Markup of a skin's art: a sprite (with its strip when it has one), or Flameblade's live motion. */
 export function skinMarkup(artId: string): string {
@@ -22,8 +23,9 @@ export function skinMarkup(artId: string): string {
 }
 
 /**
- * A card's item art: the legacy skin worn on its item type (DESIGN.md §8), otherwise its type's
- * item drawn at the rarity its tier gives (weaponLookRarity; interim art until the new pictures).
+ * A card's item art: the skin it wears (DESIGN.md §8 Card skins: a legacy skin, or another card's own
+ * weapon picture), otherwise its type's item at its tier, or its own weapon at its top tier. Without
+ * `state` (or for a card not owned) the Original is drawn.
  */
 export function cardItemArt(
   content: Content,
@@ -33,11 +35,15 @@ export function cardItemArt(
 ): string {
   const card = content.cardById.get(cardId);
   if (!card) return '';
-  const item = cardItem(content, cardId, owned);
-  if (state && item && owned) {
-    const skin = legacyWeaponArt(state, content, item.kind, owned.tier);
-    const markup = skin ? skinMarkup(skin) : '';
-    if (markup) return markup;
+  if (state && owned) {
+    const skin = resolveCardSkin(state, content, cardId);
+    if (skin?.kind === 'legacy') {
+      const markup = skinMarkup(skin.art);
+      if (markup) return markup;
+    } else if (skin) {
+      const source = content.cardById.get(skin.sourceCardId);
+      if (source) return cardTierArt(source, 'mythic');
+    }
   }
   // an Heirloom card shows its Heirloom, owned or not (DESIGN.md §5 An Heirloom card)
   const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
@@ -89,7 +95,7 @@ export function cardFaceProps(
 export function loadoutKey(state: GameState): string {
   const { main, supports } = state.cards.loadouts.fighting;
   return JSON.stringify([
-    state.weaponSkins,
+    state.cardSkins,
     ...[main, ...supports].map((id) => {
       const owned = id ? state.cards.owned[id] : undefined;
       return owned ? [id, owned.tier, owned.stars, owned.level] : null;
@@ -101,4 +107,19 @@ export function loadoutKey(state: GameState): string {
 export function weaponArtMarkup(weaponKind: string, artId: string | null): string {
   if (artId) return skinMarkup(artId);
   return itemArt(weaponKind as ItemKind, 'epic', 'wood');
+}
+
+/** The picture markup of a skin tile (the Original is the card's own, unskinned). */
+export function skinTileMarkup(
+  content: Content,
+  cardId: string,
+  owned: Parameters<typeof cardItem>[2],
+  pic: SkinPic,
+): string {
+  if (pic.kind === 'legacy') return skinMarkup(pic.art);
+  if (pic.kind === 'card') {
+    const source = content.cardById.get(pic.cardId);
+    return source ? cardTierArt(source, 'mythic') : '';
+  }
+  return cardItemArt(content, cardId, owned);
 }

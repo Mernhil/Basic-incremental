@@ -29,14 +29,14 @@ import {
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { cardTopTier, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
-import { isWeaponSkinAvailable } from './wardrobe';
+import { pruneCardSkins } from './cardSkins';
 import { fitSkillsToPoints } from './account';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 32;
+export const CURRENT_SAVE_VERSION = 33;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -124,8 +124,8 @@ export const serializedStateSchema = z.object({
   pity: counts,
   inventory: counts,
   prestigeCount: z.number().int().min(0),
-  /** v20: weapon kind -> chosen skin id. */
-  weaponSkins: z.record(z.string(), z.string()),
+  /** v33: card id -> the skin it wears (was per weapon kind in v20 to v32). */
+  cardSkins: z.record(z.string(), z.string()),
   /** v21: owned legacy weapon skin ids. */
   legacySkins: z.array(z.string()),
   cosmetics: z.object({
@@ -294,7 +294,7 @@ export function serializeState(state: GameState): SerializedState {
     pity: { ...state.pity },
     inventory: { ...state.inventory },
     prestigeCount: state.prestigeCount,
-    weaponSkins: { ...state.weaponSkins },
+    cardSkins: { ...state.cardSkins },
     legacySkins: [...state.legacySkins],
     stats: { ...state.stats },
     achievements: { ...state.achievements },
@@ -433,16 +433,12 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.pity = { ...saved.pity };
   state.inventory = { ...saved.inventory };
   state.prestigeCount = saved.prestigeCount;
-  // Unknown legacy skins and repeats are dropped; then worn skins that no longer exist or are
-  // no longer available (including legacy ones not owned) are dropped.
+  // Unknown legacy skins and repeats are dropped; worn skins that are no longer wearable are
+  // dropped once the cards are rebuilt.
   state.legacySkins = [...new Set(saved.legacySkins)].filter((id) =>
     content.legacySkinById.has(id),
   );
-  state.weaponSkins = Object.fromEntries(
-    Object.entries(saved.weaponSkins).filter(([weapon, skin]) =>
-      isWeaponSkinAvailable(state, content, weapon, skin),
-    ),
-  );
+  state.cardSkins = { ...saved.cardSkins }; // pruned once the cards are rebuilt
   state.stats = { ...saved.stats };
   // Unknown achievements and shop items (removed from the game) are dropped.
   const achievementIds = new Set(content.achievements.map((a) => a.id));
@@ -468,6 +464,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   };
   refundClampedTiers(state, saved.cards, content);
   state.cards = deserializeCards(saved.cards, content);
+  pruneCardSkins(state, content);
   deserializeWorkers(state, saved.production, content);
   state.automation = { ...saved.automation };
   deserializeTableUpdate(state, saved, content);

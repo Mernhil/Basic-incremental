@@ -89,7 +89,7 @@ describe('v27 -> v28 (the cosmetics cleanup)', () => {
     expect(Object.keys(state.cosmetics.loadout.slots).sort()).toEqual(['border', 'table']);
     expect(state.cosmetics.owned['holo_hex']).toBeUndefined();
     expect(state.legacySkins).toEqual(['legacy-sword-01']);
-    expect(state.weaponSkins).toEqual({ sword: 'legacy-sword-01' });
+    expect(state.cardSkins).toEqual({ ember_squire: 'legacy-sword-01' });
     for (const id of removedIds()) {
       if (!content.cosmeticById.has(id)) expect(state.cosmetics.owned[id]).toBeUndefined();
     }

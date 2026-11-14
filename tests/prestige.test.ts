@@ -53,8 +53,8 @@ function progressedRun(): GameState {
   state.cosmetics.owned['holo_hex'] = { level: 1, copies: 0 };
   state.mastery.gemTiers = { oak_gem: 3 };
   state.mastery.bossTiers = { mossy_cellar: 2 };
-  state.legacySkins = ['legacy-staff-01'];
-  state.weaponSkins = { staff: 'legacy-staff-01' };
+  state.legacySkins = ['legacy-sword-01'];
+  state.cardSkins = { ember_squire: 'legacy-sword-01' };
   return state;
 }
 
@@ -193,8 +193,8 @@ describe('ascend', () => {
   it('keeps the owned legacy weapon skins and the one worn', () => {
     const result = ascend(progressedRun(), content);
     if (!result.ok) throw new Error(result.reason);
-    expect(result.state.legacySkins).toEqual(['legacy-staff-01']);
-    expect(result.state.weaponSkins).toEqual({ staff: 'legacy-staff-01' });
+    expect(result.state.legacySkins).toEqual(['legacy-sword-01']);
+    expect(result.state.cardSkins).toEqual({ ember_squire: 'legacy-sword-01' });
   });
 
   it('keeps cards, cosmetics, unlocks, mastery, medals and pity', () => {

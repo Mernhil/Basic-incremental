@@ -96,6 +96,7 @@ html
     .lf-note,
     .sk-effects > div,
     .ws-tile,
+    .ws-cardbtn,
     .pp-row,
     .set-error,
     .wp-tag,
@@ -167,6 +168,7 @@ html
     .lf-note,
     .sk-effects > div,
     .ws-tile,
+    .ws-cardbtn,
     .pp-row,
     .set-error,
     .wp-tag,
@@ -330,6 +332,7 @@ html
     .px-tile[aria-selected='true'],
     .dp-floor--active,
     .ws-tile[aria-pressed='true'],
+    .ws-cardbtn[aria-pressed='true'],
     .cp-option.is-chosen,
     .shelf-chip.is-affordable .shelf-chip__body
   ):not(#_px) {

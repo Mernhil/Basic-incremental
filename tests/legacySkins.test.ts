@@ -6,14 +6,12 @@ import {
   Decimal,
   MIGRATIONS,
   createSaveText,
-  equipWeaponSkin,
-  isWeaponSkinAvailable,
-  legacyWeaponArt,
+  newOwnedCard,
+  resolveCardSkin,
+  setCardSkin,
   portalInfo,
   pull,
   readSave,
-  weaponSkinArt,
-  weaponSkinChoices,
   type GameState,
 } from '../src/game';
 import { constantRng, content as baseContent, CRYSTAL_UNIT, freshState } from './helpers';
@@ -134,100 +132,30 @@ describe('legacy skins content', () => {
 });
 
 describe('legacy skin ownership', () => {
-  it('starts owning nothing and refuses to wear a skin that is not owned', () => {
+  it('starts owning nothing, and a card cannot wear a legacy skin it does not own', () => {
     const state = freshState();
+    state.cards.owned['ember_squire'] = newOwnedCard();
     expect(state.legacySkins).toEqual([]);
-    expect(isWeaponSkinAvailable(state, baseContent, 'staff', 'legacy-staff-03')).toBe(false);
-    expect(equipWeaponSkin(state, baseContent, 'staff', 'legacy-staff-03')).toEqual({
+    expect(setCardSkin(state, baseContent, 'ember_squire', 'legacy-sword-01')).toEqual({
       ok: false,
       reason: 'unavailable',
     });
   });
 
-  it('wears an owned legacy skin; nothing is free, scythe skins included', () => {
-    const r = equipWeaponSkin(owning('legacy-staff-03'), baseContent, 'staff', 'legacy-staff-03');
+  it('wears an owned legacy skin on one card only, at any tier, and drops it when not owned', () => {
+    const state = owning('legacy-sword-01');
+    state.cards.owned['ember_squire'] = newOwnedCard();
+    state.cards.owned['brass_vanguard'] = newOwnedCard();
+    const r = setCardSkin(state, baseContent, 'ember_squire', 'legacy-sword-01');
     if (!r.ok) throw new Error(r.reason);
-    expect(weaponSkinArt(r.state, baseContent, 'staff')).toBe('skin-staff-03');
-    for (const set of baseContent.weaponSkins) {
-      for (const s of set.skins) {
-        expect(isWeaponSkinAvailable(freshState(), baseContent, set.weapon, s.id)).toBe(false);
-      }
-    }
-    const scythe = owning('legacy-scythe-02');
-    expect(isWeaponSkinAvailable(scythe, baseContent, 'scythe', 'legacy-scythe-02')).toBe(true);
-    expect(equipWeaponSkin(freshState(), baseContent, 'scythe', 'legacy-scythe-02')).toEqual({
-      ok: false,
-      reason: 'unavailable',
+    expect(resolveCardSkin(r.state, baseContent, 'ember_squire')).toEqual({
+      kind: 'legacy',
+      id: 'legacy-sword-01',
+      art: 'evo-flameblade',
     });
-  });
-
-  it('has no unskinned art for a generic item type: null until a skin is worn', () => {
-    expect(weaponSkinArt(freshState(), baseContent, 'staff')).toBeNull();
-    expect(weaponSkinArt(freshState(), baseContent, 'scythe')).toBeNull();
-  });
-
-  it('lists the choices with legacy, rarity, owned and available', () => {
-    const state = owning('legacy-hammer-02');
-    const choices = weaponSkinChoices(state, baseContent, 'hammer');
-    expect(choices.map((c) => [c.id, c.legacy, c.rarity, c.owned, c.available])).toEqual([
-      ['legacy-hammer-01', true, 'mythic', false, false],
-      ['legacy-hammer-02', true, 'void', true, true],
-    ]);
-    const scythes = weaponSkinChoices(state, baseContent, 'scythe');
-    expect(scythes).toHaveLength(13);
-    expect(scythes.every((c) => c.legacy && c.rarity === 'void' && !c.owned && !c.available)).toBe(
-      true,
-    );
-  });
-
-  it('keeps an owned worn skin through save and load, and drops unowned or unknown ones', () => {
-    const owned = owning('legacy-staff-03');
-    const r = equipWeaponSkin(owned, baseContent, 'staff', 'legacy-staff-03');
-    if (!r.ok) throw new Error(r.reason);
-    const loaded = readSave(createSaveText(r.state, 1), baseContent).state;
-    expect(loaded.legacySkins).toEqual(['legacy-staff-03']);
-    expect(loaded.weaponSkins['staff']).toBe('legacy-staff-03');
-    const text = JSON.parse(createSaveText(r.state, 1));
-    text.state.legacySkins = ['nope', 'legacy-staff-03', 'legacy-staff-03'];
-    text.state.weaponSkins = { scythe: 'legacy-scythe-02', soul_reaper: 'skin-01' };
-    const l2 = readSave(JSON.stringify(text), baseContent).state;
-    expect(l2.legacySkins).toEqual(['legacy-staff-03']);
-    expect(l2.weaponSkins).toEqual({});
-  });
-});
-
-describe('legacyWeaponArt (what a card draws)', () => {
-  const wear = (kind: string, skin: string): GameState => {
-    const r = equipWeaponSkin(owning(skin), baseContent, kind, skin);
-    if (!r.ok) throw new Error(r.reason);
-    return r.state;
-  };
-  const worn = (): GameState => wear('staff', 'legacy-staff-03');
-
-  it('is null when nothing is worn', () => {
-    expect(legacyWeaponArt(freshState(), baseContent, 'staff', 'bronze')).toBeNull();
-  });
-
-  it('applies at every tier below Heirloom, not at the Heirloom', () => {
-    for (const tier of ['wood', 'bronze', 'silver', 'gold', 'prismatic', 'mythic'] as const) {
-      expect(legacyWeaponArt(worn(), baseContent, 'staff', tier)).toBe('skin-staff-03');
-    }
-    expect(legacyWeaponArt(worn(), baseContent, 'staff', 'heirloom')).toBeNull();
-  });
-
-  it('a worn hammer skin shows at every tier of the hammer, none at the heirloom tier', () => {
-    const state = wear('hammer', 'legacy-hammer-01');
-    expect(legacyWeaponArt(state, baseContent, 'hammer', 'wood')).toBe('item-maul-exotic');
-    expect(legacyWeaponArt(state, baseContent, 'hammer', 'mythic')).toBe('item-maul-exotic');
-    expect(legacyWeaponArt(state, baseContent, 'hammer', 'heirloom')).toBeNull();
-  });
-
-  it('is null for another item type, and when the worn skin is not owned', () => {
-    expect(legacyWeaponArt(worn(), baseContent, 'bow', 'bronze')).toBeNull();
-    expect(legacyWeaponArt(worn(), baseContent, 'scythe', 'bronze')).toBeNull();
-    const state = worn();
-    state.legacySkins = [];
-    expect(legacyWeaponArt(state, baseContent, 'staff', 'bronze')).toBeNull();
+    expect(resolveCardSkin(r.state, baseContent, 'brass_vanguard')).toBeNull();
+    r.state.legacySkins = [];
+    expect(resolveCardSkin(r.state, baseContent, 'ember_squire')).toBeNull();
   });
 });
 
