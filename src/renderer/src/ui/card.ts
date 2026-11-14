@@ -27,6 +27,9 @@ const EMBLEMS: Record<string, string> = {
 const frameTierOf = (tier: Rank['tier']): FrameTier =>
   tier === 'wood' ? 'bronze' : tier === 'mythic' || tier === 'heirloom' ? 'prismatic' : tier;
 
+/** The smallest a card name may shrink to before an ellipsis cuts it (CSS px on screen). */
+const MIN_NAME_PX = 9.5;
+
 const TIER_NAMES: Record<Rank['tier'], string> = TIER_LABELS;
 
 export type { CardFace };
@@ -94,7 +97,7 @@ export function createCard(initial: CardProps): CardView {
     <div class="bi-card__hp"></div>
     <footer class="bi-card__info">
       <div class="bi-info__line"><span class="bi-info__ability"></span><span class="bi-info__speed"></span></div>
-      <div class="bi-info__line bi-info__line--meta"><span class="bi-info__level"></span><span class="bi-info__rarity"></span></div>
+      <div class="bi-info__line bi-info__line--meta"><span class="bi-info__stars"></span><span class="bi-info__level"></span><span class="bi-info__rarity"></span></div>
       <div class="bi-info__bar" aria-hidden="true"><i></i></div>
     </footer>`;
 
@@ -110,8 +113,33 @@ export function createCard(initial: CardProps): CardView {
   const levelText = q<HTMLElement>('.bi-info__level');
   const rarityWord = q<HTMLElement>('.bi-info__rarity');
   const stars = q<HTMLElement>('.bi-stars');
+  const head = q<HTMLElement>('.bi-card__head');
+  const starsSlot = q<HTMLElement>('.bi-info__stars');
   const frameSvg = q<SVGElement>('.bi-card__frame');
   let frameBorder = '';
+
+  // The name plate holds the name only, centred and never cut: the font shrinks to fit the plate, down
+  // to a readable size (MIN_NAME_PX on screen), and only then does an ellipsis cut it. Runs on every
+  // name change and whenever the plate's width changes (a card built while hidden has no width yet).
+  const fitName = (): void => {
+    name.style.fontSize = '';
+    const room = name.clientWidth;
+    if (room === 0 || name.scrollWidth <= room) return;
+    const base = parseFloat(getComputedStyle(name).fontSize);
+    const scale = name.getBoundingClientRect().width / name.offsetWidth || 1;
+    const least = Math.min(base, MIN_NAME_PX / scale);
+    let size = base;
+    while (size > least && name.scrollWidth > room) {
+      size = Math.max(least, size - 0.5);
+      name.style.fontSize = `${size}px`;
+    }
+  };
+  let plateWidth = 0;
+  new ResizeObserver(() => {
+    if (name.clientWidth === plateWidth) return;
+    plateWidth = name.clientWidth;
+    fitName();
+  }).observe(name);
 
   const update = (p: CardProps): void => {
     el.classList.toggle('bi-card--boss', Boolean(p.boss));
@@ -131,6 +159,7 @@ export function createCard(initial: CardProps): CardView {
         : `${p.name}, ${p.label}, ${TIER_NAMES[p.rank.tier]} ${p.rank.stars} of 6 stars`,
     );
     name.textContent = p.name;
+    fitName();
     job.textContent = p.label;
     const itemChanged = p.item !== itemMarkup;
     if (itemChanged) {
@@ -147,12 +176,17 @@ export function createCard(initial: CardProps): CardView {
     const face = p.face;
     ability.textContent = face?.ability ?? '';
     speed.textContent = face?.speed ?? '';
-    levelText.textContent = face?.level ? COPY.card.level(face.level.value, face.level.cap) : '';
+    levelText.textContent = face?.level
+      ? COPY.card.levelShort(face.level.value, face.level.cap)
+      : '';
     rarityWord.textContent = p.rarity ? COPY.card.rarity[p.rarity] : '';
     if (p.rarity) el.dataset['rarity'] = p.rarity;
     else delete el.dataset['rarity'];
     el.classList.toggle('bi-card--face', Boolean(face) && !p.boss);
     el.style.setProperty('--bi-xp', String(face ? Math.min(1, Math.max(0, face.progress)) : 0));
+    // the stars sit in the bottom banner's second line; a card without a banner keeps them in the head
+    const starsHome = face && !p.boss ? starsSlot : head;
+    if (stars.parentElement !== starsHome) starsHome.append(stars);
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
     // the base frame: the tier's frame to Prismatic, the batch's border at T6 and as an Heirloom (DESIGN.md §5); bosses have none

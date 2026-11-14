@@ -88,6 +88,7 @@ export const COPY = {
   card: {
     hitsEvery: (seconds: string) => `hits every ${seconds}`,
     level: (level: number, cap: number) => `Level ${level}/${cap}`,
+    levelShort: (level: number, cap: number) => `Lv ${level}/${cap}`,
     rarity: {
       common: 'Common',
       uncommon: 'Uncommon',
