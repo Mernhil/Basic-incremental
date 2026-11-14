@@ -625,8 +625,8 @@ body {
 /* the bottom banner: x 28 to 184, y 182 to 222; the text sits inside the card's width, 12 to 164 */
 .bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__info {
   z-index: 4;
-  left: 14px;
-  right: 14px;
+  left: 10px;
+  right: 10px;
   top: 207px;
   bottom: 7px;
   gap: 1px;
@@ -644,6 +644,9 @@ body {
 .bi-card--kit:not([data-border-worn]) .bi-info__speed,
 .bi-card--kit:not([data-border-worn]) .bi-info__level {
   color: var(--kit-ink-2);
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__speed {
+  font-size: 8px;
 }
 .bi-card--kit:not([data-border-worn]) .bi-info__line--meta {
   font-size: max(10px, var(--cp-floor, 0px));

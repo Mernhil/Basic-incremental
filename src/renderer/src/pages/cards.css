@@ -1087,3 +1087,19 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   height: 100%;
   background: var(--px-gold);
 }
+
+/* the card's own name plate already says the name, so the detail panel's title keeps the name for
+   screen readers only and shows just the rarity / job line */
+.cp-detail > .frame__title .frame__heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cp-detail > .frame__title .frame__note {
+  margin-left: 0;
+  text-align: left;
+}
