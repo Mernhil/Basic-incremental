@@ -149,7 +149,8 @@ export function itemName(
 ): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
-  if (card?.heirloomName) return card.heirloomName;
+  // a card's own weapon is named at Mythic or Void and as its Heirloom; below that the type's model
+  if (card?.heirloomName && (tier === 'mythic' || tier === 'heirloom')) return card.heirloomName;
   switch (tier) {
     case 'wood':
     case 'bronze':
@@ -172,23 +173,6 @@ export function itemName(
  */
 export function lookTier(_rarity: Rarity, tier: RankTier): RankTier {
   return tier;
-}
-
-/**
- * Which of an item's looks inside its tier a card shows (DESIGN.md §5 Look steps by stars): 0 is
- * BASE, then +1, +2 and FINAL. The thresholds are `lookSteps.json`; an item type or a tier with no
- * steps has the one look, and a tier-up restarts the stars, so it shows the new tier's BASE.
- */
-export function lookStep(content: Content, kind: ItemKind, tier: RankTier, stars: number): number {
-  const { kinds, steps } = content.lookSteps;
-  if (!kinds.includes(kind)) return 0;
-  const from = (steps as Partial<Record<RankTier, number[]>>)[tier];
-  if (!from) return 0;
-  let step = 0;
-  from.forEach((min, i) => {
-    if (stars >= min) step = i;
-  });
-  return step;
 }
 
 /**

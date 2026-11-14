@@ -3,7 +3,6 @@ import {
   cardInfo,
   cardItem,
   legacyWeaponArt,
-  lookStep,
   lookTier,
   resolveCard,
   type CardRole,
@@ -42,7 +41,7 @@ export function cardItemArt(
   }
   // an Heirloom card shows its Heirloom, owned or not (DESIGN.md §5 An Heirloom card)
   const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
-  return cardTierArt(card, tier, lookStep(content, card.item.kind, tier, owned?.stars ?? 1));
+  return cardTierArt(card, tier);
 }
 
 /** A fighting loadout card's props. Null when the card is unknown or not owned. */

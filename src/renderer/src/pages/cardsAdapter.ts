@@ -12,7 +12,6 @@ import {
   collectModifiers,
   levelCap,
   loadoutInfo,
-  lookStep,
   lookTier,
   setLoadoutSlot,
   starUp,
@@ -65,8 +64,8 @@ export function previewTiers(content: Content, cardId: string, from: RankTier): 
  * The picture of a card's item at a tier (T6 by the card's side). The one place the preview gets
  * its art, so a card with its own weapon picture can be given it here.
  */
-export function previewArt(card: Card, tier: RankTier, step = 0): string {
-  return cardTierArt(card, tier, step);
+export function previewArt(card: Card, tier: RankTier): string {
+  return cardTierArt(card, tier);
 }
 
 /**
@@ -161,13 +160,7 @@ export function createCardsModel(
       emblem: JOB_EMBLEM[card.job],
       itemKind: card.item.kind,
       itemType: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
-      item:
-        art?.(card.id, owned) ??
-        cardTierArt(
-          card,
-          lookTier(card.rarity, rank.tier),
-          lookStep(content, card.item.kind, lookTier(card.rarity, rank.tier), rank.stars),
-        ),
+      item: art?.(card.id, owned) ?? cardTierArt(card, lookTier(card.rarity, rank.tier)),
       element: card.element,
       owned: owned !== null,
       rank,
@@ -210,12 +203,7 @@ export function createCardsModel(
         itemName: itemName(content, card.item.kind, tier, card.rarity, card),
         item:
           index === 0
-            ? (art?.(id, state.cards.owned[id] ?? null) ??
-              previewArt(
-                card,
-                tier,
-                lookStep(content, card.item.kind, tier, state.cards.owned[id]?.stars ?? 1),
-              ))
+            ? (art?.(id, state.cards.owned[id] ?? null) ?? previewArt(card, tier))
             : previewArt(card, tier),
         ownTierName: tierLabel(tiers[0]!, card.rarity),
       };

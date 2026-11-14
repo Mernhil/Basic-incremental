@@ -125,7 +125,7 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
     }
   });
 
-  it('names the weapon after the card at every tier', () => {
+  it('names the weapon after the card at Mythic or Void and as its Heirloom', () => {
     const card = withArt[0]!;
     const type = content.itemTypeByKind.get(card.item.kind)!;
     expect(itemName(content, card.item.kind, 'heirloom', card.rarity, card)).toBe(
@@ -134,9 +134,14 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
     expect(itemName(content, card.item.kind, 'heirloom', card.rarity)).toBe(
       type.heirloom[card.rarity === 'void' ? 'void' : 'mythic'],
     );
-    // its own weapon at every tier, as the placeholder for its other upgrades (user, 2026-11-13)
+    // its own weapon at Mythic or Void; Wood to Prismatic are the type's one model
     expect(itemName(content, card.item.kind, 'mythic', card.rarity, card)).toBe(card.heirloomName);
-    expect(itemName(content, card.item.kind, 'wood', card.rarity, card)).toBe(card.heirloomName);
+    expect(itemName(content, card.item.kind, 'wood', card.rarity, card)).toBe(
+      itemName(content, card.item.kind, 'wood', card.rarity),
+    );
+    expect(itemName(content, card.item.kind, 'prismatic', card.rarity, card)).toBe(
+      itemName(content, card.item.kind, 'prismatic', card.rarity),
+    );
     expect(itemName(content, card.item.kind, 'mythic', card.rarity)).toBe(
       type[card.rarity === 'void' ? 'void' : 'mythic'],
     );
@@ -155,9 +160,10 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
       const art = cardTierArt(c, 'heirloom');
       expect(art, c.id).toContain(name);
       expect(art, c.id).not.toBe(itemArt(c.item.kind, c.rarity, 'heirloom', c.rarity));
-      // below the Heirloom it shows the same picture, never the type's wooden to Mythic ones
-      expect(cardTierArt(c, 'wood')).toBe(art);
+      // at Mythic or Void it shows the same picture; Wood to Prismatic are the type's one model
       expect(cardTierArt(c, 'mythic')).toBe(art);
+      for (const t of ['wood', 'bronze', 'silver', 'gold', 'prismatic'] as const)
+        expect(cardTierArt(c, t), `${c.id} ${t}`).toBe(itemArt(c.item.kind, c.rarity, t));
     }
     const plain = content.cards.find((c) => c.id === 'dawn_champion')!;
     expect(cardTierArt(plain, 'heirloom')).toBe(itemArt('sword', 'mythic', 'heirloom', 'mythic'));
