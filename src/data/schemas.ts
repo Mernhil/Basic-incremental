@@ -2273,6 +2273,23 @@ export const batchSchema = z.strictObject({
   id,
   name,
   kit: z.string().regex(/^kit-[a-z0-9-]+$/),
+  /**
+   * The backdrops of its Heirloom cards (DESIGN.md §5 Heirloom backdrops): sprite names, one per
+   * card rarity (`mythic` the light side, `void` the dark side); `front` is a layer drawn over the
+   * moving fish; `motion` names the motion (`sea`: fish and bubbles). Without it the Heirlooms
+   * keep the painted-window kit.
+   */
+  backdrop: z
+    .strictObject({
+      mythic: z.string().regex(/^bg-[a-z0-9-]+$/),
+      void: z.string().regex(/^bg-[a-z0-9-]+$/),
+      front: z
+        .string()
+        .regex(/^bg-[a-z0-9-]+$/)
+        .optional(),
+      motion: z.enum(['sea']).optional(),
+    })
+    .optional(),
 });
 export type Batch = z.output<typeof batchSchema>;
 
