@@ -1,4 +1,5 @@
 import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
+import type { SkinPickerView } from './cardSkinsModel';
 import type { GameState, TierUp } from '../../../game';
 import type { CardFace } from '../ui/cardFace';
 import type { StarChartView } from './skillsModel';
@@ -261,4 +262,8 @@ export interface CardsModel {
   enhance(state: GameState, id: string, optionId: string): ModelResult;
   /** Clears the card's enhancements (free). */
   resetEnhancements(state: GameState, id: string): ModelResult;
+  /** The card's weapon skin picker (DESIGN.md §8 Card skins), or null when it has none to offer. */
+  skins(state: GameState, id: string): SkinPickerView | null;
+  /** Makes the card wear a skin, or null for its Original (art only). */
+  setSkin(state: GameState, id: string, skinId: string | null): ModelResult;
 }

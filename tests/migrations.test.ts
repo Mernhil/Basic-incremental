@@ -589,7 +589,7 @@ describe('v19 -> v20 (weapon skins: nothing equipped)', () => {
     delete v19.state.weaponSkins;
     v19.version = 19;
     const loaded = readSave(JSON.stringify(v19), content);
-    expect(loaded.state.weaponSkins).toEqual({});
+    expect(loaded.state.cardSkins).toEqual({});
   });
 });
 
@@ -639,11 +639,8 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
   it('loads at the current format with the Soul Reaper skin owned and worn as a legacy scythe skin', () => {
     expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(31);
     const loaded = readSave(v21Save(), content);
-    // Soul Reaper skin-05 becomes legacy-scythe-06 on the scythe; Maul 06 became Hammer 01, Maul 01 was not kept.
-    expect(loaded.state.weaponSkins).toEqual({
-      scythe: 'legacy-scythe-06',
-      hammer: 'legacy-hammer-01',
-    });
+    // the skins of types with no owned card are dropped when the per-type choice becomes per card
+    expect(loaded.state.cardSkins).toEqual({});
     expect([...loaded.state.legacySkins].sort()).toEqual(['legacy-hammer-01', 'legacy-scythe-06']);
   });
 

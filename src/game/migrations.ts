@@ -80,6 +80,9 @@ export const MIGRATIONS: MigrationTable = {
   /** v31 -> v32: the Dragon batch (DESIGN.md §5 Heirlooms): 22 Heirlooms become 11, one per type; a
    *  save that owns a removed one gets its type's kept one (repeats become shards). */
   31: v31ToV32,
+  /** v32 -> v33: card skins (DESIGN.md §8): the skin chosen per weapon type becomes a choice on every
+   *  owned card of that type, so each card looks as it did; the per-type choice is dropped. */
+  32: v32ToV33,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1290,4 +1293,175 @@ function v28ToV29(state: Record<string, unknown>): Record<string, unknown> {
     combat,
     bossHp: null,
   };
+}
+
+/** Every non-Heirloom card id by item type at save format 33 (a snapshot of cards.json). */
+const V33_CARDS_BY_KIND: Readonly<Record<string, readonly string[]>> = {
+  sword: [
+    'ember_squire',
+    'brass_vanguard',
+    'silver_cavalier',
+    'gilded_knight',
+    'prism_paladin',
+    'dawn_champion',
+    'shadow_reaver',
+    'jade_vanguard',
+    'violet_herald',
+    'moon_reaver',
+  ],
+  dagger: [
+    'storm_duelist',
+    'alley_cutpurse',
+    'bronze_sneak',
+    'silver_shiv',
+    'whisper_assassin',
+    'gleam_phantom',
+    'venom_stalker',
+    'rose_phantom',
+    'sky_gleamer',
+    'jade_stalker',
+    'bloodletter',
+    'violet_viper',
+    'frost_viper',
+  ],
+  greatsword: [
+    'dawnblade_regent',
+    'rusty_brute',
+    'bronze_warden',
+    'silver_executioner',
+    'gold_warlord',
+    'sunbreaker_titan',
+    'ruin_tyrant',
+    'crown_warden',
+    'jade_regent',
+    'cobalt_tyrant',
+    'spore_tyrant',
+    'gloom_maw',
+  ],
+  logging_axe: [
+    'apprentice_feller',
+    'grove_keeper',
+    'elder_treant',
+    'moonwood_dryad',
+    'moss_forager',
+    'heartwood_warden',
+    'rotwood_sovereign',
+    'tidal_warden',
+    'dusk_feller',
+    'rime_feller',
+    'blight_feller',
+  ],
+  pickaxe: [
+    'cave_digger',
+    'gem_cutter',
+    'geode_golem',
+    'core_titan',
+    'pebble_prospector',
+    'prism_delver',
+    'lodestone_seer',
+    'azure_delver',
+    'emerald_seer',
+    'ruby_gnawer',
+    'void_burrower',
+    'amber_gnawer',
+  ],
+  scythe: [
+    'reaper_test',
+    'field_reaper',
+    'bronze_gleaner',
+    'golden_harvester',
+    'halfmoon_reaper',
+    'mercy_harvester',
+    'grim_sovereign',
+    'azure_gleaner',
+    'bog_reaper',
+    'hollow_reaper',
+    'frost_reaper',
+  ],
+  spear: [
+    'hollow_spearman',
+    'militia_picket',
+    'silver_skirmisher',
+    'golden_hoplite',
+    'shard_strider',
+    'valor_pikeman',
+    'wraith_impaler',
+    'molten_pikeman',
+    'rose_sentinel',
+    'royal_impaler',
+    'cinder_serpent',
+    'blood_serpent',
+  ],
+  lance: [
+    'seraph_lancer',
+    'stable_squire',
+    'bronze_jouster',
+    'silver_rider',
+    'golden_tilter',
+    'mirror_cavalier',
+    'dread_horseman',
+    'azure_cavalier',
+    'midnight_rider',
+    'plague_rider',
+  ],
+  hammer: [
+    'grave_hammerer',
+    'quarry_smasher',
+    'bronze_forgehand',
+    'silver_sledger',
+    'golden_anvilmaster',
+    'facet_crusher',
+    'thunder_smith',
+    'stormforger',
+    'verdant_smith',
+    'amethyst_smith',
+    'iron_butcher',
+  ],
+  bow: [
+    'fieldhand_archer',
+    'bronze_hunter',
+    'silver_ranger',
+    'golden_sharpshot',
+    'rainbow_sniper',
+    'seraph_archer',
+    'wither_huntress',
+    'dawn_archer',
+    'night_hunter',
+    'abyss_hunter',
+    'ember_stalker',
+  ],
+  staff: [
+    'hedge_acolyte',
+    'bronze_mystic',
+    'silver_mage',
+    'golden_sage',
+    'kaleido_weaver',
+    'sanctum_oracle',
+    'hex_warlock',
+    'orchid_oracle',
+    'rift_mystic',
+  ],
+};
+
+/**
+ * v32 -> v33 (DESIGN.md §8 Card skins): `weaponSkins` (item type -> skin) becomes `cardSkins` (card
+ * id -> skin). Every owned card of a type that had a skin chosen takes it, so every card looks as it
+ * did before; a type with no owned cards loses its choice, and a type with none chosen adds nothing.
+ * Heirloom cards are not in the snapshot: they never wore a skin. Whether a skin is still wearable
+ * is checked when the save is read.
+ */
+function v32ToV33(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? state['cards'] : {};
+  const owned = isRecord(cards['owned']) ? cards['owned'] : {};
+  const chosen = isRecord(state['weaponSkins']) ? state['weaponSkins'] : {};
+  const cardSkins: Record<string, string> = {};
+  for (const [kind, skin] of Object.entries(chosen)) {
+    if (typeof skin !== 'string') continue;
+    for (const id of V33_CARDS_BY_KIND[kind] ?? []) {
+      if (id in owned) cardSkins[id] = skin;
+    }
+  }
+  const rest = { ...state };
+  delete rest['weaponSkins'];
+  return { ...rest, cardSkins };
 }

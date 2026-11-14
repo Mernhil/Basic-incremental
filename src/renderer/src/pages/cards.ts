@@ -17,6 +17,9 @@ import { dealDelay, dealIn, dealTokens } from '../table/motion';
 import { COLLECTION_COPY as T } from '../views/collection/copy';
 import { teamRows, type TeamRow } from '../views/collection/teamsModel';
 import { createCard, type CardProps } from '../ui/card';
+import { ITEM_VIEWBOX } from '../art/items';
+import { skinTileMarkup } from './loadoutCards';
+import type { SkinPickerView } from './cardSkinsModel';
 import { fitCard } from '../ui/pixelFit';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
@@ -32,6 +35,7 @@ import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './tablePanels.css';
 import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
+import './weaponSkinsTab.css';
 import './cards.css';
 
 /**
@@ -120,6 +124,8 @@ export function createCardsPage(
   const isHeirloom = (id: string): boolean => content.cardById.get(id)?.heirloom === true;
   /** The Enhancements star chart is open under the buttons of the selected card. */
   let enhanceOpen = false;
+  /** The card whose weapon skin picker is open (view state only). */
+  let skinsOpenFor: string | null = null;
   /** The Next tier preview: which card and how many presses in (view state only, never saved). */
   let previewOf: { id: string; step: number } | null = null;
   /** The loadout slot being filled (0 = main, 1..3 supports): its job's cards show to pick from. */
@@ -777,12 +783,62 @@ export function createCardsPage(
       d.append(h('dt', '', t.label), h('dd', '', t.value));
       stats.append(d);
     }
-    body.append(main, stats);
+    body.append(main);
+    const skins = e.owned ? model.skins(state, e.id) : null;
+    if (skins) body.append(skinPanel(state, e, skins));
+    body.append(stats);
     if (e.stats.compare) body.append(h('p', 'cp-compare', e.stats.compare));
     body.append(facts);
 
     if (e.owned) cardActions(state, e, body);
     return el;
+  }
+
+  /** The weapon skin picker of an owned card: a toggle, and when open a grid of skins (DESIGN.md §8 Card skins). */
+  function skinPanel(state: GameState, e: CardEntry, v: SkinPickerView): HTMLElement {
+    const S = COPY.cardSkins;
+    const open = skinsOpenFor === e.id;
+    const wrap = h('div', 'cp-skins');
+    const toggle = h('button', 'button button--ghost cp-skins__toggle', S.toggle(v.wornName));
+    toggle.type = 'button';
+    toggle.dataset.key = 'skins-toggle';
+    toggle.setAttribute('aria-expanded', String(open));
+    toggle.setAttribute('aria-controls', 'cp-skins-grid');
+    toggle.addEventListener('click', () => {
+      skinsOpenFor = open ? null : e.id;
+      build('skins-toggle');
+    });
+    wrap.append(toggle);
+    if (!open) return wrap;
+    const grid = h('ul', 'ws-grid cp-skins__grid');
+    grid.id = 'cp-skins-grid';
+    grid.setAttribute('aria-label', S.skinsGroup);
+    for (const tile of v.tiles) {
+      const li = h('li');
+      const key = `skin-${tile.id ?? 'original'}`;
+      const b = h(
+        'button',
+        `ws-tile${tile.worn ? ' is-worn' : ''}${tile.locked ? ' is-locked' : ''}`,
+      );
+      b.type = 'button';
+      b.dataset.key = key;
+      b.setAttribute('aria-pressed', String(tile.worn));
+      b.setAttribute('aria-label', S.tileLabel(tile.name, tile.worn, tile.lockedNote));
+      if (tile.locked) b.setAttribute('aria-disabled', 'true');
+      const pic = h('span', 'ws-thumb');
+      pic.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${skinTileMarkup(content, e.id, state.cards.owned[e.id], tile.pic)}</svg>`;
+      b.append(pic, h('span', 'ws-tile__name', tile.name));
+      if (tile.lockedNote) b.append(h('span', 'ws-tile__lock', tile.lockedNote));
+      if (tile.worn) b.append(h('span', 'ws-tile__on', '✓'));
+      b.addEventListener('click', () => {
+        if (tile.locked || tile.worn) return;
+        act(model.setSkin(ctx.state(), e.id, tile.id), key);
+      });
+      li.append(b);
+      grid.append(li);
+    }
+    wrap.append(grid, h('p', 'frame__muted cp-skins__note', S.artOnly));
+    return wrap;
   }
 
   /** The Enhancements toggle and the loadout buttons of an owned card, with the open star chart. */
