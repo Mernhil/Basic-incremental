@@ -142,7 +142,7 @@ html .cp-sort .cp-select:not(#_px) {
 .cp-grid {
   margin: 0;
   /* room around the cards for the ★6 crowns, the level badges and the selected outline */
-  padding: 18px 8px 12px;
+  padding: 56px 30px 28px;
   --lv-in: calc(var(--fs-sm) * 11);
   scrollbar-width: thin;
   list-style: none;
@@ -151,7 +151,7 @@ html .cp-sort .cp-select:not(#_px) {
      across at 1x, reflowing to fewer when the window is narrow */
   grid-template-columns: repeat(auto-fill, calc(176px * var(--card-k)));
   grid-auto-rows: max-content;
-  gap: 22px 10px;
+  gap: 50px 44px;
   justify-content: center;
   align-content: start;
   min-height: 0;
@@ -228,10 +228,10 @@ html .cp-sort .cp-select:not(#_px) {
 /* a group heading in the collection grid: owned cards, then one group per weapon type */
 .cp-group {
   grid-column: 1 / -1;
-  margin: 4px 0 -12px;
+  margin: 4px 0 0;
 }
 .cp-group:first-child {
-  margin-top: -10px;
+  margin-top: 0;
 }
 .cp-group__title {
   margin: 0;
@@ -335,9 +335,9 @@ html .cp-sort .cp-select:not(#_px) {
   display: grid;
   grid-template-columns: calc(176px * var(--card-k)) minmax(0, 1fr);
   --lv-in: calc(var(--fs-sm) * 16);
-  gap: 12px;
+  gap: 22px;
   align-items: start;
-  padding: 8px 4px 0;
+  padding: 66px 6px 30px 10px;
 }
 .cp-detail__main .bi-card__name {
   font-size: 13px;

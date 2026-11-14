@@ -1,6 +1,7 @@
 import { COSMETIC_SLOTS, JOBS, RANK_TIERS, RARITIES, contentSchemas } from './schemas';
 import type {
   AscensionChallenge,
+  Batch,
   ScrollsConfig,
   HeirloomsConfig,
   HeirloomTree,
@@ -56,6 +57,7 @@ import combatJson from './content/combat.json';
 import cosmeticsJson from './content/cosmetics.json';
 import portalsJson from './content/portals.json';
 import raritiesJson from './content/rarities.json';
+import batchesJson from './content/batches.json';
 import wearRulesJson from './content/wearRules.json';
 import setsJson from './content/sets.json';
 import progressionJson from './content/progression.json';
@@ -99,6 +101,9 @@ export interface Content {
   cosmetics: Cosmetic[];
   portals: Portal[];
   rarities: RarityStyle[];
+  /** Art batches in order; the first is the base roster's (DESIGN.md §5 Art batches, The base frame). */
+  batches: Batch[];
+  batchById: ReadonlyMap<string, Batch>;
   wearRules: WearRules;
   sets: CosmeticSet[];
   /** Mastery, tile stages, evolutions and goal rules (DESIGN.md §4, §10, §12). */
@@ -216,6 +221,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     cosmetics,
     portals,
     rarities,
+    batches,
     wearRules,
     sets,
     progression,
@@ -242,6 +248,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
   checkProduction({ resources, trees, mines, production }, issues);
+  checkBatches(batches, cards, issues);
   checkCosmetics(cosmetics, rarities, issues);
   checkSets(cosmetics, sets, issues);
   checkCards({ resources, cards, cardRules }, issues);
@@ -315,6 +322,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     portals: portals.filter((p) => p.enabled),
     allPortals: portals,
     rarities,
+    batches,
+    batchById: new Map(batches.map((b) => [b.id, b])),
     wearRules,
     sets,
     progression,
@@ -516,6 +525,26 @@ function checkProduction(
   if (!c.mines.some((m) => m.unlockedByDungeon === null)) {
     issues.push('mines.json: at least one mine must be available from the start');
   }
+}
+
+/** Batch ids and kits are unique, and every card's `batch` names a later batch (the first has none). */
+function checkBatches(batches: Batch[], cards: Card[], issues: string[]): void {
+  const ids = new Set<string>();
+  const kits = new Set<string>();
+  batches.forEach((b, i) => {
+    if (ids.has(b.id)) issues.push(`batches.json › [${i}]: duplicate batch "${b.id}"`);
+    if (kits.has(b.kit)) issues.push(`batches.json › [${i}]: kit "${b.kit}" is used twice`);
+    ids.add(b.id);
+    kits.add(b.kit);
+  });
+  const base = batches[0]?.id;
+  cards.forEach((c, i) => {
+    if (!c.batch) return;
+    if (c.batch === base)
+      issues.push(`cards.json › [${i}] › batch: the base batch "${base}" is no batch field`);
+    else if (!ids.has(c.batch))
+      issues.push(`cards.json › [${i}] › batch: unknown batch "${c.batch}"`);
+  });
 }
 
 function checkCosmetics(cosmetics: Cosmetic[], rarities: RarityStyle[], issues: string[]): void {
@@ -1394,6 +1423,7 @@ export function bundledRawContent(): RawContent {
     cosmetics: cosmeticsJson,
     portals: portalsJson,
     rarities: raritiesJson,
+    batches: batchesJson,
     wearRules: wearRulesJson,
     sets: setsJson,
     progression: progressionJson,

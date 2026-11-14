@@ -486,3 +486,123 @@ body {
   --bi-num-weight: 600;
   --bi-num-color: #e9eef7;
 }
+
+/* ---- card kit (DESIGN.md §5 The base frame; art/frame.ts KIT) ---------------------------------
+   The kit picture (212 x 256 art pixels, the card at x 40, y 35) holds the frame, the name plate, a
+   painted window and the bottom banner. Layers, bottom to top: kit (frame), window (an empty layer
+   for an Heirloom's animated background, later), the weapon (clipped to the window), the text on
+   the plates. Card units: 4/3 per art pixel from the card's corner at (40, 35). A worn border
+   cosmetic replaces the kit: the card then draws its own plates again. */
+.bi-card--kit:not([data-border-worn]):not(.bi-card--boss) {
+  background: none;
+  border-color: transparent;
+  box-shadow: none;
+}
+.bi-card--kit:not([data-border-worn]) .bi-card__rarity,
+.bi-card--kit:not([data-border-worn]) .bi-card__backdrop,
+.bi-card--kit:not([data-border-worn]) .bi-card__deco {
+  display: none;
+}
+.bi-card__window {
+  display: none;
+}
+.bi-card--kit:not([data-border-worn]) .bi-card__window {
+  display: block;
+  position: absolute;
+  z-index: 1;
+  left: 5.33px;
+  top: 30.67px;
+  width: 165.33px;
+  height: 162.67px;
+  overflow: hidden;
+  pointer-events: none;
+}
+.bi-card--kit:not([data-border-worn]) .bi-card__frame {
+  z-index: 0;
+}
+/* the item's 157 x 136 box (whole scale) is centred in the window; the weapon is clipped to the window */
+.bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__art {
+  z-index: 2;
+  top: 44px;
+  clip-path: inset(-13.33px -4px);
+}
+.bi-card--kit.bi-card--fullart:not([data-border-worn]):not(.bi-card--boss) .bi-card__art {
+  top: 0;
+  clip-path: inset(30.67px 5.33px 54.67px 5.33px);
+}
+/* the name plate: x 46 to 166, y 40 to 58 -> 8, 6.7, 160 x 24 */
+.bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__head {
+  z-index: 4;
+  top: 6.7px;
+  left: 14px;
+  right: 14px;
+  height: 24px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  background: none;
+  box-shadow: none;
+}
+/* the name plates are mid-tone wood, metal or half dark: the name is always light with a dark outline */
+.bi-card--kit:not([data-border-worn]) .bi-card__name {
+  font-size: 12.5px;
+  color: #fff8e8;
+  text-shadow:
+    0 0 2px #000,
+    0 1px 1px #000,
+    1px 0 1px #000,
+    -1px 0 1px #000;
+}
+.bi-card--kit:not([data-border-worn]) .bi-stars__on {
+  color: #ffd24a;
+  text-shadow: 0 0 2px #000;
+}
+.bi-card--kit:not([data-border-worn]) .bi-stars__off {
+  color: rgba(255, 255, 255, 0.35);
+  text-shadow: 0 0 2px #000;
+}
+/* the bottom banner: x 28 to 184, y 182 to 222; the text sits inside the card's width, 12 to 164 */
+.bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__info {
+  z-index: 4;
+  left: 14px;
+  right: 14px;
+  top: 202px;
+  bottom: 8px;
+  gap: 1px;
+  padding: 0;
+  background: none;
+  box-shadow: none;
+  align-content: center;
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__ability {
+  font-size: 10.5px;
+  color: var(--kit-ink);
+  text-shadow: var(--kit-shadow);
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__speed,
+.bi-card--kit:not([data-border-worn]) .bi-info__level {
+  color: var(--kit-ink-2);
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__line--meta {
+  font-size: 7.5px;
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__rarity {
+  color: color-mix(in srgb, var(--rar) 55%, var(--kit-ink));
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__bar {
+  height: 3px;
+  background: rgba(60, 40, 15, 0.28);
+}
+.bi-card--kit {
+  --kit-ink: #2e1d0b;
+  --kit-ink-2: #5a4326;
+  --kit-ink-off: rgba(46, 29, 11, 0.3);
+  --kit-shadow: 0 1px 0 rgba(255, 244, 214, 0.55);
+}
+/* the T6 and Heirloom kits are half light (Mythic) and half dark (Void) plate: light text, dark outline */
+.bi-card--kit-t6 {
+  --kit-ink: #fff8e8;
+  --kit-ink-2: #efe3c8;
+  --kit-ink-off: rgba(255, 255, 255, 0.3);
+  --kit-star: #ffd24a;
+  --kit-shadow: 0 0 2px #000, 0 1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
+}

@@ -88,6 +88,7 @@ export function createCard(initial: CardProps): CardView {
     <span class="bi-amb bi-amb--border" aria-hidden="true"><i></i><i></i><i></i></span>
     <span class="bi-card__backdrop" aria-hidden="true"></span>
     <div class="bi-card__art"><svg class="bi-card__emblem" viewBox="0 0 100 100" aria-hidden="true"></svg><svg class="bi-card__item" viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false"></svg></div>
+    <span class="bi-card__window" aria-hidden="true"></span>
     <svg class="bi-card__frame" viewBox="0 0 176 248" aria-hidden="true" focusable="false"></svg>
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span><span class="bi-stars" role="img"></span></header>
     <div class="bi-card__hp"></div>
@@ -110,7 +111,7 @@ export function createCard(initial: CardProps): CardView {
   const rarityWord = q<HTMLElement>('.bi-info__rarity');
   const stars = q<HTMLElement>('.bi-stars');
   const frameSvg = q<SVGElement>('.bi-card__frame');
-  let frameTier = '';
+  let frameBorder = '';
 
   const update = (p: CardProps): void => {
     el.classList.toggle('bi-card--boss', Boolean(p.boss));
@@ -154,11 +155,16 @@ export function createCard(initial: CardProps): CardView {
     el.style.setProperty('--bi-xp', String(face ? Math.min(1, Math.max(0, face.progress)) : 0));
     stars.setAttribute('aria-label', `${TIER_NAMES[p.rank.tier]}, ${p.rank.stars} of 6 stars`);
     stars.innerHTML = starsHtml(p.rank);
-    // the tier is the frame (DESIGN.md §5); bosses have no rank and so no frame
-    const tier = p.boss ? '' : `${p.rank.tier}/${p.rarity === 'void' ? 'void' : 'mythic'}`;
-    if (tier !== frameTier) {
-      frameTier = tier;
-      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.rarity);
+    // the base frame: the tier's frame to Prismatic, the batch's border at T6 and as an Heirloom (DESIGN.md §5); bosses have none
+    const border = p.boss ? '' : `${p.rank.tier}/${p.theme.baseKit}`;
+    if (border !== frameBorder) {
+      frameBorder = border;
+      frameSvg.innerHTML = p.boss ? '' : cardFrame(p.rank.tier, p.theme.baseKit);
+      el.classList.toggle('bi-card--kit', !p.boss && frameSvg.innerHTML !== '');
+      el.classList.toggle(
+        'bi-card--kit-t6',
+        !p.boss && (p.rank.tier === 'mythic' || p.rank.tier === 'heirloom'),
+      );
     }
     attachElementFx(
       artBox,

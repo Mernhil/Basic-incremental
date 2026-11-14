@@ -319,9 +319,11 @@ export function createArena(ctx: ArenaContext): Arena {
   const fitHand = (): void => {
     const h = el.clientHeight || 480;
     const { want, max } = handCardWant(h);
-    const n = fitCard(hand, { want, max: () => max });
+    // the scale also leaves the four-card hand its width inside the duel
+    const wide = ((el.clientWidth || 99999) - 24) * (HAND.cardW / handSize(4).w);
+    const n = fitCard(hand, { want, max: () => Math.min(max, wide) });
     // the enemy card gives way to the hand, so the whole hand stands inside the duel
-    const handPx = (n / screenDpr()) * (HAND.cardH + HAND.drop);
+    const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
     el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx))}px`);
   };
   fitHand();

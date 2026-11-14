@@ -65,8 +65,8 @@ const CARD_WANT = { tile: 264, detail: 264, slot: 132 } as const;
 const GRID_COLUMNS = 4;
 const GRID_GAP = 10;
 /** The weapon tiles beside the detail card: the narrowest they may get, and the gap to the card. */
-const DETAIL_SIDE_MIN = 150;
-const DETAIL_GAP = 12;
+const DETAIL_SIDE_MIN = 118;
+const DETAIL_GAP = 22;
 type Fit = Parameters<typeof fitCard>[1];
 
 /**

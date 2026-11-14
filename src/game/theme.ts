@@ -255,6 +255,14 @@ export interface ResolvedCard {
   vars: Record<string, string>;
   /** Recipe class names for this card (card slots and rarity). */
   recipes: string[];
+  /** The sprite name of the card's T6 kit: its art batch's kit (DESIGN.md §5 The base frame). */
+  baseKit: string;
+}
+
+/** The T6 card kit of a card: its batch's, and the first batch's (Dragon) for a card with no `batch` or an id not in the content. */
+export function baseKitOf(content: Content, cardId: string): string {
+  const batch = content.cardById.get(cardId)?.batch;
+  return (batch ? content.batchById.get(batch) : undefined)?.kit ?? content.batches[0]!.kit;
 }
 
 /**
@@ -296,7 +304,12 @@ export function resolveCard(
     Object.assign(vars, cssVars(rarity.tokens, 'rarity-'));
     recipes.push(...rarity.recipes);
   }
-  return { slots: slots as ResolvedCard['slots'], vars, recipes: [...new Set(recipes)] };
+  return {
+    slots: slots as ResolvedCard['slots'],
+    vars,
+    recipes: [...new Set(recipes)],
+    baseKit: baseKitOf(content, card.id),
+  };
 }
 
 /** The equipped tick animation id and number style id, for a job's floating "+n" (same for every job). Null for a slot with no items yet. */

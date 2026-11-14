@@ -1,0 +1,4 @@
+[
+  { "id": "dragon", "name": "Dragon", "kit": "kit-t6-dragon" },
+  { "id": "leviathan", "name": "Leviathan", "kit": "kit-t6-leviathan" }
+]

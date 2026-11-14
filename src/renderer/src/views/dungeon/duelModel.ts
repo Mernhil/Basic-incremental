@@ -20,8 +20,12 @@ export function slotColour(slot: number): SlotColour {
 export const HAND = {
   cardW: 132,
   cardH: 186,
-  /** Art pixels two neighbours overlap. */
-  overlap: 20,
+  /** Art pixels between two neighbours' cards: each card's kit hangs up to 26 outside it (wings and horns, DESIGN.md §5 The base frame), so they never overlap. */
+  overlap: -52,
+  /** Art pixels the kit hangs outside the hand's sides, below it, and its crest above the cards, kept inside the hand's box. */
+  side: 26,
+  rim: 15,
+  crest: 34,
   /** Art pixels the two outer cards sit lower. */
   drop: 8,
 } as const;
@@ -29,15 +33,18 @@ export const HAND = {
 /** Where card `i` of `count` sits in the hand, in art pixels from the hand's top left. */
 export function handSlot(i: number, count: number): { x: number; y: number } {
   const outer = count > 2 && (i === 0 || i === count - 1);
-  return { x: i * (HAND.cardW - HAND.overlap), y: outer ? HAND.drop : 0 };
+  return {
+    x: HAND.side + i * (HAND.cardW - HAND.overlap),
+    y: HAND.crest + (outer ? HAND.drop : 0),
+  };
 }
 
 /** The hand's size in art pixels. */
 export function handSize(count: number): { w: number; h: number } {
   const n = Math.max(1, count);
   return {
-    w: HAND.cardW + (n - 1) * (HAND.cardW - HAND.overlap),
-    h: HAND.cardH + (n > 2 ? HAND.drop : 0),
+    w: 2 * HAND.side + HAND.cardW + (n - 1) * (HAND.cardW - HAND.overlap),
+    h: HAND.crest + HAND.cardH + (n > 2 ? HAND.drop : 0) + HAND.rim,
   };
 }
 
@@ -67,7 +74,7 @@ export const HAND_MARGIN = 8;
 export function handCardWant(height: number): { want: number; max: number } {
   const ratio = HAND.cardW / HAND.cardH;
   const room = Math.max(0, foeRoom(height, 0) - DUEL_FOE_MIN);
-  const cardRoom = (room * HAND.cardH) / (HAND.cardH + HAND.drop);
+  const cardRoom = (room * HAND.cardH) / (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
   return {
     want: Math.min(height * 0.42, cardRoom) * ratio,
     max: Math.min(height * 0.55, cardRoom) * ratio,
