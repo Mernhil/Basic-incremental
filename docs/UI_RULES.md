@@ -20,15 +20,10 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 
 ## 2. Interface and screens
 
-- [Built] **Shell look** (user, 2026-11-10; the castle stone look, user 2026-11-13: picked PixelLab mockup 1b and had PixelLab draw every other screen in it, Cards, Dungeon, Logging, Summon, Wardrobe, Skill Tree, Achievements, Shop, Forge, Upgrades and Settings). The table and every full view use the starter table's shell, **Castle Stone** (DESIGN.md §8), the layout unchanged (mockup 4a):
-  - Panels, tiles, wells, buttons, tabs, the header bar and its chips, the wings, the dock and the dungeon window's border are drawn from the picture parts (grey stone with chiselled bevels, blue runes, cloth banners on the wing titles, torches on the window's pillars), as 9-slice images at a whole number of device pixels per art pixel (`theme/shellPictures.css`, the pieces and insets in `content/shellArt.json`); their middles stretch, their edges never scale unevenly (ASSET_RULES §5 Shell pictures). A panel's frame is drawn over its padding, so layouts do not move; the dungeon window gets a top padding for its lintel and its side readouts move in from the pillars.
-  - The dock sits on the stone bar; each pile's icon stands in the 1b hexagon socket picture.
-  - Buttons: the stone capsule; the action that can be used and the selected choice are the gold plate; hover is a brighter face, pressed one art pixel lower and darker; an unusable button is dimmed (the PixelLab hover and pressed pictures were off, a square rune tile for a hexagon, so they are not used). The Settings sliders and checkboxes use the PixelLab slider and checkbox pictures.
-  - The cards, their frames and the enemy art keep their own look; the 1b mockup's placeholder cards and figures are not used.
-  - Today the shell is Plum Pixel's: pixel frames with a dark edge and notched corners, a light top edge and a dark bottom edge, no rounded corners, a step of a whole number of device pixels (about 4 CSS px at 100%), gold buttons when usable and dark plum when not. That recipe stays for the Plum Pixel table and the other token-only tables.
+- [Built] **Shell look** (user, 2026-11-10; the Castle Stone picture look of 0.7.9 was withdrawn on 2026-11-14, the user: "these are nothing like the ui u showed me all blurry misplaced misalgined plain missing or badly cut"). The table and every full view use the starter table's shell, **Plum Pixel** (DESIGN.md §8). The picture frames of Castle Stone are not shown (ASSET_RULES §5 Shell pictures):
+  - The shell is Plum Pixel's: pixel frames with a dark edge and notched corners, a light top edge and a dark bottom edge, no rounded corners, a step of a whole number of device pixels (about 4 CSS px at 100%), gold buttons when usable and dark plum when not.
   - Pixelify Sans is used only at 18 px and up, for headings and large numbers. All other text, small numbers included, is Atkinson Hyperlegible.
   - Colours, fonts and frame values are table tokens (ASSET_RULES.md §6), so another table item can re-skin all of it.
-  - The floating-number cosmetics are not part of the shell and keep their own look.
 - [Built] **One table, no pages** (user, 2026-11-11: layout 1a, "one table, no pages"; the table is mockup 4a, the full views 4b to 4n in `design/options/ui-layouts/`). The game has one screen, the table. Every part of the game is a pile, a wing or the dungeon window on it, and a click on one fans it out into its full view over the table. There is no sidebar, no page list and no Home page: the table is home.
 - [Built] **What is on the table** (mockup 4a), from top to bottom:
   - The header across the top (Header bar below).
@@ -183,6 +178,7 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 
 ## 4. Changelog
 
+- 2026-11-14 — Castle Stone withdrawn (user, release 0.7.9 rejected): the Shell look is Plum Pixel's pixel frames again.
 - 2026-11-13 — Medieval shell (user, PixelLab mockup 1b): the Shell look becomes Castle Stone picture frames in the same layout; Plum Pixel's pixel frames stay for its own table (§2).
 - 2026-11-13 — Heirloom Gate built (pick 3a, 2e): the Summon view stacks the five gates with the open one's content beside it; the Cards view has its Heirlooms tab; the header drops the scroll names below 1400 px wide, as four amounts no longer fit with them (§2).
 - 2026-11-13 — Heirloom Gate layouts (user picks 3a, 3b and 2e; "Yes, build it"): the Summon view stacks the five gates in a left column with the open gate's content beside it, the Cards view gets an Heirlooms tab (grid and the tree as gems around the card) and a Collection relayout in the same look, and cards are grouped by weapon type everywhere they are listed (§2).

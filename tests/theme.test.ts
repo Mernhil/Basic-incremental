@@ -65,7 +65,7 @@ describe('equipping', () => {
   it('shows the starter in every slot of an empty loadout', () => {
     const resolved = resolveGlobal(content, emptyLoadout());
     expect(resolved.border.cosmetic.id).toBe('gn_border');
-    expect(resolved.table.cosmetic.id).toBe('castle_stone_table');
+    expect(resolved.table.cosmetic.id).toBe('gn_table');
     expect(resolved.cursor.visual.recipes).toEqual(['cursor-gilded']);
   });
 

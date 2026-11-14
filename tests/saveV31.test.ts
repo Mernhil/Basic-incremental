@@ -1,10 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { MIGRATIONS } from '../src/game/migrations';
-import { CURRENT_SAVE_VERSION } from '../src/game/save';
-import { newGame } from './helpers';
+import {
+  createSaveText,
+  CURRENT_SAVE_VERSION,
+  MIGRATIONS,
+  readSave,
+  resolveGlobal,
+} from '../src/game';
+import { content, newGame } from './helpers';
 
-/** v30 -> v31: the Castle Stone shell (DESIGN.md §8 Plum Pixel and Tavern Wood tables). */
-describe('v30 -> v31 (Castle Stone is the starter table, Plum Pixel an owned one)', () => {
+/** v30 -> v31: Plum Pixel is the starter table again (DESIGN.md §8); Castle Stone was withdrawn after 0.7.9. */
+describe('v30 -> v31 (Plum Pixel is an owned table, Castle Stone is gone)', () => {
   const base = (loadoutSlots: Record<string, unknown>, owned: Record<string, unknown>) => ({
     cosmetics: { loadout: { slots: loadoutSlots, cards: {} }, owned },
   });
@@ -43,9 +48,20 @@ describe('v30 -> v31 (Castle Stone is the starter table, Plum Pixel an owned one
     expect(out.cosmetics.loadout.slots['table']).toEqual({ id: 'vine_table', level: 1 });
   });
 
-  it('a new game owns Plum Pixel and Castle Stone', () => {
+  it('a new game owns Plum Pixel and no Castle Stone exists', () => {
     const owned = newGame().cosmetics.owned;
     expect(owned['gn_table']).toEqual({ level: 1, copies: 1 });
-    expect(owned['castle_stone_table']).toEqual({ level: 1, copies: 1 });
+    expect(owned['castle_stone_table']).toBeUndefined();
+    expect(content.cosmetics.some((c) => c.id === 'castle_stone_table')).toBe(false);
+  });
+
+  it('a save that owns and wears Castle Stone loads cleanly and shows Plum Pixel', () => {
+    const raw = JSON.parse(createSaveText(newGame(), 1));
+    raw.state.cosmetics.owned['castle_stone_table'] = { level: 1, copies: 1 };
+    raw.state.cosmetics.loadout.slots['table'] = { id: 'castle_stone_table', level: 1 };
+    const { state } = readSave(JSON.stringify(raw), content);
+    expect(state.cosmetics.owned['castle_stone_table']).toBeUndefined();
+    expect(state.cosmetics.loadout.slots['table']).toBeUndefined();
+    expect(resolveGlobal(content, state.cosmetics.loadout).table.cosmetic.id).toBe('gn_table');
   });
 });
