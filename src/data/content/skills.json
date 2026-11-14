@@ -117,27 +117,6 @@
       }
     },
     {
-      "id": "eclipse",
-      "name": "Eclipse",
-      "role": "debuffer",
-      "description": "Balanced, and while it stands enemies deal 20% less damage; the signature strikes the enemy",
-      "weaken": 0.2,
-      "signature": {
-        "kind": "strike"
-      }
-    },
-    {
-      "id": "oath_of_kings",
-      "name": "Oath of Kings",
-      "role": "tank",
-      "description": "Guards the team with 40% more health: enemies hit it first; the signature strikes the enemy",
-      "guard": true,
-      "health": 1.4,
-      "signature": {
-        "kind": "strike"
-      }
-    },
-    {
       "id": "howl",
       "name": "Howl",
       "role": "glass_cannon",
@@ -160,17 +139,6 @@
       }
     },
     {
-      "id": "doom_charge",
-      "name": "Doom Charge",
-      "role": "tank",
-      "description": "Guards the team with 25% more health: enemies hit it first; the signature strikes the enemy",
-      "guard": true,
-      "health": 1.25,
-      "signature": {
-        "kind": "strike"
-      }
-    },
-    {
       "id": "venom",
       "name": "Venom",
       "role": "debuffer",
@@ -178,27 +146,6 @@
       "weaken": 0.15,
       "signature": {
         "kind": "strike"
-      }
-    },
-    {
-      "id": "anvil_of_worlds",
-      "name": "Anvil of Worlds",
-      "role": "tank",
-      "description": "Guards the team with 50% more health: enemies hit it first; the signature strikes the enemy",
-      "guard": true,
-      "health": 1.5,
-      "signature": {
-        "kind": "strike"
-      }
-    },
-    {
-      "id": "full_bloom",
-      "name": "Full Bloom",
-      "role": "healer",
-      "description": "The signature heals every standing card by 50% of its health instead of striking",
-      "signature": {
-        "kind": "heal",
-        "share": 0.5
       }
     },
     {

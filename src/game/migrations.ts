@@ -77,7 +77,91 @@ export const MIGRATIONS: MigrationTable = {
   /** v30 -> v31: the Castle Stone shell (0.8.1): Castle Stone is the starter table and Plum Pixel an
    *  owned one; a save that wore Plum Pixel explicitly shows the new starter (the slot is cleared). */
   30: v30ToV31,
+  /** v31 -> v32: the Dragon batch (DESIGN.md §5 Heirlooms): 22 Heirlooms become 11, one per type; a
+   *  save that owns a removed one gets its type's kept one (repeats become shards). */
+  31: v31ToV32,
 };
+
+/** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
+const V32_HEIRLOOM_MERGE: Readonly<Record<string, string>> = {
+  nightfall: 'solaris',
+  kingsoath: 'grimhowl',
+  lumen_fang: 'nightsting',
+  abyss_thorn: 'skypiercer',
+  doomrider: 'sunrider',
+  worldforge: 'grave_anvil',
+  umbral_string: 'starweaver',
+  lifebloom: 'soulwell',
+  graceharvest: 'last_breath',
+  deepmaw: 'heartdelver',
+  rotfeller: 'elderwarden',
+};
+/** The Heirloom Gate's unlock and star shard costs at save format 32 (a snapshot of heirlooms.json). */
+const V32_UNLOCK_SHARDS = 30;
+const V32_STAR_SHARDS = [10, 15, 20, 25, 30];
+
+/** Renames every string value equal to a removed Heirloom id, and every object key of one that has no kept twin. */
+function v32Rename(value: unknown): unknown {
+  if (typeof value === 'string') return V32_HEIRLOOM_MERGE[value] ?? value;
+  if (Array.isArray(value)) return value.map(v32Rename);
+  if (!isRecord(value)) return value;
+  const out: Record<string, unknown> = {};
+  for (const [key, v] of Object.entries(value)) {
+    const to = V32_HEIRLOOM_MERGE[key];
+    if (to === undefined) out[key] = v32Rename(v);
+    else if (!(to in value) && !(to in out)) out[to] = v32Rename(v);
+  }
+  return out;
+}
+
+/**
+ * v31 -> v32 (DESIGN.md §5 Heirlooms, Saves keep their Heirlooms): a removed Heirloom owned goes to
+ * the kept Heirloom of its type. A kept one not owned takes its place as it is (its enhancements
+ * and tree are dropped: they were the removed card's options); one already owned keeps the higher
+ * stars and level, and the lower one's unlock and stars become shards of the kept one (as do the
+ * removed one's own shards). Loadouts, presets and every other card id are renamed to the kept one.
+ */
+function v31ToV32(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? { ...state['cards'] } : {};
+  const owned = isRecord(cards['owned']) ? { ...cards['owned'] } : {};
+  const heirlooms = isRecord(state['heirlooms']) ? { ...state['heirlooms'] } : {};
+  const shards = isRecord(heirlooms['shards']) ? { ...heirlooms['shards'] } : {};
+  const trees = isRecord(heirlooms['trees']) ? { ...heirlooms['trees'] } : {};
+  const worth = (stars: number): number =>
+    V32_UNLOCK_SHARDS + V32_STAR_SHARDS.slice(0, Math.max(0, stars - 1)).reduce((a, b) => a + b, 0);
+  const num = (v: unknown, fallback: number): number => (typeof v === 'number' ? v : fallback);
+  for (const [from, to] of Object.entries(V32_HEIRLOOM_MERGE)) {
+    const gone = owned[from];
+    delete owned[from];
+    delete trees[from];
+    let extra = typeof shards[from] === 'number' ? shards[from] : 0;
+    delete shards[from];
+    if (isRecord(gone)) {
+      const kept = owned[to];
+      if (!isRecord(kept)) {
+        owned[to] = { ...gone, enhancements: [] };
+      } else {
+        const goneStars = num(gone['stars'], 1);
+        const keptStars = num(kept['stars'], 1);
+        const goneLevel = num(gone['level'], 1);
+        const keptLevel = num(kept['level'], 1);
+        extra += worth(Math.min(goneStars, keptStars));
+        const level = Math.max(goneLevel, keptLevel);
+        owned[to] = {
+          ...kept,
+          stars: Math.max(goneStars, keptStars),
+          level,
+          xp: goneLevel > keptLevel ? gone['xp'] : kept['xp'],
+        };
+      }
+    }
+    if (extra > 0) shards[to] = num(shards[to], 0) + extra;
+  }
+  cards['owned'] = owned;
+  heirlooms['shards'] = shards;
+  heirlooms['trees'] = trees;
+  return v32Rename({ ...state, cards, heirlooms }) as Record<string, unknown>;
+}
 
 /** v30 -> v31 (DESIGN.md �8 Plum Pixel and Tavern Wood tables): see the table above. */
 function v30ToV31(state: Record<string, unknown>): Record<string, unknown> {

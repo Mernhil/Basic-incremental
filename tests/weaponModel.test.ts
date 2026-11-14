@@ -160,11 +160,11 @@ describe('weapon panel model', () => {
   });
 
   it('an Heirloom card has no tier-up; its stars come from the gate', () => {
-    const w = view('deepmaw', { tier: 'heirloom', level: 140, stars: 3 })!;
+    const w = view('heartdelver', { tier: 'heirloom', level: 140, stars: 3 })!;
     expect(w.tier).toBe('heirloom');
     expect(w.tierUp).toBeNull();
     expect(w.endNote).toBe('Its stars come from its own shards in the Heirloom Gate.');
-    const max = view('deepmaw', { tier: 'heirloom', level: 140, stars: 6 })!;
+    const max = view('heartdelver', { tier: 'heirloom', level: 140, stars: 6 })!;
     expect(max.endNote).toBe('Fully upgraded. Nothing left to unlock.');
   });
 });

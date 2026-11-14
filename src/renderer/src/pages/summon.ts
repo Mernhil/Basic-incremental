@@ -54,7 +54,7 @@ import './summon.css';
  * Gate). The open gate shows its deck of card backs at 1x (its edge thickens toward its hard pity),
  * its lines, pity bar and Pull 1 / Pull 10 buttons; the others are short rows that open on a click.
  * The rest of the view is the open gate's content: the Wishlist and its odds for the card portals,
- * the odds for the Wardrobe and Legacy Gates, the board of the 22 Heirlooms for the Heirloom Gate.
+ * the odds for the Wardrobe and Legacy Gates, the board of the 11 Heirlooms for the Heirloom Gate.
  * "Your last hand" runs along the bottom. The reveal opens in a modal. The open gate and the last
  * hand live in UI memory only (no save change).
  */
@@ -472,7 +472,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     return root;
   }
 
-  // ---- the Heirloom Gate (DESIGN.md §7): its deck, and the board of the 22 Heirlooms ----
+  // ---- the Heirloom Gate (DESIGN.md §7): its deck, and the board of the 11 Heirlooms ----
   const heirloomId = content.heirlooms.gate.id;
   let heirloomUi: DeckUi | null = null;
   let heirloomAbout: HTMLElement | null = null;

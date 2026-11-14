@@ -94,9 +94,9 @@ describe('bundled content', () => {
     ]);
     // The 77 base cards (11 of every rarity, one weapon type each; the Rare scythe is `reaper_test`)
     // plus the 45 cards of the Heirloom candidates (DESIGN.md §5, tests/heirloomCards.test.ts),
-    // plus the 22 Heirloom cards (DESIGN.md §5 Heirlooms, tests/heirloomGate.test.ts).
-    expect(content.cards).toHaveLength(144);
-    expect(content.cards.filter((c) => c.heirloom)).toHaveLength(22);
+    // plus the 11 Heirloom cards (DESIGN.md §5 Heirlooms, tests/heirloomGate.test.ts).
+    expect(content.cards).toHaveLength(133);
+    expect(content.cards.filter((c) => c.heirloom)).toHaveLength(11);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -147,8 +147,7 @@ describe('item types (items.json)', () => {
       t.prismatic,
       t.mythic,
       t.void,
-      t.heirloom.mythic,
-      t.heirloom.void,
+      t.heirloom,
     ]);
     expect(new Set(names).size).toBe(names.length);
   });

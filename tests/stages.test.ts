@@ -187,11 +187,11 @@ describe('item names (DESIGN.md §5, items.json)', () => {
     expect(itemName(content, 'pickaxe', 'mythic', 'void')).toBe('Void Hollowdeep Pickaxe');
   });
 
-  it('names the Heirloom by its own name and the card side: Solaris or Nightfall', () => {
+  it('names the Heirloom by its type alone: one per type, whichever side the card leans', () => {
     expect(itemName(content, 'sword', 'heirloom', 'mythic')).toBe('Solaris');
-    expect(itemName(content, 'sword', 'heirloom', 'void')).toBe('Nightfall');
+    expect(itemName(content, 'sword', 'heirloom', 'void')).toBe('Solaris');
     expect(itemName(content, 'logging_axe', 'heirloom', 'mythic')).toBe('Elderwarden');
-    expect(itemName(content, 'logging_axe', 'heirloom', 'void')).toBe('Rotfeller');
+    expect(itemName(content, 'greatsword', 'heirloom', 'void')).toBe('Grimhowl');
   });
 
   it('has a name at every tier and side for each of the 11 types', () => {

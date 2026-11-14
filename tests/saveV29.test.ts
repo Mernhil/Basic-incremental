@@ -43,8 +43,8 @@ const levelOf = (state: Raw, id: string): number =>
 const newCurve = (id: string) => (content.treeById.get(id) ?? content.mineById.get(id))!.level.cost;
 
 describe('v28 -> v29 (readable numbers)', () => {
-  it('is the Castle Stone shell format (31), and the late-game fixture is format 28', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(31);
+  it('is at least format 31, and the late-game fixture is format 28', () => {
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(31);
     expect(late.version).toBe(28);
   });
 

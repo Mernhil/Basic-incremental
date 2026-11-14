@@ -58,9 +58,10 @@ const T6_ART = { mythic: 't6m', void: 't6v' } as const;
 
 /**
  * The item's pixel sprite for a card art window, in the 200 x 240 item box. Every type has its own
- * picture at every tier (`item-<type>-t1` Wood, `-t2`, `-t3`, `-t4`, `-t5`, `-t6m` / `-t6v`, hand-made).
- * The Heirloom has its own picture per type and side (`item-<type>-hm` Mythic, `-hv` Void). `side`
- * is the card's own rarity, which picks the Mythic or Void version at T6 and the Heirloom. A caller
+ * picture at every tier (`item-<type>-t1` Wood, `-t2`, `-t3`, `-t4`, `-t5`, `-t6m` / `-t6v`, the Dragon batch).
+ * The Heirloom has one picture per type (`item-<type>-heirloom`). `side`
+ * is the card's own rarity, which picks the Mythic or Void version at T6 (and the letter pictures
+ * of the recoloured candidates). A caller
  * with no tier (the gallery) shows the Wood picture. The card's rarity no longer changes the
  * picture: the tier does (DESIGN.md §5, Item types). Wood to Prismatic have one PixelLab sprite per
  * type and tier (`item-<type>-t<1..5>`, ASSET_RULES §5), with no look steps.
@@ -73,9 +74,10 @@ export function itemArt(
   heirloomArt?: string,
 ): string {
   if (tier === 'heirloom') {
+    // a card's own recoloured Heirloom candidate (`item-<type>-<hm|hv>-<letter>`), else the type's
+    // one Heirloom picture (`item-<type>-heirloom`, the Dragon batch)
     const base = `item-${kind}-${side === 'void' ? 'hv' : 'hm'}`;
-    // a card's own recoloured Heirloom (`item-<type>-<hm|hv>-<letter>`), else the type's original
-    return itemBoxSprite(heirloomArt ? `${base}-${heirloomArt}` : base);
+    return itemBoxSprite(heirloomArt ? `${base}-${heirloomArt}` : `item-${kind}-heirloom`);
   }
   const drawn =
     tier === 'mythic' ? T6_ART[side === 'void' ? 'void' : 'mythic'] : TIER_ART[tier ?? 'wood'];

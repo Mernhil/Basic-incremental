@@ -15,7 +15,7 @@ describe('v30 -> v31 (Plum Pixel is an owned table, Castle Stone is gone)', () =
   });
 
   it('is format 31', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(31);
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(31);
   });
 
   it('adds Plum Pixel to the owned items', () => {
