@@ -20,9 +20,10 @@ export function slotColour(slot: number): SlotColour {
 export const HAND = {
   cardW: 132,
   cardH: 186,
-  /** Art pixels between two neighbours' cards: each card's border hangs up to 15 outside it (batch borders, DESIGN.md §5 The base frame), so they never overlap. */
-  overlap: -32,
-  /** Art pixels the border hangs outside the hand's sides and bottom, and its crest above the cards, kept inside the hand's box. */
+  /** Art pixels between two neighbours' cards: each card's kit hangs up to 26 outside it (wings and horns, DESIGN.md §5 The base frame), so they never overlap. */
+  overlap: -52,
+  /** Art pixels the kit hangs outside the hand's sides, below it, and its crest above the cards, kept inside the hand's box. */
+  side: 26,
   rim: 15,
   crest: 34,
   /** Art pixels the two outer cards sit lower. */
@@ -32,14 +33,17 @@ export const HAND = {
 /** Where card `i` of `count` sits in the hand, in art pixels from the hand's top left. */
 export function handSlot(i: number, count: number): { x: number; y: number } {
   const outer = count > 2 && (i === 0 || i === count - 1);
-  return { x: HAND.rim + i * (HAND.cardW - HAND.overlap), y: HAND.crest + (outer ? HAND.drop : 0) };
+  return {
+    x: HAND.side + i * (HAND.cardW - HAND.overlap),
+    y: HAND.crest + (outer ? HAND.drop : 0),
+  };
 }
 
 /** The hand's size in art pixels. */
 export function handSize(count: number): { w: number; h: number } {
   const n = Math.max(1, count);
   return {
-    w: 2 * HAND.rim + HAND.cardW + (n - 1) * (HAND.cardW - HAND.overlap),
+    w: 2 * HAND.side + HAND.cardW + (n - 1) * (HAND.cardW - HAND.overlap),
     h: HAND.crest + HAND.cardH + (n > 2 ? HAND.drop : 0) + HAND.rim,
   };
 }

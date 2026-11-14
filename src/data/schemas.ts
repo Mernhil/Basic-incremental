@@ -2265,14 +2265,14 @@ export type HeirloomTree = HeirloomsConfig['trees'][number];
 export type HeirloomNode = z.output<typeof heirloomNodeSchema>;
 
 /**
- * An art batch (DESIGN.md §5 Art batches, The base frame): its one shared base border, worn by every
+ * An art batch (DESIGN.md §5 Art batches, The base frame): its one T6 card kit (frame, plates and window in one picture), worn by every
  * card of the batch at every tier and by its Heirlooms. The first entry is the base roster's batch
- * (cards with no `batch`); `border` is the sprite name of its 212 x 256 border picture.
+ * (cards with no `batch`); `kit` is the sprite name of its 212 x 256 kit picture.
  */
 export const batchSchema = z.strictObject({
   id,
   name,
-  border: z.string().regex(/^border-[a-z0-9-]+$/),
+  kit: z.string().regex(/^kit-[a-z0-9-]+$/),
 });
 export type Batch = z.output<typeof batchSchema>;
 

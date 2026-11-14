@@ -142,7 +142,7 @@ html .cp-sort .cp-select:not(#_px) {
 .cp-grid {
   margin: 0;
   /* room around the cards for the ★6 crowns, the level badges and the selected outline */
-  padding: 56px 22px 24px;
+  padding: 56px 30px 28px;
   --lv-in: calc(var(--fs-sm) * 11);
   scrollbar-width: thin;
   list-style: none;
@@ -151,7 +151,7 @@ html .cp-sort .cp-select:not(#_px) {
      across at 1x, reflowing to fewer when the window is narrow */
   grid-template-columns: repeat(auto-fill, calc(176px * var(--card-k)));
   grid-auto-rows: max-content;
-  gap: 50px 28px;
+  gap: 50px 44px;
   justify-content: center;
   align-content: start;
   min-height: 0;

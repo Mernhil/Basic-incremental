@@ -527,16 +527,15 @@ function checkProduction(
   }
 }
 
-/** Batch ids and borders are unique, and every card's `batch` names a later batch (the first has none). */
+/** Batch ids and kits are unique, and every card's `batch` names a later batch (the first has none). */
 function checkBatches(batches: Batch[], cards: Card[], issues: string[]): void {
   const ids = new Set<string>();
-  const borders = new Set<string>();
+  const kits = new Set<string>();
   batches.forEach((b, i) => {
     if (ids.has(b.id)) issues.push(`batches.json › [${i}]: duplicate batch "${b.id}"`);
-    if (borders.has(b.border))
-      issues.push(`batches.json › [${i}]: border "${b.border}" is used twice`);
+    if (kits.has(b.kit)) issues.push(`batches.json › [${i}]: kit "${b.kit}" is used twice`);
     ids.add(b.id);
-    borders.add(b.border);
+    kits.add(b.kit);
   });
   const base = batches[0]?.id;
   cards.forEach((c, i) => {

@@ -1046,9 +1046,9 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   position: absolute;
   left: 50%;
   z-index: 4;
-  width: calc(var(--du-u) * var(--hand-w, 654));
+  width: calc(var(--du-u) * var(--hand-w, 736));
   height: calc(var(--du-u) * var(--hand-h, 243));
-  translate: calc(var(--du-u) * var(--hand-w, 654) / -2) 0;
+  translate: calc(var(--du-u) * var(--hand-w, 736) / -2) 0;
   /* the whole hand stands inside, 8 px above the bottom edge; only a duel too short for the
      smallest scale pushes it under the edge */
   top: max(
