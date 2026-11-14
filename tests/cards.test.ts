@@ -615,8 +615,8 @@ describe('views for the Cards page', () => {
     expect(regent).toMatchObject({ owned: null, rank: null, slot: null, cost: 9, starUp: null });
     expect(regent.mainModifiers.map((m) => m.stat)).toEqual(['burst.interval', 'burst.power']);
     expect(cardInfo(state, content, 'nope')).toBeNull();
-    // 122 ladder cards and the 11 Heirloom cards.
-    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(133);
+    // 144 ladder cards (22 of them Leviathan) and the 22 Heirloom cards.
+    expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(166);
     expect(cardCollection(state, content, 'mining').map((c) => c.card.id)).toEqual([
       'cave_digger',
       'gem_cutter',
@@ -631,8 +631,11 @@ describe('views for the Cards page', () => {
       'ruby_gnawer',
       'void_burrower',
       'amber_gnawer',
-      // then the Heirloom pickaxe
+      // then the Dragon Heirloom pickaxe, the Leviathan T6 pickaxes (batch 2) and its Heirloom
       'heartdelver',
+      'reef_prospector',
+      'trench_burrower',
+      'prismstrike',
     ]);
   });
 });

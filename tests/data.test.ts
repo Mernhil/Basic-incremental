@@ -94,9 +94,10 @@ describe('bundled content', () => {
     ]);
     // The 77 base cards (11 of every rarity, one weapon type each; the Rare scythe is `reaper_test`)
     // plus the 45 cards of the Heirloom candidates (DESIGN.md §5, tests/heirloomCards.test.ts),
-    // plus the 11 Heirloom cards (DESIGN.md §5 Heirlooms, tests/heirloomGate.test.ts).
-    expect(content.cards).toHaveLength(133);
-    expect(content.cards.filter((c) => c.heirloom)).toHaveLength(11);
+    // plus the 22 Leviathan T6 cards (batch 2), plus the 22 Heirloom cards (11 Dragon, 11 Leviathan;
+    // DESIGN.md §5 Heirlooms, tests/heirloomGate.test.ts).
+    expect(content.cards).toHaveLength(166);
+    expect(content.cards.filter((c) => c.heirloom)).toHaveLength(22);
     expect(content.dungeons.map((d) => [d.name, d.boss.name])).toEqual([
       ['Mossy Cellar', 'Root Warden'],
       ['Ember Crypt', 'Cinder Lich'],
@@ -257,7 +258,9 @@ describe('card ranks and portals', () => {
     // Heirloom of their own are not beta cards.
     const content = {
       ...loaded,
-      cards: loaded.cards.filter((c) => c.id !== 'reaper_test' && !c.heirloomArt && !c.heirloom),
+      cards: loaded.cards.filter(
+        (c) => c.id !== 'reaper_test' && !c.heirloomArt && !c.heirloom && !c.batch,
+      ),
     };
     expect(loaded.cardById.get('reaper_test')?.name).toBe('Dusk Reaper');
     expect(content.cards).toHaveLength(76);

@@ -42,7 +42,7 @@ export function cardItemArt(
       if (markup) return markup;
     } else if (skin) {
       const source = content.cardById.get(skin.sourceCardId);
-      if (source) return cardTierArt(source, 'heirloom');
+      if (source) return cardTierArt(source, 'mythic');
     }
   }
   // an Heirloom card shows its Heirloom, owned or not (DESIGN.md §5 An Heirloom card)

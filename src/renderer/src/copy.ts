@@ -296,7 +296,7 @@ export const COPY = {
     heirloomsTab: 'Heirlooms',
     loadoutsTab: 'Loadouts',
     /** The Heirlooms tab (DESIGN.md §5 Heirlooms, §10 Heirloom trees; UI_RULES §2, pick 2e). */
-    heirloomsLabel: 'The 11 Heirlooms',
+    heirloomsLabel: 'The Heirlooms',
     heirloomGroup: (type: string, have: number, total: number) => `${type}: ${have} of ${total}`,
     heirloomShards: (stars: number, have: number, need: number | null) =>
       stars === 0
@@ -867,7 +867,8 @@ export const COPY = {
     heirloomStar: (n: number) => `★${n}!`,
     heirloomCardShards: (n: number) => `+${n} card shards`,
     heirloomSide: { mythic: 'Mythic', void: 'Void' } as Record<string, string>,
-    heirloomRow: 'Heirlooms',
+    /** A row of the Heirloom board: one per art batch (Dragon is the first, Leviathan the second). */
+    heirloomRows: { base: 'Dragon', leviathan: 'Leviathan' } as Record<string, string>,
     handEmptyBacks: 'No pull yet: the cards you draw will wait here.',
   },
   /** The card skin picker (DESIGN.md §8 Card skins), on the Cards panel and in the Wardrobe tab. */

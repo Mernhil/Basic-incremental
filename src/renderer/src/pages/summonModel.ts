@@ -349,8 +349,10 @@ export function heirloomDeckView(info: HeirloomGateInfo, content: Content): Heir
 export function heirloomBoardView(info: HeirloomGateInfo, content: Content): HeirloomBoardView {
   const t = COPY.summon;
   const gate = content.heirlooms.gate;
-  const cell = (kind: string): HeirloomCellView | null => {
-    const e = info.entries.find((x) => x.card.item.kind === kind);
+  const cell = (kind: string, batch: string): HeirloomCellView | null => {
+    const e = info.entries.find(
+      (x) => x.card.item.kind === kind && (x.card.batch ?? 'base') === batch,
+    );
     if (!e) return null;
     const side = e.side;
     return {
@@ -370,7 +372,11 @@ export function heirloomBoardView(info: HeirloomGateInfo, content: Content): Hei
     title: t.heirloomBoardTitle(info.total),
     facts: t.heirloomBoardFacts(info.unlocked, info.total, gate.unlockShards),
     columns: kinds.map((k) => ({ kind: k.kind, name: k.noun })),
-    rows: [{ name: t.heirloomRow, cells: kinds.map((k) => cell(k.kind)) }],
+    // one row per art batch (Dragon, then Leviathan), a cell per weapon type
+    rows: Object.entries(t.heirloomRows).map(([batch, name]) => ({
+      name,
+      cells: kinds.map((k) => cell(k.kind, batch)),
+    })),
     odds: t.heirloomOdds(
       pct(info.wholeChance),
       pct(1 - info.wholeChance),

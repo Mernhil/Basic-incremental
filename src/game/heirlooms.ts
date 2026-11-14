@@ -10,7 +10,7 @@ import { cloneState, newOwnedCard, type GameState, type OwnedCard } from './stat
 
 /**
  * Heirlooms (DESIGN.md §5 Heirlooms, §7 Heirloom Gate, §10 Heirloom trees, §3 Heirloom Scrolls):
- * the 11 Heirloom cards come only from the Heirloom Gate. A pull is a whole Heirloom at a low
+ * the 22 Heirloom cards come only from the Heirloom Gate. A pull is a whole Heirloom at a low
  * chance (sure on the pity pull), else a few shards of one random Heirloom. An Heirloom's shards
  * unlock it, then fill its stars; past ★6 they become card shards. Each Heirloom has its own tree,
  * bought with points from its stars and levels, acting while the Heirloom is at work. Every number
@@ -19,12 +19,14 @@ import { cloneState, newOwnedCard, type GameState, type OwnedCard } from './stat
 
 import type { PullCount } from './portals';
 
-/** The Heirloom cards in the shared type order (items.json): one per item type. */
+/**
+ * The Heirloom cards in the shared type order (items.json): a type's Dragon Heirloom (batch 1)
+ * first, then its later batches' in order (Leviathan).
+ */
 export function heirloomCards(content: Content): Card[] {
   const out: Card[] = [];
   for (const t of content.items.types) {
-    const card = content.cards.find((c) => c.heirloom && c.item.kind === t.kind);
-    if (card) out.push(card);
+    out.push(...content.cards.filter((c) => c.heirloom && c.item.kind === t.kind));
   }
   return out;
 }
@@ -127,7 +129,7 @@ export function heirloomPullPrice(
 
 /**
  * Pulls the Heirloom Gate `count` times: pays, then each pull is a whole Heirloom on the pity pull
- * or at `wholeChance`, else `shards.min`..`shards.max` shards; the Heirloom is one of the 11 at
+ * or at `wholeChance`, else `shards.min`..`shards.max` shards; the Heirloom is one of the 22 at
  * equal chance. A whole Heirloom not owned unlocks it (its shards held stay and go to its stars);
  * one owned counts as `wholeRepeatShards` shards. The pity resets on every whole Heirloom.
  */

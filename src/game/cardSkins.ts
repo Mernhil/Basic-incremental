@@ -12,9 +12,12 @@ import { cloneState, type GameState } from './state';
 /** Prefix of a card skin's id; the rest is the id of the card whose weapon it is. */
 export const CARD_SKIN_PREFIX = 'card:';
 
-/** Whether a card has an own weapon picture a skin can be made of (never an Heirloom). */
+/**
+ * Whether a card has an own weapon picture a skin can be made of: one of the extra cards with a
+ * recoloured picture (`heirloomArt`) or a T6 card of a later art batch (`batch`). Never an Heirloom.
+ */
 export function givesSkin(card: Card): boolean {
-  return card.heirloomArt !== undefined && card.heirloom !== true;
+  return (card.heirloomArt !== undefined || card.batch !== undefined) && card.heirloom !== true;
 }
 
 /** Whether a legacy skin was pulled from the Legacy Gate. */

@@ -20,20 +20,21 @@ const recolours = JSON.parse(
 ) as Recolour[];
 
 const withArt = content.cards.filter((c) => c.heirloomArt);
-// The ladder cards: the 11 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
+// The ladder cards: the 22 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
 const ladder = content.cards.filter((c) => !c.heirloom);
 const byRarity = (r: Rarity) => ladder.filter((c) => c.rarity === r);
 const key = (r: { type: string; side: string; letter: string }) =>
   `${r.type}/${r.side}/${r.letter}`;
 
 describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
-  it('takes the roster from 77 to 122: 31 Mythic, 36 Void, 11 of every other rarity', () => {
-    expect(ladder).toHaveLength(122);
+  it('takes the roster from 77 to 144: 42 Mythic, 47 Void, 11 of every other rarity (22 are Leviathan)', () => {
+    expect(ladder).toHaveLength(144);
+    expect(ladder.filter((c) => c.batch === 'leviathan')).toHaveLength(22);
     expect(withArt).toHaveLength(45);
     expect(withArt.filter((c) => c.rarity === 'mythic')).toHaveLength(20);
     expect(withArt.filter((c) => c.rarity === 'void')).toHaveLength(25);
     for (const r of RARITIES) {
-      const want = r === 'mythic' ? 31 : r === 'void' ? 36 : 11;
+      const want = r === 'mythic' ? 42 : r === 'void' ? 47 : 11;
       expect(byRarity(r), r).toHaveLength(want);
     }
   });
@@ -88,8 +89,8 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
 
   it('puts every card in the Card Portal at its rarity, a rarity keeping its whole chance split equally', () => {
     const portal = content.portals.find((p) => p.id === 'card_portal')!;
-    expect(portal.pool).toHaveLength(122);
-    expect(new Set(portal.pool.map((e) => e.itemId)).size).toBe(122);
+    expect(portal.pool).toHaveLength(144);
+    expect(new Set(portal.pool.map((e) => e.itemId)).size).toBe(144);
     const total: Record<string, number> = {
       common: 53.2,
       uncommon: 28,

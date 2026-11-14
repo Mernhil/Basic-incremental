@@ -755,7 +755,9 @@ function deserializeHeirlooms(state: GameState, saved: SerializedState, content:
   for (const entry of moved) {
     const from = content.cardById.get(entry.card);
     if (!from) continue;
-    const target = content.cards.find((c) => c.heirloom && c.item.kind === from.item.kind);
+    const target = content.cards.find(
+      (c) => c.heirloom && !c.batch && c.item.kind === from.item.kind,
+    );
     if (!target) continue;
     const stars = Math.max(1, Math.min(MAX_STARS, entry.stars));
     if (!state.cards.owned[target.id]) {
