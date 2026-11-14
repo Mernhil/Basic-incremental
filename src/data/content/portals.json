@@ -287,337 +287,447 @@
       {
         "itemId": "moonwood_dryad",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "seraph_lancer",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "lodestone_seer",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "dawn_champion",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "sunbreaker_titan",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "valor_pikeman",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "gleam_phantom",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "thunder_smith",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "seraph_archer",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "sanctum_oracle",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "mercy_harvester",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "jade_vanguard",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "violet_herald",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "crown_warden",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "jade_regent",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "molten_pikeman",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "rose_sentinel",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "azure_cavalier",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "rose_phantom",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "sky_gleamer",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "jade_stalker",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "stormforger",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "verdant_smith",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "amethyst_smith",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "dawn_archer",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "orchid_oracle",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "azure_gleaner",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "azure_delver",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "emerald_seer",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "tidal_warden",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "dusk_feller",
         "rarity": "mythic",
-        "weight": 0.006451677
+        "weight": 0.004761952
       },
       {
         "itemId": "core_titan",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "grave_hammerer",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "rotwood_sovereign",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "shadow_reaver",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "ruin_tyrant",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "wraith_impaler",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "dread_horseman",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "venom_stalker",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "wither_huntress",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "hex_warlock",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "grim_sovereign",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "moon_reaver",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "cobalt_tyrant",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "spore_tyrant",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "gloom_maw",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "royal_impaler",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "cinder_serpent",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "blood_serpent",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "midnight_rider",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "plague_rider",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "bloodletter",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "violet_viper",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "frost_viper",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "iron_butcher",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "night_hunter",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "abyss_hunter",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "ember_stalker",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "rift_mystic",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "bog_reaper",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "hollow_reaper",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "frost_reaper",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "ruby_gnawer",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "void_burrower",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "amber_gnawer",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "rime_feller",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
       },
       {
         "itemId": "blight_feller",
         "rarity": "void",
-        "weight": 0.002777806
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "pearl_duelist",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "surf_crusader",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "silver_minnow",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "coral_hoplite",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "foam_cavalier",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "anchor_smith",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "moonlit_angler",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "tide_oracle",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "kelp_harvester",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "reef_prospector",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "driftwood_keeper",
+        "rarity": "mythic",
+        "weight": 0.004761952
+      },
+      {
+        "itemId": "brine_corsair",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "maelstrom_tyrant",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "reef_assassin",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "kraken_impaler",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "sunken_horseman",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "barnacle_crusher",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "siren_huntress",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "murk_warlock",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "deep_sovereign",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "trench_burrower",
+        "rarity": "void",
+        "weight": 0.002127681
+      },
+      {
+        "itemId": "mangrove_tyrant",
+        "rarity": "void",
+        "weight": 0.002127681
       }
     ],
     "pity": {

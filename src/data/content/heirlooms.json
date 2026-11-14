@@ -1009,6 +1009,984 @@
           "description": "+60% output, +25% worker power"
         }
       ]
+    },
+    {
+      "card": "auroratusk",
+      "name": "Polar Spiral",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ],
+          "description": "+2% crit chance"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% health"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.3"
+            }
+          ],
+          "description": "+0.3 crit damage"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% health"
+        },
+        {
+          "id": "capstone",
+          "name": "Narwhal Dawn",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "element.bonus",
+              "kind": "percent",
+              "value": "50"
+            },
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "3",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+50% element bonus, +3 signature power"
+        }
+      ]
+    },
+    {
+      "card": "maelfang",
+      "name": "Bloodwater",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "2",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+2 signature power"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.25"
+            }
+          ],
+          "description": "+0.25 crit damage"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% damage"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "20",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+20% gauge fill"
+        },
+        {
+          "id": "capstone",
+          "name": "Feeding Frenzy",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [],
+          "description": "Glass cannon: 60% more damage, 40% less health",
+          "skill": "howl"
+        }
+      ]
+    },
+    {
+      "card": "venomplume",
+      "name": "Spined Mane",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "10",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+10% gauge fill"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.25"
+            }
+          ],
+          "description": "+0.25 crit damage"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.03"
+            }
+          ],
+          "description": "+3% crit chance"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% damage"
+        },
+        {
+          "id": "capstone",
+          "name": "Lethal Bloom",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.5"
+            }
+          ],
+          "description": "Fast hits, and while it stands enemies deal 15% less damage; the signature strikes the enemy; +0.5 crit damage",
+          "skill": "venom"
+        }
+      ]
+    },
+    {
+      "card": "bluestrike",
+      "name": "Open Water",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ],
+          "description": "+2% crit chance"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.25"
+            }
+          ],
+          "description": "+0.25 crit damage"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.03"
+            }
+          ],
+          "description": "+3% crit chance"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.5"
+            }
+          ],
+          "description": "+0.5 crit damage"
+        },
+        {
+          "id": "capstone",
+          "name": "Sailfin Rush",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.12"
+            },
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "1"
+            }
+          ],
+          "description": "+12% crit chance, +1 crit damage"
+        }
+      ]
+    },
+    {
+      "card": "pearlrider",
+      "name": "Tidal Charger",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% health"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% health"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "20"
+            }
+          ],
+          "description": "+20% health"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% damage"
+        },
+        {
+          "id": "capstone",
+          "name": "Seahorse Gallop",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [],
+          "description": "Guards the team: enemies hit it first; the signature heals every standing card by 25% of its health",
+          "skill": "dawn_charge"
+        }
+      ]
+    },
+    {
+      "card": "clawbreaker",
+      "name": "Hard Shell",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "2",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+2 signature power"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% health"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "4",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+4 signature power"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% damage"
+        },
+        {
+          "id": "capstone",
+          "name": "Crushing Pincer",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "burst.power",
+              "kind": "flat",
+              "value": "15",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+15 signature power"
+        }
+      ]
+    },
+    {
+      "card": "mantaglide",
+      "name": "Wing Beat",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.25"
+            }
+          ],
+          "description": "+0.25 crit damage"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ],
+          "description": "+2% crit chance"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.5"
+            }
+          ],
+          "description": "+0.5 crit damage"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "stars.damage",
+              "kind": "percent",
+              "value": "20"
+            }
+          ],
+          "description": "+20% stage star damage"
+        },
+        {
+          "id": "capstone",
+          "name": "Glide of Ages",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "stars.damage",
+              "kind": "percent",
+              "value": "100"
+            },
+            {
+              "stat": "stars.loot",
+              "kind": "percent",
+              "value": "50"
+            }
+          ],
+          "description": "+100% stage star damage, +50% stage star loot"
+        }
+      ]
+    },
+    {
+      "card": "dreadbloom",
+      "name": "Drifting Veil",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "10",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+10% gauge fill"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% health"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% damage"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "20",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ],
+          "description": "+20% gauge fill"
+        },
+        {
+          "id": "capstone",
+          "name": "Stinging Tide",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [],
+          "description": "While it stands, enemies deal 30% less damage; the signature strikes the enemy",
+          "skill": "soul_drain"
+        }
+      ]
+    },
+    {
+      "card": "coilreaper",
+      "name": "Reef Lurker",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ],
+          "description": "+2% crit chance"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "8"
+            }
+          ],
+          "description": "+8% damage"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.25"
+            }
+          ],
+          "description": "+0.25 crit damage"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% damage"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.5"
+            }
+          ],
+          "description": "+0.5 crit damage"
+        },
+        {
+          "id": "capstone",
+          "name": "Second Jaw",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.1"
+            },
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "1"
+            }
+          ],
+          "description": "+10% crit chance, +1 crit damage"
+        }
+      ]
+    },
+    {
+      "card": "prismstrike",
+      "name": "Spectrum Fist",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% output"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "20"
+            }
+          ],
+          "description": "+20% dig rate"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.02"
+            }
+          ],
+          "description": "+2% harvest crit chance"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "30"
+            }
+          ],
+          "description": "+30% dig rate"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "15"
+            }
+          ],
+          "description": "+15% layer yield"
+        },
+        {
+          "id": "capstone",
+          "name": "Shatter Spectrum",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "100"
+            },
+            {
+              "stat": "depth.yield",
+              "kind": "percent",
+              "value": "25"
+            }
+          ],
+          "description": "+100% dig rate, +25% layer yield"
+        }
+      ]
+    },
+    {
+      "card": "eldershell",
+      "name": "Slow Currents",
+      "nodes": [
+        {
+          "id": "root",
+          "cost": 1,
+          "requires": [],
+          "modifiers": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% output"
+        },
+        {
+          "id": "small_a",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "xp.card",
+              "kind": "percent",
+              "value": "20"
+            }
+          ],
+          "description": "+20% card XP"
+        },
+        {
+          "id": "small_b",
+          "cost": 1,
+          "requires": ["root"],
+          "modifiers": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "10"
+            }
+          ],
+          "description": "+10% strike speed"
+        },
+        {
+          "id": "large_a",
+          "cost": 2,
+          "requires": ["small_a"],
+          "modifiers": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "20"
+            }
+          ],
+          "description": "+20% output"
+        },
+        {
+          "id": "large_b",
+          "cost": 2,
+          "requires": ["small_b"],
+          "modifiers": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "20"
+            }
+          ],
+          "description": "+20% growth rate"
+        },
+        {
+          "id": "capstone",
+          "name": "Century Tide",
+          "cost": 3,
+          "requires": ["large_a", "large_b"],
+          "modifiers": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "60"
+            },
+            {
+              "stat": "worker.power",
+              "kind": "percent",
+              "value": "25"
+            }
+          ],
+          "description": "+60% output, +25% worker power"
+        }
+      ]
     }
   ]
 }

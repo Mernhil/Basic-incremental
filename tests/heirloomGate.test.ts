@@ -37,18 +37,20 @@ const ownHeirloom = (state: GameState, id: string, stars = 1, level = 1): GameSt
   return state;
 };
 
-describe('the 11 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
+describe('the 22 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
   it('lists one Heirloom card per item type, in the shared type order', () => {
     const list = heirloomCards(content);
-    expect(list).toHaveLength(11);
+    expect(list).toHaveLength(22);
+    // a type's Dragon Heirloom first, then its Leviathan one (batch 2)
     expect(list.slice(0, 4).map((c) => c.name)).toEqual([
       'Solaris',
+      'Auroratusk',
       'Grimhowl',
-      'Skypiercer',
-      'Sunrider',
+      'Maelfang',
     ]);
     // each leans to the side the user picked (2026-11-14): its card's rarity is Mythic or Void
-    expect(list.map((c) => `${c.name}:${c.rarity}`)).toEqual([
+    const dragon = list.filter((c) => !c.batch);
+    expect(dragon.map((c) => `${c.name}:${c.rarity}`)).toEqual([
       'Solaris:mythic',
       'Grimhowl:void',
       'Skypiercer:mythic',
@@ -60,6 +62,21 @@ describe('the 11 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
       'Last Breath:void',
       'Heartdelver:mythic',
       'Elderwarden:mythic',
+    ]);
+    // Leviathan (user, 2026-11-14): sword, spear, lance, bow, pickaxe and logging axe lean light
+    const leviathan = list.filter((c) => c.batch === 'leviathan');
+    expect(leviathan.map((c) => `${c.name}:${c.rarity}`)).toEqual([
+      'Auroratusk:mythic',
+      'Maelfang:void',
+      'Bluestrike:mythic',
+      'Pearlrider:mythic',
+      'Venomplume:void',
+      'Clawbreaker:void',
+      'Mantaglide:mythic',
+      'Dreadbloom:void',
+      'Coilreaper:void',
+      'Prismstrike:mythic',
+      'Eldershell:mythic',
     ]);
     for (const c of list) expect(content.heirloomTreeByCard.has(c.id), c.id).toBe(true);
   });
@@ -142,7 +159,7 @@ describe('the Heirloom Gate (DESIGN.md §7)', () => {
     // 2% with a pity at 60 lands a little above 2%.
     expect(whole / 10000).toBeGreaterThan(0.02);
     expect(whole / 10000).toBeLessThan(0.035);
-    expect(heirloomGateInfo(state, content).unlocked).toBe(11);
+    expect(heirloomGateInfo(state, content).unlocked).toBe(22);
   });
 
   it('keeps shards, pity, trees and scrolls through an Ascension', () => {

@@ -518,9 +518,15 @@ const cardBase = {
    * neither; without them the card shows its type's one model at every tier.
    */
   heirloomArt: z.enum(['b', 'c', 'd']).optional(),
+  /**
+   * A card of a later art batch (DESIGN.md §5 Art batches; batch 1 Dragon is the base roster, batch 2
+   * is `leviathan`): its T6 or Heirloom picture is `item-<type>-<batch>-<t6m|t6v|heirloom>` and
+   * its own weapon's name is `heirloomName` (both or neither). A batch card has no `heirloomArt`.
+   */
+  batch: z.enum(['leviathan']).optional(),
   heirloomName: name.optional(),
   /**
-   * One of the 22 Heirloom cards (DESIGN.md §5 Heirlooms, An Heirloom card): its type's Heirloom of
+   * One of the Heirloom cards (11 Dragon, 11 Leviathan) (DESIGN.md §5 Heirlooms, An Heirloom card): its type's Heirloom of
    * its rarity's side, named as in items.json, at the fixed tier `heirloom`. It comes only from the
    * Heirloom Gate (heirlooms.json), never from a portal, the shard shop or a tier-up.
    */

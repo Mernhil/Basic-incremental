@@ -92,9 +92,16 @@ export function itemArt(
  * shows the type's tier pictures and original Heirloom (`itemArt` with the card's rarity as its side).
  */
 export function cardTierArt(
-  card: Pick<Card, 'rarity' | 'heirloomArt'> & { item: { kind: ItemKind } },
+  card: Pick<Card, 'rarity' | 'heirloomArt' | 'batch'> & { item: { kind: ItemKind } },
   tier?: RankTier,
 ): string {
+  // a card of a later art batch (Leviathan, DESIGN.md §5 Art batches) shows its batch's T6 picture
+  // for its side, or the batch's Heirloom picture; below T6 it shows the type's one model
+  if (card.batch && (tier === 'mythic' || tier === 'heirloom')) {
+    const art =
+      tier === 'heirloom' ? 'heirloom' : T6_ART[card.rarity === 'void' ? 'void' : 'mythic'];
+    return itemBoxSprite(`item-${card.item.kind}-${card.batch}-${art}`);
+  }
   // a card's own weapon shows at its top tier only; Wood to Prismatic are the type's one model
   const own = card.heirloomArt && (tier === 'mythic' || tier === 'heirloom');
   return itemArt(
