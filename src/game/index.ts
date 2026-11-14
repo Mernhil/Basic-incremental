@@ -180,22 +180,6 @@ export {
   cosmeticSource,
   /** Each set's progress (equipped / total) and whether its bonus applies. */
   setBonuses,
-  /** The skin id worn on a weapon kind (e.g. 'soul_reaper'), or null = unskinned. */
-  weaponSkinFor,
-  /** The art id to draw for a weapon kind: the worn skin's art, else its base art (null = no skins). */
-  weaponSkinArt,
-  /** Every skin of a weapon kind for the picker: name, art, cost, available, equipped. */
-  weaponSkinChoices,
-  /** Wears a skin on a weapon kind, or null for the unskinned weapon; does not touch cosmetic slots. */
-  equipWeaponSkin,
-  /** Whether a skin exists for that weapon and can be worn now (legacy skins need to be owned). */
-  isWeaponSkinAvailable,
-  /** Whether a legacy skin was pulled from the Legacy Gate. */
-  ownsLegacySkin,
-  /** The art a card's generic weapon kind draws with at a tier when a legacy skin is worn (null at the Heirloom tier or when none). */
-  legacyWeaponArt,
-  type WeaponSkinChoice,
-  type EquipWeaponSkinResult,
   type WardrobeItem,
   type CosmeticUpgradeCheck,
   type CosmeticUpgradeResult,
@@ -204,6 +188,26 @@ export {
   type EquipResult,
   type SetBonusInfo,
 } from './wardrobe';
+export {
+  /** The skin id a card wears (raw choice), or null = its Original. */
+  cardSkinFor,
+  /** Every skin a card could wear (card skins, then legacy), owned or locked, for its picker. */
+  cardSkinChoices,
+  /** Whether a card may wear a skin now. */
+  canWearSkin,
+  /** The skin a card shows now (a legacy skin's art or another card's own picture), or null. */
+  resolveCardSkin,
+  /** Makes a card wear a skin, or null for its Original; art only. */
+  setCardSkin,
+  /** Whether a card's own weapon picture can be a skin for others (not an Heirloom). */
+  givesSkin,
+  /** Whether a legacy skin was pulled from the Legacy Gate. */
+  ownsLegacySkin,
+  CARD_SKIN_PREFIX,
+  type CardSkinChoice,
+  type ResolvedSkin,
+  type SetCardSkinResult,
+} from './cardSkins';
 export {
   /** Highest upgrade level of an item: by rarity (DESIGN.md §8); starters keep theirs. */
   cosmeticMaxLevel,

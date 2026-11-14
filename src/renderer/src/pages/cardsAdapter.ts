@@ -9,6 +9,7 @@ import {
   tierLabel,
   chooseEnhancement,
   resetEnhancements,
+  setCardSkin,
   collectModifiers,
   levelCap,
   loadoutInfo,
@@ -31,6 +32,7 @@ import { amountText } from '../settings/coins';
 import { COPY, starPercent } from '../copy';
 import { statTiles } from './statsModel';
 import { cardTierArt } from '../art/items';
+import { skinPickerView } from './cardSkinsModel';
 import { cardFaceOf } from './cardFaceModel';
 import { starChartView } from './skillsModel';
 import { weaponView } from './weaponModel';
@@ -230,7 +232,8 @@ export function createCardsModel(
         ]),
         state.cards.loadouts,
         state.production.workers,
-        state.weaponSkins,
+        state.cardSkins,
+        state.legacySkins,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
         all(state).map((i) => [Boolean(i.starUp?.met), Boolean(i.tierUp?.met)]),
@@ -272,6 +275,11 @@ export function createCardsModel(
     enhance(state, id, optionId) {
       const result = chooseEnhancement(state, content, id, optionId);
       return result.ok ? result : { ok: false, reason: COPY.enhance.reasons[result.reason] };
+    },
+    skins: (state, id) => skinPickerView(state, content, id),
+    setSkin(state, id, skinId) {
+      const result = setCardSkin(state, content, id, skinId);
+      return result.ok ? result : { ok: false, reason: COPY.cardSkins.failed };
     },
     resetEnhancements(state, id) {
       if (!state.cards.owned[id]) return { ok: false, reason: COPY.enhance.reasons['not-owned'] };

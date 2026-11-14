@@ -1,24 +1,21 @@
-import { equipWeaponSkin, resolveCard, type GameState } from '../../../game';
+import { setCardSkin } from '../../../game';
 import { COPY } from '../copy';
 import { ITEM_VIEWBOX } from '../art/items';
 import { frame, h } from '../shell/shell';
-import { createCard, type CardProps } from '../ui/card';
+import { createCard } from '../ui/card';
 import { fitCard } from '../ui/pixelFit';
-import { weaponArtMarkup } from './loadoutCards';
+import { cardSkinsSignature, skinCards, skinPickerView, type SkinTileView } from './cardSkinsModel';
+import { loadoutProps, skinTileMarkup } from './loadoutCards';
 import type { PageContext } from './production';
-import {
-  weaponSkinsSignature,
-  weaponSkinsView,
-  type SkinSelection,
-  type WeaponSkinsView,
-} from './weaponSkinsModel';
 import './weaponSkinsTab.css';
 
 const t = COPY.weaponSkins;
+const S = COPY.cardSkins;
 
 /**
- * The Wardrobe "Weapon skins" tab (a test): a weapon picker, a grid of its skins plus the
- * Original, a large preview on a card carrying the weapon, and Apply. Previewing never
+ * The Wardrobe "Weapon skins" tab (DESIGN.md §8 Card skins): the weapon types you have cards for,
+ * your cards of that type, then the skins that card can wear (Original, the card skins and legacy
+ * skins you own, and the locked card skins greyed), with a large preview and Apply. Previewing never
  * changes the save; Apply goes through `ctx.apply` (which saves).
  */
 export function createWeaponSkinsTab(
@@ -28,100 +25,110 @@ export function createWeaponSkinsTab(
   tabs?: HTMLElement,
 ): { render(): void; reveal(): void } {
   const { content } = ctx;
-  const selection: SkinSelection = {};
+  /** What the player has picked so far (view state only); `skin` undefined = the worn one. */
+  const selection: { kind?: string; card?: string; skin?: string | null } = {};
   let last = '';
   let message = '';
   const status = h('p', 'ws-status');
   status.setAttribute('role', 'status');
 
-  function previewProps(state: GameState, v: WeaponSkinsView): CardProps | null {
-    const card = v.previewCardId ? content.cardById.get(v.previewCardId) : undefined;
-    if (!card || !v.weapon) return null;
-    const rank = { tier: 'mythic', stars: 6 } as const;
-    return {
-      name: card.name,
-      label: card.job.charAt(0).toUpperCase() + card.job.slice(1),
-      job: card.job,
-      emblem: 'blade',
-      item: weaponArtMarkup(v.weapon, v.previewArt),
-      element: card.element,
-      rank,
-      rarity: card.rarity,
-      face: {
-        ability: card.name,
-        speed: `${t.hitsEvery.toLowerCase()} 1s`,
-        level: { value: 1, cap: 20 },
-        progress: 0,
-      },
-      theme: resolveCard(content, state.cosmetics.loadout, {
-        id: card.id,
-        rank,
-        rarity: card.rarity,
-      }),
-    };
-  }
-
-  function thumb(weapon: string, art: string | null): HTMLElement {
+  function thumb(art: string): HTMLElement {
     const box = h('span', 'ws-thumb');
-    box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${weaponArtMarkup(weapon, art)}</svg>`;
+    box.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${art}</svg>`;
     return box;
   }
 
   function build(focusKey?: string): void {
     const state = ctx.state();
-    last = weaponSkinsSignature(state);
-    const v = weaponSkinsView(state, content, selection, t.original);
-    if (!v.weapon) {
-      // No skin the player can wear yet: keep the section tabs so the player can go back.
-      const { el, body } = frame(t.title, t.note);
-      el.classList.add('ws-picker');
-      if (tabs) el.prepend(tabs);
-      body.append(h('p', 'frame__muted', t.none));
-      root.replaceChildren(el);
-      return;
-    }
-    const weapon = v.weapon;
-
-    // picker side
+    last = cardSkinsSignature(state);
+    const cards = skinCards(state, content);
     const { el: pickEl, body: pickBody } = frame(t.title, t.note);
     pickEl.classList.add('ws-picker');
     if (tabs) pickEl.prepend(tabs);
+    if (cards.length === 0) {
+      pickBody.append(h('p', 'frame__muted', t.none));
+      root.replaceChildren(pickEl);
+      return;
+    }
 
-    if (v.weapons.length > 1) {
+    // 1. the weapon type, 2. the card
+    const kinds = [...new Map(cards.map((c) => [c.kind, c.weapon])).entries()];
+    const kind = kinds.find(([k]) => k === selection.kind)?.[0] ?? kinds[0]![0];
+    if (kinds.length > 1) {
       const chips = h('div', 'cp-chips');
       chips.setAttribute('role', 'group');
       chips.setAttribute('aria-label', t.weaponLabel);
-      for (const w of v.weapons) {
-        const b = h('button', 'cp-chip', w.name);
+      for (const [k, noun] of kinds) {
+        const b = h('button', 'cp-chip', noun);
         b.type = 'button';
-        b.dataset.key = `weapon-${w.kind}`;
-        b.setAttribute('aria-pressed', String(w.kind === weapon));
+        b.dataset.key = `weapon-${k}`;
+        b.setAttribute('aria-pressed', String(k === kind));
         b.addEventListener('click', () => {
-          selection.weapon = w.kind;
-          selection.skin = undefined;
+          selection.kind = k;
+          delete selection.card;
+          delete selection.skin;
           message = '';
-          build(`weapon-${w.kind}`);
+          build(`weapon-${k}`);
         });
         chips.append(b);
       }
       pickBody.append(chips);
-    } else {
-      pickBody.append(h('p', 'ws-weapon', v.weapons[0]!.name));
     }
+    const ofKind = cards.filter((c) => c.kind === kind);
+    const cardId = ofKind.find((c) => c.id === selection.card)?.id ?? ofKind[0]!.id;
+    const list = h('ul', 'ws-cardlist');
+    list.setAttribute('aria-label', t.cardsGroup);
+    for (const c of ofKind) {
+      const li = h('li');
+      const b = h('button', 'ws-cardbtn');
+      b.type = 'button';
+      b.dataset.key = `card-${c.id}`;
+      b.setAttribute('aria-pressed', String(c.id === cardId));
+      b.setAttribute('aria-label', t.cardLabel(c.name, c.wornName));
+      b.append(h('span', 'ws-cardbtn__name', c.name), h('span', 'ws-cardbtn__worn', c.wornName));
+      b.addEventListener('click', () => {
+        selection.kind = kind;
+        selection.card = c.id;
+        delete selection.skin;
+        message = '';
+        build(`card-${c.id}`);
+      });
+      li.append(b);
+      list.append(li);
+    }
+    pickBody.append(list);
 
+    // 3. the skin of that card
+    const view = skinPickerView(state, content, cardId)!;
+    const wornTile = view.tiles.find((x) => x.worn) ?? view.tiles[0]!;
+    const picked: SkinTileView =
+      selection.skin === undefined
+        ? wornTile
+        : (view.tiles.find((x) => !x.locked && x.id === selection.skin) ?? wornTile);
     const grid = h('ul', 'ws-grid');
     grid.setAttribute('aria-label', t.skinsGroup);
-    for (const tile of v.tiles) {
+    for (const tile of view.tiles) {
       const li = h('li');
       const key = `skin-${tile.id ?? 'original'}`;
-      const b = h('button', `ws-tile${tile.worn ? ' is-worn' : ''}`);
+      const b = h(
+        'button',
+        `ws-tile${tile.worn ? ' is-worn' : ''}${tile.locked ? ' is-locked' : ''}`,
+      );
       b.type = 'button';
       b.dataset.key = key;
-      b.setAttribute('aria-pressed', String(tile.picked));
-      b.setAttribute('aria-label', t.tileLabel(tile.name, tile.worn, tile.picked));
-      b.append(thumb(weapon, tile.art), h('span', 'ws-tile__name', tile.name));
+      b.setAttribute('aria-pressed', String(tile === picked));
+      b.setAttribute('aria-label', S.tileLabel(tile.name, tile.worn, tile.lockedNote));
+      if (tile.locked) b.setAttribute('aria-disabled', 'true');
+      b.append(
+        thumb(skinTileMarkup(content, cardId, state.cards.owned[cardId], tile.pic)),
+        h('span', 'ws-tile__name', tile.name),
+      );
+      if (tile.lockedNote) b.append(h('span', 'ws-tile__lock', tile.lockedNote));
       if (tile.worn) b.append(h('span', 'ws-tile__on', '✓'));
       b.addEventListener('click', () => {
+        if (tile.locked) return;
+        selection.kind = kind;
+        selection.card = cardId;
         selection.skin = tile.id;
         message = '';
         build(key);
@@ -131,40 +138,39 @@ export function createWeaponSkinsTab(
     }
     pickBody.append(grid);
 
-    // preview side
-    const { el: viewEl, body: viewBody } = frame(t.previewTitle, v.pickedName);
+    // preview side: the card as it is now, with the picked skin's picture
+    const { el: viewEl, body: viewBody } = frame(t.previewTitle, picked.name);
     viewEl.classList.add('ws-preview');
     const host = h('div', 'ws-stage');
     fitCard(host, { want: 218 });
-    const props = previewProps(state, v);
+    const props = loadoutProps(content, state, cardId, 'main', []);
     if (props) {
       const fit = h('div', 'ws-card');
-      fit.append(createCard(props).el);
+      fit.append(
+        createCard({
+          ...props,
+          item: skinTileMarkup(content, cardId, state.cards.owned[cardId], picked.pic),
+        }).el,
+      );
       host.append(fit);
     }
     viewBody.append(host);
-    const cardName = v.previewCardName;
-    viewBody.append(
-      h(
-        'p',
-        'frame__muted ws-note',
-        v.ownsPreviewCard ? t.previewCard(cardName) : t.notOwned(cardName),
-      ),
-    );
+    viewBody.append(h('p', 'frame__muted ws-note', t.previewCard(view.cardName)));
     viewBody.append(h('p', 'frame__muted ws-note', t.previewOnly));
 
-    const apply = h('button', 'button ws-apply', v.isWorn ? t.equipped : t.apply(v.pickedName));
+    const apply = h('button', 'button ws-apply', picked.worn ? t.equipped : t.apply(picked.name));
     apply.type = 'button';
     apply.dataset.key = 'apply';
-    apply.disabled = !v.canApply;
+    apply.disabled = picked.worn;
     apply.addEventListener('click', () => {
-      const r = equipWeaponSkin(ctx.state(), content, weapon, v.pickedId);
+      const r = setCardSkin(ctx.state(), content, cardId, picked.id);
       if (r.ok) {
-        message = t.applied(v.pickedName);
+        message = t.applied(picked.name);
+        delete selection.skin;
         ctx.apply(r.state);
         build('apply');
       } else {
-        message = t.failed;
+        message = S.failed;
         status.textContent = message;
       }
     });
@@ -177,7 +183,7 @@ export function createWeaponSkinsTab(
 
   return {
     render() {
-      if (weaponSkinsSignature(ctx.state()) !== last || root.childElementCount === 0) {
+      if (cardSkinsSignature(ctx.state()) !== last || root.childElementCount === 0) {
         const active = (document.activeElement as HTMLElement | null)?.dataset?.key;
         build(root.contains(document.activeElement) ? active : undefined);
       }
