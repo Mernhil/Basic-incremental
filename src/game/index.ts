@@ -285,7 +285,6 @@ export {
   /** The item rarity to draw for a card's rarity and tier: one step up the rarity ladder per tier, capped at Void. */
   lookTier,
   /** Which of an item's looks inside its tier a card shows, by its stars (BASE, +1, +2, FINAL). */
-  lookStep,
   weaponLookRarity,
   /** Whether a rank is at least another (tier, then stars). */
   rankAtLeast,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_KINDS, RARITIES, loadContent } from '../src/data';
-import { FULL_ART_BOX, FULL_ART_VIEWBOX, itemArt } from '../src/renderer/src/art/items';
+import { ITEM_KINDS, RARITIES, loadContent, type RankTier } from '../src/data';
+import { itemArt } from '../src/renderer/src/art/items';
 import { EVOLUTIONS, evolutionVector, itemVector } from '../src/renderer/src/art/vector/items';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
 
@@ -44,25 +44,21 @@ describe('signature items (DESIGN.md §12)', () => {
     expect(art).toContain('image-rendering:pixelated');
   });
 
-  it("shows the user's straight pictures on the card canvas, smooth, with their traced outline (ASSET_RULES §5)", () => {
-    for (const kind of [
-      'sword',
-      'greatsword',
-      'dagger',
-      'hammer',
-      'lance',
-      'bow',
-      'scythe',
-      'logging_axe',
-    ] as const)
-      for (const tier of ['wood', 'bronze', 'silver', 'gold'] as const) {
-        const art = itemArt(kind, 'legendary', tier);
-        expect(art, `${kind} ${tier}`).toMatch(/^<g class="bi-item bi-item--full">/);
-        expect(art).toContain('image-rendering:auto');
-        expect(art).toContain(`width="${FULL_ART_BOX.w}" height="${FULL_ART_BOX.h}"`);
-        expect(art, 'outline for the element effects').toContain('bi-item__outline');
+  it('shows one PixelLab sprite per type and tier from Wood to Prismatic, on the pixel grid, with its traced outline (ASSET_RULES §5)', () => {
+    const tiers = { wood: 't1', bronze: 't2', silver: 't3', gold: 't4', prismatic: 't5' } as const;
+    for (const kind of ITEM_KINDS)
+      for (const [tier, art] of Object.entries(tiers)) {
+        const name = `item-${kind}-${art}`;
+        expect(sprite(name), name).toMatchObject({ w: 100, h: 120 });
+        expect(sprite(name)?.outline, name).toBeTruthy();
+        // no look steps: the one picture, whatever the card's rarity
+        for (const r of RARITIES) {
+          const shown = itemArt(kind, r, tier as RankTier);
+          expect(shown, `${kind} ${tier} ${r}`).toContain(`data-sprite="${name}"`);
+          expect(shown).toContain('image-rendering:pixelated');
+          expect(shown).not.toContain('bi-item--full');
+        }
       }
-    expect(FULL_ART_VIEWBOX).toBe('11.29 -7 177.42 250');
   });
 
   it('adds parts with rarity in the source drawing: Common plain, Rare a gem, Legendary a ribbon, Void shards', () => {

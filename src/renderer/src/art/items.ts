@@ -62,9 +62,8 @@ const T6_ART = { mythic: 't6m', void: 't6v' } as const;
  * The Heirloom has its own picture per type and side (`item-<type>-hm` Mythic, `-hv` Void). `side`
  * is the card's own rarity, which picks the Mythic or Void version at T6 and the Heirloom. A caller
  * with no tier (the gallery) shows the Wood picture. The card's rarity no longer changes the
- * picture: the tier does (DESIGN.md §5, Item types). From Wood to Gold an item type with concept-sheet
- * pictures (`item-<type>-t<tier>-<step>`, ASSET_RULES §5) shows its `step` (0 BASE, 1 +1, 2 +2, 3 FINAL,
- * from `lookStep`); the other types have one picture per tier and ignore it.
+ * picture: the tier does (DESIGN.md §5, Item types). Wood to Prismatic have one PixelLab sprite per
+ * type and tier (`item-<type>-t<1..5>`, ASSET_RULES §5), with no look steps.
  */
 export function itemArt(
   kind: ItemKind,
@@ -72,7 +71,6 @@ export function itemArt(
   tier?: RankTier,
   side?: Rarity,
   heirloomArt?: string,
-  step = 0,
 ): string {
   if (tier === 'heirloom') {
     const base = `item-${kind}-${side === 'void' ? 'hv' : 'hm'}`;
@@ -82,24 +80,26 @@ export function itemArt(
   const drawn =
     tier === 'mythic' ? T6_ART[side === 'void' ? 'void' : 'mythic'] : TIER_ART[tier ?? 'wood'];
   const plain = `item-${kind}-${drawn}`;
-  const stepped = `${plain}-${step}`;
-  return itemBoxSprite(sprite(stepped) ? stepped : plain);
+  return itemBoxSprite(plain);
 }
 
 /**
  * The item picture of a card at a tier: the one call a card face, tile or preview makes. A card with
  * its own Heirloom (`heirloomArt` in cards.json, DESIGN.md §5 More weapons from the Heirloom
- * candidates) shows it at every tier, as the placeholder for its other upgrades in place of the
- * type's wooden to Mythic pictures (user, 2026-11-13); every card without one shows the type's
- * tier pictures and original Heirloom (`itemArt` with the card's rarity as its side). `step` is the
- * look inside the tier (`lookStep` from the card's stars); the Next tier preview leaves it at BASE.
+ * candidates) shows it at Mythic or Void and as its Heirloom; below that, and every card without one,
+ * shows the type's tier pictures and original Heirloom (`itemArt` with the card's rarity as its side).
  */
 export function cardTierArt(
   card: Pick<Card, 'rarity' | 'heirloomArt'> & { item: { kind: ItemKind } },
   tier?: RankTier,
-  step = 0,
 ): string {
-  // a card's own weapon is its picture at every tier until its other upgrades are drawn
-  const shown = card.heirloomArt ? 'heirloom' : tier;
-  return itemArt(card.item.kind, card.rarity, shown, card.rarity, card.heirloomArt, step);
+  // a card's own weapon shows at its top tier only; Wood to Prismatic are the type's one model
+  const own = card.heirloomArt && (tier === 'mythic' || tier === 'heirloom');
+  return itemArt(
+    card.item.kind,
+    card.rarity,
+    own ? 'heirloom' : tier,
+    card.rarity,
+    card.heirloomArt,
+  );
 }
