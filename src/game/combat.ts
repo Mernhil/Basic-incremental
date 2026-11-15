@@ -1696,11 +1696,21 @@ function fightDungeon(
         perClear * pattern.lightMultiplier +
           Math.ceil(perClear / pattern.attacksPerCycle) * pattern.slamMultiplier,
       );
+      // the abilities' hits can all land on one card: none may fall within the span either
+      const hitsOnOne = abilities.reduce(
+        (sum, a) => sum.add(normal.mul(a.multiplier * Math.ceil(perClear / a.every))),
+        new Decimal(0),
+      );
+      if (
+        abilities.length > 0 &&
+        standing.some((c) => damageTaken(next, c.id).add(hitsOnOne).gte(c.maxHealth))
+      ) {
+        return false;
+      }
       return damageTaken(next, target!.id).add(worst).lt(target!.maxHealth);
     };
     const bulk =
       !run &&
-      abilities.length === 0 &&
       standing.length === team.length &&
       (overflow
         ? !attacked || (minHit.gte(stage.hp) && holds(1))

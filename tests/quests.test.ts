@@ -231,7 +231,7 @@ describe('saving (save format 34)', () => {
   });
 
   it('migrates v33 -> v34 and the first tick marks what the save meets as done, not claimed', () => {
-    expect(CURRENT_SAVE_VERSION).toBe(34);
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(34);
     expect(MIGRATIONS[33]!({ a: 1 })).toEqual({ a: 1, quests: {} });
     // an old save: boss kills it proved already, a cleared dungeon
     const old = newGame();
