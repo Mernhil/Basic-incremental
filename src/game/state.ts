@@ -385,6 +385,10 @@ export interface CombatState {
   /** Team card ids knocked out on the floor being fought (DESIGN.md §6 card duel): they stay out
    *  until the floor is won, even when their max health rises meanwhile. Save format 27. */
   cardsOut: string[];
+  /** The fighting wage earned since the last kill, by resource: paid out in a lump when an enemy
+   *  dies, so Money comes only when something is won (DESIGN.md §3). Runtime only, not saved: a save
+   *  loses at most the seconds since the last kill. */
+  wageOwed?: Record<string, Decimal>;
 }
 
 /** A running Challenge (DESIGN.md §6 Farming and Challenge). */
@@ -597,6 +601,7 @@ export function cloneCombat(c: CombatState): CombatState {
     challengeWaitSeconds: c.challengeWaitSeconds,
     cardDamage: { ...c.cardDamage },
     cardsOut: [...c.cardsOut],
+    ...(c.wageOwed ? { wageOwed: { ...c.wageOwed } } : {}),
   };
 }
 
