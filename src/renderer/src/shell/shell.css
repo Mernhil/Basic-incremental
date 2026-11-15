@@ -56,7 +56,10 @@ body {
 .shell-header {
   grid-area: header;
   position: relative;
-  z-index: 3;
+  /* above the view layer (table/viewHost.css, z-index 5): the Goals list drops out of the header
+     into the main area and must not hide behind an open view. Below the Details panel, toasts
+     and reveals (30 and up are their own layers). */
+  z-index: 8;
   display: flex;
   align-items: center;
   gap: 24px;
