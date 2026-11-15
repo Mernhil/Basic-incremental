@@ -51,6 +51,7 @@ import {
   floorPips,
   HAND,
   foeRoom,
+  HAND_MARGIN,
   handCardWant,
   handSize,
   handSlot,
@@ -71,6 +72,7 @@ import { onFrame, replay, shake } from './motion';
 import { popText } from './math';
 import { popNumber } from './numbers';
 import { toast } from './toast';
+import { lightStagePips, stagePips } from '../ui/stars';
 import './arena.css';
 
 /**
@@ -190,12 +192,7 @@ export function createArena(ctx: ArenaContext): Arena {
   const starsEl = readout('du-read--stars', COPY.dungeons.stageTip);
   const starPips = span('du-stars');
   starPips.setAttribute('role', 'img');
-  const starPipEls = Array.from({ length: 6 }, (_, i) => {
-    const p = document.createElement('i');
-    p.className = 'dp-pip';
-    p.dataset['level'] = String(i + 1);
-    return p;
-  });
+  const starPipEls = stagePips();
   starPips.append(...starPipEls);
   const starText = span('du-stars__text');
   starsEl.append(starPips, starText);
@@ -318,13 +315,16 @@ export function createArena(ctx: ArenaContext): Arena {
   // ---- sizes: the hand's whole scale follows the duel's height ----
   const fitHand = (): void => {
     const h = el.clientHeight || 480;
-    const { want, max } = handCardWant(h);
+    // the view lifts the hand above its buttons (`--du-hand-gap`); the table's window does not
+    const gap = parseFloat(getComputedStyle(el).getPropertyValue('--du-hand-gap'));
+    const margin = Number.isFinite(gap) ? gap : HAND_MARGIN;
+    const { want, max } = handCardWant(h, margin);
     // the scale also leaves the four-card hand its width inside the duel
     const wide = ((el.clientWidth || 99999) - 24) * (HAND.cardW / handSize(4).w);
     const n = fitCard(hand, { want, max: () => Math.min(max, wide) });
     // the enemy card gives way to the hand, so the whole hand stands inside the duel
     const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
-    el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx))}px`);
+    el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx, margin))}px`);
   };
   fitHand();
   new ResizeObserver(() => fitHand()).observe(el);
@@ -411,11 +411,14 @@ export function createArena(ctx: ArenaContext): Arena {
     const mods = collectModifiers(s, content);
     hand.replaceChildren();
     const count = team.length;
-    const size = handSize(count);
+    const size = handSize(
+      count,
+      team.some((c) => c.row === 'back'),
+    );
     hand.style.setProperty('--hand-w', String(size.w));
     hand.style.setProperty('--hand-h', String(size.h));
     slots = team.map((c, i) => {
-      const at = handSlot(i, count);
+      const at = handSlot(i, count, c.row === 'back');
       const wrap = div('du-card');
       wrap.dataset['slot'] = String(i);
       wrap.dataset['colour'] = slotColour(i);
@@ -424,7 +427,7 @@ export function createArena(ctx: ArenaContext): Arena {
       wrap.setAttribute('role', 'listitem');
       wrap.tabIndex = 0;
       const body = div('du-card__body');
-      const props = loadoutProps(content, s, c.cardId, i === 0 ? 'main' : 'support', mods);
+      const props = loadoutProps(content, s, c.cardId, mods);
       if (props) body.append(createCard(props).el);
       const glow = div('du-card__glow');
       const grey = div('du-card__grey');
@@ -931,7 +934,7 @@ export function createArena(ctx: ArenaContext): Arena {
       : null;
     starsEl.hidden = !stars;
     if (stars) {
-      starPipEls.forEach((p, i) => p.classList.toggle('is-on', i < stars.level));
+      lightStagePips(starPipEls, stars.level);
       starPips.setAttribute(
         'aria-label',
         COPY.dungeons.starLevel(stars.level, STAGE_STAR_NAMES[stars.level] ?? ''),
@@ -1096,7 +1099,7 @@ export function createArena(ctx: ArenaContext): Arena {
         if (a.width === 0) return;
         popNumber(el, {
           kind: 'hurt',
-          text: `-${popText(e.damage)}`,
+          text: e.ability ? `${e.ability} -${popText(e.damage)}` : `-${popText(e.damage)}`,
           x: (b.left + b.width / 2 - a.left) / a.width,
           y: (b.top - a.top) / a.height,
           scale: e.slam ? 1.6 : 1,

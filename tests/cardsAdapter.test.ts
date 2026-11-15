@@ -12,7 +12,7 @@ describe('Cards page model', () => {
     expect(entries).toHaveLength(content.cards.length);
     const owned = entries.filter((e) => e.owned);
     expect(owned.map((e) => [e.id, e.role?.slot ?? null, e.workplace])).toEqual([
-      ['ember_squire', 'main', null],
+      ['ember_squire', 0, null],
       ['apprentice_feller', null, 'Oak'],
       ['cave_digger', null, 'Copper Quarry'],
     ]);
@@ -25,12 +25,12 @@ describe('Cards page model', () => {
     );
   });
 
-  it('adds, moves and removes supports through the loadout rules', () => {
+  it('adds, moves and removes loadout cards through the loadout rules', () => {
     let state = freshState();
     const rare = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
     state.account.level = 2; // cost cap 8: Squire 2 + an Epic 5
     state = addCard(state, content, rare.id)!.state;
-    const added = model.addSupport(state, rare.id);
+    const added = model.addToLoadout(state, rare.id);
     expect(added.ok).toBe(true);
     if (!added.ok) return;
     expect(model.loadout(added.state, 'fighting').slots[1]).toBe(rare.id);
@@ -40,24 +40,24 @@ describe('Cards page model', () => {
 
   it('keeps workers out of the loadout: they work on the Production page', () => {
     const state = freshState();
-    expect(model.setMain(state, 'apprentice_feller').ok).toBe(false);
-    expect(model.addSupport(state, 'cave_digger').ok).toBe(false);
+    expect(model.addToLoadout(state, 'apprentice_feller').ok).toBe(false);
+    expect(model.addToLoadout(state, 'cave_digger').ok).toBe(false);
     const feller = model.entries(state).find((e) => e.id === 'apprentice_feller')!;
-    expect(feller.supportEffect).toBe('');
-    expect(feller.mainAbility).toBe('+20% card XP here');
+    expect(feller.teamBonus).toBe('');
+    expect(feller.ability).toBe('+20% card XP here');
   });
 
   it('explains refusals in words', () => {
     const state = freshState();
     const unowned = content.cards.find((c) => !state.cards.owned[c.id])!;
-    const result = model.setMain(state, unowned.id);
+    const result = model.addToLoadout(state, unowned.id);
     expect(result).toEqual({ ok: false, reason: "You don't own this card yet." });
     expect(model.upgrade(state, content.cards[0]!.id, 'star').ok).toBe(false);
   });
 
   it('changes its signature when a loadout changes', () => {
     const state = freshState();
-    const main = model.entries(state).find((e) => e.role?.slot === 'main')!;
+    const main = model.entries(state).find((e) => e.role?.slot === 0)!;
     const result = model.remove(state, main.id);
     expect(result.ok && model.signature(result.state)).not.toBe(model.signature(state));
   });

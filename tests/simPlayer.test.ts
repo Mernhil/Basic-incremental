@@ -72,7 +72,7 @@ describe('sim player: the card it builds', () => {
   it('hunts the card it is building: the fighting lead is on the wishlist until ★6', () => {
     const state = freshState();
     own(state, 'seraph_lancer'); // Mythic
-    state.cards.loadouts.fighting.main = 'seraph_lancer';
+    state.cards.loadouts.fighting.slots[0] = 'seraph_lancer';
     const marked = markWishlist(state, content);
     expect(marked.cards.wishlist).toContain('seraph_lancer');
     // the other Mythic mark goes to a card it does not own yet
@@ -87,8 +87,8 @@ describe('sim player: the card it builds', () => {
   it('builds the lead first, then its supports, then the strongest workers', () => {
     const state = freshState();
     own(state, 'storm_duelist');
-    state.cards.loadouts.fighting.main = 'storm_duelist';
-    state.cards.loadouts.fighting.supports[0] = 'ember_squire';
+    state.cards.loadouts.fighting.slots[0] = 'storm_duelist';
+    state.cards.loadouts.fighting.slots[1] = 'ember_squire';
     expect(buildOrder(state, content).slice(0, 2)).toEqual(['storm_duelist', 'ember_squire']);
     expect(buildOrder(state, content)).toContain('apprentice_feller');
   });
@@ -249,7 +249,7 @@ describe('sim player: autobuyers', () => {
     // the squire is ready to tier up but short of Money: the autobuyer spends none of it
     const squire = state.cards.owned['ember_squire']!;
     own(state, 'storm_duelist', { level: 20, stars: 6 });
-    state.cards.loadouts.fighting.main = 'storm_duelist';
+    state.cards.loadouts.fighting.slots[0] = 'storm_duelist';
     for (const p of content.cardRules.tierUp.wood.fighting) state.resources[p.resource] = p.amount;
     state.resources['money'] = new Decimal(1);
     void squire;
@@ -314,8 +314,7 @@ describe('sim player: floor Challenges and the team of four', () => {
     own(state, 'bronze_forgehand', { level: 40, tier: 'bronze', stars: 6 });
     state.cards.owned['ember_squire']!.level = 20;
     state.cards.loadouts.fighting = {
-      main: 'ember_squire',
-      supports: ['rusty_brute', 'militia_picket', 'alley_cutpurse'],
+      slots: ['ember_squire', 'rusty_brute', 'militia_picket', 'alley_cutpurse'],
     };
     state.combat.floors['mossy_cellar'] = {
       difficulty: 'normal',
@@ -341,7 +340,7 @@ describe('sim player: floor Challenges and the team of four', () => {
     const state = atBossWall();
     expect(margin(state, hard)).toBeLessThan(CHALLENGE_WIN);
     const team = teamForChallenge(state, hard);
-    expect(team.cards.loadouts.fighting.supports).toContain('bronze_forgehand');
+    expect(team.cards.loadouts.fighting.slots).toContain('bronze_forgehand');
     expect(margin(team, hard)).toBeGreaterThanOrEqual(CHALLENGE_WIN);
     // A team that already wins is left as it is.
     expect(teamForChallenge(state, withBossAttack(real, 'mossy_cellar', 21, 2))).toBe(state);
@@ -433,7 +432,12 @@ describe('sim player: scrolls and the Focus Portal', () => {
     expect(ids(state)).toContain('summon:card_portal');
     // Every slot filled: it saves for 10-pulls.
     for (const id of ['rusty_brute', 'militia_picket', 'alley_cutpurse']) own(state, id);
-    state.cards.loadouts.fighting.supports = ['rusty_brute', 'militia_picket', 'alley_cutpurse'];
+    state.cards.loadouts.fighting.slots = [
+      state.cards.loadouts.fighting.slots[0] ?? null,
+      'rusty_brute',
+      'militia_picket',
+      'alley_cutpurse',
+    ];
     const full = placeBestWorkers(state, content);
     expect(wantsCardsNow(full, content)).toBe(false);
     expect(ids(full)).not.toContain('summon:card_portal');

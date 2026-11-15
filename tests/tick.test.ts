@@ -12,6 +12,7 @@ import {
   bareState,
   plainContent as content,
   plainContent,
+  freshDamage,
   freshState,
   withDps,
   withOverflow,
@@ -37,7 +38,12 @@ describe('advance (tick math)', () => {
   it('applies damage to the boss without killing it', () => {
     const { state, report } = advance(freshState(), content, 10_000, rng);
     // 10 s of the Ember Squire's base damage, no burst yet.
-    expect(state.bossHp!.eq(maxHp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(true);
+    expect(
+      approxEq(
+        state.bossHp!,
+        maxHp.sub(freshDamage(content.cardRules.baseDamage.common, content).mul(10)),
+      ),
+    ).toBe(true);
     expect(report.bossKills).toBe(0);
   });
 

@@ -35,6 +35,7 @@ import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './tablePanels.css';
 import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
+import { setStarText } from '../ui/stars';
 import './weaponSkinsTab.css';
 import './cards.css';
 
@@ -119,6 +120,7 @@ export function createCardsPage(
   let tab: Tab = 'collection';
   let jobFilter: Job | null = null;
   let readyOnly = false;
+  let roleFilter: 'tank' | 'dps' | 'support' | null = null;
   let sort: Sort = 'rarity';
   let selected: string | null = null;
   /** The Heirloom selected on the Heirlooms tab. */
@@ -237,7 +239,7 @@ export function createCardsPage(
     const entries = all.filter((e) => !isHeirloom(e.id));
     const heirlooms = all.filter((e) => isHeirloom(e.id));
     if (selected === null || !entries.some((e) => e.id === selected)) {
-      selected = (entries.find((e) => e.role?.slot === 'main') ?? entries[0])?.id ?? null;
+      selected = (entries.find((e) => e.role?.slot === 0) ?? entries[0])?.id ?? null;
     }
     if (selectedHeirloom === null || !heirlooms.some((e) => e.id === selectedHeirloom)) {
       selectedHeirloom =
@@ -305,6 +307,16 @@ export function createCardsPage(
     for (const job of JOB_ORDER) {
       chips.append(chip(JOB_NAMES[job], jobFilter === job, `job-${job}`, () => (jobFilter = job)));
     }
+    for (const role of ['tank', 'dps', 'support'] as const) {
+      chips.append(
+        chip(
+          COPY.cards.combatRoles[role],
+          roleFilter === role,
+          `role-${role}`,
+          () => (roleFilter = roleFilter === role ? null : role),
+        ),
+      );
+    }
     const readyCount = entries.filter(isReady).length;
     chips.append(
       chip(COPY.cards.ready(readyCount), readyOnly, 'ready', () => (readyOnly = !readyOnly)),
@@ -332,7 +344,12 @@ export function createCardsPage(
 
     // grid
     const shown = sorted(
-      entries.filter((e) => (!jobFilter || e.job === jobFilter) && (!readyOnly || isReady(e))),
+      entries.filter(
+        (e) =>
+          (!jobFilter || e.job === jobFilter) &&
+          (!roleFilter || e.combatRole === roleFilter) &&
+          (!readyOnly || isReady(e)),
+      ),
     );
     const grid = h('ul', 'cp-grid');
     watchFit(grid, {
@@ -380,7 +397,7 @@ export function createCardsPage(
       b.dataset.key = `tile-${e.id}`;
       b.setAttribute('aria-pressed', String(e.id === selected));
       // the loadout role is a word for screen readers only: the full-art card carries no chips
-      const role = e.role ? `, ${COPY.cards.role[e.role.slot]}` : '';
+      const role = e.role ? `, ${COPY.cards.slotName(e.role.slot)}` : '';
       const detail = e.owned
         ? `${COPY.cards.rankText(TIER_NAMES[e.rank.tier]!, e.rank.stars)}, ${COPY.cards.level} ${e.level}${role}${isReady(e) ? `, ${COPY.cards.readyTag}` : ''}`
         : COPY.cards.notFound;
@@ -609,9 +626,8 @@ export function createCardsPage(
     const shard = h('div', 'cp-shardline');
     const top = h('div', 'cp-shardline__top');
     top.append(
-      h(
-        'span',
-        '',
+      setStarText(
+        h('span'),
         info.need === null
           ? COPY.cards.heirloomShards(info.stars, 0, null)
           : COPY.cards.heirloomShardLine(info.stars),
@@ -682,7 +698,7 @@ export function createCardsPage(
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
     // "rarity · job · role" on the right of the name
     const parts = [cap1(e.rarity), JOB_NAMES[e.job]];
-    if (e.owned && e.role) parts.push(COPY.cards.role[e.role.slot]);
+    if (e.owned && e.role) parts.push(COPY.cards.slotName(e.role.slot));
     const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
     el.dataset['deal'] = '';
@@ -777,12 +793,13 @@ export function createCardsPage(
       facts.append(d);
     };
     if (e.job === 'fighting') {
-      fact(COPY.cards.mainAbility, e.mainAbility);
-      fact(COPY.cards.supportEffect, e.supportEffect);
+      if (e.combatRole) fact(COPY.cards.roleFact, COPY.cards.combatRoles[e.combatRole]);
+      fact(COPY.cards.ability, e.ability);
+      fact(COPY.cards.teamBonus, e.teamBonus);
       fact(COPY.cards.cost, String(e.cost));
     } else {
       // a worker: its one ability and where it works (placed from the Production page)
-      fact(COPY.cards.workerAbility, e.mainAbility);
+      fact(COPY.cards.workerAbility, e.ability);
       fact(COPY.cards.worksAt, e.workplace ?? COPY.cards.notWorking);
     }
     // damage, health, hit speed and crits, with the compare line (DESIGN.md §5 Show the stats)
@@ -876,12 +893,9 @@ export function createCardsPage(
         });
         actions.append(b);
       }
-      // a button for the role the card already has would do nothing: it is left out
-      if (e.job === 'fighting' && e.role?.slot !== 'main') {
-        btn(COPY.cards.setMain, 'set-main', () => model.setMain(ctx.state(), e.id));
-      }
-      if (e.job === 'fighting' && e.role?.slot !== 'support') {
-        btn(COPY.cards.addSupport, 'add-support', () => model.addSupport(ctx.state(), e.id));
+      // a card already in the loadout has no add button; the slots are the Loadouts tab's
+      if (e.job === 'fighting' && !e.role) {
+        btn(COPY.cards.addToLoadout, 'add-to-loadout', () => model.addToLoadout(ctx.state(), e.id));
       }
       if (e.role) btn(COPY.cards.remove, 'remove', () => model.remove(ctx.state(), e.id));
       if (e.job !== 'fighting') actions.append(h('p', 'cp-upgrade__note', COPY.cards.workerHint));
@@ -1111,13 +1125,18 @@ export function createCardsPage(
       const slots = h('ol', 'cp-slots');
       watchFit(slots, { want: CARD_WANT.slot });
       const picking = pick && pick.job === job ? pick.slot : null;
-      const slotName = (i: number): string =>
-        i === 0 ? COPY.cards.mainSlot : COPY.cards.supportSlot(i);
+      const slotName = (i: number): string => COPY.cards.slotName(i);
       lo.slots.forEach((id, i) => {
-        const li = h('li', `cp-slot${picking === i ? ' is-picking' : ''}`);
+        const row = i === 1 || i === 2 ? 'front' : 'back';
+        const li = h('li', `cp-slot cp-slot--${row}${picking === i ? ' is-picking' : ''}`);
         const label = slotName(i);
-        li.append(h('span', 'cp-slot__label', label));
         const e = id ? byId.get(id) : undefined;
+        // the slot's place in the formation, and the role of the card standing in it
+        const labelEl = h(
+          'span',
+          'cp-slot__label',
+          e?.combatRole ? `${label} · ${COPY.cards.combatRoles[e.combatRole]}` : label,
+        );
         // Click a slot to fill or change it: the cards that fit show under the slots.
         const choose = (): void => {
           pick = picking === i ? null : { job, slot: i };
@@ -1151,7 +1170,8 @@ export function createCardsPage(
             act(model.remove(ctx.state(), e.id), `slot-${job}-${i}`),
           );
           buttons.append(details, rm);
-          li.append(open, buttons);
+          // the label sits under the card: the card's crest covers the space above it
+          li.append(open, labelEl, buttons);
         } else {
           const empty = h('button', 'cp-empty', COPY.cards.chooseCard);
           empty.type = 'button';
@@ -1162,7 +1182,7 @@ export function createCardsPage(
           );
           empty.setAttribute('aria-pressed', String(picking === i));
           empty.addEventListener('click', choose);
-          li.append(empty);
+          li.append(labelEl, empty);
         }
         slots.append(li);
       });

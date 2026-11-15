@@ -9,7 +9,7 @@ describe('card stat tiles', () => {
     const s = bareState();
     for (const id of ['ember_squire', 'silver_skirmisher', 'apprentice_feller'])
       s.cards.owned[id] = newOwnedCard();
-    s.cards.loadouts.fighting = { main: 'ember_squire', supports: [null, null, null] };
+    s.cards.loadouts.fighting = { slots: ['ember_squire', null, null, null] };
     return s;
   };
 
@@ -20,11 +20,11 @@ describe('card stat tiles', () => {
     expect(t.tiles[3]!.value).toContain('20%');
   });
 
-  it('compares with the equipped main card, and says so when it is the main', () => {
+  it('compares with the weakest other loadout card, and says so when it is the only one', () => {
     const t = statTiles(content, state(), 'silver_skirmisher');
     expect(t.compare).toMatch(/^vs Ember Squire: [+−]\d+% damage, [+−]\d+% health$/);
     expect(statTiles(content, state(), 'ember_squire').compare).toBe(
-      'This is the equipped main card.',
+      'The only card in the loadout.',
     );
   });
 

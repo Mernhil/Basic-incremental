@@ -373,8 +373,8 @@ describe('the workers view and save', () => {
     const cards = saved['cards']!;
     cards['loadouts'] = {
       ...(cards['loadouts'] as object),
-      logging: { main: 'apprentice_feller', supports: [null, null, null] },
-      mining: { main: 'cave_digger', supports: [null, null, null] },
+      logging: { slots: ['apprentice_feller', null, null, null] },
+      mining: { slots: ['cave_digger', null, null, null] },
     };
     saved['bursts'] = {
       fighting: { gauge: 1, timer: 0 },

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bossMaxHp,
   advance,
   ascend,
   collectModifiers,
@@ -14,11 +15,11 @@ import {
   pickPerk,
   producerRate,
   readSave,
-  supportPower,
+  teamBonusPower,
   waitingPicks,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState } from './helpers';
+import { bareState, constantRng, content, freshState, withDps } from './helpers';
 
 const NOW = 1_700_000_000_000;
 const oak = content.treeById.get('oak')!;
@@ -46,7 +47,7 @@ describe('milestone pick content (DESIGN.md §4 Milestone picks)', () => {
       expect(m.options[0].id).not.toBe(m.options[1].id);
       for (const o of m.options) {
         for (const e of o.effects) {
-          if (e.stat === 'card.supportPower') expect(e.scope?.job).not.toBe('fighting');
+          if (e.stat === 'card.teamBonusPower') expect(e.scope?.job).not.toBe('fighting');
         }
       }
     }
@@ -98,10 +99,10 @@ describe('picks', () => {
   it("the Pact perks make a job's worker abilities stronger", () => {
     const state = freshState();
     state.production.tools['mining_speed'] = 10;
-    expect(supportPower(state, content, 'mining').toNumber()).toBe(1);
+    expect(teamBonusPower(state, content, 'mining').toNumber()).toBe(1);
     state.upgrades.picks['mining_speed_10'] = 'mining_speed_10_pact';
-    expect(supportPower(state, content, 'mining').toNumber()).toBeCloseTo(1.25, 9);
-    expect(supportPower(state, content, 'logging').toNumber()).toBe(1);
+    expect(teamBonusPower(state, content, 'mining').toNumber()).toBeCloseTo(1.25, 9);
+    expect(teamBonusPower(state, content, 'logging').toNumber()).toBe(1);
   });
 });
 
@@ -127,11 +128,16 @@ describe('ascension', () => {
 });
 
 describe('lifetime Money earned', () => {
-  it('counts the fighting wage and purses', () => {
+  it('counts the wage and purses paid with the kills', () => {
     const state = bareState();
     state.activeDungeonId = 'mossy_cellar';
     expect(lifetimeMoney(state).eq(0)).toBe(true);
-    const { state: after } = advance(state, content, 2000, constantRng(0.5));
+    const { state: after } = advance(
+      state,
+      withDps(bossMaxHp(content.dungeons[0]!)),
+      2000,
+      constantRng(0.5),
+    );
     const gained = after.resources['money']!.sub(state.resources['money']!);
     expect(gained.gt(0)).toBe(true);
     expect(lifetimeMoney(after).eq(gained)).toBe(true);

@@ -435,16 +435,16 @@ export function heirloomSkill(state: GameState, content: Content, cardId: string
 /**
  * The modifiers of the bought tree nodes of every Heirloom at work (source `heirloom`, id
  * `<card>:<node>`): a fighting Heirloom's act everywhere while it is in the fighting loadout, a
- * worker's at its place only. Signature power (`burst.power` flat) acts only while the Heirloom
- * leads the loadout, and on top of its own main ability's signature: the main ability sets the
- * signature (a `set`, applied after flat), so the tree's points are added to that set value.
+ * worker's at its place only. Signature power (`burst.power` flat) acts on the Heirloom's own
+ * signature (id `<card>:signature`; the duel gives it to that card only), on top of its own
+ * ability's signature: the ability sets the signature (a `set`, applied after flat), so the tree's
+ * points are added to that set value.
  * Read by `collectModifiers`.
  */
 export function heirloomTreeModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
   // collectModifiers is hot: nothing bought in any tree means nothing to look up
   if (Object.keys(state.heirlooms.trees).length === 0) return out;
-  const main = state.cards.loadouts.fighting.main;
   for (const { cardId, scope } of cardsAtWork(state, content)) {
     const tree = content.heirloomTreeByCard.get(cardId);
     const card = content.cardById.get(cardId);
@@ -462,8 +462,8 @@ export function heirloomTreeModifiers(state: GameState, content: Content): Modif
         out.push({ ...m, ...(scope ? { scope: { ...m.scope, ...scope } } : {}), source });
       }
     }
-    if (signature.gt(0) && card.job === 'fighting' && main === cardId) {
-      const own = card.main.modifiers.find((m) => m.stat === 'burst.power' && m.kind === 'set');
+    if (signature.gt(0) && card.job === 'fighting') {
+      const own = card.ability.modifiers.find((m) => m.stat === 'burst.power' && m.kind === 'set');
       const source = { kind: 'heirloom' as const, id: `${cardId}:signature` };
       out.push(
         own

@@ -93,7 +93,7 @@ export interface Shell {
   goals: HTMLElement;
   /** The Goals button. */
   goalsButton: HTMLButtonElement;
-  /** The Goals button's count of goals shown (0 hides it). */
+  /** The Goals button's count of quests waiting to be claimed (0 hides it). */
   setGoals(count: number): void;
   /** Rolls the goal list back up. */
   closeGoals(): void;
@@ -150,7 +150,10 @@ export function createShell(opts: {
   const glyphArt = new Map<string, string>();
   const crystals = new Set<string>();
   /** Rolling counters (DESIGN.md §11): shown value, target and held-back part per resource. */
-  const counters = new Map<string, { shown: Decimal; target: Decimal; held: Decimal }>();
+  const counters = new Map<
+    string,
+    { shown: Decimal; target: Decimal; held: Decimal; instant: boolean }
+  >();
   // the Details button: resources the header leaves out land their coins here
   const detailsBtn = h('button', 'shell-details');
   detailsBtn.type = 'button';
@@ -188,7 +191,13 @@ export function createShell(opts: {
     item.append(glyph, amounts, h('span', 'shell-currency__name', c.name));
     currencyRates.set(c.id, rate);
     currencyGlyphs.set(c.id, glyph);
-    counters.set(c.id, { shown: new Decimal(0), target: new Decimal(0), held: new Decimal(0) });
+    counters.set(c.id, {
+      shown: new Decimal(0),
+      target: new Decimal(0),
+      held: new Decimal(0),
+      // Money shows its real value at once: it moves by what was won, when it is won (UI_RULES §2 Numbers)
+      instant: !c.crystal,
+    });
     attachTooltip(item, c.tip);
     // header chips (Money and the crystals) are always shown
     currencyValues.set(c.id, value);
@@ -229,7 +238,7 @@ export function createShell(opts: {
   });
   // a click on a goal or anywhere outside rolls it back up
   goals.addEventListener('click', (e) => {
-    if ((e.target as Element | null)?.closest('button')) setGoalsOpen(false);
+    if ((e.target as Element | null)?.closest('button[data-closes]')) setGoalsOpen(false);
   });
   document.addEventListener('pointerdown', (e) => {
     if (!goals.hidden && !goalsWrap.contains(e.target as Node)) setGoalsOpen(false);
@@ -241,7 +250,7 @@ export function createShell(opts: {
     for (const [id, c] of counters) {
       const goal = Decimal.max(c.target.sub(c.held), 0);
       if (c.shown.eq(goal)) continue;
-      c.shown = rollToward(c.shown, goal, dt);
+      c.shown = c.instant ? goal : rollToward(c.shown, goal, dt);
       // whole-number amounts (crystals, cores) roll through whole numbers only
       const shown = goal.eq(goal.floor()) ? c.shown.round() : c.shown;
       const v = currencyValues.get(id)!;
@@ -345,6 +354,7 @@ export function createShell(opts: {
       const text = count > 0 ? String(count) : '';
       if (goalsCount.textContent !== text) goalsCount.textContent = text;
       goalsBtn.setAttribute('aria-label', COPY.progress.goalsButton(count));
+      goalsBtn.classList.toggle('is-ready', count > 0);
     },
     closeGoals() {
       setGoalsOpen(false);

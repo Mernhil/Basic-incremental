@@ -83,9 +83,13 @@ export const MIGRATIONS: MigrationTable = {
   /** v32 -> v33: card skins (DESIGN.md §8): the skin chosen per weapon type becomes a choice on every
    *  owned card of that type, so each card looks as it did; the per-type choice is dropped. */
   32: v32ToV33,
-  /** v33 -> v34: milestone picks (DESIGN.md §4): the upgrade shelf is gone; every shelf upgrade
+  /** v33 -> v34: quests (DESIGN.md §10 Quests). Nothing is done yet; reading the save marks every
+   *  quest the state already meets as done and waiting to be claimed, never as claimed. */
+  33: (state) => ({ ...state, quests: {} }),
+  34: v34ToV35,
+  /** v35 -> v36: milestone picks (DESIGN.md §4): the upgrade shelf is gone; every shelf upgrade
    *  owned pays its Money back, and no milestone is picked yet. */
-  33: v33ToV34,
+  35: v35ToV36,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1469,8 +1473,43 @@ function v32ToV33(state: Record<string, unknown>): Record<string, unknown> {
   return { ...rest, cardSkins };
 }
 
-/** The shelf's Money prices at save format 33 (a snapshot of the removed `upgrades.json`). */
-const V33_SHELF_PRICES: Readonly<Record<string, string>> = {
+/** A loadout in the old shape (a main card and three supports) as four slots, in the same
+ *  left-to-right order, so no team changes. A loadout already in slots is left as it is. */
+function slotsOf(loadout: unknown): unknown {
+  if (!isRecord(loadout) || Array.isArray(loadout['slots'])) return loadout;
+  const supports = Array.isArray(loadout['supports']) ? loadout['supports'] : [];
+  const slots = [loadout['main'] ?? null, ...supports].slice(0, 4);
+  while (slots.length < 4) slots.push(null);
+  return { slots };
+}
+
+/**
+ * v34 -> v35 (DESIGN.md §5 Loadouts): the fighting loadout and every remembered dungeon loadout
+ * (presets) were a main card and three supports; they are four equal slots now, the main card
+ * first and the supports after it, so nobody's team changes. Logging and mining loadouts left in
+ * the `loadouts` record by older saves are dropped when the save is read, as before. The
+ * formation (DESIGN.md §5: slot 1 and 2 are the front row) needs the cards' health, so the step
+ * only flags the state (`arrangeFormation`) and `readSave` places the two highest-health cards of
+ * each team in front once the cards are known.
+ */
+function v34ToV35(state: Record<string, unknown>): Record<string, unknown> {
+  const each = (record: unknown): unknown =>
+    isRecord(record)
+      ? Object.fromEntries(Object.entries(record).map(([key, l]) => [key, slotsOf(l)]))
+      : record;
+  const next = { ...state };
+  if (isRecord(state['cards']) && 'loadouts' in state['cards']) {
+    next['cards'] = { ...state['cards'], loadouts: each(state['cards']['loadouts']) };
+  }
+  if (isRecord(state['presets']) && 'dungeons' in state['presets']) {
+    next['presets'] = { ...state['presets'], dungeons: each(state['presets']['dungeons']) };
+  }
+  next['arrangeFormation'] = true;
+  return next;
+}
+
+/** The shelf's Money prices at save format 35 (a snapshot of the removed `upgrades.json`). */
+const V35_SHELF_PRICES: Readonly<Record<string, string>> = {
   keen_axes: '450',
   deep_roots: '51000',
   iron_saws: '3100',
@@ -1504,17 +1543,17 @@ const V33_SHELF_PRICES: Readonly<Record<string, string>> = {
 };
 
 /**
- * v33 -> v34 (DESIGN.md §4 Milestone picks): the upgrade shelf gives way to milestone picks. Every
+ * v35 -> v36 (DESIGN.md §4 Milestone picks): the upgrade shelf gives way to milestone picks. Every
  * shelf upgrade the save owned, per-run or permanent, pays its Money back once (as the damage-line
  * removal did at v17), and `upgrades.owned` becomes `upgrades.picks`, empty: each milestone
  * already reached asks for its pick when the game opens. The lifetime Money is kept.
  */
-function v33ToV34(state: Record<string, unknown>): Record<string, unknown> {
+function v35ToV36(state: Record<string, unknown>): Record<string, unknown> {
   const upgrades = isRecord(state['upgrades']) ? state['upgrades'] : {};
   const owned = Array.isArray(upgrades['owned']) ? upgrades['owned'] : [];
   let refund = new Decimal(0);
   for (const id of new Set(owned)) {
-    const price = typeof id === 'string' ? V33_SHELF_PRICES[id] : undefined;
+    const price = typeof id === 'string' ? V35_SHELF_PRICES[id] : undefined;
     if (price) refund = refund.add(price);
   }
   const moneyEarned = upgrades['moneyEarned'];

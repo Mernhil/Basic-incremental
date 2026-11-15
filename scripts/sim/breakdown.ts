@@ -31,7 +31,7 @@ const seed = arg('seed', 1);
 
 function row(state: GameState, t: number): string {
   const modifiers = collectModifiers(state, content);
-  const main = state.cards.loadouts.fighting.main;
+  const main = state.cards.loadouts.fighting.slots.find((id) => id !== null) ?? null;
   const owned = main ? state.cards.owned[main] : undefined;
   const base = main && owned ? cardBaseDamage(content, main, owned).toNumber() : 0;
   const ctx = { job: 'fighting' as const, dungeonId: state.activeDungeonId ?? 'mossy_cellar' };

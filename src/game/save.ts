@@ -14,7 +14,7 @@ import {
   cloneHeirlooms,
   DIFFICULTIES,
   emptyCardLoadout,
-  SUPPORT_SLOTS,
+  LOADOUT_SLOTS,
   type CardState,
   cloneProduction,
   clonePresets,
@@ -27,7 +27,7 @@ import {
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
-import { cardTopTier, levelCap } from './cards';
+import { arrangeSavedFormations, cardTopTier, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
 import { pruneCardSkins } from './cardSkins';
 import { fitSkillsToPoints } from './account';
@@ -36,14 +36,14 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 34;
+export const CURRENT_SAVE_VERSION = 36;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
 const equippedSchema = z.object({ id: z.string(), level: z.number().int().min(1) });
+/** v34: four equal slots, left to right (they were a main card and three supports). */
 const cardLoadoutSchema = z.object({
-  main: z.string().nullable(),
-  supports: z.array(z.string().nullable()),
+  slots: z.array(z.string().nullable()),
 });
 const gaugeSchema = z.object({ gauge: z.number().min(0), timer: z.number().min(0) });
 /** v26: stage key -> a count (kills, or chests paid). */
@@ -56,6 +56,8 @@ const productionPresetSchema = z.object({
 
 /** The on-disk shape of GameState: Decimals as strings, nothing else special. */
 export const serializedStateSchema = z.object({
+  /** Set by the v33 -> v34 migration only (never written): the loadouts have no formation yet. */
+  arrangeFormation: z.boolean().optional(),
   resources: z.record(z.string(), decimalText),
   production: z.object({
     unlockedTrees: z.array(z.string()),
@@ -167,6 +169,8 @@ export const serializedStateSchema = z.object({
   }),
   /** v12: achievement id -> play time when unlocked, and shard shop purchases. */
   achievements: z.record(z.string(), z.number().min(0)),
+  /** v34: quest id -> when it was done and whether its reward was claimed (DESIGN.md §10 Quests). */
+  quests: z.record(z.string(), z.object({ doneAt: z.number().min(0), claimed: z.boolean() })),
   shardShop: counts,
   /** v13: account XP, level, account tree and respecs (DESIGN.md §10a). */
   account: z.object({
@@ -298,6 +302,7 @@ export function serializeState(state: GameState): SerializedState {
     legacySkins: [...state.legacySkins],
     stats: { ...state.stats },
     achievements: { ...state.achievements },
+    quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
     upgrades: {
       picks: { ...state.upgrades.picks },
@@ -445,6 +450,12 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.achievements = Object.fromEntries(
     Object.entries(saved.achievements).filter(([id]) => achievementIds.has(id)),
   );
+  // Unknown quests (removed from the game) are dropped.
+  state.quests = Object.fromEntries(
+    Object.entries(saved.quests)
+      .filter(([id]) => content.questById.has(id))
+      .map(([id, q]) => [id, { ...q }]),
+  );
   // The ranks are fitted to the tree and the points earned at the end of loading (they need the
   // cards, the Ascension count and the achievements); there is no level cap.
   state.account = {
@@ -554,7 +565,10 @@ export function readSave(
     const where = first ? first.path.join('.') : 'state';
     throw new SaveError('invalid-format', `The save data is invalid at "${where}".`);
   }
-  return { state: deserializeState(parsed.data, content), savedAt: envelope.data.savedAt };
+  const state = deserializeState(parsed.data, content);
+  // a save from before the formation had no positions: the strongest cards go to the front
+  if (parsed.data.arrangeFormation) arrangeSavedFormations(state, content);
+  return { state, savedAt: envelope.data.savedAt };
 }
 
 export interface BestSave {
@@ -724,10 +738,8 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
     return id;
   };
   const fighting = emptyCardLoadout();
-  fighting.main = keep(saved.loadouts.fighting.main);
-  for (let i = 0; i < SUPPORT_SLOTS; i++) {
-    fighting.supports[i] = keep(saved.loadouts.fighting.supports[i]);
-  }
+  for (let i = 0; i < LOADOUT_SLOTS; i++)
+    fighting.slots[i] = keep(saved.loadouts.fighting.slots[i]);
   const loadouts: CardState['loadouts'] = { fighting };
   // Unknown cards and repeats are dropped from the wishlist; a marked card need not be owned.
   const wishlist = [...new Set(saved.wishlist)].filter((id) => content.cardById.has(id));
@@ -820,8 +832,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
       return card;
     };
     const fixed = emptyCardLoadout();
-    fixed.main = keep(loadout.main);
-    for (let i = 0; i < SUPPORT_SLOTS; i++) fixed.supports[i] = keep(loadout.supports[i]);
+    for (let i = 0; i < LOADOUT_SLOTS; i++) fixed.slots[i] = keep(loadout.slots[i]);
     dungeons[id] = fixed;
   }
   const production = initialPresets().production;

@@ -20,6 +20,8 @@ import {
 } from './floors';
 import { hpBarState, type HpBarState } from './hpBars';
 import {
+  abilitiesFor,
+  abilityHitsBetween,
   bossAttacksBy,
   bossDamageBetween,
   lethalBossAttack,
@@ -34,11 +36,10 @@ import {
   statValue,
   type Modifier,
   type StatContext,
-  type StatResult,
 } from './modifiers';
 import { Decimal } from './num';
 import { clearDungeon, type Price } from './production';
-import { pushPlayerHit, pushSkill, type TickReport } from './report';
+import { pushBossAttack, pushPlayerHit, pushSkill, type TickReport } from './report';
 import {
   buildTeam,
   cardRun,
@@ -58,7 +59,10 @@ import {
   teamAverageDps,
   teamHealthLeft,
   teamHitRate,
+  teamCardIds,
+  abilityTargets,
   teamLethalAttack,
+  teamModifiers,
   teamMaxHealth,
   weakenFactor,
   type TeamCard,
@@ -124,36 +128,54 @@ const EPSILON = 1e-9;
 // ---- damage ----------------------------------------------------------------------------------
 
 /**
- * Damage per second before `combat.damage` modifiers (DESIGN.md §5, §6): the main fighting
- * card's base damage by rarity, grown by its level, tier and stars. With no card leading (or
- * one that is not owned) it is the bare-hands damage. Supports add only through their bonuses.
+ * Damage per second before `combat.damage` modifiers (DESIGN.md §5, §6): every team card's base
+ * damage by rarity, grown by its level, tier and stars, summed. With no card in the team it is the
+ * bare-hands damage. Team bonuses add only through their modifiers.
  */
 export function baseDamage(state: GameState, content: Content): Decimal {
-  const id = state.cards.loadouts.fighting.main;
-  const owned = id ? state.cards.owned[id] : undefined;
-  if (!id || !owned || !content.cardById.has(id)) return content.combat.unarmedDamage;
-  return cardBaseDamage(content, id, owned);
+  const ids = teamCardIds(state, content);
+  if (ids.length === 0) return content.combat.unarmedDamage;
+  return ids.reduce(
+    (sum, id) => sum.add(cardBaseDamage(content, id, state.cards.owned[id]!)),
+    new Decimal(0),
+  );
 }
 
-/** `combat.damage` with its breakdown (for tooltips), against a dungeon or special dungeon. */
-export function damageStat(
-  state: GameState,
-  content: Content,
-  dungeonId: string | null = state.activeDungeonId,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): StatResult {
-  const ctx: StatContext = dungeonId ? { ...FIGHTING, dungeon: dungeonId } : FIGHTING;
-  return computeStat('combat.damage', baseDamage(state, content), modifiers, ctx);
-}
-
-/** Damage per second after modifiers. Never negative. */
+/**
+ * Damage per second after modifiers, every team card's own summed (each with its own ability,
+ * element and signature power), before crits, signature attacks and a skill's damage factor.
+ * Never negative.
+ */
 export function effectiveDamage(
   state: GameState,
   content: Content,
   dungeonId: string | null = state.activeDungeonId,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Decimal {
-  return Decimal.max(damageStat(state, content, dungeonId, modifiers).value, 0);
+  const ctx: StatContext = dungeonId ? { ...FIGHTING, dungeon: dungeonId } : FIGHTING;
+  const ids = teamCardIds(state, content);
+  const { shared, forCard } = teamModifiers(state, content, modifiers);
+  if (ids.length === 0) {
+    return Decimal.max(
+      computeStat('combat.damage', content.combat.unarmedDamage, shared, ctx).value,
+      0,
+    );
+  }
+  return ids.reduce(
+    (sum, id) =>
+      sum.add(
+        Decimal.max(
+          computeStat(
+            'combat.damage',
+            cardBaseDamage(content, id, state.cards.owned[id]!),
+            forCard(id),
+            ctx,
+          ).value,
+          0,
+        ),
+      ),
+    new Decimal(0),
+  );
 }
 
 // ---- dungeons --------------------------------------------------------------------------------
@@ -761,10 +783,11 @@ export function burstView(
   job: 'fighting',
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BurstView {
-  // The main card's own gauge, on the play-time clock like its hits (DESIGN.md §6 card duel).
+  // The first card's gauge, on the play-time clock like its hits (DESIGN.md §6 card duel).
   const lead = buildTeam(state, content, modifiers, state.activeDungeonId)[0]!;
   const base = burstStats(content, job, modifiers);
-  const stats = { ...base, interval: lead.interval, size: lead.size, fill: lead.fill };
+  const power = lead.hit.gt(0) ? lead.signature.div(lead.hit) : base.power;
+  const stats = { ...base, interval: lead.interval, size: lead.size, fill: lead.fill, power };
   const fraction = gaugeAt(lead, state.stats.playTimeMs / 1000);
   return { gauge: fraction * lead.size, size: lead.size, fraction, stats };
 }
@@ -1379,12 +1402,13 @@ function fightDungeon(
       'fighting',
       fightingXpPerSecond(content, dungeon, modifiers).mul(t * stage.scale.xp),
     );
-    // The wages: crystals (and, in the first dungeon, Money) for every second spent fighting,
-    // so pulls do not grow with kill speed (DESIGN.md §3).
+    // The wage (the first dungeon's Money) for every second spent fighting is earned here and
+    // paid at the next kill, so Money comes only when something is won (DESIGN.md §3).
     for (const wage of drops.wages) {
-      const paid = wage.perSecond.mul(t * stage.scale.wage);
-      addResource(next, wage.resource, paid);
-      report.currencies[wage.resource] = (report.currencies[wage.resource] ?? 0) + paid.toNumber();
+      const owed = (next.combat.wageOwed ??= {});
+      owed[wage.resource] = (owed[wage.resource] ?? new Decimal(0)).add(
+        wage.perSecond.mul(t * stage.scale.wage),
+      );
     }
     return landed;
   };
@@ -1595,6 +1619,48 @@ function fightDungeon(
     const target = enemyTarget(next, team);
     const interval = stage.intervalSeconds;
     const normal = stage.attack.mul(weakenFactor(next, team));
+    // The boss's abilities (DESIGN.md §6 Boss abilities): their attacks hit other cards
+    // (one that would hit the card the enemy is hitting anyway is just another light attack)
+    const abilities = abilitiesFor(
+      content.combat.bossAbilities,
+      stage.kind,
+      stage.difficulty,
+    ).filter((a) => !target || !abilityTargets(next, team, a, a.offset).includes(target));
+    /** Lands the abilities' hits among attacks `from + 1 .. to`, then knocks out the cards they
+     *  emptied. */
+    const abilityStrikes = (from: number, to: number): void => {
+      if (abilities.length === 0 || to <= from || normal.lte(0)) return;
+      for (const hit of abilityHitsBetween(from, to, pattern, abilities)) {
+        const each = normal.mul(hit.ability.multiplier);
+        // a few picks stand for the span's hits (a long offline span spreads them evenly)
+        const picks = Math.min(hit.count, 8);
+        for (let i = 0; i < picks; i++) {
+          const k = hit.last - i * hit.ability.every;
+          const weight = i < picks - 1 ? 1 : hit.count - (picks - 1);
+          for (const card of abilityTargets(next, team, hit.ability, k)) {
+            const damage = each.mul(weight);
+            hurt(card, damage);
+            pushBossAttack(report.bossAttacks, {
+              dungeon: dungeon.id,
+              damage,
+              slam: false,
+              attacks: weight,
+              knockout: false,
+              nextSlamSeconds: 0,
+              cardId: card.id,
+              ability: hit.ability.name,
+            });
+          }
+        }
+      }
+      for (const card of team) {
+        if (card.maxHealth.lte(0) || next.combat.cardsOut.includes(card.id)) continue;
+        if (damageTaken(next, card.id).gte(card.maxHealth)) {
+          knockOut(next, card);
+          report.cardKnockouts.push(card.id);
+        }
+      }
+    };
     const attacked = target !== null && normal.gt(0);
     const lastCard =
       attacked && team.filter((c) => c.maxHealth.gt(0) && isStanding(next, c)).length === 1;
@@ -1607,7 +1673,9 @@ function fightDungeon(
     const frontLeft = target
       ? Decimal.max(target.maxHealth.sub(damageTaken(next, target.id)), 0)
       : new Decimal(0);
-    const lethal = attacked ? lethalBossAttack(frontLeft, normal, done, pattern) : Infinity;
+    const lethal = attacked
+      ? lethalBossAttack(frontLeft, normal, done, pattern, abilities)
+      : Infinity;
     const falls = lethal <= last;
     const untilDown = falls ? Math.min(segment, Math.max(0, lethal * interval - clock)) : segment;
 
@@ -1629,6 +1697,17 @@ function fightDungeon(
         perClear * pattern.lightMultiplier +
           Math.ceil(perClear / pattern.attacksPerCycle) * pattern.slamMultiplier,
       );
+      // the abilities' hits can all land on one card: none may fall within the span either
+      const hitsOnOne = abilities.reduce(
+        (sum, a) => sum.add(normal.mul(a.multiplier * Math.ceil(perClear / a.every))),
+        new Decimal(0),
+      );
+      if (
+        abilities.length > 0 &&
+        standing.some((c) => damageTaken(next, c.id).add(hitsOnOne).gte(c.maxHealth))
+      ) {
+        return false;
+      }
       return damageTaken(next, target!.id).add(worst).lt(target!.maxHealth);
     };
     const bulk =
@@ -1698,11 +1777,13 @@ function fightDungeon(
           pattern,
           false,
           target!.id,
+          abilities,
         );
         // Each clear refilled the health: only the attacks since the last one are still on it.
         const since =
           clears > 0 ? Math.max(done, bossAttacksBy(clock + toLastClear, interval)) : done;
-        hurt(target!, bossDamageBetween(since, end, normal, pattern));
+        hurt(target!, bossDamageBetween(since, end, normal, pattern, abilities));
+        abilityStrikes(since, end);
       }
       settled = Math.max(done, end);
       const from = clock;
@@ -1730,8 +1811,10 @@ function fightDungeon(
           pattern,
           false,
           target!.id,
+          abilities,
         );
-        hurt(target!, bossDamageBetween(done, landed, normal, pattern));
+        hurt(target!, bossDamageBetween(done, landed, normal, pattern, abilities));
+        abilityStrikes(done, landed);
       }
       const from = clock;
       pass(toKill);
@@ -1753,7 +1836,8 @@ function fightDungeon(
     pass(untilDown);
     if (!falls) {
       if (attacked) {
-        hurt(target!, bossDamageBetween(done, last, normal, pattern));
+        hurt(target!, bossDamageBetween(done, last, normal, pattern, abilities));
+        abilityStrikes(done, last);
         recordBossAttacks(
           report,
           dungeon.id,
@@ -1764,6 +1848,7 @@ function fightDungeon(
           pattern,
           false,
           target!.id,
+          abilities,
         );
       }
       settled = Math.max(done, last);
@@ -1782,10 +1867,12 @@ function fightDungeon(
       pattern,
       lastCard,
       target!.id,
+      abilities,
     );
     settled = lethal;
     knockOut(next, target!);
     report.cardKnockouts.push(target!.id);
+    abilityStrikes(done, lethal);
     if (!lastCard) {
       applyHeals(standing, from, clock);
       continue;
@@ -2001,6 +2088,17 @@ function killEnemies(
     }
   });
   if (worth <= 0) return;
+  // The wage earned since the last kill comes with this one (DESIGN.md §3).
+  const owed = state.combat.wageOwed;
+  if (owed) {
+    for (const [resource, paid] of Object.entries(owed)) {
+      if (paid.gt(0)) {
+        addResource(state, resource, paid);
+        report.currencies[resource] = (report.currencies[resource] ?? 0) + paid.toNumber();
+      }
+      delete owed[resource];
+    }
+  }
 
   state.pity[bossId] = pity;
   state.stats.bossKills += bossFloorKills;

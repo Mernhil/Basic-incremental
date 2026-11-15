@@ -2,14 +2,16 @@ import type { Content, Skill } from '../data';
 import { cardBaseDamage, cardEffectModifiers, cardHealth } from './cards';
 import { lethalBossAttack, type BossPattern } from './bossAttacks';
 import { burstStats, critFactor, critStats, type CritStats } from './combat';
+import { challengeExcludedCards } from './challenges';
 import { computeStat, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
-import type { GameState } from './state';
+import { isFrontSlot, type GameState } from './state';
+import type { BossAbility } from './bossAttacks';
 import { heirloomSkill } from './heirlooms';
 
 /**
  * The card duel's rules (DESIGN.md §6 "The fight is a first-person card duel", "The team of 4 in
- * numbers"): the fighting team is the loadout's cards (main, then the supports, left to right).
+ * numbers"): the fighting team is the loadout's four equal cards, left to right.
  * Each card fights on its own: it hits at its own interval with its own damage, fills its own
  * signature gauge and fires its own skill (skills.json: the weapon type's leaning, or the card's
  * own), and has its own health (`combat.cardDamage`). The enemy hits one card at a time: the first
@@ -32,10 +34,13 @@ export const DUE_HIT_SECONDS = 1e-6;
 export interface TeamCard {
   /** Card id; '' for bare hands (no card in the loadout). */
   id: string;
-  /** Position in the team, 0 (the main card, leftmost) to 3. */
+  /** Position in the team, 0 (leftmost) to 3. */
   slot: number;
+  /** The loadout slot it stands in (0 to 3, left to right) and its row (DESIGN.md §5 Loadouts). */
+  position: number;
+  row: 'front' | 'back';
   skill: Skill;
-  /** Seconds between hits, gauge points a hit and points to fire (burstStats with its own main
+  /** Seconds between hits, gauge points a hit and points to fire (burstStats with its own
    *  ability). */
   interval: number;
   fill: number;
@@ -52,17 +57,25 @@ export interface TeamCard {
   crit: CritStats;
 }
 
-/** The team's cards in order: the fighting loadout's main then supports, owned fighting cards
- *  only, each once. */
-export function teamCardIds(state: GameState, content: Content): string[] {
-  const l = state.cards.loadouts.fighting;
-  const out: string[] = [];
-  for (const id of [l.main, ...l.supports]) {
-    if (!id || out.includes(id) || !state.cards.owned[id]) continue;
-    if (content.cardById.get(id)?.job !== 'fighting') continue;
-    out.push(id);
-  }
+/** The team's cards with the loadout slot each stands in, left to right: owned fighting cards
+ *  only, each once, without the cards a challenge rule leaves out. */
+export function teamPlacements(
+  state: GameState,
+  content: Content,
+): { id: string; position: number }[] {
+  const excluded = challengeExcludedCards(state, content);
+  const out: { id: string; position: number }[] = [];
+  state.cards.loadouts.fighting.slots.forEach((id, position) => {
+    if (!id || out.some((p) => p.id === id) || excluded.includes(id)) return;
+    if (!state.cards.owned[id] || content.cardById.get(id)?.job !== 'fighting') return;
+    out.push({ id, position });
+  });
   return out;
+}
+
+/** The team's cards in order: the fighting loadout's cards left to right. */
+export function teamCardIds(state: GameState, content: Content): string[] {
+  return teamPlacements(state, content).map((p) => p.id);
 }
 
 /** The skill a card fights with: an Heirloom's tree capstone's (with `state`), else its own (a
@@ -78,10 +91,52 @@ export function cardSkill(content: Content, cardId: string, state?: GameState): 
   return content.skillById.get(id) ?? content.skills.skills[0]!;
 }
 
+/** The card a modifier belongs to alone, or null when it is the team's: an element bonus
+ *  (source id `<dungeon>:<card>`) or an Heirloom's signature power (`<card>:signature`). */
+function ownerOf(m: Modifier): string | null {
+  if (m.source.kind === 'element' && m.stat === 'combat.damage') {
+    return m.source.id.slice(m.source.id.lastIndexOf(':') + 1);
+  }
+  if (m.source.kind === 'heirloom' && m.source.id.endsWith(':signature')) {
+    return m.source.id.slice(0, m.source.id.indexOf(':'));
+  }
+  return null;
+}
+
 /**
- * The team as the fight uses it, after `modifiers` (collectModifiers: the main card's main ability
- * is in it, which is taken out so each card adds only its own). Bare hands stand in for an empty
- * loadout: the unarmed damage, no health.
+ * What the team and each card fight with: `shared` is every modifier that is the team's (team
+ * bonuses, tree, mastery, Training...), and `forCard` adds what is the card's own on top of it: its
+ * Ability, then its element bonus and its Heirloom signature power (last, so a signature `set`
+ * lands on the ability's). Every card fights with its own and none leaks to another (DESIGN.md §5
+ * Loadouts).
+ */
+export function teamModifiers(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+): { shared: Modifier[]; forCard: (id: string) => Modifier[] } {
+  const shared: Modifier[] = [];
+  const own = new Map<string, Modifier[]>();
+  for (const m of modifiers) {
+    const owner = ownerOf(m);
+    if (owner === null) shared.push(m);
+    else if (own.has(owner)) own.get(owner)!.push(m);
+    else own.set(owner, [m]);
+  }
+  return {
+    shared,
+    forCard: (id) => {
+      const owned = state.cards.owned[id];
+      const ability = owned ? cardEffectModifiers(content, id, 'ability', owned) : [];
+      return [...shared, ...ability, ...(own.get(id) ?? [])];
+    },
+  };
+}
+
+/**
+ * The team as the fight uses it, after `modifiers` (collectModifiers: the cards' team bonuses are
+ * in it; each card adds only its own ability, element and signature power). Bare hands stand in
+ * for an empty loadout: the unarmed damage, no health.
  */
 export function buildTeam(
   state: GameState,
@@ -89,11 +144,9 @@ export function buildTeam(
   modifiers: readonly Modifier[],
   dungeonId: string | null,
 ): TeamCard[] {
-  const ids = teamCardIds(state, content);
-  const main = state.cards.loadouts.fighting.main;
-  const shared = modifiers.filter(
-    (m) => !(main && m.source.kind === 'card' && m.source.id === main),
-  );
+  const placed = teamPlacements(state, content);
+  const ids = placed.map((p) => p.id);
+  const { shared, forCard } = teamModifiers(state, content, modifiers);
   const ctx: StatContext = dungeonId
     ? { job: 'fighting', dungeon: dungeonId }
     : { job: 'fighting' };
@@ -110,6 +163,8 @@ export function buildTeam(
       {
         id: '',
         slot: 0,
+        position: 1,
+        row: 'front',
         skill,
         interval: burst.interval,
         fill: burst.fill,
@@ -131,7 +186,7 @@ export function buildTeam(
   return ids.map((id, slot): TeamCard => {
     const owned = state.cards.owned[id]!;
     const skill = cardSkill(content, id, state);
-    const mods = [...shared, ...cardEffectModifiers(content, id, 'main', owned)];
+    const mods = forCard(id);
     const burst = burstStats(content, 'fighting', mods);
     const crit = critStats(content, mods, dungeonId);
     const dps = Decimal.max(
@@ -142,9 +197,12 @@ export function buildTeam(
       .mul(critFactor(crit));
     const hit = dps.mul(burst.interval);
     const heals = skill.signature.kind === 'heal';
+    const position = placed[slot]!.position;
     return {
       id,
       slot,
+      position,
+      row: isFrontSlot(position) ? 'front' : 'back',
       skill,
       interval: burst.interval,
       fill: burst.fill,
@@ -290,7 +348,7 @@ export function nextHealAt(cards: readonly TeamCard[], t: number): number {
 
 /** Anything holding the team cards' damage and who is out: a state, or a view of one. */
 export interface Damaged {
-  combat: { cardDamage: Record<string, Decimal>; cardsOut: string[] };
+  combat: { cardDamage: Record<string, Decimal>; cardsOut: string[]; enemyIndex?: number };
 }
 
 /** Damage a card's health has taken (0 = full). */
@@ -329,11 +387,65 @@ export function standingCards(state: Damaged, team: readonly TeamCard[]): TeamCa
   return team.filter((c) => isStanding(state, c));
 }
 
-/** The card the enemy hits next: the first standing guard, else the first standing card from the
- *  left (bare hands are never hit); null when none can be hit. */
+/** A repeatable pick in `0 .. n - 1` from a seed (a hash, so neighbours differ). */
+function seededIndex(seed: number, n: number): number {
+  return (Math.imul((seed | 0) + 1, 2654435761) >>> 16) % n;
+}
+
+/**
+ * The card an enemy's direct attack hits next (DESIGN.md §6 team of 4): in the front row, the
+ * standing guard first, else one of the standing cards picked at random (a pick seeded by the
+ * fight's own state: the enemy being fought and how many cards are out, so it repeats exactly);
+ * only when no front card stands, the back row the same way. An empty front slot is out, so it
+ * has no card here. Bare hands are never hit; null when none can be hit.
+ */
 export function enemyTarget(state: Damaged, team: readonly TeamCard[]): TeamCard | null {
   const hittable = team.filter((c) => c.maxHealth.gt(0) && isStanding(state, c));
-  return hittable.find((c) => c.skill.guard) ?? hittable[0] ?? null;
+  const front = hittable.filter((c) => c.row === 'front');
+  const pool = front.length > 0 ? front : hittable;
+  const guard = pool.find((c) => c.skill.guard);
+  if (guard) return guard;
+  if (pool.length === 0) return null;
+  return pool[
+    seededIndex((state.combat.enemyIndex ?? 0) + state.combat.cardsOut.length * 7, pool.length)
+  ]!;
+}
+
+/**
+ * The cards a boss ability hits when attack `k` lands (DESIGN.md §6 Boss abilities): the row it
+ * names (every standing card of it, the back row's lone card for one back card), falling to the
+ * other row when none of that one stands; a guard redirects nothing.
+ */
+export function abilityTargets(
+  state: Damaged,
+  team: readonly TeamCard[],
+  ability: BossAbility,
+  k: number,
+): TeamCard[] {
+  const hittable = team.filter((c) => c.maxHealth.gt(0) && isStanding(state, c));
+  const front = hittable.filter((c) => c.row === 'front');
+  const back = hittable.filter((c) => c.row === 'back');
+  switch (ability.target) {
+    case 'front':
+      return front.length > 0 ? front : back;
+    case 'back':
+      return back.length > 0 ? back : front;
+    case 'back-one': {
+      const pool = back.length > 0 ? back : front;
+      return pool.length > 0 ? [pool[seededIndex(k, pool.length)]!] : [];
+    }
+    case 'all':
+      return hittable;
+    case 'lowest': {
+      const left = (c: TeamCard): Decimal =>
+        Decimal.max(c.maxHealth.sub(damageTaken(state, c.id)), 0);
+      const lowest = hittable.reduce<TeamCard | null>(
+        (m, c) => (m === null || left(c).lt(left(m)) ? c : m),
+        null,
+      );
+      return lowest ? [lowest] : [];
+    }
+  }
 }
 
 /** What the enemy's attacks are multiplied by: each standing card's weaken takes its share off. */
@@ -402,16 +514,21 @@ export function teamLethalAttack(
   normal: Decimal,
   after: number,
   pattern: BossPattern,
+  abilities: readonly BossAbility[] = [],
 ): number {
   const view: Damaged = {
-    combat: { cardDamage: { ...state.combat.cardDamage }, cardsOut: [...state.combat.cardsOut] },
+    combat: {
+      cardDamage: { ...state.combat.cardDamage },
+      cardsOut: [...state.combat.cardsOut],
+      ...(state.combat.enemyIndex !== undefined ? { enemyIndex: state.combat.enemyIndex } : {}),
+    },
   };
   let k = after;
   for (let target = enemyTarget(view, team); target; target = enemyTarget(view, team)) {
     const hit = normal.mul(weakenFactor(view, team));
     if (hit.lte(0)) return Number.MAX_SAFE_INTEGER;
     const pool = Decimal.max(target.maxHealth.sub(damageTaken(view, target.id)), 0);
-    k = lethalBossAttack(pool, hit, k, pattern);
+    k = lethalBossAttack(pool, hit, k, pattern, abilities);
     if (k >= Number.MAX_SAFE_INTEGER) return k;
     knockOut(view, target);
   }

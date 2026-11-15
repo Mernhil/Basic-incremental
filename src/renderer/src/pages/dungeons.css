@@ -155,43 +155,47 @@ html .dp-row.is-picked:not(#_px) {
   display: flex;
   gap: 2px;
 }
-/* a star: the five-point shape cut from a square, dark until its level is earned */
+/* a stage star: the card's 11 x 11 star sprite, one device pixel to the art pixel, overlapping by the
+   shared outline pixel; the off sprite until its level is earned, then the ladder's colour */
+.dp-pips,
+.du-stars,
+.dp-legend {
+  --star-art: calc(1px / var(--dpr, 1));
+}
+.dp-pips,
+.du-stars {
+  gap: 0;
+}
 .dp-pip {
   display: block;
-  width: 14px;
-  height: 14px;
-  background: var(--px-edge);
-  clip-path: polygon(
-    50% 0%,
-    62% 36%,
-    100% 38%,
-    70% 60%,
-    81% 100%,
-    50% 76%,
-    19% 100%,
-    30% 60%,
-    0% 38%,
-    38% 36%
-  );
+  flex: none;
+  width: calc(11 * var(--star-art));
+  height: calc(11 * var(--star-art));
+  margin-left: calc(-1 * var(--star-art));
+  background: url('../art/pixel/sprites/star-off.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
-/* the ladder: Wood, Bronze, Silver, Gold, Prismatic, Mythic */
+.dp-pip:first-child {
+  margin-left: 0;
+}
+/* the ladder: Wood, Bronze, Silver, Gold, Prismatic (the blue star), Mythic (the pink star) */
 .dp-pip.is-on[data-level='1'] {
-  background: #8a6a45;
+  background-image: url('../art/pixel/sprites/star-wood-on.png');
 }
 .dp-pip.is-on[data-level='2'] {
-  background: #c98b52;
+  background-image: url('../art/pixel/sprites/star-bronze-on.png');
 }
 .dp-pip.is-on[data-level='3'] {
-  background: #c9ced8;
+  background-image: url('../art/pixel/sprites/star-silver-on.png');
 }
 .dp-pip.is-on[data-level='4'] {
-  background: #f2c14b;
+  background-image: url('../art/pixel/sprites/star-gold-on.png');
 }
 .dp-pip.is-on[data-level='5'] {
-  background: #7fd8f2;
+  background-image: url('../art/pixel/sprites/star-prismatic-4-on.png');
 }
 .dp-pip.is-on[data-level='6'] {
-  background: #f27ab4;
+  background-image: url('../art/pixel/sprites/star-prismatic-0-on.png');
 }
 .dp-cell__kills {
   color: var(--px-ink);
@@ -325,4 +329,64 @@ html .dp-row.is-picked:not(#_px) {
   .dp-dun {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---- Weapon panel: the tabs that switch between the four loadout cards ---- */
+.dp-wtabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+.dp-wtabs:empty {
+  display: none;
+}
+.dp-wtab {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 8px;
+  align-items: center;
+  min-width: 0;
+  padding: 6px 8px 6px 6px;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.dp-wtab__art {
+  grid-row: 1 / span 2;
+  display: block;
+  width: 28px;
+  height: 34px;
+}
+.dp-wtab__art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.dp-wtab__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.dp-wtab__level {
+  font-size: 12px;
+  opacity: 0.8;
+}
+.dp-wtab.is-selected {
+  outline: 3px solid var(--px-gold);
+  outline-offset: -3px;
+}
+.dp-wtab:focus-visible {
+  outline: 2px solid var(--bi-chrome-accent);
+  outline-offset: 2px;
+}
+.dp-weapon__body {
+  display: grid;
+  gap: 12px;
+  align-content: start;
 }

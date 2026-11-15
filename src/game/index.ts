@@ -60,6 +60,7 @@ export * from './prestige';
 export * from './challenges';
 export * from './wardrobe';
 export * from './achievements';
+export * from './quests';
 export * from './presets';
 export * from './bonds';
 export * from './expeditions';
@@ -407,6 +408,13 @@ export {
   /** Number of the first slam after attack k. */
   nextBossSlam,
   type BossPattern,
+  type BossAbility,
+  abilitiesFor,
+  abilityCounts,
+  abilityHitsBetween,
+  abilityOfAttack,
+  bossDamageBetween,
+  lethalBossAttack,
 } from './bossAttacks';
 export * from './elements';
 export * from './cardStats';

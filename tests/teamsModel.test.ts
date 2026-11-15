@@ -20,7 +20,7 @@ describe('remembered teams per dungeon', () => {
     state.cards.owned[card.id] = state.cards.owned[card.id] ?? {
       ...Object.values(state.cards.owned)[0]!,
     };
-    state.presets.dungeons[b!.id] = { main: card.id, supports: [null, null, null] };
+    state.presets.dungeons[b!.id] = { slots: [card.id, null, null, null] };
     const rows = teamRows(state, content);
     expect(rows.map((r) => r.dungeonId)).toEqual([a!.id, b!.id]);
     expect(rows[1]).toMatchObject({ active: false, cards: [card.name] });
@@ -31,7 +31,7 @@ describe('remembered teams per dungeon', () => {
     const state = freshState();
     const [a, b] = content.dungeons;
     state.activeDungeonId = a!.id;
-    state.presets.dungeons[b!.id] = { main: null, supports: [null, null, null] };
+    state.presets.dungeons[b!.id] = { slots: [null, null, null, null] };
     expect(teamRows(state, content).map((r) => r.dungeonId)).toEqual([a!.id]);
   });
 });

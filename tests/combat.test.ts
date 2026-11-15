@@ -12,7 +12,6 @@ import {
   burstStats,
   burstView,
   createSaveText,
-  damageStat,
   Decimal,
   effectiveDamage,
   effectiveDrops,
@@ -60,6 +59,7 @@ import {
   constantRng,
   bareState,
   plainContent as content,
+  freshDamage,
   freshState,
   withAutoChallenge,
   withDps,
@@ -103,17 +103,22 @@ describe('damage from the main card (DESIGN.md §5, §6)', () => {
   it('is the main card base damage, with no purchase involved', () => {
     const state = freshState();
     expect(baseDamage(state, content).eq(common)).toBe(true);
-    expect(effectiveDamage(state, content).eq(common)).toBe(true);
+    // the Squire's own team bonus (+4% damage) counts for the team it is in
+    expect(approxEq(effectiveDamage(state, content), freshDamage(common, content))).toBe(true);
   });
 
   it('runs every number through the modifier pipeline', () => {
     const state = freshState();
     const double = [mod('combat.damage', 'mult', '2', { dungeon: 'mossy_cellar' })];
-    expect(effectiveDamage(state, content, 'mossy_cellar', double).eq(common.mul(2))).toBe(true);
-    expect(effectiveDamage(state, content, 'ember_crypt', double).eq(common)).toBe(true);
-    expect(damageStat(state, content, 'mossy_cellar', double).applied).toHaveLength(1);
+    // the list given is the whole list: no team bonus or element in it
+    expect(approxEq(effectiveDamage(state, content, 'mossy_cellar', double), common.mul(2))).toBe(
+      true,
+    );
+    expect(approxEq(effectiveDamage(state, content, 'ember_crypt', double), common)).toBe(true);
     const more = [mod('combat.damage', 'percent', '50')];
-    expect(effectiveDamage(state, content, 'mossy_cellar', more).eq(common.mul(1.5))).toBe(true);
+    expect(approxEq(effectiveDamage(state, content, 'mossy_cellar', more), common.mul(1.5))).toBe(
+      true,
+    );
   });
 
   it('has no damage upgrade lines, price curves or gain stat any more', () => {
@@ -184,9 +189,12 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(boss.dungeon.id).toBe(mossy.id);
     expect(boss.maxHp.eq(mossy.boss.hp)).toBe(true);
     // 10 s of the Ember Squire's base damage.
-    expect(approxEq(boss.hp, mossy.boss.hp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(
-      true,
-    );
+    expect(
+      approxEq(
+        boss.hp,
+        mossy.boss.hp.sub(freshDamage(content.cardRules.baseDamage.common, content).mul(10)),
+      ),
+    ).toBe(true);
     expect(boss.bars.remaining).toBe(mossy.boss.hpBars);
     expect(boss.kills).toBe(0);
     expect(bossStatus(ok(setActiveDungeon(state, content, null)), content)).toBeNull();
@@ -236,7 +244,7 @@ describe('drops', () => {
     ]);
   });
 
-  it('pays no scroll for fighting, only the Money wage', () => {
+  it('pays no scroll for fighting, only the Money wage (with the kills)', () => {
     const dungeon = content.dungeons[0]!;
     const state = bareState();
     state.clearedDungeons = [dungeon.id]; // no first-clear purse
@@ -244,7 +252,7 @@ describe('drops', () => {
     const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
     expect(after.resources['summon_scroll']!.toNumber()).toBe(before);
     expect(report.currencies['glamour_scroll'] ?? 0).toBe(0);
-    expect(report.currencies['money']).toBeGreaterThan(0);
+    expect(report.currencies['money'] ?? 0).toBe(0); // the wage waits for a kill
   });
 
   it('pays the first-clear purse once, on the clear', () => {
@@ -316,15 +324,50 @@ describe('drops', () => {
     expect(top.resources['frost_sigil']!.toNumber()).toBe(max);
   });
 
-  it('pays the Money wage for every second of fighting, even before the first kill', () => {
+  it('earns the Money wage while fighting but pays it only when an enemy dies', () => {
     const dungeon = content.dungeons[0]!;
+    const wage = dungeon.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber();
     const state = bareState();
     state.resources['money'] = new Decimal(0);
+    // ten seconds, no kill: nothing arrives, the wage waits for the next win
     const { state: after, report } = advance(state, content, 10_000, constantRng(0.5));
-    expect(report.bossKills).toBe(0);
-    const wage = dungeon.drops.wages.find((w) => w.resource === 'money')!.perSecond.toNumber();
-    expect(after.resources['money']!.toNumber()).toBeCloseTo(wage * 10);
-    expect(report.currencies['money']).toBeCloseTo(wage * 10);
+    expect(report.bossKills + report.enemyKills).toBe(0);
+    expect(after.resources['money']!.toNumber()).toBe(0);
+    expect(after.combat.wageOwed!['money']!.toNumber()).toBeCloseTo(wage * 10);
+    // the kill that follows pays its purse and the whole wage owed, in one lump
+    const killed = advance(after, withDps(bossMaxHp(mossy)), 1000, constantRng(0.5));
+    expect(killed.report.bossKills + killed.report.enemyKills).toBeGreaterThan(0);
+    expect(killed.state.combat.wageOwed!['money']).toBeUndefined();
+    expect(killed.state.resources['money']!.toNumber()).toBeGreaterThanOrEqual(wage * 10);
+    expect(killed.report.currencies['money']).toBeCloseTo(
+      killed.state.resources['money']!.toNumber(),
+    );
+  });
+
+  it('keeps Money flat between kills and pays the same total however the time is split', () => {
+    const run = (stepMs: number): { gained: number; owed: number; flat: boolean } => {
+      let state = freshState();
+      state.resources['money'] = new Decimal(0);
+      let flat = true;
+      for (let t = 0; t < 120_000; t += stepMs) {
+        const before = state.resources['money']!.toNumber();
+        const r = advance(state, withDps(bossMaxHp(mossy).div(4)), stepMs, constantRng(0.5));
+        const kills = r.report.bossKills + r.report.enemyKills;
+        if (kills === 0 && r.state.resources['money']!.toNumber() !== before) flat = false;
+        state = r.state;
+      }
+      return {
+        gained: state.resources['money']!.toNumber(),
+        owed: state.combat.wageOwed?.['money']?.toNumber() ?? 0,
+        flat,
+      };
+    };
+    const small = run(100);
+    const large = run(10_000);
+    expect(small.flat).toBe(true);
+    expect(large.flat).toBe(true);
+    // paid plus still owed is the same either way (the tail since the last kill is what differs)
+    expect(small.gained + small.owed).toBeCloseTo(large.gained + large.owed, 0);
   });
 
   it('pays no wage in the later dungeons, only by the kill', () => {

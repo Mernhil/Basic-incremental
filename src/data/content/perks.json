@@ -1137,7 +1137,7 @@
           "description": "Logging worker abilities +25% effect",
           "effects": [
             {
-              "stat": "card.supportPower",
+              "stat": "card.teamBonusPower",
               "kind": "percent",
               "value": "25",
               "scope": {
@@ -1617,7 +1617,7 @@
           "description": "Mining worker abilities +25% effect",
           "effects": [
             {
-              "stat": "card.supportPower",
+              "stat": "card.teamBonusPower",
               "kind": "percent",
               "value": "25",
               "scope": {

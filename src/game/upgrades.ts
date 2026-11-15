@@ -83,14 +83,14 @@ export function perkModifiers(state: GameState, content: Content): Modifier[] {
   return out;
 }
 
-/** How much stronger a job's worker abilities are (1 = normal), from `card.supportPower`. */
-export function supportPower(
+/** How much stronger a job's team bonuses and worker abilities are (1 = normal), from `card.teamBonusPower`. */
+export function teamBonusPower(
   state: GameState,
   content: Content,
   job: 'mining' | 'logging' | 'fighting',
 ): Decimal {
   const perks = perkModifiers(state, content);
-  return perks.length === 0 ? new Decimal(1) : statValue('card.supportPower', 1, perks, { job });
+  return perks.length === 0 ? new Decimal(1) : statValue('card.teamBonusPower', 1, perks, { job });
 }
 
 /**

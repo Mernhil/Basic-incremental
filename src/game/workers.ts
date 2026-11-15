@@ -4,7 +4,7 @@ import { workerElementModifier } from './elements';
 import type { Modifier } from './modifiers';
 import { isProducerUnlocked, producersOf, type Producer } from './production';
 import { cloneState, isOnTrip, type GameState, type OwnedCard } from './state';
-import { supportPower } from './upgrades';
+import { teamBonusPower } from './upgrades';
 import { challengeWorkerLimit } from './challenges';
 
 /**
@@ -311,7 +311,7 @@ function boost(m: Modifier, power: Modifier['value']): Modifier {
 
 /**
  * The worker abilities at work (DESIGN.md §4 Worker abilities): each active worker's ability,
- * scoped to its own place (source `card`), made stronger by the job's `card.supportPower`
+ * scoped to its own place (source `card`), made stronger by the job's `card.teamBonusPower`
  * upgrades (Lumberjack Pact, Miner Pact). Read by `collectModifiers` through `cardModifiers`.
  */
 export function workerModifiers(state: GameState, content: Content): Modifier[] {
@@ -319,7 +319,7 @@ export function workerModifiers(state: GameState, content: Content): Modifier[] 
   const powers: Partial<Record<ProductionJob, Modifier['value']>> = {};
   for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
     const job = producerJob(content, place)!;
-    const power = (powers[job] ??= supportPower(state, content, job));
+    const power = (powers[job] ??= teamBonusPower(state, content, job));
     for (const id of ids) {
       const card = content.cardById.get(id) as WorkerCard;
       for (const m of card.worker.modifiers) {

@@ -48,6 +48,9 @@ export interface GameState {
   prestige: PrestigeState;
   /** Achievement id -> play time (ms) when it unlocked. Kept through prestige. */
   achievements: Record<string, number>;
+  /** Quest id -> its state (DESIGN.md §10 Quests): present once done, `claimed` once paid. Kept through
+   *  prestige. Save format 34. */
+  quests: Record<string, QuestProgress>;
   /** Shard shop item id -> purchases made. */
   shardShop: Record<string, number>;
   /** Account XP, level, account tree and respecs. */
@@ -376,12 +379,16 @@ export interface CombatState {
   challengeWaitSeconds: number;
   /** Card id -> damage that team card's own health has taken (DESIGN.md §6 card duel); missing =
    *  full health; at or above the card's max health it is knocked out. The team is derived (the
-   *  fighting loadout, main then supports; duel.ts). Save format 27; it replaced the shared
+   *  fighting loadout, left to right; duel.ts). Save format 27; it replaced the shared
    *  `loadoutDamage` pool. */
   cardDamage: Record<string, Decimal>;
   /** Team card ids knocked out on the floor being fought (DESIGN.md §6 card duel): they stay out
    *  until the floor is won, even when their max health rises meanwhile. Save format 27. */
   cardsOut: string[];
+  /** The fighting wage earned since the last kill, by resource: paid out in a lump when an enemy
+   *  dies, so Money comes only when something is won (DESIGN.md §3). Runtime only, not saved: a save
+   *  loses at most the seconds since the last kill. */
+  wageOwed?: Record<string, Decimal>;
 }
 
 /** A running Challenge (DESIGN.md §6 Farming and Challenge). */
@@ -487,6 +494,7 @@ export function createInitialState(content: Content): GameState {
     legacySkins: [],
     stats: { playTimeMs: 0, bossKills: 0, longestOfflineMs: 0 },
     achievements: {},
+    quests: {},
     shardShop: {},
     account: initialAccount(),
     upgrades: initialUpgrades(),
@@ -531,6 +539,7 @@ export function cloneState(state: GameState): GameState {
     mastery: cloneMastery(state.mastery),
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     achievements: { ...state.achievements },
+    quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
     upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
     automation: { ...state.automation },
@@ -592,6 +601,7 @@ export function cloneCombat(c: CombatState): CombatState {
     challengeWaitSeconds: c.challengeWaitSeconds,
     cardDamage: { ...c.cardDamage },
     cardsOut: [...c.cardsOut],
+    ...(c.wageOwed ? { wageOwed: { ...c.wageOwed } } : {}),
   };
 }
 
@@ -602,10 +612,7 @@ export function clonePresets(p: PresetState): PresetState {
     list.map((x) => (x ? { name: x.name, workers: copyWorkers(x.workers) } : null));
   return {
     dungeons: Object.fromEntries(
-      Object.entries(p.dungeons).map(([id, l]) => [
-        id,
-        { main: l.main, supports: [...l.supports] },
-      ]),
+      Object.entries(p.dungeons).map(([id, l]) => [id, { slots: [...l.slots] }]),
     ),
     production: { logging: job(p.production.logging), mining: job(p.production.mining) },
   };
@@ -630,6 +637,12 @@ export function cloneBursts(b: FightingBursts): FightingBursts {
 }
 
 /** One owned card (DESIGN.md §5). Each card is owned once; further copies are duplicates. */
+/** A quest that is done: the play time (ms) it was done at, and whether its reward was claimed. */
+export interface QuestProgress {
+  doneAt: number;
+  claimed: boolean;
+}
+
 export interface OwnedCard {
   tier: RankTier;
   /** 1..6 within the tier. */
@@ -659,12 +672,11 @@ export function initialAccount(): AccountState {
   return { xp: new Decimal(0), level: 1, skills: {}, freeRespecsUsed: 0 };
 }
 
-/** The fighting loadout: 1 main card and 3 support slots (null = empty). Logging and mining
- *  cards are workers instead (`production.workers`, DESIGN.md §4). */
+/** The fighting loadout: four equal slots, left to right (null = empty). Logging and mining
+ *  cards are workers instead (`production.workers`, DESIGN.md §4, §5 Loadouts). */
 export interface CardLoadout {
-  main: string | null;
-  /** Always 3 entries. */
-  supports: (string | null)[];
+  /** Always LOADOUT_SLOTS entries. */
+  slots: (string | null)[];
 }
 
 export interface CardState {
@@ -679,10 +691,15 @@ export interface CardState {
   wishlist: string[];
 }
 
-export const SUPPORT_SLOTS = 3;
+/** The fighting loadout's slots (DESIGN.md §5 Loadouts): back left, front left, front right,
+ *  back right. */
+export const LOADOUT_SLOTS = 4;
+/** The two central slots are the front row; the outer two are the back row. */
+export const FRONT_SLOTS: readonly number[] = [1, 2];
+export const isFrontSlot = (slot: number): boolean => FRONT_SLOTS.includes(slot);
 
 export function emptyCardLoadout(): CardLoadout {
-  return { main: null, supports: Array<string | null>(SUPPORT_SLOTS).fill(null) };
+  return { slots: Array<string | null>(LOADOUT_SLOTS).fill(null) };
 }
 
 /** A card as first obtained: Wood ★1, Lv 1, no XP, an empty star bar. */
@@ -697,7 +714,7 @@ export function newOwnedCard(): OwnedCard {
   };
 }
 
-/** A new game owns the start cards (cardRules.startCards); the fighting one leads the loadout
+/** A new game owns the start cards (cardRules.startCards); the fighting one takes the first slot
  *  and the others work (`initialWorkers`). */
 export function initialCards(content: Content): CardState {
   const cards: CardState = {
@@ -710,13 +727,13 @@ export function initialCards(content: Content): CardState {
     const card = content.cardById.get(id);
     if (!card) continue;
     cards.owned[id] = newOwnedCard();
-    if (card.job === 'fighting') cards.loadouts.fighting.main = id;
+    if (card.job === 'fighting') cards.loadouts.fighting.slots[0] = id;
   }
   return cards;
 }
 
 export function cloneCards(c: CardState): CardState {
-  const loadout = (l: CardLoadout): CardLoadout => ({ main: l.main, supports: [...l.supports] });
+  const loadout = (l: CardLoadout): CardLoadout => ({ slots: [...l.slots] });
   return {
     owned: Object.fromEntries(
       Object.entries(c.owned).map(([id, card]) => [

@@ -359,9 +359,9 @@ export const STATS = [
   'drops.moneyMultiplier',
   /** Starlight an ascension grants, before rounding down (DESIGN.md §9). */
   'prestige.gain',
-  /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
+  /** Strength of the team bonuses of a job's cards, base 1 (+25% = 1.25): scales the values of
    *  their modifiers (DESIGN.md §4). Only read from milestone perks. Scope: job. */
-  'card.supportPower',
+  'card.teamBonusPower',
   /** Power of the workers at a place (DESIGN.md §4), also its digging. Scope: job, producer. */
   'worker.power',
   /** Hardness a place's workers break per second (DESIGN.md §4 Depth), base 1. Scope: job, producer. */
@@ -533,14 +533,19 @@ const cardBase = {
   heirloom: z.boolean().optional(),
 };
 
-/** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
+export const CARD_ROLES = ['tank', 'dps', 'support'] as const;
+export type CardRole = (typeof CARD_ROLES)[number];
+
+/** A fighting card: an Ability for itself and a Team bonus for the team (DESIGN.md §5 Loadouts). */
 export const fightingCardSchema = z.strictObject({
   ...cardBase,
   job: z.literal('fighting'),
-  /** Used when the card leads the fighting loadout. */
-  main: cardEffectSchema,
-  /** Used when the card is in one of the 3 support slots. */
-  support: cardEffectSchema,
+  /** Tank, DPS or Support: a label and a guide for placement, never a lock (DESIGN.md §5 Roles). */
+  role: z.enum(CARD_ROLES),
+  /** What the card does itself in the fight, in any loadout slot. */
+  ability: cardEffectSchema,
+  /** What the card gives the whole team, in any loadout slot. */
+  teamBonus: cardEffectSchema,
 });
 
 /**
@@ -661,7 +666,7 @@ export const cardRulesSchema = z.strictObject({
    * multiplied by (power − 1): a Bronze ★1 Lv 1 main adds nothing; every level, star and tier
    * adds more.
    */
-  mainGrowth: perJob(z.array(modifierSchema)),
+  abilityGrowth: perJob(z.array(modifierSchema)),
   /**
    * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
    * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
@@ -690,6 +695,18 @@ export const cardRulesSchema = z.strictObject({
    * base health. The signature, gauge and crit parts of an identity are on the cards' main
    * abilities; these two keep the types' total power within about 10% of each other.
    */
+  /** The role most cards of each weapon type have (DESIGN.md §5 Roles). */
+  weaponRoles: z.strictObject({
+    sword: z.enum(CARD_ROLES),
+    greatsword: z.enum(CARD_ROLES),
+    spear: z.enum(CARD_ROLES),
+    lance: z.enum(CARD_ROLES),
+    dagger: z.enum(CARD_ROLES),
+    hammer: z.enum(CARD_ROLES),
+    bow: z.enum(CARD_ROLES),
+    staff: z.enum(CARD_ROLES),
+    scythe: z.enum(CARD_ROLES),
+  }),
   weapons: z.strictObject({
     sword: weaponFactorSchema,
     greatsword: weaponFactorSchema,
@@ -1080,6 +1097,28 @@ export const combatSchema = z.strictObject({
       { message: 'one cycle of attacks must add up to attacksPerCycle normal attacks' },
     ),
   /**
+   * Boss abilities (DESIGN.md §6 Boss abilities): every `every`-th attack of a boss or mini-boss
+   * (the `offset`-th of each `every`, never a slam) is replaced by a hit of `multiplier` normal
+   * attacks on the `target`: the front row, the back row, one back card, all four or the card
+   * with the least health left.
+   */
+  bossAbilities: z
+    .array(
+      z
+        .strictObject({
+          id,
+          name: z.string().min(1),
+          target: z.enum(['front', 'back', 'back-one', 'all', 'lowest']),
+          every: z.number().int().min(2),
+          offset: z.number().int().min(0),
+          multiplier: z.number().gt(0),
+          kinds: z.array(z.enum(['miniboss', 'boss'])).min(1),
+          difficulties: z.array(z.enum(['normal', 'hard', 'nightmare'])).min(1),
+        })
+        .refine((a) => a.offset < a.every, { message: 'offset must be below every' }),
+    )
+    .default([]),
+  /**
    * Floors (DESIGN.md §6 Dungeon floors, §3 Ladders). A floor's strength is measured against the
    * dungeon's boss: floor `f` of `n` is worth `hpGrowth^(f - n)` of the boss's HP and attack. A
    * normal floor is a wave of `waveSize` enemies sharing `waveHpShare` of that HP and attacking
@@ -1130,7 +1169,6 @@ export const combatSchema = z.strictObject({
   elements: z.strictObject({
     weakness: decimal,
     resistance: decimal.refine((d) => d.gte(-50), { message: 'a resistance is never a wall' }),
-    supportBonus: decimal,
     production: decimal,
   }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
@@ -1536,6 +1574,53 @@ export const achievementSchema = z.strictObject({
   }),
 });
 export type Achievement = z.output<typeof achievementSchema>;
+
+/**
+ * What completes a quest (DESIGN.md §10 Quests): any achievement condition, or one of the kinds
+ * only quests read: a floor reached on a tier, a boss or mini-boss beaten N times (the stage kills,
+ * `floor: 'last'` is the last floor's boss), cards owned, the first card of a rarity, a card level,
+ * the account level and Training levels bought.
+ */
+export const questConditionSchema = z.union([
+  achievementConditionSchema,
+  z.strictObject({
+    kind: z.literal('stage_kills'),
+    dungeon: id,
+    difficulty: z.enum(['normal', 'hard', 'nightmare']),
+    floor: z.union([z.literal('last'), z.number().int().min(1)]),
+    count: z.number().int().min(1),
+  }),
+  z.strictObject({
+    kind: z.literal('floor_reached'),
+    dungeon: id,
+    difficulty: z.enum(['normal', 'hard', 'nightmare']),
+    floor: z.number().int().min(1),
+  }),
+  z.strictObject({ kind: z.literal('cards_owned'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('rarity_owned'), rarity: z.enum(RARITIES) }),
+  z.strictObject({ kind: z.literal('card_level'), level: z.number().int().min(2) }),
+  z.strictObject({ kind: z.literal('account_level'), level: z.number().int().min(2) }),
+  z.strictObject({ kind: z.literal('training_levels'), amount: z.number().int().min(1) }),
+]);
+export type QuestCondition = z.output<typeof questConditionSchema>;
+
+export const QUEST_GROUPS = ['dungeons', 'cards', 'gathering', 'account'] as const;
+export type QuestGroup = (typeof QUEST_GROUPS)[number];
+
+export const questSchema = z.strictObject({
+  id,
+  group: z.enum(QUEST_GROUPS),
+  /** The line the player reads, e.g. "Beat Root Warden on Normal 10 times". */
+  name,
+  condition: questConditionSchema,
+  /** The view a click on the unfinished quest opens. */
+  page: z.enum(GOAL_PAGES),
+  /** Paid once, on the claim click: Summon / Glamour Scrolls or materials. */
+  reward: z.array(costSchema).min(1),
+});
+export type Quest = z.output<typeof questSchema>;
+
+export const questsFileSchema = z.strictObject({ quests: z.array(questSchema) });
 
 /** One shard shop item (DESIGN.md §5: duplicates past max rank become shards for a shop). */
 export const shardShopItemSchema = z.strictObject({
@@ -2103,7 +2188,7 @@ export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
 /** What a challenge takes away (src/game/challenges.ts applies each through the modifier pipeline). */
 export const CHALLENGE_RESTRICTIONS = [
   /** The fighting loadout's supports give no effect and no health. */
-  'no_supports',
+  'first_card_only',
   /** Only Common cards count in the fighting loadout (effects, health, and the main's damage). */
   'commons_only',
   /** Training gives nothing. */
@@ -2332,6 +2417,7 @@ export const contentSchemas = {
   skills: skillsFileSchema,
   scrolls: scrollsSchema,
   heirlooms: heirloomsSchema,
+  quests: questsFileSchema,
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;

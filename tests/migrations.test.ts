@@ -831,7 +831,7 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
     expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });
     expect(Object.keys(state.cards.loadouts)).toEqual(['fighting']);
-    expect(state.cards.loadouts.fighting.main).toBe('ember_squire');
+    expect(state.cards.loadouts.fighting.slots).toContain('ember_squire');
     expect(state.cards.wishlist).toEqual([]);
     expect(state.production.tools).toEqual({});
     expect(state.production.depth).toEqual({});
@@ -846,8 +846,8 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
   });
 });
 
-describe('v33 -> v34 (milestone picks replace the upgrade shelf, DESIGN.md §4)', () => {
-  const step = MIGRATIONS[33]!;
+describe('v35 -> v36 (milestone picks replace the upgrade shelf, DESIGN.md §4)', () => {
+  const step = MIGRATIONS[35]!;
 
   it('pays back every shelf upgrade owned, per-run or permanent, and starts with no picks', () => {
     const out = step({

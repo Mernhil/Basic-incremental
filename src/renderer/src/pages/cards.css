@@ -488,9 +488,6 @@ html .cp-sort .cp-select:not(#_px) {
   font-weight: 600;
   color: var(--bi-frame-ink-muted);
 }
-.cp-slot:first-child .cp-slot__label {
-  color: var(--bi-chrome-accent);
-}
 .button.cp-slot__remove {
   font-size: 12px;
   padding: 4px 10px;
@@ -1108,4 +1105,22 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 .cp-detail > .frame__title .frame__note {
   margin-left: 0;
   text-align: left;
+}
+
+/* the formation: the two central slots are the front row, a bit higher than the back row
+   (DESIGN.md §5 Loadouts) */
+.cp-slots {
+  align-items: flex-start;
+}
+.cp-slot--back {
+  margin-top: calc(var(--card-k) * 44px);
+}
+
+/* the slot's place and role sit under the card, clear of its kit's tails */
+.cp-slot .cp-slot__label {
+  margin-top: calc(var(--kit-bottom) + 6px);
+  font-size: 13px;
+}
+.cp-slot .cp-slot__label + .cp-slot__buttons {
+  margin-top: 2px;
 }
