@@ -364,8 +364,7 @@ _Decided with the user on 2026-11-08. It is a gacha game: strength comes from th
 
 - [Built] **Account level.** Account XP comes from everything (harvests, kills, summons, Ascensions), and account levels grant skill points.
 - [Built] XP rates and the level curve (`account.json`): level L → L + 1 costs 1,100 × 1.12^(L − 1), quick early and slow later (the readable-numbers rescale's `[Default]`, 2026-11-12, §14: it was 1.2^(L − 1); the harvest XP a gem gives went up 13 times, a kill gives 4 where it gave 3 and the kill XP grows ×3.24 a dungeon tier where it grew ×4, so the levels come at about the hours they did). There is no level cap (user, 2026-11-11): levels keep paying skill points and the same curve continues past 50; the balance run sets it.
-- [Built] **Loadout cost cap** (user, 2026-11-15, see §5 Cost: the top is 64). 6 at account level 1, +2 per level for the first levels, then slower, and it stops at 64.
-- [Default · in game] **How the cap grows** (Claude, 2026-11-15; `cardRules.json` `costCap`, `account.json`): +2 a level up to level 10 (as before), then +1 every 4 levels, plus the reward track's bumps (+1 at levels 3, 8, 15, 25, 35 and 45). The cap is never the thing that stops a team the player can realistically own: 36 (four Legendaries) at about account level 40, 56 (four T6 cards) at about level 117 and 64 at about level 148 (the sim's hours are in the PR). The cap applies to the fighting loadout only; the Loadouts tab says how it grows next to the cost bar.
+- [Built] **Loadout cost cap** (user, 2026-11-15, see §5 Cost: the top is 64). 6 at account level 1, +2 per level, and it stops at 64. How it grows stays as it was; the planning chat will set where 36, 56 and 64 land when account levels are reworked as a whole.
 - [Built] **Reward track.** Every account level gives a skill point plus a listed reward: scrolls every 5 levels, a cosmetic every 10 levels, and a cost cap bump on some levels. It shows Brave Frontier style as a row of upcoming rewards; a level-up plays a moment listing what you got.
 - [Built] Reward amounts, the cosmetics on the track and the cost cap bumps (levels 3, 8, 15, 25, 35 and 45) are in `account.json`.
 - [Default · in game] **Scroll rewards are whole numbers** (user's rule, 2026-11-15: whole numbers only for scroll rewards, everywhere; the rounding is Claude's): the reward track's 0.5 and 1.5 Summon Scrolls are 1 and 2, the achievements that paid half a Summon Scroll pay 1, and the first clear's half a Glamour Scroll is 1.
@@ -500,7 +499,6 @@ Everything tagged `[Proposed]` or `[Default]` waits here for the user. Answer a 
 Added 2026-11-15 (loadout cost cap, §5 and §10):
 
 - §5 Cost: at most two Heirlooms in a loadout (the planning chat's reading of "2 heirlooms and 2 t6 at max").
-- §10 Loadout cost cap: how it grows (+2 a level to level 10, then +1 every 4 levels, the track's bumps on top) and the levels where 36, 56 and 64 are reached.
 - §10 Scroll rewards are whole numbers: the rounding of the reward track, the achievements and the first clear.
 
 Added 2026-11-15 (milestone picks, §4 and §6):
@@ -698,7 +696,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 
 ## 17. Changelog
 
-- 2026-11-15 — Loadout cost cap (user: "it needs to be 80 tho cause you want to eventually end up using at least 3t6 and 1 heirloom but i think you should be able to get 2 heirlooms and 2 t6 at max"): the top is 64, at most two Heirlooms in a loadout, slower growth after level 10, whole-number scroll rewards (§5, §10).
+- 2026-11-15 — Loadout cost cap (user: "it needs to be 80 tho cause you want to eventually end up using at least 3t6 and 1 heirloom but i think you should be able to get 2 heirlooms and 2 t6 at max"): the top is 64, at most two Heirlooms in a loadout, whole-number scroll rewards (§5, §10).
 - 2026-11-15 — Milestone picks (user: picked option 2b, "the bottom ones i dont like at all" about the one-time upgrades): the upgrade shelf and its Upgrades tiles are replaced by picks of one of two perks at the milestones of every repeatable line, and every line shows real numbers now → after, its cost resource with "need N more" and what its next milestone gives (§3, §4, §6, §9).
 - 2026-11-15 — Formation (user: front row and back row, direct attacks hit the front, boss abilities can hit the back, three roles Tank, DPS and Support on the card): §5 Loadouts, Roles, §6 team of 4, Boss abilities.
 - 2026-11-15 — Four equal cards (user: "Four equal cards: no Main and no Support slots; every card fights with its own ability AND gives its team bonus to the others; slot order only sets left to right"): the fighting loadout has four equal slots; a card's two texts are its Ability and its Team bonus; elements, the stat compare line, the Weapon panel (a card switch) and Lone Wolf follow (§5, §6, §10, §14); the names, reach and rules the user left open are Claude's defaults listed under Open questions.

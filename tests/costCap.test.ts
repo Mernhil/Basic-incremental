@@ -22,19 +22,13 @@ describe('the loadout cost cap', () => {
     expect(loadoutCapAtLevel(real, 500)).toBe(64);
   });
 
-  it('never stops a team the player can own: 36 by level 40, 56 by level 120, 64 by level 150', () => {
-    expect(loadoutCapAtLevel(real, 40)).toBeGreaterThanOrEqual(36);
-    expect(loadoutCapAtLevel(real, 120)).toBeGreaterThanOrEqual(56);
-    expect(loadoutCapAtLevel(real, 150)).toBe(64);
-  });
-
-  it('grows by +2 a level to level 10, then slower, and never shrinks', () => {
+  it('grows +2 a level with the reward track bumps on top, and never shrinks', () => {
     let last = 0;
     for (let level = 1; level <= 200; level++) {
       const cap = loadoutCapAtLevel(real, level);
       expect(cap).toBeGreaterThanOrEqual(last);
-      if (level > 1 && level <= 10) expect(cap - last).toBeGreaterThanOrEqual(2);
-      if (level > 14) expect(cap - last).toBeLessThanOrEqual(2);
+      if (level > 1 && cap < real.account.loadoutCostCapTop)
+        expect(cap - last).toBeGreaterThanOrEqual(2);
       last = cap;
     }
   });

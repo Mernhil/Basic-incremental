@@ -377,13 +377,8 @@ export function loadoutCostCap(
   job: LoadoutJob,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): number {
-  const { base, perLevel, slowFromLevel, slowEvery } = content.cardRules.costCap;
-  const level = accountLevel(state);
-  // +perLevel a level to `slowFromLevel`, then 1 every `slowEvery` levels (DESIGN.md §10)
-  const value =
-    base +
-    perLevel * (Math.min(level, slowFromLevel) - 1) +
-    Math.floor(Math.max(0, level - slowFromLevel) / slowEvery);
+  const { base, perLevel } = content.cardRules.costCap;
+  const value = base + perLevel * (accountLevel(state) - 1);
   const cap = Math.max(
     0,
     Math.floor(statValue('loadout.costCap', value, modifiers, { job }).toNumber()),
@@ -1054,15 +1049,11 @@ export interface LoadoutInfo {
 /** The fighting loadout's cost cap at an account level: the formula plus the reward track's bumps
  *  up to it, never past the top (DESIGN.md §10 Loadout cost cap). */
 export function loadoutCapAtLevel(content: Content, level: number): number {
-  const { base, perLevel, slowFromLevel, slowEvery } = content.cardRules.costCap;
+  const { base, perLevel } = content.cardRules.costCap;
   const bumps = content.account.rewardTrack
     .filter((r) => r.level <= level)
     .reduce((sum, r) => sum + r.costCap, 0);
-  const cap =
-    base +
-    perLevel * (Math.min(level, slowFromLevel) - 1) +
-    Math.floor(Math.max(0, level - slowFromLevel) / slowEvery) +
-    bumps;
+  const cap = base + perLevel * (level - 1) + bumps;
   return Math.min(cap, content.account.loadoutCostCapTop);
 }
 
