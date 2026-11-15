@@ -66,15 +66,15 @@ export interface CardView {
   levelUp(): void;
 }
 
-function starsHtml(rank: Rank): string {
-  const on = '★'.repeat(rank.stars);
-  const off = '★'.repeat(6 - rank.stars);
-  return (
-    `<span class="bi-stars__on" aria-hidden="true">${on}</span>` +
-    `<span class="bi-stars__sheen" aria-hidden="true">${on}</span>` +
-    `<span class="bi-stars__off" aria-hidden="true">${off}</span>`
-  );
+/** Six star sprites, the first `stars` of them lit (styled by theme/rank.css under a data-tier host). */
+export function starSpritesHtml(stars: number): string {
+  return Array.from({ length: 6 }, (_, i) => {
+    const on = i < stars ? ' bi-star--on' : '';
+    return `<i class="bi-star${on}" data-i="${i}" style="--i:${i}" aria-hidden="true"></i>`;
+  }).join('');
 }
+
+const starsHtml = (rank: Rank): string => starSpritesHtml(rank.stars);
 
 /**
  * A card. Structure is fixed; every visual comes from the theme (CSS variables and recipe

@@ -202,7 +202,11 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.sm-cell__stars {
+.sm-cell .sm-cell__stars {
+  /* the 11-pixel star sprites at one device pixel to the art pixel (61 px for six) */
+  --star-art: calc(1px / var(--dpr, 1));
+  justify-content: center;
+  width: 100%;
   min-height: 1em;
   font-size: 10px;
   letter-spacing: 1px;
