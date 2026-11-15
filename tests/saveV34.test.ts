@@ -7,7 +7,6 @@ import {
   MIGRATIONS,
   newOwnedCard,
   readSave,
-  serializeState,
 } from '../src/game';
 import { content, newGame } from './helpers';
 
