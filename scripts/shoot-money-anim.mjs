@@ -1,6 +1,6 @@
-// Records the header Money counter right after a kill: 6 frames about 100 ms apart, with the shown
-// text, and the settled (real) value once the glide is over. Use a profile (see
-// shoot-ui-fast-fixes.mjs): `node scripts/shoot-money-anim.mjs [port] [outDir]`.
+// Records the header Money counter across two kills: for each kill 3 frames (as the coins land, 150 ms
+// and 600 ms later) with the shown text and the "+N" that popped, so the number can be seen stepping
+// at each win. Use a profile (see shoot-ui-fast-fixes.mjs): `node scripts/shoot-money-anim.mjs [port] [outDir]`.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
 
@@ -16,9 +16,13 @@ await page.waitForSelector('.shell-currency--money .shell-currency__value');
 const cdp = await page.context().newCDPSession(page);
 const read = () =>
   page.evaluate(() => {
-    const v = document.querySelector('.shell-currency--money .shell-currency__value');
-    const n = document.querySelector('.shell-currency--money .shell-currency__name');
-    return { text: v.textContent, coin: n?.textContent ?? '', t: performance.now() };
+    const chip = document.querySelector('.shell-currency--money');
+    const v = chip.querySelector('.shell-currency__value').textContent;
+    const n = chip.querySelector('.shell-currency__name')?.textContent ?? '';
+    return {
+      shown: `${v} ${n}`,
+      gain: chip.querySelector('.shell-currency__gain')?.textContent ?? null,
+    };
   });
 const box = await page.evaluate(() => {
   const b = document.querySelector('.shell-currency--money').getBoundingClientRect();
@@ -26,77 +30,32 @@ const box = await page.evaluate(() => {
     x: Math.max(0, b.left - 12),
     y: Math.max(0, b.top - 8),
     width: b.width + 24,
-    height: b.height + 16,
+    height: b.height + 44,
   };
 });
-// a payout makes the chip pulse (coins landed): that is the kill
-await page.evaluate(() => {
-  const chip = document.querySelector('.shell-currency--money');
-  window.__pulse = 0;
-  new MutationObserver(
-    () => chip.classList.contains('is-pulsing') && (window.__pulse = performance.now()),
-  ).observe(chip, { attributes: true, attributeFilter: ['class'] });
-});
-const before = await read();
-let kill = false;
-for (let i = 0; i < 1500 && !kill; i++) {
-  await page.waitForTimeout(20);
-  kill = (await page.evaluate(() => window.__pulse)) > 0;
+const frames = [];
+let n = 0;
+for (let kill = 1; kill <= 2; kill++) {
+  // wait for the pop of the next win
+  for (let i = 0; i < 3000; i++) {
+    if ((await read()).gain) break;
+    await page.waitForTimeout(15);
+  }
+  const t0 = Date.now();
+  for (const wait of [0, 150, 600]) {
+    const left = wait - (Date.now() - t0);
+    if (left > 0) await page.waitForTimeout(left);
+    const { data } = await cdp.send('Page.captureScreenshot', {
+      format: 'png',
+      clip: { ...box, scale: 1 },
+    });
+    const s = await read();
+    n++;
+    writeFileSync(`${out}/money-anim-${n}.png`, Buffer.from(data, 'base64'));
+    frames.push({ frame: n, kill, ms: Date.now() - t0, shown: s.shown, gain: s.gain });
+  }
+  // let the pop go before waiting for the next win
+  await page.waitForTimeout(1200);
 }
-const frames = [{ frame: 0, shown: `${before.text} ${before.coin} (before the payout)` }];
-const t0 = Date.now();
-for (let i = 0; i < 6; i++) {
-  const wait = i * 100 - (Date.now() - t0);
-  if (wait > 0) await page.waitForTimeout(wait);
-  const { data } = await cdp.send('Page.captureScreenshot', {
-    format: 'png',
-    clip: { ...box, scale: 2 },
-  });
-  const s = await read();
-  writeFileSync(`${out}/money-anim-${i + 1}.png`, Buffer.from(data, 'base64'));
-  frames.push({ frame: i + 1, ms: Date.now() - t0, shown: `${s.text} ${s.coin}` });
-}
-await page.waitForTimeout(1500);
-const settled = await read();
-const result = { kill, frames, settled: `${settled.text} ${settled.coin}` };
-
-// a bigger lump through the Dev panel's Grant (a kill's payout is too small to see): Money +300
-const lump = process.argv[4] ?? '300';
-if (!(await page.$('.dev-panel__button:visible'))) await page.click('.dev-toggle');
-await page.selectOption('select[aria-label="Resource"]', { value: 'money' });
-await page.fill('input[aria-label="Amount"]', lump);
-await page.evaluate(() => {
-  window.__series = [];
-  const v = document.querySelector('.shell-currency--money .shell-currency__value');
-  const loop = () => {
-    window.__series.push([Math.round(performance.now()), v.textContent]);
-    requestAnimationFrame(loop);
-  };
-  loop();
-});
-const lumpBefore = await read();
-await page.click('.dev-panel__button:text-is("Grant")');
-const l0 = Date.now();
-const lumpFrames = [];
-for (let i = 0; i < 6; i++) {
-  const wait = i * 100 - (Date.now() - l0);
-  if (wait > 0) await page.waitForTimeout(wait);
-  const { data } = await cdp.send('Page.captureScreenshot', {
-    format: 'png',
-    clip: { ...box, scale: 2 },
-  });
-  const sh = await read();
-  writeFileSync(`${out}/money-anim-lump-${i + 1}.png`, Buffer.from(data, 'base64'));
-  lumpFrames.push({ frame: i + 1, ms: Date.now() - l0, shown: `${sh.text} ${sh.coin}` });
-}
-await page.waitForTimeout(1200);
-const lumpSettled = await read();
-const series = await page.evaluate(() => window.__series);
-result.lump = {
-  before: `${lumpBefore.text} ${lumpBefore.coin}`,
-  frames: lumpFrames,
-  settled: `${lumpSettled.text} ${lumpSettled.coin}`,
-  distinctShown: new Set(series.map((x) => x[1])).size,
-};
-console.log(JSON.stringify(result, null, 1));
+console.log(JSON.stringify(frames, null, 1));
 await browser.close();

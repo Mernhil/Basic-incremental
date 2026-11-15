@@ -3,7 +3,6 @@ import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
-import { restingTween, retarget, tweenValue, type CounterTween } from '../stage/counterTween';
 import { onFrame, reducedMotion, replay } from '../stage/motion';
 import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
@@ -78,7 +77,8 @@ export interface Shell {
   /** The coin glyph of a resource chip: where flying coins land (null while the chip is hidden). */
   currencyGlyph(id: string): HTMLElement | null;
   /** A short pulse on a chip when coins land. */
-  pulseCurrency(id: string): void;
+  /** The coins landed: the chip pulses, and `gained` (what the kill paid) pops up beside it. */
+  pulseCurrency(id: string, gained?: Decimal): void;
   /**
    * Holds back part of a chip's amount (welcome back: the gains stay off the counter until
    * collected). `null` releases it and the counter rolls up.
@@ -153,7 +153,7 @@ export function createShell(opts: {
   /** Rolling counters (DESIGN.md §11): shown value, target and held-back part per resource. */
   const counters = new Map<
     string,
-    { shown: Decimal; target: Decimal; held: Decimal; glide?: CounterTween }
+    { shown: Decimal; target: Decimal; held: Decimal; instant: boolean }
   >();
   // the Details button: resources the header leaves out land their coins here
   const detailsBtn = h('button', 'shell-details');
@@ -196,8 +196,8 @@ export function createShell(opts: {
       shown: new Decimal(0),
       target: new Decimal(0),
       held: new Decimal(0),
-      // Money glides up on a fixed ease and a spend shows at once (stage/counterTween.ts)
-      ...(c.crystal ? {} : { glide: restingTween(new Decimal(0)) }),
+      // Money shows its real value at once: it moves by what was won, when it is won (UI_RULES §2 Numbers)
+      instant: !c.crystal,
     });
     attachTooltip(item, c.tip);
     // header chips (Money and the crystals) are always shown
@@ -245,17 +245,38 @@ export function createShell(opts: {
     if (!goals.hidden && !goalsWrap.contains(e.target as Node)) setGoalsOpen(false);
   });
 
+  /** A short "+N" under a Money chip when a win lands (still under reduced motion, without the rise). */
+  const popGain = (item: HTMLElement, gained: Decimal, id: string): void => {
+    const coin = opts.coins?.(id, gained) ?? null;
+    const text = `+${coin ? `${coin.value} ${coin.coin.name}` : fmt(gained)}`;
+    const pop = h('span', 'shell-currency__gain bi-num', text);
+    pop.setAttribute('aria-hidden', 'true');
+    item.querySelector('.shell-currency__gain')?.remove();
+    item.append(pop);
+    const done = (): void => pop.remove();
+    if (reducedMotion() || typeof pop.animate !== 'function') {
+      window.setTimeout(done, 900);
+      return;
+    }
+    pop
+      .animate(
+        [
+          { transform: 'translateY(0)', opacity: 0 },
+          { transform: 'translateY(0)', opacity: 1, offset: 0.15 },
+          { transform: 'translateY(-8px)', opacity: 0 },
+        ],
+        { duration: 900, easing: 'ease-out' },
+      )
+      .addEventListener('finish', done);
+  };
+
   header.append(brand, level, goalsWrap, currencyList, detailsBtn, tools);
 
   onFrame((dt) => {
     for (const [id, c] of counters) {
       const goal = Decimal.max(c.target.sub(c.held), 0);
       if (c.shown.eq(goal)) continue;
-      if (c.glide) {
-        const now = performance.now();
-        c.glide = retarget(c.glide, goal, now, { reduced: reducedMotion() });
-        c.shown = tweenValue(c.glide, now);
-      } else c.shown = rollToward(c.shown, goal, dt);
+      c.shown = c.instant ? goal : rollToward(c.shown, goal, dt);
       // whole-number amounts (crystals, cores) roll through whole numbers only
       const shown = goal.eq(goal.floor()) ? c.shown.round() : c.shown;
       const v = currencyValues.get(id)!;
@@ -343,8 +364,9 @@ export function createShell(opts: {
       // not in the header: land on the Details button
       return currencyGlyphs.get(id) ?? detailsGlyph;
     },
-    pulseCurrency(id) {
+    pulseCurrency(id, gained) {
       const item = currencyItems.get(id);
+      if (item && gained && gained.gt(0) && !crystals.has(id)) popGain(item, gained, id);
       replay(item ?? detailsBtn, crystals.has(id) ? 'is-pulsing-big' : 'is-pulsing', 560);
     },
     detailsButton: detailsBtn,

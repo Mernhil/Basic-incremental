@@ -204,6 +204,7 @@ body {
   min-width: 0;
 }
 .shell-currency {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -245,6 +246,20 @@ body {
 .shell-currency--money .shell-currency__art {
   width: 32px;
   height: 32px;
+}
+/* what a win paid, popping up under the chip when its coins land */
+.shell-currency__gain {
+  position: absolute;
+  left: 0;
+  top: 100%;
+  margin-top: -2px;
+  padding: 1px 6px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bi-chrome-accent);
+  background: var(--bi-chrome-rail-bg);
+  pointer-events: none;
+  z-index: 3;
 }
 /* coins landing (stage/fly.ts) */
 .shell-currency.is-pulsing .shell-currency__art {
