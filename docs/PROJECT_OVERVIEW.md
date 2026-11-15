@@ -150,7 +150,7 @@ One screen, no pages (UI_RULES §2 "The table", mockup 4a). `table/table.ts` lay
 
 ### Widgets (`ui/`)
 
-`card.ts` and `cardFace.ts` (full-art card layout; bottom plate built by `pages/cardFaceModel.ts`), `weaponPanel.ts` (XP ring, level badge, star pips, tier plate, price chips and the tier-up button; model `pages/weaponModel.ts`), `buy.ts` (×1/×10/×100/Max controls), `shelf.ts` (upgrade shelf), `hpStack.ts`, `cosmeticSwatch.ts`, `skins.ts` (equipped UI-skin style), `resourceIcons.ts`, `pixelNumbers.ts`, `skillArt.ts`, and `pixelScale.ts` + `pixelFit.ts` + `pixelScale.css` (whole device-pixel scales, `--dpr`, `fitCard()`; DESIGN §12 / ASSET_RULES §5).
+`card.ts` and `cardFace.ts` (full-art card layout; bottom plate built by `pages/cardFaceModel.ts`), `weaponPanel.ts` (XP ring, level badge, star pips, tier plate, price chips and the tier-up button; model `pages/weaponModel.ts`), `buy.ts` (×1/×10/×100/Max controls), `shelf.ts` (upgrade shelf), `hpStack.ts`, `cosmeticSwatch.ts`, `skins.ts` (equipped UI-skin style), `resourceIcons.ts`, `pixelNumbers.ts`, `skillArt.ts`, `stars.ts` (every star outside a card's own row is a pixel sprite: `stagePips` / `lightStagePips` for the six stage-star pips in the fight HUD and the stage map, `setStarText` for a "★" inside a sentence; the weapon panel, Cards and the dungeon list use them; ASSET_RULES Rank stars), and `pixelScale.ts` + `pixelFit.ts` + `pixelScale.css` (whole device-pixel scales, `--dpr`, `fitCard()`; DESIGN §12 / ASSET_RULES §5).
 
 ### Theme and sound
 
