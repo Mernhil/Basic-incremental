@@ -478,14 +478,12 @@ html .cp-sort .cp-select:not(#_px) {
   gap: 6px;
   justify-items: center;
   /* the slot holds the kit's crest and tails and half of its side decorations (they reach into the gap) */
-  padding: 10px calc(var(--kit-side) * 0.5) 10px;
+  padding: var(--kit-top) calc(var(--kit-side) * 0.5) 10px;
 }
 .cp-slot__buttons {
   margin-top: var(--kit-bottom);
 }
 .cp-slot__label {
-  /* the crest hangs above the card: the label stays clear of it */
-  margin-bottom: var(--kit-top);
   font-size: 12px;
   font-weight: 600;
   color: var(--bi-frame-ink-muted);

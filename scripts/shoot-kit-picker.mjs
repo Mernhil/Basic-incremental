@@ -45,7 +45,10 @@ await page.evaluate(
 );
 await page.reload();
 await page.waitForSelector('.shell');
-await page.getByRole('button', { name: 'Collect' }).click({ timeout: 8000 }).catch(() => {});
+await page
+  .getByRole('button', { name: 'Collect' })
+  .click({ timeout: 8000 })
+  .catch(() => {});
 await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
 await page.setViewportSize({ width: W, height: H });
 await page.click('[data-open="cards"]');

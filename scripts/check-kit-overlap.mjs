@@ -9,7 +9,10 @@ const [port = '9533', out = '.', size = '1280x720', suffix = ''] = process.argv.
 const [W, H] = size.split('x').map(Number);
 const fsUrl = (p) => `/@fs/${resolve(p).split(String.fromCharCode(92)).join('/')}`;
 const browser = await chromium.connectOverCDP(`http://localhost:${port}`);
-const page = browser.contexts().flatMap((c) => c.pages()).find((p) => !p.url().startsWith('devtools'));
+const page = browser
+  .contexts()
+  .flatMap((c) => c.pages())
+  .find((p) => !p.url().startsWith('devtools'));
 if (!page) throw new Error('No app window found');
 page.setDefaultTimeout(180000);
 await page.waitForSelector('.shell');
@@ -39,7 +42,10 @@ await page.evaluate(
 );
 await page.reload();
 await page.waitForSelector('.shell');
-await page.getByRole('button', { name: 'Collect' }).click({ timeout: 8000 }).catch(() => {});
+await page
+  .getByRole('button', { name: 'Collect' })
+  .click({ timeout: 8000 })
+  .catch(() => {});
 await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
 await page.setViewportSize({ width: W, height: H });
 
@@ -59,23 +65,38 @@ const measure = (label) =>
         const x = c.getContext('2d');
         x.drawImage(i, 0, 0);
         const a = x.getImageData(0, 0, c.width, c.height).data;
-        let l = 1e9, r = -1, t = 1e9, b = -1;
+        let l = 1e9,
+          r = -1,
+          t = 1e9,
+          b = -1;
         for (let y = 0; y < c.height; y++)
           for (let xx = 0; xx < c.width; xx++)
             if (a[(y * c.width + xx) * 4 + 3] > 20) {
-              l = Math.min(l, xx); r = Math.max(r, xx + 1); t = Math.min(t, y); b = Math.max(b, y + 1);
+              l = Math.min(l, xx);
+              r = Math.max(r, xx + 1);
+              t = Math.min(t, y);
+              b = Math.max(b, y + 1);
             }
         ext.set(href, { l: l / c.width, r: r / c.width, t: t / c.height, b: b / c.height });
       }
       const e = ext.get(href);
       const q = img.getBoundingClientRect();
-      return { left: q.left + e.l * q.width, right: q.left + e.r * q.width, top: q.top + e.t * q.height, bottom: q.top + e.b * q.height };
+      return {
+        left: q.left + e.l * q.width,
+        right: q.left + e.r * q.width,
+        top: q.top + e.t * q.height,
+        bottom: q.top + e.b * q.height,
+      };
     };
     const kits = [...document.querySelectorAll('.bi-card--kit:not([data-border-worn])')].filter(
       (c) => {
         const r = c.getBoundingClientRect();
-        if (!r.width || !c.checkVisibility({ visibilityProperty: true, opacityProperty: true })) return false;
-        const top = document.elementFromPoint(r.left + r.width / 2, Math.min(r.top + r.height / 2, innerHeight - 2));
+        if (!r.width || !c.checkVisibility({ visibilityProperty: true, opacityProperty: true }))
+          return false;
+        const top = document.elementFromPoint(
+          r.left + r.width / 2,
+          Math.min(r.top + r.height / 2, innerHeight - 2),
+        );
         return !!top && (c.contains(top) || top.contains(c));
       },
     );
@@ -84,27 +105,45 @@ const measure = (label) =>
     for (const c of kits) {
       const px = c.querySelector('.bi-frame__px');
       if (!px) continue;
-      info.push({ c, name: c.querySelector('.bi-card__name')?.textContent ?? '?', card: rect(c), kit: await opaque(px) });
+      info.push({
+        c,
+        name: c.querySelector('.bi-card__name')?.textContent ?? '?',
+        card: rect(c),
+        kit: await opaque(px),
+      });
     }
-    const hit = (a, b) => a.left < b.right - 0.5 && a.right > b.left + 0.5 && a.top < b.bottom - 0.5 && a.bottom > b.top + 0.5;
+    const hit = (a, b) =>
+      a.left < b.right - 0.5 &&
+      a.right > b.left + 0.5 &&
+      a.top < b.bottom - 0.5 &&
+      a.bottom > b.top + 0.5;
     const problems = [];
     for (const a of info) {
       for (const b of info) {
         if (a === b || a.c.contains(b.c) || b.c.contains(a.c)) continue;
-        if (hit(a.kit, b.card)) problems.push(`${a.name} kit covers ${b.name} [${a.c.closest('[class*="cp-"]')?.className.split(' ')[0]} ${Math.round(a.kit.left)},${Math.round(a.kit.top)}-${Math.round(a.kit.right)},${Math.round(a.kit.bottom)} vs ${Math.round(b.card.left)},${Math.round(b.card.top)}]`);
+        if (hit(a.kit, b.card))
+          problems.push(
+            `${a.name} kit covers ${b.name} [${a.c.closest('[class*="cp-"]')?.className.split(' ')[0]} ${Math.round(a.kit.left)},${Math.round(a.kit.top)}-${Math.round(a.kit.right)},${Math.round(a.kit.bottom)} vs ${Math.round(b.card.left)},${Math.round(b.card.top)}]`,
+          );
       }
       // text under the card (tile labels): any visible leaf text element outside the card that the kit reaches
       const li = a.c.closest('li, .cp-slot');
       if (li)
-        for (const t of li.querySelectorAll('.cp-pick__note, .cp-pick__tag, .cp-slot__label, .cp-slot__buttons button')) {
-          if (hit(a.kit, rect(t))) problems.push(`${a.name} kit covers "${t.textContent.trim().slice(0, 20)}"`);
+        for (const t of li.querySelectorAll(
+          '.cp-pick__note, .cp-pick__tag, .cp-slot__label, .cp-slot__buttons button',
+        )) {
+          if (hit(a.kit, rect(t)))
+            problems.push(`${a.name} kit covers "${t.textContent.trim().slice(0, 20)}"`);
         }
       // clipped by a scrolling or hidden-overflow ancestor
       for (let p = a.c.parentElement; p && p !== document.body; p = p.parentElement) {
         const o = getComputedStyle(p);
         if (/(auto|hidden|scroll|clip)/.test(o.overflowX + o.overflowY)) {
           const r = rect(p);
-          if (r.width && (a.kit.left < r.left - 1 || a.kit.right > r.right + 1 || a.kit.top < r.top - 1)) {
+          if (
+            r.width &&
+            (a.kit.left < r.left - 1 || a.kit.right > r.right + 1 || a.kit.top < r.top - 1)
+          ) {
             // only a problem when the cut part is on screen of that box and the box scrolls vertically from its top
             if (a.card.top >= r.top && a.card.bottom <= r.bottom)
               problems.push(`${a.name} kit cut by ${p.className.split(' ')[0]}`);
@@ -112,8 +151,6 @@ const measure = (label) =>
           break;
         }
       }
-      // wider than its tile
-      const tile = a.c.closest('.cp-tile, .cp-pick__item, .cp-slot');
     }
     return { label, cards: info.length, problems: [...new Set(problems)] };
   }, label);
@@ -132,7 +169,11 @@ await page.getByText('Loadouts', { exact: true }).first().click();
 await page.waitForTimeout(1000);
 await page.locator('[data-key^="slot-"]').first().click();
 await page.waitForTimeout(500);
-await page.locator('[data-key^="slot-fighting-1"]').first().click().catch(() => {});
+await page
+  .locator('[data-key^="slot-fighting-1"]')
+  .first()
+  .click()
+  .catch(() => {});
 await page.waitForTimeout(1000);
 results.push(await measure('loadouts + picker'));
 await shot('loadouts');
@@ -140,15 +181,26 @@ await page.locator('.cp-pick__list').evaluate((e) => (e.scrollTop = 0));
 await page.locator('.cp-pick').scrollIntoViewIfNeeded();
 await page.waitForTimeout(400);
 await shot('picker');
-for (const [key, label] of [['wardrobe', 'wardrobe'], ['summon', 'summon']]) {
-  await page.getByText('← Table').first().click().catch(() => {});
+for (const [key, label] of [
+  ['wardrobe', 'wardrobe'],
+  ['summon', 'summon'],
+]) {
+  await page
+    .getByText('← Table')
+    .first()
+    .click()
+    .catch(() => {});
   await page.waitForTimeout(600);
   await page.click(`[data-open="${key}"]`).catch(() => {});
   await page.waitForTimeout(1500);
   results.push(await measure(label));
   await shot(label);
 }
-await page.getByText('← Table').first().click().catch(() => {});
+await page
+  .getByText('← Table')
+  .first()
+  .click()
+  .catch(() => {});
 await page.waitForTimeout(800);
 results.push(await measure('table (dungeon hand)'));
 await shot('table');
