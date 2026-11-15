@@ -3,7 +3,8 @@ import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
-import { onFrame, replay } from '../stage/motion';
+import { restingTween, retarget, tweenValue, type CounterTween } from '../stage/counterTween';
+import { onFrame, reducedMotion, replay } from '../stage/motion';
 import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
 import './shell.css';
@@ -150,7 +151,10 @@ export function createShell(opts: {
   const glyphArt = new Map<string, string>();
   const crystals = new Set<string>();
   /** Rolling counters (DESIGN.md §11): shown value, target and held-back part per resource. */
-  const counters = new Map<string, { shown: Decimal; target: Decimal; held: Decimal }>();
+  const counters = new Map<
+    string,
+    { shown: Decimal; target: Decimal; held: Decimal; glide?: CounterTween }
+  >();
   // the Details button: resources the header leaves out land their coins here
   const detailsBtn = h('button', 'shell-details');
   detailsBtn.type = 'button';
@@ -188,7 +192,13 @@ export function createShell(opts: {
     item.append(glyph, amounts, h('span', 'shell-currency__name', c.name));
     currencyRates.set(c.id, rate);
     currencyGlyphs.set(c.id, glyph);
-    counters.set(c.id, { shown: new Decimal(0), target: new Decimal(0), held: new Decimal(0) });
+    counters.set(c.id, {
+      shown: new Decimal(0),
+      target: new Decimal(0),
+      held: new Decimal(0),
+      // Money glides up on a fixed ease and a spend shows at once (stage/counterTween.ts)
+      ...(c.crystal ? {} : { glide: restingTween(new Decimal(0)) }),
+    });
     attachTooltip(item, c.tip);
     // header chips (Money and the crystals) are always shown
     currencyValues.set(c.id, value);
@@ -241,7 +251,11 @@ export function createShell(opts: {
     for (const [id, c] of counters) {
       const goal = Decimal.max(c.target.sub(c.held), 0);
       if (c.shown.eq(goal)) continue;
-      c.shown = rollToward(c.shown, goal, dt);
+      if (c.glide) {
+        const now = performance.now();
+        c.glide = retarget(c.glide, goal, now, { reduced: reducedMotion() });
+        c.shown = tweenValue(c.glide, now);
+      } else c.shown = rollToward(c.shown, goal, dt);
       // whole-number amounts (crystals, cores) roll through whole numbers only
       const shown = goal.eq(goal.floor()) ? c.shown.round() : c.shown;
       const v = currencyValues.get(id)!;

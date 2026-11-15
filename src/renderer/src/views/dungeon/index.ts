@@ -14,7 +14,7 @@ import './dungeon.css';
  * 4b and 4g; UI_RULES.md §2 The duel's layout, The dungeon full view). The duel is one element
  * (`stage/arena.ts`): it sits in the window while the table shows and moves into the view when it
  * opens, so the fight never restarts. The view adds the Dungeons, Weapon and Training buttons at the
- * bottom right; each opens its panel as a framed sheet over the fight, which keeps running.
+ * right end of its title bar; each opens its panel as a framed sheet over the fight, which keeps running.
  */
 
 let arena: Arena | null = null;
@@ -108,7 +108,8 @@ export const dungeonViews: ViewPackage = {
           buttons.set(id, b);
           bar.append(b);
         }
-        stage.append(sheet, bar);
+        stage.append(sheet);
+        api.setTools(bar);
         host.append(stage);
 
         let open: DuelPanel | null = null;
