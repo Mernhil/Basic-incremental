@@ -9,15 +9,21 @@ import {
   loadBestSave,
   accountInfo,
   checkAchievements,
+  claimableQuests,
+  claimAllQuests,
+  claimQuest,
   collectModifiers,
   rewardTrack,
   gemMastery,
   incomePerSecond,
   nextGoals,
+  questPopup,
+  questsByGroup,
   resolveGlobal,
   simulateOffline,
   type GameState,
   type OfflineSummary,
+  type QuestEntry,
   type TickReport,
   type TierUp,
 } from '../../game';
@@ -44,7 +50,13 @@ import { unlockToast } from './pages/achievementsModel';
 import { toast } from './stage/toast';
 import { createCardsModel } from './pages/cardsAdapter';
 import { cardItemArt, loadoutProps } from './pages/loadoutCards';
-import { goalRows, type GoalRow } from './pages/progressionModel';
+import {
+  goalRows,
+  questRow,
+  rewardText,
+  type GoalRow,
+  type QuestRow,
+} from './pages/progressionModel';
 import { createQuestScroll } from './shell/quest';
 import { playTierUps } from './stage/tierUp';
 import { gemCoin, svg } from './art/gems';
@@ -222,19 +234,60 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
         return row.page;
     }
   };
-  const quest = createQuestScroll(shell.goals, (row) => {
-    const id = goalView(row);
+  const openPage = (page: QuestRow['page'], target = ''): void => {
+    const id = goalView({ id: target, page } as GoalRow);
     if (id) table.open(id, shell.goalsButton);
     else table.host.close();
+  };
+  const claimQuests = (ids: readonly string[] | null): void => {
+    const r = ids ? claimQuest(loop.state, content, ids[0]!) : claimAllQuests(loop.state, content);
+    if (!r.ok) return;
+    const gains = r.quests.flatMap((q) =>
+      q.reward.map((x) => rewardText(content, { ...q, reward: [x] })),
+    );
+    applyAndSave(r.state);
+    playSound('achievement');
+    toast(
+      COPY.progress.quests.claimedToast(r.quests.length),
+      gains.slice(0, 6),
+      'milestone',
+      'gold',
+    );
+    renderQuest(performance.now(), true);
+  };
+  const quest = createQuestScroll(shell.goals, {
+    claim: (id) => claimQuests([id]),
+    claimAll: () => claimQuests(null),
+    open: (page, id) => openPage(page, id),
+    openHint: (row) => {
+      const id = goalView(row);
+      if (id) table.open(id, shell.goalsButton);
+      else table.host.close();
+    },
   });
   let questAt = 0;
-  const renderQuest = (now: number): void => {
-    if (now - questAt < 1000) return;
+  function renderQuest(now: number, force = false): void {
+    if (!force && now - questAt < 1000) return;
     questAt = now;
-    const rows = goalRows(nextGoals(loop.state, content, 3));
-    quest.update(rows);
-    shell.setGoals(rows.length);
-  };
+    const popup = questPopup(loop.state, content);
+    const rowOf = (e: QuestEntry): QuestRow => questRow(content, e);
+    const hint = goalRows(nextGoals(loop.state, content, 1))[0] ?? null;
+    quest.update({
+      claimable: popup.claimable.map(rowOf),
+      next: popup.next.map(rowOf),
+      hint,
+      groups: [...questsByGroup(loop.state, content)].map(([id, list]) => ({
+        id,
+        rows: list.map(rowOf),
+      })),
+    });
+    shell.setGoals(claimableQuests(loop.state));
+  }
+  // every opening starts on the short list, with the numbers of this moment
+  shell.goalsButton.addEventListener('click', () => {
+    quest.showList();
+    renderQuest(performance.now(), true);
+  });
 
   // achievement unlocks (DESIGN.md §11): a toast and the sticker sound wherever they happen;
   // the sticker itself is slapped into the book when the page next shows it

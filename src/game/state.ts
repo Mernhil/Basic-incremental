@@ -48,6 +48,9 @@ export interface GameState {
   prestige: PrestigeState;
   /** Achievement id -> play time (ms) when it unlocked. Kept through prestige. */
   achievements: Record<string, number>;
+  /** Quest id -> its state (DESIGN.md §10 Quests): present once done, `claimed` once paid. Kept through
+   *  prestige. Save format 34. */
+  quests: Record<string, QuestProgress>;
   /** Shard shop item id -> purchases made. */
   shardShop: Record<string, number>;
   /** Account XP, level, account tree and respecs. */
@@ -487,6 +490,7 @@ export function createInitialState(content: Content): GameState {
     legacySkins: [],
     stats: { playTimeMs: 0, bossKills: 0, longestOfflineMs: 0 },
     achievements: {},
+    quests: {},
     shardShop: {},
     account: initialAccount(),
     upgrades: initialUpgrades(),
@@ -531,6 +535,7 @@ export function cloneState(state: GameState): GameState {
     mastery: cloneMastery(state.mastery),
     portals: Object.fromEntries(Object.entries(state.portals).map(([id, p]) => [id, { ...p }])),
     achievements: { ...state.achievements },
+    quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
     upgrades: { owned: [...state.upgrades.owned], moneyEarned: state.upgrades.moneyEarned },
     automation: { ...state.automation },
@@ -630,6 +635,12 @@ export function cloneBursts(b: FightingBursts): FightingBursts {
 }
 
 /** One owned card (DESIGN.md §5). Each card is owned once; further copies are duplicates. */
+/** A quest that is done: the play time (ms) it was done at, and whether its reward was claimed. */
+export interface QuestProgress {
+  doneAt: number;
+  claimed: boolean;
+}
+
 export interface OwnedCard {
   tier: RankTier;
   /** 1..6 within the tier. */

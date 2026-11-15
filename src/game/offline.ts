@@ -6,6 +6,7 @@ import { advanceChunked } from './tick';
 import type { CardDrop, TierUp } from './report';
 import { xpToNextLevel } from './cards';
 import { settleAchievements } from './achievements';
+import { settleQuests } from './quests';
 import { advanceTrips } from './expeditions';
 import { cloneState, type GameState } from './state';
 
@@ -90,6 +91,7 @@ export function simulateOffline(
   advanceTrips(recorded, (elapsedMs - simulatedMs) / 1000);
   recorded.stats.longestOfflineMs = Math.max(recorded.stats.longestOfflineMs, simulatedMs);
   const unlocked = settleAchievements(recorded, content);
+  settleQuests(recorded, content);
   result.state = recorded;
 
   const gains: Record<string, Decimal> = {};

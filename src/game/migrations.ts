@@ -83,6 +83,9 @@ export const MIGRATIONS: MigrationTable = {
   /** v32 -> v33: card skins (DESIGN.md §8): the skin chosen per weapon type becomes a choice on every
    *  owned card of that type, so each card looks as it did; the per-type choice is dropped. */
   32: v32ToV33,
+  /** v33 -> v34: quests (DESIGN.md §10 Quests). Nothing is done yet; reading the save marks every
+   *  quest the state already meets as done and waiting to be claimed, never as claimed. */
+  33: (state) => ({ ...state, quests: {} }),
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */

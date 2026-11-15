@@ -1,0 +1,1851 @@
+{
+  "quests": [
+    {
+      "id": "d1_floor_3",
+      "group": "dungeons",
+      "name": "Reach floor 3 of the Mossy Cellar",
+      "condition": {
+        "kind": "floor_reached",
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 3
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d1_floor_6",
+      "group": "dungeons",
+      "name": "Reach floor 6 of the Mossy Cellar",
+      "condition": {
+        "kind": "floor_reached",
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": 6
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d1_clear",
+      "group": "dungeons",
+      "name": "Finish the Mossy Cellar: beat Root Warden",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "mossy_cellar"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "d1_boss_3",
+      "group": "dungeons",
+      "name": "Beat Root Warden on Normal 3 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 3
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d1_boss_10",
+      "group": "dungeons",
+      "name": "Beat Root Warden on Normal 10 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d1_boss_25",
+      "group": "dungeons",
+      "name": "Beat Root Warden on Normal 25 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 25
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d1_boss_50",
+      "group": "dungeons",
+      "name": "Beat Root Warden on Normal 50 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "mossy_cellar",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 50
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d2_floor_10",
+      "group": "dungeons",
+      "name": "Reach floor 10 of the Ember Crypt",
+      "condition": {
+        "kind": "floor_reached",
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d2_floor_15",
+      "group": "dungeons",
+      "name": "Reach floor 15 of the Ember Crypt",
+      "condition": {
+        "kind": "floor_reached",
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": 15
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d2_clear",
+      "group": "dungeons",
+      "name": "Finish the Ember Crypt: beat Cinder Lich",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "ember_crypt"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d2_boss_5",
+      "group": "dungeons",
+      "name": "Beat Cinder Lich on Normal 5 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 5
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d2_boss_15",
+      "group": "dungeons",
+      "name": "Beat Cinder Lich on Normal 15 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 15
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d2_boss_40",
+      "group": "dungeons",
+      "name": "Beat Cinder Lich on Normal 40 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "ember_crypt",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 40
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d3_floor_15",
+      "group": "dungeons",
+      "name": "Reach floor 15 of the Frostspire Vault",
+      "condition": {
+        "kind": "floor_reached",
+        "dungeon": "frostspire_vault",
+        "difficulty": "normal",
+        "floor": 15
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d3_floor_25",
+      "group": "dungeons",
+      "name": "Reach floor 25 of the Frostspire Vault",
+      "condition": {
+        "kind": "floor_reached",
+        "dungeon": "frostspire_vault",
+        "difficulty": "normal",
+        "floor": 25
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d3_clear",
+      "group": "dungeons",
+      "name": "Finish the Frostspire Vault: beat Glacier Colossus",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "frostspire_vault"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "d3_boss_5",
+      "group": "dungeons",
+      "name": "Beat Glacier Colossus on Normal 5 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "frostspire_vault",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 5
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "d3_boss_20",
+      "group": "dungeons",
+      "name": "Beat Glacier Colossus on Normal 20 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "frostspire_vault",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 20
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d4_clear",
+      "group": "dungeons",
+      "name": "Finish Stormwrack Cove: beat the Abyssal Anchor Leviathan",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "thunderpeak_aerie"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "d4_boss_10",
+      "group": "dungeons",
+      "name": "Beat the Abyssal Anchor Leviathan on Normal 10 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "thunderpeak_aerie",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d5_clear",
+      "group": "dungeons",
+      "name": "Finish the Sunken Sanctum: beat Sanctuary Archangel",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "sunken_sanctum"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "d5_boss_10",
+      "group": "dungeons",
+      "name": "Beat Sanctuary Archangel on Normal 10 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "sunken_sanctum",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "d6_clear",
+      "group": "dungeons",
+      "name": "Finish the Hollow of the Void: beat the Faceless Void Reaper",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "void_hollow"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "d6_boss_10",
+      "group": "dungeons",
+      "name": "Beat the Faceless Void Reaper on Normal 10 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "void_hollow",
+        "difficulty": "normal",
+        "floor": "last",
+        "count": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "trial_clear",
+      "group": "dungeons",
+      "name": "Clear the Glimmer Trial",
+      "condition": {
+        "kind": "cleared",
+        "dungeon": "glimmer_trial"
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        },
+        {
+          "resource": "glamour_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "hard_1",
+      "group": "dungeons",
+      "name": "Beat a dungeon boss on Hard",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "hard",
+        "count": 1
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "hard_3",
+      "group": "dungeons",
+      "name": "Beat 3 dungeon bosses on Hard",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "hard",
+        "count": 3
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "hard_6",
+      "group": "dungeons",
+      "name": "Beat 6 dungeon bosses on Hard",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "hard",
+        "count": 6
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "hard_boss_10",
+      "group": "dungeons",
+      "name": "Beat Root Warden on Hard 10 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "mossy_cellar",
+        "difficulty": "hard",
+        "floor": "last",
+        "count": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "nightmare_1",
+      "group": "dungeons",
+      "name": "Beat a dungeon boss on Nightmare",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "nightmare",
+        "count": 1
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "nightmare_3",
+      "group": "dungeons",
+      "name": "Beat 3 dungeon bosses on Nightmare",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "nightmare",
+        "count": 3
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "nightmare_6",
+      "group": "dungeons",
+      "name": "Beat 6 dungeon bosses on Nightmare",
+      "condition": {
+        "kind": "tier_cleared",
+        "difficulty": "nightmare",
+        "count": 6
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "4"
+        }
+      ]
+    },
+    {
+      "id": "nightmare_boss_10",
+      "group": "dungeons",
+      "name": "Beat Root Warden on Nightmare 10 times",
+      "condition": {
+        "kind": "stage_kills",
+        "dungeon": "mossy_cellar",
+        "difficulty": "nightmare",
+        "floor": "last",
+        "count": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "endless_10",
+      "group": "dungeons",
+      "name": "Reach endless depth 10",
+      "condition": {
+        "kind": "endless_depth",
+        "depth": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "endless_25",
+      "group": "dungeons",
+      "name": "Reach endless depth 25",
+      "condition": {
+        "kind": "endless_depth",
+        "depth": 25
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "endless_50",
+      "group": "dungeons",
+      "name": "Reach endless depth 50",
+      "condition": {
+        "kind": "endless_depth",
+        "depth": 50
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "first_pull",
+      "group": "cards",
+      "name": "Summon your first card",
+      "condition": {
+        "kind": "pulls",
+        "amount": 1
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "pulls_5",
+      "group": "cards",
+      "name": "Summon 5 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 5
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "pulls_15",
+      "group": "cards",
+      "name": "Summon 15 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 15
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "pulls_30",
+      "group": "cards",
+      "name": "Summon 30 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 30
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "pulls_60",
+      "group": "cards",
+      "name": "Summon 60 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 60
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "pulls_100",
+      "group": "cards",
+      "name": "Summon 100 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 100
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "pulls_250",
+      "group": "cards",
+      "name": "Summon 250 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 250
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "pulls_500",
+      "group": "cards",
+      "name": "Summon 500 times",
+      "condition": {
+        "kind": "pulls",
+        "amount": 500
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "cards_5",
+      "group": "cards",
+      "name": "Own 5 different cards",
+      "condition": {
+        "kind": "cards_owned",
+        "amount": 5
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "cards_10",
+      "group": "cards",
+      "name": "Own 10 different cards",
+      "condition": {
+        "kind": "cards_owned",
+        "amount": 10
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "cards_20",
+      "group": "cards",
+      "name": "Own 20 different cards",
+      "condition": {
+        "kind": "cards_owned",
+        "amount": 20
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "cards_40",
+      "group": "cards",
+      "name": "Own 40 different cards",
+      "condition": {
+        "kind": "cards_owned",
+        "amount": 40
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "cards_80",
+      "group": "cards",
+      "name": "Own 80 different cards",
+      "condition": {
+        "kind": "cards_owned",
+        "amount": 80
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "first_uncommon",
+      "group": "cards",
+      "name": "Get your first Uncommon card",
+      "condition": {
+        "kind": "rarity_owned",
+        "rarity": "uncommon"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "first_rare",
+      "group": "cards",
+      "name": "Get your first Rare card",
+      "condition": {
+        "kind": "rarity_owned",
+        "rarity": "rare"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "first_epic",
+      "group": "cards",
+      "name": "Get your first Epic card",
+      "condition": {
+        "kind": "rarity_owned",
+        "rarity": "epic"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "first_legendary",
+      "group": "cards",
+      "name": "Get your first Legendary card",
+      "condition": {
+        "kind": "rarity_owned",
+        "rarity": "legendary"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "first_mythic",
+      "group": "cards",
+      "name": "Get your first Mythic card",
+      "condition": {
+        "kind": "rarity_owned",
+        "rarity": "mythic"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "first_void",
+      "group": "cards",
+      "name": "Get your first Void card",
+      "condition": {
+        "kind": "rarity_owned",
+        "rarity": "void"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "full_loadout",
+      "group": "cards",
+      "name": "Fill every slot of a loadout",
+      "condition": {
+        "kind": "full_loadout"
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_level_10",
+      "group": "cards",
+      "name": "Raise a card to level 10",
+      "condition": {
+        "kind": "card_level",
+        "level": 10
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_level_20",
+      "group": "cards",
+      "name": "Raise a card to level 20",
+      "condition": {
+        "kind": "card_level",
+        "level": 20
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_level_40",
+      "group": "cards",
+      "name": "Raise a card to level 40",
+      "condition": {
+        "kind": "card_level",
+        "level": 40
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_level_60",
+      "group": "cards",
+      "name": "Raise a card to level 60",
+      "condition": {
+        "kind": "card_level",
+        "level": 60
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_level_80",
+      "group": "cards",
+      "name": "Raise a card to level 80",
+      "condition": {
+        "kind": "card_level",
+        "level": 80
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "card_stars_2",
+      "group": "cards",
+      "name": "Raise a card to ★2",
+      "condition": {
+        "kind": "card_stars",
+        "stars": 2
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_stars_4",
+      "group": "cards",
+      "name": "Raise a card to ★4",
+      "condition": {
+        "kind": "card_stars",
+        "stars": 4
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_stars_6",
+      "group": "cards",
+      "name": "Raise a card to ★6",
+      "condition": {
+        "kind": "card_stars",
+        "stars": 6
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_tier_bronze",
+      "group": "cards",
+      "name": "Upgrade a weapon to Bronze",
+      "condition": {
+        "kind": "card_tier",
+        "tier": "bronze"
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_tier_silver",
+      "group": "cards",
+      "name": "Upgrade a weapon to Silver",
+      "condition": {
+        "kind": "card_tier",
+        "tier": "silver"
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_tier_gold",
+      "group": "cards",
+      "name": "Upgrade a weapon to Gold",
+      "condition": {
+        "kind": "card_tier",
+        "tier": "gold"
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "card_tier_prismatic",
+      "group": "cards",
+      "name": "Upgrade a weapon to Prismatic",
+      "condition": {
+        "kind": "card_tier",
+        "tier": "prismatic"
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "card_tier_mythic",
+      "group": "cards",
+      "name": "Upgrade a weapon to Mythic",
+      "condition": {
+        "kind": "card_tier",
+        "tier": "mythic"
+      },
+      "page": "cards",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "cosmetics_1",
+      "group": "cards",
+      "name": "Win a cosmetic from the Wardrobe Gate",
+      "condition": {
+        "kind": "cosmetics_owned",
+        "amount": 1
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "glamour_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "cosmetics_5",
+      "group": "cards",
+      "name": "Own 5 cosmetics",
+      "condition": {
+        "kind": "cosmetics_owned",
+        "amount": 5
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "glamour_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "cosmetics_10",
+      "group": "cards",
+      "name": "Own 10 cosmetics",
+      "condition": {
+        "kind": "cosmetics_owned",
+        "amount": 10
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "glamour_scroll",
+          "amount": "5"
+        }
+      ]
+    },
+    {
+      "id": "full_set",
+      "group": "cards",
+      "name": "Wear a complete cosmetic set",
+      "condition": {
+        "kind": "full_set"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "glamour_scroll",
+          "amount": "4"
+        }
+      ]
+    },
+    {
+      "id": "logging_1k",
+      "group": "gathering",
+      "name": "Harvest 1,000 tree gems",
+      "condition": {
+        "kind": "harvested",
+        "job": "logging",
+        "amount": "1000"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "logging_100k",
+      "group": "gathering",
+      "name": "Harvest 100,000 tree gems",
+      "condition": {
+        "kind": "harvested",
+        "job": "logging",
+        "amount": "100000"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        },
+        {
+          "resource": "moss_core",
+          "amount": "5"
+        }
+      ]
+    },
+    {
+      "id": "logging_10m",
+      "group": "gathering",
+      "name": "Harvest 10 million tree gems",
+      "condition": {
+        "kind": "harvested",
+        "job": "logging",
+        "amount": "10000000"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "logging_open_2",
+      "group": "gathering",
+      "name": "Open a second tree",
+      "condition": {
+        "kind": "producers",
+        "job": "logging",
+        "count": 2
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "logging_open_3",
+      "group": "gathering",
+      "name": "Open a third tree",
+      "condition": {
+        "kind": "producers",
+        "job": "logging",
+        "count": 3
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "mining_1k",
+      "group": "gathering",
+      "name": "Harvest 1,000 mine gems",
+      "condition": {
+        "kind": "harvested",
+        "job": "mining",
+        "amount": "1000"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "mining_100k",
+      "group": "gathering",
+      "name": "Harvest 100,000 mine gems",
+      "condition": {
+        "kind": "harvested",
+        "job": "mining",
+        "amount": "100000"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        },
+        {
+          "resource": "cinder_core",
+          "amount": "5"
+        }
+      ]
+    },
+    {
+      "id": "mining_10m",
+      "group": "gathering",
+      "name": "Harvest 10 million mine gems",
+      "condition": {
+        "kind": "harvested",
+        "job": "mining",
+        "amount": "10000000"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "mining_open_2",
+      "group": "gathering",
+      "name": "Open a second mine",
+      "condition": {
+        "kind": "producers",
+        "job": "mining",
+        "count": 2
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "mining_open_3",
+      "group": "gathering",
+      "name": "Open a third mine",
+      "condition": {
+        "kind": "producers",
+        "job": "mining",
+        "count": 3
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "tools_10",
+      "group": "gathering",
+      "name": "Buy 10 tool levels",
+      "condition": {
+        "kind": "tool_levels",
+        "amount": 10
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "tools_50",
+      "group": "gathering",
+      "name": "Buy 50 tool levels",
+      "condition": {
+        "kind": "tool_levels",
+        "amount": 50
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "tools_150",
+      "group": "gathering",
+      "name": "Buy 150 tool levels",
+      "condition": {
+        "kind": "tool_levels",
+        "amount": 150
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "tools_500",
+      "group": "gathering",
+      "name": "Buy 500 tool levels",
+      "condition": {
+        "kind": "tool_levels",
+        "amount": 500
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "workers_3",
+      "group": "gathering",
+      "name": "Have 3 cards at work",
+      "condition": {
+        "kind": "workers",
+        "count": 3
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "workers_6",
+      "group": "gathering",
+      "name": "Have 6 cards at work",
+      "condition": {
+        "kind": "workers",
+        "count": 6
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "workers_12",
+      "group": "gathering",
+      "name": "Have 12 cards at work",
+      "condition": {
+        "kind": "workers",
+        "count": 12
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "depth_2",
+      "group": "gathering",
+      "name": "Dig to the second layer of a tree or mine",
+      "condition": {
+        "kind": "depth",
+        "layer": 2
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "depth_3",
+      "group": "gathering",
+      "name": "Dig to the third layer of a tree or mine",
+      "condition": {
+        "kind": "depth",
+        "layer": 3
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "forge",
+      "group": "gathering",
+      "name": "Set the forge to work",
+      "condition": {
+        "kind": "forge_working"
+      },
+      "page": "production",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        },
+        {
+          "resource": "glimmer_dust",
+          "amount": "100"
+        }
+      ]
+    },
+    {
+      "id": "account_2",
+      "group": "account",
+      "name": "Reach account level 2",
+      "condition": {
+        "kind": "account_level",
+        "level": 2
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_3",
+      "group": "account",
+      "name": "Reach account level 3",
+      "condition": {
+        "kind": "account_level",
+        "level": 3
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_4",
+      "group": "account",
+      "name": "Reach account level 4",
+      "condition": {
+        "kind": "account_level",
+        "level": 4
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_6",
+      "group": "account",
+      "name": "Reach account level 6",
+      "condition": {
+        "kind": "account_level",
+        "level": 6
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_8",
+      "group": "account",
+      "name": "Reach account level 8",
+      "condition": {
+        "kind": "account_level",
+        "level": 8
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_12",
+      "group": "account",
+      "name": "Reach account level 12",
+      "condition": {
+        "kind": "account_level",
+        "level": 12
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_20",
+      "group": "account",
+      "name": "Reach account level 20",
+      "condition": {
+        "kind": "account_level",
+        "level": 20
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "account_30",
+      "group": "account",
+      "name": "Reach account level 30",
+      "condition": {
+        "kind": "account_level",
+        "level": 30
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "training_3",
+      "group": "account",
+      "name": "Buy 3 Training levels",
+      "condition": {
+        "kind": "training_levels",
+        "amount": 3
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "training_10",
+      "group": "account",
+      "name": "Buy 10 Training levels",
+      "condition": {
+        "kind": "training_levels",
+        "amount": 10
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "training_30",
+      "group": "account",
+      "name": "Buy 30 Training levels",
+      "condition": {
+        "kind": "training_levels",
+        "amount": 30
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "training_100",
+      "group": "account",
+      "name": "Buy 100 Training levels",
+      "condition": {
+        "kind": "training_levels",
+        "amount": 100
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "training_300",
+      "group": "account",
+      "name": "Buy 300 Training levels",
+      "condition": {
+        "kind": "training_levels",
+        "amount": 300
+      },
+      "page": "dungeons",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "skills_1",
+      "group": "account",
+      "name": "Learn your first skill",
+      "condition": {
+        "kind": "skills_learned",
+        "amount": 1
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "skills_10",
+      "group": "account",
+      "name": "Learn 10 skills",
+      "condition": {
+        "kind": "skills_learned",
+        "amount": 10
+      },
+      "page": "skills",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        }
+      ]
+    },
+    {
+      "id": "ascend_1",
+      "group": "account",
+      "name": "Ascend for the first time",
+      "condition": {
+        "kind": "ascensions",
+        "amount": 1
+      },
+      "page": "shop",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "1"
+        },
+        {
+          "resource": "glamour_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "ascend_3",
+      "group": "account",
+      "name": "Ascend 3 times",
+      "condition": {
+        "kind": "ascensions",
+        "amount": 3
+      },
+      "page": "shop",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { grantWorkerXp, hasPendingLevel, productionXpPerUnit, settleCardLevels }
 import { advanceCombat } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
+import { settleQuests } from './quests';
 import { bondsDue, settleBonds } from './bonds';
 import { advanceTrips } from './expeditions';
 import { settleChallenges } from './challenges';
@@ -78,6 +79,7 @@ export function advance(
     settleAccount(current, content, report);
     settleBonds(current, content);
     settleAchievements(current, content, report);
+    settleQuests(current, content);
     remaining -= until;
   }
   return { state: current, report };
