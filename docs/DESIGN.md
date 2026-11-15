@@ -690,6 +690,7 @@ Defaults by Claude, never confirmed (`[Default]`):
 
 ## 17. Changelog
 
+- 2026-11-15 — Milestone pick retune (Claude default, after the 40 h sim of 0.7.20 ran Starlight to about 85 times the pre-picks base): the Lv 50 place output perks ×1.5 → ×1.25, Merchant Ledger +25% → +10%, Golden Ledger and Gem Polish ×1.25 → ×1.1, the lucky strike perks ×2 → ×1.5 and +100% → +50% (§4 How milestone picks work).
 - 2026-11-15 — Milestone picks (user: picked option 2b, "the bottom ones i dont like at all" about the one-time upgrades): the upgrade shelf and its Upgrades tiles are replaced by picks of one of two perks at the milestones of every repeatable line, and every line shows real numbers now → after, its cost resource with "need N more" and what its next milestone gives (§3, §4, §6, §9).
 - 2026-11-15 — Formation (user: front row and back row, direct attacks hit the front, boss abilities can hit the back, three roles Tank, DPS and Support on the card): §5 Loadouts, Roles, §6 team of 4, Boss abilities.
 - 2026-11-15 — Four equal cards (user: "Four equal cards: no Main and no Support slots; every card fights with its own ability AND gives its team bonus to the others; slot order only sets left to right"): the fighting loadout has four equal slots; a card's two texts are its Ability and its Team bonus; elements, the stat compare line, the Weapon panel (a card switch) and Lone Wolf follow (§5, §6, §10, §14); the names, reach and rules the user left open are Claude's defaults listed under Open questions.
