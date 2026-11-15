@@ -116,6 +116,27 @@ describe('v34 -> v35 (four equal loadout slots)', () => {
     expect(loaded.presets.dungeons['mossy_cellar']!.slots).toContain('ember_squire');
   });
 
+  it('migrates a 0.7.19 save (format 34 with quests): quests intact, loadout placed in formation', () => {
+    const state = newGame();
+    state.account.level = 10;
+    for (const id of ['storm_duelist', 'rusty_brute']) state.cards.owned[id] = newOwnedCard();
+    const quest = content.quests[0]!.id;
+    state.quests[quest] = { doneAt: 5, claimed: true };
+    const json = JSON.parse(createSaveText(state, 1));
+    json.version = 34;
+    json.state.cards.loadouts.fighting = {
+      main: 'ember_squire',
+      supports: ['rusty_brute', 'storm_duelist', null],
+    };
+    json.state.presets.dungeons = {};
+    const loaded = readSave(JSON.stringify(json), content).state;
+    expect(loaded.quests[quest]).toEqual({ doneAt: 5, claimed: true });
+    const slots = loaded.cards.loadouts.fighting.slots;
+    expect(slots.filter(Boolean).sort()).toEqual(['ember_squire', 'rusty_brute', 'storm_duelist']);
+    expect(slots[1]).toBe('storm_duelist'); // the sturdiest card stands in front
+    expect(CURRENT_SAVE_VERSION).toBe(35);
+  });
+
   it('round-trips the four slots', () => {
     const state = newGame();
     state.cards.owned['storm_duelist'] = newOwnedCard();

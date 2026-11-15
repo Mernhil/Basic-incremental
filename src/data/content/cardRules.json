@@ -37,8 +37,8 @@
   },
   "power": {
     "perLevel": 0.015,
-    "perStar": 0.05,
-    "star6Bonus": 0.25,
+    "perStar": 0.03,
+    "star6Bonus": 0.04,
     "tier": {
       "wood": 1,
       "bronze": 1.2,
