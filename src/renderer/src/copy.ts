@@ -802,6 +802,9 @@ export const COPY = {
         : full
           ? `${name}, not marked. This rarity is full: unmark a card first`
           : `${name}, not marked. Click to mark`,
+    wishlistDetail: (name: string, type: string, element: string, job: string) =>
+      `${name} · ${type} · ${element} · ${job}`,
+    wishlistHover: 'Hover or focus a card to read its name.',
     wishlistHunting: (names: string) => `Hunting: ${names}`,
     wishlistNone: 'No card marked',
     wishlistFull: 'This rarity has no room left. Unmark a card first.',

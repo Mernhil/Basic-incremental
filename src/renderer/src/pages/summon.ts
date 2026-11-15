@@ -15,6 +15,7 @@ import {
   revealPlan,
   setFocusKind,
   setWishlisted,
+  cardTopTier,
   wishlistView,
   type GameState,
   type PullCount,
@@ -30,6 +31,10 @@ import { createCard, starSpritesHtml, type CardProps } from '../ui/card';
 import { fitCard, screenDpr } from '../ui/pixelFit';
 import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
 import { cardTierArt, ITEM_VIEWBOX } from '../art/items';
+import { ITEM_KINDS } from '../../../data';
+
+/** The crop of the item box a Wishlist tile shows (a square around the weapon). */
+const WISH_VIEWBOX = '28 44 144 144';
 import { cardFaceProps, weaponArtMarkup } from './loadoutCards';
 import type { PageContext } from './production';
 import {
@@ -42,6 +47,7 @@ import {
   portalView,
   revealViews,
   wishlistPanelView,
+  wishKindIndex,
   type HandCardView,
   type PortalView,
   type RevealView,
@@ -120,6 +126,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   let handViews: RevealView[] = [];
   let oddsKey = '';
   let wishKey = '';
+  let wishRead = '';
   let wishActive = false;
 
   // ---- odds table (every portal side by side) ----
@@ -174,6 +181,9 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   const wish = h('section', 'sm-wish px-panel');
   wish.setAttribute('aria-label', COPY.summon.wishlistTitle);
   wish.hidden = true;
+  /** The hovered or last-clicked card on one line (name, type, element, job). */
+  const readout = h('p', 'sm-wish__read', COPY.summon.wishlistHover);
+  readout.setAttribute('aria-live', 'polite');
   const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
 
   function renderWishlist(): void {
@@ -189,6 +199,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     if (key === wishKey) return;
     wishKey = key;
     wish.hidden = false;
+    if (wishRead) set(readout, wishRead);
     const focused = (document.activeElement as HTMLElement | null)?.dataset['wish'];
     const rows = v.rows.map((r) => {
       const row = h('div', 'sm-wish__row');
@@ -199,30 +210,45 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       head.append(h('i', 'sm-odds__swatch'), h('span', '', r.name));
       head.append(h('b', 'sm-wish__count bi-num', r.countText));
       const list = h('span', 'sm-wish__cards');
+      // one column per weapon type, so a type keeps its place from row to row
+      const columns = ITEM_KINDS.map(() => h('span', 'sm-wish__col'));
       for (const c of r.cards) {
-        const b = h(
-          'button',
-          `sm-wish__card px-btn px-btn--quiet${c.marked ? ' is-marked' : ''}`,
-          c.name,
-        );
+        const b = h('button', `sm-wish__card${c.marked ? ' is-marked' : ''}`);
         b.type = 'button';
         b.dataset['wish'] = c.id;
+        b.dataset['element'] = c.element;
+        b.title = c.detail;
         b.setAttribute('aria-pressed', String(c.marked));
         b.setAttribute('aria-label', c.label);
         b.classList.toggle('is-blocked', c.blocked);
+        const card = content.cardById.get(c.id);
+        const pic = h('span', 'sm-wish__pic');
+        if (card) {
+          pic.innerHTML = `<svg viewBox="${WISH_VIEWBOX}" aria-hidden="true" focusable="false">${cardTierArt(card, cardTopTier(content, c.id))}</svg>`;
+        }
+        b.append(pic, h('i', 'sm-wish__elem'), h('i', 'sm-wish__tick'));
+        const show = (): void => {
+          wishRead = c.detail;
+          set(readout, wishRead);
+        };
+        b.addEventListener('pointerenter', show);
+        b.addEventListener('focus', show);
         b.addEventListener('click', () => {
+          show();
           const result = setWishlisted(ctx.state(), content, c.id, !c.marked, wishPortal.id);
           if (result.ok) ctx.apply(result.state);
           render();
         });
-        list.append(b);
+        columns[wishKindIndex(c.kind)]?.append(b);
       }
+      list.append(...columns);
       row.append(head, list);
       return row;
     });
     wish.replaceChildren(
       h('h2', 'sm-wish__title px-display', COPY.summon.wishlistTitle),
       h('p', 'sm-wish__about', v.about),
+      readout,
       ...rows,
     );
     if (focused) wish.querySelector<HTMLElement>(`[data-wish="${focused}"]`)?.focus();
