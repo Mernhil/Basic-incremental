@@ -31,6 +31,12 @@ function apply(host: HTMLElement, f: Fit): void {
   const k = cardBoxScale(n, d);
   host.style.setProperty('--card-k', k.toFixed(6));
   // a big card (about 220 CSS px wide or more) shows its whole bottom banner, a small one the short form
+  // room the card kit's decorations need around the card (wings and coral at the sides, the crest above, tails
+  // below, DESIGN.md §5 The base frame): the layouts that hold cards leave it free, one set of sizes for all of them
+  host.style.setProperty('--kit-side', `${(k * 53.33).toFixed(2)}px`);
+  host.style.setProperty('--kit-top', `${(k * 46.67).toFixed(2)}px`);
+  host.style.setProperty('--kit-bottom', `${(k * 26).toFixed(2)}px`);
+  host.style.setProperty('--kit-gutter', `${(k * 72).toFixed(2)}px`);
   host.style.setProperty('--card-full', k >= 1.25 ? '1' : '0');
 }
 

@@ -672,7 +672,19 @@ body {
 .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
   display: none;
 }
+/* the card's name is on the name plate, so the banner does not say a second name: the weapon's name is not
+   shown on a kit card, and the first line (only "hits every" is left) is for the big card */
+.bi-card--kit:not([data-border-worn]) .bi-info__ability {
+  display: none;
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__line:first-child {
+  display: none;
+}
 @container style(--card-full: 1) {
+  .bi-card--kit:not([data-border-worn]) .bi-info__line:first-child {
+    display: flex;
+    justify-content: center;
+  }
   .bi-card--kit:not([data-border-worn]) .bi-info__speed,
   .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
     display: inline;
