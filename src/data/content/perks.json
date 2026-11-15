@@ -107,12 +107,12 @@
         {
           "id": "oak_50_worker",
           "name": "Seasoned Feller",
-          "description": "Oak's worker power ×1.5",
+          "description": "Oak's worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "oak"
               }
@@ -132,12 +132,12 @@
         {
           "id": "oak_75_output",
           "name": "Elder Rings",
-          "description": "Oak output ×1.5",
+          "description": "Oak output ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.15",
               "scope": {
                 "producer": "oak"
               }
@@ -147,12 +147,12 @@
         {
           "id": "oak_75_crits",
           "name": "Heart Cut",
-          "description": "Oak crits: +10% chance, +50% damage",
+          "description": "Oak crits: +5% chance, +25% damage",
           "effects": [
             {
               "stat": "harvest.critChance",
               "kind": "flat",
-              "value": "0.1",
+              "value": "0.05",
               "scope": {
                 "producer": "oak"
               }
@@ -160,7 +160,7 @@
             {
               "stat": "harvest.critDamage",
               "kind": "flat",
-              "value": "0.5",
+              "value": "0.25",
               "scope": {
                 "producer": "oak"
               }
@@ -275,12 +275,12 @@
         {
           "id": "ironbark_50_worker",
           "name": "Seasoned Feller",
-          "description": "Ironbark's worker power ×1.5",
+          "description": "Ironbark's worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "ironbark"
               }
@@ -300,12 +300,12 @@
         {
           "id": "ironbark_75_output",
           "name": "Elder Bark",
-          "description": "Ironbark output ×1.5",
+          "description": "Ironbark output ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.15",
               "scope": {
                 "producer": "ironbark"
               }
@@ -315,12 +315,12 @@
         {
           "id": "ironbark_75_crits",
           "name": "Heart Cut",
-          "description": "Ironbark crits: +10% chance, +50% damage",
+          "description": "Ironbark crits: +5% chance, +25% damage",
           "effects": [
             {
               "stat": "harvest.critChance",
               "kind": "flat",
-              "value": "0.1",
+              "value": "0.05",
               "scope": {
                 "producer": "ironbark"
               }
@@ -328,7 +328,7 @@
             {
               "stat": "harvest.critDamage",
               "kind": "flat",
-              "value": "0.5",
+              "value": "0.25",
               "scope": {
                 "producer": "ironbark"
               }
@@ -443,12 +443,12 @@
         {
           "id": "moonwillow_50_worker",
           "name": "Seasoned Feller",
-          "description": "Moonwillow's worker power ×1.5",
+          "description": "Moonwillow's worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -468,12 +468,12 @@
         {
           "id": "moonwillow_75_output",
           "name": "Elder Moon",
-          "description": "Moonwillow output ×1.5",
+          "description": "Moonwillow output ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.15",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -483,12 +483,12 @@
         {
           "id": "moonwillow_75_crits",
           "name": "Heart Cut",
-          "description": "Moonwillow crits: +10% chance, +50% damage",
+          "description": "Moonwillow crits: +5% chance, +25% damage",
           "effects": [
             {
               "stat": "harvest.critChance",
               "kind": "flat",
-              "value": "0.1",
+              "value": "0.05",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -496,7 +496,7 @@
             {
               "stat": "harvest.critDamage",
               "kind": "flat",
-              "value": "0.5",
+              "value": "0.25",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -611,12 +611,12 @@
         {
           "id": "copper_quarry_50_worker",
           "name": "Seasoned Miner",
-          "description": "Copper Quarry's worker power ×1.5",
+          "description": "Copper Quarry's worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -636,12 +636,12 @@
         {
           "id": "copper_quarry_75_output",
           "name": "Mother Lode",
-          "description": "Copper Quarry output ×1.5",
+          "description": "Copper Quarry output ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.15",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -651,12 +651,12 @@
         {
           "id": "copper_quarry_75_crits",
           "name": "Clean Break",
-          "description": "Copper Quarry crits: +10% chance, +50% damage",
+          "description": "Copper Quarry crits: +5% chance, +25% damage",
           "effects": [
             {
               "stat": "harvest.critChance",
               "kind": "flat",
-              "value": "0.1",
+              "value": "0.05",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -664,7 +664,7 @@
             {
               "stat": "harvest.critDamage",
               "kind": "flat",
-              "value": "0.5",
+              "value": "0.25",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -779,12 +779,12 @@
         {
           "id": "iron_deeps_50_worker",
           "name": "Seasoned Miner",
-          "description": "Iron Deeps's worker power ×1.5",
+          "description": "Iron Deeps's worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -804,12 +804,12 @@
         {
           "id": "iron_deeps_75_output",
           "name": "Deep Lode",
-          "description": "Iron Deeps output ×1.5",
+          "description": "Iron Deeps output ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.15",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -819,12 +819,12 @@
         {
           "id": "iron_deeps_75_crits",
           "name": "Clean Break",
-          "description": "Iron Deeps crits: +10% chance, +50% damage",
+          "description": "Iron Deeps crits: +5% chance, +25% damage",
           "effects": [
             {
               "stat": "harvest.critChance",
               "kind": "flat",
-              "value": "0.1",
+              "value": "0.05",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -832,7 +832,7 @@
             {
               "stat": "harvest.critDamage",
               "kind": "flat",
-              "value": "0.5",
+              "value": "0.25",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -947,12 +947,12 @@
         {
           "id": "crystal_grotto_50_worker",
           "name": "Seasoned Miner",
-          "description": "Crystal Grotto's worker power ×1.5",
+          "description": "Crystal Grotto's worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -972,12 +972,12 @@
         {
           "id": "crystal_grotto_75_output",
           "name": "Crystal Heart",
-          "description": "Crystal Grotto output ×1.5",
+          "description": "Crystal Grotto output ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.15",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -987,12 +987,12 @@
         {
           "id": "crystal_grotto_75_crits",
           "name": "Clean Break",
-          "description": "Crystal Grotto crits: +10% chance, +50% damage",
+          "description": "Crystal Grotto crits: +5% chance, +25% damage",
           "effects": [
             {
               "stat": "harvest.critChance",
               "kind": "flat",
-              "value": "0.1",
+              "value": "0.05",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -1000,7 +1000,7 @@
             {
               "stat": "harvest.critDamage",
               "kind": "flat",
-              "value": "0.5",
+              "value": "0.25",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -1072,12 +1072,12 @@
         {
           "id": "logging_yield_25_trees",
           "name": "Timber Yard",
-          "description": "All trees ×1.3",
+          "description": "All trees ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.3",
+              "value": "1.15",
               "scope": {
                 "job": "logging"
               }
@@ -1097,24 +1097,24 @@
         {
           "id": "logging_yield_50_ledger",
           "name": "Golden Ledger",
-          "description": "All production ×1.5",
+          "description": "All production ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5"
+              "value": "1.25"
             }
           ]
         },
         {
           "id": "logging_yield_50_workers",
           "name": "Master Fellers",
-          "description": "Logging worker power ×1.5",
+          "description": "Logging worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "job": "logging"
               }
@@ -1534,12 +1534,12 @@
         {
           "id": "mining_yield_25_carts",
           "name": "Ore Carts",
-          "description": "All mines ×1.3",
+          "description": "All mines ×1.15",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.3",
+              "value": "1.15",
               "scope": {
                 "job": "mining"
               }
@@ -1549,12 +1549,12 @@
         {
           "id": "mining_yield_25_workers",
           "name": "Strong Backs",
-          "description": "Mining worker power ×1.25",
+          "description": "Mining worker power ×1.15",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.15",
               "scope": {
                 "job": "mining"
               }
@@ -1574,12 +1574,12 @@
         {
           "id": "mining_yield_50_polish",
           "name": "Gem Polish",
-          "description": "All mines ×1.5",
+          "description": "All mines ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "job": "mining"
               }
@@ -1589,12 +1589,12 @@
         {
           "id": "mining_yield_50_workers",
           "name": "Master Miners",
-          "description": "Mining worker power ×1.5",
+          "description": "Mining worker power ×1.25",
           "effects": [
             {
               "stat": "worker.power",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "job": "mining"
               }
@@ -1964,15 +1964,15 @@
       ]
     },
     {
-      "id": "sharpen_10",
+      "id": "sharpen_5",
       "line": {
         "kind": "training",
         "id": "sharpen"
       },
-      "level": 10,
+      "level": 5,
       "options": [
         {
-          "id": "sharpen_10_cry",
+          "id": "sharpen_5_cry",
           "name": "Battle Cry",
           "description": "Team damage +25%",
           "effects": [
@@ -1987,7 +1987,7 @@
           ]
         },
         {
-          "id": "sharpen_10_crit",
+          "id": "sharpen_5_crit",
           "name": "Keen Blades",
           "description": "Crit chance +5%",
           "effects": [
@@ -2001,15 +2001,15 @@
       ]
     },
     {
-      "id": "sharpen_25",
+      "id": "sharpen_15",
       "line": {
         "kind": "training",
         "id": "sharpen"
       },
-      "level": 25,
+      "level": 15,
       "options": [
         {
-          "id": "sharpen_25_finish",
+          "id": "sharpen_15_finish",
           "name": "Finishing Blow",
           "description": "Signature attacks ×1.5",
           "effects": [
@@ -2024,7 +2024,7 @@
           ]
         },
         {
-          "id": "sharpen_25_brutal",
+          "id": "sharpen_15_brutal",
           "name": "Brutal Edge",
           "description": "Crit damage +50%",
           "effects": [
@@ -2038,15 +2038,15 @@
       ]
     },
     {
-      "id": "sharpen_50",
+      "id": "sharpen_30",
       "line": {
         "kind": "training",
         "id": "sharpen"
       },
-      "level": 50,
+      "level": 30,
       "options": [
         {
-          "id": "sharpen_50_drums",
+          "id": "sharpen_30_drums",
           "name": "War Drums",
           "description": "Team damage ×1.5",
           "effects": [
@@ -2061,7 +2061,7 @@
           ]
         },
         {
-          "id": "sharpen_50_element",
+          "id": "sharpen_30_element",
           "name": "Elemental Edge",
           "description": "Element bonuses +50%",
           "effects": [
@@ -2075,15 +2075,15 @@
       ]
     },
     {
-      "id": "toughen_10",
+      "id": "toughen_5",
       "line": {
         "kind": "training",
         "id": "toughen"
       },
-      "level": 10,
+      "level": 5,
       "options": [
         {
-          "id": "toughen_10_hide",
+          "id": "toughen_5_hide",
           "name": "Thick Hide",
           "description": "Team health +25%",
           "effects": [
@@ -2095,7 +2095,7 @@
           ]
         },
         {
-          "id": "toughen_10_guard",
+          "id": "toughen_5_guard",
           "name": "Guard Up",
           "description": "Block 5% of the damage taken",
           "effects": [
@@ -2109,15 +2109,15 @@
       ]
     },
     {
-      "id": "toughen_25",
+      "id": "toughen_15",
       "line": {
         "kind": "training",
         "id": "toughen"
       },
-      "level": 25,
+      "level": 15,
       "options": [
         {
-          "id": "toughen_25_skin",
+          "id": "toughen_15_skin",
           "name": "Iron Skin",
           "description": "Team health ×1.5",
           "effects": [
@@ -2129,7 +2129,7 @@
           ]
         },
         {
-          "id": "toughen_25_wall",
+          "id": "toughen_15_wall",
           "name": "Shield Wall",
           "description": "Block 10% of the damage taken",
           "effects": [
@@ -2143,15 +2143,15 @@
       ]
     },
     {
-      "id": "toughen_50",
+      "id": "toughen_30",
       "line": {
         "kind": "training",
         "id": "toughen"
       },
-      "level": 50,
+      "level": 30,
       "options": [
         {
-          "id": "toughen_50_titan",
+          "id": "toughen_30_titan",
           "name": "Titan Blood",
           "description": "Team health ×1.5",
           "effects": [
@@ -2163,7 +2163,7 @@
           ]
         },
         {
-          "id": "toughen_50_counter",
+          "id": "toughen_30_counter",
           "name": "Counterblow",
           "description": "Team damage +25%",
           "effects": [
@@ -2180,22 +2180,22 @@
       ]
     },
     {
-      "id": "plunder_10",
+      "id": "plunder_5",
       "line": {
         "kind": "training",
         "id": "plunder"
       },
-      "level": 10,
+      "level": 5,
       "options": [
         {
-          "id": "plunder_10_tax",
+          "id": "plunder_5_tax",
           "name": "Tax Collector",
-          "description": "Money per kill ×1.5",
+          "description": "Money per kill ×1.25",
           "effects": [
             {
               "stat": "drops.moneyMultiplier",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "resource": "money"
               }
@@ -2203,7 +2203,7 @@
           ]
         },
         {
-          "id": "plunder_10_lure",
+          "id": "plunder_5_lure",
           "name": "Crystal Lure",
           "description": "Scroll drops ×1.25",
           "effects": [
@@ -2217,22 +2217,22 @@
       ]
     },
     {
-      "id": "plunder_25",
+      "id": "plunder_15",
       "line": {
         "kind": "training",
         "id": "plunder"
       },
-      "level": 25,
+      "level": 15,
       "options": [
         {
-          "id": "plunder_25_tithe",
+          "id": "plunder_15_tithe",
           "name": "Cinder Tithe",
-          "description": "Money per kill ×1.5",
+          "description": "Money per kill ×1.25",
           "effects": [
             {
               "stat": "drops.moneyMultiplier",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "resource": "money"
               }
@@ -2240,7 +2240,7 @@
           ]
         },
         {
-          "id": "plunder_25_hoard",
+          "id": "plunder_15_hoard",
           "name": "Gleaming Hoard",
           "description": "Scroll drops ×1.25",
           "effects": [
@@ -2254,22 +2254,22 @@
       ]
     },
     {
-      "id": "plunder_50",
+      "id": "plunder_30",
       "line": {
         "kind": "training",
         "id": "plunder"
       },
-      "level": 50,
+      "level": 30,
       "options": [
         {
-          "id": "plunder_50_tithe",
+          "id": "plunder_30_tithe",
           "name": "Frost Tithe",
-          "description": "Money per kill ×1.5",
+          "description": "Money per kill ×1.25",
           "effects": [
             {
               "stat": "drops.moneyMultiplier",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "resource": "money"
               }
@@ -2277,7 +2277,7 @@
           ]
         },
         {
-          "id": "plunder_50_chests",
+          "id": "plunder_30_chests",
           "name": "Treasure Hunter",
           "description": "Stage chests +50%",
           "effects": [
@@ -2291,15 +2291,15 @@
       ]
     },
     {
-      "id": "tempo_10",
+      "id": "tempo_5",
       "line": {
         "kind": "training",
         "id": "tempo"
       },
-      "level": 10,
+      "level": 5,
       "options": [
         {
-          "id": "tempo_10_hands",
+          "id": "tempo_5_hands",
           "name": "Quick Hands",
           "description": "Signature gauge fills 25% faster",
           "effects": [
@@ -2314,7 +2314,7 @@
           ]
         },
         {
-          "id": "tempo_10_finish",
+          "id": "tempo_5_finish",
           "name": "Heavy Finish",
           "description": "Signature attacks +50%",
           "effects": [
@@ -2331,15 +2331,15 @@
       ]
     },
     {
-      "id": "tempo_25",
+      "id": "tempo_15",
       "line": {
         "kind": "training",
         "id": "tempo"
       },
-      "level": 25,
+      "level": 15,
       "options": [
         {
-          "id": "tempo_25_rhythm",
+          "id": "tempo_15_rhythm",
           "name": "Battle Rhythm",
           "description": "Signature gauge fills 25% faster",
           "effects": [
@@ -2354,7 +2354,7 @@
           ]
         },
         {
-          "id": "tempo_25_crush",
+          "id": "tempo_15_crush",
           "name": "Crushing Finish",
           "description": "Signature attacks +50%",
           "effects": [
@@ -2371,15 +2371,15 @@
       ]
     },
     {
-      "id": "tempo_50",
+      "id": "tempo_30",
       "line": {
         "kind": "training",
         "id": "tempo"
       },
-      "level": 50,
+      "level": 30,
       "options": [
         {
-          "id": "tempo_50_flow",
+          "id": "tempo_30_flow",
           "name": "Flow State",
           "description": "Signature gauge fills 25% faster",
           "effects": [
@@ -2394,7 +2394,7 @@
           ]
         },
         {
-          "id": "tempo_50_word",
+          "id": "tempo_30_word",
           "name": "Final Word",
           "description": "Signature attacks +50%",
           "effects": [

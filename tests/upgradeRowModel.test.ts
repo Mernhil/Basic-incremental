@@ -22,9 +22,9 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
     expect(row.buy.affordable).toBe(true);
     expect(row.buy.price).toMatch(/Copper Gem$/);
     expect(row.buy.short).toBeNull();
-    expect(row.next).toBe('Lv 10: pick Battle Cry or Keen Blades');
-    expect(row.toGo).toBe('2 levels');
-    expect(row.segments).toEqual({ filled: 8, total: 10 });
+    expect(row.next).toBe('Lv 15: pick Finishing Blow or Brutal Edge');
+    expect(row.toGo).toBe('7 levels');
+    expect(row.segments).toEqual({ filled: 3, total: 10 });
   });
 
   it('says how much is missing when the player is short', () => {
@@ -43,17 +43,17 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
 
   it('names a ring and a pick at the same level together, and shows the badges picked', () => {
     const s = freshState();
-    s.combat.training['sharpen'] = 20;
-    s.upgrades.picks['sharpen_10'] = 'sharpen_10_cry';
+    s.production.tools['logging_yield'] = 20;
+    s.upgrades.picks['logging_yield_10'] = 'logging_yield_10_all';
     const row = upgradeRow(
       s,
       content,
-      { kind: 'training', id: 'sharpen' },
+      { kind: 'tool', id: 'logging_yield' },
       1,
       collectModifiers(s, content),
     )!;
-    expect(row.next).toBe('Lv 25: damage ×1.8 and pick Finishing Blow or Brutal Edge');
-    expect(row.badges.map((b) => b.name)).toEqual(['Battle Cry']);
+    expect(row.next).toBe('Lv 25: yield ×1.1 and pick Merchant Ledger or Timber Yard');
+    expect(row.badges.map((b) => b.name)).toEqual(['Lumber Union']);
   });
 
   it('lists the resources a panel spends once each for the "You hold" strip', () => {

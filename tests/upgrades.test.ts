@@ -30,7 +30,7 @@ function withOakLevel(state: GameState, level: number): GameState {
 }
 
 describe('milestone pick content (DESIGN.md §4 Milestone picks)', () => {
-  it('gives every repeatable line its picks: trees and mines at 10/25/50/75, the rest at 10/25/50', () => {
+  it('gives every line its picks: trees and mines at 10/25/50/75, tools at 10/25/50, Training at 5/15/30', () => {
     const levels = (kind: string, id: string) =>
       content.perks.milestones
         .filter((m) => m.line.kind === kind && m.line.id === id)
@@ -38,7 +38,7 @@ describe('milestone pick content (DESIGN.md §4 Milestone picks)', () => {
     for (const t of content.trees) expect(levels('tree', t.id)).toEqual([10, 25, 50, 75]);
     for (const m of content.mines) expect(levels('mine', m.id)).toEqual([10, 25, 50, 75]);
     for (const t of content.production.tools) expect(levels('tool', t.id)).toEqual([10, 25, 50]);
-    for (const t of content.training) expect(levels('training', t.id)).toEqual([10, 25, 50]);
+    for (const t of content.training) expect(levels('training', t.id)).toEqual([5, 15, 30]);
   });
 
   it('offers two different perks at every milestone, none for the fight support cards', () => {
@@ -169,11 +169,11 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
     expect(ring.level).toBe(15);
     expect(ring.ring?.nextMultiplier.toNumber()).toBeCloseTo(1.15, 9);
     expect(ring.fromLevel).toBe(10);
-    state.combat.training['sharpen'] = 20;
-    const both = nextLineStep(state, content, { kind: 'training', id: 'sharpen' })!;
+    state.production.tools['logging_yield'] = 20;
+    const both = nextLineStep(state, content, { kind: 'tool', id: 'logging_yield' })!;
     expect(both.level).toBe(25);
     expect(both.ring).not.toBeNull();
-    expect(both.pick?.id).toBe('sharpen_25');
+    expect(both.pick?.id).toBe('logging_yield_25');
   });
 });
 
