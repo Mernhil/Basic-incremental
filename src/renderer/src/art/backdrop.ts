@@ -11,7 +11,15 @@
  */
 import type { Backdrop } from '../../../game';
 import { sprite, strip } from './pixel/sprites';
-import { BACKDROP, SeaSim, bubbleWobble, fishBob, type SeaBubble, type SeaFish } from './seaSim';
+import {
+  BACKDROP,
+  SeaSim,
+  backdropLayers,
+  bubbleWobble,
+  fishBob,
+  type SeaBubble,
+  type SeaFish,
+} from './seaSim';
 
 export { BACKDROP };
 
@@ -38,10 +46,10 @@ const reduced = (): boolean =>
 /** A sprite with a strip (`<name>-anim.png`, manifest `animated.frames`) is played at 8 fps by CSS (theme/base.css); frame 0 is the still. */
 const STRIP_FPS = 8;
 
-function pic(name: string, z: number): string {
+function pic(name: string, z: number, animate: boolean): string {
   const s = sprite(name);
   if (!s) return '';
-  const st = strip(name);
+  const st = animate ? strip(name) : undefined;
   if (st) {
     const n = st.frames;
     return `<div class="bi-bd__strip" style="background-image:url(${st.url});background-size:${n * 100}% 100%;width:${s.w}px;height:${s.h}px;z-index:${z};--bd-steps:${n};animation-duration:${n / STRIP_FPS}s"></div>`;
@@ -141,8 +149,9 @@ export function mountBackdrop(host: HTMLElement, spec: Backdrop | null): void {
   unmount(host);
   host.replaceChildren();
   if (!spec) return;
-  host.innerHTML = `<div class="bi-bd__stage">${pic(spec.bg, 0)}${spec.front ? pic(spec.front, 5) : ''}</div>`;
-  if (!spec.motion || typeof document === 'undefined') return;
+  const layers = backdropLayers(spec);
+  host.innerHTML = `<div class="bi-bd__stage">${pic(layers.bg, 0, layers.strip)}${layers.front ? pic(layers.front, 5, false) : ''}</div>`;
+  if (!layers.swim || typeof document === 'undefined') return;
   const m: Mounted = {
     stage: host.firstElementChild as HTMLElement,
     sim: new SeaSim(),
