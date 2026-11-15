@@ -165,7 +165,9 @@ describe('difficulty tiers', () => {
       const start = on(inCellar(content), content, 10, difficulty);
       const { state, report } = run(start, content, 1.5, constantRng(0));
       return {
-        money: report.currencies['money']! - WAGE * 1.5,
+        // the wage of the second spent before the kill arrives with it
+        money:
+          report.currencies['money']! - WAGE * difficultyScale(plain, difficulty as never).wage,
         cores: state.resources['moss_core']!.sub(start.resources['moss_core']!).toNumber(),
         kills: report.bossKills,
       };
