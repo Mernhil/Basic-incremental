@@ -1,6 +1,6 @@
 import type { JOBS, Rank, Rarity, CardElement } from '../../../data';
 import type { SkinPickerView } from './cardSkinsModel';
-import type { GameState, TierUp } from '../../../game';
+import { MAX_LOADOUT_HEIRLOOMS, type GameState, type TierUp } from '../../../game';
 import type { CardFace } from '../ui/cardFace';
 import type { StarChartView } from './skillsModel';
 export type Job = (typeof JOBS)[number];
@@ -133,6 +133,8 @@ export interface LoadoutRole {
 
 export interface CardEntry {
   id: string;
+  /** An Heirloom card (at most two in a loadout). */
+  heirloom: boolean;
   name: string;
   job: Job;
   rarity: Rarity;
@@ -183,6 +185,8 @@ export interface JobLoadout {
   slots: Array<string | null>;
   cost: number;
   cap: number;
+  /** The next rise of the cap (how much, at which account level); null at the top. */
+  nextRise: { by: number; level: number } | null;
 }
 
 /** One card a loadout slot could take (UI_RULES §2 Loadouts). */
@@ -196,6 +200,8 @@ export interface SlotChoice {
   /** The loadout's cost with this card in the slot, and whether that fits the cap. */
   costAfter: number;
   fits: boolean;
+  /** A third Heirloom would go in (DESIGN.md §5 Cost): the picker says why it cannot. */
+  heirloomBlocked: boolean;
 }
 
 /**
@@ -210,6 +216,7 @@ export function slotChoices(
   slot: number,
 ): SlotChoice[] {
   const costOf = new Map(entries.map((e) => [e.id, e.cost]));
+  const heirloomIds = new Set(entries.filter((e) => e.heirloom).map((e) => e.id));
   const occupant = loadout.slots[slot] ?? null;
   const occupantCost = occupant ? (costOf.get(occupant) ?? 0) : 0;
   return entries
@@ -218,13 +225,17 @@ export function slotChoices(
       const at = loadout.slots.indexOf(e.id);
       const from = at >= 0 ? at : null;
       const costAfter = from !== null ? loadout.cost : loadout.cost - occupantCost + e.cost;
+      const others = loadout.slots.filter((s) => s !== null && s !== occupant && s !== e.id);
+      const heirlooms = others.filter((s) => heirloomIds.has(s as string)).length;
+      const heirloomBlocked = e.heirloom && heirlooms + 1 > MAX_LOADOUT_HEIRLOOMS;
       return {
         id: e.id,
         cost: e.cost,
         from,
         current: from === slot,
         costAfter,
-        fits: costAfter <= loadout.cap,
+        fits: costAfter <= loadout.cap && !heirloomBlocked,
+        heirloomBlocked,
       };
     })
     .sort((a, b) => Number(b.fits) - Number(a.fits) || b.cost - a.cost);
