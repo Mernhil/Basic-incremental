@@ -66,10 +66,10 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
       if (c.job === 'fighting' && peer.job === 'fighting') {
         expect(c.ability, c.id).toEqual(peer.ability);
         const damage = c.teamBonus.modifiers.find((m) => m.stat === 'combat.damage');
-        expect(damage?.value.toString(), c.id).toBe('20');
+        expect(damage?.value.toString(), c.id).toBe('16');
         // the second bonus is worth the same as the peer's: one +12% line
         expect(c.teamBonus.modifiers, c.id).toHaveLength(2);
-        expect(c.teamBonus.modifiers[1]!.value.toString(), c.id).toBe('12');
+        expect(c.teamBonus.modifiers[1]!.value.toString(), c.id).toBe('10');
       } else if (c.job !== 'fighting' && peer.job !== 'fighting') {
         expect(c.worker, c.id).toEqual(peer.worker);
       }

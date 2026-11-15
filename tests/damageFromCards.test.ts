@@ -112,10 +112,10 @@ describe('fighting damage comes from the main card', () => {
   it('counts the level bump once: the pipeline adds nothing extra for a main with no damage bonus', () => {
     const owned = { ...newOwnedCard(), level: 11 };
     const state = leadWith('ember_squire', owned);
-    // the Squire's own team bonus (+5% damage) grows with its power, like its damage
+    // the Squire's own team bonus (+4% damage) grows with its power, like its damage
     const expected = rules.baseDamage.common
       .mul(1 + rules.power.perLevel * 10)
-      .mul(1 + (5 * cardPower(content, owned)) / 100);
+      .mul(1 + (4 * cardPower(content, owned)) / 100);
     expect(approxEq(effectiveDamage(state, content), expected)).toBe(true);
   });
 

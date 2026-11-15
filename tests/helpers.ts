@@ -234,7 +234,7 @@ export const plainContent: Content = {
  * damage is set to it too). Rule tests use it where they need an exact damage; the rarity ratios stay as they are.
  */
 /** What the fresh game's Ember Squire deals per second at Common base damage `common`: its own
- *  team bonus (+5% damage) counts for the team it is in, itself included (DESIGN.md §5 Loadouts). */
+ *  team bonus (+4% damage) counts for the team it is in, itself included (DESIGN.md §5 Loadouts). */
 export function freshDamage(
   common: Decimal | number | string,
   base: Content = plainContent,
@@ -251,7 +251,8 @@ export function freshDamage(
 
 export function withDps(dps: Decimal | number | string, base: Content = plainContent): Content {
   // the fresh game's Squire then deals exactly `dps` with its own team bonus counted
-  const common = new Decimal(dps).div(freshDamage(1, base));
+  // (a hair over, so a hit sized to exactly one boss never lands a rounding error short)
+  const common = new Decimal(dps).div(freshDamage(1, base)).mul('1.000000000001');
   const baseDamage = Object.fromEntries(
     Object.keys(base.cardRules.baseDamage).map((rarity) => [
       rarity,

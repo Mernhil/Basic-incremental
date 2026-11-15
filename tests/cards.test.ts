@@ -280,20 +280,20 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
         .filter((m) => m.source.kind === 'card' && m.stat === 'combat.damage')
         .map((m) => [m.source.id, m.value.toNumber()])
         .sort();
-    expect(bonuses(state)).toEqual([['ember_squire', 5]]); // the first card gives its bonus too
+    expect(bonuses(state)).toEqual([['ember_squire', 4]]); // the first card gives its bonus too
     state.account.level = 2; // cost cap 8: Squire 2 + Duelist 5 fit
     state = ok(setLoadoutSlot(state, content, 'fighting', 1, 'storm_duelist'));
     expect(bonuses(state)).toEqual([
-      ['ember_squire', 5],
-      ['storm_duelist', 12],
+      ['ember_squire', 4],
+      ['storm_duelist', 10],
     ]);
     state = ok(setLoadoutSlot(state, content, 'fighting', 0, 'storm_duelist')); // swap
     expect(state.cards.loadouts.fighting).toEqual({
       slots: ['storm_duelist', 'ember_squire', null, null],
     });
     expect(bonuses(state)).toEqual([
-      ['ember_squire', 5],
-      ['storm_duelist', 12],
+      ['ember_squire', 4],
+      ['storm_duelist', 10],
     ]); // the order only sets left to right
     expect(team(state).map((c) => c.id)).toEqual(['storm_duelist', 'ember_squire']);
     expect(fighting(state).interval).toBe(0.5); // the Duelist, now first, hits every 0.5 s
@@ -311,7 +311,7 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
 
     const lv11 = { ...newOwnedCard(), level: 11 };
     const bonus = cardEffectModifiers(content, 'storm_duelist', 'team', lv11);
-    expect(bonus[0]!.value.toNumber()).toBeCloseTo(12 * lv11Power); // +12% damage at the level-11 power
+    expect(bonus[0]!.value.toNumber()).toBeCloseTo(10 * lv11Power); // +10% damage at the level-11 power
     const main = cardEffectModifiers(content, 'storm_duelist', 'ability', lv11);
     // The fill ×2 is a `mult` that stays fixed; main growth adds +2% fill. Damage grows through
     // the card's base damage instead (DESIGN.md §5), so there is no damage percent here.

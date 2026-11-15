@@ -22,12 +22,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -63,12 +63,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+12% damage",
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -104,17 +104,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -390,12 +390,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -432,12 +432,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+8% damage",
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -473,17 +473,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -519,17 +519,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -727,6 +727,39 @@
       ]
     },
     "teamBonus": {
+      "description": "+6% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "6"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_cavalier",
+    "name": "Silver Cavalier",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "fire",
+    "item": {
+      "kind": "sword"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
       "description": "+8% damage",
       "modifiers": [
         {
@@ -738,10 +771,10 @@
     }
   },
   {
-    "id": "silver_cavalier",
-    "name": "Silver Cavalier",
+    "id": "gilded_knight",
+    "name": "Gilded Knight",
     "job": "fighting",
-    "rarity": "rare",
+    "rarity": "epic",
     "element": "fire",
     "item": {
       "kind": "sword"
@@ -771,39 +804,6 @@
     }
   },
   {
-    "id": "gilded_knight",
-    "name": "Gilded Knight",
-    "job": "fighting",
-    "rarity": "epic",
-    "element": "fire",
-    "item": {
-      "kind": "sword"
-    },
-    "ability": {
-      "description": "Steady hits every 1 s",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "teamBonus": {
-      "description": "+12% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
     "id": "prism_paladin",
     "name": "Prism Paladin",
     "job": "fighting",
@@ -826,17 +826,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -864,17 +864,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -902,17 +902,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -948,12 +948,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -963,6 +963,47 @@
     "name": "Bronze Warden",
     "job": "fighting",
     "rarity": "uncommon",
+    "element": "fire",
+    "item": {
+      "kind": "greatsword"
+    },
+    "ability": {
+      "description": "Heavy hits every 2 s, signature attack ×15",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "15",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+6% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "6"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_executioner",
+    "name": "Silver Executioner",
+    "job": "fighting",
+    "rarity": "rare",
     "element": "fire",
     "item": {
       "kind": "greatsword"
@@ -1000,10 +1041,10 @@
     }
   },
   {
-    "id": "silver_executioner",
-    "name": "Silver Executioner",
+    "id": "gold_warlord",
+    "name": "Gold Warlord",
     "job": "fighting",
-    "rarity": "rare",
+    "rarity": "epic",
     "element": "fire",
     "item": {
       "kind": "greatsword"
@@ -1041,47 +1082,6 @@
     }
   },
   {
-    "id": "gold_warlord",
-    "name": "Gold Warlord",
-    "job": "fighting",
-    "rarity": "epic",
-    "element": "fire",
-    "item": {
-      "kind": "greatsword"
-    },
-    "ability": {
-      "description": "Heavy hits every 2 s, signature attack ×15",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "2",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.power",
-          "kind": "set",
-          "value": "15",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "teamBonus": {
-      "description": "+12% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
     "id": "sunbreaker_titan",
     "name": "Sunbreaker Titan",
     "job": "fighting",
@@ -1112,17 +1112,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1158,17 +1158,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1205,12 +1205,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -1247,12 +1247,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+10% damage",
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1289,12 +1289,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+12% damage",
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1331,17 +1331,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1378,17 +1378,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1425,17 +1425,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1471,12 +1471,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -1512,12 +1512,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+8% damage",
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -1553,12 +1553,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+10% damage",
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1594,12 +1594,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+12% damage",
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1635,17 +1635,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1681,17 +1681,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1727,12 +1727,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -1768,12 +1768,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+8% damage",
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -1809,12 +1809,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+10% damage",
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1850,17 +1850,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1896,17 +1896,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1942,17 +1942,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1988,12 +1988,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -2003,6 +2003,47 @@
     "name": "Bronze Forgehand",
     "job": "fighting",
     "rarity": "uncommon",
+    "element": "earth",
+    "item": {
+      "kind": "hammer"
+    },
+    "ability": {
+      "description": "Heavy hits every 3 s, signature attack ×30",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.power",
+          "kind": "set",
+          "value": "30",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+6% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "6"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_sledger",
+    "name": "Silver Sledger",
+    "job": "fighting",
+    "rarity": "rare",
     "element": "earth",
     "item": {
       "kind": "hammer"
@@ -2040,10 +2081,10 @@
     }
   },
   {
-    "id": "silver_sledger",
-    "name": "Silver Sledger",
+    "id": "golden_anvilmaster",
+    "name": "Golden Anvilmaster",
     "job": "fighting",
-    "rarity": "rare",
+    "rarity": "epic",
     "element": "earth",
     "item": {
       "kind": "hammer"
@@ -2081,47 +2122,6 @@
     }
   },
   {
-    "id": "golden_anvilmaster",
-    "name": "Golden Anvilmaster",
-    "job": "fighting",
-    "rarity": "epic",
-    "element": "earth",
-    "item": {
-      "kind": "hammer"
-    },
-    "ability": {
-      "description": "Heavy hits every 3 s, signature attack ×30",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "3",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.power",
-          "kind": "set",
-          "value": "30",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "teamBonus": {
-      "description": "+12% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
     "id": "facet_crusher",
     "name": "Facet Crusher",
     "job": "fighting",
@@ -2152,17 +2152,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2198,17 +2198,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2254,12 +2254,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -2305,12 +2305,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+8% damage",
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -2356,12 +2356,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+10% damage",
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2407,12 +2407,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+12% damage",
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2458,17 +2458,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2514,17 +2514,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2570,17 +2570,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2616,12 +2616,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -2631,6 +2631,47 @@
     "name": "Bronze Mystic",
     "job": "fighting",
     "rarity": "uncommon",
+    "element": "crystal",
+    "item": {
+      "kind": "staff"
+    },
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+6% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "6"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_mage",
+    "name": "Silver Mage",
+    "job": "fighting",
+    "rarity": "rare",
     "element": "crystal",
     "item": {
       "kind": "staff"
@@ -2668,10 +2709,10 @@
     }
   },
   {
-    "id": "silver_mage",
-    "name": "Silver Mage",
+    "id": "golden_sage",
+    "name": "Golden Sage",
     "job": "fighting",
-    "rarity": "rare",
+    "rarity": "epic",
     "element": "crystal",
     "item": {
       "kind": "staff"
@@ -2709,47 +2750,6 @@
     }
   },
   {
-    "id": "golden_sage",
-    "name": "Golden Sage",
-    "job": "fighting",
-    "rarity": "epic",
-    "element": "crystal",
-    "item": {
-      "kind": "staff"
-    },
-    "ability": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.4",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "teamBonus": {
-      "description": "+12% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
     "id": "kaleido_weaver",
     "name": "Kaleido Weaver",
     "job": "fighting",
@@ -2780,17 +2780,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2826,17 +2826,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2872,17 +2872,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2928,12 +2928,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+5% damage",
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -2979,12 +2979,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+8% damage",
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -3030,12 +3030,12 @@
       ]
     },
     "teamBonus": {
-      "description": "+12% damage",
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3081,17 +3081,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+15% damage, +10% rare drop chance",
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -3137,17 +3137,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3193,17 +3193,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3233,17 +3233,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3273,17 +3273,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3313,17 +3313,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3361,17 +3361,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3409,17 +3409,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% material drop chance",
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3457,17 +3457,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3505,17 +3505,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3553,17 +3553,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3602,17 +3602,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3651,17 +3651,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3700,17 +3700,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% material drop chance",
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3749,17 +3749,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3798,17 +3798,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3846,17 +3846,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3894,17 +3894,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3942,17 +3942,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3990,17 +3990,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4038,17 +4038,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% material drop chance",
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4086,17 +4086,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4134,17 +4134,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4182,17 +4182,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% material drop chance",
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4230,17 +4230,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4278,17 +4278,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4326,17 +4326,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4374,17 +4374,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4422,17 +4422,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4480,17 +4480,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4538,17 +4538,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4596,17 +4596,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4654,17 +4654,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4702,17 +4702,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4750,17 +4750,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% Money from kills",
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4808,17 +4808,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% material drop chance",
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4866,17 +4866,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4924,17 +4924,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% material drop chance",
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4982,17 +4982,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5309,17 +5309,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5356,17 +5356,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5404,17 +5404,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5451,17 +5451,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5498,17 +5498,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5545,17 +5545,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5602,17 +5602,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5649,17 +5649,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5706,17 +5706,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5808,17 +5808,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5848,17 +5848,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5896,17 +5896,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5944,17 +5944,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5992,17 +5992,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6040,17 +6040,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6089,17 +6089,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6138,17 +6138,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6186,17 +6186,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6234,17 +6234,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6282,17 +6282,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6330,17 +6330,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6388,17 +6388,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6446,17 +6446,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6494,17 +6494,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6542,17 +6542,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6600,17 +6600,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6658,17 +6658,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+20% damage, +12% rare drop chance",
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6827,17 +6827,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6876,17 +6876,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6925,17 +6925,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6975,17 +6975,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7024,17 +7024,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7073,17 +7073,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7132,17 +7132,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7181,17 +7181,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7240,17 +7240,17 @@
       ]
     },
     "teamBonus": {
-      "description": "+25% damage, +15% rare drop chance",
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }

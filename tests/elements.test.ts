@@ -67,12 +67,12 @@ describe('boss weaknesses and resistances', () => {
     const mods = collectModifiers(state, content);
     const cellar = buildTeam(state, content, mods, 'mossy_cellar');
     const neutral = buildTeam(state, content, mods, 'void_hollow');
-    // percent bonuses add: the two Commons' team bonuses (+5% each) and the Squire's +50%
-    expect(cellar[0]!.hit.div(neutral[0]!.hit).toNumber()).toBeCloseTo(1.6 / 1.1);
+    // percent bonuses add: the two Commons' team bonuses (+4% each) and the Squire's +50%
+    expect(cellar[0]!.hit.div(neutral[0]!.hit).toNumber()).toBeCloseTo(1.58 / 1.08);
     expect(cellar[1]!.hit.div(neutral[1]!.hit).toNumber()).toBeCloseTo(1);
     // The Ember Crypt resists Fire: -25%, not +50%.
     const crypt = buildTeam(state, content, mods, 'ember_crypt');
-    expect(crypt[0]!.hit.div(neutral[0]!.hit).toNumber()).toBeCloseTo(0.85 / 1.1);
+    expect(crypt[0]!.hit.div(neutral[0]!.hit).toNumber()).toBeCloseTo(0.83 / 1.08);
   });
 
   it('is a bonus, never a wall', () => {

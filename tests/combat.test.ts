@@ -103,7 +103,7 @@ describe('damage from the main card (DESIGN.md §5, §6)', () => {
   it('is the main card base damage, with no purchase involved', () => {
     const state = freshState();
     expect(baseDamage(state, content).eq(common)).toBe(true);
-    // the Squire's own team bonus (+5% damage) counts for the team it is in
+    // the Squire's own team bonus (+4% damage) counts for the team it is in
     expect(approxEq(effectiveDamage(state, content), freshDamage(common, content))).toBe(true);
   });
 
