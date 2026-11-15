@@ -624,8 +624,14 @@ export const cardRulesSchema = z.strictObject({
   cost: perRarity(count),
   /** Loadout cost of an Heirloom card (DESIGN.md §5 An Heirloom card), in place of its rarity's. */
   heirloomCost: count,
-  /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
-  costCap: z.strictObject({ base: count, perLevel: count }),
+  /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (the levels up to `slowFromLevel` − 1) + 1 for every `slowEvery` levels after it. */
+  costCap: z.strictObject({
+    base: count,
+    perLevel: count,
+    /** From this account level on the cap grows slower: 1 every `slowEvery` levels. */
+    slowFromLevel: z.number().int().min(1),
+    slowEvery: z.number().int().min(1),
+  }),
   /** Level cap of each tier (Heirloom 140); stars do not change it (DESIGN.md §5). */
   levelCaps: perTier(z.number().int().min(1)),
   /** XP from level L to L + 1 = base × growth^(L − 1). */

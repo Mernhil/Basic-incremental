@@ -63,6 +63,8 @@ export type CardFailure =
   | 'duplicate'
   /** The loadout would cost more than the job's cost cap. */
   | 'over-cost-cap'
+  /** More than MAX_LOADOUT_HEIRLOOMS Heirloom cards in the loadout (DESIGN.md §5 Cost). */
+  | 'too-many-heirlooms'
   /** The card is away on an expedition (DESIGN.md §15). */
   | 'on-expedition'
   /** Not a valid slot. */
@@ -375,14 +377,27 @@ export function loadoutCostCap(
   job: LoadoutJob,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): number {
-  const { base, perLevel } = content.cardRules.costCap;
-  const value = base + perLevel * (accountLevel(state) - 1);
+  const { base, perLevel, slowFromLevel, slowEvery } = content.cardRules.costCap;
+  const level = accountLevel(state);
+  // +perLevel a level to `slowFromLevel`, then 1 every `slowEvery` levels (DESIGN.md §10)
+  const value =
+    base +
+    perLevel * (Math.min(level, slowFromLevel) - 1) +
+    Math.floor(Math.max(0, level - slowFromLevel) / slowEvery);
   const cap = Math.max(
     0,
     Math.floor(statValue('loadout.costCap', value, modifiers, { job }).toNumber()),
   );
   // With no account level cap the fighting loadout's cap stops at a top value (DESIGN.md §10).
   return job === 'fighting' ? Math.min(cap, content.account.loadoutCostCapTop) : cap;
+}
+
+/** A loadout holds at most this many Heirloom cards (DESIGN.md §5 Cost). */
+export const MAX_LOADOUT_HEIRLOOMS = 2;
+
+/** How many Heirloom cards a list of card ids holds. */
+export function heirloomCount(content: Content, ids: readonly (string | null)[]): number {
+  return ids.filter((id) => id !== null && content.cardById.get(id)?.heirloom).length;
 }
 
 /** Card ids of a loadout, left to right, without empty slots. */
@@ -455,6 +470,7 @@ export function loadoutProblem(
     if (isOnTrip(state, id)) return 'on-expedition';
   }
   if (new Set(ids).size !== ids.length) return 'duplicate';
+  if (heirloomCount(content, ids) > MAX_LOADOUT_HEIRLOOMS) return 'too-many-heirlooms';
   if (loadoutCost(content, loadout) > loadoutCostCap(state, content, job, modifiers)) {
     return 'over-cost-cap';
   }
@@ -1031,6 +1047,34 @@ export interface LoadoutInfo {
   slots: (string | null)[];
   cost: number;
   cap: number;
+  /** The next rise of the cap: how much and at which account level; null at its top. */
+  nextRise: { by: number; level: number } | null;
+}
+
+/** The fighting loadout's cost cap at an account level: the formula plus the reward track's bumps
+ *  up to it, never past the top (DESIGN.md §10 Loadout cost cap). */
+export function loadoutCapAtLevel(content: Content, level: number): number {
+  const { base, perLevel, slowFromLevel, slowEvery } = content.cardRules.costCap;
+  const bumps = content.account.rewardTrack
+    .filter((r) => r.level <= level)
+    .reduce((sum, r) => sum + r.costCap, 0);
+  const cap =
+    base +
+    perLevel * (Math.min(level, slowFromLevel) - 1) +
+    Math.floor(Math.max(0, level - slowFromLevel) / slowEvery) +
+    bumps;
+  return Math.min(cap, content.account.loadoutCostCapTop);
+}
+
+/** The next account level where the cap rises, and by how much; null once it is at the top. */
+export function nextCapRise(content: Content, level: number): { by: number; level: number } | null {
+  const now = loadoutCapAtLevel(content, level);
+  if (now >= content.account.loadoutCostCapTop) return null;
+  for (let next = level + 1; next <= level + 400; next++) {
+    const cap = loadoutCapAtLevel(content, next);
+    if (cap > now) return { by: cap - now, level: next };
+  }
+  return null;
 }
 
 /** The fighting loadout with its cost and cap. */
@@ -1044,6 +1088,7 @@ export function loadoutInfo(
   return {
     job,
     slots: [...loadout.slots],
+    nextRise: nextCapRise(content, accountLevel(state)),
     cost: loadoutCost(content, loadout),
     cap: loadoutCostCap(state, content, job, modifiers),
   };

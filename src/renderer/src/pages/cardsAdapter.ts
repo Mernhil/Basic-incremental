@@ -157,6 +157,7 @@ export function createCardsModel(
     return {
       id: card.id,
       name: card.name,
+      heirloom: Boolean(card.heirloom),
       job: card.job,
       rarity: card.rarity,
       emblem: JOB_EMBLEM[card.job],
@@ -216,7 +217,7 @@ export function createCardsModel(
     },
     loadout(state, job) {
       const lo = loadoutInfo(state, content, job);
-      return { job, slots: lo.slots, cost: lo.cost, cap: lo.cap };
+      return { job, slots: lo.slots, cost: lo.cost, cap: lo.cap, nextRise: lo.nextRise };
     },
     shards: (state) => String(state.cards.shards),
     signature(state) {

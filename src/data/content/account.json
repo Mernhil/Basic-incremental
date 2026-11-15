@@ -18,7 +18,7 @@
     "pointsPerAchievement": 1,
     "pointsPerStageStar": 1
   },
-  "loadoutCostCapTop": 40,
+  "loadoutCostCapTop": 64,
   "rewardTrack": [
     {
       "level": 3,
@@ -29,7 +29,7 @@
       "resources": [
         {
           "resource": "summon_scroll",
-          "amount": "0.5"
+          "amount": "1"
         }
       ]
     },
@@ -52,7 +52,7 @@
       "resources": [
         {
           "resource": "summon_scroll",
-          "amount": "1.5"
+          "amount": "2"
         }
       ],
       "costCap": 1

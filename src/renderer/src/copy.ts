@@ -404,6 +404,11 @@ export const COPY = {
     pickCost: (cost: number) => `Cost ${cost}`,
     pickCurrent: 'In this slot',
     pickSwap: (slot: string) => `In ${slot}: swaps`,
+    pickHeirlooms: 'A loadout can hold two Heirlooms',
+    /** How the limit grows, next to the cost bar (DESIGN.md §10 Loadout cost cap). */
+    capGrows: (next: number, level: number) =>
+      `Limit grows with account level · next +${next} at level ${level}`,
+    capTop: 'Limit at its top',
     pickOver: (after: number, cap: number) => `Too costly: ${after} / ${cap}`,
     pickNone: 'You own no card of this job yet.',
     openCard: 'Details',
@@ -430,6 +435,7 @@ export const COPY = {
       'not-owned': "You don't own this card yet.",
       'wrong-job': 'This card belongs to another job.',
       duplicate: 'This card is already in that loadout.',
+      'too-many-heirlooms': 'A loadout can hold two Heirlooms',
       'over-cost-cap':
         'That loadout would go over its cost cap. Remove a card or pick a cheaper one.',
       'invalid-slot': 'This card is not in a loadout.',

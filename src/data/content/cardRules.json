@@ -11,7 +11,9 @@
   },
   "costCap": {
     "base": 6,
-    "perLevel": 2
+    "perLevel": 2,
+    "slowFromLevel": 10,
+    "slowEvery": 4
   },
   "levelCaps": {
     "wood": 20,

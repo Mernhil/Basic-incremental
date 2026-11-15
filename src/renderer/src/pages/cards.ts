@@ -1057,11 +1057,13 @@ export function createCardsPage(
       const li = h('li', 'cp-pick__item');
       const tag = c.current
         ? COPY.cards.pickCurrent
-        : !c.fits
-          ? COPY.cards.pickOver(c.costAfter, lo.cap)
-          : c.from !== null
-            ? COPY.cards.pickSwap(slotName(c.from))
-            : '';
+        : c.heirloomBlocked
+          ? COPY.cards.pickHeirlooms
+          : !c.fits
+            ? COPY.cards.pickOver(c.costAfter, lo.cap)
+            : c.from !== null
+              ? COPY.cards.pickSwap(slotName(c.from))
+              : '';
       const b = h('button', 'cp-tile cp-pick__card');
       b.type = 'button';
       b.dataset.key = `pick-${lo.job}-${c.id}`;
@@ -1121,6 +1123,14 @@ export function createCardsPage(
         `${COPY.cards.loadoutCost} ${COPY.cards.costValue(lo.cost, lo.cap)}`,
       );
       meter.append(row, track);
+      // how the limit grows (DESIGN.md §10 Loadout cost cap)
+      meter.append(
+        h(
+          'p',
+          'cp-cap-note',
+          lo.nextRise ? COPY.cards.capGrows(lo.nextRise.by, lo.nextRise.level) : COPY.cards.capTop,
+        ),
+      );
 
       const slots = h('ol', 'cp-slots');
       watchFit(slots, { want: CARD_WANT.slot });
