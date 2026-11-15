@@ -6,7 +6,7 @@ import { IPC_CHANNELS } from '../preload/api';
 import { setupSaveIpc, saveBeforeClose } from './saves';
 import { setupAutoUpdates } from './updater';
 import { devUserDataDir } from './devPaths';
-import { devCheatsEnabled } from './devMode';
+import { devCheatsEnabled, hiddenTestWindow } from './devMode';
 import { DEV_BUILD } from './buildFlag';
 import { createFileLogger } from './fileLogger';
 import { readLogTail, systemInfo } from './logTail';
@@ -36,7 +36,10 @@ process.on('unhandledRejection', (reason) => {
 });
 
 function createWindow(): void {
+  // BI_HIDDEN_WINDOW=1 (unpackaged only): off-screen, no focus, no taskbar button.
+  const hidden = hiddenTestWindow(app, process.env);
   const win = new BrowserWindow({
+    ...(hidden ? { x: -32000, y: -32000, skipTaskbar: true, focusable: false } : {}),
     width: 1280,
     height: 820,
     minWidth: 1024,
@@ -49,6 +52,7 @@ function createWindow(): void {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      ...(hidden ? { backgroundThrottling: false } : {}),
     },
   });
 
@@ -56,7 +60,7 @@ function createWindow(): void {
     win.setTitle(`${GAME_TITLE} Dev`);
     win.on('page-title-updated', (event) => event.preventDefault());
   }
-  win.on('ready-to-show', () => win.show());
+  win.on('ready-to-show', () => (hidden ? win.showInactive() : win.show()));
   saveBeforeClose(win);
   win.webContents.on('render-process-gone', (_event, details) =>
     log.error(`Renderer gone: ${details.reason} (exit code ${details.exitCode})`),
