@@ -71,6 +71,7 @@ import { onFrame, replay, shake } from './motion';
 import { popText } from './math';
 import { popNumber } from './numbers';
 import { toast } from './toast';
+import { lightStagePips, stagePips } from '../ui/stars';
 import './arena.css';
 
 /**
@@ -190,12 +191,7 @@ export function createArena(ctx: ArenaContext): Arena {
   const starsEl = readout('du-read--stars', COPY.dungeons.stageTip);
   const starPips = span('du-stars');
   starPips.setAttribute('role', 'img');
-  const starPipEls = Array.from({ length: 6 }, (_, i) => {
-    const p = document.createElement('i');
-    p.className = 'dp-pip';
-    p.dataset['level'] = String(i + 1);
-    return p;
-  });
+  const starPipEls = stagePips();
   starPips.append(...starPipEls);
   const starText = span('du-stars__text');
   starsEl.append(starPips, starText);
@@ -931,7 +927,7 @@ export function createArena(ctx: ArenaContext): Arena {
       : null;
     starsEl.hidden = !stars;
     if (stars) {
-      starPipEls.forEach((p, i) => p.classList.toggle('is-on', i < stars.level));
+      lightStagePips(starPipEls, stars.level);
       starPips.setAttribute(
         'aria-label',
         COPY.dungeons.starLevel(stars.level, STAGE_STAR_NAMES[stars.level] ?? ''),

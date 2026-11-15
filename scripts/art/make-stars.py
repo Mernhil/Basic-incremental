@@ -1,6 +1,6 @@
 # Draws the card rank stars: 11 x 11 pixel stars (a 9 x 9 body with a 1 px ink outline), hand-drawn,
 # free, deterministic (Pillow). Option "1d Chunky", picked by the user 2026-11-15.
-# Writes src/renderer/src/art/pixel/hand/star-<set>-on.png for bronze, silver and gold, star-prismatic-<0..5>-on.png
+# Writes src/renderer/src/art/pixel/hand/star-<set>-on.png for wood (stage stars only), bronze, silver and gold, star-prismatic-<0..5>-on.png
 # (each Prismatic star its own rainbow colour) and star-off.png. Run `node scripts/art/bake-pixels.mjs` afterwards.
 # Shading per pixel: light where y <= 4 and x <= 5, deep where y >= 7 or x >= 7, mid elsewhere.
 # The colours are theme/rank.css: --shine, --star, --star-deep per tier (the Prismatic stars: the rainbow stops).
@@ -10,6 +10,7 @@ from PIL import Image
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'src', 'renderer', 'src', 'art', 'pixel', 'hand')
 INK = (26, 20, 32)
 SETS = {  # light, mid, deep
+    'wood': ((222, 190, 150), (138, 106, 69), (100, 74, 45)),  # the stage stars' first level (Wood)
     'bronze': ((255, 226, 189), (205, 127, 50), (185, 101, 31)),
     'silver': ((255, 255, 255), (201, 209, 219), (154, 167, 184)),
     'gold': ((255, 247, 194), (246, 199, 68), (220, 154, 14)),

@@ -4,6 +4,7 @@ import { gemCoin, svg } from '../art/gems';
 import { COPY } from '../copy';
 import type { CardEntry, CostChip, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
+import { setStarText } from './stars';
 import { icon } from '../shell/icons';
 import { iconMarkup, resourceIconId } from './resourceIcons';
 import './weaponPanel.css';
@@ -341,7 +342,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
   function drawSide(w: WeaponView): void {
     // star line
     if (w.starBar) {
-      starMain.textContent = w.starBar.text;
+      setStarText(starMain, w.starBar.text);
       starLine.title = w.starBar.title;
       starImpact.textContent = w.starBar.impact;
       starLine.hidden = false;
@@ -361,14 +362,14 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
 
     starHost.replaceChildren();
     if (w.starBar?.ready) {
-      const b = h('button', 'button wp-add', COPY.weapon.addStar(w.stars + 1));
+      const b = setStarText(h('button', 'button wp-add'), COPY.weapon.addStar(w.stars + 1));
       b.type = 'button';
       b.dataset.key = 'wp-star';
       b.addEventListener('click', () => opts.act('star'));
       starHost.append(b);
     } else if (w.starBar?.dust) {
       const d = w.starBar.dust;
-      const b = h('button', 'button wp-add', d.label);
+      const b = setStarText(h('button', 'button wp-add'), d.label);
       b.type = 'button';
       b.dataset.key = 'wp-dust';
       if (!d.affordable) b.setAttribute('aria-disabled', 'true');
@@ -394,9 +395,8 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       list.setAttribute('aria-labelledby', lead.id);
       if (tiles) list.append(...cardPriceRows(w, t));
       else for (const c of t.costs) list.append(costItem(c, w.atCap));
-      const go = h(
-        'button',
-        `button wp-go${t.ready ? ' is-ready' : ''}`,
+      const go = setStarText(
+        h('button', `button wp-go${t.ready ? ' is-ready' : ''}`),
         tiles && !t.ready ? t.blocker : t.action,
       );
       go.type = 'button';
