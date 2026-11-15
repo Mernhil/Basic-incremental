@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { devCheatsEnabled } from '../src/main/devMode';
+import { devCheatsEnabled, hiddenTestWindow } from '../src/main/devMode';
 import { IPC_CHANNELS } from '../src/preload/api';
 
 describe('dev cheats gating in the main process', () => {
@@ -36,5 +36,17 @@ describe('dev cheats gating in the main process', () => {
     expect(IPC_CHANNELS.devCheatsEnabled).toBe('dev:cheats-enabled');
     expect(IPC_CHANNELS.devBackupSave).toBe('dev:backup-save');
     expect(IPC_CHANNELS.devReloadView).toBe('dev:reload-view');
+  });
+});
+
+describe('off-screen test window', () => {
+  it('is on only with BI_HIDDEN_WINDOW=1 in an unpackaged run', () => {
+    expect(hiddenTestWindow({ isPackaged: false }, { BI_HIDDEN_WINDOW: '1' })).toBe(true);
+    expect(hiddenTestWindow({ isPackaged: false }, {})).toBe(false);
+    expect(hiddenTestWindow({ isPackaged: false }, { BI_HIDDEN_WINDOW: '0' })).toBe(false);
+  });
+
+  it('is ignored by a packaged build', () => {
+    expect(hiddenTestWindow({ isPackaged: true }, { BI_HIDDEN_WINDOW: '1' })).toBe(false);
   });
 });
