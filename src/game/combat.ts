@@ -34,7 +34,6 @@ import {
   statValue,
   type Modifier,
   type StatContext,
-  type StatResult,
 } from './modifiers';
 import { Decimal } from './num';
 import { clearDungeon, type Price } from './production';

@@ -6,7 +6,6 @@ import {
   burstStats,
   collectModifiers,
   critFactor,
-  critStats,
   defaultRng,
   isProducerUnlocked,
   jobProductionPerSecond,

@@ -329,8 +329,8 @@ html .dp-row.is-picked:not(#_px) {
 
 /* ---- Weapon panel: the tabs that switch between the four loadout cards ---- */
 .dp-wtabs {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
 }
 .dp-wtabs:empty {
@@ -342,8 +342,8 @@ html .dp-row.is-picked:not(#_px) {
   grid-template-rows: auto auto;
   column-gap: 8px;
   align-items: center;
-  min-width: 150px;
-  padding: 6px 10px 6px 6px;
+  min-width: 0;
+  padding: 6px 8px 6px 6px;
   color: inherit;
   font: inherit;
   text-align: left;
@@ -352,8 +352,8 @@ html .dp-row.is-picked:not(#_px) {
 .dp-wtab__art {
   grid-row: 1 / span 2;
   display: block;
-  width: 34px;
-  height: 40px;
+  width: 28px;
+  height: 34px;
 }
 .dp-wtab__art svg {
   display: block;
@@ -361,7 +361,11 @@ html .dp-row.is-picked:not(#_px) {
   height: 100%;
 }
 .dp-wtab__name {
-  font-size: 14px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
   font-weight: 700;
   line-height: 1.1;
 }

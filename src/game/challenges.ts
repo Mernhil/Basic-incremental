@@ -1,7 +1,6 @@
 import type { AscensionChallenge, ChallengeRestriction, Content } from '../data';
 import { ascend, type AscendResult } from './prestige';
 import { isDungeonUnlocked } from './combat';
-import { Decimal } from './num';
 import { MAX_CHALLENGE_COMPLETIONS, cloneState, type Difficulty, type GameState } from './state';
 import type { Modifier } from './modifiers';
 

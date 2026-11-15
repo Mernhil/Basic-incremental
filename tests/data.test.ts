@@ -341,9 +341,10 @@ describe('card ranks and portals', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     rules['tierUp'].bronze.mining[0].resource = 'nope';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (bad.cards as Record<string, any>[])[0]!['teamBonus'].modifiers[0].scope = {
       dungeon: 'nowhere',
-    }; // eslint-disable-line @typescript-eslint/no-explicit-any
+    };
     const issues = issuesFor(bad);
     expect(issues).toContain(
       'cardRules.json › tierUp › bronze › mining › [0] › resource: unknown resource "nope"',

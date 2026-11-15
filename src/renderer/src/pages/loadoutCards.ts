@@ -8,7 +8,6 @@ import {
   type GameState,
   type Modifier,
 } from '../../../game';
-import { COPY } from '../copy';
 import { evolutionArt } from '../art/evolutions';
 import { cardTierArt, itemArt, itemBoxSprite } from '../art/items';
 import type { CardProps } from '../ui/card';

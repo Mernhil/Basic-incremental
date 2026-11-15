@@ -18,7 +18,6 @@ import {
   createSaveText,
   Decimal,
   buildTeam,
-  effectiveDamage,
   emptyCardLoadout,
   fightingXpPerKill,
   levelCap,
