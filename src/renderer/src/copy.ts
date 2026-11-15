@@ -1066,7 +1066,29 @@ export const COPY = {
     heirloom: (card: string) => `${card} claimed its Heirloom!`,
     heirloomDetail: (item: string) => `It now wields ${item}.`,
     goals: 'Goals',
-    goalsButton: (n: number) => (n > 0 ? `Goals, ${n} shown` : 'Goals'),
+    goalsButton: (n: number) => (n > 0 ? `Goals, ${n} to claim` : 'Goals'),
+    quests: {
+      title: 'Quests',
+      claim: 'Claim',
+      claimAll: (n: number) => `Claim all (${n})`,
+      claimedToast: (n: number) =>
+        n === 1 ? 'Quest reward claimed' : `${n} quest rewards claimed`,
+      claimLabel: (title: string, reward: string) => `Claim ${title}: ${reward}`,
+      nextUp: 'Next up',
+      seeAll: 'See all quests',
+      back: 'Back to quests',
+      empty: 'Every quest is done. Well played.',
+      claimed: 'Claimed',
+      done: 'Done',
+      groups: {
+        dungeons: 'Dungeons',
+        cards: 'Cards',
+        gathering: 'Gathering',
+        account: 'Account',
+      } as Record<string, string>,
+      openLabel: (title: string, count: string, reward: string) =>
+        `${title}${count ? `, ${count}` : ''}, pays ${reward}. Open its view.`,
+    },
     ready: 'ready',
     eta: (d: string) => `~${d}`,
     goalLabel: (title: string, pct: number, eta: string) =>

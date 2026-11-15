@@ -62,7 +62,7 @@ let failed = 0;
 for (const id of views) {
   // back to the table, then open the view
   await page.evaluate(() => {
-    document.querySelector('.shell-goals__list:not([hidden])') &&
+    if (document.querySelector('.shell-goals__list:not([hidden])'))
       document.querySelector('.shell-goals__btn')?.click();
     document.querySelector('.vh-back')?.click();
   });

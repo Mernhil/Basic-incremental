@@ -1,5 +1,12 @@
 import type { Content } from '../../../data';
-import { formatDuration, itemName, type Goal, type TierUp } from '../../../game';
+import {
+  formatDuration,
+  formatShort,
+  itemName,
+  type Goal,
+  type QuestEntry,
+  type TierUp,
+} from '../../../game';
 import { COPY } from '../copy';
 
 /**
@@ -75,6 +82,48 @@ export function goalRows(goals: readonly Goal[]): GoalRow[] {
           : COPY.progress.eta(formatDuration(g.etaSeconds * 1000)),
     page: g.page,
   }));
+}
+
+/** One quest row of the Goals popup and the full list (DESIGN.md §10 Quests). */
+export interface QuestRow {
+  id: string;
+  title: string;
+  group: QuestEntry['quest']['group'];
+  progress: number;
+  /** "3 / 10", or empty for a quest that is a single step. */
+  count: string;
+  done: boolean;
+  claimed: boolean;
+  /** "+3 Summon Scrolls". */
+  reward: string;
+  page: Goal['page'];
+}
+
+const PLURAL = /(Scroll|Core|Gem|Shard)$/;
+
+/** What a quest pays, as a line: "+3 Summon Scrolls, +5 Moss Cores". */
+export function rewardText(content: Content, quest: QuestEntry['quest']): string {
+  return quest.reward
+    .map((r) => {
+      const name = content.resourceById.get(r.resource)?.name ?? r.resource;
+      const plural = !r.amount.eq(1) && PLURAL.test(name) ? 's' : '';
+      return `+${formatShort(r.amount)} ${name}${plural}`;
+    })
+    .join(', ');
+}
+
+export function questRow(content: Content, e: QuestEntry): QuestRow {
+  return {
+    id: e.quest.id,
+    title: e.quest.name,
+    group: e.quest.group,
+    progress: e.progress,
+    count: e.target > 1 ? `${formatShort(e.value)} / ${formatShort(e.target)}` : '',
+    done: e.done,
+    claimed: e.claimed,
+    reward: rewardText(content, e.quest),
+    page: e.quest.page,
+  };
 }
 
 /** The medal's tooltip: tier and progress to the next one. */

@@ -20,6 +20,7 @@ import type {
   PrestigeConfig,
   CosmeticRules,
   Achievement,
+  Quest,
   ShardShopItem,
   AccountConfig,
   EnhancementsConfig,
@@ -79,6 +80,7 @@ import challengesJson from './content/challenges.json';
 import skillsJson from './content/skills.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
+import questsJson from './content/quests.json';
 
 export * from './schemas';
 
@@ -117,6 +119,9 @@ export interface Content {
   allPortals: Portal[];
   /** Achievements and their rewards (DESIGN.md §10). */
   achievements: Achievement[];
+  /** Quests: what the Goals button lists and pays (DESIGN.md §10 Quests). */
+  quests: Quest[];
+  questById: ReadonlyMap<string, Quest>;
   /** Shard shop stock (card shards). */
   shardShop: ShardShopItem[];
   /** Account XP, levels, reward track, account tree and respec (DESIGN.md §10a, 16 E7). */
@@ -243,7 +248,9 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     skills,
     scrolls,
     heirlooms,
+    quests: questsFile,
   } = parsed;
+  const { quests } = questsFile;
   const { achievements, shardShop } = achievementsFile;
   checkReferences({ resources, trees, mines, cards, dungeons, cosmetics, portals }, issues);
   checkCombat({ resources, dungeons, trials, combat }, issues);
@@ -258,6 +265,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     { resources, cosmetics, cards, dungeons, trials, achievements, shardShop },
     issues,
   );
+  checkQuests({ resources, dungeons, trials, quests }, issues);
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
   checkUpgrades({ resources, trees, mines, dungeons, combat, upgrades }, issues);
   checkCosmeticSources(
@@ -330,6 +338,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     prestige,
     cosmeticRules,
     achievements,
+    quests,
+    questById: new Map(quests.map((q) => [q.id, q])),
     shardShop,
     account,
     enhancements,
@@ -821,6 +831,38 @@ function checkCosmeticSources(
       }
     }),
   );
+}
+
+/** Quest ids are unique and everything they name exists (DESIGN.md §10 Quests). */
+function checkQuests(
+  c: Pick<Content, 'resources' | 'dungeons' | 'trials'> & { quests: Quest[] },
+  issues: string[],
+): void {
+  const resources = new Set(c.resources.map((x) => x.id));
+  const dungeons = new Map(c.dungeons.map((x) => [x.id, x]));
+  const trials = new Set(c.trials.map((x) => x.id));
+  const seen = new Set<string>();
+  c.quests.forEach((q, i) => {
+    const where = `quests.json › quests › [${i}]`;
+    if (seen.has(q.id)) issues.push(`${where} › id: duplicate "${q.id}"`);
+    seen.add(q.id);
+    const cond = q.condition;
+    if ('dungeon' in cond) {
+      const d = dungeons.get(cond.dungeon);
+      if (!d && !(cond.kind === 'cleared' && trials.has(cond.dungeon))) {
+        issues.push(`${where} › condition › dungeon: unknown dungeon "${cond.dungeon}"`);
+      } else if (d && 'floor' in cond && typeof cond.floor === 'number' && cond.floor > d.floors) {
+        issues.push(
+          `${where} › condition › floor: ${cond.floor} is past the last floor of "${d.id}"`,
+        );
+      }
+    }
+    q.reward.forEach((r, j) => {
+      if (!resources.has(r.resource)) {
+        issues.push(`${where} › reward › [${j}]: unknown resource "${r.resource}"`);
+      }
+    });
+  });
 }
 
 /** Achievement and shard shop ids are unique and everything they name exists. */
@@ -1445,6 +1487,7 @@ export function bundledRawContent(): RawContent {
     skills: skillsJson,
     scrolls: scrollsJson,
     heirlooms: heirloomsJson,
+    quests: questsJson,
   };
 }
 

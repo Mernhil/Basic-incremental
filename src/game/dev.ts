@@ -10,6 +10,7 @@
 import { RANK_TIERS, type Content, type RankTier } from '../data';
 import { grantAccountXp, settleAccount } from './account';
 import { settleAchievements } from './achievements';
+import { settleQuests } from './quests';
 import { cardTopTier, levelCap } from './cards';
 import { floorCount, initialProgress, stageKey } from './floors';
 import { settleMastery } from './mastery';
@@ -51,6 +52,7 @@ function settle(state: GameState, content: Content): void {
   settleMastery(state, content, report);
   settleAccount(state, content, report);
   settleAchievements(state, content, report);
+  settleQuests(state, content);
 }
 
 /** Adds `amount` (a number or a decimal string such as "1e30") of a resource, or of every

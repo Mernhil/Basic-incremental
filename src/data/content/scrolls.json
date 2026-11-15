@@ -8,7 +8,7 @@
   "daily": { "summon": "3", "glamour": "1.5" },
   "fieldCache": {
     "everyMinutes": 10,
-    "summon": "1.25",
+    "summon": "1",
     "glamour": "0.625",
     "difficulty": { "normal": 1, "hard": 1.25, "nightmare": 1.5, "endless": 1.5 }
   },
