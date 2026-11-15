@@ -4,6 +4,36 @@
  * it is `backdrop.ts`.
  */
 
+/**
+ * THE OFF SWITCH for every Heirloom backdrop animation (the villain's lava strip, the sea's fish and
+ * bubbles). Vaulted 2026-11-15 (user: "keep the static backgrounds and vault the animations for
+ * now"): false shows the still pictures only and starts no loop, timer or fish. Set it to true to
+ * bring the motion back; nothing else needs to change (DESIGN.md §5 Heirloom backdrops).
+ */
+export const BACKDROP_MOTION = false;
+
+/** What a backdrop draws: its pictures and which motions run, for a switch position (default: the switch above). */
+export interface BackdropLayers {
+  bg: string;
+  /** The layer over the fish; only needed while fish swim (its pixels are the picture's own). */
+  front?: string;
+  /** Play the picture's strip, when it has one. */
+  strip: boolean;
+  /** Fish and bubbles. */
+  swim: boolean;
+}
+export function backdropLayers(
+  spec: { bg: string; front?: string; motion?: 'sea' },
+  motion: boolean = BACKDROP_MOTION,
+): BackdropLayers {
+  return {
+    bg: spec.bg,
+    ...(motion && spec.front ? { front: spec.front } : {}),
+    strip: motion,
+    swim: motion && spec.motion === 'sea',
+  };
+}
+
 /** The backdrop picture's size in art pixels; it sits at x 38, y 34 of the kit picture. */
 export const BACKDROP = { w: 136, h: 160, x: 38, y: 34 } as const;
 

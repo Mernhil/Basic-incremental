@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { backdropOf } from '../src/game';
 import { sprite, strip } from '../src/renderer/src/art/pixel/sprites';
 import { kitName } from '../src/renderer/src/art/frame';
-import { BACKDROP, SeaSim } from '../src/renderer/src/art/seaSim';
+import { BACKDROP, BACKDROP_MOTION, SeaSim, backdropLayers } from '../src/renderer/src/art/seaSim';
 import { content } from './helpers';
 
 const DRAGON = [
@@ -65,7 +65,40 @@ describe('Heirloom backdrops', () => {
   });
 });
 
-describe('SeaSim (the Leviathan motion)', () => {
+/** The motion is vaulted (switched off), the pictures stay. */
+describe('backdrop motion switch', () => {
+  it('is off: stills only, no strip, fish or front layer', () => {
+    expect(BACKDROP_MOTION).toBe(false);
+    const sea = { bg: 'bg-sea', front: 'bg-sea-front', motion: 'sea' as const };
+    expect(backdropLayers(sea)).toEqual({ bg: 'bg-sea', strip: false, swim: false });
+    expect(backdropLayers({ bg: 'bg-villain' })).toEqual({
+      bg: 'bg-villain',
+      strip: false,
+      swim: false,
+    });
+  });
+
+  it('brings the motion back when switched on', () => {
+    const sea = { bg: 'bg-sea', front: 'bg-sea-front', motion: 'sea' as const };
+    expect(backdropLayers(sea, true)).toEqual({
+      bg: 'bg-sea',
+      front: 'bg-sea-front',
+      strip: true,
+      swim: true,
+    });
+    expect(backdropLayers({ bg: 'bg-villain' }, true)).toMatchObject({ strip: true, swim: false });
+  });
+});
+
+/** A fixed seed, so the vaulted motion's tests never flake. */
+const seeded =
+  (seed = 12345) =>
+  () => {
+    seed = (seed * 1664525 + 1013904223) % 4294967296;
+    return seed / 4294967296;
+  };
+
+describe('SeaSim (the vaulted Leviathan motion)', () => {
   const run = (secs: number, rand = () => 0.5) => {
     const sim = new SeaSim(rand);
     const seen = { big: 0, maxSmall: 0, firstBig: -1, bubbles: 0 };
@@ -95,7 +128,7 @@ describe('SeaSim (the Leviathan motion)', () => {
   };
 
   it('sends the first big fish after about 3 s, at most 2 small ones, a bubble every 1.6 s', () => {
-    const { seen } = run(15, Math.random);
+    const { seen } = run(15, seeded());
     expect(seen.firstBig).toBeGreaterThan(2.9);
     expect(seen.firstBig).toBeLessThan(3.2);
     expect(seen.maxSmall).toBeLessThanOrEqual(2);
@@ -103,7 +136,7 @@ describe('SeaSim (the Leviathan motion)', () => {
   });
 
   it('keeps fish and bubbles bounded and removes them once they leave the box', () => {
-    const { sim } = run(300, Math.random);
+    const { sim } = run(300, seeded(7));
     for (const f of sim.fish) expect(f.x).toBeLessThan(BACKDROP.w + 4);
     for (const b of sim.bubbles) expect(b.y).toBeGreaterThan(-4);
     expect(sim.fish.length).toBeLessThanOrEqual(3);
