@@ -3,6 +3,7 @@
 .ur {
   display: grid;
   gap: 8px;
+  container-type: inline-size;
 }
 .ur__hold {
   display: flex;
@@ -220,6 +221,15 @@
 .pk__hint {
   font-size: 11px;
   color: var(--bi-frame-ink-muted);
+}
+/* A narrow column (the job view's side): the button goes under the numbers. */
+@container (max-width: 470px) {
+  .ur__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ur__buy {
+    width: 100%;
+  }
 }
 @media (max-width: 1500px) {
   .ur__row {
