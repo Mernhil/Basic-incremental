@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bossMaxHp,
   advance,
   ascend,
   buyUpgrade,
@@ -13,7 +14,7 @@ import {
   upgradeShelf,
   type GameState,
 } from '../src/game';
-import { bareState, constantRng, content, freshState } from './helpers';
+import { bareState, constantRng, content, freshState, withDps } from './helpers';
 
 const NOW = 1_700_000_000_000;
 const oak = content.treeById.get('oak')!;
@@ -143,11 +144,16 @@ describe('effects through the modifier pipeline', () => {
 });
 
 describe('lifetime Money earned', () => {
-  it('counts the fighting wage and purses', () => {
+  it('counts the wage and purses paid with the kills', () => {
     const state = bareState();
     state.activeDungeonId = 'mossy_cellar';
     expect(lifetimeMoney(state).eq(0)).toBe(true);
-    const { state: after } = advance(state, content, 2000, constantRng(0.5));
+    const { state: after } = advance(
+      state,
+      withDps(bossMaxHp(content.dungeons[0]!)),
+      2000,
+      constantRng(0.5),
+    );
     const gained = after.resources['money']!.sub(state.resources['money']!);
     expect(gained.gt(0)).toBe(true);
     expect(lifetimeMoney(after).eq(gained)).toBe(true);

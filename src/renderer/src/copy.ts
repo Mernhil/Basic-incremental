@@ -519,7 +519,7 @@ export const COPY = {
     opens: (list: string) => `First clear opens ${list}`,
     perKillDrop: (res: string) => `${res} per boss kill`,
     dropsNote: 'Normal enemies and mini-bosses drop a share of the boss’s Money and materials.',
-    wage: (res: string) => `${res} while fighting`,
+    wage: (res: string) => `${res} for time fought, paid with each kill`,
     firstClear: (res: string) => `${res} on first clear`,
     unlocksWith: (mine: string) => `Unlocks with ${mine}`,
     opened: (list: string) => `Cleared: opened ${list}`,

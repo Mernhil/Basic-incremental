@@ -1402,12 +1402,13 @@ function fightDungeon(
       'fighting',
       fightingXpPerSecond(content, dungeon, modifiers).mul(t * stage.scale.xp),
     );
-    // The wages: crystals (and, in the first dungeon, Money) for every second spent fighting,
-    // so pulls do not grow with kill speed (DESIGN.md §3).
+    // The wage (the first dungeon's Money) for every second spent fighting is earned here and
+    // paid at the next kill, so Money comes only when something is won (DESIGN.md §3).
     for (const wage of drops.wages) {
-      const paid = wage.perSecond.mul(t * stage.scale.wage);
-      addResource(next, wage.resource, paid);
-      report.currencies[wage.resource] = (report.currencies[wage.resource] ?? 0) + paid.toNumber();
+      const owed = (next.combat.wageOwed ??= {});
+      owed[wage.resource] = (owed[wage.resource] ?? new Decimal(0)).add(
+        wage.perSecond.mul(t * stage.scale.wage),
+      );
     }
     return landed;
   };
@@ -2087,6 +2088,17 @@ function killEnemies(
     }
   });
   if (worth <= 0) return;
+  // The wage earned since the last kill comes with this one (DESIGN.md §3).
+  const owed = state.combat.wageOwed;
+  if (owed) {
+    for (const [resource, paid] of Object.entries(owed)) {
+      if (paid.gt(0)) {
+        addResource(state, resource, paid);
+        report.currencies[resource] = (report.currencies[resource] ?? 0) + paid.toNumber();
+      }
+      delete owed[resource];
+    }
+  }
 
   state.pity[bossId] = pity;
   state.stats.bossKills += bossFloorKills;
