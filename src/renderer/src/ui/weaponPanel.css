@@ -337,21 +337,13 @@
   display: flex;
   gap: var(--fs-sm);
 }
-/* a 7 x 7 art pixel star at a whole device scale (ui/pixelScale.css pattern) */
-.wp-pipcell {
-  --one: calc(7px / var(--dpr));
-  display: block;
-  width: max(var(--one), round(nearest, 16px, var(--one)));
-  aspect-ratio: 1;
+/* the tier panel's stars are the card's 11 x 11 star sprites, two device pixels to the art pixel */
+.wp .wp-pips {
+  --star-art: calc(2px / var(--dpr, 1));
+  gap: 0;
 }
 .wp-pip-art {
   display: block;
-  width: 100%;
-  height: 100%;
-  fill: color-mix(in srgb, var(--bi-frame-bg) 55%, var(--bi-frame-hi, #fff));
-}
-.wp-pipcell.is-on .wp-pip-art {
-  fill: var(--bi-chrome-accent);
 }
 .wp--card .wp-stars {
   font-size: 12px;

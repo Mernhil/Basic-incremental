@@ -106,9 +106,9 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
 
   // ---- card variant: the tiles (tier and stars, card XP) ----
   const tierValue = h('b', 'wp-tile__value px-display');
-  const pipEls = Array.from({ length: STARS }, () => {
-    const cell = h('span', 'wp-pipcell');
-    cell.append(pipArt());
+  const pipEls = Array.from({ length: STARS }, (_, i) => {
+    const cell = h('i', 'bi-star');
+    cell.dataset['i'] = String(i);
     return cell;
   });
   const starGauge = h('i');
@@ -464,7 +464,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
 
   function drawTiles(w: WeaponView): void {
     tierValue.textContent = w.tierName;
-    pipEls.forEach((p, i) => p.classList.toggle('is-on', i < w.stars));
+    pipEls.forEach((p, i) => p.classList.toggle('bi-star--on', i < w.stars));
     starGauge.style.width = `${((w.starBar?.gauge ?? 1) * 100).toFixed(1)}%`;
     xpTileValue.textContent = w.atCap ? COPY.weapon.xpFull : COPY.weapon.xpOf2(w.xpNow, w.xpNeed);
     xpBar.classList.toggle('is-max', w.atCap);
