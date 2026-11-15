@@ -52,12 +52,12 @@
         {
           "id": "oak_25_levels",
           "name": "Fertile Soil",
-          "description": "Oak levels add 50% more output",
+          "description": "Oak levels add 25% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "oak"
               }
@@ -67,12 +67,12 @@
         {
           "id": "oak_25_lucky",
           "name": "Golden Boughs",
-          "description": "Oak's lucky strikes pay double",
+          "description": "Oak's lucky strikes pay ×1.5",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "mult",
-              "value": "2",
+              "value": "1.5",
               "scope": {
                 "producer": "oak"
               }
@@ -92,12 +92,12 @@
         {
           "id": "oak_50_output",
           "name": "Deep Roots",
-          "description": "Oak output ×1.5",
+          "description": "Oak output ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "oak"
               }
@@ -220,12 +220,12 @@
         {
           "id": "ironbark_25_levels",
           "name": "Fertile Soil",
-          "description": "Ironbark levels add 50% more output",
+          "description": "Ironbark levels add 25% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "ironbark"
               }
@@ -235,12 +235,12 @@
         {
           "id": "ironbark_25_lucky",
           "name": "Golden Boughs",
-          "description": "Ironbark's lucky strikes pay double",
+          "description": "Ironbark's lucky strikes pay ×1.5",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "mult",
-              "value": "2",
+              "value": "1.5",
               "scope": {
                 "producer": "ironbark"
               }
@@ -260,12 +260,12 @@
         {
           "id": "ironbark_50_output",
           "name": "Heartwood Grain",
-          "description": "Ironbark output ×1.5",
+          "description": "Ironbark output ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "ironbark"
               }
@@ -388,12 +388,12 @@
         {
           "id": "moonwillow_25_levels",
           "name": "Fertile Soil",
-          "description": "Moonwillow levels add 50% more output",
+          "description": "Moonwillow levels add 25% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -403,12 +403,12 @@
         {
           "id": "moonwillow_25_lucky",
           "name": "Golden Boughs",
-          "description": "Moonwillow's lucky strikes pay double",
+          "description": "Moonwillow's lucky strikes pay ×1.5",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "mult",
-              "value": "2",
+              "value": "1.5",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -428,12 +428,12 @@
         {
           "id": "moonwillow_50_output",
           "name": "Silver Boughs",
-          "description": "Moonwillow output ×1.5",
+          "description": "Moonwillow output ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -556,12 +556,12 @@
         {
           "id": "copper_quarry_25_levels",
           "name": "Rich Ore",
-          "description": "Copper Quarry levels add 50% more output",
+          "description": "Copper Quarry levels add 25% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -571,12 +571,12 @@
         {
           "id": "copper_quarry_25_lucky",
           "name": "Lucky Vein",
-          "description": "Copper Quarry's lucky strikes pay double",
+          "description": "Copper Quarry's lucky strikes pay ×1.5",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "mult",
-              "value": "2",
+              "value": "1.5",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -596,12 +596,12 @@
         {
           "id": "copper_quarry_50_output",
           "name": "Copper Seams",
-          "description": "Copper Quarry output ×1.5",
+          "description": "Copper Quarry output ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -724,12 +724,12 @@
         {
           "id": "iron_deeps_25_levels",
           "name": "Rich Ore",
-          "description": "Iron Deeps levels add 50% more output",
+          "description": "Iron Deeps levels add 25% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -739,12 +739,12 @@
         {
           "id": "iron_deeps_25_lucky",
           "name": "Lucky Vein",
-          "description": "Iron Deeps's lucky strikes pay double",
+          "description": "Iron Deeps's lucky strikes pay ×1.5",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "mult",
-              "value": "2",
+              "value": "1.5",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -764,12 +764,12 @@
         {
           "id": "iron_deeps_50_output",
           "name": "Iron Veins",
-          "description": "Iron Deeps output ×1.5",
+          "description": "Iron Deeps output ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -892,12 +892,12 @@
         {
           "id": "crystal_grotto_25_levels",
           "name": "Rich Ore",
-          "description": "Crystal Grotto levels add 50% more output",
+          "description": "Crystal Grotto levels add 25% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -907,12 +907,12 @@
         {
           "id": "crystal_grotto_25_lucky",
           "name": "Lucky Vein",
-          "description": "Crystal Grotto's lucky strikes pay double",
+          "description": "Crystal Grotto's lucky strikes pay ×1.5",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "mult",
-              "value": "2",
+              "value": "1.5",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -932,12 +932,12 @@
         {
           "id": "crystal_grotto_50_output",
           "name": "Prismatic Lode",
-          "description": "Crystal Grotto output ×1.5",
+          "description": "Crystal Grotto output ×1.25",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.5",
+              "value": "1.25",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -1020,12 +1020,12 @@
         {
           "id": "logging_yield_10_all",
           "name": "Lumber Union",
-          "description": "All trees +50% output",
+          "description": "All trees +25% output",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "percent",
-              "value": "50",
+              "value": "25",
               "scope": {
                 "job": "logging"
               }
@@ -1060,12 +1060,12 @@
         {
           "id": "logging_yield_25_ledger",
           "name": "Merchant Ledger",
-          "description": "All production +25%",
+          "description": "All production +10%",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "percent",
-              "value": "25"
+              "value": "10"
             }
           ]
         },
@@ -1097,12 +1097,12 @@
         {
           "id": "logging_yield_50_ledger",
           "name": "Golden Ledger",
-          "description": "All production ×1.25",
+          "description": "All production ×1.1",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.25"
+              "value": "1.1"
             }
           ]
         },
@@ -1214,12 +1214,12 @@
         {
           "id": "logging_speed_50_rush",
           "name": "Gold Rush",
-          "description": "Logging lucky strikes pay +100%",
+          "description": "Logging lucky strikes pay +50%",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "percent",
-              "value": "100",
+              "value": "50",
               "scope": {
                 "job": "logging"
               }
@@ -1494,12 +1494,12 @@
         {
           "id": "mining_yield_10_all",
           "name": "Dynamite",
-          "description": "All mines +50% output",
+          "description": "All mines +25% output",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "percent",
-              "value": "50",
+              "value": "25",
               "scope": {
                 "job": "mining"
               }
@@ -1574,12 +1574,12 @@
         {
           "id": "mining_yield_50_polish",
           "name": "Gem Polish",
-          "description": "All mines ×1.25",
+          "description": "All mines ×1.1",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.1",
               "scope": {
                 "job": "mining"
               }
@@ -1694,12 +1694,12 @@
         {
           "id": "mining_speed_50_rush",
           "name": "Gold Rush",
-          "description": "Mining lucky strikes pay +100%",
+          "description": "Mining lucky strikes pay +50%",
           "effects": [
             {
               "stat": "lucky.payout",
               "kind": "percent",
-              "value": "100",
+              "value": "50",
               "scope": {
                 "job": "mining"
               }
