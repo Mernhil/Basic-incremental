@@ -18,6 +18,15 @@ export interface SaveFiles {
 export interface SaveStore {
   read(): SaveFiles;
   write(text: string): void;
+  /** Dev builds: copies the main save to `save.before-reset-<timestamp>.json`; its file name,
+   *  or null when there is no save to copy. */
+  backupBeforeReset(now: Date): string | null;
+}
+
+/** `2026-11-15_16-30-05` in local time, safe in a file name. */
+export function stampName(now: Date): string {
+  const p = (n: number): string => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${p(now.getMonth() + 1)}-${p(now.getDate())}_${p(now.getHours())}-${p(now.getMinutes())}-${p(now.getSeconds())}`;
 }
 
 function readOrNull(path: string): string | null {
@@ -63,6 +72,12 @@ export function createSaveStore(dir: string): SaveStore {
         copyFileSync(primaryPath, isJson(readOrNull(primaryPath)) ? backupPath : corruptPath);
       }
       renameSync(tempPath, primaryPath);
+    },
+    backupBeforeReset(now) {
+      if (!existsSync(primaryPath)) return null;
+      const name = `save.before-reset-${stampName(now)}.json`;
+      copyFileSync(primaryPath, join(dir, name));
+      return name;
     },
   };
 }

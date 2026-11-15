@@ -12,6 +12,8 @@ export default tseslint.config(
       'out/**',
       'dist/**',
       'release/**',
+      'release-dev/**',
+      'out-dev/**',
       'coverage/**',
     ],
   },

@@ -72,3 +72,35 @@ describe('GameLoop', () => {
     }
   });
 });
+
+describe('GameLoop game speed (dev builds)', () => {
+  it('runs at 1x by default and rejects bad speeds', () => {
+    const loop = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    expect(loop.speed).toBe(1);
+    for (const bad of [0, -3, NaN, Infinity]) {
+      loop.setSpeed(bad);
+      expect(loop.speed).toBe(1);
+    }
+  });
+
+  it('5x gives five times the play time and production for the same clock time', () => {
+    const slow = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    const fast = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    fast.setSpeed(5);
+    slow.step(10_000);
+    fast.step(10_000);
+    expect(slow.state.stats.playTimeMs).toBe(10_000);
+    expect(fast.state.stats.playTimeMs).toBe(50_000);
+    expect(approxEq(fast.state.resources['oak_gem']!, 50)).toBe(true);
+  });
+
+  it('a change applies from the next step on; a long sleep is clamped before the speed', () => {
+    const loop = new GameLoop(bareState(), content, constantRng(0.5), 0);
+    loop.step(10_000);
+    loop.setSpeed(10);
+    loop.step(20_000);
+    expect(loop.state.stats.playTimeMs).toBe(10_000 + 100_000);
+    loop.step(20_000 + 100 * MAX_STEP_MS);
+    expect(loop.state.stats.playTimeMs).toBe(110_000 + 10 * MAX_STEP_MS);
+  });
+});

@@ -1,0 +1,24 @@
+# The local-only dev build (npm run dist:dev, scripts/dist-dev.mjs). Never published, never built
+# by CI or the Release workflow. Unpacked: no installer, no updater, no signing.
+appId: com.mernhil.basicincremental.devbuild
+productName: Basic Incremental Dev
+copyright: Copyright (c) Mernhil
+
+directories:
+  output: release-dev
+
+files:
+  - out-dev/**
+  - package.json
+
+# electron-builder reads `main` from package.json; point it at the dev bundle.
+extraMetadata:
+  main: out-dev/main/index.js
+
+win:
+  target:
+    - target: dir
+      arch: x64
+  executableName: Basic Incremental Dev
+
+publish: null

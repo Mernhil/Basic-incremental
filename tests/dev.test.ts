@@ -6,6 +6,7 @@ import {
   devGrant,
   devGrantCosmetic,
   devOptions,
+  devResetGame,
   devSetCardRank,
   devSetDungeonCleared,
 } from '../src/game/dev';
@@ -153,5 +154,30 @@ describe('dev cheats (dev builds only)', () => {
 
   it('carries a marker string the release bundle check looks for', () => {
     expect(DEV_CHEATS_MARKER).toMatch(/^bi-dev-cheats/);
+  });
+});
+
+describe('dev reset', () => {
+  it('starts a brand new game without touching the old state', () => {
+    const played = devGrant(freshState(), content, { resource: 'oak_gem', amount: 1e9 });
+    if (!played.ok) throw new Error('grant failed');
+    const fresh = devResetGame(played.state, content);
+    expect(fresh.resources['oak_gem']!.toNumber()).toBe(0);
+    expect(played.state.resources['oak_gem']!.toNumber()).toBe(1e9);
+  });
+
+  it('can keep the owned cosmetics, the loadout and the legacy skins', () => {
+    const played = freshState();
+    const starters = new Set(Object.values(content.starterBySlot).map((c) => c.id));
+    const id = content.cosmetics.find((c) => !c.ownedAtStart && !starters.has(c.id))!.id;
+    const withCosmetic = devGrantCosmetic(played, content, id);
+    if (!withCosmetic.ok) throw new Error('grant failed');
+    const state = { ...withCosmetic.state, legacySkins: ['x'] };
+    state.cosmetics.loadout.slots['table'] = { id, level: 1 };
+    const kept = devResetGame(state, content, { keepCosmetics: true });
+    expect(kept.cosmetics.owned[id]).toBeDefined();
+    expect(kept.cosmetics.loadout.slots['table']?.id).toBe(id);
+    expect(kept.legacySkins).toEqual(['x']);
+    expect(devResetGame(state, content).cosmetics.owned[id]).toBeUndefined();
   });
 });

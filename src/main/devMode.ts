@@ -1,13 +1,18 @@
 /**
- * Whether the dev cheats panel may run (Phase 9). Only in a dev build (the app is not
- * packaged); `BI_NO_CHEATS=1` hides it in a dev build too (to check the player's view). A
- * packaged (release) app never allows it, whatever the environment says. The renderer also
- * loads the cheats code only behind `import.meta.env.DEV`, so a release bundle never ships it.
+ * Whether the dev cheats panel may run. Three cases (DESIGN.md §2 Dev tools):
+ * - unpackaged (running from source): on, unless `BI_NO_CHEATS=1` hides it (to check the
+ *   player's view);
+ * - packaged local dev build (`npm run dist:dev`, `devBuild` is a build-time constant, never
+ *   read from the environment): on;
+ * - packaged public release: never, whatever the environment says.
+ * The renderer loads the cheats code only behind `import.meta.env.DEV` or that same build
+ * constant, so a public bundle never ships it (scripts/check-release-bundle.mjs).
  */
 export function devCheatsEnabled(
   app: { isPackaged: boolean },
   env: Record<string, string | undefined>,
+  devBuild = false,
 ): boolean {
-  if (app.isPackaged) return false;
+  if (app.isPackaged) return devBuild;
   return env['BI_NO_CHEATS'] !== '1';
 }

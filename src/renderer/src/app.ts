@@ -404,11 +404,31 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   // The dev cheats panel (DESIGN.md §2): dev builds only. Vite drops this import from a release
   // build, and the main process says no in a packaged app.
-  if (import.meta.env.DEV) {
+  // The local dev build (npm run dist:dev) bakes in __BI_DEV_BUILD__ so the same import stays.
+  if (import.meta.env.DEV || __BI_DEV_BUILD__) {
     void window.api.devCheatsEnabled().then(async (enabled) => {
       if (!enabled) return;
       const { installDevPanel } = await import('./dev/devPanel');
-      installDevPanel({ content, state: () => loop.state, apply: applyAndSave });
+      const { devResetGame } = await import('../../game/dev');
+      installDevPanel({
+        content,
+        state: () => loop.state,
+        apply: applyAndSave,
+        speed: () => loop.speed,
+        setSpeed: (speed) => {
+          step(); // the time so far runs at the old speed
+          loop.setSpeed(speed);
+        },
+        resetGame: async (keepCosmetics) => {
+          await save(); // the backup is of the latest state
+          const backup = await window.api.devBackupSave();
+          const fresh = devResetGame(loop.state, content, { keepCosmetics });
+          loop.reset(fresh, Date.now());
+          await window.api.writeSave(createSaveText(fresh, Date.now()));
+          window.api.devReloadView();
+          return backup;
+        },
+      });
     });
   }
 

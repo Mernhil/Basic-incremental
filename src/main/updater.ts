@@ -3,6 +3,7 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import { IPC_CHANNELS } from '../preload/api';
 import { createFileLogger } from './fileLogger';
+import { DEV_BUILD } from './buildFlag';
 
 let updateReady = false;
 
@@ -30,7 +31,7 @@ export function setupAutoUpdates(): void {
     }
   });
 
-  if (!app.isPackaged) {
+  if (!app.isPackaged || DEV_BUILD) {
     log.info('Dev build: update checks are disabled.');
     return;
   }
