@@ -155,43 +155,47 @@ html .dp-row.is-picked:not(#_px) {
   display: flex;
   gap: 2px;
 }
-/* a star: the five-point shape cut from a square, dark until its level is earned */
+/* a stage star: the card's 11 x 11 star sprite, one device pixel to the art pixel, overlapping by the
+   shared outline pixel; the off sprite until its level is earned, then the ladder's colour */
+.dp-pips,
+.du-stars,
+.dp-legend {
+  --star-art: calc(1px / var(--dpr, 1));
+}
+.dp-pips,
+.du-stars {
+  gap: 0;
+}
 .dp-pip {
   display: block;
-  width: 14px;
-  height: 14px;
-  background: var(--px-edge);
-  clip-path: polygon(
-    50% 0%,
-    62% 36%,
-    100% 38%,
-    70% 60%,
-    81% 100%,
-    50% 76%,
-    19% 100%,
-    30% 60%,
-    0% 38%,
-    38% 36%
-  );
+  flex: none;
+  width: calc(11 * var(--star-art));
+  height: calc(11 * var(--star-art));
+  margin-left: calc(-1 * var(--star-art));
+  background: url('../art/pixel/sprites/star-off.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
-/* the ladder: Wood, Bronze, Silver, Gold, Prismatic, Mythic */
+.dp-pip:first-child {
+  margin-left: 0;
+}
+/* the ladder: Wood, Bronze, Silver, Gold, Prismatic (the blue star), Mythic (the pink star) */
 .dp-pip.is-on[data-level='1'] {
-  background: #8a6a45;
+  background-image: url('../art/pixel/sprites/star-wood-on.png');
 }
 .dp-pip.is-on[data-level='2'] {
-  background: #c98b52;
+  background-image: url('../art/pixel/sprites/star-bronze-on.png');
 }
 .dp-pip.is-on[data-level='3'] {
-  background: #c9ced8;
+  background-image: url('../art/pixel/sprites/star-silver-on.png');
 }
 .dp-pip.is-on[data-level='4'] {
-  background: #f2c14b;
+  background-image: url('../art/pixel/sprites/star-gold-on.png');
 }
 .dp-pip.is-on[data-level='5'] {
-  background: #7fd8f2;
+  background-image: url('../art/pixel/sprites/star-prismatic-4-on.png');
 }
 .dp-pip.is-on[data-level='6'] {
-  background: #f27ab4;
+  background-image: url('../art/pixel/sprites/star-prismatic-0-on.png');
 }
 .dp-cell__kills {
   color: var(--px-ink);

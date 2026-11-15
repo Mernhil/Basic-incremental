@@ -549,8 +549,12 @@ html .wd-stage:not(#_px) {
   font-size: 0;
 }
 .wd-rung--ambient .wd-rung__lv::after {
-  content: '★';
-  font-size: 12px;
+  content: '';
+  display: block;
+  width: calc(11px / var(--dpr, 1));
+  height: calc(11px / var(--dpr, 1));
+  background: url('../art/pixel/sprites/star-gold-on.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
   transform: rotate(-45deg);
 }
 .wd-rung--ambient.is-done .wd-rung__lv {

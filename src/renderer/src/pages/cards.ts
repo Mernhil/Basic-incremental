@@ -35,6 +35,7 @@ import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './tablePanels.css';
 import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
+import { setStarText } from '../ui/stars';
 import './weaponSkinsTab.css';
 import './cards.css';
 
@@ -609,9 +610,8 @@ export function createCardsPage(
     const shard = h('div', 'cp-shardline');
     const top = h('div', 'cp-shardline__top');
     top.append(
-      h(
-        'span',
-        '',
+      setStarText(
+        h('span'),
         info.need === null
           ? COPY.cards.heirloomShards(info.stars, 0, null)
           : COPY.cards.heirloomShardLine(info.stars),
