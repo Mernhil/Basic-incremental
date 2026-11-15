@@ -29,21 +29,21 @@ import {
 const d = (n: number) => new Decimal(n);
 
 describe('the hand', () => {
-  it('leaves 52 art pixels between neighbours (their borders), room for the crest above and the rim around, and drops the two outer cards 8', () => {
+  it('leaves 60 art pixels between neighbours (their borders), room for the crest above and the rim around, and drops the two outer cards 8', () => {
     expect([0, 1, 2, 3].map((i) => handSlot(i, 4))).toEqual([
-      { x: 26, y: 42 },
-      { x: 210, y: 34 },
-      { x: 394, y: 34 },
-      { x: 578, y: 42 },
+      { x: 28, y: 42 },
+      { x: 220, y: 34 },
+      { x: 412, y: 34 },
+      { x: 604, y: 42 },
     ]);
-    expect(handSize(4)).toEqual({ w: 736, h: 243 });
+    expect(handSize(4)).toEqual({ w: 764, h: 243 });
   });
 
   it('keeps a hand of one or two flat', () => {
-    expect(handSlot(0, 1)).toEqual({ x: 26, y: 34 });
-    expect(handSlot(1, 2)).toEqual({ x: 210, y: 34 });
-    expect(handSize(1)).toEqual({ w: 184, h: 235 });
-    expect(handSize(0)).toEqual({ w: 184, h: 235 });
+    expect(handSlot(0, 1)).toEqual({ x: 28, y: 34 });
+    expect(handSlot(1, 2)).toEqual({ x: 220, y: 34 });
+    expect(handSize(1)).toEqual({ w: 188, h: 235 });
+    expect(handSize(0)).toEqual({ w: 188, h: 235 });
   });
 
   it('wants a card from the duel height, never more than 55% of it', () => {

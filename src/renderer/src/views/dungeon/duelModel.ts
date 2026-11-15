@@ -20,10 +20,10 @@ export function slotColour(slot: number): SlotColour {
 export const HAND = {
   cardW: 132,
   cardH: 186,
-  /** Art pixels between two neighbours' cards: each card's kit hangs up to 26 outside it (wings and horns, DESIGN.md §5 The base frame), so they never overlap. */
-  overlap: -52,
+  /** Art pixels between two neighbours' cards: each card's kit hangs up to 30 outside it (wings, coral and horns, DESIGN.md §5 The base frame), so a neighbour's picture never reaches its text. */
+  overlap: -60,
   /** Art pixels the kit hangs outside the hand's sides, below it, and its crest above the cards, kept inside the hand's box. */
-  side: 26,
+  side: 28,
   rim: 15,
   crest: 34,
   /** Art pixels the two outer cards sit lower. */

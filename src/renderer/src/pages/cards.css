@@ -151,7 +151,9 @@ html .cp-sort .cp-select:not(#_px) {
      across at 1x, reflowing to fewer when the window is narrow */
   grid-template-columns: repeat(auto-fill, calc(176px * var(--card-k)));
   grid-auto-rows: max-content;
-  gap: 50px 44px;
+  /* --kit-gutter (ui/pixelFit.ts): the kit's decorations reach about 72 card units past the edge across
+     two neighbours, so the gap between columns leaves room for them: no picture covers another card's text */
+  gap: 50px var(--kit-gutter);
   justify-content: center;
   align-content: start;
   min-height: 0;
@@ -469,13 +471,17 @@ html .cp-sort .cp-select:not(#_px) {
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 16px 24px;
 }
 .cp-slot {
   display: grid;
   gap: 6px;
   justify-items: center;
-  padding: 8px 10px 10px;
+  /* the slot holds the kit's crest and tails and half of its side decorations (they reach into the gap) */
+  padding: var(--kit-top) calc(var(--kit-side) * 0.5) 10px;
+}
+.cp-slot__buttons {
+  margin-top: var(--kit-bottom);
 }
 .cp-slot__label {
   font-size: 12px;
@@ -847,8 +853,8 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   }
 }
 .cp-grid--heirlooms {
-  grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + 10px));
-  gap: 14px 18px;
+  grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + var(--kit-gutter)));
+  gap: 14px var(--kit-gutter);
   justify-content: start;
 }
 .cp-hgroup {
@@ -860,7 +866,7 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 }
 .cp-hgroup__cards {
   display: flex;
-  gap: 10px;
+  gap: var(--kit-gutter);
   /* room for the ★6 crowns above the cards */
   padding-top: calc(28px * var(--card-k));
 }

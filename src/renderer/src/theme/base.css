@@ -658,7 +658,19 @@ body {
 .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
   display: none;
 }
+/* a weapon that carries the card's own name (an Heirloom) is not said twice: the card's name on the plate is the
+   only one, and the first banner line (only "hits every" is left) is for the big card */
+.bi-card--same-name:not([data-border-worn]) .bi-info__ability {
+  display: none;
+}
+.bi-card--same-name:not([data-border-worn]) .bi-info__line:first-child {
+  display: none;
+}
 @container style(--card-full: 1) {
+  .bi-card--same-name:not([data-border-worn]) .bi-info__line:first-child {
+    display: flex;
+    justify-content: center;
+  }
   .bi-card--kit:not([data-border-worn]) .bi-info__speed,
   .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
     display: inline;

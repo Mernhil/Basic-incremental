@@ -624,8 +624,10 @@
   color: var(--px-muted);
 }
 .sm-hand__row {
-  /* the card at 1x and the tag over its top edge: no jump when the first hand arrives */
-  min-height: calc(186 * var(--u));
+  /* the card at 1x with its crest above it and the tag over its top edge: no jump when the first hand
+     arrives, and the crest never covers the title */
+  padding: calc(36 * var(--u)) 0 0 calc(28 * var(--u));
+  min-height: calc(222 * var(--u));
   min-width: 0;
 }
 /* an empty hand: a row of face-down card backs and a line, so the strip is never empty */
