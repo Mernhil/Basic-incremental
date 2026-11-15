@@ -396,7 +396,7 @@ describe('save format v17: damage comes from cards (DESIGN.md §5)', () => {
     json.state.upgrades.owned = ['copper_temper'];
     const { state } = readSave(JSON.stringify(json), content);
     expect('damageLevels' in state.combat).toBe(false);
-    expect(state.upgrades.owned).not.toContain('copper_temper');
+    expect(state.upgrades.picks).toEqual({});
     // Copper Edge 10 + 12 + 13, Iron Edge 200, Copper Temper 5,000.
     expect(state.resources['money']!.toNumber()).toBeCloseTo(
       toV29('money', 100 + 35 + 200 + 5000),

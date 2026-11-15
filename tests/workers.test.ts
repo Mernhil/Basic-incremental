@@ -260,11 +260,12 @@ describe('a worker’s power multiplies its place’s output', () => {
     expect(yieldMods.every((m) => m.scope?.producer === 'ironbark')).toBe(true);
   });
 
-  it('the Lumberjack Pact makes logging worker abilities stronger', () => {
+  it('the Lumberjack Pact perk makes logging worker abilities stronger', () => {
     let state = withCards(['moonwood_dryad']);
     state = assign(state, 'ironbark', 'moonwood_dryad');
+    state.production.tools['logging_speed'] = 10;
     const before = workSites(state, content, 'logging')[1]!.rate;
-    state.upgrades.owned.push('lumberjack_pact');
+    state.upgrades.picks['logging_speed_10'] = 'logging_speed_10_pact';
     const after = workSites(state, content, 'logging')[1]!.rate;
     // +30% becomes +37.5%
     expect(after.div(before).toNumber()).toBeCloseTo(1.375 / 1.3, 9);

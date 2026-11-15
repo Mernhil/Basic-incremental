@@ -626,7 +626,7 @@ export const COPY = {
       ],
     },
     upgradesNote:
-      'Per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
+      'Your milestone picks and lifetime Money earned are kept: each pick comes back when its line reaches that level again.',
     kept: 'Kept forever',
     keptParts: {
       cards: 'Cards',
@@ -1254,7 +1254,6 @@ export const COPY = {
       levels === 1 ? `×${mult} in 1 level` : `×${mult} in ${levels} levels`,
     preview: (from: string, to: string) => `×${from} → ×${to}`,
     buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
-    oneTime: 'One-time upgrades',
   },
   /** The forge (DESIGN.md §4 The forge). */
   forge: {
@@ -1274,7 +1273,44 @@ export const COPY = {
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,
-    note: 'Bought with gems, again and again. Resets on Ascension.',
+    note: 'Bought with Money, again and again. Resets on Ascension.',
+  },
+  /** The upgrade row (DESIGN.md §4 The upgrade row). */
+  row: {
+    hold: 'You hold',
+    need: (amount: string) => `need ${amount} more`,
+    level: (n: number) => `Lv ${n}`,
+    effect: {
+      placeOutput: (place: string) => `${place} output`,
+      jobOutput: (job: string) => `${job} output`,
+      burstEvery: 'A burst every',
+      critChance: 'Crit chance',
+      critDamage: 'Crit damage',
+      teamDps: 'Team damage',
+      teamHealth: 'Team health',
+      moneyPerKill: 'Money per kill',
+      hitsPerSignature: 'Signature every',
+    },
+    ring: (what: string, times: string) => `${what} ×${times}`,
+    pick: (a: string, b: string) => `pick ${a} or ${b}`,
+    next: (level: number, parts: string) => `Lv ${level}: ${parts}`,
+    toGo: (levels: number) => (levels === 1 ? '1 level' : `${levels} levels`),
+    done: 'Every milestone passed',
+    and: ' and ',
+  },
+  /** Milestone picks (DESIGN.md §4 Milestone picks). */
+  picks: {
+    title: (line: string, level: number) => `Choose one · ${line} Lv ${level}`,
+    of: (i: number, n: number) => `${i} of ${n}`,
+    hint: 'Free. Kept for good: it comes back when you reach this level again.',
+    pickLabel: (name: string, what: string) => `Pick ${name}: ${what}`,
+    toChoose: (n: number) => `${n} to choose`,
+    none: 'No pick waiting',
+    picked: 'Picked',
+    kept: (level: number) => `Comes back at Lv ${level}`,
+    ahead: (level: number) => `At Lv ${level}`,
+    lifetime: 'Lifetime Money earned',
+    groups: { logging: 'Logging', mining: 'Mining', training: 'Training' },
   },
   buy: {
     countLabel: 'Buy amount',

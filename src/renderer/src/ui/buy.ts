@@ -113,9 +113,13 @@ export function createBuyButton(onBuy: () => void, compact = false): BuyButton {
   top.className = 'buy-btn__top';
   const label = document.createElement('span');
   label.className = 'buy-btn__label';
+  const art = document.createElement('span');
+  art.className = 'buy-btn__art';
+  art.setAttribute('aria-hidden', 'true');
   const price = document.createElement('span');
   price.className = 'buy-btn__price bi-num';
-  top.append(label, price);
+  top.append(label, art, price);
+  let artMarkup = '';
   const preview = document.createElement('span');
   preview.className = 'buy-btn__preview bi-num';
   const fill = document.createElement('i');
@@ -132,10 +136,14 @@ export function createBuyButton(onBuy: () => void, compact = false): BuyButton {
   return {
     el,
     update(v) {
-      set(label, v.label);
-      set(price, v.price);
-      set(preview, v.preview);
       const ok = v.available && v.offer.affordable;
+      set(label, v.label);
+      set(price, !ok && v.short ? v.short : v.price);
+      set(preview, v.preview);
+      if ((v.art ?? '') !== artMarkup) {
+        artMarkup = v.art ?? '';
+        art.innerHTML = artMarkup;
+      }
       // aria-disabled keeps the button focusable so its preview can still be read
       el.setAttribute('aria-disabled', String(!ok));
       el.classList.toggle('is-affordable', ok);

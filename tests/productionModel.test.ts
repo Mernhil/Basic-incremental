@@ -12,9 +12,7 @@ import {
   jobRateValue,
   milestoneSegments,
   productionRows,
-  shelfSummary,
 } from '../src/renderer/src/pages/productionModel';
-import type { ShelfChip } from '../src/renderer/src/pages/shelfModel';
 import { content, freshState } from './helpers';
 
 const mods = (s: GameState) => collectModifiers(s, content);
@@ -157,34 +155,5 @@ describe('band rate', () => {
   it('sums the job gems per second as a number', () => {
     const s = rich();
     expect(jobRateValue(s, content, 'logging', mods(s))).toMatch(/\d/);
-  });
-});
-
-describe('shelfSummary', () => {
-  const chip = (over: Partial<ShelfChip>): ShelfChip => ({
-    id: 'x',
-    name: 'X',
-    effect: '',
-    status: 'available',
-    price: '1 Money',
-    affordable: false,
-    permanent: false,
-    unlockText: '',
-    preview: '',
-    ...over,
-  });
-
-  it('counts ready, waiting and owned upgrades', () => {
-    const s = shelfSummary([
-      chip({ affordable: true }),
-      chip({ affordable: true }),
-      chip({}),
-      chip({ status: 'owned' }),
-    ]);
-    expect(s).toMatchObject({ ready: 2, waiting: 1, owned: 1, text: '2 ready to buy · 1 owned' });
-  });
-
-  it('says zero ready for an empty shelf', () => {
-    expect(shelfSummary([]).text).toBe('0 ready to buy · 0 owned');
   });
 });

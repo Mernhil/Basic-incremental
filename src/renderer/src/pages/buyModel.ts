@@ -44,6 +44,10 @@ export interface BuyLineView {
   milestoneInfo: MilestoneInfo | null;
   /** Comparable size of the gain (for picking the best line), >= 0. */
   gain: Decimal;
+  /** The price's resource art (markup), shown before the price (DESIGN.md §4 The upgrade row). */
+  art?: string;
+  /** "need 239 more": shown in place of the price while short. */
+  short?: string | null;
 }
 
 const resName = (content: Content, id: string): string => content.resourceById.get(id)?.name ?? id;

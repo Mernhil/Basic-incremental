@@ -134,7 +134,8 @@ describe('v34 -> v35 (four equal loadout slots)', () => {
     const slots = loaded.cards.loadouts.fighting.slots;
     expect(slots.filter(Boolean).sort()).toEqual(['ember_squire', 'rusty_brute', 'storm_duelist']);
     expect(slots[1]).toBe('storm_duelist'); // the sturdiest card stands in front
-    expect(CURRENT_SAVE_VERSION).toBe(35);
+    // later formats (36: milestone picks) read it on to the current one
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(35);
   });
 
   it('round-trips the four slots', () => {

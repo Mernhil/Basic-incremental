@@ -10,11 +10,12 @@ const { state } = readSave(text, content);
 state.prestigeCount = 2;
 for (const t of content.trees) state.production.treeLevels[t.id] = 60;
 for (const m of content.mines) state.production.mineLevels[m.id] = 60;
-state.resources[content.upgrades.currency] = new Decimal('5e12');
-state.upgrades.owned = content.upgrades.upgrades
-  .filter((u) => u.permanent)
-  .slice(0, 2)
-  .map((u) => u.id);
+state.resources[content.perks.currency] = new Decimal('5e12');
+// Every milestone the levels above reach is picked (the first perk), as a player would have.
+for (const m of content.perks.milestones) {
+  if (m.line.kind === 'tree' || m.line.kind === 'mine')
+    state.upgrades.picks[m.id] = m.options[0].id;
+}
 const cur = content.prestige.currency;
 state.resources[cur] = new Decimal(64);
 state.prestige.starlightEarned = new Decimal(140);

@@ -200,16 +200,16 @@ export function initialAutomation(): AutomationState {
   return { treeLevels: false, mineLevels: false, reservePercent: 0 };
 }
 
-/** The upgrade shelf's state. */
+/** Milestone picks and the lifetime Money (DESIGN.md §4 Milestone picks, §9). */
 export interface UpgradeState {
-  /** Ids of the upgrades bought. Non-permanent ones are dropped by an ascension. */
-  owned: string[];
+  /** Milestone id -> the perk option picked there. Kept through prestige. */
+  picks: Record<string, string>;
   /** Money earned from dungeons (wage and purses) over every run; kept through prestige. */
   moneyEarned: Decimal;
 }
 
 export function initialUpgrades(): UpgradeState {
-  return { owned: [], moneyEarned: new Decimal(0) };
+  return { picks: {}, moneyEarned: new Decimal(0) };
 }
 
 /** Ascension progress. Kept through prestige (the run start moves forward on each ascension). */
@@ -541,7 +541,7 @@ export function cloneState(state: GameState): GameState {
     achievements: { ...state.achievements },
     quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
-    upgrades: { owned: [...state.upgrades.owned], moneyEarned: state.upgrades.moneyEarned },
+    upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
     automation: { ...state.automation },
     summon: { ...state.summon },
     presets: clonePresets(state.presets),

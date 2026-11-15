@@ -2,16 +2,12 @@ import type { Content } from '../../../../data';
 import {
   Decimal,
   forgeStatus,
-  producersOf,
   toolLines,
-  upgradeShelf,
   type GameState,
   type Modifier,
   type ProductionJob,
-  type ShelfItem,
 } from '../../../../game';
 import { ITEM_VIEWBOX } from '../../art/items';
-import { amountText } from '../../settings/coins';
 import { fmt } from '../../settings/numberFormat';
 import { GATHERING_COPY as T } from './copy';
 
@@ -19,54 +15,6 @@ import { GATHERING_COPY as T } from './copy';
  * View models of the Logging, Mining and Forge views (UI_RULES.md §2; table update 9b). Display
  * logic only: the game decides every number; this picks and words them. Pure, no DOM, unit tested.
  */
-
-/** One chip of "Upgrades for <job>": a one-time upgrade that acts on this job's places or the job. */
-export interface JobUpgradeChip {
-  id: string;
-  name: string;
-  effect: string;
-  price: string;
-  status: 'available' | 'owned';
-  affordable: boolean;
-}
-
-/** True when an upgrade's effects are scoped to the job or to one of its places. */
-export function upgradeIsFor(
-  item: Pick<ShelfItem, 'effects'>,
-  job: ProductionJob,
-  placeIds: ReadonlySet<string>,
-): boolean {
-  return item.effects.some(
-    (e) =>
-      e.scope?.job === job ||
-      (e.scope?.producer !== undefined && placeIds.has(e.scope.producer as string)),
-  );
-}
-
-/** The job's upgrade chips, available first (affordable before waiting), then owned. Never hidden ones. */
-export function jobUpgradeChips(
-  state: GameState,
-  content: Content,
-  mods: readonly Modifier[],
-  job: ProductionJob,
-): JobUpgradeChip[] {
-  const places = new Set(producersOf(content, job).map((p) => p.id));
-  const chips = upgradeShelf(state, content, mods)
-    .filter((i) => i.status !== 'hidden' && upgradeIsFor(i, job, places))
-    .map<JobUpgradeChip>((i) => ({
-      id: i.id,
-      name: i.name,
-      effect: i.description,
-      price: amountText(content, i.cost.resource, i.cost.amount),
-      status: i.status === 'owned' ? 'owned' : 'available',
-      affordable: i.canAfford,
-    }));
-  const rank = (c: JobUpgradeChip): number => (c.status === 'owned' ? 2 : c.affordable ? 0 : 1);
-  return chips
-    .map((c, i) => [c, i] as const)
-    .sort((a, b) => rank(a[0]) - rank(b[0]) || a[1] - b[1])
-    .map(([c]) => c);
-}
 
 /** "Tools · 2 ready" for a job's tool lines (how many the held gems can buy now). */
 export function toolsReady(

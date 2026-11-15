@@ -20,7 +20,7 @@ export type CardElement = (typeof ELEMENTS)[number];
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
- * and pays for tree and mine levels, the upgrade shelf and tier-ups; `scroll` (Summon / Glamour Scroll)
+ * and pays for tree and mine levels, the tool lines and tier-ups; `scroll` (Summon / Glamour Scroll)
  * is the premium tier that pays for summons and is kept through an ascension; `prestige`
  * (Starlight) is the prestige currency, kept too.
  */
@@ -360,7 +360,7 @@ export const STATS = [
   /** Starlight an ascension grants, before rounding down (DESIGN.md §9). */
   'prestige.gain',
   /** Strength of the team bonuses of a job's cards, base 1 (+25% = 1.25): scales the values of
-   *  their modifiers (DESIGN.md §4). Only read from upgrades. Scope: job. */
+   *  their modifiers (DESIGN.md §4). Only read from milestone perks. Scope: job. */
   'card.teamBonusPower',
   /** Power of the workers at a place (DESIGN.md §4), also its digging. Scope: job, producer. */
   'worker.power',
@@ -1945,43 +1945,37 @@ export const cosmeticSetSchema = z.strictObject({
 });
 
 /**
- * The upgrade shelf (DESIGN.md §4): one-time multipliers bought with Money that appear when
- * their unlock condition is met. `permanent` ones are kept through an ascension, the rest are
- * bought again each run. Effects are ordinary modifiers (source `upgrade`).
+ * Milestone picks (DESIGN.md §4 Milestone picks): at a milestone level of a repeatable line (a tree's
+ * or mine's level, a tool line, a Training line) the player picks one of two perks. The perk's
+ * effects are ordinary modifiers (source `upgrade`), applied while the line is at or above the
+ * level; the pick is kept through an ascension and comes back when the line reaches it again.
  */
-export const UPGRADE_UNLOCK_KINDS = [
-  'treeLevel',
-  'mineLevel',
-  'gemMastery',
-  'bossKills',
-  'lifetimeMoney',
-] as const;
-export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('treeLevel'), tree: id, level: z.number().int().min(1) }),
-  z.strictObject({ kind: z.literal('mineLevel'), mine: id, level: z.number().int().min(1) }),
-  z.strictObject({
-    kind: z.literal('gemMastery'),
-    gem: id,
-    tier: z.number().int().min(1).max(16),
-  }),
-  z.strictObject({ kind: z.literal('bossKills'), dungeon: id, kills: z.number().int().min(1) }),
-  z.strictObject({ kind: z.literal('lifetimeMoney'), amount: positiveDecimal }),
-]);
-export const upgradeSchema = z.strictObject({
+export const PERK_LINE_KINDS = ['tree', 'mine', 'tool', 'training'] as const;
+export type PerkLineKind = (typeof PERK_LINE_KINDS)[number];
+export const perkLineSchema = z.strictObject({
+  kind: z.enum(PERK_LINE_KINDS),
+  /** The tree, mine, tool line or Training line id. */
+  id,
+});
+export const perkOptionSchema = z.strictObject({
   id,
   name,
-  /** The effect as shown to the player, e.g. "Oak output x2". */
+  /** The effect as shown to the player, e.g. "Oak output ×1.25". */
   description: z.string().min(1),
-  unlock: upgradeUnlockSchema,
-  cost: costSchema,
-  /** Kept through an ascension (its unlock must be lasting progress). */
-  permanent: z.boolean(),
   effects: z.array(modifierSchema).min(1),
 });
-export const upgradesFileSchema = z.strictObject({
-  /** The resource every upgrade is paid in (Money). */
+export const perkMilestoneSchema = z.strictObject({
+  id,
+  line: perkLineSchema,
+  /** The line level that opens the pick. */
+  level: z.number().int().min(1),
+  /** The two perks to pick from. */
+  options: z.tuple([perkOptionSchema, perkOptionSchema]),
+});
+export const perksFileSchema = z.strictObject({
+  /** Money: the resource whose lifetime earnings are counted (DESIGN.md §9 Ascension keeps). */
   currency: id,
-  upgrades: z.array(upgradeSchema),
+  milestones: z.array(perkMilestoneSchema),
 });
 
 /**
@@ -2400,7 +2394,7 @@ export const contentSchemas = {
   achievements: achievementsFileSchema,
   account: accountSchema,
   enhancements: enhancementsSchema,
-  upgrades: upgradesFileSchema,
+  perks: perksFileSchema,
   training: z.array(trainingSchema).min(1),
   credits: z.array(creditSchema).min(1),
   shellArt: shellArtSchema,
@@ -2428,9 +2422,10 @@ export const contentSchemas = {
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;
 export type WeaponSkinSet = z.output<typeof weaponSkinSetSchema>;
-export type Upgrade = z.output<typeof upgradeSchema>;
-export type UpgradeUnlock = z.output<typeof upgradeUnlockSchema>;
-export type UpgradesConfig = z.output<typeof upgradesFileSchema>;
+export type PerkLine = z.output<typeof perkLineSchema>;
+export type PerkOption = z.output<typeof perkOptionSchema>;
+export type PerkMilestone = z.output<typeof perkMilestoneSchema>;
+export type PerksConfig = z.output<typeof perksFileSchema>;
 export type Resource = z.output<typeof resourceSchema>;
 export type GemArt = z.output<typeof gemArtSchema>;
 export type Tree = z.output<typeof treeSchema>;

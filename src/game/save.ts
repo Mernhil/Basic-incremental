@@ -36,7 +36,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 35;
+export const CURRENT_SAVE_VERSION = 36;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -179,8 +179,8 @@ export const serializedStateSchema = z.object({
     skills: counts,
     freeRespecsUsed: z.number().int().min(0),
   }),
-  /** v15: the upgrade shelf (DESIGN.md §4). */
-  upgrades: z.object({ owned: z.array(z.string()), moneyEarned: decimalText }),
+  /** v34: milestone picks (DESIGN.md §4) and the lifetime Money (v15). */
+  upgrades: z.object({ picks: z.record(z.string(), z.string()), moneyEarned: decimalText }),
   /** v26: the autobuyer switches (DESIGN.md §15). */
   automation: z.object({
     treeLevels: z.boolean(),
@@ -305,7 +305,7 @@ export function serializeState(state: GameState): SerializedState {
     quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
     upgrades: {
-      owned: [...state.upgrades.owned],
+      picks: { ...state.upgrades.picks },
       moneyEarned: decimalToString(state.upgrades.moneyEarned),
     },
     automation: { ...state.automation },
@@ -468,9 +468,13 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   state.shardShop = Object.fromEntries(
     Object.entries(saved.shardShop).filter(([id]) => shopIds.has(id)),
   );
-  // Upgrades removed from the game are dropped.
+  // Picks of milestones or perks no longer in the game are dropped.
   state.upgrades = {
-    owned: saved.upgrades.owned.filter((id) => content.upgradeById.has(id)),
+    picks: Object.fromEntries(
+      Object.entries(saved.upgrades.picks).filter(
+        ([m, o]) => content.perkOptionById.get(o)?.milestone.id === m,
+      ),
+    ),
     moneyEarned: new Decimal(saved.upgrades.moneyEarned),
   };
   refundClampedTiers(state, saved.cards, content);

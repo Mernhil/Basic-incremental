@@ -3,143 +3,127 @@ import {
   bossMaxHp,
   advance,
   ascend,
-  buyUpgrade,
   collectModifiers,
   createSaveText,
-  approxEq,
   Decimal,
   lifetimeMoney,
+  lineBadges,
+  lineEffect,
+  milestoneStatus,
+  nextLineStep,
+  perkModifiers,
+  pickPerk,
   producerRate,
   readSave,
-  upgradeShelf,
+  teamBonusPower,
+  waitingPicks,
   type GameState,
 } from '../src/game';
 import { bareState, constantRng, content, freshState, withDps } from './helpers';
 
 const NOW = 1_700_000_000_000;
 const oak = content.treeById.get('oak')!;
+const ms = (id: string) => content.perkMilestoneById.get(id)!;
 
-const item = (state: GameState, id: string) =>
-  upgradeShelf(state, content).find((i) => i.id === id)!;
-
-function withMoney(state: GameState, amount: number | string): GameState {
-  state.resources['money'] = new Decimal(amount);
+function withOakLevel(state: GameState, level: number): GameState {
+  state.production.treeLevels['oak'] = level;
   return state;
 }
 
-describe('upgrade shelf content (DESIGN.md §4)', () => {
-  it('has about 30 upgrades with unique ids, paid in Money', () => {
-    const list = content.upgrades.upgrades;
-    expect(list.length).toBeGreaterThanOrEqual(30);
-    expect(new Set(list.map((u) => u.id)).size).toBe(list.length);
-    for (const u of list) expect(u.cost.resource).toBe(content.upgrades.currency);
+describe('milestone pick content (DESIGN.md §4 Milestone picks)', () => {
+  it('gives every line its picks: trees and mines at 10/25/50/75, tools at 10/25/50, Training at 5/15/30', () => {
+    const levels = (kind: string, id: string) =>
+      content.perks.milestones
+        .filter((m) => m.line.kind === kind && m.line.id === id)
+        .map((m) => m.level);
+    for (const t of content.trees) expect(levels('tree', t.id)).toEqual([10, 25, 50, 75]);
+    for (const m of content.mines) expect(levels('mine', m.id)).toEqual([10, 25, 50, 75]);
+    for (const t of content.production.tools) expect(levels('tool', t.id)).toEqual([10, 25, 50]);
+    for (const t of content.training) expect(levels('training', t.id)).toEqual([5, 15, 30]);
   });
 
-  it('keeps only upgrades unlocked by lasting progress as permanent', () => {
-    for (const u of content.upgrades.upgrades.filter((x) => x.permanent)) {
-      expect(['treeLevel', 'mineLevel']).not.toContain(u.unlock.kind);
+  it('offers two different perks at every milestone, none for the fight support cards', () => {
+    for (const m of content.perks.milestones) {
+      expect(m.options[0].id).not.toBe(m.options[1].id);
+      for (const o of m.options) {
+        for (const e of o.effects) {
+          if (e.stat === 'card.teamBonusPower') expect(e.scope?.job).not.toBe('fighting');
+        }
+      }
     }
   });
 });
 
-describe('shelf status', () => {
-  it('hides an upgrade until its threshold, then offers it, then shows it owned', () => {
-    const state = freshState();
-    expect(item(state, 'keen_axes').status).toBe('hidden');
-    state.production.treeLevels['oak'] = 10;
-    expect(item(state, 'keen_axes').status).toBe('available');
-    withMoney(state, 1e9);
-    const bought = buyUpgrade(state, content, 'keen_axes');
-    expect(bought.ok).toBe(true);
-    if (bought.ok) expect(item(bought.state, 'keen_axes').status).toBe('owned');
+describe('picks', () => {
+  it('a milestone waits once its line reaches the level, and nothing applies before a pick', () => {
+    const state = withOakLevel(freshState(), 9);
+    expect(milestoneStatus(state, ms('oak_10'))).toBe('ahead');
+    expect(waitingPicks(state, content).map((m) => m.id)).not.toContain('oak_10');
+    withOakLevel(state, 10);
+    expect(milestoneStatus(state, ms('oak_10'))).toBe('waiting');
+    expect(waitingPicks(state, content).map((m) => m.id)).toContain('oak_10');
+    expect(perkModifiers(state, content)).toEqual([]);
   });
 
-  it('unlocks from every condition kind', () => {
-    const state = freshState();
-    state.production.mineLevels['copper_quarry'] = 10;
-    expect(item(state, 'sharp_picks').status).toBe('available');
-    state.combat.stageKills['mossy_cellar:normal:1'] = 20;
-    expect(item(state, 'tax_collector').status).toBe('available');
-    state.mastery.gemTiers['oak_gem'] = 1;
-    expect(item(state, 'harvest_rhythm').status).toBe('available');
-    state.upgrades.moneyEarned = new Decimal(1e5);
-    expect(item(state, 'lumber_union').status).toBe('available');
+  it('a pick applies its perk as an ordinary modifier and shows as a badge', () => {
+    const state = withOakLevel(freshState(), 12);
+    const before = producerRate(oak, 'logging', collectModifiers(state, content), 12);
+    const r = pickPerk(state, content, 'oak_10', 'oak_10_output');
+    if (!r.ok) throw new Error(r.reason);
+    expect(milestoneStatus(r.state, ms('oak_10'))).toBe('active');
+    const after = producerRate(oak, 'logging', collectModifiers(r.state, content), 12);
+    expect(after.div(before).toNumber()).toBeCloseTo(1.25, 9);
+    const badges = lineBadges(r.state, content, { kind: 'tree', id: 'oak' });
+    expect(badges.map((b) => b.option.id)).toEqual(['oak_10_output']);
   });
 
-  it('shows cost, affordability and a ready-to-show effect', () => {
-    const state = freshState();
-    state.production.treeLevels['oak'] = 10;
-    const entry = item(state, 'keen_axes');
-    const price = content.upgrades.upgrades.find((u) => u.id === 'keen_axes')!.cost.amount;
-    expect(entry.cost.resource).toBe('money');
-    expect(entry.cost.amount.eq(price)).toBe(true);
-    expect(entry.canAfford).toBe(false);
-    expect(entry.description).toBe('Oak output x1.25');
-    expect(entry.unlockText).toMatch(/Oak/);
-    withMoney(state, price.toNumber());
-    expect(item(state, 'keen_axes').canAfford).toBe(true);
+  it('refuses a pick that is unknown, not reached or already made', () => {
+    const state = withOakLevel(freshState(), 10);
+    expect(pickPerk(state, content, 'nope', 'x')).toEqual({ ok: false, reason: 'unknown' });
+    expect(pickPerk(state, content, 'oak_10', 'oak_25_lucky')).toEqual({
+      ok: false,
+      reason: 'unknown',
+    });
+    expect(pickPerk(state, content, 'oak_25', 'oak_25_lucky')).toEqual({
+      ok: false,
+      reason: 'not-reached',
+    });
+    const r = pickPerk(state, content, 'oak_10', 'oak_10_pace');
+    if (!r.ok) throw new Error(r.reason);
+    expect(pickPerk(r.state, content, 'oak_10', 'oak_10_output')).toEqual({
+      ok: false,
+      reason: 'picked',
+    });
   });
 
-  it('previews the output of a production upgrade before and after', () => {
+  it("the Pact perks make a job's worker abilities stronger", () => {
     const state = freshState();
-    state.production.treeLevels['oak'] = 10;
-    const preview = item(state, 'keen_axes').preview!;
-    expect(preview.kind).toBe('rate');
-    expect(approxEq(preview.after, preview.before.mul(1.25))).toBe(true);
+    state.production.tools['mining_speed'] = 10;
+    expect(teamBonusPower(state, content, 'mining').toNumber()).toBe(1);
+    state.upgrades.picks['mining_speed_10'] = 'mining_speed_10_pact';
+    expect(teamBonusPower(state, content, 'mining').toNumber()).toBeCloseTo(1.25, 9);
+    expect(teamBonusPower(state, content, 'logging').toNumber()).toBe(1);
   });
 });
 
-describe('buying', () => {
-  it('pays Money once and refuses locked, owned, unknown and unaffordable', () => {
-    const price = content.upgrades.upgrades.find((u) => u.id === 'keen_axes')!.cost.amount;
-    const state = withMoney(freshState(), 5000);
-    expect(buyUpgrade(state, content, 'keen_axes')).toEqual({ ok: false, reason: 'locked' });
-    expect(buyUpgrade(state, content, 'nope')).toEqual({ ok: false, reason: 'unknown' });
-    state.production.treeLevels['oak'] = 10;
-    const ok = buyUpgrade(state, content, 'keen_axes');
-    expect(ok.ok && ok.state.resources['money']!.eq(new Decimal(5000).sub(price))).toBe(true);
-    if (!ok.ok) throw new Error('should buy');
-    expect(buyUpgrade(ok.state, content, 'keen_axes')).toEqual({ ok: false, reason: 'owned' });
-    const poor = withMoney(freshState(), 10);
-    poor.production.treeLevels['oak'] = 10;
-    expect(buyUpgrade(poor, content, 'keen_axes')).toEqual({ ok: false, reason: 'unaffordable' });
-  });
-});
-
-describe('effects through the modifier pipeline', () => {
-  it('multiplies Oak output and labels the source "upgrade"', () => {
-    const state = freshState();
-    const before = producerRate(oak, 'logging', collectModifiers(state, content));
-    state.upgrades.owned.push('keen_axes');
-    const mods = collectModifiers(state, content);
-    expect(approxEq(producerRate(oak, 'logging', mods), before.mul(1.25))).toBe(true);
-    expect(mods.some((m) => m.source.kind === 'upgrade' && m.source.id === 'keen_axes')).toBe(true);
-  });
-
-  it('makes a logging worker ability stronger', () => {
-    const state = bareState();
-    const card = content.cards.find(
-      (c) => c.job === 'logging' && c.worker.modifiers.some((m) => m.kind !== 'set'),
-    )!;
-    state.cards.owned[card.id] = {
-      tier: 'bronze',
-      stars: 1,
-      level: 1,
-      xp: new Decimal(0),
-      starFill: 0,
-      enhancements: [],
-    };
-    state.production.workers = { oak: [card.id] };
-    const sum = (s: GameState) =>
-      collectModifiers(s, content)
-        .filter((m) => m.source.kind === 'card' && m.source.id === card.id)
-        .map((m) => m.value);
-    const base = sum(state);
-    state.upgrades.owned.push('lumberjack_pact');
-    const boosted = sum(state);
-    expect(boosted.length).toBe(base.length);
-    const grew = boosted.some((v, i) => !v.eq(base[i]!));
-    expect(grew).toBe(true);
+describe('ascension', () => {
+  it('keeps every pick and the lifetime Money; a perk comes back when its line reaches the level', () => {
+    const state = withOakLevel(freshState(), 30);
+    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
+    state.mastery.harvested['grotto_gem'] = new Decimal(1e8);
+    state.upgrades.picks['oak_10'] = 'oak_10_output';
+    state.upgrades.moneyEarned = new Decimal(123456);
+    const result = ascend(state, content);
+    if (!result.ok) throw new Error(result.reason);
+    const next = result.state;
+    expect(next.upgrades.picks).toEqual({ oak_10: 'oak_10_output' });
+    expect(next.upgrades.moneyEarned.eq(123456)).toBe(true);
+    expect(milestoneStatus(next, ms('oak_10'))).toBe('kept');
+    expect(perkModifiers(next, content)).toEqual([]);
+    withOakLevel(next, 10);
+    expect(milestoneStatus(next, ms('oak_10'))).toBe('active');
+    expect(waitingPicks(next, content).map((m) => m.id)).not.toContain('oak_10');
+    expect(perkModifiers(next, content).length).toBe(1);
   });
 });
 
@@ -160,27 +144,52 @@ describe('lifetime Money earned', () => {
   });
 });
 
-describe('ascension', () => {
-  it('drops per-run upgrades, keeps permanent ones and lifetime Money', () => {
+describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
+  it('shows a tree level as the place output now and after', () => {
+    const state = withOakLevel(freshState(), 5);
+    const e = lineEffect(state, content, { kind: 'tree', id: 'oak' }, 1);
+    expect(e.kind).toBe('placeOutput');
+    expect(e.resource).toBe('oak_gem');
+    expect(e.after.gt(e.now)).toBe(true);
+  });
+
+  it('shows Sharpen as team damage per second and Tempo as hits per signature', () => {
     const state = freshState();
-    state.mastery.harvested['oak_gem'] = new Decimal(1e14);
-    state.mastery.harvested['grotto_gem'] = new Decimal(1e8);
-    state.upgrades.owned.push('keen_axes', 'battle_cry');
-    state.upgrades.moneyEarned = new Decimal(123456);
-    const result = ascend(state, content);
-    if (!result.ok) throw new Error(result.reason);
-    expect(result.state.upgrades.owned).toEqual(['battle_cry']);
-    expect(result.state.upgrades.moneyEarned.eq(123456)).toBe(true);
+    const dps = lineEffect(state, content, { kind: 'training', id: 'sharpen' }, 1);
+    expect(dps.kind).toBe('teamDps');
+    expect(dps.after.gt(dps.now)).toBe(true);
+    const tempo = lineEffect(state, content, { kind: 'training', id: 'tempo' }, 1);
+    expect(tempo.kind).toBe('hitsPerSignature');
+    expect(tempo.after.lt(tempo.now)).toBe(true);
+  });
+
+  it('names the next milestone: the ring, the pick, or both at one level', () => {
+    const state = withOakLevel(freshState(), 8);
+    const step = nextLineStep(state, content, { kind: 'tree', id: 'oak' })!;
+    expect(step.level).toBe(10);
+    expect(step.levelsToGo).toBe(2);
+    expect(step.pick?.id).toBe('oak_10');
+    expect(step.ring).toBeNull();
+    withOakLevel(state, 12);
+    const ring = nextLineStep(state, content, { kind: 'tree', id: 'oak' })!;
+    expect(ring.level).toBe(15);
+    expect(ring.ring?.nextMultiplier.toNumber()).toBeCloseTo(1.15, 9);
+    expect(ring.fromLevel).toBe(10);
+    state.production.tools['logging_yield'] = 20;
+    const both = nextLineStep(state, content, { kind: 'tool', id: 'logging_yield' })!;
+    expect(both.level).toBe(25);
+    expect(both.ring).not.toBeNull();
+    expect(both.pick?.id).toBe('logging_yield_25');
   });
 });
 
 describe('saves', () => {
-  it('round-trips owned upgrades and lifetime Money', () => {
+  it('round-trips picks and lifetime Money, dropping picks no longer in the game', () => {
     const state = freshState();
-    state.upgrades.owned.push('keen_axes', 'battle_cry', 'removed_upgrade');
+    state.upgrades.picks = { oak_10: 'oak_10_output', gone: 'x', oak_25: 'oak_10_pace' };
     state.upgrades.moneyEarned = new Decimal('1.5e12');
     const loaded = readSave(createSaveText(state, NOW), content).state;
-    expect(loaded.upgrades.owned).toEqual(['keen_axes', 'battle_cry']);
+    expect(loaded.upgrades.picks).toEqual({ oak_10: 'oak_10_output' });
     expect(loaded.upgrades.moneyEarned.eq('1.5e12')).toBe(true);
   });
 });

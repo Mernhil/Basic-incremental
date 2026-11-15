@@ -1,104 +1,97 @@
-import { buyUpgrade, collectModifiers } from '../../../../game';
-import { replay } from '../../stage/motion';
+import { pickPerk } from '../../../../game';
+import { COPY } from '../../copy';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
-import { META_COPY as T } from './copy';
-import { upgradeBoard, type UpgradeTile } from './upgradesModel';
+import { pickCards } from '../../ui/perkPick';
+import { milestoneBoard, type MilestoneLine } from './upgradesModel';
 
 /**
- * The Upgrades view (UI_RULES §2 "The Upgrades view", mockup 4m): two framed panels, This run and
- * Permanent, each a grid of upgrade tiles, and a foot bar with the lifetime Money earned. A lit
- * tile buys the upgrade; the board comes from `upgradeBoard`.
+ * The Upgrades view (UI_RULES §2 "The Upgrades view"; DESIGN.md §4 Milestone picks): three panels,
+ * Logging, Mining and Training, each listing its lines and every milestone on them. A waiting pick
+ * shows its two cards (a click picks one), a pick made its badge, and a milestone ahead its level
+ * and both perks, dimmed. A foot bar keeps the lifetime Money earned.
  */
 
-interface Panel {
-  list: HTMLUListElement;
-  sig: string;
-  tiles: Map<string, HTMLElement>;
-}
-
 export function mountUpgrades(host: HTMLElement, ctx: TableContext, api: ViewApi): ViewHandle {
-  host.classList.add('mv-upgrades');
+  host.classList.add('mv-upgrades', 'mv-picks');
   const subtitle = h('span', 'mv-subtitle');
   api.setTools(subtitle);
-
-  const make = (title: string, note: string, key: string): Panel & { el: HTMLElement } => {
-    const el = h('section', `px-panel mv-up-panel mv-up-panel--${key}`);
+  const panels = new Map<string, { el: HTMLElement; list: HTMLElement; sig: string }>();
+  for (const key of ['logging', 'mining', 'training'] as const) {
+    const el = h('section', `px-panel mv-up-panel mv-mp-panel mv-mp-panel--${key}`);
     el.dataset.deal = '';
     const head = h('header', 'mv-up-head');
-    head.append(h('h2', 'px-display mv-up-title', title), h('span', 'mv-up-note', note));
-    const list = h('ul', 'mv-up-grid');
+    head.append(h('h2', 'px-display mv-up-title', COPY.picks.groups[key]));
+    const list = h('div', 'mv-mp-lines');
     el.append(head, list);
-    return { el, list, sig: '', tiles: new Map() };
-  };
-  const run = make(T.upgrades.run, T.upgrades.runNote, 'run');
-  const permanent = make(T.upgrades.permanent, T.upgrades.permanentNote, 'permanent');
+    panels.set(key, { el, list, sig: '' });
+  }
   const foot = h('footer', 'px-panel mv-up-foot');
   foot.dataset.deal = '';
   const lifetime = h('strong', 'mv-up-lifetime bi-num');
-  foot.append(h('span', 'mv-up-foot__label', T.upgrades.lifetime), lifetime);
-  host.append(run.el, permanent.el, foot);
+  foot.append(h('span', 'mv-up-foot__label', COPY.picks.lifetime), lifetime);
+  host.append(...[...panels.values()].map((p) => p.el), foot);
 
-  const buy = (panel: Panel, id: string): void => {
-    const result = buyUpgrade(ctx.state(), ctx.content, id);
-    if (!result.ok) return;
-    ctx.apply(result.state);
+  const pick = (milestoneId: string, optionId: string): void => {
+    const r = pickPerk(ctx.state(), ctx.content, milestoneId, optionId);
+    if (!r.ok) return;
+    ctx.apply(r.state);
     ctx.sound('buy');
     render();
-    replay(panel.tiles.get(id), 'is-bought', 600);
   };
 
-  const tile = (panel: Panel, t: UpgradeTile): HTMLElement => {
-    const li = h('li', `mv-up-tile mv-up-tile--${t.status}`);
-    const body = h(t.status === 'available' ? 'button' : 'div', 'mv-up-body');
-    const text = h('span', 'mv-up-text');
-    text.append(h('span', 'mv-up-name', t.name), h('span', 'mv-up-effect', t.effect));
-    if (body instanceof HTMLButtonElement) {
-      body.type = 'button';
-      body.dataset.key = `upgrade-${t.id}`;
-      body.classList.add('px-btn');
-      if (t.preview) body.title = t.preview;
-      body.addEventListener('click', () => {
-        if (body.getAttribute('aria-disabled') !== 'true') buy(panel, t.id);
-      });
-      body.append(text, h('span', 'mv-up-price bi-num', t.price));
-    } else {
-      body.classList.add('px-tile');
-      body.append(text, h('span', 'mv-up-bought', T.upgrades.bought));
+  const lineEl = (line: MilestoneLine): HTMLElement => {
+    const el = h('div', 'mv-mp-line');
+    const head = h('div', 'mv-mp-line__head');
+    head.append(
+      h('b', 'mv-mp-line__name', line.name),
+      h('span', 'mv-mp-line__lv bi-num', line.levelText),
+    );
+    el.append(head);
+    for (const item of line.items) {
+      const row = h('div', `mv-mp-item mv-mp-item--${item.status}`);
+      row.dataset.key = `ms-${item.milestone.id}`;
+      row.append(h('span', 'mv-mp-item__lv bi-num', item.levelText));
+      if (item.status === 'waiting') {
+        row.append(pickCards(ctx.content, item.milestone, (o) => pick(item.milestone.id, o)));
+      } else if (item.picked) {
+        const chip = h('span', 'ur__badge', item.picked.name);
+        chip.title = item.picked.description;
+        row.append(
+          chip,
+          h('span', 'mv-mp-item__what', item.picked.description),
+          h('span', 'mv-mp-item__note', item.note),
+        );
+      } else {
+        const [a, b] = item.milestone.options;
+        const both = h('span', 'mv-mp-item__what');
+        both.append(
+          h('b', '', a.name),
+          ` ${a.description} · `,
+          h('b', '', b.name),
+          ` ${b.description}`,
+        );
+        row.append(both);
+      }
+      el.append(row);
     }
-    li.append(body);
-    panel.tiles.set(t.id, li);
-    return li;
-  };
-
-  const fill = (panel: Panel, tiles: UpgradeTile[], empty: string): void => {
-    const sig = JSON.stringify(tiles.map((t) => [t.id, t.status]));
-    if (sig !== panel.sig) {
-      panel.sig = sig;
-      panel.tiles.clear();
-      panel.list.replaceChildren(
-        ...(tiles.length > 0 ? tiles.map((t) => tile(panel, t)) : [h('li', 'mv-up-empty', empty)]),
-      );
-    }
-    // only the lit state changes between rebuilds
-    for (const t of tiles) {
-      const li = panel.tiles.get(t.id);
-      if (!li || t.status !== 'available') continue;
-      const body = li.firstElementChild!;
-      body.classList.toggle('px-btn--gold', t.affordable);
-      body.classList.toggle('px-btn--dark', !t.affordable);
-      body.setAttribute('aria-disabled', String(!t.affordable));
-    }
+    return el;
   };
 
   function render(): void {
     const s = ctx.state();
-    const board = upgradeBoard(s, ctx.content, collectModifiers(s, ctx.content));
-    fill(run, board.run, T.upgrades.emptyRun);
-    fill(permanent, board.permanent, T.upgrades.emptyPermanent);
-    const text = T.ready(board.ready);
-    if (subtitle.textContent !== text)
-      subtitle.textContent = board.ready > 0 ? text : T.upgrades.noneReady;
+    const board = milestoneBoard(s, ctx.content);
+    for (const group of board.groups) {
+      const panel = panels.get(group.key)!;
+      const sig = JSON.stringify(
+        group.lines.map((l) => [l.levelText, l.items.map((i) => [i.status, i.picked?.id ?? ''])]),
+      );
+      if (sig === panel.sig) continue;
+      panel.sig = sig;
+      panel.list.replaceChildren(...group.lines.map(lineEl));
+    }
+    const text = board.waiting > 0 ? COPY.picks.toChoose(board.waiting) : COPY.picks.none;
+    if (subtitle.textContent !== text) subtitle.textContent = text;
     if (lifetime.textContent !== board.lifetime) lifetime.textContent = board.lifetime;
   }
   render();

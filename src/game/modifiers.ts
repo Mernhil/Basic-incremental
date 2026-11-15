@@ -6,7 +6,7 @@ import { cardModifiers } from './cards';
 import { masteryModifiers } from './mastery';
 import { prestigeModifiers } from './prestige';
 import { accountModifiers } from './account';
-import { upgradeModifiers } from './upgrades';
+import { perkModifiers } from './upgrades';
 import { trainingModifiers } from './training';
 import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
@@ -230,8 +230,8 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   // signature power can stand on its Heirloom's own.
   out.push(...heirloomTreeModifiers(view, content));
 
-  // Upgrade shelf purchases.
-  out.push(...upgradeModifiers(state, content));
+  // Milestone picks (DESIGN.md §4).
+  out.push(...perkModifiers(state, content));
   out.push(...trainingModifiers(state, content));
   out.push(...toolModifiers(state, content));
 

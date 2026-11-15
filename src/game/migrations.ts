@@ -87,6 +87,9 @@ export const MIGRATIONS: MigrationTable = {
    *  quest the state already meets as done and waiting to be claimed, never as claimed. */
   33: (state) => ({ ...state, quests: {} }),
   34: v34ToV35,
+  /** v35 -> v36: milestone picks (DESIGN.md §4): the upgrade shelf is gone; every shelf upgrade
+   *  owned pays its Money back, and no milestone is picked yet. */
+  35: v35ToV36,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1503,4 +1506,62 @@ function v34ToV35(state: Record<string, unknown>): Record<string, unknown> {
   }
   next['arrangeFormation'] = true;
   return next;
+}
+
+/** The shelf's Money prices at save format 35 (a snapshot of the removed `upgrades.json`). */
+const V35_SHELF_PRICES: Readonly<Record<string, string>> = {
+  keen_axes: '450',
+  deep_roots: '51000',
+  iron_saws: '3100',
+  heartwood_grain: '1100000',
+  moonlit_grove: '28000',
+  silver_boughs: '14000000',
+  lumber_union: '8700',
+  fertile_soil: '4800',
+  sharp_picks: '370',
+  copper_seams: '51000',
+  deep_shafts: '3100',
+  iron_veins: '1100000',
+  glittering_walls: '28000',
+  prismatic_lode: '14000000',
+  dynamite: '16000',
+  rich_ore: '5600',
+  battle_cry: '8700',
+  tax_collector: '22000',
+  cinder_tithe: '500000',
+  frost_tithe: '3500000',
+  crystal_lure: '34000',
+  gleaming_hoard: '780000',
+  lumberjack_pact: '7200',
+  miner_pact: '7200',
+  vanguard_pact: '16000',
+  quick_hands: '13000',
+  harvest_rhythm: '4000',
+  finishing_blow: '360000',
+  merchant_ledger: '200000',
+  golden_ledger: '5500000',
+};
+
+/**
+ * v35 -> v36 (DESIGN.md §4 Milestone picks): the upgrade shelf gives way to milestone picks. Every
+ * shelf upgrade the save owned, per-run or permanent, pays its Money back once (as the damage-line
+ * removal did at v17), and `upgrades.owned` becomes `upgrades.picks`, empty: each milestone
+ * already reached asks for its pick when the game opens. The lifetime Money is kept.
+ */
+function v35ToV36(state: Record<string, unknown>): Record<string, unknown> {
+  const upgrades = isRecord(state['upgrades']) ? state['upgrades'] : {};
+  const owned = Array.isArray(upgrades['owned']) ? upgrades['owned'] : [];
+  let refund = new Decimal(0);
+  for (const id of new Set(owned)) {
+    const price = typeof id === 'string' ? V35_SHELF_PRICES[id] : undefined;
+    if (price) refund = refund.add(price);
+  }
+  const moneyEarned = upgrades['moneyEarned'];
+  return withMoney(
+    {
+      ...state,
+      upgrades: { picks: {}, moneyEarned: typeof moneyEarned === 'string' ? moneyEarned : '0' },
+    },
+    refund,
+  );
 }
