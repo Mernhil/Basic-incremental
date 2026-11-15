@@ -12,7 +12,6 @@ import {
   burstStats,
   burstView,
   createSaveText,
-  damageStat,
   Decimal,
   effectiveDamage,
   effectiveDrops,
@@ -60,6 +59,7 @@ import {
   constantRng,
   bareState,
   plainContent as content,
+  freshDamage,
   freshState,
   withAutoChallenge,
   withDps,
@@ -103,17 +103,22 @@ describe('damage from the main card (DESIGN.md §5, §6)', () => {
   it('is the main card base damage, with no purchase involved', () => {
     const state = freshState();
     expect(baseDamage(state, content).eq(common)).toBe(true);
-    expect(effectiveDamage(state, content).eq(common)).toBe(true);
+    // the Squire's own team bonus (+4% damage) counts for the team it is in
+    expect(approxEq(effectiveDamage(state, content), freshDamage(common, content))).toBe(true);
   });
 
   it('runs every number through the modifier pipeline', () => {
     const state = freshState();
     const double = [mod('combat.damage', 'mult', '2', { dungeon: 'mossy_cellar' })];
-    expect(effectiveDamage(state, content, 'mossy_cellar', double).eq(common.mul(2))).toBe(true);
-    expect(effectiveDamage(state, content, 'ember_crypt', double).eq(common)).toBe(true);
-    expect(damageStat(state, content, 'mossy_cellar', double).applied).toHaveLength(1);
+    // the list given is the whole list: no team bonus or element in it
+    expect(approxEq(effectiveDamage(state, content, 'mossy_cellar', double), common.mul(2))).toBe(
+      true,
+    );
+    expect(approxEq(effectiveDamage(state, content, 'ember_crypt', double), common)).toBe(true);
     const more = [mod('combat.damage', 'percent', '50')];
-    expect(effectiveDamage(state, content, 'mossy_cellar', more).eq(common.mul(1.5))).toBe(true);
+    expect(approxEq(effectiveDamage(state, content, 'mossy_cellar', more), common.mul(1.5))).toBe(
+      true,
+    );
   });
 
   it('has no damage upgrade lines, price curves or gain stat any more', () => {
@@ -184,9 +189,12 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(boss.dungeon.id).toBe(mossy.id);
     expect(boss.maxHp.eq(mossy.boss.hp)).toBe(true);
     // 10 s of the Ember Squire's base damage.
-    expect(approxEq(boss.hp, mossy.boss.hp.sub(content.cardRules.baseDamage.common.mul(10)))).toBe(
-      true,
-    );
+    expect(
+      approxEq(
+        boss.hp,
+        mossy.boss.hp.sub(freshDamage(content.cardRules.baseDamage.common, content).mul(10)),
+      ),
+    ).toBe(true);
     expect(boss.bars.remaining).toBe(mossy.boss.hpBars);
     expect(boss.kills).toBe(0);
     expect(bossStatus(ok(setActiveDungeon(state, content, null)), content)).toBeNull();

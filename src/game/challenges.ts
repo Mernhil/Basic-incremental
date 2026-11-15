@@ -1,8 +1,6 @@
 import type { AscensionChallenge, ChallengeRestriction, Content } from '../data';
 import { ascend, type AscendResult } from './prestige';
 import { isDungeonUnlocked } from './combat';
-import { cardHealth } from './cards';
-import { Decimal } from './num';
 import { MAX_CHALLENGE_COMPLETIONS, cloneState, type Difficulty, type GameState } from './state';
 import type { Modifier } from './modifiers';
 
@@ -101,19 +99,23 @@ export function isRestricted(
 }
 
 /**
- * Fighting loadout cards that count for nothing in the run: the supports under Lone Wolf, every
- * card but Commons under Common Folk. Their effect, health and (for the main) damage are gone.
+ * Fighting loadout cards that count for nothing in the run: every card but the first one (left to
+ * right) under Lone Wolf, every card but Commons under Common Folk. They do not fight: their
+ * ability, team bonus, health and damage are gone (DESIGN.md §14 Challenges).
  */
 export function challengeExcludedCards(state: GameState, content: Content): string[] {
   const restrictions = activeRestrictions(state, content);
   if (restrictions.size === 0) return [];
-  const l = state.cards.loadouts.fighting;
+  const slots = state.cards.loadouts.fighting.slots;
+  const first = slots.find((id) => id !== null) ?? null;
   const out: string[] = [];
   const common = (id: string): boolean => content.cardById.get(id)?.rarity === 'common';
-  if (l.main !== null && restrictions.has('commons_only') && !common(l.main)) out.push(l.main);
-  for (const id of l.supports) {
+  for (const id of slots) {
     if (id === null) continue;
-    if (restrictions.has('no_supports') || (restrictions.has('commons_only') && !common(id))) {
+    if (
+      (restrictions.has('first_card_only') && id !== first) ||
+      (restrictions.has('commons_only') && !common(id))
+    ) {
       out.push(id);
     }
   }
@@ -137,8 +139,7 @@ export function restrictedView(state: GameState, content: Content): GameState {
         ...state.cards.loadouts,
         fighting: {
           ...l,
-          main: l.main !== null && drop.has(l.main) ? null : l.main,
-          supports: l.supports.map((id) => (id !== null && drop.has(id) ? null : id)),
+          slots: l.slots.map((id) => (id !== null && drop.has(id) ? null : id)),
         },
       },
     },
@@ -160,8 +161,9 @@ export function challengeRewardModifiers(state: GameState, content: Content): Mo
 }
 
 /**
- * Modifiers of the challenge: the rewards earned (always) and, in a challenge run, its penalties
- * plus what the excluded cards take with them (their health, and the main's damage).
+ * Modifiers of the challenge: the rewards earned (always) and, in a challenge run, its penalties.
+ * The cards a rule leaves out do not fight (`teamCardIds`), so they take their health and damage
+ * with them there.
  */
 export function challengeModifiers(state: GameState, content: Content): Modifier[] {
   const out = challengeRewardModifiers(state, content);
@@ -169,20 +171,6 @@ export function challengeModifiers(state: GameState, content: Content): Modifier
   if (!challenge) return out;
   const source = { kind: 'challenge' as const, id: challenge.id };
   for (const m of challenge.penalties) out.push({ ...m, source });
-  const excluded = challengeExcludedCards(state, content);
-  if (excluded.length > 0) {
-    let health = new Decimal(0);
-    for (const id of excluded) {
-      const owned = state.cards.owned[id];
-      if (owned) health = health.add(cardHealth(content, id, owned));
-    }
-    if (health.gt(0))
-      out.push({ stat: 'combat.health', kind: 'flat', value: health.neg(), source });
-    // The main's own damage is the base of all fighting damage: without it there is none.
-    if (excluded.includes(state.cards.loadouts.fighting.main ?? '')) {
-      out.push({ stat: 'combat.damage', kind: 'mult', value: new Decimal(0), source });
-    }
-  }
   return out;
 }
 

@@ -36,7 +36,7 @@ const sci = (d: Decimal | number): string => {
 
 function row(state: GameState, t: number): string {
   const modifiers = collectModifiers(state, content);
-  const main = state.cards.loadouts.fighting.main;
+  const main = state.cards.loadouts.fighting.slots.find((id) => id !== null) ?? null;
   const card = main ? state.cards.owned[main] : undefined;
   const lead = card ? `${main} ${card.tier} ★${card.stars} Lv${card.level}` : 'none';
   const dungeons = content.dungeons

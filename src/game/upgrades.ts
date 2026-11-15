@@ -87,14 +87,14 @@ export function upgradeModifiers(state: GameState, content: Content): Modifier[]
   );
 }
 
-/** How much stronger a job's support card effects are (1 = normal), from `card.supportPower`. */
-export function supportPower(
+/** How much stronger a job's team bonuses are (1 = normal), from `card.teamBonusPower`. */
+export function teamBonusPower(
   state: GameState,
   content: Content,
   job: 'mining' | 'logging' | 'fighting',
 ): Decimal {
   const ups = upgradeModifiers(state, content);
-  return ups.length === 0 ? new Decimal(1) : statValue('card.supportPower', 1, ups, { job });
+  return ups.length === 0 ? new Decimal(1) : statValue('card.teamBonusPower', 1, ups, { job });
 }
 
 /** What an ascension keeps of the shelf: permanent upgrades and the lifetime Money. */

@@ -175,6 +175,9 @@ export interface BossAttackEvent {
   /** The team card the attack hit (DESIGN.md §6 card duel); '' when unknown. Merged events
    *  keep the last one. */
   cardId: string;
+  /** The boss ability that made this hit (DESIGN.md §6 Boss abilities): its name, e.g. "Back
+   *  Strike"; absent for a plain attack. */
+  ability?: string;
 }
 
 /** Most boss attack events a merged report keeps before folding attacks of one kind together. */
@@ -183,7 +186,9 @@ export const MAX_REPORT_BOSS_ATTACKS = 64;
 /** Adds a boss attack event, folding it into a matching one when the list is full. */
 export function pushBossAttack(into: BossAttackEvent[], event: BossAttackEvent): void {
   if (into.length >= MAX_REPORT_BOSS_ATTACKS) {
-    const same = into.find((e) => e.dungeon === event.dungeon && e.slam === event.slam);
+    const same = into.find(
+      (e) => e.dungeon === event.dungeon && e.slam === event.slam && e.ability === event.ability,
+    );
     if (same) {
       same.damage = same.damage.add(event.damage);
       same.attacks += event.attacks;

@@ -553,16 +553,18 @@ export function resetEnhancements(state: GameState, content: Content, cardId: st
 
 /**
  * Where each weapon type's circle acts now: everywhere (scope null) while the fighting loadout's
- * main card is of that type, and at the place of each worker whose card is of that type.
+ * loadout has a card of that type (once, however many), and at the place of each worker whose card
+ * is of that type.
  */
 function circleScopesOf(
   state: GameState,
   content: Content,
 ): Record<string, (ModifierScope | null)[]> {
   const out: Record<string, (ModifierScope | null)[]> = {};
-  const main = state.cards.loadouts.fighting.main;
-  const mainKind = main && state.cards.owned[main] ? content.cardById.get(main)?.item.kind : null;
-  if (mainKind) out[mainKind] = [null];
+  for (const id of state.cards.loadouts.fighting.slots) {
+    const kind = id && state.cards.owned[id] ? content.cardById.get(id)?.item.kind : null;
+    if (kind) out[kind] = [null];
+  }
   for (const { cardId, scope } of cardsAtWork(state, content)) {
     if (!scope) continue;
     const kind = content.cardById.get(cardId)?.item.kind;

@@ -379,7 +379,7 @@ export interface CombatState {
   challengeWaitSeconds: number;
   /** Card id -> damage that team card's own health has taken (DESIGN.md §6 card duel); missing =
    *  full health; at or above the card's max health it is knocked out. The team is derived (the
-   *  fighting loadout, main then supports; duel.ts). Save format 27; it replaced the shared
+   *  fighting loadout, left to right; duel.ts). Save format 27; it replaced the shared
    *  `loadoutDamage` pool. */
   cardDamage: Record<string, Decimal>;
   /** Team card ids knocked out on the floor being fought (DESIGN.md §6 card duel): they stay out
@@ -612,10 +612,7 @@ export function clonePresets(p: PresetState): PresetState {
     list.map((x) => (x ? { name: x.name, workers: copyWorkers(x.workers) } : null));
   return {
     dungeons: Object.fromEntries(
-      Object.entries(p.dungeons).map(([id, l]) => [
-        id,
-        { main: l.main, supports: [...l.supports] },
-      ]),
+      Object.entries(p.dungeons).map(([id, l]) => [id, { slots: [...l.slots] }]),
     ),
     production: { logging: job(p.production.logging), mining: job(p.production.mining) },
   };
@@ -675,12 +672,11 @@ export function initialAccount(): AccountState {
   return { xp: new Decimal(0), level: 1, skills: {}, freeRespecsUsed: 0 };
 }
 
-/** The fighting loadout: 1 main card and 3 support slots (null = empty). Logging and mining
- *  cards are workers instead (`production.workers`, DESIGN.md §4). */
+/** The fighting loadout: four equal slots, left to right (null = empty). Logging and mining
+ *  cards are workers instead (`production.workers`, DESIGN.md §4, §5 Loadouts). */
 export interface CardLoadout {
-  main: string | null;
-  /** Always 3 entries. */
-  supports: (string | null)[];
+  /** Always LOADOUT_SLOTS entries. */
+  slots: (string | null)[];
 }
 
 export interface CardState {
@@ -695,10 +691,15 @@ export interface CardState {
   wishlist: string[];
 }
 
-export const SUPPORT_SLOTS = 3;
+/** The fighting loadout's slots (DESIGN.md §5 Loadouts): back left, front left, front right,
+ *  back right. */
+export const LOADOUT_SLOTS = 4;
+/** The two central slots are the front row; the outer two are the back row. */
+export const FRONT_SLOTS: readonly number[] = [1, 2];
+export const isFrontSlot = (slot: number): boolean => FRONT_SLOTS.includes(slot);
 
 export function emptyCardLoadout(): CardLoadout {
-  return { main: null, supports: Array<string | null>(SUPPORT_SLOTS).fill(null) };
+  return { slots: Array<string | null>(LOADOUT_SLOTS).fill(null) };
 }
 
 /** A card as first obtained: Wood ★1, Lv 1, no XP, an empty star bar. */
@@ -713,7 +714,7 @@ export function newOwnedCard(): OwnedCard {
   };
 }
 
-/** A new game owns the start cards (cardRules.startCards); the fighting one leads the loadout
+/** A new game owns the start cards (cardRules.startCards); the fighting one takes the first slot
  *  and the others work (`initialWorkers`). */
 export function initialCards(content: Content): CardState {
   const cards: CardState = {
@@ -726,13 +727,13 @@ export function initialCards(content: Content): CardState {
     const card = content.cardById.get(id);
     if (!card) continue;
     cards.owned[id] = newOwnedCard();
-    if (card.job === 'fighting') cards.loadouts.fighting.main = id;
+    if (card.job === 'fighting') cards.loadouts.fighting.slots[0] = id;
   }
   return cards;
 }
 
 export function cloneCards(c: CardState): CardState {
-  const loadout = (l: CardLoadout): CardLoadout => ({ main: l.main, supports: [...l.supports] });
+  const loadout = (l: CardLoadout): CardLoadout => ({ slots: [...l.slots] });
   return {
     owned: Object.fromEntries(
       Object.entries(c.owned).map(([id, card]) => [

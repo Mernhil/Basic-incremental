@@ -56,7 +56,7 @@ const STAT_NAMES: Partial<Record<Modifier['stat'], string>> = {
   'cost.multiplier': 'prices',
   'cost.growth': 'price growth',
   'burst.fill': 'burst gauge fill',
-  'card.supportPower': 'support card effects',
+  'card.teamBonusPower': 'team bonuses',
   'burst.power': 'burst power',
   'trial.reward': 'Glimmer Trial rewards',
   'prestige.gain': 'Starlight from ascensions',

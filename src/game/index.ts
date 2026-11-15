@@ -407,6 +407,13 @@ export {
   /** Number of the first slam after attack k. */
   nextBossSlam,
   type BossPattern,
+  type BossAbility,
+  abilitiesFor,
+  abilityCounts,
+  abilityHitsBetween,
+  abilityOfAttack,
+  bossDamageBetween,
+  lethalBossAttack,
 } from './bossAttacks';
 export * from './elements';
 export * from './cardStats';

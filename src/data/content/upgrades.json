@@ -562,7 +562,7 @@
       "permanent": false,
       "effects": [
         {
-          "stat": "card.supportPower",
+          "stat": "card.teamBonusPower",
           "kind": "percent",
           "value": "25",
           "scope": {
@@ -587,7 +587,7 @@
       "permanent": false,
       "effects": [
         {
-          "stat": "card.supportPower",
+          "stat": "card.teamBonusPower",
           "kind": "percent",
           "value": "25",
           "scope": {
@@ -599,7 +599,7 @@
     {
       "id": "vanguard_pact",
       "name": "Vanguard Pact",
-      "description": "Fighting support cards +25% effect",
+      "description": "Fighting team bonuses +25% effect",
       "unlock": {
         "kind": "bossKills",
         "dungeon": "mossy_cellar",
@@ -612,7 +612,7 @@
       "permanent": true,
       "effects": [
         {
-          "stat": "card.supportPower",
+          "stat": "card.teamBonusPower",
           "kind": "percent",
           "value": "25",
           "scope": {

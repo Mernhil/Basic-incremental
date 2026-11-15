@@ -132,7 +132,7 @@ export function sample(state: GameState, content: Content): Sample {
   const gems = Object.entries(state.resources)
     .filter(([id]) => id.endsWith('_gem'))
     .map(([, d]) => new Decimal(d).toNumber());
-  const lead = state.cards.loadouts.fighting.main;
+  const lead = state.cards.loadouts.fighting.slots.find((id) => id !== null) ?? null;
   const level = lead ? (state.cards.owned[lead]?.level ?? 1) : 1;
   return {
     hit: max(team.map((c) => c.hit.toNumber())),
@@ -175,8 +175,7 @@ export function endOfContent(state: GameState, content: Content): GameState {
       enhancements: [],
     };
   }
-  next.cards.loadouts.fighting.main = tops[0]!;
-  next.cards.loadouts.fighting.supports = tops.slice(1);
+  next.cards.loadouts.fighting.slots = tops.slice(0, 4);
   for (const item of content.prestige.shop) next.prestige.shop[item.id] = item.maxLevel;
   const last = content.dungeons[content.dungeons.length - 1]!;
   next.activeDungeonId = last.id;

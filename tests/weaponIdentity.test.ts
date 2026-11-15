@@ -8,6 +8,7 @@ import {
   critFactor,
   critStats,
   effectiveDamage,
+  teamModifiers,
   newOwnedCard,
 } from '../src/game';
 import { bareState, content } from './helpers';
@@ -26,17 +27,18 @@ function lead(kind: string, rarity: string) {
   )!;
   const state = bareState();
   state.cards.owned[card.id] = newOwnedCard();
-  state.cards.loadouts.fighting = { main: card.id, supports: [null, null, null] };
+  state.cards.loadouts.fighting = { slots: [card.id, null, null, null] };
   const mods = collectModifiers(state, content);
+  // the card's own numbers: the team's modifiers with its own ability on top
+  const own = teamModifiers(state, content, mods).forCard(card.id);
+  const burst = burstStats(content, 'fighting', own);
+  const crit = critStats(content, own);
   return {
     card,
-    dps: averageDamage(
-      effectiveDamage(state, content, null, mods),
-      burstStats(content, 'fighting', mods),
-    ).mul(critFactor(critStats(content, mods))),
+    dps: averageDamage(effectiveDamage(state, content, null, mods), burst).mul(critFactor(crit)),
     health: cardHealth(content, card.id, state.cards.owned[card.id]!),
-    crit: critStats(content, mods),
-    burst: burstStats(content, 'fighting', mods),
+    crit,
+    burst,
   };
 }
 

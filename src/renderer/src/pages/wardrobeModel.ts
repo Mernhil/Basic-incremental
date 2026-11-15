@@ -86,10 +86,10 @@ export function previewChoices(state: GameState, content: Content): PreviewChoic
     });
 }
 
-/** The default preview card: the fighting main card, else the rarest owned card. */
+/** The default preview card: the first fighting loadout card, else the rarest owned card. */
 export function defaultPreview(state: GameState, content: Content): string | null {
-  const main = state.cards.loadouts.fighting.main;
-  if (main && state.cards.owned[main]) return main;
+  const first = state.cards.loadouts.fighting.slots.find((id) => id && state.cards.owned[id]);
+  if (first) return first;
   return previewChoices(state, content)[0]?.id ?? null;
 }
 

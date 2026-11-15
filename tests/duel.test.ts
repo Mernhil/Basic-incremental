@@ -51,8 +51,7 @@ function teamOf(ids: (string | null)[], content = bundled): GameState {
   const state = ok(setActiveDungeon(freshState(), content, 'mossy_cellar'));
   for (const id of ids) if (id) state.cards.owned[id] ??= newOwnedCard();
   state.cards.loadouts.fighting = {
-    main: ids[0] ?? null,
-    supports: [ids[1] ?? null, ids[2] ?? null, ids[3] ?? null],
+    slots: [ids[0] ?? null, ids[1] ?? null, ids[2] ?? null, ids[3] ?? null],
   };
   return state;
 }
@@ -61,6 +60,14 @@ const team = (s: GameState, content = bundled): TeamCard[] =>
 const taken = (s: GameState, id: string): number => s.combat.cardDamage[id]?.toNumber() ?? 0;
 const hitters = (r: ReturnType<typeof advance>['report']): Set<string> =>
   new Set(r.playerHits.map((h) => h.cardId));
+
+/** The bosses hit plainly: no abilities (those have their own tests). */
+const noAbilities = (c: typeof bundled): typeof bundled => ({
+  ...c,
+  combat: { ...c.combat, bossAbilities: [] },
+});
+const calm = noAbilities(gentle);
+const walledCalm = noAbilities(walled);
 
 const FOUR = ['ember_squire', 'militia_picket', 'fieldhand_archer', 'field_reaper'];
 
@@ -110,54 +117,96 @@ describe('the team', () => {
   });
 });
 
-describe('who the enemy hits', () => {
-  it('hits the first standing card from the left', () => {
-    const { state } = advance(teamOf([...FOUR], gentle), gentle, 30_000, rng);
-    expect(taken(state, 'ember_squire')).toBeGreaterThan(0);
-    for (const id of FOUR.slice(1)) expect(taken(state, id)).toBe(0);
+describe('who the enemy hits (DESIGN.md §6: the front row first)', () => {
+  // slots: back left, front left, front right, back right
+  it('hits the front row, never the back row while a front card stands', () => {
+    const { state } = advance(teamOf([...FOUR], calm), calm, 30_000, rng);
+    // militia_picket and fieldhand_archer stand in front
+    expect(taken(state, 'militia_picket') + taken(state, 'fieldhand_archer')).toBeGreaterThan(0);
+    expect(taken(state, 'ember_squire')).toBe(0);
+    expect(taken(state, 'field_reaper')).toBe(0);
   });
 
-  it('hits a standing guard first: hammers and lances lean to tanks', () => {
+  it('marks the cards of the two central slots as the front row', () => {
+    expect(team(teamOf([...FOUR])).map((c) => c.row)).toEqual(['back', 'front', 'front', 'back']);
+    expect(team(teamOf([...FOUR])).map((c) => c.position)).toEqual([0, 1, 2, 3]);
+  });
+
+  it('hits a standing guard in the front row first: hammers and lances lean to tanks', () => {
     expect(cardSkill(bundled, 'quarry_smasher').guard).toBe(true);
     expect(cardSkill(bundled, 'stable_squire').guard).toBe(true);
     const ids = ['ember_squire', 'militia_picket', 'quarry_smasher', 'field_reaper'];
-    const { state, report } = advance(teamOf(ids, gentle), gentle, 30_000, rng);
+    const { state, report } = advance(teamOf(ids, calm), calm, 30_000, rng);
     expect(taken(state, 'quarry_smasher')).toBeGreaterThan(0);
-    expect(taken(state, 'ember_squire')).toBe(0);
+    expect(taken(state, 'militia_picket')).toBe(0);
     expect(report.bossAttacks.every((e) => e.cardId === 'quarry_smasher')).toBe(true);
   });
 
+  it('does not let a guard in the back row pull attacks while a front card stands', () => {
+    const ids = ['quarry_smasher', 'militia_picket', 'fieldhand_archer', 'field_reaper'];
+    const { state } = advance(teamOf(ids, calm), calm, 30_000, rng);
+    expect(taken(state, 'quarry_smasher')).toBe(0);
+    expect(taken(state, 'militia_picket') + taken(state, 'fieldhand_archer')).toBeGreaterThan(0);
+  });
+
+  it('picks the same front card for the same fight state, and both over a long fight', () => {
+    const a = advance(teamOf([...FOUR], calm), calm, 120_000, rng);
+    const b = advance(teamOf([...FOUR], calm), calm, 120_000, rng);
+    expect(a.state.combat.cardDamage).toEqual(b.state.combat.cardDamage);
+    expect(taken(a.state, 'militia_picket')).toBeGreaterThan(0);
+    expect(taken(a.state, 'fieldhand_archer')).toBeGreaterThan(0);
+  });
+
+  it('counts an empty front slot as out: a team with nobody in front is hit in the back', () => {
+    const state = teamOf(['ember_squire', null, null, 'field_reaper'], calm);
+    const { state: after } = advance(state, calm, 30_000, rng);
+    expect(taken(after, 'ember_squire') + taken(after, 'field_reaper')).toBeGreaterThan(0);
+  });
+
+  it('goes to the back row when both front cards are out', () => {
+    const state = teamOf([...FOUR], walledCalm);
+    const [, a, b] = team(state, walledCalm);
+    state.combat.cardsOut = [a!.id, b!.id];
+    state.combat.cardDamage = { [a!.id]: a!.maxHealth, [b!.id]: b!.maxHealth };
+    const { state: after } = advance(state, walledCalm, 4_000, rng);
+    expect(taken(after, 'ember_squire') + taken(after, 'field_reaper')).toBeGreaterThan(0);
+  });
+
   it('knocks a card out on the attack that empties its health; the others fight on', () => {
-    const state = teamOf([...FOUR], walled);
-    const lead = team(state, walled)[0]!;
-    state.combat.cardDamage = { ember_squire: lead.maxHealth.sub(1e-6) };
-    const { state: after, report } = advance(state, walled, 7_000, rng);
+    // the Squire alone stands in front, the Picket and the Archer behind
+    const state = teamOf(['militia_picket', 'ember_squire', null, 'fieldhand_archer'], walledCalm);
+    const front = team(state, walledCalm)[1]!;
+    state.combat.cardDamage = { ember_squire: front.maxHealth.sub(1e-6) };
+    const { state: after, report } = advance(state, walledCalm, 7_000, rng);
     expect(report.cardKnockouts).toEqual(['ember_squire']);
     expect(report.knockouts).toBe(0);
-    // The next card takes the hits from then on.
-    expect(taken(after, 'militia_picket')).toBeGreaterThan(0);
-    const view = teamView(after, walled);
-    expect(view[0]!.knockedOut).toBe(true);
-    expect(view[0]!.health.toNumber()).toBe(0);
-    expect(view[1]!.targeted).toBe(true);
+    // The back row takes the hits from then on.
+    expect(taken(after, 'militia_picket') + taken(after, 'fieldhand_archer')).toBeGreaterThan(0);
+    const view = teamView(after, walledCalm);
+    const squire = view.find((c) => c.cardId === 'ember_squire')!;
+    expect(squire.knockedOut).toBe(true);
+    expect(squire.health.toNumber()).toBe(0);
+    expect(view.some((c) => c.targeted && c.cardId !== 'ember_squire')).toBe(true);
     // A knocked-out card stops attacking until the floor is won.
-    const later = advance(after, walled, 3_000, rng);
+    const later = advance(after, walledCalm, 3_000, rng);
     expect(hitters(later.report).has('ember_squire')).toBe(false);
-    expect(hitters(later.report).has('militia_picket')).toBe(true);
   });
 
   it('keeps a knocked-out card out when its max health rises (a level-up) before the floor is won', () => {
-    const state = teamOf([...FOUR], walled);
-    const lead = team(state, walled)[0]!;
-    state.combat.cardDamage = { ember_squire: lead.maxHealth.sub(1e-6) };
-    const out = advance(state, walled, 4_000, rng);
+    const state = teamOf(['militia_picket', 'ember_squire', null, 'fieldhand_archer'], walledCalm);
+    const front = team(state, walledCalm)[1]!;
+    state.combat.cardDamage = { ember_squire: front.maxHealth.sub(1e-6) };
+    const out = advance(state, walledCalm, 4_000, rng);
     expect(out.report.cardKnockouts).toEqual(['ember_squire']);
     // Fighting XP levels the card up: its max health rises above the damage it took.
     const grown = cloneState(out.state);
     grown.cards.owned['ember_squire']!.level = 15;
-    expect(team(grown, walled)[0]!.maxHealth.gt(taken(grown, 'ember_squire'))).toBe(true);
-    const later = advance(grown, walled, 10_000, rng);
-    expect(teamView(later.state, walled)[0]!.knockedOut).toBe(true);
+    const grownSquire = team(grown, walledCalm).find((c) => c.id === 'ember_squire')!;
+    expect(grownSquire.maxHealth.gt(taken(grown, 'ember_squire'))).toBe(true);
+    const later = advance(grown, walledCalm, 10_000, rng);
+    expect(
+      teamView(later.state, walledCalm).find((c) => c.cardId === 'ember_squire')!.knockedOut,
+    ).toBe(true);
     expect(later.report.bossAttacks.some((e) => e.cardId === 'ember_squire')).toBe(false);
     expect(hitters(later.report).has('ember_squire')).toBe(false);
     expect(later.report.cardKnockouts).not.toContain('ember_squire');

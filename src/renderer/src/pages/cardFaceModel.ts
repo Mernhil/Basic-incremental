@@ -21,14 +21,15 @@ import type { CardFace } from '../ui/cardFace';
 export const secondsText = (s: number): string => `${Number(s.toFixed(2))}s`;
 
 /**
- * Seconds between one hit of the card's main ability: the fight tick for a fighting card, the
+ * Seconds between one hit of the card's ability: the fight tick for a fighting card, the
  * gap between two strikes of a worker's (logging or mining card's) harvest pattern.
  */
 export function hitSeconds(content: Content, info: CardInfo, mods?: readonly Modifier[]): number {
   const { card } = info;
   if (card.job === 'fighting') {
-    // the live modifiers only describe the card that leads; any other card shows its own speed
-    const live = mods?.length && info.slot?.slot === 'main' ? mods : info.mainModifiers;
+    // the live modifiers (Training, the tree) with the card's own ability on top; a card shown
+    // outside the loadout has its own ability alone
+    const live = mods?.length ? [...mods, ...info.abilityModifiers] : info.abilityModifiers;
     return burstStats(content, 'fighting', live).interval;
   }
   return card.worker.harvest.intervalSeconds / card.worker.harvest.strikes;

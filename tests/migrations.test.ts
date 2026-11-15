@@ -831,7 +831,7 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
     expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });
     expect(Object.keys(state.cards.loadouts)).toEqual(['fighting']);
-    expect(state.cards.loadouts.fighting.main).toBe('ember_squire');
+    expect(state.cards.loadouts.fighting.slots).toContain('ember_squire');
     expect(state.cards.wishlist).toEqual([]);
     expect(state.production.tools).toEqual({});
     expect(state.production.depth).toEqual({});

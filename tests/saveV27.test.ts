@@ -99,7 +99,7 @@ describe('v26 -> v27: the team and the floor of an old save (DESIGN.md §6)', ()
   it('the 0.6.0 fixture farms on from the migrated save: no knockout loop in two minutes', () => {
     const text = readFileSync(resolve(__dirname, 'fixtures/saves/v26-0.6.0.save.txt'), 'utf8');
     let state = readSave(text, real).state;
-    expect(state.cards.loadouts.fighting.supports.filter((id) => id !== null)).toHaveLength(2);
+    expect(state.cards.loadouts.fighting.slots.filter((id) => id !== null)).toHaveLength(3);
     const farmed = state.combat.floors[state.activeDungeonId!]!.tiers['normal']!;
     expect(farmed.best).toBeGreaterThan(0);
     expect(state.combat.knockoutSeconds).toBe(0); // the old save was parked mid-knockout
@@ -246,11 +246,16 @@ describe('v26 -> v27 (the table update)', () => {
     }
     // The team was filled and the player moved off the dungeon with nothing beaten (below).
     const exp = expected as { cards: { loadouts: { fighting: { supports: unknown[] } } } };
-    exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.supports;
+    exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.slots.slice(1);
     // Format 29 moved the numbers onto the readable scale (DESIGN.md §14 Readable numbers).
     // Format 30 added the Heirloom Gate's state (no Heirloom-tier card in this save); format 31 added the owned-table fix-up.
-    const scaled = MIGRATIONS[33]!(
-      MIGRATIONS[32]!(MIGRATIONS[31]!(MIGRATIONS[30]!(MIGRATIONS[29]!(MIGRATIONS[28]!(expected))))),
+    // Format 35 made the loadouts four slots in a formation.
+    const scaled = MIGRATIONS[34]!(
+      MIGRATIONS[33]!(
+        MIGRATIONS[32]!(
+          MIGRATIONS[31]!(MIGRATIONS[30]!(MIGRATIONS[29]!(MIGRATIONS[28]!(expected)))),
+        ),
+      ),
     ) as Record<string, unknown>;
     delete scaled['heirloomMigration'];
     const scaledCombat = scaled['combat'] as Record<string, unknown>;
@@ -258,6 +263,17 @@ describe('v26 -> v27 (the table update)', () => {
     delete (scaled['resources'] as Record<string, unknown>)['summon_scroll'];
     delete (scaled['resources'] as Record<string, unknown>)['glamour_scroll'];
     delete resources['heirloom_scroll'];
+    // the formation is placed when the save is read (the migration only flags it)
+    delete scaled['arrangeFormation'];
+    const placed = again as {
+      cards: { loadouts: { fighting: unknown } };
+      presets: { dungeons: unknown };
+    };
+    (scaled['cards'] as { loadouts: { fighting: unknown } }).loadouts.fighting =
+      placed.cards.loadouts.fighting;
+    if (scaled['presets']) {
+      (scaled['presets'] as { dungeons: unknown }).dungeons = placed.presets.dungeons;
+    }
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
@@ -301,10 +317,7 @@ describe('format 27 state', () => {
     state.combat.challengeWaitSeconds = 30;
     state.combat.cardDamage = { ember_squire: new Decimal('1e5') };
     state.summon = { focusKind: 'hammer', dailyClaimedDay: '2026-11-11' };
-    state.presets.dungeons['mossy_cellar'] = {
-      main: 'ember_squire',
-      supports: [null, null, null],
-    };
+    state.presets.dungeons['mossy_cellar'] = { slots: ['ember_squire', null, null, null] };
     state.presets.production.logging[1] = {
       name: 'Oaks',
       workers: { oak: ['apprentice_feller'] },
@@ -328,10 +341,10 @@ describe('format 27 state', () => {
     state.combat.cardDamage = { ember_squire: new Decimal(1), dawnblade_regent: new Decimal(1) };
     state.combat.cardsOut = ['ember_squire', 'ember_squire', 'dawnblade_regent', 'cave_digger'];
     state.summon.focusKind = 'twin_blades';
-    state.presets.dungeons['gone'] = { main: 'ember_squire', supports: [null, null, null] };
+    state.presets.dungeons['gone'] = { slots: ['ember_squire', null, null, null] };
     state.presets.dungeons['ember_crypt'] = {
-      main: 'apprentice_feller', // not a fighting card
-      supports: ['ember_squire', 'ember_squire', 'dawnblade_regent'], // repeat, not owned
+      // not a fighting card, a repeat, a repeat, not owned
+      slots: ['apprentice_feller', 'ember_squire', 'ember_squire', 'dawnblade_regent'],
     };
     state.presets.production.mining[0] = {
       name: 'Mixed',
@@ -352,8 +365,8 @@ describe('format 27 state', () => {
     expect(loaded.combat.cardsOut).toEqual(['ember_squire']);
     expect(loaded.summon.focusKind).toBeNull();
     expect(loaded.presets.dungeons).toEqual({
-      mossy_cellar: { main: 'ember_squire', supports: [null, null, null] },
-      ember_crypt: { main: null, supports: ['ember_squire', null, null] },
+      mossy_cellar: { slots: ['ember_squire', null, null, null] },
+      ember_crypt: { slots: [null, 'ember_squire', null, null] },
     });
     expect(loaded.presets.production.mining[0]).toEqual({
       name: 'Mixed',
@@ -378,10 +391,7 @@ describe('format 27 state through an Ascension', () => {
     before.mastery.harvested['oak_gem'] = new Decimal(1e14);
     before.resources['summon_scroll'] = new Decimal(4);
     before.resources['glamour_scroll'] = new Decimal(2);
-    before.presets.dungeons['mossy_cellar'] = {
-      main: 'ember_squire',
-      supports: [null, null, null],
-    };
+    before.presets.dungeons['mossy_cellar'] = { slots: ['ember_squire', null, null, null] };
     before.discoveredBonds = ['old_growth'];
     before.expeditions.trips = [
       { cardId: 'cave_digger', placeId: 'mossy_outskirts', hours: 1, elapsedSeconds: 5 },

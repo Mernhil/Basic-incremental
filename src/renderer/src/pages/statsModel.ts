@@ -35,7 +35,7 @@ export function statTiles(content: Content, state: GameState, cardId: string): S
     if (cmp.health !== null) parts.push(s.comparePart(cmp.health, 'health'));
     const name = content.cardById.get(cmp.againstId)?.name ?? s.compareMain;
     compare = s.compare(name, parts);
-  } else if (fighting && state.cards.loadouts.fighting.main === cardId) {
+  } else if (fighting && state.cards.loadouts.fighting.slots.includes(cardId)) {
     compare = s.equipped;
   } else {
     compare = '';

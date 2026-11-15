@@ -233,8 +233,26 @@ export const plainContent: Content = {
  * ★1 Lv 1, leading) then deals exactly `dps` per second, and so does a bare-handed one (the unarmed
  * damage is set to it too). Rule tests use it where they need an exact damage; the rarity ratios stay as they are.
  */
+/** What the fresh game's Ember Squire deals per second at Common base damage `common`: its own
+ *  team bonus (+4% damage) counts for the team it is in, itself included (DESIGN.md §5 Loadouts). */
+export function freshDamage(
+  common: Decimal | number | string,
+  base: Content = plainContent,
+): Decimal {
+  const squire = base.cardById.get('ember_squire');
+  const percent =
+    squire?.job === 'fighting'
+      ? squire.teamBonus.modifiers
+          .filter((m) => m.stat === 'combat.damage' && m.kind === 'percent')
+          .reduce((sum, m) => sum.add(m.value), new Decimal(0))
+      : new Decimal(0);
+  return new Decimal(common).mul(percent.div(100).add(1));
+}
+
 export function withDps(dps: Decimal | number | string, base: Content = plainContent): Content {
-  const common = new Decimal(dps);
+  // the fresh game's Squire then deals exactly `dps` with its own team bonus counted
+  // (a hair over, so a hit sized to exactly one boss never lands a rounding error short)
+  const common = new Decimal(dps).div(freshDamage(1, base)).mul('1.000000000001');
   const baseDamage = Object.fromEntries(
     Object.keys(base.cardRules.baseDamage).map((rarity) => [
       rarity,
@@ -251,7 +269,7 @@ export function withDps(dps: Decimal | number | string, base: Content = plainCon
   return {
     ...base,
     cardRules: { ...base.cardRules, baseDamage },
-    combat: { ...base.combat, unarmedDamage: common },
+    combat: { ...base.combat, unarmedDamage: new Decimal(dps) },
   };
 }
 

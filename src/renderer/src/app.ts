@@ -217,7 +217,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
       content,
       sound: playSound,
       cardProps: (id) =>
-        loadoutProps(content, loop.state, id, 'main', collectModifiers(loop.state, content)),
+        loadoutProps(content, loop.state, id, collectModifiers(loop.state, content)),
     });
 
   // the goal list under the header's Goals button (DESIGN.md §10); a goal opens its view.

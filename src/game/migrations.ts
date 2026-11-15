@@ -86,6 +86,7 @@ export const MIGRATIONS: MigrationTable = {
   /** v33 -> v34: quests (DESIGN.md §10 Quests). Nothing is done yet; reading the save marks every
    *  quest the state already meets as done and waiting to be claimed, never as claimed. */
   33: (state) => ({ ...state, quests: {} }),
+  34: v34ToV35,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1467,4 +1468,39 @@ function v32ToV33(state: Record<string, unknown>): Record<string, unknown> {
   const rest = { ...state };
   delete rest['weaponSkins'];
   return { ...rest, cardSkins };
+}
+
+/** A loadout in the old shape (a main card and three supports) as four slots, in the same
+ *  left-to-right order, so no team changes. A loadout already in slots is left as it is. */
+function slotsOf(loadout: unknown): unknown {
+  if (!isRecord(loadout) || Array.isArray(loadout['slots'])) return loadout;
+  const supports = Array.isArray(loadout['supports']) ? loadout['supports'] : [];
+  const slots = [loadout['main'] ?? null, ...supports].slice(0, 4);
+  while (slots.length < 4) slots.push(null);
+  return { slots };
+}
+
+/**
+ * v34 -> v35 (DESIGN.md §5 Loadouts): the fighting loadout and every remembered dungeon loadout
+ * (presets) were a main card and three supports; they are four equal slots now, the main card
+ * first and the supports after it, so nobody's team changes. Logging and mining loadouts left in
+ * the `loadouts` record by older saves are dropped when the save is read, as before. The
+ * formation (DESIGN.md §5: slot 1 and 2 are the front row) needs the cards' health, so the step
+ * only flags the state (`arrangeFormation`) and `readSave` places the two highest-health cards of
+ * each team in front once the cards are known.
+ */
+function v34ToV35(state: Record<string, unknown>): Record<string, unknown> {
+  const each = (record: unknown): unknown =>
+    isRecord(record)
+      ? Object.fromEntries(Object.entries(record).map(([key, l]) => [key, slotsOf(l)]))
+      : record;
+  const next = { ...state };
+  if (isRecord(state['cards']) && 'loadouts' in state['cards']) {
+    next['cards'] = { ...state['cards'], loadouts: each(state['cards']['loadouts']) };
+  }
+  if (isRecord(state['presets']) && 'dungeons' in state['presets']) {
+    next['presets'] = { ...state['presets'], dungeons: each(state['presets']['dungeons']) };
+  }
+  next['arrangeFormation'] = true;
+  return next;
 }

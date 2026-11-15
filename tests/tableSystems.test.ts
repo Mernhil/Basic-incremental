@@ -36,7 +36,7 @@ function own(state: GameState, ...ids: string[]): GameState {
 function equip(state: GameState, ...ids: string[]): GameState {
   let s = state;
   ids.forEach((id, i) => {
-    const r = setLoadoutSlot(s, content, 'fighting', i === 0 ? 'main' : i - 1, id);
+    const r = setLoadoutSlot(s, content, 'fighting', i, id);
     if (!r.ok) throw new Error(`equip ${id}: ${r.reason}`);
     s = r.state;
   });
@@ -106,11 +106,13 @@ describe('dungeon presets', () => {
     const b = pickDungeon(s, content, 'ember_crypt');
     expect(b.ok && b.preset).toBe('none');
     s = equip((b as { state: GameState }).state, 'dawnblade_regent');
-    expect(s.cards.loadouts.fighting.main).toBe('dawnblade_regent');
+    expect(s.cards.loadouts.fighting.slots[0]).toBe('dawnblade_regent');
     const back = pickDungeon(s, content, 'mossy_cellar');
     expect(back.ok && back.preset).toBe('applied');
-    expect((back as { state: GameState }).state.cards.loadouts.fighting.main).toBe('ember_squire');
-    expect((back as { state: GameState }).state.presets.dungeons['ember_crypt']!.main).toBe(
+    expect((back as { state: GameState }).state.cards.loadouts.fighting.slots[0]).toBe(
+      'ember_squire',
+    );
+    expect((back as { state: GameState }).state.presets.dungeons['ember_crypt']!.slots[0]).toBe(
       'dawnblade_regent',
     );
   });
@@ -118,8 +120,7 @@ describe('dungeon presets', () => {
   it('empties the slot of a remembered card that is away', () => {
     let s = ready();
     s.presets.dungeons['mossy_cellar'] = {
-      main: 'ember_squire',
-      supports: ['dawnblade_regent', null, null],
+      slots: ['ember_squire', 'dawnblade_regent', null, null],
     };
     s.clearedDungeons = ['mossy_cellar', 'ember_crypt'];
     s.activeDungeonId = null;
@@ -133,8 +134,7 @@ describe('dungeon presets', () => {
     const r = pickDungeon(s, content, 'mossy_cellar');
     expect(r.ok && r.preset).toBe('applied');
     const loadout = (r as { state: GameState }).state.cards.loadouts.fighting;
-    expect(loadout.main).toBe('ember_squire');
-    expect(loadout.supports).toEqual([null, null, null]);
+    expect(loadout.slots).toEqual(['ember_squire', null, null, null]);
   });
 
   it('refuses a locked dungeon', () => {
@@ -255,7 +255,7 @@ describe('expeditions', () => {
     ).toEqual({ ok: false, reason: 'at-work' });
 
     const away = trip(s, 'ember_squire');
-    const r = setLoadoutSlot(away, content, 'fighting', 'main', 'ember_squire');
+    const r = setLoadoutSlot(away, content, 'fighting', 0, 'ember_squire');
     expect(r).toEqual({ ok: false, reason: 'on-expedition' });
     const w = assignWorker(trip(s, 'apprentice_feller'), content, 'oak', 'apprentice_feller');
     expect(w).toEqual({ ok: false, reason: 'on-expedition' });

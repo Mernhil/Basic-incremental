@@ -5,7 +5,7 @@ import {
   cloneState,
   isOnTrip,
   PRESETS_PER_JOB,
-  SUPPORT_SLOTS,
+  LOADOUT_SLOTS,
   type CardLoadout,
   type GameState,
   type PresetJob,
@@ -34,7 +34,7 @@ export type PickDungeonResult =
   | { ok: true; state: GameState; preset: DungeonPresetOutcome }
   | { ok: false; reason: CombatFailure };
 
-const copyLoadout = (l: CardLoadout): CardLoadout => ({ main: l.main, supports: [...l.supports] });
+const copyLoadout = (l: CardLoadout): CardLoadout => ({ slots: [...l.slots] });
 
 /** The loadout remembered for a dungeon, or null. */
 export function dungeonPreset(state: GameState, dungeonId: string): CardLoadout | null {
@@ -55,9 +55,7 @@ function usable(state: GameState, content: Content, saved: CardLoadout): CardLoa
     seen.add(v);
     return v;
   };
-  const main = once(saved.main);
-  const supports = Array.from({ length: SUPPORT_SLOTS }, (_, i) => once(saved.supports[i] ?? null));
-  return { main, supports };
+  return { slots: Array.from({ length: LOADOUT_SLOTS }, (_, i) => once(saved.slots[i] ?? null)) };
 }
 
 /**
