@@ -13,7 +13,28 @@ describe('dev cheats gating in the main process', () => {
     expect(devCheatsEnabled({ isPackaged: true }, { BI_NO_CHEATS: '0' })).toBe(false);
   });
 
+  it('public packaged build = off, whatever the environment says', () => {
+    expect(devCheatsEnabled({ isPackaged: true }, {}, false)).toBe(false);
+    expect(devCheatsEnabled({ isPackaged: true }, { BI_DEV_BUILD: '1' }, false)).toBe(false);
+  });
+
+  it('dev packaged build = on (a build-time flag), BI_NO_CHEATS does not matter there', () => {
+    expect(devCheatsEnabled({ isPackaged: true }, {}, true)).toBe(true);
+  });
+
+  it('unpackaged = on, with or without the build flag', () => {
+    expect(devCheatsEnabled({ isPackaged: false }, {}, false)).toBe(true);
+    expect(devCheatsEnabled({ isPackaged: false }, {}, true)).toBe(true);
+  });
+
+  it('the build flag is false outside the dev build script', async () => {
+    const { DEV_BUILD } = await import('../src/main/buildFlag');
+    expect(DEV_BUILD).toBe(false);
+  });
+
   it('has an IPC channel the preload asks', () => {
     expect(IPC_CHANNELS.devCheatsEnabled).toBe('dev:cheats-enabled');
+    expect(IPC_CHANNELS.devBackupSave).toBe('dev:backup-save');
+    expect(IPC_CHANNELS.devReloadView).toBe('dev:reload-view');
   });
 });
