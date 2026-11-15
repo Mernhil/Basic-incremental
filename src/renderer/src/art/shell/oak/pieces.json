@@ -1,0 +1,92 @@
+{
+  "sheet": {
+    "w": 104,
+    "h": 104,
+    "corner": 32,
+    "outset": 6
+  },
+  "window": {
+    "w": 104,
+    "h": 104,
+    "corner": 32,
+    "outset": 11
+  },
+  "plate": {
+    "w": 22,
+    "h": 22,
+    "corner": 5,
+    "outset": 2
+  },
+  "tile": {
+    "w": 22,
+    "h": 22,
+    "corner": 5,
+    "outset": 2
+  },
+  "pill": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "btn": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "btn-hover": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "btn-press": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "btn-focus": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "action": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "action-hover": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "action-press": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "action-focus": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "unusable": {
+    "w": 32,
+    "h": 32,
+    "corner": 8,
+    "outset": 2
+  },
+  "bar": {
+    "w": 64,
+    "h": 32,
+    "corner": 0,
+    "outset": 0
+  }
+}

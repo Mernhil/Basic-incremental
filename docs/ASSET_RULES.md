@@ -195,11 +195,11 @@ An item only lists what it changes: tokens it does not set are inherited from th
 
 The header, sidebar, framed panels and tooltips (DESIGN.md §11) are skinned by the **table** item, so equipping a table re-skins the whole screen. Token groups, each following the card's `<surface>-bg / -line / -ink / -ink-muted` pattern:
 
-| Group      | Tokens                                                                                                              | Used by                        |
-| ---------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
-| `chrome-*` | `bg`, `rail-bg`, `line`, `ink`, `ink-muted`, `accent`, `active-bg`, `accent-lo`, `xp`, `logging`, `mining`, `burst` | Header and sidebar             |
-| `frame-*`  | `bg`, `radius`, `line`, `title-bg`, `title-line`, `title-ink`, `ink`, `ink-muted`, `raised`, `edge`, `hi`, `lo`     | Framed panels on every page    |
-| `font-*`   | `ui`, `display`                                                                                                     | Body text and the display font |
+| Group      | Tokens                                                                                                                                                   | Used by                        |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| `chrome-*` | `bg`, `rail-bg`, `line`, `ink`, `ink-muted`, `accent`, `active-bg`, `accent-lo`, `xp`, `logging`, `mining`, `burst`                                      | Header and sidebar             |
+| `frame-*`  | `bg`, `radius`, `line`, `title-bg`, `title-line`, `title-ink`, `ink`, `ink-muted`, `raised`, `edge`, `hi`, `lo`, `accent`, `good`, `bad`, `xp`, `xp-ink` | Framed panels on every page    |
+| `font-*`   | `ui`, `display`                                                                                                                                          | Body text and the display font |
 
 [To build] A table that also wears a `shell-<id>` recipe draws the shell from pieces instead of the pixel box-shadow frames: `shell-oak` (Carved Oak, `theme/shellOak.css`, the pieces in `art/shell/oak/`) is built behind a hidden table item; `shell-stone` (`theme/shellPictures.css`) stays dormant. Carved Oak sets `frame-bg` `#f6ead0`, `frame-ink` `#2a1c10`, `frame-ink-muted` `#6b5133` and its other tokens for dark ink on flat cream; components read tokens, never hardcoded light colours. All other tables use `theme/frames.css`.
 | `tip-*` | `bg`, `line`, `ink`, `ink-muted` | Hover and focus tooltips |

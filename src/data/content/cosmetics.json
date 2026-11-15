@@ -73,8 +73,69 @@
           "frame-hi": "#54456d",
           "frame-lo": "#1d1729",
           "font-ui": "'Atkinson Hyperlegible', 'Segoe UI', sans-serif",
-          "font-display": "'Pixelify Sans', 'Atkinson Hyperlegible', sans-serif"
+          "font-display": "'Pixelify Sans', 'Atkinson Hyperlegible', sans-serif",
+          "frame-accent": "#f4c14a",
+          "frame-good": "#6fdc8c",
+          "frame-bad": "#ef8a7a",
+          "frame-xp": "#7fc6ff",
+          "frame-xp-ink": "#9fd8ff"
         }
+      }
+    ]
+  },
+  {
+    "id": "oak_table",
+    "hidden": true,
+    "name": "Carved Oak",
+    "slot": "table",
+    "rarity": "common",
+    "set": null,
+    "exclusiveCard": null,
+    "ownedModifiers": [],
+    "levels": [
+      {
+        "tokens": {
+          "table-bg": "#17110d",
+          "table-glow": "rgba(120, 84, 40, 0.16)",
+          "on-table": "#f1e8d6",
+          "on-table-muted": "#c2ad88",
+          "chrome-bg": "#2e2013",
+          "chrome-line": "#0b0100",
+          "chrome-ink": "#f3e6c8",
+          "chrome-ink-muted": "#c2ad88",
+          "chrome-accent": "#f4c14a",
+          "chrome-accent-lo": "#a87a22",
+          "frame-bg": "#f6ead0",
+          "frame-line": "#0b0100",
+          "frame-title-bg": "#e9d8b0",
+          "frame-title-line": "#6b5133",
+          "frame-ink": "#2a1c10",
+          "frame-ink-muted": "#563d22",
+          "tip-bg": "#fdf5df",
+          "tip-line": "#3a2410",
+          "tip-ink": "#2a1c10",
+          "tip-ink-muted": "#563d22",
+          "frame-title-ink": "#2a1c10",
+          "chrome-rail-bg": "#1f160d",
+          "chrome-active-bg": "rgba(244, 193, 74, 0.16)",
+          "chrome-xp": "#8fc7ff",
+          "chrome-logging": "#9be05a",
+          "chrome-mining": "#ffb35c",
+          "chrome-burst": "#ff9a4a",
+          "frame-radius": "0",
+          "frame-raised": "#fdf5df",
+          "frame-edge": "#3a2410",
+          "frame-hi": "#fffaf0",
+          "frame-lo": "#c9b58f",
+          "font-ui": "'Atkinson Hyperlegible', 'Segoe UI', sans-serif",
+          "font-display": "'Pixelify Sans', 'Atkinson Hyperlegible', sans-serif",
+          "frame-accent": "#8a5a0a",
+          "frame-good": "#1f6a35",
+          "frame-bad": "#a8322a",
+          "frame-xp": "#2f8fd8",
+          "frame-xp-ink": "#1d5b8c"
+        },
+        "recipes": ["shell-oak"]
       }
     ]
   },

@@ -155,7 +155,7 @@
   margin: 12px 0 8px;
   font-size: 15px;
   font-weight: 800;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
   text-align: left;
 }
 .shop-list,
@@ -447,7 +447,7 @@ html .shop-body :is(.shop-it, .shop-tile) .shop-price:focus-visible:not(#_px) {
   margin: 0;
   font-size: 32px;
   line-height: 1.05;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .shop-needs {
   margin: 0;

@@ -33,17 +33,17 @@ Everything is **free**: Pillow scripts and cuts from `src/renderer/src/art/pixel
 
 Preview versions are in `design/options/ui-style/pieces/`, drawn by `tools/gen.py` and `tools/gen4.py`. The build redraws them with one clean script, `scripts/shell-art/oak.py`, into `src/renderer/src/art/shell/oak/`.
 
-| # | Piece | File in previews | Sheet | Corner | Tile | Outset | Notes |
-|---|---|---|---|---|---|---|---|
-| 1 | Sheet frame | `p-big-wood3` | 104×104 | 32 | 40 | 6 | Wood 13 thick (kit columns 27–34 and 40–44 of the left side, rows 100–120 mirrored), gold cap arms 30 long, cream fill |
-| 2 | Dungeon window frame | `a-window3` | 104×104 | 32 | 40 | 11 | Same as 1 with an empty centre |
-| 3 | Plate frame | `p-plate-wood` | 22×22 | 5 | 12 | 2 | Thin wood, cream fill `#f6ead0` |
-| 4 | Tile | `p-tile-wood` | 22×22 | 5 | 12 | 2 | Thin wood, lighter fill `#fdf5df` |
-| 5 | Readout pill | `p-pill-gold` | 32×32 | 8 | 16 | 2 | Cream, gold edge, 2 px notch (drawn at 2× art scale) |
-| 6 | Button | `p-btn` | 32×32 | 8 | 16 | 2 | `#fdf5df`, gold edge |
-| 7 | Action button | `p-gold` | 32×32 | 8 | 16 | 2 | Red `#a8322a`, gold edge, cream text `#fff1d0` |
-| 8 | Unusable button | `p-dark` | 32×32 | 8 | 16 | 2 | Tan `#bfad86`, ink `#5a4528` |
-| 9 | Header and dock planks | `a-bar` | 64×32 | — | whole | — | Background tile |
+| #   | Piece                  | File in previews | Sheet   | Corner | Tile  | Outset | Notes                                                                                                                  |
+| --- | ---------------------- | ---------------- | ------- | ------ | ----- | ------ | ---------------------------------------------------------------------------------------------------------------------- |
+| 1   | Sheet frame            | `p-big-wood3`    | 104×104 | 32     | 40    | 6      | Wood 13 thick (kit columns 27–34 and 40–44 of the left side, rows 100–120 mirrored), gold cap arms 30 long, cream fill |
+| 2   | Dungeon window frame   | `a-window3`      | 104×104 | 32     | 40    | 11     | Same as 1 with an empty centre                                                                                         |
+| 3   | Plate frame            | `p-plate-wood`   | 22×22   | 5      | 12    | 2      | Thin wood, cream fill `#f6ead0`                                                                                        |
+| 4   | Tile                   | `p-tile-wood`    | 22×22   | 5      | 12    | 2      | Thin wood, lighter fill `#fdf5df`                                                                                      |
+| 5   | Readout pill           | `p-pill-gold`    | 32×32   | 8      | 16    | 2      | Cream, gold edge, 2 px notch (drawn at 2× art scale)                                                                   |
+| 6   | Button                 | `p-btn`          | 32×32   | 8      | 16    | 2      | `#fdf5df`, gold edge                                                                                                   |
+| 7   | Action button          | `p-gold`         | 32×32   | 8      | 16    | 2      | Red `#a8322a`, gold edge, cream text `#fff1d0`                                                                         |
+| 8   | Unusable button        | `p-dark`         | 32×32   | 8      | 16    | 2      | Tan `#bfad86`, ink `#5a4528`                                                                                           |
+| 9   | Header and dock planks | `a-bar`          | 64×32   | —      | whole | —      | Background tile                                                                                                        |
 
 Pieces still to draw in the build, same method, each shown to the user in a real screenshot before its PR merges:
 

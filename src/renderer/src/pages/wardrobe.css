@@ -290,7 +290,7 @@ html .wd-stage:not(#_px) {
   font-weight: 600;
 }
 .wd-slot__tag {
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .wd-slot__warn {
   overflow: hidden;

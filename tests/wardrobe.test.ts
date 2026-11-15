@@ -213,7 +213,7 @@ describe('the wardrobe grid', () => {
   it('lists every cosmetic with ownership, level, max, copies, source and where it is worn', () => {
     const state = ok(equipCosmetic(owning('gilded_plate'), content, 'gilded_plate'));
     const items = wardrobeItems(state, content);
-    expect(items).toHaveLength(content.cosmetics.length);
+    expect(items).toHaveLength(content.cosmetics.filter((c) => !c.hidden).length);
     const hex = items.find((i) => i.cosmetic.id === 'gilded_plate')!;
     expect(hex).toMatchObject({
       owned: true,
@@ -236,7 +236,8 @@ describe('the wardrobe grid', () => {
     expect(cosmeticSource(content, 'gilded_filigree')).toBe('prestige');
     expect(cosmeticSource(content, 'gt_border')).toBe('achievement');
     expect(cosmeticSource(content, 'ember_crown')).toBe('portal');
-    for (const c of content.cosmetics) expect(cosmeticSource(content, c.id), c.id).not.toBeNull();
+    for (const c of content.cosmetics.filter((x) => !x.hidden))
+      expect(cosmeticSource(content, c.id), c.id).not.toBeNull();
   });
 });
 

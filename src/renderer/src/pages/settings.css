@@ -431,7 +431,7 @@
   line-height: 1.35;
 }
 .set-credits__row[data-required='true'] b {
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .set-credits__licence,
 .set-credits__url {
