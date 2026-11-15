@@ -57,7 +57,8 @@ await page.evaluate(() => document.querySelector('.away button')?.click());
 await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
 // the game's own sound off too (the app itself is started with --mute-audio)
 const mute = page.locator('.snd-mute');
-if ((await mute.count()) > 0 && (await mute.getAttribute('aria-pressed')) !== 'true') await mute.click();
+if ((await mute.count()) > 0 && (await mute.getAttribute('aria-pressed')) !== 'true')
+  await mute.click();
 await page.setViewportSize({ width: 1280, height: 720 });
 await page.waitForTimeout(1200);
 
