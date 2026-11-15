@@ -28,7 +28,10 @@ function apply(host: HTMLElement, f: Fit): void {
     ? pickRowScale(f.row.count, want, Number.isFinite(max) ? max : 1e6, f.row.gap, d)
     : pickCardScale(want, d, max);
   host.style.setProperty('--card-n', String(n));
-  host.style.setProperty('--card-k', cardBoxScale(n, d).toFixed(6));
+  const k = cardBoxScale(n, d);
+  host.style.setProperty('--card-k', k.toFixed(6));
+  // a big card (about 220 CSS px wide or more) shows its whole bottom banner, a small one the short form
+  host.style.setProperty('--card-full', k >= 1.25 ? '1' : '0');
 }
 
 /**

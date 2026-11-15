@@ -493,14 +493,14 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   pointer-events: none;
 }
 .wp-over .wp-badge {
-  left: calc(var(--fs) * -2);
-  top: calc(var(--fs) * -2);
-  width: calc(var(--fs-sm) * 20);
-  height: calc(var(--fs-sm) * 20);
+  left: calc(var(--card-k) * 9px);
+  top: calc(var(--card-k) * 35px);
+  width: calc(var(--fs-sm) * 13);
+  height: calc(var(--fs-sm) * 13);
   clip-path: none;
 }
 .wp-over .wp-badge b {
-  font-size: 22px;
+  font-size: 17px;
   font-weight: 600;
   line-height: 1;
 }

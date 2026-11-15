@@ -212,17 +212,12 @@ html .cp-sort .cp-select:not(#_px) {
 .cp-fit > .bi-card .bi-rank-name {
   font-size: max(12px, var(--cp-floor));
 }
-.cp-fit > .bi-card .bi-card__name {
+.cp-fit > .bi-card:not(.bi-card--kit) .bi-card__name {
   font-size: max(14px, var(--cp-floor));
 }
 .cp-grid .bi-card__job,
 .cp-slots[data-n='1'] .bi-card__job {
   display: none;
-}
-
-/* the level badge lies on the card's top-left corner, so the name in the card's head starts after it */
-.cp-fit--lv > .bi-card:not(.bi-card--boss) .bi-card__head {
-  padding-left: calc(var(--lv-in) / var(--card-k) - 9px);
 }
 
 /* a group heading in the collection grid: owned cards, then one group per weapon type */
@@ -249,14 +244,15 @@ html .cp-sort .cp-select:not(#_px) {
   z-index: 2;
   pointer-events: none;
 }
+/* on the art window's top-left corner, just under the name plate (window x 5.33, y 30.67 in card units) */
 .cp-lv {
-  left: calc(var(--fs-sm) * -3);
-  top: calc(var(--fs-sm) * -3);
-  min-width: calc(var(--fs-sm) * 14);
-  height: calc(var(--fs-sm) * 14);
-  padding: 0 calc(var(--fs-sm) * 3);
+  left: calc(var(--card-k) * 9px);
+  top: calc(var(--card-k) * 35px);
+  min-width: calc(var(--fs-sm) * 9);
+  height: calc(var(--fs-sm) * 9);
+  padding: 0 calc(var(--fs-sm) * 2);
   box-sizing: border-box;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 800;
   line-height: 1;
 }
@@ -333,11 +329,26 @@ html .cp-sort .cp-select:not(#_px) {
 /* the card at 2x with room around it for the level badge and the ★6 crown */
 .cp-detail__main {
   display: grid;
-  grid-template-columns: calc(176px * var(--card-k)) minmax(0, 1fr);
-  --lv-in: calc(var(--fs-sm) * 16);
+  /* the column is the whole kit picture (212 x 256 art pixels = 282.67 x 341.33 card units), so the
+     frame's ornaments (wings, crests) stay inside it and never reach the tiles */
+  grid-template-columns: calc(282.67px * var(--card-k)) minmax(0, 1fr);
   gap: 22px;
   align-items: start;
-  padding: 66px 6px 30px 10px;
+  padding: 8px 6px 20px 6px;
+}
+/* too narrow for the card beside the tiles: the card on top, the tiles under it */
+.cp-detail__main.is-stacked {
+  grid-template-columns: minmax(0, 1fr);
+  justify-items: center;
+}
+.cp-detail__main.is-stacked .cp-detail__side {
+  justify-self: stretch;
+}
+.cp-detail__card > .cp-fit {
+  margin: calc(var(--card-k) * 46.67px) calc(var(--card-k) * 53.33px) calc(var(--card-k) * 30px);
+}
+.cp-detail__card > .cp-preview {
+  margin-inline: calc(var(--card-k) * 53.33px);
 }
 .cp-detail__main .bi-card__name {
   font-size: 13px;
@@ -1075,4 +1086,20 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   display: block;
   height: 100%;
   background: var(--px-gold);
+}
+
+/* the card's own name plate already says the name, so the detail panel's title keeps the name for
+   screen readers only and shows just the rarity / job line */
+.cp-detail > .frame__title .frame__heading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.cp-detail > .frame__title .frame__note {
+  margin-left: 0;
+  text-align: left;
 }

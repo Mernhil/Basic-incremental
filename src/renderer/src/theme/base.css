@@ -598,12 +598,15 @@ body {
   height: 24px;
   box-sizing: border-box;
   padding: 0 4px;
+  justify-content: center;
   background: none;
   box-shadow: none;
 }
 /* the name plates are mid-tone wood, metal or half dark: the name is always light with a dark outline */
 .bi-card--kit:not([data-border-worn]) .bi-card__name {
-  font-size: 12.5px;
+  flex: 1;
+  text-align: center;
+  font-size: max(13px, var(--cp-floor, 0px));
   color: #fff8e8;
   text-shadow:
     0 0 2px #000,
@@ -622,10 +625,10 @@ body {
 /* the bottom banner: x 28 to 184, y 182 to 222; the text sits inside the card's width, 12 to 164 */
 .bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__info {
   z-index: 4;
-  left: 14px;
-  right: 14px;
-  top: 202px;
-  bottom: 8px;
+  left: 10px;
+  right: 10px;
+  top: 207px;
+  bottom: 7px;
   gap: 1px;
   padding: 0;
   background: none;
@@ -633,7 +636,8 @@ body {
   align-content: center;
 }
 .bi-card--kit:not([data-border-worn]) .bi-info__ability {
-  font-size: 10.5px;
+  font-size: max(11px, var(--cp-floor, 0px));
+  font-weight: 700;
   color: var(--kit-ink);
   text-shadow: var(--kit-shadow);
 }
@@ -641,8 +645,38 @@ body {
 .bi-card--kit:not([data-border-worn]) .bi-info__level {
   color: var(--kit-ink-2);
 }
+.bi-card--kit:not([data-border-worn]) .bi-info__speed {
+  font-size: 8px;
+}
 .bi-card--kit:not([data-border-worn]) .bi-info__line--meta {
-  font-size: 7.5px;
+  font-size: max(10px, var(--cp-floor, 0px));
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  align-items: center;
+}
+.bi-info__stars {
+  display: none;
+}
+.bi-info__stars .bi-stars {
+  font-size: 8.5px;
+}
+.bi-info__line--meta .bi-info__stars {
+  display: flex;
+}
+.bi-card--kit:not([data-border-worn]) .bi-info__stars .bi-stars {
+  font-size: max(10px, var(--cp-floor, 0px));
+}
+/* a small card's banner: the weapon name, then stars and level; the speed and rarity word are for the big card */
+.bi-card--kit:not([data-border-worn]) .bi-info__speed,
+.bi-card--kit:not([data-border-worn]) .bi-info__rarity {
+  display: none;
+}
+@container style(--card-full: 1) {
+  .bi-card--kit:not([data-border-worn]) .bi-info__speed,
+  .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
+    display: inline;
+  }
 }
 .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
   color: color-mix(in srgb, var(--rar) 55%, var(--kit-ink));
@@ -664,4 +698,12 @@ body {
   --kit-ink-off: rgba(255, 255, 255, 0.3);
   --kit-star: #ffd24a;
   --kit-shadow: 0 0 2px #000, 0 1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
+}
+/* the T6 and Heirloom banner is half light, half dark: light letters with a dark outline read on both halves */
+.bi-card--kit-t6:not([data-border-worn]) .bi-info__ability,
+.bi-card--kit-t6:not([data-border-worn]) .bi-info__speed,
+.bi-card--kit-t6:not([data-border-worn]) .bi-info__level,
+.bi-card--kit-t6:not([data-border-worn]) .bi-info__rarity {
+  paint-order: stroke fill;
+  -webkit-text-stroke: 2.5px #14100a;
 }

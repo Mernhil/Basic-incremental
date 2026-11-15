@@ -67,6 +67,8 @@ const GRID_GAP = 10;
 /** The weapon tiles beside the detail card: the narrowest they may get, and the gap to the card. */
 const DETAIL_SIDE_MIN = 118;
 const DETAIL_GAP = 22;
+/** The kit picture is this many times as wide as the card it frames (212 / 132 art pixels). */
+const KIT_PER_CARD = 212 / 132;
 type Fit = Parameters<typeof fitCard>[1];
 
 /**
@@ -688,9 +690,17 @@ export function createCardsPage(
     // the card at 2x with its large level badge, and the weapon panel's tiles beside it
     // (DESIGN.md §5, §11); the card's whole scale is picked on this row
     const main = h('div', 'cp-detail__main');
+    // the column holds the whole kit picture (ornaments too): 212 art pixels per 132 of the card, so
+    // the card is picked for the room left; when the 2x card does not fit beside the tiles the tiles go under it
     watchFit(main, {
       want: CARD_WANT.detail,
-      max: () => innerWidth(main) - DETAIL_SIDE_MIN - DETAIL_GAP,
+      max: () => {
+        const room = innerWidth(main);
+        const beside = room - DETAIL_SIDE_MIN - DETAIL_GAP;
+        const stacked = beside / KIT_PER_CARD < CARD_WANT.detail;
+        main.classList.toggle('is-stacked', stacked);
+        return (stacked ? room : beside) / KIT_PER_CARD;
+      },
     });
     // Next tier preview: the picture and name of a higher tier on the card, view state only
     const step = previewOf?.id === e.id ? previewOf.step : 0;
