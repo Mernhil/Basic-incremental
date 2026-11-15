@@ -3,7 +3,7 @@ import { Decimal } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
 import { rollToward } from '../stage/math';
-import { onFrame, reducedMotion, replay } from '../stage/motion';
+import { onFrame, replay } from '../stage/motion';
 import { icon, type IconName } from './icons';
 import { attachTooltip, type TipContent } from './tooltip';
 import './shell.css';
