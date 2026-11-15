@@ -1132,12 +1132,10 @@ export function createCardsPage(
         const label = slotName(i);
         const e = id ? byId.get(id) : undefined;
         // the slot's place in the formation, and the role of the card standing in it
-        li.append(
-          h(
-            'span',
-            'cp-slot__label',
-            e?.combatRole ? `${label} · ${COPY.cards.combatRoles[e.combatRole]}` : label,
-          ),
+        const labelEl = h(
+          'span',
+          'cp-slot__label',
+          e?.combatRole ? `${label} · ${COPY.cards.combatRoles[e.combatRole]}` : label,
         );
         // Click a slot to fill or change it: the cards that fit show under the slots.
         const choose = (): void => {
@@ -1172,7 +1170,8 @@ export function createCardsPage(
             act(model.remove(ctx.state(), e.id), `slot-${job}-${i}`),
           );
           buttons.append(details, rm);
-          li.append(open, buttons);
+          // the label sits under the card: the card's crest covers the space above it
+          li.append(open, labelEl, buttons);
         } else {
           const empty = h('button', 'cp-empty', COPY.cards.chooseCard);
           empty.type = 'button';
@@ -1183,7 +1182,7 @@ export function createCardsPage(
           );
           empty.setAttribute('aria-pressed', String(picking === i));
           empty.addEventListener('click', choose);
-          li.append(empty);
+          li.append(labelEl, empty);
         }
         slots.append(li);
       });

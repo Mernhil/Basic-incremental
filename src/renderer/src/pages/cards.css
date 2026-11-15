@@ -1115,3 +1115,12 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 .cp-slot--back {
   margin-top: calc(var(--card-k) * 44px);
 }
+
+/* the slot's place and role sit under the card, clear of its kit's tails */
+.cp-slot .cp-slot__label {
+  margin-top: calc(var(--kit-bottom) + 6px);
+  font-size: 13px;
+}
+.cp-slot .cp-slot__label + .cp-slot__buttons {
+  margin-top: 2px;
+}
