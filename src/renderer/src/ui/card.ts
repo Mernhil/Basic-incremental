@@ -67,13 +67,10 @@ export interface CardView {
 }
 
 function starsHtml(rank: Rank): string {
-  const on = '★'.repeat(rank.stars);
-  const off = '★'.repeat(6 - rank.stars);
-  return (
-    `<span class="bi-stars__on" aria-hidden="true">${on}</span>` +
-    `<span class="bi-stars__sheen" aria-hidden="true">${on}</span>` +
-    `<span class="bi-stars__off" aria-hidden="true">${off}</span>`
-  );
+  return Array.from({ length: 6 }, (_, i) => {
+    const on = i < rank.stars ? ' bi-star--on' : '';
+    return `<i class="bi-star${on}" data-i="${i}" style="--i:${i}" aria-hidden="true"></i>`;
+  }).join('');
 }
 
 /**

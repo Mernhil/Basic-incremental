@@ -50,44 +50,87 @@
 }
 
 /* ---- stars ---------------------------------------------------------------------------------- */
+/* Pixel stars (art/pixel/hand/star-*.png, made by scripts/art/make-stars.py): 11 x 11 art pixels,
+   drawn at the card's art scale (1 art pixel = 4/3 card px, so the card's whole scale keeps them
+   crisp) and overlapping by their shared outline pixel. The tier picks the colours, Prismatic gives
+   each of its six stars its own. */
+.bi-card {
+  --star-art: calc(4px / 3);
+  --star-off: url('../art/pixel/sprites/star-off.png');
+}
+.bi-card[data-tier='bronze'] {
+  --star-on: url('../art/pixel/sprites/star-bronze-on.png');
+  --shine: #ffe2bd;
+}
+.bi-card[data-tier='silver'] {
+  --star-on: url('../art/pixel/sprites/star-silver-on.png');
+  --shine: #ffffff;
+}
+.bi-card[data-tier='gold'] {
+  --star-on: url('../art/pixel/sprites/star-gold-on.png');
+  --shine: #fff7c2;
+}
+.bi-card[data-tier='prismatic'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-0-on.png');
+  --shine: #ffffff;
+}
+.bi-card[data-tier='prismatic'] .bi-star[data-i='1'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-1-on.png');
+}
+.bi-card[data-tier='prismatic'] .bi-star[data-i='2'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-2-on.png');
+}
+.bi-card[data-tier='prismatic'] .bi-star[data-i='3'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-3-on.png');
+}
+.bi-card[data-tier='prismatic'] .bi-star[data-i='4'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-4-on.png');
+}
+.bi-card[data-tier='prismatic'] .bi-star[data-i='5'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-5-on.png');
+}
 .bi-stars {
   position: relative;
   display: inline-flex;
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: 0.08em;
+  line-height: 0;
   white-space: nowrap;
 }
-.bi-stars__on {
-  color: transparent;
-  background-image: linear-gradient(var(--star), var(--star));
-  -webkit-background-clip: text;
-  background-clip: text;
+.bi-star {
+  position: relative;
+  flex: none;
+  width: calc(11 * var(--star-art));
+  height: calc(11 * var(--star-art));
+  margin-left: calc(-1 * var(--star-art));
+  background: var(--star-off) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
-.bi-stars__off {
-  color: rgba(163, 176, 198, 0.4);
+.bi-star:first-child {
+  margin-left: 0;
 }
-.bi-stars__sheen {
+.bi-star--on {
+  background-image: var(--star-on);
+}
+
+/* star 6: a shine sweeps across each star, a little later on each one (a hard-edged band through the
+   star's own shape, so the pixels stay crisp) */
+/* the "on" stars of a ★6 card */
+.bi-card[data-stars='6'] .bi-star--on::after {
+  content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  display: none;
-  color: transparent;
-  background-image: linear-gradient(
-    100deg,
-    transparent 26%,
-    var(--shine) 45%,
-    #fff 50%,
-    var(--shine) 55%,
-    transparent 74%
-  );
-  background-size: 260% 100%;
-  background-repeat: no-repeat;
-  background-position: 50% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter: drop-shadow(0 0 3px var(--shine));
+  inset: 0;
+  -webkit-mask: var(--star-on) center / 100% 100% no-repeat;
+  mask: var(--star-on) center / 100% 100% no-repeat;
+  background: linear-gradient(
+      100deg,
+      transparent 38%,
+      var(--shine) 46%,
+      #fff 50%,
+      var(--shine) 54%,
+      transparent 62%
+    )
+    100% 0 / 300% 100% no-repeat;
   animation: bi-shine 2.4s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i, 0) * -0.3s);
 }
 @keyframes bi-shine {
   from {
@@ -95,25 +138,6 @@
   }
   to {
     background-position: 0% 0;
-  }
-}
-
-.bi-card[data-stars='6'] .bi-stars__on {
-  background-image: linear-gradient(var(--star-deep), var(--star-deep));
-}
-.bi-card[data-stars='6'] .bi-stars__sheen {
-  display: inline;
-}
-
-/* prismatic stars animate through the rainbow */
-.bi-card[data-tier='prismatic'] .bi-stars__on {
-  background-image: var(--prism);
-  background-size: 300% 100%;
-  animation: bi-prism 5s linear infinite;
-}
-@keyframes bi-prism {
-  to {
-    background-position: 300% 0;
   }
 }
 
@@ -215,7 +239,7 @@
     opacity: 0;
   }
 }
-.bi-card[data-tier='prismatic'][data-stars='6'] .bi-stars__on {
+.bi-card[data-tier='prismatic'][data-stars='6'] .bi-star--on {
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
 }
 
@@ -258,7 +282,7 @@
   .bi-card::after {
     animation: none !important;
   }
-  .bi-stars__sheen {
+  .bi-card[data-stars='6'] .bi-star--on::after {
     background-position: 50% 0;
   }
   .bi-mote {
