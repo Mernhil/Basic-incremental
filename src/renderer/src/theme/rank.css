@@ -50,70 +50,130 @@
 }
 
 /* ---- stars ---------------------------------------------------------------------------------- */
+/* Pixel stars (art/pixel/hand/star-*.png, made by scripts/art/make-stars.py): 11 x 11 art pixels,
+   drawn at the card's art scale (1 art pixel = 4/3 card px, so the card's whole scale keeps them
+   crisp) and overlapping by their shared outline pixel. The tier picks the colours, Prismatic gives
+   each of its six stars its own. */
+/* Hosts: a card, the weapon panel (.wp) and any other place that shows stars (.bi-starset), each with a
+   data-tier (Wood reads as Bronze; Mythic, Void and the Heirloom as Prismatic). */
+.bi-card,
+.wp,
+.bi-starset {
+  --star-art: calc(4px / 3);
+  --star-off: url('../art/pixel/sprites/star-off.png');
+}
+:is(.bi-card, .wp, .bi-starset)[data-tier='bronze'],
+:is(.bi-card, .wp, .bi-starset)[data-tier='wood'] {
+  --star-on: url('../art/pixel/sprites/star-bronze-on.png');
+  --shine: #ffe2bd;
+}
+:is(.bi-card, .wp, .bi-starset)[data-tier='silver'] {
+  --star-on: url('../art/pixel/sprites/star-silver-on.png');
+  --shine: #ffffff;
+}
+:is(.bi-card, .wp, .bi-starset)[data-tier='gold'] {
+  --star-on: url('../art/pixel/sprites/star-gold-on.png');
+  --shine: #fff7c2;
+}
+:is(.bi-card, .wp, .bi-starset)[data-tier='prismatic'],
+:is(.bi-card, .wp, .bi-starset)[data-tier='mythic'],
+:is(.bi-card, .wp, .bi-starset)[data-tier='heirloom'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-0-on.png');
+  --shine: #ffffff;
+}
+:is(.bi-card, .wp, .bi-starset):is(
+    [data-tier='prismatic'],
+    [data-tier='mythic'],
+    [data-tier='heirloom']
+  )
+  .bi-star[data-i='1'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-1-on.png');
+}
+:is(.bi-card, .wp, .bi-starset):is(
+    [data-tier='prismatic'],
+    [data-tier='mythic'],
+    [data-tier='heirloom']
+  )
+  .bi-star[data-i='2'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-2-on.png');
+}
+:is(.bi-card, .wp, .bi-starset):is(
+    [data-tier='prismatic'],
+    [data-tier='mythic'],
+    [data-tier='heirloom']
+  )
+  .bi-star[data-i='3'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-3-on.png');
+}
+:is(.bi-card, .wp, .bi-starset):is(
+    [data-tier='prismatic'],
+    [data-tier='mythic'],
+    [data-tier='heirloom']
+  )
+  .bi-star[data-i='4'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-4-on.png');
+}
+:is(.bi-card, .wp, .bi-starset):is(
+    [data-tier='prismatic'],
+    [data-tier='mythic'],
+    [data-tier='heirloom']
+  )
+  .bi-star[data-i='5'] {
+  --star-on: url('../art/pixel/sprites/star-prismatic-5-on.png');
+}
 .bi-stars {
   position: relative;
   display: inline-flex;
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: 0.08em;
+  line-height: 0;
   white-space: nowrap;
 }
-.bi-stars__on {
-  color: transparent;
-  background-image: linear-gradient(var(--star), var(--star));
-  -webkit-background-clip: text;
-  background-clip: text;
+.bi-star {
+  position: relative;
+  flex: none;
+  width: calc(11 * var(--star-art));
+  height: calc(11 * var(--star-art));
+  margin-left: calc(-1 * var(--star-art));
+  background: var(--star-off) center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
-.bi-stars__off {
-  color: rgba(163, 176, 198, 0.4);
+.bi-star:first-child {
+  margin-left: 0;
 }
-.bi-stars__sheen {
+.bi-star--on {
+  background-image: var(--star-on);
+}
+
+/* star 6: a shine sweeps across each star, a little later on each one (a hard-edged band through the
+   star's own shape, so the pixels stay crisp) */
+/* the "on" stars of a ★6 card */
+.bi-card[data-stars='6'] .bi-star--on::after {
+  content: '';
   position: absolute;
-  left: 0;
-  top: 0;
-  display: none;
-  color: transparent;
-  background-image: linear-gradient(
-    100deg,
-    transparent 26%,
-    var(--shine) 45%,
-    #fff 50%,
-    var(--shine) 55%,
-    transparent 74%
-  );
-  background-size: 260% 100%;
-  background-repeat: no-repeat;
-  background-position: 50% 0;
-  -webkit-background-clip: text;
-  background-clip: text;
-  filter: drop-shadow(0 0 3px var(--shine));
-  animation: bi-shine 2.4s ease-in-out infinite alternate;
+  inset: 0;
+  -webkit-mask: var(--star-on) center / 100% 100% no-repeat;
+  mask: var(--star-on) center / 100% 100% no-repeat;
+  background: linear-gradient(
+      100deg,
+      transparent 38%,
+      var(--shine) 46%,
+      #fff 50%,
+      var(--shine) 54%,
+      transparent 62%
+    )
+    100% 0 / 300% 100% no-repeat;
+  /* one way only: left to right across star 1 to 6, then a pause, then again from the left */
+  animation: bi-shine 3.6s linear infinite backwards;
+  animation-delay: calc(var(--i, 0) * 0.3s);
 }
 @keyframes bi-shine {
-  from {
+  0% {
     background-position: 100% 0;
   }
-  to {
+  22% {
     background-position: 0% 0;
   }
-}
-
-.bi-card[data-stars='6'] .bi-stars__on {
-  background-image: linear-gradient(var(--star-deep), var(--star-deep));
-}
-.bi-card[data-stars='6'] .bi-stars__sheen {
-  display: inline;
-}
-
-/* prismatic stars animate through the rainbow */
-.bi-card[data-tier='prismatic'] .bi-stars__on {
-  background-image: var(--prism);
-  background-size: 300% 100%;
-  animation: bi-prism 5s linear infinite;
-}
-@keyframes bi-prism {
-  to {
-    background-position: 300% 0;
+  100% {
+    background-position: 0% 0;
   }
 }
 
@@ -130,40 +190,52 @@
 .bi-card[data-tier='prismatic'] .bi-stars::after {
   content: '✦';
   position: absolute;
-  top: -7px;
-  left: 8%;
+  top: calc(-7 * var(--star-art));
+  left: 0;
   font-size: 10px;
+  line-height: 1;
   letter-spacing: 0;
   color: #fff;
   text-shadow:
     0 0 6px #fff,
     0 0 10px #b48cff;
-  animation:
-    bi-glint-hop 3.2s steps(1) infinite,
-    bi-glint-pulse 0.8s ease-in-out infinite alternate;
+  opacity: 0;
+  /* hops from star 1 to star 6 in order, then rests, in step with the shine */
+  animation: bi-glint-hop 3.6s steps(1, end) infinite;
 }
 @keyframes bi-glint-hop {
   0% {
-    left: 8%;
+    opacity: 0;
   }
-  25% {
-    left: 46%;
-  }
-  50% {
-    left: 24%;
-  }
-  75% {
-    left: 70%;
-  }
-}
-@keyframes bi-glint-pulse {
-  from {
-    opacity: 0.15;
-    transform: scale(0.6) rotate(0deg);
-  }
-  to {
+  4.00% {
+    left: calc(0.5 * var(--star-art));
     opacity: 1;
-    transform: scale(1.15) rotate(45deg);
+  }
+  12.33% {
+    left: calc(10.5 * var(--star-art));
+    opacity: 1;
+  }
+  20.67% {
+    left: calc(20.5 * var(--star-art));
+    opacity: 1;
+  }
+  29.00% {
+    left: calc(30.5 * var(--star-art));
+    opacity: 1;
+  }
+  37.33% {
+    left: calc(40.5 * var(--star-art));
+    opacity: 1;
+  }
+  45.66% {
+    left: calc(50.5 * var(--star-art));
+    opacity: 1;
+  }
+  56% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
   }
 }
 
@@ -215,7 +287,7 @@
     opacity: 0;
   }
 }
-.bi-card[data-tier='prismatic'][data-stars='6'] .bi-stars__on {
+.bi-card[data-tier='prismatic'][data-stars='6'] .bi-star--on {
   filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.55));
 }
 
@@ -258,7 +330,7 @@
   .bi-card::after {
     animation: none !important;
   }
-  .bi-stars__sheen {
+  .bi-card[data-stars='6'] .bi-star--on::after {
     background-position: 50% 0;
   }
   .bi-mote {

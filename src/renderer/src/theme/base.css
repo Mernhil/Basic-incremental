@@ -398,11 +398,6 @@ body {
 .bi-card:not(.bi-card--boss) .bi-stars {
   flex: none;
   z-index: 3;
-  font-size: 8.5px;
-  letter-spacing: 0.02em;
-}
-.bi-card:not(.bi-card--boss) .bi-stars__off {
-  color: rgba(255, 255, 255, 0.25);
 }
 .bi-card__info {
   position: absolute;
@@ -614,14 +609,6 @@ body {
     1px 0 1px #000,
     -1px 0 1px #000;
 }
-.bi-card--kit:not([data-border-worn]) .bi-stars__on {
-  color: #ffd24a;
-  text-shadow: 0 0 2px #000;
-}
-.bi-card--kit:not([data-border-worn]) .bi-stars__off {
-  color: rgba(255, 255, 255, 0.35);
-  text-shadow: 0 0 2px #000;
-}
 /* the bottom banner: x 28 to 184, y 182 to 222; the text sits inside the card's width, 12 to 164 */
 .bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__info {
   z-index: 4;
@@ -654,18 +641,17 @@ body {
   letter-spacing: 0;
   text-transform: none;
   align-items: center;
+  gap: 2px;
+}
+/* the six 11-pixel stars take 61 art pixels of the line: the level gives a little on a 1x card so Lv n/cap still fits beside them */
+.bi-card--kit:not([data-border-worn]) .bi-info__line--meta .bi-info__level {
+  font-size: max(10px, calc(var(--cp-floor, 0px) * 0.86));
 }
 .bi-info__stars {
   display: none;
 }
-.bi-info__stars .bi-stars {
-  font-size: 8.5px;
-}
 .bi-info__line--meta .bi-info__stars {
   display: flex;
-}
-.bi-card--kit:not([data-border-worn]) .bi-info__stars .bi-stars {
-  font-size: max(10px, var(--cp-floor, 0px));
 }
 /* a small card's banner: the weapon name, then stars and level; the speed and rarity word are for the big card */
 .bi-card--kit:not([data-border-worn]) .bi-info__speed,
