@@ -48,7 +48,7 @@ export function moneyText(content: Content, amount: Decimal): string {
 
 /** Whether a resource is the Money that coins show. */
 export const isMoney = (content: Content, resource: string): boolean =>
-  resource === content.upgrades.currency;
+  resource === content.perks.currency;
 
 /**
  * An amount of a resource with its name: Money in coins ("12.4 Gold"), anything else as a

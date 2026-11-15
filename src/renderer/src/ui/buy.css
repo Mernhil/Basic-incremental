@@ -177,3 +177,19 @@
     display: none;
   }
 }
+/* The price's resource art (DESIGN.md §4 The upgrade row). */
+.buy-btn__art {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  flex: none;
+  margin-left: auto;
+}
+.buy-btn__art:empty {
+  display: none;
+}
+.buy-btn__art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}

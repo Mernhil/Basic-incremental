@@ -1,40 +1,33 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, collectModifiers } from '../src/game';
-import { upgradeBoard } from '../src/renderer/src/views/meta/upgradesModel';
+import { Decimal } from '../src/game';
+import { milestoneBoard } from '../src/renderer/src/views/meta/upgradesModel';
 import { content, freshState } from './helpers';
 
-describe('the Upgrades board', () => {
-  it('splits every shelf upgrade into This run and Permanent without losing any', () => {
-    const s = freshState();
-    s.resources.money = new Decimal(1e15);
-    for (const t of content.trees) s.production.treeLevels[t.id] = 60;
-    const mods = collectModifiers(s, content);
-    const board = upgradeBoard(s, content, mods);
-    const ids = [...board.run, ...board.permanent].map((t) => t.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    expect(ids.length).toBeGreaterThan(0);
-    expect(board.ready).toBe(
-      [...board.run, ...board.permanent].filter((t) => t.status === 'available' && t.affordable)
-        .length,
+describe('the Upgrades board (milestone picks by place)', () => {
+  it('lists every milestone once, in Logging, Mining and Training', () => {
+    const board = milestoneBoard(freshState(), content);
+    expect(board.groups.map((g) => g.key)).toEqual(['logging', 'mining', 'training']);
+    const ids = board.groups.flatMap((g) =>
+      g.lines.flatMap((l) => l.items.map((i) => i.milestone.id)),
     );
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.length).toBe(content.perks.milestones.length);
   });
 
-  it('puts bought upgrades after the ones still on sale and counts only the buyable as ready', () => {
+  it('counts the picks waiting and marks the rest picked, kept or ahead', () => {
     const s = freshState();
-    const mods = collectModifiers(s, content);
-    const board = upgradeBoard(s, content, mods);
-    for (const list of [board.run, board.permanent]) {
-      const firstOwned = list.findIndex((t) => t.status === 'owned');
-      if (firstOwned >= 0)
-        expect(list.slice(firstOwned).every((t) => t.status === 'owned')).toBe(true);
-    }
-    expect(board.ready).toBeLessThanOrEqual(board.run.length + board.permanent.length);
+    s.production.treeLevels['oak'] = 26;
+    s.upgrades.picks['oak_10'] = 'oak_10_output';
+    s.upgrades.picks['oak_50'] = 'oak_50_worker';
+    const board = milestoneBoard(s, content);
+    const oak = board.groups[0]!.lines.find((l) => l.line.id === 'oak')!;
+    expect(oak.items.map((i) => i.status)).toEqual(['active', 'waiting', 'kept', 'ahead']);
+    expect(board.waiting).toBeGreaterThanOrEqual(1);
   });
 
   it('reads the lifetime Money as a coin amount', () => {
     const s = freshState();
     s.upgrades.moneyEarned = new Decimal('1234');
-    const board = upgradeBoard(s, content, collectModifiers(s, content));
-    expect(board.lifetime).toMatch(/\d/);
+    expect(milestoneBoard(s, content).lifetime).toMatch(/\d/);
   });
 });

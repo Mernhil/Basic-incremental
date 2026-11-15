@@ -30,7 +30,6 @@ import { COPY } from '../copy';
 import { h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import { MEDAL_VIEWBOX, masteryMedal, svg } from '../art/gems';
-import { createShelf } from '../ui/shelf';
 import { createTrainingPanel } from '../ui/training';
 import { createWeaponPanel, type WeaponPanel } from '../ui/weaponPanel';
 import { DUEL_COPY } from '../views/dungeon/copy';
@@ -45,7 +44,7 @@ import './dungeons.css';
  * mockups 4b and 4g): Dungeons (the dungeon list with star totals on the left; on the right, for
  * the dungeon picked in it, its tiers, Fight here, the stage map with stars, kills and the Overflow
  * switches, and the drops of the dungeon being fought), Weapon (the main card's weapon panel,
- * DESIGN.md §5) and Training (the training lines, then the one-time upgrades, DESIGN.md §6).
+ * DESIGN.md §5) and Training (a waiting milestone pick, then the training lines, DESIGN.md §6).
  */
 
 export interface DungeonPanelsContext extends PageContext {
@@ -518,7 +517,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     weapon.replaceChildren(weaponPanel.el, weaponNote);
   }
 
-  // ---- Training: the repeatable lines first, the one-time upgrades under them ----
+  // ---- Training: a waiting pick, then the repeatable lines (DESIGN.md §4 Milestone picks) ----
   const training = h('div', 'dp-training');
   const trainingPanel = createTrainingPanel({
     content,
@@ -526,14 +525,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     apply: ctx.apply,
     sound: ctx.sound,
   });
-  const shelf = createShelf({
-    content,
-    state: ctx.state,
-    apply: ctx.apply,
-    scope: 'fighting',
-    sound: ctx.sound,
-  });
-  training.append(trainingPanel.el, h('h3', 'dp-sub px-display', COPY.training.oneTime), shelf.el);
+  training.append(trainingPanel.el);
 
   function render(): void {
     const s = ctx.state();
@@ -552,7 +544,6 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     const entry = weaponId ? ctx.cards.entry(s, weaponId) : null;
     if (entry) weaponPanel?.update(entry);
     trainingPanel.update();
-    shelf.update();
   }
 
   return {

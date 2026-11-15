@@ -24,7 +24,6 @@ import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
 import { mineLevelViews, treeLevelViews, type BuyLineView } from './buyModel';
-import type { ShelfChip } from './shelfModel';
 
 /**
  * View models of the Production screen, the pixel ledger (DESIGN.md §4, §11): one row per tree
@@ -274,27 +273,4 @@ export function jobRateValue(
       new Decimal(0),
     ),
   );
-}
-
-export interface ShelfSummary {
-  /** Upgrades that can be bought right now. */
-  ready: number;
-  /** Upgrades on the shelf that are not bought yet. */
-  waiting: number;
-  owned: number;
-  /** The closed drawer's one line: "3 ready to buy · 5 owned". */
-  text: string;
-}
-
-/** What the closed shelf drawer says: how many upgrades are ready, waiting and owned. */
-export function shelfSummary(chips: readonly ShelfChip[]): ShelfSummary {
-  const owned = chips.filter((c) => c.status === 'owned').length;
-  const open = chips.filter((c) => c.status === 'available');
-  const ready = open.filter((c) => c.affordable).length;
-  return {
-    ready,
-    waiting: open.length - ready,
-    owned,
-    text: COPY.production.shelfLine(ready, owned),
-  };
 }

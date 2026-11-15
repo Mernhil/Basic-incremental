@@ -74,8 +74,10 @@ import {
   isProducerUnlocked,
   loadoutCostCap,
   mineLevel,
-  upgradeShelf,
-  buyUpgrade,
+  waitingPicks,
+  pickPerk,
+  perkEffects,
+  loadoutMaxHealth,
   treeLevel,
   treeLevelCost,
   buyTreeLevel,
@@ -991,19 +993,6 @@ function economyCandidates(
       });
     }
   }
-  // The upgrade shelf: one-time multipliers; the gain is the relative rise of what they touch.
-  for (const item of upgradeShelf(state, content, modifiers)) {
-    if (item.status !== 'available') continue;
-    const p = item.preview;
-    const rise = p && num(p.before) > 0 ? (num(p.after) - num(p.before)) / num(p.before) : 0.05;
-    out.push({
-      id: `upgrade:${item.id}`,
-      kind: 'economy',
-      prices: [item.cost],
-      gain: (p?.kind === 'damage' ? 1 : PRODUCTION_VALUE) * rise * 0.5,
-      buy: (s, c) => okState(buyUpgrade(s, c, item.id)),
-    });
-  }
   return out;
 }
 
@@ -1387,7 +1376,7 @@ export function greedyBuy(
   content: Content,
   rng: Rng = createSeededRng(1),
 ): { state: GameState; bought: string[]; dustSpent: number } {
-  let current = chooseRespec(state, content);
+  let current = takePicks(chooseRespec(state, content), content);
   const bought: string[] = [];
   let candidates: Candidate[] = [];
   const maxed = new Set<string>();
@@ -1422,7 +1411,7 @@ export function greedyBuy(
       current = optimizeLoadouts(current, content);
     }
   }
-  if (bought.length > 0) current = optimizeLoadouts(current, content);
+  if (bought.length > 0) current = optimizeLoadouts(takePicks(current, content), content);
   const dust = spendStarDust(current, content);
   const shards = spendShards(dust.state, content);
   current = shards === current ? current : optimizeLoadouts(shards, content);
@@ -3546,4 +3535,43 @@ export function formatLevels(
     );
   }
   return lines.join('\n');
+}
+
+/** How the sim player values a relative rise when it picks a perk (DESIGN.md §4 Milestone picks). */
+const PICK_VALUE = { production: 1, damage: 1, health: 0.5, money: 0.6, scrolls: 0.4 } as const;
+
+/**
+ * Takes every waiting milestone pick: of the two perks, the one whose effects raise what the sim
+ * values most (production weighted by gem tier, team damage and health against the dungeon fought,
+ * Money per kill and scroll drops), each as a log rise; a tie keeps the first perk.
+ */
+export function takePicks(state: GameState, content: Content): GameState {
+  let current = state;
+  for (const milestone of waitingPicks(state, content)) {
+    const modifiers = collectModifiers(current, content);
+    const dungeon = current.activeDungeonId;
+    const fight = { job: 'fighting' as const, dungeon: dungeon ?? undefined, resource: 'money' };
+    const measure = (mods: readonly Modifier[]) => ({
+      production: weightedProduction(current, content, mods),
+      damage: dungeon ? num(averageDps(current, content, dungeon, mods)) : 0,
+      health: dungeon ? num(loadoutMaxHealth(current, content, mods, dungeon)) : 0,
+      money: num(statValue('drops.moneyMultiplier', 1, mods, fight)),
+      scrolls: num(statValue('drops.crystalMultiplier', 1, mods, { job: 'fighting' })),
+    });
+    const before = measure(modifiers);
+    const score = (option: (typeof milestone.options)[number]): number => {
+      const after = measure([...modifiers, ...perkEffects(option)]);
+      let total = 0;
+      for (const key of Object.keys(PICK_VALUE) as (keyof typeof PICK_VALUE)[]) {
+        if (before[key] > 0 && after[key] > 0)
+          total += PICK_VALUE[key] * Math.log(after[key] / before[key]);
+      }
+      return total;
+    };
+    const [a, b] = milestone.options;
+    const choice = score(b) > score(a) + 1e-9 ? b : a;
+    const picked = pickPerk(current, content, milestone.id, choice.id);
+    if (picked.ok) current = picked.state;
+  }
+  return current;
 }

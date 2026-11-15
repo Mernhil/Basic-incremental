@@ -845,3 +845,26 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(again.state).toEqual(state);
   });
 });
+
+describe('v33 -> v34 (milestone picks replace the upgrade shelf, DESIGN.md §4)', () => {
+  const step = MIGRATIONS[33]!;
+
+  it('pays back every shelf upgrade owned, per-run or permanent, and starts with no picks', () => {
+    const out = step({
+      resources: { money: '100' },
+      upgrades: { owned: ['keen_axes', 'battle_cry', 'keen_axes', 'unknown'], moneyEarned: '77' },
+    }) as { resources: Record<string, string>; upgrades: Record<string, unknown> };
+    // Keen Axes 450 + Battle Cry 8,700, each once.
+    expect(out.resources['money']).toBe(String(100 + 450 + 8700));
+    expect(out.upgrades).toEqual({ picks: {}, moneyEarned: '77' });
+  });
+
+  it('adds nothing for a save that owned nothing', () => {
+    const out = step({
+      resources: { money: '5' },
+      upgrades: { owned: [], moneyEarned: '0' },
+    }) as { resources: Record<string, string>; upgrades: Record<string, unknown> };
+    expect(out.resources['money']).toBe('5');
+    expect(out.upgrades).toEqual({ picks: {}, moneyEarned: '0' });
+  });
+});

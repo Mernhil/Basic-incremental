@@ -65,6 +65,7 @@ export * from './bonds';
 export * from './expeditions';
 export * from './account';
 export * from './upgrades';
+export * from './lineView';
 export { METALS, type Metal } from '../data';
 
 // ---- Ascension (DESIGN.md §9): the contract with the UI, one line each ---------------------
