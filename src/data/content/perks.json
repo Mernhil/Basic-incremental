@@ -52,12 +52,12 @@
         {
           "id": "oak_25_levels",
           "name": "Fertile Soil",
-          "description": "Oak levels add 25% more output",
+          "description": "Oak levels add 50% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.5",
               "scope": {
                 "producer": "oak"
               }
@@ -220,12 +220,12 @@
         {
           "id": "ironbark_25_levels",
           "name": "Fertile Soil",
-          "description": "Ironbark levels add 25% more output",
+          "description": "Ironbark levels add 50% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.5",
               "scope": {
                 "producer": "ironbark"
               }
@@ -388,12 +388,12 @@
         {
           "id": "moonwillow_25_levels",
           "name": "Fertile Soil",
-          "description": "Moonwillow levels add 25% more output",
+          "description": "Moonwillow levels add 50% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.5",
               "scope": {
                 "producer": "moonwillow"
               }
@@ -556,12 +556,12 @@
         {
           "id": "copper_quarry_25_levels",
           "name": "Rich Ore",
-          "description": "Copper Quarry levels add 25% more output",
+          "description": "Copper Quarry levels add 50% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.5",
               "scope": {
                 "producer": "copper_quarry"
               }
@@ -724,12 +724,12 @@
         {
           "id": "iron_deeps_25_levels",
           "name": "Rich Ore",
-          "description": "Iron Deeps levels add 25% more output",
+          "description": "Iron Deeps levels add 50% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.5",
               "scope": {
                 "producer": "iron_deeps"
               }
@@ -892,12 +892,12 @@
         {
           "id": "crystal_grotto_25_levels",
           "name": "Rich Ore",
-          "description": "Crystal Grotto levels add 25% more output",
+          "description": "Crystal Grotto levels add 50% more output",
           "effects": [
             {
               "stat": "production.levelBonus",
               "kind": "mult",
-              "value": "1.25",
+              "value": "1.5",
               "scope": {
                 "producer": "crystal_grotto"
               }
@@ -1020,12 +1020,12 @@
         {
           "id": "logging_yield_10_all",
           "name": "Lumber Union",
-          "description": "All trees +25% output",
+          "description": "All trees +50% output",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "percent",
-              "value": "25",
+              "value": "50",
               "scope": {
                 "job": "logging"
               }
@@ -1494,12 +1494,12 @@
         {
           "id": "mining_yield_10_all",
           "name": "Dynamite",
-          "description": "All mines +25% output",
+          "description": "All mines +50% output",
           "effects": [
             {
               "stat": "production.rate",
               "kind": "percent",
-              "value": "25",
+              "value": "50",
               "scope": {
                 "job": "mining"
               }
