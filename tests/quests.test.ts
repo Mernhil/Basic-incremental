@@ -54,6 +54,15 @@ describe('quest data', () => {
     expect(() => validateContent(raw)).toThrow(/unknown resource "nothing"/);
   });
 
+  it('pays whole scrolls, at least one, never a fraction', () => {
+    for (const q of content.quests) {
+      for (const r of q.reward.filter((x) => x.resource.endsWith('_scroll'))) {
+        const n = new Decimal(r.amount).toNumber();
+        expect(Number.isInteger(n) && n >= 1, `${q.id} pays ${n}`).toBe(true);
+      }
+    }
+  });
+
   it('steps of a ladder pay more as the count grows', () => {
     const steps = content.quests
       .filter((q) => q.condition.kind === 'stage_kills' && q.condition.dungeon === 'mossy_cellar')
