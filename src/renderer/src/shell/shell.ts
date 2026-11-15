@@ -77,8 +77,7 @@ export interface Shell {
   /** The coin glyph of a resource chip: where flying coins land (null while the chip is hidden). */
   currencyGlyph(id: string): HTMLElement | null;
   /** A short pulse on a chip when coins land. */
-  /** The coins landed: the chip pulses, and `gained` (what the kill paid) pops up beside it. */
-  pulseCurrency(id: string, gained?: Decimal): void;
+  pulseCurrency(id: string): void;
   /**
    * Holds back part of a chip's amount (welcome back: the gains stay off the counter until
    * collected). `null` releases it and the counter rolls up.
@@ -245,31 +244,6 @@ export function createShell(opts: {
     if (!goals.hidden && !goalsWrap.contains(e.target as Node)) setGoalsOpen(false);
   });
 
-  /** A short "+N" under a Money chip when a win lands (still under reduced motion, without the rise). */
-  const popGain = (item: HTMLElement, gained: Decimal, id: string): void => {
-    const coin = opts.coins?.(id, gained) ?? null;
-    const text = `+${coin ? `${coin.value} ${coin.coin.name}` : fmt(gained)}`;
-    const pop = h('span', 'shell-currency__gain bi-num', text);
-    pop.setAttribute('aria-hidden', 'true');
-    item.querySelector('.shell-currency__gain')?.remove();
-    item.append(pop);
-    const done = (): void => pop.remove();
-    if (reducedMotion() || typeof pop.animate !== 'function') {
-      window.setTimeout(done, 900);
-      return;
-    }
-    pop
-      .animate(
-        [
-          { transform: 'translateY(0)', opacity: 0 },
-          { transform: 'translateY(0)', opacity: 1, offset: 0.15 },
-          { transform: 'translateY(-8px)', opacity: 0 },
-        ],
-        { duration: 900, easing: 'ease-out' },
-      )
-      .addEventListener('finish', done);
-  };
-
   header.append(brand, level, goalsWrap, currencyList, detailsBtn, tools);
 
   onFrame((dt) => {
@@ -364,9 +338,8 @@ export function createShell(opts: {
       // not in the header: land on the Details button
       return currencyGlyphs.get(id) ?? detailsGlyph;
     },
-    pulseCurrency(id, gained) {
+    pulseCurrency(id) {
       const item = currencyItems.get(id);
-      if (item && gained && gained.gt(0) && !crystals.has(id)) popGain(item, gained, id);
       replay(item ?? detailsBtn, crystals.has(id) ? 'is-pulsing-big' : 'is-pulsing', 560);
     },
     detailsButton: detailsBtn,

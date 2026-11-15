@@ -22,7 +22,6 @@ import {
   trialStatus,
   type BarLook,
   type DuelLog,
-  type Decimal,
   type GameState,
   type TeamCardView,
 } from '../../../game';
@@ -88,7 +87,7 @@ import './arena.css';
 /** What the arena needs from the header: where coins land, and the pulse when they do. */
 export interface CoinTarget {
   currencyGlyph(id: string): HTMLElement | null;
-  pulseCurrency(id: string, gained?: Decimal): void;
+  pulseCurrency(id: string): void;
 }
 
 export interface ArenaContext {
@@ -1170,7 +1169,6 @@ export function createArena(ctx: ArenaContext): Arena {
     for (const loot of e.loot) {
       const n = Math.max(1, Math.min(6, Math.round(loot.amount.toNumber())));
       const crystal = isCrystal(ctx.content.resourceById.get(loot.resource));
-      let popped = false;
       flyCoins({
         from,
         target: ctx.coins.currencyGlyph(loot.resource),
@@ -1178,9 +1176,7 @@ export function createArena(ctx: ArenaContext): Arena {
         spill: true,
         ...(crystal ? { cls: 'st-coin--crystal' } : {}),
         onLand: () => {
-          // the "+N" pops once per win, on the first coin to land
-          ctx.coins.pulseCurrency(loot.resource, popped ? undefined : loot.amount);
-          popped = true;
+          ctx.coins.pulseCurrency(loot.resource);
           play(crystal ? 'crystal' : 'coin');
         },
       });

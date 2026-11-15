@@ -1,5 +1,5 @@
 // Records the header Money counter across two kills: for each kill 3 frames (as the coins land, 150 ms
-// and 600 ms later) with the shown text and the "+N" that popped, so the number can be seen stepping
+// and 600 ms later) with the shown text, so the number can be seen stepping
 // at each win. Use a profile (see shoot-ui-fast-fixes.mjs): `node scripts/shoot-money-anim.mjs [port] [outDir]`.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { chromium } from 'playwright';
@@ -19,10 +19,7 @@ const read = () =>
     const chip = document.querySelector('.shell-currency--money');
     const v = chip.querySelector('.shell-currency__value').textContent;
     const n = chip.querySelector('.shell-currency__name')?.textContent ?? '';
-    return {
-      shown: `${v} ${n}`,
-      gain: chip.querySelector('.shell-currency__gain')?.textContent ?? null,
-    };
+    return { shown: `${v} ${n}`, pulse: chip.classList.contains('is-pulsing') };
   });
 const box = await page.evaluate(() => {
   const b = document.querySelector('.shell-currency--money').getBoundingClientRect();
@@ -36,9 +33,9 @@ const box = await page.evaluate(() => {
 const frames = [];
 let n = 0;
 for (let kill = 1; kill <= 2; kill++) {
-  // wait for the pop of the next win
+  // wait for the next win: its coins land and the chip pulses
   for (let i = 0; i < 3000; i++) {
-    if ((await read()).gain) break;
+    if ((await read()).pulse) break;
     await page.waitForTimeout(15);
   }
   const t0 = Date.now();
@@ -52,9 +49,9 @@ for (let kill = 1; kill <= 2; kill++) {
     const s = await read();
     n++;
     writeFileSync(`${out}/money-anim-${n}.png`, Buffer.from(data, 'base64'));
-    frames.push({ frame: n, kill, ms: Date.now() - t0, shown: s.shown, gain: s.gain });
+    frames.push({ frame: n, kill, ms: Date.now() - t0, shown: s.shown, pulse: s.pulse });
   }
-  // let the pop go before waiting for the next win
+  // let the pulse end before waiting for the next win
   await page.waitForTimeout(1200);
 }
 console.log(JSON.stringify(frames, null, 1));
