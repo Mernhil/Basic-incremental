@@ -1575,6 +1575,53 @@ export const achievementSchema = z.strictObject({
 });
 export type Achievement = z.output<typeof achievementSchema>;
 
+/**
+ * What completes a quest (DESIGN.md §10 Quests): any achievement condition, or one of the kinds
+ * only quests read: a floor reached on a tier, a boss or mini-boss beaten N times (the stage kills,
+ * `floor: 'last'` is the last floor's boss), cards owned, the first card of a rarity, a card level,
+ * the account level and Training levels bought.
+ */
+export const questConditionSchema = z.union([
+  achievementConditionSchema,
+  z.strictObject({
+    kind: z.literal('stage_kills'),
+    dungeon: id,
+    difficulty: z.enum(['normal', 'hard', 'nightmare']),
+    floor: z.union([z.literal('last'), z.number().int().min(1)]),
+    count: z.number().int().min(1),
+  }),
+  z.strictObject({
+    kind: z.literal('floor_reached'),
+    dungeon: id,
+    difficulty: z.enum(['normal', 'hard', 'nightmare']),
+    floor: z.number().int().min(1),
+  }),
+  z.strictObject({ kind: z.literal('cards_owned'), amount: z.number().int().min(1) }),
+  z.strictObject({ kind: z.literal('rarity_owned'), rarity: z.enum(RARITIES) }),
+  z.strictObject({ kind: z.literal('card_level'), level: z.number().int().min(2) }),
+  z.strictObject({ kind: z.literal('account_level'), level: z.number().int().min(2) }),
+  z.strictObject({ kind: z.literal('training_levels'), amount: z.number().int().min(1) }),
+]);
+export type QuestCondition = z.output<typeof questConditionSchema>;
+
+export const QUEST_GROUPS = ['dungeons', 'cards', 'gathering', 'account'] as const;
+export type QuestGroup = (typeof QUEST_GROUPS)[number];
+
+export const questSchema = z.strictObject({
+  id,
+  group: z.enum(QUEST_GROUPS),
+  /** The line the player reads, e.g. "Beat Root Warden on Normal 10 times". */
+  name,
+  condition: questConditionSchema,
+  /** The view a click on the unfinished quest opens. */
+  page: z.enum(GOAL_PAGES),
+  /** Paid once, on the claim click: Summon / Glamour Scrolls or materials. */
+  reward: z.array(costSchema).min(1),
+});
+export type Quest = z.output<typeof questSchema>;
+
+export const questsFileSchema = z.strictObject({ quests: z.array(questSchema) });
+
 /** One shard shop item (DESIGN.md §5: duplicates past max rank become shards for a shop). */
 export const shardShopItemSchema = z.strictObject({
   id,
@@ -2376,6 +2423,7 @@ export const contentSchemas = {
   skills: skillsFileSchema,
   scrolls: scrollsSchema,
   heirlooms: heirloomsSchema,
+  quests: questsFileSchema,
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;

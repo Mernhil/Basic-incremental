@@ -22,14 +22,14 @@ type Out = {
   presets: { dungeons: Record<string, unknown> };
 };
 
-/** v33 -> v34: the fighting loadout is four equal slots (DESIGN.md §5 Loadouts). */
-describe('v33 -> v34 (four equal loadout slots)', () => {
-  it('is format 34 or later', () => {
-    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(34);
+/** v34 -> v35: the fighting loadout is four equal slots (DESIGN.md §5 Loadouts). */
+describe('v34 -> v35 (four equal loadout slots)', () => {
+  it('is format 35 or later', () => {
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(35);
   });
 
   it('keeps the main card first and the supports after it, in the same order', () => {
-    const out = MIGRATIONS[33]!(
+    const out = MIGRATIONS[34]!(
       save({ main: 'ember_squire', supports: ['storm_duelist', null, 'rusty_brute'] }),
     ) as Out;
     expect(out.cards.loadouts.fighting).toEqual({
@@ -38,14 +38,14 @@ describe('v33 -> v34 (four equal loadout slots)', () => {
   });
 
   it('keeps a loadout with an empty main card in place', () => {
-    const out = MIGRATIONS[33]!(
+    const out = MIGRATIONS[34]!(
       save({ main: null, supports: ['storm_duelist', null, null] }),
     ) as Out;
     expect(out.cards.loadouts.fighting).toEqual({ slots: [null, 'storm_duelist', null, null] });
   });
 
   it('converts every dungeon preset the same way', () => {
-    const out = MIGRATIONS[33]!(
+    const out = MIGRATIONS[34]!(
       save(
         { main: null, supports: [null, null, null] },
         {
@@ -64,10 +64,10 @@ describe('v33 -> v34 (four equal loadout slots)', () => {
   });
 
   it('pads and trims to four slots, and leaves a loadout already in slots alone', () => {
-    const short = MIGRATIONS[33]!(save({ main: 'ember_squire', supports: [] })) as Out;
+    const short = MIGRATIONS[34]!(save({ main: 'ember_squire', supports: [] })) as Out;
     expect(short.cards.loadouts.fighting).toEqual({ slots: ['ember_squire', null, null, null] });
     const done = { slots: ['ember_squire', null, null, null] };
-    const again = MIGRATIONS[33]!({
+    const again = MIGRATIONS[34]!({
       cards: { loadouts: { fighting: done } },
       presets: { dungeons: {} },
     }) as Out;
@@ -77,11 +77,11 @@ describe('v33 -> v34 (four equal loadout slots)', () => {
   it('does not change the input', () => {
     const input = save({ main: 'ember_squire', supports: ['storm_duelist', null, null] });
     const copy = JSON.parse(JSON.stringify(input));
-    MIGRATIONS[33]!(input);
+    MIGRATIONS[34]!(input);
     expect(input).toEqual(copy);
   });
 
-  it('reads a format 33 save with the same team in the same order', () => {
+  it('reads a format 34 save with the same team in the same order', () => {
     const state = newGame();
     state.account.level = 10;
     const ids = ['storm_duelist', 'dawnblade_regent', 'rusty_brute'];
@@ -94,7 +94,7 @@ describe('v33 -> v34 (four equal loadout slots)', () => {
     };
     // write it as the 0.7.16 game did: a main card and three supports, format 33
     const json = JSON.parse(createSaveText(state, 1));
-    json.version = 33;
+    json.version = 34;
     json.state.cards.loadouts.fighting = {
       main: 'ember_squire',
       supports: ['storm_duelist', null, 'rusty_brute'],

@@ -93,7 +93,7 @@ export interface Shell {
   goals: HTMLElement;
   /** The Goals button. */
   goalsButton: HTMLButtonElement;
-  /** The Goals button's count of goals shown (0 hides it). */
+  /** The Goals button's count of quests waiting to be claimed (0 hides it). */
   setGoals(count: number): void;
   /** Rolls the goal list back up. */
   closeGoals(): void;
@@ -238,7 +238,7 @@ export function createShell(opts: {
   });
   // a click on a goal or anywhere outside rolls it back up
   goals.addEventListener('click', (e) => {
-    if ((e.target as Element | null)?.closest('button')) setGoalsOpen(false);
+    if ((e.target as Element | null)?.closest('button[data-closes]')) setGoalsOpen(false);
   });
   document.addEventListener('pointerdown', (e) => {
     if (!goals.hidden && !goalsWrap.contains(e.target as Node)) setGoalsOpen(false);
@@ -354,6 +354,7 @@ export function createShell(opts: {
       const text = count > 0 ? String(count) : '';
       if (goalsCount.textContent !== text) goalsCount.textContent = text;
       goalsBtn.setAttribute('aria-label', COPY.progress.goalsButton(count));
+      goalsBtn.classList.toggle('is-ready', count > 0);
     },
     closeGoals() {
       setGoalsOpen(false);

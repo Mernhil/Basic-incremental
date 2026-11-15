@@ -249,9 +249,13 @@ describe('v26 -> v27 (the table update)', () => {
     exp.cards.loadouts.fighting.supports = state.cards.loadouts.fighting.slots.slice(1);
     // Format 29 moved the numbers onto the readable scale (DESIGN.md §14 Readable numbers).
     // Format 30 added the Heirloom Gate's state (no Heirloom-tier card in this save); format 31 added the owned-table fix-up.
-    // Format 34 made the loadouts four equal slots.
-    const scaled = MIGRATIONS[33]!(
-      MIGRATIONS[32]!(MIGRATIONS[31]!(MIGRATIONS[30]!(MIGRATIONS[29]!(MIGRATIONS[28]!(expected))))),
+    // Format 35 made the loadouts four slots in a formation.
+    const scaled = MIGRATIONS[34]!(
+      MIGRATIONS[33]!(
+        MIGRATIONS[32]!(
+          MIGRATIONS[31]!(MIGRATIONS[30]!(MIGRATIONS[29]!(MIGRATIONS[28]!(expected)))),
+        ),
+      ),
     ) as Record<string, unknown>;
     delete scaled['heirloomMigration'];
     const scaledCombat = scaled['combat'] as Record<string, unknown>;

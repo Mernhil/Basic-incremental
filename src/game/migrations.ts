@@ -83,7 +83,10 @@ export const MIGRATIONS: MigrationTable = {
   /** v32 -> v33: card skins (DESIGN.md §8): the skin chosen per weapon type becomes a choice on every
    *  owned card of that type, so each card looks as it did; the per-type choice is dropped. */
   32: v32ToV33,
-  33: v33ToV34,
+  /** v33 -> v34: quests (DESIGN.md §10 Quests). Nothing is done yet; reading the save marks every
+   *  quest the state already meets as done and waiting to be claimed, never as claimed. */
+  33: (state) => ({ ...state, quests: {} }),
+  34: v34ToV35,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1478,7 +1481,7 @@ function slotsOf(loadout: unknown): unknown {
 }
 
 /**
- * v33 -> v34 (DESIGN.md §5 Loadouts): the fighting loadout and every remembered dungeon loadout
+ * v34 -> v35 (DESIGN.md §5 Loadouts): the fighting loadout and every remembered dungeon loadout
  * (presets) were a main card and three supports; they are four equal slots now, the main card
  * first and the supports after it, so nobody's team changes. Logging and mining loadouts left in
  * the `loadouts` record by older saves are dropped when the save is read, as before. The
@@ -1486,7 +1489,7 @@ function slotsOf(loadout: unknown): unknown {
  * only flags the state (`arrangeFormation`) and `readSave` places the two highest-health cards of
  * each team in front once the cards are known.
  */
-function v33ToV34(state: Record<string, unknown>): Record<string, unknown> {
+function v34ToV35(state: Record<string, unknown>): Record<string, unknown> {
   const each = (record: unknown): unknown =>
     isRecord(record)
       ? Object.fromEntries(Object.entries(record).map(([key, l]) => [key, slotsOf(l)]))

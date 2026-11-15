@@ -115,6 +115,8 @@ import {
   averageDps,
   cardCost,
   claimDaily,
+  claimAllQuests,
+  questScrolls,
   pull,
   pullPrice,
   ascend,
@@ -213,6 +215,8 @@ export interface SimLog {
   fought: Record<string, number>;
   /** Star dust spent on stars. */
   dustSpent?: number;
+  /** Quests claimed: [sim seconds, Summon Scrolls, Glamour Scrolls] per claim (DESIGN.md §10 Quests). */
+  questClaims?: Array<[number, number, number, string]>;
   /** The table update's systems (DESIGN.md §14 The sim player's choices), for the report. */
   table?: TableLog;
 }
@@ -2792,6 +2796,18 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
     if (acting) {
       const daily = claimDaily(state, content, `day-${Math.floor(t / DAY_SECONDS)}`);
       if (daily.ok) state = daily.state;
+    }
+    // Quests are claimed at every check-in too (BI_SIM_NO_QUESTS=1 plays without them, the
+    // baseline of a tuning run).
+    if (acting && !process.env['BI_SIM_NO_QUESTS']) {
+      const claim = claimAllQuests(state, content);
+      if (claim.ok) {
+        state = claim.state;
+        for (const q of claim.quests) {
+          const s = questScrolls(q);
+          (log.questClaims ??= []).push([t, s.summon, s.glamour, q.id]);
+        }
+      }
     }
     if (acting) {
       const buys = greedyBuy(state, content, rng);

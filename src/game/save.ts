@@ -36,7 +36,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 34;
+export const CURRENT_SAVE_VERSION = 35;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -169,6 +169,8 @@ export const serializedStateSchema = z.object({
   }),
   /** v12: achievement id -> play time when unlocked, and shard shop purchases. */
   achievements: z.record(z.string(), z.number().min(0)),
+  /** v34: quest id -> when it was done and whether its reward was claimed (DESIGN.md §10 Quests). */
+  quests: z.record(z.string(), z.object({ doneAt: z.number().min(0), claimed: z.boolean() })),
   shardShop: counts,
   /** v13: account XP, level, account tree and respecs (DESIGN.md §10a). */
   account: z.object({
@@ -300,6 +302,7 @@ export function serializeState(state: GameState): SerializedState {
     legacySkins: [...state.legacySkins],
     stats: { ...state.stats },
     achievements: { ...state.achievements },
+    quests: Object.fromEntries(Object.entries(state.quests).map(([id, q]) => [id, { ...q }])),
     shardShop: { ...state.shardShop },
     upgrades: {
       owned: [...state.upgrades.owned],
@@ -446,6 +449,12 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   const achievementIds = new Set(content.achievements.map((a) => a.id));
   state.achievements = Object.fromEntries(
     Object.entries(saved.achievements).filter(([id]) => achievementIds.has(id)),
+  );
+  // Unknown quests (removed from the game) are dropped.
+  state.quests = Object.fromEntries(
+    Object.entries(saved.quests)
+      .filter(([id]) => content.questById.has(id))
+      .map(([id, q]) => [id, { ...q }]),
   );
   // The ranks are fitted to the tree and the points earned at the end of loading (they need the
   // cards, the Ascension count and the achievements); there is no level cap.

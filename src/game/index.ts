@@ -60,6 +60,7 @@ export * from './prestige';
 export * from './challenges';
 export * from './wardrobe';
 export * from './achievements';
+export * from './quests';
 export * from './presets';
 export * from './bonds';
 export * from './expeditions';

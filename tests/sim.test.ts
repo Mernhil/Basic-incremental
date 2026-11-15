@@ -593,7 +593,9 @@ describe('balance sim: run', () => {
       return targetRatio(clear, result.hits['clear_d1']! / 3600);
     });
     expect([...ratios].sort((x, y) => x - y)[1]!).toBeLessThan(125);
-  }, 90_000);
+    // Three one-hour runs of the shipped game: with the quests' scrolls the sim pulls and upgrades
+    // far more in the first hour (about 35 s locally, 90 s was not enough on the CI runner).
+  }, 240_000);
 
   it('samples the fighting DPS every quarter hour for the tuning report', () => {
     const result = runSim(content, { hours: 1.1, seed: 1, stepSeconds: 10 });

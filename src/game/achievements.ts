@@ -23,7 +23,7 @@ import type { CardGain } from './report';
  */
 
 /** Where a condition stands: the value read from the state and the target to reach. */
-function measure(
+export function measure(
   state: GameState,
   content: Content,
   condition: AchievementCondition,
