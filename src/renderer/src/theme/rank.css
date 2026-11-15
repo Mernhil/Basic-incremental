@@ -143,6 +143,18 @@
   background-image: var(--star-on);
 }
 
+/* a star inside a sentence ("50% to ★3"): the gold sprite at text height, one device pixel to the art
+   pixel so it stays crisp (ui/stars.ts `setStarText`) */
+.bi-glyph-star {
+  display: inline-block;
+  width: calc(11px / var(--dpr, 1));
+  height: calc(11px / var(--dpr, 1));
+  margin: 0 1px;
+  vertical-align: -1px;
+  background: url('../art/pixel/sprites/star-gold-on.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
 /* star 6: a shine sweeps across each star, a little later on each one (a hard-edged band through the
    star's own shape, so the pixels stay crisp) */
 /* the "on" stars of a ★6 card */

@@ -38,6 +38,7 @@ import type { CardsModel } from './cardsModel';
 import { stageCell, starTotal } from './dungeonsModel';
 import { medalTip } from './progressionModel';
 import type { PageContext } from './production';
+import { lightStagePips, setStarText, stagePips } from '../ui/stars';
 import './dungeons.css';
 
 /**
@@ -152,7 +153,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
         const m = stageMap(now, content).find((x) => x.dungeon.id === d.id);
         const total = starTotal(m?.levels ?? 0, m?.maxLevels ?? 0);
         const st = COPY.dungeons.stars(total.levels, total.max);
-        if (stars.textContent !== st) stars.textContent = st;
+        setStarText(stars, st);
       });
     }
     row.disabled = !unlocked;
@@ -315,11 +316,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
     box.setAttribute('role', 'cell');
     const pips = h('span', 'dp-pips');
     pips.setAttribute('role', 'img');
-    const pipEls = Array.from({ length: 6 }, (_, i) => {
-      const p = h('i', 'dp-pip');
-      p.dataset.level = String(i + 1);
-      return p;
-    });
+    const pipEls = stagePips();
     pips.append(...pipEls);
     const kills = h('span', 'dp-cell__kills');
     const flow = h('div', 'dp-cell__flow');
@@ -354,7 +351,7 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       stageKeyNow = info.key;
       state = c.overflow;
       box.classList.toggle('is-locked', c.locked);
-      pipEls.forEach((p, i) => p.classList.toggle('is-on', i < c.level));
+      lightStagePips(pipEls, c.level);
       pips.setAttribute(
         'aria-label',
         COPY.dungeons.starLevel(c.level, STAGE_STAR_NAMES[c.level] ?? ''),
