@@ -24,6 +24,12 @@ export interface AppApi {
   flushDone(): void;
   /** Whether the dev cheats panel may show (dev builds only; always false in a release). */
   devCheatsEnabled(): Promise<boolean>;
+  /** Dev builds only: copies the current save to a timestamped file in the saves folder and
+   *  returns its name (null when there is no save). Rejects in a public release. */
+  devBackupSave(): Promise<string | null>;
+  /** Dev builds only: reloads the window (a plain `location.reload()` is blocked by the app's
+   *  navigation guard). No-op in a public release. */
+  devReloadView(): void;
   /** The last `lines` lines of main's logs (main.log + updater.log by time), oldest first. */
   readLogTail(lines: number): Promise<string[]>;
   /** OS, OS release, CPU architecture and the Electron / Chrome versions (for issue reports). */
@@ -52,6 +58,8 @@ export const IPC_CHANNELS = {
   flushRequest: 'save:flush-request',
   flushDone: 'save:flush-done',
   devCheatsEnabled: 'dev:cheats-enabled',
+  devBackupSave: 'dev:backup-save',
+  devReloadView: 'dev:reload-view',
   readLogTail: 'app:read-log-tail',
   getSystemInfo: 'app:get-system-info',
 } as const;

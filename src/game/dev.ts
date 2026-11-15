@@ -18,7 +18,14 @@ import { Decimal, isDecimalString } from './num';
 import { clearDungeon } from './production';
 import { emptyReport, type TickReport } from './report';
 import { createSeededRng, type Rng } from './rng';
-import { cloneState, DIFFICULTIES, newOwnedCard, type Difficulty, type GameState } from './state';
+import {
+  cloneState,
+  createInitialState,
+  DIFFICULTIES,
+  newOwnedCard,
+  type Difficulty,
+  type GameState,
+} from './state';
 import { advance } from './tick';
 import { grantCosmetic } from './wardrobe';
 
@@ -205,6 +212,21 @@ export function devAdvanceTime(
   return { ok: true, state: advance(state, content, seconds * 1000, rng).state };
 }
 
+/**
+ * A brand new game. With `keepCosmetics` it keeps the owned cosmetics, the loadout and the owned
+ * legacy skins (the look, not the progress). The caller writes the backup of the old save first.
+ */
+export function devResetGame(
+  state: GameState,
+  content: Content,
+  options: { keepCosmetics?: boolean } = {},
+): GameState {
+  const fresh = createInitialState(content);
+  if (!options.keepCosmetics) return fresh;
+  const kept = cloneState(state);
+  return { ...fresh, cosmetics: kept.cosmetics, legacySkins: kept.legacySkins };
+}
+
 /** What the dev panel can pick from, in content order. */
 export interface DevOptions {
   resources: { id: string; name: string }[];
@@ -213,6 +235,8 @@ export interface DevOptions {
   cards: { id: string; name: string }[];
   cosmetics: { id: string; name: string }[];
   tiers: readonly RankTier[];
+  /** Keeps `DEV_CHEATS_MARKER` in the bundle, which minifying would drop as unused. */
+  marker: string;
 }
 
 /** Ids and names for the dev panel's pickers. */
@@ -224,5 +248,6 @@ export function devOptions(content: Content): DevOptions {
     cards: content.cards.map(pick),
     cosmetics: content.cosmetics.map(pick),
     tiers: RANK_TIERS,
+    marker: DEV_CHEATS_MARKER,
   };
 }

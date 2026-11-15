@@ -17,8 +17,12 @@ const CATCH_UP_CHUNK_MS = 60_000;
  * timer or animation frame; how often it does so does not change the outcome, because each
  * step advances by the actual time since the previous one.
  */
+/** The game speeds the dev panel offers (1 = normal pace; DESIGN.md §2 Dev tools). */
+export const GAME_SPEEDS = [1, 2, 5, 10] as const;
+
 export class GameLoop {
   private lastMs: number;
+  private speedFactor = 1;
 
   constructor(
     public state: GameState,
@@ -29,9 +33,25 @@ export class GameLoop {
     this.lastMs = startMs;
   }
 
+  /** The multiplier on the game's elapsed time; 1 unless a dev build changed it. Never saved. */
+  get speed(): number {
+    return this.speedFactor;
+  }
+
+  /**
+   * Runs the game `speed` times faster than the clock (production, fights, timers and cooldowns
+   * together, because it scales the elapsed time every rule reads). Anything but a finite number
+   * above 0 means 1x. The host steps the loop first so the time before the change runs at the
+   * old speed. Real timestamps (saves, offline progress) are never scaled.
+   */
+  setSpeed(speed: number): void {
+    this.speedFactor = Number.isFinite(speed) && speed > 0 ? Math.min(speed, 100) : 1;
+  }
+
   step(nowMs: number): TickReport {
-    // A clock that went backwards (or a huge gap, e.g. after sleep) is clamped, never negative.
-    const delta = Math.min(Math.max(0, nowMs - this.lastMs), MAX_STEP_MS);
+    // A clock that went backwards (or a huge gap, e.g. after sleep) is clamped, never negative;
+    // the speed multiplies the clamped real gap, so a sleep never pays out more than 8 hours.
+    const delta = Math.min(Math.max(0, nowMs - this.lastMs), MAX_STEP_MS) * this.speedFactor;
     this.lastMs = Math.max(this.lastMs, nowMs);
     // Splitting a span differently gives the same totals (tick.ts), so a long gap is caught up in
     // minute steps instead of thousands of one-second ones, which froze the window for seconds.

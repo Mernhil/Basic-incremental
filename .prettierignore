@@ -6,3 +6,5 @@ coverage
 package-lock.json
 design
 .claude/worktrees
+release-dev
+out-dev
