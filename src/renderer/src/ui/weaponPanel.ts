@@ -2,7 +2,7 @@ import type { Content } from '../../../data';
 import { gemMastery, type GameState } from '../../../game';
 import { gemCoin, svg } from '../art/gems';
 import { COPY } from '../copy';
-import type { CardEntry, CostChip, WeaponView } from '../pages/cardsModel';
+import type { CardEntry, CostChip, StatChange, WeaponView } from '../pages/cardsModel';
 import { h } from '../shell/shell';
 import { setStarText } from './stars';
 import { icon } from '../shell/icons';
@@ -338,6 +338,25 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     return rows;
   }
 
+  /** The stats an upgrade changes, "now → after" with the gain in green. */
+  function changeList(rows: readonly StatChange[]): HTMLElement | null {
+    if (rows.length === 0) return null;
+    const ul = h('ul', 'wp-changes');
+    ul.setAttribute('aria-label', COPY.weapon.changesLead);
+    for (const r of rows) {
+      const li = h('li', 'wp-change');
+      li.append(
+        h('span', 'wp-change__label', r.label),
+        h('span', 'wp-change__now bi-num', r.now),
+        h('span', 'wp-change__arrow', '→'),
+        h('span', 'wp-change__after bi-num', r.after),
+      );
+      if (r.gain) li.append(h('span', 'wp-change__gain bi-num', r.gain));
+      ul.append(li);
+    }
+    return ul;
+  }
+
   let sideSig = '';
   function drawSide(w: WeaponView): void {
     // star line
@@ -354,7 +373,14 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
     }
     starLine.style.setProperty('--gauge', `${((w.starBar?.gauge ?? 1) * 100).toFixed(1)}%`);
 
-    const sig = JSON.stringify([w.stars, w.starBar?.ready, w.starBar?.dust, w.tierUp, w.endNote]);
+    const sig = JSON.stringify([
+      w.stars,
+      w.starBar?.ready,
+      w.starBar?.dust,
+      w.starStats,
+      w.tierUp,
+      w.endNote,
+    ]);
     if (sig === sideSig) return;
     sideSig = sig;
     const keep = root.contains(document.activeElement);
@@ -378,6 +404,8 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       });
       starHost.append(b);
     }
+    const starChanges = w.starBar ? changeList(w.starStats) : null;
+    if (starChanges) starHost.append(starChanges);
 
     tagHost.replaceChildren();
     const t = w.tierUp;
@@ -395,6 +423,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       list.setAttribute('aria-labelledby', lead.id);
       if (tiles) list.append(...cardPriceRows(w, t));
       else for (const c of t.costs) list.append(costItem(c, w.atCap));
+      const tierChanges = changeList(t.stats);
       const go = setStarText(
         h('button', `button wp-go${t.ready ? ' is-ready' : ''}`),
         tiles && !t.ready ? t.blocker : t.action,
@@ -411,9 +440,12 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       if (tiles) {
         tag.classList.add('px-tile', 'wp-tile');
         tag.append(lead, list);
+        if (tierChanges) tag.append(tierChanges);
         tagHost.append(tag, go);
       } else {
-        tag.append(lead, list, go);
+        tag.append(lead, list);
+        if (tierChanges) tag.append(tierChanges);
+        tag.append(go);
         if (hint) tag.append(hint);
         tagHost.append(tag);
       }

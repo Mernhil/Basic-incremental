@@ -28,7 +28,7 @@ import account from '../src/data/content/account.json';
 import achievements from '../src/data/content/achievements.json';
 import cosmeticRules from '../src/data/content/cosmeticRules.json';
 import prestige from '../src/data/content/prestige.json';
-import upgrades from '../src/data/content/upgrades.json';
+import perks from '../src/data/content/perks.json';
 import training from '../src/data/content/training.json';
 import coins from '../src/data/content/coins.json';
 import weaponSkins from '../src/data/content/weaponSkins.json';
@@ -63,7 +63,7 @@ function raw(overrides: Partial<RawContent> = {}): RawContent {
     achievements,
     cosmeticRules,
     prestige,
-    upgrades,
+    perks,
     training,
     coins,
     weaponSkins,
@@ -287,8 +287,8 @@ describe('card ranks and portals', () => {
     // fighting cards have a main ability and a support effect; workers one worker ability
     for (const card of content.cards) {
       if (card.job === 'fighting') {
-        expect(card.main.description.length).toBeGreaterThan(0);
-        expect(card.support.modifiers.length).toBeGreaterThan(0);
+        expect(card.ability.description.length).toBeGreaterThan(0);
+        expect(card.teamBonus.modifiers.length).toBeGreaterThan(0);
       } else {
         expect(card.worker.description.length, card.id).toBeGreaterThan(0);
         expect(card.worker.modifiers.length, card.id).toBeGreaterThan(0);
@@ -305,11 +305,11 @@ describe('card ranks and portals', () => {
     const content = loadContent();
     const duelist = content.cardById.get('storm_duelist')!;
     if (duelist.job !== 'fighting') throw new Error('a fighting card');
-    expect(duelist.main.modifiers.map((m) => [m.kind, m.scale])).toEqual([
+    expect(duelist.ability.modifiers.map((m) => [m.kind, m.scale])).toEqual([
       ['set', 'none'],
       ['mult', 'none'],
     ]);
-    expect(duelist.support.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
+    expect(duelist.teamBonus.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
     // a worker ability applies as written: it has no scale (the worker's power multiplies the
     // place's output instead)
     const keeper = content.cardById.get('grove_keeper')!;
@@ -341,13 +341,16 @@ describe('card ranks and portals', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     rules['tierUp'].bronze.mining[0].resource = 'nope';
-    (bad.cards as Record<string, any>[])[0]!['support'].modifiers[0].scope = { dungeon: 'nowhere' }; // eslint-disable-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (bad.cards as Record<string, any>[])[0]!['teamBonus'].modifiers[0].scope = {
+      dungeon: 'nowhere',
+    };
     const issues = issuesFor(bad);
     expect(issues).toContain(
       'cardRules.json › tierUp › bronze › mining › [0] › resource: unknown resource "nope"',
     );
     expect(issues).toContain(
-      'cards.json › [0] › support › modifiers › [0] › scope › dungeon: unknown dungeon "nowhere"',
+      'cards.json › [0] › teamBonus › modifiers › [0] › scope › dungeon: unknown dungeon "nowhere"',
     );
   });
 
@@ -673,16 +676,16 @@ describe('crit and milestone data (DESIGN.md §6, §4)', () => {
     expect(issues.some((i) => i.includes('milestones › multiplier'))).toBe(true);
   });
 
-  it('rejects upgrades that name unknown things or are permanent but unlocked by a reset level', () => {
+  it('rejects milestone picks on unknown lines, two at one level or a repeated id', () => {
     const input = raw();
-    const list = (input as unknown as { upgrades: { upgrades: Record<string, unknown>[] } })
-      .upgrades.upgrades;
-    list[0]!['unlock'] = { kind: 'treeLevel', tree: 'redwood', level: 3 };
-    list[1]!['permanent'] = true; // deep_roots is unlocked by an Oak level
-    list[2]!['cost'] = { resource: 'oak_gem', amount: '5' };
+    const list = (input as unknown as { perks: { milestones: Record<string, unknown>[] } }).perks
+      .milestones;
+    list[0]!['line'] = { kind: 'tree', id: 'redwood' };
+    list[1]!['level'] = 50; // oak_25 moves onto oak_50's level
+    list[3]!['id'] = list[4]!['id'];
     const found = issuesFor(input).join(' | ');
     expect(found).toMatch(/unknown tree "redwood"/);
-    expect(found).toMatch(/cannot be permanent/);
-    expect(found).toMatch(/cost › resource: must be "money"/);
+    expect(found).toMatch(/two milestones at tree:oak:50/);
+    expect(found).toMatch(/duplicate id/);
   });
 });

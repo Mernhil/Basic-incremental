@@ -45,7 +45,7 @@ describe('coins (DESIGN.md §3 Coins)', () => {
   });
 
   it('names Money by its coin and other resources by their name', () => {
-    const money = content.upgrades.currency;
+    const money = content.perks.currency;
     expect(isMoney(content, money)).toBe(true);
     expect(moneyText(content, new Decimal(12_400_000))).toBe('12.4 Gold');
     expect(amountText(content, money, new Decimal(500))).toBe('500 Copper');

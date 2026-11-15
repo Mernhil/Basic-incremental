@@ -2,7 +2,6 @@ import {
   assignWorker,
   buyMineLevels,
   buyTreeLevels,
-  buyUpgrade,
   collectModifiers,
   producersOf,
   productionStageView,
@@ -53,16 +52,12 @@ import {
   type BuyButton,
 } from '../../ui/buy';
 import { createToolLinesPanel, type ToolLinesPanel } from '../../ui/toolLines';
+import { createPerkPick } from '../../ui/perkPick';
+import { resourceArt } from '../../ui/resourceArt';
+import { upgradeRow } from '../../pages/upgradeRowModel';
+import type { PerkLine } from '../../../../data';
 import { GATHERING_COPY as T } from './copy';
-import {
-  gaugeLine,
-  itemSvg,
-  jobUpgradeChips,
-  slotsLine,
-  strikeSeconds,
-  toolsReady,
-  workerLine,
-} from './jobModel';
+import { gaugeLine, itemSvg, slotsLine, strikeSeconds, toolsReady, workerLine } from './jobModel';
 import './job.css';
 
 /**
@@ -92,6 +87,8 @@ interface PlateRef {
   pips: HTMLElement[];
   track: HTMLElement;
   x2: HTMLElement;
+  badges: HTMLElement;
+  badgeKey: string;
   lucky: HTMLElement;
   depthName: HTMLElement;
   depthFill: HTMLElement;
@@ -165,24 +162,30 @@ export function createJobView(
     links,
   );
 
-  const upgrades = h('section', 'gv-panel gv-upgrades px-panel');
-  upgrades.setAttribute('aria-label', T.upgradesTitle(jobCopy.title));
-  const upgradeList = h('ul', 'gv-chips');
-  const upgradeNote = h('p', 'gv-hint', T.upgradesNone);
-  upgradeNote.hidden = true;
-  const upgradeOwned = h('p', 'gv-hint bi-num');
-  upgrades.append(
-    h('h2', 'gv-panel__title px-display', T.upgradesTitle(jobCopy.title)),
-    upgradeList,
-    upgradeNote,
-    upgradeOwned,
-  );
-  side.append(tools.el, workers, upgrades);
+  // The job's waiting milestone pick: its trees or mines and its tool lines (DESIGN.md §4).
+  const jobLines: PerkLine[] = [
+    ...producersOf(content, job).map((p) => ({
+      kind: job === 'logging' ? ('tree' as const) : ('mine' as const),
+      id: p.id,
+    })),
+    ...content.production.tools
+      .filter((t) => t.job === job)
+      .map((t) => ({ kind: 'tool' as const, id: t.id })),
+  ];
+  const picks = createPerkPick({
+    content,
+    lines: () => jobLines,
+    state: ctx.state,
+    apply: ctx.apply,
+    sound: ctx.sound,
+  });
+  picks.el.classList.add('gv-panel', 'px-panel');
+  side.append(picks.el, tools.el, workers);
   layout.append(places, side);
   host.append(layout);
   // the host deals the title bar, then these blocks, in reading order
   places.dataset['deal'] = '';
-  for (const el of [tools.el, workers, upgrades]) el.dataset['deal'] = '';
+  for (const el of [picks.el, tools.el, workers]) el.dataset['deal'] = '';
 
   // ---- plates ----
   let last = '';
@@ -214,6 +217,7 @@ export function createJobView(
     const track = h('div', 'pp-seg');
     track.setAttribute('aria-hidden', 'true');
     const x2 = h('span', 'gv-plate__x2 bi-num');
+    const badges = h('div', 'ur__badges gv-plate__badges');
     const depth = h('div', 'gv-depth');
     const depthName = h('span', 'gv-depth__name bi-num');
     const depthText = h('span', 'gv-depth__text bi-num');
@@ -237,6 +241,8 @@ export function createJobView(
       pips: [],
       track,
       x2,
+      badges,
+      badgeKey: '',
       lucky,
       depthName,
       depthFill,
@@ -273,7 +279,7 @@ export function createJobView(
       buy.el.classList.add('gv-buy');
       buy.el.dataset['key'] = isTree ? `tree-${row.id}` : `level-${row.id}`;
       ref.buy = buy;
-      li.append(lucky, head, track, x2, depth, worker.el, buy.el);
+      li.append(lucky, head, track, x2, badges, depth, worker.el, buy.el);
     }
     return ref;
   }
@@ -428,16 +434,23 @@ export function createJobView(
       if (row.kind === 'active') {
         set(ref.level, T.levelLine(row.buy?.level ?? 0));
         set(ref.value, row.outputValue);
-        if (row.milestone) {
-          setSegments(ref, row.milestone.segments);
-          set(
-            ref.x2,
-            T.multIn(
-              row.milestone.mult,
-              row.milestone.segments.total - row.milestone.segments.filled,
-            ),
-          );
-          ref.track.title = row.milestone.label;
+        const line: PerkLine = { kind: job === 'logging' ? 'tree' : 'mine', id: row.id };
+        const ur = upgradeRow(s, content, line, count, mods);
+        if (ur) {
+          setSegments(ref, ur.segments);
+          set(ref.x2, `${ur.next} · ${ur.toGo}`);
+          ref.track.title = ur.next;
+          const badgeKey = ur.badges.map((x) => x.name).join('|');
+          if (badgeKey !== ref.badgeKey) {
+            ref.badgeKey = badgeKey;
+            ref.badges.replaceChildren(
+              ...ur.badges.map((x) => {
+                const chip = h('span', 'ur__badge', x.name);
+                chip.title = x.description;
+                return chip;
+              }),
+            );
+          }
         }
         if (row.buy && ref.buy) {
           const v = row.buy;
@@ -446,6 +459,8 @@ export function createJobView(
             label: T.levelUp(v.offer.count, count === 'max'),
             price: amountText(content, v.offer.price.resource, v.offer.price.amount),
             preview: row.previewText || v.preview,
+            art: resourceArt(content, s, v.offer.price.resource, v.offer.price.amount),
+            short: ur?.buy.short ?? null,
           });
         }
       } else if (ref.unlock) {
@@ -466,8 +481,6 @@ export function createJobView(
   }
 
   const strikeEvery = new Map<number, number>();
-  let upgradeSig = '';
-  const chipEls = new Map<string, HTMLElement>();
 
   function refreshSide(mods: readonly Modifier[]): void {
     const s = ctx.state();
@@ -475,45 +488,7 @@ export function createJobView(
     presets.update();
     const ready = toolsReady(s, content, job, mods);
     set(toolsReadyEl, ready > 0 ? T.toolsReadyTag(ready) : '');
-    const chips = jobUpgradeChips(s, content, mods, job);
-    const avail = chips.filter((c) => c.status === 'available');
-    const sig = JSON.stringify(avail.map((c) => c.id));
-    if (sig !== upgradeSig) {
-      upgradeSig = sig;
-      chipEls.clear();
-      upgradeList.replaceChildren(
-        ...avail.map((c) => {
-          const li = h('li');
-          const b = h('button', 'px-btn gv-chip');
-          b.type = 'button';
-          b.dataset['key'] = `upgrade-${c.id}`;
-          b.title = c.effect;
-          b.append(h('b', '', c.name), h('span', 'bi-num', c.price));
-          b.addEventListener('click', () => {
-            if (b.getAttribute('aria-disabled') === 'true') return;
-            const r = buyUpgrade(ctx.state(), content, c.id);
-            if (!r.ok) return;
-            ctx.sound('buy');
-            ctx.apply(r.state);
-            update();
-          });
-          li.append(b);
-          chipEls.set(c.id, b);
-          return li;
-        }),
-      );
-    }
-    for (const c of avail) {
-      const b = chipEls.get(c.id);
-      if (!b) continue;
-      b.classList.toggle('px-btn--gold', c.affordable);
-      b.classList.toggle('px-btn--dark', !c.affordable);
-      b.setAttribute('aria-disabled', String(!c.affordable));
-    }
-    upgradeNote.hidden = chips.length > 0;
-    const owned = chips.length - avail.length;
-    upgradeOwned.hidden = owned === 0;
-    set(upgradeOwned, T.upgradesOwned(owned));
+    picks.update();
   }
 
   const signature = (rows: ProductionRow[]): string =>

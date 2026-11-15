@@ -35,8 +35,9 @@ import type {
   Credit,
   ShellArtTable,
   Training,
-  Upgrade,
-  UpgradesConfig,
+  PerkMilestone,
+  PerkOption,
+  PerksConfig,
   WearRules,
   WeaponSkin,
   WeaponSkinSet,
@@ -67,7 +68,7 @@ import cosmeticRulesJson from './content/cosmeticRules.json';
 import achievementsJson from './content/achievements.json';
 import accountJson from './content/account.json';
 import enhancementsJson from './content/enhancements.json';
-import upgradesJson from './content/upgrades.json';
+import perksJson from './content/perks.json';
 import trainingJson from './content/training.json';
 import coinsJson from './content/coins.json';
 import creditsJson from './content/credits.json';
@@ -128,8 +129,8 @@ export interface Content {
   account: AccountConfig;
   /** Card enhancements (DESIGN.md §10b). */
   enhancements: EnhancementsConfig;
-  /** The upgrade shelf: one-time Money multipliers that appear at a threshold (DESIGN.md §4). */
-  upgrades: UpgradesConfig;
+  /** Milestone picks: two perks at each milestone of a repeatable line (DESIGN.md §4). */
+  perks: PerksConfig;
   /** Weapon skins: alternate art per weapon kind (weaponSkins.json). */
   weaponSkins: WeaponSkinSet[];
   /** Item types: names per tier and the names of their two Heirlooms (items.json). */
@@ -139,7 +140,9 @@ export interface Content {
   resourceById: ReadonlyMap<string, Resource>;
   dungeonById: ReadonlyMap<string, Dungeon>;
   trialById: ReadonlyMap<string, Trial>;
-  upgradeById: ReadonlyMap<string, Upgrade>;
+  perkMilestoneById: ReadonlyMap<string, PerkMilestone>;
+  /** Every perk option by id, with the milestone it belongs to. */
+  perkOptionById: ReadonlyMap<string, { milestone: PerkMilestone; option: PerkOption }>;
   /** The training lines of the Dungeons drawer (DESIGN.md §6 Training). */
   training: Training[];
   trainingById: ReadonlyMap<string, Training>;
@@ -235,7 +238,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     achievements: achievementsFile,
     account,
     enhancements,
-    upgrades,
+    perks,
     training,
     coins,
     credits,
@@ -267,7 +270,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
   );
   checkQuests({ resources, dungeons, trials, quests }, issues);
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
-  checkUpgrades({ resources, trees, mines, dungeons, combat, upgrades }, issues);
+  checkPerks({ resources, trees, mines, production, training, perks }, issues);
   checkCosmeticSources(
     { resources, cosmetics, dungeons, portals, prestige, cards, achievements, shardShop, account },
     issues,
@@ -299,7 +302,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
       prestige,
       account,
       enhancements,
-      upgrades,
+      perks,
     },
     issues,
   );
@@ -343,14 +346,19 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     shardShop,
     account,
     enhancements,
-    upgrades,
+    perks,
     weaponSkins,
     items,
     itemTypeByKind: new Map(items.types.map((t) => [t.kind, t])),
     resourceById: new Map(resources.map((r) => [r.id, r])),
     dungeonById: new Map(openDungeons.map((d) => [d.id, d])),
     trialById: new Map(trials.map((t) => [t.id, t])),
-    upgradeById: new Map(upgrades.upgrades.map((u) => [u.id, u])),
+    perkMilestoneById: new Map(perks.milestones.map((m) => [m.id, m])),
+    perkOptionById: new Map(
+      perks.milestones.flatMap((m) =>
+        m.options.map((o) => [o.id, { milestone: m, option: o }] as const),
+      ),
+    ),
     training,
     trainingById: new Map(training.map((t) => [t.id, t])),
     coins,
@@ -607,56 +615,35 @@ function checkSets(cosmetics: Cosmetic[], sets: CosmeticSet[], issues: string[])
   });
 }
 
-/** Upgrade shelf rules (DESIGN.md §4): unlock conditions and the cost name things that exist,
- *  and a permanent upgrade is unlocked by progress that an ascension keeps. */
-function checkUpgrades(
-  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'dungeons' | 'combat' | 'upgrades'>,
+/** Milestone pick rules (DESIGN.md §4): every milestone names a line that exists, each line's
+ *  levels are distinct, and ids are unique across milestones and options. */
+function checkPerks(
+  c: Pick<Content, 'resources' | 'trees' | 'mines' | 'production' | 'training' | 'perks'>,
   issues: string[],
 ): void {
-  const resources = new Map(c.resources.map((r) => [r.id, r]));
-  const seen = new Set<string>();
-  const currency = resources.get(c.upgrades.currency);
+  const currency = c.resources.find((r) => r.id === c.perks.currency);
   if (currency?.kind !== 'currency') {
-    issues.push(`upgrades.json › currency: "${c.upgrades.currency}" must be a currency resource`);
+    issues.push(`perks.json › currency: "${c.perks.currency}" must be a currency resource`);
   }
-  c.upgrades.upgrades.forEach((u, i) => {
-    const where = `upgrades.json › upgrades › [${i}]`;
-    if (seen.has(u.id)) issues.push(`${where} › id: duplicate "${u.id}"`);
-    seen.add(u.id);
-    if (u.cost.resource !== c.upgrades.currency) {
-      issues.push(`${where} › cost › resource: must be "${c.upgrades.currency}"`);
+  const lines: Record<string, Set<string>> = {
+    tree: new Set(c.trees.map((t) => t.id)),
+    mine: new Set(c.mines.map((m) => m.id)),
+    tool: new Set(c.production.tools.map((t) => t.id)),
+    training: new Set(c.training.map((t) => t.id)),
+  };
+  const ids = new Set<string>();
+  const levels = new Set<string>();
+  c.perks.milestones.forEach((m, i) => {
+    const where = `perks.json › milestones › [${i}]`;
+    if (!lines[m.line.kind]?.has(m.line.id)) {
+      issues.push(`${where} › line: unknown ${m.line.kind} "${m.line.id}"`);
     }
-    const k = u.unlock;
-    const missing = (what: string, ok: boolean, value: string): void => {
-      if (!ok) issues.push(`${where} › unlock: unknown ${what} "${value}"`);
-    };
-    if (k.kind === 'treeLevel')
-      missing(
-        'tree',
-        c.trees.some((t) => t.id === k.tree),
-        k.tree,
-      );
-    if (k.kind === 'mineLevel')
-      missing(
-        'mine',
-        c.mines.some((m) => m.id === k.mine),
-        k.mine,
-      );
-    if (k.kind === 'bossKills') {
-      missing(
-        'dungeon',
-        c.dungeons.some((d) => d.id === k.dungeon),
-        k.dungeon,
-      );
-    }
-    if (k.kind === 'gemMastery') {
-      const gem = resources.get(k.gem);
-      missing('gem', gem?.kind === 'tree_gem' || gem?.kind === 'mine_gem', k.gem);
-    }
-    if (u.permanent && (k.kind === 'treeLevel' || k.kind === 'mineLevel')) {
-      issues.push(
-        `${where} › permanent: tree and mine levels reset, so their upgrades cannot be permanent`,
-      );
+    const key = `${m.line.kind}:${m.line.id}:${m.level}`;
+    if (levels.has(key)) issues.push(`${where} › level: two milestones at ${key}`);
+    levels.add(key);
+    for (const x of [m.id, ...m.options.map((o) => o.id)]) {
+      if (ids.has(x)) issues.push(`${where}: duplicate id "${x}"`);
+      ids.add(x);
     }
   });
 }
@@ -678,7 +665,7 @@ function checkModifiers(
     | 'prestige'
     | 'account'
     | 'enhancements'
-    | 'upgrades'
+    | 'perks'
   >,
   issues: string[],
 ): void {
@@ -704,17 +691,19 @@ function checkModifiers(
   c.sets.forEach((x, i) => check(`sets.json › [${i}] › modifiers`, x.modifiers));
   c.cards.forEach((x, i) => {
     if (x.job === 'fighting') {
-      check(`cards.json › [${i}] › main › modifiers`, x.main.modifiers);
-      check(`cards.json › [${i}] › support › modifiers`, x.support.modifiers);
+      check(`cards.json › [${i}] › ability › modifiers`, x.ability.modifiers);
+      check(`cards.json › [${i}] › teamBonus › modifiers`, x.teamBonus.modifiers);
     } else {
       check(`cards.json › [${i}] › worker › modifiers`, x.worker.modifiers);
     }
   });
   for (const job of JOBS) {
-    check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
+    check(`cardRules.json › abilityGrowth › ${job}`, c.cardRules.abilityGrowth[job]);
   }
-  c.upgrades.upgrades.forEach((x, i) =>
-    check(`upgrades.json › upgrades › [${i}] › effects`, x.effects),
+  c.perks.milestones.forEach((m, i) =>
+    m.options.forEach((o, j) =>
+      check(`perks.json › milestones › [${i}] › options › [${j}] › effects`, o.effects),
+    ),
   );
   c.prestige.shop.forEach((x, i) => check(`prestige.json › shop › [${i}] › perLevel`, x.perLevel));
   c.account.tree.forEach((x, i) => check(`account.json › tree › [${i}] › perRank`, x.perRank));
@@ -1474,7 +1463,7 @@ export function bundledRawContent(): RawContent {
     achievements: achievementsJson,
     account: accountJson,
     enhancements: enhancementsJson,
-    upgrades: upgradesJson,
+    perks: perksJson,
     training: trainingJson,
     coins: coinsJson,
     credits: creditsJson,

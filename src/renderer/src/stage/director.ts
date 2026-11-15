@@ -2,13 +2,11 @@ import type { Content } from '../../../data';
 import {
   Decimal,
   PRODUCTION_JOBS,
+  buildTeam,
   burstStats,
   collectModifiers,
   critFactor,
-  critStats,
   defaultRng,
-  effectiveDamage,
-  hitDamage,
   isProducerUnlocked,
   jobProductionPerSecond,
   loadoutHealth,
@@ -17,7 +15,6 @@ import {
   producerRate,
   producersOf,
   rollHitForShow,
-  signatureDamage,
   type ChallengeEvent,
   type GameState,
   type HarvestEvent,
@@ -54,6 +51,8 @@ export interface ShowEvents {
     attacks: number;
     knockout: boolean;
     span: ChunkSpan;
+    /** The boss ability that made the hit ("Back Strike"), '' for a plain attack. */
+    ability: string;
   };
   knockout: { seconds: number };
   /** A Challenge ended (DESIGN.md §6 Farming and Challenge): won, or lost with why. */
@@ -90,16 +89,18 @@ export function createDirector(content: Content, state: () => GameState) {
   const fighting = (s: GameState): boolean =>
     s.activeDungeonId !== null && s.combat.knockoutSeconds <= 0;
 
-  // the main card's rhythm: one hit per burst interval
+  // the stage's rhythm is the first card's (left to right): one hit per its interval
   const hitLoop = (): void => {
     const s = state();
     const mods = collectModifiers(s, content);
-    const stats = burstStats(content, 'fighting', mods);
+    const lead = buildTeam(s, content, mods, s.activeDungeonId)[0]!;
+    const stats = { interval: lead.interval };
     if (!document.hidden && fighting(s)) {
-      const crit = critStats(content, mods, s.activeDungeonId);
-      const hit = hitDamage(effectiveDamage(s, content, undefined, mods), stats);
+      const crit = lead.crit;
+      const factor = critFactor(crit);
+      const hit = factor.gt(0) ? lead.hit.div(factor) : lead.hit;
       const shown = rollHitForShow(hit, crit, defaultRng);
-      average = nextAverage(average, hit.mul(critFactor(crit)), 0.1);
+      average = nextAverage(average, lead.hit, 0.1);
       const scale = popupScale(shown.damage, average);
       emit('hit', {
         damage: shown.damage,
@@ -123,18 +124,17 @@ export function createDirector(content: Content, state: () => GameState) {
     const id = after.activeDungeonId;
     if (!id) return;
     const l = after.cards.loadouts.fighting;
-    const filled = [l.main, ...l.supports].map((c, i) => (c ? i : -1)).filter((i) => i >= 0);
-    if (filled.length === 0) return;
+    const slots = l.slots.filter((c): c is string => c !== null);
+    if (slots.length === 0) return;
     const max = loadoutMaxHealth(after, content, mods, id);
     // a fight that resumes after a knockout starts from a full team; the pool is the team's
     // health left, every card summed (DESIGN.md §6 card duel)
     const poolBefore =
       before.combat.knockoutSeconds > 0 ? max : loadoutHealth(before, content, mods).current;
-    const slots = [l.main, ...l.supports];
     for (const { event, span } of bossHitShows(report.bossAttacks, poolBefore, max)) {
       // the card the game says was hit (DESIGN.md §6 card duel)
       const hit = event.cardId ? slots.indexOf(event.cardId) : -1;
-      const target = hit >= 0 ? hit : filled[0]!;
+      const target = hit >= 0 ? hit : 0;
       emit('bossAttack', {
         damage: event.damage,
         target,
@@ -142,6 +142,7 @@ export function createDirector(content: Content, state: () => GameState) {
         attacks: event.attacks,
         knockout: event.knockout,
         span,
+        ability: event.ability ?? '',
       });
     }
   };
@@ -186,13 +187,10 @@ export function createDirector(content: Content, state: () => GameState) {
       if (document.hidden) return;
       const mods = collectModifiers(after, content);
       if (report.bursts.fighting > 0 && after.activeDungeonId) {
-        const stats = burstStats(content, 'fighting', mods);
-        const sig = signatureDamage(effectiveDamage(after, content, undefined, mods), stats);
-        const shown = rollHitForShow(
-          sig,
-          critStats(content, mods, after.activeDungeonId),
-          defaultRng,
-        );
+        const lead = buildTeam(after, content, mods, after.activeDungeonId)[0]!;
+        const factor = critFactor(lead.crit);
+        const sig = factor.gt(0) ? lead.signature.div(factor) : lead.signature;
+        const shown = rollHitForShow(sig, lead.crit, defaultRng);
         emit('signature', { damage: shown.damage, crit: shown.crit });
       }
       if (report.harvests.length > 0) emit('harvests', { events: report.harvests });

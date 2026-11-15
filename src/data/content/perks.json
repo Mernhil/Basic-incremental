@@ -1,0 +1,2414 @@
+{
+  "currency": "money",
+  "milestones": [
+    {
+      "id": "oak_10",
+      "line": {
+        "kind": "tree",
+        "id": "oak"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "oak_10_output",
+          "name": "Keen Axes",
+          "description": "Oak output ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        },
+        {
+          "id": "oak_10_pace",
+          "name": "Light Axes",
+          "description": "Oak's worker strikes 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oak_25",
+      "line": {
+        "kind": "tree",
+        "id": "oak"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "oak_25_levels",
+          "name": "Fertile Soil",
+          "description": "Oak levels add 50% more output",
+          "effects": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        },
+        {
+          "id": "oak_25_lucky",
+          "name": "Golden Boughs",
+          "description": "Oak's lucky strikes pay double",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "mult",
+              "value": "2",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oak_50",
+      "line": {
+        "kind": "tree",
+        "id": "oak"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "oak_50_output",
+          "name": "Deep Roots",
+          "description": "Oak output ×1.5",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        },
+        {
+          "id": "oak_50_worker",
+          "name": "Seasoned Feller",
+          "description": "Oak's worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "oak_75",
+      "line": {
+        "kind": "tree",
+        "id": "oak"
+      },
+      "level": 75,
+      "options": [
+        {
+          "id": "oak_75_output",
+          "name": "Elder Rings",
+          "description": "Oak output ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        },
+        {
+          "id": "oak_75_crits",
+          "name": "Heart Cut",
+          "description": "Oak crits: +5% chance, +25% damage",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "producer": "oak"
+              }
+            },
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.25",
+              "scope": {
+                "producer": "oak"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ironbark_10",
+      "line": {
+        "kind": "tree",
+        "id": "ironbark"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "ironbark_10_output",
+          "name": "Iron Saws",
+          "description": "Ironbark output ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ironbark_10_pace",
+          "name": "Light Axes",
+          "description": "Ironbark's worker strikes 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ironbark_25",
+      "line": {
+        "kind": "tree",
+        "id": "ironbark"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "ironbark_25_levels",
+          "name": "Fertile Soil",
+          "description": "Ironbark levels add 50% more output",
+          "effects": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ironbark_25_lucky",
+          "name": "Golden Boughs",
+          "description": "Ironbark's lucky strikes pay double",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "mult",
+              "value": "2",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ironbark_50",
+      "line": {
+        "kind": "tree",
+        "id": "ironbark"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "ironbark_50_output",
+          "name": "Heartwood Grain",
+          "description": "Ironbark output ×1.5",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ironbark_50_worker",
+          "name": "Seasoned Feller",
+          "description": "Ironbark's worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ironbark_75",
+      "line": {
+        "kind": "tree",
+        "id": "ironbark"
+      },
+      "level": 75,
+      "options": [
+        {
+          "id": "ironbark_75_output",
+          "name": "Elder Bark",
+          "description": "Ironbark output ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        },
+        {
+          "id": "ironbark_75_crits",
+          "name": "Heart Cut",
+          "description": "Ironbark crits: +5% chance, +25% damage",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "producer": "ironbark"
+              }
+            },
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.25",
+              "scope": {
+                "producer": "ironbark"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moonwillow_10",
+      "line": {
+        "kind": "tree",
+        "id": "moonwillow"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "moonwillow_10_output",
+          "name": "Moonlit Grove",
+          "description": "Moonwillow output ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        },
+        {
+          "id": "moonwillow_10_pace",
+          "name": "Light Axes",
+          "description": "Moonwillow's worker strikes 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moonwillow_25",
+      "line": {
+        "kind": "tree",
+        "id": "moonwillow"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "moonwillow_25_levels",
+          "name": "Fertile Soil",
+          "description": "Moonwillow levels add 50% more output",
+          "effects": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        },
+        {
+          "id": "moonwillow_25_lucky",
+          "name": "Golden Boughs",
+          "description": "Moonwillow's lucky strikes pay double",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "mult",
+              "value": "2",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moonwillow_50",
+      "line": {
+        "kind": "tree",
+        "id": "moonwillow"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "moonwillow_50_output",
+          "name": "Silver Boughs",
+          "description": "Moonwillow output ×1.5",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        },
+        {
+          "id": "moonwillow_50_worker",
+          "name": "Seasoned Feller",
+          "description": "Moonwillow's worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "moonwillow_75",
+      "line": {
+        "kind": "tree",
+        "id": "moonwillow"
+      },
+      "level": 75,
+      "options": [
+        {
+          "id": "moonwillow_75_output",
+          "name": "Elder Moon",
+          "description": "Moonwillow output ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        },
+        {
+          "id": "moonwillow_75_crits",
+          "name": "Heart Cut",
+          "description": "Moonwillow crits: +5% chance, +25% damage",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            },
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.25",
+              "scope": {
+                "producer": "moonwillow"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "copper_quarry_10",
+      "line": {
+        "kind": "mine",
+        "id": "copper_quarry"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "copper_quarry_10_output",
+          "name": "Sharp Picks",
+          "description": "Copper Quarry output ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        },
+        {
+          "id": "copper_quarry_10_pace",
+          "name": "Light Picks",
+          "description": "Copper Quarry's worker strikes 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "copper_quarry_25",
+      "line": {
+        "kind": "mine",
+        "id": "copper_quarry"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "copper_quarry_25_levels",
+          "name": "Rich Ore",
+          "description": "Copper Quarry levels add 50% more output",
+          "effects": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        },
+        {
+          "id": "copper_quarry_25_lucky",
+          "name": "Lucky Vein",
+          "description": "Copper Quarry's lucky strikes pay double",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "mult",
+              "value": "2",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "copper_quarry_50",
+      "line": {
+        "kind": "mine",
+        "id": "copper_quarry"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "copper_quarry_50_output",
+          "name": "Copper Seams",
+          "description": "Copper Quarry output ×1.5",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        },
+        {
+          "id": "copper_quarry_50_worker",
+          "name": "Seasoned Miner",
+          "description": "Copper Quarry's worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "copper_quarry_75",
+      "line": {
+        "kind": "mine",
+        "id": "copper_quarry"
+      },
+      "level": 75,
+      "options": [
+        {
+          "id": "copper_quarry_75_output",
+          "name": "Mother Lode",
+          "description": "Copper Quarry output ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        },
+        {
+          "id": "copper_quarry_75_crits",
+          "name": "Clean Break",
+          "description": "Copper Quarry crits: +5% chance, +25% damage",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            },
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.25",
+              "scope": {
+                "producer": "copper_quarry"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iron_deeps_10",
+      "line": {
+        "kind": "mine",
+        "id": "iron_deeps"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "iron_deeps_10_output",
+          "name": "Deep Shafts",
+          "description": "Iron Deeps output ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        },
+        {
+          "id": "iron_deeps_10_pace",
+          "name": "Light Picks",
+          "description": "Iron Deeps's worker strikes 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iron_deeps_25",
+      "line": {
+        "kind": "mine",
+        "id": "iron_deeps"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "iron_deeps_25_levels",
+          "name": "Rich Ore",
+          "description": "Iron Deeps levels add 50% more output",
+          "effects": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        },
+        {
+          "id": "iron_deeps_25_lucky",
+          "name": "Lucky Vein",
+          "description": "Iron Deeps's lucky strikes pay double",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "mult",
+              "value": "2",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iron_deeps_50",
+      "line": {
+        "kind": "mine",
+        "id": "iron_deeps"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "iron_deeps_50_output",
+          "name": "Iron Veins",
+          "description": "Iron Deeps output ×1.5",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        },
+        {
+          "id": "iron_deeps_50_worker",
+          "name": "Seasoned Miner",
+          "description": "Iron Deeps's worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iron_deeps_75",
+      "line": {
+        "kind": "mine",
+        "id": "iron_deeps"
+      },
+      "level": 75,
+      "options": [
+        {
+          "id": "iron_deeps_75_output",
+          "name": "Deep Lode",
+          "description": "Iron Deeps output ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        },
+        {
+          "id": "iron_deeps_75_crits",
+          "name": "Clean Break",
+          "description": "Iron Deeps crits: +5% chance, +25% damage",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            },
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.25",
+              "scope": {
+                "producer": "iron_deeps"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crystal_grotto_10",
+      "line": {
+        "kind": "mine",
+        "id": "crystal_grotto"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "crystal_grotto_10_output",
+          "name": "Glittering Walls",
+          "description": "Crystal Grotto output ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        },
+        {
+          "id": "crystal_grotto_10_pace",
+          "name": "Light Picks",
+          "description": "Crystal Grotto's worker strikes 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crystal_grotto_25",
+      "line": {
+        "kind": "mine",
+        "id": "crystal_grotto"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "crystal_grotto_25_levels",
+          "name": "Rich Ore",
+          "description": "Crystal Grotto levels add 50% more output",
+          "effects": [
+            {
+              "stat": "production.levelBonus",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        },
+        {
+          "id": "crystal_grotto_25_lucky",
+          "name": "Lucky Vein",
+          "description": "Crystal Grotto's lucky strikes pay double",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "mult",
+              "value": "2",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crystal_grotto_50",
+      "line": {
+        "kind": "mine",
+        "id": "crystal_grotto"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "crystal_grotto_50_output",
+          "name": "Prismatic Lode",
+          "description": "Crystal Grotto output ×1.5",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        },
+        {
+          "id": "crystal_grotto_50_worker",
+          "name": "Seasoned Miner",
+          "description": "Crystal Grotto's worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "crystal_grotto_75",
+      "line": {
+        "kind": "mine",
+        "id": "crystal_grotto"
+      },
+      "level": 75,
+      "options": [
+        {
+          "id": "crystal_grotto_75_output",
+          "name": "Crystal Heart",
+          "description": "Crystal Grotto output ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        },
+        {
+          "id": "crystal_grotto_75_crits",
+          "name": "Clean Break",
+          "description": "Crystal Grotto crits: +5% chance, +25% damage",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            },
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.25",
+              "scope": {
+                "producer": "crystal_grotto"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_yield_10",
+      "line": {
+        "kind": "tool",
+        "id": "logging_yield"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "logging_yield_10_all",
+          "name": "Lumber Union",
+          "description": "All trees +50% output",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_yield_10_critdmg",
+          "name": "Clean Cuts",
+          "description": "Logging crits +100% damage",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_yield_25",
+      "line": {
+        "kind": "tool",
+        "id": "logging_yield"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "logging_yield_25_ledger",
+          "name": "Merchant Ledger",
+          "description": "All production +25%",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "25"
+            }
+          ]
+        },
+        {
+          "id": "logging_yield_25_trees",
+          "name": "Timber Yard",
+          "description": "All trees ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_yield_50",
+      "line": {
+        "kind": "tool",
+        "id": "logging_yield"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "logging_yield_50_ledger",
+          "name": "Golden Ledger",
+          "description": "All production ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25"
+            }
+          ]
+        },
+        {
+          "id": "logging_yield_50_workers",
+          "name": "Master Fellers",
+          "description": "Logging worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_speed_10",
+      "line": {
+        "kind": "tool",
+        "id": "logging_speed"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "logging_speed_10_pact",
+          "name": "Lumberjack Pact",
+          "description": "Logging worker abilities +25% effect",
+          "effects": [
+            {
+              "stat": "card.teamBonusPower",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_speed_10_rhythm",
+          "name": "Harvest Rhythm",
+          "description": "Logging harvest gauges fill 25% faster",
+          "effects": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_speed_25",
+      "line": {
+        "kind": "tool",
+        "id": "logging_speed"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "logging_speed_25_dig",
+          "name": "Fast Growth",
+          "description": "Trees age 50% faster",
+          "effects": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_speed_25_haul",
+          "name": "Big Haul",
+          "description": "Logging bursts +50%",
+          "effects": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_speed_50",
+      "line": {
+        "kind": "tool",
+        "id": "logging_speed"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "logging_speed_50_rush",
+          "name": "Gold Rush",
+          "description": "Logging lucky strikes pay +100%",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "percent",
+              "value": "100",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_speed_50_tireless",
+          "name": "Tireless",
+          "description": "Logging workers strike 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_crit_chance_10",
+      "line": {
+        "kind": "tool",
+        "id": "logging_crit_chance"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "logging_crit_chance_10_a",
+          "name": "Keen Eye",
+          "description": "Logging crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_crit_chance_10_b",
+          "name": "Heavy Swing",
+          "description": "Logging crit damage +50%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.5",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_crit_chance_25",
+      "line": {
+        "kind": "tool",
+        "id": "logging_crit_chance"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "logging_crit_chance_25_a",
+          "name": "Sure Strike",
+          "description": "Logging crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_crit_chance_25_b",
+          "name": "Split Grain",
+          "description": "Logging crit damage +75%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.75",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_crit_chance_50",
+      "line": {
+        "kind": "tool",
+        "id": "logging_crit_chance"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "logging_crit_chance_50_a",
+          "name": "Master's Eye",
+          "description": "Logging crit chance +10%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_crit_chance_50_b",
+          "name": "Shatter",
+          "description": "Logging crit damage +100%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_crit_damage_10",
+      "line": {
+        "kind": "tool",
+        "id": "logging_crit_damage"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "logging_crit_damage_10_a",
+          "name": "Weighted Head",
+          "description": "Logging crit damage +50%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.5",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_crit_damage_10_b",
+          "name": "Fine Edge",
+          "description": "Logging crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_crit_damage_25",
+      "line": {
+        "kind": "tool",
+        "id": "logging_crit_damage"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "logging_crit_damage_25_a",
+          "name": "Crushing Blow",
+          "description": "Logging crit damage +75%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.75",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_crit_damage_25_b",
+          "name": "True Aim",
+          "description": "Logging crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "logging_crit_damage_50",
+      "line": {
+        "kind": "tool",
+        "id": "logging_crit_damage"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "logging_crit_damage_50_a",
+          "name": "Earthshaker",
+          "description": "Logging crit damage +100%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        },
+        {
+          "id": "logging_crit_damage_50_b",
+          "name": "Hawk Eye",
+          "description": "Logging crit chance +10%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.1",
+              "scope": {
+                "job": "logging"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_yield_10",
+      "line": {
+        "kind": "tool",
+        "id": "mining_yield"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "mining_yield_10_all",
+          "name": "Dynamite",
+          "description": "All mines +50% output",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_yield_10_critdmg",
+          "name": "Clean Splits",
+          "description": "Mining crits +100% damage",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "1",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_yield_25",
+      "line": {
+        "kind": "tool",
+        "id": "mining_yield"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "mining_yield_25_carts",
+          "name": "Ore Carts",
+          "description": "All mines ×1.15",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_yield_25_workers",
+          "name": "Strong Backs",
+          "description": "Mining worker power ×1.15",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.15",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_yield_50",
+      "line": {
+        "kind": "tool",
+        "id": "mining_yield"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "mining_yield_50_polish",
+          "name": "Gem Polish",
+          "description": "All mines ×1.25",
+          "effects": [
+            {
+              "stat": "production.rate",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_yield_50_workers",
+          "name": "Master Miners",
+          "description": "Mining worker power ×1.25",
+          "effects": [
+            {
+              "stat": "worker.power",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_speed_10",
+      "line": {
+        "kind": "tool",
+        "id": "mining_speed"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "mining_speed_10_pact",
+          "name": "Miner Pact",
+          "description": "Mining worker abilities +25% effect",
+          "effects": [
+            {
+              "stat": "card.teamBonusPower",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_speed_10_rhythm",
+          "name": "Harvest Rhythm",
+          "description": "Mining harvest gauges fill 25% faster",
+          "effects": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_speed_25",
+      "line": {
+        "kind": "tool",
+        "id": "mining_speed"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "mining_speed_25_dig",
+          "name": "Deep Digging",
+          "description": "Mines dig 50% faster",
+          "effects": [
+            {
+              "stat": "depth.digRate",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_speed_25_haul",
+          "name": "Big Haul",
+          "description": "Mining bursts +50%",
+          "effects": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_speed_50",
+      "line": {
+        "kind": "tool",
+        "id": "mining_speed"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "mining_speed_50_rush",
+          "name": "Gold Rush",
+          "description": "Mining lucky strikes pay +100%",
+          "effects": [
+            {
+              "stat": "lucky.payout",
+              "kind": "percent",
+              "value": "100",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_speed_50_tireless",
+          "name": "Tireless",
+          "description": "Mining workers strike 30% faster",
+          "effects": [
+            {
+              "stat": "harvest.speed",
+              "kind": "percent",
+              "value": "30",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_crit_chance_10",
+      "line": {
+        "kind": "tool",
+        "id": "mining_crit_chance"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "mining_crit_chance_10_a",
+          "name": "Keen Eye",
+          "description": "Mining crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_crit_chance_10_b",
+          "name": "Heavy Swing",
+          "description": "Mining crit damage +50%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.5",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_crit_chance_25",
+      "line": {
+        "kind": "tool",
+        "id": "mining_crit_chance"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "mining_crit_chance_25_a",
+          "name": "Sure Strike",
+          "description": "Mining crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_crit_chance_25_b",
+          "name": "Split Grain",
+          "description": "Mining crit damage +75%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.75",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_crit_chance_50",
+      "line": {
+        "kind": "tool",
+        "id": "mining_crit_chance"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "mining_crit_chance_50_a",
+          "name": "Master's Eye",
+          "description": "Mining crit chance +10%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.1",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_crit_chance_50_b",
+          "name": "Shatter",
+          "description": "Mining crit damage +100%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "1",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_crit_damage_10",
+      "line": {
+        "kind": "tool",
+        "id": "mining_crit_damage"
+      },
+      "level": 10,
+      "options": [
+        {
+          "id": "mining_crit_damage_10_a",
+          "name": "Weighted Head",
+          "description": "Mining crit damage +50%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.5",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_crit_damage_10_b",
+          "name": "Fine Edge",
+          "description": "Mining crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_crit_damage_25",
+      "line": {
+        "kind": "tool",
+        "id": "mining_crit_damage"
+      },
+      "level": 25,
+      "options": [
+        {
+          "id": "mining_crit_damage_25_a",
+          "name": "Crushing Blow",
+          "description": "Mining crit damage +75%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "0.75",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_crit_damage_25_b",
+          "name": "True Aim",
+          "description": "Mining crit chance +5%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.05",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mining_crit_damage_50",
+      "line": {
+        "kind": "tool",
+        "id": "mining_crit_damage"
+      },
+      "level": 50,
+      "options": [
+        {
+          "id": "mining_crit_damage_50_a",
+          "name": "Earthshaker",
+          "description": "Mining crit damage +100%",
+          "effects": [
+            {
+              "stat": "harvest.critDamage",
+              "kind": "flat",
+              "value": "1",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mining_crit_damage_50_b",
+          "name": "Hawk Eye",
+          "description": "Mining crit chance +10%",
+          "effects": [
+            {
+              "stat": "harvest.critChance",
+              "kind": "flat",
+              "value": "0.1",
+              "scope": {
+                "job": "mining"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sharpen_5",
+      "line": {
+        "kind": "training",
+        "id": "sharpen"
+      },
+      "level": 5,
+      "options": [
+        {
+          "id": "sharpen_5_cry",
+          "name": "Battle Cry",
+          "description": "Team damage +25%",
+          "effects": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sharpen_5_crit",
+          "name": "Keen Blades",
+          "description": "Crit chance +5%",
+          "effects": [
+            {
+              "stat": "combat.critChance",
+              "kind": "flat",
+              "value": "0.05"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sharpen_15",
+      "line": {
+        "kind": "training",
+        "id": "sharpen"
+      },
+      "level": 15,
+      "options": [
+        {
+          "id": "sharpen_15_finish",
+          "name": "Finishing Blow",
+          "description": "Signature attacks ×1.5",
+          "effects": [
+            {
+              "stat": "burst.power",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sharpen_15_brutal",
+          "name": "Brutal Edge",
+          "description": "Crit damage +50%",
+          "effects": [
+            {
+              "stat": "combat.critDamage",
+              "kind": "flat",
+              "value": "0.5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sharpen_30",
+      "line": {
+        "kind": "training",
+        "id": "sharpen"
+      },
+      "level": 30,
+      "options": [
+        {
+          "id": "sharpen_30_drums",
+          "name": "War Drums",
+          "description": "Team damage ×1.5",
+          "effects": [
+            {
+              "stat": "combat.damage",
+              "kind": "mult",
+              "value": "1.5",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "id": "sharpen_30_element",
+          "name": "Elemental Edge",
+          "description": "Element bonuses +50%",
+          "effects": [
+            {
+              "stat": "element.bonus",
+              "kind": "percent",
+              "value": "50"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "toughen_5",
+      "line": {
+        "kind": "training",
+        "id": "toughen"
+      },
+      "level": 5,
+      "options": [
+        {
+          "id": "toughen_5_hide",
+          "name": "Thick Hide",
+          "description": "Team health +25%",
+          "effects": [
+            {
+              "stat": "combat.health",
+              "kind": "percent",
+              "value": "25"
+            }
+          ]
+        },
+        {
+          "id": "toughen_5_guard",
+          "name": "Guard Up",
+          "description": "Block 5% of the damage taken",
+          "effects": [
+            {
+              "stat": "combat.defence",
+              "kind": "flat",
+              "value": "5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "toughen_15",
+      "line": {
+        "kind": "training",
+        "id": "toughen"
+      },
+      "level": 15,
+      "options": [
+        {
+          "id": "toughen_15_skin",
+          "name": "Iron Skin",
+          "description": "Team health ×1.5",
+          "effects": [
+            {
+              "stat": "combat.health",
+              "kind": "mult",
+              "value": "1.5"
+            }
+          ]
+        },
+        {
+          "id": "toughen_15_wall",
+          "name": "Shield Wall",
+          "description": "Block 10% of the damage taken",
+          "effects": [
+            {
+              "stat": "combat.defence",
+              "kind": "flat",
+              "value": "10"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "toughen_30",
+      "line": {
+        "kind": "training",
+        "id": "toughen"
+      },
+      "level": 30,
+      "options": [
+        {
+          "id": "toughen_30_titan",
+          "name": "Titan Blood",
+          "description": "Team health ×1.5",
+          "effects": [
+            {
+              "stat": "combat.health",
+              "kind": "mult",
+              "value": "1.5"
+            }
+          ]
+        },
+        {
+          "id": "toughen_30_counter",
+          "name": "Counterblow",
+          "description": "Team damage +25%",
+          "effects": [
+            {
+              "stat": "combat.damage",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plunder_5",
+      "line": {
+        "kind": "training",
+        "id": "plunder"
+      },
+      "level": 5,
+      "options": [
+        {
+          "id": "plunder_5_tax",
+          "name": "Tax Collector",
+          "description": "Money per kill ×1.25",
+          "effects": [
+            {
+              "stat": "drops.moneyMultiplier",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "resource": "money"
+              }
+            }
+          ]
+        },
+        {
+          "id": "plunder_5_lure",
+          "name": "Crystal Lure",
+          "description": "Scroll drops ×1.25",
+          "effects": [
+            {
+              "stat": "drops.crystalMultiplier",
+              "kind": "mult",
+              "value": "1.25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plunder_15",
+      "line": {
+        "kind": "training",
+        "id": "plunder"
+      },
+      "level": 15,
+      "options": [
+        {
+          "id": "plunder_15_tithe",
+          "name": "Cinder Tithe",
+          "description": "Money per kill ×1.25",
+          "effects": [
+            {
+              "stat": "drops.moneyMultiplier",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "resource": "money"
+              }
+            }
+          ]
+        },
+        {
+          "id": "plunder_15_hoard",
+          "name": "Gleaming Hoard",
+          "description": "Scroll drops ×1.25",
+          "effects": [
+            {
+              "stat": "drops.crystalMultiplier",
+              "kind": "mult",
+              "value": "1.25"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "plunder_30",
+      "line": {
+        "kind": "training",
+        "id": "plunder"
+      },
+      "level": 30,
+      "options": [
+        {
+          "id": "plunder_30_tithe",
+          "name": "Frost Tithe",
+          "description": "Money per kill ×1.25",
+          "effects": [
+            {
+              "stat": "drops.moneyMultiplier",
+              "kind": "mult",
+              "value": "1.25",
+              "scope": {
+                "resource": "money"
+              }
+            }
+          ]
+        },
+        {
+          "id": "plunder_30_chests",
+          "name": "Treasure Hunter",
+          "description": "Stage chests +50%",
+          "effects": [
+            {
+              "stat": "stars.chest",
+              "kind": "percent",
+              "value": "50"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tempo_5",
+      "line": {
+        "kind": "training",
+        "id": "tempo"
+      },
+      "level": 5,
+      "options": [
+        {
+          "id": "tempo_5_hands",
+          "name": "Quick Hands",
+          "description": "Signature gauge fills 25% faster",
+          "effects": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "id": "tempo_5_finish",
+          "name": "Heavy Finish",
+          "description": "Signature attacks +50%",
+          "effects": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tempo_15",
+      "line": {
+        "kind": "training",
+        "id": "tempo"
+      },
+      "level": 15,
+      "options": [
+        {
+          "id": "tempo_15_rhythm",
+          "name": "Battle Rhythm",
+          "description": "Signature gauge fills 25% faster",
+          "effects": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "id": "tempo_15_crush",
+          "name": "Crushing Finish",
+          "description": "Signature attacks +50%",
+          "effects": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tempo_30",
+      "line": {
+        "kind": "training",
+        "id": "tempo"
+      },
+      "level": 30,
+      "options": [
+        {
+          "id": "tempo_30_flow",
+          "name": "Flow State",
+          "description": "Signature gauge fills 25% faster",
+          "effects": [
+            {
+              "stat": "burst.fill",
+              "kind": "percent",
+              "value": "25",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        },
+        {
+          "id": "tempo_30_word",
+          "name": "Final Word",
+          "description": "Signature attacks +50%",
+          "effects": [
+            {
+              "stat": "burst.power",
+              "kind": "percent",
+              "value": "50",
+              "scope": {
+                "job": "fighting"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

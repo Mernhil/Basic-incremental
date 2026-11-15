@@ -109,10 +109,6 @@ export const COPY = {
     loadout: 'Fighting loadout',
     production: 'Production',
     resources: 'Resources',
-    main: 'Main',
-    support: 'Support',
-    emptySlot: 'Empty support slot',
-    emptyMain: 'No main card',
     trees: (n: number) => (n === 1 ? '1 tree' : `${n} trees`),
     mines: (n: number) => (n === 1 ? '1 mine' : `${n} mines`),
     locked: (by: string) => `Unlocks from ${by}`,
@@ -354,8 +350,8 @@ export const COPY = {
       tip: (item: string, tier: string) => `Preview of ${item} at ${tier}`,
     },
     lockedDetail: 'Not found yet. Cards come from the Card Portal on the Summon page.',
-    mainAbility: 'Main ability',
-    supportEffect: 'Support effect',
+    ability: 'Ability',
+    teamBonus: 'Team bonus',
     workerAbility: 'Worker ability',
     /** Stat tiles on every card (DESIGN.md §5 Show the stats). */
     stats: {
@@ -368,14 +364,14 @@ export const COPY = {
       seconds: (n: number) => `${+n.toFixed(2)} s`,
       crit: (chance: number, damage: string) => `${+(chance * 100).toFixed(1)}% · ×${damage}`,
       outputValue: (power: string) => `×${power}`,
-      damageTip: 'Average damage per second as the main card: hits, signature attacks and crits.',
+      damageTip: 'Average damage per second of this card: hits, signature attacks and crits.',
       outputTip: 'The multiplier this worker gives its tree or mine.',
       compare: (name: string, parts: string[]) => `vs ${name}: ${parts.join(', ')}`,
-      compareMain: 'equipped main',
+      compareMain: 'weakest other card',
       comparePart: (percent: number, what: string) =>
         `${percent >= 0 ? '+' : '−'}${Math.abs(Math.round(percent * 100))}% ${what}`,
       same: 'about the same',
-      equipped: 'This is the equipped main card.',
+      equipped: 'The only card in the loadout.',
       working: 'This is the card working that place.',
     },
     worksAt: 'Works at',
@@ -384,18 +380,21 @@ export const COPY = {
     cost: 'Cost',
     duplicates: 'Star bar',
     shards: 'Shards',
-    role: { main: 'Main', support: 'Support' },
-    inLoadout: (role: string, job: string) => `${role} of ${job}`,
-    setMain: 'Set as main',
-    addSupport: 'Add as support',
+    /** The four loadout slots are equal: they are only numbered, left to right. */
+    slotName: (i: number) =>
+      (['Back left', 'Front left', 'Front right', 'Back right'] as const)[i] ?? `Slot ${i + 1}`,
+    /** The three roles (DESIGN.md §5 Roles): a label and a guide, never a lock. */
+    combatRoles: { tank: 'Tank', dps: 'DPS', support: 'Support' } as const,
+    roleFact: 'Role',
+    roleFilters: 'Roles',
+    inLoadout: (slot: string, job: string) => `${slot} of ${job}`,
+    addToLoadout: 'Add to loadout',
     remove: 'Remove from loadout',
     maxRank: 'Fully ranked. Further copies become shards.',
     met: 'Done',
     missing: 'Missing',
     loadoutCost: 'Loadout cost',
     costValue: (used: number, cap: number) => `${used} / ${cap}`,
-    mainSlot: 'Main',
-    supportSlot: (n: number) => `Support ${n}`,
     emptySlot: 'Empty',
     chooseCard: 'Choose a card',
     /** The loadout picker (UI_RULES §2 Loadouts): click a slot, then a card. */
@@ -436,7 +435,7 @@ export const COPY = {
       'invalid-slot': 'This card is not in a loadout.',
       unavailable: 'There is no upgrade for this card right now.',
       requirements: 'Some requirements are not met yet.',
-      full: 'All 3 support slots are full. Remove a support first.',
+      full: 'All 4 loadout slots are full. Remove a card first.',
     },
   },
   dungeons: {
@@ -627,7 +626,7 @@ export const COPY = {
       ],
     },
     upgradesNote:
-      'Per-run upgrades on the shelf start over too. Permanent upgrades and your lifetime Money earned are kept.',
+      'Your milestone picks and lifetime Money earned are kept: each pick comes back when its line reaches that level again.',
     kept: 'Kept forever',
     keptParts: {
       cards: 'Cards',
@@ -1235,8 +1234,15 @@ export const COPY = {
     fullyUpgraded: 'Fully upgraded. Nothing left to unlock.',
     costTitle: (name: string, have: string, need: string) => `${name}: have ${have}, need ${need}`,
     cardBadge: (lv: number, cap: number) => `Level ${lv} of ${cap}`,
-    noMain:
-      'No weapon is leading the fight. Put a fighting card in the main slot on the Cards page.',
+    noMain: 'No fighting card yet. Put a fighting card in the loadout on the Cards page.',
+    /** What an upgrade changes (DESIGN.md §5 Weapon panel). */
+    changesLead: 'It changes:',
+    levelCapLabel: 'Level cap',
+    lookLabel: 'Look',
+    /** The card switch of the Weapon panel (DESIGN.md §5 Weapon panel). */
+    tabsLabel: 'Loadout cards',
+    tabLevel: (lv: number) => `Lv ${lv}`,
+    tabTitle: (name: string, slot: number) => `${name}, slot ${slot}`,
   },
   /** Training (DESIGN.md §6): the repeatable fighting upgrades of the Dungeons drawer. */
   training: {
@@ -1248,7 +1254,6 @@ export const COPY = {
       levels === 1 ? `×${mult} in 1 level` : `×${mult} in ${levels} levels`,
     preview: (from: string, to: string) => `×${from} → ×${to}`,
     buyLabel: (name: string, label: string, price: string) => `${name}: ${label} for ${price}`,
-    oneTime: 'One-time upgrades',
   },
   /** The forge (DESIGN.md §4 The forge). */
   forge: {
@@ -1268,7 +1273,44 @@ export const COPY = {
   /** Tool lines (DESIGN.md §4): the repeatable lines of a production job. */
   tools: {
     title: (job: string) => `${job} tools`,
-    note: 'Bought with gems, again and again. Resets on Ascension.',
+    note: 'Bought with Money, again and again. Resets on Ascension.',
+  },
+  /** The upgrade row (DESIGN.md §4 The upgrade row). */
+  row: {
+    hold: 'You hold',
+    need: (amount: string) => `need ${amount} more`,
+    level: (n: number) => `Lv ${n}`,
+    effect: {
+      placeOutput: (place: string) => `${place} output`,
+      jobOutput: (job: string) => `${job} output`,
+      burstEvery: 'A burst every',
+      critChance: 'Crit chance',
+      critDamage: 'Crit damage',
+      teamDps: 'Team damage',
+      teamHealth: 'Team health',
+      moneyPerKill: 'Money per kill',
+      hitsPerSignature: 'Signature every',
+    },
+    ring: (what: string, times: string) => `${what} ×${times}`,
+    pick: (a: string, b: string) => `pick ${a} or ${b}`,
+    next: (level: number, parts: string) => `Lv ${level}: ${parts}`,
+    toGo: (levels: number) => (levels === 1 ? '1 level' : `${levels} levels`),
+    done: 'Every milestone passed',
+    and: ' and ',
+  },
+  /** Milestone picks (DESIGN.md §4 Milestone picks). */
+  picks: {
+    title: (line: string, level: number) => `Choose one · ${line} Lv ${level}`,
+    of: (i: number, n: number) => `${i} of ${n}`,
+    hint: 'Free. Kept for good: it comes back when you reach this level again.',
+    pickLabel: (name: string, what: string) => `Pick ${name}: ${what}`,
+    toChoose: (n: number) => `${n} to choose`,
+    none: 'No pick waiting',
+    picked: 'Picked',
+    kept: (level: number) => `Comes back at Lv ${level}`,
+    ahead: (level: number) => `At Lv ${level}`,
+    lifetime: 'Lifetime Money earned',
+    groups: { logging: 'Logging', mining: 'Mining', training: 'Training' },
   },
   buy: {
     countLabel: 'Buy amount',

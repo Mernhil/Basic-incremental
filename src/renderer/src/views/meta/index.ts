@@ -1,10 +1,9 @@
-import { accountInfo, collectModifiers, Decimal } from '../../../../game';
+import { accountInfo, Decimal, waitingPicks } from '../../../../game';
 import { COPY } from '../../copy';
 import { levelBadge } from '../../pages/accountModel';
 import { createAchievementsPage } from '../../pages/achievements';
 import { shardsText } from '../../pages/achievementsModel';
 import { createSettingsPage } from '../../pages/settings';
-import { shelfChips } from '../../pages/shelfModel';
 import { createShopPage } from '../../pages/shop';
 import { createSkillsPage } from '../../pages/skills';
 import { h } from '../../shell/shell';
@@ -129,12 +128,8 @@ export const metaViews: ViewPackage = {
       pile: {
         glyph: 'settings',
         hint: (ctx) => {
-          const s = ctx.state();
-          const mods = collectModifiers(s, ctx.content);
-          const n = shelfChips(s, ctx.content, mods, null).filter(
-            (c) => c.status === 'available' && c.affordable,
-          ).length;
-          return n > 0 ? { text: T.ready(n), ready: true } : null;
+          const n = waitingPicks(ctx.state(), ctx.content).length;
+          return n > 0 ? { text: COPY.picks.toChoose(n), ready: true } : null;
         },
       },
       mount: (host, ctx, api) => mountUpgrades(host, ctx, api),

@@ -66,6 +66,7 @@ export * from './bonds';
 export * from './expeditions';
 export * from './account';
 export * from './upgrades';
+export * from './lineView';
 export { METALS, type Metal } from '../data';
 
 // ---- Ascension (DESIGN.md §9): the contract with the UI, one line each ---------------------
@@ -407,6 +408,13 @@ export {
   /** Number of the first slam after attack k. */
   nextBossSlam,
   type BossPattern,
+  type BossAbility,
+  abilitiesFor,
+  abilityCounts,
+  abilityHitsBetween,
+  abilityOfAttack,
+  bossDamageBetween,
+  lethalBossAttack,
 } from './bossAttacks';
 export * from './elements';
 export * from './cardStats';

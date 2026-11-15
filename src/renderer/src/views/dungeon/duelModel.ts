@@ -30,9 +30,17 @@ export const HAND = {
   drop: 8,
 } as const;
 
-/** Where card `i` of `count` sits in the hand, in art pixels from the hand's top left. */
-export function handSlot(i: number, count: number): { x: number; y: number } {
-  const outer = count > 2 && (i === 0 || i === count - 1);
+/**
+ * Where card `i` of `count` sits in the hand, in art pixels from the hand's top left. A back-row
+ * card (`back`: the outer two loadout slots, DESIGN.md §5 Loadouts) sits lower than a front-row
+ * one; without it the outer cards of a hand of three or four are the back ones.
+ */
+export function handSlot(
+  i: number,
+  count: number,
+  back: boolean = count > 2 && (i === 0 || i === count - 1),
+): { x: number; y: number } {
+  const outer = back;
   return {
     x: HAND.side + i * (HAND.cardW - HAND.overlap),
     y: HAND.crest + (outer ? HAND.drop : 0),
@@ -40,11 +48,11 @@ export function handSlot(i: number, count: number): { x: number; y: number } {
 }
 
 /** The hand's size in art pixels. */
-export function handSize(count: number): { w: number; h: number } {
+export function handSize(count: number, anyBack: boolean = count > 2): { w: number; h: number } {
   const n = Math.max(1, count);
   return {
     w: 2 * HAND.side + HAND.cardW + (n - 1) * (HAND.cardW - HAND.overlap),
-    h: HAND.crest + HAND.cardH + (n > 2 ? HAND.drop : 0) + HAND.rim,
+    h: HAND.crest + HAND.cardH + (anyBack ? HAND.drop : 0) + HAND.rim,
   };
 }
 

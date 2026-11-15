@@ -20,7 +20,7 @@ export type CardElement = (typeof ELEMENTS)[number];
 /**
  * Resource kinds (DESIGN.md §4, §7). Three loops: `tree_gem` / `mine_gem` / `material` come from
  * production and dungeon cores and pay for card upgrades; `currency` (Money) comes from boss kills
- * and pays for tree and mine levels, the upgrade shelf and tier-ups; `scroll` (Summon / Glamour Scroll)
+ * and pays for tree and mine levels, the tool lines and tier-ups; `scroll` (Summon / Glamour Scroll)
  * is the premium tier that pays for summons and is kept through an ascension; `prestige`
  * (Starlight) is the prestige currency, kept too.
  */
@@ -359,9 +359,9 @@ export const STATS = [
   'drops.moneyMultiplier',
   /** Starlight an ascension grants, before rounding down (DESIGN.md §9). */
   'prestige.gain',
-  /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
-   *  their modifiers (DESIGN.md §4). Only read from upgrades. Scope: job. */
-  'card.supportPower',
+  /** Strength of the team bonuses of a job's cards, base 1 (+25% = 1.25): scales the values of
+   *  their modifiers (DESIGN.md §4). Only read from milestone perks. Scope: job. */
+  'card.teamBonusPower',
   /** Power of the workers at a place (DESIGN.md §4), also its digging. Scope: job, producer. */
   'worker.power',
   /** Hardness a place's workers break per second (DESIGN.md §4 Depth), base 1. Scope: job, producer. */
@@ -533,14 +533,19 @@ const cardBase = {
   heirloom: z.boolean().optional(),
 };
 
-/** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
+export const CARD_ROLES = ['tank', 'dps', 'support'] as const;
+export type CardRole = (typeof CARD_ROLES)[number];
+
+/** A fighting card: an Ability for itself and a Team bonus for the team (DESIGN.md §5 Loadouts). */
 export const fightingCardSchema = z.strictObject({
   ...cardBase,
   job: z.literal('fighting'),
-  /** Used when the card leads the fighting loadout. */
-  main: cardEffectSchema,
-  /** Used when the card is in one of the 3 support slots. */
-  support: cardEffectSchema,
+  /** Tank, DPS or Support: a label and a guide for placement, never a lock (DESIGN.md §5 Roles). */
+  role: z.enum(CARD_ROLES),
+  /** What the card does itself in the fight, in any loadout slot. */
+  ability: cardEffectSchema,
+  /** What the card gives the whole team, in any loadout slot. */
+  teamBonus: cardEffectSchema,
 });
 
 /**
@@ -661,7 +666,7 @@ export const cardRulesSchema = z.strictObject({
    * multiplied by (power − 1): a Bronze ★1 Lv 1 main adds nothing; every level, star and tier
    * adds more.
    */
-  mainGrowth: perJob(z.array(modifierSchema)),
+  abilityGrowth: perJob(z.array(modifierSchema)),
   /**
    * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
    * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
@@ -690,6 +695,18 @@ export const cardRulesSchema = z.strictObject({
    * base health. The signature, gauge and crit parts of an identity are on the cards' main
    * abilities; these two keep the types' total power within about 10% of each other.
    */
+  /** The role most cards of each weapon type have (DESIGN.md §5 Roles). */
+  weaponRoles: z.strictObject({
+    sword: z.enum(CARD_ROLES),
+    greatsword: z.enum(CARD_ROLES),
+    spear: z.enum(CARD_ROLES),
+    lance: z.enum(CARD_ROLES),
+    dagger: z.enum(CARD_ROLES),
+    hammer: z.enum(CARD_ROLES),
+    bow: z.enum(CARD_ROLES),
+    staff: z.enum(CARD_ROLES),
+    scythe: z.enum(CARD_ROLES),
+  }),
   weapons: z.strictObject({
     sword: weaponFactorSchema,
     greatsword: weaponFactorSchema,
@@ -1080,6 +1097,28 @@ export const combatSchema = z.strictObject({
       { message: 'one cycle of attacks must add up to attacksPerCycle normal attacks' },
     ),
   /**
+   * Boss abilities (DESIGN.md §6 Boss abilities): every `every`-th attack of a boss or mini-boss
+   * (the `offset`-th of each `every`, never a slam) is replaced by a hit of `multiplier` normal
+   * attacks on the `target`: the front row, the back row, one back card, all four or the card
+   * with the least health left.
+   */
+  bossAbilities: z
+    .array(
+      z
+        .strictObject({
+          id,
+          name: z.string().min(1),
+          target: z.enum(['front', 'back', 'back-one', 'all', 'lowest']),
+          every: z.number().int().min(2),
+          offset: z.number().int().min(0),
+          multiplier: z.number().gt(0),
+          kinds: z.array(z.enum(['miniboss', 'boss'])).min(1),
+          difficulties: z.array(z.enum(['normal', 'hard', 'nightmare'])).min(1),
+        })
+        .refine((a) => a.offset < a.every, { message: 'offset must be below every' }),
+    )
+    .default([]),
+  /**
    * Floors (DESIGN.md §6 Dungeon floors, §3 Ladders). A floor's strength is measured against the
    * dungeon's boss: floor `f` of `n` is worth `hpGrowth^(f - n)` of the boss's HP and attack. A
    * normal floor is a wave of `waveSize` enemies sharing `waveHpShare` of that HP and attacking
@@ -1130,7 +1169,6 @@ export const combatSchema = z.strictObject({
   elements: z.strictObject({
     weakness: decimal,
     resistance: decimal.refine((d) => d.gte(-50), { message: 'a resistance is never a wall' }),
-    supportBonus: decimal,
     production: decimal,
   }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
@@ -1907,43 +1945,37 @@ export const cosmeticSetSchema = z.strictObject({
 });
 
 /**
- * The upgrade shelf (DESIGN.md §4): one-time multipliers bought with Money that appear when
- * their unlock condition is met. `permanent` ones are kept through an ascension, the rest are
- * bought again each run. Effects are ordinary modifiers (source `upgrade`).
+ * Milestone picks (DESIGN.md §4 Milestone picks): at a milestone level of a repeatable line (a tree's
+ * or mine's level, a tool line, a Training line) the player picks one of two perks. The perk's
+ * effects are ordinary modifiers (source `upgrade`), applied while the line is at or above the
+ * level; the pick is kept through an ascension and comes back when the line reaches it again.
  */
-export const UPGRADE_UNLOCK_KINDS = [
-  'treeLevel',
-  'mineLevel',
-  'gemMastery',
-  'bossKills',
-  'lifetimeMoney',
-] as const;
-export const upgradeUnlockSchema = z.discriminatedUnion('kind', [
-  z.strictObject({ kind: z.literal('treeLevel'), tree: id, level: z.number().int().min(1) }),
-  z.strictObject({ kind: z.literal('mineLevel'), mine: id, level: z.number().int().min(1) }),
-  z.strictObject({
-    kind: z.literal('gemMastery'),
-    gem: id,
-    tier: z.number().int().min(1).max(16),
-  }),
-  z.strictObject({ kind: z.literal('bossKills'), dungeon: id, kills: z.number().int().min(1) }),
-  z.strictObject({ kind: z.literal('lifetimeMoney'), amount: positiveDecimal }),
-]);
-export const upgradeSchema = z.strictObject({
+export const PERK_LINE_KINDS = ['tree', 'mine', 'tool', 'training'] as const;
+export type PerkLineKind = (typeof PERK_LINE_KINDS)[number];
+export const perkLineSchema = z.strictObject({
+  kind: z.enum(PERK_LINE_KINDS),
+  /** The tree, mine, tool line or Training line id. */
+  id,
+});
+export const perkOptionSchema = z.strictObject({
   id,
   name,
-  /** The effect as shown to the player, e.g. "Oak output x2". */
+  /** The effect as shown to the player, e.g. "Oak output ×1.25". */
   description: z.string().min(1),
-  unlock: upgradeUnlockSchema,
-  cost: costSchema,
-  /** Kept through an ascension (its unlock must be lasting progress). */
-  permanent: z.boolean(),
   effects: z.array(modifierSchema).min(1),
 });
-export const upgradesFileSchema = z.strictObject({
-  /** The resource every upgrade is paid in (Money). */
+export const perkMilestoneSchema = z.strictObject({
+  id,
+  line: perkLineSchema,
+  /** The line level that opens the pick. */
+  level: z.number().int().min(1),
+  /** The two perks to pick from. */
+  options: z.tuple([perkOptionSchema, perkOptionSchema]),
+});
+export const perksFileSchema = z.strictObject({
+  /** Money: the resource whose lifetime earnings are counted (DESIGN.md §9 Ascension keeps). */
   currency: id,
-  upgrades: z.array(upgradeSchema),
+  milestones: z.array(perkMilestoneSchema),
 });
 
 /**
@@ -2156,7 +2188,7 @@ export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
 /** What a challenge takes away (src/game/challenges.ts applies each through the modifier pipeline). */
 export const CHALLENGE_RESTRICTIONS = [
   /** The fighting loadout's supports give no effect and no health. */
-  'no_supports',
+  'first_card_only',
   /** Only Common cards count in the fighting loadout (effects, health, and the main's damage). */
   'commons_only',
   /** Training gives nothing. */
@@ -2362,7 +2394,7 @@ export const contentSchemas = {
   achievements: achievementsFileSchema,
   account: accountSchema,
   enhancements: enhancementsSchema,
-  upgrades: upgradesFileSchema,
+  perks: perksFileSchema,
   training: z.array(trainingSchema).min(1),
   credits: z.array(creditSchema).min(1),
   shellArt: shellArtSchema,
@@ -2390,9 +2422,10 @@ export const contentSchemas = {
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;
 export type WeaponSkinSet = z.output<typeof weaponSkinSetSchema>;
-export type Upgrade = z.output<typeof upgradeSchema>;
-export type UpgradeUnlock = z.output<typeof upgradeUnlockSchema>;
-export type UpgradesConfig = z.output<typeof upgradesFileSchema>;
+export type PerkLine = z.output<typeof perkLineSchema>;
+export type PerkOption = z.output<typeof perkOptionSchema>;
+export type PerkMilestone = z.output<typeof perkMilestoneSchema>;
+export type PerksConfig = z.output<typeof perksFileSchema>;
 export type Resource = z.output<typeof resourceSchema>;
 export type GemArt = z.output<typeof gemArtSchema>;
 export type Tree = z.output<typeof treeSchema>;

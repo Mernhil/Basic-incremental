@@ -72,10 +72,15 @@ import {
   isDungeonCleared,
   isDungeonUnlocked,
   isProducerUnlocked,
+  arrangeFormation,
+  cardHealth,
+  loadoutCards,
   loadoutCostCap,
   mineLevel,
-  upgradeShelf,
-  buyUpgrade,
+  waitingPicks,
+  pickPerk,
+  perkEffects,
+  loadoutMaxHealth,
   treeLevel,
   treeLevelCost,
   buyTreeLevel,
@@ -184,6 +189,7 @@ export {
   teamSurvival,
   wantsCardsNow,
 } from './table';
+import { leadOf } from './table';
 
 // ---- milestones (DESIGN.md §14) ---------------------------------------------------------------
 
@@ -564,14 +570,14 @@ const SKILL_WEIGHT: Record<string, number> = {
 
 /**
  * Whether a skill acts now (DESIGN.md §10 Hidden weapon circles): a branch skill always; a fighting
- * circle only while the loadout's main card carries that weapon type; the pickaxe and logging axe
+ * circle only while a loadout card carries that weapon type; the pickaxe and logging axe
  * circles while a card carrying it is at work.
  */
 function skillActive(state: GameState, content: Content, node: SkillNode): boolean {
   if (!node.circle) return true;
   const kindOf = (id: string | null): string | undefined =>
     id ? content.cardById.get(id)?.item.kind : undefined;
-  if (kindOf(state.cards.loadouts.fighting.main) === node.circle) return true;
+  if (state.cards.loadouts.fighting.slots.some((id) => kindOf(id) === node.circle)) return true;
   return Object.values(activeWorkers(state, content))
     .flat()
     .some((id) => kindOf(id) === node.circle);
@@ -995,19 +1001,6 @@ function economyCandidates(
       });
     }
   }
-  // The upgrade shelf: one-time multipliers; the gain is the relative rise of what they touch.
-  for (const item of upgradeShelf(state, content, modifiers)) {
-    if (item.status !== 'available') continue;
-    const p = item.preview;
-    const rise = p && num(p.before) > 0 ? (num(p.after) - num(p.before)) / num(p.before) : 0.05;
-    out.push({
-      id: `upgrade:${item.id}`,
-      kind: 'economy',
-      prices: [item.cost],
-      gain: (p?.kind === 'damage' ? 1 : PRODUCTION_VALUE) * rise * 0.5,
-      buy: (s, c) => okState(buyUpgrade(s, c, item.id)),
-    });
-  }
   return out;
 }
 
@@ -1048,7 +1041,7 @@ export function buyerCandidates(
         kind: 'card',
         cardRank:
           cardProgress(content, state.cards.owned[card.id]!) +
-          (state.cards.loadouts.fighting.main === card.id ? FIGHTING_LEAD_BONUS : 0),
+          (leadOf(state, content) === card.id ? FIGHTING_LEAD_BONUS : 0),
         hold,
         deferMoney: kind === 'tier' && defersMoney(state, content, prices, modifiers),
         // A held tier-up (level still short) keeps its Cores and gems but not its Money: the
@@ -1391,7 +1384,7 @@ export function greedyBuy(
   content: Content,
   rng: Rng = createSeededRng(1),
 ): { state: GameState; bought: string[]; dustSpent: number } {
-  let current = chooseRespec(state, content);
+  let current = takePicks(chooseRespec(state, content), content);
   const bought: string[] = [];
   let candidates: Candidate[] = [];
   const maxed = new Set<string>();
@@ -1426,7 +1419,7 @@ export function greedyBuy(
       current = optimizeLoadouts(current, content);
     }
   }
-  if (bought.length > 0) current = optimizeLoadouts(current, content);
+  if (bought.length > 0) current = optimizeLoadouts(takePicks(current, content), content);
   const dust = spendStarDust(current, content);
   const shards = spendShards(dust.state, content);
   current = shards === current ? current : optimizeLoadouts(shards, content);
@@ -1494,9 +1487,9 @@ export function buildOrder(state: GameState, content: Content): string[] {
   const add = (id: string | null | undefined): void => {
     if (id && state.cards.owned[id] && !out.includes(id)) out.push(id);
   };
-  add(loadout.main);
+  add(leadOf(state, content));
   add(heir(state, content));
-  for (const id of loadout.supports) add(id);
+  for (const id of loadout.slots) add(id);
   const working = [
     ...Object.values(activeWorkers(state, content)).flat(),
     ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
@@ -1515,7 +1508,7 @@ export function buildOrder(state: GameState, content: Content): string[] {
  * up or nothing rarer is owned.
  */
 export function heir(state: GameState, content: Content): string | null {
-  const main = state.cards.loadouts.fighting.main;
+  const main = leadOf(state, content);
   const lead = main ? content.cardById.get(main) : undefined;
   if (!main || !lead) return null;
   if (tierUpCheck(state, content, main)?.available) return null;
@@ -1668,7 +1661,7 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
     if (cardCost(content, card.id) > cap) continue;
     if (best === null || damage(card.id) > damage(best)) best = card.id;
   }
-  const now = state.cards.loadouts.fighting.main;
+  const now = leadOf(state, content);
   if (
     best !== null &&
     now !== null &&
@@ -1708,21 +1701,26 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
           cardPower(content, current.cards.owned[a.id]!),
     );
   const loadout: CardLoadout = emptyCardLoadout();
-  loadout.main = chooseLead(current, content, cap);
-  let cost = loadout.main ? cardCost(content, loadout.main) : 0;
-  let support = 0;
+  // the first slot takes the hardest-hitting card, the rest the strongest others in order
+  loadout.slots[0] = chooseLead(current, content, cap);
+  let cost = loadout.slots[0] ? cardCost(content, loadout.slots[0]) : 0;
+  let next = 1;
   for (const card of ranked) {
-    if (card.id === loadout.main) continue;
+    if (card.id === loadout.slots[0]) continue;
     const c = cardCost(content, card.id);
     if (cost + c > cap) continue;
-    if (loadout.main === null) loadout.main = card.id;
-    else if (support < loadout.supports.length) loadout.supports[support++] = card.id;
+    if (loadout.slots[0] === null) loadout.slots[0] = card.id;
+    else if (next < loadout.slots.length) loadout.slots[next++] = card.id;
     else break;
     cost += c;
   }
+  // the formation: the two sturdiest cards in front, the rest behind
+  const placed = arrangeFormation(loadout, (id) =>
+    current.cards.owned[id] ? cardHealth(content, id, current.cards.owned[id]!) : new Decimal(0),
+  );
   const now = current.cards.loadouts.fighting;
-  if (now.main !== loadout.main || !now.supports.every((id, i) => id === loadout.supports[i])) {
-    const result = setLoadout(current, content, job, loadout);
+  if (!now.slots.every((id, i) => id === placed.slots[i])) {
+    const result = setLoadout(current, content, job, placed);
     if (result.ok) current = result.state;
   }
   current = teamForChallenge(current, content);
@@ -1860,7 +1858,7 @@ export function forgePlan(state: GameState, content: Content): ForgePlan {
   if (recipes.length === 0) return { recipe: null, run: false };
   const wantsDust = buildOrder(state, content).some((id) => needsStars(state, id));
   const recipe = recipes.find((r) => wantsDust && r.output.resource === 'star_dust') ?? recipes[0]!;
-  const lead = state.cards.loadouts.fighting.main;
+  const lead = leadOf(state, content);
   const tierNeeds = lead ? (tierUpCheck(state, content, lead)?.requirements ?? []) : [];
   const spare = recipe.inputs.every((input) => {
     const kept = tierNeeds.find((r) => r.kind === 'resource' && r.resource === input.resource);
@@ -3430,7 +3428,7 @@ export function formatTableLog(
       : `${hoursText(table.stuckLongest)} before a new best floor at ${table.stuckWhere}`;
   return [
     `Floor Challenges: ${table.challengesWon} won, ${table.challengesLost} lost (${all > 0 ? Math.round((table.challengesWon / all) * 100) : 0}%), ${table.manualTries} started by hand; longest stuck ${stuck}`,
-    `Team: ${teamRoles(state, content)} (${[state.cards.loadouts.fighting.main, ...state.cards.loadouts.fighting.supports].filter(Boolean).join(', ')})`,
+    `Team: ${teamRoles(state, content)} (${loadoutCards(state.cards.loadouts.fighting).join(', ')})`,
     `Scrolls spent: ${table.summonSpent} Summon (${table.focusPulls} at the Focus Portal), ${table.glamourSpent} Glamour; held ${num(have(state, 'summon_scroll')).toFixed(2)} / ${num(have(state, 'glamour_scroll')).toFixed(2)}`,
     `Expeditions: ${table.trips} trips, ${table.tripMaterials} Core units (fights ${table.fightMaterials}), ${formatShort(table.tripGems)} weighted gems`,
     `Ascension challenges: ${table.challengeRuns} runs, ${table.challengesLeft} left, completed ${table.completions.map(([id, at]) => `${id} at ${hoursText(at)}`).join(', ') || 'none'}`,
@@ -3562,4 +3560,43 @@ export function formatLevels(
     );
   }
   return lines.join('\n');
+}
+
+/** How the sim player values a relative rise when it picks a perk (DESIGN.md §4 Milestone picks). */
+const PICK_VALUE = { production: 1, damage: 1, health: 0.5, money: 0.6, scrolls: 0.4 } as const;
+
+/**
+ * Takes every waiting milestone pick: of the two perks, the one whose effects raise what the sim
+ * values most (production weighted by gem tier, team damage and health against the dungeon fought,
+ * Money per kill and scroll drops), each as a log rise; a tie keeps the first perk.
+ */
+export function takePicks(state: GameState, content: Content): GameState {
+  let current = state;
+  for (const milestone of waitingPicks(state, content)) {
+    const modifiers = collectModifiers(current, content);
+    const dungeon = current.activeDungeonId;
+    const fight = { job: 'fighting' as const, dungeon: dungeon ?? undefined, resource: 'money' };
+    const measure = (mods: readonly Modifier[]) => ({
+      production: weightedProduction(current, content, mods),
+      damage: dungeon ? num(averageDps(current, content, dungeon, mods)) : 0,
+      health: dungeon ? num(loadoutMaxHealth(current, content, mods, dungeon)) : 0,
+      money: num(statValue('drops.moneyMultiplier', 1, mods, fight)),
+      scrolls: num(statValue('drops.crystalMultiplier', 1, mods, { job: 'fighting' })),
+    });
+    const before = measure(modifiers);
+    const score = (option: (typeof milestone.options)[number]): number => {
+      const after = measure([...modifiers, ...perkEffects(option)]);
+      let total = 0;
+      for (const key of Object.keys(PICK_VALUE) as (keyof typeof PICK_VALUE)[]) {
+        if (before[key] > 0 && after[key] > 0)
+          total += PICK_VALUE[key] * Math.log(after[key] / before[key]);
+      }
+      return total;
+    };
+    const [a, b] = milestone.options;
+    const choice = score(b) > score(a) + 1e-9 ? b : a;
+    const picked = pickPerk(current, content, milestone.id, choice.id);
+    if (picked.ok) current = picked.state;
+  }
+  return current;
 }

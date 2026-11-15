@@ -258,7 +258,7 @@ describe('Heirloom trees (DESIGN.md §10 Heirloom trees)', () => {
     const state = ownHeirloom(freshState(), 'skypiercer', 6, 140);
     state.heirlooms.trees['skypiercer'] = ['root', 'small_a', 'large_a'];
     expect(heirloomTreeModifiers(state, content)).toEqual([]);
-    state.cards.loadouts.fighting.supports[0] = 'skypiercer';
+    state.cards.loadouts.fighting.slots[1] = 'skypiercer';
     const mods = heirloomTreeModifiers(state, content);
     expect(mods.map((m) => m.source.id)).toEqual([
       'skypiercer:root',
@@ -275,7 +275,7 @@ describe('Heirloom trees (DESIGN.md §10 Heirloom trees)', () => {
   it('adds signature power on top of its own signature while it leads', () => {
     const state = ownHeirloom(freshState(), 'grave_anvil', 6, 140);
     state.heirlooms.trees['grave_anvil'] = ['root', 'small_a', 'large_a', 'capstone'];
-    state.cards.loadouts.fighting.main = 'grave_anvil';
+    state.cards.loadouts.fighting.slots[0] = 'grave_anvil';
     const power = statValue('burst.power', 1, collectModifiers(state, content), {
       job: 'fighting',
     });

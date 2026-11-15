@@ -831,7 +831,7 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     expect(state.cards.owned['ember_squire']).toMatchObject({ tier: 'wood', stars: 6, level: 20 });
     expect(state.cards.owned['apprentice_feller']).toMatchObject({ tier: 'wood', stars: 3 });
     expect(Object.keys(state.cards.loadouts)).toEqual(['fighting']);
-    expect(state.cards.loadouts.fighting.main).toBe('ember_squire');
+    expect(state.cards.loadouts.fighting.slots).toContain('ember_squire');
     expect(state.cards.wishlist).toEqual([]);
     expect(state.production.tools).toEqual({});
     expect(state.production.depth).toEqual({});
@@ -843,5 +843,28 @@ describe('v25 -> v26 (the balance update: workers, stage stars, DESIGN.md §4 to
     const again = readSave(createSaveText(state, 1), floorsContent);
     expect(JSON.parse(createSaveText(state, 1)).version).toBe(CURRENT_SAVE_VERSION);
     expect(again.state).toEqual(state);
+  });
+});
+
+describe('v35 -> v36 (milestone picks replace the upgrade shelf, DESIGN.md §4)', () => {
+  const step = MIGRATIONS[35]!;
+
+  it('pays back every shelf upgrade owned, per-run or permanent, and starts with no picks', () => {
+    const out = step({
+      resources: { money: '100' },
+      upgrades: { owned: ['keen_axes', 'battle_cry', 'keen_axes', 'unknown'], moneyEarned: '77' },
+    }) as { resources: Record<string, string>; upgrades: Record<string, unknown> };
+    // Keen Axes 450 + Battle Cry 8,700, each once.
+    expect(out.resources['money']).toBe(String(100 + 450 + 8700));
+    expect(out.upgrades).toEqual({ picks: {}, moneyEarned: '77' });
+  });
+
+  it('adds nothing for a save that owned nothing', () => {
+    const out = step({
+      resources: { money: '5' },
+      upgrades: { owned: [], moneyEarned: '0' },
+    }) as { resources: Record<string, string>; upgrades: Record<string, unknown> };
+    expect(out.resources['money']).toBe('5');
+    expect(out.upgrades).toEqual({ picks: {}, moneyEarned: '0' });
   });
 });

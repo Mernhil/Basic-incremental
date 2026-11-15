@@ -39,7 +39,7 @@ describe('simulateOffline', () => {
     const { summary } = simulateOffline(start, withDps(5000), 0, HOUR, constantRng(0.05));
     expect(summary!.bossKills).toBeGreaterThan(0);
     expect(summary!.materials['moss_core']).toBe(summary!.bossKills);
-    const main = start.cards.loadouts.fighting.main!;
+    const main = start.cards.loadouts.fighting.slots[0]!;
     expect(summary!.cardXp[main]!.gt(0)).toBe(true);
     // Cards outside every loadout gain nothing and are left out.
     expect(Object.keys(summary!.cardXp).every((id) => id !== 'storm_duelist')).toBe(true);

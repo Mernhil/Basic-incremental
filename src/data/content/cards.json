@@ -5,10 +5,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -21,13 +22,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -38,10 +39,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -62,13 +64,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -79,10 +81,11 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -103,18 +106,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -355,10 +358,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -389,13 +393,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -406,10 +410,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -431,13 +436,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -448,10 +453,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "support",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -472,18 +478,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -494,10 +500,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Slow hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -518,18 +525,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -710,10 +717,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -726,13 +734,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -743,10 +751,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -759,13 +768,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -776,10 +785,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -792,13 +802,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -809,10 +819,11 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -825,18 +836,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -847,10 +858,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -863,18 +875,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -885,10 +897,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -901,18 +914,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -923,10 +936,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -947,13 +961,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -964,10 +978,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -988,13 +1003,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -1005,10 +1020,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -1029,13 +1045,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1046,10 +1062,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -1070,13 +1087,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1087,10 +1104,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -1111,18 +1129,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1133,10 +1151,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -1157,18 +1176,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1179,10 +1198,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -1204,13 +1224,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -1221,10 +1241,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -1246,13 +1267,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1263,10 +1284,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -1288,13 +1310,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1305,10 +1327,11 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -1330,18 +1353,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1352,10 +1375,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -1377,18 +1401,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1399,10 +1423,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -1424,18 +1449,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1446,10 +1471,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -1470,13 +1496,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -1487,10 +1513,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -1511,13 +1538,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -1528,10 +1555,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -1552,13 +1580,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1569,10 +1597,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -1593,13 +1622,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1610,10 +1639,11 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -1634,18 +1664,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1656,10 +1686,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -1680,18 +1711,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1702,10 +1733,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -1726,13 +1758,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -1743,10 +1775,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -1767,13 +1800,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -1784,10 +1817,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -1808,13 +1842,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1825,10 +1859,11 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -1849,18 +1884,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -1871,10 +1906,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -1895,18 +1931,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1917,10 +1953,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -1941,18 +1978,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -1963,10 +2000,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -1987,13 +2025,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -2004,10 +2042,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -2028,13 +2067,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -2045,10 +2084,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -2069,13 +2109,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2086,10 +2126,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -2110,13 +2151,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2127,10 +2168,11 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -2151,18 +2193,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2173,10 +2215,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -2197,18 +2240,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -2219,10 +2262,11 @@
     "job": "fighting",
     "rarity": "common",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -2253,13 +2297,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+5% damage",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "4"
         }
       ]
     }
@@ -2270,10 +2314,11 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -2304,13 +2349,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+8% damage",
+    "teamBonus": {
+      "description": "+6% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "8"
+          "value": "6"
         }
       ]
     }
@@ -2321,10 +2366,11 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -2355,13 +2401,13 @@
         }
       ]
     },
-    "support": {
-      "description": "+10% damage",
+    "teamBonus": {
+      "description": "+8% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "10"
+          "value": "8"
         }
       ]
     }
@@ -2372,10 +2418,11 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -2406,298 +2453,7 @@
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
-    "id": "rainbow_sniper",
-    "name": "Rainbow Sniper",
-    "job": "fighting",
-    "rarity": "legendary",
-    "element": "nature",
-    "item": {
-      "kind": "bow"
-    },
-    "main": {
-      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.2",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "3",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        }
-      ]
-    },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "15"
-        },
-        {
-          "stat": "drops.rareChance",
-          "kind": "percent",
-          "value": "10"
-        }
-      ]
-    }
-  },
-  {
-    "id": "seraph_archer",
-    "name": "Seraph Archer",
-    "job": "fighting",
-    "rarity": "mythic",
-    "element": "light",
-    "item": {
-      "kind": "bow"
-    },
-    "main": {
-      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.2",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "3",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "20"
-        },
-        {
-          "stat": "drops.rareChance",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
-    "id": "wither_huntress",
-    "name": "Wither Huntress",
-    "job": "fighting",
-    "rarity": "void",
-    "element": "void",
-    "item": {
-      "kind": "bow"
-    },
-    "main": {
-      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.2",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "3",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "20"
-        },
-        {
-          "stat": "drops.rareChance",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
-    "id": "hedge_acolyte",
-    "name": "Hedge Acolyte",
-    "job": "fighting",
-    "rarity": "common",
-    "element": "crystal",
-    "item": {
-      "kind": "staff"
-    },
-    "main": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.4",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+5% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "5"
-        }
-      ]
-    }
-  },
-  {
-    "id": "bronze_mystic",
-    "name": "Bronze Mystic",
-    "job": "fighting",
-    "rarity": "uncommon",
-    "element": "crystal",
-    "item": {
-      "kind": "staff"
-    },
-    "main": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.4",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+8% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "8"
-        }
-      ]
-    }
-  },
-  {
-    "id": "silver_mage",
-    "name": "Silver Mage",
-    "job": "fighting",
-    "rarity": "rare",
-    "element": "crystal",
-    "item": {
-      "kind": "staff"
-    },
-    "main": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.4",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "support": {
+    "teamBonus": {
       "description": "+10% damage",
       "modifiers": [
         {
@@ -2709,83 +2465,110 @@
     }
   },
   {
-    "id": "golden_sage",
-    "name": "Golden Sage",
+    "id": "rainbow_sniper",
+    "name": "Rainbow Sniper",
     "job": "fighting",
-    "rarity": "epic",
-    "element": "crystal",
+    "rarity": "legendary",
+    "element": "nature",
+    "role": "dps",
     "item": {
-      "kind": "staff"
+      "kind": "bow"
     },
-    "main": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
           "kind": "set",
-          "value": "1.4",
+          "value": "1.2",
           "scope": {
             "job": "fighting"
           }
         },
         {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
           "scope": {
             "job": "fighting"
-          }
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
           "value": "12"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "8"
         }
       ]
     }
   },
   {
-    "id": "kaleido_weaver",
-    "name": "Kaleido Weaver",
+    "id": "seraph_archer",
+    "name": "Seraph Archer",
     "job": "fighting",
-    "rarity": "legendary",
-    "element": "crystal",
+    "rarity": "mythic",
+    "element": "light",
+    "role": "dps",
     "item": {
-      "kind": "staff"
+      "kind": "bow"
     },
-    "main": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
           "stat": "burst.interval",
           "kind": "set",
-          "value": "1.4",
+          "value": "1.2",
           "scope": {
             "job": "fighting"
           }
         },
         {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
           "scope": {
             "job": "fighting"
-          }
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
@@ -2796,61 +2579,73 @@
     }
   },
   {
-    "id": "sanctum_oracle",
-    "name": "Sanctum Oracle",
-    "job": "fighting",
-    "rarity": "mythic",
-    "element": "light",
-    "item": {
-      "kind": "staff"
-    },
-    "main": {
-      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1.4",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "burst.fill",
-          "kind": "mult",
-          "value": "1.5",
-          "scope": {
-            "job": "fighting"
-          }
-        }
-      ]
-    },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "20"
-        },
-        {
-          "stat": "drops.rareChance",
-          "kind": "percent",
-          "value": "12"
-        }
-      ]
-    }
-  },
-  {
-    "id": "hex_warlock",
-    "name": "Hex Warlock",
+    "id": "wither_huntress",
+    "name": "Wither Huntress",
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
+    "item": {
+      "kind": "bow"
+    },
+    "ability": {
+      "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.2",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "3",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "hedge_acolyte",
+    "name": "Hedge Acolyte",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "crystal",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -2871,114 +2666,91 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
-        },
-        {
-          "stat": "drops.rareChance",
-          "kind": "percent",
-          "value": "12"
+          "value": "4"
         }
       ]
     }
   },
   {
-    "id": "field_reaper",
-    "name": "Field Reaper",
-    "job": "fighting",
-    "rarity": "common",
-    "element": "void",
-    "item": {
-      "kind": "scythe"
-    },
-    "main": {
-      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
-      "modifiers": [
-        {
-          "stat": "burst.interval",
-          "kind": "set",
-          "value": "1",
-          "scope": {
-            "job": "fighting"
-          }
-        },
-        {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "0.5",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
-        }
-      ]
-    },
-    "support": {
-      "description": "+5% damage",
-      "modifiers": [
-        {
-          "stat": "combat.damage",
-          "kind": "percent",
-          "value": "5"
-        }
-      ]
-    }
-  },
-  {
-    "id": "bronze_gleaner",
-    "name": "Bronze Gleaner",
+    "id": "bronze_mystic",
+    "name": "Bronze Mystic",
     "job": "fighting",
     "rarity": "uncommon",
-    "element": "void",
+    "element": "crystal",
+    "role": "dps",
     "item": {
-      "kind": "scythe"
+      "kind": "staff"
     },
-    "main": {
-      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
           "stat": "burst.interval",
           "kind": "set",
-          "value": "1",
+          "value": "1.4",
           "scope": {
             "job": "fighting"
           }
         },
         {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
           "scope": {
             "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "0.5",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
+          }
         }
       ]
     },
-    "support": {
+    "teamBonus": {
+      "description": "+6% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "6"
+        }
+      ]
+    }
+  },
+  {
+    "id": "silver_mage",
+    "name": "Silver Mage",
+    "job": "fighting",
+    "rarity": "rare",
+    "element": "crystal",
+    "role": "dps",
+    "item": {
+      "kind": "staff"
+    },
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
       "description": "+8% damage",
       "modifiers": [
         {
@@ -2990,103 +2762,132 @@
     }
   },
   {
-    "id": "golden_harvester",
-    "name": "Golden Harvester",
+    "id": "golden_sage",
+    "name": "Golden Sage",
     "job": "fighting",
     "rarity": "epic",
-    "element": "void",
+    "element": "crystal",
+    "role": "support",
     "item": {
-      "kind": "scythe"
+      "kind": "staff"
     },
-    "main": {
-      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
           "stat": "burst.interval",
           "kind": "set",
-          "value": "1",
+          "value": "1.4",
           "scope": {
             "job": "fighting"
           }
         },
         {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
           "scope": {
             "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "0.5",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
+          }
         }
       ]
     },
-    "support": {
-      "description": "+12% damage",
+    "teamBonus": {
+      "description": "+10% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
   },
   {
-    "id": "halfmoon_reaper",
-    "name": "Halfmoon Reaper",
+    "id": "kaleido_weaver",
+    "name": "Kaleido Weaver",
     "job": "fighting",
     "rarity": "legendary",
-    "element": "void",
+    "element": "crystal",
+    "role": "support",
     "item": {
-      "kind": "scythe"
+      "kind": "staff"
     },
-    "main": {
-      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
           "stat": "burst.interval",
           "kind": "set",
-          "value": "1",
+          "value": "1.4",
           "scope": {
             "job": "fighting"
           }
         },
         {
-          "stat": "combat.critChance",
-          "kind": "flat",
-          "value": "0.05",
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
           "scope": {
             "job": "fighting"
-          },
-          "scale": "none"
-        },
-        {
-          "stat": "combat.critDamage",
-          "kind": "flat",
-          "value": "0.5",
-          "scope": {
-            "job": "fighting"
-          },
-          "scale": "none"
+          }
         }
       ]
     },
-    "support": {
-      "description": "+15% damage, +10% rare drop chance",
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "sanctum_oracle",
+    "name": "Sanctum Oracle",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
@@ -3097,15 +2898,63 @@
     }
   },
   {
-    "id": "mercy_harvester",
-    "name": "Mercy Harvester",
+    "id": "hex_warlock",
+    "name": "Hex Warlock",
     "job": "fighting",
-    "rarity": "mythic",
-    "element": "light",
+    "rarity": "void",
+    "element": "void",
+    "role": "support",
+    "item": {
+      "kind": "staff"
+    },
+    "ability": {
+      "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1.4",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "burst.fill",
+          "kind": "mult",
+          "value": "1.5",
+          "scope": {
+            "job": "fighting"
+          }
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "field_reaper",
+    "name": "Field Reaper",
+    "job": "fighting",
+    "rarity": "common",
+    "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -3136,18 +2985,231 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+4% damage",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "4"
+        }
+      ]
+    }
+  },
+  {
+    "id": "bronze_gleaner",
+    "name": "Bronze Gleaner",
+    "job": "fighting",
+    "rarity": "uncommon",
+    "element": "void",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+6% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "6"
+        }
+      ]
+    }
+  },
+  {
+    "id": "golden_harvester",
+    "name": "Golden Harvester",
+    "job": "fighting",
+    "rarity": "epic",
+    "element": "void",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+10% damage",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "10"
+        }
+      ]
+    }
+  },
+  {
+    "id": "halfmoon_reaper",
+    "name": "Halfmoon Reaper",
+    "job": "fighting",
+    "rarity": "legendary",
+    "element": "void",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+12% damage, +8% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "12"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "8"
+        }
+      ]
+    }
+  },
+  {
+    "id": "mercy_harvester",
+    "name": "Mercy Harvester",
+    "job": "fighting",
+    "rarity": "mythic",
+    "element": "light",
+    "role": "dps",
+    "item": {
+      "kind": "scythe"
+    },
+    "ability": {
+      "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
+      "modifiers": [
+        {
+          "stat": "burst.interval",
+          "kind": "set",
+          "value": "1",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "combat.critChance",
+          "kind": "flat",
+          "value": "0.05",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        },
+        {
+          "stat": "combat.critDamage",
+          "kind": "flat",
+          "value": "0.5",
+          "scope": {
+            "job": "fighting"
+          },
+          "scale": "none"
+        }
+      ]
+    },
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
+      "modifiers": [
+        {
+          "stat": "combat.damage",
+          "kind": "percent",
+          "value": "16"
+        },
+        {
+          "stat": "drops.rareChance",
+          "kind": "percent",
+          "value": "10"
         }
       ]
     }
@@ -3158,10 +3220,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -3192,18 +3255,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3214,12 +3277,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
     "heirloomArt": "b",
     "heirloomName": "Frostjade",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -3232,18 +3296,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3254,12 +3318,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
     "heirloomArt": "d",
     "heirloomName": "Rayspire",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -3272,18 +3337,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3294,12 +3359,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
     "heirloomArt": "d",
     "heirloomName": "Crimsonfall",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -3312,18 +3378,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3334,12 +3400,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "heirloomArt": "b",
     "heirloomName": "Crownbreaker",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -3360,18 +3427,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3382,12 +3449,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "heirloomArt": "c",
     "heirloomName": "Jadecleaver",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -3408,18 +3476,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% material drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3430,12 +3498,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "crystal",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "heirloomArt": "b",
     "heirloomName": "Frostmaw",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -3456,18 +3525,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3478,12 +3547,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "heirloomArt": "c",
     "heirloomName": "Rotcleaver",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -3504,18 +3574,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3526,12 +3596,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "heirloomArt": "d",
     "heirloomName": "Dreadmaw",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -3552,18 +3623,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3574,12 +3645,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "heirloomArt": "b",
     "heirloomName": "Moltenpike",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -3601,18 +3673,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3623,12 +3695,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "heirloomArt": "d",
     "heirloomName": "Quartzfrost",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -3650,18 +3723,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3672,12 +3745,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "heirloomArt": "b",
     "heirloomName": "Coilcrown",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -3699,18 +3773,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% material drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3721,12 +3795,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "heirloomArt": "c",
     "heirloomName": "Cinderspine",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -3748,18 +3823,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3770,12 +3845,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "heirloomArt": "d",
     "heirloomName": "Bloodcoil",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -3797,18 +3873,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3819,12 +3895,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
     "heirloomArt": "b",
     "heirloomName": "Skybanner",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -3845,18 +3922,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3867,12 +3944,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
     "heirloomArt": "b",
     "heirloomName": "Moonbane",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -3893,18 +3971,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3915,12 +3993,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
     "heirloomArt": "d",
     "heirloomName": "Blightbanner",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -3941,18 +4020,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -3963,12 +4042,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "heirloomArt": "b",
     "heirloomName": "Petalfang",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -3989,18 +4069,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4011,12 +4091,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "heirloomArt": "c",
     "heirloomName": "Azurefang",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -4037,18 +4118,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% material drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4059,12 +4140,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "heirloomArt": "d",
     "heirloomName": "Mintfang",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -4085,18 +4167,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4107,12 +4189,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "heirloomArt": "b",
     "heirloomName": "Redsting",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -4133,18 +4216,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4155,12 +4238,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "heirloomArt": "c",
     "heirloomName": "Nightshade",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -4181,18 +4265,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% material drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4203,12 +4287,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "heirloomArt": "d",
     "heirloomName": "Icesting",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -4229,18 +4314,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4251,12 +4336,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "heirloomArt": "b",
     "heirloomName": "Thunderstar",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -4277,18 +4363,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4299,12 +4385,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "heirloomArt": "c",
     "heirloomName": "Verdance",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -4325,18 +4412,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4347,12 +4434,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "heirloomArt": "d",
     "heirloomName": "Violetflare",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -4373,18 +4461,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4395,12 +4483,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "heirloomArt": "b",
     "heirloomName": "Gorehammer",
-    "main": {
+    "ability": {
       "description": "Slow hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -4421,18 +4510,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4443,12 +4532,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "heirloomArt": "c",
     "heirloomName": "Sunweaver",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -4479,18 +4569,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4501,12 +4591,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "heirloomArt": "b",
     "heirloomName": "Redthorn",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -4537,18 +4628,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4559,12 +4650,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "heirloomArt": "c",
     "heirloomName": "Deepthorn",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -4595,18 +4687,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4617,12 +4709,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "heirloomArt": "d",
     "heirloomName": "Emberwing",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -4653,18 +4746,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4675,12 +4768,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
     "heirloomArt": "b",
     "heirloomName": "Orchidveil",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -4701,18 +4795,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4723,12 +4817,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
     "heirloomArt": "c",
     "heirloomName": "Soulrift",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -4749,18 +4844,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% Money from kills",
+    "teamBonus": {
+      "description": "+16% damage, +10% Money from kills",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.moneyMultiplier",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4771,12 +4866,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "heirloomArt": "d",
     "heirloomName": "Skyharvest",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -4807,18 +4903,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% material drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4829,12 +4925,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "heirloomArt": "b",
     "heirloomName": "Greengrave",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -4865,18 +4962,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4887,12 +4984,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "heirloomArt": "c",
     "heirloomName": "Hollowgrave",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -4923,18 +5021,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% material drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% material drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -4945,12 +5043,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "heirloomArt": "d",
     "heirloomName": "Coldtoll",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -4981,18 +5080,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5292,10 +5391,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -5308,18 +5408,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5331,10 +5431,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -5355,18 +5456,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5378,10 +5479,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -5403,18 +5505,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5426,10 +5528,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -5450,18 +5553,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5473,10 +5576,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -5497,18 +5601,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5520,10 +5624,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
-    "main": {
+    "ability": {
       "description": "Slow hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -5544,18 +5649,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5567,10 +5672,11 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -5601,18 +5707,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5624,10 +5730,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -5648,18 +5755,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5671,10 +5778,11 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -5705,18 +5813,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -5789,12 +5897,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
     "batch": "leviathan",
     "heirloomName": "Pearlbrand",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -5807,18 +5916,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5829,12 +5938,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
     "batch": "leviathan",
     "heirloomName": "Saltcutter",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -5847,18 +5957,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5869,12 +5979,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "batch": "leviathan",
     "heirloomName": "Wavecleaver",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -5895,18 +6006,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5917,12 +6028,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "batch": "leviathan",
     "heirloomName": "Drowncleaver",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -5943,18 +6055,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -5965,12 +6077,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "batch": "leviathan",
     "heirloomName": "Glimmerfin",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -5991,18 +6104,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6013,12 +6126,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "batch": "leviathan",
     "heirloomName": "Urchin Fang",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -6039,18 +6153,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6061,12 +6175,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "batch": "leviathan",
     "heirloomName": "Coralspire",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -6088,18 +6203,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6110,12 +6225,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "batch": "leviathan",
     "heirloomName": "Krakenthorn",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -6137,18 +6253,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6159,12 +6275,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
     "batch": "leviathan",
     "heirloomName": "Surfpiercer",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -6185,18 +6302,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6207,12 +6324,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
     "batch": "leviathan",
     "heirloomName": "Sunkenlance",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -6233,18 +6351,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6255,12 +6373,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "batch": "leviathan",
     "heirloomName": "Anchorfall",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -6281,18 +6400,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6303,12 +6422,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "batch": "leviathan",
     "heirloomName": "Barnaclemaul",
-    "main": {
+    "ability": {
       "description": "Slow hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -6329,18 +6449,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6351,12 +6471,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "batch": "leviathan",
     "heirloomName": "Moonscale",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -6387,18 +6508,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6409,12 +6530,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "batch": "leviathan",
     "heirloomName": "Sirensong",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -6445,18 +6567,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6467,12 +6589,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
     "batch": "leviathan",
     "heirloomName": "Tideseer",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -6493,18 +6616,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6515,12 +6638,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
     "batch": "leviathan",
     "heirloomName": "Murkwand",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -6541,18 +6665,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6563,12 +6687,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "batch": "leviathan",
     "heirloomName": "Kelpreap",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -6599,18 +6724,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6621,12 +6746,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "batch": "leviathan",
     "heirloomName": "Deepreap",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -6657,18 +6783,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+20% damage, +12% rare drop chance",
+    "teamBonus": {
+      "description": "+16% damage, +10% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "20"
+          "value": "16"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "12"
+          "value": "10"
         }
       ]
     }
@@ -6808,12 +6934,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
     "batch": "leviathan",
     "heirloomName": "Auroratusk",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s",
       "modifiers": [
         {
@@ -6826,18 +6953,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6849,12 +6976,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
     "batch": "leviathan",
     "heirloomName": "Maelfang",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 2 s, signature attack ×15",
       "modifiers": [
         {
@@ -6875,18 +7003,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6898,12 +7026,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
     "batch": "leviathan",
     "heirloomName": "Venomplume",
-    "main": {
+    "ability": {
       "description": "Fast hits every 0.5 s, gauge fills twice as fast",
       "modifiers": [
         {
@@ -6924,18 +7053,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6947,12 +7076,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
     "batch": "leviathan",
     "heirloomName": "Bluestrike",
-    "main": {
+    "ability": {
       "description": "Steady hits every 0.8 s, +15% crit chance",
       "modifiers": [
         {
@@ -6974,18 +7104,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -6997,12 +7127,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
     "batch": "leviathan",
     "heirloomName": "Pearlrider",
-    "main": {
+    "ability": {
       "description": "Heavy hits every 1.5 s, signature attack ×20",
       "modifiers": [
         {
@@ -7023,18 +7154,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7046,12 +7177,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
     "batch": "leviathan",
     "heirloomName": "Clawbreaker",
-    "main": {
+    "ability": {
       "description": "Slow hits every 3 s, signature attack ×30",
       "modifiers": [
         {
@@ -7072,18 +7204,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7095,12 +7227,13 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
     "batch": "leviathan",
     "heirloomName": "Mantaglide",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.2 s, +5% crit chance, +3 crit damage",
       "modifiers": [
         {
@@ -7131,18 +7264,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7154,12 +7287,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
     "batch": "leviathan",
     "heirloomName": "Dreadbloom",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1.4 s, gauge fills 1.5× as fast",
       "modifiers": [
         {
@@ -7180,18 +7314,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }
@@ -7203,12 +7337,13 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
     "batch": "leviathan",
     "heirloomName": "Coilreaper",
-    "main": {
+    "ability": {
       "description": "Steady hits every 1 s, +5% crit chance, +0.5 crit damage",
       "modifiers": [
         {
@@ -7239,18 +7374,18 @@
         }
       ]
     },
-    "support": {
-      "description": "+25% damage, +15% rare drop chance",
+    "teamBonus": {
+      "description": "+20% damage, +12% rare drop chance",
       "modifiers": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "25"
+          "value": "20"
         },
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "15"
+          "value": "12"
         }
       ]
     }

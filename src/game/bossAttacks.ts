@@ -11,6 +11,75 @@ import { Decimal } from './num';
  */
 
 export type BossPattern = CombatConfig['bossPattern'];
+/** A boss ability (DESIGN.md §6 Boss abilities): every `every`-th attack is its hit on its target. */
+export type BossAbility = CombatConfig['bossAbilities'][number];
+
+/** The abilities a floor kind on a difficulty has (`combat.json` `bossAbilities`), in order. */
+export function abilitiesFor(
+  all: readonly BossAbility[],
+  kind: string,
+  difficulty: string,
+): BossAbility[] {
+  return all.filter(
+    (a) =>
+      (a.kinds as readonly string[]).includes(kind) &&
+      (a.difficulties as readonly string[]).includes(difficulty),
+  );
+}
+
+/** The ability that replaces attack number `k` (never a slam; the first listed wins), or null. */
+export function abilityOfAttack(
+  k: number,
+  pattern: BossPattern,
+  abilities: readonly BossAbility[],
+): BossAbility | null {
+  if (abilities.length === 0 || isBossSlam(k, pattern)) return null;
+  for (const a of abilities) if (k % a.every === a.offset) return a;
+  return null;
+}
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+
+/** Attacks after which the slams and every ability repeat. */
+function schedulePeriod(pattern: BossPattern, abilities: readonly BossAbility[]): number {
+  return abilities.reduce((p, a) => (p * a.every) / gcd(p, a.every), pattern.attacksPerCycle);
+}
+
+/** How many of attacks `after + 1 .. upto` each ability replaces (same order as `abilities`). */
+export function abilityCounts(
+  after: number,
+  upto: number,
+  pattern: BossPattern,
+  abilities: readonly BossAbility[],
+): number[] {
+  const counts = abilities.map(() => 0);
+  if (abilities.length === 0 || upto <= after) return counts;
+  const period = schedulePeriod(pattern, abilities);
+  const upTo = (n: number): number[] => {
+    const whole = Math.floor(n / period);
+    const out = abilities.map(() => 0);
+    for (let k = 1; k <= period; k++) {
+      const a = abilityOfAttack(k, pattern, abilities);
+      if (!a) continue;
+      const i = abilities.indexOf(a);
+      out[i]! += whole + (k <= n % period ? 1 : 0);
+    }
+    return out;
+  };
+  const hi = upTo(upto);
+  const lo = upTo(after);
+  return counts.map((_, i) => hi[i]! - lo[i]!);
+}
+
+/** What attack `k` takes from its main target, as a multiple of a normal attack: 0 when an
+ *  ability sends it elsewhere. */
+function mainMultiplier(
+  k: number,
+  pattern: BossPattern,
+  abilities: readonly BossAbility[],
+): number {
+  return abilityOfAttack(k, pattern, abilities) ? 0 : bossAttackMultiplier(k, pattern);
+}
 
 /** Slack that keeps a boundary exactly on an attack from flipping with rounding. */
 const EPSILON = 1e-9;
@@ -41,17 +110,23 @@ export function slamsBetween(after: number, upto: number, pattern: BossPattern):
   return Math.floor(upto / c) - Math.floor(after / c);
 }
 
-/** Damage of attacks `after + 1 .. upto`, given the damage of a normal attack. */
+/**
+ * Damage of attacks `after + 1 .. upto` on their main target, given the damage of a normal attack;
+ * the attacks an ability sends elsewhere (`abilities`) are left out.
+ */
 export function bossDamageBetween(
   after: number,
   upto: number,
   normal: Decimal,
   pattern: BossPattern,
+  abilities: readonly BossAbility[] = [],
 ): Decimal {
   const count = upto - after;
   if (count <= 0) return new Decimal(0);
   const slams = slamsBetween(after, upto, pattern);
-  const multiple = (count - slams) * pattern.lightMultiplier + slams * pattern.slamMultiplier;
+  const replaced = abilityCounts(after, upto, pattern, abilities).reduce((a, b) => a + b, 0);
+  const multiple =
+    (count - slams - replaced) * pattern.lightMultiplier + slams * pattern.slamMultiplier;
   return normal.mul(multiple);
 }
 
@@ -65,10 +140,13 @@ export function lethalBossAttack(
   normal: Decimal,
   after: number,
   pattern: BossPattern,
+  abilities: readonly BossAbility[] = [],
 ): number {
   if (pool.lte(0)) return after + 1;
-  const c = pattern.attacksPerCycle;
-  const cycle = normal.mul(c);
+  const c = schedulePeriod(pattern, abilities);
+  let perPeriod = 0;
+  for (let k = 1; k <= c; k++) perPeriod += mainMultiplier(k, pattern, abilities);
+  const cycle = normal.mul(perPeriod);
   const ratio = pool.div(cycle).toNumber();
   if (!Number.isFinite(ratio) || ratio > Number.MAX_SAFE_INTEGER / c) {
     return Number.MAX_SAFE_INTEGER;
@@ -80,7 +158,7 @@ export function lethalBossAttack(
   const slack = pool.mul(EPSILON);
   for (let i = 0; i <= 2 * c; i++) {
     k++;
-    left = left.sub(normal.mul(bossAttackMultiplier(k, pattern)));
+    left = left.sub(normal.mul(mainMultiplier(k, pattern, abilities)));
     if (left.lte(slack)) return k;
   }
   return k;
@@ -95,11 +173,12 @@ export function meanAttacksToKnockout(
   pool: Decimal,
   normal: Decimal,
   pattern: BossPattern,
+  abilities: readonly BossAbility[] = [],
 ): number {
-  const c = pattern.attacksPerCycle;
+  const c = schedulePeriod(pattern, abilities);
   let total = 0;
   for (let start = 0; start < c; start++) {
-    total += lethalBossAttack(pool, normal, start, pattern) - start;
+    total += lethalBossAttack(pool, normal, start, pattern, abilities) - start;
   }
   return total / c;
 }
@@ -122,6 +201,7 @@ export function recordBossAttacks(
   pattern: BossPattern,
   lethal: boolean,
   cardId = '',
+  abilities: readonly BossAbility[] = [],
 ): void {
   if (upto <= after) return;
   const single = (k: number, knockout: boolean): BossAttackEvent => ({
@@ -138,7 +218,8 @@ export function recordBossAttacks(
   if (count > MAX_DETAILED_ATTACKS) {
     // Too many to play one by one: one event for the light hits, one for the slams.
     const slams = slamsBetween(after, lastLight, pattern);
-    const lights = count - slams;
+    const replaced = abilityCounts(after, lastLight, pattern, abilities).reduce((a, b) => a + b, 0);
+    const lights = count - slams - replaced;
     const nextSlamSeconds = (nextBossSlam(lastLight, pattern) - lastLight) * intervalSeconds;
     const merged = (n: number, slam: boolean): BossAttackEvent => ({
       dungeon: dungeonId,
@@ -152,8 +233,37 @@ export function recordBossAttacks(
     if (lights > 0) pushBossAttack(report.bossAttacks, merged(lights, false));
     if (slams > 0) pushBossAttack(report.bossAttacks, merged(slams, true));
   } else {
-    for (let k = after + 1; k <= lastLight; k++)
+    for (let k = after + 1; k <= lastLight; k++) {
+      if (abilityOfAttack(k, pattern, abilities)) continue;
       pushBossAttack(report.bossAttacks, single(k, false));
+    }
   }
   if (lethal) pushBossAttack(report.bossAttacks, single(upto, true));
+}
+
+/** One ability's hits in a span: how many landed and the attack number of the last one. */
+export interface AbilityHits {
+  ability: BossAbility;
+  count: number;
+  /** Attack number of the last of them (seeds which card it picked). */
+  last: number;
+}
+
+/** The ability hits among attacks `after + 1 .. upto`. */
+export function abilityHitsBetween(
+  after: number,
+  upto: number,
+  pattern: BossPattern,
+  abilities: readonly BossAbility[],
+): AbilityHits[] {
+  const counts = abilityCounts(after, upto, pattern, abilities);
+  const out: AbilityHits[] = [];
+  abilities.forEach((ability, i) => {
+    const count = counts[i]!;
+    if (count <= 0) return;
+    let last = upto;
+    while (abilityOfAttack(last, pattern, abilities) !== ability) last--;
+    out.push({ ability, count, last });
+  });
+  return out;
 }

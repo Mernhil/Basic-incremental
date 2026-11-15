@@ -18,8 +18,17 @@ const SOURCE_LABELS: Record<Modifier['source']['kind'], string> = {
   challenge: 'Ascension challenge',
   heirloom: 'Heirloom tree',
   account: 'Account level', // compile fix (mechanics): reward track cost cap bumps
-  upgrade: 'Upgrade', // compile fix (mechanics): upgrade shelf purchases (DESIGN §4)
+  upgrade: 'Upgrade', // milestone perks, Training and tool lines (DESIGN §4, §6)
 };
+
+/** The name of a perk (`perk:<option>`), a Training line (`training:<id>`) or a tool line (`tool:<id>`). */
+function upgradeSourceName(content: Content, id: string): string | undefined {
+  const [kind, rest] = [id.slice(0, id.indexOf(':')), id.slice(id.indexOf(':') + 1)];
+  if (kind === 'perk') return content.perkOptionById.get(rest)?.option.name;
+  if (kind === 'training') return content.trainingById.get(rest)?.name;
+  if (kind === 'tool') return content.production.tools.find((t) => t.id === rest)?.name;
+  return undefined;
+}
 
 /** "Gilded Plate", "Gilded Tradition set", or a generic label for sources without a name yet. */
 export function sourceName(content: Content, m: Modifier): string {
@@ -29,7 +38,7 @@ export function sourceName(content: Content, m: Modifier): string {
     const set = content.setById.get(id);
     return set ? `${set.name} set` : SOURCE_LABELS[kind];
   }
-  if (kind === 'upgrade') return content.upgradeById.get(id)?.name ?? SOURCE_LABELS[kind];
+  if (kind === 'upgrade') return upgradeSourceName(content, id) ?? SOURCE_LABELS[kind];
   if (kind === 'card') return content.cardById.get(id)?.name ?? SOURCE_LABELS[kind];
   return SOURCE_LABELS[kind];
 }
@@ -56,7 +65,7 @@ const STAT_NAMES: Partial<Record<Modifier['stat'], string>> = {
   'cost.multiplier': 'prices',
   'cost.growth': 'price growth',
   'burst.fill': 'burst gauge fill',
-  'card.supportPower': 'support card effects',
+  'card.teamBonusPower': 'team bonuses',
   'burst.power': 'burst power',
   'trial.reward': 'Glimmer Trial rewards',
   'prestige.gain': 'Starlight from ascensions',

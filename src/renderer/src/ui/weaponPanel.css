@@ -505,3 +505,30 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
     animation: none;
   }
 }
+
+/* ---- what an upgrade changes: real numbers, now to after, the gain in green ---- */
+.wp-changes {
+  display: grid;
+  gap: 2px;
+  margin: 6px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+.wp-change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+}
+.wp-change__label {
+  min-width: 78px;
+  opacity: 0.8;
+}
+.wp-change__arrow {
+  opacity: 0.6;
+}
+.wp-change__gain {
+  color: #6fdc7e;
+  font-weight: 700;
+}

@@ -2,8 +2,8 @@
   {
     "id": "lone_wolf",
     "name": "Lone Wolf",
-    "rule": "No supports: only your main card fights.",
-    "restrictions": ["no_supports"],
+    "rule": "Only your first card, left to right, fights.",
+    "restrictions": ["first_card_only"],
     "penalties": [],
     "targets": [
       {
