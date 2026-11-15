@@ -97,10 +97,10 @@ describe('GameLoop game speed (dev builds)', () => {
   it('a change applies from the next step on; a long sleep is clamped before the speed', () => {
     const loop = new GameLoop(bareState(), content, constantRng(0.5), 0);
     loop.step(10_000);
-    loop.setSpeed(10);
+    loop.setSpeed(2);
     loop.step(20_000);
-    expect(loop.state.stats.playTimeMs).toBe(10_000 + 100_000);
+    expect(loop.state.stats.playTimeMs).toBe(10_000 + 20_000);
     loop.step(20_000 + 100 * MAX_STEP_MS);
-    expect(loop.state.stats.playTimeMs).toBe(110_000 + 10 * MAX_STEP_MS);
+    expect(loop.state.stats.playTimeMs).toBe(30_000 + 2 * MAX_STEP_MS);
   });
 });
