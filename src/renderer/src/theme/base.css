@@ -671,12 +671,12 @@ body {
     display: flex;
     justify-content: center;
   }
-  .bi-card--kit:not([data-border-worn]) .bi-info__speed,
-  .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
+  .bi-card--kit:not([data-border-worn]) .bi-info__speed {
     display: inline;
   }
 }
-.bi-card--kit:not([data-border-worn]) .bi-info__rarity {
+/* the banner has no room for the rarity word next to six stars and the level: the level takes the rarity's colour */
+.bi-card--kit:not([data-border-worn]) .bi-info__level {
   color: color-mix(in srgb, var(--rar) 55%, var(--kit-ink));
 }
 .bi-card--kit:not([data-border-worn]) .bi-info__bar {
