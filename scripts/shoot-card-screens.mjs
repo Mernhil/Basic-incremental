@@ -39,7 +39,7 @@ await page.evaluate(
       'reef_assassin',
     ])
       own(id, 'mythic', 2, 110);
-    own('ember_squire', 'wood', 1, 4);
+    own('ember_squire', 'wood', 1, 20);
     own('storm_duelist', 'silver', 3, 30);
     s.cards.loadouts.fighting = {
       main: 'jade_vanguard',
@@ -53,7 +53,14 @@ await page.evaluate(
 );
 await page.reload();
 await page.waitForSelector('.shell');
-await page.evaluate(() => document.querySelector('.away button')?.click());
+// the welcome-back dialog (.wb) would cover the piles and stop every click
+for (let i = 0; i < 20; i++) {
+  const btn = await page.$('.wb button');
+  if (!btn) break;
+  await btn.click().catch(() => {});
+  await page.waitForTimeout(300);
+}
+await page.waitForTimeout(1500);
 await page.addStyleTag({ content: '.st-toasts{display:none!important}' });
 // the game's own sound off too (the app itself is started with --mute-audio)
 const mute = page.locator('.snd-mute');
@@ -97,7 +104,7 @@ await click('[data-open="cards"]', 1500);
 await shot('02-collection');
 await page.evaluate(() => document.querySelector('.cp-tile')?.click());
 await page.waitForTimeout(500);
-if (await click('[data-key="enhance-toggle"], .cp-enhance-toggle', 600)) await shot('03-enhance');
+if (await click('[data-key="enh-toggle"]', 800)) await shot('03-enhance');
 await text('.cp-tab, button', 'Heirlooms');
 await shot('04-heirlooms');
 await text('.cp-tab, button', 'Loadouts');
@@ -112,7 +119,7 @@ await back();
 // Summon
 await click('[data-open="summon"]', 1500);
 await shot('09-summon');
-if (await click('.sm-pull--ten', 2500)) {
+if (await click('.sm-pull--ten:visible', 2500)) {
   await shot('10-reveal-ten-dealt');
   for (let i = 0; i < 5; i++) {
     await page.click('.rv__row').catch(() => {});
@@ -125,7 +132,7 @@ if (await click('.sm-pull--ten', 2500)) {
 await shot('12-summon-hand');
 if (await text('.sm-gate__row', 'Heirloom Gate', 900)) {
   await shot('13-heirloom-gate');
-  if (await click('.sm-pull--ten', 2500)) {
+  if (await click('.sm-pull--ten:visible', 2500)) {
     await shot('14-heirloom-reveal-dealt');
     for (let i = 0; i < 5; i++) {
       await page.click('.rv__row').catch(() => {});
@@ -136,6 +143,22 @@ if (await text('.sm-gate__row', 'Heirloom Gate', 900)) {
     await back();
   }
   await shot('16-heirloom-hand');
+}
+await back();
+// the tier-up stage: the Wood card's upgrade button on its detail panel
+await click('[data-open="cards"]', 1500);
+await page.evaluate(() => {
+  const t = [...document.querySelectorAll('.cp-tile')].find((x) =>
+    x.textContent?.includes('Ember Squire'),
+  );
+  t?.click();
+});
+await page.waitForTimeout(600);
+if (await click('.wp-go', 1500)) {
+  await shot('19-tier-up');
+  await page.waitForTimeout(2500);
+  await shot('20-tier-up-later');
+  await back();
 }
 await back();
 // Wardrobe

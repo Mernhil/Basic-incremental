@@ -180,6 +180,8 @@ export function createCard(initial: CardProps): CardView {
     // the bottom plate (DESIGN.md §5 full-art layout): ability and speed, level and rarity, bar
     const face = p.face;
     ability.textContent = face?.ability ?? '';
+    // the weapon's name is dropped from the banner only when it is the card's own name (an Heirloom's)
+    el.classList.toggle('bi-card--same-name', Boolean(face) && face!.ability === p.name);
     speed.textContent = face?.speed ?? '';
     levelText.textContent = face?.level
       ? COPY.card.levelShort(face.level.value, face.level.cap)
