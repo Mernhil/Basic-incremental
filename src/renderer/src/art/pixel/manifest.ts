@@ -1461,6 +1461,7 @@ export const MANIFEST: Record<
   'star-prismatic-4-on': { w: 11, h: 11 },
   'star-prismatic-5-on': { w: 11, h: 11 },
   'star-silver-on': { w: 11, h: 11 },
+  'star-wood-on': { w: 11, h: 11 },
   'tile-mine-drop-0': { w: 58, h: 64 },
   'tile-mine-drop-1': { w: 58, h: 64 },
   'tile-mine-drop-2': { w: 58, h: 64 },

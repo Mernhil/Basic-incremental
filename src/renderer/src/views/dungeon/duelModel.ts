@@ -65,8 +65,8 @@ export const DUEL_FOE_MIN = 170;
 export const HAND_TAGS = 12;
 
 /** CSS px the enemy card may be tall in a duel `height` tall over a hand `handPx` tall. */
-export function foeRoom(height: number, handPx: number): number {
-  return height - DUEL_TOP - DUEL_GAP - HAND_TAGS - HAND_MARGIN - handPx;
+export function foeRoom(height: number, handPx: number, margin = HAND_MARGIN): number {
+  return height - DUEL_TOP - DUEL_GAP - HAND_TAGS - margin - handPx;
 }
 
 /** CSS px the duel keeps free under the hand, so the whole hand stands inside the window. */
@@ -79,9 +79,9 @@ export const HAND_MARGIN = 8;
  * scale then rounds it to a whole scale (`fitCard`) and the enemy card gives way (`foeRoom`);
  * only a duel too short for the smallest scale cuts the hand.
  */
-export function handCardWant(height: number): { want: number; max: number } {
+export function handCardWant(height: number, margin = HAND_MARGIN): { want: number; max: number } {
   const ratio = HAND.cardW / HAND.cardH;
-  const room = Math.max(0, foeRoom(height, 0) - DUEL_FOE_MIN);
+  const room = Math.max(0, foeRoom(height, 0, margin) - DUEL_FOE_MIN);
   const cardRoom = (room * HAND.cardH) / (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
   return {
     want: Math.min(height * 0.42, cardRoom) * ratio,

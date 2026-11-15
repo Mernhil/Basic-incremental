@@ -230,7 +230,15 @@
   font-weight: 700;
 }
 .ac-chapter.is-done .ac-tape__count::after {
-  content: ' ★';
+  /* the gold rank star sprite, 11 art pixels at one device pixel each, after the count */
+  content: '';
+  display: inline-block;
+  width: calc(11px / var(--dpr, 1));
+  height: calc(11px / var(--dpr, 1));
+  margin-left: 4px;
+  vertical-align: -1px;
+  background: url('../art/pixel/sprites/star-gold-on.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
 }
 
 .ac-grid {

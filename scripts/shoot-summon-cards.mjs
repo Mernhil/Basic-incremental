@@ -44,18 +44,23 @@ if ((await mute.count()) > 0 && (await mute.getAttribute('aria-pressed')) !== 't
 await page.setViewportSize({ width: 1280, height: 720 });
 await page.waitForTimeout(1500);
 const shot = (n) => page.screenshot({ path: `${out}/${n}.png` });
-const pullAndReveal = async (tag) => {
-  await page.locator('.sm-pull--ten:visible').first().click({ timeout: 8000 });
+const pullAndReveal = async (tag, ten = true) => {
+  await page
+    .locator(ten ? '.sm-pull--ten:visible' : '.sm-pull:not(.sm-pull--ten):visible')
+    .first()
+    .click({ timeout: 8000 });
   await page.waitForTimeout(2500);
   await shot(`${tag}-reveal-dealt`);
-  for (let i = 0; i < 6; i++) {
-    await page
-      .locator('.rv__row')
-      .first()
-      .click({ timeout: 2000 })
-      .catch(() => {});
-    await page.waitForTimeout(700);
+  // flip the cards one by one until the Done button shows (an entrance of the best card needs a click too)
+  for (let i = 0; i < 16; i++) {
+    if (await page.getByRole('button', { name: 'Done' }).isVisible()) break;
+    const entrance = page.locator('.rv-entrance');
+    const target =
+      (await entrance.count()) > 0 ? entrance.first() : page.locator('.rv__row').first();
+    await target.click({ timeout: 2000 }).catch(() => {});
+    await page.waitForTimeout(900);
   }
+  await page.waitForTimeout(3000); // the reveal has settled
   await shot(`${tag}-reveal`);
   await page
     .getByRole('button', { name: 'Done' })
@@ -69,6 +74,8 @@ const pullAndReveal = async (tag) => {
   await shot(`${tag}-hand`);
 };
 await page.click('[data-open="summon"]');
+await page.waitForTimeout(1500);
+await pullAndReveal('1b-card-portal-single', false);
 await page.waitForTimeout(1500);
 await pullAndReveal('1-card-portal');
 await page.getByText('Heirloom Gate').first().click();
