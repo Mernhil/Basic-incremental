@@ -51,6 +51,7 @@ import {
   floorPips,
   HAND,
   foeRoom,
+  HAND_MARGIN,
   handCardWant,
   handSize,
   handSlot,
@@ -314,13 +315,16 @@ export function createArena(ctx: ArenaContext): Arena {
   // ---- sizes: the hand's whole scale follows the duel's height ----
   const fitHand = (): void => {
     const h = el.clientHeight || 480;
-    const { want, max } = handCardWant(h);
+    // the view lifts the hand above its buttons (`--du-hand-gap`); the table's window does not
+    const gap = parseFloat(getComputedStyle(el).getPropertyValue('--du-hand-gap'));
+    const margin = Number.isFinite(gap) ? gap : HAND_MARGIN;
+    const { want, max } = handCardWant(h, margin);
     // the scale also leaves the four-card hand its width inside the duel
     const wide = ((el.clientWidth || 99999) - 24) * (HAND.cardW / handSize(4).w);
     const n = fitCard(hand, { want, max: () => Math.min(max, wide) });
     // the enemy card gives way to the hand, so the whole hand stands inside the duel
     const handPx = (n / screenDpr()) * (HAND.crest + HAND.cardH + HAND.drop + HAND.rim);
-    el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx))}px`);
+    el.style.setProperty('--du-foe-room', `${Math.floor(foeRoom(h, handPx, margin))}px`);
   };
   fitHand();
   new ResizeObserver(() => fitHand()).observe(el);
