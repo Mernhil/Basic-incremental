@@ -16,3 +16,16 @@ export function devCheatsEnabled(
   if (app.isPackaged) return devBuild;
   return env['BI_NO_CHEATS'] !== '1';
 }
+
+/**
+ * Whether the window opens off-screen for an automated test run (`BI_HIDDEN_WINDOW=1`): it is
+ * placed far outside every monitor, shown without taking focus and kept off the taskbar, so a
+ * test or screenshot run never appears on the user's screen. The page still renders, so
+ * screenshots over the debugging port work. Unpackaged runs only; a packaged build ignores it.
+ */
+export function hiddenTestWindow(
+  app: { isPackaged: boolean },
+  env: Record<string, string | undefined>,
+): boolean {
+  return !app.isPackaged && env['BI_HIDDEN_WINDOW'] === '1';
+}
