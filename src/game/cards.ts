@@ -18,13 +18,13 @@ import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { finalPrice, pay, type Price } from './production';
-import { supportPower } from './upgrades';
+import { teamBonusPower } from './upgrades';
 import { activeWorkers, producerJob, workerModifiers, workerScope, workplaceOf } from './workers';
 import type { CardGain, TickReport, TierUp } from './report';
 import {
   cloneState,
   newOwnedCard,
-  SUPPORT_SLOTS,
+  LOADOUT_SLOTS,
   type CardLoadout,
   type CardState,
   type GameState,
@@ -34,7 +34,7 @@ import {
 
 /**
  * Cards (DESIGN.md §5): a collection of owned cards with tier, stars, level and
- * XP; the fighting loadout (1 main + 3 supports) under a cost cap (logging and mining cards are
+ * XP; the fighting loadout (four equal slots) under a cost cap (logging and mining cards are
  * workers instead, workers.ts); star-ups, tier-ups, shards and
  * card drops. Card effects reach the game only as modifiers (source kind `card`) through
  * `collectModifiers`. Every progression number is in cardRules.json.
@@ -45,11 +45,12 @@ import {
  */
 
 export type { Job };
-export type CardRole = 'main' | 'support';
+/** What a card gives: its Ability (itself) or its Team bonus (the team); DESIGN.md §5 Loadouts. */
+export type CardRole = 'ability' | 'team';
 /** The one job with a loadout (DESIGN.md §5 Loadouts). */
 export type LoadoutJob = 'fighting';
-/** A loadout slot: the main card or support slot 0, 1 or 2. */
-export type LoadoutSlot = 'main' | number;
+/** A loadout slot: 0 to 3, left to right. */
+export type LoadoutSlot = number;
 
 export type CardFailure =
   /** No card with that id. */
@@ -305,8 +306,7 @@ export function cardHealth(content: Content, cardId: string, owned: OwnedCard): 
 /**
  * A card's base damage per second (DESIGN.md §5): its rarity's base damage × its base-stat
  * power, so it grows with level, stars and tier like its health. 0 for unknown ids. The fighting
- * main's value is the base of all fighting damage; the modifiers (supports, tree, mastery) come
- * on top.
+ * value is the base of that card's damage; the modifiers (team bonuses, tree, mastery) come on top.
  */
 export function cardBaseDamage(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
@@ -385,9 +385,9 @@ export function loadoutCostCap(
   return job === 'fighting' ? Math.min(cap, content.account.loadoutCostCapTop) : cap;
 }
 
-/** Card ids of a loadout, main first, without empty slots. */
+/** Card ids of a loadout, left to right, without empty slots. */
 export function loadoutCards(loadout: CardLoadout): string[] {
-  return [loadout.main, ...loadout.supports].filter((id): id is string => id !== null);
+  return loadout.slots.filter((id): id is string => id !== null);
 }
 
 /** Total cost of the cards in a loadout. */
@@ -400,16 +400,13 @@ export function loadoutSlotOf(
   state: GameState,
   cardId: string,
 ): { job: LoadoutJob; slot: LoadoutSlot } | null {
-  const loadout = state.cards.loadouts.fighting;
-  if (loadout.main === cardId) return { job: 'fighting', slot: 'main' };
-  const index = loadout.supports.indexOf(cardId);
-  if (index >= 0) return { job: 'fighting', slot: index };
-  return null;
+  const index = state.cards.loadouts.fighting.slots.indexOf(cardId);
+  return index >= 0 ? { job: 'fighting', slot: index } : null;
 }
 
 /**
  * Why a fighting loadout cannot be saved, or null when it can: every card exists, is owned, is a
- * fighting card and appears once; the total cost fits the cap; there are 3 support slots.
+ * fighting card and appears once; the total cost fits the cap; there are four slots.
  */
 export function loadoutProblem(
   state: GameState,
@@ -418,7 +415,7 @@ export function loadoutProblem(
   loadout: CardLoadout,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): CardFailure | null {
-  if (loadout.supports.length !== SUPPORT_SLOTS) return 'invalid-slot';
+  if (loadout.slots.length !== LOADOUT_SLOTS) return 'invalid-slot';
   const ids = loadoutCards(loadout);
   for (const id of ids) {
     const card = content.cardById.get(id);
@@ -434,7 +431,7 @@ export function loadoutProblem(
   return null;
 }
 
-/** Replaces the fighting loadout (main + 3 supports) after checking it. */
+/** Replaces the fighting loadout (four slots) after checking it. */
 export function setLoadout(
   state: GameState,
   content: Content,
@@ -445,7 +442,7 @@ export function setLoadout(
   const problem = loadoutProblem(state, content, job, loadout, modifiers);
   if (problem) return fail(problem);
   const next = cloneState(state);
-  next.cards.loadouts[job] = { main: loadout.main, supports: [...loadout.supports] };
+  next.cards.loadouts[job] = { slots: [...loadout.slots] };
   return { ok: true, state: next };
 }
 
@@ -461,23 +458,13 @@ export function setLoadoutSlot(
   cardId: string | null,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): CardResult {
-  if (slot !== 'main' && !(Number.isInteger(slot) && slot >= 0 && slot < SUPPORT_SLOTS)) {
-    return fail('invalid-slot');
-  }
-  const current = state.cards.loadouts[job];
-  const loadout: CardLoadout = { main: current.main, supports: [...current.supports] };
-  const read = (s: LoadoutSlot): string | null =>
-    s === 'main' ? loadout.main : (loadout.supports[s] ?? null);
-  const write = (s: LoadoutSlot, id: string | null): void => {
-    if (s === 'main') loadout.main = id;
-    else loadout.supports[s] = id;
-  };
+  if (!Number.isInteger(slot) || slot < 0 || slot >= LOADOUT_SLOTS) return fail('invalid-slot');
+  const loadout: CardLoadout = { slots: [...state.cards.loadouts[job].slots] };
   if (cardId !== null) {
-    const from: LoadoutSlot | null =
-      loadout.main === cardId ? 'main' : loadout.supports.indexOf(cardId);
-    if (from !== null && from !== -1) write(from, read(slot));
+    const from = loadout.slots.indexOf(cardId);
+    if (from !== -1) loadout.slots[from] = loadout.slots[slot] ?? null;
   }
-  write(slot, cardId);
+  loadout.slots[slot] = cardId;
   return setLoadout(state, content, job, loadout, modifiers);
 }
 
@@ -493,9 +480,9 @@ export function scaleCardModifier(m: CardModifierData, power: number): ModifierD
 }
 
 /**
- * The modifiers a card gives in a role at its current rank and level: a fighting card's main
- * ability plus the main growth, or its support effect; a worker's ability as written (role
- * `main`; workers have no support effect), not yet scoped to a place. Use it to preview a card.
+ * The modifiers a card gives in a role at its current rank and level: a fighting card's Ability
+ * plus the ability growth, or its Team bonus; a worker's ability as written (role `ability`;
+ * workers have no team bonus), not yet scoped to a place. Use it to preview a card.
  */
 export function cardEffectModifiers(
   content: Content,
@@ -507,49 +494,45 @@ export function cardEffectModifiers(
   if (!card) return [];
   const source = { kind: 'card' as const, id: cardId };
   if (card.job !== 'fighting') {
-    return role === 'main' ? card.worker.modifiers.map((m) => ({ ...m, source })) : [];
+    return role === 'ability' ? card.worker.modifiers.map((m) => ({ ...m, source })) : [];
   }
   const power = cardPower(content, owned);
-  const effect = role === 'main' ? card.main : card.support;
+  const effect = role === 'ability' ? card.ability : card.teamBonus;
   const out: Modifier[] = effect.modifiers.map((m) => ({
     ...scaleCardModifier(m, power),
     source,
   }));
-  if (role === 'main' && power > 1) {
-    for (const m of content.cardRules.mainGrowth[card.job]) {
+  if (role === 'ability' && power > 1) {
+    for (const m of content.cardRules.abilityGrowth[card.job]) {
       out.push({ ...m, value: m.value.mul(power - 1), source });
     }
   }
   return out;
 }
 
-/** A support modifier made `power` times as strong: flat and percent values scale, a mult scales its part above 1. */
-function boostSupport(m: Modifier, power: Decimal): Modifier {
+/** A team bonus made `power` times as strong: flat and percent values scale, a mult scales its part above 1. */
+function boostTeamBonus(m: Modifier, power: Decimal): Modifier {
   if (m.kind === 'flat' || m.kind === 'percent') return { ...m, value: m.value.mul(power) };
   if (m.kind === 'mult') return { ...m, value: m.value.sub(1).mul(power).add(1) };
   return m;
 }
 
 /**
- * Every modifier from the cards at work: the fighting loadout's main ability and support effects,
- * and each worker's ability scoped to its place (workers.ts). Read by `collectModifiers`.
+ * Every modifier from the cards at work: the fighting loadout's team bonuses (every card gives its
+ * own; its Ability is not here, it is the card's own in the duel, duel.ts) and each worker's
+ * ability scoped to its place (workers.ts). Read by `collectModifiers`.
  */
 export function cardModifiers(state: GameState, content: Content): Modifier[] {
   const out: Modifier[] = [];
-  const loadout = state.cards.loadouts.fighting;
-  // Upgrades make the support effects stronger (DESIGN.md §4).
-  const power = supportPower(state, content, 'fighting');
-  const add = (id: string | null, role: CardRole): void => {
-    if (id === null) return;
+  // Upgrades make the team bonuses stronger (DESIGN.md §4).
+  const power = teamBonusPower(state, content, 'fighting');
+  for (const id of state.cards.loadouts.fighting.slots) {
+    if (id === null) continue;
     const owned = state.cards.owned[id];
-    if (!owned || content.cardById.get(id)?.job !== 'fighting') return;
-    const mods = cardEffectModifiers(content, id, role, owned);
-    out.push(
-      ...(role === 'support' && !power.eq(1) ? mods.map((m) => boostSupport(m, power)) : mods),
-    );
-  };
-  add(loadout.main, 'main');
-  for (const id of loadout.supports) add(id, 'support');
+    if (!owned || content.cardById.get(id)?.job !== 'fighting') continue;
+    const mods = cardEffectModifiers(content, id, 'team', owned);
+    out.push(...(power.eq(1) ? mods : mods.map((m) => boostTeamBonus(m, power))));
+  }
   out.push(...workerModifiers(state, content));
   return out;
 }
@@ -564,8 +547,7 @@ export function cardsAtWork(
 ): { cardId: string; scope: ModifierScope | null }[] {
   const out: { cardId: string; scope: ModifierScope | null }[] = [];
   const seen = new Set<string>();
-  const l = state.cards.loadouts.fighting;
-  for (const id of [l.main, ...l.supports]) {
+  for (const id of state.cards.loadouts.fighting.slots) {
     if (!id || seen.has(id) || content.cardById.get(id)?.job !== 'fighting') continue;
     seen.add(id);
     out.push({ cardId: id, scope: null });
@@ -961,9 +943,9 @@ export interface CardInfo {
   /** Star dust that would cover the missing part of the next star, with what is held; null at ★6 or not owned. */
   starDust: { cost: number; have: number } | null;
   tierUp: UpgradeCheck | null;
-  /** Its effect as main / as support at the current power (Wood ★1 Lv 1 when not owned). */
-  mainModifiers: Modifier[];
-  supportModifiers: Modifier[];
+  /** Its Ability / its Team bonus at the current power (Wood ★1 Lv 1 when not owned). */
+  abilityModifiers: Modifier[];
+  teamModifiers: Modifier[];
 }
 
 /** Everything the Cards page shows for one card. Null for unknown ids. */
@@ -997,8 +979,8 @@ export function cardInfo(
     starUp: starUpCheck(state, content, cardId),
     starDust: dustCost === null ? null : { cost: dustCost, have: heldDust },
     tierUp: tierUpCheck(state, content, cardId, modifiers),
-    mainModifiers: cardEffectModifiers(content, cardId, 'main', preview),
-    supportModifiers: cardEffectModifiers(content, cardId, 'support', preview),
+    abilityModifiers: cardEffectModifiers(content, cardId, 'ability', preview),
+    teamModifiers: cardEffectModifiers(content, cardId, 'team', preview),
   };
 }
 
@@ -1016,8 +998,7 @@ export function cardCollection(
 
 export interface LoadoutInfo {
   job: LoadoutJob;
-  main: string | null;
-  supports: (string | null)[];
+  slots: (string | null)[];
   cost: number;
   cap: number;
 }
@@ -1032,8 +1013,7 @@ export function loadoutInfo(
   const loadout = state.cards.loadouts[job];
   return {
     job,
-    main: loadout.main,
-    supports: [...loadout.supports],
+    slots: [...loadout.slots],
     cost: loadoutCost(content, loadout),
     cap: loadoutCostCap(state, content, job, modifiers),
   };

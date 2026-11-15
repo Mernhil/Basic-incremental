@@ -1,6 +1,6 @@
 import { burstStats, averageDamage, critFactor, critStats } from './combat';
 import type { Content } from '../data';
-import { cardBaseDamage, cardEffectModifiers, cardHealth } from './cards';
+import { cardBaseDamage, cardEffectModifiers, cardHealth, loadoutCards } from './cards';
 import { Decimal } from './num';
 import { harvestCrit } from './production';
 import { newOwnedCard, type GameState } from './state';
@@ -13,7 +13,7 @@ import { activeWorkers, producerJob, workerPower } from './workers';
 export interface CardStats {
   kind: 'fighting' | 'worker';
   /** Fighting: average damage per second (hits, signature attacks and crits at their expected
-   *  value) as the main card. Worker: its power, the multiplier it gives its place. */
+   *  value) as a team card. Worker: its power, the multiplier it gives its place. */
   output: Decimal;
   /** Fighting: the card's health in the loadout pool. Null for a worker (it takes no hits). */
   health: Decimal | null;
@@ -25,7 +25,8 @@ export interface CardStats {
 
 /** How a card's numbers sit against the card it would replace; each is a fraction (0.12 = +12%). */
 export interface CardCompare {
-  /** The card compared against: the equipped main (fighting) or the card working the place. */
+  /** The card compared against: the weakest other card of the loadout (fighting) or the card
+   *  working the place. */
   againstId: string;
   output: number;
   health: number | null;
@@ -36,7 +37,7 @@ export function cardStats(state: GameState, content: Content, cardId: string): C
   const card = content.cardById.get(cardId);
   if (!card) return null;
   const owned = state.cards.owned[cardId] ?? newOwnedCard();
-  const mods = cardEffectModifiers(content, cardId, 'main', owned);
+  const mods = cardEffectModifiers(content, cardId, 'ability', owned);
   if (card.job === 'fighting') {
     const burst = burstStats(content, 'fighting', mods);
     const crit = critStats(content, mods);
@@ -62,12 +63,25 @@ export function cardStats(state: GameState, content: Content, cardId: string): C
   };
 }
 
-/** The card a card is compared with: the main fighting card, or for a worker the first card of its
- *  job working a place (in place order), unless that is the card itself. */
+/** The card a card is compared with: the weakest other card of the fighting loadout (by damage per
+ *  second), or for a worker the first card of its job working a place (in place order), unless
+ *  that is the card itself. */
 function comparedWith(state: GameState, content: Content, cardId: string): string | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  if (card.job === 'fighting') return state.cards.loadouts.fighting.main;
+  if (card.job === 'fighting') {
+    let weakest: string | null = null;
+    let least: Decimal | null = null;
+    for (const id of loadoutCards(state.cards.loadouts.fighting)) {
+      if (id === cardId || !state.cards.owned[id]) continue;
+      const output = cardStats(state, content, id)?.output;
+      if (output && (least === null || output.lt(least))) {
+        weakest = id;
+        least = output;
+      }
+    }
+    return weakest;
+  }
   for (const [place, ids] of Object.entries(activeWorkers(state, content))) {
     if (producerJob(content, place) === card.job && ids[0]) return ids[0];
   }

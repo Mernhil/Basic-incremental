@@ -83,6 +83,7 @@ export const MIGRATIONS: MigrationTable = {
   /** v32 -> v33: card skins (DESIGN.md §8): the skin chosen per weapon type becomes a choice on every
    *  owned card of that type, so each card looks as it did; the per-type choice is dropped. */
   32: v32ToV33,
+  33: v33ToV34,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1464,4 +1465,38 @@ function v32ToV33(state: Record<string, unknown>): Record<string, unknown> {
   const rest = { ...state };
   delete rest['weaponSkins'];
   return { ...rest, cardSkins };
+}
+
+/** A loadout in the old shape (a main card and three supports) as four slots, in the same
+ *  left-to-right order, so no team changes. A loadout already in slots is left as it is. */
+function slotsOf(loadout: unknown): unknown {
+  if (!isRecord(loadout) || Array.isArray(loadout['slots'])) return loadout;
+  const supports = Array.isArray(loadout['supports']) ? loadout['supports'] : [];
+  const slots = [loadout['main'] ?? null, ...supports].slice(0, 4);
+  while (slots.length < 4) slots.push(null);
+  return { slots };
+}
+
+/**
+ * v33 -> v34 (DESIGN.md §5 Loadouts): the fighting loadout and every remembered dungeon loadout
+ * (presets) were a main card and three supports; they are four equal slots now, the main card
+ * first and the supports after it, so nobody's team changes. Logging and mining loadouts left in
+ * the `loadouts` record by older saves are dropped when the save is read, as before.
+ */
+function v33ToV34(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? state['cards'] : {};
+  const loadouts = isRecord(cards['loadouts']) ? cards['loadouts'] : {};
+  const presets = isRecord(state['presets']) ? state['presets'] : {};
+  const dungeons = isRecord(presets['dungeons']) ? presets['dungeons'] : {};
+  return {
+    ...state,
+    cards: {
+      ...cards,
+      loadouts: Object.fromEntries(Object.entries(loadouts).map(([job, l]) => [job, slotsOf(l)])),
+    },
+    presets: {
+      ...presets,
+      dungeons: Object.fromEntries(Object.entries(dungeons).map(([id, l]) => [id, slotsOf(l)])),
+    },
+  };
 }

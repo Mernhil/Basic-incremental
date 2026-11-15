@@ -2,6 +2,7 @@ import type { Content, Skill } from '../data';
 import { cardBaseDamage, cardEffectModifiers, cardHealth } from './cards';
 import { lethalBossAttack, type BossPattern } from './bossAttacks';
 import { burstStats, critFactor, critStats, type CritStats } from './combat';
+import { challengeExcludedCards } from './challenges';
 import { computeStat, type Modifier, type StatContext } from './modifiers';
 import { Decimal } from './num';
 import type { GameState } from './state';
@@ -9,7 +10,7 @@ import { heirloomSkill } from './heirlooms';
 
 /**
  * The card duel's rules (DESIGN.md §6 "The fight is a first-person card duel", "The team of 4 in
- * numbers"): the fighting team is the loadout's cards (main, then the supports, left to right).
+ * numbers"): the fighting team is the loadout's four equal cards, left to right.
  * Each card fights on its own: it hits at its own interval with its own damage, fills its own
  * signature gauge and fires its own skill (skills.json: the weapon type's leaning, or the card's
  * own), and has its own health (`combat.cardDamage`). The enemy hits one card at a time: the first
@@ -32,10 +33,10 @@ export const DUE_HIT_SECONDS = 1e-6;
 export interface TeamCard {
   /** Card id; '' for bare hands (no card in the loadout). */
   id: string;
-  /** Position in the team, 0 (the main card, leftmost) to 3. */
+  /** Position in the team, 0 (leftmost) to 3. */
   slot: number;
   skill: Skill;
-  /** Seconds between hits, gauge points a hit and points to fire (burstStats with its own main
+  /** Seconds between hits, gauge points a hit and points to fire (burstStats with its own
    *  ability). */
   interval: number;
   fill: number;
@@ -52,13 +53,13 @@ export interface TeamCard {
   crit: CritStats;
 }
 
-/** The team's cards in order: the fighting loadout's main then supports, owned fighting cards
- *  only, each once. */
+/** The team's cards in order: the fighting loadout's cards left to right, owned fighting cards
+ *  only, each once, without the cards a challenge rule leaves out. */
 export function teamCardIds(state: GameState, content: Content): string[] {
-  const l = state.cards.loadouts.fighting;
+  const excluded = challengeExcludedCards(state, content);
   const out: string[] = [];
-  for (const id of [l.main, ...l.supports]) {
-    if (!id || out.includes(id) || !state.cards.owned[id]) continue;
+  for (const id of state.cards.loadouts.fighting.slots) {
+    if (!id || out.includes(id) || excluded.includes(id) || !state.cards.owned[id]) continue;
     if (content.cardById.get(id)?.job !== 'fighting') continue;
     out.push(id);
   }
@@ -78,10 +79,52 @@ export function cardSkill(content: Content, cardId: string, state?: GameState): 
   return content.skillById.get(id) ?? content.skills.skills[0]!;
 }
 
+/** The card a modifier belongs to alone, or null when it is the team's: an element bonus
+ *  (source id `<dungeon>:<card>`) or an Heirloom's signature power (`<card>:signature`). */
+function ownerOf(m: Modifier): string | null {
+  if (m.source.kind === 'element' && m.stat === 'combat.damage') {
+    return m.source.id.slice(m.source.id.lastIndexOf(':') + 1);
+  }
+  if (m.source.kind === 'heirloom' && m.source.id.endsWith(':signature')) {
+    return m.source.id.slice(0, m.source.id.indexOf(':'));
+  }
+  return null;
+}
+
 /**
- * The team as the fight uses it, after `modifiers` (collectModifiers: the main card's main ability
- * is in it, which is taken out so each card adds only its own). Bare hands stand in for an empty
- * loadout: the unarmed damage, no health.
+ * What the team and each card fight with: `shared` is every modifier that is the team's (team
+ * bonuses, tree, mastery, Training...), and `forCard` adds what is the card's own on top of it: its
+ * Ability, then its element bonus and its Heirloom signature power (last, so a signature `set`
+ * lands on the ability's). Every card fights with its own and none leaks to another (DESIGN.md §5
+ * Loadouts).
+ */
+export function teamModifiers(
+  state: GameState,
+  content: Content,
+  modifiers: readonly Modifier[],
+): { shared: Modifier[]; forCard: (id: string) => Modifier[] } {
+  const shared: Modifier[] = [];
+  const own = new Map<string, Modifier[]>();
+  for (const m of modifiers) {
+    const owner = ownerOf(m);
+    if (owner === null) shared.push(m);
+    else if (own.has(owner)) own.get(owner)!.push(m);
+    else own.set(owner, [m]);
+  }
+  return {
+    shared,
+    forCard: (id) => {
+      const owned = state.cards.owned[id];
+      const ability = owned ? cardEffectModifiers(content, id, 'ability', owned) : [];
+      return [...shared, ...ability, ...(own.get(id) ?? [])];
+    },
+  };
+}
+
+/**
+ * The team as the fight uses it, after `modifiers` (collectModifiers: the cards' team bonuses are
+ * in it; each card adds only its own ability, element and signature power). Bare hands stand in
+ * for an empty loadout: the unarmed damage, no health.
  */
 export function buildTeam(
   state: GameState,
@@ -90,10 +133,7 @@ export function buildTeam(
   dungeonId: string | null,
 ): TeamCard[] {
   const ids = teamCardIds(state, content);
-  const main = state.cards.loadouts.fighting.main;
-  const shared = modifiers.filter(
-    (m) => !(main && m.source.kind === 'card' && m.source.id === main),
-  );
+  const { shared, forCard } = teamModifiers(state, content, modifiers);
   const ctx: StatContext = dungeonId
     ? { job: 'fighting', dungeon: dungeonId }
     : { job: 'fighting' };
@@ -131,7 +171,7 @@ export function buildTeam(
   return ids.map((id, slot): TeamCard => {
     const owned = state.cards.owned[id]!;
     const skill = cardSkill(content, id, state);
-    const mods = [...shared, ...cardEffectModifiers(content, id, 'main', owned)];
+    const mods = forCard(id);
     const burst = burstStats(content, 'fighting', mods);
     const crit = critStats(content, mods, dungeonId);
     const dps = Decimal.max(

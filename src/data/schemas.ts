@@ -359,9 +359,9 @@ export const STATS = [
   'drops.moneyMultiplier',
   /** Starlight an ascension grants, before rounding down (DESIGN.md §9). */
   'prestige.gain',
-  /** Strength of the support effects of a job's cards, base 1 (+25% = 1.25): scales the values of
+  /** Strength of the team bonuses of a job's cards, base 1 (+25% = 1.25): scales the values of
    *  their modifiers (DESIGN.md §4). Only read from upgrades. Scope: job. */
-  'card.supportPower',
+  'card.teamBonusPower',
   /** Power of the workers at a place (DESIGN.md §4), also its digging. Scope: job, producer. */
   'worker.power',
   /** Hardness a place's workers break per second (DESIGN.md §4 Depth), base 1. Scope: job, producer. */
@@ -533,14 +533,14 @@ const cardBase = {
   heirloom: z.boolean().optional(),
 };
 
-/** A fighting card: it leads the loadout (`main`) or sits in a support slot (`support`). */
+/** A fighting card: an Ability for itself and a Team bonus for the team (DESIGN.md §5 Loadouts). */
 export const fightingCardSchema = z.strictObject({
   ...cardBase,
   job: z.literal('fighting'),
-  /** Used when the card leads the fighting loadout. */
-  main: cardEffectSchema,
-  /** Used when the card is in one of the 3 support slots. */
-  support: cardEffectSchema,
+  /** What the card does itself in the fight, in any loadout slot. */
+  ability: cardEffectSchema,
+  /** What the card gives the whole team, in any loadout slot. */
+  teamBonus: cardEffectSchema,
 });
 
 /**
@@ -661,7 +661,7 @@ export const cardRulesSchema = z.strictObject({
    * multiplied by (power − 1): a Bronze ★1 Lv 1 main adds nothing; every level, star and tier
    * adds more.
    */
-  mainGrowth: perJob(z.array(modifierSchema)),
+  abilityGrowth: perJob(z.array(modifierSchema)),
   /**
    * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
    * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
@@ -1130,7 +1130,6 @@ export const combatSchema = z.strictObject({
   elements: z.strictObject({
     weakness: decimal,
     resistance: decimal.refine((d) => d.gte(-50), { message: 'a resistance is never a wall' }),
-    supportBonus: decimal,
     production: decimal,
   }),
   /** Crits (DESIGN.md §6): base chance (0..1) and damage multiplier of a critical hit. */
@@ -2109,7 +2108,7 @@ export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
 /** What a challenge takes away (src/game/challenges.ts applies each through the modifier pipeline). */
 export const CHALLENGE_RESTRICTIONS = [
   /** The fighting loadout's supports give no effect and no health. */
-  'no_supports',
+  'first_card_only',
   /** Only Common cards count in the fighting loadout (effects, health, and the main's damage). */
   'commons_only',
   /** Training gives nothing. */

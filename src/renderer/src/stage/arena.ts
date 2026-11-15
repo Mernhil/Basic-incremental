@@ -424,7 +424,7 @@ export function createArena(ctx: ArenaContext): Arena {
       wrap.setAttribute('role', 'listitem');
       wrap.tabIndex = 0;
       const body = div('du-card__body');
-      const props = loadoutProps(content, s, c.cardId, i === 0 ? 'main' : 'support', mods);
+      const props = loadoutProps(content, s, c.cardId, mods);
       if (props) body.append(createCard(props).el);
       const glow = div('du-card__glow');
       const grey = div('du-card__grey');

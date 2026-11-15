@@ -58,7 +58,9 @@ import {
   teamAverageDps,
   teamHealthLeft,
   teamHitRate,
+  teamCardIds,
   teamLethalAttack,
+  teamModifiers,
   teamMaxHealth,
   weakenFactor,
   type TeamCard,
@@ -124,36 +126,54 @@ const EPSILON = 1e-9;
 // ---- damage ----------------------------------------------------------------------------------
 
 /**
- * Damage per second before `combat.damage` modifiers (DESIGN.md §5, §6): the main fighting
- * card's base damage by rarity, grown by its level, tier and stars. With no card leading (or
- * one that is not owned) it is the bare-hands damage. Supports add only through their bonuses.
+ * Damage per second before `combat.damage` modifiers (DESIGN.md §5, §6): every team card's base
+ * damage by rarity, grown by its level, tier and stars, summed. With no card in the team it is the
+ * bare-hands damage. Team bonuses add only through their modifiers.
  */
 export function baseDamage(state: GameState, content: Content): Decimal {
-  const id = state.cards.loadouts.fighting.main;
-  const owned = id ? state.cards.owned[id] : undefined;
-  if (!id || !owned || !content.cardById.has(id)) return content.combat.unarmedDamage;
-  return cardBaseDamage(content, id, owned);
+  const ids = teamCardIds(state, content);
+  if (ids.length === 0) return content.combat.unarmedDamage;
+  return ids.reduce(
+    (sum, id) => sum.add(cardBaseDamage(content, id, state.cards.owned[id]!)),
+    new Decimal(0),
+  );
 }
 
-/** `combat.damage` with its breakdown (for tooltips), against a dungeon or special dungeon. */
-export function damageStat(
-  state: GameState,
-  content: Content,
-  dungeonId: string | null = state.activeDungeonId,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): StatResult {
-  const ctx: StatContext = dungeonId ? { ...FIGHTING, dungeon: dungeonId } : FIGHTING;
-  return computeStat('combat.damage', baseDamage(state, content), modifiers, ctx);
-}
-
-/** Damage per second after modifiers. Never negative. */
+/**
+ * Damage per second after modifiers, every team card's own summed (each with its own ability,
+ * element and signature power), before crits, signature attacks and a skill's damage factor.
+ * Never negative.
+ */
 export function effectiveDamage(
   state: GameState,
   content: Content,
   dungeonId: string | null = state.activeDungeonId,
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): Decimal {
-  return Decimal.max(damageStat(state, content, dungeonId, modifiers).value, 0);
+  const ctx: StatContext = dungeonId ? { ...FIGHTING, dungeon: dungeonId } : FIGHTING;
+  const ids = teamCardIds(state, content);
+  const { shared, forCard } = teamModifiers(state, content, modifiers);
+  if (ids.length === 0) {
+    return Decimal.max(
+      computeStat('combat.damage', content.combat.unarmedDamage, shared, ctx).value,
+      0,
+    );
+  }
+  return ids.reduce(
+    (sum, id) =>
+      sum.add(
+        Decimal.max(
+          computeStat(
+            'combat.damage',
+            cardBaseDamage(content, id, state.cards.owned[id]!),
+            forCard(id),
+            ctx,
+          ).value,
+          0,
+        ),
+      ),
+    new Decimal(0),
+  );
 }
 
 // ---- dungeons --------------------------------------------------------------------------------
@@ -761,10 +781,11 @@ export function burstView(
   job: 'fighting',
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): BurstView {
-  // The main card's own gauge, on the play-time clock like its hits (DESIGN.md §6 card duel).
+  // The first card's gauge, on the play-time clock like its hits (DESIGN.md §6 card duel).
   const lead = buildTeam(state, content, modifiers, state.activeDungeonId)[0]!;
   const base = burstStats(content, job, modifiers);
-  const stats = { ...base, interval: lead.interval, size: lead.size, fill: lead.fill };
+  const power = lead.hit.gt(0) ? lead.signature.div(lead.hit) : base.power;
+  const stats = { ...base, interval: lead.interval, size: lead.size, fill: lead.fill, power };
   const fraction = gaugeAt(lead, state.stats.playTimeMs / 1000);
   return { gauge: fraction * lead.size, size: lead.size, fraction, stats };
 }

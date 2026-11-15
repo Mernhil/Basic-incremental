@@ -59,7 +59,7 @@
       "heirloom": 1630
     }
   },
-  "mainGrowth": {
+  "abilityGrowth": {
     "fighting": [
       {
         "stat": "burst.fill",

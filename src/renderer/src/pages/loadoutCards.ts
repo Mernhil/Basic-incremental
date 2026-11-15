@@ -5,7 +5,6 @@ import {
   resolveCardSkin,
   lookTier,
   resolveCard,
-  type CardRole,
   type GameState,
   type Modifier,
 } from '../../../game';
@@ -50,12 +49,12 @@ export function cardItemArt(
   return cardTierArt(card, tier);
 }
 
-/** A fighting loadout card's props. Null when the card is unknown or not owned. */
+/** A fighting loadout card's props (the four cards are equal: no slot label). Null when the card
+ *  is unknown or not owned. */
 export function loadoutProps(
   content: Content,
   state: GameState,
   cardId: string,
-  role: CardRole,
   mods: Modifier[],
 ): CardProps | null {
   const info = cardInfo(state, content, cardId, mods);
@@ -63,9 +62,9 @@ export function loadoutProps(
   const { card, rank } = info;
   return {
     name: card.name,
-    label: role === 'main' ? COPY.table.main : COPY.table.support,
+    label: card.job.charAt(0).toUpperCase() + card.job.slice(1),
     job: card.job,
-    emblem: role === 'main' ? 'blade' : 'gem',
+    emblem: 'blade',
     item: cardItemArt(content, card.id, info.owned, state),
     element: card.element,
     rank,
@@ -85,7 +84,7 @@ export function cardFaceProps(
   state: GameState,
   cardId: string,
 ): CardProps | null {
-  const props = loadoutProps(content, state, cardId, 'main', []);
+  const props = loadoutProps(content, state, cardId, []);
   const card = content.cardById.get(cardId);
   if (!props || !card) return null;
   return { ...props, label: card.job.charAt(0).toUpperCase() + card.job.slice(1) };
@@ -93,10 +92,9 @@ export function cardFaceProps(
 
 /** Key that changes whenever the fighting loadout or one of its cards' rank / level does. */
 export function loadoutKey(state: GameState): string {
-  const { main, supports } = state.cards.loadouts.fighting;
   return JSON.stringify([
     state.cardSkins,
-    ...[main, ...supports].map((id) => {
+    ...state.cards.loadouts.fighting.slots.map((id) => {
       const owned = id ? state.cards.owned[id] : undefined;
       return owned ? [id, owned.tier, owned.stars, owned.level] : null;
     }),

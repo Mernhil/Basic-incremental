@@ -66,8 +66,8 @@ function measure(
     case 'card_stars':
       return { value: Math.max(0, ...cards.map((c) => c.stars)), target: condition.stars };
     case 'full_loadout': {
-      const full = Object.values(state.cards.loadouts).some(
-        (l) => l.main !== null && l.supports.every((s) => s !== null),
+      const full = Object.values(state.cards.loadouts).some((l) =>
+        l.slots.every((s) => s !== null),
       );
       return { value: full ? 1 : 0, target: 1 };
     }

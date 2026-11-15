@@ -14,7 +14,7 @@ import {
   cloneHeirlooms,
   DIFFICULTIES,
   emptyCardLoadout,
-  SUPPORT_SLOTS,
+  LOADOUT_SLOTS,
   type CardState,
   cloneProduction,
   clonePresets,
@@ -36,14 +36,14 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 33;
+export const CURRENT_SAVE_VERSION = 34;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
 const equippedSchema = z.object({ id: z.string(), level: z.number().int().min(1) });
+/** v34: four equal slots, left to right (they were a main card and three supports). */
 const cardLoadoutSchema = z.object({
-  main: z.string().nullable(),
-  supports: z.array(z.string().nullable()),
+  slots: z.array(z.string().nullable()),
 });
 const gaugeSchema = z.object({ gauge: z.number().min(0), timer: z.number().min(0) });
 /** v26: stage key -> a count (kills, or chests paid). */
@@ -720,10 +720,8 @@ function deserializeCards(saved: SerializedState['cards'], content: Content): Ca
     return id;
   };
   const fighting = emptyCardLoadout();
-  fighting.main = keep(saved.loadouts.fighting.main);
-  for (let i = 0; i < SUPPORT_SLOTS; i++) {
-    fighting.supports[i] = keep(saved.loadouts.fighting.supports[i]);
-  }
+  for (let i = 0; i < LOADOUT_SLOTS; i++)
+    fighting.slots[i] = keep(saved.loadouts.fighting.slots[i]);
   const loadouts: CardState['loadouts'] = { fighting };
   // Unknown cards and repeats are dropped from the wishlist; a marked card need not be owned.
   const wishlist = [...new Set(saved.wishlist)].filter((id) => content.cardById.has(id));
@@ -816,8 +814,7 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
       return card;
     };
     const fixed = emptyCardLoadout();
-    fixed.main = keep(loadout.main);
-    for (let i = 0; i < SUPPORT_SLOTS; i++) fixed.supports[i] = keep(loadout.supports[i]);
+    for (let i = 0; i < LOADOUT_SLOTS; i++) fixed.slots[i] = keep(loadout.slots[i]);
     dungeons[id] = fixed;
   }
   const production = initialPresets().production;

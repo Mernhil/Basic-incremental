@@ -488,9 +488,6 @@ html .cp-sort .cp-select:not(#_px) {
   font-weight: 600;
   color: var(--bi-frame-ink-muted);
 }
-.cp-slot:first-child .cp-slot__label {
-  color: var(--bi-chrome-accent);
-}
 .button.cp-slot__remove {
   font-size: 12px;
   padding: 4px 10px;

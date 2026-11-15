@@ -694,14 +694,14 @@ function checkModifiers(
   c.sets.forEach((x, i) => check(`sets.json › [${i}] › modifiers`, x.modifiers));
   c.cards.forEach((x, i) => {
     if (x.job === 'fighting') {
-      check(`cards.json › [${i}] › main › modifiers`, x.main.modifiers);
-      check(`cards.json › [${i}] › support › modifiers`, x.support.modifiers);
+      check(`cards.json › [${i}] › ability › modifiers`, x.ability.modifiers);
+      check(`cards.json › [${i}] › teamBonus › modifiers`, x.teamBonus.modifiers);
     } else {
       check(`cards.json › [${i}] › worker › modifiers`, x.worker.modifiers);
     }
   });
   for (const job of JOBS) {
-    check(`cardRules.json › mainGrowth › ${job}`, c.cardRules.mainGrowth[job]);
+    check(`cardRules.json › abilityGrowth › ${job}`, c.cardRules.abilityGrowth[job]);
   }
   c.upgrades.upgrades.forEach((x, i) =>
     check(`upgrades.json › upgrades › [${i}] › effects`, x.effects),

@@ -105,7 +105,7 @@ export interface WeaponView {
   endNote: string | null;
 }
 
-/** The four stat tiles of a card and the line comparing it with the card it would replace. */
+/** The four stat tiles of a card and the line comparing it with the weakest other loadout card. */
 export interface StatTiles {
   tiles: Array<{ label: string; value: string; title: string }>;
   /** "vs Ember Squire: +12% damage, −8% health"; the card's own note when there is nothing to compare. */
@@ -114,7 +114,8 @@ export interface StatTiles {
 
 export interface LoadoutRole {
   job: Job;
-  slot: 'main' | 'support';
+  /** The loadout slot, 0 to 3, left to right: the four cards are equal. */
+  slot: number;
 }
 
 export interface CardEntry {
@@ -140,9 +141,11 @@ export interface CardEntry {
   duplicates: number;
   cost: number;
   /** A fighting card's main ability, or a worker's ability. */
-  mainAbility: string;
+  /** A fighting card's Ability (a worker's one ability). */
+  ability: string;
   /** A fighting card's support effect; empty for a worker (it has one ability). */
-  supportEffect: string;
+  /** A fighting card's Team bonus; empty for a worker. */
+  teamBonus: string;
   /** A worker's workplace name ("Oak"), or null when it works nowhere or is a fighting card. */
   workplace: string | null;
   /** The bottom plate of the card face (ability, speed, level, progress). */
@@ -248,10 +251,10 @@ export interface CardsModel {
   shards(state: GameState): string;
   /** Changes in what the page shows structurally (not per-tick numbers). */
   signature(state: GameState): string;
-  setMain(state: GameState, id: string): ModelResult;
-  addSupport(state: GameState, id: string): ModelResult;
+  /** Puts a fighting card in the first free loadout slot. */
+  addToLoadout(state: GameState, id: string): ModelResult;
   remove(state: GameState, id: string): ModelResult;
-  /** Puts a card in a slot of its job's loadout (0 = main, 1..3 supports); a card already in
+  /** Puts a card in a slot (0 to 3, left to right) of its job's loadout; a card already in
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
