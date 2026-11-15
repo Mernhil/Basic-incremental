@@ -614,14 +614,6 @@ body {
     1px 0 1px #000,
     -1px 0 1px #000;
 }
-.bi-card--kit:not([data-border-worn]) .bi-stars__on {
-  color: #ffd24a;
-  text-shadow: 0 0 2px #000;
-}
-.bi-card--kit:not([data-border-worn]) .bi-stars__off {
-  color: rgba(255, 255, 255, 0.35);
-  text-shadow: 0 0 2px #000;
-}
 /* the bottom banner: x 28 to 184, y 182 to 222; the text sits inside the card's width, 12 to 164 */
 .bi-card--kit:not([data-border-worn]):not(.bi-card--boss) .bi-card__info {
   z-index: 4;
@@ -666,6 +658,8 @@ body {
 }
 .bi-card--kit:not([data-border-worn]) .bi-info__stars .bi-stars {
   font-size: max(10px, var(--cp-floor, 0px));
+  /* a dark edge for the banner, as a filter so the tier colour and the sheen keep showing through */
+  filter: drop-shadow(0 0 1px #000);
 }
 /* a small card's banner: the weapon name, then stars and level; the speed and rarity word are for the big card */
 .bi-card--kit:not([data-border-worn]) .bi-info__speed,
