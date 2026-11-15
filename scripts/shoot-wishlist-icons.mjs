@@ -46,6 +46,7 @@ await page.evaluate(() =>
   document.querySelectorAll('audio,video').forEach((m) => (m.muted = true)),
 );
 await page.setViewportSize({ width: 1920, height: 1010 });
+if (process.env.WISH_CSS) await page.addStyleTag({ content: process.env.WISH_CSS });
 await page.click('[data-open="summon"]');
 await page.waitForSelector('.sm-wish:not([hidden])');
 for (const [w, h] of [

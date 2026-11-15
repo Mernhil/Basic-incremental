@@ -137,6 +137,8 @@ export interface WishlistPanelView {
       marked: boolean;
       label: string;
       blocked: boolean;
+      /** The player owns this card (an unowned tile is drawn with a dashed edge). */
+      owned: boolean;
       /** Item type ("greatsword"), the column the tile sits in. */
       kind: string;
       element: string;
@@ -187,6 +189,7 @@ export function wishlistPanelView(
               name: nameOf(c.itemId),
               marked: c.marked,
               blocked: !c.marked && full,
+              owned: state.cards.owned[c.itemId] !== undefined,
               label: t.wishlistCard(nameOf(c.itemId), c.marked, full),
               kind,
               element: card?.element ?? '',

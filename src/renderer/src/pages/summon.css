@@ -642,7 +642,8 @@
   width: calc(132 * var(--u));
   height: calc(186 * var(--u));
   background: #3a55c4;
-  opacity: 0.6;
+  opacity: 0.85;
+  cursor: not-allowed;
   box-shadow:
     inset 0 0 0 calc(3 * var(--u)) var(--px-gold),
     inset 0 0 0 calc(4 * var(--u)) var(--px-edge),
@@ -798,8 +799,10 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
   color: var(--px-text, inherit);
 }
 .sm-wish__cards {
+  --wish-w: 58px;
+  --wish-h: 68px;
   display: grid;
-  grid-template-columns: repeat(11, minmax(0, 46px));
+  grid-template-columns: repeat(auto-fill, var(--wish-w));
   gap: 4px;
   align-items: start;
 }
@@ -812,8 +815,8 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
   position: relative;
   display: block;
   padding: 0;
-  width: 100%;
-  aspect-ratio: 1;
+  width: var(--wish-w);
+  height: var(--wish-h);
   box-sizing: border-box;
   border: 2px solid var(--rc);
   background: var(--px-lo, #1c1830);
@@ -825,11 +828,12 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 }
 .sm-wish__pic {
   position: absolute;
-  inset: 1px;
+  inset: 2px;
 }
 .sm-wish__pic svg {
-  width: 100%;
-  height: 100%;
+  /* the 100 x 120 sprite at exactly half scale (2 art pixels to 1), nearest neighbour */
+  width: calc(var(--wish-w) - 8px);
+  height: calc(var(--wish-h) - 8px);
   display: block;
 }
 .sm-wish__elem {
@@ -897,8 +901,15 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
   outline: 2px solid #fff;
   outline-offset: 1px;
 }
+.sm-wish__card.is-unowned {
+  border-style: dashed;
+}
+.sm-wish__card.is-unowned .sm-wish__pic {
+  filter: saturate(0.55);
+}
 .sm-wish__card.is-blocked {
-  opacity: 0.45;
+  opacity: 0.85;
+  cursor: not-allowed;
 }
 
 /* A legacy skin's picture in the reveal and the hand (the Legacy Gate). */

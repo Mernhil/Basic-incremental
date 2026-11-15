@@ -33,8 +33,8 @@ import { iconMarkup, resourceIconId } from '../ui/resourceIcons';
 import { cardTierArt, ITEM_VIEWBOX } from '../art/items';
 import { ITEM_KINDS } from '../../../data';
 
-/** The crop of the item box a Wishlist tile shows (a square around the weapon). */
-const WISH_VIEWBOX = '28 44 144 144';
+/** A Wishlist tile shows the whole item box (the weapon uncropped, centred). */
+const WISH_VIEWBOX = ITEM_VIEWBOX;
 import { cardFaceProps, weaponArtMarkup } from './loadoutCards';
 import type { PageContext } from './production';
 import {
@@ -221,6 +221,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         b.setAttribute('aria-pressed', String(c.marked));
         b.setAttribute('aria-label', c.label);
         b.classList.toggle('is-blocked', c.blocked);
+        b.classList.toggle('is-unowned', !c.owned);
         const card = content.cardById.get(c.id);
         const pic = h('span', 'sm-wish__pic');
         if (card) {
