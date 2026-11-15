@@ -18,17 +18,16 @@
   overflow: hidden;
 }
 .dv-stage > .dv-duel {
+  /* a clear gap under the hand (user, 2026-11-15: the cards sat too close to the bottom edge); the
+     arena reads it for the hand's room (stage/arena.ts fitHand) */
+  --du-hand-gap: 24px;
   position: absolute;
   inset: 0;
   height: auto;
 }
 
-/* the panel buttons, bottom right */
+/* the panel buttons, at the right end of the view's title bar (nothing stands under the hand) */
 .dv-buttons {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
-  z-index: 9;
   display: flex;
   gap: 10px;
 }
@@ -42,13 +41,13 @@
   outline-offset: 3px;
 }
 
-/* the sheet: one framed panel over the fight, leaving the buttons free */
+/* the sheet: one framed panel over the fight, under the title bar that holds the buttons */
 .dv-sheet {
   position: absolute;
   top: 12px;
   left: 16px;
   right: 16px;
-  bottom: 64px;
+  bottom: 16px;
   z-index: 10;
   display: grid;
   grid-template-rows: auto 1fr;
@@ -60,7 +59,7 @@
 .dv-sheet[data-panel='training'] {
   left: auto;
   bottom: auto;
-  max-height: calc(100% - 76px);
+  max-height: calc(100% - 28px);
   width: min(560px, calc(100% - 32px));
 }
 .dv-sheet__head {

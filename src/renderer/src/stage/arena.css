@@ -1049,11 +1049,12 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   width: calc(var(--du-u) * var(--hand-w, 736));
   height: calc(var(--du-u) * var(--hand-h, 243));
   translate: calc(var(--du-u) * var(--hand-w, 736) / -2) 0;
-  /* the whole hand stands inside, 8 px above the bottom edge; only a duel too short for the
+  /* the whole hand stands inside, --du-hand-gap above the bottom edge (4 px in the table's window,
+     the view lifts it above its buttons); only a duel too short for the
      smallest scale pushes it under the edge */
   top: max(
     calc(var(--du-top) + var(--du-foe-h) + 34px),
-    calc(100cqh - var(--du-u) * var(--hand-h, 243) - 4px)
+    calc(100cqh - var(--du-u) * var(--hand-h, 243) - var(--du-hand-gap, 4px))
   );
 }
 .du-card {
