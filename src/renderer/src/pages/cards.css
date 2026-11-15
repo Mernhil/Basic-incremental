@@ -151,7 +151,10 @@ html .cp-sort .cp-select:not(#_px) {
      across at 1x, reflowing to fewer when the window is narrow */
   grid-template-columns: repeat(auto-fill, calc(176px * var(--card-k)));
   grid-auto-rows: max-content;
-  gap: 50px 44px;
+  /* the kit's decorations (wings, coral, tails) reach about 72 card units past the card's edge across
+     two neighbours, so the gap between columns leaves room for them: no picture covers another card's text */
+  --kit-gutter: calc(var(--card-k) * 72px);
+  gap: 50px var(--kit-gutter);
   justify-content: center;
   align-content: start;
   min-height: 0;
@@ -847,8 +850,8 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   }
 }
 .cp-grid--heirlooms {
-  grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + 10px));
-  gap: 14px 18px;
+  grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + var(--kit-gutter)));
+  gap: 14px var(--kit-gutter);
   justify-content: start;
 }
 .cp-hgroup {
@@ -860,7 +863,7 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 }
 .cp-hgroup__cards {
   display: flex;
-  gap: 10px;
+  gap: var(--kit-gutter);
   /* room for the ★6 crowns above the cards */
   padding-top: calc(28px * var(--card-k));
 }
