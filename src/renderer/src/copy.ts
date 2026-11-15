@@ -381,7 +381,12 @@ export const COPY = {
     duplicates: 'Star bar',
     shards: 'Shards',
     /** The four loadout slots are equal: they are only numbered, left to right. */
-    slotName: (i: number) => `Slot ${i + 1}`,
+    slotName: (i: number) =>
+      (['Back left', 'Front left', 'Front right', 'Back right'] as const)[i] ?? `Slot ${i + 1}`,
+    /** The three roles (DESIGN.md §5 Roles): a label and a guide, never a lock. */
+    combatRoles: { tank: 'Tank', dps: 'DPS', support: 'Support' } as const,
+    roleFact: 'Role',
+    roleFilters: 'Roles',
     inLoadout: (slot: string, job: string) => `${slot} of ${job}`,
     addToLoadout: 'Add to loadout',
     remove: 'Remove from loadout',
@@ -1208,6 +1213,10 @@ export const COPY = {
     costTitle: (name: string, have: string, need: string) => `${name}: have ${have}, need ${need}`,
     cardBadge: (lv: number, cap: number) => `Level ${lv} of ${cap}`,
     noMain: 'No fighting card yet. Put a fighting card in the loadout on the Cards page.',
+    /** What an upgrade changes (DESIGN.md §5 Weapon panel). */
+    changesLead: 'It changes:',
+    levelCapLabel: 'Level cap',
+    lookLabel: 'Look',
     /** The card switch of the Weapon panel (DESIGN.md §5 Weapon panel). */
     tabsLabel: 'Loadout cards',
     tabLevel: (lv: number) => `Lv ${lv}`,

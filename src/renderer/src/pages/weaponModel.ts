@@ -1,15 +1,56 @@
 import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
-import { itemName, lookTier, tierLabel, type CardInfo } from '../../../game';
+import {
+  cardStatsFor,
+  itemName,
+  levelCap,
+  lookTier,
+  tierLabel,
+  type CardInfo,
+  type CardStats,
+  type OwnedCard,
+} from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
-import type { CostChip, WeaponView } from './cardsModel';
+import type { CostChip, StatChange, WeaponView } from './cardsModel';
 
 /**
  * The weapon panel's view model (DESIGN.md §5, §11): turns a card's game info (level, XP, star
  * bar, tier-up check) into the plain data the panel draws. No rules here: every number comes from
  * `cardInfo` and the content, and the order of the prices is the order of `cardRules.tierUp`.
  */
+
+/**
+ * What an upgrade changes for a card, as real numbers (the same `cardStats` numbers as the Cards
+ * detail's tiles, so they never disagree): damage per second and health now → after, each with its
+ * gain. A worker has no health; its output stands in for the damage.
+ */
+function changes(now: CardStats | null, after: CardStats | null, fighting: boolean): StatChange[] {
+  if (!now || !after) return [];
+  const gain = (a: { toNumber(): number }, b: { toNumber(): number }): string => {
+    const x = a.toNumber();
+    if (!(x > 0)) return '';
+    const pct = Math.round((b.toNumber() / x - 1) * 100);
+    return pct > 0 ? `+${pct}%` : '';
+  };
+  const rows: StatChange[] = [
+    {
+      label: fighting ? COPY.cards.stats.damage : COPY.cards.stats.output,
+      now: fmt(now.output),
+      after: fmt(after.output),
+      gain: gain(now.output, after.output),
+    },
+  ];
+  if (now.health && after.health) {
+    rows.push({
+      label: COPY.cards.stats.health,
+      now: fmt(now.health),
+      after: fmt(after.health),
+      gain: gain(now.health, after.health),
+    });
+  }
+  return rows;
+}
 
 /** The weapon panel's data for an owned card; null when the card is not owned. */
 export function weaponView(content: Content, info: CardInfo): WeaponView | null {
@@ -49,6 +90,18 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
       }
     : null;
 
+  // what the next star changes (the same level and tier)
+  const fighting = card.job === 'fighting';
+  const starAfter: OwnedCard = { ...owned, stars: owned.stars + 1 };
+  const starStats =
+    owned.stars >= MAX_STARS
+      ? []
+      : changes(
+          cardStatsFor(content, card.id, owned),
+          cardStatsFor(content, card.id, starAfter),
+          fighting,
+        );
+
   const check = info.tierUp;
   let tierUp: WeaponView['tierUp'] = null;
   let endNote: string | null = null;
@@ -68,7 +121,31 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
     const starsMet = check.requirements.every((r) => r.kind !== 'stars' || r.met);
     const phase = !levelMet ? 'leveling' : check.met ? 'ready' : 'short';
     const missing = costs.filter((c) => !c.met).map((c) => c.name);
+    // a tier-up keeps the level and restarts the stars at its own first star; the level cap rises
+    const tierAfter: OwnedCard = { ...owned, tier: check.to.tier, stars: check.to.stars };
+    const stats = heirloom
+      ? []
+      : changes(
+          cardStatsFor(content, card.id, owned),
+          cardStatsFor(content, card.id, tierAfter),
+          fighting,
+        );
+    if (!heirloom) {
+      stats.push({
+        label: COPY.weapon.levelCapLabel,
+        now: String(cap),
+        after: String(levelCap(content, check.to)),
+        gain: '',
+      });
+      stats.push({
+        label: COPY.weapon.lookLabel,
+        now: tierLabel(rank.tier, card.rarity),
+        after: toName,
+        gain: '',
+      });
+    }
     tierUp = {
+      stats,
       toTier: check.to.tier,
       toName,
       heirloom,
@@ -112,6 +189,7 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
     xpNow: atCap || !need ? '' : fmt(owned.xp.floor()),
     xpNeed: atCap || !need ? '' : fmt(need.floor()),
     stars: owned.stars,
+    starStats,
     starBar: owned.stars >= MAX_STARS ? null : starBar,
     tierUp,
     endNote,

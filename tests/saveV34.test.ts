@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
+  arrangeFormation,
+  cardHealth,
   createSaveText,
   CURRENT_SAVE_VERSION,
   MIGRATIONS,
@@ -103,19 +105,16 @@ describe('v33 -> v34 (four equal loadout slots)', () => {
       supports: ['ember_squire', null, null],
     };
     const loaded = readSave(JSON.stringify(json), content).state;
-    expect(loaded.cards.loadouts.fighting.slots).toEqual([
-      'ember_squire',
-      'storm_duelist',
-      null,
-      'rusty_brute',
-    ]);
-    expect(loaded.presets.dungeons['mossy_cellar']!.slots).toEqual([
-      'dawnblade_regent',
-      'ember_squire',
-      null,
-      null,
-    ]);
-    expect(serializeState(loaded)).toEqual(serializeState(state));
+    // the two highest-health cards go to the front (slots 1 and 2), the others behind in order
+    const health = (id: string) => cardHealth(content, id, newOwnedCard());
+    expect(health('storm_duelist').gt(health('ember_squire'))).toBe(true);
+    expect(loaded.cards.loadouts.fighting.slots).toEqual(
+      arrangeFormation({ slots: ['ember_squire', 'storm_duelist', null, 'rusty_brute'] }, health)
+        .slots,
+    );
+    expect(loaded.cards.loadouts.fighting.slots[1]).toBe('storm_duelist');
+    expect(loaded.presets.dungeons['mossy_cellar']!.slots[1]).toBe('dawnblade_regent');
+    expect(loaded.presets.dungeons['mossy_cellar']!.slots).toContain('ember_squire');
   });
 
   it('round-trips the four slots', () => {

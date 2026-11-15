@@ -1106,3 +1106,12 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
   margin-left: 0;
   text-align: left;
 }
+
+/* the formation: the two central slots are the front row, a bit higher than the back row
+   (DESIGN.md §5 Loadouts) */
+.cp-slots {
+  align-items: flex-start;
+}
+.cp-slot--back {
+  margin-top: calc(var(--card-k) * 44px);
+}

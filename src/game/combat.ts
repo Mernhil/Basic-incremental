@@ -20,6 +20,8 @@ import {
 } from './floors';
 import { hpBarState, type HpBarState } from './hpBars';
 import {
+  abilitiesFor,
+  abilityHitsBetween,
   bossAttacksBy,
   bossDamageBetween,
   lethalBossAttack,
@@ -37,7 +39,7 @@ import {
 } from './modifiers';
 import { Decimal } from './num';
 import { clearDungeon, type Price } from './production';
-import { pushPlayerHit, pushSkill, type TickReport } from './report';
+import { pushBossAttack, pushPlayerHit, pushSkill, type TickReport } from './report';
 import {
   buildTeam,
   cardRun,
@@ -58,6 +60,7 @@ import {
   teamHealthLeft,
   teamHitRate,
   teamCardIds,
+  abilityTargets,
   teamLethalAttack,
   teamModifiers,
   teamMaxHealth,
@@ -1615,6 +1618,48 @@ function fightDungeon(
     const target = enemyTarget(next, team);
     const interval = stage.intervalSeconds;
     const normal = stage.attack.mul(weakenFactor(next, team));
+    // The boss's abilities (DESIGN.md §6 Boss abilities): their attacks hit other cards
+    // (one that would hit the card the enemy is hitting anyway is just another light attack)
+    const abilities = abilitiesFor(
+      content.combat.bossAbilities,
+      stage.kind,
+      stage.difficulty,
+    ).filter((a) => !target || !abilityTargets(next, team, a, a.offset).includes(target));
+    /** Lands the abilities' hits among attacks `from + 1 .. to`, then knocks out the cards they
+     *  emptied. */
+    const abilityStrikes = (from: number, to: number): void => {
+      if (abilities.length === 0 || to <= from || normal.lte(0)) return;
+      for (const hit of abilityHitsBetween(from, to, pattern, abilities)) {
+        const each = normal.mul(hit.ability.multiplier);
+        // a few picks stand for the span's hits (a long offline span spreads them evenly)
+        const picks = Math.min(hit.count, 8);
+        for (let i = 0; i < picks; i++) {
+          const k = hit.last - i * hit.ability.every;
+          const weight = i < picks - 1 ? 1 : hit.count - (picks - 1);
+          for (const card of abilityTargets(next, team, hit.ability, k)) {
+            const damage = each.mul(weight);
+            hurt(card, damage);
+            pushBossAttack(report.bossAttacks, {
+              dungeon: dungeon.id,
+              damage,
+              slam: false,
+              attacks: weight,
+              knockout: false,
+              nextSlamSeconds: 0,
+              cardId: card.id,
+              ability: hit.ability.name,
+            });
+          }
+        }
+      }
+      for (const card of team) {
+        if (card.maxHealth.lte(0) || next.combat.cardsOut.includes(card.id)) continue;
+        if (damageTaken(next, card.id).gte(card.maxHealth)) {
+          knockOut(next, card);
+          report.cardKnockouts.push(card.id);
+        }
+      }
+    };
     const attacked = target !== null && normal.gt(0);
     const lastCard =
       attacked && team.filter((c) => c.maxHealth.gt(0) && isStanding(next, c)).length === 1;
@@ -1627,7 +1672,9 @@ function fightDungeon(
     const frontLeft = target
       ? Decimal.max(target.maxHealth.sub(damageTaken(next, target.id)), 0)
       : new Decimal(0);
-    const lethal = attacked ? lethalBossAttack(frontLeft, normal, done, pattern) : Infinity;
+    const lethal = attacked
+      ? lethalBossAttack(frontLeft, normal, done, pattern, abilities)
+      : Infinity;
     const falls = lethal <= last;
     const untilDown = falls ? Math.min(segment, Math.max(0, lethal * interval - clock)) : segment;
 
@@ -1653,6 +1700,7 @@ function fightDungeon(
     };
     const bulk =
       !run &&
+      abilities.length === 0 &&
       standing.length === team.length &&
       (overflow
         ? !attacked || (minHit.gte(stage.hp) && holds(1))
@@ -1718,11 +1766,13 @@ function fightDungeon(
           pattern,
           false,
           target!.id,
+          abilities,
         );
         // Each clear refilled the health: only the attacks since the last one are still on it.
         const since =
           clears > 0 ? Math.max(done, bossAttacksBy(clock + toLastClear, interval)) : done;
-        hurt(target!, bossDamageBetween(since, end, normal, pattern));
+        hurt(target!, bossDamageBetween(since, end, normal, pattern, abilities));
+        abilityStrikes(since, end);
       }
       settled = Math.max(done, end);
       const from = clock;
@@ -1750,8 +1800,10 @@ function fightDungeon(
           pattern,
           false,
           target!.id,
+          abilities,
         );
-        hurt(target!, bossDamageBetween(done, landed, normal, pattern));
+        hurt(target!, bossDamageBetween(done, landed, normal, pattern, abilities));
+        abilityStrikes(done, landed);
       }
       const from = clock;
       pass(toKill);
@@ -1773,7 +1825,8 @@ function fightDungeon(
     pass(untilDown);
     if (!falls) {
       if (attacked) {
-        hurt(target!, bossDamageBetween(done, last, normal, pattern));
+        hurt(target!, bossDamageBetween(done, last, normal, pattern, abilities));
+        abilityStrikes(done, last);
         recordBossAttacks(
           report,
           dungeon.id,
@@ -1784,6 +1837,7 @@ function fightDungeon(
           pattern,
           false,
           target!.id,
+          abilities,
         );
       }
       settled = Math.max(done, last);
@@ -1802,10 +1856,12 @@ function fightDungeon(
       pattern,
       lastCard,
       target!.id,
+      abilities,
     );
     settled = lethal;
     knockOut(next, target!);
     report.cardKnockouts.push(target!.id);
+    abilityStrikes(done, lethal);
     if (!lastCard) {
       applyHeals(standing, from, clock);
       continue;

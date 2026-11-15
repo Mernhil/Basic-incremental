@@ -119,6 +119,7 @@ export function createCardsPage(
   let tab: Tab = 'collection';
   let jobFilter: Job | null = null;
   let readyOnly = false;
+  let roleFilter: 'tank' | 'dps' | 'support' | null = null;
   let sort: Sort = 'rarity';
   let selected: string | null = null;
   /** The Heirloom selected on the Heirlooms tab. */
@@ -305,6 +306,16 @@ export function createCardsPage(
     for (const job of JOB_ORDER) {
       chips.append(chip(JOB_NAMES[job], jobFilter === job, `job-${job}`, () => (jobFilter = job)));
     }
+    for (const role of ['tank', 'dps', 'support'] as const) {
+      chips.append(
+        chip(
+          COPY.cards.combatRoles[role],
+          roleFilter === role,
+          `role-${role}`,
+          () => (roleFilter = roleFilter === role ? null : role),
+        ),
+      );
+    }
     const readyCount = entries.filter(isReady).length;
     chips.append(
       chip(COPY.cards.ready(readyCount), readyOnly, 'ready', () => (readyOnly = !readyOnly)),
@@ -332,7 +343,12 @@ export function createCardsPage(
 
     // grid
     const shown = sorted(
-      entries.filter((e) => (!jobFilter || e.job === jobFilter) && (!readyOnly || isReady(e))),
+      entries.filter(
+        (e) =>
+          (!jobFilter || e.job === jobFilter) &&
+          (!roleFilter || e.combatRole === roleFilter) &&
+          (!readyOnly || isReady(e)),
+      ),
     );
     const grid = h('ul', 'cp-grid');
     watchFit(grid, {
@@ -777,6 +793,7 @@ export function createCardsPage(
       facts.append(d);
     };
     if (e.job === 'fighting') {
+      if (e.combatRole) fact(COPY.cards.roleFact, COPY.cards.combatRoles[e.combatRole]);
       fact(COPY.cards.ability, e.ability);
       fact(COPY.cards.teamBonus, e.teamBonus);
       fact(COPY.cards.cost, String(e.cost));
@@ -1110,10 +1127,18 @@ export function createCardsPage(
       const picking = pick && pick.job === job ? pick.slot : null;
       const slotName = (i: number): string => COPY.cards.slotName(i);
       lo.slots.forEach((id, i) => {
-        const li = h('li', `cp-slot${picking === i ? ' is-picking' : ''}`);
+        const row = i === 1 || i === 2 ? 'front' : 'back';
+        const li = h('li', `cp-slot cp-slot--${row}${picking === i ? ' is-picking' : ''}`);
         const label = slotName(i);
-        li.append(h('span', 'cp-slot__label', label));
         const e = id ? byId.get(id) : undefined;
+        // the slot's place in the formation, and the role of the card standing in it
+        li.append(
+          h(
+            'span',
+            'cp-slot__label',
+            e?.combatRole ? `${label} · ${COPY.cards.combatRoles[e.combatRole]}` : label,
+          ),
+        );
         // Click a slot to fill or change it: the cards that fit show under the slots.
         const choose = (): void => {
           pick = picking === i ? null : { job, slot: i };

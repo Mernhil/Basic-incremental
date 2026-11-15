@@ -5,6 +5,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -38,6 +39,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -79,6 +81,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -355,6 +358,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -406,6 +410,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -448,6 +453,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "support",
     "item": {
       "kind": "lance"
     },
@@ -494,6 +500,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -710,6 +717,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -743,6 +751,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -776,6 +785,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -809,6 +819,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -847,6 +858,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -885,6 +897,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -923,6 +936,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -964,6 +978,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -1005,6 +1020,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -1046,6 +1062,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "fire",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -1087,6 +1104,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -1133,6 +1151,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -1179,6 +1198,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -1221,6 +1241,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -1263,6 +1284,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -1305,6 +1327,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -1352,6 +1375,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -1399,6 +1423,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -1446,6 +1471,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -1487,6 +1513,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -1528,6 +1555,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -1569,6 +1597,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -1610,6 +1639,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -1656,6 +1686,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -1702,6 +1733,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -1743,6 +1775,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -1784,6 +1817,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -1825,6 +1859,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -1871,6 +1906,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -1917,6 +1953,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -1963,6 +2000,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -2004,6 +2042,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -2045,6 +2084,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -2086,6 +2126,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -2127,6 +2168,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -2173,6 +2215,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -2219,6 +2262,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2270,6 +2314,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2321,6 +2366,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2372,6 +2418,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2423,6 +2470,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2479,6 +2527,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2535,6 +2584,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -2591,6 +2641,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "crystal",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -2632,6 +2683,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "staff"
     },
@@ -2673,6 +2725,7 @@
     "job": "fighting",
     "rarity": "rare",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "staff"
     },
@@ -2714,6 +2767,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "crystal",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -2755,6 +2809,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "crystal",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -2801,6 +2856,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -2847,6 +2903,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -2893,6 +2950,7 @@
     "job": "fighting",
     "rarity": "common",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -2944,6 +3002,7 @@
     "job": "fighting",
     "rarity": "uncommon",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -2995,6 +3054,7 @@
     "job": "fighting",
     "rarity": "epic",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -3046,6 +3106,7 @@
     "job": "fighting",
     "rarity": "legendary",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -3102,6 +3163,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -3158,6 +3220,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -3214,6 +3277,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -3254,6 +3318,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -3294,6 +3359,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -3334,6 +3400,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -3382,6 +3449,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -3430,6 +3498,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "crystal",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -3478,6 +3547,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -3526,6 +3596,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -3574,6 +3645,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -3623,6 +3695,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -3672,6 +3745,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -3721,6 +3795,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -3770,6 +3845,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -3819,6 +3895,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -3867,6 +3944,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -3915,6 +3993,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -3963,6 +4042,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -4011,6 +4091,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -4059,6 +4140,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -4107,6 +4189,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -4155,6 +4238,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -4203,6 +4287,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -4251,6 +4336,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -4299,6 +4385,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -4347,6 +4434,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -4395,6 +4483,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -4443,6 +4532,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -4501,6 +4591,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -4559,6 +4650,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -4617,6 +4709,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -4675,6 +4768,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -4723,6 +4817,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -4771,6 +4866,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -4829,6 +4925,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -4887,6 +4984,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -4945,6 +5043,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -5292,6 +5391,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "fire",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -5331,6 +5431,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -5378,6 +5479,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -5426,6 +5528,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -5473,6 +5576,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -5520,6 +5624,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -5567,6 +5672,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -5624,6 +5730,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -5671,6 +5778,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -5789,6 +5897,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -5829,6 +5938,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -5869,6 +5979,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -5917,6 +6028,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -5965,6 +6077,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -6013,6 +6126,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -6061,6 +6175,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -6110,6 +6225,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -6159,6 +6275,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -6207,6 +6324,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "storm",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -6255,6 +6373,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -6303,6 +6422,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -6351,6 +6471,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -6409,6 +6530,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -6467,6 +6589,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -6515,6 +6638,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -6563,6 +6687,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -6621,6 +6746,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },
@@ -6808,6 +6934,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "crystal",
+    "role": "dps",
     "item": {
       "kind": "sword"
     },
@@ -6849,6 +6976,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "tank",
     "item": {
       "kind": "greatsword"
     },
@@ -6898,6 +7026,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "nature",
+    "role": "dps",
     "item": {
       "kind": "dagger"
     },
@@ -6947,6 +7076,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "spear"
     },
@@ -6997,6 +7127,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "light",
+    "role": "tank",
     "item": {
       "kind": "lance"
     },
@@ -7046,6 +7177,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "earth",
+    "role": "tank",
     "item": {
       "kind": "hammer"
     },
@@ -7095,6 +7227,7 @@
     "job": "fighting",
     "rarity": "mythic",
     "element": "storm",
+    "role": "dps",
     "item": {
       "kind": "bow"
     },
@@ -7154,6 +7287,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "support",
     "item": {
       "kind": "staff"
     },
@@ -7203,6 +7337,7 @@
     "job": "fighting",
     "rarity": "void",
     "element": "void",
+    "role": "dps",
     "item": {
       "kind": "scythe"
     },

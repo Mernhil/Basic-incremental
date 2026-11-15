@@ -736,6 +736,9 @@ describe('saving cards (save format v5)', () => {
     delete v4.state.cards;
     v4.version = 4;
     const loaded = readSave(JSON.stringify(v4), content).state;
-    expect(serializeState(loaded).cards).toEqual(serializeState(freshState()).cards);
+    // an old save has no positions: its lone card is placed in the front row
+    const fresh = freshState();
+    fresh.cards.loadouts.fighting.slots = [null, 'ember_squire', null, null];
+    expect(serializeState(loaded).cards).toEqual(serializeState(fresh).cards);
   });
 });

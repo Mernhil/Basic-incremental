@@ -1481,7 +1481,10 @@ function slotsOf(loadout: unknown): unknown {
  * v33 -> v34 (DESIGN.md §5 Loadouts): the fighting loadout and every remembered dungeon loadout
  * (presets) were a main card and three supports; they are four equal slots now, the main card
  * first and the supports after it, so nobody's team changes. Logging and mining loadouts left in
- * the `loadouts` record by older saves are dropped when the save is read, as before.
+ * the `loadouts` record by older saves are dropped when the save is read, as before. The
+ * formation (DESIGN.md §5: slot 1 and 2 are the front row) needs the cards' health, so the step
+ * only flags the state (`arrangeFormation`) and `readSave` places the two highest-health cards of
+ * each team in front once the cards are known.
  */
 function v33ToV34(state: Record<string, unknown>): Record<string, unknown> {
   const each = (record: unknown): unknown =>
@@ -1495,5 +1498,6 @@ function v33ToV34(state: Record<string, unknown>): Record<string, unknown> {
   if (isRecord(state['presets']) && 'dungeons' in state['presets']) {
     next['presets'] = { ...state['presets'], dungeons: each(state['presets']['dungeons']) };
   }
+  next['arrangeFormation'] = true;
   return next;
 }

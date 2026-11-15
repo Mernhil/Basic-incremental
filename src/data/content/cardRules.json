@@ -641,5 +641,16 @@
       "health": 0.92
     }
   },
-  "heirloomCost": 18
+  "heirloomCost": 18,
+  "weaponRoles": {
+    "sword": "dps",
+    "greatsword": "tank",
+    "spear": "dps",
+    "lance": "tank",
+    "dagger": "dps",
+    "hammer": "tank",
+    "bow": "dps",
+    "staff": "support",
+    "scythe": "dps"
+  }
 }

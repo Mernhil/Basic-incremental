@@ -51,6 +51,8 @@ export interface ShowEvents {
     attacks: number;
     knockout: boolean;
     span: ChunkSpan;
+    /** The boss ability that made the hit ("Back Strike"), '' for a plain attack. */
+    ability: string;
   };
   knockout: { seconds: number };
   /** A Challenge ended (DESIGN.md §6 Farming and Challenge): won, or lost with why. */
@@ -140,6 +142,7 @@ export function createDirector(content: Content, state: () => GameState) {
         attacks: event.attacks,
         knockout: event.knockout,
         span,
+        ability: event.ability ?? '',
       });
     }
   };

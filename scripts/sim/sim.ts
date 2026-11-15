@@ -72,6 +72,8 @@ import {
   isDungeonCleared,
   isDungeonUnlocked,
   isProducerUnlocked,
+  arrangeFormation,
+  cardHealth,
   loadoutCards,
   loadoutCostCap,
   mineLevel,
@@ -183,6 +185,7 @@ export {
   teamSurvival,
   wantsCardsNow,
 } from './table';
+import { leadOf } from './table';
 
 // ---- milestones (DESIGN.md §14) ---------------------------------------------------------------
 
@@ -1045,7 +1048,7 @@ export function buyerCandidates(
         kind: 'card',
         cardRank:
           cardProgress(content, state.cards.owned[card.id]!) +
-          (state.cards.loadouts.fighting.slots[0] === card.id ? FIGHTING_LEAD_BONUS : 0),
+          (leadOf(state, content) === card.id ? FIGHTING_LEAD_BONUS : 0),
         hold,
         deferMoney: kind === 'tier' && defersMoney(state, content, prices, modifiers),
         // A held tier-up (level still short) keeps its Cores and gems but not its Money: the
@@ -1491,9 +1494,9 @@ export function buildOrder(state: GameState, content: Content): string[] {
   const add = (id: string | null | undefined): void => {
     if (id && state.cards.owned[id] && !out.includes(id)) out.push(id);
   };
-  add(loadout.slots[0]);
+  add(leadOf(state, content));
   add(heir(state, content));
-  for (const id of loadout.slots.slice(1)) add(id);
+  for (const id of loadout.slots) add(id);
   const working = [
     ...Object.values(activeWorkers(state, content)).flat(),
     ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
@@ -1512,7 +1515,7 @@ export function buildOrder(state: GameState, content: Content): string[] {
  * up or nothing rarer is owned.
  */
 export function heir(state: GameState, content: Content): string | null {
-  const main = state.cards.loadouts.fighting.slots[0] ?? null;
+  const main = leadOf(state, content);
   const lead = main ? content.cardById.get(main) : undefined;
   if (!main || !lead) return null;
   if (tierUpCheck(state, content, main)?.available) return null;
@@ -1665,7 +1668,7 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
     if (cardCost(content, card.id) > cap) continue;
     if (best === null || damage(card.id) > damage(best)) best = card.id;
   }
-  const now = state.cards.loadouts.fighting.slots[0] ?? null;
+  const now = leadOf(state, content);
   if (
     best !== null &&
     now !== null &&
@@ -1718,9 +1721,13 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
     else break;
     cost += c;
   }
+  // the formation: the two sturdiest cards in front, the rest behind
+  const placed = arrangeFormation(loadout, (id) =>
+    current.cards.owned[id] ? cardHealth(content, id, current.cards.owned[id]!) : new Decimal(0),
+  );
   const now = current.cards.loadouts.fighting;
-  if (!now.slots.every((id, i) => id === loadout.slots[i])) {
-    const result = setLoadout(current, content, job, loadout);
+  if (!now.slots.every((id, i) => id === placed.slots[i])) {
+    const result = setLoadout(current, content, job, placed);
     if (result.ok) current = result.state;
   }
   current = teamForChallenge(current, content);
@@ -1858,7 +1865,7 @@ export function forgePlan(state: GameState, content: Content): ForgePlan {
   if (recipes.length === 0) return { recipe: null, run: false };
   const wantsDust = buildOrder(state, content).some((id) => needsStars(state, id));
   const recipe = recipes.find((r) => wantsDust && r.output.resource === 'star_dust') ?? recipes[0]!;
-  const lead = state.cards.loadouts.fighting.slots[0] ?? null;
+  const lead = leadOf(state, content);
   const tierNeeds = lead ? (tierUpCheck(state, content, lead)?.requirements ?? []) : [];
   const spare = recipe.inputs.every((input) => {
     const kept = tierNeeds.find((r) => r.kind === 'resource' && r.resource === input.resource);

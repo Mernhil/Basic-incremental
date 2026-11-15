@@ -25,8 +25,11 @@ import type { GameState } from './state';
 /** One team card as the duel shows it. */
 export interface TeamCardView {
   cardId: string;
-  /** Position in the hand, 0 (the main card, leftmost) to 3. */
+  /** Position in the hand, 0 (leftmost) to 3. */
   slot: number;
+  /** The loadout slot it stands in (0 to 3) and its row: the central two are the front row. */
+  position: number;
+  row: 'front' | 'back';
   skill: Pick<Skill, 'id' | 'name' | 'role' | 'description' | 'guard' | 'weaken'>;
   /** The signature heals instead of striking. */
   heals: boolean;
@@ -66,6 +69,8 @@ export function teamView(
     return {
       cardId: card.id,
       slot: card.slot,
+      position: card.position,
+      row: card.row,
       skill: {
         id: card.skill.id,
         name: card.skill.name,

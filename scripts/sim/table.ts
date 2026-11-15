@@ -5,6 +5,7 @@
  * them from its buyer and its run loop.
  */
 import { RARITIES, type Content, type Portal } from '../../src/data';
+import { arrangeFormation, cardBaseDamage, cardHealth } from '../../src/game';
 import {
   buildTeam,
   cardSkill,
@@ -179,13 +180,18 @@ export function teamForChallenge(state: GameState, content: Content): GameState 
   for (let round = 0; round < TEAM_SWAP_ROUNDS; round++) {
     let improved = false;
     const loadout = best.cards.loadouts.fighting;
-    // the first slot keeps the card the player builds; the other three are tried
-    for (let slot = 1; slot < loadout.slots.length; slot++) {
+    // the card the player builds stays; the other slots are tried, the formation kept
+    const lead = leadOf(best, content);
+    const healthOf = (id: string): Decimal =>
+      best.cards.owned[id] ? cardHealth(content, id, best.cards.owned[id]!) : new Decimal(0);
+    for (let slot = 0; slot < loadout.slots.length; slot++) {
+      if (loadout.slots[slot] === lead) continue;
       for (const card of pool) {
         if (loadout.slots.includes(card)) continue;
-        const next: CardLoadout = {
-          slots: loadout.slots.map((s, i) => (i === slot ? card : s)),
-        };
+        const next: CardLoadout = arrangeFormation(
+          { slots: loadout.slots.map((s, i) => (i === slot ? card : s)) },
+          healthOf,
+        );
         const result = setLoadout(best, content, 'fighting', next);
         if (!result.ok) continue;
         const m = margin(result.state);
@@ -247,7 +253,7 @@ export function pullCardValue(
   const owned = state.cards.owned[cardId];
   if (!owned) return worth * (card.job === 'fighting' ? 1 : 0.6);
   if (owned.stars >= 6) return worth * 0.05;
-  if (cardId === state.cards.loadouts.fighting.slots[0]) return worth;
+  if (cardId === leadOf(state, content)) return worth;
   return worth * (building.has(cardId) ? 0.6 : 0.1);
 }
 
@@ -433,4 +439,21 @@ export function challengeOrder(state: GameState, content: Content): string[] {
     .filter((c) => startChallengeProblem(state, content, c.id) === null)
     .sort((a, b) => challengeCompletions(state, a.id) - challengeCompletions(state, b.id))
     .map((c) => c.id);
+}
+
+/** The loadout card the player builds first: the one with the most base damage (the formation
+ *  decides where it stands, so no slot is "the lead"). */
+export function leadOf(state: GameState, content: Content): string | null {
+  let best: string | null = null;
+  let most = -1;
+  for (const id of state.cards.loadouts.fighting.slots) {
+    const owned = id ? state.cards.owned[id] : undefined;
+    if (!id || !owned) continue;
+    const damage = cardBaseDamage(content, id, owned).toNumber();
+    if (damage > most) {
+      best = id;
+      most = damage;
+    }
+  }
+  return best;
 }

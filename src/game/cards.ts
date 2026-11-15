@@ -46,7 +46,7 @@ import {
 
 export type { Job };
 /** What a card gives: its Ability (itself) or its Team bonus (the team); DESIGN.md §5 Loadouts. */
-export type CardRole = 'ability' | 'team';
+export type EffectRole = 'ability' | 'team';
 /** The one job with a loadout (DESIGN.md §5 Loadouts). */
 export type LoadoutJob = 'fighting';
 /** A loadout slot: 0 to 3, left to right. */
@@ -390,6 +390,36 @@ export function loadoutCards(loadout: CardLoadout): string[] {
   return loadout.slots.filter((id): id is string => id !== null);
 }
 
+/**
+ * A team placed in the formation (DESIGN.md §5 Loadouts): the two highest-health cards in the
+ * front row (the higher on the left), the others in the back row in their order. A saved team
+ * that had no positions gets this once, so no low-health card is put in front.
+ */
+export function arrangeFormation(
+  loadout: CardLoadout,
+  healthOf: (cardId: string) => Decimal,
+): CardLoadout {
+  const ids = loadout.slots.filter((id): id is string => id !== null);
+  const strongest = [...ids].sort(
+    (a, b) => healthOf(b).cmp(healthOf(a)) || ids.indexOf(a) - ids.indexOf(b),
+  );
+  const front = strongest.slice(0, 2);
+  const back = ids.filter((id) => !front.includes(id));
+  return { slots: [back[0] ?? null, front[0] ?? null, front[1] ?? null, back[1] ?? null] };
+}
+
+/** Arranges the fighting loadout and every dungeon preset of a state read from an old save. */
+export function arrangeSavedFormations(state: GameState, content: Content): void {
+  const healthOf = (id: string): Decimal => {
+    const owned = state.cards.owned[id];
+    return owned ? cardHealth(content, id, owned) : new Decimal(0);
+  };
+  state.cards.loadouts.fighting = arrangeFormation(state.cards.loadouts.fighting, healthOf);
+  for (const [id, preset] of Object.entries(state.presets.dungeons)) {
+    state.presets.dungeons[id] = arrangeFormation(preset, healthOf);
+  }
+}
+
 /** Total cost of the cards in a loadout. */
 export function loadoutCost(content: Content, loadout: CardLoadout): number {
   return loadoutCards(loadout).reduce((sum, id) => sum + cardCost(content, id), 0);
@@ -487,7 +517,7 @@ export function scaleCardModifier(m: CardModifierData, power: number): ModifierD
 export function cardEffectModifiers(
   content: Content,
   cardId: string,
-  role: CardRole,
+  role: EffectRole,
   owned: OwnedCard,
 ): Modifier[] {
   const card = content.cardById.get(cardId);

@@ -27,7 +27,7 @@ import {
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
-import { cardTopTier, levelCap } from './cards';
+import { arrangeSavedFormations, cardTopTier, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
 import { pruneCardSkins } from './cardSkins';
 import { fitSkillsToPoints } from './account';
@@ -56,6 +56,8 @@ const productionPresetSchema = z.object({
 
 /** The on-disk shape of GameState: Decimals as strings, nothing else special. */
 export const serializedStateSchema = z.object({
+  /** Set by the v33 -> v34 migration only (never written): the loadouts have no formation yet. */
+  arrangeFormation: z.boolean().optional(),
   resources: z.record(z.string(), decimalText),
   production: z.object({
     unlockedTrees: z.array(z.string()),
@@ -550,7 +552,10 @@ export function readSave(
     const where = first ? first.path.join('.') : 'state';
     throw new SaveError('invalid-format', `The save data is invalid at "${where}".`);
   }
-  return { state: deserializeState(parsed.data, content), savedAt: envelope.data.savedAt };
+  const state = deserializeState(parsed.data, content);
+  // a save from before the formation had no positions: the strongest cards go to the front
+  if (parsed.data.arrangeFormation) arrangeSavedFormations(state, content);
+  return { state, savedAt: envelope.data.savedAt };
 }
 
 export interface BestSave {

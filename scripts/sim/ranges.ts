@@ -132,7 +132,7 @@ export function sample(state: GameState, content: Content): Sample {
   const gems = Object.entries(state.resources)
     .filter(([id]) => id.endsWith('_gem'))
     .map(([, d]) => new Decimal(d).toNumber());
-  const lead = state.cards.loadouts.fighting.slots[0] ?? null;
+  const lead = state.cards.loadouts.fighting.slots.find((id) => id !== null) ?? null;
   const level = lead ? (state.cards.owned[lead]?.level ?? 1) : 1;
   return {
     hit: max(team.map((c) => c.hit.toNumber())),

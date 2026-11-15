@@ -533,10 +533,15 @@ const cardBase = {
   heirloom: z.boolean().optional(),
 };
 
+export const CARD_ROLES = ['tank', 'dps', 'support'] as const;
+export type CardRole = (typeof CARD_ROLES)[number];
+
 /** A fighting card: an Ability for itself and a Team bonus for the team (DESIGN.md §5 Loadouts). */
 export const fightingCardSchema = z.strictObject({
   ...cardBase,
   job: z.literal('fighting'),
+  /** Tank, DPS or Support: a label and a guide for placement, never a lock (DESIGN.md §5 Roles). */
+  role: z.enum(CARD_ROLES),
   /** What the card does itself in the fight, in any loadout slot. */
   ability: cardEffectSchema,
   /** What the card gives the whole team, in any loadout slot. */
@@ -690,6 +695,18 @@ export const cardRulesSchema = z.strictObject({
    * base health. The signature, gauge and crit parts of an identity are on the cards' main
    * abilities; these two keep the types' total power within about 10% of each other.
    */
+  /** The role most cards of each weapon type have (DESIGN.md §5 Roles). */
+  weaponRoles: z.strictObject({
+    sword: z.enum(CARD_ROLES),
+    greatsword: z.enum(CARD_ROLES),
+    spear: z.enum(CARD_ROLES),
+    lance: z.enum(CARD_ROLES),
+    dagger: z.enum(CARD_ROLES),
+    hammer: z.enum(CARD_ROLES),
+    bow: z.enum(CARD_ROLES),
+    staff: z.enum(CARD_ROLES),
+    scythe: z.enum(CARD_ROLES),
+  }),
   weapons: z.strictObject({
     sword: weaponFactorSchema,
     greatsword: weaponFactorSchema,
@@ -1079,6 +1096,28 @@ export const combatSchema = z.strictObject({
         ) < 1e-9,
       { message: 'one cycle of attacks must add up to attacksPerCycle normal attacks' },
     ),
+  /**
+   * Boss abilities (DESIGN.md §6 Boss abilities): every `every`-th attack of a boss or mini-boss
+   * (the `offset`-th of each `every`, never a slam) is replaced by a hit of `multiplier` normal
+   * attacks on the `target`: the front row, the back row, one back card, all four or the card
+   * with the least health left.
+   */
+  bossAbilities: z
+    .array(
+      z
+        .strictObject({
+          id,
+          name: z.string().min(1),
+          target: z.enum(['front', 'back', 'back-one', 'all', 'lowest']),
+          every: z.number().int().min(2),
+          offset: z.number().int().min(0),
+          multiplier: z.number().gt(0),
+          kinds: z.array(z.enum(['miniboss', 'boss'])).min(1),
+          difficulties: z.array(z.enum(['normal', 'hard', 'nightmare'])).min(1),
+        })
+        .refine((a) => a.offset < a.every, { message: 'offset must be below every' }),
+    )
+    .default([]),
   /**
    * Floors (DESIGN.md §6 Dungeon floors, §3 Ladders). A floor's strength is measured against the
    * dungeon's boss: floor `f` of `n` is worth `hpGrowth^(f - n)` of the boss's HP and attack. A

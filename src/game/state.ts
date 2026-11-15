@@ -675,8 +675,12 @@ export interface CardState {
   wishlist: string[];
 }
 
-/** The fighting loadout's slots (DESIGN.md §5 Loadouts). */
+/** The fighting loadout's slots (DESIGN.md §5 Loadouts): back left, front left, front right,
+ *  back right. */
 export const LOADOUT_SLOTS = 4;
+/** The two central slots are the front row; the outer two are the back row. */
+export const FRONT_SLOTS: readonly number[] = [1, 2];
+export const isFrontSlot = (slot: number): boolean => FRONT_SLOTS.includes(slot);
 
 export function emptyCardLoadout(): CardLoadout {
   return { slots: Array<string | null>(LOADOUT_SLOTS).fill(null) };

@@ -259,6 +259,17 @@ describe('v26 -> v27 (the table update)', () => {
     delete (scaled['resources'] as Record<string, unknown>)['summon_scroll'];
     delete (scaled['resources'] as Record<string, unknown>)['glamour_scroll'];
     delete resources['heirloom_scroll'];
+    // the formation is placed when the save is read (the migration only flags it)
+    delete scaled['arrangeFormation'];
+    const placed = again as {
+      cards: { loadouts: { fighting: unknown } };
+      presets: { dungeons: unknown };
+    };
+    (scaled['cards'] as { loadouts: { fighting: unknown } }).loadouts.fighting =
+      placed.cards.loadouts.fighting;
+    if (scaled['presets']) {
+      (scaled['presets'] as { dungeons: unknown }).dungeons = placed.presets.dungeons;
+    }
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

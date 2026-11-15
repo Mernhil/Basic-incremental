@@ -171,6 +171,7 @@ export function createCardsModel(
       xp,
       duplicates: owned?.starFill ?? 0,
       cost: info.cost,
+      combatRole: card.job === 'fighting' ? card.role : null,
       ability: card.job === 'fighting' ? card.ability.description : card.worker.description,
       teamBonus: card.job === 'fighting' ? card.teamBonus.description : '',
       workplace: info.workplace ? placeName(info.workplace) : null,

@@ -101,5 +101,47 @@
     "weakness": "50",
     "resistance": "-25",
     "production": "15"
-  }
+  },
+  "bossAbilities": [
+    {
+      "id": "back_strike",
+      "name": "Back Strike",
+      "target": "back-one",
+      "every": 3,
+      "offset": 2,
+      "multiplier": 0.4,
+      "kinds": ["boss"],
+      "difficulties": ["normal", "hard", "nightmare"]
+    },
+    {
+      "id": "back_strike_mini",
+      "name": "Back Strike",
+      "target": "back-one",
+      "every": 3,
+      "offset": 2,
+      "multiplier": 0.4,
+      "kinds": ["miniboss"],
+      "difficulties": ["hard", "nightmare"]
+    },
+    {
+      "id": "sweep",
+      "name": "Sweep",
+      "target": "back",
+      "every": 4,
+      "offset": 3,
+      "multiplier": 0.4,
+      "kinds": ["boss"],
+      "difficulties": ["hard", "nightmare"]
+    },
+    {
+      "id": "culling_blow",
+      "name": "Culling Blow",
+      "target": "lowest",
+      "every": 5,
+      "offset": 4,
+      "multiplier": 1,
+      "kinds": ["boss"],
+      "difficulties": ["nightmare"]
+    }
+  ]
 }

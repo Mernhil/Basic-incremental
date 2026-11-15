@@ -411,11 +411,14 @@ export function createArena(ctx: ArenaContext): Arena {
     const mods = collectModifiers(s, content);
     hand.replaceChildren();
     const count = team.length;
-    const size = handSize(count);
+    const size = handSize(
+      count,
+      team.some((c) => c.row === 'back'),
+    );
     hand.style.setProperty('--hand-w', String(size.w));
     hand.style.setProperty('--hand-h', String(size.h));
     slots = team.map((c, i) => {
-      const at = handSlot(i, count);
+      const at = handSlot(i, count, c.row === 'back');
       const wrap = div('du-card');
       wrap.dataset['slot'] = String(i);
       wrap.dataset['colour'] = slotColour(i);
@@ -1096,7 +1099,7 @@ export function createArena(ctx: ArenaContext): Arena {
         if (a.width === 0) return;
         popNumber(el, {
           kind: 'hurt',
-          text: `-${popText(e.damage)}`,
+          text: e.ability ? `${e.ability} -${popText(e.damage)}` : `-${popText(e.damage)}`,
           x: (b.left + b.width / 2 - a.left) / a.width,
           y: (b.top - a.top) / a.height,
           scale: e.slam ? 1.6 : 1,

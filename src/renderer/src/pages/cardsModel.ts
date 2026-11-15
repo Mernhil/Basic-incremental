@@ -61,6 +61,8 @@ export interface WeaponView {
   xpNow: string;
   xpNeed: string;
   stars: number;
+  /** What the next star changes: damage per second and health now → after; empty at ★6. */
+  starStats: StatChange[];
   /** The star bar towards the next star; null at ★6. */
   starBar: {
     fill: number;
@@ -79,6 +81,8 @@ export interface WeaponView {
   } | null;
   /** The next tier-up, or null at the weapon's top tier. */
   tierUp: {
+    /** What the tier-up changes: damage per second, health, the level cap and the look. */
+    stats: StatChange[];
     toTier: Rank['tier'];
     toName: string;
     /** The step to the Heirloom (button "Reveal <name>"). */
@@ -103,6 +107,15 @@ export interface WeaponView {
   } | null;
   /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
   endNote: string | null;
+}
+
+/** One stat an upgrade changes for the chosen card: real numbers now and after, and the gain. */
+export interface StatChange {
+  label: string;
+  now: string;
+  after: string;
+  /** "+21%" for a number that grows; empty for a word or when nothing changes. */
+  gain: string;
 }
 
 /** The four stat tiles of a card and the line comparing it with the weakest other loadout card. */
@@ -141,6 +154,8 @@ export interface CardEntry {
   duplicates: number;
   cost: number;
   /** A fighting card's main ability, or a worker's ability. */
+  /** A fighting card's role: Tank, DPS or Support (DESIGN.md §5 Roles); null for a worker. */
+  combatRole: 'tank' | 'dps' | 'support' | null;
   /** A fighting card's Ability (a worker's one ability). */
   ability: string;
   /** A fighting card's support effect; empty for a worker (it has one ability). */

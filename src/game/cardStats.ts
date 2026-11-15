@@ -3,7 +3,7 @@ import type { Content } from '../data';
 import { cardBaseDamage, cardEffectModifiers, cardHealth, loadoutCards } from './cards';
 import { Decimal } from './num';
 import { harvestCrit } from './production';
-import { newOwnedCard, type GameState } from './state';
+import { newOwnedCard, type GameState, type OwnedCard } from './state';
 import { activeWorkers, producerJob, workerPower } from './workers';
 
 /**
@@ -34,9 +34,14 @@ export interface CardCompare {
 
 /** Stats of an owned card at its rank, or of a fresh one (Wood ★1 Lv 1) when not owned. */
 export function cardStats(state: GameState, content: Content, cardId: string): CardStats | null {
+  return cardStatsFor(content, cardId, state.cards.owned[cardId] ?? newOwnedCard());
+}
+
+/** The same numbers for a card at any rank `owned` describes (the Weapon panel's "after" of a
+ *  star or a tier-up, DESIGN.md §5 Weapon panel). */
+export function cardStatsFor(content: Content, cardId: string, owned: OwnedCard): CardStats | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  const owned = state.cards.owned[cardId] ?? newOwnedCard();
   const mods = cardEffectModifiers(content, cardId, 'ability', owned);
   if (card.job === 'fighting') {
     const burst = burstStats(content, 'fighting', mods);
