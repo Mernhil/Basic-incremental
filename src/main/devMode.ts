@@ -2,7 +2,7 @@
  * Whether the dev cheats panel may run. Three cases (DESIGN.md §2 Dev tools):
  * - unpackaged (running from source): on, unless `BI_NO_CHEATS=1` hides it (to check the
  *   player's view);
- * - packaged local dev build (`npm run dist:dev`, `devBuild` is a build-time constant, never
+ * - packaged local dev build (the local dev build, `devBuild` is a build-time constant, never
  *   read from the environment): on;
  * - packaged public release: never, whatever the environment says.
  * The renderer loads the cheats code only behind `import.meta.env.DEV` or that same build

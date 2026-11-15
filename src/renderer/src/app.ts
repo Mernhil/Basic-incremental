@@ -404,7 +404,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
 
   // The dev cheats panel (DESIGN.md §2): dev builds only. Vite drops this import from a release
   // build, and the main process says no in a packaged app.
-  // The local dev build (npm run dist:dev) bakes in __BI_DEV_BUILD__ so the same import stays.
+  // The local dev build (the local dev build) bakes in __BI_DEV_BUILD__ so the same import stays.
   if (import.meta.env.DEV || __BI_DEV_BUILD__) {
     void window.api.devCheatsEnabled().then(async (enabled) => {
       if (!enabled) return;

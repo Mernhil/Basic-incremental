@@ -52,7 +52,7 @@ describe('release bundles never ship the dev cheats', () => {
     expect(found.length).toBeGreaterThan(0);
   }, 60_000);
 
-  it('a production build with the dev-build flag (npm run dist:dev) contains them', async () => {
+  it('a production build with the dev-build flag (the local dev build) contains them', async () => {
     const out = await buildFixture('production', true);
     expect(findDevCheats(out).length).toBeGreaterThan(0);
   }, 60_000);

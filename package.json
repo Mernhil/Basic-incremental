@@ -17,7 +17,6 @@
     "format": "prettier --write .",
     "sim": "tsx scripts/sim/cli.ts",
     "dist": "npm run build && electron-builder --win --publish never",
-    "dist:dev": "node scripts/dist-dev.mjs",
     "release": "npm run build && electron-builder --win --publish always",
     "design:build": "node design/explorations/build.mjs",
     "design:shoot": "node design/explorations/shoot.mjs"
