@@ -370,7 +370,8 @@
   }
 }
 .rv__dialog--ten .rv__stage {
-  grid-template-columns: calc(1.45 * var(--w)) calc(7.45 * var(--w));
+  grid-template-columns: calc(1.45 * var(--w)) auto;
+  column-gap: 12px;
 }
 .rv__dialog--ten .rv__circle {
   left: calc(0.72 * var(--w));
@@ -395,31 +396,18 @@
   translate: calc(var(--d) * 2 * var(--u)) calc(var(--d) * -2 * var(--u));
   z-index: calc(var(--d) * -1);
 }
+/* a ten-pull lies in two rows of five, every card whole: the gap between cards is the kit's room
+   (--kit-gutter, --kit-top from fitCard, ui/pixelFit.ts), so a revealed face never covers another's text */
 .rv__dialog--ten .rv__row {
-  display: block;
+  display: grid;
+  grid-template-columns: repeat(5, var(--w));
+  gap: calc(var(--kit-top) + 10px) var(--kit-gutter);
   max-width: none;
-  width: calc(7.45 * var(--w));
-  height: calc(1.9 * var(--w));
+  width: auto;
+  padding: var(--kit-top) calc(var(--kit-side) * 0.8) 0 0;
 }
 .rv__dialog--ten .rv-slot {
-  --c: calc(var(--i) - (var(--n) - 1) / 2);
-  --lift: 0px;
-  position: absolute;
-  left: calc(50% - var(--w) / 2);
-  top: calc(0.3 * var(--w));
-  translate: calc(var(--c) * 0.67 * var(--w))
-    calc(var(--c) * var(--c) * 0.0125 * var(--w) + var(--lift));
-  rotate: calc(var(--c) * 3.6deg);
-  z-index: var(--i);
-  transition: translate 0.5s var(--deal-ease, ease-out);
-}
-/* a rare card lifts out of the fan while it lies face down; each flip lifts its card further */
-.rv__dialog--ten .rv-slot.is-glowing:not(.is-open) {
-  --lift: calc(-0.1 * var(--w));
-}
-.rv__dialog--ten .rv-slot.is-open {
-  --lift: calc(-0.2 * var(--w));
-  z-index: 20;
+  position: relative;
 }
 /* the rarity glow: a halo behind the card (opacity only), the frame also takes the colour */
 .rv-slot::before {
@@ -561,9 +549,6 @@
   }
   .rv-slot.is-glowing:not(.is-open)::before {
     opacity: 0.7;
-  }
-  .rv__dialog--ten .rv-slot {
-    transition: none;
   }
 }
 
