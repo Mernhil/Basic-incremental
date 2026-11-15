@@ -1,5 +1,4 @@
-// Screenshots an Heirloom card of each backdrop (hero, villain, Leviathan sea) and a frame sequence of
-// the sea's fish, from the running dev app. Start: `BI_PROFILE=x npx electron-vite dev -- --remote-debugging-port=9333`
+// Screenshots an Heirloom card of each backdrop (hero, villain, Leviathan sea) at 1280 x 720 from the running dev app. Start: `BI_PROFILE=x npx electron-vite dev -- --remote-debugging-port=9333`
 // Run: `node scripts/shoot-heirloom-backdrops.mjs [port] [outDir]`.
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
@@ -51,41 +50,7 @@ await page.evaluate(
     items: fsUrl('src/renderer/src/art/items.ts'),
   },
 );
-await page.setViewportSize({ width: 1000, height: 640 });
+await page.setViewportSize({ width: 1280, height: 720 });
 await page.waitForTimeout(500);
 await page.screenshot({ path: `${out}/cards.png` });
-// the villain at two lava frames (stepped by hand so the frames differ for sure)
-const villain = { x: 340, y: 80, width: 330, height: 470 };
-for (const [n, frame] of [
-  [0, 0],
-  [1, 20],
-]) {
-  await page.evaluate((f) => {
-    const el = document.querySelectorAll('#bd-shoot .bi-bd__strip')[0];
-    el.style.animation = 'none';
-    el.style.backgroundPosition = `${(f / 39) * 100}% 0`;
-  }, frame);
-  await page.waitForTimeout(100);
-  await page.screenshot({ path: `${out}/villain-lava-${n}.png`, clip: villain });
-}
-// the sea with three fish that were mirrored to face right (r15, r23, r47), placed by hand
-await page.evaluate(() => {
-  const stage = document.querySelectorAll('#bd-shoot .bi-bd__stage')[2];
-  const base = stage.querySelector('img').src;
-  [
-    [15, 20, 10],
-    [23, 60, 40],
-    [47, 90, 70],
-  ].forEach(([n, x, y]) => {
-    const im = document.createElement('img');
-    im.src = base.replace(/bg-sea[^/]*\.png|bg-sea-[a-f0-9]+\.png/, `bgfish-r${n}.png`);
-    im.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:32px;z-index:2;image-rendering:pixelated`;
-    stage.append(im);
-  });
-});
-await page.waitForTimeout(100);
-await page.screenshot({
-  path: `${out}/sea-mirrored.png`,
-  clip: { x: 640, y: 80, width: 330, height: 470 },
-});
 await browser.close();
