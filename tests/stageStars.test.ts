@@ -467,7 +467,7 @@ describe('harder modes pay more (DESIGN.md §6)', () => {
     const farm = (difficulty: Difficulty) => {
       const start = at(content, 10, difficulty);
       start.clearedDungeons = ['mossy_cellar'];
-      const id = start.cards.loadouts.fighting.main!;
+      const id = start.cards.loadouts.fighting.slots[0]!;
       const before = start.cards.owned[id]!;
       const { report } = run(start, content, 30, constantRng(0));
       expect(report.bossKills).toBe(30);

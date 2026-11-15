@@ -72,6 +72,7 @@ import {
   isDungeonCleared,
   isDungeonUnlocked,
   isProducerUnlocked,
+  loadoutCards,
   loadoutCostCap,
   mineLevel,
   upgradeShelf,
@@ -560,14 +561,14 @@ const SKILL_WEIGHT: Record<string, number> = {
 
 /**
  * Whether a skill acts now (DESIGN.md §10 Hidden weapon circles): a branch skill always; a fighting
- * circle only while the loadout's main card carries that weapon type; the pickaxe and logging axe
+ * circle only while a loadout card carries that weapon type; the pickaxe and logging axe
  * circles while a card carrying it is at work.
  */
 function skillActive(state: GameState, content: Content, node: SkillNode): boolean {
   if (!node.circle) return true;
   const kindOf = (id: string | null): string | undefined =>
     id ? content.cardById.get(id)?.item.kind : undefined;
-  if (kindOf(state.cards.loadouts.fighting.main) === node.circle) return true;
+  if (state.cards.loadouts.fighting.slots.some((id) => kindOf(id) === node.circle)) return true;
   return Object.values(activeWorkers(state, content))
     .flat()
     .some((id) => kindOf(id) === node.circle);
@@ -1044,7 +1045,7 @@ export function buyerCandidates(
         kind: 'card',
         cardRank:
           cardProgress(content, state.cards.owned[card.id]!) +
-          (state.cards.loadouts.fighting.main === card.id ? FIGHTING_LEAD_BONUS : 0),
+          (state.cards.loadouts.fighting.slots[0] === card.id ? FIGHTING_LEAD_BONUS : 0),
         hold,
         deferMoney: kind === 'tier' && defersMoney(state, content, prices, modifiers),
         // A held tier-up (level still short) keeps its Cores and gems but not its Money: the
@@ -1490,9 +1491,9 @@ export function buildOrder(state: GameState, content: Content): string[] {
   const add = (id: string | null | undefined): void => {
     if (id && state.cards.owned[id] && !out.includes(id)) out.push(id);
   };
-  add(loadout.main);
+  add(loadout.slots[0]);
   add(heir(state, content));
-  for (const id of loadout.supports) add(id);
+  for (const id of loadout.slots.slice(1)) add(id);
   const working = [
     ...Object.values(activeWorkers(state, content)).flat(),
     ...(forgeWorker(state, content) ? [forgeWorker(state, content)!] : []),
@@ -1511,7 +1512,7 @@ export function buildOrder(state: GameState, content: Content): string[] {
  * up or nothing rarer is owned.
  */
 export function heir(state: GameState, content: Content): string | null {
-  const main = state.cards.loadouts.fighting.main;
+  const main = state.cards.loadouts.fighting.slots[0] ?? null;
   const lead = main ? content.cardById.get(main) : undefined;
   if (!main || !lead) return null;
   if (tierUpCheck(state, content, main)?.available) return null;
@@ -1664,7 +1665,7 @@ export function chooseLead(state: GameState, content: Content, cap: number): str
     if (cardCost(content, card.id) > cap) continue;
     if (best === null || damage(card.id) > damage(best)) best = card.id;
   }
-  const now = state.cards.loadouts.fighting.main;
+  const now = state.cards.loadouts.fighting.slots[0] ?? null;
   if (
     best !== null &&
     now !== null &&
@@ -1704,20 +1705,21 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
           cardPower(content, current.cards.owned[a.id]!),
     );
   const loadout: CardLoadout = emptyCardLoadout();
-  loadout.main = chooseLead(current, content, cap);
-  let cost = loadout.main ? cardCost(content, loadout.main) : 0;
-  let support = 0;
+  // the first slot takes the hardest-hitting card, the rest the strongest others in order
+  loadout.slots[0] = chooseLead(current, content, cap);
+  let cost = loadout.slots[0] ? cardCost(content, loadout.slots[0]) : 0;
+  let next = 1;
   for (const card of ranked) {
-    if (card.id === loadout.main) continue;
+    if (card.id === loadout.slots[0]) continue;
     const c = cardCost(content, card.id);
     if (cost + c > cap) continue;
-    if (loadout.main === null) loadout.main = card.id;
-    else if (support < loadout.supports.length) loadout.supports[support++] = card.id;
+    if (loadout.slots[0] === null) loadout.slots[0] = card.id;
+    else if (next < loadout.slots.length) loadout.slots[next++] = card.id;
     else break;
     cost += c;
   }
   const now = current.cards.loadouts.fighting;
-  if (now.main !== loadout.main || !now.supports.every((id, i) => id === loadout.supports[i])) {
+  if (!now.slots.every((id, i) => id === loadout.slots[i])) {
     const result = setLoadout(current, content, job, loadout);
     if (result.ok) current = result.state;
   }
@@ -1856,7 +1858,7 @@ export function forgePlan(state: GameState, content: Content): ForgePlan {
   if (recipes.length === 0) return { recipe: null, run: false };
   const wantsDust = buildOrder(state, content).some((id) => needsStars(state, id));
   const recipe = recipes.find((r) => wantsDust && r.output.resource === 'star_dust') ?? recipes[0]!;
-  const lead = state.cards.loadouts.fighting.main;
+  const lead = state.cards.loadouts.fighting.slots[0] ?? null;
   const tierNeeds = lead ? (tierUpCheck(state, content, lead)?.requirements ?? []) : [];
   const spare = recipe.inputs.every((input) => {
     const kept = tierNeeds.find((r) => r.kind === 'resource' && r.resource === input.resource);
@@ -3414,7 +3416,7 @@ export function formatTableLog(
       : `${hoursText(table.stuckLongest)} before a new best floor at ${table.stuckWhere}`;
   return [
     `Floor Challenges: ${table.challengesWon} won, ${table.challengesLost} lost (${all > 0 ? Math.round((table.challengesWon / all) * 100) : 0}%), ${table.manualTries} started by hand; longest stuck ${stuck}`,
-    `Team: ${teamRoles(state, content)} (${[state.cards.loadouts.fighting.main, ...state.cards.loadouts.fighting.supports].filter(Boolean).join(', ')})`,
+    `Team: ${teamRoles(state, content)} (${loadoutCards(state.cards.loadouts.fighting).join(', ')})`,
     `Scrolls spent: ${table.summonSpent} Summon (${table.focusPulls} at the Focus Portal), ${table.glamourSpent} Glamour; held ${num(have(state, 'summon_scroll')).toFixed(2)} / ${num(have(state, 'glamour_scroll')).toFixed(2)}`,
     `Expeditions: ${table.trips} trips, ${table.tripMaterials} Core units (fights ${table.fightMaterials}), ${formatShort(table.tripGems)} weighted gems`,
     `Ascension challenges: ${table.challengeRuns} runs, ${table.challengesLeft} left, completed ${table.completions.map(([id, at]) => `${id} at ${hoursText(at)}`).join(', ') || 'none'}`,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   collectModifiers,
-  damageStat,
+  buildTeam,
   elementRelation,
   newOwnedCard,
   producerRate,
@@ -14,20 +14,17 @@ const content = loadContent();
 
 /** DESIGN §6 Elements in combat: a bonus or a malus, never a wall. */
 const own = (state: GameState, id: string) => (state.cards.owned[id] = newOwnedCard());
-const fight = (main: string, supports: string[] = []): GameState => {
+const fight = (...cards: string[]): GameState => {
   const state = bareState();
-  for (const id of [main, ...supports]) own(state, id);
-  state.cards.loadouts.fighting = {
-    main,
-    supports: [supports[0] ?? null, supports[1] ?? null, supports[2] ?? null],
-  };
+  for (const id of cards) own(state, id);
+  state.cards.loadouts.fighting = { slots: [0, 1, 2, 3].map((i) => cards[i] ?? null) };
   return state;
 };
-/** The element percent against a dungeon: the `element` damage modifiers that apply there. */
-const elementPercent = (state: GameState, dungeon: string): number =>
+/** The element percent a card gets against a dungeon: its own `element` damage modifier there. */
+const elementPercent = (state: GameState, dungeon: string, card: string): number =>
   collectModifiers(state, content)
     .filter((m) => m.source.kind === 'element' && m.stat === 'combat.damage')
-    .filter((m) => !m.scope?.dungeon || m.scope.dungeon === dungeon)
+    .filter((m) => m.source.id === `${dungeon}:${card}`)
     .reduce((sum, m) => sum + m.value.toNumber(), 0);
 
 describe('boss weaknesses and resistances', () => {
@@ -47,31 +44,35 @@ describe('boss weaknesses and resistances', () => {
     expect(content.dungeons).toHaveLength(6);
   });
 
-  it('the main card against the weakness gives +50%, against the resistance -25%', () => {
+  it('a card against the weakness gives its damage +50%, against the resistance -25%', () => {
     expect(elementRelation(content, 'mossy_cellar', 'fire')).toBe('weak');
     expect(elementRelation(content, 'mossy_cellar', 'nature')).toBe('resist');
     expect(elementRelation(content, 'mossy_cellar', 'storm')).toBe('neutral');
     expect(elementRelation(content, 'glimmer_trial', 'fire')).toBe('neutral');
-    expect(elementPercent(fight('ember_squire'), 'mossy_cellar')).toBe(50);
-    expect(elementPercent(fight('fieldhand_archer'), 'mossy_cellar')).toBe(-25);
-    expect(elementPercent(fight('alley_cutpurse'), 'mossy_cellar')).toBe(0);
+    expect(elementPercent(fight('ember_squire'), 'mossy_cellar', 'ember_squire')).toBe(50);
+    expect(elementPercent(fight('fieldhand_archer'), 'mossy_cellar', 'fieldhand_archer')).toBe(-25);
+    expect(elementPercent(fight('alley_cutpurse'), 'mossy_cellar', 'alley_cutpurse')).toBe(0);
   });
 
-  it('each matching support adds +10%, a non-matching one nothing', () => {
-    const s = fight('ember_squire', ['rusty_brute', 'brass_vanguard', 'alley_cutpurse']);
-    expect(elementPercent(s, 'mossy_cellar')).toBe(70);
-    expect(elementPercent(fight('alley_cutpurse', ['rusty_brute']), 'mossy_cellar')).toBe(10);
+  it('every matching card gets its own +50%, in any slot, and a non-matching one nothing', () => {
+    const s = fight('alley_cutpurse', 'ember_squire', 'rusty_brute', 'brass_vanguard');
+    for (const id of ['ember_squire', 'rusty_brute', 'brass_vanguard']) {
+      expect(elementPercent(s, 'mossy_cellar', id), id).toBe(50);
+    }
+    expect(elementPercent(s, 'mossy_cellar', 'alley_cutpurse')).toBe(0);
   });
 
-  it('reaches the damage stat as a modifier of source element, only against that dungeon', () => {
-    const state = fight('ember_squire');
+  it('changes only the damage of the card whose element it is, only against that dungeon', () => {
+    const state = fight('ember_squire', 'alley_cutpurse');
     const mods = collectModifiers(state, content);
-    const cellar = damageStat(state, content, 'mossy_cellar', mods);
-    expect(cellar.applied.some((m) => m.source.kind === 'element')).toBe(true);
-    expect(cellar.value.div(cellar.base).toNumber()).toBeCloseTo(1.5);
+    const cellar = buildTeam(state, content, mods, 'mossy_cellar');
+    const neutral = buildTeam(state, content, mods, 'void_hollow');
+    // percent bonuses add: the two Commons' team bonuses (+5% each) and the Squire's +50%
+    expect(cellar[0]!.hit.div(neutral[0]!.hit).toNumber()).toBeCloseTo(1.6 / 1.1);
+    expect(cellar[1]!.hit.div(neutral[1]!.hit).toNumber()).toBeCloseTo(1);
     // The Ember Crypt resists Fire: -25%, not +50%.
-    const crypt = damageStat(state, content, 'ember_crypt', mods);
-    expect(crypt.value.div(crypt.base).toNumber()).toBeCloseTo(0.75);
+    const crypt = buildTeam(state, content, mods, 'ember_crypt');
+    expect(crypt[0]!.hit.div(neutral[0]!.hit).toNumber()).toBeCloseTo(0.85 / 1.1);
   });
 
   it('is a bonus, never a wall', () => {

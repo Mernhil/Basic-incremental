@@ -93,7 +93,7 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has no ETA while the boss knocks the loadout out first', () => {
     const state = fighter();
-    state.cards.loadouts.fighting.main = 'ember_squire';
+    state.cards.loadouts.fighting.slots[0] = 'ember_squire';
     state.cards.owned['ember_squire'] = newOwnedCard();
     // A tiny health pool against a boss that takes ages to kill.
     const goal = find(allGoals(state, content), 'clear_dungeon:mossy_cellar')!;

@@ -287,8 +287,8 @@ describe('card ranks and portals', () => {
     // fighting cards have a main ability and a support effect; workers one worker ability
     for (const card of content.cards) {
       if (card.job === 'fighting') {
-        expect(card.main.description.length).toBeGreaterThan(0);
-        expect(card.support.modifiers.length).toBeGreaterThan(0);
+        expect(card.ability.description.length).toBeGreaterThan(0);
+        expect(card.teamBonus.modifiers.length).toBeGreaterThan(0);
       } else {
         expect(card.worker.description.length, card.id).toBeGreaterThan(0);
         expect(card.worker.modifiers.length, card.id).toBeGreaterThan(0);
@@ -305,11 +305,11 @@ describe('card ranks and portals', () => {
     const content = loadContent();
     const duelist = content.cardById.get('storm_duelist')!;
     if (duelist.job !== 'fighting') throw new Error('a fighting card');
-    expect(duelist.main.modifiers.map((m) => [m.kind, m.scale])).toEqual([
+    expect(duelist.ability.modifiers.map((m) => [m.kind, m.scale])).toEqual([
       ['set', 'none'],
       ['mult', 'none'],
     ]);
-    expect(duelist.support.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
+    expect(duelist.teamBonus.modifiers[0]!.scale).toBe('full'); // a percent bonus scales by default
     // a worker ability applies as written: it has no scale (the worker's power multiplies the
     // place's output instead)
     const keeper = content.cardById.get('grove_keeper')!;
@@ -341,13 +341,15 @@ describe('card ranks and portals', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     rules['tierUp'].bronze.mining[0].resource = 'nope';
-    (bad.cards as Record<string, any>[])[0]!['support'].modifiers[0].scope = { dungeon: 'nowhere' }; // eslint-disable-line @typescript-eslint/no-explicit-any
+    (bad.cards as Record<string, any>[])[0]!['teamBonus'].modifiers[0].scope = {
+      dungeon: 'nowhere',
+    }; // eslint-disable-line @typescript-eslint/no-explicit-any
     const issues = issuesFor(bad);
     expect(issues).toContain(
       'cardRules.json › tierUp › bronze › mining › [0] › resource: unknown resource "nope"',
     );
     expect(issues).toContain(
-      'cards.json › [0] › support › modifiers › [0] › scope › dungeon: unknown dungeon "nowhere"',
+      'cards.json › [0] › teamBonus › modifiers › [0] › scope › dungeon: unknown dungeon "nowhere"',
     );
   });
 

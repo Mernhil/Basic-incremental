@@ -56,7 +56,7 @@ const rich = (state: GameState, resource: string, amount: number): GameState => 
  *  leads the fighting loadout, or works the job's first tree or mine. */
 const lead = (state: GameState, id: string, job: 'fighting' | 'logging' | 'mining'): void => {
   state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
-  if (job === 'fighting') state.cards.loadouts.fighting.main = id;
+  if (job === 'fighting') state.cards.loadouts.fighting.slots[0] = id;
   else state.production.workers[job === 'logging' ? 'oak' : 'copper_quarry'] = [id];
 };
 

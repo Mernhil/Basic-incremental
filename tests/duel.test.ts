@@ -51,8 +51,7 @@ function teamOf(ids: (string | null)[], content = bundled): GameState {
   const state = ok(setActiveDungeon(freshState(), content, 'mossy_cellar'));
   for (const id of ids) if (id) state.cards.owned[id] ??= newOwnedCard();
   state.cards.loadouts.fighting = {
-    main: ids[0] ?? null,
-    supports: [ids[1] ?? null, ids[2] ?? null, ids[3] ?? null],
+    slots: [ids[0] ?? null, ids[1] ?? null, ids[2] ?? null, ids[3] ?? null],
   };
   return state;
 }

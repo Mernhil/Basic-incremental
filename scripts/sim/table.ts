@@ -168,7 +168,7 @@ const TEAM_SWAP_ROUNDS = 3;
 export function teamForChallenge(state: GameState, content: Content): GameState {
   const id = state.activeDungeonId;
   if (!id || !content.dungeonById.has(id)) return state;
-  if (isRestricted(state, content, 'no_supports')) return state;
+  if (isRestricted(state, content, 'first_card_only')) return state;
   const margin = (s: GameState): number =>
     challengeMargin(s, content, id, collectModifiers(s, content)) ?? Infinity;
   const start = margin(state);
@@ -179,12 +179,12 @@ export function teamForChallenge(state: GameState, content: Content): GameState 
   for (let round = 0; round < TEAM_SWAP_ROUNDS; round++) {
     let improved = false;
     const loadout = best.cards.loadouts.fighting;
-    for (let slot = 0; slot < loadout.supports.length; slot++) {
+    // the first slot keeps the card the player builds; the other three are tried
+    for (let slot = 1; slot < loadout.slots.length; slot++) {
       for (const card of pool) {
-        if (card === loadout.main || loadout.supports.includes(card)) continue;
+        if (loadout.slots.includes(card)) continue;
         const next: CardLoadout = {
-          main: loadout.main,
-          supports: loadout.supports.map((s, i) => (i === slot ? card : s)),
+          slots: loadout.slots.map((s, i) => (i === slot ? card : s)),
         };
         const result = setLoadout(best, content, 'fighting', next);
         if (!result.ok) continue;
@@ -225,7 +225,7 @@ export function teamRoles(state: GameState, content: Content): string {
  */
 export function wantsCardsNow(state: GameState, content: Content): boolean {
   const team = state.cards.loadouts.fighting;
-  if (team.main === null || team.supports.some((s) => s === null)) return true;
+  if (team.slots.some((s) => s === null)) return true;
   return workersUsed(state, content) < workerSlots(state, content);
 }
 
@@ -247,7 +247,7 @@ export function pullCardValue(
   const owned = state.cards.owned[cardId];
   if (!owned) return worth * (card.job === 'fighting' ? 1 : 0.6);
   if (owned.stars >= 6) return worth * 0.05;
-  if (cardId === state.cards.loadouts.fighting.main) return worth;
+  if (cardId === state.cards.loadouts.fighting.slots[0]) return worth;
   return worth * (building.has(cardId) ? 0.6 : 0.1);
 }
 

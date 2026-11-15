@@ -1484,19 +1484,16 @@ function slotsOf(loadout: unknown): unknown {
  * the `loadouts` record by older saves are dropped when the save is read, as before.
  */
 function v33ToV34(state: Record<string, unknown>): Record<string, unknown> {
-  const cards = isRecord(state['cards']) ? state['cards'] : {};
-  const loadouts = isRecord(cards['loadouts']) ? cards['loadouts'] : {};
-  const presets = isRecord(state['presets']) ? state['presets'] : {};
-  const dungeons = isRecord(presets['dungeons']) ? presets['dungeons'] : {};
-  return {
-    ...state,
-    cards: {
-      ...cards,
-      loadouts: Object.fromEntries(Object.entries(loadouts).map(([job, l]) => [job, slotsOf(l)])),
-    },
-    presets: {
-      ...presets,
-      dungeons: Object.fromEntries(Object.entries(dungeons).map(([id, l]) => [id, slotsOf(l)])),
-    },
-  };
+  const each = (record: unknown): unknown =>
+    isRecord(record)
+      ? Object.fromEntries(Object.entries(record).map(([key, l]) => [key, slotsOf(l)]))
+      : record;
+  const next = { ...state };
+  if (isRecord(state['cards']) && 'loadouts' in state['cards']) {
+    next['cards'] = { ...state['cards'], loadouts: each(state['cards']['loadouts']) };
+  }
+  if (isRecord(state['presets']) && 'dungeons' in state['presets']) {
+    next['presets'] = { ...state['presets'], dungeons: each(state['presets']['dungeons']) };
+  }
+  return next;
 }

@@ -6,6 +6,7 @@ import {
   approxEq,
   baseDamage,
   cardBaseDamage,
+  cardPower,
   cardStatPower,
   Decimal,
   effectiveDamage,
@@ -19,6 +20,7 @@ import {
 import {
   bareState,
   constantRng,
+  freshDamage,
   freshState,
   plainContent,
   withBossAttack,
@@ -54,7 +56,7 @@ function leadWith(
   state: GameState = freshState(),
 ): GameState {
   state.cards.owned[cardId] = { ...newOwnedCard(), ...patch };
-  state.cards.loadouts.fighting = { main: cardId, supports: [null, null, null] };
+  state.cards.loadouts.fighting = { slots: [cardId, null, null, null] };
   return state;
 }
 
@@ -81,7 +83,9 @@ describe('fighting damage comes from the main card', () => {
   it('is the Common base damage for a fresh Ember Squire (Bronze ★1 Lv 1)', () => {
     const state = freshState();
     expect(baseDamage(state, content).eq(rules.baseDamage.common)).toBe(true);
-    expect(effectiveDamage(state, content).eq(rules.baseDamage.common)).toBe(true);
+    expect(
+      approxEq(effectiveDamage(state, content), freshDamage(rules.baseDamage.common, content)),
+    ).toBe(true);
   });
 
   it('follows the rarity of whichever card leads', () => {
@@ -108,15 +112,20 @@ describe('fighting damage comes from the main card', () => {
   it('counts the level bump once: the pipeline adds nothing extra for a main with no damage bonus', () => {
     const owned = { ...newOwnedCard(), level: 11 };
     const state = leadWith('ember_squire', owned);
-    const expected = rules.baseDamage.common.mul(1 + rules.power.perLevel * 10);
+    // the Squire's own team bonus (+5% damage) grows with its power, like its damage
+    const expected = rules.baseDamage.common
+      .mul(1 + rules.power.perLevel * 10)
+      .mul(1 + (5 * cardPower(content, owned)) / 100);
     expect(approxEq(effectiveDamage(state, content), expected)).toBe(true);
   });
 
-  it('ignores support cards in the base damage, which a support only changes through its bonus', () => {
+  it('sums the base damage of every loadout card: the four cards are equal', () => {
     const state = leadWith('ember_squire');
     state.cards.owned['storm_duelist'] = newOwnedCard();
-    state.cards.loadouts.fighting.supports = ['storm_duelist', null, null];
-    expect(baseDamage(state, content).eq(rules.baseDamage.common)).toBe(true);
+    state.cards.loadouts.fighting.slots[1] = 'storm_duelist';
+    expect(
+      approxEq(baseDamage(state, content), rules.baseDamage.common.add(rules.baseDamage.epic)),
+    ).toBe(true);
   });
 
   it('keeps a small bare-hands damage when no card leads', () => {
@@ -127,7 +136,7 @@ describe('fighting damage comes from the main card', () => {
 
   it('falls back to bare hands for an unknown main card', () => {
     const state = bareState();
-    state.cards.loadouts.fighting = { main: 'not_a_card', supports: [null, null, null] };
+    state.cards.loadouts.fighting = { slots: ['not_a_card', null, null, null] };
     expect(baseDamage(state, content).eq(content.combat.unarmedDamage)).toBe(true);
   });
 });
@@ -145,7 +154,7 @@ describe('card XP from fighting time (DESIGN.md §5)', () => {
   it('gives every fighting card in the loadout XP for each second of a fight with no kill', () => {
     const state = freshState();
     state.cards.owned['storm_duelist'] = newOwnedCard();
-    state.cards.loadouts.fighting.supports = ['storm_duelist', null, null];
+    state.cards.loadouts.fighting.slots[1] = 'storm_duelist';
     const { state: after, report } = advance(state, content, 100_000, rng);
     expect(report.bossKills).toBe(0);
     const expected = rules.xp.perSecond.mul(100);

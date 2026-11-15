@@ -324,7 +324,7 @@ describe('card enhancements (DESIGN.md §10b, 12.2, 12.3)', () => {
     expect(mods[0]!.source.id).toBe(`ember_squire:${option.id}`);
 
     const benched = result.state;
-    benched.cards.loadouts.fighting.main = null;
+    benched.cards.loadouts.fighting.slots[0] = null;
     expect(
       collectModifiers(benched, content).filter((m) => m.source.kind === 'enhancement'),
     ).toHaveLength(0);

@@ -5,6 +5,7 @@ import {
   autoAscendUnlocked,
   ascend,
   challengeExcludedCards,
+  teamCardIds,
   challengeProgress,
   challengeViews,
   collectModifiers,
@@ -32,13 +33,13 @@ function ready(): GameState {
   return s;
 }
 
-/** The fresh loadout with a main and one support, both owned. */
+/** The fresh loadout with a second card in slot 2, both owned. */
 function withTeam(s: GameState): { main: string; support: string } {
   const l = s.cards.loadouts.fighting;
-  const main = l.main!;
+  const main = l.slots[0]!;
   const support = content.cards.find((c) => c.job === 'fighting' && c.id !== main)!.id;
   s.cards.owned[support] ??= newOwnedCard();
-  l.supports = [support, null, null];
+  l.slots[1] = support;
   return { main, support };
 }
 
@@ -188,7 +189,7 @@ describe('the rules, through modifiers', () => {
     expect(hp.toNumber()).toBeCloseTo(25);
   });
 
-  it('Lone Wolf drops the supports, their effect and their health', () => {
+  it('Lone Wolf lets only the first card fight: the others lose their bonus, health and damage', () => {
     const s = freshState();
     const { support } = withTeam(s);
     const before = collectModifiers(s, content);
@@ -197,10 +198,8 @@ describe('the rules, through modifiers', () => {
     expect(challengeExcludedCards(s, content)).toEqual([support]);
     const after = collectModifiers(s, content);
     expect(after.some((m) => m.source.kind === 'card' && m.source.id === support)).toBe(false);
-    expect(after.some((m) => m.stat === 'combat.health' && m.source.kind === 'challenge')).toBe(
-      true,
-    );
-    expect(s.cards.loadouts.fighting.supports[0]).toBe(support); // the loadout itself is untouched
+    expect(teamCardIds(s, content)).toEqual([s.cards.loadouts.fighting.slots[0]]); // only it fights
+    expect(s.cards.loadouts.fighting.slots[1]).toBe(support); // the loadout itself is untouched
   });
 
   it('Common Folk keeps only Commons', () => {
@@ -210,12 +209,7 @@ describe('the rules, through modifiers', () => {
     const commons = (id: string): boolean => content.cardById.get(id)!.rarity === 'common';
     const expected = [main, support].filter((id) => !commons(id));
     expect(challengeExcludedCards(s, content).sort()).toEqual(expected.sort());
-    if (!commons(main)) {
-      const dmg = collectModifiers(s, content).filter(
-        (m) => m.stat === 'combat.damage' && m.source.kind === 'challenge',
-      );
-      expect(statValue('combat.damage', 100, dmg).toNumber()).toBe(0);
-    }
+    expect(teamCardIds(s, content)).toEqual([main, support].filter(commons));
   });
 
   it('Untrained turns Training off', () => {
