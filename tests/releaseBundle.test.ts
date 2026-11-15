@@ -11,7 +11,7 @@ const entry = resolve(__dirname, 'fixtures/devGate/entry.js');
 const outDirs: string[] = [];
 
 /** Builds the dev-gate fixture like the renderer build does, in a mode. */
-async function buildFixture(mode: 'production' | 'development'): Promise<string> {
+async function buildFixture(mode: 'production' | 'development', devBuild = false): Promise<string> {
   const outDir = mkdtempSync(join(tmpdir(), `bi-devgate-${mode}-`));
   outDirs.push(outDir);
   const before = process.env['NODE_ENV'];
@@ -22,6 +22,7 @@ async function buildFixture(mode: 'production' | 'development'): Promise<string>
       configFile: false,
       logLevel: 'silent',
       mode,
+      define: { __BI_DEV_BUILD__: JSON.stringify(devBuild) },
       build: {
         outDir,
         emptyOutDir: true,
@@ -49,6 +50,11 @@ describe('release bundles never ship the dev cheats', () => {
     const out = await buildFixture('development');
     const found: string[] = findDevCheats(out);
     expect(found.length).toBeGreaterThan(0);
+  }, 60_000);
+
+  it('a production build with the dev-build flag (the local dev build) contains them', async () => {
+    const out = await buildFixture('production', true);
+    expect(findDevCheats(out).length).toBeGreaterThan(0);
   }, 60_000);
 
   it('looks for the marker the cheats module carries', () => {

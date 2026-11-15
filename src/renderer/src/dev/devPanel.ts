@@ -19,7 +19,7 @@ import {
   devSetFloor,
   type DevResult,
 } from '../../../game/dev';
-import { DIFFICULTIES, type Difficulty } from '../../../game';
+import { DIFFICULTIES, GAME_SPEEDS, type Difficulty } from '../../../game';
 import { h } from '../shell/shell';
 import './devPanel.css';
 
@@ -28,6 +28,12 @@ export interface DevPanelContext {
   state: () => GameState;
   /** Applies a new state the way a player action does (checks, celebrations, save). */
   apply: (next: GameState) => void;
+  /** The game loop's speed multiplier (1 = normal). Never saved. */
+  speed: () => number;
+  setSpeed: (speed: number) => void;
+  /** Backs up the save, starts a new game and reloads the view; resolves to the backup's file
+   *  name (null when there was no save). */
+  resetGame: (keepCosmetics: boolean) => Promise<string | null>;
 }
 
 const REASONS: Record<string, string> = {
@@ -162,6 +168,62 @@ export function installDevPanel(ctx: DevPanelContext): void {
     run('Cosmetic', (s) => devGrantCosmetic(s, ctx.content, cosmetic.value)),
   );
 
+  // game speed: the badge stays on screen while it is not 1x, so a sped-up game is never taken
+  // for normal pace
+  const badge = h('div', 'dev-speed-badge');
+  badge.setAttribute('role', 'status');
+  badge.hidden = true;
+  const speedButtons = GAME_SPEEDS.map((x) => {
+    const b = button(`${x}x`, () => {
+      ctx.setSpeed(x);
+      showSpeed();
+      status.textContent = `Game speed: ${x}x.`;
+    });
+    b.setAttribute('aria-pressed', 'false');
+    return [x, b] as const;
+  });
+  const showSpeed = (): void => {
+    const now = ctx.speed();
+    for (const [x, b] of speedButtons) {
+      b.setAttribute('aria-pressed', String(x === now));
+      b.classList.toggle('dev-panel__button--on', x === now);
+    }
+    badge.hidden = now === 1;
+    badge.textContent = `${now}x`;
+  };
+
+  // reset: the second click confirms, in the panel (no dialog)
+  let pending: HTMLButtonElement | null = null;
+  let pendingTimer = 0;
+  const disarm = (): void => {
+    window.clearTimeout(pendingTimer);
+    if (pending) {
+      pending.textContent = pending.dataset['label'] ?? '';
+      pending.classList.remove('dev-panel__button--danger');
+    }
+    pending = null;
+  };
+  const resetButton = (label: string, keepCosmetics: boolean) => {
+    const b = button(label, () => {
+      if (pending !== b) {
+        disarm();
+        pending = b;
+        b.textContent = 'Click again to confirm';
+        b.classList.add('dev-panel__button--danger');
+        status.textContent = 'This starts a new game. The current save is backed up first.';
+        pendingTimer = window.setTimeout(disarm, 10_000);
+        return;
+      }
+      disarm();
+      status.textContent = 'Backing up the save and starting a new game...';
+      ctx.resetGame(keepCosmetics).catch((error: unknown) => {
+        status.textContent = `Reset failed: ${error instanceof Error ? error.message : String(error)}`;
+      });
+    });
+    b.dataset['label'] = label;
+    return b;
+  };
+
   // time
   const time = (label: string, seconds: number) =>
     button(label, () => run(`Advance ${label}`, (s) => devAdvanceTime(s, ctx.content, seconds)));
@@ -174,8 +236,11 @@ export function installDevPanel(ctx: DevPanelContext): void {
     row('Card', card, tier, stars, level, setRank),
     row('Account', xp, addXp),
     row('Cosmetic', cosmetic, giveCosmetic),
+    row('Speed', ...speedButtons.map(([, b]) => b)),
     row('Time', time('10 min', 600), time('1 h', 3600), time('8 h', 8 * 3600)),
+    row('New game', resetButton('Reset game', false), resetButton('Reset, keep cosmetics', true)),
     status,
   );
-  document.body.append(root, toggle);
+  showSpeed();
+  document.body.append(root, toggle, badge);
 }

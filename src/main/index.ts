@@ -7,6 +7,7 @@ import { setupSaveIpc, saveBeforeClose } from './saves';
 import { setupAutoUpdates } from './updater';
 import { devUserDataDir } from './devPaths';
 import { devCheatsEnabled } from './devMode';
+import { DEV_BUILD } from './buildFlag';
 import { createFileLogger } from './fileLogger';
 import { readLogTail, systemInfo } from './logTail';
 
@@ -15,6 +16,9 @@ import { readLogTail, systemInfo } from './logTail';
 // BI_PROFILE / --bi-profile / BI_USER_DATA_DIR give parallel dev apps separate saves.
 if (!app.isPackaged) {
   app.setPath('userData', devUserDataDir(app.getPath('appData'), process.env, process.argv));
+} else if (DEV_BUILD) {
+  // The local dev build (DESIGN.md §2) never shares the installed game's save folder.
+  app.setPath('userData', join(app.getPath('appData'), 'basic-incremental-devbuild'));
 }
 
 /** Where main's logs live (main.log, updater.log, saves.log). */
@@ -48,6 +52,10 @@ function createWindow(): void {
     },
   });
 
+  if (DEV_BUILD) {
+    win.setTitle(`${GAME_TITLE} Dev`);
+    win.on('page-title-updated', (event) => event.preventDefault());
+  }
   win.on('ready-to-show', () => win.show());
   saveBeforeClose(win);
   win.webContents.on('render-process-gone', (_event, details) =>
@@ -73,9 +81,13 @@ function createWindow(): void {
 }
 
 void app.whenReady().then(() => {
-  log.info(`App ${app.getVersion()} started (${app.isPackaged ? 'release' : 'dev'} build)`);
+  log.info(
+    `App ${app.getVersion()} started (${app.isPackaged ? (DEV_BUILD ? 'local dev' : 'release') : 'dev'} build)`,
+  );
   ipcMain.handle(IPC_CHANNELS.getVersion, () => app.getVersion());
-  ipcMain.handle(IPC_CHANNELS.devCheatsEnabled, () => devCheatsEnabled(app, process.env));
+  ipcMain.handle(IPC_CHANNELS.devCheatsEnabled, () =>
+    devCheatsEnabled(app, process.env, DEV_BUILD),
+  );
   ipcMain.handle(IPC_CHANNELS.readLogTail, (_event, lines: unknown) =>
     readLogTail(logDir(), Math.min(MAX_TAIL_LINES, typeof lines === 'number' ? lines : 0)),
   );
@@ -87,7 +99,7 @@ void app.whenReady().then(() => {
       versions: process.versions,
     }),
   );
-  setupSaveIpc();
+  setupSaveIpc({ devTools: devCheatsEnabled(app, process.env, DEV_BUILD) });
   createWindow();
 
   try {

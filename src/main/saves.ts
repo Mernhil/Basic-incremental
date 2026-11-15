@@ -8,11 +8,16 @@ import { createSaveStore } from './saveStore';
 const FLUSH_TIMEOUT_MS = 3000;
 
 /** Registers the save IPC handlers. Saves live in `<userData>/saves`. */
-export function setupSaveIpc(): void {
+export function setupSaveIpc(options: { devTools?: boolean } = {}): void {
   const store = createSaveStore(join(app.getPath('userData'), 'saves'));
   const log = createFileLogger(join(app.getPath('userData'), 'logs', 'saves.log'));
 
   ipcMain.handle(IPC_CHANNELS.readSave, () => store.read());
+  // Only where the dev cheats exist (a public release has no such handler at all).
+  if (options.devTools) {
+    ipcMain.handle(IPC_CHANNELS.devBackupSave, () => store.backupBeforeReset(new Date()));
+    ipcMain.on(IPC_CHANNELS.devReloadView, (event) => event.sender.reloadIgnoringCache());
+  }
   ipcMain.handle(IPC_CHANNELS.writeSave, (_event, text: unknown) => {
     if (typeof text !== 'string') throw new TypeError('Save text must be a string.');
     try {
