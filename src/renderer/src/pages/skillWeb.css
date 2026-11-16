@@ -217,12 +217,12 @@
   top: calc(100% + 8px);
   left: 50%;
   translate: -50% 0;
-  width: 92px;
+  width: max-content;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.15;
+  white-space: nowrap;
   text-align: center;
-  text-wrap: balance;
   color: color-mix(in srgb, var(--gem) 55%, #fff);
   text-shadow:
     0 1px 0 #0b0e20,
@@ -407,4 +407,52 @@
   .sk-legend__item--branch {
     display: none;
   }
+}
+
+.sk-node__name.is-hidden {
+  visibility: hidden;
+}
+.sk-node:hover .sk-node__name.is-hidden,
+.sk-node:focus-visible .sk-node__name.is-hidden {
+  z-index: 4;
+  visibility: visible;
+}
+.sk-node__gem.has-art .sg {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+.sk-node.is-key .sk-node__gem.has-art .sg {
+  width: 32px;
+  height: 32px;
+}
+.sk-chip,
+.sk-count,
+.sk-legend {
+  background: #0b0e20;
+}
+
+/* very small: the whole web in a small window */
+.sk-sky.is-micro .sk-node__gem,
+.sk-sky.is-micro .sk-node.is-key .sk-node__gem {
+  width: 26px;
+  height: 26px;
+  margin: 2px;
+  border-width: 2px;
+}
+.sk-sky.is-micro .sk-node__rank {
+  display: none;
+}
+.sk-sky.is-micro .sk-node__q {
+  font-size: 14px;
+}
+
+.sk-branch.is-short .sk-branch__count {
+  display: none;
+}
+
+.sk-node__name.is-above,
+.sk-node.is-key .sk-node__name.is-above {
+  top: auto;
+  bottom: calc(100% + 8px);
 }

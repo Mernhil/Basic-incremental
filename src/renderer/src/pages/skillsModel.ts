@@ -37,9 +37,9 @@ export const CENTRE = { x: 0, y: 0 } as const;
  * depth in the branch's tree (the root first, the keystone last), and the skills of one depth are
  * spread across the arm.
  */
-export const depthRadius = (depth: number): number => 300 + 190 * depth;
+export const depthRadius = (depth: number): number => 260 + 170 * depth;
 /** Room between two skills of the same depth across an arm. */
-const LATERAL = 130;
+const LATERAL = 120;
 /** Where the branch name sits, past the keystone. */
 const LABEL_R = 1400;
 /** The weapon circles sit past the branches: their centre radius, outline radius and gem radius. */
@@ -332,6 +332,20 @@ export function treeView(
         COPY.skills.rank(i.rank, i.maxRank),
       ),
     });
+  }
+
+  // a branch's title sits just past the furthest skill of it in view, so the opening view keeps it whole
+  for (const b of branches) {
+    const reach = Math.max(
+      0,
+      ...nodes.filter((n) => n.branch === b.id && !n.circle).map((n) => Math.hypot(n.x, n.y)),
+    );
+    const ray = branchAngle(b.id);
+    const p = at(ray, reach + 120);
+    const cos = Math.cos(rad(ray));
+    b.x = p.x;
+    b.y = p.y;
+    b.anchor = cos > 0.3 ? 'start' : cos < -0.3 ? 'end' : 'middle';
   }
 
   const pos = new Map(nodes.map((n) => [n.id, n]));
