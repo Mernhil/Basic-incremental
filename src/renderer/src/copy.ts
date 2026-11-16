@@ -1459,6 +1459,7 @@ export const COPY = {
       unknown: 'Unknown',
     },
     unknownName: 'Unknown skill',
+    areas: { logging: 'Logging', mining: 'Mining', dungeon: 'Dungeon', cards: 'Cards' },
     levelLine: 'Level',
     keystoneTag: 'Keystone',
     canBuyNow: (n: number) =>

@@ -17,7 +17,7 @@ import { glyphSvg } from '../ui/webGlyphs';
 import { createHeirloomsTab } from './heirloomsMap';
 import type { PageContext } from './production';
 import {
-  BRANCH_COLOUR,
+  AREA_COLOUR,
   CENTRE,
   SKY,
   respecView,
@@ -46,8 +46,8 @@ export interface SkillsContext extends PageContext {
 }
 
 /** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
-const START_SCALE = 0.62;
-const MIN_SCALE = 0.2;
+const START_SCALE = 1;
+const MIN_SCALE = 0.3;
 const MAX_SCALE = 1.7;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -171,127 +171,48 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     build('respec');
   }
 
-  // ---- the constellation ----
+  // ---- the web ----
 
   /** Pan and zoom of the sky: pixels per sky unit and the box's offset in the stage. */
   const camera = { scale: START_SCALE, x: 0, y: 0, placed: false, touched: false, width: 0 };
-  /** The skills in view (sky units): the first view fits them, so the web you have opens whole. */
-  let fit: { x0: number; y0: number; x1: number; y1: number } | null = null;
-  /** The branch titles in view, so the first view keeps them whole inside the frame. */
-  let titles: { x: number; y: number; anchor: 'start' | 'middle' | 'end'; w: number }[] = [];
-  /** Every plate and its name, for hiding the names that would touch something. */
-  let plates: { n: NodeView; name: HTMLElement | null }[] = [];
-  let titleEls: HTMLElement[] = [];
+  /** Where the first view looks: the middle of what you have bought and the star (pick 4a opens on it). */
+  let focus = { x: 0, y: 0, w: 0, h: 0 };
   const clampScale = (s: number): number => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
 
-  /** Sizes and places the sky box in its stage from the camera (gems keep their pixel size). */
+  /** Sizes and places the sky box in its stage from the camera (plates keep their pixel size). */
   function applyCamera(stage: HTMLElement, box: HTMLElement): void {
     const rect = stage.getBoundingClientRect();
-    // a window resized before you moved the sky gets the fitted first view again
+    // a window resized before you moved the sky gets the first view again
     if (camera.placed && !camera.touched && Math.abs(rect.width - camera.width) > 40) {
       camera.placed = false;
     }
     if (!camera.placed && rect.width > 0) {
       camera.width = rect.width;
-      // first view: everything you know, and the "?" next to it, inside the frame (under the tabs)
-      const f0 = fit ?? { x0: 0, y0: 0, x1: 0, y1: 0 };
-      let f = f0;
-      let scale = camera.scale;
-      // a few passes: a title is a fixed width in pixels, so its reach in sky units depends on the scale
-      for (let pass = 0; pass < 3; pass++) {
-        f = { ...f0 };
-        for (const t of titles) {
-          const reach = t.w / scale;
-          const left =
-            t.anchor === 'start' ? t.x : t.anchor === 'end' ? t.x - reach : t.x - reach / 2;
-          f.x0 = Math.min(f.x0, left);
-          f.x1 = Math.max(f.x1, left + reach);
-          f.y0 = Math.min(f.y0, t.y - 14 / scale);
-          f.y1 = Math.max(f.y1, t.y + 14 / scale);
-        }
-        scale = clampScale(
+      // what you have and the "?" next to it fill the frame, 1:1 at most and never below half size
+      camera.scale = Math.min(
+        START_SCALE,
+        Math.max(
+          0.5,
           Math.min(
-            (rect.width - 90) / Math.max(f.x1 - f.x0, 1),
-            (rect.height - (rect.width < 1000 ? 190 : 215)) / Math.max(f.y1 - f.y0, 1),
-            1,
+            (rect.width - 140) / Math.max(focus.w + 320, 1),
+            (rect.height - 190) / Math.max(focus.h + 320, 1),
           ),
-        );
-      }
-      camera.scale = scale;
-      camera.x = rect.width / 2 - ((f.x0 + f.x1) / 2 - SKY.x) * camera.scale;
-      camera.y = rect.height / 2 + 8 - ((f.y0 + f.y1) / 2 - SKY.y) * camera.scale;
+        ),
+      );
+      camera.x = rect.width / 2 - (focus.x - SKY.x) * camera.scale;
+      camera.y = rect.height / 2 + 24 - (focus.y - SKY.y) * camera.scale;
       camera.placed = true;
     }
-    box.classList.toggle('is-far', camera.scale < 0.25);
-    box.classList.toggle('is-micro', camera.scale < 0.3);
-    box.classList.toggle('is-tiny', camera.scale < 0.42);
+    box.classList.toggle('is-far', camera.scale < 0.42);
+    // the plates grow and shrink with the zoom, as 4a's whole web does
+    box.style.setProperty(
+      '--plate',
+      `${Math.max(38, Math.round(64 * Math.min(camera.scale, 1)))}px`,
+    );
     box.style.width = `${SKY.w * camera.scale}px`;
     box.style.height = `${SKY.h * camera.scale}px`;
     box.style.left = `${camera.x}px`;
     box.style.top = `${camera.y}px`;
-    declutter();
-  }
-
-  /** Hides each name that would touch another name or a plate (the chosen skill always shows its own). */
-  function declutter(): void {
-    const k = camera.scale;
-    const reach = (n: NodeView): number => (n.keystone ? 38 : k < 0.3 ? 15 : k < 0.42 ? 21 : 30);
-    type R = { x0: number; y0: number; x1: number; y1: number };
-    const boxes = plates.map(({ n }) => ({
-      id: n.id,
-      x0: n.x * k - reach(n),
-      y0: n.y * k - reach(n),
-      x1: n.x * k + reach(n),
-      y1: n.y * k + reach(n),
-    }));
-    const hit = (a: R, b: R): boolean =>
-      a.x0 < b.x1 + 3 && a.x1 > b.x0 - 3 && a.y0 < b.y1 + 3 && a.y1 > b.y0 - 3;
-    const rank = (n: NodeView): number =>
-      n.id === selected ? 0 : n.canBuy ? 1 : n.rank > 0 ? 2 : 3;
-    const shown: R[] = [];
-    for (const { n, name } of [...plates].sort((a, b) => rank(a.n) - rank(b.n))) {
-      if (!name) continue;
-      const w = name.offsetWidth;
-      const hgt = name.offsetHeight;
-      if (w === 0) continue;
-      // under the plate, or over it when that is free
-      const below: R = {
-        x0: n.x * k - w / 2,
-        y0: n.y * k + reach(n) + 6,
-        x1: n.x * k + w / 2,
-        y1: n.y * k + reach(n) + 6 + hgt,
-      };
-      const above: R = { ...below, y0: n.y * k - reach(n) - 6 - hgt, y1: n.y * k - reach(n) - 6 };
-      const free = (r: R): boolean =>
-        !boxes.some((b) => b.id !== n.id && hit(r, b)) && !shown.some((o) => hit(r, o));
-      const spot = free(below) ? below : free(above) ? above : null;
-      const forced = n.id === selected;
-      name.classList.toggle('is-above', spot === above);
-      name.classList.toggle('is-hidden', spot === null && !forced);
-      if (spot || forced) shown.push(spot ?? below);
-    }
-    // two titles that touch drop their counts ("Workers", "Automation"), so none runs into another
-    const seen: DOMRect[] = [];
-    for (const el of titleEls) {
-      el.classList.remove('is-short');
-      let r = el.getBoundingClientRect();
-      const over = (o: DOMRect): boolean =>
-        r.left < o.right + 4 && r.right > o.left - 4 && r.top < o.bottom && r.bottom > o.top;
-      el.style.marginLeft = '';
-      if (seen.some(over)) {
-        el.classList.add('is-short');
-        r = el.getBoundingClientRect();
-      }
-      // still touching: slide it sideways, away from the title it meets
-      const meets = seen.find(over);
-      if (meets) {
-        const left = r.left + r.width / 2 < meets.left + meets.width / 2;
-        const shift = left ? meets.left - 6 - r.right : meets.right + 6 - r.left;
-        el.style.marginLeft = `${shift}px`;
-        r = el.getBoundingClientRect();
-      }
-      seen.push(r);
-    }
   }
 
   /** Zooms to `scale`, keeping the point under (cx, cy) of the stage where it is. */
@@ -400,7 +321,6 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   }
 
   function sky(v: TreeView): HTMLElement {
-    titleEls = [];
     // the title and the learned count are in the view's title bar (UI_RULES §2, table update 9d)
     const el = h('section', 'frame sk-frame');
     el.setAttribute('aria-label', t.tree);
@@ -475,21 +395,18 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       label.setAttribute('role', 'img');
       label.setAttribute('aria-label', t.branchLearned(b.name, b.learned, b.total));
       box.append(label);
-      titleEls.push(label);
     }
 
-    // the branches only: the far weapon circles are for panning to
-    plates = [];
-    titles = v.branches.map((b) => ({
-      x: b.x,
-      y: b.y,
-      anchor: b.anchor,
-      w: (b.name.length + 6) * 9 + 12,
-    }));
-    const arms = v.nodes.filter((n) => !n.circle);
-    const xs = [CENTRE.x, ...arms.map((n) => n.x)];
-    const ys = [CENTRE.y, ...arms.map((n) => n.y)];
-    fit = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+    // the first view looks at the middle of what you have bought and the star
+    const mine = v.nodes.filter((n) => n.rank > 0 && !n.circle);
+    const xs = [CENTRE.x, ...mine.map((n) => n.x)];
+    const ys = [CENTRE.y, ...mine.map((n) => n.y)];
+    focus = {
+      w: Math.max(...xs) - Math.min(...xs),
+      h: Math.max(...ys) - Math.min(...ys),
+      x: (Math.min(...xs) + Math.max(...xs)) / 2,
+      y: (Math.min(...ys) + Math.max(...ys)) / 2,
+    };
 
     // the hub: a gold node with a star, the points to spend on its rim
     const centre = h('div', 'sk-centre');
@@ -533,7 +450,6 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     b.style.setProperty('--gem', n.colour);
     b.setAttribute('aria-label', n.label);
     b.setAttribute('aria-pressed', String(n.id === selected));
-    let nameEl: HTMLElement | null = null;
     const gem = h('span', 'sk-node__gem');
     // the equipped node art (a style other than the starter) shows in the plate in place of the glyph
     const style = nodeStyle(content, ctx.state());
@@ -548,10 +464,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     // the rank sits on the plate's lower edge, "2/5"; the name under it
     if (n.state !== 'unknown') {
       b.append(h('span', 'sk-node__rank bi-num', n.rankText));
-      nameEl = h('span', 'sk-node__name', n.name);
-      b.append(nameEl);
+      b.append(h('span', 'sk-node__name', n.name));
     }
-    plates.push({ n, name: nameEl });
     attachTooltip(b, () => tip(n));
     b.addEventListener('click', () => {
       selected = n.id;
@@ -727,15 +641,12 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       tabs.append(b);
     }
     const legend = h('div', 'sk-legend');
-    if (points !== undefined) {
-      for (const [id, colour] of Object.entries(BRANCH_COLOUR)) {
-        const item = h('span', 'sk-legend__item sk-legend__item--branch');
-        const dot = h('i', 'sk-legend__dot is-branch');
-        dot.style.background = colour;
-        dot.style.borderColor = colour;
-        item.append(dot, t.branchShort[id as keyof typeof t.branchShort]);
-        legend.append(item);
-      }
+    for (const area of ['logging', 'mining', 'dungeon', 'cards'] as const) {
+      const item = h('span', 'sk-legend__item sk-legend__item--area');
+      const dot = h('i', 'sk-legend__dot is-branch');
+      dot.style.background = AREA_COLOUR[area];
+      item.append(dot, t.areas[area]);
+      legend.append(item);
     }
     for (const [cls, text] of [
       ['is-maxed', t.legend.maxed],

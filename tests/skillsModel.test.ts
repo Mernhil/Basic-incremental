@@ -11,9 +11,11 @@ import {
 } from '../src/game';
 import {
   CENTRE,
-  depthRadius,
+  AREA_COLOUR,
+  AREA_DEGREES,
+  DEPTH_STEP,
+  LATERAL,
   SKY,
-  branchAngle,
   respecView,
   starChartView,
   treeView,
@@ -35,8 +37,11 @@ const fullyKnown = (): GameState => {
   return s;
 };
 
-describe('constellation layout', () => {
-  it('places every node inside the sky, on its own branch ray, without overlaps', () => {
+describe('web layout', () => {
+  const areaOf = (branch: string) =>
+    content.account.branches.find((x) => x.branch === branch)!.area;
+
+  it('places every node inside the sky, along its area, with room for a plate and its name', () => {
     const v = view(fullyKnown());
     // the weapon circles are hidden on a new game: only their outlines are in the view
     expect(v.nodes).toHaveLength(branchNodes.length);
@@ -47,31 +52,42 @@ describe('constellation layout', () => {
       expect(n.x).toBeLessThan(SKY.x + SKY.w);
       expect(n.y).toBeGreaterThan(SKY.y);
       expect(n.y).toBeLessThan(SKY.y + SKY.h);
-      // within 30 degrees of its branch ray
-      const deg = (Math.atan2(n.y - CENTRE.y, n.x - CENTRE.x) * 180) / Math.PI;
-      const off = ((deg - branchAngle(n.branch) + 540) % 360) - 180;
-      expect(Math.abs(off)).toBeLessThan(30);
+      // in the area's half of the web, in the area's colour
+      const deg = AREA_DEGREES[areaOf(n.branch)];
+      const along = n.x * Math.cos((deg * Math.PI) / 180) + n.y * Math.sin((deg * Math.PI) / 180);
+      expect(along).toBeGreaterThan(0);
+      expect(n.colour).toBe(AREA_COLOUR[areaOf(n.branch)]);
     }
+    // the spacing of pick 4a: no two skills closer than a plate and a name need
+    const min = Math.min(LATERAL, DEPTH_STEP) - 10;
     for (const a of v.nodes) {
       for (const b of v.nodes) {
         if (a === b) continue;
-        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(55);
+        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(min);
       }
     }
   });
 
-  it('puts a node further out than what it requires', () => {
+  it('puts a node further out than what it requires, along its area', () => {
     const v = view(fullyKnown());
-    const r = (id: string) => {
+    const along = (id: string) => {
       const n = v.nodes.find((x) => x.id === id)!;
-      return Math.hypot(n.x - CENTRE.x, n.y - CENTRE.y);
+      const deg = (AREA_DEGREES[areaOf(n.branch)] * Math.PI) / 180;
+      return n.x * Math.cos(deg) + n.y * Math.sin(deg);
     };
-    // a skill sits at the radius of its depth: further out than what it requires
-    expect(r('logging_s3')).toBeGreaterThan(r('logging_s2'));
-    expect(r('combat_s6')).toBeGreaterThan(r('combat_s3'));
-    expect(r('combat_k')).toBeGreaterThan(r('combat_l3'));
-    expect(r('logging_s1')).toBeCloseTo(depthRadius(0), 0);
-    expect(r('logging_k')).toBeCloseTo(depthRadius(5), 0);
+    expect(along('logging_s3')).toBeGreaterThan(along('logging_s2'));
+    expect(along('combat_s6')).toBeGreaterThan(along('combat_s3'));
+    expect(along('combat_k')).toBeGreaterThan(along('combat_l3'));
+    // the keystone is the furthest of its branch
+    const furthest = Math.max(
+      ...branchNodes.filter((n) => n.branch === 'combat').map((n) => along(n.id)),
+    );
+    expect(along('combat_k')).toBe(furthest);
+  });
+
+  it('gives every branch an area, and the four areas their own direction', () => {
+    expect(new Set(content.account.branches.map((b) => b.area)).size).toBe(4);
+    expect(new Set(Object.values(AREA_DEGREES)).size).toBe(4);
   });
 
   it('draws an edge per requirement, plus one from the centre for each root', () => {

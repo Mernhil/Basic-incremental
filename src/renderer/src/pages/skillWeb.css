@@ -114,8 +114,8 @@
   display: grid;
   place-items: center;
   box-sizing: border-box;
-  width: 54px;
-  height: 54px;
+  width: var(--plate, 64px);
+  height: var(--plate, 64px);
   aspect-ratio: auto;
   border: 4px solid var(--edge);
   border-radius: 50%;
@@ -127,9 +127,9 @@
 }
 .sk-node.is-key .sk-node__gem {
   --one: 1px;
-  width: 56px;
-  height: 56px;
-  margin: 6px;
+  width: calc(var(--plate, 64px) * 0.8);
+  height: calc(var(--plate, 64px) * 0.8);
+  margin: calc(var(--plate, 64px) * 0.15);
   border-radius: 0;
   border-width: 5px;
   transform: rotate(45deg);
@@ -214,14 +214,16 @@
 }
 .sk-node__name {
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 14px);
   left: 50%;
   translate: -50% 0;
   width: max-content;
+  max-width: 130px;
   font-size: 12px;
   font-weight: 700;
   line-height: 1.15;
-  white-space: nowrap;
+  white-space: normal;
+  text-wrap: balance;
   text-align: center;
   color: color-mix(in srgb, var(--gem) 55%, #fff);
   text-shadow:
