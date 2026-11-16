@@ -497,3 +497,11 @@ html.r-shell-oak
   :is(.dp-row__meta, .dp-row__stars):not(#_o):not(#_o) {
   color: #fff1d0;
 }
+
+/* The dungeon room keeps its own purple brick: its wall, floor and mortar are mixed from the dark
+   chrome tokens, so the room reads the dark surface set (not the oak header's brown) */
+html.r-shell-oak .ar__scene {
+  --bi-chrome-bg: #2a2238;
+  --bi-chrome-rail-bg: #17131f;
+  --bi-frame-hi: #54456d;
+}
