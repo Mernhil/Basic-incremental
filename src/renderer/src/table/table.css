@@ -175,7 +175,7 @@
 .tbl-pile__hint {
   min-height: 1.3em;
   font-size: 12px;
-  color: var(--px-muted, var(--bi-on-table));
+  color: var(--bi-on-table-muted, var(--bi-on-table));
   white-space: nowrap;
 }
 .tbl-pile__hint.is-ready {

@@ -70,7 +70,7 @@
 .dv-sheet__title {
   margin: 0;
   font-size: 22px;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .dv-sheet__back {
   padding: 4px 12px;

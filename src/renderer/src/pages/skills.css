@@ -309,7 +309,7 @@
 .sk-points__num {
   font-size: 34px;
   line-height: 1.1;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 /* the gem and its effect in a dark well */
 .sk-art {

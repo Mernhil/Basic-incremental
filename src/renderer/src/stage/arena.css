@@ -964,7 +964,7 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   margin: 0 0 0.45em;
   font-family: var(--bi-font-display);
   font-size: 1.3em;
-  color: var(--du-gold);
+  color: var(--bi-frame-accent, var(--du-gold));
 }
 .du-sheet__rows {
   display: grid;

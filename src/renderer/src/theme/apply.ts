@@ -13,6 +13,7 @@ import './rank.css';
 import './recipes.css';
 import './frames.css';
 import './shellPictures.css';
+import './shellOak.css';
 
 const RECIPE_PREFIX = 'r-';
 
@@ -152,4 +153,20 @@ export function applyScopedGlobalTheme(
 ): void {
   const { vars, recipes } = globalVars(resolveGlobal(content, loadout));
   applied.set(el, setVisuals(el, vars, recipes, applied.get(el) ?? []));
+}
+
+/**
+ * Dev switch for a table nobody owns yet (Carved Oak while it is built): in a dev build only,
+ * `localStorage['bi-dev-table'] = '<table item id>'` makes the table slot show that item. A release
+ * build, and a dev build without the key, return the loadout as it is.
+ */
+export function withDevTable(loadout: CosmeticLoadout): CosmeticLoadout {
+  if (!(import.meta.env.DEV || __BI_DEV_BUILD__)) return loadout;
+  let id: string | null = null;
+  try {
+    id = localStorage.getItem('bi-dev-table');
+  } catch {
+    // storage is not available: no switch
+  }
+  return id ? { ...loadout, slots: { ...loadout.slots, table: { id, level: 1 } } } : loadout;
 }

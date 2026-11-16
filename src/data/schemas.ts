@@ -1266,6 +1266,11 @@ export const SLOT_TOKENS = {
     'frame-edge',
     'frame-hi',
     'frame-lo',
+    'frame-accent',
+    'frame-good',
+    'frame-bad',
+    'frame-xp',
+    'frame-xp-ink',
     'font-ui',
     'font-display',
     'tip-bg',
@@ -1314,6 +1319,8 @@ export const cosmeticSchema = z
     starter: z.boolean().default(false),
     /** Owned by every new game and every save from format 31 on, without being the slot's starter. */
     ownedAtStart: z.boolean().default(false),
+    /** In development: no source, no player can get or see it; a dev switch wears it (Carved Oak). */
+    hidden: z.boolean().default(false),
     /** Small permanent buffs granted just for owning it (worn or not). */
     ownedModifiers: z.array(modifierSchema).default([]),
     /**

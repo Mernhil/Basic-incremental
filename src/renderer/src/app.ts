@@ -30,7 +30,12 @@ import {
 import { fmt } from './settings/numberFormat';
 import { COPY } from './copy';
 import { coinAmount, isMoney } from './settings/coins';
-import { applyGlobalTheme, assertVisualsImplemented, configureCardLevels } from './theme/apply';
+import {
+  applyGlobalTheme,
+  assertVisualsImplemented,
+  configureCardLevels,
+  withDevTable,
+} from './theme/apply';
 import { createDetailsPanel } from './shell/details';
 import {
   iconMarkup,
@@ -108,7 +113,7 @@ export async function startGame(root: HTMLElement, version: string): Promise<voi
   }
   const loop = new GameLoop(state, content, defaultRng, startedAt);
   const applyTheme = (): void => {
-    applyGlobalTheme(content, loop.state.cosmetics.loadout);
+    applyGlobalTheme(content, withDevTable(loop.state.cosmetics.loadout));
     setNumberMotion(resolveGlobal(content, loop.state.cosmetics.loadout).tick?.visual.effect);
     setPixelTick(getComputedStyle(document.documentElement).getPropertyValue('--bi-tick-px'));
     refreshPixelNumbers();

@@ -5,9 +5,9 @@
 .wp,
 .wp-over {
   --wp-tc: #c98a4b;
-  --wp-xp: #7fc6ff;
-  --wp-good: #7fc79a;
-  --wp-bad: #ef8a7a;
+  --wp-xp: var(--bi-frame-xp, #7fc6ff);
+  --wp-good: var(--bi-frame-good, #7fc79a);
+  --wp-bad: var(--bi-frame-bad, #ef8a7a);
   --wp-tag-bg: color-mix(in srgb, #000 55%, var(--bi-frame-bg));
   --wp-prism: linear-gradient(90deg, #ff5f9e, #ffb347, #f4f46b, #5ff0a8, #5fc6ff, #b48cff);
   color: var(--bi-frame-ink);
@@ -119,14 +119,14 @@
 }
 .wp-xp {
   position: absolute;
-  right: 6px;
-  top: 34px;
+  right: -8px;
+  top: -6px;
   display: grid;
   text-align: right;
   font-size: 11.5px;
   font-weight: 700;
   line-height: 1.2;
-  color: #9fd8ff;
+  color: var(--bi-frame-xp-ink, #9fd8ff);
 }
 .wp-plate {
   position: absolute;
@@ -529,6 +529,6 @@ html .wp--card .button.wp-go[aria-disabled='true']:not(#_px) {
   opacity: 0.6;
 }
 .wp-change__gain {
-  color: #6fdc7e;
+  color: var(--bi-frame-good, #6fdc7e);
   font-weight: 700;
 }
