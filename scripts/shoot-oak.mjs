@@ -2,7 +2,7 @@
 // view with the Weapon panel, at 1920x1010 and 1280x720, optionally at a device scale.
 // Start the game hidden and muted on its own profile (it writes that profile's save, never the player's):
 //   BI_HIDDEN_WINDOW=1 BI_PROFILE=oak npx electron-vite dev -- --remote-debugging-port=9492 --mute-audio
-// then: node scripts/shoot-oak.mjs <outDir> [port] [oak|plum] [scale]
+// then: node scripts/shoot-oak.mjs <outDir> [port] [default|oak|plum] [scale]
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from 'playwright';
@@ -64,9 +64,9 @@ await page.evaluate(
 );
 await page.evaluate(
   (t) =>
-    t === 'oak'
-      ? localStorage.setItem('bi-dev-table', 'oak_table')
-      : localStorage.removeItem('bi-dev-table'),
+    t === 'default'
+      ? localStorage.removeItem('bi-dev-table')
+      : localStorage.setItem('bi-dev-table', t === 'plum' ? 'gn_table' : 'oak_table'),
   table,
 );
 await page.reload();

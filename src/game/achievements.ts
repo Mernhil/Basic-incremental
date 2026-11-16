@@ -81,9 +81,10 @@ export function measure(
       return { value: full ? 1 : 0, target: 1 };
     }
     case 'cosmetics_owned': {
-      const owned = Object.keys(state.cosmetics.owned).filter(
-        (id) => content.cosmeticById.get(id)?.starter === false,
-      );
+      const owned = Object.keys(state.cosmetics.owned).filter((id) => {
+        const c = content.cosmeticById.get(id);
+        return c?.starter === false && !c.ownedAtStart; // Plum Pixel is owned from the start
+      });
       return { value: owned.length, target: condition.amount };
     }
     case 'skill_points_spent':

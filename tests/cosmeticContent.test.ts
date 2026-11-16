@@ -321,15 +321,16 @@ describe('achievement sticker styles', () => {
   });
 });
 
-describe('the hidden Carved Oak table', () => {
-  it('is a table no player can get: hidden, not a starter, no source, worn by the shell-oak recipe', () => {
+describe('the Carved Oak starter table', () => {
+  it('is the starter table, worn by the shell-oak recipe; Plum Pixel is a table every game owns', () => {
     const oak = content.cosmetics.find((c) => c.id === 'oak_table')!;
     expect(oak.slot).toBe('table');
-    expect(oak.hidden).toBe(true);
-    expect(oak.starter).toBe(false);
-    expect(oak.ownedAtStart).toBe(false);
-    expect(cosmeticSource(content, 'oak_table')).toBeNull();
+    expect(oak.starter).toBe(true);
     expect(oak.levels[0]!.recipes).toContain('shell-oak');
+    expect(content.starterBySlot.table!.id).toBe('oak_table');
+    const plum = content.cosmetics.find((c) => c.id === 'gn_table')!;
+    expect(plum.starter).toBe(false);
+    expect(plum.ownedAtStart).toBe(true);
   });
 
   it('sets every table token the starter sets, with dark ink on cream panels', () => {
