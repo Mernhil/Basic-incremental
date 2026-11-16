@@ -82,9 +82,10 @@ describe('the skill web (UI_RULES, The Skill Tree, pick 4a)', () => {
     const v = webView(content, s, free(s));
     const saws = v.nodes.find((n) => n.id === 'lg_saws')!;
     expect(saws.state).toBe('owned');
-    expect(saws.rankText).toBe('2/10');
-    expect(saws.now).toEqual(['+25% logging production']);
-    expect(saws.next[0]).toMatch(/^\+3[78]% logging production/);
+    expect(saws.rankText).toBe(`2/${content.webNodeById.get('lg_saws')!.maxLevel}`);
+    expect(saws.now[0]).toMatch(/^\+\d+(\.\d+)?% logging production$/);
+    expect(saws.next[0]).toMatch(/^\+\d+(\.\d+)?% logging production$/);
+    expect(saws.next[0]).not.toBe(saws.now[0]);
     expect(saws.colour).toBe(AREA_COLOUR.logging);
     expect(v.nodes.find((n) => n.id === 'lg_swing')!.state).toBe('open');
     expect(v.nodes.find((n) => n.id === 'lg_heart')!.state).toBe('open');

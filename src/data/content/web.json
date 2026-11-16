@@ -28,12 +28,12 @@
       "name": "Sharp Saws",
       "parent": null,
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 26,
       "perLevel": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "12.5",
+          "value": "4.8077",
           "scope": {
             "job": "logging"
           }
@@ -78,12 +78,12 @@
       "name": "Quick Swing",
       "parent": "lg_saws",
       "slot": "forward",
-      "maxLevel": 8,
+      "maxLevel": 23,
       "perLevel": [
         {
           "stat": "burst.fill",
           "kind": "percent",
-          "value": "18.75",
+          "value": "6.5217",
           "scope": {
             "job": "logging"
           }
@@ -91,7 +91,7 @@
         {
           "stat": "harvest.speed",
           "kind": "percent",
-          "value": "9.375",
+          "value": "3.2609",
           "scope": {
             "job": "logging"
           }
@@ -136,12 +136,12 @@
       "name": "Wide Groves",
       "parent": "lg_swing",
       "slot": "forward",
-      "maxLevel": 8,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "cost.growth",
           "kind": "percent",
-          "value": "-2.625",
+          "value": "-1",
           "scope": {
             "job": "logging"
           }
@@ -179,12 +179,12 @@
       "name": "Whetstone Hands",
       "parent": "lg_groves",
       "slot": "forward",
-      "maxLevel": 6,
+      "maxLevel": 15,
       "perLevel": [
         {
           "stat": "tool.strength",
           "kind": "percent",
-          "value": "7.5",
+          "value": "3",
           "scope": {
             "job": "logging"
           }
@@ -234,7 +234,7 @@
       "description": "Every tree makes a quarter more gems.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -250,12 +250,12 @@
       "name": "Heart Strike",
       "parent": "lg_saws",
       "slot": "left",
-      "maxLevel": 10,
+      "maxLevel": 8,
       "perLevel": [
         {
           "stat": "harvest.critChance",
           "kind": "flat",
-          "value": "0.015",
+          "value": "0.0188",
           "scope": {
             "job": "logging"
           }
@@ -288,12 +288,12 @@
       "name": "Splitter",
       "parent": "lg_heart",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 5,
       "perLevel": [
         {
           "stat": "harvest.critDamage",
           "kind": "flat",
-          "value": "0.1",
+          "value": "0.2",
           "scope": {
             "job": "logging"
           }
@@ -322,12 +322,12 @@
       "name": "Grove Bounty",
       "parent": "lg_split",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 16,
       "perLevel": [
         {
           "stat": "burst.power",
           "kind": "flat",
-          "value": "3.2",
+          "value": "2",
           "scope": {
             "job": "logging"
           }
@@ -379,7 +379,7 @@
       "description": "Heart strikes never come less than one in five, and your workers work harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -422,12 +422,12 @@
       "name": "Root Diggers",
       "parent": "lg_lucky",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 6,
       "perLevel": [
         {
           "stat": "depth.digRate",
           "kind": "percent",
-          "value": "6",
+          "value": "10",
           "scope": {
             "job": "logging"
           }
@@ -435,7 +435,7 @@
         {
           "stat": "depth.yield",
           "kind": "percent",
-          "value": "3",
+          "value": "5",
           "scope": {
             "job": "logging"
           }
@@ -465,12 +465,12 @@
       "name": "Vein Cutter",
       "parent": null,
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 26,
       "perLevel": [
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "12.5",
+          "value": "4.8077",
           "scope": {
             "job": "mining"
           }
@@ -515,12 +515,12 @@
       "name": "Quick Strike",
       "parent": "mn_cutter",
       "slot": "forward",
-      "maxLevel": 8,
+      "maxLevel": 23,
       "perLevel": [
         {
           "stat": "burst.fill",
           "kind": "percent",
-          "value": "18.75",
+          "value": "6.5217",
           "scope": {
             "job": "mining"
           }
@@ -528,7 +528,7 @@
         {
           "stat": "harvest.speed",
           "kind": "percent",
-          "value": "9.375",
+          "value": "3.2609",
           "scope": {
             "job": "mining"
           }
@@ -573,12 +573,12 @@
       "name": "Deep Seams",
       "parent": "mn_strike",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "production.levelBonus",
           "kind": "percent",
-          "value": "21",
+          "value": "10",
           "scope": {
             "job": "mining"
           }
@@ -616,12 +616,12 @@
       "name": "Tempered Picks",
       "parent": "mn_seams",
       "slot": "forward",
-      "maxLevel": 6,
+      "maxLevel": 10,
       "perLevel": [
         {
           "stat": "tool.strength",
           "kind": "percent",
-          "value": "5",
+          "value": "3",
           "scope": {
             "job": "mining"
           }
@@ -667,7 +667,7 @@
       "description": "Every mine makes a quarter more gems.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -683,12 +683,12 @@
       "name": "Keen Eye",
       "parent": "mn_cutter",
       "slot": "left",
-      "maxLevel": 10,
+      "maxLevel": 8,
       "perLevel": [
         {
           "stat": "harvest.critChance",
           "kind": "flat",
-          "value": "0.015",
+          "value": "0.0188",
           "scope": {
             "job": "mining"
           }
@@ -721,12 +721,12 @@
       "name": "Hard Strikes",
       "parent": "mn_eye",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 5,
       "perLevel": [
         {
           "stat": "harvest.critDamage",
           "kind": "flat",
-          "value": "0.1",
+          "value": "0.2",
           "scope": {
             "job": "mining"
           }
@@ -755,12 +755,12 @@
       "name": "Vein Bounty",
       "parent": "mn_hard",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 16,
       "perLevel": [
         {
           "stat": "burst.power",
           "kind": "flat",
-          "value": "3.2",
+          "value": "2",
           "scope": {
             "job": "mining"
           }
@@ -794,12 +794,12 @@
       "name": "Shaft Diggers",
       "parent": "mn_bounty",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 6,
       "perLevel": [
         {
           "stat": "depth.digRate",
           "kind": "percent",
-          "value": "6",
+          "value": "10",
           "scope": {
             "job": "mining"
           }
@@ -807,7 +807,7 @@
         {
           "stat": "depth.yield",
           "kind": "percent",
-          "value": "3",
+          "value": "5",
           "scope": {
             "job": "mining"
           }
@@ -837,12 +837,12 @@
       "name": "Bellows",
       "parent": "mn_cutter",
       "slot": "right",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "forge.speed",
           "kind": "percent",
-          "value": "10.5"
+          "value": "5"
         }
       ],
       "description": "The forge works faster.",
@@ -876,12 +876,12 @@
       "name": "Fine Moulds",
       "parent": "mn_bellows",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "forge.yield",
           "kind": "percent",
-          "value": "6.3"
+          "value": "3"
         }
       ],
       "gate": 1,
@@ -962,7 +962,7 @@
       "description": "Four in ten gems of every craft come back, and the forge works a quarter faster.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -978,12 +978,12 @@
       "name": "Might",
       "parent": null,
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 31,
       "perLevel": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "12.5"
+          "value": "4.0323"
         }
       ],
       "description": "Your team hits harder.",
@@ -1025,12 +1025,12 @@
       "name": "Vigor",
       "parent": "dg_might",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "combat.health",
           "kind": "percent",
-          "value": "21"
+          "value": "10"
         }
       ],
       "description": "Your team has more health.",
@@ -1064,12 +1064,12 @@
       "name": "Keen Eye",
       "parent": "dg_vigor",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 15,
       "perLevel": [
         {
           "stat": "combat.critChance",
           "kind": "flat",
-          "value": "0.015"
+          "value": "0.01"
         }
       ],
       "gate": 1,
@@ -1141,7 +1141,7 @@
       "description": "Your team hits a quarter harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -1157,12 +1157,12 @@
       "name": "Guard",
       "parent": "dg_might",
       "slot": "left",
-      "maxLevel": 5,
+      "maxLevel": 10,
       "perLevel": [
         {
           "stat": "combat.defence",
           "kind": "flat",
-          "value": "4"
+          "value": "2"
         }
       ],
       "description": "Every hit your team takes is softened.",
@@ -1188,12 +1188,12 @@
       "name": "Weak Points",
       "parent": "dg_guard",
       "slot": "forward",
-      "maxLevel": 5,
+      "maxLevel": 10,
       "perLevel": [
         {
           "stat": "combat.bossHp",
           "kind": "percent",
-          "value": "-4"
+          "value": "-2"
         }
       ],
       "description": "Bosses have less health.",
@@ -1219,12 +1219,12 @@
       "name": "Trophy Hunter",
       "parent": "dg_weak",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "stars.chest",
           "kind": "percent",
-          "value": "10.5"
+          "value": "5"
         }
       ],
       "gate": 1,
@@ -1259,12 +1259,12 @@
       "name": "Battle Scars",
       "parent": "dg_trophy",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "stars.damage",
           "kind": "percent",
-          "value": "10.5"
+          "value": "5"
         }
       ],
       "gate": 2,
@@ -1299,12 +1299,12 @@
       "name": "Spoils of War",
       "parent": "dg_scars",
       "slot": "forward",
-      "maxLevel": 5,
+      "maxLevel": 15,
       "perLevel": [
         {
           "stat": "stars.loot",
           "kind": "percent",
-          "value": "15"
+          "value": "5"
         }
       ],
       "gate": 2,
@@ -1358,7 +1358,7 @@
       "description": "Stars on a dungeon count double for damage, and bring half as much more loot and chests.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -1374,12 +1374,12 @@
       "name": "Attunement",
       "parent": "dg_might",
       "slot": "right",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "element.bonus",
           "kind": "percent",
-          "value": "10.5"
+          "value": "5"
         }
       ],
       "description": "Your elements hit harder.",
@@ -1413,12 +1413,12 @@
       "name": "Ward",
       "parent": "dg_attune",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "element.resist",
           "kind": "percent",
-          "value": "-10.5"
+          "value": "-5"
         }
       ],
       "gate": 1,
@@ -1453,12 +1453,12 @@
       "name": "Living Earth",
       "parent": "dg_ward",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "element.production",
           "kind": "percent",
-          "value": "10.5"
+          "value": "5"
         }
       ],
       "gate": 2,
@@ -1511,7 +1511,7 @@
       "description": "You take no more damage from opposing elements, and your own hit half again as hard.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -1527,17 +1527,17 @@
       "name": "Quick Study",
       "parent": null,
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 46,
       "perLevel": [
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "21"
+          "value": "4.5652"
         },
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "7.5",
+          "value": "1.6304",
           "scope": {
             "job": "fighting"
           }
@@ -1545,7 +1545,7 @@
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "5",
+          "value": "1.087",
           "scope": {
             "job": "logging"
           }
@@ -1602,12 +1602,12 @@
       "name": "Renown",
       "parent": "cd_study",
       "slot": "forward",
-      "maxLevel": 8,
+      "maxLevel": 36,
       "perLevel": [
         {
           "stat": "xp.account",
           "kind": "percent",
-          "value": "22.5"
+          "value": "5"
         }
       ],
       "description": "Your account earns more XP.",
@@ -1684,12 +1684,12 @@
       "name": "Hired Hands",
       "parent": "cd_pockets",
       "slot": "forward",
-      "maxLevel": 5,
+      "maxLevel": 15,
       "perLevel": [
         {
           "stat": "worker.power",
           "kind": "percent",
-          "value": "15"
+          "value": "5"
         }
       ],
       "gate": 2,
@@ -1738,7 +1738,7 @@
       "description": "Your cards earn a quarter more XP, and you send one more expedition.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -1754,12 +1754,12 @@
       "name": "Crystal Luck",
       "parent": "cd_study",
       "slot": "left",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "drops.crystalMultiplier",
           "kind": "percent",
-          "value": "10.5"
+          "value": "5"
         }
       ],
       "description": "Scrolls and crystals drop in larger numbers.",
@@ -1793,12 +1793,12 @@
       "name": "Rare Luck",
       "parent": "cd_crystal",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "21"
+          "value": "10"
         }
       ],
       "description": "Rare cards turn up more often.",
@@ -1832,12 +1832,12 @@
       "name": "Core Luck",
       "parent": "cd_rare",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 27,
       "perLevel": [
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "13.5"
+          "value": "5"
         }
       ],
       "gate": 1,
@@ -1876,12 +1876,12 @@
       "name": "Pity Sense",
       "parent": "cd_core",
       "slot": "forward",
-      "maxLevel": 5,
+      "maxLevel": 10,
       "perLevel": [
         {
           "stat": "summon.pityThreshold",
           "kind": "flat",
-          "value": "-4"
+          "value": "-2"
         }
       ],
       "gate": 2,
@@ -1921,7 +1921,7 @@
       "description": "Rare cards turn up a quarter more often.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [
@@ -1937,12 +1937,12 @@
       "name": "Trial Focus",
       "parent": "cd_study",
       "slot": "right",
-      "maxLevel": 10,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "trial.reward",
           "kind": "percent",
-          "value": "21"
+          "value": "10"
         }
       ],
       "description": "Glimmer Trials pay more.",
@@ -1976,12 +1976,12 @@
       "name": "Long Watch",
       "parent": "cd_trial",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 42,
       "perLevel": [
         {
           "stat": "offline.capHours",
           "kind": "flat",
-          "value": "4.2"
+          "value": "1"
         }
       ],
       "gate": 1,
@@ -2032,12 +2032,12 @@
       "name": "Starlit Mind",
       "parent": "cd_watch",
       "slot": "forward",
-      "maxLevel": 10,
+      "maxLevel": 42,
       "perLevel": [
         {
           "stat": "prestige.gain",
           "kind": "percent",
-          "value": "18"
+          "value": "4.2857"
         }
       ],
       "gate": 2,
@@ -2088,17 +2088,17 @@
       "name": "Quick Return",
       "parent": "cd_mind",
       "slot": "forward",
-      "maxLevel": 6,
+      "maxLevel": 16,
       "perLevel": [
         {
           "stat": "cost.growth",
           "kind": "percent",
-          "value": "-1.6667"
+          "value": "-0.625"
         },
         {
           "stat": "cost.multiplier",
           "kind": "percent",
-          "value": "-3"
+          "value": "-1.125"
         }
       ],
       "gate": 2,
@@ -2158,7 +2158,7 @@
       "description": "Ascending gives a quarter more Starlight, and every level costs a fifth less.",
       "cost": {
         "resource": "skill_points",
-        "base": "5",
+        "base": "8",
         "growth": 1
       },
       "absorbs": [

@@ -468,3 +468,40 @@
     max-width: 300px;
   }
 }
+
+/* a node with more than ten levels: one bar instead of a diamond each */
+.sk-bar {
+  position: relative;
+  display: inline-block;
+  width: 190px;
+  height: 20px;
+  background: #1a1630;
+  border: 2px solid #6c76b0;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+.sk-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(11, 14, 32, 0.55) 9px 10px);
+  pointer-events: none;
+}
+.sk-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--gem);
+}
+.sk-bar b {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  color: #fff;
+  text-shadow:
+    0 1px 0 #0b0e20,
+    1px 0 0 #0b0e20,
+    -1px 0 0 #0b0e20;
+}

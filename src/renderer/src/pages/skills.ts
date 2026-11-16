@@ -547,8 +547,16 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     row(t.now, n.now.join(', ') || t.none);
     row(t.afterLine, n.next.join(', ') || t.maxed);
     if (n.state !== 'unknown') {
-      const pips = h('span', 'sk-pips');
-      for (let i = 0; i < n.maxRank; i++) pips.append(h('i', i < n.rank ? 'is-on' : ''));
+      // ten levels or fewer: one diamond each; more: one segmented bar and "Level n of max"
+      const pips = h('span', n.maxRank > 10 ? 'sk-bar' : 'sk-pips');
+      if (n.maxRank > 10) {
+        const fill = h('i', 'sk-bar__fill');
+        fill.style.width = `${(n.rank / n.maxRank) * 100}%`;
+        pips.append(fill, h('b', 'bi-num', t.levelOf(n.rank, n.maxRank)));
+        pips.title = t.levelOf(n.rank, n.maxRank);
+      } else {
+        for (let i = 0; i < n.maxRank; i++) pips.append(h('i', i < n.rank ? 'is-on' : ''));
+      }
       const r = h('div', 'sk-row');
       r.append(h('dt', '', t.levelLine), h('dd', '', ''));
       r.lastElementChild!.append(pips);

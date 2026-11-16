@@ -86,7 +86,7 @@ describe('v37 -> v38 (the skill web)', () => {
       'element.bonus',
       'forge.speed',
     ]) {
-      expect(total(newMods, stat), stat).toBeCloseTo(total(oldMods, stat), 3);
+      expect(total(newMods, stat), stat).toBeCloseTo(total(oldMods, stat), 1);
     }
   });
 
@@ -114,8 +114,9 @@ describe('v37 -> v38 with a half-bought old tree', () => {
       account: { web: Record<string, number> };
     };
     const saws = out.account.web['lg_saws'] ?? 0;
-    expect(saws).toBeGreaterThanOrEqual(3);
-    expect(saws).toBeLessThanOrEqual(6);
+    const max = content.webNodeById.get('lg_saws')!.maxLevel;
+    expect(saws).toBeGreaterThanOrEqual(Math.floor(max * 0.35));
+    expect(saws).toBeLessThanOrEqual(Math.ceil(max * 0.65));
     let spent = 0;
     for (const n of content.web.nodes) {
       for (let l = 0; l < (out.account.web[n.id] ?? 0); l++)

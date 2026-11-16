@@ -1461,6 +1461,7 @@ export const COPY = {
     unknownName: 'Unknown skill',
     areaLevel: (area: string, level: number, max: number) => `${area} · level ${level} of ${max}`,
     have: (n: number) => `(have ${n})`,
+    levelOf: (n: number, max: number) => `Level ${n} of ${max}`,
     needsLine: 'Needs',
     areas: { logging: 'Logging', mining: 'Mining', dungeon: 'Dungeon', cards: 'Cards' },
     levelLine: 'Level',

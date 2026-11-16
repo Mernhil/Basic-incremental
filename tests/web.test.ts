@@ -42,7 +42,7 @@ describe('buying in the skill web (DESIGN.md §10 The skill web)', () => {
     expect(buyWebNode(s2, content, 'lg_groves').ok).toBe(true);
     const lp = levelPointsOnly(content);
     const poor = freshState();
-    poor.account.level = 2;
+    poor.account.level = 1;
     expect(buyWebNode(poor, lp, 'lg_saws')).toEqual({ ok: false, reason: 'no-points' });
     const max = rich(500);
     max.account.web = { lg_saws: content.webNodeById.get('lg_saws')!.maxLevel };
