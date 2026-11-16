@@ -25,11 +25,11 @@
     "base": "60",
     "growth": "1.12",
     "stepWall": {
-      "wood": "40",
-      "bronze": "1700",
-      "silver": "3000",
-      "gold": "3000",
-      "prismatic": "3000"
+      "wood": "142",
+      "bronze": "17",
+      "silver": "112",
+      "gold": "35",
+      "prismatic": "8.5"
     }
   },
   "xp": {
