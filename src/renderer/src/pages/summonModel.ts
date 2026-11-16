@@ -1,4 +1,4 @@
-import { RARITIES, type Content, type Rarity } from '../../../data';
+import { ITEM_KINDS, RARITIES, type Content, type Rarity } from '../../../data';
 import {
   type GameState,
   type HeirloomGateInfo,
@@ -131,8 +131,30 @@ export interface WishlistPanelView {
     countText: string;
     label: string;
     full: boolean;
-    cards: { id: string; name: string; marked: boolean; label: string; blocked: boolean }[];
+    cards: {
+      id: string;
+      name: string;
+      marked: boolean;
+      label: string;
+      blocked: boolean;
+      /** The player owns this card (an unowned tile is drawn with a dashed edge). */
+      owned: boolean;
+      /** Item type ("greatsword"), the column the tile sits in. */
+      kind: string;
+      element: string;
+      /** "Ember Squire · Sword · Fire · Fighting": the one-line readout and the tooltip. */
+      detail: string;
+    }[];
   }[];
+}
+
+const cap = (x: string): string => x.charAt(0).toUpperCase() + x.slice(1);
+const kindName = (kind: string): string => cap(kind.replace('_', ' '));
+
+/** Column of an item type in the Wishlist grid (the order of the 11 types). */
+export function wishKindIndex(kind: string): number {
+  const i = (ITEM_KINDS as readonly string[]).indexOf(kind);
+  return i < 0 ? ITEM_KINDS.length : i;
 }
 
 export function wishlistPanelView(
@@ -158,13 +180,26 @@ export function wishlistPanelView(
         countText: t.wishlistCount(r.marked, r.limit),
         label: t.wishlistRow(rarityName(content, r.rarity), r.marked, r.limit),
         full,
-        cards: r.cards.map((c) => ({
-          id: c.itemId,
-          name: nameOf(c.itemId),
-          marked: c.marked,
-          blocked: !c.marked && full,
-          label: t.wishlistCard(nameOf(c.itemId), c.marked, full),
-        })),
+        cards: r.cards
+          .map((c) => {
+            const card = content.cardById.get(c.itemId);
+            const kind = card?.item.kind ?? '';
+            return {
+              id: c.itemId,
+              name: nameOf(c.itemId),
+              marked: c.marked,
+              blocked: !c.marked && full,
+              owned: state.cards.owned[c.itemId] !== undefined,
+              label: t.wishlistCard(nameOf(c.itemId), c.marked, full),
+              kind,
+              element: card?.element ?? '',
+              detail: card
+                ? t.wishlistDetail(card.name, kindName(kind), cap(card.element), cap(card.job))
+                : nameOf(c.itemId),
+            };
+          })
+          // by weapon type, so a type keeps its column from one rarity to the next
+          .sort((a, b) => wishKindIndex(a.kind) - wishKindIndex(b.kind)),
       };
     }),
   };

@@ -35,7 +35,7 @@ function apply(host: HTMLElement, f: Fit): void {
   // below, DESIGN.md §5 The base frame): the layouts that hold cards leave it free, one set of sizes for all of them
   host.style.setProperty('--kit-side', `${(k * 53.33).toFixed(2)}px`);
   host.style.setProperty('--kit-top', `${(k * 46.67).toFixed(2)}px`);
-  host.style.setProperty('--kit-bottom', `${(k * 26).toFixed(2)}px`);
+  host.style.setProperty('--kit-bottom', `${(k * 33.34).toFixed(2)}px`);
   host.style.setProperty('--kit-gutter', `${(k * 72).toFixed(2)}px`);
   host.style.setProperty('--card-full', k >= 1.25 ? '1' : '0');
 }
