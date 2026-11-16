@@ -10,11 +10,10 @@ import {
   type GameState,
 } from '../src/game';
 import {
-  AREA_COLOUR,
-  AREA_DEGREES,
-  MIN_GAP,
-  STEP,
+  CENTRE,
+  RING_RADIUS,
   SKY,
+  branchAngle,
   respecView,
   starChartView,
   treeView,
@@ -29,19 +28,10 @@ const content = levelPointsOnly(bundled);
 const branchNodes = content.account.tree.filter((n) => !n.circle);
 
 const view = (s: GameState) => treeView(content, skillTree(s, content), skillPoints(s, content));
-/** Every skill of the branches learned one rank: the whole tree is known, so all of it is in view. */
-const fullyKnown = (): GameState => {
-  const s = freshState();
-  s.account.skills = Object.fromEntries(branchNodes.map((n) => [n.id, 1]));
-  return s;
-};
 
-describe('web layout', () => {
-  const areaOf = (branch: string) =>
-    content.account.branches.find((x) => x.branch === branch)!.area;
-
-  it('places every node inside the sky, along its area, with room for a plate and its name', () => {
-    const v = view(fullyKnown());
+describe('constellation layout', () => {
+  it('places every node inside the sky, on its own branch ray, without overlaps', () => {
+    const v = view(freshState());
     // the weapon circles are hidden on a new game: only their outlines are in the view
     expect(v.nodes).toHaveLength(branchNodes.length);
     expect(v.circles).toHaveLength(0);
@@ -51,68 +41,39 @@ describe('web layout', () => {
       expect(n.x).toBeLessThan(SKY.x + SKY.w);
       expect(n.y).toBeGreaterThan(SKY.y);
       expect(n.y).toBeLessThan(SKY.y + SKY.h);
-      // in the area's half of the web, in the area's colour
-      const deg = AREA_DEGREES[areaOf(n.branch)];
-      const along = n.x * Math.cos((deg * Math.PI) / 180) + n.y * Math.sin((deg * Math.PI) / 180);
-      expect(along).toBeGreaterThan(0);
-      expect(n.colour).toBe(AREA_COLOUR[areaOf(n.branch)]);
+      // within 30 degrees of its branch ray
+      const deg = (Math.atan2(n.y - CENTRE.y, n.x - CENTRE.x) * 180) / Math.PI;
+      const off = ((deg - branchAngle(n.branch) + 540) % 360) - 180;
+      expect(Math.abs(off)).toBeLessThan(30);
     }
-    // the spacing of pick 4a: no two skills closer than a plate and a name need
-    const min = MIN_GAP - 1;
     for (const a of v.nodes) {
       for (const b of v.nodes) {
         if (a === b) continue;
-        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(min);
+        expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(55);
       }
     }
   });
 
-  it('puts a node further out than what it requires, along its area', () => {
-    const v = view(fullyKnown());
-    const along = (id: string) => {
+  it('puts a node further out than what it requires', () => {
+    const v = view(freshState());
+    const r = (id: string) => {
       const n = v.nodes.find((x) => x.id === id)!;
-      const deg = (AREA_DEGREES[areaOf(n.branch)] * Math.PI) / 180;
-      return n.x * Math.cos(deg) + n.y * Math.sin(deg);
+      return Math.hypot(n.x - CENTRE.x, n.y - CENTRE.y);
     };
-    expect(along('logging_s3')).toBeGreaterThan(along('logging_s2'));
-    expect(along('combat_s6')).toBeGreaterThan(along('combat_s3'));
-    expect(along('combat_k')).toBeGreaterThan(along('combat_l3'));
-    // the keystone is the furthest of its branch
-    const furthest = Math.max(
-      ...branchNodes.filter((n) => n.branch === 'combat').map((n) => along(n.id)),
-    );
-    expect(along('combat_k')).toBe(furthest);
-  });
-
-  it('puts the first skill of a trunk one step from the star, on its arm, and a side root one step from its trunk', () => {
-    const v = view(fullyKnown());
-    const at = (id: string) => v.nodes.find((n) => n.id === id)!;
-    for (const row of content.account.branches) {
-      const first = at(`${row.branch}_s1`);
-      if (!row.forksFrom) {
-        const deg = (AREA_DEGREES[row.area] * Math.PI) / 180;
-        expect(first.x).toBeCloseTo(Math.cos(deg) * STEP, 0);
-        expect(first.y).toBeCloseTo(Math.sin(deg) * STEP, 0);
-      } else {
-        const trunk = at(`${row.forksFrom}_s1`);
-        expect(Math.hypot(first.x - trunk.x, first.y - trunk.y)).toBeCloseTo(STEP, 0);
-        expect(content.account.tree.find((n) => n.id === first.id)!.requires).toContain(
-          `${row.forksFrom}_s1`,
-        );
-      }
-    }
-  });
-
-  it('gives every branch an area, and the four areas their own direction', () => {
-    expect(new Set(content.account.branches.map((b) => b.area)).size).toBe(4);
-    expect(new Set(Object.values(AREA_DEGREES)).size).toBe(4);
+    // a gem sits on its ring: further out than what it requires once the requirement is a ring inside
+    expect(r('logging_s3')).toBeGreaterThan(r('logging_s2'));
+    expect(r('combat_s6')).toBeGreaterThan(r('combat_s3'));
+    expect(r('combat_k')).toBeGreaterThan(r('combat_l3'));
+    expect(r('logging_s1')).toBeCloseTo(RING_RADIUS[0], 0);
+    expect(r('logging_k')).toBeCloseTo(RING_RADIUS[3], 0);
   });
 
   it('draws an edge per requirement, plus one from the centre for each root', () => {
-    const v = view(fullyKnown());
+    const v = view(freshState());
     const roots = branchNodes.filter((n) => n.requires.length === 0).length;
     const links = branchNodes.reduce((a, n) => a + n.requires.length, 0);
     expect(v.edges).toHaveLength(roots + links);
+    expect(v.edges.every((e) => !e.lit)).toBe(true);
   });
 });
 
@@ -124,12 +85,8 @@ describe('node states and effects', () => {
     const node = (id: string) => v.nodes.find((n) => n.id === id)!;
     expect(node('logging_s1').state).toBe('open');
     expect(node('logging_s1').canBuy).toBe(true);
-    // a skill next to a known one is a "?": its name and effect stay hidden until it is open
-    expect(node('logging_s2').state).toBe('unknown');
-    expect(node('logging_s2').name).toBe('Unknown skill');
-    expect(node('logging_s2').now).toEqual([]);
-    expect(node('logging_s2').next).toEqual([]);
-    expect(node('logging_s2').canBuy).toBe(false);
+    expect(node('logging_s2').state).toBe('locked');
+    expect(node('logging_s2').needs).toBe('Needs Grove Yield first');
     expect(node('logging_s1').now).toEqual([]);
     expect(node('logging_s1').next).toEqual(['+5% logging production']);
 
@@ -303,39 +260,5 @@ describe('enhancement star chart', () => {
     const open = starChartView(cardEnhancements(s, content, cardId)!);
     expect(open.stars.find((x) => x.unlockLevel === 20)!.state).toBe('open');
     expect(open.stars.find((x) => x.unlockLevel === 40)!.levelText).toBe('Opens at level 40');
-  });
-});
-
-describe('the web shows what you know and its "?" neighbours (UI_RULES, The Skill Tree, pick 4a)', () => {
-  it('starts with the open roots and the "?" next to them, and nothing further out', () => {
-    const v = view(freshState());
-    const open = v.nodes.filter((n) => n.state === 'open');
-    const unknown = v.nodes.filter((n) => n.state === 'unknown');
-    // only the four trunks are open at the start: the other branches need a rank in their trunk
-    expect(open.length).toBe(4);
-    expect(unknown.length).toBeGreaterThan(0);
-    // a "?" is never a root, and its parent is in view
-    const ids = new Set(v.nodes.map((n) => n.id));
-    for (const n of unknown) {
-      const req = content.account.tree.find((x) => x.id === n.id)!.requires;
-      expect(req.length).toBeGreaterThan(0);
-      expect(req.some((r) => ids.has(r))).toBe(true);
-    }
-    expect(v.nodes.length).toBeLessThan(branchNodes.length);
-    // nothing in view is hidden behind two unknown skills
-    expect(v.nodes.every((n) => n.glyph.length > 0)).toBe(true);
-  });
-
-  it('counts what can be learned now, and opens the next "?" when a skill is learned', () => {
-    const s = freshState();
-    s.account.level = 20;
-    const before = view(s);
-    expect(before.affordable).toBe(before.nodes.filter((n) => n.canBuy).length);
-    expect(before.affordable).toBeGreaterThan(0);
-    s.account.skills = { logging_s1: 1 };
-    const after = view(s);
-    expect(after.nodes.find((n) => n.id === 'logging_s2')!.state).toBe('open');
-    expect(after.nodes.find((n) => n.id === 'logging_s2')!.name).toBe('Grove Rhythm');
-    expect(after.nodes.length).toBeGreaterThan(before.nodes.length);
   });
 });

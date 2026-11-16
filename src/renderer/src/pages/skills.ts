@@ -16,6 +16,7 @@ import { nodeStyle, skillGem } from '../ui/skillArt';
 import { glyphSvg } from '../ui/webGlyphs';
 import { createHeirloomsTab } from './heirloomsMap';
 import type { PageContext } from './production';
+import { webSpent, webView } from './webModel';
 import {
   AREA_COLOUR,
   CENTRE,
@@ -101,14 +102,33 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   status.setAttribute('role', 'status');
   page.append(wrap, status);
 
-  const view = (): TreeView => {
+  /** The web's nodes plus the weapon circles (still the old tree's skills, on points). */
+  const view = (): TreeView & { affordable: number } => {
     const s = ctx.state();
-    return treeView(
+    const old = treeView(
       content,
       skillTree(s, content),
       skillPoints(s, content),
       weaponCircles(s, content),
     );
+    const free = Math.max(0, old.points.available - webSpent(content, s.account.web));
+    const w = webView(content, s, free);
+    const circleNodes = old.nodes
+      .filter((n) => n.circle)
+      .map((n) => ({ ...n, canBuy: n.canBuy && free >= n.cost }));
+    const circleEdges = old.edges.filter((e) =>
+      circleNodes.some((n) => n.x === e.x2 && n.y === e.y2),
+    );
+    return {
+      ...old,
+      nodes: [...w.nodes, ...circleNodes],
+      edges: [...w.edges, ...circleEdges],
+      branches: [],
+      points: { ...old.points, available: free },
+      learned: w.learned + circleNodes.filter((n) => n.rank > 0).length,
+      total: w.total + circleNodes.length,
+      affordable: w.affordable + circleNodes.filter((n) => n.canBuy).length,
+    };
   };
   const respec = () => {
     const s = ctx.state();
@@ -127,6 +147,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       heirlooms.signature(),
       s.cosmetics.loadout.slots.nodes,
       s.account.skills,
+      s.account.web,
       s.account.level,
       s.prestigeCount,
       weaponCircles(s, content).map((c) => c.step),
@@ -143,6 +164,11 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   }
 
   function buy(id: string): void {
+    // buying a level of the web is built after the user has seen the web (docs/plans/skill-web.md)
+    if (content.webNodeById.has(id)) {
+      say(t.webSoon);
+      return;
+    }
     const result = buySkill(ctx.state(), content, id);
     if (!result.ok) {
       say(t.reasons[result.reason]);
@@ -191,10 +217,10 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       // every skill in view, with its "?" neighbours, inside the safe area: under the tab strip and
       // the count box, over the legend and the zoom buttons, clear of the frame (a plate and its
       // name add about 60 units around the outermost skills)
-      const top = 124;
-      const bottom = 92;
+      const top = 112;
+      const bottom = 74;
       const w = focus.x1 - focus.x0 + 130;
-      const hgt = focus.y1 - focus.y0 + 190;
+      const hgt = focus.y1 - focus.y0 + 150;
       camera.scale = clampScale(
         Math.min(START_SCALE, (rect.width - 48) / w, (rect.height - top - bottom) / hgt),
       );
@@ -203,11 +229,11 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
         top + (rect.height - top - bottom) / 2 - ((focus.y0 + focus.y1) / 2 - SKY.y) * camera.scale;
       camera.placed = true;
     }
-    box.classList.toggle('is-far', camera.scale < 0.45);
+    box.classList.toggle('is-far', camera.scale < 0.36);
     // the plates grow and shrink with the zoom, as 4a's whole web does
     box.style.setProperty(
       '--plate',
-      `${Math.min(64, Math.max(30, Math.round(70 * camera.scale)))}px`,
+      `${Math.min(64, Math.max(22, Math.round(80 * camera.scale)))}px`,
     );
     box.style.width = `${SKY.w * camera.scale}px`;
     box.style.height = `${SKY.h * camera.scale}px`;
@@ -470,7 +496,11 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     const n = v.nodes.find((x) => x.id === selected);
     const { el, body } = frame(
       n ? n.name : t.tree,
-      n ? t.branchRank(t.branchShort[n.branch], n.rank, n.maxRank) : undefined,
+      n
+        ? n.areaLabel
+          ? t.areaLevel(n.areaLabel, n.rank, n.maxRank)
+          : t.branchRank(t.branchShort[n.branch], n.rank, n.maxRank)
+        : undefined,
     );
     el.classList.add('sk-detail');
     el.dataset.deal = '';
@@ -495,9 +525,14 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     else gem.innerHTML = glyphSvg(n.glyph, n.colour);
     gem.classList.toggle('is-key', n.keystone);
     const text = h('div', 'sk-art__text');
-    const effect = n.state === 'maxed' ? n.now : n.next;
-    for (const l of effect.length ? effect : [t.none]) text.append(h('b', 'bi-num', l));
-    text.append(h('span', 'sk-art__note', n.needs || t.state[n.state]));
+    if (n.what !== undefined) {
+      // a web node: the plain sentence of what it does (pick 4a)
+      text.append(h('b', 'sk-what', n.what || t.unknownNote));
+    } else {
+      const effect = n.state === 'maxed' ? n.now : n.next;
+      for (const l of effect.length ? effect : [t.none]) text.append(h('b', 'bi-num', l));
+      text.append(h('span', 'sk-art__note', n.needs || t.state[n.state]));
+    }
     art.append(gem, text);
 
     const rows = h('dl', 'sk-rows');
@@ -516,7 +551,11 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       r.lastElementChild!.append(pips);
       rows.append(r);
     }
-    row(t.costLine, n.state === 'maxed' ? t.maxed : t.pointCost(n.cost));
+    row(
+      t.costLine,
+      n.state === 'maxed' ? t.maxed : `${t.pointCost(n.cost)} ${t.have(v.points.available)}`,
+    );
+    if (n.needs && n.what !== undefined && n.state !== 'unknown') row(t.needsLine, n.needs);
     if (n.keystone) text.append(h('span', 'sw-tag', t.keystoneTag));
     body.append(art, rows);
 

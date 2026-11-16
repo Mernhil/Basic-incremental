@@ -5,7 +5,7 @@ numbers below are shapes; the sim sets them and the controller approves them.
 
 ## What the user picked
 
-"Fewer nodes, each with several levels, paid in materials, now > after on hover", one web from a
+"Fewer nodes, each with several levels" (the proposal also said "paid in materials", which the user did not choose: levels cost skill points), one web from a
 centre with four arms (Logging, Mining, Dungeon, Cards), "?" for unknown neighbours, skill points
 only for keystones (planning chat, 2026-11-15, and pick 4a). So the tree is a content redesign:
 steps 1 (layout) and 2 (economy) are one job. The 165-skill tree cannot be laid out as 4a (a
@@ -83,38 +83,35 @@ About 55 nodes and 8 keystones, down from 165 skills.
 
 ## 2. Costs
 
-- Each node is paid in one material of its arm, by depth: Logging Oak gems (depth 0 to 1), Ironbark
-  (2 to 3), Moonwillow (4); Mining Copper, Iron, Grotto gems the same way; Dungeon Moss, Cinder, Frost,
-  Storm Cores (depth 0 to 3, the Core of the dungeon that drops it); Cards Glimmer Dust (depth 0 to 2)
-  and Facet Shards (3 and up). Gems and Cores are what the player already earns; Cards pays in what
-  also pays card and cosmetic upgrades (competition, see Open questions).
-- Cost of level n: `base x growth^(n-1)`, growth 1.35 (a flat 1.35 keeps level 10 about 20 times level
-  1), base about 3 minutes of that material's income at the moment the node opens. Aim: with 6 to 10
-  nodes open at a time on different materials, one level is nearly always affordable; a node's last
-  levels take 10 to 30 minutes. The sim tunes base and growth; the data file holds one pair per node.
-- Keystones cost skill points only: 8 each (was 5 in a branch of 15 skills). Skill points are what
-  account levels, stage stars and achievements give (about 43 in the first hour, 230 by 40 hours). With
-  only 8 keystones (64 points) and the weapon circles (about 110 skills) still on points, the income
-  is not too much: it stays for circles and keystones, and Heirloom points are a separate system.
+The user's answer (2026-11-16): the pick was "fewer nodes, each with several levels", nothing about
+materials. So every level of every node costs skill points, as the whole tree does today; there are
+no material costs, no material chips and no "paid in what the area earns" line. A node's cost is one
+`cost` object in `web.json` (`resource: skill_points`, `base`, `growth`), so the cost source stays in
+one place.
+
+- A level costs skill points, calibrated so the whole web costs what the 11 branches cost today
+  (about 860 points; the weapon circles' 590 are unchanged): a node costs about the points of the
+  skills it absorbs divided by its levels, a keystone 8. The sim checks the pace against the targets
+  (DESIGN §14) before it goes in.
+- Skill points keep their sources (account level, stage stars, achievements; about 43 in the first
+  hour, 230 by 40 hours).
 - Nodes past depth 2 open with an Ascension (depth 3 with the first, 4 with the second, keystones with
   the third), as the rings of today.
 
 ## 3. Rules that need a default (each [Default] in DESIGN.md plus an Open questions line)
 
-- Respec: node levels are not refunded (materials cannot be); there is nothing to regret in additive
-  nodes. Keystones refund their points free once per Ascension, then 5 Starlight, as today's respec.
+- Respec: as today (every point back, free once per Ascension, then 5 Starlight): the web's levels are skill points like the old ranks.
 - Ascension: node levels and keystones are kept (as skill ranks are today); the materials reset as they
   do now, so the web keeps its power and the early nodes are re-paid from nothing only when leveled.
 - Migration (save format 38 -> 39): the old `account.skills` of the 11 branches is replaced by `account.web`
   (node id -> level). Each old rank carries over: a new node gets the level that equals the power of the
   absorbed ranks (rounded down, capped at its max); a keystone owned stays; ranks with no node
   (the dropped copies) are refunded as points. Circle skills stay as they are. Nothing is paid in
-  materials for a carried level.
+  skill points for a carried level.
 - Data: `web.json` (arms, nodes: name, per-level modifiers, max level, parent, slot, cost, ascension
   gate, keystone points), a schema, `game/web.ts` (level, cost, buy, modifiers with source `web`), the
   model and tab on top of it; `heirlooms` untouched.
-- Open questions to write: Cards paid in Glimmer Dust and Facet Shards; circle skills staying on points;
-  keystone count and cost; levels carried free in the migration; no refund of node levels.
+- Open questions to write: circle skills staying outside the four arms; keystone count and cost; levels carried free in the migration.
 
 ## 4. What the user sees before any PR
 

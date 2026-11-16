@@ -177,6 +177,8 @@ export const serializedStateSchema = z.object({
     xp: decimalText,
     level: z.number().int().min(1),
     skills: counts,
+    /** The skill web's levels (DESIGN.md §10 The skill web); format 38 adds it for good. */
+    web: counts.default({}),
     freeRespecsUsed: z.number().int().min(0),
   }),
   /** v34: milestone picks (DESIGN.md §4) and the lifetime Money (v15). */
@@ -325,6 +327,7 @@ export function serializeState(state: GameState): SerializedState {
       xp: decimalToString(state.account.xp),
       level: state.account.level,
       skills: { ...state.account.skills },
+      web: { ...state.account.web },
       freeRespecsUsed: state.account.freeRespecsUsed,
     },
     cards: {
@@ -462,6 +465,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     xp: new Decimal(saved.account.xp),
     level: saved.account.level,
     skills: { ...saved.account.skills },
+    web: { ...saved.account.web },
     freeRespecsUsed: saved.account.freeRespecsUsed,
   };
   const shopIds = new Set(content.shardShop.map((i) => i.id));

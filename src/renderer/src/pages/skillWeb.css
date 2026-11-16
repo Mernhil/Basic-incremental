@@ -458,3 +458,7 @@
   top: auto;
   bottom: calc(100% + 8px);
 }
+
+.sk-sky.is-far .sk-node__rank {
+  display: none;
+}

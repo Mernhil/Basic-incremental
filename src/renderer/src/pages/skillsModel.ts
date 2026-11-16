@@ -4,7 +4,6 @@ import {
   type CircleStep,
   type Content,
   type Rank,
-  type SkillArea,
   type SkillBranch,
   type SkillKind,
 } from '../../../data';
@@ -30,42 +29,47 @@ import { statGlyph, type WebGlyph } from '../ui/webGlyphs';
 
 // ---- constellation geometry ---------------------------------------------------------------------
 
-/** The web's drawing box (SVG viewBox units); the centre star sits at CENTRE. */
-export const SKY = { x: -2300, y: -2300, w: 4600, h: 4600 } as const;
+/** The constellation's drawing box (SVG viewBox units); the centre star sits at CENTRE. */
+export const SKY = { x: -2400, y: -2400, w: 4800, h: 4800 } as const;
 export const CENTRE = { x: 0, y: 0 } as const;
-/**
- * The web (pick 4a): four arms leave the centre star, Logging to the left, Mining to the right,
- * Dungeon up and Cards down. Every line is one STEP between two plates: the first skill of an arm
- * is one step from the star, and a side branch forks off the first skill of its area's trunk, one
- * step from it, growing away at an angle where there is room.
- */
-export const AREA_DEGREES: Record<SkillArea, number> = {
-  logging: 180,
-  mining: 0,
-  dungeon: -90,
-  cards: 90,
-};
-export const STEP = 140;
-/** Closest two plates may sit (a plate and its name need about this). */
-export const MIN_GAP = 125;
-/** The weapon circles sit past the web: their centre radius, outline radius and gem radius. */
-const CIRCLE_CENTRE_R = 1850;
+/** Radius of each ring of the branches (ring 0 is open from the start, ring N with Ascension N). */
+export const RING_RADIUS = [330, 430, 530, 630] as const;
+/** Where the branch name sits, past the outer ring. */
+const LABEL_R = 715;
+/** Degrees between two neighbouring gems of a ring, and the widest spread of a branch's ring. */
+const STEP_DEG = 20;
+/** The room a branch has on a ring: its sector of the circle, less a gap so neighbours never touch. */
+const SECTOR_DEG = 360 / SKILL_BRANCHES.length;
+const GAP_PX = 62;
+/** The weapon circles sit past the branches: their centre radius, outline radius and gem radius. */
+const CIRCLE_CENTRE_R = 1900;
 export const CIRCLE_R = 92;
 const CIRCLE_GEM_R = 58;
 
-/** Area colours: lines, plates and names of an area's branches share one colour (pick 4a). */
-export const AREA_COLOUR: Record<SkillArea, string> = {
+/** The four arms of the web: lines, plates and names of an arm share one colour (pick 4a). */
+export const AREA_COLOUR: Record<'logging' | 'mining' | 'dungeon' | 'cards', string> = {
   logging: '#74d06a',
   mining: '#f08a3c',
   dungeon: '#e8645e',
   cards: '#8f9bff',
 };
 
-/**
- * `closed`: its ring has not opened yet, or its weapon circle has not reached its step. `unknown`:
- * a "?" next to a skill you know (UI_RULES §2 The Skill Tree, pick 4a): its name and effect stay
- * hidden until the skill before it is open or learned.
- */
+/** Branch colours: each branch lights its gems in its own colour (DESIGN.md §11). */
+export const BRANCH_COLOUR: Record<SkillBranch, string> = {
+  logging: '#74d06a',
+  mining: '#5cb8f0',
+  combat: '#f0694f',
+  luck: '#b98cff',
+  collection: '#f5c24c',
+  automation: '#4fd8c4',
+  workers: '#ff9f5a',
+  forge: '#ff6f91',
+  elements: '#8fa8ff',
+  dungeons: '#d6c06a',
+  ascension: '#e8e1ff',
+};
+
+/** `closed`: its ring has not opened yet, or its weapon circle has not reached its step. */
 export type NodeState = 'locked' | 'open' | 'owned' | 'maxed' | 'closed' | 'unknown';
 
 export interface NodeView {
@@ -85,8 +89,12 @@ export interface NodeView {
   rank: number;
   maxRank: number;
   state: NodeState;
-  /** The icon on the node's plate, from the first effect it gives. */
+  /** The icon on the node's plate. */
   glyph: WebGlyph;
+  /** The arm of the web ("Logging"), for a web node. */
+  areaLabel?: string;
+  /** The plain sentence of what it does, for a web node. */
+  what?: string;
   canBuy: boolean;
   cost: number;
   /** The bonus at the current rank ("+10% logging production"), empty at rank 0. */
@@ -127,6 +135,14 @@ export interface BranchView {
   total: number;
 }
 
+export interface RingView {
+  ring: number;
+  radius: number;
+  open: boolean;
+  /** "Opens with Ascension 2", or "" for an open ring. */
+  note: string;
+}
+
 export interface CircleView {
   kind: string;
   name: string;
@@ -147,13 +163,12 @@ export interface TreeView {
   nodes: NodeView[];
   edges: EdgeView[];
   branches: BranchView[];
+  rings: RingView[];
   circles: CircleView[];
   points: SkillPoints;
   /** Gems with at least one rank, and all gems of the tree that are in view. */
   learned: number;
   total: number;
-  /** Skills you can learn a rank of right now (the header's count). */
-  affordable: number;
 }
 
 const rad = (deg: number): number => (deg * Math.PI) / 180;
@@ -163,112 +178,37 @@ const at = (deg: number, r: number, from: { x: number; y: number } = CENTRE) => 
   y: round(from.y + r * Math.sin(rad(deg))),
 });
 
-/** Angle of a weapon circle around the web: between two others, clockwise from the top. */
+/** Ray angle of a branch: Logging at the top, then clockwise in DESIGN.md §10 order. */
+export const branchAngle = (branch: SkillBranch): number =>
+  -90 + SKILL_BRANCHES.indexOf(branch) * (360 / SKILL_BRANCHES.length);
+
+/** Angle of a weapon circle around the constellation: between two branch rays, clockwise from the top. */
 const circleAngle = (index: number, count: number): number => -90 + ((index + 0.5) * 360) / count;
 
-type Pt = { x: number; y: number };
-
 /**
- * The shape of a branch's fork tree: each skill's depth in it and where it sits across the arm,
- * ordered by where the skill it hangs off sits, so the links do not cross.
+ * Lays a branch out ring by ring along its ray: a ring's gems are spread across the ray, ordered
+ * by where the gem they hang off sits, so the links do not cross.
  */
-function branchShape(infos: SkillNodeInfo[]): Map<string, { depth: number; lat: number }> {
-  const byId = new Map(infos.map((i) => [i.node.id, i]));
-  const depths = new Map<string, number>();
-  const depthOf = (i: SkillNodeInfo): number => {
-    const known = depths.get(i.node.id);
-    if (known !== undefined) return known;
-    // a requirement outside the branch (a side branch's trunk) is not part of the shape
-    const parents = i.node.requires.map((r) => byId.get(r)).filter((p) => p !== undefined);
-    const d = parents.length ? 1 + Math.max(...parents.map(depthOf)) : 0;
-    depths.set(i.node.id, d);
-    return d;
-  };
-  infos.forEach(depthOf);
-  const lateral = new Map<string, number>();
-  const out = new Map<string, { depth: number; lat: number }>();
-  for (const d of [...new Set(depths.values())].sort((a, b) => a - b)) {
-    const own = infos.filter((i) => depths.get(i.node.id) === d);
-    const key = (i: SkillNodeInfo): number => {
-      const p = i.node.requires.map((r) => lateral.get(r)).filter((v) => v !== undefined);
-      return p.length ? p.reduce((a, v) => a + v, 0) / p.length : 0;
+function layoutBranch(infos: SkillNodeInfo[]): Map<string, { deg: number; ring: number }> {
+  const out = new Map<string, { deg: number; ring: number }>();
+  const rings = [...new Set(infos.map((i) => i.node.ring))].sort((a, b) => a - b);
+  for (const ring of rings) {
+    const own = infos.filter((i) => i.node.ring === ring);
+    const parentDeg = (i: SkillNodeInfo): number => {
+      const p = i.node.requires.map((r) => out.get(r)?.deg).find((d) => d !== undefined);
+      return p ?? 0;
     };
     const ordered = own
-      .map((i, index) => ({ i, index, k: key(i) }))
-      .sort((a, b) => a.k - b.k || a.index - b.index);
+      .map((i, index) => ({ i, index, key: parentDeg(i) }))
+      .sort((a, b) => a.key - b.key || a.index - b.index);
+    const r = RING_RADIUS[ring] ?? RING_RADIUS.at(-1)!;
+    const spread = ((r * rad(SECTOR_DEG) - GAP_PX) / r) * (180 / Math.PI);
+    const step = ordered.length > 1 ? Math.min(STEP_DEG, spread / (ordered.length - 1)) : 0;
     ordered.forEach(({ i }, n) => {
-      const lat = (n - (ordered.length - 1) / 2) * STEP;
-      lateral.set(i.node.id, lat);
-      out.set(i.node.id, { depth: d, lat });
+      out.set(i.node.id, { deg: (n - (ordered.length - 1) / 2) * step, ring });
     });
   }
   return out;
-}
-
-/** The shape set down from `origin` (the first skill's spot), growing along `deg`. */
-function setDown(
-  shape: Map<string, { depth: number; lat: number }>,
-  origin: Pt,
-  deg: number,
-): Map<string, Pt> {
-  const out = new Map<string, Pt>();
-  for (const [id, { depth, lat }] of shape) {
-    out.set(id, at(deg + 90, lat, at(deg, depth * STEP, origin)));
-  }
-  return out;
-}
-
-/** The angles to try for a side branch, nearest the sides of its trunk first. */
-const SIDE_TRIES = [
-  60, -60, 90, -90, 30, -30, 120, -120, 45, -45, 75, -75, 105, -105, 135, -135, 15, -15, 150, -150,
-  0, 180,
-];
-
-/**
- * Lays the four trunks along their arms, then each side branch off the first skill of its trunk:
- * one step from it, at the first angle where nothing is nearer than MIN_GAP.
- */
-function layoutWeb(content: Content, infos: readonly SkillNodeInfo[]): Map<string, Pt> {
-  const spots = new Map<string, Pt>();
-  const placed: Pt[] = [CENTRE];
-  const listOf = (branch: SkillBranch) =>
-    infos.filter((i) => i.node.branch === branch && !i.node.circle);
-  const branchRows = content.account.branches;
-  const free = (pts: Map<string, Pt>): boolean =>
-    [...pts.values()].every((p) =>
-      placed.every((q) => Math.hypot(p.x - q.x, p.y - q.y) >= MIN_GAP),
-    );
-  const put = (pts: Map<string, Pt>): void => {
-    for (const [id, p] of pts) {
-      spots.set(id, p);
-      placed.push(p);
-    }
-  };
-  // trunks
-  for (const area of Object.keys(AREA_DEGREES) as SkillArea[]) {
-    const trunk = branchRows.find((b) => b.area === area && !b.forksFrom)!.branch;
-    const deg = AREA_DEGREES[area];
-    put(setDown(branchShape(listOf(trunk)), at(deg, STEP), deg));
-  }
-  // side branches
-  for (const row of branchRows) {
-    if (!row.forksFrom) continue;
-    const trunkRoot = spots.get(`${row.forksFrom}_s1`)!;
-    const axis = AREA_DEGREES[row.area];
-    const shape = branchShape(listOf(row.branch));
-    let best: Map<string, Pt> | null = null;
-    for (const turn of SIDE_TRIES) {
-      const deg = axis + turn;
-      const pts = setDown(shape, at(deg, STEP, trunkRoot), deg);
-      if (free(pts)) {
-        best = pts;
-        break;
-      }
-    }
-    // no angle is clear: take the one with the most room (cannot happen with the shipped tree)
-    put(best ?? setDown(shape, at(axis + 60, STEP, trunkRoot), axis + 60));
-  }
-  return spots;
 }
 
 function nodeState(i: SkillNodeInfo): NodeState {
@@ -301,23 +241,24 @@ export function treeView(
   const stepName = (step: string): string => COPY.skills.step[step as CircleStep] ?? step;
   const nodes: NodeView[] = [];
   const branches: BranchView[] = [];
-  const spots = new Map<string, { x: number; y: number }>();
+  const spots = new Map<string, { x: number; y: number; ring: number }>();
 
-  // the web: four trunks from the star, the other branches forking off them
-  const laid = layoutWeb(content, infos);
-  const areaOf = (branch: SkillBranch): SkillArea =>
-    content.account.branches.find((x) => x.branch === branch)!.area;
+  // the branches, on the shared skeleton
   for (const branch of SKILL_BRANCHES) {
     const list = infos.filter((i) => i.node.branch === branch && !i.node.circle);
-    for (const i of list) spots.set(i.node.id, laid.get(i.node.id)!);
-    const first = laid.get(`${branch}_s1`)!;
+    const ray = branchAngle(branch);
+    const layout = layoutBranch(list);
+    for (const i of list) {
+      const { deg, ring } = layout.get(i.node.id)!;
+      spots.set(i.node.id, { ...at(ray + deg, RING_RADIUS[ring] ?? RING_RADIUS.at(-1)!), ring });
+    }
+    const cos = Math.cos(rad(ray));
     branches.push({
       id: branch,
       name: COPY.skills.branchShort[branch],
-      colour: AREA_COLOUR[areaOf(branch)],
-      x: first.x,
-      y: first.y,
-      anchor: 'middle',
+      colour: BRANCH_COLOUR[branch],
+      ...at(ray, LABEL_R),
+      anchor: cos > 0.3 ? 'start' : cos < -0.3 ? 'end' : 'middle',
       ranks: list.reduce((a, i) => a + i.rank, 0),
       maxRanks: list.reduce((a, i) => a + i.maxRank, 0),
       learned: list.filter((i) => i.rank > 0).length,
@@ -329,7 +270,7 @@ export function treeView(
   const circleViews: CircleView[] = circles.map((c, index) => {
     const centre = at(circleAngle(index, circles.length), CIRCLE_CENTRE_R);
     const list = infos.filter((i) => i.node.circle === c.kind);
-    for (const [id, p] of circleSpots(centre, list)) spots.set(id, p);
+    for (const [id, p] of circleSpots(centre, list)) spots.set(id, { ...p, ring: 0 });
     const learned = list.filter((i) => i.rank > 0).length;
     const stepText = c.step ? stepName(c.step) : '';
     return {
@@ -347,21 +288,12 @@ export function treeView(
     };
   });
 
-  // known: learned or open to learn; a "?" is a skill one step past one you own or can learn now
-  // (a root has none before it)
-  const reveal = new Set(infos.filter((i) => i.rank > 0 || i.canBuy).map((i) => i.node.id));
-  const known = new Set(
-    infos.filter((i) => i.rank > 0 || nodeState(i) === 'open').map((i) => i.node.id),
-  );
   for (const i of infos) {
     const spot = spots.get(i.node.id);
     if (!spot) continue;
     // a hidden circle shows only its outline: its gems stay out of the view
     if (i.node.circle && !circles.find((c) => c.kind === i.node.circle)?.revealed) continue;
-    const isKnown = known.has(i.node.id);
-    const neighbour = i.node.requires.length === 0 || i.node.requires.some((r) => reveal.has(r));
-    if (!isKnown && !neighbour) continue;
-    const state: NodeState = isKnown ? nodeState(i) : 'unknown';
+    const state = nodeState(i);
     const missing = i.node.requires.filter(
       (r) => (infos.find((x) => x.node.id === r)?.rank ?? 0) === 0,
     );
@@ -374,9 +306,9 @@ export function treeView(
         : COPY.skills.needs(missing.map(nameOf).join(' and '));
     nodes.push({
       id: i.node.id,
-      name: state === 'unknown' ? COPY.skills.unknownName : i.node.name,
+      name: i.node.name,
       branch: i.node.branch,
-      colour: AREA_COLOUR[areaOf(i.node.branch)],
+      colour: BRANCH_COLOUR[i.node.branch],
       x: spot.x,
       y: spot.y,
       ring: i.node.ring,
@@ -386,15 +318,15 @@ export function treeView(
       rank: i.rank,
       maxRank: i.maxRank,
       state,
-      glyph: state === 'unknown' ? 'lock' : statGlyph((i.next[0] ?? i.current[0])?.stat),
+      glyph: statGlyph((i.next[0] ?? i.current[0])?.stat),
       canBuy: i.canBuy,
       cost: i.node.cost,
-      now: state === 'unknown' ? [] : i.current.map(effectText),
-      next: state === 'unknown' ? [] : i.next.map(effectText),
-      needs: state === 'unknown' ? COPY.skills.unknownNote : needs,
+      now: i.current.map(effectText),
+      next: i.next.map(effectText),
+      needs,
       rankText: COPY.skills.rankShort(i.rank, i.maxRank),
       label: COPY.skills.nodeLabel(
-        state === 'unknown' ? COPY.skills.unknownName : i.node.name,
+        i.node.name,
         COPY.skills.state[state],
         COPY.skills.rank(i.rank, i.maxRank),
       ),
@@ -408,7 +340,12 @@ export function treeView(
     const parents = info.node.requires.map((r) => pos.get(r)).filter((p) => p !== undefined);
     // a branch root hangs off the centre star; a circle root hangs off its circle's rim
     const circle = circleViews.find((c) => c.kind === n.circle);
-    const from = parents.length > 0 ? parents : circle ? [{ x: circle.x, y: circle.y }] : [CENTRE];
+    const from =
+      parents.length > 0
+        ? parents
+        : circle
+          ? [{ x: circle.x, y: circle.y }]
+          : [at(branchAngle(n.branch), 40)];
     for (const p of from) {
       const parentLearned = !('rank' in p) || (p as NodeView).rank > 0;
       edges.push({
@@ -418,22 +355,27 @@ export function treeView(
         y2: n.y,
         colour: n.colour,
         lit: n.rank > 0,
-        state: n.rank > 0 ? 'learned' : parentLearned && n.state !== 'unknown' ? 'open' : 'locked',
+        state: n.rank > 0 ? 'learned' : parentLearned ? 'open' : 'locked',
       });
     }
   }
+
+  const rings: RingView[] = RING_RADIUS.map((radius, ring) => ({
+    ring,
+    radius,
+    open: infos.some((i) => !i.node.circle && i.node.ring === ring && i.open),
+    note: '',
+  })).map((r) => ({ ...r, note: r.open ? '' : COPY.skills.needsRing(r.ring) }));
 
   return {
     nodes,
     edges,
     branches,
+    rings,
     circles: circleViews,
     points,
     learned: nodes.filter((n) => n.rank > 0).length,
-    total: infos.filter(
-      (i) => !i.node.circle || circles.find((c) => c.kind === i.node.circle)?.revealed,
-    ).length,
-    affordable: nodes.filter((n) => n.canBuy).length,
+    total: nodes.length,
   };
 }
 
