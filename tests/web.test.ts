@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import type { WebNode } from '../src/data';
+import { SKILL_WEIGHT } from '../scripts/sim/sim';
 import {
   buyWebNode,
   collectModifiers,
@@ -78,5 +80,32 @@ describe('buying in the skill web (DESIGN.md §10 The skill web)', () => {
     expect(out.state.account.web).toEqual({});
     expect(skillPoints(out.state, content).spent).toBe(0);
     expect(respecSkills(freshState(), content)).toEqual({ ok: false, reason: 'nothing' });
+  });
+});
+
+describe('where the web keeps its power', () => {
+  it('has a quarter less on the deep nodes and the same total per arm (the sim weights)', () => {
+    // what a maxed arm gave before a quarter of the deep nodes' effect moved onto the first two
+    const before: Record<string, number> = {
+      logging: 1.68865,
+      mining: 1.99195,
+      dungeon: 3.29501,
+      cards: 3.1555,
+    };
+    const depth = (n: WebNode): number =>
+      n.parent ? 1 + depth(content.webNodeById.get(n.parent)!) : 1;
+    for (const arm of Object.keys(before)) {
+      const ns = content.web.nodes.filter((n) => n.arm === arm && !n.keystone);
+      const value = (n: WebNode): number =>
+        n.maxLevel *
+        n.perLevel.reduce(
+          (s, m) => s + Math.abs(m.value.toNumber()) * (SKILL_WEIGHT[m.stat] ?? 0.001),
+          0,
+        );
+      const total = ns.reduce((s, n) => s + value(n), 0);
+      expect(total, arm).toBeCloseTo(before[arm]!, 2);
+      const deep = ns.filter((n) => depth(n) >= 3).reduce((s, n) => s + value(n), 0);
+      expect(deep / total, arm).toBeLessThan(0.45);
+    }
   });
 });

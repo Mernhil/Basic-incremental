@@ -552,7 +552,7 @@ export function skillPriority(content: Content): string[] {
  * percent modifier (5 = +5%) and per 1 for a flat one. Damage is the yardstick (+1% damage = 0.01);
  * production counts at PRODUCTION_VALUE, as the buyer values it; anything unlisted a little.
  */
-const SKILL_WEIGHT: Record<string, number> = {
+export const SKILL_WEIGHT: Record<string, number> = {
   'combat.damage': 0.01,
   'combat.health': 0.005,
   'combat.critChance': 1,

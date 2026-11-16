@@ -33,7 +33,7 @@
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "4.8077",
+          "value": "5.5905",
           "scope": {
             "job": "logging"
           }
@@ -83,7 +83,7 @@
         {
           "stat": "burst.fill",
           "kind": "percent",
-          "value": "6.5217",
+          "value": "7.5835",
           "scope": {
             "job": "logging"
           }
@@ -91,7 +91,7 @@
         {
           "stat": "harvest.speed",
           "kind": "percent",
-          "value": "3.2609",
+          "value": "3.7918",
           "scope": {
             "job": "logging"
           }
@@ -141,7 +141,7 @@
         {
           "stat": "cost.growth",
           "kind": "percent",
-          "value": "-1",
+          "value": "-0.75",
           "scope": {
             "job": "logging"
           }
@@ -184,7 +184,7 @@
         {
           "stat": "tool.strength",
           "kind": "percent",
-          "value": "3",
+          "value": "2.25",
           "scope": {
             "job": "logging"
           }
@@ -255,7 +255,7 @@
         {
           "stat": "harvest.critChance",
           "kind": "flat",
-          "value": "0.0188",
+          "value": "0.0219",
           "scope": {
             "job": "logging"
           }
@@ -293,7 +293,7 @@
         {
           "stat": "harvest.critDamage",
           "kind": "flat",
-          "value": "0.2",
+          "value": "0.15",
           "scope": {
             "job": "logging"
           }
@@ -327,7 +327,7 @@
         {
           "stat": "burst.power",
           "kind": "flat",
-          "value": "2",
+          "value": "1.5",
           "scope": {
             "job": "logging"
           }
@@ -400,7 +400,7 @@
         {
           "stat": "lucky.payout",
           "kind": "percent",
-          "value": "10"
+          "value": "11.6281"
         }
       ],
       "description": "A lucky strike pays out more.",
@@ -427,7 +427,7 @@
         {
           "stat": "depth.digRate",
           "kind": "percent",
-          "value": "10",
+          "value": "7.5",
           "scope": {
             "job": "logging"
           }
@@ -435,7 +435,7 @@
         {
           "stat": "depth.yield",
           "kind": "percent",
-          "value": "5",
+          "value": "3.75",
           "scope": {
             "job": "logging"
           }
@@ -470,7 +470,7 @@
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "4.8077",
+          "value": "5.8482",
           "scope": {
             "job": "mining"
           }
@@ -520,7 +520,7 @@
         {
           "stat": "burst.fill",
           "kind": "percent",
-          "value": "6.5217",
+          "value": "7.9332",
           "scope": {
             "job": "mining"
           }
@@ -528,7 +528,7 @@
         {
           "stat": "harvest.speed",
           "kind": "percent",
-          "value": "3.2609",
+          "value": "3.9667",
           "scope": {
             "job": "mining"
           }
@@ -578,7 +578,7 @@
         {
           "stat": "production.levelBonus",
           "kind": "percent",
-          "value": "10",
+          "value": "7.5",
           "scope": {
             "job": "mining"
           }
@@ -621,7 +621,7 @@
         {
           "stat": "tool.strength",
           "kind": "percent",
-          "value": "3",
+          "value": "2.25",
           "scope": {
             "job": "mining"
           }
@@ -688,7 +688,7 @@
         {
           "stat": "harvest.critChance",
           "kind": "flat",
-          "value": "0.0188",
+          "value": "0.0229",
           "scope": {
             "job": "mining"
           }
@@ -726,7 +726,7 @@
         {
           "stat": "harvest.critDamage",
           "kind": "flat",
-          "value": "0.2",
+          "value": "0.15",
           "scope": {
             "job": "mining"
           }
@@ -760,7 +760,7 @@
         {
           "stat": "burst.power",
           "kind": "flat",
-          "value": "2",
+          "value": "1.5",
           "scope": {
             "job": "mining"
           }
@@ -799,7 +799,7 @@
         {
           "stat": "depth.digRate",
           "kind": "percent",
-          "value": "10",
+          "value": "7.5",
           "scope": {
             "job": "mining"
           }
@@ -807,7 +807,7 @@
         {
           "stat": "depth.yield",
           "kind": "percent",
-          "value": "5",
+          "value": "3.75",
           "scope": {
             "job": "mining"
           }
@@ -842,7 +842,7 @@
         {
           "stat": "forge.speed",
           "kind": "percent",
-          "value": "5"
+          "value": "6.0822"
         }
       ],
       "description": "The forge works faster.",
@@ -881,7 +881,7 @@
         {
           "stat": "forge.yield",
           "kind": "percent",
-          "value": "3"
+          "value": "2.25"
         }
       ],
       "gate": 1,
@@ -921,7 +921,7 @@
         {
           "stat": "forge.refund",
           "kind": "flat",
-          "value": "0.05"
+          "value": "0.0375"
         }
       ],
       "gate": 2,
@@ -983,7 +983,7 @@
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "4.0323"
+          "value": "4.3717"
         }
       ],
       "description": "Your team hits harder.",
@@ -1030,7 +1030,7 @@
         {
           "stat": "combat.health",
           "kind": "percent",
-          "value": "10"
+          "value": "10.8418"
         }
       ],
       "description": "Your team has more health.",
@@ -1069,7 +1069,7 @@
         {
           "stat": "combat.critChance",
           "kind": "flat",
-          "value": "0.01"
+          "value": "0.0075"
         }
       ],
       "gate": 1,
@@ -1105,7 +1105,7 @@
         {
           "stat": "combat.critDamage",
           "kind": "flat",
-          "value": "0.1"
+          "value": "0.075"
         }
       ],
       "gate": 2,
@@ -1162,7 +1162,7 @@
         {
           "stat": "combat.defence",
           "kind": "flat",
-          "value": "2"
+          "value": "2.1684"
         }
       ],
       "description": "Every hit your team takes is softened.",
@@ -1193,7 +1193,7 @@
         {
           "stat": "combat.bossHp",
           "kind": "percent",
-          "value": "-2"
+          "value": "-1.5"
         }
       ],
       "description": "Bosses have less health.",
@@ -1224,7 +1224,7 @@
         {
           "stat": "stars.chest",
           "kind": "percent",
-          "value": "5"
+          "value": "3.75"
         }
       ],
       "gate": 1,
@@ -1264,7 +1264,7 @@
         {
           "stat": "stars.damage",
           "kind": "percent",
-          "value": "5"
+          "value": "3.75"
         }
       ],
       "gate": 2,
@@ -1304,7 +1304,7 @@
         {
           "stat": "stars.loot",
           "kind": "percent",
-          "value": "5"
+          "value": "3.75"
         }
       ],
       "gate": 2,
@@ -1379,7 +1379,7 @@
         {
           "stat": "element.bonus",
           "kind": "percent",
-          "value": "5"
+          "value": "5.4209"
         }
       ],
       "description": "Your elements hit harder.",
@@ -1418,7 +1418,7 @@
         {
           "stat": "element.resist",
           "kind": "percent",
-          "value": "-5"
+          "value": "-3.75"
         }
       ],
       "gate": 1,
@@ -1458,7 +1458,7 @@
         {
           "stat": "element.production",
           "kind": "percent",
-          "value": "5"
+          "value": "3.75"
         }
       ],
       "gate": 2,
@@ -1532,12 +1532,12 @@
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "4.5652"
+          "value": "6.0431"
         },
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "1.6304",
+          "value": "2.1582",
           "scope": {
             "job": "fighting"
           }
@@ -1545,7 +1545,7 @@
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "1.087",
+          "value": "1.4389",
           "scope": {
             "job": "logging"
           }
@@ -1607,7 +1607,7 @@
         {
           "stat": "xp.account",
           "kind": "percent",
-          "value": "5"
+          "value": "6.6186"
         }
       ],
       "description": "Your account earns more XP.",
@@ -1658,7 +1658,7 @@
         {
           "stat": "loadout.costCap",
           "kind": "flat",
-          "value": "0.5",
+          "value": "0.375",
           "scope": {
             "job": "fighting"
           }
@@ -1689,7 +1689,7 @@
         {
           "stat": "worker.power",
           "kind": "percent",
-          "value": "5"
+          "value": "3.75"
         }
       ],
       "gate": 2,
@@ -1759,7 +1759,7 @@
         {
           "stat": "drops.crystalMultiplier",
           "kind": "percent",
-          "value": "5"
+          "value": "6.6186"
         }
       ],
       "description": "Scrolls and crystals drop in larger numbers.",
@@ -1798,7 +1798,7 @@
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "10"
+          "value": "7.5"
         }
       ],
       "description": "Rare cards turn up more often.",
@@ -1837,7 +1837,7 @@
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "5"
+          "value": "3.75"
         }
       ],
       "gate": 1,
@@ -1881,7 +1881,7 @@
         {
           "stat": "summon.pityThreshold",
           "kind": "flat",
-          "value": "-2"
+          "value": "-1.5"
         }
       ],
       "gate": 2,
@@ -1942,7 +1942,7 @@
         {
           "stat": "trial.reward",
           "kind": "percent",
-          "value": "10"
+          "value": "13.2373"
         }
       ],
       "description": "Glimmer Trials pay more.",
@@ -1981,7 +1981,7 @@
         {
           "stat": "offline.capHours",
           "kind": "flat",
-          "value": "1"
+          "value": "0.75"
         }
       ],
       "gate": 1,
@@ -2037,7 +2037,7 @@
         {
           "stat": "prestige.gain",
           "kind": "percent",
-          "value": "4.2857"
+          "value": "3.2143"
         }
       ],
       "gate": 2,
@@ -2093,12 +2093,12 @@
         {
           "stat": "cost.growth",
           "kind": "percent",
-          "value": "-0.625"
+          "value": "-0.4687"
         },
         {
           "stat": "cost.multiplier",
           "kind": "percent",
-          "value": "-1.125"
+          "value": "-0.8437"
         }
       ],
       "gate": 2,
