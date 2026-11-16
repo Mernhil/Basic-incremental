@@ -25,3 +25,6 @@ Real save files, kept exactly as the game wrote them, for the migration tests.
   (`summon.dailyClaimedDay`, the sim's own day label) is null, and the Glimmer Trial's best score
   is 1 (the sim had scored 617%, which the 0.7.5 save schema refuses past 100%). Made by a script,
   not by the game.
+- `v37-skill-ranks.save.txt`: save format 37, as the 0.7.23 game code wrote it, with ranks in the old
+  account tree (Logging, Mining and Collection ranks, level 24) and no weapon circle skills. It is the
+  input of the format 38 migration (the skill web) in `tests/saveV37.test.ts`.

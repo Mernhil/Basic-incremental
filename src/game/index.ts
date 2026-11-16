@@ -65,6 +65,7 @@ export * from './presets';
 export * from './bonds';
 export * from './expeditions';
 export * from './account';
+export * from './web';
 export * from './upgrades';
 export * from './lineView';
 export { METALS, type Metal } from '../data';

@@ -30,13 +30,13 @@ import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme
 import { arrangeSavedFormations, cardTopTier, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
 import { pruneCardSkins } from './cardSkins';
-import { fitSkillsToPoints } from './account';
+import { fitSkillsToPoints, fitWebToPoints } from './account';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 37;
+export const CURRENT_SAVE_VERSION = 38;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -177,8 +177,8 @@ export const serializedStateSchema = z.object({
     xp: decimalText,
     level: z.number().int().min(1),
     skills: counts,
-    /** The skill web's levels (DESIGN.md §10 The skill web); format 38 adds it for good. */
-    web: counts.default({}),
+    /** v38: the skill web's levels (DESIGN.md §10 The skill web). */
+    web: counts,
     freeRespecsUsed: z.number().int().min(0),
   }),
   /** v34: milestone picks (DESIGN.md §4) and the lifetime Money (v15). */
@@ -527,6 +527,7 @@ export function deserializeState(saved: SerializedState, content: Content): Game
   };
   // Last, because the points and the open rings and circles read the rest of the state.
   state.account.skills = fitSkillsToPoints(state, content, state.account.skills);
+  state.account.web = fitWebToPoints(state, content);
   return state;
 }
 
