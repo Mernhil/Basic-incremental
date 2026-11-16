@@ -11,7 +11,7 @@ import {
 } from '../src/game';
 import {
   CENTRE,
-  RING_RADIUS,
+  depthRadius,
   SKY,
   branchAngle,
   respecView,
@@ -28,10 +28,16 @@ const content = levelPointsOnly(bundled);
 const branchNodes = content.account.tree.filter((n) => !n.circle);
 
 const view = (s: GameState) => treeView(content, skillTree(s, content), skillPoints(s, content));
+/** Every skill of the branches learned one rank: the whole tree is known, so all of it is in view. */
+const fullyKnown = (): GameState => {
+  const s = freshState();
+  s.account.skills = Object.fromEntries(branchNodes.map((n) => [n.id, 1]));
+  return s;
+};
 
 describe('constellation layout', () => {
   it('places every node inside the sky, on its own branch ray, without overlaps', () => {
-    const v = view(freshState());
+    const v = view(fullyKnown());
     // the weapon circles are hidden on a new game: only their outlines are in the view
     expect(v.nodes).toHaveLength(branchNodes.length);
     expect(v.circles).toHaveLength(0);
@@ -55,25 +61,24 @@ describe('constellation layout', () => {
   });
 
   it('puts a node further out than what it requires', () => {
-    const v = view(freshState());
+    const v = view(fullyKnown());
     const r = (id: string) => {
       const n = v.nodes.find((x) => x.id === id)!;
       return Math.hypot(n.x - CENTRE.x, n.y - CENTRE.y);
     };
-    // a gem sits on its ring: further out than what it requires once the requirement is a ring inside
+    // a skill sits at the radius of its depth: further out than what it requires
     expect(r('logging_s3')).toBeGreaterThan(r('logging_s2'));
     expect(r('combat_s6')).toBeGreaterThan(r('combat_s3'));
     expect(r('combat_k')).toBeGreaterThan(r('combat_l3'));
-    expect(r('logging_s1')).toBeCloseTo(RING_RADIUS[0], 0);
-    expect(r('logging_k')).toBeCloseTo(RING_RADIUS[3], 0);
+    expect(r('logging_s1')).toBeCloseTo(depthRadius(0), 0);
+    expect(r('logging_k')).toBeCloseTo(depthRadius(5), 0);
   });
 
   it('draws an edge per requirement, plus one from the centre for each root', () => {
-    const v = view(freshState());
+    const v = view(fullyKnown());
     const roots = branchNodes.filter((n) => n.requires.length === 0).length;
     const links = branchNodes.reduce((a, n) => a + n.requires.length, 0);
     expect(v.edges).toHaveLength(roots + links);
-    expect(v.edges.every((e) => !e.lit)).toBe(true);
   });
 });
 
@@ -85,8 +90,12 @@ describe('node states and effects', () => {
     const node = (id: string) => v.nodes.find((n) => n.id === id)!;
     expect(node('logging_s1').state).toBe('open');
     expect(node('logging_s1').canBuy).toBe(true);
-    expect(node('logging_s2').state).toBe('locked');
-    expect(node('logging_s2').needs).toBe('Needs Grove Yield first');
+    // a skill next to a known one is a "?": its name and effect stay hidden until it is open
+    expect(node('logging_s2').state).toBe('unknown');
+    expect(node('logging_s2').name).toBe('Unknown skill');
+    expect(node('logging_s2').now).toEqual([]);
+    expect(node('logging_s2').next).toEqual([]);
+    expect(node('logging_s2').canBuy).toBe(false);
     expect(node('logging_s1').now).toEqual([]);
     expect(node('logging_s1').next).toEqual(['+5% logging production']);
 
@@ -260,5 +269,38 @@ describe('enhancement star chart', () => {
     const open = starChartView(cardEnhancements(s, content, cardId)!);
     expect(open.stars.find((x) => x.unlockLevel === 20)!.state).toBe('open');
     expect(open.stars.find((x) => x.unlockLevel === 40)!.levelText).toBe('Opens at level 40');
+  });
+});
+
+describe('the web shows what you know and its "?" neighbours (UI_RULES, The Skill Tree, pick 4a)', () => {
+  it('starts with the open roots and the "?" next to them, and nothing further out', () => {
+    const v = view(freshState());
+    const open = v.nodes.filter((n) => n.state === 'open');
+    const unknown = v.nodes.filter((n) => n.state === 'unknown');
+    expect(open.length).toBe(SKILL_BRANCHES.length);
+    expect(unknown.length).toBeGreaterThan(0);
+    // a "?" is never a root, and its parent is in view
+    const ids = new Set(v.nodes.map((n) => n.id));
+    for (const n of unknown) {
+      const req = content.account.tree.find((x) => x.id === n.id)!.requires;
+      expect(req.length).toBeGreaterThan(0);
+      expect(req.some((r) => ids.has(r))).toBe(true);
+    }
+    expect(v.nodes.length).toBeLessThan(branchNodes.length);
+    // nothing in view is hidden behind two unknown skills
+    expect(v.nodes.every((n) => n.glyph.length > 0)).toBe(true);
+  });
+
+  it('counts what can be learned now, and opens the next "?" when a skill is learned', () => {
+    const s = freshState();
+    s.account.level = 20;
+    const before = view(s);
+    expect(before.affordable).toBe(before.nodes.filter((n) => n.canBuy).length);
+    expect(before.affordable).toBeGreaterThan(0);
+    s.account.skills = { logging_s1: 1 };
+    const after = view(s);
+    expect(after.nodes.find((n) => n.id === 'logging_s2')!.state).toBe('open');
+    expect(after.nodes.find((n) => n.id === 'logging_s2')!.name).toBe('Grove Rhythm');
+    expect(after.nodes.length).toBeGreaterThan(before.nodes.length);
   });
 });
