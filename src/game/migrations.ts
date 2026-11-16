@@ -90,6 +90,9 @@ export const MIGRATIONS: MigrationTable = {
   /** v35 -> v36: milestone picks (DESIGN.md §4): the upgrade shelf is gone; every shelf upgrade
    *  owned pays its Money back, and no milestone is picked yet. */
   35: v35ToV36,
+  /** v36 -> v37: Carved Oak becomes the starter table (DESIGN.md §8): Plum Pixel and Carved Oak are
+   *  both owned, and a save that wears either as its table goes back to the starter (Carved Oak). */
+  36: v36ToV37,
 };
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
@@ -1541,6 +1544,30 @@ const V35_SHELF_PRICES: Readonly<Record<string, string>> = {
   merchant_ledger: '200000',
   golden_ledger: '5500000',
 };
+
+/**
+ * v36 -> v37 (DESIGN.md §8 Starter table): Carved Oak replaces Plum Pixel as the starter table, and Plum
+ * Pixel stays a table every save owns. Both are owned; a save wearing either has no worn table (the
+ * starter shows), and a save wearing another table keeps it.
+ */
+function v36ToV37(state: Record<string, unknown>): Record<string, unknown> {
+  const cosmetics = isRecord(state['cosmetics']) ? { ...state['cosmetics'] } : {};
+  const owned = isRecord(cosmetics['owned']) ? { ...cosmetics['owned'] } : {};
+  for (const id of ['gn_table', 'oak_table']) {
+    if (!isRecord(owned[id])) owned[id] = { level: 1, copies: 1 };
+  }
+  cosmetics['owned'] = owned;
+  const loadout: Record<string, unknown> = isRecord(cosmetics['loadout'])
+    ? { ...cosmetics['loadout'] }
+    : { cards: {} };
+  const slots = isRecord(loadout['slots']) ? { ...loadout['slots'] } : {};
+  const worn = slots['table'];
+  if (isRecord(worn) && (worn['id'] === 'gn_table' || worn['id'] === 'oak_table'))
+    delete slots['table'];
+  loadout['slots'] = slots;
+  cosmetics['loadout'] = loadout;
+  return { ...state, cosmetics };
+}
 
 /**
  * v35 -> v36 (DESIGN.md §4 Milestone picks): the upgrade shelf gives way to milestone picks. Every

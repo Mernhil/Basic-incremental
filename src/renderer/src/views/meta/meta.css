@@ -10,7 +10,7 @@
 }
 .mv-subtitle {
   font-size: 14px;
-  color: var(--bi-frame-ink-muted);
+  color: var(--bi-on-table-muted, var(--bi-frame-ink-muted));
   white-space: nowrap;
 }
 
@@ -42,7 +42,7 @@
 .mv-up-title {
   margin: 0;
   font-size: 18px;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 .mv-up-note {
   font-size: 13px;

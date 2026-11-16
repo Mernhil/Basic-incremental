@@ -462,7 +462,7 @@ body {
   font-variant-ligatures: none;
   font-size: 18px;
   font-weight: 600;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 .shell-quest__all,
 .shell-quest__see {
@@ -566,7 +566,7 @@ body {
   grid-column: 1 / -1;
   font-size: 12px;
   font-weight: 700;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 .shell-quest__claim {
   padding: 6px 12px;

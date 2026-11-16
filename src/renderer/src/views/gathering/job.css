@@ -100,7 +100,7 @@
 }
 .gv-plate__value {
   font-size: 24px;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 .gv-plate__unit {
   font-size: 12px;
@@ -317,7 +317,7 @@
 .gv-panel__title {
   margin: 0;
   font-size: 19px;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 .gv-ready {
   font-size: 12px;
@@ -376,7 +376,7 @@
   margin: 0;
   font-family: var(--bi-font-display);
   font-size: 19px;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 :is(.gv-panel, .fv-panel) :is(.dp-col__note, .tr__track, .tr__togo) {
   display: none;

@@ -55,13 +55,13 @@ describe('v30 -> v31 (Plum Pixel is an owned table, Castle Stone is gone)', () =
     expect(content.cosmetics.some((c) => c.id === 'castle_stone_table')).toBe(false);
   });
 
-  it('a save that owns and wears Castle Stone loads cleanly and shows Plum Pixel', () => {
+  it('a save that owns and wears Castle Stone loads cleanly and shows the starter table', () => {
     const raw = JSON.parse(createSaveText(newGame(), 1));
     raw.state.cosmetics.owned['castle_stone_table'] = { level: 1, copies: 1 };
     raw.state.cosmetics.loadout.slots['table'] = { id: 'castle_stone_table', level: 1 };
     const { state } = readSave(JSON.stringify(raw), content);
     expect(state.cosmetics.owned['castle_stone_table']).toBeUndefined();
     expect(state.cosmetics.loadout.slots['table']).toBeUndefined();
-    expect(resolveGlobal(content, state.cosmetics.loadout).table.cosmetic.id).toBe('gn_table');
+    expect(resolveGlobal(content, state.cosmetics.loadout).table.cosmetic.id).toBe('oak_table');
   });
 });

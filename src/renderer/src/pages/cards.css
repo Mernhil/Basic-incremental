@@ -100,7 +100,7 @@ html .cp-tabs .cp-tab[aria-selected='false']:not(#_px) {
 .cp-shards,
 .cp-count {
   font-size: 13px;
-  color: var(--bi-frame-ink-muted);
+  color: var(--bi-on-table-muted, var(--bi-frame-ink-muted));
 }
 .cp-toolbar {
   display: flex;
