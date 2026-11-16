@@ -31,5 +31,7 @@ describe('resources never go down on their own', () => {
     for (const [id, now] of Object.entries(away.resources)) {
       expect(now.gte(last[id] ?? 0), id).toBe(true);
     }
-  });
+    // 3,000 ticks plus an hour offline: about 3 s here, close to 6 s on a CI runner, which the
+    // default 5 s limit failed at random (it broke the 0.7.14 and 0.7.23 runs).
+  }, 30_000);
 });
