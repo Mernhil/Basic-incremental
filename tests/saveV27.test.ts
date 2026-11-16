@@ -222,6 +222,8 @@ describe('v26 -> v27 (the table update)', () => {
     for (const p of Object.values(combat['floors'] as Record<string, Record<string, unknown>>)) {
       delete p['autoChallenge'];
     }
+    // format 38 added the skill web's levels to the account
+    delete (again['account'] as Record<string, unknown>)['web'];
     const resources = again['resources'] as Record<string, unknown>;
     delete resources['summon_scroll'];
     delete resources['glamour_scroll'];
