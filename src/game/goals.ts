@@ -3,7 +3,7 @@ import { skillPoints } from './account';
 import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
 import { toolLines } from './toolLines';
 import { activeWorkers, forgeWorker, workerSlots, workersUsed } from './workers';
-import { cardDisplayName, starUpCheck, tierUpCheck } from './cards';
+import { cardDisplayName, starUpCheck } from './cards';
 import {
   averageDps,
   burstStats,
@@ -398,44 +398,6 @@ const starUpRule: RuleFn = (state, content) =>
   });
 
 /**
- * Tier up a card that is at its level cap (DESIGN.md §5): short of ★6 the goal shows the stars
- * (no ETA, copies come from summons); otherwise progress is the scarcest of Money, Core and gems
- * and the ETA is the time to earn what is missing.
- */
-const tierUpRule: RuleFn = (state, content, modifiers) =>
-  content.cards.flatMap((card) => {
-    const owned = state.cards.owned[card.id];
-    if (!owned) return [];
-    const check = tierUpCheck(state, content, card.id, modifiers);
-    if (!check?.available || check.met || !check.to) return [];
-    const level = check.requirements.find((r) => r.kind === 'level');
-    if (!level?.met) return [];
-    // At its level cap but short of ★6: the missing requirement is the stars (DESIGN.md §5).
-    const stars = check.requirements.find((r) => r.kind === 'stars');
-    if (stars && !stars.met) {
-      return [
-        {
-          targetId: card.id,
-          title: `Tier up ${cardDisplayName(content, card, owned)} to ${TIER_NAMES[check.to.tier]}: needs ★${stars.need.toString()}`,
-          progress: ratio(stars.have, stars.need),
-          etaSeconds: null,
-        },
-      ];
-    }
-    const prices: Price[] = check.requirements
-      .filter((r) => r.kind === 'resource' && r.resource)
-      .map((r) => ({ resource: r.resource!, amount: r.need }));
-    return [
-      {
-        targetId: card.id,
-        title: `Tier up ${cardDisplayName(content, card, owned)} to ${TIER_NAMES[check.to.tier]}`,
-        progress: priceProgress(state, prices),
-        etaSeconds: secondsToAfford(state, content, prices, modifiers),
-      },
-    ];
-  });
-
-/**
  * The next ascension: progress is the Starlight gain over the minimum; the ETA is the weighted
  * gem points still missing over the rate the current production earns them.
  */
@@ -550,7 +512,6 @@ const RULES: Record<GoalKind, RuleFn> = {
   gem_mastery: gemMasteryRule,
   boss_mastery: bossMasteryRule,
   star_up: starUpRule,
-  tier_up: tierUpRule,
   ascension: ascensionRule,
 };
 

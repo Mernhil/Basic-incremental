@@ -7,17 +7,16 @@ import type {
   Job,
   ModifierData,
   ModifierScope,
+  CardGrade,
+  CardSide,
   Rank,
   RankTier,
-  Rarity,
   Trial,
 } from '../data';
-import { MAX_STARS, RANK_TIERS, RARITIES } from '../data/schemas';
+import { MAX_STARS, RANK_TIERS } from '../data/schemas';
 import { accountLevel } from './account';
-import { metalOf } from './mastery';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
-import { finalPrice, pay, type Price } from './production';
 import { teamBonusPower } from './upgrades';
 import { activeWorkers, producerJob, workerModifiers, workerScope, workplaceOf } from './workers';
 import type { CardGain, TickReport, TierUp } from './report';
@@ -35,8 +34,9 @@ import {
 /**
  * Cards (DESIGN.md §5): a collection of owned cards with tier, stars, level and
  * XP; the fighting loadout (four equal slots) under a cost cap (logging and mining cards are
- * workers instead, workers.ts); star-ups, tier-ups, shards and
- * card drops. Card effects reach the game only as modifiers (source kind `card`) through
+ * workers instead, workers.ts); star-ups, shards and
+ * card drops. A card's tier is its own for good (DESIGN.md §5 No tier-ups): `OwnedCard.tier` is
+ * a copy of `card.tier`, written when the card is gained and when a save is read, never changed. Card effects reach the game only as modifiers (source kind `card`) through
  * `collectModifiers`. Every progression number is in cardRules.json.
  *
  * Every function is pure: state changes return a new state. Functions that need modifiers take
@@ -69,13 +69,13 @@ export type CardFailure =
   | 'on-expedition'
   /** Not a valid slot. */
   | 'invalid-slot'
-  /** No star-up (already ★6) or no tier-up (already at the card's top tier) from this rank. */
+  /** No star-up from this rank (already ★6, or an Heirloom card). */
   | 'unavailable'
-  /** At least one requirement of the star-up / tier-up is not met. */
+  /** At least one requirement of the star-up is not met. */
   | 'requirements';
 
 export type CardResult = { ok: true; state: GameState } | { ok: false; reason: CardFailure };
-/** A star-up or tier-up: like CardResult, plus the tier-up moments it caused (a new card tier). */
+/** A star-up: like CardResult, plus the moments it caused (none today). */
 export type CardUpgradeResult =
   { ok: true; state: GameState; tierUps: TierUp[] } | { ok: false; reason: CardFailure };
 
@@ -100,20 +100,7 @@ export interface CardItem {
   name: string;
   /** True for an Heirloom card (DESIGN.md §5 Heirlooms): it shows its Heirloom. */
   heirloom: boolean;
-  /** The item rarity to draw: the card's rarity moved up the ladder by its tier (weaponLookRarity). */
-  rarity: Rarity;
 }
-
-/** The highest tier each rarity reaches on the ladder (DESIGN.md §5 "Rarity caps the tier"). */
-export const RARITY_TIER_CAP: Record<Rarity, RankTier> = {
-  common: 'wood',
-  uncommon: 'bronze',
-  rare: 'silver',
-  epic: 'gold',
-  legendary: 'prismatic',
-  mythic: 'mythic',
-  void: 'mythic',
-};
 
 /** On-screen name of each tier; the T6 tier reads "Void" for a Void card (see tierLabel). */
 export const TIER_LABELS: Record<RankTier, string> = {
@@ -126,16 +113,26 @@ export const TIER_LABELS: Record<RankTier, string> = {
   heirloom: 'Heirloom',
 };
 
-/** A tier's on-screen name for a card of a rarity: T6 is Mythic or Void by the card's side. */
-export const tierLabel = (tier: RankTier, rarity?: Rarity): string =>
-  tier === 'mythic' && rarity === 'void' ? 'Void' : TIER_LABELS[tier];
+/** A tier's on-screen name: T6 is Mythic or Void by the card's side. */
+export const tierLabel = (tier: RankTier, side?: CardSide): string =>
+  tier === 'mythic' && side === 'void' ? 'Void' : TIER_LABELS[tier];
+
+/** On-screen name of a card grade (its tier; the two sides of T6 are Mythic and Void). */
+export const gradeLabel = (grade: CardGrade): string =>
+  grade === 'void' ? 'Void' : TIER_LABELS[grade];
 
 /** The side of a card's T6 or an Heirloom: Mythic (heroic) or Void (villainous). */
-export const cardSide = (rarity: Rarity): 'mythic' | 'void' =>
-  rarity === 'void' ? 'void' : 'mythic';
+export const cardSide = (card: { side?: CardSide | undefined }): CardSide => card.side ?? 'mythic';
+
+/** The tier whose table value a card reads: its own, an Heirloom card the T6 one. */
+export const ladderTier = (card: { tier: RankTier }): Exclude<RankTier, 'heirloom'> =>
+  card.tier === 'heirloom' ? 'mythic' : card.tier;
+
+/** A card as owned the moment it is gained: at its own tier, ★1, Lv 1. Also the preview of a card not owned. */
+export const freshCard = (card: { tier: RankTier }): OwnedCard => newOwnedCard(card.tier);
 
 /**
- * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T5
+ * The name of an item type at a tier for a card of a side (DESIGN.md §5 "Item names"): T1 to T5
  * "<material> <type>" (Wooden, Bronze, Silver, Golden, Prismatic Sword), T6 by the card's side; the Heirloom tier (an
  * Heirloom card's) is the type's Heirloom of that side.
  * Pass the card as `card` and a card with its own Heirloom (`heirloomName` in cards.json, DESIGN.md
@@ -147,8 +144,8 @@ export function itemName(
   content: Content,
   kind: ItemKind,
   tier: RankTier,
-  rarity: Rarity,
-  card?: { heirloomName?: string },
+  side: CardSide | undefined,
+  card?: { heirloomName?: string | undefined },
 ): string {
   const type = content.itemTypeByKind.get(kind);
   if (!type) return kind;
@@ -162,72 +159,39 @@ export function itemName(
     case 'prismatic':
       return `${content.items.materials[tier]} ${type.noun}`;
     case 'mythic':
-      return type[cardSide(rarity)];
+      return type[side ?? 'mythic'];
     case 'heirloom':
       return type.heirloom;
   }
 }
 
 /**
- * The one name a card has (DESIGN.md §5 "Item names", user 2026-11-16): its weapon's, at the tier it is
- * at. Not owned = its first-owned name (tier 1; an Heirloom card is always at the Heirloom tier). The
- * character names in cards.json are shown nowhere. Use this everywhere a card is named.
+ * The one name a card has (DESIGN.md §5 "Item names", user 2026-11-16): its weapon's. A card never
+ * changes tier, so the name is fixed. The character names in cards.json are shown nowhere. Use this
+ * everywhere a card is named. (`_owned` is ignored; it stays so callers keep one shape.)
  */
-export function cardDisplayName(
-  content: Content,
-  card: Card,
-  owned?: { tier: RankTier } | null,
-): string {
-  const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
-  return itemName(content, card.item.kind, tier, card.rarity, card);
+export function cardDisplayName(content: Content, card: Card, _owned?: unknown): string {
+  return itemName(content, card.item.kind, card.tier, card.side, card);
 }
 
 /** `cardDisplayName` by card id: undefined for an unknown id (so `?? id` chains keep working). */
 export function cardNameById(
   content: Content,
   cardId: string,
-  owned?: { tier: RankTier } | null,
+  owned?: unknown,
 ): string | undefined {
   const card = content.cardById.get(cardId);
   return card ? cardDisplayName(content, card, owned) : undefined;
 }
 
-/**
- * The tier whose weapon art and name a card shows (user, 2026-11-11): its own. Every card starts
- * with its wooden weapon and each tier-up changes the picture and the name. The rarity no longer
- * lifts the look; it stays a parameter so callers keep one signature.
- */
-export function lookTier(_rarity: Rarity, tier: RankTier): RankTier {
-  return tier;
-}
-
-/**
- * The item rarity to draw for a card's rarity and tier (DESIGN.md §5 "Weapon looks, for now"):
- * one step up the rarity ladder per tier (Wood = the card's rarity, Bronze +1, ... Heirloom +6),
- * capped at Void. The art for an item type that has no new pictures yet is interim.
- */
-export function weaponLookRarity(rarity: Rarity, tier: RankTier): Rarity {
-  const at = RARITIES.indexOf(rarity) + RANK_TIERS.indexOf(tier);
-  return RARITIES[Math.min(at, RARITIES.length - 1)]!;
-}
-
-/** The item to draw for a card at its rank: its type's item named for the tier, at the rarity
- *  its tier gives. Not owned = Wood; an Heirloom card is always at the Heirloom tier. Null for
- *  unknown ids. */
-export function cardItem(
-  content: Content,
-  cardId: string,
-  owned: OwnedCard | null | undefined,
-): CardItem | null {
+/** The item to draw for a card: its type's item named for the card's tier. Null for unknown ids. */
+export function cardItem(content: Content, cardId: string, _owned?: unknown): CardItem | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
-  const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
-  const rarity = weaponLookRarity(card.rarity, tier);
   return {
     kind: card.item.kind,
-    name: itemName(content, card.item.kind, tier, card.rarity, card),
+    name: itemName(content, card.item.kind, card.tier, card.side, card),
     heirloom: card.heirloom === true,
-    rarity,
   };
 }
 
@@ -240,37 +204,19 @@ export function cardItemKind(
   return cardItem(content, cardId, owned)?.kind ?? null;
 }
 
-/** A card tier as a metal index on the ladder (wood 0 = stone, bronze 1 .. prismatic 4; mythic and heirloom cap at prismatic). */
-function tierMetalIndex(tier: OwnedCard['tier']): number {
-  return RANK_TIERS.indexOf(tier);
-}
-
 /** Whether a card is one of the 22 Heirloom cards (DESIGN.md §5 Heirlooms). */
 export function isHeirloomCard(content: Content, cardId: string): boolean {
   return content.cardById.get(cardId)?.heirloom === true;
 }
 
-/** The highest tier a card can reach: its rarity's cap on the ladder (Mythic/Void at most), or
- *  the fixed Heirloom tier of an Heirloom card. */
-export function cardTopTier(content: Content, cardId: string): RankTier {
-  const card = content.cardById.get(cardId);
-  if (!card) return 'wood';
-  return card.heirloom ? 'heirloom' : RARITY_TIER_CAP[card.rarity];
+/** The tier of a card (its own, for good); Wood for an unknown id. */
+export function cardTier(content: Content, cardId: string): RankTier {
+  return content.cardById.get(cardId)?.tier ?? 'wood';
 }
 
-/** The tier after `tier` for this card, or null at its top tier (an Heirloom card never tiers up). */
-function nextTierOf(content: Content, cardId: string, tier: RankTier): RankTier | null {
-  if (isHeirloomCard(content, cardId)) return null;
-  const next = RANK_TIERS[RANK_TIERS.indexOf(tier) + 1];
-  if (!next || RANK_TIERS.indexOf(next) > RANK_TIERS.indexOf(cardTopTier(content, cardId))) {
-    return null;
-  }
-  return next;
-}
-
-/** The card's top tier at ★6: nothing left to rank up. */
-export function isMaxRank(content: Content, cardId: string, owned: OwnedCard): boolean {
-  return owned.tier === cardTopTier(content, cardId) && owned.stars >= MAX_STARS;
+/** ★6: nothing left to rank up (a card never changes tier). */
+export function isMaxRank(_content: Content, _cardId: string, owned: OwnedCard): boolean {
+  return owned.stars >= MAX_STARS;
 }
 
 /** Level cap of a rank (cardRules.levelCaps): by tier only, stars do not raise it (DESIGN.md §5). */
@@ -323,7 +269,7 @@ function weaponFactor(content: Content, card: Card, stat: 'damage' | 'health'): 
 export function cardHealth(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.health[card.rarity]
+  return content.cardRules.health[ladderTier(card)]
     .mul(cardStatPower(content, owned))
     .mul(weaponFactor(content, card, 'health'));
 }
@@ -336,14 +282,14 @@ export function cardHealth(content: Content, cardId: string, owned: OwnedCard): 
 export function cardBaseDamage(content: Content, cardId: string, owned: OwnedCard): Decimal {
   const card = content.cardById.get(cardId);
   if (!card) return new Decimal(0);
-  return content.cardRules.baseDamage[card.rarity]
+  return content.cardRules.baseDamage[ladderTier(card)]
     .mul(cardStatPower(content, owned))
     .mul(weaponFactor(content, card, 'damage'));
 }
 
 /**
  * Levels a card up while its XP allows (mutates it). XP stops at the level cap: a card at its cap
- * keeps 0 XP until a tier-up raises the cap. Returns the levels before and after, or
+ * keeps 0 XP. Returns the levels before and after, or
  * null when the level did not change.
  */
 function levelUp(content: Content, owned: OwnedCard): { from: number; to: number } | null {
@@ -385,11 +331,11 @@ export function settleCardLevels(state: GameState, content: Content, report: Tic
 
 // ---- cost and loadouts -----------------------------------------------------------------------
 
-/** Loadout cost of a card, by rarity (11.4); an Heirloom card has its own. 0 for unknown ids. */
+/** Loadout cost of a card, by its tier (11.4); an Heirloom card has its own. 0 for unknown ids. */
 export function cardCost(content: Content, cardId: string): number {
   const card = content.cardById.get(cardId);
   if (!card) return 0;
-  return card.heirloom ? content.cardRules.heirloomCost : content.cardRules.cost[card.rarity];
+  return card.heirloom ? content.cardRules.heirloomCost : content.cardRules.cost[ladderTier(card)];
 }
 
 /** The fighting loadout's cost cap: base + perLevel × (account level − 1), through
@@ -663,36 +609,19 @@ function check(to: Rank | null, requirements: Requirement[]): UpgradeCheck {
   return { available: true, to, requirements, met: requirements.every((r) => r.met) };
 }
 
-function levelRequirement(content: Content, owned: OwnedCard): Requirement {
-  return requirement('level', owned.level, levelCap(content, cardRank(owned)));
-}
-
-function resourceRequirements(state: GameState, prices: Price[]): Requirement[] {
-  return prices.map((p) =>
-    requirement('resource', state.resources[p.resource] ?? 0, p.amount, p.resource),
-  );
-}
-
 /**
- * The star bar's fill a star-up from `stars` takes at a tier (DESIGN.md §5), by rarity: copies per
- * star (a fraction at low tiers, 1 at the top tier) times the fill each duplicate gives. Null at ★6.
+ * The star bar's fill a star-up from `stars` takes (DESIGN.md §5 One copy a star): one copy, at
+ * every tier. Null at ★6 and for an Heirloom card, whose stars come from its own shards.
  */
-export function starFillNeeded(
-  content: Content,
-  rarity: Rarity,
-  stars: number,
-  tier: RankTier,
-): number | null {
-  // An Heirloom card has no star bar: its stars come from its own shards (heirlooms.ts).
-  if (stars >= MAX_STARS || tier === 'heirloom') return null;
-  const { needs, fillPerDuplicate } = content.cardRules.starBar;
-  return needs[rarity][tier] * fillPerDuplicate[rarity];
+export function starFillNeeded(card: { tier: RankTier }, stars: number): number | null {
+  if (stars >= MAX_STARS || card.tier === 'heirloom') return null;
+  return 1;
 }
 
-/** Fill still to collect from `stars` to ★6 at a tier (0 at ★6). */
-function starFillToMax(content: Content, rarity: Rarity, stars: number, tier: RankTier): number {
+/** Fill still to collect from `stars` to ★6 (0 at ★6). */
+function starFillToMax(card: { tier: RankTier }, stars: number): number {
   let total = 0;
-  for (let s = stars; s < MAX_STARS; s++) total += starFillNeeded(content, rarity, s, tier)!;
+  for (let s = stars; s < MAX_STARS; s++) total += starFillNeeded(card, s) ?? 0;
   return total;
 }
 
@@ -709,8 +638,8 @@ export interface StarBarView {
 }
 
 /** The star bar of an owned card below ★6; null otherwise. */
-export function starBarView(content: Content, card: Card, owned: OwnedCard): StarBarView | null {
-  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier);
+export function starBarView(_content: Content, card: Card, owned: OwnedCard): StarBarView | null {
+  const need = starFillNeeded(card, owned.stars);
   if (need === null) return null;
   return {
     fill: owned.starFill,
@@ -718,26 +647,6 @@ export function starBarView(content: Content, card: Card, owned: OwnedCard): Sta
     gauge: need <= 0 ? 1 : Math.min(1, owned.starFill / need),
     ready: owned.starFill >= need,
   };
-}
-
-/**
- * Tier-up costs from the current tier, per the card's job: Money plus the tier's Core and tree
- * and mine gems (Frost Sigils from Gold up), through `cost.multiplier` (scope: job,
- * resource). Empty at the card's top tier.
- */
-export function tierUpCost(
-  content: Content,
-  card: Card,
-  owned: OwnedCard,
-  modifiers: readonly Modifier[] = [],
-): Price[] {
-  const from = owned.tier;
-  if (from === 'mythic' || from === 'heirloom' || nextTierOf(content, card.id, from) === null) {
-    return [];
-  }
-  return content.cardRules.tierUp[from][card.job].map((c) =>
-    finalPrice(c.resource, c.amount, modifiers, { job: card.job }),
-  );
 }
 
 /** Star-up checklist (★n → ★n+1): the star bar's fill and nothing else. Null if not owned. */
@@ -749,50 +658,27 @@ export function starUpCheck(
   const card = content.cardById.get(cardId);
   const owned = state.cards.owned[cardId];
   if (!card || !owned) return null;
-  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier);
+  const need = starFillNeeded(card, owned.stars);
   if (need === null) return check(null, []);
   return check({ tier: owned.tier, stars: owned.stars + 1 }, [
     requirement('starFill', owned.starFill, need),
   ]);
 }
 
-/** Tier-up checklist (to the next tier at ★1, the stars restart): level cap, ★6, Money, Cores, tree
- *  and mine gems and Frost Sigils. Null if not owned. Unavailable at the card's top tier. */
-export function tierUpCheck(
-  state: GameState,
-  content: Content,
-  cardId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): UpgradeCheck | null {
-  const card = content.cardById.get(cardId);
-  const owned = state.cards.owned[cardId];
-  if (!card || !owned) return null;
-  const nextTier = nextTierOf(content, cardId, owned.tier);
-  if (!nextTier) return check(null, []);
-  return check({ tier: nextTier, stars: 1 }, [
-    levelRequirement(content, owned),
-    requirement('stars', owned.stars, MAX_STARS),
-    ...resourceRequirements(state, tierUpCost(content, card, owned, modifiers)),
-  ]);
-}
-
 /**
  * The star dust a star-up from the card's current star needs to cover what the bar lacks
  * (DESIGN.md §5 Star dust): the missing copies times the dust price of a copy at the card's
- * rarity and tier, rounded up. 0 when the bar is full; null at ★6 or for a card not owned.
+ * tier, rounded up. 0 when the bar is full; null at ★6 or for a card not owned.
  */
 export function starDustCost(state: GameState, content: Content, cardId: string): number | null {
   const card = content.cardById.get(cardId);
   const owned = state.cards.owned[cardId];
   if (!card || !owned) return null;
-  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier);
+  const need = starFillNeeded(card, owned.stars);
   if (need === null) return null;
   const missing = Math.max(0, need - owned.starFill);
   if (missing === 0) return 0;
-  const perCopy = content.cardRules.starBar.fillPerDuplicate[card.rarity];
-  const tier = owned.tier;
-  if (tier === 'heirloom') return null;
-  return Math.ceil((missing / perCopy) * content.cardRules.starBar.dust[card.rarity][tier]);
+  return Math.ceil(missing * content.cardRules.starBar.dust[ladderTier(card)]);
 }
 
 /** Spends the star bar's fill and adds a star. Level and XP stay. Left-over fill carries over. */
@@ -804,7 +690,7 @@ export function starUp(state: GameState, content: Content, cardId: string): Card
   const card = content.cardById.get(cardId)!;
   const next = cloneState(state);
   const owned = next.cards.owned[cardId]!;
-  owned.starFill -= starFillNeeded(content, card.rarity, owned.stars, owned.tier)!;
+  owned.starFill -= starFillNeeded(card, owned.stars)!;
   owned.stars += 1;
   if (owned.stars >= MAX_STARS) owned.starFill = 0;
   return { ok: true, state: next, tierUps: [] };
@@ -830,36 +716,11 @@ export function starUpWithDust(
   const next = cloneState(state);
   const owned = next.cards.owned[cardId]!;
   next.resources['star_dust'] = held.sub(cost);
-  const need = starFillNeeded(content, card.rarity, owned.stars, owned.tier)!;
+  const need = starFillNeeded(card, owned.stars)!;
   owned.starFill = Math.max(0, owned.starFill - need);
   owned.stars += 1;
   if (owned.stars >= MAX_STARS) owned.starFill = 0;
   return { ok: true, state: next, tierUps: [] };
-}
-
-/** Pays the tier-up costs and moves the card to the next tier. The stars restart at ★1 with an
- *  empty star bar; level and XP carry over. */
-export function tierUp(
-  state: GameState,
-  content: Content,
-  cardId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CardUpgradeResult {
-  const result = tierUpCheck(state, content, cardId, modifiers);
-  if (!result) return fail(content.cardById.has(cardId) ? 'not-owned' : 'unknown');
-  if (!result.available) return fail('unavailable');
-  if (!result.met) return fail('requirements');
-  const card = content.cardById.get(cardId)!;
-  const before = state.cards.owned[cardId]!;
-  const next = pay(state, tierUpCost(content, card, before, modifiers));
-  const owned = next.cards.owned[cardId]!;
-  owned.tier = result.to!.tier;
-  owned.stars = 1;
-  owned.starFill = 0;
-  const from = tierMetalIndex(before.tier);
-  const to = tierMetalIndex(owned.tier);
-  const tierUps: TierUp[] = [{ kind: 'card_tier', id: cardId, from, to, metal: metalOf(to) }];
-  return { ok: true, state: next, tierUps };
 }
 
 // ---- gaining cards ---------------------------------------------------------------------------
@@ -872,10 +733,8 @@ export function tierUp(
 export function grantCard(cards: CardState, content: Content, card: Card): CardGain {
   const owned = cards.owned[card.id];
   if (!owned) {
-    const fresh = newOwnedCard();
-    // An Heirloom card sits at its own fixed tier (DESIGN.md §5 An Heirloom card).
-    if (card.heirloom) fresh.tier = 'heirloom';
-    cards.owned[card.id] = fresh;
+    // A card is gained at its own tier and stays there (DESIGN.md §5 No tier-ups).
+    cards.owned[card.id] = freshCard(card);
     return { kind: 'new' };
   }
   // A copy of an owned Heirloom card is never a star (its stars come from the Heirloom Gate's
@@ -883,13 +742,13 @@ export function grantCard(cards: CardState, content: Content, card: Card): CardG
   if (
     card.heirloom ||
     owned.stars >= MAX_STARS ||
-    owned.starFill >= starFillToMax(content, card.rarity, owned.stars, owned.tier)
+    owned.starFill >= starFillToMax(card, owned.stars)
   ) {
-    const shards = content.cardRules.shards[card.rarity];
+    const shards = content.cardRules.shards[ladderTier(card)];
     cards.shards += shards;
     return { kind: 'shards', shards };
   }
-  owned.starFill += content.cardRules.starBar.fillPerDuplicate[card.rarity];
+  owned.starFill += 1;
   return { kind: 'duplicate', duplicates: owned.starFill };
 }
 
@@ -992,22 +851,21 @@ export interface CardInfo {
   levelCap: number | null;
   /** XP needed for the next level; null when not owned or at the level cap. */
   xpToNext: Decimal | null;
-  /** 1 for a Wood ★1 Lv 1 card; scales its bonuses. */
+  /** 1 for a Wood ★1 Lv 1 card; scales its bonuses (a card not owned: fresh at its own tier). */
   power: number;
   cost: number;
   /** Where the card sits in the fighting loadout, or null. */
   slot: { job: LoadoutJob; slot: LoadoutSlot } | null;
   /** A worker: the tree kind or mine type it works, or null. */
   workplace: string | null;
-  /** At its top tier and ★6 (its rarity's cap, or an Heirloom card's own tier). */
+  /** At ★6. */
   maxRank: boolean;
   /** The star bar (fill, need, gauge 0..1); null when not owned or at ★6. */
   starBar: StarBarView | null;
   starUp: UpgradeCheck | null;
   /** Star dust that would cover the missing part of the next star, with what is held; null at ★6 or not owned. */
   starDust: { cost: number; have: number } | null;
-  tierUp: UpgradeCheck | null;
-  /** Its Ability / its Team bonus at the current power (Wood ★1 Lv 1 when not owned). */
+  /** Its Ability / its Team bonus at the current power (fresh at its tier when not owned). */
   abilityModifiers: Modifier[];
   teamModifiers: Modifier[];
 }
@@ -1022,7 +880,7 @@ export function cardInfo(
   const card = content.cardById.get(cardId);
   if (!card) return null;
   const owned = state.cards.owned[cardId] ?? null;
-  const preview = owned ?? newOwnedCard();
+  const preview = owned ?? freshCard(card);
   const rank = owned ? cardRank(owned) : null;
   const cap = rank ? levelCap(content, rank) : null;
   const dustCost = starDustCost(state, content, cardId);
@@ -1042,7 +900,6 @@ export function cardInfo(
     starBar: owned ? starBarView(content, card, owned) : null,
     starUp: starUpCheck(state, content, cardId),
     starDust: dustCost === null ? null : { cost: dustCost, have: heldDust },
-    tierUp: tierUpCheck(state, content, cardId, modifiers),
     abilityModifiers: cardEffectModifiers(content, cardId, 'ability', preview),
     teamModifiers: cardEffectModifiers(content, cardId, 'team', preview),
   };

@@ -1,5 +1,6 @@
 import {
-  RARITIES,
+  CARD_GRADES,
+  cardGrade,
   type Card,
   type Content,
   type ExpeditionPlace,
@@ -294,7 +295,7 @@ export function expeditionView(state: GameState, content: Content): ExpeditionVi
     )
     .sort(
       (a, b) =>
-        RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) || a.name.localeCompare(b.name),
+        CARD_GRADES.indexOf(cardGrade(b)) - CARD_GRADES.indexOf(cardGrade(a)) || a.name.localeCompare(b.name),
     );
   return {
     slots: expeditionSlots(state, content, modifiers),

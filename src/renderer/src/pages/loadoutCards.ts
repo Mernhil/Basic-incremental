@@ -1,10 +1,10 @@
+import { cardStyle } from '../../../data';
 import type { Content, ItemKind } from '../../../data';
 import {
   cardDisplayName,
   cardInfo,
   cardItem,
   resolveCardSkin,
-  lookTier,
   resolveCard,
   type GameState,
   type Modifier,
@@ -44,9 +44,8 @@ export function cardItemArt(
       if (source) return cardTierArt(source, 'mythic');
     }
   }
-  // an Heirloom card shows its Heirloom, owned or not (DESIGN.md §5 An Heirloom card)
-  const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
-  return cardTierArt(card, tier);
+  // a card shows the weapon of its own tier, owned or not (DESIGN.md §5 Weapon looks)
+  return cardTierArt(card);
 }
 
 /** A fighting loadout card's props (the four cards are equal: no slot label). Null when the card
@@ -68,12 +67,12 @@ export function loadoutProps(
     item: cardItemArt(content, card.id, info.owned, state),
     element: card.element,
     rank,
-    rarity: card.rarity,
+    rarity: cardStyle(card),
     face: cardFaceOf(content, info, mods),
     theme: resolveCard(content, state.cosmetics.loadout, {
       id: card.id,
       rank,
-      rarity: card.rarity,
+      rarity: cardStyle(card),
     }),
   };
 }

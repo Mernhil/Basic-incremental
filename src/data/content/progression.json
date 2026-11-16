@@ -77,10 +77,6 @@
       "page": "cards"
     },
     {
-      "kind": "tier_up",
-      "page": "cards"
-    },
-    {
       "kind": "ascension",
       "page": "shop",
       "minProgress": 0.25

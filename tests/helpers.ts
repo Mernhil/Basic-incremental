@@ -55,19 +55,9 @@ function pinProductionRates(bundled: Content): Content {
   };
 }
 
-/**
- * The star bar pinned to one whole copy per star at every rarity and tier (the shipped one asks a
- * fraction of a copy at low tiers, DESIGN.md §5 Star bar), so the star bar, shard and tier-up rule
- * tests have whole copies to count. The shipped table is tested in cardsFromStart.test.ts.
- */
+/** The star bar already asks one whole copy per star at every tier (DESIGN.md §5 One copy a star). */
 function pinStarBar(bundled: Content): Content {
-  const needs = Object.fromEntries(
-    RARITIES.map((r) => [r, Object.fromEntries(RANK_TIERS.map((t) => [t, 1]))]),
-  ) as unknown as Content['cardRules']['starBar']['needs'];
-  return {
-    ...bundled,
-    cardRules: { ...bundled.cardRules, starBar: { ...bundled.cardRules.starBar, needs } },
-  };
+  return bundled;
 }
 
 /**
@@ -252,16 +242,16 @@ export function freshDamage(
 export function withDps(dps: Decimal | number | string, base: Content = plainContent): Content {
   // the fresh game's Squire then deals exactly `dps` with its own team bonus counted
   // (a hair over, so a hit sized to exactly one boss never lands a rounding error short)
-  const common = new Decimal(dps).div(freshDamage(1, base)).mul('1.000000000001');
+  const wood = new Decimal(dps).div(freshDamage(1, base)).mul('1.000000000001');
   const baseDamage = Object.fromEntries(
-    Object.keys(base.cardRules.baseDamage).map((rarity) => [
-      rarity,
-      // the Common value exactly (a ratio of 1 can come back as 0.999… in floating point)
-      rarity === 'common'
-        ? common
-        : common.mul(
-            base.cardRules.baseDamage[rarity as keyof typeof base.cardRules.baseDamage].div(
-              base.cardRules.baseDamage.common,
+    Object.keys(base.cardRules.baseDamage).map((tier) => [
+      tier,
+      // the Wood value exactly (a ratio of 1 can come back as 0.999… in floating point)
+      tier === 'wood'
+        ? wood
+        : wood.mul(
+            base.cardRules.baseDamage[tier as keyof typeof base.cardRules.baseDamage].div(
+              base.cardRules.baseDamage.wood,
             ),
           ),
     ]),

@@ -280,14 +280,14 @@ function done(state: GameState, workers: Record<string, string[]>): WorkerResult
 }
 
 /**
- * A worker's power (DESIGN.md §4 Workers): its rarity's power (`production.json`) × its level,
- * star and tier power (`cardStatPower`). It multiplies its place's output; 1 for a Wood ★1 Lv 1
- * Common. 0 for an unknown card.
+ * A worker's power (DESIGN.md §4 Workers): its tier's power (`production.json` `tierPower`) × its level
+ * and star power (`cardStatPower`). It multiplies its place's output; 1 for a Wood ★1 Lv 1
+ * card. 0 for an unknown card.
  */
 export function workerPower(content: Content, cardId: string, owned: OwnedCard): number {
   const card = content.cardById.get(cardId);
   if (!card) return 0;
-  return content.production.workers.rarityPower[card.rarity] * cardStatPower(content, owned);
+  return content.production.workers.tierPower[card.tier === 'heirloom' ? 'mythic' : card.tier] * cardStatPower(content, owned);
 }
 
 /** The power of the place's workers together: 1 with none (the plain level rate). */

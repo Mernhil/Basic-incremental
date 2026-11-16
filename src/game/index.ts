@@ -275,26 +275,26 @@ export {
 export {
   /** The item type to draw in a card. */
   cardItemKind,
-  /** The item to draw with its name at the card's tier, whether it is an Heirloom and the look rarity. */
+  /** The item to draw with its name at the card's tier, and whether it is an Heirloom. */
   cardItem,
-  /** The name of an item type at a tier for a card's rarity (Wooden Sword ... Solaris). */
+  /** The name of an item type at a tier for a card's side (Wooden Sword ... Solaris). */
   itemName,
   cardDisplayName,
   cardNameById,
-  /** The highest tier a card can reach: its rarity's cap, or the Heirloom when open. */
-  cardTopTier,
-  /** The highest tier before an Heirloom, by rarity. */
-  RARITY_TIER_CAP,
+  /** The tier of a card: its own, for good (DESIGN.md §5 No tier-ups). */
+  cardTier,
+  /** A card as owned the moment it is gained (its own tier, ★1, Lv 1). */
+  freshCard,
+  /** The tier whose table value a card reads (an Heirloom card the T6 one). */
+  ladderTier,
   /** On-screen name of each tier. */
   TIER_LABELS,
-  /** A tier's name for a card of a rarity: Mythic or Void at T6. */
+  /** On-screen name of a card grade (a tier; Mythic or Void at T6). */
+  gradeLabel,
+  /** A tier's name: Mythic or Void at T6, by the card's side. */
   tierLabel,
   /** The side of a card's T6 and Heirloom: 'mythic' or 'void'. */
   cardSide,
-  /** The item rarity to draw for a card's rarity and tier: one step up the rarity ladder per tier, capped at Void. */
-  lookTier,
-  /** Which of an item's looks inside its tier a card shows, by its stars (BASE, +1, +2, FINAL). */
-  weaponLookRarity,
   /** Whether a rank is at least another (tier, then stars). */
   rankAtLeast,
   type CardItem,

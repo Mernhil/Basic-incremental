@@ -58,7 +58,7 @@ export function tierUpText(u: TierUp, content: Content): { title: string; detail
     case 'heirloom': {
       const card = content.cardById.get(u.id);
       const heirloom = card
-        ? itemName(content, card.item.kind, 'heirloom', card.rarity, card)
+        ? itemName(content, card.item.kind, 'heirloom', card.side, card)
         : undefined;
       return { title: t.heirloom(name), detail: heirloom ? t.heirloomDetail(heirloom) : '' };
     }

@@ -1,10 +1,10 @@
+import { cardStyle } from '../../../data';
 import { RANK_TIERS, type Card, type Content, type Rank, type RankTier } from '../../../data';
 import {
   LOADOUT_SLOTS,
   cardCollection,
   cardEnhancements,
   cardInfo,
-  cardTopTier,
   itemName,
   tierLabel,
   chooseEnhancement,
@@ -13,11 +13,9 @@ import {
   collectModifiers,
   levelCap,
   loadoutInfo,
-  lookTier,
   setLoadoutSlot,
   starUp,
   starUpWithDust,
-  tierUp,
   type CardFailure,
   type CardInfo,
   type GameState,
@@ -54,13 +52,17 @@ const BASE_RANK: Rank = { tier: 'wood', stars: 1 };
 const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', mining: 'pick' };
 
 /**
- * The tiers the Next tier preview steps through: the card's own tier, then each tier up to the
- * highest its rarity allows (DESIGN §5 Rarity caps the tier; Mythic or Void at most, the Heirloom
- * is no tier of the ladder). A card at its top tier, and an Heirloom card, has just the one.
+ * The tiers the Next tier preview steps through (DESIGN §5 Next tier preview): a card from Wood to
+ * Prismatic shows its own tier, then the same weapon type's weapons of each higher tier up to T6.
+ * A card never changes tier: the higher ones are other cards to pull. A T6 or an Heirloom card has
+ * just its own.
  */
-export function previewTiers(content: Content, cardId: string, from: RankTier): RankTier[] {
-  const top = RANK_TIERS.indexOf(cardTopTier(content, cardId));
-  return RANK_TIERS.slice(Math.max(0, RANK_TIERS.indexOf(from)), top + 1);
+export function previewTiers(content: Content, cardId: string): RankTier[] {
+  const card = content.cardById.get(cardId);
+  if (!card) return [];
+  const at = RANK_TIERS.indexOf(card.tier);
+  const t6 = RANK_TIERS.indexOf('mythic');
+  return at >= t6 ? [card.tier] : RANK_TIERS.slice(at, t6 + 1);
 }
 
 /**
@@ -160,11 +162,11 @@ export function createCardsModel(
       name: cardDisplayName(content, card, owned),
       heirloom: Boolean(card.heirloom),
       job: card.job,
-      rarity: card.rarity,
+      rarity: cardStyle(card),
       emblem: JOB_EMBLEM[card.job],
       itemKind: card.item.kind,
       itemType: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
-      item: art?.(card.id, owned) ?? cardTierArt(card, lookTier(card.rarity, rank.tier)),
+      item: art?.(card.id, owned) ?? cardTierArt(card),
       element: card.element,
       owned: owned !== null,
       rank,
@@ -180,7 +182,7 @@ export function createCardsModel(
       face: cardFaceOf(content, info),
       role: info.slot ? { job: info.slot.job, slot: info.slot.slot } : null,
       next: owned ? step('star', info.starUp) : null,
-      tier: owned ? step('tier', info.tierUp) : null,
+      tier: null,
       weapon: weaponView(content, info),
       stats: statTiles(content, state, card.id),
     };
@@ -193,8 +195,7 @@ export function createCardsModel(
     preview(state, id, step) {
       const card = content.cardById.get(id);
       if (!card) return null;
-      const own = state.cards.owned[id]?.tier ?? 'wood';
-      const tiers = previewTiers(content, id, lookTier(card.rarity, own));
+      const tiers = previewTiers(content, id);
       if (tiers.length < 2) return null;
       const index = ((Math.trunc(step) % tiers.length) + tiers.length) % tiers.length;
       const tier = tiers[index]!;
@@ -202,13 +203,13 @@ export function createCardsModel(
         count: tiers.length,
         index,
         own: index === 0,
-        tierName: tierLabel(tier, card.rarity),
-        itemName: itemName(content, card.item.kind, tier, card.rarity, card),
+        tierName: tierLabel(tier, card.side),
+        itemName: itemName(content, card.item.kind, tier, card.side, card),
         item:
           index === 0
             ? (art?.(id, state.cards.owned[id] ?? null) ?? previewArt(card, tier))
             : previewArt(card, tier),
-        ownTierName: tierLabel(tiers[0]!, card.rarity),
+        ownTierName: tierLabel(tiers[0]!, card.side),
       };
     },
     entries: (state) => all(state).map((i) => entry(i, state)),
@@ -237,7 +238,7 @@ export function createCardsModel(
         state.legacySkins,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
-        all(state).map((i) => [Boolean(i.starUp?.met), Boolean(i.tierUp?.met)]),
+        all(state).map((i) => Boolean(i.starUp?.met)),
       ]);
     },
     addToLoadout(state, id) {
@@ -260,7 +261,9 @@ export function createCardsModel(
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
       if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
-      return wrap(kind === 'star' ? starUp(state, content, id) : tierUp(state, content, id));
+      // there is no tier-up (DESIGN.md §5 No tier-ups)
+      if (kind !== 'star') return { ok: false, reason: reason('unavailable') };
+      return wrap(starUp(state, content, id));
     },
     chart(state, id) {
       const info = cardEnhancements(state, content, id);

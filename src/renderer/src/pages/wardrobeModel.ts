@@ -1,3 +1,4 @@
+import { CARD_GRADES, cardGrade } from '../../../data';
 import {
   CARD_SLOTS,
   COSMETIC_SLOTS,
@@ -74,12 +75,11 @@ export interface PreviewChoice {
   label: string;
 }
 
-/** The owned cards the mannequin can wear, rarest first. */
+/** The owned cards the mannequin can wear, highest tier first. */
 export function previewChoices(state: GameState, content: Content): PreviewChoice[] {
-  const order = content.rarities.map((r) => r.id);
   return content.cards
     .filter((c) => state.cards.owned[c.id])
-    .sort((a, b) => order.indexOf(b.rarity) - order.indexOf(a.rarity))
+    .sort((a, b) => CARD_GRADES.indexOf(cardGrade(b)) - CARD_GRADES.indexOf(cardGrade(a)))
     .map((c) => {
       const o = state.cards.owned[c.id]!;
       const rank = { tier: o.tier, stars: o.stars };

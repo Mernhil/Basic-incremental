@@ -1,4 +1,5 @@
 import type { Card, Content, HarvestPattern, ProductionJob, Rarity, Rank } from '../data';
+import { cardStyle } from '../data';
 import { cardDisplayName, cardRank } from './cards';
 import { luckyWindow, type LuckyWindow } from './lucky';
 import { depthInfo, type DepthInfo } from './depth';
@@ -91,14 +92,14 @@ function stageCard(state: GameState, content: Content, cardId: string): StageCar
   return {
     cardId,
     name: cardDisplayName(content, def, owned),
-    rarity: def.rarity,
+    rarity: cardStyle(def),
     element: def.element,
     item: def.item,
     rank,
     level: owned.level,
     abilityText: def.worker.description,
     power: workerPower(content, cardId, owned),
-    look: resolveCard(content, state.cosmetics.loadout, { id: cardId, rank, rarity: def.rarity }),
+    look: resolveCard(content, state.cosmetics.loadout, { id: cardId, rank, rarity: cardStyle(def) }),
   };
 }
 
@@ -197,7 +198,7 @@ export function workerChoices(
     out.push({
       cardId: card.id,
       name: cardDisplayName(content, card, owned),
-      rarity: card.rarity,
+      rarity: cardStyle(card),
       rank: cardRank(owned),
       level: owned.level,
       power: workerPower(content, card.id, owned),

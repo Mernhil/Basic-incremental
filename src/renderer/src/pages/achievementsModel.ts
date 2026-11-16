@@ -1,3 +1,5 @@
+import { cardStyle } from '../../../data';
+import { tierLabel } from '../../../game';
 import type { Achievement, AchievementCondition, Content, Rarity } from '../../../data';
 import {
   cardNameById,
@@ -286,8 +288,8 @@ export function shardOfferViews(
     if (r.kind === 'card') {
       const card = content.cardById.get(r.card);
       name = cardNameById(content, r.card) ?? r.card;
-      rarity = card?.rarity ?? null;
-      detail = t.cardDetail(content.rarityById.get(card?.rarity ?? 'common')?.name ?? '');
+      rarity = card ? cardStyle(card) : null;
+      detail = t.cardDetail(card ? tierLabel(card.tier, card.side) : '');
       art = { kind: 'card', cardId: r.card };
       group = 'cards';
       gain = t.copyOf(name);
@@ -367,7 +369,7 @@ export function shardGainView(
   const id = r.kind === 'card' ? r.card : r.cosmetic;
   const rarity =
     r.kind === 'card'
-      ? content.cardById.get(r.card)?.rarity
+      ? ((c) => (c ? cardStyle(c) : undefined))(content.cardById.get(r.card))
       : content.cosmeticById.get(r.cosmetic)?.rarity;
   const s = COPY.summon;
   const tags: string[] = [];

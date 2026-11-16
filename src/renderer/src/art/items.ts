@@ -1,3 +1,4 @@
+import type { CardSide } from '../../../data';
 /**
  * The signature item inside a card (DESIGN.md §12), as approved pixel art: a 100 x 120 sprite with
  * the black one-pixel ink, light extra shading, plus sparkles and a light rim (treatment 'E+'),
@@ -60,17 +61,17 @@ const T6_ART = { mythic: 't6m', void: 't6v' } as const;
  * The item's pixel sprite for a card art window, in the 200 x 240 item box. Every type has its own
  * picture at every tier (`item-<type>-t1` Wood, `-t2`, `-t3`, `-t4`, `-t5`, `-t6m` / `-t6v`, the Dragon batch).
  * The Heirloom has one picture per type (`item-<type>-heirloom`). `side`
- * is the card's own rarity, which picks the Mythic or Void version at T6 (and the letter pictures
+ * is the card's own side, which picks the Mythic or Void version at T6 (and the letter pictures
  * of the recoloured candidates). A caller
- * with no tier (the gallery) shows the Wood picture. The card's rarity no longer changes the
- * picture: the tier does (DESIGN.md §5, Item types). Wood to Prismatic have one PixelLab sprite per
+ * with no tier (the gallery) shows the Wood picture. The tier sets the
+ * picture (DESIGN.md §5, Item types). Wood to Prismatic have one PixelLab sprite per
  * type and tier (`item-<type>-t<1..5>`, ASSET_RULES §5), with no look steps.
  */
 export function itemArt(
   kind: ItemKind,
-  _rarity: Rarity,
+  _style: Rarity | undefined,
   tier?: RankTier,
-  side?: Rarity,
+  side?: Rarity | CardSide,
   heirloomArt?: string,
 ): string {
   if (tier === 'heirloom') {
@@ -89,26 +90,27 @@ export function itemArt(
  * The item picture of a card at a tier: the one call a card face, tile or preview makes. A card with
  * its own Heirloom (`heirloomArt` in cards.json, DESIGN.md §5 More weapons from the Heirloom
  * candidates) shows it at Mythic or Void and as its Heirloom; below that, and every card without one,
- * shows the type's tier pictures and original Heirloom (`itemArt` with the card's rarity as its side).
+ * shows the type's tier pictures and original Heirloom (`itemArt` with the card's side). With no tier given it is the card's own.
  */
 export function cardTierArt(
-  card: Pick<Card, 'rarity' | 'heirloomArt' | 'batch'> & { item: { kind: ItemKind } },
-  tier?: RankTier,
+  card: Pick<Card, 'tier' | 'side' | 'heirloomArt' | 'batch'> & { item: { kind: ItemKind } },
+  at?: RankTier,
 ): string {
+  const tier = at ?? card.tier;
   // a card of a later art batch (Leviathan, DESIGN.md §5 Art batches) shows its batch's T6 picture
   // for its side, or the batch's Heirloom picture; below T6 it shows the type's one model
   if (card.batch && (tier === 'mythic' || tier === 'heirloom')) {
     const art =
-      tier === 'heirloom' ? 'heirloom' : T6_ART[card.rarity === 'void' ? 'void' : 'mythic'];
+      tier === 'heirloom' ? 'heirloom' : T6_ART[card.side === 'void' ? 'void' : 'mythic'];
     return itemBoxSprite(`item-${card.item.kind}-${card.batch}-${art}`);
   }
   // a card's own weapon shows at its top tier only; Wood to Prismatic are the type's one model
   const own = card.heirloomArt && (tier === 'mythic' || tier === 'heirloom');
   return itemArt(
     card.item.kind,
-    card.rarity,
+    undefined,
     own ? 'heirloom' : tier,
-    card.rarity,
+    card.side,
     card.heirloomArt,
   );
 }

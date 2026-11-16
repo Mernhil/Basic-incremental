@@ -1,3 +1,4 @@
+import { cardStyle } from '../../../../data';
 import type { Content } from '../../../../data';
 import {
   cardDisplayName,
@@ -270,7 +271,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
       artSig = art;
       workerArt.innerHTML = art;
     }
-    workerArt.dataset['rarity'] = card?.rarity ?? '';
+    workerArt.dataset['rarity'] = card ? cardStyle(card) : '';
     workerArt.classList.toggle('is-empty', !card);
     drawPick(v.workers, id ?? '');
 

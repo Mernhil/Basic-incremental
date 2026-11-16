@@ -1,3 +1,5 @@
+import { cardStyle, styleGrade } from '../../../data';
+import { gradeLabel } from '../../../game';
 import { ITEM_KINDS, RARITIES, type Content, type Rarity } from '../../../data';
 import {
   cardDisplayName,
@@ -48,7 +50,12 @@ export interface PortalView {
   deckLayers: number;
 }
 
-const rarityName = (content: Content, r: Rarity): string => content.rarityById.get(r)?.name ?? r;
+/**
+ * The name of a step of a portal's ladder: a tier on a card portal (DESIGN.md §7: Wood ... Prismatic,
+ * Mythic or Void at T6), a rarity on the cosmetic gates.
+ */
+const rarityName = (content: Content, r: Rarity, cards = false): string =>
+  cards ? gradeLabel(styleGrade(r)) : (content.rarityById.get(r)?.name ?? r);
 
 const pct = (x: number): string => {
   const v = x * 100;
@@ -58,12 +65,17 @@ const pct = (x: number): string => {
 export function portalView(info: PortalInfo, content: Content): PortalView {
   const res = (id: string): string => content.resourceById.get(id)?.name ?? id;
   const t = COPY.summon;
+  const cards = info.portal.kind === 'cards';
   const left = Math.max(1, info.pity.threshold - info.pity.count);
   return {
     id: info.portal.id,
     name: info.portal.name,
     kind: info.portal.kind,
-    line: deckLine(info.portal.kind, rarityName(content, info.pity.rarity), info.pity.threshold),
+    line: deckLine(
+      info.portal.kind,
+      rarityName(content, info.pity.rarity, cards),
+      info.pity.threshold,
+    ),
     resourceId: info.single.price.resource,
     pityText: t.pityOf(info.pity.count, info.pity.threshold),
     single: {
@@ -78,18 +90,20 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
       amount: fmt(info.ten.price.amount),
       affordable: info.ten.affordable,
     },
-    pity: t.pity(rarityName(content, info.pity.rarity), left),
+    pity: t.pity(rarityName(content, info.pity.rarity, cards), left),
     pityProgress: Math.min(1, Math.max(0, info.pity.progress)),
-    guarantee: t.guarantee(rarityName(content, info.tenPullGuarantee)),
-    rates: info.rates.byRarity.map((r) => t.rate(rarityName(content, r.rarity), pct(r.chance))),
+    guarantee: t.guarantee(rarityName(content, info.tenPullGuarantee, cards)),
+    rates: info.rates.byRarity.map((r) =>
+      t.rate(rarityName(content, r.rarity, cards), pct(r.chance)),
+    ),
     odds: info.rates.byRarity.map((r) => ({
       rarity: r.rarity,
-      name: rarityName(content, r.rarity),
+      name: rarityName(content, r.rarity, cards),
       chance: pct(r.chance),
     })),
     pityCount: info.pity.count,
     pityThreshold: info.pity.threshold,
-    pityRarityName: rarityName(content, info.pity.rarity),
+    pityRarityName: rarityName(content, info.pity.rarity, cards),
     deckLayers: deckLayers(info.pity.progress),
   };
 }
@@ -181,9 +195,9 @@ export function wishlistPanelView(
       const full = r.marked >= r.limit;
       return {
         rarity: r.rarity,
-        name: rarityName(content, r.rarity),
+        name: rarityName(content, r.rarity, true),
         countText: t.wishlistCount(r.marked, r.limit),
-        label: t.wishlistRow(rarityName(content, r.rarity), r.marked, r.limit),
+        label: t.wishlistRow(rarityName(content, r.rarity, true), r.marked, r.limit),
         full,
         cards: r.cards
           .map((c) => {
@@ -319,7 +333,7 @@ export function revealViews(results: readonly PullResult[], content: Content): R
         content.legacySkinById.get(r.itemId)?.skin.name ??
         r.itemId,
       rarity: r.rarity,
-      rarityName: rarityName(content, r.rarity),
+      rarityName: rarityName(content, r.rarity, content.cardById.has(r.itemId)),
       orb: r.orb,
       upgrade: r.orb !== r.rarity,
       tags,
@@ -441,7 +455,7 @@ export function heirloomRevealViews(
   const t = COPY.summon;
   return results.map((r) => {
     const card = content.cardById.get(r.cardId);
-    const rarity = card?.rarity ?? 'mythic';
+    const rarity = card ? cardStyle(card) : 'mythic';
     const tags: string[] = [];
     if (r.whole) tags.push(t.heirloomWhole);
     else tags.push(t.shards(r.shards));

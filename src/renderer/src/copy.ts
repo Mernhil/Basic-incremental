@@ -339,7 +339,7 @@ export const COPY = {
     rankText: (tier: string, stars: number) => `${tier} ★${stars}`,
     level: 'Level',
     levelValue: (lv: number, cap: number) => `${lv} / ${cap}`,
-    atCap: 'At its level cap. Tier up to raise it.',
+    atCap: 'At its level cap.',
     toCap: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'} to the cap`,
     /** The Next tier preview under the detail card (UI_RULES §2). */
     preview: {
@@ -1237,7 +1237,9 @@ export const COPY = {
     needsMany: (n: number) => `Missing ${n} items`,
     starOf: (n: number, total: number) => `${n} of ${total} stars`,
     ready: 'Ready. Level and stars carry over.',
-    topLadder: (tier: string) => `${tier} is the top tier. Heirlooms come from the Heirloom Gate.`,
+    /** Under the stars: a card never changes tier (DESIGN.md §5 No tier-ups). */
+    fixedTier: (tier: string) =>
+      `A ${tier} weapon, for good. Weapons of other tiers come from Summon.`,
     heirloomStars: 'Its stars come from its own shards in the Heirloom Gate.',
     topEnd: (tier: string) => `${tier} is as far as this weapon goes.`,
     fullyUpgraded: 'Fully upgraded. Nothing left to unlock.',

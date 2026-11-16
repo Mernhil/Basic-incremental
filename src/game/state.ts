@@ -709,9 +709,9 @@ export function emptyCardLoadout(): CardLoadout {
 }
 
 /** A card as first obtained: Wood ★1, Lv 1, no XP, an empty star bar. */
-export function newOwnedCard(): OwnedCard {
+export function newOwnedCard(tier: RankTier = 'wood'): OwnedCard {
   return {
-    tier: 'wood',
+    tier,
     stars: 1,
     level: 1,
     xp: new Decimal(0),

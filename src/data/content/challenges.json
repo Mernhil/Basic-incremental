@@ -49,8 +49,8 @@
   {
     "id": "common_folk",
     "name": "Common Folk",
-    "rule": "Only Common cards count in the fighting loadout.",
-    "restrictions": ["commons_only"],
+    "rule": "Only Wood weapons count in the fighting loadout.",
+    "restrictions": ["wood_only"],
     "penalties": [],
     "targets": [
       {
