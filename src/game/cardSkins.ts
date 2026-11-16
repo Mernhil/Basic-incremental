@@ -80,10 +80,10 @@ export function cardSkinChoices(
     out.push({
       id,
       kind: 'card',
-      name: cardDisplayName(content, source, { tier: 'mythic' }),
+      name: cardDisplayName(content, source),
       art: null,
       sourceCardId: source.id,
-      sourceCardName: cardDisplayName(content, source, { tier: 'mythic' }),
+      sourceCardName: cardDisplayName(content, source),
       rarity: cardStyle(source),
       available: state.cards.owned[source.id] !== undefined,
       equipped: worn === id,

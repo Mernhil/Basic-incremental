@@ -287,7 +287,10 @@ function done(state: GameState, workers: Record<string, string[]>): WorkerResult
 export function workerPower(content: Content, cardId: string, owned: OwnedCard): number {
   const card = content.cardById.get(cardId);
   if (!card) return 0;
-  return content.production.workers.tierPower[card.tier === 'heirloom' ? 'mythic' : card.tier] * cardStatPower(content, owned);
+  return (
+    content.production.workers.tierPower[card.tier === 'heirloom' ? 'mythic' : card.tier] *
+    cardStatPower(content, owned)
+  );
 }
 
 /** The power of the place's workers together: 1 with none (the plain level rate). */

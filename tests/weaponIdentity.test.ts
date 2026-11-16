@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import { ITEM_KINDS, RARITIES } from '../src/data';
 import {
@@ -23,7 +24,7 @@ const KINDS = ITEM_KINDS.filter((k) => !['pickaxe', 'logging_axe'].includes(k));
  */
 function lead(kind: string, rarity: string) {
   const card = content.cards.find(
-    (c) => c.job === 'fighting' && c.item.kind === kind && c.rarity === rarity,
+    (c) => c.job === 'fighting' && c.item.kind === kind && cardStyle(c) === rarity,
   )!;
   const state = bareState();
   state.cards.owned[card.id] = newOwnedCard();

@@ -91,7 +91,7 @@ function stageCard(state: GameState, content: Content, cardId: string): StageCar
   const rank = cardRank(owned);
   return {
     cardId,
-    name: cardDisplayName(content, def, owned),
+    name: cardDisplayName(content, def),
     rarity: cardStyle(def),
     element: def.element,
     item: def.item,
@@ -99,7 +99,11 @@ function stageCard(state: GameState, content: Content, cardId: string): StageCar
     level: owned.level,
     abilityText: def.worker.description,
     power: workerPower(content, cardId, owned),
-    look: resolveCard(content, state.cosmetics.loadout, { id: cardId, rank, rarity: cardStyle(def) }),
+    look: resolveCard(content, state.cosmetics.loadout, {
+      id: cardId,
+      rank,
+      rarity: cardStyle(def),
+    }),
   };
 }
 
@@ -197,7 +201,7 @@ export function workerChoices(
     const workplace = inForge ? 'forge' : workplaceOf(state, content, card.id);
     out.push({
       cardId: card.id,
-      name: cardDisplayName(content, card, owned),
+      name: cardDisplayName(content, card),
       rarity: cardStyle(card),
       rank: cardRank(owned),
       level: owned.level,

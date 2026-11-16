@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { RANK_TIERS, RARITIES } from '../src/data';
+import { RANK_TIERS } from '../src/data';
+
+/** The tiers a card can be pulled at (DESIGN.md §5 The tier is the rarity). */
+const TIERS = ['wood', 'bronze', 'silver', 'gold', 'prismatic', 'mythic'] as const;
 import {
   advance,
   advanceChunked,
@@ -62,18 +65,18 @@ function leadWith(
 
 describe('base damage by rarity (DESIGN.md §5)', () => {
   it('follows the rarity ratios: 1, 1.49, 2.18, 3.24, 5.2, 8.22, 8.22 times the Common value (Mythic = Void)', () => {
-    const common = rules.baseDamage.common;
+    const common = rules.baseDamage.wood;
     expect(common.gt(0)).toBe(true);
     const ratios = [1, 1.49, 2.18, 3.24, 5.2, 8.22, 8.22];
-    RARITIES.forEach((rarity, i) => {
+    TIERS.forEach((rarity, i) => {
       expect(approxEq(rules.baseDamage[rarity], common.mul(ratios[i]!))).toBe(true);
     });
   });
 
   it('has the same ratios as base health', () => {
-    for (const rarity of RARITIES) {
-      const damageRatio = rules.baseDamage[rarity].div(rules.baseDamage.common);
-      const healthRatio = rules.health[rarity].div(rules.health.common);
+    for (const rarity of TIERS) {
+      const damageRatio = rules.baseDamage[rarity].div(rules.baseDamage.wood);
+      const healthRatio = rules.health[rarity].div(rules.health.wood);
       expect(approxEq(damageRatio, healthRatio)).toBe(true);
     }
   });
@@ -82,19 +85,19 @@ describe('base damage by rarity (DESIGN.md §5)', () => {
 describe('fighting damage comes from the main card', () => {
   it('is the Common base damage for a fresh Ember Squire (Bronze ★1 Lv 1)', () => {
     const state = freshState();
-    expect(baseDamage(state, content).eq(rules.baseDamage.common)).toBe(true);
+    expect(baseDamage(state, content).eq(rules.baseDamage.wood)).toBe(true);
     expect(
-      approxEq(effectiveDamage(state, content), freshDamage(rules.baseDamage.common, content)),
+      approxEq(effectiveDamage(state, content), freshDamage(rules.baseDamage.wood, content)),
     ).toBe(true);
   });
 
   it('follows the rarity of whichever card leads', () => {
     const epic = leadWith('storm_duelist');
-    expect(baseDamage(epic, content).toNumber()).toBeCloseTo(rules.baseDamage.epic.toNumber()); // dagger ×1
+    expect(baseDamage(epic, content).toNumber()).toBeCloseTo(rules.baseDamage.gold.toNumber()); // dagger ×1
     const legendary = leadWith('dawnblade_regent');
     // The greatsword's identity factor (DESIGN.md §5) is on top of the rarity's base.
     expect(baseDamage(legendary, content).toNumber()).toBeCloseTo(
-      rules.baseDamage.legendary.toNumber() * rules.weapons.greatsword.damage,
+      rules.baseDamage.prismatic.toNumber() * rules.weapons.greatsword.damage,
     );
   });
 
@@ -103,9 +106,9 @@ describe('fighting damage comes from the main card', () => {
     const state = leadWith('ember_squire', owned);
     const power = cardStatPower(content, owned);
     expect(power).toBeGreaterThan(1.5);
-    expect(approxEq(baseDamage(state, content), rules.baseDamage.common.mul(power))).toBe(true);
+    expect(approxEq(baseDamage(state, content), rules.baseDamage.wood.mul(power))).toBe(true);
     expect(
-      approxEq(cardBaseDamage(content, 'ember_squire', owned), rules.baseDamage.common.mul(power)),
+      approxEq(cardBaseDamage(content, 'ember_squire', owned), rules.baseDamage.wood.mul(power)),
     ).toBe(true);
   });
 
@@ -113,7 +116,7 @@ describe('fighting damage comes from the main card', () => {
     const owned = { ...newOwnedCard(), level: 11 };
     const state = leadWith('ember_squire', owned);
     // the Squire's own team bonus (+4% damage) grows with its power, like its damage
-    const expected = rules.baseDamage.common
+    const expected = rules.baseDamage.wood
       .mul(1 + rules.power.perLevel * 10)
       .mul(1 + (4 * cardPower(content, owned)) / 100);
     expect(approxEq(effectiveDamage(state, content), expected)).toBe(true);
@@ -124,14 +127,14 @@ describe('fighting damage comes from the main card', () => {
     state.cards.owned['storm_duelist'] = newOwnedCard();
     state.cards.loadouts.fighting.slots[1] = 'storm_duelist';
     expect(
-      approxEq(baseDamage(state, content), rules.baseDamage.common.add(rules.baseDamage.epic)),
+      approxEq(baseDamage(state, content), rules.baseDamage.wood.add(rules.baseDamage.gold)),
     ).toBe(true);
   });
 
   it('keeps a small bare-hands damage when no card leads', () => {
     const state = bareState();
     expect(baseDamage(state, content).eq(content.combat.unarmedDamage)).toBe(true);
-    expect(content.combat.unarmedDamage.lte(rules.baseDamage.common)).toBe(true);
+    expect(content.combat.unarmedDamage.lte(rules.baseDamage.wood)).toBe(true);
   });
 
   it('falls back to bare hands for an unknown main card', () => {

@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -266,7 +267,7 @@ describe('card ranks and portals', () => {
     ] as const) {
       expect(content.cards.filter((c) => c.job === job)).toHaveLength(n);
     }
-    const rarities = content.cards.map((c) => c.rarity);
+    const rarities = content.cards.map((c) => cardStyle(c));
     expect(rarities.filter((r) => r === 'common')).toHaveLength(11);
     expect(rarities.filter((r) => r === 'uncommon')).toHaveLength(11);
     expect(rarities.filter((r) => r === 'rare')).toHaveLength(10);
@@ -276,7 +277,9 @@ describe('card ranks and portals', () => {
     expect(rarities.filter((r) => r === 'void')).toHaveLength(11);
     // every job has a base card of every rarity (one per tier cap), except fighting's Rare, the skin test card
     for (const job of ['logging', 'mining'] as const) {
-      expect(new Set(content.cards.filter((c) => c.job === job).map((c) => c.rarity)).size).toBe(7);
+      expect(
+        new Set(content.cards.filter((c) => c.job === job).map((c) => cardStyle(c))).size,
+      ).toBe(7);
     }
     // fighting cards have a main ability and a support effect; workers one worker ability
     for (const card of content.cards) {
@@ -334,15 +337,11 @@ describe('card ranks and portals', () => {
   it('catches unknown materials and card modifier scopes', () => {
     const bad = raw();
     const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['tierUp'].bronze.mining[0].resource = 'nope';
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (bad.cards as Record<string, any>[])[0]!['teamBonus'].modifiers[0].scope = {
       dungeon: 'nowhere',
     };
     const issues = issuesFor(bad);
-    expect(issues).toContain(
-      'cardRules.json › tierUp › bronze › mining › [0] › resource: unknown resource "nope"',
-    );
     expect(issues).toContain(
       'cards.json › [0] › teamBonus › modifiers › [0] › scope › dungeon: unknown dungeon "nowhere"',
     );
@@ -488,8 +487,9 @@ describe('card ranks and portals', () => {
   it('needs pool items at the pity and guarantee rarities, or they could never be met', () => {
     const bad = raw();
     const portal = (bad.portals as PortalRaw[])[0]!;
-    portal.pool = (portal.pool as { itemId: string; rarity: string }[]).filter(
-      (e) => e.rarity === 'common',
+    // the Card Portal goes by tier: keep only its Wood cards
+    portal.pool = (portal.pool as { itemId: string; tier: string }[]).filter(
+      (e) => e.tier === 'wood',
     );
     const issues = issuesFor(bad);
     expect(issues).toContain(
@@ -635,20 +635,11 @@ describe('the three loops (DESIGN.md §3)', () => {
     );
   });
 
-  it('refuses tier-ups paid in other currencies, without Money or without both production loops', () => {
+  it('has no tier-up prices: a card stays the tier it is (DESIGN.md §5 No tier-ups)', () => {
+    expect('tierUp' in (raw().cardRules as Record<string, unknown>)).toBe(false);
     const bad = raw();
-    const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-    rules['tierUp'].bronze.logging[1].resource = 'summon_scroll';
-    rules['tierUp'].gold.fighting = rules['tierUp'].gold.fighting.filter(
-      (x: { resource: string }) => x.resource !== 'money',
-    );
-    rules['tierUp'].silver.mining = rules['tierUp'].silver.mining.filter(
-      (x: { resource: string }) => x.resource !== 'moonwillow_gem',
-    );
-    const issues = issuesFor(bad).join(String.fromCharCode(10));
-    expect(issues).toContain('card upgrades use Money, gems and materials only');
-    expect(issues).toContain('cardRules.json › tierUp › gold › fighting: needs a Money cost');
-    expect(issues).toContain('cardRules.json › tierUp › silver › mining: needs a tree_gem');
+    (bad.cardRules as Record<string, unknown>)['tierUp'] = {};
+    expect(issuesFor(bad).some((i) => i.startsWith('cardRules.json'))).toBe(true);
   });
 });
 

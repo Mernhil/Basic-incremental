@@ -41,7 +41,7 @@ describe('advance (tick math)', () => {
     expect(
       approxEq(
         state.bossHp!,
-        maxHp.sub(freshDamage(content.cardRules.baseDamage.common, content).mul(10)),
+        maxHp.sub(freshDamage(content.cardRules.baseDamage.wood, content).mul(10)),
       ),
     ).toBe(true);
     expect(report.bossKills).toBe(0);

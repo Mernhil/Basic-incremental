@@ -3,7 +3,6 @@ import { MAX_STARS } from '../../../data';
 import {
   cardStatsFor,
   itemName,
-  levelCap,
   tierLabel,
   type CardInfo,
   type CardStats,
@@ -11,7 +10,7 @@ import {
 } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
-import type { CostChip, StatChange, WeaponView } from './cardsModel';
+import type { StatChange, WeaponView } from './cardsModel';
 
 /**
  * The weapon panel's view model (DESIGN.md §5, §11): turns a card's game info (level, XP, star
@@ -60,7 +59,6 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
   const need = info.xpToNext;
   const xp =
     atCap || !need || need.lte(0) ? 1 : Math.min(1, Math.max(0, owned.xp.div(need).toNumber()));
-  const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
   const multipliers = content.cardRules.power.starMultiplier;
   const multiplierAt = (stars: number): number => (stars <= 1 ? 1 : (multipliers[stars - 2] ?? 1));
 
@@ -103,7 +101,6 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
 
   // A card never changes tier (DESIGN.md §5 No tier-ups): the panel has no tier-up step, only a
   // note under the stars.
-  const tierUp: WeaponView['tierUp'] = null;
   const tierName = tierLabel(rank.tier, card.side);
   const endNote =
     rank.tier === 'heirloom'
@@ -126,7 +123,6 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
     stars: owned.stars,
     starStats,
     starBar: owned.stars >= MAX_STARS ? null : starBar,
-    tierUp,
     endNote,
   };
 }

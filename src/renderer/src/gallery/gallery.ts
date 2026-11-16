@@ -327,7 +327,7 @@ function cardProps(
 ) {
   const card = content.cardById.get(id);
   return {
-    name: card ? cardDisplayName(content, card, rank) : name,
+    name: card ? cardDisplayName(content, card) : name,
     label: 'Fighting',
     job: 'fighting',
     emblem,

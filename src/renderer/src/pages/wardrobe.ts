@@ -570,9 +570,7 @@ export function createWardrobePage(
     };
     const slotId = item.cosmetic.slot;
     const previewDef = previewCard ? content.cardById.get(previewCard) : undefined;
-    const cardName = previewDef
-      ? cardDisplayName(content, previewDef, ctx.state().cards.owned[previewDef.id])
-      : '';
+    const cardName = previewDef ? cardDisplayName(content, previewDef) : '';
     if (d.equip.global === 'equip') {
       btn(isCardSlot(slotId) ? t.equipAll : t.equip, 'equip', () =>
         equipResult(equipCosmetic(ctx.state(), content, item.cosmetic.id), 'equip'),

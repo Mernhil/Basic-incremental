@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import { backdropOf } from '../src/game';
 import { sprite, strip } from '../src/renderer/src/art/pixel/sprites';
@@ -26,18 +27,18 @@ describe('Heirloom backdrops', () => {
       const c = content.cardById.get(id)!;
       expect(c.heirloom, id).toBe(true);
       expect(c.batch, id).toBeUndefined();
-      const bd = backdropOf(content, id, c.rarity);
-      expect(bd, id).toEqual({ bg: c.rarity === 'mythic' ? 'bg-hero' : 'bg-villain' });
+      const bd = backdropOf(content, id, cardStyle(c));
+      expect(bd, id).toEqual({ bg: cardStyle(c) === 'mythic' ? 'bg-hero' : 'bg-villain' });
     }
-    expect(DRAGON.some((id) => content.cardById.get(id)!.rarity === 'mythic')).toBe(true);
-    expect(DRAGON.some((id) => content.cardById.get(id)!.rarity === 'void')).toBe(true);
+    expect(DRAGON.some((id) => cardStyle(content.cardById.get(id)!) === 'mythic')).toBe(true);
+    expect(DRAGON.some((id) => cardStyle(content.cardById.get(id)!) === 'void')).toBe(true);
   });
 
   it('gives Leviathan Heirlooms the moving sea with its front layer', () => {
     const lev = content.cards.filter((c) => c.heirloom && c.batch === 'leviathan');
     expect(lev).toHaveLength(11);
     for (const c of lev)
-      expect(backdropOf(content, c.id, c.rarity)).toEqual({
+      expect(backdropOf(content, c.id, cardStyle(c))).toEqual({
         bg: 'bg-sea',
         front: 'bg-sea-front',
         motion: 'sea',

@@ -181,7 +181,7 @@ describe('wishlist panel', () => {
     expect(v.active).toBe(true);
     expect(v.hunting).toBe(`Hunting: ${cardNameById(content, id)}`);
     const epic = v.rows.find((x) => x.rarity === 'epic')!;
-    expect(epic.countText).toBe(`1 / ${portal.wishlistPerRarity}`);
+    expect(epic.countText).toBe(`1 / ${portal.wishlistPerTier}`);
     expect(epic.cards.find((c) => c.id === id)!.label).toContain('Click to unmark');
     expect(epic.cards.every((c) => c.marked || !c.blocked)).toBe(true);
   });
@@ -189,7 +189,7 @@ describe('wishlist panel', () => {
   it('blocks the unmarked cards of a full rarity', () => {
     let s = freshState();
     const ids = portal.pool.filter((e) => e.rarity === 'rare').map((e) => e.itemId);
-    for (const id of ids.slice(0, portal.wishlistPerRarity)) {
+    for (const id of ids.slice(0, portal.wishlistPerTier)) {
       const r = setWishlisted(s, content, id, true);
       if (!r.ok) throw new Error(r.reason);
       s = r.state;
@@ -197,6 +197,6 @@ describe('wishlist panel', () => {
     const v = wishlistPanelView(wishlistView(s, content, portal.id)!, s, content);
     const rare = v.rows.find((x) => x.rarity === 'rare')!;
     expect(rare.full).toBe(true);
-    expect(rare.cards.filter((c) => c.blocked)).toHaveLength(ids.length - portal.wishlistPerRarity);
+    expect(rare.cards.filter((c) => c.blocked)).toHaveLength(ids.length - portal.wishlistPerTier);
   });
 });

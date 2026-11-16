@@ -1,4 +1,4 @@
-import { RANK_TIERS, RARITIES, loadContent, type Content } from '../src/data';
+import { loadContent, type Content } from '../src/data';
 import {
   createInitialState,
   Decimal,
@@ -155,7 +155,7 @@ function pinRuleNumbers(bundled: Content): Content {
     Object.fromEntries(
       Object.entries(stats).map(([r, v]) => [
         r,
-        r === 'common' ? new Decimal(common) : v.div(stats['common']!).mul(common),
+        r === 'wood' ? new Decimal(common) : v.div(stats['wood']!).mul(common),
       ]),
     ) as T;
   const baseDamage = scaled(bundled.cardRules.baseDamage, 200);

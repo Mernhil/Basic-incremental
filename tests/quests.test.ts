@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   advance,
@@ -104,7 +105,7 @@ describe('progress counting', () => {
 
   it('a first card of a rarity is done once any owned card has it', () => {
     const state = newGame();
-    const rare = content.cards.find((c) => c.rarity === 'rare')!;
+    const rare = content.cards.find((c) => cardStyle(c) === 'rare')!;
     expect(questList(state, content).find((e) => e.quest.id === 'first_rare')!.done).toBe(false);
     state.cards.owned[rare.id] = newOwnedCard();
     settleQuests(state, content);

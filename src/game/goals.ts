@@ -34,15 +34,6 @@ import {
 } from './production';
 import type { GameState } from './state';
 
-const TIER_NAMES: Record<string, string> = {
-  bronze: 'Bronze',
-  silver: 'Silver',
-  gold: 'Gold',
-  prismatic: 'Prismatic',
-  mythic: 'Mythic',
-  heirloom: 'Heirloom',
-};
-
 /**
  * The goal tracker (DESIGN.md §10): the next few things to aim for, picked by the rules in
  * progression.json (never a fixed script) and sorted by estimated time. Each goal carries a
@@ -390,7 +381,7 @@ const starUpRule: RuleFn = (state, content) =>
     return [
       {
         targetId: card.id,
-        title: `Fill ${cardDisplayName(content, card, owned)}'s star bar for ★${owned.stars + 1}`,
+        title: `Fill ${cardDisplayName(content, card)}'s star bar for ★${owned.stars + 1}`,
         progress: ratio(fill.have, fill.need),
         etaSeconds: null,
       },
@@ -464,7 +455,7 @@ const workerSlotRule: RuleFn = (state, content) => {
   return [
     {
       targetId: idle.id,
-      title: `Put ${cardDisplayName(content, idle, state.cards.owned[idle.id])} to work`,
+      title: `Put ${cardDisplayName(content, idle)} to work`,
       progress: 0.5,
       etaSeconds: 0,
     },

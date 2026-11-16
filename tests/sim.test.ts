@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   Decimal,
@@ -313,26 +314,28 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(state.cards.wishlist.length).toBeGreaterThan(0);
     for (const rarity of ['common', 'rare', 'legendary']) {
       const marked = state.cards.wishlist.filter(
-        (id) => content.cardById.get(id)!.rarity === rarity,
+        (id) => cardStyle(content.cardById.get(id)!) === rarity,
       );
-      expect(marked.length).toBeLessThanOrEqual(portal.wishlistPerRarity);
+      expect(marked.length).toBeLessThanOrEqual(portal.wishlistPerTier);
     }
     // the lead (a Common below ★6) is hunted for its copies; the rest are cards it does not own
     expect(state.cards.wishlist).toContain('ember_squire');
     expect(
       state.cards.wishlist
-        .filter((id) => content.cardById.get(id)!.rarity !== 'common')
+        .filter((id) => cardStyle(content.cardById.get(id)!) !== 'common')
         .every((id) => !state.cards.owned[id]),
     ).toBe(true);
     // a Rare it comes to own is the heir of the Common lead (capped at Wood): hunted alone
-    const id = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'rare')!;
+    const id = state.cards.wishlist.find((x) => cardStyle(content.cardById.get(x)!) === 'rare')!;
     state.cards.owned[id] = { ...state.cards.owned['ember_squire']! };
     const rares = markWishlist(state, content).cards.wishlist.filter(
-      (x) => content.cardById.get(x)!.rarity === 'rare',
+      (x) => cardStyle(content.cardById.get(x)!) === 'rare',
     );
     expect(rares).toEqual([id]);
     // a card it comes to own and does not build leaves the list
-    const other = state.cards.wishlist.find((x) => content.cardById.get(x)!.rarity === 'uncommon')!;
+    const other = state.cards.wishlist.find(
+      (x) => cardStyle(content.cardById.get(x)!) === 'uncommon',
+    )!;
     state.cards.owned[other] = { ...state.cards.owned['ember_squire']! };
     expect(markWishlist(state, content).cards.wishlist).not.toContain(other);
   });

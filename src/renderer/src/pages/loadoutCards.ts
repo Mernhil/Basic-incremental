@@ -3,11 +3,11 @@ import type { Content, ItemKind } from '../../../data';
 import {
   cardDisplayName,
   cardInfo,
-  cardItem,
   resolveCardSkin,
   resolveCard,
   type GameState,
   type Modifier,
+  type OwnedCard,
 } from '../../../game';
 import { evolutionArt } from '../art/evolutions';
 import { cardTierArt, itemArt, itemBoxSprite } from '../art/items';
@@ -29,7 +29,7 @@ export function skinMarkup(artId: string): string {
 export function cardItemArt(
   content: Content,
   cardId: string,
-  owned: Parameters<typeof cardItem>[2],
+  owned: OwnedCard | null | undefined,
   state?: GameState,
 ): string {
   const card = content.cardById.get(cardId);
@@ -56,11 +56,11 @@ export function loadoutProps(
   cardId: string,
   mods: Modifier[],
 ): CardProps | null {
-  const info = cardInfo(state, content, cardId, mods);
+  const info = cardInfo(state, content, cardId);
   if (!info?.owned || !info.rank) return null;
   const { card, rank } = info;
   return {
-    name: cardDisplayName(content, card, info.owned),
+    name: cardDisplayName(content, card),
     label: card.job.charAt(0).toUpperCase() + card.job.slice(1),
     job: card.job,
     emblem: 'blade',
@@ -110,7 +110,7 @@ export function weaponArtMarkup(weaponKind: string, artId: string | null): strin
 export function skinTileMarkup(
   content: Content,
   cardId: string,
-  owned: Parameters<typeof cardItem>[2],
+  owned: OwnedCard | null | undefined,
   pic: SkinPic,
 ): string {
   if (pic.kind === 'legacy') return skinMarkup(pic.art);

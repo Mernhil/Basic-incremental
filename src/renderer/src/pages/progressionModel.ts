@@ -1,4 +1,4 @@
-import { RANK_TIERS, type Content, type RankTier } from '../../../data';
+import type { Content } from '../../../data';
 import {
   cardNameById,
   formatDuration,
@@ -17,14 +17,14 @@ import { COPY } from '../copy';
 
 const metalName = (m: string): string => m.charAt(0).toUpperCase() + m.slice(1);
 
-function nameOf(content: Content, id: string, cardTier?: RankTier): string {
+function nameOf(content: Content, id: string): string {
   return (
     content.resourceById.get(id)?.name ??
     content.dungeonById.get(id)?.name ??
     content.trialById.get(id)?.name ??
     content.mineById.get(id)?.name ??
     content.treeById.get(id)?.name ??
-    cardNameById(content, id, cardTier ? { tier: cardTier } : null) ??
+    cardNameById(content, id) ??
     id
   );
 }
@@ -32,16 +32,7 @@ function nameOf(content: Content, id: string, cardTier?: RankTier): string {
 /** Title and detail of the toast for one tier-up. */
 export function tierUpText(u: TierUp, content: Content): { title: string; detail: string } {
   const t = COPY.progress;
-  // a card's tier-up names the weapon it now has
-  const name = nameOf(
-    content,
-    u.id,
-    u.kind === 'card_tier'
-      ? (RANK_TIERS[u.to] ?? 'prismatic')
-      : u.kind === 'heirloom'
-        ? 'mythic'
-        : undefined,
-  );
+  const name = nameOf(content, u.id);
   const metal = metalName(u.metal);
   switch (u.kind) {
     case 'gem_mastery':

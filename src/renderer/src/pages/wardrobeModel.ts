@@ -83,7 +83,7 @@ export function previewChoices(state: GameState, content: Content): PreviewChoic
     .map((c) => {
       const o = state.cards.owned[c.id]!;
       const rank = { tier: o.tier, stars: o.stars };
-      const name = cardDisplayName(content, c, o);
+      const name = cardDisplayName(content, c);
       return { id: c.id, name, rank, label: `${name} · ${rankText(rank)}` };
     });
 }
@@ -405,10 +405,7 @@ export function itemDetail(
       : null;
   const exclusiveCard = c.exclusiveCard ? content.cardById.get(c.exclusiveCard) : undefined;
   const exclusive = exclusiveCard
-    ? t.exclusiveTo(
-        cardDisplayName(content, exclusiveCard, state.cards.owned[exclusiveCard.id]),
-        rankText(content.wearRules.exclusive),
-      )
+    ? t.exclusiveTo(cardDisplayName(content, exclusiveCard), rankText(content.wearRules.exclusive))
     : null;
 
   const rungs: LadderRung[] = ladder.map((step, i) => {
@@ -461,8 +458,8 @@ export function itemDetail(
   if (!item.owned) note = t.notOwnedNote;
   else if (exclusiveCard && previewCard !== exclusiveCard.id) {
     note = state.cards.owned[exclusiveCard.id]
-      ? t.pickCard(cardDisplayName(content, exclusiveCard, state.cards.owned[exclusiveCard.id]))
-      : t.needCard(cardDisplayName(content, exclusiveCard, null));
+      ? t.pickCard(cardDisplayName(content, exclusiveCard))
+      : t.needCard(cardDisplayName(content, exclusiveCard));
   }
   const equipOpts: EquipOptions = {
     global:

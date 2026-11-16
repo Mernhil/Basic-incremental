@@ -1,5 +1,5 @@
 import { CARD_GRADES, cardGrade } from '../../../data';
-import { RANK_TIERS, RARITIES, type Content, type Rarity } from '../../../data';
+import type { Content, Rarity } from '../../../data';
 import {
   Decimal,
   bossMastery,
@@ -66,9 +66,6 @@ export interface GateView {
   resets: ResetView[];
   kept: KeptView[];
 }
-
-const RARITY_ORDER: readonly string[] = RARITIES;
-const TIER_ORDER = ['stone', ...RANK_TIERS];
 
 /** The reward line of a prestige cosmetic. */
 export function rewardView(content: Content, id: string): RewardView {

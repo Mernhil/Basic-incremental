@@ -181,7 +181,7 @@ export function wishlistPanelView(
   const t = COPY.summon;
   const nameOf = (id: string): string => {
     const def = content.cardById.get(id);
-    return def ? cardDisplayName(content, def, state.cards.owned[id]) : id;
+    return def ? cardDisplayName(content, def) : id;
   };
   const limit = info.byRarity[0]?.limit ?? 0;
   const marked = state.cards.wishlist.filter((id) =>
@@ -416,14 +416,14 @@ export function heirloomBoardView(info: HeirloomGateInfo, content: Content): Hei
     const side = e.side;
     return {
       cardId: e.card.id,
-      name: cardDisplayName(content, e.card, e.owned),
+      name: cardDisplayName(content, e.card),
       kind,
       side,
       owned: e.owned !== null,
       stars: e.stars,
       progress: e.progress,
       shardsText: t.heirloomShardsOf(e.shards, e.need),
-      label: t.heirloomCell(cardDisplayName(content, e.card, e.owned), e.stars, e.shards, e.need),
+      label: t.heirloomCell(cardDisplayName(content, e.card), e.stars, e.shards, e.need),
     };
   };
   const kinds = content.items.types;
@@ -465,7 +465,7 @@ export function heirloomRevealViews(
     if (r.pity) tags.push(t.byPity);
     return {
       itemId: r.cardId,
-      name: cardNameById(content, r.cardId, { tier: 'heirloom' }) ?? r.cardId,
+      name: cardNameById(content, r.cardId) ?? r.cardId,
       // a shard pull shows one step lower, so a whole Heirloom stands out in the reveal
       rarity: r.whole ? rarity : 'legendary',
       rarityName: rarityName(content, rarity),

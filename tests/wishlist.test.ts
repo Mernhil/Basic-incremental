@@ -31,7 +31,7 @@ const mark = (state: GameState, ...ids: string[]): GameState => {
 
 describe('Wishlist marking (DESIGN.md §7)', () => {
   it('the portal data holds a per-rarity limit', () => {
-    expect(portal.wishlistPerRarity).toBeGreaterThanOrEqual(1);
+    expect(portal.wishlistPerTier).toBeGreaterThanOrEqual(1);
   });
 
   it('marks and unmarks a card, in the order marked', () => {
@@ -46,7 +46,7 @@ describe('Wishlist marking (DESIGN.md §7)', () => {
 
   it('refuses a card past the limit of its rarity, an unknown card and a card of no card portal', () => {
     const ids = ofRarity('rare');
-    const limit = portal.wishlistPerRarity;
+    const limit = portal.wishlistPerTier;
     const s = mark(freshState(), ...ids.slice(0, limit));
     expect(setWishlisted(s, content, ids[limit]!, true)).toEqual({ ok: false, reason: 'full' });
     expect(setWishlisted(s, content, 'nobody', true)).toEqual({ ok: false, reason: 'unknown' });
@@ -67,7 +67,7 @@ describe('Wishlist marking (DESIGN.md §7)', () => {
     const view = wishlistView(mark(freshState(), id), content, PORTAL)!;
     const epic = view.byRarity.find((r) => r.rarity === 'epic')!;
     expect(epic.cards.find((c) => c.itemId === id)!.marked).toBe(true);
-    expect(epic.limit).toBe(portal.wishlistPerRarity);
+    expect(epic.limit).toBe(portal.wishlistPerTier);
     expect(epic.marked).toBe(1);
     expect(view.active).toBe(true);
     expect(wishlistView(freshState(), content, PORTAL)!.active).toBe(false);

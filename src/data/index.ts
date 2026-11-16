@@ -53,7 +53,6 @@ import type {
   WeaponSkinSet,
   ItemsData,
   ItemType,
-  RankTier,
   Skill,
   SkillsConfig,
 } from './schemas';
@@ -994,9 +993,6 @@ function checkPrestige(
   );
 }
 
-/** Resource kinds card upgrades may cost: gems and dungeon / trial materials (DESIGN.md §5). */
-const UPGRADE_KINDS: readonly Resource['kind'][] = ['tree_gem', 'mine_gem', 'material'];
-
 /** Start cards, star-up and tier-up materials must exist; start cards lead distinct jobs. */
 function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issues: string[]): void {
   // Roster by tier (DESIGN.md §5 Roster): from Wood to Prismatic every weapon type has exactly one
@@ -1020,7 +1016,6 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
       );
     }
   }
-  const resources = new Map(c.resources.map((r) => [r.id, r]));
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
   // A worker ability acts on its own place: the game adds the place, data never names one.
@@ -1046,23 +1041,6 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
     if (jobs.has(card.job)) issues.push(`${where}: a start card already leads ${card.job}`);
     jobs.add(card.job);
   });
-  const checkResource = (where: string, id: string): void => {
-    const res = resources.get(id);
-    if (!res) issues.push(`${where}: unknown resource "${id}"`);
-    else if (id !== 'money' && !UPGRADE_KINDS.includes(res.kind)) {
-      issues.push(
-        `${where}: "${id}" is ${res.kind}, card upgrades use Money, gems and materials only`,
-      );
-    }
-  };
-  // Every card upgrade of every job mixes both production loops with a dungeon material
-  // (DESIGN.md §5): a tree gem, a mine gem and a Core.
-  const checkMix = (where: string, ids: string[]): void => {
-    const kinds = new Set(ids.map((id) => resources.get(id)?.kind));
-    for (const kind of ['tree_gem', 'mine_gem', 'material'] as const) {
-      if (!kinds.has(kind)) issues.push(`${where}: needs a ${kind} among its costs`);
-    }
-  };
   RANK_TIERS.forEach((tier, i) => {
     const before = RANK_TIERS[i - 1];
     if (before && c.cardRules.levelCaps[tier] < c.cardRules.levelCaps[before]) {

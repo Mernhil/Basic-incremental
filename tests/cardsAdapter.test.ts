@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import { addCard, cardDisplayName, itemName } from '../src/game';
 import { RANK_TIERS } from '../src/data/schemas';
@@ -28,7 +29,7 @@ describe('Cards page model', () => {
 
   it('adds, moves and removes loadout cards through the loadout rules', () => {
     let state = freshState();
-    const rare = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
+    const rare = content.cards.find((c) => c.job === 'fighting' && cardStyle(c) === 'epic')!;
     state.account.level = 2; // cost cap 8: Squire 2 + an Epic 5
     state = addCard(state, content, rare.id)!.state;
     const added = model.addToLoadout(state, rare.id);
@@ -65,8 +66,8 @@ describe('Cards page model', () => {
 
   it('offers a slot the cards of its job with what picking each would cost', () => {
     let state = freshState();
-    const epic = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
-    const mythic = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'mythic')!;
+    const epic = content.cards.find((c) => c.job === 'fighting' && cardStyle(c) === 'epic')!;
+    const mythic = content.cards.find((c) => c.job === 'fighting' && cardStyle(c) === 'mythic')!;
     state.account.level = 2; // cost cap 8: the Squire costs 2, an Epic 6, a Mythic 14
     state = addCard(state, content, epic.id)!.state;
     state = addCard(state, content, mythic.id)!.state;
@@ -82,7 +83,7 @@ describe('Cards page model', () => {
 
   it('places a card in a slot and swaps two cards of a loadout', () => {
     let state = freshState();
-    const epic = content.cards.find((c) => c.job === 'fighting' && c.rarity === 'epic')!;
+    const epic = content.cards.find((c) => c.job === 'fighting' && cardStyle(c) === 'epic')!;
     state.account.level = 2;
     state = addCard(state, content, epic.id)!.state;
     const placed = model.place(state, 2, epic.id);
@@ -112,79 +113,81 @@ describe('Cards page model', () => {
 });
 
 describe('Next tier preview', () => {
-  const byRarity = (r: string) => content.cards.find((c) => c.rarity === r)!;
+  const byRarity = (r: string) => content.cards.find((c) => cardStyle(c) === r)!;
 
-  it('steps from the own tier up to the highest the rarity allows', () => {
-    const top: Record<string, string> = {
+  it("steps from the card's own tier through the type's weapons of the higher tiers, up to T6", () => {
+    const first: Record<string, string> = {
       common: 'wood',
       uncommon: 'bronze',
       rare: 'silver',
       epic: 'gold',
       legendary: 'prismatic',
-      mythic: 'mythic',
-      void: 'mythic',
     };
-    for (const [rarity, last] of Object.entries(top)) {
-      const tiers = previewTiers(content, byRarity(rarity).id, 'wood');
-      expect(tiers[0]).toBe('wood');
-      expect(tiers[tiers.length - 1]).toBe(last);
+    for (const [style, own] of Object.entries(first)) {
+      const tiers = previewTiers(content, byRarity(style).id);
+      expect(tiers[0]).toBe(own);
+      expect(tiers[tiers.length - 1]).toBe('mythic');
     }
-    expect(previewTiers(content, byRarity('epic').id, 'silver')).toEqual(['silver', 'gold']);
+    expect(previewTiers(content, byRarity('epic').id)).toEqual(['gold', 'prismatic', 'mythic']);
+    // a T6 card and an Heirloom card have only their own
+    expect(previewTiers(content, byRarity('void').id)).toEqual(['mythic']);
+    expect(previewTiers(content, content.cards.find((c) => c.heirloom)!.id)).toEqual(['heirloom']);
   });
 
   it('cycles round to the own tier and never touches the state', () => {
-    const card = byRarity('legendary');
+    const card = byRarity('common');
     const state = freshState();
     const before = JSON.stringify(state);
-    const stops = [0, 1, 2, 3, 4, 5].map((i) => model.preview(state, card.id, i));
-    expect(stops.slice(0, 5).map((p) => p!.tierName)).toEqual([
+    const stops = [0, 1, 2, 3, 4, 5, 6].map((i) => model.preview(state, card.id, i));
+    expect(stops.slice(0, 6).map((p) => p!.tierName)).toEqual([
       'Wood',
       'Bronze',
       'Silver',
       'Gold',
       'Prismatic',
+      'Mythic',
     ]);
     expect(stops[0]!.own).toBe(true);
-    expect(stops[5]!.own).toBe(true); // back to the own tier
-    expect(stops[4]!.itemName).toBe(itemName(content, card.item.kind, 'prismatic', 'legendary'));
+    expect(stops[6]!.own).toBe(true); // back to the own tier
+    expect(stops[4]!.itemName).toBe(itemName(content, card.item.kind, 'prismatic', undefined));
     expect(stops[1]!.item).not.toBe(stops[0]!.item);
+    expect(stops[1]!.item).toBe(previewArt(card, 'bronze'));
     expect(JSON.stringify(state)).toBe(before);
   });
 
-  it('stops at the Void side at T6, and has nothing for a Common', () => {
-    const card = byRarity('void');
-    const stops = [5, 6].map((i) => model.preview(freshState(), card.id, i)!);
-    expect(stops[0]!.tierName).toBe('Void');
-    expect(stops[0]!.itemName).toBe(itemName(content, card.item.kind, 'mythic', 'void'));
-    expect(stops[0]!.item).toBe(previewArt(card, 'mythic'));
-    expect(stops[1]!.own).toBe(true); // back to the own tier: there is no step after T6
-    expect(model.preview(freshState(), byRarity('common').id, 1)).toBeNull();
+  it('has nothing for a T6 card, an Heirloom or an unknown card', () => {
+    expect(model.preview(freshState(), byRarity('void').id, 1)).toBeNull();
+    expect(model.preview(freshState(), content.cards.find((c) => c.heirloom)!.id, 1)).toBeNull();
     expect(model.preview(freshState(), 'nope', 1)).toBeNull();
   });
 });
 
 describe("cardDisplayName: a card has one name, its weapon's (DESIGN.md §5 Item names)", () => {
-  it('is material + type from T1 to T5, and an unowned card shows its first-owned name', () => {
-    const card = content.cardById.get('ember_squire')!;
-    const names = RANK_TIERS.slice(0, 5).map((tier) => cardDisplayName(content, card, { tier }));
+  it('is material + type from T1 to T5, each tier its own card, owned or not', () => {
+    const swords = [
+      'ember_squire',
+      'brass_vanguard',
+      'silver_cavalier',
+      'gilded_knight',
+      'prism_paladin',
+    ];
+    const names = swords.map((id) => cardDisplayName(content, content.cardById.get(id)!));
     expect(names).toEqual(
       ['Wooden', 'Bronze', 'Silver', 'Golden', 'Prismatic'].map((m) => `${m} Sword`),
     );
-    expect(cardDisplayName(content, card, null)).toBe('Wooden Sword');
+    const card = content.cardById.get('ember_squire')!;
     expect(cardDisplayName(content, card)).toBe('Wooden Sword');
   });
   it('never shows a character name from cards.json', () => {
     // an Heirloom card's character name is its weapon's name, so it is the one name there
     for (const card of content.cards.filter((c) => !c.heirloom)) {
-      for (const tier of RANK_TIERS) {
-        expect(cardDisplayName(content, card, { tier }), `${card.id} ${tier}`).not.toBe(card.name);
-      }
+      expect(cardDisplayName(content, card), card.id).not.toBe(card.name);
     }
   });
   it('keeps the unique names at T6 and as an Heirloom', () => {
     const heirloom = content.cards.find((c) => c.heirloom)!;
-    expect(cardDisplayName(content, heirloom, null)).toBe(
-      itemName(content, heirloom.item.kind, 'heirloom', heirloom.rarity, heirloom),
+    expect(cardDisplayName(content, heirloom)).toBe(
+      itemName(content, heirloom.item.kind, 'heirloom', heirloom.side, heirloom),
     );
   });
 });

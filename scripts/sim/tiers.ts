@@ -34,7 +34,9 @@ for (const tier of TIERS) {
   const wantHp = rules.health.wood.toNumber() * RATIO[tier];
   if (Math.abs(dmg - wantDmg) > 1e-3 || Math.abs(hp - wantHp) > 0.5) {
     ok = false;
-    console.log(`RATIO BROKEN: ${tier} should be ×${RATIO[tier]} of Wood (damage ${wantDmg}, health ${wantHp})`);
+    console.log(
+      `RATIO BROKEN: ${tier} should be ×${RATIO[tier]} of Wood (damage ${wantDmg}, health ${wantHp})`,
+    );
   }
 }
 for (let i = 1; i < rows.length; i++) {

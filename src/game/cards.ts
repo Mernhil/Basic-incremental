@@ -168,24 +168,20 @@ export function itemName(
 /**
  * The one name a card has (DESIGN.md §5 "Item names", user 2026-11-16): its weapon's. A card never
  * changes tier, so the name is fixed. The character names in cards.json are shown nowhere. Use this
- * everywhere a card is named. (`_owned` is ignored; it stays so callers keep one shape.)
+ * everywhere a card is named.
  */
-export function cardDisplayName(content: Content, card: Card, _owned?: unknown): string {
+export function cardDisplayName(content: Content, card: Card): string {
   return itemName(content, card.item.kind, card.tier, card.side, card);
 }
 
 /** `cardDisplayName` by card id: undefined for an unknown id (so `?? id` chains keep working). */
-export function cardNameById(
-  content: Content,
-  cardId: string,
-  owned?: unknown,
-): string | undefined {
+export function cardNameById(content: Content, cardId: string): string | undefined {
   const card = content.cardById.get(cardId);
-  return card ? cardDisplayName(content, card, owned) : undefined;
+  return card ? cardDisplayName(content, card) : undefined;
 }
 
 /** The item to draw for a card: its type's item named for the card's tier. Null for unknown ids. */
-export function cardItem(content: Content, cardId: string, _owned?: unknown): CardItem | null {
+export function cardItem(content: Content, cardId: string): CardItem | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
   return {
@@ -196,12 +192,8 @@ export function cardItem(content: Content, cardId: string, _owned?: unknown): Ca
 }
 
 /** Just the item kind to draw (see cardItem). Null for unknown ids. */
-export function cardItemKind(
-  content: Content,
-  cardId: string,
-  owned: OwnedCard | null | undefined,
-): ItemKind | null {
-  return cardItem(content, cardId, owned)?.kind ?? null;
+export function cardItemKind(content: Content, cardId: string): ItemKind | null {
+  return cardItem(content, cardId)?.kind ?? null;
 }
 
 /** Whether a card is one of the 22 Heirloom cards (DESIGN.md §5 Heirlooms). */
@@ -215,7 +207,7 @@ export function cardTier(content: Content, cardId: string): RankTier {
 }
 
 /** ★6: nothing left to rank up (a card never changes tier). */
-export function isMaxRank(_content: Content, _cardId: string, owned: OwnedCard): boolean {
+export function isMaxRank(owned: { stars: number }): boolean {
   return owned.stars >= MAX_STARS;
 }
 
@@ -638,7 +630,7 @@ export interface StarBarView {
 }
 
 /** The star bar of an owned card below ★6; null otherwise. */
-export function starBarView(_content: Content, card: Card, owned: OwnedCard): StarBarView | null {
+export function starBarView(card: Card, owned: OwnedCard): StarBarView | null {
   const need = starFillNeeded(card, owned.stars);
   if (need === null) return null;
   return {
@@ -871,12 +863,7 @@ export interface CardInfo {
 }
 
 /** Everything the Cards page shows for one card. Null for unknown ids. */
-export function cardInfo(
-  state: GameState,
-  content: Content,
-  cardId: string,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CardInfo | null {
+export function cardInfo(state: GameState, content: Content, cardId: string): CardInfo | null {
   const card = content.cardById.get(cardId);
   if (!card) return null;
   const owned = state.cards.owned[cardId] ?? null;
@@ -896,8 +883,8 @@ export function cardInfo(
     cost: cardCost(content, cardId),
     slot: loadoutSlotOf(state, cardId),
     workplace: card.job === 'fighting' ? null : workplaceOf(state, content, cardId),
-    maxRank: owned ? isMaxRank(content, cardId, owned) : false,
-    starBar: owned ? starBarView(content, card, owned) : null,
+    maxRank: owned ? isMaxRank(owned) : false,
+    starBar: owned ? starBarView(card, owned) : null,
     starUp: starUpCheck(state, content, cardId),
     starDust: dustCost === null ? null : { cost: dustCost, have: heldDust },
     abilityModifiers: cardEffectModifiers(content, cardId, 'ability', preview),
@@ -906,15 +893,10 @@ export function cardInfo(
 }
 
 /** Every card in content order (owned or not), optionally for one job. */
-export function cardCollection(
-  state: GameState,
-  content: Content,
-  job?: Job,
-  modifiers: readonly Modifier[] = collectModifiers(state, content),
-): CardInfo[] {
+export function cardCollection(state: GameState, content: Content, job?: Job): CardInfo[] {
   return content.cards
     .filter((c) => job === undefined || c.job === job)
-    .map((c) => cardInfo(state, content, c.id, modifiers)!);
+    .map((c) => cardInfo(state, content, c.id)!);
 }
 
 export interface LoadoutInfo {

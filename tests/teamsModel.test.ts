@@ -26,7 +26,7 @@ describe('remembered teams per dungeon', () => {
     expect(rows.map((r) => r.dungeonId)).toEqual([a!.id, b!.id]);
     expect(rows[1]).toMatchObject({
       active: false,
-      cards: [cardNameById(content, card.id, state.cards.owned[card.id])],
+      cards: [cardNameById(content, card.id)],
     });
     expect(rows[1]!.overCap).toBe(rows[1]!.cost > rows[1]!.cap);
   });

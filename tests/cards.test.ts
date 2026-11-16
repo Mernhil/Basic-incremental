@@ -35,9 +35,6 @@ import {
   simulateOffline,
   starUp,
   starUpCheck,
-  tierUpCost,
-  tierUp,
-  tierUpCheck,
   xpToNextLevel,
   type CardResult,
   type GameState,
@@ -322,17 +319,17 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     ]);
   });
 
-  it('gives each card health by rarity, scaled by its power', () => {
+  it('gives each card health by its tier, scaled by its power', () => {
     const base = newOwnedCard();
-    const { common, legendary } = content.cardRules.health;
-    expect(cardHealth(content, 'ember_squire', base).eq(common)).toBe(true);
+    const { wood, prismatic: legendary } = content.cardRules.health;
+    expect(cardHealth(content, 'ember_squire', base).eq(wood)).toBe(true);
     // Weapon identities (DESIGN.md §5): the greatsword's health factor is 1.05.
     expect(cardHealth(content, 'dawnblade_regent', base).toNumber()).toBeCloseTo(
       legendary.toNumber() * 1.05,
     );
     const silver = { ...base, tier: 'silver' as const, level: 11 };
     expect(cardHealth(content, 'ember_squire', silver).toNumber()).toBeCloseTo(
-      common.toNumber() * lv11Power * 1.5,
+      wood.toNumber() * lv11Power * 1.5,
     );
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);
   });
@@ -417,7 +414,7 @@ describe('loadouts (DESIGN.md §5)', () => {
   });
 });
 
-describe('star-up and tier-up (DESIGN.md §5)', () => {
+describe('star-up, and no tier-up (DESIGN.md §5 No tier-ups)', () => {
   it('lists what a star-up needs: the star bar fill, nothing else', () => {
     const state = own(freshState(), 'ember_squire', { level: 12 });
     const check = starUpCheck(state, content, 'ember_squire')!;
@@ -432,7 +429,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
         r.need.toNumber(),
         r.met,
       ]),
-    ).toEqual([['starFill', undefined, 0, content.cardRules.starBar.needs.common.wood, false]]);
+    ).toEqual([['starFill', undefined, 0, 1, false]]);
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'requirements' });
     expect(starUpCheck(state, content, 'storm_duelist')).toBeNull();
     expect(starUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'not-owned' });
@@ -440,7 +437,7 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
   });
 
   it('spends the fill and keeps the level; the cap stays', () => {
-    const need = content.cardRules.starBar.needs.common.wood;
+    const need = 1; // one copy a star, at every tier
     const state = own(freshState(), 'ember_squire', { level: 20, starFill: need + 2 });
     const after = ok(starUp(state, content, 'ember_squire'));
     expect(after.cards.owned['ember_squire']).toMatchObject({ stars: 2, level: 20, starFill: 2 });
@@ -448,139 +445,39 @@ describe('star-up and tier-up (DESIGN.md §5)', () => {
     expect(state.cards.owned['ember_squire']!.stars).toBe(1); // pure
   });
 
-  it("has no star-up at ★6 and no tier-up past the card's top tier", () => {
-    const state = own(own(freshState(), 'ember_squire', { stars: 6 }), 'storm_duelist', {
-      tier: 'gold',
-      stars: 6,
-    });
+  it('has no star-up at ★6', () => {
+    const state = own(freshState(), 'ember_squire', { stars: 6 });
     expect(starUpCheck(state, content, 'ember_squire')).toMatchObject({
       available: false,
       to: null,
     });
     expect(starUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'unavailable' });
-    expect(tierUpCheck(state, content, 'storm_duelist')!.available).toBe(false);
-    expect(tierUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'unavailable' });
   });
 
-  it('tiers up with Money, Cores and higher-tier gems, carrying level and XP over', () => {
-    let state = freshState();
-    own(state, 'grove_keeper', { level: 20, stars: 6 });
-    own(state, 'storm_duelist', { level: 19, xp: new Decimal(3) });
-    const fighting = tierUpCheck(state, content, 'storm_duelist')!;
-    expect(fighting.to).toEqual({ tier: 'bronze', stars: 1 });
-    expect(fighting.requirements.map((r) => [r.kind, r.resource ?? null])).toEqual([
-      ['level', null],
-      ['stars', null],
-      ['resource', 'money'],
-      ['resource', 'moss_core'],
-      ['resource', 'iron_gem'],
-      ['resource', 'ironbark_gem'],
-    ]);
-    const logging = tierUpCheck(state, content, 'grove_keeper')!;
-    expect(logging.requirements.map((r) => r.resource ?? null)).toEqual([
-      null,
-      null,
-      'money',
-      'moss_core',
-      'ironbark_gem',
-      'iron_gem',
-    ]);
-    for (const cost of content.cardRules.tierUp.wood.logging) {
-      state = give(state, cost.resource, cost.amount.toNumber());
+  it('a star costs one copy at every tier, an Heirloom has no star bar', () => {
+    for (const id of [
+      'ember_squire',
+      'brass_vanguard',
+      'storm_duelist',
+      'dawnblade_regent',
+      'core_titan',
+    ]) {
+      const card = content.cardById.get(id)!;
+      const state = own(freshState(), id, { tier: card.tier });
+      expect(starUpCheck(state, content, id)!.requirements[0]!.need.toNumber(), id).toBe(1);
     }
-    state = ok(tierUp(state, content, 'grove_keeper'));
-    expect(state.cards.owned['grove_keeper']).toMatchObject({
-      tier: 'bronze',
-      stars: 1,
-      level: 20,
-    });
-    for (const cost of content.cardRules.tierUp.wood.logging) {
-      expect(state.resources[cost.resource]!.eq(0)).toBe(true);
-    }
-    expect(tierUp(state, content, 'storm_duelist')).toEqual({ ok: false, reason: 'requirements' });
+    const heirloom = own(freshState(), 'solaris', { tier: 'heirloom' });
+    expect(starUpCheck(heirloom, content, 'solaris')!.available).toBe(false);
   });
 
-  it('caps the tier by rarity: no tier-up past the rarity cap, even with everything paid', () => {
-    const state = own(freshState(), 'ember_squire', { stars: 6, level: 20 });
-    for (const cost of content.cardRules.tierUp.wood.fighting) {
-      give(state, cost.resource, cost.amount.toNumber());
-    }
-    const squire = content.cardById.get('ember_squire')!;
-    expect(tierUpCheck(state, content, 'ember_squire')!.available).toBe(false); // Common stops at Wood
-    expect(tierUp(state, content, 'ember_squire')).toEqual({ ok: false, reason: 'unavailable' });
-    expect(tierUpCost(content, squire, state.cards.owned['ember_squire']!)).toEqual([]);
-  });
-
-  it('opens a tier-up past Prismatic only for a Mythic or Void card, and none after Mythic', () => {
-    const state = freshState();
-    own(state, 'dawnblade_regent', { tier: 'prismatic', stars: 6 }); // Legendary stops at Prismatic
-    own(state, 'moonwood_dryad', { tier: 'prismatic', stars: 6 }); // Mythic goes on to Mythic
-    own(state, 'core_titan', { tier: 'mythic', stars: 6 }); // Void: the ladder ends here
-    expect(tierUpCheck(state, content, 'dawnblade_regent')!.available).toBe(false);
-    expect(tierUpCheck(state, content, 'moonwood_dryad')!.to).toEqual({ tier: 'mythic', stars: 1 });
-    expect(tierUpCheck(state, content, 'core_titan')!.available).toBe(false);
-  });
-
-  it('prices the five tier-ups in rising Money: Wood the cheap first step, Prismatic the biggest', () => {
-    const money = (tier: 'wood' | 'bronze' | 'silver' | 'gold' | 'prismatic') =>
-      content.cardRules.tierUp[tier].fighting
-        .find((p) => p.resource === 'money')!
-        .amount.toNumber();
-    const order = (['wood', 'bronze', 'silver', 'gold', 'prismatic'] as const).map(money);
-    expect(order).toEqual([...order].sort((a, b) => a - b));
-    expect(new Set(order).size).toBe(5);
-  });
-
-  it('uses Cinder Cores + Moonwillow Gem / Grotto Gem, then Frost Cores + Frost Sigils', () => {
-    const state = freshState();
-    own(state, 'geode_golem', { tier: 'silver', level: 60 });
-    own(state, 'dawnblade_regent', { tier: 'gold', level: 80 });
-    const resources = (id: string) =>
-      tierUpCheck(state, content, id)!.requirements.flatMap((r) => r.resource ?? []);
-    expect(resources('geode_golem')).toEqual([
-      'money',
-      'cinder_core',
-      'grotto_gem',
-      'moonwillow_gem',
-    ]);
-    expect(resources('dawnblade_regent')).toEqual([
-      'money',
-      'frost_core',
-      'frost_sigil',
-      'storm_core',
-      'grotto_gem',
-      'moonwillow_gem',
-    ]);
-  });
-
-  it('mixes a Core, a tree gem and a mine gem into every tier-up of every job', () => {
-    const kindOf = (id: string) => content.resourceById.get(id)!.kind;
-    for (const card of ['dawnblade_regent', 'moonwood_dryad', 'geode_golem']) {
-      for (const tier of ['wood', 'bronze', 'silver', 'gold'] as const) {
-        const state = own(freshState(), card, { tier });
-        const up = tierUpCost(content, content.cardById.get(card)!, state.cards.owned[card]!);
-        const kinds = new Set(up.map((p) => kindOf(p.resource)));
-        for (const k of ['currency', 'material', 'tree_gem', 'mine_gem'])
-          expect(kinds.has(k as never), `${card} ${tier} ${k}`).toBe(true);
-      }
-    }
-  });
-
-  it('leans on the job’s own loop: logging cards need more tree gems, mining cards more mine gems', () => {
-    const amount = (card: string, resource: string): number => {
-      const state = own(freshState(), card, { tier: 'silver' });
-      const cost = tierUpCost(content, content.cardById.get(card)!, state.cards.owned[card]!);
-      return cost.find((p) => p.resource === resource)!.amount.toNumber();
-    };
-    expect(amount('moonwood_dryad', 'moonwillow_gem')).toBeGreaterThan(
-      amount('moonwood_dryad', 'grotto_gem'),
-    );
-    expect(amount('geode_golem', 'grotto_gem')).toBeGreaterThan(
-      amount('geode_golem', 'moonwillow_gem'),
-    );
-    // Fighting uses both.
-    expect(amount('dawnblade_regent', 'grotto_gem')).toBeGreaterThan(0);
-    expect(amount('dawnblade_regent', 'moonwillow_gem')).toBeGreaterThan(0);
+  it('has no tier-up: the card rules hold no tier-up price and a card keeps its tier', () => {
+    expect('tierUp' in content.cardRules).toBe(false);
+    // a maxed Wood card with everything in hand stays Wood
+    let state = own(freshState(), 'ember_squire', { stars: 6, level: 20 });
+    for (const r of ['money', 'moss_core', 'iron_gem', 'ironbark_gem']) state = give(state, r, 1e9);
+    expect(cardInfo(state, content, 'ember_squire')!.rank).toEqual({ tier: 'wood', stars: 6 });
+    expect(cardInfo(state, content, 'ember_squire')!.maxRank).toBe(true);
+    expect('tierUp' in cardInfo(state, content, 'ember_squire')!).toBe(false);
   });
 });
 
@@ -588,28 +485,35 @@ describe('gaining cards (DESIGN.md §5)', () => {
   it('adds a new card, then duplicates into the star bar, then shards at ★6', () => {
     let result = addCard(freshState(), content, 'dawnblade_regent')!;
     expect(result.gain).toEqual({ kind: 'new' });
+    // a card arrives at its own tier (DESIGN.md §5 No tier-ups): the Prismatic greatsword is Prismatic
     expect(result.state.cards.owned['dawnblade_regent']).toMatchObject({
-      tier: 'wood',
+      tier: 'prismatic',
       stars: 1,
+      level: 1,
     });
+    expect(
+      addCard(freshState(), content, 'core_titan')!.state.cards.owned['core_titan']!.tier,
+    ).toBe('mythic');
+    expect(
+      addCard(freshState(), content, 'silver_cavalier')!.state.cards.owned['silver_cavalier'],
+    ).toMatchObject({ tier: 'silver', stars: 1, level: 1 });
     result = addCard(result.state, content, 'dawnblade_regent')!;
     expect(result.gain).toEqual({ kind: 'duplicate', duplicates: 1 });
     const maxed = own(result.state, 'dawnblade_regent', { stars: 6 });
     result = addCard(maxed, content, 'dawnblade_regent')!;
-    expect(result.gain).toEqual({ kind: 'shards', shards: 8 }); // Legendary
+    expect(result.gain).toEqual({ kind: 'shards', shards: 8 }); // Prismatic
     expect(result.state.cards.shards).toBe(8);
     expect(addCard(freshState(), content, 'nope')).toBeNull();
   });
 
-  it('gives shards by rarity as in DESIGN.md §5', () => {
+  it('gives shards by tier as in DESIGN.md §5', () => {
     expect(content.cardRules.shards).toEqual({
-      common: 1,
-      uncommon: 1,
-      rare: 2,
-      epic: 4,
-      legendary: 8,
-      mythic: 25,
-      void: 25, // Mythic and Void are one top rarity
+      wood: 1,
+      bronze: 1,
+      silver: 2,
+      gold: 4,
+      prismatic: 8,
+      mythic: 25, // T6: the Mythic and the Void side alike
     });
   });
 });
@@ -630,7 +534,11 @@ describe('views for the Cards page', () => {
     expect(squire.teamModifiers.map((m) => m.stat)).toEqual(['combat.damage']);
     const regent = cardInfo(state, content, 'dawnblade_regent')!;
     expect(regent).toMatchObject({ owned: null, rank: null, slot: null, cost: 9, starUp: null });
-    expect(regent.abilityModifiers.map((m) => m.stat)).toEqual(['burst.interval', 'burst.power']);
+    // not owned: previewed fresh at its own tier (Prismatic), where its ability has already grown
+    expect(regent.abilityModifiers.map((m) => m.stat).slice(0, 2)).toEqual([
+      'burst.interval',
+      'burst.power',
+    ]);
     expect(cardInfo(state, content, 'nope')).toBeNull();
     // 144 ladder cards (22 of them Leviathan) and the 22 Heirloom cards.
     expect(cardCollection(state, content).map((c) => c.card.id)).toHaveLength(166);

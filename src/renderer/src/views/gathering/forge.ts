@@ -261,7 +261,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     const id = forgeWorker(s, content);
     const card = id ? content.cardById.get(id) : undefined;
     const owned = id ? s.cards.owned[id] : undefined;
-    set(workerName, card && owned ? cardDisplayName(content, card, owned) : COPY.forge.noneWorker);
+    set(workerName, card && owned ? cardDisplayName(content, card) : COPY.forge.noneWorker);
     set(
       workerPowerEl,
       card && owned ? T.forgeWorkerPower(fmt(workerPower(content, card.id, owned))) : '',

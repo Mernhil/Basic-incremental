@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   Decimal,
@@ -79,7 +80,7 @@ describe('sim player: the card it builds', () => {
     expect(marked.cards.wishlist).toContain('seraph_lancer');
     // the other Mythic mark goes to a card it does not own yet
     const mythics = marked.cards.wishlist.filter(
-      (id) => content.cardById.get(id)!.rarity === 'mythic',
+      (id) => cardStyle(content.cardById.get(id)!) === 'mythic',
     );
     expect(mythics.filter((id) => !marked.cards.owned[id])).toHaveLength(mythics.length - 1);
     marked.cards.owned['seraph_lancer']!.stars = 6; // copies would only become shards now
@@ -245,32 +246,24 @@ describe('sim player: where to fight', () => {
 });
 
 describe('sim player: autobuyers', () => {
-  it('switches on the autobuyers it owns, holding them while it saves Money for a tier-up', () => {
+  it('switches on the autobuyers it owns', () => {
     const state = freshState();
     expect(chooseAutomation(state, content)).toBe(state); // none owned
     state.prestige.shop['timber_steward'] = 1;
     const on = chooseAutomation(state, content);
     expect(on.automation).toMatchObject({ treeLevels: true, mineLevels: false, reservePercent: 0 });
-    // the squire is ready to tier up but short of Money: the autobuyer spends none of it
-    const squire = state.cards.owned['ember_squire']!;
-    own(state, 'storm_duelist', { level: 20, stars: 6 });
-    state.cards.loadouts.fighting.slots[0] = 'storm_duelist';
-    for (const p of content.cardRules.tierUp.wood.fighting) state.resources[p.resource] = p.amount;
-    state.resources['money'] = new Decimal(1);
-    void squire;
-    expect(chooseAutomation(state, content).automation.reservePercent).toBe(100);
   });
 });
 
 describe('sim player: lead and Ascension', () => {
   it('leads with the card that hits hardest, not the rarest one, and keeps a lead within 10%', () => {
     const state = freshState();
-    own(state, 'grave_hammerer'); // Void at Wood ★1 Lv 1
-    own(state, 'storm_duelist', { tier: 'gold', stars: 6, level: 80 }); // a starred Epic
-    expect(chooseLead(state, content, 99)).toBe('storm_duelist');
-    // a fresh Void beats a fresh Common
+    own(state, 'brass_vanguard', { tier: 'bronze' }); // a fresh Bronze card
+    own(state, 'ember_squire', { stars: 6, level: 20 }); // a maxed Wood card
+    expect(chooseLead(state, content, 99)).toBe('ember_squire');
+    // a fresh T6 card beats a fresh Wood card
     const fresh = freshState();
-    own(fresh, 'grave_hammerer');
+    own(fresh, 'grave_hammerer', { tier: 'mythic' });
     expect(chooseLead(fresh, content, 99)).toBe('grave_hammerer');
   });
 

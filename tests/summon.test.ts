@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   Decimal,
@@ -101,7 +102,7 @@ describe('Focus Portal', () => {
 
   it('honours the wishlist inside its type', () => {
     const s = rich(10);
-    const marked = content.cards.find((c) => c.item.kind === 'sword' && c.rarity === 'common')!;
+    const marked = content.cards.find((c) => c.item.kind === 'sword' && cardStyle(c) === 'common')!;
     s.cards.wishlist = [marked.id];
     const out = pull(s, content, FOCUS_PORTAL_ID, 1, constantRng(0));
     if (!out.ok) throw new Error(out.reason);

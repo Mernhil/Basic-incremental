@@ -12,7 +12,7 @@ describe('signature items (DESIGN.md §12)', () => {
       for (const r of RARITIES) expect(itemArt(kind, r), `${kind} ${r}`).not.toBe('');
     for (const card of content.cards) {
       expect(ITEM_KINDS).toContain(card.item.kind);
-      expect(itemArt(card.item.kind, card.rarity)).not.toBe('');
+      expect(itemArt(card.item.kind, undefined)).not.toBe('');
     }
   });
 

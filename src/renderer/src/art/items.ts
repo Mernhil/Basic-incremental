@@ -100,17 +100,10 @@ export function cardTierArt(
   // a card of a later art batch (Leviathan, DESIGN.md §5 Art batches) shows its batch's T6 picture
   // for its side, or the batch's Heirloom picture; below T6 it shows the type's one model
   if (card.batch && (tier === 'mythic' || tier === 'heirloom')) {
-    const art =
-      tier === 'heirloom' ? 'heirloom' : T6_ART[card.side === 'void' ? 'void' : 'mythic'];
+    const art = tier === 'heirloom' ? 'heirloom' : T6_ART[card.side === 'void' ? 'void' : 'mythic'];
     return itemBoxSprite(`item-${card.item.kind}-${card.batch}-${art}`);
   }
   // a card's own weapon shows at its top tier only; Wood to Prismatic are the type's one model
   const own = card.heirloomArt && (tier === 'mythic' || tier === 'heirloom');
-  return itemArt(
-    card.item.kind,
-    undefined,
-    own ? 'heirloom' : tier,
-    card.side,
-    card.heirloomArt,
-  );
+  return itemArt(card.item.kind, undefined, own ? 'heirloom' : tier, card.side, card.heirloomArt);
 }

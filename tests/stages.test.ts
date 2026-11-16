@@ -131,24 +131,24 @@ describe('item types per card (DESIGN.md §5)', () => {
   });
 
   it('draws the same item type at every tier of a card', () => {
-    expect(cardItemKind(content, 'ember_squire', null)).toBe('sword');
-    expect(cardItemKind(content, 'ember_squire', cardAt('wood', 6))).toBe('sword');
-    expect(cardItemKind(content, 'dawnblade_regent', cardAt('prismatic', 6))).toBe('greatsword');
-    expect(cardItemKind(content, 'storm_duelist', cardAt('gold', 6))).toBe('dagger');
-    expect(cardItemKind(content, 'reaper_test', cardAt('silver', 1))).toBe('scythe');
-    expect(cardItemKind(content, 'grove_keeper', cardAt('bronze', 3))).toBe('logging_axe');
-    expect(cardItemKind(content, 'gem_cutter', null)).toBe('pickaxe');
-    expect(cardItemKind(content, 'nope', null)).toBeNull();
+    expect(cardItemKind(content, 'ember_squire')).toBe('sword');
+    expect(cardItemKind(content, 'ember_squire')).toBe('sword');
+    expect(cardItemKind(content, 'dawnblade_regent')).toBe('greatsword');
+    expect(cardItemKind(content, 'storm_duelist')).toBe('dagger');
+    expect(cardItemKind(content, 'reaper_test')).toBe('scythe');
+    expect(cardItemKind(content, 'grove_keeper')).toBe('logging_axe');
+    expect(cardItemKind(content, 'gem_cutter')).toBe('pickaxe');
+    expect(cardItemKind(content, 'nope')).toBeNull();
   });
 
   it('gives the item name and whether it is an Heirloom', () => {
-    expect(cardItem(content, 'ember_squire', null)).toEqual({
+    expect(cardItem(content, 'ember_squire')).toEqual({
       kind: 'sword',
       name: 'Wooden Sword',
       heirloom: false,
       rarity: 'common',
     });
-    expect(cardItem(content, 'moonwood_dryad', cardAt('mythic', 1))).toEqual({
+    expect(cardItem(content, 'moonwood_dryad')).toEqual({
       kind: 'logging_axe',
       name: 'Mythic Grove Axe',
       heirloom: false,

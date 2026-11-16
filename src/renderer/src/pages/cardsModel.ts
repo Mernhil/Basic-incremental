@@ -32,16 +32,6 @@ export interface UpgradeStep {
   ready: boolean;
 }
 
-/** One price of a tier-up, as the weapon panel's cost tag shows it. */
-export interface CostChip {
-  /** Resource id (the icon and name come from it). */
-  id: string;
-  name: string;
-  have: string;
-  need: string;
-  met: boolean;
-}
-
 /**
  * The weapon panel's view of an owned card (DESIGN.md §5, §11): level and XP, the star bar and
  * the next tier-up with its price. Built by `weaponView` (weaponModel.ts); the panel draws it in
@@ -79,34 +69,9 @@ export interface WeaponView {
     /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
     dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
-  /** The next tier-up, or null at the weapon's top tier. */
-  tierUp: {
-    /** What the tier-up changes: damage per second, health, the level cap and the look. */
-    stats: StatChange[];
-    toTier: Rank['tier'];
-    toName: string;
-    /** The step to the Heirloom (button "Reveal <name>"). */
-    heirloom: boolean;
-    /** leveling: below the cap; ready: at the cap and paid for; short: at the cap, missing prices. */
-    phase: 'leveling' | 'ready' | 'short';
-    /** "Reach Lv 40 to tier up. It costs:" below the cap, "It costs:" at it. */
-    lead: string;
-    costs: CostChip[];
-    /** The button text. */
-    action: string;
-    ready: boolean;
-    /** What is missing, for the tag's hint ("Missing Frost Sigil."), empty when nothing is. */
-    missing: string;
-    /** The level cap is reached. */
-    levelMet: boolean;
-    /** The card is at ★6, which a tier-up needs (DESIGN.md §5). */
-    starsMet: boolean;
-    /** Why the tier-up cannot be taken, as the dark button says it ("Needs ★6", "Needs Lv 40",
-     *  "Missing Money"); empty when it can. */
-    blocker: string;
-  } | null;
-  /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
-  endNote: string | null;
+  /** The note under the stars: the card's tier is its own for good (DESIGN.md §5 No tier-ups), or
+   *  where an Heirloom's stars come from. */
+  endNote: string;
 }
 
 /** One stat an upgrade changes for the chosen card: real numbers now and after, and the gain. */

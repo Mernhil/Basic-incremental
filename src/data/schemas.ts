@@ -1493,7 +1493,11 @@ export const portalSchema = portalFileSchema.transform((p, ctx) => {
     where: string,
     v: { rarity?: Rarity | undefined; tier?: CardGrade | undefined },
   ): Rarity => {
-    if (cards ? v.tier === undefined || v.rarity !== undefined : v.rarity === undefined || v.tier !== undefined) {
+    if (
+      cards
+        ? v.tier === undefined || v.rarity !== undefined
+        : v.rarity === undefined || v.tier !== undefined
+    ) {
       ctx.addIssue({
         code: 'custom',
         message: `${where}: a card portal names a tier, any other portal a rarity`,

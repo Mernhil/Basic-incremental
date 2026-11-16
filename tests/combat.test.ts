@@ -98,7 +98,7 @@ function cleared(...ids: string[]): GameState {
 }
 
 describe('damage from the main card (DESIGN.md §5, §6)', () => {
-  const common = content.cardRules.baseDamage.common;
+  const common = content.cardRules.baseDamage.wood;
 
   it('is the main card base damage, with no purchase involved', () => {
     const state = freshState();
@@ -192,7 +192,7 @@ describe('dungeon progression (first kill clears, DESIGN.md §6)', () => {
     expect(
       approxEq(
         boss.hp,
-        mossy.boss.hp.sub(freshDamage(content.cardRules.baseDamage.common, content).mul(10)),
+        mossy.boss.hp.sub(freshDamage(content.cardRules.baseDamage.wood, content).mul(10)),
       ),
     ).toBe(true);
     expect(boss.bars.remaining).toBe(mossy.boss.hpBars);

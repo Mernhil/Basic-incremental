@@ -10,7 +10,6 @@ import {
   chooseEnhancement,
   resetEnhancements,
   setCardSkin,
-  collectModifiers,
   levelCap,
   loadoutInfo,
   setLoadoutSlot,
@@ -159,7 +158,7 @@ export function createCardsModel(
           : 0;
     return {
       id: card.id,
-      name: cardDisplayName(content, card, owned),
+      name: cardDisplayName(content, card),
       heirloom: Boolean(card.heirloom),
       job: card.job,
       rarity: cardStyle(card),
@@ -188,8 +187,7 @@ export function createCardsModel(
     };
   }
 
-  const all = (state: GameState): CardInfo[] =>
-    cardCollection(state, content, undefined, collectModifiers(state, content));
+  const all = (state: GameState): CardInfo[] => cardCollection(state, content, undefined);
 
   return {
     preview(state, id, step) {

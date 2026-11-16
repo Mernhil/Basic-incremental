@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { RARITIES, type Rarity } from '../src/data';
@@ -22,7 +23,7 @@ const recolours = JSON.parse(
 const withArt = content.cards.filter((c) => c.heirloomArt);
 // The ladder cards: the 22 Heirloom cards are apart (DESIGN.md §5 Heirlooms).
 const ladder = content.cards.filter((c) => !c.heirloom);
-const byRarity = (r: Rarity) => ladder.filter((c) => c.rarity === r);
+const byRarity = (r: Rarity) => ladder.filter((c) => cardStyle(c) === r);
 const key = (r: { type: string; side: string; letter: string }) =>
   `${r.type}/${r.side}/${r.letter}`;
 
@@ -31,8 +32,8 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
     expect(ladder).toHaveLength(144);
     expect(ladder.filter((c) => c.batch === 'leviathan')).toHaveLength(22);
     expect(withArt).toHaveLength(45);
-    expect(withArt.filter((c) => c.rarity === 'mythic')).toHaveLength(20);
-    expect(withArt.filter((c) => c.rarity === 'void')).toHaveLength(25);
+    expect(withArt.filter((c) => cardStyle(c) === 'mythic')).toHaveLength(20);
+    expect(withArt.filter((c) => cardStyle(c) === 'void')).toHaveLength(25);
     for (const r of RARITIES) {
       const want = r === 'mythic' ? 42 : r === 'void' ? 47 : 11;
       expect(byRarity(r), r).toHaveLength(want);
@@ -42,7 +43,9 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
   it('has one card per recoloured picture: its item type, side and letter', () => {
     expect(recolours).toHaveLength(45);
     expect(
-      withArt.map((c) => key({ type: c.item.kind, side: c.rarity, letter: c.heirloomArt! })).sort(),
+      withArt
+        .map((c) => key({ type: c.item.kind, side: cardStyle(c), letter: c.heirloomArt! }))
+        .sort(),
     ).toEqual(recolours.map(key).sort());
   });
 
@@ -61,7 +64,7 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
   it('keeps each new card at the power of its rarity peers: the type main ability, a comparable support', () => {
     for (const c of withArt) {
       const peer = content.cards.find(
-        (p) => !p.heirloomArt && p.item.kind === c.item.kind && p.rarity === c.rarity,
+        (p) => !p.heirloomArt && p.item.kind === c.item.kind && cardStyle(p) === cardStyle(c),
       )!;
       if (c.job === 'fighting' && peer.job === 'fighting') {
         expect(c.ability, c.id).toEqual(peer.ability);
@@ -78,7 +81,9 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
 
   it('varies elements, and gives a few cards a different support', () => {
     for (const rarity of ['mythic', 'void'] as const) {
-      const elements = new Set(withArt.filter((c) => c.rarity === rarity).map((c) => c.element));
+      const elements = new Set(
+        withArt.filter((c) => cardStyle(c) === rarity).map((c) => c.element),
+      );
       expect(elements.size, rarity).toBeGreaterThanOrEqual(4);
     }
     const supports = new Set(
@@ -129,40 +134,37 @@ describe('the 45 Heirloom-candidate cards (DESIGN.md §5)', () => {
   it('names the weapon after the card at Mythic or Void and as its Heirloom', () => {
     const card = withArt[0]!;
     const type = content.itemTypeByKind.get(card.item.kind)!;
-    expect(itemName(content, card.item.kind, 'heirloom', card.rarity, card)).toBe(
-      card.heirloomName,
-    );
-    expect(itemName(content, card.item.kind, 'heirloom', card.rarity)).toBe(type.heirloom);
+    expect(itemName(content, card.item.kind, 'heirloom', card.side, card)).toBe(card.heirloomName);
+    expect(itemName(content, card.item.kind, 'heirloom', card.side)).toBe(type.heirloom);
     // its own weapon at Mythic or Void; Wood to Prismatic are the type's one model
-    expect(itemName(content, card.item.kind, 'mythic', card.rarity, card)).toBe(card.heirloomName);
-    expect(itemName(content, card.item.kind, 'wood', card.rarity, card)).toBe(
-      itemName(content, card.item.kind, 'wood', card.rarity),
+    expect(itemName(content, card.item.kind, 'mythic', card.side, card)).toBe(card.heirloomName);
+    expect(itemName(content, card.item.kind, 'wood', card.side, card)).toBe(
+      itemName(content, card.item.kind, 'wood', card.side),
     );
-    expect(itemName(content, card.item.kind, 'prismatic', card.rarity, card)).toBe(
-      itemName(content, card.item.kind, 'prismatic', card.rarity),
+    expect(itemName(content, card.item.kind, 'prismatic', card.side, card)).toBe(
+      itemName(content, card.item.kind, 'prismatic', card.side),
     );
-    expect(itemName(content, card.item.kind, 'mythic', card.rarity)).toBe(
-      type[card.rarity === 'void' ? 'void' : 'mythic'],
+    expect(itemName(content, card.item.kind, 'mythic', card.side)).toBe(
+      type[card.side === 'void' ? 'void' : 'mythic'],
     );
-    const owned = { ...newOwnedCard(), tier: 'heirloom' as const };
-    expect(cardItem(content, card.id, owned)?.name).toBe(card.heirloomName);
-    // a card without the field keeps its type's Heirloom
-    const plain = content.cards.find((c) => c.id === 'dawn_champion')!;
-    expect(cardItem(content, plain.id, owned)?.name).toBe('Solaris');
+    // the card's item is its own weapon: a T6 card is never at another tier
+    expect(cardItem(content, card.id)?.name).toBe(card.heirloomName);
+    // a T6 card without the field has its type's T6 name for its side
+    expect(cardItem(content, 'dawn_champion')?.name).toBe('Mythic Light Sword');
   });
 
   it('shows each new card its own Heirloom picture, and an old card the type original', () => {
     for (const c of withArt) {
-      const side = c.rarity === 'void' ? 'hv' : 'hm';
+      const side = cardStyle(c) === 'void' ? 'hv' : 'hm';
       const name = `item-${c.item.kind}-${side}-${c.heirloomArt}`;
       expect(sprite(name), name).toBeTruthy();
       const art = cardTierArt(c, 'heirloom');
       expect(art, c.id).toContain(name);
-      expect(art, c.id).not.toBe(itemArt(c.item.kind, c.rarity, 'heirloom', c.rarity));
+      expect(art, c.id).not.toBe(itemArt(c.item.kind, undefined, 'heirloom', c.side));
       // at Mythic or Void it shows the same picture; Wood to Prismatic are the type's one model
       expect(cardTierArt(c, 'mythic')).toBe(art);
       for (const t of ['wood', 'bronze', 'silver', 'gold', 'prismatic'] as const)
-        expect(cardTierArt(c, t), `${c.id} ${t}`).toBe(itemArt(c.item.kind, c.rarity, t));
+        expect(cardTierArt(c, t), `${c.id} ${t}`).toBe(itemArt(c.item.kind, undefined, t));
     }
     const plain = content.cards.find((c) => c.id === 'dawn_champion')!;
     expect(cardTierArt(plain, 'heirloom')).toBe(itemArt('sword', 'mythic', 'heirloom', 'mythic'));

@@ -1,4 +1,4 @@
-import type { Content, RankTier } from '../../../data';
+import type { Content } from '../../../data';
 import { cardNameById, type Modifier } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 
@@ -31,11 +31,7 @@ function upgradeSourceName(content: Content, id: string): string | undefined {
 }
 
 /** "Gilded Plate", "Gilded Tradition set", or a generic label for sources without a name yet. */
-export function sourceName(
-  content: Content,
-  m: Modifier,
-  owned?: Record<string, { tier: RankTier }>,
-): string {
+export function sourceName(content: Content, m: Modifier): string {
   const { kind, id } = m.source;
   if (kind === 'cosmetic') return content.cosmeticById.get(id)?.name ?? SOURCE_LABELS[kind];
   if (kind === 'set') {
@@ -43,7 +39,7 @@ export function sourceName(
     return set ? `${set.name} set` : SOURCE_LABELS[kind];
   }
   if (kind === 'upgrade') return upgradeSourceName(content, id) ?? SOURCE_LABELS[kind];
-  if (kind === 'card') return cardNameById(content, id, owned?.[id]) ?? SOURCE_LABELS[kind];
+  if (kind === 'card') return cardNameById(content, id) ?? SOURCE_LABELS[kind];
   return SOURCE_LABELS[kind];
 }
 

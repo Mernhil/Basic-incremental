@@ -33,7 +33,14 @@
  * in every 30 minutes (the game stays open in between, nothing is bought or re-aimed) and is
  * offline 8 hours a day, taking the game's own offline progress on return.
  */
-import { RANK_TIERS, RARITIES, cardStyle, type Content, type SkillNode, type WebNode } from '../../src/data';
+import {
+  RANK_TIERS,
+  RARITIES,
+  cardStyle,
+  type Content,
+  type SkillNode,
+  type WebNode,
+} from '../../src/data';
 import {
   advance,
   activeWorkers,
@@ -757,30 +764,6 @@ function etaOf(
     worst = Math.max(worst, missing.div(income).toNumber());
   }
   return Number.isFinite(worst) ? worst : null;
-}
-
-/**
- * Whether a tier-up's Money should not be saved yet: some other resource is still missing and
- * is not due before the Money would be (or nothing earns either). Money is the laggard only
- * when the Cores and gems come first.
- */
-function defersMoney(
-  state: GameState,
-  content: Content,
-  prices: readonly Price[],
-  modifiers: readonly Modifier[],
-): boolean {
-  const money = prices.filter((p) => p.resource === 'money');
-  if (money.length === 0) return false;
-  const others = etaOf(
-    state,
-    content,
-    prices.filter((p) => p.resource !== 'money'),
-    modifiers,
-  );
-  if (others === 0) return false;
-  const own = etaOf(state, content, money, modifiers);
-  return others === null || own === null || others > own;
 }
 
 const okState = (r: { ok: boolean; state?: GameState }): GameState | null =>
