@@ -35,6 +35,7 @@ import { CHART, type StarChartView, type StarView } from './skillsModel';
 import type { PageContext } from './production';
 import './tablePanels.css';
 import { createBondsPanel, createExpeditionsPanel, type Panel } from './tablePanels';
+import { keepScroll } from '../ui/keepScroll';
 import { setStarText } from '../ui/stars';
 import './weaponSkinsTab.css';
 import './cards.css';
@@ -181,7 +182,7 @@ export function createCardsPage(
     tab = next;
     if (job) jobFilter = job;
     message = '';
-    build();
+    build(undefined, true);
   }
 
   const act = (result: ModelResult, focusKey?: string): void => {
@@ -224,7 +225,11 @@ export function createCardsPage(
   }
 
   // ---- build ----
-  function build(focusKey?: string): void {
+  /** Rebuilds the panel; the scroll stays where it was unless the player went somewhere new. */
+  function build(focusKey?: string, reset = false): void {
+    keepScroll(panel, () => buildNow(focusKey), { reset });
+  }
+  function buildNow(focusKey?: string): void {
     hideTip();
     const state = ctx.state();
     last = model.signature(state);
@@ -299,7 +304,7 @@ export function createCardsPage(
       b.setAttribute('aria-pressed', String(on));
       b.addEventListener('click', () => {
         onClick();
-        build(key);
+        build(key, true);
       });
       return b;
     };
@@ -333,7 +338,7 @@ export function createCardsPage(
     }
     select.addEventListener('change', () => {
       sort = select.value as Sort;
-      build('sort');
+      build('sort', true);
     });
     sortLabel.append(select);
     const count = h('span', 'cp-count bi-num', COPY.cards.found(owned, entries.length));
@@ -1236,7 +1241,7 @@ export function createCardsPage(
       // the grid's cards are dealt out of the pile, after the toolbar and the detail panel (motion E)
       const body = page.parentElement;
       if (!body) return;
-      if (model.signature(ctx.state()) !== last) build();
+      if (model.signature(ctx.state()) !== last) build(undefined, true);
       const limit = body.getBoundingClientRect().bottom;
       const tiles = [...page.querySelectorAll<HTMLElement>('.cp-grid .cp-cell, .cp-slots .cp-slot')]
         .filter((c) => c.getBoundingClientRect().top < limit)

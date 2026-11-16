@@ -42,6 +42,7 @@ import {
   type SlotView,
 } from './wardrobeModel';
 import { fitCard } from '../ui/pixelFit';
+import { keepScroll } from '../ui/keepScroll';
 import { dealDelay, dealIn, dealTokens } from '../table/motion';
 import { createWeaponSkinsTab } from './weaponSkinsTab';
 import './wardrobe.css';
@@ -96,7 +97,7 @@ export function createWardrobePage(
     wrap.hidden = skins;
     skinsRoot.hidden = !skins;
     if (skins) skinsTab.reveal();
-    else build();
+    else build(undefined, true);
     chipButtons.get(filter)?.focus({ preventScroll: true });
   }
   for (const id of INVENTORY_FILTERS) {
@@ -135,7 +136,11 @@ export function createWardrobePage(
       materials.map((r) => s.resources[r]?.toString() ?? '0'),
     ]);
 
-  function build(focusKey?: string): void {
+  /** Rebuilds the view; the scroll stays where it was unless the player went somewhere new. */
+  function build(focusKey?: string, reset = false): void {
+    keepScroll(wrap, () => buildNow(focusKey), { reset });
+  }
+  function buildNow(focusKey?: string): void {
     hideTip();
     applySkin();
     const state = ctx.state();
@@ -648,7 +653,7 @@ export function createWardrobePage(
       // the grid's tiles are dealt out of the pile after the chips and the item panel (motion E)
       const body = page.parentElement;
       if (!body || filter === 'skins') return;
-      if (signature(ctx.state()) !== last) build();
+      if (signature(ctx.state()) !== last) build(undefined, true);
       const limit = body.getBoundingClientRect().bottom;
       const tiles = [...wrap.querySelectorAll<HTMLElement>('.wd-grid > li')]
         .filter((c) => c.getBoundingClientRect().top < limit)
