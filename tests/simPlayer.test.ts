@@ -42,6 +42,7 @@ import {
   forgePlan,
   markWishlist,
   nextSkill,
+  nextWebNode,
   placeBestWorkers,
   skillValue,
   spendShards,
@@ -57,6 +58,7 @@ import {
   withBossAttack,
   withBossHp,
   withDps,
+  levelPointsOnly,
 } from './helpers';
 
 /** Owns `id` as a copy of the squire's record (Wood ★1 Lv 1), optionally changed. */
@@ -177,9 +179,12 @@ describe('sim player: skill tree', () => {
     expect(skillValue(state, content, spear)).toBe(0);
   });
 
-  it('buys the skill worth the most per point', () => {
+  it('buys the web node worth the most per point', () => {
     const state = freshState();
-    expect(nextSkill(state, content)).toBe('combat_s1');
+    state.account.level = 6;
+    expect(nextWebNode(state, levelPointsOnly(content))).toBe('dg_might');
+    // the weapon circles are all that is left in the old tree
+    expect(nextSkill(state, content)).toBeNull();
   });
 
   it('respecs when skill points sit in a circle of a weapon no longer at work', () => {

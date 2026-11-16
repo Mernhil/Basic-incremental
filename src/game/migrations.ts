@@ -1,3 +1,4 @@
+import webJson from '../data/content/web.json';
 import { Decimal, isDecimalString } from './num';
 import { SaveError } from './saveError';
 import { farmableDungeon, fillTeam } from './migrationTeam';
@@ -93,7 +94,74 @@ export const MIGRATIONS: MigrationTable = {
   /** v36 -> v37: Carved Oak becomes the starter table (DESIGN.md §8): Plum Pixel and Carved Oak are
    *  both owned, and a save that wears either as its table goes back to the starter (Carved Oak). */
   36: v36ToV37,
+  /** v37 -> v38: the skill web (DESIGN.md §10 The skill web): the 11 branches of the old tree become the
+   *  web's nodes; each old rank is carried into the node that took its skill over. */
+  37: v37ToV38,
 };
+
+/** What an old branch skill costs a rank and has as its ranks, by its slot letter (s small, l large, k keystone). */
+const OLD_SKILL = {
+  s: { cost: 1, max: 5 },
+  l: { cost: 2, max: 3 },
+  k: { cost: 5, max: 1 },
+} as const;
+
+interface RawWebNode {
+  id: string;
+  parent: string | null;
+  maxLevel: number;
+  absorbs: { id: string; weight: number }[];
+}
+
+/**
+ * v37 -> v38 (DESIGN.md §10 The skill web): `account.skills` of the 11 branches becomes `account.web`.
+ * A web node gets the share of its levels that matches the share of its old skills that was bought
+ * (points spent over points the old skills could take, weighted), rounded down, so a save never
+ * pays more than it did and the rest comes back as free points; a keystone is kept when all of its
+ * old skills were bought; a node whose parent has no level gives the parent one. The old
+ * branch ranks are removed; points are derived, so nothing needs a refund step, and a rounding that
+ * leaves more spent than earned is fitted on load. The weapon circles' ranks stay.
+ */
+function v37ToV38(state: Record<string, unknown>): Record<string, unknown> {
+  const account = isRecord(state['account']) ? { ...state['account'] } : {};
+  const skills = isRecord(account['skills']) ? { ...account['skills'] } : {};
+  const nodes = (webJson as { nodes: RawWebNode[] }).nodes;
+  const bought = (id: string): number => {
+    const rank = skills[id];
+    return typeof rank === 'number' && rank > 0 ? rank : 0;
+  };
+  const kind = (id: string): keyof typeof OLD_SKILL | null => {
+    const letter = id.split('_').at(-1)?.[0];
+    return letter === 's' || letter === 'l' || letter === 'k' ? letter : null;
+  };
+  const web: Record<string, number> = {};
+  const absorbed = new Set<string>();
+  for (const node of nodes) {
+    let spent = 0;
+    let room = 0;
+    for (const a of node.absorbs) {
+      const k = kind(a.id);
+      if (!k) continue;
+      absorbed.add(a.id);
+      const rule = OLD_SKILL[k];
+      spent += Math.min(bought(a.id), rule.max) * rule.cost * a.weight;
+      room += rule.max * rule.cost * a.weight;
+    }
+    // rounded down: a save never pays more than it did, the rest comes back as free points
+    web[node.id] =
+      room > 0 ? Math.min(node.maxLevel, Math.floor((node.maxLevel * spent) / room + 1e-9)) : 0;
+  }
+  // a node needs its parent
+  for (const node of [...nodes].reverse()) {
+    if ((web[node.id] ?? 0) > 0 && node.parent && !((web[node.parent] ?? 0) > 0))
+      web[node.parent] = 1;
+  }
+  for (const id of Object.keys(web)) if (!web[id]) delete web[id];
+  for (const id of absorbed) delete skills[id];
+  account['skills'] = skills;
+  account['web'] = web;
+  return { ...state, account };
+}
 
 /** The Heirloom cards that left at save format 32, each with the kept Heirloom of its type (a snapshot). */
 const V32_HEIRLOOM_MERGE: Readonly<Record<string, string>> = {

@@ -382,6 +382,7 @@ describe('saving (save format v13)', () => {
       xp: new Decimal(42),
       level: 6,
       skills: { combat_s1: 2, gone: 1 },
+      web: {},
       freeRespecsUsed: 1,
     };
     state.cards.owned['ember_squire']!.tier = 'silver';

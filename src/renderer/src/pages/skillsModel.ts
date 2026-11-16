@@ -19,6 +19,7 @@ import {
 } from '../../../game';
 import { COPY } from '../copy';
 import { effectText } from '../shell/modifierText';
+import { statGlyph, type WebGlyph } from '../ui/webGlyphs';
 
 /**
  * The Skill Tree page (DESIGN.md §10, §11 "radial constellation", A8 A) and the card enhancement
@@ -29,7 +30,7 @@ import { effectText } from '../shell/modifierText';
 // ---- constellation geometry ---------------------------------------------------------------------
 
 /** The constellation's drawing box (SVG viewBox units); the centre star sits at CENTRE. */
-export const SKY = { x: -1200, y: -1200, w: 2400, h: 2400 } as const;
+export const SKY = { x: -2400, y: -2400, w: 4800, h: 4800 } as const;
 export const CENTRE = { x: 0, y: 0 } as const;
 /** Radius of each ring of the branches (ring 0 is open from the start, ring N with Ascension N). */
 export const RING_RADIUS = [330, 430, 530, 630] as const;
@@ -41,9 +42,17 @@ const STEP_DEG = 20;
 const SECTOR_DEG = 360 / SKILL_BRANCHES.length;
 const GAP_PX = 62;
 /** The weapon circles sit past the branches: their centre radius, outline radius and gem radius. */
-const CIRCLE_CENTRE_R = 1010;
+const CIRCLE_CENTRE_R = 1900;
 export const CIRCLE_R = 92;
 const CIRCLE_GEM_R = 58;
+
+/** The four arms of the web: lines, plates and names of an arm share one colour (pick 4a). */
+export const AREA_COLOUR: Record<'logging' | 'mining' | 'dungeon' | 'cards', string> = {
+  logging: '#74d06a',
+  mining: '#f08a3c',
+  dungeon: '#e8645e',
+  cards: '#8f9bff',
+};
 
 /** Branch colours: each branch lights its gems in its own colour (DESIGN.md §11). */
 export const BRANCH_COLOUR: Record<SkillBranch, string> = {
@@ -61,7 +70,7 @@ export const BRANCH_COLOUR: Record<SkillBranch, string> = {
 };
 
 /** `closed`: its ring has not opened yet, or its weapon circle has not reached its step. */
-export type NodeState = 'locked' | 'open' | 'owned' | 'maxed' | 'closed';
+export type NodeState = 'locked' | 'open' | 'owned' | 'maxed' | 'closed' | 'unknown';
 
 export interface NodeView {
   id: string;
@@ -80,6 +89,12 @@ export interface NodeView {
   rank: number;
   maxRank: number;
   state: NodeState;
+  /** The icon on the node's plate. */
+  glyph: WebGlyph;
+  /** The arm of the web ("Logging"), for a web node. */
+  areaLabel?: string;
+  /** The plain sentence of what it does, for a web node. */
+  what?: string;
   canBuy: boolean;
   cost: number;
   /** The bonus at the current rank ("+10% logging production"), empty at rank 0. */
@@ -303,6 +318,7 @@ export function treeView(
       rank: i.rank,
       maxRank: i.maxRank,
       state,
+      glyph: statGlyph((i.next[0] ?? i.current[0])?.stat),
       canBuy: i.canBuy,
       cost: i.node.cost,
       now: i.current.map(effectText),
