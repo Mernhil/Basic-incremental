@@ -222,10 +222,12 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
         );
       }
     }
-    // keep the DOM order the lines' order
-    rows.forEach((row) => {
+    // Keep the DOM order the lines' order, but only move a row that is out of place: re-appending
+    // a row that is already there still removes and re-inserts it, which drops the buy button's
+    // focus and hover and eats the press and release of a click (updates run every tick).
+    rows.forEach((row, i) => {
       const ref = refs.get(row.key);
-      if (ref && ref.li.parentElement === list) list.append(ref.li);
+      if (ref && list.children[i] !== ref.li) list.insertBefore(ref.li, list.children[i] ?? null);
     });
     if (opts.hold !== false) {
       const held = heldResources(s, content, rows);
