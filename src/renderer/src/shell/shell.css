@@ -412,7 +412,7 @@ body {
   font-size: 14px;
 }
 .shell-goals__count {
-  color: var(--bi-good, #6fdc8c);
+  color: var(--bi-frame-good, var(--bi-good, #6fdc8c));
 }
 .shell-goals__count:empty {
   display: none;

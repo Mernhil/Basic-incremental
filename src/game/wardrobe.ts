@@ -327,29 +327,31 @@ export function wardrobeItems(
   modifiers: readonly Modifier[] = collectModifiers(state, content),
 ): WardrobeItem[] {
   const loadout = state.cosmetics.loadout;
-  return content.cosmetics.map((cosmetic) => {
-    const owned = state.cosmetics.owned[cosmetic.id];
-    const maxLevel = cosmeticMaxLevel(content, cosmetic);
-    const upgrade = owned ? cosmeticUpgradeCheck(state, content, cosmetic.id, modifiers) : null;
-    const global = loadout.slots[cosmetic.slot];
-    return {
-      cosmetic,
-      owned: !!owned,
-      level: owned?.level ?? 0,
-      maxLevel,
-      copies: owned?.copies ?? 0,
-      nextStep: upgrade?.step ?? null,
-      upgrade,
-      maxed: !!owned && owned.level >= maxLevel,
-      source: cosmeticSource(content, cosmetic.id),
-      equippedGlobally: cosmetic.starter ? !global : global?.id === cosmetic.id,
-      equippedOnCards: Object.entries(loadout.cards)
-        .filter(([, slots]) => Object.values(slots).some((eq) => eq?.id === cosmetic.id))
-        .map(([card]) => card),
-      wearRank: wearRequirement(content, cosmetic),
-      ownedModifiers: cosmetic.ownedModifiers,
-    };
-  });
+  return content.cosmetics
+    .filter((c) => !c.hidden)
+    .map((cosmetic) => {
+      const owned = state.cosmetics.owned[cosmetic.id];
+      const maxLevel = cosmeticMaxLevel(content, cosmetic);
+      const upgrade = owned ? cosmeticUpgradeCheck(state, content, cosmetic.id, modifiers) : null;
+      const global = loadout.slots[cosmetic.slot];
+      return {
+        cosmetic,
+        owned: !!owned,
+        level: owned?.level ?? 0,
+        maxLevel,
+        copies: owned?.copies ?? 0,
+        nextStep: upgrade?.step ?? null,
+        upgrade,
+        maxed: !!owned && owned.level >= maxLevel,
+        source: cosmeticSource(content, cosmetic.id),
+        equippedGlobally: cosmetic.starter ? !global : global?.id === cosmetic.id,
+        equippedOnCards: Object.entries(loadout.cards)
+          .filter(([, slots]) => Object.values(slots).some((eq) => eq?.id === cosmetic.id))
+          .map(([card]) => card),
+        wearRank: wearRequirement(content, cosmetic),
+        ownedModifiers: cosmetic.ownedModifiers,
+      };
+    });
 }
 
 export interface SetBonusInfo {

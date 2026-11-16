@@ -145,7 +145,7 @@
   color: var(--bi-frame-ink-muted);
 }
 .ur__togo {
-  color: var(--px-gold, #f4c14a);
+  color: var(--bi-frame-accent, var(--px-gold));
   font-weight: 700;
   white-space: nowrap;
 }
@@ -161,7 +161,7 @@
   font-size: 10.5px;
   font-weight: 700;
   padding: 1px 6px;
-  color: var(--px-gold, #f4c14a);
+  color: var(--bi-frame-accent, var(--px-gold));
   background: rgb(244 193 74 / 0.14);
 }
 .ur__badge::before {
@@ -192,7 +192,7 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: var(--px-gold, #f4c14a);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .pk__of {
   font-size: 11.5px;
@@ -213,7 +213,7 @@
 }
 .pk__card b {
   font-size: 14px;
-  color: var(--px-gold, #f4c14a);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .pk__card span {
   font-size: 12px;

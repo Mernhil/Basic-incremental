@@ -96,7 +96,7 @@
 .mv-mp-item__lv {
   min-width: 42px;
   font-weight: 700;
-  color: var(--px-gold, #f4c14a);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .mv-mp-item--ahead,
 .mv-mp-item--kept {

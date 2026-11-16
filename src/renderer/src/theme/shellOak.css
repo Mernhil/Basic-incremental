@@ -1,0 +1,499 @@
+/* Carved Oak: the table drawn from small tiled 9-slice pieces (UI_RULES.md §2 Shell look,
+   ASSET_RULES.md §5 Shell pieces; the pieces are drawn by scripts/shell-art/oak.py into art/shell/oak/).
+
+   Only a table that wears the `shell-oak` recipe gets any of this; every other table keeps frames.css.
+
+   The method that keeps it crisp and keeps every layout where it is:
+   - each piece is a PNG laid out [corner | tile | corner] in both directions at its final pixel size;
+   - it is drawn with `border-image` on a zero-width border, so no element changes size or position;
+     the frame hangs `outset` outside the box and covers the padding by the slice size;
+   - the middle is tiled (`repeat`), never stretched, and `image-rendering: pixelated` keeps the pixels;
+   - `--oa` is one image pixel as a whole number of device pixels (1 at 100 %, 125 %; 2 at 150 %, 200 %),
+     worked out from `--dpr` with `round()` like frames.css, so the pieces are crisp at every scale.
+
+   Image sizes (px): sheet 104 (corner 32, outset 6), window 104 (32, 11), plate and tile 22 (5, 2),
+   pill and buttons 32 (8, 2), bar 64 x 32 (tiled whole). Text colours are table tokens (--bi-frame-ink
+   and the rest, set by the table item); this file only draws and sets the few colours a recipe owns
+   (--oak-*), which components read with a fallback so other tables are unchanged. */
+
+html.r-shell-oak {
+  --oa: calc(max(1, round(var(--dpr), 1)) * var(--px));
+  /* what this table owns beyond the common tokens */
+  --oak-badge-bg: #3a2410;
+  --oak-xp-ink: #1d5b8c;
+  --oak-xp-fill: #2f8fd8;
+  --oak-track: #d6c49b;
+  --oak-wood: #3a2410;
+}
+
+/* ---- the drawing rule: one set of variables per piece, one rule that draws it -------------------- */
+html.r-shell-oak
+  :is(
+    .frame,
+    .du-sheet,
+    .dv-sheet,
+    .details__panel,
+    .rv__dialog,
+    .wb__dialog,
+    .set-confirm,
+    .sk-confirm,
+    .px-panel.du-sheet
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/sheet.png');
+  --o-bg: #f6ead0;
+  --o-slice: 32;
+  --o-out: 6;
+  --o-fill: fill;
+}
+html.r-shell-oak
+  :is(
+    .px-panel,
+    .shell-track,
+    .shell-tip,
+    .pp-panel,
+    .pp-drawer,
+    .dp-drawer,
+    .hm-stage,
+    .st-toast,
+    .update-notice,
+    .wp-tag
+  ):not(.du-sheet):not(.dv-sheet):not(.du-read):not(.du-plate):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/plate.png');
+  --o-bg: #f6ead0;
+  --o-slice: 5;
+  --o-out: 2;
+  --o-fill: fill;
+}
+html.r-shell-oak
+  :is(
+    .px-tile,
+    .tbl-pile__card,
+    .cp-facts,
+    .cp-reqs,
+    .cp-option,
+    .cp-slot,
+    .dp-floor,
+    .dp-drop,
+    .dp-best,
+    .wd-buff,
+    .wd-trying,
+    .shop-it,
+    .shop-tile,
+    .details-row,
+    .lf-note,
+    .sk-effects > div,
+    .ws-tile,
+    .ws-cardbtn,
+    .pp-row,
+    .set-error
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/tile.png');
+  --o-bg: #fdf5df;
+  --o-slice: 5;
+  --o-out: 2;
+  --o-fill: fill;
+}
+html.r-shell-oak :is(.du-read, .du-plate, .ar__readout):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/pill.png');
+  --o-bg: #f6ead0;
+  --o-slice: 8;
+  --o-out: 2;
+  --o-fill: fill;
+}
+/* buttons: plain (light cream, gold edge) ... */
+html.r-shell-oak
+  :is(
+    .px-btn,
+    .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/btn.png');
+  --o-bg: #fdf5df;
+  --o-slice: 8;
+  --o-out: 2;
+  --o-fill: fill;
+}
+html.r-shell-oak
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .shell-details,
+    .snd-mute
+  ):hover:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/btn-hover.png');
+  --o-bg: #ffffff;
+}
+html.r-shell-oak
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .shell-details,
+    .snd-mute
+  ):active:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/btn-press.png');
+  --o-bg: #ecdcb5;
+}
+html.r-shell-oak
+  :is(
+    .px-btn,
+    .button,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .set-seg__opt,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .wp-go,
+    .shell-details,
+    .snd-mute,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):focus-visible:not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/btn-focus.png');
+  --o-bg: #fdf5df;
+  outline: none;
+}
+/* ... the action that can be used, and the selected tab, chip or choice: red with a gold edge ... */
+html.r-shell-oak
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/action.png');
+  --o-bg: #a8322a;
+}
+html.r-shell-oak
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):hover:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/action-hover.png');
+  --o-bg: #bd3b32;
+}
+html.r-shell-oak
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):active:not(:disabled):not([aria-disabled='true']):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/action-press.png');
+  --o-bg: #8e2820;
+}
+html.r-shell-oak
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):focus-visible:not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/action-focus.png');
+  --o-bg: #a8322a;
+}
+/* ... and the button that cannot be used: flat tan (it wins over every other state) */
+html.r-shell-oak
+  :is(
+    .px-btn--dark,
+    .px-btn:disabled,
+    .button:disabled,
+    .button[aria-disabled='true'],
+    .buy-btn[aria-disabled='true'],
+    .sm-pull:disabled,
+    .shop-ascend.is-no,
+    .shop-price.is-no,
+    .wp-go[aria-disabled='true']
+  ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/unusable.png');
+  --o-bg: #bfad86;
+}
+
+/* the one rule that draws every piece */
+html.r-shell-oak
+  :is(
+    .frame,
+    .du-sheet,
+    .dv-sheet,
+    .details__panel,
+    .rv__dialog,
+    .wb__dialog,
+    .set-confirm,
+    .sk-confirm,
+    .px-panel,
+    .shell-track,
+    .shell-tip,
+    .pp-panel,
+    .pp-drawer,
+    .dp-drawer,
+    .hm-stage,
+    .st-toast,
+    .update-notice,
+    .wp-tag,
+    .px-tile,
+    .tbl-pile__card,
+    .cp-facts,
+    .cp-reqs,
+    .cp-option,
+    .cp-slot,
+    .dp-floor,
+    .dp-drop,
+    .dp-best,
+    .wd-buff,
+    .wd-trying,
+    .shop-it,
+    .shop-tile,
+    .details-row,
+    .lf-note,
+    .sk-effects > div,
+    .ws-tile,
+    .ws-cardbtn,
+    .pp-row,
+    .set-error,
+    .du-read,
+    .du-plate,
+    .ar__readout,
+    .px-btn,
+    .button,
+    .shell-details,
+    .snd-mute,
+    .buy-btn,
+    .buy-toggle__opt,
+    .cp-tab,
+    .cp-chip,
+    .cp-select,
+    .pp-tab,
+    .dp-drawer__handle,
+    .pp-drawer__handle,
+    .sm-pull,
+    .shop-price,
+    .shop-ascend,
+    .shop-cancel,
+    .set-seg__opt,
+    .wp-go,
+    .shelf-chip__body,
+    .details__close,
+    .shell-track__close
+  ):not(#_o):not(#_o):not(#_o) {
+  border: 0 solid transparent;
+  border-radius: 0;
+  border-image-source: var(--o-src);
+  border-image-slice: var(--o-slice) var(--o-fill);
+  border-image-width: calc(var(--o-slice) * var(--oa));
+  border-image-outset: calc(var(--o-out) * var(--oa));
+  border-image-repeat: repeat;
+  image-rendering: pixelated;
+  /* the piece's own fill colour underneath, so a hairline seam at a fractional device scale shows no gap */
+  background: var(--o-bg, none);
+  box-shadow: none;
+  filter: none;
+  translate: none;
+}
+/* the Summon table is a stage, not a frame; wells are flat and inset */
+html.r-shell-oak .sm-table:not(#_o):not(#_o):not(#_o) {
+  background: transparent;
+  box-shadow: none;
+}
+html.r-shell-oak .px-well:not(#_o):not(#_o):not(#_o) {
+  background: var(--oak-track);
+  box-shadow: inset 0 0 0 var(--fs-sm) var(--oak-wood);
+}
+
+/* ---- the header, the dock, the window and the table ---------------------------------------------- */
+html.r-shell-oak :is(.shell-header, .tbl-dock):not(#_o):not(#_o) {
+  background: url('../art/shell/oak/bar.png') 0 0 / calc(64 * var(--oa)) calc(32 * var(--oa));
+  image-rendering: pixelated;
+  box-shadow: none;
+}
+html.r-shell-oak .tbl-window:not(#_o):not(#_o):not(#_o) {
+  border: 0 solid transparent;
+  border-image: url('../art/shell/oak/window.png') 32 / calc(32 * var(--oa)) / calc(11 * var(--oa))
+    repeat;
+  image-rendering: pixelated;
+  box-shadow: none;
+}
+
+/* ---- the Weapon panel's level badge: dark brown, the number in the card's tier colour ----------- */
+html.r-shell-oak .wp-stage .wp-badge:not(#_o):not(#_o) {
+  background: var(--oak-badge-bg);
+  color: var(--wp-tc);
+}
+html.r-shell-oak .wp-stage .wp-badge :is(b, small):not(#_o) {
+  color: var(--wp-tc);
+  opacity: 1;
+}
+
+/* ---- colour: what this recipe owns beyond the table tokens ------------------------------------- */
+/* red action buttons carry cream text (below); the unusable tan button carries brown ink */
+html.r-shell-oak
+  :is(
+    .px-btn--dark,
+    .px-btn:disabled,
+    .button:disabled,
+    .button[aria-disabled='true'],
+    .buy-btn[aria-disabled='true'],
+    .sm-pull:disabled,
+    .shop-ascend.is-no,
+    .shop-price.is-no,
+    .wp-go[aria-disabled='true']
+  ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
+  color: #43301a;
+}
+html.r-shell-oak
+  :is(
+    .px-btn--gold,
+    .button:not(.button--ghost):not(.button--danger),
+    .buy-btn.is-affordable,
+    .sm-pull.is-affordable:not(.sm-pull--ten),
+    .shop-ascend:not(.is-no),
+    .wp-go.is-ready,
+    .px-btn.is-selected,
+    .px-btn[aria-pressed='true'],
+    .px-btn[aria-selected='true'],
+    .px-btn[aria-checked='true'],
+    .buy-toggle__opt[aria-checked='true'],
+    .cp-tab[aria-selected='true'],
+    .cp-chip[aria-pressed='true'],
+    .pp-tab[aria-selected='true'],
+    .set-seg__opt:has(input:checked)
+  ):not(#_o):not(#_o):not(#_o):not(#_o):not(#_o) {
+  color: #fff1d0;
+}
+/* a selected tile (the weapon switch) is the red action piece too */
+html.r-shell-oak
+  :is(.px-tile.is-selected, .px-tile[aria-pressed='true'], .px-tile[aria-selected='true']):not(
+    #_o
+  ):not(#_o):not(#_o):not(#_o) {
+  --o-src: url('../art/shell/oak/action.png');
+  --o-bg: #a8322a;
+  --o-slice: 8;
+  --o-out: 2;
+  color: #fff1d0;
+}
+
+/* The fight itself (the enemy card, the floating numbers, the deck) is a dark stage inside the window:
+   it keeps the dark surface tokens, and the sheets and readouts laid over it read the light ones. */
+html.r-shell-oak .du-zone {
+  --bi-frame-bg: #2a2238;
+  --bi-frame-raised: #352b48;
+  --bi-frame-ink: #f1e8d6;
+  --bi-frame-ink-muted: #a597bd;
+  --bi-frame-edge: #08060c;
+  --bi-frame-hi: #54456d;
+  --bi-frame-lo: #1d1729;
+  --bi-frame-accent: #f4c14a;
+  --bi-frame-good: #6fdc8c;
+  --bi-frame-bad: #ef8a7a;
+  --px-edge: #08060c;
+  --px-hi: #54456d;
+  --px-lo: #1d1729;
+  --px-body: #2a2238;
+  --px-raised: #352b48;
+  --px-ink: #f1e8d6;
+  --px-muted: #a597bd;
+  --px-dark: #1d1729;
+  --px-dark-hi: #3a2f4f;
+  color: var(--px-ink);
+}
+
+/* the few hardcoded greens of the upgrade rows read the frame's green on a cream sheet */
+html.r-shell-oak .ur__after:not(#_o):not(#_o) {
+  color: var(--bi-frame-good);
+}
+/* inside a red selected tile, the small lines and stars read cream */
+html.r-shell-oak
+  :is(.px-tile.is-selected, .px-tile[aria-pressed='true'], .px-tile[aria-selected='true'])
+  :is(.dp-row__meta, .dp-row__stars):not(#_o):not(#_o) {
+  color: #fff1d0;
+}

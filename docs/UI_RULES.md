@@ -20,8 +20,11 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 
 ## 2. Interface and screens
 
-- [Built] **Shell look** (user, 2026-11-10; the Castle Stone picture look of 0.7.9 was withdrawn on 2026-11-14, the user: "these are nothing like the ui u showed me all blurry misplaced misalgined plain missing or badly cut"). The table and every full view use the starter table's shell, **Plum Pixel** (DESIGN.md §8). The picture frames of Castle Stone are not shown (ASSET_RULES §5 Shell pictures):
-  - The shell is Plum Pixel's: pixel frames with a dark edge and notched corners, a light top edge and a dark bottom edge, no rounded corners, a step of a whole number of device pixels (about 4 CSS px at 100%), gold buttons when usable and dark plum when not.
+- [To build] **Shell look** (user, 2026-11-16, "Replace starter": **Carved Oak** becomes the starter table, approved on the Dungeon, Cards and Summon screens of the real game; the plan is `docs/plans/ui-style-carved-oak.md`; the Castle Stone picture look of 0.7.9 was withdrawn on 2026-11-14, the user: "these are nothing like the ui u showed me all blurry misplaced misalgined plain missing or badly cut"). The layout does not change, only the look of panels, plates, readouts, buttons, tabs, the header and the dock:
+  - Panels are flat cream (`#f6ead0`) with dark brown ink (`#2a1c10`, muted `#6b5133`) and no grain. Big sheets and the dungeon window wear the carved wood edge of the wood card kit, 13 px thick, with gilded corner caps; small plates and tiles wear a thin 5 px wood edge. Buttons, tabs, chips and readouts are light cream with a gold edge; the usable action (and a selected tab or chip) is red with a gold edge and cream text; an unusable button is flat tan. The header and the dock are dark wood planks on a warm near-black table (`#17110d`). The Weapon panel's level badge is a dark brown hexagon with the number in the card's tier colour.
+  - Method: small 9-slice pieces at exact pixel size, tiled and never stretched, drawn with `border-image` on a zero-width border so no element moves (ASSET_RULES §5 Shell pieces). The table wears the `shell-oak` recipe; every other table keeps `theme/frames.css`. Text colours come from table tokens, never hardcoded light ink.
+  - [Built] The Weapon panel's XP text sits at the top-right corner of the ring's box, clear of the ring, on every table (user, 2026-11-16: "misplaced").
+  - [Built] **Plum Pixel** (user, 2026-11-10; the starter until Carved Oak): pixel frames with a dark edge and notched corners, a light top edge and a dark bottom edge, no rounded corners, a step of a whole number of device pixels (about 4 CSS px at 100%), gold buttons when usable and dark plum when not. It stays a table every save owns (DESIGN.md §8, `[Default]`).
   - Pixelify Sans is used only at 18 px and up, for headings and large numbers. All other text, small numbers included, is Atkinson Hyperlegible.
   - Colours, fonts and frame values are table tokens (ASSET_RULES.md §6), so another table item can re-skin all of it.
 - [Built] **One table, no pages** (user, 2026-11-11: layout 1a, "one table, no pages"; the table is mockup 4a, the full views 4b to 4n in `design/options/ui-layouts/`). The game has one screen, the table. Every part of the game is a pile, a wing or the dungeon window on it, and a click on one fans it out into its full view over the table. There is no sidebar, no page list and no Home page: the table is home.
@@ -147,6 +150,8 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 
 Everything tagged `[Proposed]` or `[Default]` waits here for the user.
 
+Default by Claude, 2026-11-16 (Carved Oak): see DESIGN.md §16 (the name, Plum Pixel kept for every save, the dormant Castle Stone files left alone, Tavern Wood untouched).
+
 Defaults by Claude, 2026-11-11 (the table update, package 8, the table shell, to confirm):
 
 - §2 Motion E tokens and moments: the curves, 440 ms per dealt item, the 90 ms stagger shrinking by 10 ms to 40 ms, seven items at most, the 0.92 start size, 220 ms exits all at once, the launch order (window, wings, piles) and the reduced-motion fade.
@@ -175,10 +180,11 @@ Defaults by Claude, 2026-11-13 (Heirloom Gate layouts, to confirm):
 - §2 Grouped by weapon type: a heading per type with its collected count, the view's sort inside a group, empty groups hidden.
 - §2 The Summon view: the short rows show name, pity and scroll cost; an empty last hand shows the gate's card backs.
 
-Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
+Not decided yet (no rule exists, ask before inventing one): on-screen copy tone and wording rules, UI-skin conventions beyond the shell look (Carved Oak's pieces for tooltips, dialogs, scrollbars and the like follow in later waves) and what Wardrobe cosmetics define (DESIGN.md §8), and keyboard and gamepad navigation.
 
 ## 4. Changelog
 
+- 2026-11-16 — Carved Oak (user: "Replace starter"): the Shell look becomes flat cream panels with carved wood edges and gilded corners, drawn from tiled 9-slice pieces; Plum Pixel stays as a table every save owns; the Weapon panel's XP text moves clear of the ring.
 - 2026-11-14 — Castle Stone withdrawn (user, release 0.7.9 rejected): the Shell look is Plum Pixel's pixel frames again.
 - 2026-11-13 — Medieval shell (user, PixelLab mockup 1b): the Shell look becomes Castle Stone picture frames in the same layout; Plum Pixel's pixel frames stay for its own table (§2).
 - 2026-11-13 — Heirloom Gate built (pick 3a, 2e): the Summon view stacks the five gates with the open one's content beside it; the Cards view has its Heirlooms tab; the header drops the scroll names below 1400 px wide, as four amounts no longer fit with them (§2).

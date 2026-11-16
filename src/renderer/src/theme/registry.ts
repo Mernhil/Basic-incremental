@@ -36,6 +36,7 @@ export const BASE_RECIPES = [
   'chrome',
   // table pictures (art/shell/<dir>/, content/shellArt.json): the id after `shell-` is a shellArt table
   'shell-stone',
+  'shell-oak',
   // cursor
   'cursor-gilded',
   'cursor-crimson',

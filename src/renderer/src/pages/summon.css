@@ -87,7 +87,7 @@
 }
 .sm-gate__chevron {
   font-size: 12px;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .sm-deck__about {
   margin: 0;

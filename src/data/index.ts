@@ -800,7 +800,7 @@ function checkCosmeticSources(
     ...c.portals.filter((p) => p.kind === 'cosmetics').flatMap((p) => p.pool.map((e) => e.itemId)),
   ]);
   c.cosmetics.forEach((x, i) => {
-    if (!x.starter && !x.ownedAtStart && !sourced.has(x.id)) {
+    if (!x.starter && !x.ownedAtStart && !x.hidden && !sourced.has(x.id)) {
       issues.push(
         `cosmetics.json › [${i}]: "${x.id}" has no source (put it in the Wardrobe Gate pool)`,
       );

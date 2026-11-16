@@ -11,12 +11,12 @@
    `translate` change on hover and press. Tables without pictures (Plum Pixel and the others) get
    none of this and keep frames.css as it is. */
 
-html[class*='r-shell-'] {
+html.r-shell-stone {
   --as: calc(max(1, round(calc(var(--shell-scale, 2) * var(--dpr)), 1)) * var(--px));
 }
 
 /* ---- panels: the stone frame ---------------------------------------------------------------- */
-html[class*='r-shell-']
+html.r-shell-stone
   :is(
     .px-panel,
     .frame,
@@ -43,7 +43,7 @@ html[class*='r-shell-']
 }
 
 /* ---- wells ---------------------------------------------------------------------------------- */
-html[class*='r-shell-'] :is(.px-well, .cp-select):not(#_px) {
+html.r-shell-stone :is(.px-well, .cp-select):not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
@@ -51,7 +51,7 @@ html[class*='r-shell-'] :is(.px-well, .cp-select):not(#_px) {
 }
 
 /* ---- tiles: a small plate with rivets ------------------------------------------------------- */
-html[class*='r-shell-']
+html.r-shell-stone
   :is(
     .px-tile,
     .cp-facts,
@@ -81,7 +81,7 @@ html[class*='r-shell-']
 }
 
 /* ---- buttons: the capsule; gold for the action that can be used; dim when it cannot ---------- */
-html[class*='r-shell-']
+html.r-shell-stone
   :is(
     .px-btn,
     .button,
@@ -107,14 +107,14 @@ html[class*='r-shell-']
   border-image: var(--sh-chip-url) var(--sh-chip-slice) / var(--sh-chip-bw) stretch;
   color: var(--px-ink);
 }
-html[class*='r-shell-'] :is(.cp-tab):not(#_px) {
+html.r-shell-stone :is(.cp-tab):not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
   border-image: var(--sh-tab-url) var(--sh-tab-slice) / var(--sh-tab-bw) stretch;
   color: var(--px-ink);
 }
-html[class*='r-shell-']
+html.r-shell-stone
   :is(
     .px-btn--gold,
     .button:not(.button--ghost):not(.button--danger),
@@ -135,7 +135,7 @@ html[class*='r-shell-']
   border-image: var(--sh-btn_gold-url) var(--sh-btn_gold-slice) / var(--sh-btn_gold-bw) stretch;
   color: #fff7d6;
 }
-html[class*='r-shell-']
+html.r-shell-stone
   :is(
     .px-btn--dark,
     .px-btn:disabled,
@@ -152,7 +152,7 @@ html[class*='r-shell-']
   color: var(--px-muted);
   cursor: default;
 }
-html[class*='r-shell-']
+html.r-shell-stone
   :is(
     .px-btn,
     .button,
@@ -166,7 +166,7 @@ html[class*='r-shell-']
   ):hover:not(:disabled):not([aria-disabled='true']):not(#_px) {
   filter: brightness(1.18);
 }
-html[class*='r-shell-']
+html.r-shell-stone
   :is(.px-btn, .button, .buy-btn, .sm-pull, .shop-price, .shop-ascend, .wp-go):active:not(
     :disabled
   ):not(#_px) {
@@ -175,18 +175,18 @@ html[class*='r-shell-']
 }
 
 /* ---- the header: the stone bar and the pieces on it ----------------------------------------- */
-html[class*='r-shell-'] .shell-header:not(#_px) {
+html.r-shell-stone .shell-header:not(#_px) {
   background: transparent;
   box-shadow: none;
   border: solid 0 transparent;
   border-image: var(--sh-header-url) var(--sh-header-slice) / var(--sh-header-bw) stretch;
 }
-html[class*='r-shell-'] .shell-goals__btn:not(#_px) {
+html.r-shell-stone .shell-goals__btn:not(#_px) {
   border-image: var(--sh-goals_button-url) var(--sh-goals_button-slice) / var(--sh-goals_button-bw)
     stretch;
   color: var(--px-ink);
 }
-html[class*='r-shell-'] .shell-details:not(#_px) {
+html.r-shell-stone .shell-details:not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
@@ -194,7 +194,7 @@ html[class*='r-shell-'] .shell-details:not(#_px) {
     var(--sh-details_button-bw) stretch;
   color: var(--px-ink);
 }
-html[class*='r-shell-'] .snd-mute:not(#_px) {
+html.r-shell-stone .snd-mute:not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
@@ -202,7 +202,7 @@ html[class*='r-shell-'] .snd-mute:not(#_px) {
     stretch;
   color: var(--px-ink);
 }
-html[class*='r-shell-'] .shell-level__badge:not(#_px) {
+html.r-shell-stone .shell-level__badge:not(#_px) {
   background: transparent;
   box-shadow: none;
   border: solid 0 transparent;
@@ -210,7 +210,7 @@ html[class*='r-shell-'] .shell-level__badge:not(#_px) {
     stretch;
   color: var(--px-ink);
 }
-html[class*='r-shell-'] .shell-level__bar:not(#_px) {
+html.r-shell-stone .shell-level__bar:not(#_px) {
   background: transparent;
   box-shadow: none;
   border: solid 0 transparent;
@@ -218,7 +218,7 @@ html[class*='r-shell-'] .shell-level__bar:not(#_px) {
 }
 
 /* ---- the table: the dock -------------------------------------------------------------------- */
-html[class*='r-shell-'] .tbl-dock:not(#_px) {
+html.r-shell-stone .tbl-dock:not(#_px) {
   background: transparent;
   box-shadow: none;
   border: solid 0 transparent;
@@ -226,7 +226,7 @@ html[class*='r-shell-'] .tbl-dock:not(#_px) {
 }
 
 /* ---- the table: the wings ------------------------------------------------------------------- */
-html[class*='r-shell-'] .tbl-wing::before {
+html.r-shell-stone .tbl-wing::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -236,12 +236,12 @@ html[class*='r-shell-'] .tbl-wing::before {
   border-image: var(--sh-wing_frame-url) var(--sh-wing_frame-slice) / var(--sh-wing_frame-bw)
     stretch;
 }
-html[class*='r-shell-'] .tbl-wing > * {
+html.r-shell-stone .tbl-wing > * {
   position: relative;
   z-index: 1;
 }
 /* the title sits on the cloth banner */
-html[class*='r-shell-'] .gw__title {
+html.r-shell-stone .gw__title {
   justify-content: center;
   padding: calc(5 * var(--as)) calc(16 * var(--as)) calc(8 * var(--as));
   background: var(--sh-wing_banner-url) center / 100% 100% no-repeat;
@@ -250,14 +250,14 @@ html[class*='r-shell-'] .gw__title {
 }
 
 /* ---- the table: the dungeon window: stone lintel on top, pillars with runes and torches ----- */
-html[class*='r-shell-'] .tbl-window:not(#_px) {
+html.r-shell-stone .tbl-window:not(#_px) {
   background-color: color-mix(in srgb, var(--bi-table-bg) 80%, #000);
   box-shadow: none;
   border: 0;
   position: relative;
 }
-html[class*='r-shell-'] .tbl-window::before,
-html[class*='r-shell-'] .tbl-window::after {
+html.r-shell-stone .tbl-window::before,
+html.r-shell-stone .tbl-window::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -266,7 +266,7 @@ html[class*='r-shell-'] .tbl-window::after {
   image-rendering: pixelated;
 }
 /* pillars: the repeating stone block, the foot with its runes at the bottom, a torch between */
-html[class*='r-shell-'] .tbl-window::before {
+html.r-shell-stone .tbl-window::before {
   background-image:
     var(--sh-torch_l-url), var(--sh-torch_r-url), var(--sh-pillar_l_foot-url),
     var(--sh-pillar_r_foot-url), var(--sh-pillar_l_tile-url), var(--sh-pillar_r_tile-url);
@@ -287,56 +287,56 @@ html[class*='r-shell-'] .tbl-window::before {
     right calc(-1 * var(--as)) top calc(27 * var(--as));
 }
 /* the lintel: the two corner blocks and the top edge */
-html[class*='r-shell-'] .tbl-window::after {
+html.r-shell-stone .tbl-window::after {
   border: solid 0 transparent;
   border-image: var(--sh-window_lintel-url) 27 26 0 25 / calc(27 * var(--as)) calc(26 * var(--as)) 0
     calc(25 * var(--as)) stretch;
 }
 /* the arena runs under the lintel; its side readouts are moved in from the pillars */
-html[class*='r-shell-'] .tbl-window:not(#_px) {
+html.r-shell-stone .tbl-window:not(#_px) {
   padding: calc(27 * var(--as) - 14px) 0 0;
   box-sizing: border-box;
 }
-html[class*='r-shell-'] .tbl-window .du-left {
+html.r-shell-stone .tbl-window .du-left {
   left: calc(26 * var(--as));
   max-width: calc(50cqw - var(--du-foe-w) / 2 - 26 * var(--as) - 24px);
 }
-html[class*='r-shell-'] .tbl-window .du-sheet {
+html.r-shell-stone .tbl-window .du-sheet {
   right: calc(26 * var(--as));
 }
 
 /* ---- the dock: each pile sits in a hexagon stone socket ------------------------------------- */
-html[class*='r-shell-'] .tbl-pile__stack {
+html.r-shell-stone .tbl-pile__stack {
   background: var(--sh-socket-url) center / calc(26 * var(--as)) calc(30 * var(--as)) no-repeat;
   image-rendering: pixelated;
 }
-html[class*='r-shell-'] .tbl-pile__stack::before,
-html[class*='r-shell-'] .tbl-pile__stack::after {
+html.r-shell-stone .tbl-pile__stack::before,
+html.r-shell-stone .tbl-pile__stack::after {
   display: none;
 }
-html[class*='r-shell-'] .tbl-pile__card {
+html.r-shell-stone .tbl-pile__card {
   background: transparent;
   box-shadow: none;
 }
-html[class*='r-shell-'] .tbl-pile:hover .tbl-pile__stack,
-html[class*='r-shell-'] .tbl-pile:focus-visible .tbl-pile__stack {
+html.r-shell-stone .tbl-pile:hover .tbl-pile__stack,
+html.r-shell-stone .tbl-pile:focus-visible .tbl-pile__stack {
   filter: brightness(1.2);
 }
-html[class*='r-shell-'] .tbl-pile:active .tbl-pile__stack {
+html.r-shell-stone .tbl-pile:active .tbl-pile__stack {
   translate: 0 var(--as);
   filter: brightness(0.9);
 }
 
 /* ---- the arena: readout plates, the floor plate, the fight sheet -------------------------- */
-html[class*='r-shell-'] .tbl-window .du-read:not(#_px),
-html[class*='r-shell-'] .du-read:not(#_px) {
+html.r-shell-stone .tbl-window .du-read:not(#_px),
+html.r-shell-stone .du-read:not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
   border-image: var(--sh-stat_plate-url) var(--sh-stat_plate-slice) / var(--sh-stat_plate-bw)
     stretch;
 }
-html[class*='r-shell-'] .du-sheet:not(#_px) {
+html.r-shell-stone .du-sheet:not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
@@ -345,33 +345,33 @@ html[class*='r-shell-'] .du-sheet:not(#_px) {
 }
 
 /* ---- wing plates: the wood row on Logging, the slate row on Mining ------------------------- */
-html[class*='r-shell-'] .gw-plate:not(#_px) {
+html.r-shell-stone .gw-plate:not(#_px) {
   border: solid 0 transparent;
   background: transparent;
   box-shadow: none;
   border-image: var(--sh-row_slate-url) var(--sh-row_slate-slice) / var(--sh-row_slate-bw) stretch;
 }
-html[class*='r-shell-'] .tbl-wing--left .gw-plate:not(#_px) {
+html.r-shell-stone .tbl-wing--left .gw-plate:not(#_px) {
   border-image: var(--sh-row_wood-url) var(--sh-row_wood-slice) / var(--sh-row_wood-bw) stretch;
 }
 
 /* ---- the header chips: money on the gold chip, the scrolls on the blue and the pink ---------- */
-html[class*='r-shell-'] .shell-currency--money {
+html.r-shell-stone .shell-currency--money {
   border: solid 0 transparent;
   border-image: var(--sh-gold_chip-url) var(--sh-gold_chip-slice) / var(--sh-gold_chip-bw) stretch;
   padding: 0 calc(5 * var(--as));
 }
-html[class*='r-shell-'] .shell-currency--crystal {
+html.r-shell-stone .shell-currency--crystal {
   border: solid 0 transparent;
   border-image: var(--sh-blue_chip-url) var(--sh-blue_chip-slice) / var(--sh-blue_chip-bw) stretch;
   padding: 0 calc(5 * var(--as));
 }
-html[class*='r-shell-'] .shell-currency--crystal[data-icon='crystal-glamour'] {
+html.r-shell-stone .shell-currency--crystal[data-icon='crystal-glamour'] {
   border-image: var(--sh-pink_chip-url) var(--sh-pink_chip-slice) / var(--sh-pink_chip-bw) stretch;
 }
 
 /* ---- settings controls: sliders and checkboxes ---------------------------------------------- */
-html[class*='r-shell-'] .set-page .snd-row input[type='range']::-webkit-slider-runnable-track {
+html.r-shell-stone .set-page .snd-row input[type='range']::-webkit-slider-runnable-track {
   height: calc(25 * var(--as));
   background: transparent;
   box-shadow: none;
@@ -379,7 +379,7 @@ html[class*='r-shell-'] .set-page .snd-row input[type='range']::-webkit-slider-r
   border-image: var(--sh-slider_track-url) var(--sh-slider_track-slice) / var(--sh-slider_track-bw)
     stretch;
 }
-html[class*='r-shell-'] .set-page .snd-row input[type='range']::-webkit-slider-thumb {
+html.r-shell-stone .set-page .snd-row input[type='range']::-webkit-slider-thumb {
   width: calc(36 * var(--as));
   height: calc(36 * var(--as));
   margin-top: calc(-5.5 * var(--as));
@@ -387,7 +387,7 @@ html[class*='r-shell-'] .set-page .snd-row input[type='range']::-webkit-slider-t
   box-shadow: none;
   image-rendering: pixelated;
 }
-html[class*='r-shell-'] .snd-check input[type='checkbox'] {
+html.r-shell-stone .snd-check input[type='checkbox'] {
   appearance: none;
   width: calc(18 * var(--as));
   height: calc(18 * var(--as));
@@ -395,6 +395,6 @@ html[class*='r-shell-'] .snd-check input[type='checkbox'] {
   background: var(--sh-checkbox-url) center / 100% 100% no-repeat;
   image-rendering: pixelated;
 }
-html[class*='r-shell-'] .snd-check input[type='checkbox']:checked {
+html.r-shell-stone .snd-check input[type='checkbox']:checked {
   background-image: var(--sh-checkbox_on-url);
 }
