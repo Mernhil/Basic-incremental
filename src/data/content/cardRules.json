@@ -23,7 +23,14 @@
   },
   "xpCurve": {
     "base": "60",
-    "growth": "1.12"
+    "growth": "1.12",
+    "stepWall": {
+      "wood": "40",
+      "bronze": "1700",
+      "silver": "3000",
+      "gold": "3000",
+      "prismatic": "3000"
+    }
   },
   "xp": {
     "perSecond": "1",

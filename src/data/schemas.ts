@@ -667,7 +667,20 @@ export const cardRulesSchema = z.strictObject({
   /** Level cap of each tier (Heirloom 140); stars do not change it (DESIGN.md §5). */
   levelCaps: perTier(z.number().int().min(1)),
   /** XP from level L to L + 1 = base × growth^(L − 1). */
-  xpCurve: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
+  xpCurve: z.strictObject({
+    base: positiveDecimal,
+    growth: atLeastOne,
+    /** The XP need of the levels that carry a card onto the next tier's power step (the
+     *  `power.tierStepLevels` levels from a tier's level cap on) is multiplied by this, keyed by the
+     *  tier whose cap is passed (DESIGN.md §5 Strength comes with the card's levels). */
+    stepWall: z.strictObject({
+      wood: atLeastOne,
+      bronze: atLeastOne,
+      silver: atLeastOne,
+      gold: atLeastOne,
+      prismatic: atLeastOne,
+    }),
+  }),
   /**
    * Fighting cards (DESIGN.md §5): XP per second fought (not while knocked out) = perSecond ×
    * tierGrowth^(dungeon tier − 1), plus XP per boss kill = perKill × tierGrowth^(dungeon tier −
