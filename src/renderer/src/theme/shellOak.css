@@ -85,7 +85,9 @@ html.r-shell-oak
     .ws-tile,
     .ws-cardbtn,
     .pp-row,
-    .set-error
+    .set-error,
+    .mv-mp-line,
+    .wd-tile
   ):not(#_o):not(#_o):not(#_o) {
   --o-src: url('../art/shell/oak/tile.png');
   --o-bg: #fdf5df;
@@ -341,6 +343,8 @@ html.r-shell-oak
     .ws-cardbtn,
     .pp-row,
     .set-error,
+    .mv-mp-line,
+    .wd-tile,
     .du-read,
     .du-plate,
     .ar__readout,
@@ -516,17 +520,11 @@ html.r-shell-oak .wd-coming__row strong:not(#_o):not(#_o) {
 html.r-shell-oak .shop-sign__count:not(#_o):not(#_o) {
   color: #ffe9b8;
 }
-html.r-shell-oak .wd-maxed:not(#_o):not(#_o) {
+html.r-shell-oak :is(.wd-maxed, .wd-tile__meta):not(#_o):not(#_o) {
   color: var(--bi-frame-ink-muted);
 }
-/* the wardrobe's item tiles are dark stages for the previews of the items; they keep the dark set */
-html.r-shell-oak .wd-tile {
-  --bi-frame-ink: #f1e8d6;
-  --bi-frame-ink-muted: #a597bd;
-  --px-ink: #f1e8d6;
-  --px-muted: #a597bd;
-  --px-body: #2a2238;
-  --px-lo: #1d1729;
-  --px-hi: #54456d;
-  --px-edge: #08060c;
+
+/* the rare lines of the Welcome back cards sit on cream paper */
+html.r-shell-oak .wb-card__lines .is-rare:not(#_o):not(#_o) {
+  color: var(--bi-frame-accent);
 }
