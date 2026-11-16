@@ -552,13 +552,16 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       if (n.maxRank > 10) {
         const fill = h('i', 'sk-bar__fill');
         fill.style.width = `${(n.rank / n.maxRank) * 100}%`;
-        pips.append(fill, h('b', 'bi-num', t.levelOf(n.rank, n.maxRank)));
+        pips.append(fill);
         pips.title = t.levelOf(n.rank, n.maxRank);
       } else {
         for (let i = 0; i < n.maxRank; i++) pips.append(h('i', i < n.rank ? 'is-on' : ''));
       }
-      const r = h('div', 'sk-row');
+      const r = h('div', n.maxRank > 10 ? 'sk-row sk-row--long' : 'sk-row');
       r.append(h('dt', '', t.levelLine), h('dd', '', ''));
+      // a long node: "13 / 26" above the bar, right-aligned, no text on the bar
+      if (n.maxRank > 10)
+        r.lastElementChild!.append(h('b', 'sk-bar__num bi-num', `${n.rank} / ${n.maxRank}`));
       r.lastElementChild!.append(pips);
       rows.append(r);
     }
@@ -661,7 +664,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       tabs.append(b);
     }
     const legend = h('div', 'sk-legend');
-    for (const area of ['logging', 'mining', 'dungeon', 'cards'] as const) {
+    // the area keys only mean something on the web, not on the Heirlooms map
+    for (const area of tab === 'tree' ? (['logging', 'mining', 'dungeon', 'cards'] as const) : []) {
       const item = h('span', 'sk-legend__item sk-legend__item--area');
       const dot = h('i', 'sk-legend__dot is-branch');
       dot.style.background = AREA_COLOUR[area];

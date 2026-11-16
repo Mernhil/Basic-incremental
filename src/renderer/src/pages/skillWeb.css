@@ -492,16 +492,21 @@
   inset: 0 auto 0 0;
   background: var(--gem);
 }
-.sk-bar b {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  display: grid;
-  place-items: center;
-  font-size: 12px;
-  color: #fff;
-  text-shadow:
-    0 1px 0 #0b0e20,
-    1px 0 0 #0b0e20,
-    -1px 0 0 #0b0e20;
+/* a long node: Level, the bar, then "13 / 26" beside it; no text on the bar */
+.sk-row--long {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+.sk-row--long dd {
+  display: contents;
+}
+.sk-row--long .sk-bar {
+  order: 1;
+  display: block;
+  width: 100%;
+  height: 16px;
+}
+.sk-bar__num {
+  order: 2;
+  font-size: 14px;
 }
