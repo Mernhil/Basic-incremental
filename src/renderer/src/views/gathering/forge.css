@@ -22,7 +22,7 @@
 .fv-title {
   margin: 0;
   font-size: 19px;
-  color: var(--bi-chrome-accent);
+  color: var(--bi-frame-accent, var(--bi-chrome-accent));
 }
 .fv-hint {
   margin: 0;

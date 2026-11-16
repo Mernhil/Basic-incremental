@@ -868,3 +868,39 @@ describe('v35 -> v36 (milestone picks replace the upgrade shelf, DESIGN.md §4)'
     expect(out.upgrades).toEqual({ picks: {}, moneyEarned: '0' });
   });
 });
+
+describe('v36 -> v37 (Carved Oak is the starter table, DESIGN.md §8)', () => {
+  const step = MIGRATIONS[36]!;
+  const cosmetics = (out: Record<string, unknown>) =>
+    out['cosmetics'] as {
+      owned: Record<string, unknown>;
+      loadout: { slots: Record<string, unknown> };
+    };
+
+  it('gives every save both tables and puts a save that wore Plum Pixel back on the starter', () => {
+    const out = cosmetics(
+      step({
+        cosmetics: {
+          owned: { gn_border: { level: 1, copies: 1 } },
+          loadout: { slots: { table: { id: 'gn_table', level: 1 } }, cards: {} },
+        },
+      }),
+    );
+    expect(Object.keys(out.owned).sort()).toEqual(['gn_border', 'gn_table', 'oak_table']);
+    expect(out.loadout.slots['table']).toBeUndefined();
+  });
+
+  it('leaves a save that wears another table on it', () => {
+    const out = cosmetics(
+      step({
+        cosmetics: {
+          owned: { gt_table: { level: 1, copies: 1 } },
+          loadout: { slots: { table: { id: 'gt_table', level: 1 } }, cards: {} },
+        },
+      }),
+    );
+    expect(out.loadout.slots['table']).toEqual({ id: 'gt_table', level: 1 });
+    expect(out.owned['gn_table']).toBeDefined();
+    expect(out.owned['oak_table']).toBeDefined();
+  });
+});

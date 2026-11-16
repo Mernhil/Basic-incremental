@@ -277,6 +277,11 @@ describe('v26 -> v27 (the table update)', () => {
     if (scaled['presets']) {
       (scaled['presets'] as { dungeons: unknown }).dungeons = placed.presets.dungeons;
     }
+    // format 37: Carved Oak, the starter table, is owned by every save
+    (scaled['cosmetics'] as { owned: Record<string, unknown> }).owned['oak_table'] = {
+      level: 1,
+      copies: 1,
+    };
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
