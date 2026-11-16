@@ -10,7 +10,6 @@ import {
   type GameState,
 } from '../src/game';
 import {
-  CENTRE,
   AREA_COLOUR,
   AREA_DEGREES,
   DEPTH_STEP,
