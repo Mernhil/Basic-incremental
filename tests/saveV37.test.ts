@@ -71,13 +71,6 @@ describe('v37 -> v38 (the skill web)', () => {
         value: m.value.mul(['percent', 'flat'].includes(m.kind) ? n.maxLevel : 1),
       })),
     );
-    const total = (
-      mods: { stat: string; kind: string; value: { toNumber(): number }; scope?: unknown }[],
-      stat: string,
-    ) =>
-      mods
-        .filter((m) => m.stat === stat && ['percent', 'flat'].includes(m.kind))
-        .reduce((a, m) => a + m.value.toNumber(), 0);
     // moving power inward (a quarter off the deep nodes onto the first two) shifts a stat between
     // nodes of an arm, so what stays is the sum of what the web gives, each stat at its sim weight
     const weighted = (
