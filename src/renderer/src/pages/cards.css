@@ -142,7 +142,7 @@ html .cp-sort .cp-select:not(#_px) {
 .cp-grid {
   margin: 0;
   /* room around the cards for the ★6 crowns, the level badges and the selected outline */
-  padding: 56px 30px 28px;
+  padding: calc(var(--kit-top) + 10px) var(--kit-side) var(--kit-bottom);
   --lv-in: calc(var(--fs-sm) * 11);
   scrollbar-width: thin;
   list-style: none;
@@ -153,7 +153,7 @@ html .cp-sort .cp-select:not(#_px) {
   grid-auto-rows: max-content;
   /* --kit-gutter (ui/pixelFit.ts): the kit's decorations reach about 72 card units past the edge across
      two neighbours, so the gap between columns leaves room for them: no picture covers another card's text */
-  gap: 50px var(--kit-gutter);
+  gap: calc(var(--kit-top) + var(--kit-bottom) + 10px) var(--kit-gutter);
   justify-content: center;
   align-content: start;
   min-height: 0;
@@ -704,11 +704,13 @@ html .cp-sort .cp-select:not(#_px) {
 }
 .cp-pick__list {
   margin: 0;
-  padding: 4px;
+  /* the kit's crest, tails and side decorations hang outside each card (--kit-*, ui/pixelFit.ts): the
+     list keeps them inside its scroll box, and the gap leaves them room so no kit covers a neighbour */
+  padding: var(--kit-top) var(--kit-side) var(--kit-bottom);
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 14px 16px;
+  gap: calc(var(--kit-top) + 10px) var(--kit-gutter);
   max-height: 46vh;
   overflow-y: auto;
 }
@@ -724,6 +726,8 @@ html .cp-sort .cp-select:not(#_px) {
   cursor: default;
 }
 .cp-pick__note {
+  /* the cost sits below the kit's banner tails */
+  margin-top: var(--kit-bottom);
   font-size: 12px;
   color: var(--bi-frame-ink);
 }
@@ -851,7 +855,7 @@ html .vh-tools .cp-tabs .cp-tab:not(#_px) {
 }
 .cp-grid--heirlooms {
   grid-template-columns: repeat(auto-fill, calc(2 * 176px * var(--card-k) + var(--kit-gutter)));
-  gap: 14px var(--kit-gutter);
+  gap: calc(var(--kit-top) + var(--kit-bottom)) var(--kit-gutter);
   justify-content: start;
 }
 .cp-hgroup {
