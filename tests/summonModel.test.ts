@@ -39,7 +39,8 @@ describe('summon shelf', () => {
     expect(v.pity).toMatch(/or better within \d+ pulls$/);
     expect(v.pityProgress).toBe(0);
     expect(v.guarantee).toMatch(/^Every ×10 holds a /);
-    expect(v.rates[0]).toMatch(/^Common: \d/);
+    // the Card Portal goes by tier (DESIGN.md §7)
+    expect(v.rates[0]).toMatch(/^Wood: \d/);
   });
 
   it('cannot pull without the portal resource', () => {

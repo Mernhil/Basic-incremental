@@ -28,7 +28,7 @@ export interface WeaponPanelOptions {
   content: Content;
   state: () => GameState;
   /** Takes the star-up or the tier-up (the page runs the game action and re-renders). */
-  act: (kind: 'star' | 'tier' | 'dust') => void;
+  act: (kind: 'star' | 'dust') => void;
 }
 
 export interface WeaponPanel {

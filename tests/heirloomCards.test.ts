@@ -2,7 +2,7 @@ import { cardStyle } from '../src/data';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { RARITIES, type Rarity } from '../src/data';
-import { cardItem, newOwnedCard, itemName } from '../src/game';
+import { cardItem, itemName } from '../src/game';
 import { cardTierArt, itemArt } from '../src/renderer/src/art/items';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
 import { content } from './helpers';

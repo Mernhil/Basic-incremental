@@ -8,13 +8,7 @@ import type { Difficulty } from './state';
  * Heirloom.
  */
 export type TierUpKind =
-  | 'gem_mastery'
-  | 'boss_mastery'
-  | 'mine_milestone'
-  | 'tree_milestone'
-  | 'tile_stage'
-  | 'card_tier'
-  | 'heirloom';
+  'gem_mastery' | 'boss_mastery' | 'mine_milestone' | 'tree_milestone' | 'tile_stage' | 'heirloom';
 
 /**
  * One tier-up moment, the same shape for everything with tiers so the UI plays one kind of

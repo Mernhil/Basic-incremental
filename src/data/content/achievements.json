@@ -237,7 +237,7 @@
     {
       "id": "silver_lining",
       "name": "Silver Lining",
-      "description": "Raise a card to Silver.",
+      "description": "Own a Silver weapon.",
       "condition": {
         "kind": "card_tier",
         "tier": "silver"
@@ -254,7 +254,7 @@
     {
       "id": "golden_hour",
       "name": "Golden Hour",
-      "description": "Raise a card to Gold.",
+      "description": "Own a Gold weapon.",
       "condition": {
         "kind": "card_tier",
         "tier": "gold"
@@ -278,7 +278,7 @@
     {
       "id": "prismatic_dawn",
       "name": "Prismatic Dawn",
-      "description": "Raise a card to Prismatic.",
+      "description": "Own a Prismatic weapon.",
       "condition": {
         "kind": "card_tier",
         "tier": "prismatic"

@@ -124,23 +124,17 @@ export function createCardsModel(
       .join(', ');
   }
 
-  /** The star-up (fill only) or tier-up (level cap, Money, materials) of a card, if it has one. */
-  function step(kind: 'star' | 'tier', check: UpgradeCheck | null): UpgradeStep | null {
+  /** The star-up (the star bar's fill only) of a card, if it has one. */
+  function step(check: UpgradeCheck | null): UpgradeStep | null {
     if (!check?.available || !check.to) return null;
     const tierName = TIER_NAMES[check.to.tier];
     const multiplier = content.cardRules.power.starMultiplier[check.to.stars - 2] ?? 1;
     return {
-      kind,
-      title:
-        kind === 'star'
-          ? COPY.cards.nextStar(check.to.stars, tierName)
-          : COPY.cards.nextTier(tierName, check.to.stars),
-      note:
-        kind === 'star'
-          ? COPY.cards.starNote(multiplier)
-          : COPY.cards.tierNote(tierName, levelCap(content, check.to)),
+      kind: 'star',
+      title: COPY.cards.nextStar(check.to.stars, tierName),
+      note: COPY.cards.starNote(multiplier),
       requirements: check.requirements.map(requirement),
-      action: (kind === 'star' ? COPY.cards.addStar : COPY.cards.tierUp)(priceText(check)),
+      action: COPY.cards.addStar(priceText(check)),
       ready: check.met,
     };
   }
@@ -180,8 +174,7 @@ export function createCardsModel(
       workplace: info.workplace ? placeName(info.workplace) : null,
       face: cardFaceOf(content, info),
       role: info.slot ? { job: info.slot.job, slot: info.slot.slot } : null,
-      next: owned ? step('star', info.starUp) : null,
-      tier: null,
+      next: owned ? step(info.starUp) : null,
       weapon: weaponView(content, info),
       stats: statTiles(content, state, card.id),
     };
@@ -259,8 +252,6 @@ export function createCardsModel(
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
       if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
-      // there is no tier-up (DESIGN.md §5 No tier-ups)
-      if (kind !== 'star') return { ok: false, reason: reason('unavailable') };
       return wrap(starUp(state, content, id));
     },
     chart(state, id) {

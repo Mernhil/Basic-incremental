@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { depthDef } from './depth';
 import type { Content } from '../data';
-import { MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
+import { MAX_STARS, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
 import { Decimal, decimalToString, isDecimalString } from './num';
 import { SaveError } from './saveError';
@@ -36,7 +36,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 38;
+export const CURRENT_SAVE_VERSION = 39;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -143,8 +143,8 @@ export const serializedStateSchema = z.object({
   cards: z.object({
     owned: z.record(
       z.string(),
+      // v39: no tier. A card's tier is its own (DESIGN.md §5 No tier-ups) and is read from the card.
       z.object({
-        tier: z.enum(RANK_TIERS),
         stars: z.number().int().min(1).max(MAX_STARS),
         level: z.number().int().min(1),
         xp: decimalText,
@@ -334,7 +334,13 @@ export function serializeState(state: GameState): SerializedState {
       owned: Object.fromEntries(
         Object.entries(state.cards.owned).map(([id, c]) => [
           id,
-          { ...c, xp: decimalToString(c.xp), enhancements: [...c.enhancements] },
+          {
+            stars: c.stars,
+            level: c.level,
+            xp: decimalToString(c.xp),
+            starFill: c.starFill,
+            enhancements: [...c.enhancements],
+          },
         ]),
       ),
       loadouts: cloneCards(state.cards).loadouts,

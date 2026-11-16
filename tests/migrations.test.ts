@@ -662,31 +662,14 @@ describe('v21 -> v22 (the weapon base: tiers Wood to Mythic/Void, Heirloom, item
     });
   });
 
-  it('pays back the base price of the tier-up steps beyond each cap, never the Wood step', () => {
+  it('pays nothing back for tier-ups: a card stands at its own tier (DESIGN.md §5 Saves keep their cards)', () => {
     const before = freshState();
     const loaded = readSave(v21Save(), content);
-    // Both cards fight. The Common (Gold, cap Wood) paid the steps leaving Bronze and Silver; the
-    // Wood step was never paid. The Legendary (Unique -> Mythic, cap Prismatic) paid the step
-    // leaving Prismatic. The Mythic card is at its cap: nothing back.
-    const owed = new Map<string, Decimal>();
-    for (const step of ['bronze', 'silver', 'prismatic'] as const)
-      for (const cost of content.cardRules.tierUp[step]['fighting'])
-        owed.set(cost.resource, (owed.get(cost.resource) ?? new Decimal(0)).add(cost.amount));
-    for (const [resource, amount] of owed) {
-      const gained = (loaded.state.resources[resource] ?? new Decimal(0)).sub(
-        before.resources[resource] ?? new Decimal(0),
-      );
-      // the Money and gems the save held moved to the readable scale first (format 29), so the
-      // refund is counted to the nearest hundredth of a percent
-      expect(gained.sub(amount).abs().lte(amount.mul(1e-4)), resource).toBe(true);
-    }
-    // Resources only the Wood step would have paid stay untouched.
-    for (const cost of content.cardRules.tierUp.wood['fighting']) {
-      if (owed.has(cost.resource)) continue;
+    for (const core of ['moss_core', 'cinder_core', 'frost_core']) {
       expect(
-        (loaded.state.resources[cost.resource] ?? new Decimal(0)).toString(),
-        cost.resource,
-      ).toBe((before.resources[cost.resource] ?? new Decimal(0)).toString());
+        (loaded.state.resources[core] ?? new Decimal(0)).eq(before.resources[core] ?? 0),
+        core,
+      ).toBe(true);
     }
   });
 

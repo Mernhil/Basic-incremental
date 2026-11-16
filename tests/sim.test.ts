@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   Decimal,
   cardEnhancements,
-  cloneState,
   cosmeticMaxLevel,
   floorPosition,
   type GameState,
@@ -162,31 +161,24 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(after.resources['moss_core']!.toNumber()).toBe(10);
   });
 
-  it('keeps buying levels while a tier-up still waits for gems, and saves its Money once the gems are close', () => {
-    const base = freshState();
-    lead(base, 'storm_duelist', 'fighting'); // Epic: a card that can tier up
-    const squire = base.cards.owned['storm_duelist']!;
-    squire.level = 20; // at the Wood cap
-    squire.stars = 6; // a tier-up also needs every star
-    base.clearedDungeons = ['mossy_cellar']; // Iron Deeps opens
-    base.production.unlockedTrees = ['ironbark', 'moonwillow'];
-    base.resources['moss_core'] = new Decimal(10);
-    const woodMoney = content.cardRules.tierUp.wood.fighting.find((p) => p.resource === 'money')!;
-    const short = woodMoney.amount.mul(0.8); // short of the tier-up, so affordable levels are on offer
-    base.resources['money'] = short;
-    // The gems are far off: Money goes into levels.
-    const far = greedyBuy(base, content);
-    expect(far.state.resources['money']!.lt(short)).toBe(true);
-    // The gems are in hand: Money is the only thing missing, so none of it is spent on levels.
-    const ready = cloneState(base);
-    for (const price of content.cardRules.tierUp.wood.fighting) {
-      if (price.resource !== 'money' && price.resource !== 'moss_core') {
-        ready.resources[price.resource] = price.amount;
-      }
+  it('never offers a tier-up: a card stays the tier it is (DESIGN.md §5 No tier-ups)', () => {
+    const state = freshState();
+    lead(state, 'storm_duelist', 'fighting');
+    const card = state.cards.owned['storm_duelist']!;
+    card.level = 80; // at its cap
+    card.stars = 6;
+    for (const r of [
+      'money',
+      'moss_core',
+      'cinder_core',
+      'frost_core',
+      'iron_gem',
+      'ironbark_gem',
+    ]) {
+      state.resources[r] = new Decimal(1e9);
     }
-    ready.resources['money'] = short;
-    const near = greedyBuy(ready, content);
-    expect(near.state.resources['money']!.eq(short)).toBe(true);
+    expect(buyerCandidates(state, content).some((c) => c.id.startsWith('tier:'))).toBe(false);
+    expect(greedyBuy(state, content).bought.some((id) => id.startsWith('tier:'))).toBe(false);
   });
 
   it('weighs a mine or tree level by the share of the production', () => {
@@ -200,75 +192,9 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
   it('buys a star-up from the star bar alone: it needs no Cores to share', () => {
     const state = freshState();
     const feller = state.cards.owned['apprentice_feller']!;
-    feller.starFill = content.cardRules.starBar.needs.common.wood;
+    feller.starFill = 1; // one copy a star
     const { bought } = greedyBuy(state, content);
     expect(bought).toContain('star:apprentice_feller');
-  });
-
-  it('finishes the fighting lead first: a more advanced production card does not starve its tier-up of gems', () => {
-    const state = freshState();
-    lead(state, 'storm_duelist', 'fighting'); // Epic: it can reach Gold
-    lead(state, 'geode_golem', 'mining'); // Legendary: it can reach Prismatic
-    const squire = state.cards.owned['storm_duelist']!;
-    squire.tier = 'silver';
-    squire.level = 60; // at the Silver cap: Gold costs Money, Cinder Cores and gems
-    squire.stars = 6;
-    const digger = state.cards.owned['geode_golem']!;
-    digger.tier = 'gold';
-    digger.stars = 6;
-    digger.level = 80; // further along, and its Prismatic step waits for Frost Cores
-    state.resources['money'] = new Decimal(5e6);
-    state.resources['cinder_core'] = new Decimal(10);
-    state.resources['moonwillow_gem'] = new Decimal(100000);
-    state.resources['grotto_gem'] = new Decimal(100000);
-    expect(greedyBuy(state, content).bought).toContain('tier:storm_duelist');
-  });
-
-  it('lets a weaker card take its step while the lead is hours from its gems', () => {
-    const state = freshState();
-    state.clearedDungeons = ['mossy_cellar'];
-    state.production.unlockedTrees = []; // no Ironbark grows: the lead is hours (forever) away
-    state.activeDungeonId = 'mossy_cellar';
-    lead(state, 'storm_duelist', 'fighting'); // Epic: it can leave Wood
-    lead(state, 'gem_cutter', 'mining'); // Rare: it can leave Wood
-    state.cards.owned['storm_duelist']!.level = 20; // Wood cap: needs more Ironbark than it has
-    state.cards.owned['storm_duelist']!.stars = 6;
-    state.cards.owned['gem_cutter']!.stars = 6;
-    state.cards.owned['gem_cutter']!.level = 20; // needs less Ironbark, and Iron
-    const need = (job: 'fighting' | 'mining', gem: string) =>
-      content.cardRules.tierUp.wood[job].find((p) => p.resource === gem)!.amount;
-    expect(need('mining', 'ironbark_gem').lt(need('fighting', 'ironbark_gem'))).toBe(true);
-    state.resources['money'] = new Decimal(2e5);
-    state.resources['moss_core'] = new Decimal(6);
-    state.resources['iron_gem'] = need('mining', 'iron_gem').mul(3);
-    state.resources['ironbark_gem'] = need('mining', 'ironbark_gem');
-    expect(greedyBuy(state, content).bought).toContain('tier:gem_cutter');
-  });
-
-  it('saves the Frost Cores for the lead card still levelling toward its tier-up', () => {
-    const state = freshState();
-    lead(state, 'dawnblade_regent', 'fighting'); // Legendary: it can reach Prismatic
-    lead(state, 'geode_golem', 'mining');
-    const squire = state.cards.owned['dawnblade_regent']!;
-    squire.tier = 'gold';
-    squire.stars = 6;
-    squire.level = 70; // Gold cap 80: not ready, but its tier-up will need Frost Cores and Sigils
-    const digger = state.cards.owned['geode_golem']!;
-    digger.tier = 'gold';
-    digger.stars = 6;
-    digger.level = 80; // at the Gold cap: ready to tier up too
-    const [, coreCost, sigilCost] = content.cardRules.tierUp.gold.fighting;
-    state.resources['frost_core'] = new Decimal(coreCost!.amount);
-    state.resources['frost_sigil'] = new Decimal(sigilCost!.amount).mul(2);
-    state.resources['storm_core'] = new Decimal(1e6); // the Gold step also asks Thunderpeak's Core
-    state.resources['moonwillow_gem'] = new Decimal(1e6);
-    state.resources['grotto_gem'] = new Decimal(1e6);
-    state.resources['money'] = new Decimal(1e9);
-    state.resources['summon_scroll'] = new Decimal(0); // no pull mixed in
-    const { bought } = greedyBuy(state, content);
-    expect(bought).not.toContain('tier:geode_golem');
-    state.resources['frost_core'] = new Decimal(coreCost!.amount).mul(2);
-    expect(greedyBuy(state, content).bought).toContain('tier:geode_golem');
   });
 
   it('saves the Glimmer Dust for the cosmetic closest to its top level', () => {

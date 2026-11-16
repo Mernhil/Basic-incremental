@@ -48,17 +48,17 @@ describe('the star bar (DESIGN.md §5 One copy a star)', () => {
 
   it('shows a gauge between 0 and 1 and no bar at ★6 or for a card not owned', () => {
     const card = content.cardById.get('ember_squire')!;
-    expect(starBarView(content, card, { ...newOwnedCard(), starFill: 0 })).toMatchObject({
+    expect(starBarView(card, { ...newOwnedCard(), starFill: 0 })).toMatchObject({
       need: 1,
       gauge: 0,
       ready: false,
     });
-    expect(starBarView(content, card, { ...newOwnedCard(), starFill: 0.5 })!.gauge).toBe(0.5);
-    expect(starBarView(content, card, { ...newOwnedCard(), starFill: 4 })).toMatchObject({
+    expect(starBarView(card, { ...newOwnedCard(), starFill: 0.5 })!.gauge).toBe(0.5);
+    expect(starBarView(card, { ...newOwnedCard(), starFill: 4 })).toMatchObject({
       gauge: 1,
       ready: true,
     });
-    expect(starBarView(content, card, { ...newOwnedCard(), stars: 6 })).toBeNull();
+    expect(starBarView(card, { ...newOwnedCard(), stars: 6 })).toBeNull();
     expect(cardInfo(freshState(), content, 'storm_duelist')!.starBar).toBeNull();
   });
 
@@ -169,7 +169,7 @@ describe('a card has one tier, for good (DESIGN.md §5 No tier-ups)', () => {
   it('counts as fully ranked at ★6, at any tier', () => {
     for (const id of ['ember_squire', 'storm_duelist', 'core_titan', 'heartdelver']) {
       const state = own(freshState(), id, { stars: 6 });
-      expect(isMaxRank(content, id, state.cards.owned[id]!), id).toBe(true);
+      expect(isMaxRank(state.cards.owned[id]!), id).toBe(true);
       expect(cardInfo(state, content, id)!.maxRank).toBe(true);
       own(state, id, { stars: 5 });
       expect(cardInfo(state, content, id)!.maxRank).toBe(false);

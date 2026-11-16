@@ -44,8 +44,6 @@ export function tierUpText(u: TierUp, content: Content): { title: string; detail
       return { title: t.mine(name, metal), detail: t.milestone(u.to) };
     case 'tile_stage':
       return { title: t.tile(name, metal), detail: t.tileDetail };
-    case 'card_tier':
-      return { title: t.cardTier(name, metal), detail: t.cardTierDetail };
     case 'heirloom': {
       const card = content.cardById.get(u.id);
       const heirloom = card

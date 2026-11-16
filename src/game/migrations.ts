@@ -97,7 +97,158 @@ export const MIGRATIONS: MigrationTable = {
   /** v37 -> v38: the skill web (DESIGN.md §10 The skill web): the 11 branches of the old tree become the
    *  web's nodes; each old rank is carried into the node that took its skill over. */
   37: v37ToV38,
+  /** v38 -> v39: the roster by tier (DESIGN.md §5 No tier-ups): a card's tier is its own and leaves the
+   *  save; stars, level, XP and enhancements are kept. */
+  38: v38ToV39,
 };
+
+/**
+ * The Wood to Prismatic cards by tier when save format 39 was made (a snapshot of cards.json; every
+ * other card of that roster is a T6 card or an Heirloom card).
+ */
+const V39_BASE_CARDS: Record<string, readonly string[]> = {
+  wood: [
+    'ember_squire',
+    'apprentice_feller',
+    'cave_digger',
+    'rusty_brute',
+    'militia_picket',
+    'stable_squire',
+    'alley_cutpurse',
+    'quarry_smasher',
+    'fieldhand_archer',
+    'hedge_acolyte',
+    'field_reaper',
+  ],
+  bronze: [
+    'hollow_spearman',
+    'moss_forager',
+    'pebble_prospector',
+    'brass_vanguard',
+    'bronze_warden',
+    'bronze_jouster',
+    'bronze_sneak',
+    'bronze_forgehand',
+    'bronze_hunter',
+    'bronze_mystic',
+    'bronze_gleaner',
+  ],
+  silver: [
+    'grove_keeper',
+    'gem_cutter',
+    'reaper_test',
+    'silver_cavalier',
+    'silver_executioner',
+    'silver_skirmisher',
+    'silver_rider',
+    'silver_shiv',
+    'silver_sledger',
+    'silver_ranger',
+    'silver_mage',
+  ],
+  gold: [
+    'storm_duelist',
+    'elder_treant',
+    'prism_delver',
+    'gilded_knight',
+    'gold_warlord',
+    'golden_hoplite',
+    'golden_tilter',
+    'golden_anvilmaster',
+    'golden_sharpshot',
+    'golden_sage',
+    'golden_harvester',
+  ],
+  prismatic: [
+    'dawnblade_regent',
+    'geode_golem',
+    'heartwood_warden',
+    'prism_paladin',
+    'shard_strider',
+    'mirror_cavalier',
+    'whisper_assassin',
+    'facet_crusher',
+    'rainbow_sniper',
+    'kaleido_weaver',
+    'halfmoon_reaper',
+  ],
+};
+
+/** Shards a copy past ★6 pays, by tier, when save format 39 was made (cardRules.json). */
+const V39_SHARDS: Record<string, number> = {
+  wood: 1,
+  bronze: 1,
+  silver: 2,
+  gold: 4,
+  prismatic: 8,
+  mythic: 25,
+};
+
+/**
+ * The five "Upgrade a weapon to ..." quests that left with tier-ups, each with the "first ... weapon"
+ * quest that took its Summon Scrolls over (quests.json before and after save format 39).
+ */
+const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
+  { gone: 'card_tier_bronze', into: 'first_uncommon', scrolls: 1 },
+  { gone: 'card_tier_silver', into: 'first_rare', scrolls: 1 },
+  { gone: 'card_tier_gold', into: 'first_epic', scrolls: 1 },
+  { gone: 'card_tier_prismatic', into: 'first_legendary', scrolls: 2 },
+  { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
+];
+
+/**
+ * v38 -> v39: the roster by tier (DESIGN.md §5 No tier-ups, Saves keep their cards). A card's tier is
+ * its own and is no longer saved: the saved `tier` of every owned card is dropped, and the card
+ * stands at its own tier whatever tier it had been raised to. Stars, level, XP and enhancements are
+ * kept as they are (the new level cap is never below the old one). A star now costs one copy at
+ * every tier, so a star bar holding more than the stars left to ★6 pays the rest as shards. Money
+ * and materials spent on tier-ups are not paid back. The five "Upgrade a weapon to ..." quests are
+ * gone: one whose scrolls were not claimed, while the quest that took them over was, pays them now.
+ */
+function v38ToV39(state: Record<string, unknown>): Record<string, unknown> {
+  const cards = isRecord(state['cards']) ? { ...state['cards'] } : {};
+  const owned = isRecord(cards['owned']) ? { ...cards['owned'] } : {};
+  const tierOf = new Map<string, string>();
+  for (const [tier, ids] of Object.entries(V39_BASE_CARDS))
+    for (const id of ids) tierOf.set(id, tier);
+  let shards = typeof cards['shards'] === 'number' ? cards['shards'] : 0;
+  for (const [id, value] of Object.entries(owned)) {
+    if (!isRecord(value)) continue;
+    const { tier: saved, ...card } = value;
+    // An Heirloom card has no star bar: its fill is left alone.
+    if (saved !== 'heirloom') {
+      const stars = typeof card['stars'] === 'number' ? card['stars'] : 1;
+      const fill = typeof card['starFill'] === 'number' ? card['starFill'] : 0;
+      const room = Math.max(0, 6 - stars);
+      if (fill > room) {
+        shards += Math.floor((fill - room) * V39_SHARDS[tierOf.get(id) ?? 'mythic']!);
+        card['starFill'] = room;
+      }
+    }
+    owned[id] = card;
+  }
+  cards['owned'] = owned;
+  cards['shards'] = shards;
+
+  const quests = isRecord(state['quests']) ? { ...state['quests'] } : {};
+  const resources = isRecord(state['resources']) ? { ...state['resources'] } : {};
+  let scrolls = 0;
+  for (const q of V39_QUESTS) {
+    const gone = quests[q.gone];
+    const into = quests[q.into];
+    const goneClaimed = isRecord(gone) && gone['claimed'] === true;
+    const intoClaimed = isRecord(into) && into['claimed'] === true;
+    if (intoClaimed && !goneClaimed) scrolls += q.scrolls;
+    delete quests[q.gone];
+  }
+  if (scrolls > 0) {
+    const held = new Decimal(
+      typeof resources['summon_scroll'] === 'string' ? resources['summon_scroll'] : 0,
+    );
+    resources['summon_scroll'] = held.add(scrolls).toString();
+  }
+  return { ...state, cards, quests, resources };
+}
 
 /** What an old branch skill costs a rank and has as its ranks, by its slot letter (s small, l large, k keystone). */
 const OLD_SKILL = {

@@ -336,7 +336,6 @@ describe('card ranks and portals', () => {
 
   it('catches unknown materials and card modifier scopes', () => {
     const bad = raw();
-    const rules = bad.cardRules as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (bad.cards as Record<string, any>[])[0]!['teamBonus'].modifiers[0].scope = {
       dungeon: 'nowhere',

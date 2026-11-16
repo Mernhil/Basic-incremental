@@ -63,14 +63,18 @@ describe('dev cheats (dev builds only)', () => {
 
   it('sets a card rank and level, owning the card if needed, level clamped to the cap', () => {
     const result = devSetCardRank(freshState(), content, 'dawnblade_regent', {
-      tier: 'gold',
+      tier: 'prismatic',
       stars: 6,
       level: 999,
     });
     expect(result.ok).toBe(true);
     if (!result.ok) return;
     const owned = result.state.cards.owned['dawnblade_regent']!;
-    expect([owned.tier, owned.stars, owned.level]).toEqual(['gold', 6, 80]);
+    expect([owned.tier, owned.stars, owned.level]).toEqual(['prismatic', 6, 100]);
+    // a card's tier is its own: another tier is refused
+    expect(
+      devSetCardRank(freshState(), content, 'dawnblade_regent', { tier: 'gold', stars: 1 }).ok,
+    ).toBe(false);
     expect(devSetCardRank(freshState(), content, 'nobody', { tier: 'gold', stars: 1 }).ok).toBe(
       false,
     );

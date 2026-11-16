@@ -21,7 +21,7 @@ export interface Requirement {
 }
 
 export interface UpgradeStep {
-  kind: 'star' | 'tier';
+  kind: 'star';
   /** "Next star: ★4", "Tier-up to Silver ★3" */
   title: string;
   /** What it gives, e.g. "Adds power and raises the level cap to 32." */
@@ -135,8 +135,6 @@ export interface CardEntry {
   role: LoadoutRole | null;
   /** The next star-up (the star bar), or null at ★6. */
   next: UpgradeStep | null;
-  /** The next tier-up (level cap, Money, materials), or null at the card's top tier. */
-  tier: UpgradeStep | null;
   /** The weapon panel's data (level ring, star bar, tier-up cost); null when not owned. */
   weapon: WeaponView | null;
   /** The stat tiles with their compare line (DESIGN.md §5 Show the stats). */
@@ -249,7 +247,7 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'tier' | 'dust'): ModelResult;
+  upgrade(state: GameState, id: string, kind: 'star' | 'dust'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

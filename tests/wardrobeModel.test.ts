@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   collectModifiers,
@@ -162,8 +163,8 @@ describe('selected item', () => {
     const d = detail(s, 'ember_crown', other);
     expect(d.equip.global).toBeNull();
     expect(d.equip.card).toBeNull();
-    expect(d.equip.note).toBe('Own Wooden Greatsword to equip it.');
-    expect(d.exclusive).toBe('Only for Wooden Greatsword, from Prismatic ★6');
+    expect(d.equip.note).toBe('Own Prismatic Greatsword to equip it.');
+    expect(d.exclusive).toBe('Only for Prismatic Greatsword, from Prismatic ★6');
     ownCard(s, 'dawnblade_regent');
     expect(detail(s, 'ember_crown', 'dawnblade_regent').equip.card).toBe('equip');
   });
@@ -221,7 +222,7 @@ describe('preview', () => {
     const r = resolveCard(content, loadout, {
       id: card,
       rank: { tier: 'gold', stars: 1 },
-      rarity: content.cardById.get(card)!.rarity,
+      rarity: cardStyle(content.cardById.get(card)!),
     });
     expect(r.slots.border.level).toBe(4);
     expect(r.recipes).toEqual(expect.arrayContaining(['filigree-1', 'filigree-2', 'filigree-3']));

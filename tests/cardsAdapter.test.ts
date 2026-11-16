@@ -1,7 +1,6 @@
 import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import { addCard, cardDisplayName, itemName } from '../src/game';
-import { RANK_TIERS } from '../src/data/schemas';
 import { createCardsModel, previewArt, previewTiers } from '../src/renderer/src/pages/cardsAdapter';
 import { slotChoices } from '../src/renderer/src/pages/cardsModel';
 import { content, freshState } from './helpers';
@@ -20,11 +19,8 @@ describe('Cards page model', () => {
     ]);
     for (const e of owned) {
       expect(e.next?.kind).toBe('star');
-      expect(e.tier).toBeNull(); // commons stop at Wood (rarity caps the tier)
     }
-    expect(entries.filter((e) => !e.owned).every((e) => e.next === null && e.tier === null)).toBe(
-      true,
-    );
+    expect(entries.filter((e) => !e.owned).every((e) => e.next === null)).toBe(true);
   });
 
   it('adds, moves and removes loadout cards through the loadout rules', () => {

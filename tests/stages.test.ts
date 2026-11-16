@@ -9,7 +9,6 @@ import {
   resetProduction,
   simulateOffline,
   starUp,
-  tierUp,
   tileStage,
   type OwnedCard,
 } from '../src/game';
@@ -72,43 +71,7 @@ function cardAt(tier: OwnedCard['tier'], stars: number, level = 200): OwnedCard 
   return { ...newOwnedCard(), tier, stars, level, starFill: 5 };
 }
 
-describe('card tier and heirloom tier-ups', () => {
-  it('reports a card tier-up with the metal of its new tier index', () => {
-    const state = freshState();
-    state.cards.owned['storm_duelist'] = cardAt('wood', 6, 20);
-    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e9');
-    const result = tierUp(state, content, 'storm_duelist');
-    // The tier index runs wood 0 (stone), bronze 1 ... mythic 5; the flash metal is capped at prismatic.
-    expect(result.ok && result.tierUps).toEqual([
-      { kind: 'card_tier', id: 'storm_duelist', from: 0, to: 1, metal: 'bronze' },
-    ]);
-  });
-
-  it('reports the Mythic tier-up as an ordinary card tier-up, with no Heirloom moment', () => {
-    const state = freshState();
-    state.cards.owned['moonwood_dryad'] = cardAt('prismatic', 6, 100);
-    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
-    const result = tierUp(state, content, 'moonwood_dryad');
-    expect(result.ok && result.tierUps).toEqual([
-      { kind: 'card_tier', id: 'moonwood_dryad', from: 4, to: 5, metal: 'prismatic' },
-    ]);
-  });
-
-  it('reports no tier-up past Mythic or Void: the ladder ends there', () => {
-    const state = freshState();
-    state.cards.owned['core_titan'] = cardAt('mythic', 6, 120);
-    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
-    expect(tierUp(state, content, 'core_titan')).toEqual({ ok: false, reason: 'unavailable' });
-  });
-
-  it('reports no heirloom moment when a card reaches Gold ★6', () => {
-    const state = freshState();
-    state.cards.owned['dawnblade_regent'] = cardAt('silver', 6, 60);
-    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e12');
-    const result = tierUp(state, content, 'dawnblade_regent');
-    expect(result.ok && result.tierUps.map((t) => t.kind)).toEqual(['card_tier']);
-  });
-
+describe('card star-ups', () => {
   it('reports nothing for an ordinary star-up', () => {
     const state = freshState();
     state.cards.owned['ember_squire'] = cardAt('wood', 1, 20);
@@ -146,37 +109,35 @@ describe('item types per card (DESIGN.md §5)', () => {
       kind: 'sword',
       name: 'Wooden Sword',
       heirloom: false,
-      rarity: 'common',
     });
     expect(cardItem(content, 'moonwood_dryad')).toEqual({
       kind: 'logging_axe',
       name: 'Mythic Grove Axe',
       heirloom: false,
-      rarity: 'void',
     });
   });
 });
 
 describe('item names (DESIGN.md §5, items.json)', () => {
   it('names T1 to T4 "<material> <type>": Wooden, Bronze, Silver, Golden', () => {
-    expect(itemName(content, 'sword', 'wood', 'common')).toBe('Wooden Sword');
-    expect(itemName(content, 'sword', 'bronze', 'uncommon')).toBe('Bronze Sword');
-    expect(itemName(content, 'sword', 'silver', 'rare')).toBe('Silver Sword');
-    expect(itemName(content, 'sword', 'gold', 'epic')).toBe('Golden Sword');
-    expect(itemName(content, 'greatsword', 'gold', 'epic')).toBe('Golden Greatsword');
-    expect(itemName(content, 'dagger', 'silver', 'rare')).toBe('Silver Dagger');
+    expect(itemName(content, 'sword', 'wood', undefined)).toBe('Wooden Sword');
+    expect(itemName(content, 'sword', 'bronze', undefined)).toBe('Bronze Sword');
+    expect(itemName(content, 'sword', 'silver', undefined)).toBe('Silver Sword');
+    expect(itemName(content, 'sword', 'gold', undefined)).toBe('Golden Sword');
+    expect(itemName(content, 'greatsword', 'gold', undefined)).toBe('Golden Greatsword');
+    expect(itemName(content, 'dagger', 'silver', undefined)).toBe('Silver Dagger');
   });
 
   it('shows the logging axe as "Axe"', () => {
-    expect(itemName(content, 'logging_axe', 'wood', 'common')).toBe('Wooden Axe');
-    expect(itemName(content, 'logging_axe', 'gold', 'epic')).toBe('Golden Axe');
-    expect(itemName(content, 'logging_axe', 'prismatic', 'legendary')).toBe('Prismatic Axe');
+    expect(itemName(content, 'logging_axe', 'wood', undefined)).toBe('Wooden Axe');
+    expect(itemName(content, 'logging_axe', 'gold', undefined)).toBe('Golden Axe');
+    expect(itemName(content, 'logging_axe', 'prismatic', undefined)).toBe('Prismatic Axe');
   });
 
   it('names T5 "Prismatic <type>", the same for both sides', () => {
-    expect(itemName(content, 'sword', 'prismatic', 'legendary')).toBe('Prismatic Sword');
+    expect(itemName(content, 'sword', 'prismatic', undefined)).toBe('Prismatic Sword');
     expect(itemName(content, 'sword', 'prismatic', 'void')).toBe('Prismatic Sword');
-    expect(itemName(content, 'bow', 'prismatic', 'legendary')).toBe('Prismatic Bow');
+    expect(itemName(content, 'bow', 'prismatic', undefined)).toBe('Prismatic Bow');
   });
 
   it('names T6 by the card side: Mythic Light Sword for Mythic, Void Shadow Sword for Void', () => {
@@ -207,7 +168,7 @@ describe('item names (DESIGN.md §5, items.json)', () => {
   });
 
   it('falls back to the kind for an unknown type', () => {
-    expect(itemName(content, 'nothing' as never, 'wood', 'common')).toBe('nothing');
+    expect(itemName(content, 'nothing' as never, 'wood', undefined)).toBe('nothing');
   });
 });
 

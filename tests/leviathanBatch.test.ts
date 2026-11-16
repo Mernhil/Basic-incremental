@@ -1,6 +1,6 @@
 import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
-import { cardItem, newOwnedCard, itemName } from '../src/game';
+import { cardItem, itemName } from '../src/game';
 import { cardTierArt, itemArt } from '../src/renderer/src/art/items';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
 import { content } from './helpers';
@@ -76,7 +76,6 @@ describe('the Leviathan batch (DESIGN.md §5 Art batches)', () => {
   });
 
   it('shows each Heirloom its own picture and name', () => {
-    const owned = { ...newOwnedCard(), tier: 'heirloom' as const };
     for (const c of heirlooms) {
       const name = `item-${c.item.kind}-leviathan-heirloom`;
       expect(sprite(name), name).toBeTruthy();

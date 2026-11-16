@@ -1,4 +1,4 @@
-import type { Content, RankTier } from '../../../data';
+import type { Content } from '../../../data';
 import { type StatResult } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
