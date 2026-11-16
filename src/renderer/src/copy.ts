@@ -1210,6 +1210,10 @@ export const COPY = {
     xpLabelShort: 'Card XP',
     xpOf2: (now: string, need: string) => `${now} / ${need}`,
     starOf: (n: number, total: number) => `${n} of ${total} stars`,
+    /** Under the level line while the next level is a breakthrough level (DESIGN.md §5 Strength
+     *  comes with the card's levels): the XP bar is not stuck, the level is a big one. */
+    breakthrough:
+      'Breakthrough levels: the next levels need much more XP and give a big jump in power.',
     /** Under the stars: a card never changes tier (DESIGN.md §5 No tier-ups). */
     fixedTier: (tier: string) =>
       `A ${tier} weapon, for good. Weapons of other tiers come from Summon.`,

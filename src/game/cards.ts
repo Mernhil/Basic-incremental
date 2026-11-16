@@ -219,16 +219,29 @@ export function levelCap(content: Content, rank: Rank): number {
 /** XP needed to go from `level` to `level + 1`: base × growth^(level − 1), times the step wall
  *  of the tier whose level cap the card is passing (`xpCurve.stepWall`). */
 export function xpToNextLevel(content: Content, level: number): Decimal {
-  const { base, growth, stepWall } = content.cardRules.xpCurve;
+  const { base, growth } = content.cardRules.xpCurve;
   const need = base.mul(growth.pow(Math.max(0, level - 1)));
+  const wall = breakthroughTier(content, level);
+  return wall ? need.mul(content.cardRules.xpCurve.stepWall[wall]) : need;
+}
+
+/**
+ * The tier whose level cap a card at `level` is passing: its next level is one of the breakthrough
+ * levels that carry it onto the next tier's power step (the `power.tierStepLevels` levels from that
+ * cap on) and need much more XP; null on any other level.
+ */
+export function breakthroughTier(
+  content: Content,
+  level: number,
+): 'wood' | 'bronze' | 'silver' | 'gold' | 'prismatic' | null {
   // The levels that carry a card onto the next tier's power step cost more XP (DESIGN.md §5
   // Strength comes with the card's levels): they stand where the tier-up stood.
   const { levelCaps, power } = content.cardRules;
   for (const tier of ['wood', 'bronze', 'silver', 'gold', 'prismatic'] as const) {
     const cap = levelCaps[tier];
-    if (level >= cap && level < cap + power.tierStepLevels) return need.mul(stepWall[tier]);
+    if (level >= cap && level < cap + power.tierStepLevels) return tier;
   }
-  return need;
+  return null;
 }
 
 /**

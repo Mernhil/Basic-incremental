@@ -265,6 +265,7 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
       w.starBar?.ready,
       w.starBar?.dust,
       w.starStats,
+      w.breakthrough,
       w.endNote,
     ]);
     if (sig === sideSig) return;
@@ -295,6 +296,11 @@ export function createWeaponPanel(opts: WeaponPanelOptions): WeaponPanel {
 
     tagHost.replaceChildren();
     // there is no tier-up step (DESIGN.md §5 No tier-ups): only the note
+    if (w.breakthrough) {
+      const note = h('p', 'wp-end wp-break', w.breakthrough);
+      if (variant === 'card') note.classList.add('wp-tile', 'px-tile');
+      tagHost.append(note);
+    }
     const end = h('p', 'wp-end', w.endNote);
     if (variant === 'card') end.classList.add('wp-tile', 'px-tile');
     tagHost.append(end);

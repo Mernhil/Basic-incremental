@@ -69,6 +69,9 @@ export interface WeaponView {
     /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
     dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
+  /** "Breakthrough levels: ..." while the card's next level is one of the levels that carry it
+   *  onto the next tier's power step (they need much more XP); null otherwise. */
+  breakthrough: string | null;
   /** The note under the stars: the card's tier is its own for good (DESIGN.md §5 No tier-ups), or
    *  where an Heirloom's stars come from. */
   endNote: string;

@@ -1,6 +1,7 @@
 import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
 import {
+  breakthroughTier,
   cardStatsFor,
   itemName,
   tierLabel,
@@ -123,6 +124,8 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
     stars: owned.stars,
     starStats,
     starBar: owned.stars >= MAX_STARS ? null : starBar,
+    breakthrough:
+      !atCap && breakthroughTier(content, owned.level) !== null ? COPY.weapon.breakthrough : null,
     endNote,
   };
 }
