@@ -12,11 +12,18 @@ import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import type { SoundId } from '../sound/registry';
 import { replay } from '../stage/motion';
-import { centreStar } from '../ui/skillArt';
 import { glyphSvg } from '../ui/webGlyphs';
 import { createHeirloomsTab } from './heirloomsMap';
 import type { PageContext } from './production';
-import { CENTRE, SKY, respecView, treeView, type NodeView, type TreeView } from './skillsModel';
+import {
+  BRANCH_COLOUR,
+  CENTRE,
+  SKY,
+  respecView,
+  treeView,
+  type NodeView,
+  type TreeView,
+} from './skillsModel';
 import './skills.css';
 import './skillWeb.css';
 
@@ -39,7 +46,7 @@ export interface SkillsContext extends PageContext {
 
 /** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
 const START_SCALE = 0.62;
-const MIN_SCALE = 0.4;
+const MIN_SCALE = 0.2;
 const MAX_SCALE = 1.7;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -158,19 +165,33 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   // ---- the constellation ----
 
   /** Pan and zoom of the sky: pixels per sky unit and the box's offset in the stage. */
-  const camera = { scale: START_SCALE, x: 0, y: 0, placed: false };
+  const camera = { scale: START_SCALE, x: 0, y: 0, placed: false, touched: false, width: 0 };
+  /** The skills in view (sky units): the first view fits them, so the web you have opens whole. */
+  let fit: { x0: number; y0: number; x1: number; y1: number } | null = null;
   const clampScale = (s: number): number => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
 
   /** Sizes and places the sky box in its stage from the camera (gems keep their pixel size). */
   function applyCamera(stage: HTMLElement, box: HTMLElement): void {
     const rect = stage.getBoundingClientRect();
+    // a window resized before you moved the sky gets the fitted first view again
+    if (camera.placed && !camera.touched && Math.abs(rect.width - camera.width) > 40) {
+      camera.placed = false;
+    }
     if (!camera.placed && rect.width > 0) {
-      // first view: the centre star in the middle of the stage
-      camera.x = rect.width / 2 + SKY.x * camera.scale;
-      camera.y = rect.height / 2 + SKY.y * camera.scale;
+      camera.width = rect.width;
+      // first view: everything you know, and the "?" next to it, inside the frame (under the tabs)
+      const f = fit ?? { x0: 0, y0: 0, x1: 0, y1: 0 };
+      const w = Math.max(f.x1 - f.x0, 1);
+      const hgt = Math.max(f.y1 - f.y0, 1);
+      camera.scale = clampScale(
+        Math.min((rect.width - 150) / w, (rect.height - (rect.width < 1000 ? 200 : 270)) / hgt, 1),
+      );
+      camera.x = rect.width / 2 - ((f.x0 + f.x1) / 2 - SKY.x) * camera.scale;
+      camera.y = rect.height / 2 + 8 - ((f.y0 + f.y1) / 2 - SKY.y) * camera.scale;
       camera.placed = true;
     }
     box.classList.toggle('is-far', camera.scale < 0.45);
+    box.classList.toggle('is-tiny', camera.scale < 0.4);
     box.style.width = `${SKY.w * camera.scale}px`;
     box.style.height = `${SKY.h * camera.scale}px`;
     box.style.left = `${camera.x}px`;
@@ -186,6 +207,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     cy: number,
   ): void {
     const next = clampScale(scale);
+    camera.touched = true;
     const k = next / camera.scale;
     camera.x = cx - (cx - camera.x) * k;
     camera.y = cy - (cy - camera.y) * k;
@@ -238,6 +260,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
         stage.setPointerCapture(e.pointerId);
         stage.classList.add('is-panning');
       }
+      camera.touched = true;
       camera.x = drag.cx + dx;
       camera.y = drag.cy + dy;
       applyCamera(stage, box);
@@ -273,6 +296,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     mk('⌂', t.zoomReset, () => {
       camera.scale = START_SCALE;
       camera.placed = false;
+      camera.touched = false;
       applyCamera(stage, box);
     });
     bar.append(h('span', 'sk-zoom__hint', t.panHint));
@@ -356,15 +380,20 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       box.append(label);
     }
 
-    // centre star: the points to spend
+    // the branches only: the far weapon circles are for panning to
+    const arms = v.nodes.filter((n) => !n.circle);
+    const xs = [CENTRE.x, ...arms.map((n) => n.x)];
+    const ys = [CENTRE.y, ...arms.map((n) => n.y)];
+    fit = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
+
+    // the hub: a gold node with a star, the points to spend on its rim
     const centre = h('div', 'sk-centre');
     centre.style.left = px(CENTRE.x);
     centre.style.top = py(CENTRE.y);
     const star = h('span', 'sk-centre__star');
-    star.innerHTML = centreStar();
+    star.innerHTML = glyphSvg('key', '#ffd45a');
     const num = h('span', 'sk-centre__num bi-num', String(v.points.available));
-    const lab = h('span', 'sk-centre__label', t.points);
-    centre.append(star, num, lab);
+    centre.append(star, num);
     centre.classList.toggle('has-points', v.points.available > 0);
     centre.setAttribute('aria-label', t.pointsAvailable(v.points.available));
     centre.setAttribute('role', 'img');
@@ -378,6 +407,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     enablePanZoom(stage, box);
     body.append(stage);
     // the stage has no size until it is in the page: place the sky once it is
+    if (typeof ResizeObserver !== 'undefined')
+      new ResizeObserver(() => applyCamera(stage, box)).observe(stage);
     queueMicrotask(() => applyCamera(stage, box));
     applyCamera(stage, box);
     return el;
@@ -554,7 +585,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   }
 
   /** The tab strip, the count of what can be bought and the legend, laid over the stage (pick 4a, 4c). */
-  function chrome(frameEl: HTMLElement, affordable: number): void {
+  function chrome(frameEl: HTMLElement, affordable: number, points?: number): void {
     const stage = frameEl.querySelector<HTMLElement>('.sk-stage');
     if (!stage) return;
     const count = h('p', 'sk-count');
@@ -583,6 +614,16 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       tabs.append(b);
     }
     const legend = h('div', 'sk-legend');
+    if (points !== undefined) {
+      for (const [id, colour] of Object.entries(BRANCH_COLOUR)) {
+        const item = h('span', 'sk-legend__item sk-legend__item--branch');
+        const dot = h('i', 'sk-legend__dot is-branch');
+        dot.style.background = colour;
+        dot.style.borderColor = colour;
+        item.append(dot, t.branchShort[id as keyof typeof t.branchShort]);
+        legend.append(item);
+      }
+    }
     for (const [cls, text] of [
       ['is-maxed', t.legend.maxed],
       ['is-owned', t.legend.owned],
@@ -595,6 +636,14 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       legend.append(item);
     }
     stage.append(tabs, count, legend);
+    if (points !== undefined) {
+      const chips = h('div', 'sk-chips');
+      const chip = h('span', 'sk-chip');
+      chip.innerHTML = glyphSvg('key', '#ffd45a');
+      chip.append(h('b', 'bi-num', String(points)), ` ${t.points}`);
+      chips.append(chip);
+      stage.append(chips);
+    }
   }
 
   function build(focusKey?: string): void {
@@ -606,7 +655,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     }
     if (tab === 'tree') {
       const stage = sky(v);
-      chrome(stage, v.affordable);
+      chrome(stage, v.affordable, v.points.available);
       wrap.replaceChildren(stage, sidePanel(v));
       ctx.subtitle?.(v.learned, v.total);
     } else {

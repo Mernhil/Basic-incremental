@@ -307,3 +307,104 @@
   background: #3a2a08;
   border: 2px solid #ffd45a;
 }
+
+/* ---- the hub: a gold node with a star, not a big star over the web ---- */
+.sk-centre {
+  box-sizing: border-box;
+  width: 78px;
+  aspect-ratio: auto;
+  height: 78px;
+  border: 5px solid #ffd45a;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #4a3c14, #201808 70%);
+  box-shadow:
+    0 0 0 2px #0b0e20,
+    0 0 20px rgba(255, 212, 90, 0.55);
+}
+.sk-centre:not(.has-points) {
+  border-color: #8a7a4a;
+  box-shadow: 0 0 0 2px #0b0e20;
+}
+.sk-centre__star {
+  inset: 18%;
+  filter: none;
+}
+.sk-centre__star .wg {
+  width: 100%;
+  height: 100%;
+}
+.sk-centre__num {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  translate: -50% 0;
+  margin: 0;
+  padding: 0 7px;
+  font-size: 13px;
+  line-height: 17px;
+  color: #fff;
+  background: #0b0e20;
+  border-radius: 9px;
+  box-shadow: 0 0 0 2px #ffd45a;
+}
+.sk-node__name {
+  padding: 0 4px;
+  background: rgba(11, 14, 32, 0.78);
+  border-radius: 3px;
+}
+.sk-chips {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+.sk-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e9ecfb;
+  background: rgba(11, 14, 32, 0.9);
+  border: 2px solid #2d3563;
+}
+.sk-chip .wg {
+  width: 24px;
+  height: 24px;
+}
+.sk-legend__dot.is-branch {
+  border-width: 0;
+}
+.sk-legend {
+  max-width: calc(100% - 170px);
+}
+
+/* a small window fits the whole web: smaller plates, no names, no branch keys */
+.sk-sky.is-tiny .sk-node__gem {
+  width: 36px;
+  height: 36px;
+  border-width: 3px;
+}
+.sk-sky.is-tiny .sk-node.is-key .sk-node__gem {
+  width: 36px;
+  height: 36px;
+  margin: 4px;
+}
+.sk-sky.is-tiny .sk-node__rank {
+  font-size: 9px;
+  line-height: 12px;
+  bottom: -8px;
+  padding: 0 3px;
+}
+.sk-sky.is-tiny .sk-node__q {
+  font-size: 18px;
+}
+@media (max-width: 1400px) {
+  .sk-legend__item--branch {
+    display: none;
+  }
+}
