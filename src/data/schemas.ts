@@ -1753,6 +1753,8 @@ const accountFileSchema = z.strictObject({
       branch: z.enum(SKILL_BRANCHES),
       /** The area of the web the branch grows in (colour and direction). */
       area: z.enum(SKILL_AREAS),
+      /** A side branch: the trunk branch of its area whose first skill must have a rank before this branch's first skill opens. */
+      forksFrom: z.enum(SKILL_BRANCHES).optional(),
       small: z.array(skillEffectSchema).min(1),
       large: z.array(skillEffectSchema).min(1),
       keystone: skillEffectSchema,
@@ -1832,7 +1834,10 @@ function generateTree(a: z.output<typeof accountFileSchema>): SkillNode[] {
         branch: b.branch,
         cost: rule.cost,
         maxRank: rule.maxRank,
-        requires: slot.requires.map((r) => `${b.branch}_${r}`),
+        requires:
+          slot.requires.length === 0 && b.forksFrom
+            ? [`${b.forksFrom}_${slot.slot}`]
+            : slot.requires.map((r) => `${b.branch}_${r}`),
         perRank: effect.perRank.map((m) => ({ ...m, value: m.value.mul(rule.scale) })),
         kind: slot.kind,
         ring: slot.ring,

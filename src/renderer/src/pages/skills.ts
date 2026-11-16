@@ -47,7 +47,7 @@ export interface SkillsContext extends PageContext {
 
 /** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
 const START_SCALE = 1;
-const MIN_SCALE = 0.3;
+const MIN_SCALE = 0.22;
 const MAX_SCALE = 1.7;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -175,8 +175,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
 
   /** Pan and zoom of the sky: pixels per sky unit and the box's offset in the stage. */
   const camera = { scale: START_SCALE, x: 0, y: 0, placed: false, touched: false, width: 0 };
-  /** Where the first view looks: the middle of what you have bought and the star (pick 4a opens on it). */
-  let focus = { x: 0, y: 0, w: 0, h: 0 };
+  /** The skills in view (sky units): the first view fits them all (pick 4a opens on its whole web). */
+  let focus = { x0: 0, y0: 0, x1: 0, y1: 0 };
   const clampScale = (s: number): number => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
 
   /** Sizes and places the sky box in its stage from the camera (plates keep their pixel size). */
@@ -188,26 +188,26 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     }
     if (!camera.placed && rect.width > 0) {
       camera.width = rect.width;
-      // what you have and the "?" next to it fill the frame, 1:1 at most and never below half size
-      camera.scale = Math.min(
-        START_SCALE,
-        Math.max(
-          0.5,
-          Math.min(
-            (rect.width - 140) / Math.max(focus.w + 320, 1),
-            (rect.height - 190) / Math.max(focus.h + 320, 1),
-          ),
-        ),
+      // every skill in view, with its "?" neighbours, inside the safe area: under the tab strip and
+      // the count box, over the legend and the zoom buttons, clear of the frame (a plate and its
+      // name add about 60 units around the outermost skills)
+      const top = 124;
+      const bottom = 92;
+      const w = focus.x1 - focus.x0 + 130;
+      const hgt = focus.y1 - focus.y0 + 190;
+      camera.scale = clampScale(
+        Math.min(START_SCALE, (rect.width - 48) / w, (rect.height - top - bottom) / hgt),
       );
-      camera.x = rect.width / 2 - (focus.x - SKY.x) * camera.scale;
-      camera.y = rect.height / 2 + 24 - (focus.y - SKY.y) * camera.scale;
+      camera.x = rect.width / 2 - ((focus.x0 + focus.x1) / 2 - SKY.x) * camera.scale;
+      camera.y =
+        top + (rect.height - top - bottom) / 2 - ((focus.y0 + focus.y1) / 2 - SKY.y) * camera.scale;
       camera.placed = true;
     }
-    box.classList.toggle('is-far', camera.scale < 0.42);
+    box.classList.toggle('is-far', camera.scale < 0.45);
     // the plates grow and shrink with the zoom, as 4a's whole web does
     box.style.setProperty(
       '--plate',
-      `${Math.max(38, Math.round(64 * Math.min(camera.scale, 1)))}px`,
+      `${Math.min(64, Math.max(30, Math.round(70 * camera.scale)))}px`,
     );
     box.style.width = `${SKY.w * camera.scale}px`;
     box.style.height = `${SKY.h * camera.scale}px`;
@@ -335,19 +335,6 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       'aria-hidden': 'true',
     });
     art.append(starField());
-    // faint rays behind each branch
-    for (const b of v.branches) {
-      art.append(
-        svgEl('line', {
-          class: 'sk-ray',
-          x1: CENTRE.x,
-          y1: CENTRE.y,
-          x2: b.x,
-          y2: b.y,
-          stroke: b.colour,
-        }),
-      );
-    }
     // the weapon circles: a dim outline while hidden
     for (const c of v.circles) {
       art.append(
@@ -385,28 +372,11 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       box.append(label);
     }
 
-    // branch labels with learned / total (HTML, so the text stays sharp at every size)
-    for (const b of v.branches) {
-      const label = h('span', `sk-branch sk-branch--${b.anchor}`);
-      label.style.left = px(b.x);
-      label.style.top = py(b.y);
-      label.style.color = b.colour;
-      label.append(b.name, ' ', h('span', 'sk-branch__count bi-num', `${b.learned}/${b.total}`));
-      label.setAttribute('role', 'img');
-      label.setAttribute('aria-label', t.branchLearned(b.name, b.learned, b.total));
-      box.append(label);
-    }
-
-    // the first view looks at the middle of what you have bought and the star
-    const mine = v.nodes.filter((n) => n.rank > 0 && !n.circle);
-    const xs = [CENTRE.x, ...mine.map((n) => n.x)];
-    const ys = [CENTRE.y, ...mine.map((n) => n.y)];
-    focus = {
-      w: Math.max(...xs) - Math.min(...xs),
-      h: Math.max(...ys) - Math.min(...ys),
-      x: (Math.min(...xs) + Math.max(...xs)) / 2,
-      y: (Math.min(...ys) + Math.max(...ys)) / 2,
-    };
+    // the first view fits every skill in view, the "?" next to what you know included
+    const arms = v.nodes.filter((n) => !n.circle);
+    const xs = [CENTRE.x, ...arms.map((n) => n.x)];
+    const ys = [CENTRE.y, ...arms.map((n) => n.y)];
+    focus = { x0: Math.min(...xs), y0: Math.min(...ys), x1: Math.max(...xs), y1: Math.max(...ys) };
 
     // the hub: a gold node with a star, the points to spend on its rim
     const centre = h('div', 'sk-centre');

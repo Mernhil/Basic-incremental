@@ -313,9 +313,9 @@
 /* ---- the hub: a gold node with a star, not a big star over the web ---- */
 .sk-centre {
   box-sizing: border-box;
-  width: 78px;
+  width: calc(var(--plate, 64px) * 1.2);
   aspect-ratio: auto;
-  height: 78px;
+  height: calc(var(--plate, 64px) * 1.2);
   border: 5px solid #ffd45a;
   border-radius: 50%;
   background: radial-gradient(circle at 50% 35%, #4a3c14, #201808 70%);

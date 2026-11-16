@@ -12,8 +12,8 @@ import {
 import {
   AREA_COLOUR,
   AREA_DEGREES,
-  DEPTH_STEP,
-  LATERAL,
+  MIN_GAP,
+  STEP,
   SKY,
   respecView,
   starChartView,
@@ -58,7 +58,7 @@ describe('web layout', () => {
       expect(n.colour).toBe(AREA_COLOUR[areaOf(n.branch)]);
     }
     // the spacing of pick 4a: no two skills closer than a plate and a name need
-    const min = Math.min(LATERAL, DEPTH_STEP) - 10;
+    const min = MIN_GAP - 1;
     for (const a of v.nodes) {
       for (const b of v.nodes) {
         if (a === b) continue;
@@ -82,6 +82,25 @@ describe('web layout', () => {
       ...branchNodes.filter((n) => n.branch === 'combat').map((n) => along(n.id)),
     );
     expect(along('combat_k')).toBe(furthest);
+  });
+
+  it('puts the first skill of a trunk one step from the star, on its arm, and a side root one step from its trunk', () => {
+    const v = view(fullyKnown());
+    const at = (id: string) => v.nodes.find((n) => n.id === id)!;
+    for (const row of content.account.branches) {
+      const first = at(`${row.branch}_s1`);
+      if (!row.forksFrom) {
+        const deg = (AREA_DEGREES[row.area] * Math.PI) / 180;
+        expect(first.x).toBeCloseTo(Math.cos(deg) * STEP, 0);
+        expect(first.y).toBeCloseTo(Math.sin(deg) * STEP, 0);
+      } else {
+        const trunk = at(`${row.forksFrom}_s1`);
+        expect(Math.hypot(first.x - trunk.x, first.y - trunk.y)).toBeCloseTo(STEP, 0);
+        expect(content.account.tree.find((n) => n.id === first.id)!.requires).toContain(
+          `${row.forksFrom}_s1`,
+        );
+      }
+    }
   });
 
   it('gives every branch an area, and the four areas their own direction', () => {
@@ -292,7 +311,8 @@ describe('the web shows what you know and its "?" neighbours (UI_RULES, The Skil
     const v = view(freshState());
     const open = v.nodes.filter((n) => n.state === 'open');
     const unknown = v.nodes.filter((n) => n.state === 'unknown');
-    expect(open.length).toBe(SKILL_BRANCHES.length);
+    // only the four trunks are open at the start: the other branches need a rank in their trunk
+    expect(open.length).toBe(4);
     expect(unknown.length).toBeGreaterThan(0);
     // a "?" is never a root, and its parent is in view
     const ids = new Set(v.nodes.map((n) => n.id));

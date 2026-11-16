@@ -577,6 +577,7 @@
     {
       "branch": "luck",
       "area": "cards",
+      "forksFrom": "collection",
       "small": [
         {
           "name": "Crystal Luck",
@@ -767,6 +768,7 @@
     {
       "branch": "automation",
       "area": "cards",
+      "forksFrom": "collection",
       "small": [
         {
           "name": "Long Watch",
@@ -855,6 +857,7 @@
     {
       "branch": "workers",
       "area": "cards",
+      "forksFrom": "collection",
       "small": [
         {
           "name": "Hired Hands",
@@ -948,6 +951,7 @@
     {
       "branch": "forge",
       "area": "mining",
+      "forksFrom": "mining",
       "small": [
         {
           "name": "Bellows",
@@ -1047,6 +1051,7 @@
     {
       "branch": "elements",
       "area": "dungeon",
+      "forksFrom": "combat",
       "small": [
         {
           "name": "Attunement",
@@ -1140,6 +1145,7 @@
     {
       "branch": "dungeons",
       "area": "dungeon",
+      "forksFrom": "combat",
       "small": [
         {
           "name": "Trophy Hunter",
@@ -1238,6 +1244,7 @@
     {
       "branch": "ascension",
       "area": "dungeon",
+      "forksFrom": "combat",
       "small": [
         {
           "name": "Starlit Path",
