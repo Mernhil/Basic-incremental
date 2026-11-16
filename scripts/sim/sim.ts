@@ -33,7 +33,7 @@
  * in every 30 minutes (the game stays open in between, nothing is bought or re-aimed) and is
  * offline 8 hours a day, taking the game's own offline progress on return.
  */
-import { RANK_TIERS, RARITIES, type Content, type SkillNode } from '../../src/data';
+import { RANK_TIERS, RARITIES, type Content, type SkillNode, type WebNode } from '../../src/data';
 import {
   advance,
   activeWorkers,
@@ -129,6 +129,8 @@ import {
   starlightShop,
   skillTree,
   buySkill,
+  buyWebNode,
+  webNextCost,
   cardEnhancements,
   chooseEnhancement,
   resetEnhancements,
@@ -550,7 +552,7 @@ export function skillPriority(content: Content): string[] {
  * percent modifier (5 = +5%) and per 1 for a flat one. Damage is the yardstick (+1% damage = 0.01);
  * production counts at PRODUCTION_VALUE, as the buyer values it; anything unlisted a little.
  */
-const SKILL_WEIGHT: Record<string, number> = {
+export const SKILL_WEIGHT: Record<string, number> = {
   'combat.damage': 0.01,
   'combat.health': 0.005,
   'combat.critChance': 1,
@@ -605,7 +607,8 @@ export function nextSkill(state: GameState, content: Content): string | null {
   const order = skillPriority(content);
   let best: { id: string; score: number; rank: number } | null = null;
   for (const info of nodes) {
-    if (!info.canBuy) continue;
+    // the branches are the web now; only the weapon circles are left in the old tree
+    if (!info.canBuy || !info.node.circle) continue;
     const id = info.node.id;
     const opens = nodes
       .filter((n) => n.rank === 0 && n.node.requires.includes(id))
@@ -621,6 +624,39 @@ export function nextSkill(state: GameState, content: Content): string | null {
     ) {
       best = { id, score, rank };
     }
+  }
+  return best?.id ?? null;
+}
+
+/** What one level of a web node is worth (a keystone's one level: all it gives). */
+export function webValue(node: WebNode): number {
+  return node.perLevel.reduce(
+    (sum, m) => sum + Math.abs(num(new Decimal(m.value))) * (SKILL_WEIGHT[m.stat] ?? 0.001),
+    0,
+  );
+}
+
+/**
+ * The web node to buy next (DESIGN.md §10 The skill web): among the nodes it can buy a level of
+ * now, the most value per skill point, where a node also counts half of the best node it opens (so a
+ * path to a keystone is walked). Ties go to the order of the data.
+ */
+export function nextWebNode(state: GameState, content: Content): string | null {
+  let best: { id: string; score: number } | null = null;
+  const byParent = new Map<string, WebNode[]>();
+  for (const n of content.web.nodes) {
+    if (n.parent) byParent.set(n.parent, [...(byParent.get(n.parent) ?? []), n]);
+  }
+  for (const node of content.web.nodes) {
+    if (!buyWebNode(state, content, node.id).ok) continue;
+    const level = state.account.web[node.id] ?? 0;
+    const opens = (byParent.get(node.id) ?? [])
+      .filter((c) => (state.account.web[c.id] ?? 0) === 0)
+      .map((c) => webValue(c) / webNextCost(c, 0));
+    const own = webValue(node);
+    if (own === 0 && opens.every((v) => v === 0)) continue;
+    const score = own / webNextCost(node, level) + (level === 0 ? 0.5 * Math.max(0, ...opens) : 0);
+    if (!best || score > best.score + 1e-12) best = { id: node.id, score };
   }
   return best?.id ?? null;
 }
@@ -1054,7 +1090,17 @@ export function buyerCandidates(
       });
     }
   }
-  // Account tree: the node worth the most per point (`nextSkill`; no resource price).
+  // Skill web: the level worth the most per point (`nextWebNode`; no resource price).
+  const web = skillPoints(state, content).available > 0 ? nextWebNode(state, content) : null;
+  if (web) {
+    out.push({
+      id: `web:${web}`,
+      kind: 'skill',
+      prices: [],
+      buy: (s, c) => okState(buyWebNode(s, c, web)),
+    });
+  }
+  // Weapon circles: the node worth the most per point (`nextSkill`; no resource price).
   const skill = skillPoints(state, content).available > 0 ? nextSkill(state, content) : null;
   if (skill) {
     out.push({

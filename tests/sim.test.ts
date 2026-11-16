@@ -124,10 +124,13 @@ describe('balance sim: greedy buyer', () => {
 
   it('spends skill points and fills card enhancement budgets', () => {
     const state = freshState();
-    state.account.level = 3;
+    state.account.level = 6;
     state.cards.owned['ember_squire']!.tier = 'silver';
     const { state: after, bought } = greedyBuy(state, levelPointsOnly(content));
-    expect(bought.filter((id) => id.startsWith('skill:'))).toHaveLength(2);
+    // the skill web: Might is the first level worth its points, the rest go on web levels too
+    const webBuys = bought.filter((id) => id.startsWith('web:'));
+    expect(webBuys[0]).toBe('web:dg_might');
+    expect(webBuys.length).toBeGreaterThan(1);
     expect(after.cards.owned['ember_squire']!.enhancements.length).toBeGreaterThan(0);
   });
 
@@ -276,11 +279,12 @@ describe('balance sim: smarter buyer (Phase 9)', () => {
     expect(bought).not.toContain('cosmetic:holo_waves');
   });
 
-  it('spends skill points by priority (Might before the data order)', () => {
+  it('spends skill points by value per point (Might first)', () => {
     const state = freshState();
-    state.account.level = 3;
+    state.account.level = 6;
     const { state: after } = greedyBuy(state, levelPointsOnly(content));
-    expect(after.account.skills).toEqual({ combat_s1: 2 });
+    expect(after.account.web['dg_might']).toBeGreaterThanOrEqual(1);
+    expect(Object.keys(after.account.web).every((id) => id.startsWith('dg_'))).toBe(true);
   });
 
   it('picks the best enhancement set for the budget, rebuilt when the budget grows', () => {

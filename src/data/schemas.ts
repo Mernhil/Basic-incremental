@@ -1633,6 +1633,48 @@ export type Quest = z.output<typeof questSchema>;
 
 export const questsFileSchema = z.strictObject({ quests: z.array(questSchema) });
 
+/**
+ * The skill web (web.json; DESIGN.md §10 The skill web): four arms from the centre star, each a tree
+ * of multi-level nodes. A node sits one step from its parent: straight on, or turned left or right by
+ * 60 degrees from the arm's direction, so every line is one short step. A level costs `cost` (skill
+ * points for now: the cost source is this one object).
+ */
+export const WEB_ARMS = ['logging', 'mining', 'dungeon', 'cards'] as const;
+export type WebArm = (typeof WEB_ARMS)[number];
+export const WEB_SLOTS = ['forward', 'left', 'right'] as const;
+export const webNodeSchema = z.strictObject({
+  id,
+  arm: z.enum(WEB_ARMS),
+  name,
+  /** One plain sentence of what it does. */
+  description: z.string().min(1),
+  /** The node it hangs off; null for the arm's first node, one step from the star. */
+  parent: id.nullable(),
+  slot: z.enum(WEB_SLOTS),
+  maxLevel: z.number().int().min(1),
+  /** What one level gives; a level n gives n times this (a keystone has one level). */
+  perLevel: z.array(modifierSchema).min(1),
+  /** What the next level costs: `base` x `growth` ^ (level it already has). */
+  cost: z.strictObject({
+    resource: z.union([z.literal('skill_points'), id]),
+    base: positiveDecimal,
+    growth: z.number().min(1),
+  }),
+  /** The skills of the old 11-branch tree this node took over, each with its share (the save migration carries their ranks in). */
+  absorbs: z.array(z.strictObject({ id, weight: z.number().positive() })).default([]),
+  /** Ascensions needed before it opens (rings, as the old tree). */
+  gate: z.number().int().min(0).optional(),
+  keystone: z.boolean().optional(),
+});
+export type WebNode = z.output<typeof webNodeSchema>;
+export const webFileSchema = z.strictObject({
+  arms: z
+    .array(z.strictObject({ id: z.enum(WEB_ARMS), name, degrees: z.number() }))
+    .length(WEB_ARMS.length),
+  nodes: z.array(webNodeSchema).min(1),
+});
+export type WebFile = z.output<typeof webFileSchema>;
+
 /** One shard shop item (DESIGN.md §5: duplicates past max rank become shards for a shop). */
 export const shardShopItemSchema = z.strictObject({
   id,
@@ -2429,6 +2471,7 @@ export const contentSchemas = {
   scrolls: scrollsSchema,
   heirlooms: heirloomsSchema,
   quests: questsFileSchema,
+  web: webFileSchema,
 } as const;
 
 export type WeaponSkin = z.output<typeof weaponSkinSchema>;

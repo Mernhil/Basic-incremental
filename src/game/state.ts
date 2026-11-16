@@ -555,7 +555,11 @@ export function cloneState(state: GameState): GameState {
       completions: { ...state.ascensionChallenges.completions },
     },
     heirlooms: cloneHeirlooms(state.heirlooms),
-    account: { ...state.account, skills: { ...state.account.skills } },
+    account: {
+      ...state.account,
+      skills: { ...state.account.skills },
+      web: { ...state.account.web },
+    },
     prestige: {
       runStart: { ...state.prestige.runStart },
       shop: { ...state.prestige.shop },
@@ -664,12 +668,14 @@ export interface AccountState {
   level: number;
   /** Account tree node id -> rank bought. */
   skills: Record<string, number>;
+  /** Skill web node id -> level bought (DESIGN.md §10 The skill web). */
+  web: Record<string, number>;
   /** Free respecs used this run (reset on ascension). */
   freeRespecsUsed: number;
 }
 
 export function initialAccount(): AccountState {
-  return { xp: new Decimal(0), level: 1, skills: {}, freeRespecsUsed: 0 };
+  return { xp: new Decimal(0), level: 1, skills: {}, web: {}, freeRespecsUsed: 0 };
 }
 
 /** The fighting loadout: four equal slots, left to right (null = empty). Logging and mining

@@ -1,0 +1,512 @@
+/* The Skill Tree as a node web (UI_RULES.md §2 The Skill Tree, picks 4a and 4c). Loaded after
+   skills.css: it turns the gems into round plates with a state border, a rank pill and a name, and
+   adds the tab strip, the count of what can be bought, the legend and the level pips. */
+
+/* ---- chrome laid over the stage ---- */
+.sk-tabs {
+  position: absolute;
+  top: 12px;
+  left: 14px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  cursor: default;
+}
+.sk-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: #aeb6e0;
+  background: #12162f;
+  border: 3px solid #2d3563;
+  cursor: pointer;
+}
+.sk-tab.is-on {
+  color: #fff;
+  background: #1b2148;
+  border-color: var(--px-gold, #ffd45a);
+}
+.sk-tab:hover:not(.is-on) {
+  border-color: #4a5690;
+}
+.sk-tab em {
+  font-style: normal;
+  font-size: 12px;
+  color: #04202c;
+  background: #5ad7ff;
+  padding: 1px 7px;
+  border-radius: 9px;
+}
+.sk-count {
+  position: absolute;
+  top: 58px;
+  left: 14px;
+  z-index: 3;
+  margin: 0;
+  padding: 5px 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #bff0ff;
+  background: rgba(11, 14, 32, 0.9);
+  border: 2px solid #5ad7ff;
+  pointer-events: none;
+}
+.sk-count b {
+  color: #fff;
+  font-size: 18px;
+}
+.sk-legend {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+  max-width: calc(100% - 200px);
+  padding: 5px 10px;
+  font-size: 12px;
+  color: #aeb6e0;
+  background: rgba(11, 14, 32, 0.88);
+  pointer-events: none;
+}
+.sk-legend__item {
+  white-space: nowrap;
+}
+.sk-legend__dot {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 5px;
+  vertical-align: -2px;
+  box-sizing: border-box;
+  border: 3px solid #8a5560;
+  border-radius: 50%;
+}
+.sk-legend__dot.is-maxed {
+  border-color: #ffd45a;
+  background: #3a2f10;
+}
+.sk-legend__dot.is-owned {
+  border-color: #6fd36b;
+}
+.sk-legend__dot.is-affordable {
+  border-color: #5ad7ff;
+  box-shadow: 0 0 6px #5ad7ff;
+}
+.sk-legend__dot.is-unknown {
+  border-color: #4a5280;
+  border-style: dashed;
+}
+.sk-zoom {
+  left: auto;
+  right: 12px;
+}
+
+/* ---- the node plates ---- */
+.sk-node__gem {
+  --edge: #8a5560;
+  --glow: transparent;
+  display: grid;
+  place-items: center;
+  box-sizing: border-box;
+  width: var(--plate, 64px);
+  height: var(--plate, 64px);
+  aspect-ratio: auto;
+  border: 4px solid var(--edge);
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #252c58, #12162f 70%);
+  box-shadow:
+    0 0 0 2px #0b0e20,
+    0 0 12px var(--glow);
+  filter: none;
+}
+.sk-node.is-key .sk-node__gem {
+  --one: 1px;
+  width: calc(var(--plate, 64px) * 0.8);
+  height: calc(var(--plate, 64px) * 0.8);
+  margin: calc(var(--plate, 64px) * 0.15);
+  border-radius: 0;
+  border-width: 5px;
+  transform: rotate(45deg);
+}
+.sk-node.is-key .sk-node__gem > * {
+  transform: rotate(-45deg);
+}
+.sk-node__gem .wg {
+  width: 62%;
+  height: 62%;
+  opacity: 0.55;
+}
+.sk-node__q {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  color: #7a86c0;
+}
+.sk-node.is-owned .sk-node__gem {
+  --edge: #6fd36b;
+}
+.sk-node.is-owned .sk-node__gem .wg,
+.sk-node.is-maxed .sk-node__gem .wg,
+.sk-node.is-affordable .sk-node__gem .wg {
+  opacity: 1;
+}
+.sk-node.is-maxed .sk-node__gem {
+  --edge: #ffd45a;
+  --glow: rgba(255, 212, 90, 0.55);
+  background: radial-gradient(circle at 50% 35%, #4a3c14, #201808 70%);
+}
+.sk-node.is-affordable .sk-node__gem,
+.sk-node.can-buy .sk-node__gem {
+  --edge: #5ad7ff;
+  --glow: rgba(90, 215, 255, 0.8);
+  filter: none;
+}
+.sk-node.is-unknown .sk-node__gem {
+  --edge: #4a5280;
+  border-style: dashed;
+  background: #0f1330;
+}
+.sk-node.is-key:not(.is-maxed):not(.is-affordable) .sk-node__gem {
+  --edge: #c79a3a;
+  --glow: rgba(255, 212, 90, 0.3);
+}
+.sk-node.is-key:not(.is-unknown) .sk-node__gem .wg {
+  opacity: 1;
+}
+.sk-node.is-closed .sk-node__gem {
+  opacity: 0.55;
+}
+.sk-node:hover .sk-node__gem {
+  filter: brightness(1.12);
+}
+.sk-node.can-buy::before {
+  display: none;
+}
+.sk-node[aria-pressed='true']::after {
+  inset: -8px;
+}
+.sk-node__rank {
+  right: auto;
+  left: 50%;
+  bottom: -10px;
+  translate: -50% 0;
+  z-index: 2;
+  padding: 0 6px;
+  border-radius: 9px;
+  line-height: 15px;
+  white-space: nowrap;
+  box-shadow: 0 0 0 2px var(--edge, #8a5560);
+}
+.sk-node.is-owned .sk-node__rank {
+  box-shadow: 0 0 0 2px #6fd36b;
+}
+.sk-node.is-maxed .sk-node__rank {
+  box-shadow: 0 0 0 2px #ffd45a;
+}
+.sk-node.is-affordable .sk-node__rank {
+  box-shadow: 0 0 0 2px #5ad7ff;
+}
+.sk-node__name {
+  position: absolute;
+  top: calc(100% + 14px);
+  left: 50%;
+  translate: -50% 0;
+  width: max-content;
+  max-width: 130px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: normal;
+  text-wrap: balance;
+  text-align: center;
+  color: color-mix(in srgb, var(--gem) 55%, #fff);
+  text-shadow:
+    0 1px 0 #0b0e20,
+    0 -1px 0 #0b0e20,
+    1px 0 0 #0b0e20,
+    -1px 0 0 #0b0e20;
+  pointer-events: none;
+}
+.sk-node.is-key .sk-node__name {
+  top: calc(100% + 14px);
+  color: #ffd45a;
+}
+/* zoomed far out the names would only crowd each other */
+.sk-sky.is-far .sk-node__name {
+  display: none;
+}
+
+/* ---- the side panel ---- */
+.sk-plate {
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  aspect-ratio: auto;
+  border: 4px solid #8a5560;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #252c58, #12162f 70%);
+  filter: none;
+}
+.sk-plate .wg {
+  width: 62%;
+  height: 62%;
+}
+.sk-plate.is-owned {
+  border-color: #6fd36b;
+}
+.sk-plate.is-maxed {
+  border-color: #ffd45a;
+}
+.sk-plate.is-affordable {
+  border-color: #5ad7ff;
+  box-shadow: 0 0 12px rgba(90, 215, 255, 0.7);
+}
+.sk-plate.is-unknown {
+  border: 4px dashed #4a5280;
+}
+.sk-plate.is-key {
+  width: 62px;
+  height: 62px;
+  margin: 7px;
+  border-radius: 0;
+  transform: rotate(45deg);
+}
+.sk-plate.is-key > * {
+  transform: rotate(-45deg);
+}
+.sk-pips {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+.sk-pips i {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  border: 2px solid #6c76b0;
+  transform: rotate(45deg);
+}
+.sk-pips i.is-on {
+  background: var(--gem);
+  border-color: var(--gem);
+}
+.sw-tag {
+  justify-self: start;
+  padding: 1px 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffd45a;
+  background: #3a2a08;
+  border: 2px solid #ffd45a;
+}
+
+/* ---- the hub: a gold node with a star, not a big star over the web ---- */
+.sk-centre {
+  box-sizing: border-box;
+  width: calc(var(--plate, 64px) * 1.2);
+  aspect-ratio: auto;
+  height: calc(var(--plate, 64px) * 1.2);
+  border: 5px solid #ffd45a;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 35%, #4a3c14, #201808 70%);
+  box-shadow:
+    0 0 0 2px #0b0e20,
+    0 0 20px rgba(255, 212, 90, 0.55);
+}
+.sk-centre:not(.has-points) {
+  border-color: #8a7a4a;
+  box-shadow: 0 0 0 2px #0b0e20;
+}
+.sk-centre__star {
+  inset: 18%;
+  filter: none;
+}
+.sk-centre__star .wg {
+  width: 100%;
+  height: 100%;
+}
+.sk-centre__num {
+  position: absolute;
+  left: 50%;
+  bottom: -11px;
+  translate: -50% 0;
+  margin: 0;
+  padding: 0 7px;
+  font-size: 13px;
+  line-height: 17px;
+  color: #fff;
+  background: #0b0e20;
+  border-radius: 9px;
+  box-shadow: 0 0 0 2px #ffd45a;
+}
+.sk-node__name {
+  padding: 0 4px;
+  background: rgba(11, 14, 32, 0.78);
+  border-radius: 3px;
+}
+.sk-chips {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  pointer-events: none;
+}
+.sk-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px 3px 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e9ecfb;
+  background: rgba(11, 14, 32, 0.9);
+  border: 2px solid #2d3563;
+}
+.sk-chip .wg {
+  width: 24px;
+  height: 24px;
+}
+.sk-legend__dot.is-branch {
+  border-width: 0;
+}
+.sk-legend {
+  max-width: calc(100% - 170px);
+}
+
+/* a small window fits the whole web: smaller plates, no names, no branch keys */
+.sk-sky.is-tiny .sk-node__gem {
+  width: 36px;
+  height: 36px;
+  border-width: 3px;
+}
+.sk-sky.is-tiny .sk-node.is-key .sk-node__gem {
+  width: 36px;
+  height: 36px;
+  margin: 4px;
+}
+.sk-sky.is-tiny .sk-node__rank {
+  font-size: 9px;
+  line-height: 12px;
+  bottom: -8px;
+  padding: 0 3px;
+}
+.sk-sky.is-tiny .sk-node__q {
+  font-size: 18px;
+}
+@media (max-width: 1400px) {
+  .sk-legend__item--branch {
+    display: none;
+  }
+}
+
+.sk-node__name.is-hidden {
+  visibility: hidden;
+}
+.sk-node:hover .sk-node__name.is-hidden,
+.sk-node:focus-visible .sk-node__name.is-hidden {
+  z-index: 4;
+  visibility: visible;
+}
+.sk-node__gem.has-art .sg {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+.sk-node.is-key .sk-node__gem.has-art .sg {
+  width: 32px;
+  height: 32px;
+}
+.sk-chip,
+.sk-count,
+.sk-legend {
+  background: #0b0e20;
+}
+
+/* very small: the whole web in a small window */
+.sk-sky.is-micro .sk-node__gem,
+.sk-sky.is-micro .sk-node.is-key .sk-node__gem {
+  width: 26px;
+  height: 26px;
+  margin: 2px;
+  border-width: 2px;
+}
+.sk-sky.is-micro .sk-node__rank {
+  display: none;
+}
+.sk-sky.is-micro .sk-node__q {
+  font-size: 14px;
+}
+
+.sk-branch.is-short .sk-branch__count {
+  display: none;
+}
+
+.sk-node__name.is-above,
+.sk-node.is-key .sk-node__name.is-above {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+.sk-sky.is-far .sk-node__rank {
+  display: none;
+}
+
+@media (max-width: 1400px) {
+  .sk-legend {
+    max-width: 300px;
+  }
+}
+
+/* a node with more than ten levels: one bar instead of a diamond each */
+.sk-bar {
+  position: relative;
+  display: inline-block;
+  width: 190px;
+  height: 20px;
+  background: #1a1630;
+  border: 2px solid #6c76b0;
+  box-sizing: border-box;
+  vertical-align: middle;
+}
+.sk-bar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(11, 14, 32, 0.55) 9px 10px);
+  pointer-events: none;
+}
+.sk-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--gem);
+}
+/* a long node: Level, the bar, then "13 / 26" beside it; no text on the bar */
+.sk-row--long {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+}
+.sk-row--long dd {
+  display: contents;
+}
+.sk-row--long .sk-bar {
+  order: 1;
+  display: block;
+  width: 100%;
+  height: 16px;
+}
+.sk-bar__num {
+  order: 2;
+  font-size: 14px;
+}

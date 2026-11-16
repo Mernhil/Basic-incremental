@@ -21,6 +21,8 @@ import type {
   CosmeticRules,
   Achievement,
   Quest,
+  WebFile,
+  WebNode,
   ShardShopItem,
   AccountConfig,
   EnhancementsConfig,
@@ -82,6 +84,7 @@ import skillsJson from './content/skills.json';
 import scrollsJson from './content/scrolls.json';
 import heirloomsJson from './content/heirlooms.json';
 import questsJson from './content/quests.json';
+import webJson from './content/web.json';
 
 export * from './schemas';
 
@@ -123,6 +126,9 @@ export interface Content {
   /** Quests: what the Goals button lists and pays (DESIGN.md §10 Quests). */
   quests: Quest[];
   questById: ReadonlyMap<string, Quest>;
+  /** The skill web: arms and nodes (DESIGN.md §10 The skill web). */
+  web: WebFile;
+  webNodeById: ReadonlyMap<string, WebNode>;
   /** Shard shop stock (card shards). */
   shardShop: ShardShopItem[];
   /** Account XP, levels, reward track, account tree and respec (DESIGN.md §10a, 16 E7). */
@@ -252,6 +258,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     scrolls,
     heirlooms,
     quests: questsFile,
+    web,
   } = parsed;
   const { quests } = questsFile;
   const { achievements, shardShop } = achievementsFile;
@@ -269,6 +276,7 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     issues,
   );
   checkQuests({ resources, dungeons, trials, quests }, issues);
+  checkWeb({ resources, web }, issues);
   checkAccount({ resources, cosmetics, cards, account, enhancements }, issues);
   checkPerks({ resources, trees, mines, production, training, perks }, issues);
   checkCosmeticSources(
@@ -343,6 +351,8 @@ export function validateContent(raw: RawContent, options: ContentOptions = {}): 
     achievements,
     quests,
     questById: new Map(quests.map((q) => [q.id, q])),
+    web,
+    webNodeById: new Map(web.nodes.map((n) => [n.id, n])),
     shardShop,
     account,
     enhancements,
@@ -820,6 +830,31 @@ function checkCosmeticSources(
       }
     }),
   );
+}
+
+/** Web nodes: ids unique, a parent comes first and is in the same arm, one root an arm, resources exist. */
+function checkWeb(c: Pick<Content, 'resources'> & { web: WebFile }, issues: string[]): void {
+  const resources = new Set(c.resources.map((x) => x.id));
+  const seen = new Map<string, WebNode>();
+  const roots = new Map<string, number>();
+  c.web.nodes.forEach((n, i) => {
+    const where = `web.json › nodes › [${i}] (${n.id})`;
+    if (seen.has(n.id)) issues.push(`${where}: duplicate id`);
+    if (n.parent === null) roots.set(n.arm, (roots.get(n.arm) ?? 0) + 1);
+    else {
+      const p = seen.get(n.parent);
+      if (!p) issues.push(`${where}: parent "${n.parent}" must be listed before it`);
+      else if (p.arm !== n.arm) issues.push(`${where}: parent is in another arm`);
+    }
+    if (n.cost.resource !== 'skill_points' && !resources.has(n.cost.resource)) {
+      issues.push(`${where}: unknown resource "${n.cost.resource}"`);
+    }
+    seen.set(n.id, n);
+  });
+  for (const arm of c.web.arms) {
+    if (roots.get(arm.id) !== 1)
+      issues.push(`web.json: arm "${arm.id}" needs exactly one first node`);
+  }
 }
 
 /** Quest ids are unique and everything they name exists (DESIGN.md §10 Quests). */
@@ -1477,6 +1512,7 @@ export function bundledRawContent(): RawContent {
     scrolls: scrollsJson,
     heirlooms: heirloomsJson,
     quests: questsJson,
+    web: webJson,
   };
 }
 

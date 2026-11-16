@@ -17,6 +17,7 @@ import { cardsAtWork, rankAtLeast } from './cards';
 import { totalStageStarLevels } from './stageStars';
 import { cloneState, type GameState, type OwnedCard } from './state';
 import { grantCosmetic } from './wardrobe';
+import { fitWebToBudget, webModifiers, webNextCost, webNodeOpen, webSpentPoints } from './web';
 
 /**
  * The account (DESIGN.md §10): account XP from harvests, kills, trial attempts, pulls and
@@ -147,9 +148,9 @@ function ranksCost(content: Content, skills: Readonly<Record<string, number>>): 
   return spent;
 }
 
-/** Skill points spent in the account tree. */
+/** Skill points spent: the weapon circles' ranks and the web's levels. */
 export function skillPointsSpent(state: GameState, content: Content): number {
-  return ranksCost(content, state.account.skills);
+  return ranksCost(content, state.account.skills) + webSpentPoints(content, state.account.web);
 }
 
 /** Points earned: account level, stage star levels and achievements. Derived, never saved. */
@@ -331,6 +332,40 @@ export function skillTree(state: GameState, content: Content): SkillNodeInfo[] {
   });
 }
 
+export type WebBuyResult =
+  | { ok: true; state: GameState }
+  | { ok: false; reason: 'unknown' | 'maxed' | 'locked' | 'closed' | 'no-points' };
+
+/** Buys one level of a skill web node with skill points (DESIGN.md §10 The skill web). */
+export function buyWebNode(state: GameState, content: Content, nodeId: string): WebBuyResult {
+  const node = content.webNodeById.get(nodeId);
+  if (!node) return { ok: false, reason: 'unknown' };
+  const level = state.account.web[nodeId] ?? 0;
+  if (level >= node.maxLevel) return { ok: false, reason: 'maxed' };
+  const open = webNodeOpen(node, state.account.web, state.prestigeCount);
+  if (!open.gate) return { ok: false, reason: 'closed' };
+  if (!open.parent) return { ok: false, reason: 'locked' };
+  if (skillPoints(state, content).available < webNextCost(node, level)) {
+    return { ok: false, reason: 'no-points' };
+  }
+  const next = cloneState(state);
+  next.account.web[nodeId] = level + 1;
+  return { ok: true, state: next };
+}
+
+/**
+ * Fits a loaded save's web levels to the web and the points left after the weapon circles
+ * (a migrated or hand-edited save never has more levels than points).
+ */
+export function fitWebToPoints(state: GameState, content: Content): Record<string, number> {
+  return fitWebToBudget(
+    content,
+    state.account.web,
+    state.prestigeCount,
+    pointsEarned(state, content) - ranksCost(content, state.account.skills),
+  );
+}
+
 export type SkillBuyResult =
   | { ok: true; state: GameState }
   | { ok: false; reason: 'unknown' | 'maxed' | 'locked' | 'closed' | 'no-points' };
@@ -434,11 +469,12 @@ export function respecSkills(
   content: Content,
   modifiers: readonly Modifier[] = [],
 ): RespecResult {
-  if (Object.keys(state.account.skills).length === 0) return { ok: false, reason: 'nothing' };
+  if (skillPointsSpent(state, content) === 0) return { ok: false, reason: 'nothing' };
   const info = respecInfo(state, content, modifiers);
   if (info.price && !canAfford(state, [info.price])) return { ok: false, reason: 'unaffordable' };
   const next = info.price ? pay(state, [info.price]) : cloneState(state);
   next.account.skills = {};
+  next.account.web = {};
   if (info.free) next.account.freeRespecsUsed += 1;
   return { ok: true, state: next };
 }
@@ -591,6 +627,7 @@ export function accountModifiers(state: GameState, content: Content): Modifier[]
         out.push(...mods.map((m) => (scope ? { ...m, scope: { ...m.scope, ...scope } } : m)));
       }
   }
+  out.push(...webModifiers(content, state.account.web));
   for (const entry of content.account.rewardTrack) {
     if (entry.costCap > 0 && state.account.level >= entry.level) {
       out.push({
