@@ -978,18 +978,18 @@
       "name": "Might",
       "parent": null,
       "slot": "forward",
-      "maxLevel": 31,
+      "maxLevel": 16,
       "perLevel": [
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "4.3717"
+          "value": "8.4702"
         }
       ],
       "description": "Your team hits harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
       },
       "absorbs": [
@@ -1527,17 +1527,17 @@
       "name": "Quick Study",
       "parent": null,
       "slot": "forward",
-      "maxLevel": 46,
+      "maxLevel": 23,
       "perLevel": [
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "6.0431"
+          "value": "12.0862"
         },
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "2.1582",
+          "value": "4.3164",
           "scope": {
             "job": "fighting"
           }
@@ -1545,7 +1545,7 @@
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "1.4389",
+          "value": "2.8778",
           "scope": {
             "job": "logging"
           }
@@ -1554,7 +1554,7 @@
       "description": "Your cards earn more XP.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
       },
       "absorbs": [
@@ -1602,18 +1602,18 @@
       "name": "Renown",
       "parent": "cd_study",
       "slot": "forward",
-      "maxLevel": 36,
+      "maxLevel": 18,
       "perLevel": [
         {
           "stat": "xp.account",
           "kind": "percent",
-          "value": "6.6186"
+          "value": "13.2372"
         }
       ],
       "description": "Your account earns more XP.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
       },
       "absorbs": [
@@ -1976,19 +1976,19 @@
       "name": "Long Watch",
       "parent": "cd_trial",
       "slot": "forward",
-      "maxLevel": 42,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "offline.capHours",
           "kind": "flat",
-          "value": "0.75"
+          "value": "1.5"
         }
       ],
       "gate": 1,
       "description": "You earn for more hours while the game is closed.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
       },
       "absorbs": [
@@ -2032,19 +2032,19 @@
       "name": "Starlit Mind",
       "parent": "cd_watch",
       "slot": "forward",
-      "maxLevel": 42,
+      "maxLevel": 21,
       "perLevel": [
         {
           "stat": "prestige.gain",
           "kind": "percent",
-          "value": "3.2143"
+          "value": "6.4286"
         }
       ],
       "gate": 2,
       "description": "Ascending gives more Starlight.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
       },
       "absorbs": [
