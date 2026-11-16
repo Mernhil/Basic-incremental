@@ -72,8 +72,10 @@ import {
   isDungeonCleared,
   isDungeonUnlocked,
   isProducerUnlocked,
+  MAX_LOADOUT_HEIRLOOMS,
   arrangeFormation,
   cardHealth,
+  heirloomCount,
   loadoutCards,
   loadoutCostCap,
   mineLevel,
@@ -1709,6 +1711,7 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
     if (card.id === loadout.slots[0]) continue;
     const c = cardCost(content, card.id);
     if (cost + c > cap) continue;
+    if (card.heirloom && heirloomCount(content, loadout.slots) >= MAX_LOADOUT_HEIRLOOMS) continue;
     if (loadout.slots[0] === null) loadout.slots[0] = card.id;
     else if (next < loadout.slots.length) loadout.slots[next++] = card.id;
     else break;

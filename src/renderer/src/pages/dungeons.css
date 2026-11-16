@@ -60,7 +60,7 @@ html .dp-row.is-picked:not(#_px) {
   align-items: center;
   font-size: 12.5px;
   font-weight: 800;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .dp-row__meta {
   grid-column: 1 / -1;
@@ -100,7 +100,7 @@ html .dp-row.is-picked:not(#_px) {
 .dp-map__title {
   margin: 0;
   font-size: 22px;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .dp-tiers {
   display: flex;
@@ -129,7 +129,7 @@ html .dp-row.is-picked:not(#_px) {
 }
 .dp-grid__th {
   font-size: 18px;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .dp-grid__label {
   display: grid;
@@ -272,7 +272,7 @@ html .dp-row.is-picked:not(#_px) {
 .dp-loot__title {
   margin: 0;
   font-size: 13px;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 .dp-drops {
   display: grid;
@@ -290,7 +290,7 @@ html .dp-row.is-picked:not(#_px) {
   font-size: 12px;
 }
 .dp-drop--rare span:first-child {
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
   font-weight: 700;
 }
 .dp-pity {
@@ -322,7 +322,7 @@ html .dp-row.is-picked:not(#_px) {
 .dp-sub {
   margin: 8px 0 0;
   font-size: 18px;
-  color: var(--px-gold);
+  color: var(--bi-frame-accent, var(--px-gold));
 }
 
 @media (max-width: 1100px) {

@@ -370,6 +370,7 @@ describe('loadouts (DESIGN.md §5)', () => {
       slots: ['ember_squire', null, null, null],
       cost: 2,
       cap: 6,
+      nextRise: { by: 2, level: 2 },
     });
   });
 

@@ -63,7 +63,7 @@
         },
         {
           "resource": "glamour_scroll",
-          "amount": "0.5"
+          "amount": "1"
         }
       ],
       "currencies": [

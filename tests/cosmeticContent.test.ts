@@ -290,7 +290,8 @@ describe('the Wardrobe Gate pool and sources', () => {
   });
 
   it('gives every non-starter cosmetic a source', () => {
-    for (const c of content.cosmetics) expect(cosmeticSource(content, c.id), c.id).not.toBeNull();
+    for (const c of content.cosmetics.filter((x) => !x.hidden))
+      expect(cosmeticSource(content, c.id), c.id).not.toBeNull();
   });
 });
 
@@ -317,5 +318,24 @@ describe('achievement sticker styles', () => {
       'Legendary Card',
       'Prismatic Card',
     ]);
+  });
+});
+
+describe('the hidden Carved Oak table', () => {
+  it('is a table no player can get: hidden, not a starter, no source, worn by the shell-oak recipe', () => {
+    const oak = content.cosmetics.find((c) => c.id === 'oak_table')!;
+    expect(oak.slot).toBe('table');
+    expect(oak.hidden).toBe(true);
+    expect(oak.starter).toBe(false);
+    expect(oak.ownedAtStart).toBe(false);
+    expect(cosmeticSource(content, 'oak_table')).toBeNull();
+    expect(oak.levels[0]!.recipes).toContain('shell-oak');
+  });
+
+  it('sets every table token the starter sets, with dark ink on cream panels', () => {
+    const tokens = (id: string) => content.cosmetics.find((c) => c.id === id)!.levels[0]!.tokens;
+    expect(Object.keys(tokens('oak_table')).sort()).toEqual(Object.keys(tokens('gn_table')).sort());
+    expect(tokens('oak_table')['frame-bg']).toBe('#f6ead0');
+    expect(tokens('oak_table')['frame-ink']).toBe('#2a1c10');
   });
 });
