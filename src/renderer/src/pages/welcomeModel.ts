@@ -1,5 +1,5 @@
 import type { Content } from '../../../data';
-import { formatDuration, type Decimal, type OfflineSummary } from '../../../game';
+import { cardNameById, formatDuration, type Decimal, type OfflineSummary } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
 import { COPY } from '../copy';
@@ -32,7 +32,7 @@ export interface WelcomeCard {
 const name = (content: Content, id: string): string =>
   content.resourceById.get(id)?.name ??
   content.cosmeticById.get(id)?.name ??
-  content.cardById.get(id)?.name ??
+  cardNameById(content, id) ??
   content.dungeonById.get(id)?.name ??
   content.trialById.get(id)?.name ??
   content.mineById.get(id)?.name ??

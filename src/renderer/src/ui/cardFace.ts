@@ -2,8 +2,6 @@
 
 /** What the bottom plate of a full-art card shows (DESIGN.md §5); built by pages/cardFaceModel.ts. */
 export interface CardFace {
-  /** The ability line. */
-  ability: string;
   /** Hit speed as text, e.g. "hits every 1s"; null shows nothing. */
   speed: string | null;
   /** Level and cap; null on a card the player does not own. */

@@ -1,5 +1,6 @@
 import type { Content } from '../../../../data';
 import {
+  cardNameById,
   dungeonPreset,
   loadoutCards,
   presetCost,
@@ -41,7 +42,9 @@ export function teamRows(state: GameState, content: Content): TeamRow[] {
       dungeonId: dungeon.id,
       dungeonName: dungeon.name,
       active,
-      cards: ids.map((id) => content.cardById.get(id)?.name).filter((n): n is string => !!n),
+      cards: ids
+        .map((id) => cardNameById(content, id, state.cards.owned[id]))
+        .filter((n): n is string => !!n),
       cost,
       cap,
       overCap: cost > cap,

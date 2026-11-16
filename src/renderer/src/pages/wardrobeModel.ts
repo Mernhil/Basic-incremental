@@ -17,6 +17,7 @@ import {
   resolveGlobal,
   setBonuses,
   ThemeError,
+  cardDisplayName,
   type CosmeticLoadout,
   type GameState,
   type ResolvedCard,
@@ -82,7 +83,8 @@ export function previewChoices(state: GameState, content: Content): PreviewChoic
     .map((c) => {
       const o = state.cards.owned[c.id]!;
       const rank = { tier: o.tier, stars: o.stars };
-      return { id: c.id, name: c.name, rank, label: `${c.name} · ${rankText(rank)}` };
+      const name = cardDisplayName(content, c, o);
+      return { id: c.id, name, rank, label: `${name} · ${rankText(rank)}` };
     });
 }
 
@@ -403,7 +405,10 @@ export function itemDetail(
       : null;
   const exclusiveCard = c.exclusiveCard ? content.cardById.get(c.exclusiveCard) : undefined;
   const exclusive = exclusiveCard
-    ? t.exclusiveTo(exclusiveCard.name, rankText(content.wearRules.exclusive))
+    ? t.exclusiveTo(
+        cardDisplayName(content, exclusiveCard, state.cards.owned[exclusiveCard.id]),
+        rankText(content.wearRules.exclusive),
+      )
     : null;
 
   const rungs: LadderRung[] = ladder.map((step, i) => {
@@ -456,8 +461,8 @@ export function itemDetail(
   if (!item.owned) note = t.notOwnedNote;
   else if (exclusiveCard && previewCard !== exclusiveCard.id) {
     note = state.cards.owned[exclusiveCard.id]
-      ? t.pickCard(exclusiveCard.name)
-      : t.needCard(exclusiveCard.name);
+      ? t.pickCard(cardDisplayName(content, exclusiveCard, state.cards.owned[exclusiveCard.id]))
+      : t.needCard(cardDisplayName(content, exclusiveCard, null));
   }
   const equipOpts: EquipOptions = {
     global:

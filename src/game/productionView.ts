@@ -1,5 +1,5 @@
 import type { Card, Content, HarvestPattern, ProductionJob, Rarity, Rank } from '../data';
-import { cardRank } from './cards';
+import { cardDisplayName, cardRank } from './cards';
 import { luckyWindow, type LuckyWindow } from './lucky';
 import { depthInfo, type DepthInfo } from './depth';
 import { harvestBurstStats, harvestGauge, strikePeriodSeconds, workerPattern } from './harvest';
@@ -90,7 +90,7 @@ function stageCard(state: GameState, content: Content, cardId: string): StageCar
   const rank = cardRank(owned);
   return {
     cardId,
-    name: def.name,
+    name: cardDisplayName(content, def, owned),
     rarity: def.rarity,
     element: def.element,
     item: def.item,
@@ -196,7 +196,7 @@ export function workerChoices(
     const workplace = inForge ? 'forge' : workplaceOf(state, content, card.id);
     out.push({
       cardId: card.id,
-      name: card.name,
+      name: cardDisplayName(content, card, owned),
       rarity: card.rarity,
       rank: cardRank(owned),
       level: owned.level,

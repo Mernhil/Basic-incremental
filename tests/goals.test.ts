@@ -168,7 +168,7 @@ describe('goal rules (DESIGN.md §10)', () => {
     state.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 4, starFill: 0.5 };
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
     expect(goal).toMatchObject({
-      title: "Fill Ember Squire's star bar for ★5",
+      title: "Fill Wooden Sword's star bar for ★5",
       page: 'cards',
       etaSeconds: null,
     });
@@ -188,7 +188,7 @@ describe('goal rules (DESIGN.md §10)', () => {
     const costs = content.cardRules.tierUp.wood.fighting;
     for (const c of costs) state.resources[c.resource] = c.amount.div(2);
     const goal = find(allGoals(state, content), 'tier_up:storm_duelist')!;
-    expect(goal).toMatchObject({ title: 'Tier up Storm Duelist to Bronze', page: 'cards' });
+    expect(goal).toMatchObject({ title: 'Tier up Wooden Dagger to Bronze', page: 'cards' });
     expect(goal.progress).toBeCloseTo(0.5);
   });
 
@@ -207,7 +207,7 @@ describe('goal rules (DESIGN.md §10)', () => {
       stars: 4,
     };
     expect(find(allGoals(state, content), 'tier_up:moonwood_dryad')).toMatchObject({
-      title: 'Tier up Moonwood Dryad to Mythic: needs ★6',
+      title: 'Tier up Prismatic Axe to Mythic: needs ★6',
     });
   });
 
@@ -216,7 +216,7 @@ describe('goal rules (DESIGN.md §10)', () => {
     state.cards.owned['storm_duelist'] = { ...newOwnedCard(), level: 20, stars: 4 };
     const goal = find(allGoals(state, content), 'tier_up:storm_duelist')!;
     expect(goal).toMatchObject({
-      title: 'Tier up Storm Duelist to Bronze: needs ★6',
+      title: 'Tier up Wooden Dagger to Bronze: needs ★6',
       page: 'cards',
     });
     expect(goal.progress).toBeCloseTo(4 / 6);

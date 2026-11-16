@@ -10,9 +10,8 @@ describe('Full-art card face model', () => {
     expect(secondsText(4 / 3)).toBe('1.33s');
   });
 
-  it('shows the ability, hit speed, level and progress of an owned card', () => {
+  it('shows the hit speed, level and progress of an owned card', () => {
     const face = cardFaceFor(content, freshState(), 'ember_squire')!;
-    expect(face.ability).toBe('Wooden Sword');
     expect(face.speed).toBe('hits every 1s');
     expect(face.level).toEqual({ value: 1, cap: expect.any(Number) });
     expect(face.progress).toBeGreaterThanOrEqual(0);

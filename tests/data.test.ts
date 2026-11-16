@@ -143,13 +143,7 @@ describe('item types (items.json)', () => {
       expect(type, `${card.id} item ${card.item.kind}`).toBeDefined();
       expect(type!.job, card.id).toBe(card.job);
     }
-    const names = content.items.types.flatMap((t) => [
-      t.noun,
-      t.prismatic,
-      t.mythic,
-      t.void,
-      t.heirloom,
-    ]);
+    const names = content.items.types.flatMap((t) => [t.noun, t.mythic, t.void, t.heirloom]);
     expect(new Set(names).size).toBe(names.length);
   });
 });

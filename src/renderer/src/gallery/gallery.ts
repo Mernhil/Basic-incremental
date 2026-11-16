@@ -12,6 +12,7 @@ import {
 } from '../../../data';
 import {
   defaultRng,
+  cardDisplayName,
   detectSets,
   emptyLoadout,
   equip,
@@ -323,8 +324,9 @@ function cardProps(
   emblem: string,
   rarity: Rarity,
 ) {
+  const card = content.cardById.get(id);
   return {
-    name,
+    name: card ? cardDisplayName(content, card, rank) : name,
     label: 'Fighting',
     job: 'fighting',
     emblem,
@@ -333,7 +335,6 @@ function cardProps(
     rank,
     rarity,
     face: {
-      ability: emblem === 'gem' ? 'Bulwark' : 'Ember Blade',
       speed: COPY.card.hitsEvery('1s'),
       level: { value: 12, cap: 20 },
       progress: 0.6,

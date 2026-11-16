@@ -3,7 +3,7 @@ import { skillPoints } from './account';
 import { curveBulkPrice, MAX_BULK_LEVELS } from './bulk';
 import { toolLines } from './toolLines';
 import { activeWorkers, forgeWorker, workerSlots, workersUsed } from './workers';
-import { starUpCheck, tierUpCheck } from './cards';
+import { cardDisplayName, starUpCheck, tierUpCheck } from './cards';
 import {
   averageDps,
   burstStats,
@@ -390,7 +390,7 @@ const starUpRule: RuleFn = (state, content) =>
     return [
       {
         targetId: card.id,
-        title: `Fill ${card.name}'s star bar for ★${owned.stars + 1}`,
+        title: `Fill ${cardDisplayName(content, card, owned)}'s star bar for ★${owned.stars + 1}`,
         progress: ratio(fill.have, fill.need),
         etaSeconds: null,
       },
@@ -416,7 +416,7 @@ const tierUpRule: RuleFn = (state, content, modifiers) =>
       return [
         {
           targetId: card.id,
-          title: `Tier up ${card.name} to ${TIER_NAMES[check.to.tier]}: needs ★${stars.need.toString()}`,
+          title: `Tier up ${cardDisplayName(content, card, owned)} to ${TIER_NAMES[check.to.tier]}: needs ★${stars.need.toString()}`,
           progress: ratio(stars.have, stars.need),
           etaSeconds: null,
         },
@@ -428,7 +428,7 @@ const tierUpRule: RuleFn = (state, content, modifiers) =>
     return [
       {
         targetId: card.id,
-        title: `Tier up ${card.name} to ${TIER_NAMES[check.to.tier]}`,
+        title: `Tier up ${cardDisplayName(content, card, owned)} to ${TIER_NAMES[check.to.tier]}`,
         progress: priceProgress(state, prices),
         etaSeconds: secondsToAfford(state, content, prices, modifiers),
       },
@@ -499,7 +499,14 @@ const workerSlotRule: RuleFn = (state, content) => {
     (c) => c.job !== 'fighting' && state.cards.owned[c.id] && !working.has(c.id),
   );
   if (!idle) return [];
-  return [{ targetId: idle.id, title: `Put ${idle.name} to work`, progress: 0.5, etaSeconds: 0 }];
+  return [
+    {
+      targetId: idle.id,
+      title: `Put ${cardDisplayName(content, idle, state.cards.owned[idle.id])} to work`,
+      progress: 0.5,
+      etaSeconds: 0,
+    },
+  ];
 };
 
 /** Skill points waiting in the account tree. */

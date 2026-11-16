@@ -135,8 +135,8 @@ export const cardSide = (rarity: Rarity): 'mythic' | 'void' =>
   rarity === 'void' ? 'void' : 'mythic';
 
 /**
- * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T4
- * "<material> <type>", T5 "Prismatic <name> <type>", T6 by the card's side; the Heirloom tier (an
+ * The name of an item type at a tier for a card of a rarity (DESIGN.md §5 "Item names"): T1 to T5
+ * "<material> <type>" (Wooden, Bronze, Silver, Golden, Prismatic Sword), T6 by the card's side; the Heirloom tier (an
  * Heirloom card's) is the type's Heirloom of that side.
  * Pass the card as `card` and a card with its own Heirloom (`heirloomName` in cards.json, DESIGN.md
  * §5 More weapons from the Heirloom candidates) is named by it at every tier: the card's weapon is
@@ -159,14 +159,37 @@ export function itemName(
     case 'bronze':
     case 'silver':
     case 'gold':
-      return `${content.items.materials[tier]} ${type.noun}`;
     case 'prismatic':
-      return type.prismatic;
+      return `${content.items.materials[tier]} ${type.noun}`;
     case 'mythic':
       return type[cardSide(rarity)];
     case 'heirloom':
       return type.heirloom;
   }
+}
+
+/**
+ * The one name a card has (DESIGN.md §5 "Item names", user 2026-11-16): its weapon's, at the tier it is
+ * at. Not owned = its first-owned name (tier 1; an Heirloom card is always at the Heirloom tier). The
+ * character names in cards.json are shown nowhere. Use this everywhere a card is named.
+ */
+export function cardDisplayName(
+  content: Content,
+  card: Card,
+  owned?: { tier: RankTier } | null,
+): string {
+  const tier = card.heirloom ? 'heirloom' : lookTier(card.rarity, owned?.tier ?? 'wood');
+  return itemName(content, card.item.kind, tier, card.rarity, card);
+}
+
+/** `cardDisplayName` by card id: undefined for an unknown id (so `?? id` chains keep working). */
+export function cardNameById(
+  content: Content,
+  cardId: string,
+  owned?: { tier: RankTier } | null,
+): string | undefined {
+  const card = content.cardById.get(cardId);
+  return card ? cardDisplayName(content, card, owned) : undefined;
 }
 
 /**

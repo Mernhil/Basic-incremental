@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cardNameById } from '../src/game';
 import { teamRows } from '../src/renderer/src/views/collection/teamsModel';
 import { content, freshState } from './helpers';
 
@@ -23,7 +24,10 @@ describe('remembered teams per dungeon', () => {
     state.presets.dungeons[b!.id] = { slots: [card.id, null, null, null] };
     const rows = teamRows(state, content);
     expect(rows.map((r) => r.dungeonId)).toEqual([a!.id, b!.id]);
-    expect(rows[1]).toMatchObject({ active: false, cards: [card.name] });
+    expect(rows[1]).toMatchObject({
+      active: false,
+      cards: [cardNameById(content, card.id, state.cards.owned[card.id])],
+    });
     expect(rows[1]!.overCap).toBe(rows[1]!.cost > rows[1]!.cap);
   });
 

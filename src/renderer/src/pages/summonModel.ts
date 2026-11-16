@@ -1,5 +1,7 @@
 import { ITEM_KINDS, RARITIES, type Content, type Rarity } from '../../../data';
 import {
+  cardDisplayName,
+  cardNameById,
   type GameState,
   type HeirloomGateInfo,
   type HeirloomPull,
@@ -142,7 +144,7 @@ export interface WishlistPanelView {
       /** Item type ("greatsword"), the column the tile sits in. */
       kind: string;
       element: string;
-      /** "Ember Squire · Sword · Fire · Fighting": the one-line readout and the tooltip. */
+      /** "Wooden Sword · Sword · Fire · Fighting": the one-line readout and the tooltip. */
       detail: string;
     }[];
   }[];
@@ -163,7 +165,10 @@ export function wishlistPanelView(
   content: Content,
 ): WishlistPanelView {
   const t = COPY.summon;
-  const nameOf = (id: string): string => content.cardById.get(id)?.name ?? id;
+  const nameOf = (id: string): string => {
+    const def = content.cardById.get(id);
+    return def ? cardDisplayName(content, def, state.cards.owned[id]) : id;
+  };
   const limit = info.byRarity[0]?.limit ?? 0;
   const marked = state.cards.wishlist.filter((id) =>
     info.byRarity.some((r) => r.cards.some((c) => c.itemId === id)),
@@ -194,7 +199,12 @@ export function wishlistPanelView(
               kind,
               element: card?.element ?? '',
               detail: card
-                ? t.wishlistDetail(card.name, kindName(kind), cap(card.element), cap(card.job))
+                ? t.wishlistDetail(
+                    nameOf(c.itemId),
+                    kindName(kind),
+                    cap(card.element),
+                    cap(card.job),
+                  )
                 : nameOf(c.itemId),
             };
           })
@@ -304,7 +314,7 @@ export function revealViews(results: readonly PullResult[], content: Content): R
     return {
       itemId: r.itemId,
       name:
-        content.cardById.get(r.itemId)?.name ??
+        cardNameById(content, r.itemId) ??
         content.cosmeticById.get(r.itemId)?.name ??
         content.legacySkinById.get(r.itemId)?.skin.name ??
         r.itemId,
@@ -392,14 +402,14 @@ export function heirloomBoardView(info: HeirloomGateInfo, content: Content): Hei
     const side = e.side;
     return {
       cardId: e.card.id,
-      name: e.card.name,
+      name: cardDisplayName(content, e.card, e.owned),
       kind,
       side,
       owned: e.owned !== null,
       stars: e.stars,
       progress: e.progress,
       shardsText: t.heirloomShardsOf(e.shards, e.need),
-      label: t.heirloomCell(e.card.name, e.stars, e.shards, e.need),
+      label: t.heirloomCell(cardDisplayName(content, e.card, e.owned), e.stars, e.shards, e.need),
     };
   };
   const kinds = content.items.types;
@@ -441,7 +451,7 @@ export function heirloomRevealViews(
     if (r.pity) tags.push(t.byPity);
     return {
       itemId: r.cardId,
-      name: card?.name ?? r.cardId,
+      name: cardNameById(content, r.cardId, { tier: 'heirloom' }) ?? r.cardId,
       // a shard pull shows one step lower, so a whole Heirloom stands out in the reveal
       rarity: r.whole ? rarity : 'legendary',
       rarityName: rarityName(content, rarity),

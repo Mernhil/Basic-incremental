@@ -45,21 +45,21 @@ Parts per type (a demo version of the system):
 | Pickaxe     | handle, langets, butt cap, head, pick points     | handle    | butt cap   | langets    |
 | Logging axe | handle, langets, butt cap, head, cutting edge    | handle    | butt cap   | langets    |
 
-Names (T1 to T4 are "<material> <type>": Wooden Sword, Bronze Sword, Silver Sword, Golden Sword; Wooden Axe for the logging axe):
+Names (T1 to T5 are "<material> <type>": Wooden Sword, Bronze Sword, Silver Sword, Golden Sword, Prismatic Sword; Wooden Axe for the logging axe; a card has this one name only, DESIGN §5 Item names):
 
-| Type        | T5                           | T6 Mythic                    | T6 Void                 | Heirloom (lean)     |
+| Type | T6 Mythic | T6 Void | Heirloom (lean) |
 | ----------- | ---------------------------- | ---------------------------- | ----------------------- | ------------------- |
-| Sword       | Prismatic Dancer Sword       | Mythic Light Sword           | Void Shadow Sword       | Solaris (light)     |
-| Greatsword  | Prismatic Glacier Greatsword | Mythic Sunbreaker Greatsword | Void Ruin Greatsword    | Grimhowl (dark)     |
-| Dagger      | Prismatic Whisper Dagger     | Mythic Gleam Dagger          | Void Venom Dagger       | Nightsting (dark)   |
-| Spear       | Prismatic Shard Spear        | Mythic Valor Spear           | Void Wraith Spear       | Skypiercer (light)  |
-| Lance       | Prismatic Mirror Lance       | Mythic Paladin Lance         | Void Dread Lance        | Sunrider (light)    |
-| Hammer      | Prismatic Facet Hammer       | Mythic Thunder Hammer        | Void Quake Hammer       | Grave Anvil (dark)  |
-| Bow         | Prismatic Rainbow Bow        | Mythic Seraph Bow            | Void Wither Bow         | Starweaver (light)  |
-| Staff       | Prismatic Kaleido Staff      | Mythic Sanctum Staff         | Void Hex Staff          | Soulwell (dark)     |
-| Scythe      | Prismatic Halfmoon Scythe    | Mythic Mercy Scythe          | Void Grim Scythe        | Last Breath (dark)  |
-| Pickaxe     | Prismatic Vein Pickaxe       | Mythic Lodestar Pickaxe      | Void Hollowdeep Pickaxe | Heartdelver (light) |
-| Logging axe | Prismatic Glass Axe          | Mythic Grove Axe             | Void Blight Axe         | Elderwarden (light) |
+| Sword | Mythic Light Sword | Void Shadow Sword | Solaris (light) |
+| Greatsword | Mythic Sunbreaker Greatsword | Void Ruin Greatsword | Grimhowl (dark) |
+| Dagger | Mythic Gleam Dagger | Void Venom Dagger | Nightsting (dark) |
+| Spear | Mythic Valor Spear | Void Wraith Spear | Skypiercer (light) |
+| Lance | Mythic Paladin Lance | Void Dread Lance | Sunrider (light) |
+| Hammer | Mythic Thunder Hammer | Void Quake Hammer | Grave Anvil (dark) |
+| Bow | Mythic Seraph Bow | Void Wither Bow | Starweaver (light) |
+| Staff | Mythic Sanctum Staff | Void Hex Staff | Soulwell (dark) |
+| Scythe | Mythic Mercy Scythe | Void Grim Scythe | Last Breath (dark) |
+| Pickaxe | Mythic Lodestar Pickaxe | Void Hollowdeep Pickaxe | Heartdelver (light) |
+| Logging axe | Mythic Grove Axe | Void Blight Axe | Elderwarden (light) |
 
 The Leviathan batch (batch 2, added next to the table above) has its own weapon at T6, shown on its own cards (`DESIGN.md` §5 Where the extra weapons show), and its own Heirloom. All names are Claude's `[Default]`:
 

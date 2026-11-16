@@ -1,5 +1,12 @@
 import type { Content } from '../../../data';
-import { forgeStatus, forgeWorker, workerPower, workplaceOf, type GameState } from '../../../game';
+import {
+  cardDisplayName,
+  forgeStatus,
+  forgeWorker,
+  workerPower,
+  workplaceOf,
+  type GameState,
+} from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import { formatWait } from './productionModel';
@@ -59,7 +66,7 @@ export function forgeView(state: GameState, content: Content): ForgeView {
     workers.push({
       cardId: card.id,
       label: t.worker(
-        card.name,
+        cardDisplayName(content, card, owned),
         fmt(workerPower(content, card.id, owned)),
         at ? (names.get(at) ?? at) : null,
         owned.tier,

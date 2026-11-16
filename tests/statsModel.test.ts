@@ -22,7 +22,7 @@ describe('card stat tiles', () => {
 
   it('compares with the weakest other loadout card, and says so when it is the only one', () => {
     const t = statTiles(content, state(), 'silver_skirmisher');
-    expect(t.compare).toMatch(/^vs Ember Squire: [+−]\d+% damage, [+−]\d+% health$/);
+    expect(t.compare).toMatch(/^vs Wooden Sword: [+−]\d+% damage, [+−]\d+% health$/);
     expect(statTiles(content, state(), 'ember_squire').compare).toBe(
       'The only card in the loadout.',
     );
