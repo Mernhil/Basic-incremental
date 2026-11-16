@@ -697,6 +697,9 @@ export const cardRulesSchema = z.strictObject({
      * Tier multiplier of base damage and health (and worker power), DESIGN.md §5 Tier: a step at
      * least as big as ★6 over ★1, so a tier-up that restarts the stars never weakens the card.
      */
+    /** Levels over which a card gains the step to the next tier after passing that tier's level
+     *  cap (DESIGN.md §5 Strength comes with the card's levels). */
+    tierStepLevels: z.number().int().min(1),
     statTier: perTier(z.number().positive()),
   }),
   /**

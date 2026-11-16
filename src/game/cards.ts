@@ -223,15 +223,44 @@ export function xpToNextLevel(content: Content, level: number): Decimal {
 }
 
 /**
+ * The step of a tier table (`power.tier`, `power.statTier`) a card stands on at its level (DESIGN.md
+ * §5 Strength comes with the card's levels). A card is its tier from the first pull, but its numbers
+ * climb the tiers with its own levels: it starts on the Wood step and gains the step to the next
+ * tier as it passes that tier's level cap (20, 40, 60, 80, 100), spread over the next
+ * `power.tierStepLevels` levels, up to its own tier. So a Prismatic card at Lv 1 has the Wood step
+ * and its full Prismatic step from a little past Lv 80. An Heirloom card has its own fixed step.
+ */
+export function tierStepAt(
+  content: Content,
+  table: Record<RankTier, number>,
+  tier: RankTier,
+  level: number,
+): number {
+  if (tier === 'heirloom') return table.heirloom;
+  const { levelCaps, power } = content.cardRules;
+  const ramp = Math.max(1, power.tierStepLevels);
+  const top = RANK_TIERS.indexOf(tier);
+  let value = table.wood;
+  for (let k = 0; k < top; k++) {
+    const from = RANK_TIERS[k]!;
+    const to = RANK_TIERS[k + 1]!;
+    const part = Math.min(1, (level - levelCaps[from]) / ramp);
+    if (part <= 0) break;
+    value = table[from] * Math.pow(table[to] / table[from], part);
+  }
+  return value;
+}
+
+/**
  * The card's power: (1 + perLevel × (level − 1)) × (1 + perStar × (stars − 1), plus star6Bonus
- * at ★6) × the tier's multiplier. 1 for a Wood ★1 Lv 1 card.
+ * at ★6) × the tier step the card stands on at its level (`tierStepAt`). 1 for any ★1 Lv 1 card.
  */
 export function cardPower(content: Content, owned: OwnedCard): number {
   const p = content.cardRules.power;
   const levelPart = 1 + p.perLevel * (owned.level - 1);
   const starPart =
     1 + p.perStar * (owned.stars - 1) + (owned.stars >= MAX_STARS ? p.star6Bonus : 0);
-  return levelPart * starPart * p.tier[owned.tier];
+  return levelPart * starPart * tierStepAt(content, p.tier, owned.tier, owned.level);
 }
 
 /**
@@ -243,7 +272,11 @@ export function cardPower(content: Content, owned: OwnedCard): number {
 export function cardStatPower(content: Content, owned: OwnedCard): number {
   const p = content.cardRules.power;
   const star = owned.stars <= 1 ? 1 : p.starMultiplier[owned.stars - 2]!;
-  return (1 + p.perLevel * (owned.level - 1)) * star * p.statTier[owned.tier];
+  return (
+    (1 + p.perLevel * (owned.level - 1)) *
+    star *
+    tierStepAt(content, p.statTier, owned.tier, owned.level)
+  );
 }
 
 /** The weapon identity's factor on base damage or health (DESIGN.md §5); 1 off the fighting types. */

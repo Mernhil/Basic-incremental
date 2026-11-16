@@ -303,7 +303,9 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     expect(at({ stars: 6 }) - at({ stars: 5 })).toBeGreaterThan(
       at({ stars: 5 }) - at({ stars: 4 }) * 2,
     );
-    expect(at({ tier: 'silver' })).toBeCloseTo(1.5);
+    // the tier step comes with the card's levels: a Silver card has it once past Lv 40
+    expect(at({ tier: 'silver' })).toBe(1);
+    expect(at({ tier: 'silver', level: 60 }) / at({ tier: 'wood', level: 60 })).toBeCloseTo(1.5);
     expect(at({ tier: 'prismatic', stars: 6, level: 100 })).toBeGreaterThan(10);
 
     const lv11 = { ...newOwnedCard(), level: 11 };
@@ -327,9 +329,9 @@ describe('card effects through the modifier pipeline (DESIGN.md §14, §5)', () 
     expect(cardHealth(content, 'dawnblade_regent', base).toNumber()).toBeCloseTo(
       legendary.toNumber() * 1.05,
     );
-    const silver = { ...base, tier: 'silver' as const, level: 11 };
-    expect(cardHealth(content, 'ember_squire', silver).toNumber()).toBeCloseTo(
-      wood.toNumber() * lv11Power * 1.5,
+    const lv11 = { ...base, level: 11 };
+    expect(cardHealth(content, 'ember_squire', lv11).toNumber()).toBeCloseTo(
+      wood.toNumber() * lv11Power,
     );
     expect(cardHealth(content, 'nope', base).eq(0)).toBe(true);
   });

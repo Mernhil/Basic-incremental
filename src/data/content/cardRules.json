@@ -56,7 +56,8 @@
       "prismatic": 70.1,
       "mythic": 203,
       "heirloom": 1630
-    }
+    },
+    "tierStepLevels": 5
   },
   "abilityGrowth": {
     "fighting": [

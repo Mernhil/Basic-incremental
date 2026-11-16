@@ -15,7 +15,7 @@ describe('a higher tier is always worth having', () => {
     ...new Set(content.cards.filter((c) => c.job === 'fighting').map((c) => c.item.kind)),
   ];
 
-  it('a fresh card of the next tier at the same level beats a ★6 card of the tier below', () => {
+  it('the next tier beats the tier below, both fresh and both at ★6 and their level cap', () => {
     for (const kind of kinds) {
       for (let i = 0; i < 5; i++) {
         const tier = RANK_TIERS[i]!;
@@ -24,14 +24,21 @@ describe('a higher tier is always worth having', () => {
         const high = content.cards.find(
           (c) => c.item.kind === kind && c.tier === next && !c.heirloomName,
         )!;
-        const level = levelCap(content, { tier, stars: 6 });
-        const now: OwnedCard = { ...newOwnedCard(tier), stars: 6, level };
-        const after: OwnedCard = { ...newOwnedCard(next), stars: 1, level };
-        const a = cardStatsFor(content, low.id, now)!;
-        const b = cardStatsFor(content, high.id, after)!;
-        const label = `${kind} ${tier} to ${next}`;
-        expect(b.output.gte(a.output.mul(0.9999)), `${label} damage`).toBe(true);
-        expect(b.health!.gte(a.health!.mul(0.9999)), `${label} health`).toBe(true);
+        const pairs: [OwnedCard, OwnedCard, string][] = [
+          [newOwnedCard(tier), newOwnedCard(next), 'fresh'],
+          [
+            { ...newOwnedCard(tier), stars: 6, level: levelCap(content, { tier, stars: 6 }) },
+            { ...newOwnedCard(next), stars: 6, level: levelCap(content, { tier: next, stars: 6 }) },
+            'maxed',
+          ],
+        ];
+        for (const [a0, b0, what] of pairs) {
+          const a = cardStatsFor(content, low.id, a0)!;
+          const b = cardStatsFor(content, high.id, b0)!;
+          const label = `${kind} ${tier} to ${next} ${what}`;
+          expect(b.output.gt(a.output), `${label} damage`).toBe(true);
+          expect(b.health!.gt(a.health!), `${label} health`).toBe(true);
+        }
       }
     }
   });
