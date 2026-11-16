@@ -1,4 +1,5 @@
 import type { Card, Content, Rarity } from '../data';
+import { cardDisplayName } from './cards';
 import { cloneState, type GameState } from './state';
 
 /**
@@ -78,10 +79,10 @@ export function cardSkinChoices(
     out.push({
       id,
       kind: 'card',
-      name: source.heirloomName ?? source.name,
+      name: cardDisplayName(content, source, { tier: 'mythic' }),
       art: null,
       sourceCardId: source.id,
-      sourceCardName: source.name,
+      sourceCardName: cardDisplayName(content, source, { tier: 'mythic' }),
       rarity: source.rarity,
       available: state.cards.owned[source.id] !== undefined,
       equipped: worn === id,

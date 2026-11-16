@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { addCard, itemName } from '../src/game';
+import { addCard, cardDisplayName, itemName } from '../src/game';
+import { RANK_TIERS } from '../src/data/schemas';
 import { createCardsModel, previewArt, previewTiers } from '../src/renderer/src/pages/cardsAdapter';
 import { slotChoices } from '../src/renderer/src/pages/cardsModel';
 import { content, freshState } from './helpers';
@@ -159,5 +160,31 @@ describe('Next tier preview', () => {
     expect(stops[1]!.own).toBe(true); // back to the own tier: there is no step after T6
     expect(model.preview(freshState(), byRarity('common').id, 1)).toBeNull();
     expect(model.preview(freshState(), 'nope', 1)).toBeNull();
+  });
+});
+
+describe("cardDisplayName: a card has one name, its weapon's (DESIGN.md §5 Item names)", () => {
+  it('is material + type from T1 to T5, and an unowned card shows its first-owned name', () => {
+    const card = content.cardById.get('ember_squire')!;
+    const names = RANK_TIERS.slice(0, 5).map((tier) => cardDisplayName(content, card, { tier }));
+    expect(names).toEqual(
+      ['Wooden', 'Bronze', 'Silver', 'Golden', 'Prismatic'].map((m) => `${m} Sword`),
+    );
+    expect(cardDisplayName(content, card, null)).toBe('Wooden Sword');
+    expect(cardDisplayName(content, card)).toBe('Wooden Sword');
+  });
+  it('never shows a character name from cards.json', () => {
+    // an Heirloom card's character name is its weapon's name, so it is the one name there
+    for (const card of content.cards.filter((c) => !c.heirloom)) {
+      for (const tier of RANK_TIERS) {
+        expect(cardDisplayName(content, card, { tier }), `${card.id} ${tier}`).not.toBe(card.name);
+      }
+    }
+  });
+  it('keeps the unique names at T6 and as an Heirloom', () => {
+    const heirloom = content.cards.find((c) => c.heirloom)!;
+    expect(cardDisplayName(content, heirloom, null)).toBe(
+      itemName(content, heirloom.item.kind, 'heirloom', heirloom.rarity, heirloom),
+    );
   });
 });

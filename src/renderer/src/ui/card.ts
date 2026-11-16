@@ -99,7 +99,7 @@ export function createCard(initial: CardProps): CardView {
     <header class="bi-card__head"><h3 class="bi-card__name"></h3><span class="bi-card__job"></span><span class="bi-stars" role="img"></span></header>
     <div class="bi-card__hp"></div>
     <footer class="bi-card__info">
-      <div class="bi-info__line"><span class="bi-info__ability"></span><span class="bi-info__speed"></span></div>
+      <div class="bi-info__line"><span class="bi-info__speed"></span></div>
       <div class="bi-info__line bi-info__line--meta"><span class="bi-info__stars"></span><span class="bi-info__level"></span><span class="bi-info__rarity"></span></div>
       <div class="bi-info__bar" aria-hidden="true"><i></i></div>
     </footer>`;
@@ -111,7 +111,6 @@ export function createCard(initial: CardProps): CardView {
   const itemSvg = q<SVGElement>('.bi-card__item');
   const artBox = q<HTMLElement>('.bi-card__art');
   let itemMarkup: string | undefined;
-  const ability = q<HTMLElement>('.bi-info__ability');
   const speed = q<HTMLElement>('.bi-info__speed');
   const levelText = q<HTMLElement>('.bi-info__level');
   const rarityWord = q<HTMLElement>('.bi-info__rarity');
@@ -177,11 +176,8 @@ export function createCard(initial: CardProps): CardView {
       itemSvg.setAttribute('viewBox', full ? FULL_ART_VIEWBOX : ITEM_VIEWBOX);
     }
     if (!p.item) emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
-    // the bottom plate (DESIGN.md §5 full-art layout): ability and speed, level and rarity, bar
+    // the bottom plate (DESIGN.md §5 full-art layout): hit speed, stars, level and rarity, bar; the name is on the top plate only
     const face = p.face;
-    ability.textContent = face?.ability ?? '';
-    // the weapon's name is dropped from the banner only when it is the card's own name (an Heirloom's)
-    el.classList.toggle('bi-card--same-name', Boolean(face) && face!.ability === p.name);
     speed.textContent = face?.speed ?? '';
     levelText.textContent = face?.level
       ? COPY.card.levelShort(face.level.value, face.level.cap)

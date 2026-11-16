@@ -1,19 +1,10 @@
 import type { Content } from '../../../data';
-import {
-  burstStats,
-  cardInfo,
-  itemName,
-  lookTier,
-  type CardInfo,
-  type GameState,
-  type Modifier,
-} from '../../../game';
+import { burstStats, cardInfo, type CardInfo, type GameState, type Modifier } from '../../../game';
 import { COPY } from '../copy';
 import type { CardFace } from '../ui/cardFace';
 
 /**
- * What the full-art card face shows (DESIGN.md §5 "Full-art layout"): the ability line, the hit
- * speed, the level and the progress to the next one. Pure view-model code; the numbers come from
+ * What the full-art card face shows (DESIGN.md §5 "Full-art layout"): the hit speed, the level and the progress to the next one. Pure view-model code; the numbers come from
  * the game's own exports.
  */
 
@@ -37,7 +28,7 @@ export function hitSeconds(content: Content, info: CardInfo, mods?: readonly Mod
 
 /** The face of one card. `mods` lets a loadout card use the live modifiers for its speed. */
 export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Modifier[]): CardFace {
-  const { card, owned } = info;
+  const { owned } = info;
   const cap = info.levelCap;
   let progress = 0;
   if (owned && cap !== null) {
@@ -46,14 +37,6 @@ export function cardFaceOf(content: Content, info: CardInfo, mods?: readonly Mod
     else progress = 1; // at the level cap
   }
   return {
-    // The weapon's name stands in for the ability name until the card data has one.
-    ability: itemName(
-      content,
-      card.item.kind,
-      card.heirloom ? 'heirloom' : lookTier(card.rarity, info.rank?.tier ?? 'wood'),
-      card.rarity,
-      card,
-    ),
     speed: COPY.card.hitsEvery(secondsText(hitSeconds(content, info, mods))),
     level: owned && cap !== null ? { value: owned.level, cap } : null,
     progress,

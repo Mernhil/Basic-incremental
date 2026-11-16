@@ -426,14 +426,6 @@ body {
   min-width: 0;
   white-space: nowrap;
 }
-.bi-info__ability {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--plate-ink);
-}
 .bi-info__speed {
   flex: none;
   font-size: 8.5px;
@@ -622,12 +614,6 @@ body {
   box-shadow: none;
   align-content: center;
 }
-.bi-card--kit:not([data-border-worn]) .bi-info__ability {
-  font-size: max(11px, var(--cp-floor, 0px));
-  font-weight: 700;
-  color: var(--kit-ink);
-  text-shadow: var(--kit-shadow);
-}
 .bi-card--kit:not([data-border-worn]) .bi-info__speed,
 .bi-card--kit:not([data-border-worn]) .bi-info__level {
   color: var(--kit-ink-2);
@@ -653,21 +639,18 @@ body {
 .bi-info__line--meta .bi-info__stars {
   display: flex;
 }
-/* a small card's banner: the weapon name, then stars and level; the speed and rarity word are for the big card */
+/* a small card's banner: stars and level only; the speed and rarity word are for the big card */
 .bi-card--kit:not([data-border-worn]) .bi-info__speed,
 .bi-card--kit:not([data-border-worn]) .bi-info__rarity {
   display: none;
 }
-/* a weapon that carries the card's own name (an Heirloom) is not said twice: the card's name on the plate is the
-   only one, and the first banner line (only "hits every" is left) is for the big card */
-.bi-card--same-name:not([data-border-worn]) .bi-info__ability {
-  display: none;
-}
-.bi-card--same-name:not([data-border-worn]) .bi-info__line:first-child {
+/* the card's one name is the weapon's, on the top plate (DESIGN.md §5 Item names): the banner has no name line,
+   its first line ("hits every") is for the big card */
+.bi-card--kit:not([data-border-worn]) .bi-info__line:first-child {
   display: none;
 }
 @container style(--card-full: 1) {
-  .bi-card--same-name:not([data-border-worn]) .bi-info__line:first-child {
+  .bi-card--kit:not([data-border-worn]) .bi-info__line:first-child {
     display: flex;
     justify-content: center;
   }
@@ -698,7 +681,6 @@ body {
   --kit-shadow: 0 0 2px #000, 0 1px 1px #000, 1px 0 1px #000, -1px 0 1px #000;
 }
 /* the T6 and Heirloom banner is half light, half dark: light letters with a dark outline read on both halves */
-.bi-card--kit-t6:not([data-border-worn]) .bi-info__ability,
 .bi-card--kit-t6:not([data-border-worn]) .bi-info__speed,
 .bi-card--kit-t6:not([data-border-worn]) .bi-info__level,
 .bi-card--kit-t6:not([data-border-worn]) .bi-info__rarity {

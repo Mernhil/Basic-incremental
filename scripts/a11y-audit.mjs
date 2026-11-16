@@ -13,7 +13,6 @@ const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic', '
 const CHECKS = [
   '.bi-card__name',
   '.bi-card__job',
-  '.bi-info__ability',
   '.bi-info__speed',
   '.bi-info__level',
   '.bi-info__rarity',

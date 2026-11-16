@@ -1,5 +1,5 @@
 import type { Content, Rarity } from '../../../data';
-import { cardSkinChoices, resolveCardSkin, type GameState } from '../../../game';
+import { cardDisplayName, cardSkinChoices, resolveCardSkin, type GameState } from '../../../game';
 import { COPY } from '../copy';
 
 /**
@@ -87,7 +87,7 @@ export function skinPickerView(
   const wornTile = tiles.find((t) => t.worn) ?? tiles[0]!;
   return {
     cardId,
-    cardName: card.name,
+    cardName: cardDisplayName(content, card, owned),
     weapon: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
     tiles,
     wornName: wornTile.name,
@@ -113,7 +113,7 @@ export function skinCards(state: GameState, content: Content): SkinCardView[] {
     if (!view || view.ownedSkins === 0) continue;
     out.push({
       id: card.id,
-      name: card.name,
+      name: cardDisplayName(content, card, state.cards.owned[card.id]),
       kind: card.item.kind,
       weapon: view.weapon,
       wornName: view.wornName,

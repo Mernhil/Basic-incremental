@@ -1,5 +1,6 @@
 import type { ProductionJob } from '../../../data';
 import {
+  cardDisplayName,
   applyProductionPreset,
   bondCodex,
   checkAchievements,
@@ -189,7 +190,12 @@ export function createBondsPanel(ctx: PageContext): Panel {
       li.append(h('strong', 'tp-bond__name', e.name ?? TEXT.undiscovered));
       if (e.job) li.append(h('span', 'tp-bond__job', TEXT.jobs[e.job]));
       if (e.discovered && e.cards && e.bonus) {
-        const names = e.cards.map((id) => ctx.content.cardById.get(id)?.name ?? id).join(' + ');
+        const names = e.cards
+          .map((id) => {
+            const def = ctx.content.cardById.get(id);
+            return def ? cardDisplayName(ctx.content, def, s.cards.owned[id]) : id;
+          })
+          .join(' + ');
         li.append(
           h('span', 'tp-bond__cards', names),
           h(
@@ -347,7 +353,10 @@ export function createExpeditionsPanel(
       form.append(
         select(
           TEXT.card,
-          v.available.map((c) => ({ value: c.id, text: `${c.name} (${c.element})` })),
+          v.available.map((c) => ({
+            value: c.id,
+            text: `${cardDisplayName(ctx.content, c, s.cards.owned[c.id])} (${c.element})`,
+          })),
           pickCard,
           (x) => (pickCard = x),
         ),

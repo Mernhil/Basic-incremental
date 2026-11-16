@@ -106,7 +106,7 @@ describe('shard shop', () => {
     expect(squire.group).toBe('cards');
     expect(squire.detail).toBe('Common card');
     expect(squire.buy.price).toBe('5 shards');
-    expect(squire.buy.preview).toBe('+1 copy of Ember Squire');
+    expect(squire.buy.preview).toBe('+1 copy of Wooden Sword');
     expect(squire.buy.offer.affordable).toBe(true);
     expect(squire.stockText).toBe('');
     const crown = views.find((v) => v.id === 'ember_crown')!;
@@ -136,7 +136,7 @@ describe('shard shop', () => {
     const card = shardGainView(content, 'copy_ember_squire', { kind: 'new' });
     expect(card?.kind).toBe('reveal');
     if (card?.kind === 'reveal') {
-      expect(card.view.name).toBe('Ember Squire');
+      expect(card.view.name).toBe('Wooden Sword');
       expect(card.view.tags).toEqual(['New!']);
       expect(card.view.upgrade).toBe(false);
     }

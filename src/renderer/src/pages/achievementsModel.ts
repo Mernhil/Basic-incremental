@@ -1,5 +1,6 @@
 import type { Achievement, AchievementCondition, Content, Rarity } from '../../../data';
 import {
+  cardNameById,
   Decimal,
   formatDuration,
   type AchievementEntry,
@@ -284,7 +285,7 @@ export function shardOfferViews(
     let gain: string;
     if (r.kind === 'card') {
       const card = content.cardById.get(r.card);
-      name = card?.name ?? r.card;
+      name = cardNameById(content, r.card) ?? r.card;
       rarity = card?.rarity ?? null;
       detail = t.cardDetail(content.rarityById.get(card?.rarity ?? 'common')?.name ?? '');
       art = { kind: 'card', cardId: r.card };
@@ -379,7 +380,7 @@ export function shardGainView(
     kind: 'reveal',
     view: {
       itemId: id,
-      name: content.cardById.get(id)?.name ?? content.cosmeticById.get(id)?.name ?? id,
+      name: cardNameById(content, id) ?? content.cosmeticById.get(id)?.name ?? id,
       rarity: r0,
       rarityName: content.rarityById.get(r0)?.name ?? r0,
       orb: r0,

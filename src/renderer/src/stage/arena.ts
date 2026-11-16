@@ -1,5 +1,6 @@
 import type { Content } from '../../../data';
 import {
+  cardNameById,
   barMoment,
   bossAttackView,
   bossStatus,
@@ -459,7 +460,7 @@ export function createArena(ctx: ArenaContext): Arena {
     for (const c of team) {
       const slot = slots.find((x) => x.cardId === c.cardId);
       if (!slot) continue;
-      const name = content.cardById.get(c.cardId)?.name ?? c.cardId;
+      const name = cardNameById(content, c.cardId, ctx.state().cards.owned[c.cardId]) ?? c.cardId;
       // its own health shows as the round gauge in the stat sheet
       slot.fraction = c.fraction;
       slot.crit = c.critChance;
@@ -790,7 +791,10 @@ export function createArena(ctx: ArenaContext): Arena {
       li.style.setProperty('--hp', String(pct));
       li.dataset['hp'] = `${pct}%`;
       li.classList.toggle('is-out', own?.out === true);
-      setText(li.children[0] as HTMLElement, content.cardById.get(r.cardId)?.name ?? r.cardId);
+      setText(
+        li.children[0] as HTMLElement,
+        cardNameById(content, r.cardId, ctx.state().cards.owned[r.cardId]) ?? r.cardId,
+      );
       setText(li.children[1] as HTMLElement, fmt(r.damage));
       (li.children[2] as HTMLElement).style.transform = `scaleX(${r.bar.toFixed(3)})`;
     });
@@ -828,7 +832,10 @@ export function createArena(ctx: ArenaContext): Arena {
       node.dataset['colour'] = slot >= 0 ? slotColour(slot) : 'none';
       const title = document.createElement('b');
       title.textContent = skill?.name ?? (p.kind === 'heal' ? DUEL_COPY.heal : p.skillId);
-      const who = span('du-skill__who', content.cardById.get(p.cardId)?.name ?? '');
+      const who = span(
+        'du-skill__who',
+        cardNameById(content, p.cardId, ctx.state().cards.owned[p.cardId]) ?? '',
+      );
       const icon = div('du-skill__icon');
       const sprite = slots.find((x) => x.cardId === p.cardId)?.el.querySelector('.bi-px-anim');
       if (sprite) icon.append(sprite.cloneNode(true));

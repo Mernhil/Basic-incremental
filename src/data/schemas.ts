@@ -488,8 +488,6 @@ export const itemTypeSchema = z.strictObject({
   job: z.enum(['fighting', 'mining', 'logging']),
   /** The type word in item names: "Sword", "Axe" for the logging axe. */
   noun: name,
-  /** T5 name ("Prismatic Dancer Sword"). */
-  prismatic: name,
   /** T6 names, by the card's side. */
   mythic: name,
   void: name,
@@ -497,8 +495,14 @@ export const itemTypeSchema = z.strictObject({
   heirloom: name,
 });
 export const itemsSchema = z.strictObject({
-  /** Material words for T1 to T4 names: "Wooden Sword", "Bronze Sword", "Silver Sword", "Golden Sword". */
-  materials: z.strictObject({ wood: name, bronze: name, silver: name, gold: name }),
+  /** Material words for T1 to T5 names: "Wooden Sword", "Bronze Sword", "Silver Sword", "Golden Sword", "Prismatic Sword". */
+  materials: z.strictObject({
+    wood: name,
+    bronze: name,
+    silver: name,
+    gold: name,
+    prismatic: name,
+  }),
   types: z.array(itemTypeSchema).length(ITEM_KINDS.length),
 });
 export type ItemType = z.output<typeof itemTypeSchema>;
