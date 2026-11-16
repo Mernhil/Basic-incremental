@@ -26,6 +26,7 @@ import {
   type Requirement as GameRequirement,
   type UpgradeCheck,
   TIER_LABELS,
+  cardDisplayName,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { amountText } from '../settings/coins';
@@ -156,7 +157,7 @@ export function createCardsModel(
           : 0;
     return {
       id: card.id,
-      name: card.name,
+      name: cardDisplayName(content, card, owned),
       heirloom: Boolean(card.heirloom),
       job: card.job,
       rarity: card.rarity,

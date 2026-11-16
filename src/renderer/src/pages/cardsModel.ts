@@ -121,7 +121,7 @@ export interface StatChange {
 /** The four stat tiles of a card and the line comparing it with the weakest other loadout card. */
 export interface StatTiles {
   tiles: Array<{ label: string; value: string; title: string }>;
-  /** "vs Ember Squire: +12% damage, −8% health"; the card's own note when there is nothing to compare. */
+  /** "vs Wooden Sword: +12% damage, −8% health"; the card's own note when there is nothing to compare. */
   compare: string;
 }
 

@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { Decimal, portalInfo, setWishlisted, wishlistView, type PullResult } from '../src/game';
+import {
+  cardNameById,
+  Decimal,
+  portalInfo,
+  setWishlisted,
+  wishlistView,
+  type PullResult,
+} from '../src/game';
 import {
   DECK_MAX_LAYERS,
   DECK_MIN_LAYERS,
@@ -65,7 +72,11 @@ describe('summon reveal', () => {
       },
     ];
     const [a, b] = revealViews(results, content);
-    expect(a).toMatchObject({ name: card.name, upgrade: true, tags: ['New!', '×10 guarantee'] });
+    expect(a).toMatchObject({
+      name: cardNameById(content, card.id),
+      upgrade: true,
+      tags: ['New!', '×10 guarantee'],
+    });
     expect(b).toMatchObject({ upgrade: false, tags: ['Duplicate (2)', 'Pity'] });
   });
 
@@ -168,7 +179,7 @@ describe('wishlist panel', () => {
     if (!r.ok) throw new Error(r.reason);
     const v = wishlistPanelView(wishlistView(r.state, content, portal.id)!, r.state, content);
     expect(v.active).toBe(true);
-    expect(v.hunting).toBe(`Hunting: ${content.cardById.get(id)!.name}`);
+    expect(v.hunting).toBe(`Hunting: ${cardNameById(content, id)}`);
     const epic = v.rows.find((x) => x.rarity === 'epic')!;
     expect(epic.countText).toBe(`1 / ${portal.wishlistPerRarity}`);
     expect(epic.cards.find((c) => c.id === id)!.label).toContain('Click to unmark');

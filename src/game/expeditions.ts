@@ -5,7 +5,7 @@ import {
   type ExpeditionPlace,
   type ProductionJob,
 } from '../data';
-import { grantWorkerXp, loadoutCards, xpToNextLevel } from './cards';
+import { cardDisplayName, grantWorkerXp, loadoutCards, xpToNextLevel } from './cards';
 import { collectModifiers, statValue, type Modifier } from './modifiers';
 import { Decimal } from './num';
 import { producerLevel, producerRate, producersOf } from './production';
@@ -268,11 +268,17 @@ export interface ExpeditionView {
   available: Card[];
 }
 
+/** The name of the card on a trip (its weapon's, DESIGN.md §5 "Item names"). */
+function tripCardName(state: GameState, content: Content, cardId: string): string {
+  const card = content.cardById.get(cardId);
+  return card ? cardDisplayName(content, card, state.cards.owned[cardId]) : cardId;
+}
+
 export function expeditionView(state: GameState, content: Content): ExpeditionView {
   const modifiers = collectModifiers(state, content);
   const trips: TripView[] = state.expeditions.trips.map((trip) => ({
     trip,
-    cardName: content.cardById.get(trip.cardId)?.name ?? trip.cardId,
+    cardName: tripCardName(state, content, trip.cardId),
     placeName: content.expeditions.places.find((p) => p.id === trip.placeId)?.name ?? trip.placeId,
     done: isTripDone(trip),
     secondsLeft: tripSecondsLeft(trip),

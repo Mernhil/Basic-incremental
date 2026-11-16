@@ -434,7 +434,7 @@ describe('weapon looks for now (DESIGN.md §5)', () => {
     });
     expect(at('dawnblade_regent', 'prismatic', 6)).toMatchObject({
       kind: 'greatsword',
-      name: 'Prismatic Glacier Greatsword',
+      name: 'Prismatic Greatsword',
       heirloom: false,
     });
     expect(at('core_titan', 'mythic')).toMatchObject({

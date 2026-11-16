@@ -721,10 +721,7 @@ export function createCardsPage(
     // Next tier preview: the picture and name of a higher tier on the card, view state only
     const step = previewOf?.id === e.id ? previewOf.step : 0;
     const pv = model.preview(state, e.id, step);
-    const face = cardEl(
-      pv && !pv.own ? { ...e, item: pv.item, face: { ...e.face, ability: pv.itemName } } : e,
-      state,
-    );
+    const face = cardEl(pv && !pv.own ? { ...e, item: pv.item, name: pv.itemName } : e, state);
     const previewing = Boolean(pv && !pv.own);
     face.classList.toggle('is-previewing', previewing);
     const cardCol = h('div', 'cp-detail__card');

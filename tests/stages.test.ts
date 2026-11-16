@@ -170,13 +170,13 @@ describe('item names (DESIGN.md §5, items.json)', () => {
   it('shows the logging axe as "Axe"', () => {
     expect(itemName(content, 'logging_axe', 'wood', 'common')).toBe('Wooden Axe');
     expect(itemName(content, 'logging_axe', 'gold', 'epic')).toBe('Golden Axe');
-    expect(itemName(content, 'logging_axe', 'prismatic', 'legendary')).toBe('Prismatic Glass Axe');
+    expect(itemName(content, 'logging_axe', 'prismatic', 'legendary')).toBe('Prismatic Axe');
   });
 
-  it('names T5 "Prismatic <name> <type>", the same for both sides', () => {
-    expect(itemName(content, 'sword', 'prismatic', 'legendary')).toBe('Prismatic Dancer Sword');
-    expect(itemName(content, 'sword', 'prismatic', 'void')).toBe('Prismatic Dancer Sword');
-    expect(itemName(content, 'bow', 'prismatic', 'legendary')).toBe('Prismatic Rainbow Bow');
+  it('names T5 "Prismatic <type>", the same for both sides', () => {
+    expect(itemName(content, 'sword', 'prismatic', 'legendary')).toBe('Prismatic Sword');
+    expect(itemName(content, 'sword', 'prismatic', 'void')).toBe('Prismatic Sword');
+    expect(itemName(content, 'bow', 'prismatic', 'legendary')).toBe('Prismatic Bow');
   });
 
   it('names T6 by the card side: Mythic Light Sword for Mythic, Void Shadow Sword for Void', () => {

@@ -279,6 +279,8 @@ export {
   cardItem,
   /** The name of an item type at a tier for a card's rarity (Wooden Sword ... Solaris). */
   itemName,
+  cardDisplayName,
+  cardNameById,
   /** The highest tier a card can reach: its rarity's cap, or the Heirloom when open. */
   cardTopTier,
   /** The highest tier before an Heirloom, by rarity. */

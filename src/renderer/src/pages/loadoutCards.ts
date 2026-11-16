@@ -1,5 +1,6 @@
 import type { Content, ItemKind } from '../../../data';
 import {
+  cardDisplayName,
   cardInfo,
   cardItem,
   resolveCardSkin,
@@ -60,7 +61,7 @@ export function loadoutProps(
   if (!info?.owned || !info.rank) return null;
   const { card, rank } = info;
   return {
-    name: card.name,
+    name: cardDisplayName(content, card, info.owned),
     label: card.job.charAt(0).toUpperCase() + card.job.slice(1),
     job: card.job,
     emblem: 'blade',

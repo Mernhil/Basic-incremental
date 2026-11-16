@@ -162,8 +162,8 @@ describe('selected item', () => {
     const d = detail(s, 'ember_crown', other);
     expect(d.equip.global).toBeNull();
     expect(d.equip.card).toBeNull();
-    expect(d.equip.note).toBe('Own Dawnblade Regent to equip it.');
-    expect(d.exclusive).toBe('Only for Dawnblade Regent, from Prismatic ★6');
+    expect(d.equip.note).toBe('Own Wooden Greatsword to equip it.');
+    expect(d.exclusive).toBe('Only for Wooden Greatsword, from Prismatic ★6');
     ownCard(s, 'dawnblade_regent');
     expect(detail(s, 'ember_crown', 'dawnblade_regent').equip.card).toBe('equip');
   });

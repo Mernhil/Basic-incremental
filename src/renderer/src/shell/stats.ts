@@ -1,4 +1,4 @@
-import type { Content } from '../../../data';
+import type { Content, RankTier } from '../../../data';
 import { type StatResult } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -13,8 +13,9 @@ export function statTip(
   title: string,
   result: StatResult,
   unit = '',
+  owned?: Record<string, { tier: RankTier }>,
 ): HTMLElement {
   const rows: Array<[string, string]> = [[COPY.home.base, fmt(result.base) + unit]];
-  for (const m of result.applied) rows.push([sourceName(content, m), modifierText(m)]);
+  for (const m of result.applied) rows.push([sourceName(content, m, owned), modifierText(m)]);
   return tipTable(title, rows, [COPY.home.total, fmt(result.value) + unit]);
 }

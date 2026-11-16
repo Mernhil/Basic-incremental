@@ -21,7 +21,7 @@ describe('tier-up moments', () => {
       { kind: 'heirloom', id: card.id, from: 0, to: 1, metal: 'gold' },
       content,
     );
-    expect(text.title).toBe(`${card.name} claimed its Heirloom!`);
+    expect(text.title).toBe(`Mythic Light Sword claimed its Heirloom!`);
     expect(text.detail).toMatch(/^It now wields /);
   });
 });

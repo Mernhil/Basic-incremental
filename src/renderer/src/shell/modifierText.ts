@@ -1,5 +1,5 @@
-import type { Content } from '../../../data';
-import { type Modifier } from '../../../game';
+import type { Content, RankTier } from '../../../data';
+import { cardNameById, type Modifier } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 
 /** Modifier wording shared by stat tooltips and view models. No DOM, so models can use it. */
@@ -31,7 +31,11 @@ function upgradeSourceName(content: Content, id: string): string | undefined {
 }
 
 /** "Gilded Plate", "Gilded Tradition set", or a generic label for sources without a name yet. */
-export function sourceName(content: Content, m: Modifier): string {
+export function sourceName(
+  content: Content,
+  m: Modifier,
+  owned?: Record<string, { tier: RankTier }>,
+): string {
   const { kind, id } = m.source;
   if (kind === 'cosmetic') return content.cosmeticById.get(id)?.name ?? SOURCE_LABELS[kind];
   if (kind === 'set') {
@@ -39,7 +43,7 @@ export function sourceName(content: Content, m: Modifier): string {
     return set ? `${set.name} set` : SOURCE_LABELS[kind];
   }
   if (kind === 'upgrade') return upgradeSourceName(content, id) ?? SOURCE_LABELS[kind];
-  if (kind === 'card') return content.cardById.get(id)?.name ?? SOURCE_LABELS[kind];
+  if (kind === 'card') return cardNameById(content, id, owned?.[id]) ?? SOURCE_LABELS[kind];
   return SOURCE_LABELS[kind];
 }
 
