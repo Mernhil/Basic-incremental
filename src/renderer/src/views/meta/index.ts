@@ -50,7 +50,6 @@ export const metaViews: ViewPackage = {
           apply: ctx.apply,
           sound: ctx.sound,
           subtitle: (learned, total) => set(T.skills.subtitle(learned, total)),
-          subtitleText: set,
         });
       },
     },

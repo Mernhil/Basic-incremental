@@ -235,7 +235,7 @@
 .rv__hint {
   margin: 0;
   font-size: 12.5px;
-  color: var(--bi-chrome-ink-muted);
+  color: var(--bi-frame-ink-muted, var(--bi-chrome-ink-muted));
 }
 .rv__actions {
   display: flex;
