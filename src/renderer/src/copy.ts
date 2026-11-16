@@ -1459,7 +1459,6 @@ export const COPY = {
       unknown: 'Unknown',
     },
     unknownName: 'Unknown skill',
-    webSoon: 'Buying a level of the web is not wired yet in this preview.',
     areaLevel: (area: string, level: number, max: number) => `${area} · level ${level} of ${max}`,
     have: (n: number) => `(have ${n})`,
     needsLine: 'Needs',
