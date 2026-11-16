@@ -264,6 +264,7 @@
   "branches": [
     {
       "branch": "logging",
+      "area": "logging",
       "small": [
         {
           "name": "Grove Yield",
@@ -375,6 +376,7 @@
     },
     {
       "branch": "mining",
+      "area": "mining",
       "small": [
         {
           "name": "Vein Yield",
@@ -486,6 +488,7 @@
     },
     {
       "branch": "combat",
+      "area": "dungeon",
       "small": [
         {
           "name": "Might",
@@ -573,6 +576,7 @@
     },
     {
       "branch": "luck",
+      "area": "cards",
       "small": [
         {
           "name": "Crystal Luck",
@@ -660,6 +664,7 @@
     },
     {
       "branch": "collection",
+      "area": "cards",
       "small": [
         {
           "name": "Quick Study",
@@ -761,6 +766,7 @@
     },
     {
       "branch": "automation",
+      "area": "cards",
       "small": [
         {
           "name": "Long Watch",
@@ -848,6 +854,7 @@
     },
     {
       "branch": "workers",
+      "area": "cards",
       "small": [
         {
           "name": "Hired Hands",
@@ -940,6 +947,7 @@
     },
     {
       "branch": "forge",
+      "area": "mining",
       "small": [
         {
           "name": "Bellows",
@@ -1038,6 +1046,7 @@
     },
     {
       "branch": "elements",
+      "area": "dungeon",
       "small": [
         {
           "name": "Attunement",
@@ -1130,6 +1139,7 @@
     },
     {
       "branch": "dungeons",
+      "area": "dungeon",
       "small": [
         {
           "name": "Trophy Hunter",
@@ -1227,6 +1237,7 @@
     },
     {
       "branch": "ascension",
+      "area": "dungeon",
       "small": [
         {
           "name": "Starlit Path",

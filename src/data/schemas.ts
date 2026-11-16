@@ -1666,6 +1666,10 @@ export const SKILL_BRANCHES = [
 ] as const;
 export type SkillBranch = (typeof SKILL_BRANCHES)[number];
 
+/** The four areas of the skill web: each branch belongs to one (DESIGN.md §10 Skill tree areas). */
+export const SKILL_AREAS = ['logging', 'mining', 'dungeon', 'cards'] as const;
+export type SkillArea = (typeof SKILL_AREAS)[number];
+
 export const SKILL_KINDS = ['small', 'large', 'keystone'] as const;
 export type SkillKind = (typeof SKILL_KINDS)[number];
 /** The steps of a hidden weapon circle, in order; each opens when a card reaches its tier. */
@@ -1747,6 +1751,8 @@ const accountFileSchema = z.strictObject({
   branches: z.array(
     z.strictObject({
       branch: z.enum(SKILL_BRANCHES),
+      /** The area of the web the branch grows in (colour and direction). */
+      area: z.enum(SKILL_AREAS),
       small: z.array(skillEffectSchema).min(1),
       large: z.array(skillEffectSchema).min(1),
       keystone: skillEffectSchema,

@@ -12,10 +12,21 @@ import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import type { SoundId } from '../sound/registry';
 import { replay } from '../stage/motion';
-import { centreStar, nodeStyle, skillGem } from '../ui/skillArt';
+import { nodeStyle, skillGem } from '../ui/skillArt';
+import { glyphSvg } from '../ui/webGlyphs';
+import { createHeirloomsTab } from './heirloomsMap';
 import type { PageContext } from './production';
-import { CENTRE, SKY, respecView, treeView, type NodeView, type TreeView } from './skillsModel';
+import {
+  AREA_COLOUR,
+  CENTRE,
+  SKY,
+  respecView,
+  treeView,
+  type NodeView,
+  type TreeView,
+} from './skillsModel';
 import './skills.css';
+import './skillWeb.css';
 
 /**
  * Skill Tree page (DESIGN.md §11, §10a, 17; UI_RULES.md §2, the Skill tree screen pick): six
@@ -30,11 +41,13 @@ export interface SkillsContext extends PageContext {
   sound?: (id: SoundId) => void;
   /** The view's title-bar subtitle ("21 of 275 learned"), set on every rebuild. */
   subtitle?: (learned: number, total: number) => void;
+  /** The same bar's text on the Heirlooms tab. */
+  subtitleText?: (text: string) => void;
 }
 
 /** Pixels per sky unit: the first view, and how far the sky zooms out and in. */
-const START_SCALE = 0.75;
-const MIN_SCALE = 0.4;
+const START_SCALE = 1;
+const MIN_SCALE = 0.3;
 const MAX_SCALE = 1.7;
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -67,11 +80,16 @@ function starField(): SVGElement {
 
 /** The gem art knows locked, open and owned: a closed gem is drawn locked, a maxed one owned. */
 const gemState = (n: NodeView): 'locked' | 'open' | 'owned' =>
-  n.state === 'maxed' ? 'owned' : n.state === 'closed' ? 'locked' : n.state;
+  n.state === 'maxed'
+    ? 'owned'
+    : n.state === 'closed' || n.state === 'unknown'
+      ? 'locked'
+      : n.state;
 
 export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { render(): void } {
   const { content } = ctx;
   const t = COPY.skills;
+  let tab: 'tree' | 'heirlooms' = 'tree';
   let selected: string | null = null;
   let confirming = false;
   let last = '';
@@ -96,10 +114,17 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     const s = ctx.state();
     return respecView(content, s, respecInfo(s, content, collectModifiers(s, content)));
   };
+  const heirlooms = createHeirloomsTab({
+    ...ctx,
+    rebuild: (key) => build(key),
+    ...(ctx.sound ? { sound: ctx.sound } : {}),
+  });
   const signature = (): string => {
     const s = ctx.state();
     const r = respec();
     return JSON.stringify([
+      tab,
+      heirlooms.signature(),
       s.cosmetics.loadout.slots.nodes,
       s.account.skills,
       s.account.level,
@@ -146,21 +171,44 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     build('respec');
   }
 
-  // ---- the constellation ----
+  // ---- the web ----
 
   /** Pan and zoom of the sky: pixels per sky unit and the box's offset in the stage. */
-  const camera = { scale: START_SCALE, x: 0, y: 0, placed: false };
+  const camera = { scale: START_SCALE, x: 0, y: 0, placed: false, touched: false, width: 0 };
+  /** Where the first view looks: the middle of what you have bought and the star (pick 4a opens on it). */
+  let focus = { x: 0, y: 0, w: 0, h: 0 };
   const clampScale = (s: number): number => Math.min(MAX_SCALE, Math.max(MIN_SCALE, s));
 
-  /** Sizes and places the sky box in its stage from the camera (gems keep their pixel size). */
+  /** Sizes and places the sky box in its stage from the camera (plates keep their pixel size). */
   function applyCamera(stage: HTMLElement, box: HTMLElement): void {
     const rect = stage.getBoundingClientRect();
+    // a window resized before you moved the sky gets the first view again
+    if (camera.placed && !camera.touched && Math.abs(rect.width - camera.width) > 40) {
+      camera.placed = false;
+    }
     if (!camera.placed && rect.width > 0) {
-      // first view: the centre star in the middle of the stage
-      camera.x = rect.width / 2 + SKY.x * camera.scale;
-      camera.y = rect.height / 2 + SKY.y * camera.scale;
+      camera.width = rect.width;
+      // what you have and the "?" next to it fill the frame, 1:1 at most and never below half size
+      camera.scale = Math.min(
+        START_SCALE,
+        Math.max(
+          0.5,
+          Math.min(
+            (rect.width - 140) / Math.max(focus.w + 320, 1),
+            (rect.height - 190) / Math.max(focus.h + 320, 1),
+          ),
+        ),
+      );
+      camera.x = rect.width / 2 - (focus.x - SKY.x) * camera.scale;
+      camera.y = rect.height / 2 + 24 - (focus.y - SKY.y) * camera.scale;
       camera.placed = true;
     }
+    box.classList.toggle('is-far', camera.scale < 0.42);
+    // the plates grow and shrink with the zoom, as 4a's whole web does
+    box.style.setProperty(
+      '--plate',
+      `${Math.max(38, Math.round(64 * Math.min(camera.scale, 1)))}px`,
+    );
     box.style.width = `${SKY.w * camera.scale}px`;
     box.style.height = `${SKY.h * camera.scale}px`;
     box.style.left = `${camera.x}px`;
@@ -176,6 +224,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     cy: number,
   ): void {
     const next = clampScale(scale);
+    camera.touched = true;
     const k = next / camera.scale;
     camera.x = cx - (cx - camera.x) * k;
     camera.y = cy - (cy - camera.y) * k;
@@ -228,6 +277,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
         stage.setPointerCapture(e.pointerId);
         stage.classList.add('is-panning');
       }
+      camera.touched = true;
       camera.x = drag.cx + dx;
       camera.y = drag.cy + dy;
       applyCamera(stage, box);
@@ -263,6 +313,7 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     mk('⌂', t.zoomReset, () => {
       camera.scale = START_SCALE;
       camera.placed = false;
+      camera.touched = false;
       applyCamera(stage, box);
     });
     bar.append(h('span', 'sk-zoom__hint', t.panHint));
@@ -284,17 +335,6 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       'aria-hidden': 'true',
     });
     art.append(starField());
-    // the rings: an open ring is a faint circle, a closed one dashed and dimmer
-    for (const r of v.rings) {
-      art.append(
-        svgEl('circle', {
-          class: `sk-ring${r.open ? '' : ' is-closed'}`,
-          cx: CENTRE.x,
-          cy: CENTRE.y,
-          r: r.radius,
-        }),
-      );
-    }
     // faint rays behind each branch
     for (const b of v.branches) {
       art.append(
@@ -334,16 +374,6 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     }
     box.append(art);
 
-    // ring notes ("Opens with Ascension 2") on the closed rings, between two branches
-    for (const r of v.rings) {
-      if (!r.note) continue;
-      const note = h('span', 'sk-ring-note', r.note);
-      const a = (-60 * Math.PI) / 180;
-      note.style.left = px(CENTRE.x + r.radius * Math.cos(a));
-      note.style.top = py(CENTRE.y + r.radius * Math.sin(a));
-      box.append(note);
-    }
-
     // circle names under their outline
     for (const c of v.circles) {
       const label = h('span', `sk-circle-label${c.revealed ? '' : ' is-hidden'}`);
@@ -367,15 +397,25 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       box.append(label);
     }
 
-    // centre star: the points to spend
+    // the first view looks at the middle of what you have bought and the star
+    const mine = v.nodes.filter((n) => n.rank > 0 && !n.circle);
+    const xs = [CENTRE.x, ...mine.map((n) => n.x)];
+    const ys = [CENTRE.y, ...mine.map((n) => n.y)];
+    focus = {
+      w: Math.max(...xs) - Math.min(...xs),
+      h: Math.max(...ys) - Math.min(...ys),
+      x: (Math.min(...xs) + Math.max(...xs)) / 2,
+      y: (Math.min(...ys) + Math.max(...ys)) / 2,
+    };
+
+    // the hub: a gold node with a star, the points to spend on its rim
     const centre = h('div', 'sk-centre');
     centre.style.left = px(CENTRE.x);
     centre.style.top = py(CENTRE.y);
     const star = h('span', 'sk-centre__star');
-    star.innerHTML = centreStar();
+    star.innerHTML = glyphSvg('key', '#ffd45a');
     const num = h('span', 'sk-centre__num bi-num', String(v.points.available));
-    const lab = h('span', 'sk-centre__label', t.points);
-    centre.append(star, num, lab);
+    centre.append(star, num);
     centre.classList.toggle('has-points', v.points.available > 0);
     centre.setAttribute('aria-label', t.pointsAvailable(v.points.available));
     centre.setAttribute('role', 'img');
@@ -389,6 +429,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     enablePanZoom(stage, box);
     body.append(stage);
     // the stage has no size until it is in the page: place the sky once it is
+    if (typeof ResizeObserver !== 'undefined')
+      new ResizeObserver(() => applyCamera(stage, box)).observe(stage);
     queueMicrotask(() => applyCamera(stage, box));
     applyCamera(stage, box);
     return el;
@@ -409,11 +451,21 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     b.setAttribute('aria-label', n.label);
     b.setAttribute('aria-pressed', String(n.id === selected));
     const gem = h('span', 'sk-node__gem');
-    gem.innerHTML = skillGem(nodeStyle(content, ctx.state()), n.branch, gemState(n), n.keystone);
+    // the equipped node art (a style other than the starter) shows in the plate in place of the glyph
+    const style = nodeStyle(content, ctx.state());
+    if (n.state === 'unknown') gem.append(h('span', 'sk-node__q', '?'));
+    else if (style !== 'a') {
+      gem.innerHTML = skillGem(style, n.branch, gemState(n), n.keystone);
+      gem.classList.add('has-art');
+    } else gem.innerHTML = glyphSvg(n.glyph, n.colour);
     b.classList.toggle('is-key', n.keystone);
+    b.classList.toggle('is-affordable', n.canBuy);
     b.append(gem);
-    // the rank sits on the gem's corner once it has one
-    if (n.rank > 0) b.append(h('span', 'sk-node__rank bi-num', n.rankText));
+    // the rank sits on the plate's lower edge, "2/5"; the name under it
+    if (n.state !== 'unknown') {
+      b.append(h('span', 'sk-node__rank bi-num', n.rankText));
+      b.append(h('span', 'sk-node__name', n.name));
+    }
     attachTooltip(b, () => tip(n));
     b.addEventListener('click', () => {
       selected = n.id;
@@ -465,8 +517,12 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     }
     el.style.setProperty('--gem', n.colour);
     const art = h('div', 'sk-art');
-    const gem = h('span', `sk-detail__gem is-${n.state}`);
-    gem.innerHTML = skillGem(nodeStyle(content, ctx.state()), n.branch, gemState(n), n.keystone);
+    const gem = h(
+      'span',
+      `sk-detail__gem sk-plate is-${n.state}${n.canBuy ? ' is-affordable' : ''}`,
+    );
+    if (n.state === 'unknown') gem.append(h('span', 'sk-node__q', '?'));
+    else gem.innerHTML = glyphSvg(n.glyph, n.colour);
     gem.classList.toggle('is-key', n.keystone);
     const text = h('div', 'sk-art__text');
     const effect = n.state === 'maxed' ? n.now : n.next;
@@ -482,7 +538,16 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     };
     row(t.now, n.now.join(', ') || t.none);
     row(t.afterLine, n.next.join(', ') || t.maxed);
+    if (n.state !== 'unknown') {
+      const pips = h('span', 'sk-pips');
+      for (let i = 0; i < n.maxRank; i++) pips.append(h('i', i < n.rank ? 'is-on' : ''));
+      const r = h('div', 'sk-row');
+      r.append(h('dt', '', t.levelLine), h('dd', '', ''));
+      r.lastElementChild!.append(pips);
+      rows.append(r);
+    }
     row(t.costLine, n.state === 'maxed' ? t.maxed : t.pointCost(n.cost));
+    if (n.keystone) text.append(h('span', 'sw-tag', t.keystoneTag));
     body.append(art, rows);
 
     const b = h('button', 'button sk-buy', n.state === 'maxed' ? t.maxed : t.learn(n.cost));
@@ -546,6 +611,65 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     return box;
   }
 
+  /** The tab strip, the count of what can be bought and the legend, laid over the stage (pick 4a, 4c). */
+  function chrome(frameEl: HTMLElement, affordable: number, points?: number): void {
+    const stage = frameEl.querySelector<HTMLElement>('.sk-stage');
+    if (!stage) return;
+    const count = h('p', 'sk-count');
+    count.append(h('b', 'bi-num', String(affordable)), ` ${t.canBuyNow(affordable)}`);
+    const tabs = h('div', 'sk-tabs');
+    tabs.setAttribute('role', 'tablist');
+    const ready = { tree: view().affordable, heirlooms: heirlooms.affordable() };
+    for (const [id, label] of [
+      ['tree', COPY.heirloomMap.tabSkills],
+      ['heirlooms', COPY.heirloomMap.tabHeirlooms],
+    ] as const) {
+      const b = h('button', `sk-tab${tab === id ? ' is-on' : ''}`);
+      b.type = 'button';
+      b.setAttribute('role', 'tab');
+      b.setAttribute('aria-selected', String(tab === id));
+      b.dataset.key = `tab-${id}`;
+      b.append(h('span', '', label));
+      if (ready[id] > 0) b.append(h('em', 'bi-num', COPY.heirloomMap.ready(ready[id])));
+      b.addEventListener('click', () => {
+        if (tab === id) return;
+        tab = id;
+        if (id === 'heirlooms') heirlooms.resetView();
+        say('');
+        build(`tab-${id}`);
+      });
+      tabs.append(b);
+    }
+    const legend = h('div', 'sk-legend');
+    for (const area of ['logging', 'mining', 'dungeon', 'cards'] as const) {
+      const item = h('span', 'sk-legend__item sk-legend__item--area');
+      const dot = h('i', 'sk-legend__dot is-branch');
+      dot.style.background = AREA_COLOUR[area];
+      item.append(dot, t.areas[area]);
+      legend.append(item);
+    }
+    for (const [cls, text] of [
+      ['is-maxed', t.legend.maxed],
+      ['is-owned', t.legend.owned],
+      ['is-affordable', t.legend.affordable],
+      ['is-open', t.legend.poor],
+      ['is-unknown', t.legend.unknown],
+    ] as const) {
+      const item = h('span', 'sk-legend__item');
+      item.append(h('i', `sk-legend__dot ${cls}`), text);
+      legend.append(item);
+    }
+    stage.append(tabs, count, legend);
+    if (points !== undefined) {
+      const chips = h('div', 'sk-chips');
+      const chip = h('span', 'sk-chip');
+      chip.innerHTML = glyphSvg('key', '#ffd45a');
+      chip.append(h('b', 'bi-num', String(points)), ` ${t.points}`);
+      chips.append(chip);
+      stage.append(chips);
+    }
+  }
+
   function build(focusKey?: string): void {
     hideTip();
     const v = view();
@@ -553,8 +677,18 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     if (!selected || !v.nodes.some((n) => n.id === selected)) {
       selected = (v.nodes.find((n) => n.canBuy) ?? v.nodes[0])?.id ?? null;
     }
-    wrap.replaceChildren(sky(v), sidePanel(v));
-    ctx.subtitle?.(v.learned, v.total);
+    if (tab === 'tree') {
+      const stage = sky(v);
+      chrome(stage, v.affordable, v.points.available);
+      wrap.replaceChildren(stage, sidePanel(v));
+      ctx.subtitle?.(v.learned, v.total);
+    } else {
+      const h2 = heirlooms.build();
+      chrome(h2.stage, heirlooms.affordable());
+      wrap.replaceChildren(h2.stage, h2.panel);
+      const c = heirlooms.counts();
+      ctx.subtitleText?.(COPY.heirloomMap.subtitle(c.found, c.total));
+    }
     status.textContent = message;
     if (focusKey) {
       const target =
