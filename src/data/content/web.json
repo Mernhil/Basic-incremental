@@ -33,7 +33,7 @@
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "5.5",
+          "value": "12.5",
           "scope": {
             "job": "logging"
           }
@@ -42,9 +42,35 @@
       "description": "Every tree makes more gems each second.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "logging_s1",
+          "weight": 1
+        },
+        {
+          "id": "logging_l1",
+          "weight": 1
+        },
+        {
+          "id": "logging_s5",
+          "weight": 1
+        },
+        {
+          "id": "logging_s9",
+          "weight": 1
+        },
+        {
+          "id": "automation_s4",
+          "weight": 0.5
+        },
+        {
+          "id": "automation_s8",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "lg_swing",
@@ -57,7 +83,7 @@
         {
           "stat": "burst.fill",
           "kind": "percent",
-          "value": "6.25",
+          "value": "18.75",
           "scope": {
             "job": "logging"
           }
@@ -65,7 +91,7 @@
         {
           "stat": "harvest.speed",
           "kind": "percent",
-          "value": "3.1",
+          "value": "9.375",
           "scope": {
             "job": "logging"
           }
@@ -74,9 +100,35 @@
       "description": "Your strikes on trees come faster and fill the signature gauge sooner.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "logging_s2",
+          "weight": 1
+        },
+        {
+          "id": "logging_s6",
+          "weight": 1
+        },
+        {
+          "id": "logging_s10",
+          "weight": 1
+        },
+        {
+          "id": "workers_s2",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s6",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s10",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "lg_groves",
@@ -89,7 +141,7 @@
         {
           "stat": "cost.growth",
           "kind": "percent",
-          "value": "-1.38",
+          "value": "-2.625",
           "scope": {
             "job": "logging"
           }
@@ -99,9 +151,27 @@
       "description": "The next tree level costs a little less.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "logging_s3",
+          "weight": 1
+        },
+        {
+          "id": "logging_l2",
+          "weight": 1
+        },
+        {
+          "id": "logging_s7",
+          "weight": 1
+        },
+        {
+          "id": "logging_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "lg_hands",
@@ -114,7 +184,7 @@
         {
           "stat": "tool.strength",
           "kind": "percent",
-          "value": "2.5",
+          "value": "7.5",
           "scope": {
             "job": "logging"
           }
@@ -124,9 +194,23 @@
       "description": "Your logging axe cuts harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "forge_s3",
+          "weight": 1
+        },
+        {
+          "id": "forge_s7",
+          "weight": 1
+        },
+        {
+          "id": "forge_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "lg_grove",
@@ -150,9 +234,15 @@
       "description": "Every tree makes a quarter more gems.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "logging_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "lg_heart",
@@ -165,7 +255,7 @@
         {
           "stat": "harvest.critChance",
           "kind": "flat",
-          "value": "0.005",
+          "value": "0.015",
           "scope": {
             "job": "logging"
           }
@@ -176,7 +266,21 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_s3",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s7",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s11",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "lg_split",
@@ -189,7 +293,7 @@
         {
           "stat": "harvest.critDamage",
           "kind": "flat",
-          "value": "0.05",
+          "value": "0.1",
           "scope": {
             "job": "logging"
           }
@@ -200,7 +304,17 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_s4",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s8",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "lg_bounty",
@@ -213,7 +327,7 @@
         {
           "stat": "burst.power",
           "kind": "flat",
-          "value": "2.2",
+          "value": "3.2",
           "scope": {
             "job": "logging"
           }
@@ -223,9 +337,23 @@
       "description": "Each strike on a tree hits harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "logging_s4",
+          "weight": 1
+        },
+        {
+          "id": "logging_s8",
+          "weight": 1
+        },
+        {
+          "id": "logging_l3",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "lg_crew",
@@ -238,18 +366,12 @@
         {
           "stat": "harvest.critChance",
           "kind": "min",
-          "value": "0.2",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "0.2"
         },
         {
           "stat": "worker.power",
           "kind": "percent",
-          "value": "25",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "25"
         }
       ],
       "keystone": true,
@@ -257,9 +379,15 @@
       "description": "Heart strikes never come less than one in five, and your workers work harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "lg_lucky",
@@ -272,10 +400,7 @@
         {
           "stat": "lucky.payout",
           "kind": "percent",
-          "value": "10",
-          "scope": {
-            "job": "logging"
-          }
+          "value": "10"
         }
       ],
       "description": "A lucky strike pays out more.",
@@ -283,7 +408,13 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_l1",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "lg_dig",
@@ -316,7 +447,17 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_l2",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_l3",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "mn_cutter",
@@ -329,7 +470,7 @@
         {
           "stat": "production.rate",
           "kind": "percent",
-          "value": "5.5",
+          "value": "12.5",
           "scope": {
             "job": "mining"
           }
@@ -338,9 +479,35 @@
       "description": "Every mine makes more gems each second.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "mining_s1",
+          "weight": 1
+        },
+        {
+          "id": "mining_l1",
+          "weight": 1
+        },
+        {
+          "id": "mining_s5",
+          "weight": 1
+        },
+        {
+          "id": "mining_s9",
+          "weight": 1
+        },
+        {
+          "id": "automation_s4",
+          "weight": 0.5
+        },
+        {
+          "id": "automation_s8",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "mn_strike",
@@ -353,7 +520,7 @@
         {
           "stat": "burst.fill",
           "kind": "percent",
-          "value": "6.25",
+          "value": "18.75",
           "scope": {
             "job": "mining"
           }
@@ -361,7 +528,7 @@
         {
           "stat": "harvest.speed",
           "kind": "percent",
-          "value": "3.1",
+          "value": "9.375",
           "scope": {
             "job": "mining"
           }
@@ -370,9 +537,35 @@
       "description": "Your strikes in mines come faster and fill the signature gauge sooner.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "mining_s2",
+          "weight": 1
+        },
+        {
+          "id": "mining_s6",
+          "weight": 1
+        },
+        {
+          "id": "mining_s10",
+          "weight": 1
+        },
+        {
+          "id": "workers_s2",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s6",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s10",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "mn_seams",
@@ -385,7 +578,7 @@
         {
           "stat": "production.levelBonus",
           "kind": "percent",
-          "value": "11",
+          "value": "21",
           "scope": {
             "job": "mining"
           }
@@ -395,9 +588,27 @@
       "description": "Each mine level counts for more.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "mining_s3",
+          "weight": 1
+        },
+        {
+          "id": "mining_l2",
+          "weight": 1
+        },
+        {
+          "id": "mining_s7",
+          "weight": 1
+        },
+        {
+          "id": "mining_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_picks",
@@ -410,7 +621,7 @@
         {
           "stat": "tool.strength",
           "kind": "percent",
-          "value": "2.5",
+          "value": "5",
           "scope": {
             "job": "mining"
           }
@@ -420,9 +631,19 @@
       "description": "Your pickaxe cuts harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "forge_s4",
+          "weight": 1
+        },
+        {
+          "id": "forge_s8",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_heart",
@@ -446,9 +667,15 @@
       "description": "Every mine makes a quarter more gems.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "mining_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_eye",
@@ -461,7 +688,7 @@
         {
           "stat": "harvest.critChance",
           "kind": "flat",
-          "value": "0.005",
+          "value": "0.015",
           "scope": {
             "job": "mining"
           }
@@ -472,7 +699,21 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_s3",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s7",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s11",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "mn_hard",
@@ -485,7 +726,7 @@
         {
           "stat": "harvest.critDamage",
           "kind": "flat",
-          "value": "0.05",
+          "value": "0.1",
           "scope": {
             "job": "mining"
           }
@@ -496,7 +737,17 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_s4",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_s8",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "mn_bounty",
@@ -509,7 +760,7 @@
         {
           "stat": "burst.power",
           "kind": "flat",
-          "value": "2.2",
+          "value": "3.2",
           "scope": {
             "job": "mining"
           }
@@ -519,9 +770,23 @@
       "description": "Each strike in a mine hits harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "mining_s4",
+          "weight": 1
+        },
+        {
+          "id": "mining_s8",
+          "weight": 1
+        },
+        {
+          "id": "mining_l3",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_dig",
@@ -554,7 +819,17 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_l2",
+          "weight": 0.5
+        },
+        {
+          "id": "workers_l3",
+          "weight": 0.5
+        }
+      ]
     },
     {
       "id": "mn_bellows",
@@ -567,15 +842,33 @@
         {
           "stat": "forge.speed",
           "kind": "percent",
-          "value": "5.5"
+          "value": "10.5"
         }
       ],
       "description": "The forge works faster.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "forge_s1",
+          "weight": 1
+        },
+        {
+          "id": "forge_l1",
+          "weight": 1
+        },
+        {
+          "id": "forge_s5",
+          "weight": 1
+        },
+        {
+          "id": "forge_s9",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_moulds",
@@ -588,16 +881,34 @@
         {
           "stat": "forge.yield",
           "kind": "percent",
-          "value": "3.3"
+          "value": "6.3"
         }
       ],
       "gate": 1,
       "description": "A craft gives more of what you make.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "forge_s2",
+          "weight": 1
+        },
+        {
+          "id": "forge_l2",
+          "weight": 1
+        },
+        {
+          "id": "forge_s6",
+          "weight": 1
+        },
+        {
+          "id": "forge_s10",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_smelt",
@@ -619,7 +930,13 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "forge_l3",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "mn_alchemist",
@@ -645,9 +962,15 @@
       "description": "Four in ten gems of every craft come back, and the forge works a quarter faster.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "forge_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_might",
@@ -660,15 +983,41 @@
         {
           "stat": "combat.damage",
           "kind": "percent",
-          "value": "6.5"
+          "value": "12.5"
         }
       ],
       "description": "Your team hits harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "combat_s1",
+          "weight": 1
+        },
+        {
+          "id": "combat_s5",
+          "weight": 1
+        },
+        {
+          "id": "combat_l2",
+          "weight": 1
+        },
+        {
+          "id": "combat_s9",
+          "weight": 1
+        },
+        {
+          "id": "elements_s4",
+          "weight": 1
+        },
+        {
+          "id": "elements_s8",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_vigor",
@@ -681,15 +1030,33 @@
         {
           "stat": "combat.health",
           "kind": "percent",
-          "value": "11"
+          "value": "21"
         }
       ],
       "description": "Your team has more health.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "combat_s3",
+          "weight": 1
+        },
+        {
+          "id": "combat_s7",
+          "weight": 1
+        },
+        {
+          "id": "combat_l3",
+          "weight": 1
+        },
+        {
+          "id": "combat_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_eye",
@@ -702,16 +1069,30 @@
         {
           "stat": "combat.critChance",
           "kind": "flat",
-          "value": "0.005"
+          "value": "0.015"
         }
       ],
       "gate": 1,
       "description": "Your team crits more often.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "combat_s2",
+          "weight": 1
+        },
+        {
+          "id": "combat_s6",
+          "weight": 1
+        },
+        {
+          "id": "combat_s10",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_brutal",
@@ -733,7 +1114,13 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "combat_l1",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_unbroken",
@@ -754,9 +1141,15 @@
       "description": "Your team hits a quarter harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "combat_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_guard",
@@ -769,15 +1162,25 @@
         {
           "stat": "combat.defence",
           "kind": "flat",
-          "value": "2"
+          "value": "4"
         }
       ],
       "description": "Every hit your team takes is softened.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "combat_s4",
+          "weight": 1
+        },
+        {
+          "id": "combat_s8",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_weak",
@@ -790,15 +1193,25 @@
         {
           "stat": "combat.bossHp",
           "kind": "percent",
-          "value": "-2"
+          "value": "-4"
         }
       ],
       "description": "Bosses have less health.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "dungeons_s4",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s8",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_trophy",
@@ -811,16 +1224,34 @@
         {
           "stat": "stars.chest",
           "kind": "percent",
-          "value": "5.5"
+          "value": "10.5"
         }
       ],
       "gate": 1,
       "description": "Stage chests hold more.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "dungeons_s1",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_l1",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s5",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s9",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_scars",
@@ -833,16 +1264,34 @@
         {
           "stat": "stars.damage",
           "kind": "percent",
-          "value": "5.5"
+          "value": "10.5"
         }
       ],
       "gate": 2,
       "description": "Each star on a dungeon makes your team hit harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "dungeons_s2",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_l2",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s6",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s10",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_spoils",
@@ -855,16 +1304,30 @@
         {
           "stat": "stars.loot",
           "kind": "percent",
-          "value": "5"
+          "value": "15"
         }
       ],
       "gate": 2,
       "description": "Each star on a dungeon brings more loot.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "dungeons_s3",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s7",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_sovereign",
@@ -895,9 +1358,15 @@
       "description": "Stars on a dungeon count double for damage, and bring half as much more loot and chests.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "dungeons_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_attune",
@@ -910,15 +1379,33 @@
         {
           "stat": "element.bonus",
           "kind": "percent",
-          "value": "5.5"
+          "value": "10.5"
         }
       ],
       "description": "Your elements hit harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "elements_s1",
+          "weight": 1
+        },
+        {
+          "id": "elements_l1",
+          "weight": 1
+        },
+        {
+          "id": "elements_s5",
+          "weight": 1
+        },
+        {
+          "id": "elements_s9",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_ward",
@@ -931,16 +1418,34 @@
         {
           "stat": "element.resist",
           "kind": "percent",
-          "value": "-5.5"
+          "value": "-10.5"
         }
       ],
       "gate": 1,
       "description": "Hostile elements hurt you less.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "elements_s3",
+          "weight": 1
+        },
+        {
+          "id": "elements_s7",
+          "weight": 1
+        },
+        {
+          "id": "elements_l3",
+          "weight": 1
+        },
+        {
+          "id": "elements_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_earth",
@@ -953,16 +1458,34 @@
         {
           "stat": "element.production",
           "kind": "percent",
-          "value": "5.5"
+          "value": "10.5"
         }
       ],
       "gate": 2,
       "description": "Elements make more of their material.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "elements_s2",
+          "weight": 1
+        },
+        {
+          "id": "elements_l2",
+          "weight": 1
+        },
+        {
+          "id": "elements_s6",
+          "weight": 1
+        },
+        {
+          "id": "elements_s10",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "dg_prism",
@@ -988,9 +1511,15 @@
       "description": "You take no more damage from opposing elements, and your own hit half again as hard.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "elements_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_study",
@@ -1003,15 +1532,69 @@
         {
           "stat": "xp.card",
           "kind": "percent",
-          "value": "13.5"
+          "value": "21"
+        },
+        {
+          "stat": "xp.card",
+          "kind": "percent",
+          "value": "7.5",
+          "scope": {
+            "job": "fighting"
+          }
+        },
+        {
+          "stat": "xp.card",
+          "kind": "percent",
+          "value": "5",
+          "scope": {
+            "job": "logging"
+          }
         }
       ],
       "description": "Your cards earn more XP.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "collection_s1",
+          "weight": 1
+        },
+        {
+          "id": "collection_s3",
+          "weight": 1
+        },
+        {
+          "id": "collection_s4",
+          "weight": 1
+        },
+        {
+          "id": "collection_s5",
+          "weight": 1
+        },
+        {
+          "id": "collection_l2",
+          "weight": 1
+        },
+        {
+          "id": "collection_s7",
+          "weight": 1
+        },
+        {
+          "id": "collection_s8",
+          "weight": 1
+        },
+        {
+          "id": "collection_s9",
+          "weight": 1
+        },
+        {
+          "id": "collection_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_renown",
@@ -1024,15 +1607,45 @@
         {
           "stat": "xp.account",
           "kind": "percent",
-          "value": "10"
+          "value": "22.5"
         }
       ],
       "description": "Your account earns more XP.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "collection_s2",
+          "weight": 1
+        },
+        {
+          "id": "collection_s6",
+          "weight": 1
+        },
+        {
+          "id": "collection_l3",
+          "weight": 1
+        },
+        {
+          "id": "collection_s10",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s3",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s7",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_pockets",
@@ -1057,7 +1670,13 @@
         "resource": "skill_points",
         "base": "1",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "collection_l1",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_hands",
@@ -1070,16 +1689,30 @@
         {
           "stat": "worker.power",
           "kind": "percent",
-          "value": "5"
+          "value": "15"
         }
       ],
       "gate": 2,
       "description": "Your workers work harder.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "workers_s1",
+          "weight": 1
+        },
+        {
+          "id": "workers_s5",
+          "weight": 1
+        },
+        {
+          "id": "workers_s9",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_archive",
@@ -1105,9 +1738,15 @@
       "description": "Your cards earn a quarter more XP, and you send one more expedition.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "collection_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_crystal",
@@ -1120,15 +1759,33 @@
         {
           "stat": "drops.crystalMultiplier",
           "kind": "percent",
-          "value": "5.5"
+          "value": "10.5"
         }
       ],
       "description": "Scrolls and crystals drop in larger numbers.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "luck_s1",
+          "weight": 1
+        },
+        {
+          "id": "luck_l1",
+          "weight": 1
+        },
+        {
+          "id": "luck_s5",
+          "weight": 1
+        },
+        {
+          "id": "luck_s9",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_rare",
@@ -1141,15 +1798,33 @@
         {
           "stat": "drops.rareChance",
           "kind": "percent",
-          "value": "11"
+          "value": "21"
         }
       ],
       "description": "Rare cards turn up more often.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "luck_s3",
+          "weight": 1
+        },
+        {
+          "id": "luck_l2",
+          "weight": 1
+        },
+        {
+          "id": "luck_s7",
+          "weight": 1
+        },
+        {
+          "id": "luck_s11",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_core",
@@ -1162,16 +1837,38 @@
         {
           "stat": "drops.materialChance",
           "kind": "percent",
-          "value": "8.5"
+          "value": "13.5"
         }
       ],
       "gate": 1,
       "description": "Cores and materials drop more often.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "luck_s2",
+          "weight": 1
+        },
+        {
+          "id": "luck_s6",
+          "weight": 1
+        },
+        {
+          "id": "luck_l3",
+          "weight": 1
+        },
+        {
+          "id": "luck_s10",
+          "weight": 1
+        },
+        {
+          "id": "dungeons_l3",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_pity",
@@ -1184,16 +1881,26 @@
         {
           "stat": "summon.pityThreshold",
           "kind": "flat",
-          "value": "-2"
+          "value": "-4"
         }
       ],
       "gate": 2,
       "description": "Your summon pity comes sooner.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "luck_s4",
+          "weight": 1
+        },
+        {
+          "id": "luck_s8",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_fortune",
@@ -1214,9 +1921,15 @@
       "description": "Rare cards turn up a quarter more often.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "5",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "luck_k",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_trial",
@@ -1229,15 +1942,33 @@
         {
           "stat": "trial.reward",
           "kind": "percent",
-          "value": "11"
+          "value": "21"
         }
       ],
       "description": "Glimmer Trials pay more.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "2",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "automation_s2",
+          "weight": 1
+        },
+        {
+          "id": "automation_l2",
+          "weight": 1
+        },
+        {
+          "id": "automation_s6",
+          "weight": 1
+        },
+        {
+          "id": "automation_s10",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_watch",
@@ -1250,16 +1981,50 @@
         {
           "stat": "offline.capHours",
           "kind": "flat",
-          "value": "2.2"
+          "value": "4.2"
         }
       ],
       "gate": 1,
       "description": "You earn for more hours while the game is closed.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "4",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "automation_s1",
+          "weight": 1
+        },
+        {
+          "id": "automation_l1",
+          "weight": 1
+        },
+        {
+          "id": "automation_s5",
+          "weight": 1
+        },
+        {
+          "id": "automation_s9",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s2",
+          "weight": 1
+        },
+        {
+          "id": "ascension_l2",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s6",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s10",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_mind",
@@ -1272,16 +2037,50 @@
         {
           "stat": "prestige.gain",
           "kind": "percent",
-          "value": "10"
+          "value": "18"
         }
       ],
       "gate": 2,
       "description": "Ascending gives more Starlight.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "4",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "automation_s3",
+          "weight": 1
+        },
+        {
+          "id": "automation_s7",
+          "weight": 1
+        },
+        {
+          "id": "automation_l3",
+          "weight": 1
+        },
+        {
+          "id": "automation_s11",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s1",
+          "weight": 1
+        },
+        {
+          "id": "ascension_l1",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s5",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s9",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_return",
@@ -1292,23 +2091,37 @@
       "maxLevel": 6,
       "perLevel": [
         {
+          "stat": "cost.growth",
+          "kind": "percent",
+          "value": "-1.6667"
+        },
+        {
           "stat": "cost.multiplier",
           "kind": "percent",
           "value": "-3"
-        },
-        {
-          "stat": "cost.growth",
-          "kind": "percent",
-          "value": "-0.83"
         }
       ],
       "gate": 2,
       "description": "Everything costs less to level after an Ascension.",
       "cost": {
         "resource": "skill_points",
-        "base": "1",
+        "base": "3",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "ascension_s4",
+          "weight": 1
+        },
+        {
+          "id": "ascension_s8",
+          "weight": 1
+        },
+        {
+          "id": "ascension_l3",
+          "weight": 1
+        }
+      ]
     },
     {
       "id": "cd_eternal",
@@ -1321,17 +2134,23 @@
         {
           "stat": "prestige.gain",
           "kind": "percent",
-          "value": "25"
+          "value": "45"
         },
         {
           "stat": "cost.multiplier",
           "kind": "mult",
-          "value": "0.8"
+          "value": "0.8",
+          "scope": {
+            "job": "logging"
+          }
         },
         {
           "stat": "cost.multiplier",
           "kind": "mult",
-          "value": "0.8"
+          "value": "0.8",
+          "scope": {
+            "job": "mining"
+          }
         }
       ],
       "keystone": true,
@@ -1339,9 +2158,19 @@
       "description": "Ascending gives a quarter more Starlight, and every level costs a fifth less.",
       "cost": {
         "resource": "skill_points",
-        "base": "8",
+        "base": "10",
         "growth": 1
-      }
+      },
+      "absorbs": [
+        {
+          "id": "automation_k",
+          "weight": 1
+        },
+        {
+          "id": "ascension_k",
+          "weight": 1
+        }
+      ]
     }
   ]
 }

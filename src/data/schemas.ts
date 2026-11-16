@@ -1656,6 +1656,8 @@ export const webNodeSchema = z.strictObject({
     base: positiveDecimal,
     growth: z.number().min(1),
   }),
+  /** The skills of the old 11-branch tree this node took over, each with its share (the save migration carries their ranks in). */
+  absorbs: z.array(z.strictObject({ id, weight: z.number().positive() })).default([]),
   /** Ascensions needed before it opens (rings, as the old tree). */
   gate: z.number().int().min(0).optional(),
   keystone: z.boolean().optional(),
