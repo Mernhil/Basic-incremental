@@ -1,4 +1,5 @@
-import { RANK_TIERS, RARITIES, type Content, type Rarity } from '../../../data';
+import { CARD_GRADES, cardGrade } from '../../../data';
+import type { Content, Rarity } from '../../../data';
 import {
   Decimal,
   bossMastery,
@@ -66,9 +67,6 @@ export interface GateView {
   kept: KeptView[];
 }
 
-const RARITY_ORDER: readonly string[] = RARITIES;
-const TIER_ORDER = ['stone', ...RANK_TIERS];
-
 /** The reward line of a prestige cosmetic. */
 export function rewardView(content: Content, id: string): RewardView {
   const c = content.cosmeticById.get(id);
@@ -106,12 +104,12 @@ export function keptViews(state: GameState, content: Content): KeptView[] {
     switch (id) {
       case 'cards': {
         const owned = Object.entries(state.cards.owned);
-        // the rarest card, then the highest rank tier
+        // the card of the highest tier, then the most stars
         let best: { id: string; score: number } | null = null;
         for (const [cardId, o] of owned) {
           const card = content.cardById.get(cardId);
           if (!card) continue;
-          const score = RARITY_ORDER.indexOf(card.rarity) * 10 + TIER_ORDER.indexOf(o.tier);
+          const score = CARD_GRADES.indexOf(cardGrade(card)) * 10 + o.stars;
           if (!best || score > best.score) best = { id: cardId, score };
         }
         if (best)

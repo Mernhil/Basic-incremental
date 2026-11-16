@@ -104,7 +104,7 @@ describe('shard shop', () => {
     expect(views.length).toBe(content.shardShop.length);
     const squire = views.find((v) => v.id === 'copy_ember_squire')!;
     expect(squire.group).toBe('cards');
-    expect(squire.detail).toBe('Common card');
+    expect(squire.detail).toBe('Wood card');
     expect(squire.buy.price).toBe('5 shards');
     expect(squire.buy.preview).toBe('+1 copy of Wooden Sword');
     expect(squire.buy.offer.affordable).toBe(true);

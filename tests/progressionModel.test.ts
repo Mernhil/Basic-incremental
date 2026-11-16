@@ -16,7 +16,7 @@ describe('tier-up moments', () => {
   });
 
   it('names the Heirloom of a card', () => {
-    const card = content.cardById.get('ember_squire')!;
+    const card = content.cardById.get('dawn_champion')!;
     const text = tierUpText(
       { kind: 'heirloom', id: card.id, from: 0, to: 1, metal: 'gold' },
       content,

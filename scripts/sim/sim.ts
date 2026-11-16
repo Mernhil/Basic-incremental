@@ -3,7 +3,7 @@
  * player and records when each beta pacing milestone is reached.
  *
  * The buyer (Phase 9), every step:
- * - buys card star-ups and tier-ups, tree kinds, cosmetic levels, summons (10-pulls when
+ * - buys card star-ups, tree kinds, cosmetic levels, summons (10-pulls when
  *   affordable, else single pulls), Starlight shop levels (cheapest first) and skill points (the
  *   most value per point, `nextSkill`) as soon as they are affordable, and rebuilds each card's
  *   enhancements as the best set its budget allows;
@@ -33,7 +33,14 @@
  * in every 30 minutes (the game stays open in between, nothing is bought or re-aimed) and is
  * offline 8 hours a day, taking the game's own offline progress on return.
  */
-import { RANK_TIERS, RARITIES, type Content, type SkillNode, type WebNode } from '../../src/data';
+import {
+  RANK_TIERS,
+  RARITIES,
+  cardStyle,
+  type Content,
+  type SkillNode,
+  type WebNode,
+} from '../../src/data';
 import {
   advance,
   activeWorkers,
@@ -111,8 +118,6 @@ import {
   starDustCost,
   starUpWithDust,
   buyShardItem,
-  tierUp,
-  tierUpCheck,
   cardStatPower,
   treeUnlockCost,
   unlockTree,
@@ -281,16 +286,6 @@ const tierAtLeast = (state: GameState, tier: (typeof RANK_TIERS)[number]): boole
   Object.values(state.cards.owned).some(
     (c) => RANK_TIERS.indexOf(c.tier) >= RANK_TIERS.indexOf(tier),
   );
-/** Whether a card of the rarity or a rarer one is owned (RARITIES runs Common to Void). */
-const ownsRarityAtLeast = (
-  state: GameState,
-  content: Content,
-  rarity: (typeof RARITIES)[number],
-): boolean =>
-  content.cards.some(
-    (card) =>
-      state.cards.owned[card.id] && RARITIES.indexOf(card.rarity) >= RARITIES.indexOf(rarity),
-  );
 const cleared = (id: string) => (state: GameState) => isDungeonCleared(state, id);
 /** Whether the last-floor boss of a dungeon's difficulty tier has been beaten. */
 const tierBeaten = (
@@ -319,26 +314,12 @@ export const MILESTONES: Milestone[] = [
     targetHours: 1.5,
     reached: (s) => tierAtLeast(s, 'silver'),
   },
-  {
-    id: 'first_epic',
-    label: 'First Epic',
-    targetHours: 1.5,
-    toHours: 2,
-    reached: (s, c) => ownsRarityAtLeast(s, c, 'epic'),
-  },
   { id: 'clear_d2', label: 'Dungeon 2 cleared', targetHours: 2, reached: cleared('ember_crypt') },
   {
     id: 'first_gold',
     label: 'First Gold card',
     targetHours: 4,
     reached: (s) => tierAtLeast(s, 'gold'),
-  },
-  {
-    id: 'first_legendary',
-    label: 'First Legendary',
-    targetHours: 4,
-    toHours: 5,
-    reached: (s, c) => ownsRarityAtLeast(s, c, 'legendary'),
   },
   {
     id: 'first_star6',
@@ -785,30 +766,6 @@ function etaOf(
   return Number.isFinite(worst) ? worst : null;
 }
 
-/**
- * Whether a tier-up's Money should not be saved yet: some other resource is still missing and
- * is not due before the Money would be (or nothing earns either). Money is the laggard only
- * when the Cores and gems come first.
- */
-function defersMoney(
-  state: GameState,
-  content: Content,
-  prices: readonly Price[],
-  modifiers: readonly Modifier[],
-): boolean {
-  const money = prices.filter((p) => p.resource === 'money');
-  if (money.length === 0) return false;
-  const others = etaOf(
-    state,
-    content,
-    prices.filter((p) => p.resource !== 'money'),
-    modifiers,
-  );
-  if (others === 0) return false;
-  const own = etaOf(state, content, money, modifiers);
-  return others === null || own === null || others > own;
-}
-
 const okState = (r: { ok: boolean; state?: GameState }): GameState | null =>
   r.ok ? (r.state ?? null) : null;
 
@@ -1060,16 +1017,13 @@ export function buyerCandidates(
   }
   for (const card of content.cards) {
     if (!state.cards.owned[card.id]) continue;
-    for (const kind of ['tier', 'star'] as const) {
-      const check =
-        kind === 'star'
-          ? starUpCheck(state, content, card.id)
-          : tierUpCheck(state, content, card.id, modifiers);
+    for (const kind of ['star'] as const) {
+      const check = starUpCheck(state, content, card.id);
       if (!check?.available) continue;
       // Only worth waiting for when the star bar and level are already there (a tier-up that
       // only lacks levels is held: its resources are kept).
       const short = check.requirements.filter((r) => r.kind !== 'resource' && !r.met);
-      const hold = kind === 'tier' && short.length > 0 && short.every((r) => r.kind === 'level');
+      const hold = false;
       if (short.length > 0 && !hold) continue;
       const prices = check.requirements
         .filter((r) => r.kind === 'resource' && r.resource && !(hold && r.resource === 'money'))
@@ -1081,12 +1035,9 @@ export function buyerCandidates(
           cardProgress(content, state.cards.owned[card.id]!) +
           (leadOf(state, content) === card.id ? FIGHTING_LEAD_BONUS : 0),
         hold,
-        deferMoney: kind === 'tier' && defersMoney(state, content, prices, modifiers),
-        // A held tier-up (level still short) keeps its Cores and gems but not its Money: the
-        // player keeps buying levels with it until the card is at its cap.
+        deferMoney: false,
         prices,
-        buy: (s, c, m) =>
-          okState(kind === 'star' ? starUp(s, c, card.id) : tierUp(s, c, card.id, m)),
+        buy: (s, c) => okState(starUp(s, c, card.id)),
       });
     }
   }
@@ -1526,8 +1477,8 @@ export function fillEnhancements(state: GameState, content: Content): GameState 
 /**
  * The cards the player is building, most important first (DESIGN.md §5 Stars): the fighting lead,
  * its supports in slot order, then the cards at work by worker power. Every one of them gains from
- * copies and star dust; a card at ★6 gains nothing until its tier-up, so `needsStars` leaves it out.
- * A lead at its rarity's top tier can grow no further, so its heir (`heir`) comes right after it.
+ * copies and star dust; a card at ★6 gains nothing more, so `needsStars` leaves it out.
+ * The lead's heir (`heir`), a card of a higher tier, comes right after it.
  */
 export function buildOrder(state: GameState, content: Content): string[] {
   const loadout = state.cards.loadouts.fighting;
@@ -1551,16 +1502,14 @@ export function buildOrder(state: GameState, content: Content): string[] {
 }
 
 /**
- * The card that takes over from a lead at its rarity's top tier (`buildOrder`): the rarest owned
- * fighting card above the lead's rarity, the strongest of them; null while the lead can still tier
- * up or nothing rarer is owned.
+ * The card that takes over from the lead (`buildOrder`): the owned fighting card of the highest
+ * tier above the lead's, the strongest of them; null when no card of a higher tier is owned.
  */
 export function heir(state: GameState, content: Content): string | null {
   const main = leadOf(state, content);
   const lead = main ? content.cardById.get(main) : undefined;
   if (!main || !lead) return null;
-  if (tierUpCheck(state, content, main)?.available) return null;
-  const rank = (id: string): number => RARITIES.indexOf(content.cardById.get(id)!.rarity);
+  const rank = (id: string): number => RARITIES.indexOf(cardStyle(content.cardById.get(id)!));
   const rarer = content.cards
     .filter((c) => c.job === 'fighting' && state.cards.owned[c.id] && rank(c.id) > rank(main))
     .map((c) => c.id)
@@ -1638,7 +1587,7 @@ export function spendShards(state: GameState, content: Content): GameState {
  * own leaves the list.
  */
 export function markWishlist(state: GameState, content: Content): GameState {
-  const portal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
+  const portal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerTier > 0);
   if (!portal) return state;
   const want = new Set<string>();
   const inPool = new Set(portal.pool.map((e) => e.itemId));
@@ -1646,7 +1595,7 @@ export function markWishlist(state: GameState, content: Content): GameState {
     (id) => inPool.has(id) && needsStars(state, id),
   );
   for (const rarity of RARITIES) {
-    const built = building.filter((id) => content.cardById.get(id)!.rarity === rarity);
+    const built = building.filter((id) => cardStyle(content.cardById.get(id)!) === rarity);
     const missing = portal.pool
       .filter((e) => e.rarity === rarity && !state.cards.owned[e.itemId])
       .map((e) => content.cardById.get(e.itemId)!)
@@ -1654,7 +1603,7 @@ export function markWishlist(state: GameState, content: Content): GameState {
       .map((c) => c.id);
     // A card it builds takes every pull of its rarity: a second mark would halve its copies.
     const marks = built.length > 0 ? built.slice(0, 1) : missing;
-    for (const id of marks.slice(0, portal.wishlistPerRarity)) want.add(id);
+    for (const id of marks.slice(0, portal.wishlistPerTier)) want.add(id);
   }
   const now = state.cards.wishlist;
   if (now.length === want.size && now.every((id) => want.has(id))) return state;
@@ -1698,11 +1647,11 @@ export const LEAD_SWAP_MARGIN = 1.1;
 export function chooseLead(state: GameState, content: Content, cap: number): string | null {
   const damage = (id: string): number => num(cardBaseDamage(content, id, state.cards.owned[id]!));
   // Under Common Folk only Commons count (DESIGN.md §15); a card away on a trip cannot fight.
-  const commonsOnly = isRestricted(state, content, 'commons_only');
+  const commonsOnly = isRestricted(state, content, 'wood_only');
   const usable = (id: string): boolean =>
     !!state.cards.owned[id] &&
     !isOnTrip(state, id) &&
-    (!commonsOnly || content.cardById.get(id)?.rarity === 'common');
+    (!commonsOnly || content.cardById.get(id)?.tier === 'wood');
   let best: string | null = null;
   for (const card of content.cards) {
     if (card.job !== 'fighting' || !usable(card.id)) continue;
@@ -1733,18 +1682,18 @@ export function optimizeLoadouts(state: GameState, content: Content): GameState 
   let current = state;
   const job = 'fighting' as const;
   const cap = loadoutCostCap(current, content, job);
-  const commonsOnly = isRestricted(current, content, 'commons_only');
+  const commonsOnly = isRestricted(current, content, 'wood_only');
   const ranked = content.cards
     .filter(
       (c) =>
         c.job === job &&
         current.cards.owned[c.id] &&
         !isOnTrip(current, c.id) &&
-        (!commonsOnly || c.rarity === 'common'),
+        (!commonsOnly || c.tier === 'wood'),
     )
     .sort(
       (a, b) =>
-        RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) ||
+        RARITIES.indexOf(cardStyle(b)) - RARITIES.indexOf(cardStyle(a)) ||
         cardPower(content, current.cards.owned[b.id]!) -
           cardPower(content, current.cards.owned[a.id]!),
     );
@@ -1899,22 +1848,14 @@ export interface ForgePlan {
 /**
  * The forge (DESIGN.md §4 The forge). The recipe is the first one whose output a card is waiting
  * for (star dust while a card being built needs stars), else the first recipe. It runs only while
- * its gems are coming in and spare: the gems of a craft are in hand over and above what the
- * fighting lead's next tier-up asks of them, so the forge never eats a tier-up.
+ * its gems are coming in and in hand.
  */
 export function forgePlan(state: GameState, content: Content): ForgePlan {
   const recipes = content.production.forge.recipes;
   if (recipes.length === 0) return { recipe: null, run: false };
   const wantsDust = buildOrder(state, content).some((id) => needsStars(state, id));
   const recipe = recipes.find((r) => wantsDust && r.output.resource === 'star_dust') ?? recipes[0]!;
-  const lead = leadOf(state, content);
-  const tierNeeds = lead ? (tierUpCheck(state, content, lead)?.requirements ?? []) : [];
-  const spare = recipe.inputs.every((input) => {
-    const kept = tierNeeds.find((r) => r.kind === 'resource' && r.resource === input.resource);
-    return have(state, input.resource)
-      .sub(kept?.need ?? 0)
-      .gte(input.amount);
-  });
+  const spare = recipe.inputs.every((input) => have(state, input.resource).gte(input.amount));
   const produced = recipe.inputs.every((input) =>
     PRODUCTION_JOBS.some((job) =>
       producersOf(content, job).some(
@@ -2047,37 +1988,6 @@ export function ascendOrChallenge(
 }
 
 /** Share of a tier-up's missing resource already held at which the player waits for it. */
-const HOLD_SHARE = 0.75;
-/** The longest a run is stretched while waiting for a tier-up, in seconds. */
-export const HOLD_MAX_RUN_SECONDS = 12 * 3600;
-
-/**
- * Whether a tier-up is close: some card is at its level cap and ★6 and only resources are short,
- * and the slow ones (the Money, Cores and Frost Sigils an ascension resets) are at least 40% in hand, or
- * all in hand with only gems to wait for (they come back within minutes). A player finishes that
- * step before ascending instead of throwing the Cores away.
- */
-export function holdAscension(state: GameState, content: Content): boolean {
-  for (const id of Object.keys(state.cards.owned)) {
-    const check = tierUpCheck(state, content, id);
-    if (!check || !check.available || check.met) continue;
-    const missing = check.requirements.filter((r) => !r.met);
-    if (missing.some((r) => r.kind !== 'resource')) continue;
-    // Money resets on Ascension like the Cores do, so it counts as slow too.
-    const slow = missing.filter((r) => {
-      const kind = content.resourceById.get(r.resource ?? '')?.kind;
-      return kind === 'material' || kind === 'currency';
-    });
-    // Only the Prismatic step is worth waiting for gems on: the lower steps' Cores are cheap.
-    if (slow.length === 0) {
-      if (state.cards.owned[id]?.tier === 'gold') return true;
-      continue;
-    }
-    if (slow.every((r) => r.have.gte(r.need.mul(HOLD_SHARE)))) return true;
-  }
-  return false;
-}
-
 // ---- where to fight ----------------------------------------------------------------------------
 
 /** Whether the loadout clears the floor it stands on, on Normal, before the floor knocks it out. */
@@ -2877,8 +2787,7 @@ export function runSim(bundled: Content, options: SimOptions): SimResult {
         runSeconds: t - runStart,
         earned: num(state.prestige.starlightEarned),
       };
-      const holding = now.runSeconds < HOLD_MAX_RUN_SECONDS && holdAscension(state, content);
-      if (ascendNow(now, tracker) && !holding) {
+      if (ascendNow(now, tracker)) {
         const result = ascendOrChallenge(state, content);
         if (result.ok) {
           if (result.state.ascensionChallenges.active !== null) {

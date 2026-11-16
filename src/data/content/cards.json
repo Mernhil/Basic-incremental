@@ -3,7 +3,7 @@
     "id": "ember_squire",
     "name": "Ember Squire",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -37,7 +37,7 @@
     "id": "storm_duelist",
     "name": "Storm Duelist",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -79,7 +79,7 @@
     "id": "dawnblade_regent",
     "name": "Dawnblade Regent",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "fire",
     "role": "tank",
     "item": {
@@ -126,7 +126,7 @@
     "id": "apprentice_feller",
     "name": "Apprentice Feller",
     "job": "logging",
-    "rarity": "common",
+    "tier": "wood",
     "element": "nature",
     "item": {
       "kind": "logging_axe"
@@ -151,7 +151,7 @@
     "id": "grove_keeper",
     "name": "Grove Keeper",
     "job": "logging",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "nature",
     "item": {
       "kind": "logging_axe"
@@ -181,7 +181,7 @@
     "id": "elder_treant",
     "name": "Elder Treant",
     "job": "logging",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "nature",
     "item": {
       "kind": "logging_axe"
@@ -211,7 +211,8 @@
     "id": "moonwood_dryad",
     "name": "Moonwood Dryad",
     "job": "logging",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "item": {
       "kind": "logging_axe"
@@ -241,7 +242,7 @@
     "id": "cave_digger",
     "name": "Cave Digger",
     "job": "mining",
-    "rarity": "common",
+    "tier": "wood",
     "element": "earth",
     "item": {
       "kind": "pickaxe"
@@ -266,7 +267,7 @@
     "id": "gem_cutter",
     "name": "Gem Cutter",
     "job": "mining",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "crystal",
     "item": {
       "kind": "pickaxe"
@@ -296,7 +297,7 @@
     "id": "geode_golem",
     "name": "Geode Golem",
     "job": "mining",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "crystal",
     "item": {
       "kind": "pickaxe"
@@ -326,7 +327,8 @@
     "id": "core_titan",
     "name": "Core Titan",
     "job": "mining",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "item": {
       "kind": "pickaxe"
@@ -356,7 +358,7 @@
     "id": "reaper_test",
     "name": "Dusk Reaper",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "void",
     "role": "dps",
     "item": {
@@ -408,7 +410,7 @@
     "id": "hollow_spearman",
     "name": "Hollow Spearman",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "earth",
     "role": "dps",
     "item": {
@@ -451,7 +453,8 @@
     "id": "seraph_lancer",
     "name": "Seraph Lancer",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "support",
     "item": {
@@ -498,7 +501,8 @@
     "id": "grave_hammerer",
     "name": "Grave Hammerer",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -545,7 +549,7 @@
     "id": "moss_forager",
     "name": "Moss Forager",
     "job": "logging",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "nature",
     "item": {
       "kind": "logging_axe"
@@ -570,7 +574,7 @@
     "id": "heartwood_warden",
     "name": "Heartwood Warden",
     "job": "logging",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "nature",
     "item": {
       "kind": "logging_axe"
@@ -600,7 +604,8 @@
     "id": "rotwood_sovereign",
     "name": "Rotwood Sovereign",
     "job": "logging",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "item": {
       "kind": "logging_axe"
@@ -630,7 +635,7 @@
     "id": "pebble_prospector",
     "name": "Pebble Prospector",
     "job": "mining",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "earth",
     "item": {
       "kind": "pickaxe"
@@ -655,7 +660,7 @@
     "id": "prism_delver",
     "name": "Prism Delver",
     "job": "mining",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "crystal",
     "item": {
       "kind": "pickaxe"
@@ -685,7 +690,8 @@
     "id": "lodestone_seer",
     "name": "Lodestone Seer",
     "job": "mining",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "item": {
       "kind": "pickaxe"
@@ -715,7 +721,7 @@
     "id": "brass_vanguard",
     "name": "Brass Vanguard",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -749,7 +755,7 @@
     "id": "silver_cavalier",
     "name": "Silver Cavalier",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -783,7 +789,7 @@
     "id": "gilded_knight",
     "name": "Gilded Knight",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -817,7 +823,7 @@
     "id": "prism_paladin",
     "name": "Prism Paladin",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -856,7 +862,8 @@
     "id": "dawn_champion",
     "name": "Dawn Champion",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -895,7 +902,8 @@
     "id": "shadow_reaver",
     "name": "Shadow Reaver",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -934,7 +942,7 @@
     "id": "rusty_brute",
     "name": "Rusty Brute",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "fire",
     "role": "tank",
     "item": {
@@ -976,7 +984,7 @@
     "id": "bronze_warden",
     "name": "Bronze Warden",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "fire",
     "role": "tank",
     "item": {
@@ -1018,7 +1026,7 @@
     "id": "silver_executioner",
     "name": "Silver Executioner",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "fire",
     "role": "tank",
     "item": {
@@ -1060,7 +1068,7 @@
     "id": "gold_warlord",
     "name": "Gold Warlord",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "fire",
     "role": "tank",
     "item": {
@@ -1102,7 +1110,8 @@
     "id": "sunbreaker_titan",
     "name": "Sunbreaker Titan",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -1149,7 +1158,8 @@
     "id": "ruin_tyrant",
     "name": "Ruin Tyrant",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -1196,7 +1206,7 @@
     "id": "militia_picket",
     "name": "Militia Picket",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "earth",
     "role": "dps",
     "item": {
@@ -1239,7 +1249,7 @@
     "id": "silver_skirmisher",
     "name": "Silver Skirmisher",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "earth",
     "role": "dps",
     "item": {
@@ -1282,7 +1292,7 @@
     "id": "golden_hoplite",
     "name": "Golden Hoplite",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "earth",
     "role": "dps",
     "item": {
@@ -1325,7 +1335,7 @@
     "id": "shard_strider",
     "name": "Shard Strider",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "earth",
     "role": "dps",
     "item": {
@@ -1373,7 +1383,8 @@
     "id": "valor_pikeman",
     "name": "Valor Pikeman",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -1421,7 +1432,8 @@
     "id": "wraith_impaler",
     "name": "Wraith Impaler",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -1469,7 +1481,7 @@
     "id": "stable_squire",
     "name": "Stable Squire",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "light",
     "role": "tank",
     "item": {
@@ -1511,7 +1523,7 @@
     "id": "bronze_jouster",
     "name": "Bronze Jouster",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "light",
     "role": "tank",
     "item": {
@@ -1553,7 +1565,7 @@
     "id": "silver_rider",
     "name": "Silver Rider",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "light",
     "role": "tank",
     "item": {
@@ -1595,7 +1607,7 @@
     "id": "golden_tilter",
     "name": "Golden Tilter",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "light",
     "role": "tank",
     "item": {
@@ -1637,7 +1649,7 @@
     "id": "mirror_cavalier",
     "name": "Mirror Cavalier",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -1684,7 +1696,8 @@
     "id": "dread_horseman",
     "name": "Dread Horseman",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -1731,7 +1744,7 @@
     "id": "alley_cutpurse",
     "name": "Alley Cutpurse",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -1773,7 +1786,7 @@
     "id": "bronze_sneak",
     "name": "Bronze Sneak",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -1815,7 +1828,7 @@
     "id": "silver_shiv",
     "name": "Silver Shiv",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -1857,7 +1870,7 @@
     "id": "whisper_assassin",
     "name": "Whisper Assassin",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -1904,7 +1917,8 @@
     "id": "gleam_phantom",
     "name": "Gleam Phantom",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -1951,7 +1965,8 @@
     "id": "venom_stalker",
     "name": "Venom Stalker",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -1998,7 +2013,7 @@
     "id": "quarry_smasher",
     "name": "Quarry Smasher",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -2040,7 +2055,7 @@
     "id": "bronze_forgehand",
     "name": "Bronze Forgehand",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -2082,7 +2097,7 @@
     "id": "silver_sledger",
     "name": "Silver Sledger",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -2124,7 +2139,7 @@
     "id": "golden_anvilmaster",
     "name": "Golden Anvilmaster",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -2166,7 +2181,7 @@
     "id": "facet_crusher",
     "name": "Facet Crusher",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -2213,7 +2228,8 @@
     "id": "thunder_smith",
     "name": "Thunder Smith",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -2260,7 +2276,7 @@
     "id": "fieldhand_archer",
     "name": "Fieldhand Archer",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -2312,7 +2328,7 @@
     "id": "bronze_hunter",
     "name": "Bronze Hunter",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -2364,7 +2380,7 @@
     "id": "silver_ranger",
     "name": "Silver Ranger",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -2416,7 +2432,7 @@
     "id": "golden_sharpshot",
     "name": "Golden Sharpshot",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -2468,7 +2484,7 @@
     "id": "rainbow_sniper",
     "name": "Rainbow Sniper",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -2525,7 +2541,8 @@
     "id": "seraph_archer",
     "name": "Seraph Archer",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -2582,7 +2599,8 @@
     "id": "wither_huntress",
     "name": "Wither Huntress",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -2639,7 +2657,7 @@
     "id": "hedge_acolyte",
     "name": "Hedge Acolyte",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "crystal",
     "role": "support",
     "item": {
@@ -2681,7 +2699,7 @@
     "id": "bronze_mystic",
     "name": "Bronze Mystic",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -2723,7 +2741,7 @@
     "id": "silver_mage",
     "name": "Silver Mage",
     "job": "fighting",
-    "rarity": "rare",
+    "tier": "silver",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -2765,7 +2783,7 @@
     "id": "golden_sage",
     "name": "Golden Sage",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "crystal",
     "role": "support",
     "item": {
@@ -2807,7 +2825,7 @@
     "id": "kaleido_weaver",
     "name": "Kaleido Weaver",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "crystal",
     "role": "support",
     "item": {
@@ -2854,7 +2872,8 @@
     "id": "sanctum_oracle",
     "name": "Sanctum Oracle",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "support",
     "item": {
@@ -2901,7 +2920,8 @@
     "id": "hex_warlock",
     "name": "Hex Warlock",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "support",
     "item": {
@@ -2948,7 +2968,7 @@
     "id": "field_reaper",
     "name": "Field Reaper",
     "job": "fighting",
-    "rarity": "common",
+    "tier": "wood",
     "element": "void",
     "role": "dps",
     "item": {
@@ -3000,7 +3020,7 @@
     "id": "bronze_gleaner",
     "name": "Bronze Gleaner",
     "job": "fighting",
-    "rarity": "uncommon",
+    "tier": "bronze",
     "element": "void",
     "role": "dps",
     "item": {
@@ -3052,7 +3072,7 @@
     "id": "golden_harvester",
     "name": "Golden Harvester",
     "job": "fighting",
-    "rarity": "epic",
+    "tier": "gold",
     "element": "void",
     "role": "dps",
     "item": {
@@ -3104,7 +3124,7 @@
     "id": "halfmoon_reaper",
     "name": "Halfmoon Reaper",
     "job": "fighting",
-    "rarity": "legendary",
+    "tier": "prismatic",
     "element": "void",
     "role": "dps",
     "item": {
@@ -3161,7 +3181,8 @@
     "id": "mercy_harvester",
     "name": "Mercy Harvester",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -3218,7 +3239,8 @@
     "id": "grim_sovereign",
     "name": "Grim Sovereign",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -3275,7 +3297,8 @@
     "id": "jade_vanguard",
     "name": "Jade Vanguard",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -3316,7 +3339,8 @@
     "id": "violet_herald",
     "name": "Violet Herald",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -3357,7 +3381,8 @@
     "id": "moon_reaver",
     "name": "Moon Reaver",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -3398,7 +3423,8 @@
     "id": "crown_warden",
     "name": "Crown Warden",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "tank",
     "item": {
@@ -3447,7 +3473,8 @@
     "id": "jade_regent",
     "name": "Jade Regent",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "role": "tank",
     "item": {
@@ -3496,7 +3523,8 @@
     "id": "cobalt_tyrant",
     "name": "Cobalt Tyrant",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "crystal",
     "role": "tank",
     "item": {
@@ -3545,7 +3573,8 @@
     "id": "spore_tyrant",
     "name": "Spore Tyrant",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "nature",
     "role": "tank",
     "item": {
@@ -3594,7 +3623,8 @@
     "id": "gloom_maw",
     "name": "Gloom Maw",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -3643,7 +3673,8 @@
     "id": "molten_pikeman",
     "name": "Molten Pikeman",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -3693,7 +3724,8 @@
     "id": "rose_sentinel",
     "name": "Rose Sentinel",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -3743,7 +3775,8 @@
     "id": "royal_impaler",
     "name": "Royal Impaler",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -3793,7 +3826,8 @@
     "id": "cinder_serpent",
     "name": "Cinder Serpent",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -3843,7 +3877,8 @@
     "id": "blood_serpent",
     "name": "Blood Serpent",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -3893,7 +3928,8 @@
     "id": "azure_cavalier",
     "name": "Azure Cavalier",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "tank",
     "item": {
@@ -3942,7 +3978,8 @@
     "id": "midnight_rider",
     "name": "Midnight Rider",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -3991,7 +4028,8 @@
     "id": "plague_rider",
     "name": "Plague Rider",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "nature",
     "role": "tank",
     "item": {
@@ -4040,7 +4078,8 @@
     "id": "rose_phantom",
     "name": "Rose Phantom",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -4089,7 +4128,8 @@
     "id": "sky_gleamer",
     "name": "Sky Gleamer",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -4138,7 +4178,8 @@
     "id": "jade_stalker",
     "name": "Jade Stalker",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -4187,7 +4228,8 @@
     "id": "bloodletter",
     "name": "Bloodletter",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -4236,7 +4278,8 @@
     "id": "violet_viper",
     "name": "Violet Viper",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -4285,7 +4328,8 @@
     "id": "frost_viper",
     "name": "Frost Viper",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -4334,7 +4378,8 @@
     "id": "stormforger",
     "name": "Stormforger",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "tank",
     "item": {
@@ -4383,7 +4428,8 @@
     "id": "verdant_smith",
     "name": "Verdant Smith",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "role": "tank",
     "item": {
@@ -4432,7 +4478,8 @@
     "id": "amethyst_smith",
     "name": "Amethyst Smith",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "crystal",
     "role": "tank",
     "item": {
@@ -4481,7 +4528,8 @@
     "id": "iron_butcher",
     "name": "Iron Butcher",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -4530,7 +4578,8 @@
     "id": "dawn_archer",
     "name": "Dawn Archer",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -4589,7 +4638,8 @@
     "id": "night_hunter",
     "name": "Night Hunter",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -4648,7 +4698,8 @@
     "id": "abyss_hunter",
     "name": "Abyss Hunter",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -4707,7 +4758,8 @@
     "id": "ember_stalker",
     "name": "Ember Stalker",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "earth",
     "role": "dps",
     "item": {
@@ -4766,7 +4818,8 @@
     "id": "orchid_oracle",
     "name": "Orchid Oracle",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "role": "support",
     "item": {
@@ -4815,7 +4868,8 @@
     "id": "rift_mystic",
     "name": "Rift Mystic",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "support",
     "item": {
@@ -4864,7 +4918,8 @@
     "id": "azure_gleaner",
     "name": "Azure Gleaner",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -4923,7 +4978,8 @@
     "id": "bog_reaper",
     "name": "Bog Reaper",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -4982,7 +5038,8 @@
     "id": "hollow_reaper",
     "name": "Hollow Reaper",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -5041,7 +5098,8 @@
     "id": "frost_reaper",
     "name": "Frost Reaper",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -5100,7 +5158,8 @@
     "id": "azure_delver",
     "name": "Azure Delver",
     "job": "mining",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "item": {
       "kind": "pickaxe"
@@ -5132,7 +5191,8 @@
     "id": "emerald_seer",
     "name": "Emerald Seer",
     "job": "mining",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "item": {
       "kind": "pickaxe"
@@ -5164,7 +5224,8 @@
     "id": "ruby_gnawer",
     "name": "Ruby Gnawer",
     "job": "mining",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "fire",
     "item": {
       "kind": "pickaxe"
@@ -5196,7 +5257,8 @@
     "id": "void_burrower",
     "name": "Void Burrower",
     "job": "mining",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "item": {
       "kind": "pickaxe"
@@ -5228,7 +5290,8 @@
     "id": "amber_gnawer",
     "name": "Amber Gnawer",
     "job": "mining",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "light",
     "item": {
       "kind": "pickaxe"
@@ -5260,7 +5323,8 @@
     "id": "tidal_warden",
     "name": "Tidal Warden",
     "job": "logging",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "item": {
       "kind": "logging_axe"
@@ -5292,7 +5356,8 @@
     "id": "dusk_feller",
     "name": "Dusk Feller",
     "job": "logging",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "crystal",
     "item": {
       "kind": "logging_axe"
@@ -5324,7 +5389,8 @@
     "id": "rime_feller",
     "name": "Rime Feller",
     "job": "logging",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "crystal",
     "item": {
       "kind": "logging_axe"
@@ -5356,7 +5422,8 @@
     "id": "blight_feller",
     "name": "Blight Feller",
     "job": "logging",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "item": {
       "kind": "logging_axe"
@@ -5389,7 +5456,8 @@
     "name": "Solaris",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "fire",
     "role": "dps",
     "item": {
@@ -5429,7 +5497,8 @@
     "name": "Grimhowl",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -5477,7 +5546,8 @@
     "name": "Skypiercer",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -5526,7 +5596,8 @@
     "name": "Sunrider",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -5574,7 +5645,8 @@
     "name": "Nightsting",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -5622,7 +5694,8 @@
     "name": "Grave Anvil",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -5670,7 +5743,8 @@
     "name": "Starweaver",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "light",
     "role": "dps",
     "item": {
@@ -5728,7 +5802,8 @@
     "name": "Soulwell",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "support",
     "item": {
@@ -5776,7 +5851,8 @@
     "name": "Last Breath",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -5834,7 +5910,8 @@
     "name": "Heartdelver",
     "heirloom": true,
     "job": "mining",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "crystal",
     "item": {
       "kind": "pickaxe"
@@ -5865,7 +5942,8 @@
     "name": "Elderwarden",
     "heirloom": true,
     "job": "logging",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "nature",
     "item": {
       "kind": "logging_axe"
@@ -5895,7 +5973,8 @@
     "id": "pearl_duelist",
     "name": "Pearl Duelist",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -5936,7 +6015,8 @@
     "id": "brine_corsair",
     "name": "Brine Corsair",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -5977,7 +6057,8 @@
     "id": "surf_crusader",
     "name": "Surf Crusader",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -6026,7 +6107,8 @@
     "id": "maelstrom_tyrant",
     "name": "Maelstrom Tyrant",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -6075,7 +6157,8 @@
     "id": "silver_minnow",
     "name": "Silver Minnow",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -6124,7 +6207,8 @@
     "id": "reef_assassin",
     "name": "Reef Assassin",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -6173,7 +6257,8 @@
     "id": "coral_hoplite",
     "name": "Coral Hoplite",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -6223,7 +6308,8 @@
     "id": "kraken_impaler",
     "name": "Kraken Impaler",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -6273,7 +6359,8 @@
     "id": "foam_cavalier",
     "name": "Foam Cavalier",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -6322,7 +6409,8 @@
     "id": "sunken_horseman",
     "name": "Sunken Horseman",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "storm",
     "role": "tank",
     "item": {
@@ -6371,7 +6459,8 @@
     "id": "anchor_smith",
     "name": "Anchor Smith",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -6420,7 +6509,8 @@
     "id": "barnacle_crusher",
     "name": "Barnacle Crusher",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -6469,7 +6559,8 @@
     "id": "moonlit_angler",
     "name": "Moonlit Angler",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -6528,7 +6619,8 @@
     "id": "siren_huntress",
     "name": "Siren Huntress",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -6587,7 +6679,8 @@
     "id": "tide_oracle",
     "name": "Tide Oracle",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "role": "support",
     "item": {
@@ -6636,7 +6729,8 @@
     "id": "murk_warlock",
     "name": "Murk Warlock",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "support",
     "item": {
@@ -6685,7 +6779,8 @@
     "id": "kelp_harvester",
     "name": "Kelp Harvester",
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -6744,7 +6839,8 @@
     "id": "deep_sovereign",
     "name": "Deep Sovereign",
     "job": "fighting",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -6803,7 +6899,8 @@
     "id": "reef_prospector",
     "name": "Reef Prospector",
     "job": "mining",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "item": {
       "kind": "pickaxe"
@@ -6835,7 +6932,8 @@
     "id": "trench_burrower",
     "name": "Trench Burrower",
     "job": "mining",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "item": {
       "kind": "pickaxe"
@@ -6867,7 +6965,8 @@
     "id": "driftwood_keeper",
     "name": "Driftwood Keeper",
     "job": "logging",
-    "rarity": "mythic",
+    "tier": "mythic",
+    "side": "mythic",
     "element": "light",
     "item": {
       "kind": "logging_axe"
@@ -6899,7 +6998,8 @@
     "id": "mangrove_tyrant",
     "name": "Mangrove Tyrant",
     "job": "logging",
-    "rarity": "void",
+    "tier": "mythic",
+    "side": "void",
     "element": "void",
     "item": {
       "kind": "logging_axe"
@@ -6932,7 +7032,8 @@
     "name": "Auroratusk",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "crystal",
     "role": "dps",
     "item": {
@@ -6974,7 +7075,8 @@
     "name": "Maelfang",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "tank",
     "item": {
@@ -7024,7 +7126,8 @@
     "name": "Venomplume",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "nature",
     "role": "dps",
     "item": {
@@ -7074,7 +7177,8 @@
     "name": "Bluestrike",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -7125,7 +7229,8 @@
     "name": "Pearlrider",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "light",
     "role": "tank",
     "item": {
@@ -7175,7 +7280,8 @@
     "name": "Clawbreaker",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "earth",
     "role": "tank",
     "item": {
@@ -7225,7 +7331,8 @@
     "name": "Mantaglide",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "storm",
     "role": "dps",
     "item": {
@@ -7285,7 +7392,8 @@
     "name": "Dreadbloom",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "support",
     "item": {
@@ -7335,7 +7443,8 @@
     "name": "Coilreaper",
     "heirloom": true,
     "job": "fighting",
-    "rarity": "void",
+    "tier": "heirloom",
+    "side": "void",
     "element": "void",
     "role": "dps",
     "item": {
@@ -7395,7 +7504,8 @@
     "name": "Prismstrike",
     "heirloom": true,
     "job": "mining",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "crystal",
     "item": {
       "kind": "pickaxe"
@@ -7428,7 +7538,8 @@
     "name": "Eldershell",
     "heirloom": true,
     "job": "logging",
-    "rarity": "mythic",
+    "tier": "heirloom",
+    "side": "mythic",
     "element": "nature",
     "item": {
       "kind": "logging_axe"

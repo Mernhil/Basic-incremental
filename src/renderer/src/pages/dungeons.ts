@@ -526,13 +526,10 @@ export function createDungeonPanels(ctx: DungeonPanelsContext): DungeonPanels {
       tab.type = 'button';
       tab.setAttribute('role', 'tab');
       tab.dataset.key = `wtab-${id}`;
-      tab.title = COPY.weapon.tabTitle(
-        cardDisplayName(content, card, s.cards.owned[id]),
-        slots.indexOf(id) + 1,
-      );
+      tab.title = COPY.weapon.tabTitle(cardDisplayName(content, card), slots.indexOf(id) + 1);
       const art = h('span', 'dp-wtab__art');
       art.innerHTML = `<svg viewBox="${ITEM_VIEWBOX}" aria-hidden="true" focusable="false">${cardItemArt(content, id, s.cards.owned[id], s)}</svg>`;
-      const name = h('span', 'dp-wtab__name', cardDisplayName(content, card, s.cards.owned[id]));
+      const name = h('span', 'dp-wtab__name', cardDisplayName(content, card));
       const level = h('span', 'dp-wtab__level bi-num');
       tab.append(art, name, level);
       tab.addEventListener('click', () => {

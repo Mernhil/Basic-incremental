@@ -28,3 +28,9 @@ Real save files, kept exactly as the game wrote them, for the migration tests.
 - `v37-skill-ranks.save.txt`: save format 37, as the 0.7.23 game code wrote it, with ranks in the old
   account tree (Logging, Mining and Collection ranks, level 24) and no weapon circle skills. It is the
   input of the format 38 migration (the skill web) in `tests/saveV37.test.ts`.
+- `v38-0.7.25.save.txt`: save format 38, for the roster by tier (format 39). It is the state the
+  0.7.25 balance sim reached after 12 hours on seed 3 (35 cards, many of them raised part of the
+  way up the old tier ladder: the Legendary greatsword at Gold ★5 Lv 71, a Rare lance at Bronze
+  Lv 40, Rares at Silver ★6, Commons at Wood ★6), written with `createSaveText` by the 0.7.25
+  code (release commit c0b8d509). The two sim-only values were set to what the game accepts, as
+  for the format 28 fixture. Made by a script, not by the game.

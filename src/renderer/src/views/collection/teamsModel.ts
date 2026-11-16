@@ -42,9 +42,7 @@ export function teamRows(state: GameState, content: Content): TeamRow[] {
       dungeonId: dungeon.id,
       dungeonName: dungeon.name,
       active,
-      cards: ids
-        .map((id) => cardNameById(content, id, state.cards.owned[id]))
-        .filter((n): n is string => !!n),
+      cards: ids.map((id) => cardNameById(content, id)).filter((n): n is string => !!n),
       cost,
       cap,
       overCap: cost > cap,

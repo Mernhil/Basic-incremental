@@ -15,7 +15,6 @@ import {
   revealPlan,
   setFocusKind,
   setWishlisted,
-  cardTopTier,
   wishlistView,
   type GameState,
   type PullCount,
@@ -184,7 +183,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
   /** The hovered or last-clicked card on one line (name, type, element, job). */
   const readout = h('p', 'sm-wish__read', COPY.summon.wishlistHover);
   readout.setAttribute('aria-live', 'polite');
-  const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerRarity > 0);
+  const wishPortal = content.portals.find((p) => p.kind === 'cards' && p.wishlistPerTier > 0);
 
   function renderWishlist(): void {
     if (!wishPortal) return;
@@ -225,7 +224,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         const card = content.cardById.get(c.id);
         const pic = h('span', 'sm-wish__pic');
         if (card) {
-          pic.innerHTML = `<svg viewBox="${WISH_VIEWBOX}" aria-hidden="true" focusable="false">${cardTierArt(card, cardTopTier(content, c.id))}</svg>`;
+          pic.innerHTML = `<svg viewBox="${WISH_VIEWBOX}" aria-hidden="true" focusable="false">${cardTierArt(card)}</svg>`;
         }
         b.append(pic, h('i', 'sm-wish__elem'), h('i', 'sm-wish__tick'));
         const show = (): void => {
@@ -444,7 +443,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     buttons.append(single.el, ten.el);
     root.append(h('h2', 'sm-deck__name px-display', portal.name), line, stack, pity, buttons);
     const hunt =
-      portalId !== FOCUS_PORTAL_ID && portal.kind === 'cards' && portal.wishlistPerRarity > 0
+      portalId !== FOCUS_PORTAL_ID && portal.kind === 'cards' && portal.wishlistPerTier > 0
         ? h('p', 'sm-deck__hunt')
         : null;
     if (hunt) line.after(hunt);

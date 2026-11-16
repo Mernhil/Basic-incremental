@@ -4,7 +4,7 @@
  * expeditions and Ascension challenges. Pure functions over the real game rules; `sim.ts` calls
  * them from its buyer and its run loop.
  */
-import { RARITIES, type Content, type Portal } from '../../src/data';
+import { RARITIES, cardStyle, type Content, type Portal } from '../../src/data';
 import { arrangeFormation, cardBaseDamage, cardHealth } from '../../src/game';
 import {
   buildTeam,
@@ -141,14 +141,14 @@ export function challengeWall(
 
 /** Fighting cards the team may use now: owned, at home, allowed by the run's challenge rule. */
 export function teamPool(state: GameState, content: Content): string[] {
-  const commonsOnly = isRestricted(state, content, 'commons_only');
+  const commonsOnly = isRestricted(state, content, 'wood_only');
   return content.cards
     .filter(
       (c) =>
         c.job === 'fighting' &&
         state.cards.owned[c.id] &&
         !isOnTrip(state, c.id) &&
-        (!commonsOnly || c.rarity === 'common'),
+        (!commonsOnly || c.tier === 'wood'),
     )
     .map((c) => c.id);
 }
@@ -249,7 +249,7 @@ export function pullCardValue(
 ): number {
   const card = content.cardById.get(cardId);
   if (!card) return 0;
-  const worth = 3 ** RARITIES.indexOf(card.rarity);
+  const worth = 3 ** RARITIES.indexOf(cardStyle(card));
   const owned = state.cards.owned[cardId];
   if (!owned) return worth * (card.job === 'fighting' ? 1 : 0.6);
   if (owned.stars >= 6) return worth * 0.05;
@@ -372,7 +372,7 @@ export function runExpeditions(
         !isOnTrip(current, c.id) &&
         !(c.job === 'fighting' && BENCH_ROLES.has(cardSkill(content, c.id).role)),
     )
-    .sort((a, b) => RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity));
+    .sort((a, b) => RARITIES.indexOf(cardStyle(b)) - RARITIES.indexOf(cardStyle(a)));
   const furthest = places[places.length - 1]!;
   const length = content.expeditions.durationsHours.includes(hours)
     ? hours

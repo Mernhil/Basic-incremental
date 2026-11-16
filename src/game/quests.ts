@@ -1,4 +1,5 @@
 import type { Content, Quest, QuestCondition, QuestGroup } from '../data';
+import { cardGrade } from '../data';
 import { measure } from './achievements';
 import { floorPosition, stageKey } from './floors';
 import { Decimal } from './num';
@@ -33,10 +34,11 @@ export function measureQuest(
     }
     case 'cards_owned':
       return { value: Object.keys(state.cards.owned).length, target: condition.amount };
-    case 'rarity_owned': {
-      const has = Object.keys(state.cards.owned).some(
-        (id) => content.cardById.get(id)?.rarity === condition.rarity,
-      );
+    case 'grade_owned': {
+      const has = Object.keys(state.cards.owned).some((id) => {
+        const card = content.cardById.get(id);
+        return card !== undefined && cardGrade(card) === condition.grade;
+      });
       return { value: has ? 1 : 0, target: 1 };
     }
     case 'card_level':

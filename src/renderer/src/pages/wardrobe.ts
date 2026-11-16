@@ -1,3 +1,4 @@
+import { cardStyle } from '../../../data';
 import type { CosmeticSlot } from '../../../data';
 import {
   cardDisplayName,
@@ -183,7 +184,7 @@ export function createWardrobePage(
     return resolveCard(content, state.cosmetics.loadout, {
       id: cardId,
       rank: { tier: owned.tier, stars: owned.stars },
-      rarity: card.rarity,
+      rarity: cardStyle(card),
     });
   }
 
@@ -250,7 +251,7 @@ export function createWardrobePage(
         theme: resolveCard(content, loadout, {
           id: previewCard,
           rank: props.rank,
-          rarity: card.rarity,
+          rarity: cardStyle(card),
         }),
       });
       const fit = h('div', 'wd-card');
@@ -569,9 +570,7 @@ export function createWardrobePage(
     };
     const slotId = item.cosmetic.slot;
     const previewDef = previewCard ? content.cardById.get(previewCard) : undefined;
-    const cardName = previewDef
-      ? cardDisplayName(content, previewDef, ctx.state().cards.owned[previewDef.id])
-      : '';
+    const cardName = previewDef ? cardDisplayName(content, previewDef) : '';
     if (d.equip.global === 'equip') {
       btn(isCardSlot(slotId) ? t.equipAll : t.equip, 'equip', () =>
         equipResult(equipCosmetic(ctx.state(), content, item.cosmetic.id), 'equip'),

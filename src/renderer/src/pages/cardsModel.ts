@@ -21,7 +21,7 @@ export interface Requirement {
 }
 
 export interface UpgradeStep {
-  kind: 'star' | 'tier';
+  kind: 'star';
   /** "Next star: ★4", "Tier-up to Silver ★3" */
   title: string;
   /** What it gives, e.g. "Adds power and raises the level cap to 32." */
@@ -30,16 +30,6 @@ export interface UpgradeStep {
   /** Button text, e.g. "Add star · 2 copies", "Tier up · 150,000 Money, 6 Moss Core" */
   action: string;
   ready: boolean;
-}
-
-/** One price of a tier-up, as the weapon panel's cost tag shows it. */
-export interface CostChip {
-  /** Resource id (the icon and name come from it). */
-  id: string;
-  name: string;
-  have: string;
-  need: string;
-  met: boolean;
 }
 
 /**
@@ -79,34 +69,12 @@ export interface WeaponView {
     /** Star dust that tops up the next star (DESIGN.md §5); null when the bar is full or there is no dust to spend. */
     dust: { cost: number; have: number; affordable: boolean; label: string } | null;
   } | null;
-  /** The next tier-up, or null at the weapon's top tier. */
-  tierUp: {
-    /** What the tier-up changes: damage per second, health, the level cap and the look. */
-    stats: StatChange[];
-    toTier: Rank['tier'];
-    toName: string;
-    /** The step to the Heirloom (button "Reveal <name>"). */
-    heirloom: boolean;
-    /** leveling: below the cap; ready: at the cap and paid for; short: at the cap, missing prices. */
-    phase: 'leveling' | 'ready' | 'short';
-    /** "Reach Lv 40 to tier up. It costs:" below the cap, "It costs:" at it. */
-    lead: string;
-    costs: CostChip[];
-    /** The button text. */
-    action: string;
-    ready: boolean;
-    /** What is missing, for the tag's hint ("Missing Frost Sigil."), empty when nothing is. */
-    missing: string;
-    /** The level cap is reached. */
-    levelMet: boolean;
-    /** The card is at ★6, which a tier-up needs (DESIGN.md §5). */
-    starsMet: boolean;
-    /** Why the tier-up cannot be taken, as the dark button says it ("Needs ★6", "Needs Lv 40",
-     *  "Missing Money"); empty when it can. */
-    blocker: string;
-  } | null;
-  /** Why there is no tier-up (top tier, or the Heirloom is not drawn yet); null otherwise. */
-  endNote: string | null;
+  /** "Breakthrough levels: ..." while the card's next level is one of the levels that carry it
+   *  onto the next tier's power step (they need much more XP); null otherwise. */
+  breakthrough: string | null;
+  /** The note under the stars: the card's tier is its own for good (DESIGN.md §5 No tier-ups), or
+   *  where an Heirloom's stars come from. */
+  endNote: string;
 }
 
 /** One stat an upgrade changes for the chosen card: real numbers now and after, and the gain. */
@@ -170,8 +138,6 @@ export interface CardEntry {
   role: LoadoutRole | null;
   /** The next star-up (the star bar), or null at ★6. */
   next: UpgradeStep | null;
-  /** The next tier-up (level cap, Money, materials), or null at the card's top tier. */
-  tier: UpgradeStep | null;
   /** The weapon panel's data (level ring, star bar, tier-up cost); null when not owned. */
   weapon: WeaponView | null;
   /** The stat tiles with their compare line (DESIGN.md §5 Show the stats). */
@@ -284,7 +250,7 @@ export interface CardsModel {
    *  another slot swaps with the slot's card. */
   place(state: GameState, slot: number, id: string): ModelResult;
   /** Takes the card's next star (from the star bar) or its next tier. */
-  upgrade(state: GameState, id: string, kind: 'star' | 'tier' | 'dust'): ModelResult;
+  upgrade(state: GameState, id: string, kind: 'star' | 'dust'): ModelResult;
   /** The card's enhancement star chart (DESIGN.md §10b), or null when not owned. */
   chart(state: GameState, id: string): StarChartView | null;
   /** Picks one enhancement option within the card's budget. */

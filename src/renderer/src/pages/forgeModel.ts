@@ -66,7 +66,7 @@ export function forgeView(state: GameState, content: Content): ForgeView {
     workers.push({
       cardId: card.id,
       label: t.worker(
-        cardDisplayName(content, card, owned),
+        cardDisplayName(content, card),
         fmt(workerPower(content, card.id, owned)),
         at ? (names.get(at) ?? at) : null,
         owned.tier,

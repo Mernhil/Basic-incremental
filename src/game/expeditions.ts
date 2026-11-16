@@ -1,5 +1,6 @@
 import {
-  RARITIES,
+  CARD_GRADES,
+  cardGrade,
   type Card,
   type Content,
   type ExpeditionPlace,
@@ -271,7 +272,7 @@ export interface ExpeditionView {
 /** The name of the card on a trip (its weapon's, DESIGN.md §5 "Item names"). */
 function tripCardName(state: GameState, content: Content, cardId: string): string {
   const card = content.cardById.get(cardId);
-  return card ? cardDisplayName(content, card, state.cards.owned[cardId]) : cardId;
+  return card ? cardDisplayName(content, card) : cardId;
 }
 
 export function expeditionView(state: GameState, content: Content): ExpeditionView {
@@ -294,7 +295,8 @@ export function expeditionView(state: GameState, content: Content): ExpeditionVi
     )
     .sort(
       (a, b) =>
-        RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) || a.name.localeCompare(b.name),
+        CARD_GRADES.indexOf(cardGrade(b)) - CARD_GRADES.indexOf(cardGrade(a)) ||
+        a.name.localeCompare(b.name),
     );
   return {
     slots: expeditionSlots(state, content, modifiers),

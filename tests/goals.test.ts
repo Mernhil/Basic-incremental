@@ -163,8 +163,7 @@ describe('goal rules (DESIGN.md §10)', () => {
 
   it('has a star bar goal once some copies are held, with no ETA', () => {
     const state = fighter();
-    // ★4 -> ★5 takes 1 copy of a Common (pinned); half of it is held.
-    expect(content.cardRules.starBar.needs.common.wood).toBe(1);
+    // ★4 -> ★5 takes one copy; half of it is held.
     state.cards.owned['ember_squire'] = { ...newOwnedCard(), stars: 4, starFill: 0.5 };
     const goal = find(allGoals(state, content), 'star_up:ember_squire')!;
     expect(goal).toMatchObject({
@@ -182,45 +181,12 @@ describe('goal rules (DESIGN.md §10)', () => {
     expect(find(allGoals(state, content), 'star_up:ember_squire')).toBeUndefined();
   });
 
-  it('has a tier-up goal for a card at its level cap, from what Money and materials are missing', () => {
+  it('has no tier-up goal: a card stays the tier it is (DESIGN.md §5 No tier-ups)', () => {
     const state = fighter();
-    state.cards.owned['storm_duelist'] = { ...newOwnedCard(), level: 20, stars: 6 };
-    const costs = content.cardRules.tierUp.wood.fighting;
-    for (const c of costs) state.resources[c.resource] = c.amount.div(2);
-    const goal = find(allGoals(state, content), 'tier_up:storm_duelist')!;
-    expect(goal).toMatchObject({ title: 'Tier up Wooden Dagger to Bronze', page: 'cards' });
-    expect(goal.progress).toBeCloseTo(0.5);
-  });
-
-  it('has no tier-up goal for a card at its rarity cap (a Common card stops at Wood)', () => {
-    const state = fighter();
+    state.cards.owned['storm_duelist'] = { ...newOwnedCard('gold'), level: 80, stars: 6 };
     state.cards.owned['ember_squire'] = { ...newOwnedCard(), level: 20, stars: 6 };
-    expect(find(allGoals(state, content), 'tier_up:ember_squire')).toBeUndefined();
-  });
-
-  it('names the Mythic tier for a card that moves up from Prismatic', () => {
-    const state = fighter();
-    state.cards.owned['moonwood_dryad'] = {
-      ...newOwnedCard(),
-      tier: 'prismatic',
-      level: 100,
-      stars: 4,
-    };
-    expect(find(allGoals(state, content), 'tier_up:moonwood_dryad')).toMatchObject({
-      title: 'Tier up Prismatic Axe to Mythic: needs ★6',
-    });
-  });
-
-  it('shows the missing stars when the card is at its level cap but short of ★6', () => {
-    const state = fighter();
-    state.cards.owned['storm_duelist'] = { ...newOwnedCard(), level: 20, stars: 4 };
-    const goal = find(allGoals(state, content), 'tier_up:storm_duelist')!;
-    expect(goal).toMatchObject({
-      title: 'Tier up Wooden Dagger to Bronze: needs ★6',
-      page: 'cards',
-    });
-    expect(goal.progress).toBeCloseTo(4 / 6);
-    expect(goal.etaSeconds).toBeNull();
+    for (const r of Object.keys(state.resources)) state.resources[r] = new Decimal('1e9');
+    expect(allGoals(state, content).some((g) => g.id.startsWith('tier_up:'))).toBe(false);
   });
 
   it('has no tier-up goal below the level cap', () => {

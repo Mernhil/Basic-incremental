@@ -11,7 +11,7 @@ import { RANK_TIERS, type Content, type RankTier } from '../data';
 import { grantAccountXp, settleAccount } from './account';
 import { settleAchievements } from './achievements';
 import { settleQuests } from './quests';
-import { cardTopTier, levelCap } from './cards';
+import { cardTier, levelCap } from './cards';
 import { floorCount, initialProgress, stageKey } from './floors';
 import { settleMastery } from './mastery';
 import { collectModifiers } from './modifiers';
@@ -158,13 +158,11 @@ export function devSetCardRank(
   rank: { tier: RankTier; stars: number; level?: number },
 ): DevResult {
   if (!content.cardById.has(cardId)) return fail('unknown');
-  if (!RANK_TIERS.includes(rank.tier)) return fail('invalid');
-  // The Heirloom tier is the fixed tier of the Heirloom cards, and theirs only (DESIGN.md §5).
-  if ((rank.tier === 'heirloom') !== (cardTopTier(content, cardId) === 'heirloom'))
-    return fail('invalid');
+  // A card's tier is its own for good (DESIGN.md §5 No tier-ups): the rank asked for must name it.
+  if (rank.tier !== cardTier(content, cardId)) return fail('invalid');
   if (!Number.isInteger(rank.stars) || rank.stars < 1 || rank.stars > 6) return fail('invalid');
   const next = cloneState(state);
-  const owned = { ...(next.cards.owned[cardId] ?? newOwnedCard()) };
+  const owned = { ...(next.cards.owned[cardId] ?? newOwnedCard(rank.tier)) };
   owned.tier = rank.tier;
   owned.stars = rank.stars;
   const cap = levelCap(content, { tier: rank.tier, stars: rank.stars });

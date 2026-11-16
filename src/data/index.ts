@@ -1,4 +1,12 @@
-import { COSMETIC_SLOTS, JOBS, RANK_TIERS, RARITIES, contentSchemas } from './schemas';
+import {
+  COSMETIC_SLOTS,
+  ITEM_KINDS,
+  JOBS,
+  RANK_TIERS,
+  RARITIES,
+  cardStyle,
+  contentSchemas,
+} from './schemas';
 import type {
   AscensionChallenge,
   Batch,
@@ -45,7 +53,6 @@ import type {
   WeaponSkinSet,
   ItemsData,
   ItemType,
-  RankTier,
   Skill,
   SkillsConfig,
 } from './schemas';
@@ -818,7 +825,8 @@ function checkCosmeticSources(
   });
   const rarityOf = new Map<string, Rarity>([
     ...c.cosmetics.map((x) => [x.id, x.rarity] as const),
-    ...c.cards.map((x) => [x.id, x.rarity] as const),
+    // a card portal lists a card at its grade, which the portal reads as that grade's style
+    ...c.cards.map((x) => [x.id, cardStyle(x)] as const),
   ]);
   c.portals.forEach((p, i) =>
     p.pool.forEach((e, j) => {
@@ -985,12 +993,29 @@ function checkPrestige(
   );
 }
 
-/** Resource kinds card upgrades may cost: gems and dungeon / trial materials (DESIGN.md §5). */
-const UPGRADE_KINDS: readonly Resource['kind'][] = ['tree_gem', 'mine_gem', 'material'];
-
 /** Start cards, star-up and tier-up materials must exist; start cards lead distinct jobs. */
 function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issues: string[]): void {
-  const resources = new Map(c.resources.map((r) => [r.id, r]));
+  // Roster by tier (DESIGN.md §5 Roster): from Wood to Prismatic every weapon type has exactly one
+  // card per tier; a side is on T6 and Heirloom cards and only on them.
+  for (const kind of ITEM_KINDS) {
+    for (const tier of RANK_TIERS.slice(0, 5)) {
+      const n = c.cards.filter((x) => x.item.kind === kind && x.tier === tier).length;
+      if (n !== 1) issues.push(`cards.json: ${n} ${tier} cards for ${kind}, needs exactly 1`);
+    }
+  }
+  for (const card of c.cards) {
+    const top = card.tier === 'mythic' || card.tier === 'heirloom';
+    if (top !== (card.side !== undefined)) {
+      issues.push(
+        `cards.json › ${card.id} › side: T6 and Heirloom cards have a side, no other card has one`,
+      );
+    }
+    if ((card.heirloom === true) !== (card.tier === 'heirloom')) {
+      issues.push(
+        `cards.json › ${card.id} › tier: an Heirloom card, and only one, is at the heirloom tier`,
+      );
+    }
+  }
   const cards = new Map(c.cards.map((x) => [x.id, x]));
   const jobs = new Set<string>();
   // A worker ability acts on its own place: the game adds the place, data never names one.
@@ -1016,48 +1041,12 @@ function checkCards(c: Pick<Content, 'resources' | 'cards' | 'cardRules'>, issue
     if (jobs.has(card.job)) issues.push(`${where}: a start card already leads ${card.job}`);
     jobs.add(card.job);
   });
-  const checkResource = (where: string, id: string): void => {
-    const res = resources.get(id);
-    if (!res) issues.push(`${where}: unknown resource "${id}"`);
-    else if (id !== 'money' && !UPGRADE_KINDS.includes(res.kind)) {
-      issues.push(
-        `${where}: "${id}" is ${res.kind}, card upgrades use Money, gems and materials only`,
-      );
-    }
-  };
-  // Every card upgrade of every job mixes both production loops with a dungeon material
-  // (DESIGN.md §5): a tree gem, a mine gem and a Core.
-  const checkMix = (where: string, ids: string[]): void => {
-    const kinds = new Set(ids.map((id) => resources.get(id)?.kind));
-    for (const kind of ['tree_gem', 'mine_gem', 'material'] as const) {
-      if (!kinds.has(kind)) issues.push(`${where}: needs a ${kind} among its costs`);
-    }
-  };
   RANK_TIERS.forEach((tier, i) => {
     const before = RANK_TIERS[i - 1];
     if (before && c.cardRules.levelCaps[tier] < c.cardRules.levelCaps[before]) {
       issues.push(`cardRules.json › levelCaps › ${tier}: caps must not go down`);
     }
   });
-  // Tier-ups run Wood → … → Mythic/Void; Mythic/Void and the Heirloom tier have no next step.
-  for (const tier of RANK_TIERS.slice(0, -2) as Exclude<RankTier, 'mythic' | 'heirloom'>[]) {
-    for (const job of JOBS) {
-      const costs = c.cardRules.tierUp[tier][job];
-      if (!costs.some((x) => x.resource === 'money')) {
-        issues.push(`cardRules.json › tierUp › ${tier} › ${job}: needs a Money cost`);
-      }
-      costs.forEach((cost, i) =>
-        checkResource(
-          `cardRules.json › tierUp › ${tier} › ${job} › [${i}] › resource`,
-          cost.resource,
-        ),
-      );
-      checkMix(
-        `cardRules.json › tierUp › ${tier} › ${job}`,
-        costs.map((x) => x.resource),
-      );
-    }
-  }
 }
 
 /** Every item type is listed once and matches its job; every card carries a listed type of its own job. */
@@ -1105,10 +1094,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
         if (!card.heirloom) claim(card.heirloomName, `${where} › heirloomName`);
         else claim(card.name, `${where} › name`);
       }
-      if (!card.heirloom && card.rarity !== 'mythic' && card.rarity !== 'void') {
-        issues.push(`${where} › batch: only a Mythic or Void card has its own weapon`);
+      if (!card.heirloom && card.tier !== 'mythic') {
+        issues.push(`${where} › batch: only a T6 card has its own weapon`);
       }
-      const picture = `${card.item.kind}/${card.rarity}/${card.batch}/${card.heirloom ? 'h' : 't6'}`;
+      const picture = `${card.item.kind}/${card.side}/${card.batch}/${card.heirloom ? 'h' : 't6'}`;
       if (pictures.has(picture)) issues.push(`${where} › batch: "${picture}" is used twice`);
       pictures.add(picture);
       return;
@@ -1121,10 +1110,10 @@ function checkItems(c: Pick<Content, 'cards' | 'items'>, issues: string[]): void
       issues.push(`${where}: heirloomArt and heirloomName go together`);
       return;
     }
-    if (card.rarity !== 'mythic' && card.rarity !== 'void') {
-      issues.push(`${where} › heirloomArt: only a Mythic or Void card has its own Heirloom`);
+    if (card.tier !== 'mythic') {
+      issues.push(`${where} › heirloomArt: only a T6 card has its own weapon`);
     }
-    const picture = `${card.item.kind}/${card.rarity}/${card.heirloomArt}`;
+    const picture = `${card.item.kind}/${card.side}/${card.heirloomArt}`;
     if (pictures.has(picture)) issues.push(`${where} › heirloomArt: "${picture}" is used twice`);
     pictures.add(picture);
     claim(card.heirloomName, `${where} › heirloomName`);
@@ -1162,8 +1151,8 @@ function checkHeirlooms(
   }
   const pooled = new Set(c.portals.flatMap((p) => p.pool.map((e) => e.itemId)));
   for (const card of heirloomCards) {
-    if (card.rarity !== 'mythic' && card.rarity !== 'void') {
-      issues.push(`cards.json › ${card.id} › rarity: an Heirloom is Mythic or Void`);
+    if (card.tier !== 'heirloom') {
+      issues.push(`cards.json › ${card.id} › tier: an Heirloom card is at the heirloom tier`);
     }
     if (pooled.has(card.id)) issues.push(`portals.json: Heirloom card "${card.id}" is in a pool`);
     if (!c.enhancements.cards[card.id]) {

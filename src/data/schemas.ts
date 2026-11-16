@@ -174,6 +174,43 @@ export const RARITIES = [
   'void',
 ] as const;
 export type Rarity = (typeof RARITIES)[number];
+
+/**
+ * A card's grade (DESIGN.md §5 The tier is the rarity): its tier, with T6 split into its two sides
+ * (`mythic` the heroic side, `void` the villain side). It is what Summon rolls, what the wishlist
+ * and the odds group by, and what a card's colour follows. An Heirloom card has its side's grade.
+ * Cards have no rarity; cosmetics and legacy skins keep theirs.
+ */
+export const CARD_GRADES = [
+  'wood',
+  'bronze',
+  'silver',
+  'gold',
+  'prismatic',
+  'mythic',
+  'void',
+] as const;
+export type CardGrade = (typeof CARD_GRADES)[number];
+/** The side of a T6 or Heirloom card. */
+export type CardSide = 'mythic' | 'void';
+
+/** The grade of a card: its tier, or its side at T6 and as an Heirloom. */
+export const cardGrade = (card: { tier: string; side?: CardSide }): CardGrade =>
+  card.tier === 'mythic' || card.tier === 'heirloom'
+    ? (card.side ?? 'mythic')
+    : (card.tier as CardGrade);
+
+/**
+ * The colour style of a grade (DESIGN.md §5 Card colours follow the tier): each card keeps the body
+ * colour it had, so a grade reads the style of rarities.json at the same step of the ladder
+ * (Wood the first, Bronze the second, ... the Void side the last).
+ */
+export const gradeStyle = (grade: CardGrade): Rarity => RARITIES[CARD_GRADES.indexOf(grade)]!;
+/** The colour style of a card (see gradeStyle). */
+export const cardStyle = (card: { tier: string; side?: CardSide }): Rarity =>
+  gradeStyle(cardGrade(card));
+/** The grade a colour style stands for on a card portal (the reverse of gradeStyle). */
+export const styleGrade = (style: Rarity): CardGrade => CARD_GRADES[RARITIES.indexOf(style)]!;
 export type Job = (typeof JOBS)[number];
 
 const positiveNumber = z.number().positive();
@@ -270,16 +307,15 @@ export const productionSchema = z.strictObject({
       perAscension: z.number().int().min(0),
       perProducer: z.number().int().min(1),
     }),
-    /** A worker's power by rarity; × the card's level, star and tier power (`cardStatPower`) it
-     *  multiplies its place's output. */
-    rarityPower: z.strictObject({
-      common: positiveNumber,
-      uncommon: positiveNumber,
-      rare: positiveNumber,
-      epic: positiveNumber,
-      legendary: positiveNumber,
+    /** A worker's power by its card's tier (an Heirloom as T6); × the card's level and star power
+     *  (`cardStatPower`) it multiplies its place's output. */
+    tierPower: z.strictObject({
+      wood: positiveNumber,
+      bronze: positiveNumber,
+      silver: positiveNumber,
+      gold: positiveNumber,
+      prismatic: positiveNumber,
       mythic: positiveNumber,
-      void: positiveNumber,
     }),
   }),
 });
@@ -511,7 +547,13 @@ export type ItemsData = z.output<typeof itemsSchema>;
 const cardBase = {
   id,
   name,
-  rarity: z.enum(RARITIES),
+  /**
+   * The card's tier, for good (DESIGN.md §5 No tier-ups): it is pulled at this tier and never
+   * changes it. The tier is the card's rarity.
+   */
+  tier: z.enum(RANK_TIERS),
+  /** The side of a T6 or Heirloom card: Mythic (heroic) or Void (villainous). Only on those. */
+  side: z.enum(['mythic', 'void']).optional(),
   element: z.enum(ELEMENTS),
   /** The item type the card carries (its names per tier come from items.json). */
   item: z.strictObject({ kind: z.enum(ITEM_KINDS) }),
@@ -594,14 +636,6 @@ const perLadderTier = <T extends z.ZodType>(schema: T) =>
     mythic: schema,
   });
 /** One entry per tier that has a next tier: Wood to Prismatic (the ladder ends at Mythic/Void). */
-const perTierUp = <T extends z.ZodType>(schema: T) =>
-  z.strictObject({
-    wood: schema,
-    bronze: schema,
-    silver: schema,
-    gold: schema,
-    prismatic: schema,
-  });
 const perRarity = <T extends z.ZodType>(schema: T) =>
   z.strictObject({
     common: schema,
@@ -624,16 +658,29 @@ const weaponFactorSchema = z.strictObject({
 export const cardRulesSchema = z.strictObject({
   /** Cards a new game owns at Bronze ★1 Lv 1, each leading its job (at most one per job). */
   startCards: z.array(id),
-  /** Loadout cost of a card, by rarity (11.4). */
-  cost: perRarity(count),
-  /** Loadout cost of an Heirloom card (DESIGN.md §5 An Heirloom card), in place of its rarity's. */
+  /** Loadout cost of a card, by its tier (11.4). */
+  cost: perLadderTier(count),
+  /** Loadout cost of an Heirloom card (DESIGN.md §5 An Heirloom card), in place of a tier's. */
   heirloomCost: count,
   /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
   costCap: z.strictObject({ base: count, perLevel: count }),
   /** Level cap of each tier (Heirloom 140); stars do not change it (DESIGN.md §5). */
   levelCaps: perTier(z.number().int().min(1)),
   /** XP from level L to L + 1 = base × growth^(L − 1). */
-  xpCurve: z.strictObject({ base: positiveDecimal, growth: atLeastOne }),
+  xpCurve: z.strictObject({
+    base: positiveDecimal,
+    growth: atLeastOne,
+    /** The XP need of the levels that carry a card onto the next tier's power step (the
+     *  `power.tierStepLevels` levels from a tier's level cap on) is multiplied by this, keyed by the
+     *  tier whose cap is passed (DESIGN.md §5 Strength comes with the card's levels). */
+    stepWall: z.strictObject({
+      wood: atLeastOne,
+      bronze: atLeastOne,
+      silver: atLeastOne,
+      gold: atLeastOne,
+      prismatic: atLeastOne,
+    }),
+  }),
   /**
    * Fighting cards (DESIGN.md §5): XP per second fought (not while knocked out) = perSecond ×
    * tierGrowth^(dungeon tier − 1), plus XP per boss kill = perKill × tierGrowth^(dungeon tier −
@@ -663,6 +710,9 @@ export const cardRulesSchema = z.strictObject({
      * Tier multiplier of base damage and health (and worker power), DESIGN.md §5 Tier: a step at
      * least as big as ★6 over ★1, so a tier-up that restarts the stars never weakens the card.
      */
+    /** Levels over which a card gains the step to the next tier after passing that tier's level
+     *  cap (DESIGN.md §5 Strength comes with the card's levels). */
+    tierStepLevels: z.number().int().min(1),
     statTier: perTier(z.number().positive()),
   }),
   /**
@@ -672,28 +722,21 @@ export const cardRulesSchema = z.strictObject({
    */
   abilityGrowth: perJob(z.array(modifierSchema)),
   /**
-   * The star bar (DESIGN.md §5): each duplicate adds `fillPerDuplicate` (by rarity) to the card's
-   * saved fill. A star takes `needs[rarity][tier]` copies of it, the same for all five stars of
-   * that tier: a fraction at low tiers, 1 at the rarity's top tier. Star dust pays for the missing
-   * part: `dust[rarity][tier]` is the dust price of one whole copy.
+   * The star bar (DESIGN.md §5): each duplicate adds one copy to the card's saved fill and a star
+   * takes one copy, at every tier. Star dust pays for the missing part: `dust[tier]` is the dust
+   * price of one whole copy.
    */
   starBar: z.strictObject({
-    fillPerDuplicate: perRarity(z.number().positive()),
-    needs: perRarity(perLadderTier(z.number().positive())),
-    dust: perRarity(perLadderTier(z.number().positive())),
+    dust: perLadderTier(z.number().positive()),
   }),
-  /** Tier-up (to the next tier, stars kept), keyed by the tier being left, per job: Money plus
-   *  the tier's Core, tree and mine gems (and Frost Sigils at Gold and Prismatic). The card must
-   *  be at its level cap. There is no step after Mythic/Void (DESIGN.md §5 Tier). */
-  tierUp: perTierUp(perJob(z.array(costSchema).min(1))),
-  /** Base health of a card by rarity, multiplied by its power (DESIGN.md §6). The fighting
+  /** Base health of a card by its tier (an Heirloom as T6), multiplied by its power (DESIGN.md §6). The fighting
    *  loadout's health pool sums its cards. */
-  health: perRarity(positiveDecimal),
+  health: perLadderTier(positiveDecimal),
   /**
-   * Base damage per second of a card by rarity (DESIGN.md §5), with the same ratios as health.
+   * Base damage per second of a card by its tier (DESIGN.md §5), with the same ratios as health.
    * Fighting damage is the main card's base damage × its power, then the modifiers.
    */
-  baseDamage: perRarity(positiveDecimal),
+  baseDamage: perLadderTier(positiveDecimal),
   /**
    * Weapon identities (DESIGN.md §5): each fighting type's factor on a card's base damage and
    * base health. The signature, gauge and crit parts of an identity are on the cards' main
@@ -722,8 +765,8 @@ export const cardRulesSchema = z.strictObject({
     staff: weaponFactorSchema,
     scythe: weaponFactorSchema,
   }),
-  /** Shards for a duplicate gained past ★6, by rarity. */
-  shards: perRarity(count),
+  /** Shards for a duplicate gained past ★6, by the card's tier. */
+  shards: perLadderTier(count),
 });
 
 /** Boss drawings (DESIGN.md §12: sticker style, a distinct body shape each). */
@@ -938,7 +981,6 @@ export const GOAL_KINDS = [
   /** A card's star bar is part full (DESIGN.md §5). */
   'star_up',
   /** A card at its level cap is short of Money or materials for its tier-up. */
-  'tier_up',
   /** The next ascension: progress = Starlight gain / the minimum (DESIGN.md §9). */
   'ascension',
   /** The cheapest next level of a tool line (DESIGN.md §4 Tool lines). */
@@ -1412,7 +1454,7 @@ export const PORTAL_KINDS = ['cards', 'cosmetics', 'skins'] as const;
  * A summon portal (DESIGN.md §7, "Beta portals"). Every portal offers a single pull and a
  * 10-pull; prices go through `cost.multiplier` (scope: portal, resource).
  */
-export const portalSchema = z.strictObject({
+const portalFileSchema = z.strictObject({
   id,
   name,
   kind: z.enum(PORTAL_KINDS),
@@ -1423,16 +1465,23 @@ export const portalSchema = z.strictObject({
     .array(
       z.strictObject({
         itemId: skinArtId,
-        rarity: z.enum(RARITIES),
+        /** A cosmetic or skin: its rarity. */
+        rarity: z.enum(RARITIES).optional(),
+        /** A card: its grade (its tier, or its side at T6). */
+        tier: z.enum(CARD_GRADES).optional(),
         weight: z.number().positive(),
       }),
     )
     .min(1),
   /** Hard pity: after `threshold - 1` pulls without this rarity or better, the next one is it
    *  (`summon.pityThreshold`, scope: portal). Counted per portal, kept through prestige. */
-  pity: z.strictObject({ rarity: z.enum(RARITIES), threshold: z.number().int().min(1) }),
+  pity: z.strictObject({
+    rarity: z.enum(RARITIES).optional(),
+    tier: z.enum(CARD_GRADES).optional(),
+    threshold: z.number().int().min(1),
+  }),
   /** Every 10-pull holds at least one item of this rarity or better. */
-  tenPullGuarantee: z.enum(RARITIES),
+  tenPullGuarantee: z.enum([...RARITIES, ...CARD_GRADES]),
   /** Reveal: chance that a result above the lowest rarity shows an orb one rarity lower first,
    *  then flashes up to its own colour. */
   reveal: z.strictObject({ upgradeFlashChance: z.number().min(0).max(1) }),
@@ -1442,9 +1491,56 @@ export const portalSchema = z.strictObject({
   /** Skin portals: a skin you already own pays back this fraction of a single pull's price (in the
    *  portal resource). Ignored by other kinds. */
   duplicatePayback: z.number().min(0).max(1).default(0.2),
-  /** Card portals: how many cards of each rarity can be marked on the wishlist (DESIGN.md §7).
-   *  0 = no wishlist (the other kinds). */
-  wishlistPerRarity: z.number().int().min(0).default(0),
+  /** Card portals: how many cards of each tier (at T6, of each side) can be marked on the
+   *  wishlist (DESIGN.md §7). 0 = no wishlist (the other kinds). */
+  wishlistPerTier: z.number().int().min(0).default(0),
+});
+
+/**
+ * A portal as the game reads it. The file names a card portal's steps by tier (`tier` on the pool
+ * entries and the pity, a tier as the 10-pull guarantee) and the cosmetic portals' by rarity; here
+ * both become one ladder key, `rarity`: for a card portal it is the colour style of the grade
+ * (`gradeStyle`: Wood the first step ... the Void side the last), so the summon engine, the reveal
+ * and the colours work on one ladder. `styleGrade` gives a card portal's grade back.
+ */
+export const portalSchema = portalFileSchema.transform((p, ctx) => {
+  const cards = p.kind === 'cards';
+  const step = (
+    where: string,
+    v: { rarity?: Rarity | undefined; tier?: CardGrade | undefined },
+  ): Rarity => {
+    if (
+      cards
+        ? v.tier === undefined || v.rarity !== undefined
+        : v.rarity === undefined || v.tier !== undefined
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `${where}: a card portal names a tier, any other portal a rarity`,
+      });
+      return 'common';
+    }
+    return cards ? gradeStyle(v.tier!) : v.rarity!;
+  };
+  const guarantee = p.tenPullGuarantee;
+  const isGrade = (CARD_GRADES as readonly string[]).includes(guarantee);
+  const isRarity = (RARITIES as readonly string[]).includes(guarantee);
+  if (cards ? !isGrade : !isRarity) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'tenPullGuarantee: a card portal names a tier, any other portal a rarity',
+    });
+  }
+  return {
+    ...p,
+    pool: p.pool.map((e, i) => ({
+      itemId: e.itemId,
+      weight: e.weight,
+      rarity: step(`pool › [${i}]`, e),
+    })),
+    pity: { rarity: step('pity', p.pity), threshold: p.pity.threshold },
+    tenPullGuarantee: cards ? gradeStyle(guarantee as CardGrade) : (guarantee as Rarity),
+  };
 });
 
 /**
@@ -1608,7 +1704,7 @@ export const questConditionSchema = z.union([
     floor: z.number().int().min(1),
   }),
   z.strictObject({ kind: z.literal('cards_owned'), amount: z.number().int().min(1) }),
-  z.strictObject({ kind: z.literal('rarity_owned'), rarity: z.enum(RARITIES) }),
+  z.strictObject({ kind: z.literal('grade_owned'), grade: z.enum(CARD_GRADES) }),
   z.strictObject({ kind: z.literal('card_level'), level: z.number().int().min(2) }),
   z.strictObject({ kind: z.literal('account_level'), level: z.number().int().min(2) }),
   z.strictObject({ kind: z.literal('training_levels'), amount: z.number().int().min(1) }),
@@ -2242,8 +2338,8 @@ export type ExpeditionsConfig = z.output<typeof expeditionsSchema>;
 export const CHALLENGE_RESTRICTIONS = [
   /** The fighting loadout's supports give no effect and no health. */
   'first_card_only',
-  /** Only Common cards count in the fighting loadout (effects, health, and the main's damage). */
-  'commons_only',
+  /** Only Wood cards count in the fighting loadout (effects, health, and the main's damage). */
+  'wood_only',
   /** Training gives nothing. */
   'no_training',
   /** Only one worker works. */

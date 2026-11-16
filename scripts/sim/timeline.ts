@@ -8,7 +8,6 @@ import {
   averageDps,
   ascensionPreview,
   collectModifiers,
-  tierUpCheck,
   Decimal,
   productionPerSecond,
   secondsPerKill,
@@ -16,7 +15,7 @@ import {
   type GameState,
   formatShort,
 } from '../../src/game';
-import { holdAscension, runSim } from './sim';
+import { runSim } from './sim';
 
 function arg(name: string, fallback: number): number {
   const i = process.argv.indexOf(`--${name}`);
@@ -60,23 +59,17 @@ function row(state: GameState, t: number): string {
       .sort((a, b) => b[1].level - a[1].level)[0];
     return c ? `${c[1].tier[0]}${c[1].stars}L${c[1].level}` : '-';
   };
-  const unmet = main
-    ? (tierUpCheck(state, content, main, modifiers)?.requirements ?? [])
-        .filter((r) => !r.met)
-        .map((r) => `${r.resource ?? r.kind} ${sci(r.have)}/${sci(r.need)}`)
-        .join(', ')
-    : '';
   return [
     `${(t / 3600).toFixed(2)}h`,
     `fight=${state.activeDungeonId?.slice(0, 5) ?? '-'}`,
-    `lead=${lead} [next tier-up lacks: ${unmet || 'nothing'}]`,
+    `lead=${lead}`,
     `dps=${sci(averageDps(state, content, 'mossy_cellar', modifiers))}`,
     dungeons,
     `money=${sci(state.resources['money'] ?? 0)} scrolls=${sci(state.resources['summon_scroll'] ?? 0)}/${sci(state.resources['glamour_scroll'] ?? 0)} kills=${state.stats.bossKills}`,
     `prod/s[${prod}]`,
     `lv(tree/mine)=${levels}`,
     `cards=${cards.length} best(f/l/m)=${best('fighting')}/${best('logging')}/${best('mining')}`,
-    `starlight+${sci(ascensionPreview(state, content).gain)} hold=${holdAscension(state, content)}`,
+    `starlight+${sci(ascensionPreview(state, content).gain)}`,
     `acct=${state.account.level} asc=${state.prestigeCount} pulls=${Object.values(state.portals).reduce((a, p) => a + p.pulls, 0)} top=${cards
       .sort((a, b) => b.stars - a.stars || b.level - a.level)
       .slice(0, 4)

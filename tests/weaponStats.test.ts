@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cardInfo, cardStats, levelCap, newOwnedCard } from '../src/game';
+import { cardInfo, cardStats, newOwnedCard } from '../src/game';
 import { weaponView } from '../src/renderer/src/pages/weaponModel';
 import { fmt } from '../src/renderer/src/settings/numberFormat';
 import { content, freshState } from './helpers';
@@ -23,17 +23,14 @@ describe('what the weapon panel upgrades change', () => {
     expect(w.starStats[0]!.after).not.toBe(w.starStats[0]!.now);
   });
 
-  it('lists damage, health, level cap and look for the tier-up', () => {
+  it('lists no tier-up: the panel has only the note that the tier is for good', () => {
     const state = freshState();
-    state.cards.owned['storm_duelist'] = { ...newOwnedCard(), stars: 6, level: 20 };
+    state.cards.owned['storm_duelist'] = { ...newOwnedCard('gold'), stars: 6, level: 80 };
     const info = cardInfo(state, content, 'storm_duelist')!;
     const w = weaponView(content, info)!;
-    expect(w.tierUp).not.toBeNull();
-    const rows = w.tierUp!.stats;
-    expect(rows.map((r) => r.label)).toEqual(['Damage / s', 'Health', 'Level cap', 'Look']);
-    const cap = rows.find((r) => r.label === 'Level cap')!;
-    expect(cap.now).toBe(String(info.levelCap));
-    expect(cap.after).toBe(String(levelCap(content, info.tierUp!.to!)));
+    expect('tierUp' in w).toBe(false);
+    expect(w.tierName).toBe('Gold');
+    expect(w.endNote).toBe('A Gold weapon, for good. Weapons of other tiers come from Summon.');
   });
 
   it('lists no star change at ★6', () => {

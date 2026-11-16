@@ -100,7 +100,7 @@ export function isRestricted(
 
 /**
  * Fighting loadout cards that count for nothing in the run: every card but the first one (left to
- * right) under Lone Wolf, every card but Commons under Common Folk. They do not fight: their
+ * right) under Lone Wolf, every card but Wood cards under Common Folk. They do not fight: their
  * ability, team bonus, health and damage are gone (DESIGN.md §14 Challenges).
  */
 export function challengeExcludedCards(state: GameState, content: Content): string[] {
@@ -109,12 +109,12 @@ export function challengeExcludedCards(state: GameState, content: Content): stri
   const slots = state.cards.loadouts.fighting.slots;
   const first = slots.find((id) => id !== null) ?? null;
   const out: string[] = [];
-  const common = (id: string): boolean => content.cardById.get(id)?.rarity === 'common';
+  const wood = (id: string): boolean => content.cardById.get(id)?.tier === 'wood';
   for (const id of slots) {
     if (id === null) continue;
     if (
       (restrictions.has('first_card_only') && id !== first) ||
-      (restrictions.has('commons_only') && !common(id))
+      (restrictions.has('wood_only') && !wood(id))
     ) {
       out.push(id);
     }
