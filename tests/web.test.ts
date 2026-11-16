@@ -8,7 +8,7 @@ import {
   webNextCost,
   type GameState,
 } from '../src/game';
-import { content, freshState } from './helpers';
+import { content, freshState, levelPointsOnly } from './helpers';
 
 const rich = (points = 100): GameState => {
   const s = freshState();
@@ -40,9 +40,10 @@ describe('buying in the skill web (DESIGN.md §10 The skill web)', () => {
     expect(buyWebNode(s2, content, 'lg_groves')).toEqual({ ok: false, reason: 'closed' });
     s2.prestigeCount = 1;
     expect(buyWebNode(s2, content, 'lg_groves').ok).toBe(true);
-    const poor = rich(1);
-    poor.account.web = {};
-    expect(buyWebNode(poor, content, 'lg_saws')).toEqual({ ok: false, reason: 'no-points' });
+    const lp = levelPointsOnly(content);
+    const poor = freshState();
+    poor.account.level = 2;
+    expect(buyWebNode(poor, lp, 'lg_saws')).toEqual({ ok: false, reason: 'no-points' });
     const max = rich(500);
     max.account.web = { lg_saws: content.webNodeById.get('lg_saws')!.maxLevel };
     expect(buyWebNode(max, content, 'lg_saws')).toEqual({ ok: false, reason: 'maxed' });

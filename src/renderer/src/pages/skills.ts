@@ -1,5 +1,6 @@
 import {
   buySkill,
+  buyWebNode,
   collectModifiers,
   respecInfo,
   respecSkills,
@@ -16,7 +17,7 @@ import { nodeStyle, skillGem } from '../ui/skillArt';
 import { glyphSvg } from '../ui/webGlyphs';
 import { createHeirloomsTab } from './heirloomsMap';
 import type { PageContext } from './production';
-import { webSpent, webView } from './webModel';
+import { webView } from './webModel';
 import {
   AREA_COLOUR,
   CENTRE,
@@ -111,7 +112,8 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       skillPoints(s, content),
       weaponCircles(s, content),
     );
-    const free = Math.max(0, old.points.available - webSpent(content, s.account.web));
+    // the points already count the web's levels (`skillPoints`), so what is left is what to spend
+    const free = old.points.available;
     const w = webView(content, s, free);
     const circleNodes = old.nodes
       .filter((n) => n.circle)
@@ -164,12 +166,9 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
   }
 
   function buy(id: string): void {
-    // buying a level of the web is built after the user has seen the web (docs/plans/skill-web.md)
-    if (content.webNodeById.has(id)) {
-      say(t.webSoon);
-      return;
-    }
-    const result = buySkill(ctx.state(), content, id);
+    const result = content.webNodeById.has(id)
+      ? buyWebNode(ctx.state(), content, id)
+      : buySkill(ctx.state(), content, id);
     if (!result.ok) {
       say(t.reasons[result.reason]);
       return;
@@ -217,14 +216,18 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
       // every skill in view, with its "?" neighbours, inside the safe area: under the tab strip and
       // the count box, over the legend and the zoom buttons, clear of the frame (a plate and its
       // name add about 60 units around the outermost skills)
-      const top = 112;
-      const bottom = 74;
+      // a small window: the web is a column down the middle, so it may use the whole height and sits
+      // right of the tab strip and above nothing (the legend is narrow there)
+      const narrow = rect.width < 1000;
+      const top = narrow ? 18 : 112;
+      const bottom = narrow ? 18 : 74;
       const w = focus.x1 - focus.x0 + 130;
       const hgt = focus.y1 - focus.y0 + 150;
       camera.scale = clampScale(
         Math.min(START_SCALE, (rect.width - 48) / w, (rect.height - top - bottom) / hgt),
       );
-      camera.x = rect.width / 2 - ((focus.x0 + focus.x1) / 2 - SKY.x) * camera.scale;
+      camera.x =
+        rect.width / 2 + (narrow ? 90 : 0) - ((focus.x0 + focus.x1) / 2 - SKY.x) * camera.scale;
       camera.y =
         top + (rect.height - top - bottom) / 2 - ((focus.y0 + focus.y1) / 2 - SKY.y) * camera.scale;
       camera.placed = true;

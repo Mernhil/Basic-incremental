@@ -1,5 +1,5 @@
 import type { Content, WebArm, WebNode } from '../../../data';
-import { Decimal, type GameState } from '../../../game';
+import { webNextCost, webSpentPoints, type GameState } from '../../../game';
 import { COPY } from '../copy';
 import { effectText } from '../shell/modifierText';
 import { statGlyph } from '../ui/webGlyphs';
@@ -34,21 +34,11 @@ export function webPositions(content: Content): Map<string, Pt> {
   return out;
 }
 
-/** The skill-point price of the next level of a node that has `level` (a node's `cost` object). */
-export function nextLevelCost(node: WebNode, level: number): number {
-  return Math.round(
-    new Decimal(node.cost.base).mul(Decimal.pow(node.cost.growth, level)).toNumber(),
-  );
-}
+/** The skill-point price of the next level of a node that has `level` (the node's `cost` object). */
+export const nextLevelCost = webNextCost;
 
 /** Skill points the web's levels have taken so far. */
-export function webSpent(content: Content, levels: Readonly<Record<string, number>>): number {
-  let sum = 0;
-  for (const n of content.web.nodes) {
-    for (let l = 0; l < (levels[n.id] ?? 0); l++) sum += nextLevelCost(n, l);
-  }
-  return sum;
-}
+export const webSpent = webSpentPoints;
 
 const ARM_NAME: Record<WebArm, string> = {
   logging: COPY.skills.areas.logging,

@@ -462,3 +462,9 @@
 .sk-sky.is-far .sk-node__rank {
   display: none;
 }
+
+@media (max-width: 1400px) {
+  .sk-legend {
+    max-width: 300px;
+  }
+}
