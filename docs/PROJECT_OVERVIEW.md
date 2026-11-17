@@ -116,6 +116,10 @@ Windows desktop game, Electron + TypeScript, built with electron-vite; tests are
 
 `main/index.ts` (window, IPC), `saves.ts` and `saveStore.ts` (save files, autosave, final save before close), `updater.ts` (auto-update on launch, DESIGN §2), `fileLogger.ts` and `logTail.ts` (logs and the Report-an-issue text), `devPaths.ts` (dev profiles), `devMode.ts` (whether dev cheats are on: unpackaged or the local dev build, never the public release), `buildFlag.ts`. `preload/api.ts` defines `window.api`.
 
+## Web build (`vite.web.config.ts`, `src/renderer/src/web/`, `scripts/serve-web.mjs`)
+
+The phone / browser version (DESIGN §2 Web build): `npm run build:web` builds the same renderer entry with a relative base into `out-web/` (git-ignored, `__BI_DEV_BUILD__` false, `__BI_WEB_VERSION__` from `package.json`); `npm run serve:web` builds it, serves it on `0.0.0.0` (port 5174, `--port=N`, `--no-build`) and prints the PC's Wi-Fi addresses. `main.ts` calls `installBrowserApi()` (`web/installBrowserApi.ts`), which does nothing when the Electron preload already set `window.api`; otherwise `web/browserApi.ts` `createBrowserApi` implements the same `AppApi`: saves through `web/webSaveStore.ts` (`localStorage` keys `bi:save`, `bi:save.bak`, `bi:save.corrupt`; the twin of `main/saveStore.ts`, same backup-only-if-valid-JSON rule, the text untouched so `loadBestSave` and the migrations run as on desktop), the version from `package.json`, no updater, dev cheats off, and the flush request fired on `pagehide` and when the page becomes hidden. A refused write (full storage) rejects, so the save toast shows. The layout is the desktop one, untouched. Tests: `tests/webSaveStore.test.ts`.
+
 ## Renderer (`src/renderer/src`)
 
 ### App shell

@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "npm run typecheck && electron-vite build && node scripts/check-release-bundle.mjs out",
+    "build:web": "vite build --config vite.web.config.ts",
+    "serve:web": "node scripts/serve-web.mjs",
     "preview": "electron-vite preview",
     "test": "vitest run",
     "lint": "eslint . && prettier --check . && node scripts/check-design.mjs && node scripts/check-workflow.mjs",

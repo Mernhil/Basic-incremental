@@ -28,5 +28,7 @@ design/app-screens/production-*.png
 # Local-only dev build (the local dev build): never committed, never uploaded
 release-dev/
 out-dev/
+# the phone / browser build (npm run build:web)
+out-web/
 # the build recipe itself is kept only on this PC
 local-dev/
