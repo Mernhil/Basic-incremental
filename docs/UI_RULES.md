@@ -10,7 +10,7 @@ Same rules as `docs/DESIGN.md` ("How this document works"): one version of each 
 
 - [Built] **One UI rulebook.** This file is the only document for screens, layout and UI conventions. Art rules are in `docs/ASSET_RULES.md`; the game design is in `docs/DESIGN.md`. Read this file before any UI change.
 - [Built] **Who builds UI.** UI lives in `src/renderer/**` outside the art folders and in `design/**` outside `design/pixel`; the optional `ui` agent (`.claude/agents/ui.md`) can help. Sprites and effects are art (`docs/ASSET_RULES.md`), rules and numbers are in `src/game` and `src/data`. A screen that needs a value the game does not expose yet gets the value added to the game side first (types wanted and why), not a UI-side workaround.
-- [Built] **Five options first.** A design, UI or graphics brainstorm in the Claude Desktop home chat shows the user 5 options that differ in ways that matter (layout, colour, density, motion, ornament) as mockups or screenshots, and the user picks before the final version is built. Small direct jobs in Code need no options. Options are never merged into `main`.
+- [Built] **Options on the picker page.** A choice between pictures is shown on the picker page with two to five options that each differ in layout or in how it works; the user picks before the final version is built, and nothing graphic is merged or released before that (`CLAUDE.md` group 2). Small direct jobs need no options. Options are never merged into `main`.
 - [Built] **Skills.** UI work uses the frontend-design skill and the Design plugin skills (critique, design system, accessibility, UX copy).
 - [Built] **Game data through public entry points.** The renderer imports game code only from `src/game` and `src/data` index files, never from files inside them (ESLint enforces it).
 - [Built] **Adapters, no rules.** Display logic lives in adapters (`pages/*Adapter.ts`, `pages/*Model.ts`) that turn game state into view models. No game rules in the renderer.
@@ -186,6 +186,7 @@ Not decided yet (no rule exists, ask before inventing one): on-screen copy tone 
 
 ## 4. Changelog
 
+- 2026-11-17 — Options (user, rules rewrite): "five options first" becomes two to five options that differ in kind, on the picker page (`CLAUDE.md` group 2).
 - 2026-11-16 — Scroll and focus are kept across updates (user: the UI snapped back to the top): the Cards and Wardrobe rebuilds restore every scroll position; `ui/keepScroll.ts`, `scripts/check-scroll-keep.mjs`.
 - 2026-11-16 — Carved Oak (user: "Replace starter"): the Shell look becomes flat cream panels with carved wood edges and gilded corners, drawn from tiled 9-slice pieces; Plum Pixel stays as a table every save owns; the Weapon panel's XP text moves clear of the ring.
 - 2026-11-14 — Castle Stone withdrawn (user, release 0.7.9 rejected): the Shell look is Plum Pixel's pixel frames again.

@@ -1,21 +1,22 @@
 ---
 name: pixel-art
-description: Pixel art, sprite animation and pixel effects for Basic Incremental, in the cel-shaded Brave Frontier style the game uses. Use this skill for EVERY graphics task, however small - drawing or redrawing any sprite (card items, weapons, frames, gems, coins, tiles, bosses, icons, unique evolutions), animating anything (idle loops, attacks, hits, frame shine, sparkles), element effects, palette or shading tweaks, and reviewing whether existing art follows the pixel rules. Use it even when the request only says "make it look better", "tweak the colour", "fix the sword" or "add an effect".
+description: Pixel art, sprite animation and pixel effects for Basic Incremental, in the cel-shaded Brave Frontier style the game uses. Use this skill for graphics work - drawing or redrawing any sprite (card items, weapons, frames, gems, coins, tiles, bosses, icons, unique evolutions), animating anything (idle loops, attacks, hits, frame shine, sparkles), element effects, palette or shading tweaks, and reviewing whether existing art follows the pixel rules. Use it even when the request only says "make it look better", "tweak the colour", "fix the sword" or "add an effect".
 ---
 
 > **First, read `docs/ASSET_RULES.md`** before generating or changing any art. It holds every art rule: the tier ladder (T1-T6), uniques and skins, the pixel rules, frames, effects, cosmetic art, and what to reuse. `references/` here is drawing technique only.
 
 # Pixel art for Basic Incremental
 
-The game is switching from vector to pixel art (ASSET_RULES.md §5). Your job is to make sprites and animations that look like they came from a polished mobile RPG of the Brave Frontier era: bold readable silhouettes, chunky cel shading, saturated metals, and effects with real weight and timing.
+The weapon sprites now in the game are the style to keep (`CLAUDE.md` rule 10.2). Your job is to make sprites and animations that look like they came from a polished mobile RPG of the Brave Frontier era: bold readable silhouettes, chunky cel shading, saturated metals, and effects with real weight and timing.
 
 ## Order of authority
 
 1. The user's latest instruction.
-2. `docs/ASSET_RULES.md` (all art rules, pixel rules and the list of approved assets). It wins over everything in this skill. Read it at the start of every task; it changes often.
-3. This skill and its references (technique).
+2. `CLAUDE.md` (money, approved art, showing and picking).
+3. `docs/ASSET_RULES.md` (all art rules, pixel rules and the list of approved assets). It wins over everything in this skill. Read it at the start of every task; it changes often.
+4. This skill and its references (technique).
 
-If a technique here conflicts with DESIGN.md (for example Brave Frontier's coloured "sel-out" outlines vs the game's single ink colour), follow DESIGN.md and mention the trade-off when you show options.
+If a technique here conflicts with ASSET_RULES.md, follow ASSET_RULES.md and mention the trade-off when you show options.
 
 ## Before you draw
 
@@ -33,7 +34,7 @@ If a technique here conflicts with DESIGN.md (for example Brave Frontier's colou
 
 ## Workflow for every change
 
-1. **Five options.** Project rule: every visual change shows the user 5 options that differ in ways that matter (silhouette, palette ramp, detail density, motion timing, effect style), on the interactive picker page (`CLAUDE.md`, Workflow; `scripts/art/picker.mjs`), at 1× and at the scale used in game. Put drafts under `design/pixel/<asset>/`, never into `main` as final art. Label each option with what makes it different in one line.
+1. **Options on the picker page.** A choice between pictures is shown on the interactive picker page (`scripts/art/picker.mjs`) with two to five options that differ in kind (`CLAUDE.md` group 2), at 1× and at the scale used in game. A small direct job needs none. Paid generations and changes to approved art need the user's yes first (`CLAUDE.md` group 3). Put drafts under `design/pixel/<asset>/`, never into `main` as final art. Label each option with what makes it different in one line.
 2. **Check before showing.** Export each sprite or frame to PNG and run:
    `python3 .claude/skills/pixel-art/scripts/pixel_check.py <png or folder> [--max-colors N] [--scale S]`
    It flags semi-transparent (anti-aliased) pixels, blurred scaling, orphan pixels, too many colours and outline gaps. Fix every error; warnings need a reason.
