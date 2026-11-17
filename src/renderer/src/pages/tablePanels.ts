@@ -193,7 +193,7 @@ export function createBondsPanel(ctx: PageContext): Panel {
         const names = e.cards
           .map((id) => {
             const def = ctx.content.cardById.get(id);
-            return def ? cardDisplayName(ctx.content, def, s.cards.owned[id]) : id;
+            return def ? cardDisplayName(ctx.content, def) : id;
           })
           .join(' + ');
         li.append(
@@ -355,7 +355,7 @@ export function createExpeditionsPanel(
           TEXT.card,
           v.available.map((c) => ({
             value: c.id,
-            text: `${cardDisplayName(ctx.content, c, s.cards.owned[c.id])} (${c.element})`,
+            text: `${cardDisplayName(ctx.content, c)} (${c.element})`,
           })),
           pickCard,
           (x) => (pickCard = x),

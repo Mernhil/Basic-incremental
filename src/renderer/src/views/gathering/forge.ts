@@ -1,3 +1,4 @@
+import { cardStyle } from '../../../../data';
 import type { Content } from '../../../../data';
 import {
   cardDisplayName,
@@ -260,7 +261,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     const id = forgeWorker(s, content);
     const card = id ? content.cardById.get(id) : undefined;
     const owned = id ? s.cards.owned[id] : undefined;
-    set(workerName, card && owned ? cardDisplayName(content, card, owned) : COPY.forge.noneWorker);
+    set(workerName, card && owned ? cardDisplayName(content, card) : COPY.forge.noneWorker);
     set(
       workerPowerEl,
       card && owned ? T.forgeWorkerPower(fmt(workerPower(content, card.id, owned))) : '',
@@ -270,7 +271,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
       artSig = art;
       workerArt.innerHTML = art;
     }
-    workerArt.dataset['rarity'] = card?.rarity ?? '';
+    workerArt.dataset['rarity'] = card ? cardStyle(card) : '';
     workerArt.classList.toggle('is-empty', !card);
     drawPick(v.workers, id ?? '');
 

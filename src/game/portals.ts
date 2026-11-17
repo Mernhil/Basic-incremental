@@ -18,7 +18,10 @@ export const FOCUS_BASE_PORTAL_ID = 'card_portal';
  * Summon portals (DESIGN.md §7, "Beta portals"): one engine for every portal (the Card Portal now,
  * the Wardrobe Gate with the Wardrobe). A single pull costs `cost.single`, a 10-pull `cost.ten`;
  * every 10-pull holds at least one item of `tenPullGuarantee` or better; hard pity gives the pity
- * rarity or better once `threshold - 1` pulls in a row missed it. Counters are per portal, saved,
+ * rarity or better once `threshold - 1` pulls in a row missed it. A card portal goes by tier
+ * (DESIGN.md §7): its entries, pity and guarantee carry the tier as its ladder step (`rarity`
+ * here is `gradeStyle` of the card's grade, see `portalSchema`), and a pulled card is gained at
+ * its own tier. Counters are per portal, saved,
  * and kept through prestige. Prices go through `cost.multiplier` (scope: portal, resource), the
  * pity threshold through `summon.pityThreshold` (scope: portal).
  */
@@ -169,7 +172,7 @@ function pick(
 
 /** The marked cards of a portal's pool, or null when the portal has no wishlist or none is marked. */
 function wishlistOf(state: GameState, portal: Portal): ReadonlySet<string> | null {
-  if (portal.kind !== 'cards' || portal.wishlistPerRarity <= 0) return null;
+  if (portal.kind !== 'cards' || portal.wishlistPerTier <= 0) return null;
   const marked = new Set(
     state.cards.wishlist.filter((id) => portal.pool.some((e) => e.itemId === id)),
   );
@@ -260,7 +263,7 @@ export type WishlistFailure = 'unknown' | 'full';
 
 /**
  * Marks or unmarks a card of a card portal's pool (DESIGN.md §7 Wishlist). At most
- * `wishlistPerRarity` cards per rarity can be marked; the order marked is kept. Unmarking always
+ * `wishlistPerTier` cards per rarity can be marked; the order marked is kept. Unmarking always
  * works; marking an already marked card changes nothing.
  */
 export function setWishlisted(
@@ -279,7 +282,7 @@ export function setWishlisted(
     const same = state.cards.wishlist.filter(
       (id) => portal.pool.find((e) => e.itemId === id)?.rarity === entry.rarity,
     ).length;
-    if (same >= portal.wishlistPerRarity) return { ok: false, reason: 'full' };
+    if (same >= portal.wishlistPerTier) return { ok: false, reason: 'full' };
   }
   const next = cloneState(state);
   next.cards.wishlist = marked
@@ -307,7 +310,7 @@ export function wishlistView(
   portalId: string,
 ): WishlistInfo | null {
   const portal = content.portals.find((p) => p.id === portalId);
-  if (!portal || portal.kind !== 'cards' || portal.wishlistPerRarity <= 0) return null;
+  if (!portal || portal.kind !== 'cards' || portal.wishlistPerTier <= 0) return null;
   const set = state.cards.wishlist;
   const byRarity = RARITIES.filter((r) => portal.pool.some((e) => e.rarity === r)).map((rarity) => {
     const cards = portal.pool
@@ -315,7 +318,7 @@ export function wishlistView(
       .map((e) => ({ itemId: e.itemId, marked: set.includes(e.itemId) }));
     return {
       rarity,
-      limit: portal.wishlistPerRarity,
+      limit: portal.wishlistPerTier,
       marked: cards.filter((c) => c.marked).length,
       cards,
     };

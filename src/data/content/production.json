@@ -133,14 +133,13 @@
       "perAscension": 1,
       "perProducer": 1
     },
-    "rarityPower": {
-      "common": 1,
-      "uncommon": 1.14,
-      "rare": 1.33,
-      "epic": 1.52,
-      "legendary": 1.77,
-      "mythic": 2.12,
-      "void": 2.12
+    "tierPower": {
+      "wood": 1,
+      "bronze": 1.14,
+      "silver": 1.33,
+      "gold": 1.52,
+      "prismatic": 1.77,
+      "mythic": 2.12
     }
   },
   "forge": {

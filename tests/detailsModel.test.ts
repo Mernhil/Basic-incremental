@@ -59,8 +59,9 @@ describe('details view', () => {
   it('derives what a resource is used for from the data', () => {
     const uses = (id: string) => usedFor(content, content.resourceById.get(id)!);
     expect(uses('oak_gem')).toEqual(expect.arrayContaining(['unlocking Ironbark']));
-    expect(uses('ironbark_gem')).toEqual(expect.arrayContaining(['card tier-ups']));
-    expect(uses('money')).toEqual(expect.arrayContaining(['card tier-ups']));
+    // nothing is spent on tier-ups any more (DESIGN.md §5 No tier-ups)
+    expect(uses('ironbark_gem')).not.toContain('card tier-ups');
+    expect(uses('moss_core')).toEqual([]);
     expect(uses('glimmer_dust')).toContain('cosmetic upgrades');
     expect(uses('starlight')).toContain('the Starlight shop');
     expect(entryOf('oak_gem')!.usedFor.startsWith('Used for ')).toBe(true);

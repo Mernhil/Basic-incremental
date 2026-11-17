@@ -284,6 +284,12 @@ describe('v26 -> v27 (the table update)', () => {
       level: 1,
       copies: 1,
     };
+    // format 39: a card's tier is its own and is no longer saved
+    for (const card of Object.values(
+      (scaled['cards'] as { owned: Record<string, Record<string, unknown>> }).owned,
+    )) {
+      delete card['tier'];
+    }
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.

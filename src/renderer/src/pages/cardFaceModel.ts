@@ -50,6 +50,6 @@ export function cardFaceFor(
   cardId: string,
   mods?: readonly Modifier[],
 ): CardFace | null {
-  const info = cardInfo(state, content, cardId, mods);
+  const info = cardInfo(state, content, cardId);
   return info ? cardFaceOf(content, info, mods) : null;
 }

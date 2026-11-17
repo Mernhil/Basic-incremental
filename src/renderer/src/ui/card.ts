@@ -1,5 +1,5 @@
-import type { Rank, Rarity } from '../../../data';
-import { TIER_LABELS, type ResolvedCard } from '../../../game';
+import { styleGrade, type Rank, type Rarity } from '../../../data';
+import { TIER_LABELS, gradeLabel, type ResolvedCard } from '../../../game';
 import { cardFrame } from '../art/frame';
 import { mountBackdrop } from '../art/backdrop';
 import { sprite } from '../art/pixel/sprites';
@@ -47,7 +47,8 @@ export interface CardProps {
   /** The card's element: its effect plays from Gold (DESIGN.md §12). */
   element?: CardElement;
   rank: Rank;
-  /** The card's rarity: the word on the bottom plate and the colour of its progress bar. */
+  /** The card's colour style, which follows its tier (`cardStyle`): the tier word on the bottom
+   *  plate and the colour of its progress bar. */
   rarity?: Rarity;
   /** The bottom plate. Without it (bosses, placeholders) the plate stays empty. */
   face?: CardFace;
@@ -176,13 +177,14 @@ export function createCard(initial: CardProps): CardView {
       itemSvg.setAttribute('viewBox', full ? FULL_ART_VIEWBOX : ITEM_VIEWBOX);
     }
     if (!p.item) emblem.innerHTML = EMBLEMS[p.emblem] ?? EMBLEMS['gem']!;
-    // the bottom plate (DESIGN.md §5 full-art layout): hit speed, stars, level and rarity, bar; the name is on the top plate only
+    // the bottom plate (DESIGN.md §5 full-art layout): hit speed, stars, level and tier, bar; the name is on the top plate only
     const face = p.face;
     speed.textContent = face?.speed ?? '';
     levelText.textContent = face?.level
       ? COPY.card.levelShort(face.level.value, face.level.cap)
       : '';
-    rarityWord.textContent = p.rarity ? COPY.card.rarity[p.rarity] : '';
+    // the word is the card's tier (DESIGN.md §5 The tier is the rarity); `rarity` is its colour style
+    rarityWord.textContent = p.rarity ? gradeLabel(styleGrade(p.rarity)) : '';
     if (p.rarity) el.dataset['rarity'] = p.rarity;
     else delete el.dataset['rarity'];
     el.classList.toggle('bi-card--face', Boolean(face) && !p.boss);

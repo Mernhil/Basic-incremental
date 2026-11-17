@@ -89,15 +89,6 @@ export const COPY = {
     hitsEvery: (seconds: string) => `hits every ${seconds}`,
     level: (level: number, cap: number) => `Level ${level}/${cap}`,
     levelShort: (level: number, cap: number) => `Lv ${level}/${cap}`,
-    rarity: {
-      common: 'Common',
-      uncommon: 'Uncommon',
-      rare: 'Rare',
-      epic: 'Epic',
-      legendary: 'Legendary',
-      mythic: 'Mythic',
-      void: 'Void',
-    },
   },
   table: {
     /** The dock of piles along the bottom of the table (UI_RULES.md §2). */
@@ -147,7 +138,7 @@ export const COPY = {
       label: 'Cards',
       frame: 'Collection',
       empty:
-        'Your card collection. Every card you find or summon will be listed here with its rarity, rank and level.',
+        'Your card collection. Every card you find or summon will be listed here with its tier, stars and level.',
     },
     production: {
       label: 'Production',
@@ -333,13 +324,13 @@ export const COPY = {
     readyTag: 'Upgrade ready',
     shardsLabel: (n: string) => `Shards ${n}`,
     sort: 'Sort',
-    sortBy: { rarity: 'Rarity', rank: 'Rank', level: 'Level', name: 'Name' },
+    sortBy: { rarity: 'Tier', rank: 'Stars', level: 'Level', name: 'Name' },
     notFound: 'Not found yet',
     tileLabel: (name: string, detail: string) => `${name}, ${detail}`,
     rankText: (tier: string, stars: number) => `${tier} ★${stars}`,
     level: 'Level',
     levelValue: (lv: number, cap: number) => `${lv} / ${cap}`,
-    atCap: 'At its level cap. Tier up to raise it.',
+    atCap: 'At its level cap.',
     toCap: (n: number) => `${n} ${n === 1 ? 'level' : 'levels'} to the cap`,
     /** The Next tier preview under the detail card (UI_RULES §2). */
     preview: {
@@ -415,13 +406,9 @@ export const COPY = {
     changeCard: (slot: string, name: string) => `${slot}: ${name}. Click to change`,
     jobLoadout: (job: string) => `${job} loadout`,
     nextStar: (stars: number, tier: string) => `Next star: ${tier} ★${stars}`,
-    nextTier: (tier: string, stars: number) => `Tier-up to ${tier} ★${stars}`,
     starNote: (multiplier: number) =>
       `Base damage and health ×${multiplier}. Costs only copies of the card.`,
-    tierNote: (tier: string, cap: number) =>
-      `A big power step, a new frame, and the level cap rises to ${cap}. The level carries over; the stars restart at ★1.`,
     addStar: (price: string) => `Add star · ${price}`,
-    tierUp: (price: string) => `Tier up · ${price}`,
     req: {
       level: 'At its level cap',
       levelValue: (have: string, need: string) => `Lv ${have} / ${need}`,
@@ -783,7 +770,7 @@ export const COPY = {
     oddsColumn: { cards: 'Cards', cosmetics: 'Wardrobe', skins: 'Skins' } as Record<string, string>,
     oddsNone: '–',
     oddsNoneLabel: 'not in this portal',
-    oddsTableLabel: 'Odds per pull, by portal and rarity',
+    oddsTableLabel: 'Odds per pull, by portal and by tier or rarity',
     tagNew: 'New',
     noteNewCard: 'New card',
     noteNewItem: 'New item',
@@ -792,7 +779,7 @@ export const COPY = {
       `${pulls} ${pulls === 1 ? 'pull' : 'pulls'} · ${news} new · ${copies} ${copies === 1 ? 'copy' : 'copies'}`,
     wishlistTitle: 'Wishlist',
     wishlistAbout: (n: number) =>
-      `Mark up to ${n} cards per rarity to hunt. A pull of that rarity then lands on one of your marked cards. The chance of each rarity, the price and the pity stay the same.`,
+      `Mark up to ${n} cards per tier to hunt. A pull of that tier then lands on one of your marked cards. The chance of each tier, the price and the pity stay the same.`,
     wishlistRow: (rarity: string, marked: number, limit: number) =>
       `${rarity}: ${marked} of ${limit} marked`,
     wishlistCount: (marked: number, limit: number) => `${marked} / ${limit}`,
@@ -800,15 +787,15 @@ export const COPY = {
       marked
         ? `${name}, marked. Click to unmark`
         : full
-          ? `${name}, not marked. This rarity is full: unmark a card first`
+          ? `${name}, not marked. This tier is full: unmark a card first`
           : `${name}, not marked. Click to mark`,
     wishlistDetail: (name: string, type: string, element: string, job: string) =>
       `${name} · ${type} · ${element} · ${job}`,
     wishlistHover: 'Hover or focus a card to read its name.',
     wishlistHunting: (names: string) => `Hunting: ${names}`,
     wishlistNone: 'No card marked',
-    wishlistFull: 'This rarity has no room left. Unmark a card first.',
-    oddsWishlist: 'Wishlist on: a pull of a rarity with a marked card lands on a marked card.',
+    wishlistFull: 'This tier has no room left. Unmark a card first.',
+    oddsWishlist: 'Wishlist on: a pull of a tier with a marked card lands on a marked card.',
     handTitle: 'Your last hand',
     handEmpty: 'Draw from a deck and the cards you get will wait here.',
     handLabel: (n: number) => `Your last hand, ${n} ${n === 1 ? 'card' : 'cards'}`,
@@ -1069,8 +1056,6 @@ export const COPY = {
     milestone: (n: number) => (n === 1 ? 'Level milestone reached' : `Milestone ${n} reached`),
     tile: (name: string, metal: string) => `${name} grew: ${metal}`,
     tileDetail: 'The tile grows a stage.',
-    cardTier: (card: string, metal: string) => `${card} is now ${metal}`,
-    cardTierDetail: 'A big power step and a new frame.',
     heirloom: (card: string) => `${card} claimed its Heirloom!`,
     heirloomDetail: (item: string) => `It now wields ${item}.`,
     goals: 'Goals',
@@ -1200,7 +1185,7 @@ export const COPY = {
       `Rare drop guaranteed in ${kills} boss ${kills === 1 ? 'kill' : 'kills'}`,
   },
   weapon: {
-    /** The weapon panel (DESIGN.md §5, §11): the ring, the star line and the tier-up tag. */
+    /** The weapon panel (DESIGN.md §5, §11): the ring, the star line and the note under it. */
     panel: (name: string) => `${name} weapon`,
     level: 'LV',
     max: 'MAX',
@@ -1220,28 +1205,20 @@ export const COPY = {
     allStars: 'All six stars',
     impact: (from: number, to: number) => `×${from} → ×${to}`,
     addStar: (next: number) => `Add star ★${next}`,
-    reach: (cap: number) => `Reach Lv ${cap} to tier up. It costs:`,
-    costs: 'It costs:',
-    tierUpTo: (tier: string) => `Tier up to ${tier}`,
-    reveal: (name: string) => `Reveal ${name}`,
-    missing: (list: string) => `Missing ${list}.`,
-    /** The Cards detail tiles (UI rework 2.2): labels and the reasons a tier-up button gives. */
+    /** The Cards detail tiles (UI rework 2.2): labels. */
     tierLabel: 'Tier',
     xpLabelShort: 'Card XP',
     xpOf2: (now: string, need: string) => `${now} / ${need}`,
-    starsRow: 'Stars',
-    levelRow: 'Level',
-    needsStars: (n: number) => `Needs ★${n}`,
-    needsLevel: (cap: number) => `Needs Lv ${cap}`,
-    needsCosts: (name: string) => `Missing ${name}`,
-    needsMany: (n: number) => `Missing ${n} items`,
     starOf: (n: number, total: number) => `${n} of ${total} stars`,
-    ready: 'Ready. Level and stars carry over.',
-    topLadder: (tier: string) => `${tier} is the top tier. Heirlooms come from the Heirloom Gate.`,
+    /** Under the level line while the next level is a breakthrough level (DESIGN.md §5 Strength
+     *  comes with the card's levels): the XP bar is not stuck, the level is a big one. */
+    breakthrough:
+      'Breakthrough levels: the next levels need much more XP and give a big jump in power.',
+    /** Under the stars: a card never changes tier (DESIGN.md §5 No tier-ups). */
+    fixedTier: (tier: string) =>
+      `A ${tier} weapon, for good. Weapons of other tiers come from Summon.`,
     heirloomStars: 'Its stars come from its own shards in the Heirloom Gate.',
-    topEnd: (tier: string) => `${tier} is as far as this weapon goes.`,
     fullyUpgraded: 'Fully upgraded. Nothing left to unlock.',
-    costTitle: (name: string, have: string, need: string) => `${name}: have ${have}, need ${need}`,
     cardBadge: (lv: number, cap: number) => `Level ${lv} of ${cap}`,
     noMain: 'No fighting card yet. Put a fighting card in the loadout on the Cards page.',
     /** What an upgrade changes (DESIGN.md §5 Weapon panel). */
@@ -1355,7 +1332,6 @@ export const COPY = {
     usedFor: (list: string) => `Used for ${list}`,
     usedNowhere: 'Not spent on anything yet',
     uses: {
-      tierUp: 'card tier-ups',
       cosmetics: 'cosmetic upgrades',
       portal: 'summons',
       starlightShop: 'the Starlight shop',

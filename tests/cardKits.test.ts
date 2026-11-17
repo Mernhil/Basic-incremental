@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import { baseKitOf, resolveCard, createInitialState } from '../src/game';
 import { sprite } from '../src/renderer/src/art/pixel/sprites';
@@ -18,7 +19,7 @@ describe('card kits (DESIGN.md §5 The base frame)', () => {
       const look = resolveCard(content, state.cosmetics.loadout, {
         id: c.id,
         rank: { tier: 'wood', stars: 1 },
-        rarity: c.rarity,
+        rarity: cardStyle(c),
       });
       expect(look.baseKit).toBe(want);
     }

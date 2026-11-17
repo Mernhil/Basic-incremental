@@ -1,4 +1,5 @@
-import { RANK_TIERS, RARITIES } from '../../../data';
+import { RANK_TIERS, RARITIES, styleGrade } from '../../../data';
+import { gradeLabel } from '../../../game';
 import {
   buyHeirloomNode,
   heirloomEntry,
@@ -678,12 +679,13 @@ export function createCardsPage(
     return row;
   }
 
-  /** A star-up or a tier-up can be taken now. */
-  const isReady = (e: CardEntry): boolean => Boolean(e.next?.ready || e.tier?.ready);
+  /** A star-up can be taken now. */
+  const isReady = (e: CardEntry): boolean => Boolean(e.next?.ready);
 
   function sorted(list: CardEntry[]): CardEntry[] {
     const rarity = (e: CardEntry) => RARITIES.indexOf(e.rarity);
-    const rank = (e: CardEntry) => TIER_ORDER.indexOf(e.rank.tier) * 6 + e.rank.stars;
+    // "Stars": the most stars first, then the higher tier
+    const rank = (e: CardEntry) => e.rank.stars * 10 + TIER_ORDER.indexOf(e.rank.tier);
     const by: Record<Sort, (a: CardEntry, b: CardEntry) => number> = {
       rarity: (a, b) => rarity(b) - rarity(a),
       rank: (a, b) => rank(b) - rank(a),
@@ -701,8 +703,8 @@ export function createCardsPage(
 
   // ---- detail panel ----
   function detailPanel(state: GameState, e: CardEntry): HTMLElement {
-    // "rarity · job · role" on the right of the name
-    const parts = [cap1(e.rarity), JOB_NAMES[e.job]];
+    // "tier · job · role" on the right of the name
+    const parts = [gradeLabel(styleGrade(e.rarity)), JOB_NAMES[e.job]];
     if (e.owned && e.role) parts.push(COPY.cards.slotName(e.role.slot));
     const { el, body } = frame(e.name, parts.join(' · '));
     el.classList.add('cp-detail');
@@ -768,12 +770,6 @@ export function createCardsPage(
         state: ctx.state,
         act: (kind) => {
           act(model.upgrade(ctx.state(), e.id, kind), `wp-${kind}`);
-          // A tier-up of a card whose stars are free lands at ★6: the star flash plays once.
-          if (kind === 'tier' && model.entry(ctx.state(), e.id)?.rank.stars === 6) {
-            const card = page.querySelector<HTMLElement>('.cp-detail .bi-card');
-            card?.classList.add('is-levelup');
-            window.setTimeout(() => card?.classList.remove('is-levelup'), 1200);
-          }
         },
       });
       if (panel.overlay) face.append(panel.overlay);

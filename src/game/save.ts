@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { depthDef } from './depth';
 import type { Content } from '../data';
-import { MAX_STARS, RANK_TIERS, type Job } from '../data/schemas';
+import { MAX_STARS, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
 import { Decimal, decimalToString, isDecimalString } from './num';
 import { SaveError } from './saveError';
@@ -27,7 +27,7 @@ import {
   type GameState,
 } from './state';
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
-import { arrangeSavedFormations, cardTopTier, levelCap } from './cards';
+import { arrangeSavedFormations, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
 import { pruneCardSkins } from './cardSkins';
 import { fitSkillsToPoints, fitWebToPoints } from './account';
@@ -36,7 +36,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 38;
+export const CURRENT_SAVE_VERSION = 39;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -143,8 +143,8 @@ export const serializedStateSchema = z.object({
   cards: z.object({
     owned: z.record(
       z.string(),
+      // v39: no tier. A card's tier is its own (DESIGN.md §5 No tier-ups) and is read from the card.
       z.object({
-        tier: z.enum(RANK_TIERS),
         stars: z.number().int().min(1).max(MAX_STARS),
         level: z.number().int().min(1),
         xp: decimalText,
@@ -334,7 +334,13 @@ export function serializeState(state: GameState): SerializedState {
       owned: Object.fromEntries(
         Object.entries(state.cards.owned).map(([id, c]) => [
           id,
-          { ...c, xp: decimalToString(c.xp), enhancements: [...c.enhancements] },
+          {
+            stars: c.stars,
+            level: c.level,
+            xp: decimalToString(c.xp),
+            starFill: c.starFill,
+            enhancements: [...c.enhancements],
+          },
         ]),
       ),
       loadouts: cloneCards(state.cards).loadouts,
@@ -481,7 +487,6 @@ export function deserializeState(saved: SerializedState, content: Content): Game
     ),
     moneyEarned: new Decimal(saved.upgrades.moneyEarned),
   };
-  refundClampedTiers(state, saved.cards, content);
   state.cards = deserializeCards(saved.cards, content);
   pruneCardSkins(state, content);
   deserializeWorkers(state, saved.production, content);
@@ -682,44 +687,17 @@ function deserializeMastery(
 }
 
 /**
- * A card saved above its rarity's cap (the rarity caps came with the weapon base, save format 22)
- * is clamped by deserializeCards; the base price of every tier-up step it had paid beyond the cap
- * is paid back so nothing is lost. The Wood step was never paid (cards used to start at Bronze).
- */
-function refundClampedTiers(
-  state: GameState,
-  saved: SerializedState['cards'],
-  content: Content,
-): void {
-  for (const [id, c] of Object.entries(saved.owned)) {
-    const card = content.cardById.get(id);
-    if (!card) continue;
-    const top = RANK_TIERS.indexOf(cardTopTier(content, id));
-    const at = RANK_TIERS.indexOf(c.tier);
-    for (let k = Math.max(top, 1); k < at; k++) {
-      const step = RANK_TIERS[k]!;
-      if (step === 'mythic' || step === 'heirloom') continue;
-      for (const cost of content.cardRules.tierUp[step][card.job]) {
-        state.resources[cost.resource] = (state.resources[cost.resource] ?? new Decimal(0)).add(
-          cost.amount,
-        );
-      }
-    }
-  }
-}
-
-/**
  * Rebuilds the card collection: unknown cards are dropped, levels are kept within the rank's
  * cap, free stars are taken, and loadout slots holding an unknown, unowned, other-job or repeated card are emptied.
  */
 function deserializeCards(saved: SerializedState['cards'], content: Content): CardState {
   const owned: CardState['owned'] = {};
   for (const [id, c] of Object.entries(saved.owned)) {
-    if (!content.cardById.has(id)) continue;
-    // A card above its rarity's cap (or at a closed Heirloom) is clamped to its top tier; its stars
-    // and level stay (the tier-up costs of the removed steps are paid back in refundClampedTiers).
-    const top = RANK_TIERS.indexOf(cardTopTier(content, id));
-    const tier = RANK_TIERS.indexOf(c.tier) > top ? RANK_TIERS[top]! : c.tier;
+    const card = content.cardById.get(id);
+    if (!card) continue;
+    // A card's tier is its own (DESIGN.md §5 No tier-ups): it is read from the card, never from
+    // the save.
+    const tier = card.tier;
     const cap = levelCap(content, { tier, stars: c.stars });
     const level = Math.min(c.level, cap);
     owned[id] = {

@@ -851,74 +851,10 @@
     {
       "id": "first_uncommon",
       "group": "cards",
-      "name": "Get your first Uncommon card",
+      "name": "Get your first Bronze weapon",
       "condition": {
-        "kind": "rarity_owned",
-        "rarity": "uncommon"
-      },
-      "page": "summon",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "first_rare",
-      "group": "cards",
-      "name": "Get your first Rare card",
-      "condition": {
-        "kind": "rarity_owned",
-        "rarity": "rare"
-      },
-      "page": "summon",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "first_epic",
-      "group": "cards",
-      "name": "Get your first Epic card",
-      "condition": {
-        "kind": "rarity_owned",
-        "rarity": "epic"
-      },
-      "page": "summon",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "first_legendary",
-      "group": "cards",
-      "name": "Get your first Legendary card",
-      "condition": {
-        "kind": "rarity_owned",
-        "rarity": "legendary"
-      },
-      "page": "summon",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "first_mythic",
-      "group": "cards",
-      "name": "Get your first Mythic card",
-      "condition": {
-        "kind": "rarity_owned",
-        "rarity": "mythic"
+        "kind": "grade_owned",
+        "grade": "bronze"
       },
       "page": "summon",
       "reward": [
@@ -929,12 +865,76 @@
       ]
     },
     {
+      "id": "first_rare",
+      "group": "cards",
+      "name": "Get your first Silver weapon",
+      "condition": {
+        "kind": "grade_owned",
+        "grade": "silver"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "first_epic",
+      "group": "cards",
+      "name": "Get your first Gold weapon",
+      "condition": {
+        "kind": "grade_owned",
+        "grade": "gold"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "2"
+        }
+      ]
+    },
+    {
+      "id": "first_legendary",
+      "group": "cards",
+      "name": "Get your first Prismatic weapon",
+      "condition": {
+        "kind": "grade_owned",
+        "grade": "prismatic"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "3"
+        }
+      ]
+    },
+    {
+      "id": "first_mythic",
+      "group": "cards",
+      "name": "Get your first Mythic T6 weapon",
+      "condition": {
+        "kind": "grade_owned",
+        "grade": "mythic"
+      },
+      "page": "summon",
+      "reward": [
+        {
+          "resource": "summon_scroll",
+          "amount": "5"
+        }
+      ]
+    },
+    {
       "id": "first_void",
       "group": "cards",
-      "name": "Get your first Void card",
+      "name": "Get your first Void T6 weapon",
       "condition": {
-        "kind": "rarity_owned",
-        "rarity": "void"
+        "kind": "grade_owned",
+        "grade": "void"
       },
       "page": "summon",
       "reward": [
@@ -1084,86 +1084,6 @@
         {
           "resource": "summon_scroll",
           "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "card_tier_bronze",
-      "group": "cards",
-      "name": "Upgrade a weapon to Bronze",
-      "condition": {
-        "kind": "card_tier",
-        "tier": "bronze"
-      },
-      "page": "cards",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "card_tier_silver",
-      "group": "cards",
-      "name": "Upgrade a weapon to Silver",
-      "condition": {
-        "kind": "card_tier",
-        "tier": "silver"
-      },
-      "page": "cards",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "card_tier_gold",
-      "group": "cards",
-      "name": "Upgrade a weapon to Gold",
-      "condition": {
-        "kind": "card_tier",
-        "tier": "gold"
-      },
-      "page": "cards",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "1"
-        }
-      ]
-    },
-    {
-      "id": "card_tier_prismatic",
-      "group": "cards",
-      "name": "Upgrade a weapon to Prismatic",
-      "condition": {
-        "kind": "card_tier",
-        "tier": "prismatic"
-      },
-      "page": "cards",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "2"
-        }
-      ]
-    },
-    {
-      "id": "card_tier_mythic",
-      "group": "cards",
-      "name": "Upgrade a weapon to Mythic",
-      "condition": {
-        "kind": "card_tier",
-        "tier": "mythic"
-      },
-      "page": "cards",
-      "reward": [
-        {
-          "resource": "summon_scroll",
-          "amount": "3"
         }
       ]
     },

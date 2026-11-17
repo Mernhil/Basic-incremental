@@ -209,14 +209,9 @@ export function createDirector(content: Content, state: () => GameState) {
         }
         const rare = [
           ...Object.keys(report.drops).map(
-            (id) =>
-              content.cosmeticById.get(id)?.name ??
-              cardNameById(content, id, after.cards.owned[id]) ??
-              id,
+            (id) => content.cosmeticById.get(id)?.name ?? cardNameById(content, id) ?? id,
           ),
-          ...report.cardDrops.map(
-            (d) => cardNameById(content, d.cardId, after.cards.owned[d.cardId]) ?? d.cardId,
-          ),
+          ...report.cardDrops.map((d) => cardNameById(content, d.cardId) ?? d.cardId),
         ];
         emit('kill', { loot, rare });
       }

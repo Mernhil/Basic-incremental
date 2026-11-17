@@ -24,8 +24,8 @@ describe('weapon panel model', () => {
     expect(weaponView(content, cardInfo(state, content, unowned.id)!)).toBeNull();
   });
 
-  it('mid level: the ring fills with XP and the tier-up waits for the cap', () => {
-    const w = view('dawnblade_regent', {
+  it('mid level: the ring fills with XP; there is no tier-up step', () => {
+    const w = view('silver_cavalier', {
       tier: 'silver',
       stars: 3,
       level: 27,
@@ -40,10 +40,8 @@ describe('weapon panel model', () => {
     expect(w.xp).toBeLessThan(1);
     expect(w.xpNow).toBe('60');
     expect(w.xpNeed).toMatch(/^[\d.]+$/);
-    expect(w.tierUp?.phase).toBe('leveling');
-    expect(w.tierUp?.lead).toBe(`Reach Lv ${w.cap} to tier up. It costs:`);
-    expect(w.tierUp?.action).toBe('Tier up to Gold');
-    expect(w.tierUp?.ready).toBe(false);
+    expect('tierUp' in w).toBe(false);
+    expect(w.endNote).toBe('A Silver weapon, for good. Weapons of other tiers come from Summon.');
   });
 
   it('shows the star bar with its copies and the star impact from the data', () => {
@@ -68,101 +66,31 @@ describe('weapon panel model', () => {
     expect(view('ember_squire', { stars: 6 })!.starBar).toBeNull();
   });
 
-  it('a new card starts at Wood', () => {
-    const w = view('dawnblade_regent', {})!;
-    expect(w.tier).toBe('wood');
-    expect(w.tierName).toBe('Wood');
-    expect(w.tierUp?.toName).toBe('Bronze');
-  });
-
-  it('max level, tier-up affordable: ready, with every price met', () => {
-    const price = content.cardRules.tierUp.bronze.fighting;
-    const extra = Object.fromEntries(price.map((p) => [p.resource, p.amount.toString()]));
-    const w = view(
-      'dawnblade_regent',
-      { tier: 'bronze', level: content.cardRules.levelCaps.bronze, stars: 6 },
-      '0',
-      extra,
-    )!;
-    expect(w.atCap).toBe(true);
-    expect(w.xp).toBe(1);
-    expect(w.xpNow).toBe('');
-    expect(w.tierUp?.phase).toBe('ready');
-    expect(w.tierUp?.ready).toBe(true);
-    expect(w.tierUp?.costs.map((c) => c.id)).toEqual(price.map((p) => p.resource));
-    expect(w.tierUp?.costs.every((c) => c.met)).toBe(true);
-    expect(w.tierUp?.lead).toBe('It costs:');
-    expect(w.tierUp?.levelMet).toBe(true);
-    expect(w.tierUp?.starsMet).toBe(true);
-    expect(w.tierUp?.blocker).toBe('');
-  });
-
-  it('the tier-up button says why it cannot be taken: stars first, then level, then prices', () => {
-    const cap = content.cardRules.levelCaps.silver;
-    // below ★6: "Needs ★6", even at the level cap with the prices missing
-    const stars = view('dawnblade_regent', { tier: 'silver', level: cap, stars: 3 })!;
-    expect(stars.tierUp?.starsMet).toBe(false);
-    expect(stars.tierUp?.blocker).toBe('Needs ★6');
-    // ★6 but below the level cap
-    const level = view('dawnblade_regent', { tier: 'silver', level: cap - 1, stars: 6 })!;
-    expect(level.tierUp?.starsMet).toBe(true);
-    expect(level.tierUp?.levelMet).toBe(false);
-    expect(level.tierUp?.blocker).toBe(`Needs Lv ${cap}`);
-    // ★6 at the cap: it counts what is short (a single price is named instead)
-    const short = view('dawnblade_regent', { tier: 'silver', level: cap, stars: 6 }, '1')!;
-    expect(short.tierUp?.blocker).toBe('Missing 4 items');
-    expect(short.tierUp?.ready).toBe(false);
-  });
-
-  it('max level, not enough: short, and names what is missing', () => {
-    const w = view(
-      'dawnblade_regent',
-      { tier: 'silver', level: content.cardRules.levelCaps.silver },
-      '1',
-    )!;
-    expect(w.tierUp?.phase).toBe('short');
-    expect(w.tierUp?.ready).toBe(false);
-    expect(w.tierUp?.costs.some((c) => !c.met)).toBe(true);
-    expect(w.tierUp?.missing).toMatch(/^Missing .*Money.*\.$/);
-  });
-
-  it('Gold to Prismatic costs Frost Sigils', () => {
-    const w = view('dawnblade_regent', { tier: 'gold', level: 80 })!;
-    expect(w.tierUp?.toName).toBe('Prismatic');
-    expect(w.tierUp?.heirloom).toBe(false);
-    expect(w.tierUp?.costs.map((c) => c.name)).toContain('Frost Sigil');
-  });
-
-  it('a card stops at the tier its rarity allows and says so: the end note', () => {
-    const common = view('ember_squire', { tier: 'wood', level: 20 })!;
-    expect(common.tierUp).toBeNull();
-    expect(common.endNote).toBe('Wood is as far as this weapon goes.');
-    const legendary = view('dawnblade_regent', { tier: 'prismatic', level: 100 })!;
-    expect(legendary.tierUp).toBeNull();
-    expect(legendary.endNote).toBe('Prismatic is as far as this weapon goes.');
-  });
-
-  it('Prismatic to Mythic (T6) is a normal tier-up for a mythic card, not a reveal', () => {
-    const w = view('moonwood_dryad', { tier: 'prismatic', level: 100 })!;
-    expect(w.tierUp?.toName).toBe('Mythic');
-    expect(w.tierUp?.heirloom).toBe(false);
-    expect(w.tierUp?.action).toBe('Tier up to Mythic');
-    expect(w.endNote).toBeNull();
-  });
-
-  it('at Mythic the ladder ends and points to the Heirloom Gate', () => {
-    const w = view('moonwood_dryad', { tier: 'mythic', level: 120, stars: 6 })!;
-    expect(w.tierUp).toBeNull();
-    expect(w.endNote).toBe('Mythic is the top tier. Heirlooms come from the Heirloom Gate.');
-    expect(view('core_titan', { tier: 'mythic', level: 120 })!.endNote).toBe(
-      'Void is the top tier. Heirlooms come from the Heirloom Gate.',
+  it('a card shows its own tier and weapon, at the cap too', () => {
+    const wood = view('ember_squire', { tier: 'wood', level: 20, stars: 6 })!;
+    expect(wood.tier).toBe('wood');
+    expect(wood.weapon).toBe('Wooden Sword');
+    expect(wood.atCap).toBe(true);
+    expect(wood.xp).toBe(1);
+    expect(wood.endNote).toBe('A Wood weapon, for good. Weapons of other tiers come from Summon.');
+    const prismatic = view('dawnblade_regent', { tier: 'prismatic', level: 100 })!;
+    expect(prismatic.tierName).toBe('Prismatic');
+    expect(prismatic.weapon).toBe('Prismatic Greatsword');
+    expect(prismatic.endNote).toBe(
+      'A Prismatic weapon, for good. Weapons of other tiers come from Summon.',
     );
+  });
+
+  it('a T6 card is named by its side', () => {
+    const w = view('moonwood_dryad', { tier: 'mythic', level: 120, stars: 6 })!;
+    expect(w.tierName).toBe('Mythic');
+    expect(w.endNote).toBe('A Mythic weapon, for good. Weapons of other tiers come from Summon.');
+    expect(view('core_titan', { tier: 'mythic', level: 120 })!.tierName).toBe('Void');
   });
 
   it('an Heirloom card has no tier-up; its stars come from the gate', () => {
     const w = view('heartdelver', { tier: 'heirloom', level: 140, stars: 3 })!;
     expect(w.tier).toBe('heirloom');
-    expect(w.tierUp).toBeNull();
     expect(w.endNote).toBe('Its stars come from its own shards in the Heirloom Gate.');
     const max = view('heartdelver', { tier: 'heirloom', level: 140, stars: 6 })!;
     expect(max.endNote).toBe('Fully upgraded. Nothing left to unlock.');

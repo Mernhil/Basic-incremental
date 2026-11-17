@@ -197,9 +197,9 @@ describe('a worker’s power multiplies its place’s output', () => {
     ).toBe(true);
   });
 
-  it('power is rarity × the card’s level, star and tier power', () => {
-    const owned = { ...newOwnedCard(), level: 11, stars: 3, tier: 'bronze' as const };
-    const expected = content.production.workers.rarityPower.epic * cardStatPower(content, owned);
+  it('power is the tier’s worker power × the card’s level and star power', () => {
+    const owned = { ...newOwnedCard('gold'), level: 11, stars: 3 };
+    const expected = content.production.workers.tierPower.gold * cardStatPower(content, owned);
     expect(workerPower(content, 'elder_treant', owned)).toBeCloseTo(expected, 12);
     expect(workerPower(content, 'apprentice_feller', newOwnedCard())).toBe(1);
   });

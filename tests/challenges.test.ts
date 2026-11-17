@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   activeRestrictions,
@@ -206,7 +207,7 @@ describe('the rules, through modifiers', () => {
     const s = freshState();
     const { main, support } = withTeam(s);
     rule(s, 'common_folk');
-    const commons = (id: string): boolean => content.cardById.get(id)!.rarity === 'common';
+    const commons = (id: string): boolean => cardStyle(content.cardById.get(id)!) === 'common';
     const expected = [main, support].filter((id) => !commons(id));
     expect(challengeExcludedCards(s, content).sort()).toEqual(expected.sort());
     expect(teamCardIds(s, content)).toEqual([main, support].filter(commons));

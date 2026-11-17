@@ -1,10 +1,9 @@
 import type { Content } from '../../../data';
 import { MAX_STARS } from '../../../data';
 import {
+  breakthroughTier,
   cardStatsFor,
   itemName,
-  levelCap,
-  lookTier,
   tierLabel,
   type CardInfo,
   type CardStats,
@@ -12,12 +11,12 @@ import {
 } from '../../../game';
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
-import type { CostChip, StatChange, WeaponView } from './cardsModel';
+import type { StatChange, WeaponView } from './cardsModel';
 
 /**
  * The weapon panel's view model (DESIGN.md §5, §11): turns a card's game info (level, XP, star
- * bar, tier-up check) into the plain data the panel draws. No rules here: every number comes from
- * `cardInfo` and the content, and the order of the prices is the order of `cardRules.tierUp`.
+ * bar) into the plain data the panel draws. There is no tier-up (DESIGN.md §5 No tier-ups). No rules here: every number comes from
+ * `cardInfo` and the content.
  */
 
 /**
@@ -61,7 +60,6 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
   const need = info.xpToNext;
   const xp =
     atCap || !need || need.lte(0) ? 1 : Math.min(1, Math.max(0, owned.xp.div(need).toNumber()));
-  const resName = (id: string): string => content.resourceById.get(id)?.name ?? id;
   const multipliers = content.cardRules.power.starMultiplier;
   const multiplierAt = (stars: number): number => (stars <= 1 ? 1 : (multipliers[stars - 2] ?? 1));
 
@@ -102,86 +100,21 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
           fighting,
         );
 
-  const check = info.tierUp;
-  let tierUp: WeaponView['tierUp'] = null;
-  let endNote: string | null = null;
-  if (check?.available && check.to) {
-    const toName = tierLabel(check.to.tier, card.rarity);
-    const heirloom = check.to.tier === 'heirloom';
-    const costs: CostChip[] = check.requirements
-      .filter((r) => r.kind === 'resource')
-      .map((r) => ({
-        id: r.resource ?? '',
-        name: resName(r.resource ?? ''),
-        have: fmt(r.have),
-        need: fmt(r.need),
-        met: r.met,
-      }));
-    const levelMet = check.requirements.every((r) => r.kind !== 'level' || r.met);
-    const starsMet = check.requirements.every((r) => r.kind !== 'stars' || r.met);
-    const phase = !levelMet ? 'leveling' : check.met ? 'ready' : 'short';
-    const missing = costs.filter((c) => !c.met).map((c) => c.name);
-    // a tier-up keeps the level and restarts the stars at its own first star; the level cap rises
-    const tierAfter: OwnedCard = { ...owned, tier: check.to.tier, stars: check.to.stars };
-    const stats = heirloom
-      ? []
-      : changes(
-          cardStatsFor(content, card.id, owned),
-          cardStatsFor(content, card.id, tierAfter),
-          fighting,
-        );
-    if (!heirloom) {
-      stats.push({
-        label: COPY.weapon.levelCapLabel,
-        now: String(cap),
-        after: String(levelCap(content, check.to)),
-        gain: '',
-      });
-      stats.push({
-        label: COPY.weapon.lookLabel,
-        now: tierLabel(rank.tier, card.rarity),
-        after: toName,
-        gain: '',
-      });
-    }
-    tierUp = {
-      stats,
-      toTier: check.to.tier,
-      toName,
-      heirloom,
-      phase,
-      lead: atCap ? COPY.weapon.costs : COPY.weapon.reach(cap),
-      costs,
-      action: heirloom
-        ? COPY.weapon.reveal(itemName(content, card.item.kind, 'heirloom', card.rarity, card))
-        : COPY.weapon.tierUpTo(toName),
-      ready: check.met,
-      missing: phase === 'short' ? COPY.weapon.missing(missing.join(', ')) : '',
-      levelMet,
-      starsMet,
-      blocker: check.met
-        ? ''
-        : !starsMet
-          ? COPY.weapon.needsStars(MAX_STARS)
-          : !levelMet
-            ? COPY.weapon.needsLevel(cap)
-            : missing.length === 1
-              ? COPY.weapon.needsCosts(missing[0] ?? '')
-              : COPY.weapon.needsMany(missing.length),
-    };
-  } else if (rank.tier === 'heirloom') {
-    // An Heirloom card (DESIGN.md §5): no tier-up; its stars come from the gate's shards.
-    endNote = rank.stars >= MAX_STARS ? COPY.weapon.fullyUpgraded : COPY.weapon.heirloomStars;
-  } else if (rank.tier === 'mythic') {
-    endNote = COPY.weapon.topLadder(tierLabel(rank.tier, card.rarity));
-  } else {
-    endNote = COPY.weapon.topEnd(tierLabel(rank.tier, card.rarity));
-  }
+  // A card never changes tier (DESIGN.md §5 No tier-ups): the panel has no tier-up step, only a
+  // note under the stars.
+  const tierName = tierLabel(rank.tier, card.side);
+  const endNote =
+    rank.tier === 'heirloom'
+      ? // An Heirloom card: its stars come from the gate's shards.
+        rank.stars >= MAX_STARS
+        ? COPY.weapon.fullyUpgraded
+        : COPY.weapon.heirloomStars
+      : COPY.weapon.fixedTier(tierName);
 
   return {
-    weapon: itemName(content, card.item.kind, lookTier(card.rarity, rank.tier), card.rarity, card),
+    weapon: itemName(content, card.item.kind, rank.tier, card.side, card),
     tier: rank.tier,
-    tierName: tierLabel(rank.tier, card.rarity),
+    tierName,
     level: owned.level,
     cap,
     atCap,
@@ -191,7 +124,8 @@ export function weaponView(content: Content, info: CardInfo): WeaponView | null 
     stars: owned.stars,
     starStats,
     starBar: owned.stars >= MAX_STARS ? null : starBar,
-    tierUp,
+    breakthrough:
+      !atCap && breakthroughTier(content, owned.level) !== null ? COPY.weapon.breakthrough : null,
     endNote,
   };
 }

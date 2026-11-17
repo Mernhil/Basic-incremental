@@ -1,3 +1,4 @@
+import { cardStyle } from '../../../data';
 import {
   CARD_SLOTS,
   COSMETIC_SLOTS,
@@ -202,10 +203,10 @@ export function renderGallery(root: HTMLElement = document.body): void {
         { tier: 'bronze', stars: 1 },
         card.name,
         'blade',
-        card.rarity,
+        cardStyle(card),
       ),
-      item: itemArt(card.item.kind, card.rarity),
-      label: cap(card.rarity),
+      item: itemArt(card.item.kind, cardStyle(card)),
+      label: cap(card.tier),
     });
     const fig = el('figure', 'gallery__fig');
     fig.append(view.el, el('figcaption', '', card.item.kind));
@@ -247,8 +248,8 @@ export function renderGallery(root: HTMLElement = document.body): void {
     for (const [id, label] of picks) {
       const card = content.cardById.get(id)!;
       const view = createCard({
-        ...cardProps(content, loadout, id, { tier, stars: 1 }, card.name, 'blade', card.rarity),
-        item: itemArt(card.item.kind, card.rarity),
+        ...cardProps(content, loadout, id, { tier, stars: 1 }, card.name, 'blade', cardStyle(card)),
+        item: itemArt(card.item.kind, cardStyle(card)),
         element: card.element,
       });
       const fig = el('figure', 'gallery__fig');
@@ -326,7 +327,7 @@ function cardProps(
 ) {
   const card = content.cardById.get(id);
   return {
-    name: card ? cardDisplayName(content, card, rank) : name,
+    name: card ? cardDisplayName(content, card) : name,
     label: 'Fighting',
     job: 'fighting',
     emblem,

@@ -1,23 +1,20 @@
+import { cardStyle } from '../../../data';
 import { RANK_TIERS, type Card, type Content, type Rank, type RankTier } from '../../../data';
 import {
   LOADOUT_SLOTS,
   cardCollection,
   cardEnhancements,
   cardInfo,
-  cardTopTier,
   itemName,
   tierLabel,
   chooseEnhancement,
   resetEnhancements,
   setCardSkin,
-  collectModifiers,
   levelCap,
   loadoutInfo,
-  lookTier,
   setLoadoutSlot,
   starUp,
   starUpWithDust,
-  tierUp,
   type CardFailure,
   type CardInfo,
   type GameState,
@@ -54,13 +51,17 @@ const BASE_RANK: Rank = { tier: 'wood', stars: 1 };
 const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', mining: 'pick' };
 
 /**
- * The tiers the Next tier preview steps through: the card's own tier, then each tier up to the
- * highest its rarity allows (DESIGN §5 Rarity caps the tier; Mythic or Void at most, the Heirloom
- * is no tier of the ladder). A card at its top tier, and an Heirloom card, has just the one.
+ * The tiers the Next tier preview steps through (DESIGN §5 Next tier preview): a card from Wood to
+ * Prismatic shows its own tier, then the same weapon type's weapons of each higher tier up to T6.
+ * A card never changes tier: the higher ones are other cards to pull. A T6 or an Heirloom card has
+ * just its own.
  */
-export function previewTiers(content: Content, cardId: string, from: RankTier): RankTier[] {
-  const top = RANK_TIERS.indexOf(cardTopTier(content, cardId));
-  return RANK_TIERS.slice(Math.max(0, RANK_TIERS.indexOf(from)), top + 1);
+export function previewTiers(content: Content, cardId: string): RankTier[] {
+  const card = content.cardById.get(cardId);
+  if (!card) return [];
+  const at = RANK_TIERS.indexOf(card.tier);
+  const t6 = RANK_TIERS.indexOf('mythic');
+  return at >= t6 ? [card.tier] : RANK_TIERS.slice(at, t6 + 1);
 }
 
 /**
@@ -123,23 +124,17 @@ export function createCardsModel(
       .join(', ');
   }
 
-  /** The star-up (fill only) or tier-up (level cap, Money, materials) of a card, if it has one. */
-  function step(kind: 'star' | 'tier', check: UpgradeCheck | null): UpgradeStep | null {
+  /** The star-up (the star bar's fill only) of a card, if it has one. */
+  function step(check: UpgradeCheck | null): UpgradeStep | null {
     if (!check?.available || !check.to) return null;
     const tierName = TIER_NAMES[check.to.tier];
     const multiplier = content.cardRules.power.starMultiplier[check.to.stars - 2] ?? 1;
     return {
-      kind,
-      title:
-        kind === 'star'
-          ? COPY.cards.nextStar(check.to.stars, tierName)
-          : COPY.cards.nextTier(tierName, check.to.stars),
-      note:
-        kind === 'star'
-          ? COPY.cards.starNote(multiplier)
-          : COPY.cards.tierNote(tierName, levelCap(content, check.to)),
+      kind: 'star',
+      title: COPY.cards.nextStar(check.to.stars, tierName),
+      note: COPY.cards.starNote(multiplier),
       requirements: check.requirements.map(requirement),
-      action: (kind === 'star' ? COPY.cards.addStar : COPY.cards.tierUp)(priceText(check)),
+      action: COPY.cards.addStar(priceText(check)),
       ready: check.met,
     };
   }
@@ -157,14 +152,14 @@ export function createCardsModel(
           : 0;
     return {
       id: card.id,
-      name: cardDisplayName(content, card, owned),
+      name: cardDisplayName(content, card),
       heirloom: Boolean(card.heirloom),
       job: card.job,
-      rarity: card.rarity,
+      rarity: cardStyle(card),
       emblem: JOB_EMBLEM[card.job],
       itemKind: card.item.kind,
       itemType: content.itemTypeByKind.get(card.item.kind)?.noun ?? card.item.kind,
-      item: art?.(card.id, owned) ?? cardTierArt(card, lookTier(card.rarity, rank.tier)),
+      item: art?.(card.id, owned) ?? cardTierArt(card),
       element: card.element,
       owned: owned !== null,
       rank,
@@ -179,22 +174,19 @@ export function createCardsModel(
       workplace: info.workplace ? placeName(info.workplace) : null,
       face: cardFaceOf(content, info),
       role: info.slot ? { job: info.slot.job, slot: info.slot.slot } : null,
-      next: owned ? step('star', info.starUp) : null,
-      tier: owned ? step('tier', info.tierUp) : null,
+      next: owned ? step(info.starUp) : null,
       weapon: weaponView(content, info),
       stats: statTiles(content, state, card.id),
     };
   }
 
-  const all = (state: GameState): CardInfo[] =>
-    cardCollection(state, content, undefined, collectModifiers(state, content));
+  const all = (state: GameState): CardInfo[] => cardCollection(state, content, undefined);
 
   return {
     preview(state, id, step) {
       const card = content.cardById.get(id);
       if (!card) return null;
-      const own = state.cards.owned[id]?.tier ?? 'wood';
-      const tiers = previewTiers(content, id, lookTier(card.rarity, own));
+      const tiers = previewTiers(content, id);
       if (tiers.length < 2) return null;
       const index = ((Math.trunc(step) % tiers.length) + tiers.length) % tiers.length;
       const tier = tiers[index]!;
@@ -202,13 +194,13 @@ export function createCardsModel(
         count: tiers.length,
         index,
         own: index === 0,
-        tierName: tierLabel(tier, card.rarity),
-        itemName: itemName(content, card.item.kind, tier, card.rarity, card),
+        tierName: tierLabel(tier, card.side),
+        itemName: itemName(content, card.item.kind, tier, card.side, card),
         item:
           index === 0
             ? (art?.(id, state.cards.owned[id] ?? null) ?? previewArt(card, tier))
             : previewArt(card, tier),
-        ownTierName: tierLabel(tiers[0]!, card.rarity),
+        ownTierName: tierLabel(tiers[0]!, card.side),
       };
     },
     entries: (state) => all(state).map((i) => entry(i, state)),
@@ -237,7 +229,7 @@ export function createCardsModel(
         state.legacySkins,
         state.cards.shards,
         // readiness changes with resources; it moves badges and the ready filter
-        all(state).map((i) => [Boolean(i.starUp?.met), Boolean(i.tierUp?.met)]),
+        all(state).map((i) => Boolean(i.starUp?.met)),
       ]);
     },
     addToLoadout(state, id) {
@@ -260,7 +252,7 @@ export function createCardsModel(
     upgrade(state, id, kind) {
       if (!cardInfo(state, content, id)) return { ok: false, reason: reason('unknown') };
       if (kind === 'dust') return wrap(starUpWithDust(state, content, id));
-      return wrap(kind === 'star' ? starUp(state, content, id) : tierUp(state, content, id));
+      return wrap(starUp(state, content, id));
     },
     chart(state, id) {
       const info = cardEnhancements(state, content, id);

@@ -7,6 +7,7 @@ import type {
   LadderStep,
   Rank,
 } from '../data';
+import { cardStyle } from '../data';
 import { CARD_SLOTS } from '../data';
 import { collectModifiers, type Modifier } from './modifiers';
 import { Decimal } from './num';
@@ -262,7 +263,7 @@ export function resolveCardFor(
   return resolveCard(content, state.cosmetics.loadout, {
     id: cardId,
     rank: { tier: owned.tier, stars: owned.stars },
-    rarity: card.rarity,
+    rarity: cardStyle(card),
   });
 }
 

@@ -89,9 +89,7 @@ export function addHeirloomShards(
 
 /** The Heirloom becomes owned at its tier, ★1 Lv 1 (mutates `state`). */
 function unlockHeirloom(state: GameState, cardId: string): void {
-  const fresh = newOwnedCard();
-  fresh.tier = 'heirloom';
-  state.cards.owned[cardId] = fresh;
+  state.cards.owned[cardId] = newOwnedCard('heirloom');
 }
 
 // ---- the gate ----------------------------------------------------------------------------------
@@ -200,7 +198,7 @@ export function heirloomEntry(state: GameState, content: Content, card: Card): H
   const need = heirloomShardsNeeded(content, owned ?? undefined);
   return {
     card,
-    side: cardSide(card.rarity),
+    side: cardSide(card),
     owned,
     stars: owned?.stars ?? 0,
     shards,

@@ -1,3 +1,4 @@
+import { cardStyle } from '../src/data';
 import { describe, expect, it } from 'vitest';
 import {
   addHeirloomShards,
@@ -50,7 +51,7 @@ describe('the 22 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
     ]);
     // each leans to the side the user picked (2026-11-14): its card's rarity is Mythic or Void
     const dragon = list.filter((c) => !c.batch);
-    expect(dragon.map((c) => `${c.name}:${c.rarity}`)).toEqual([
+    expect(dragon.map((c) => `${c.name}:${cardStyle(c)}`)).toEqual([
       'Solaris:mythic',
       'Grimhowl:void',
       'Skypiercer:mythic',
@@ -65,7 +66,7 @@ describe('the 22 Heirlooms (DESIGN.md §5 Heirlooms)', () => {
     ]);
     // Leviathan (user, 2026-11-14): sword, spear, lance, bow, pickaxe and logging axe lean light
     const leviathan = list.filter((c) => c.batch === 'leviathan');
-    expect(leviathan.map((c) => `${c.name}:${c.rarity}`)).toEqual([
+    expect(leviathan.map((c) => `${c.name}:${cardStyle(c)}`)).toEqual([
       'Auroratusk:mythic',
       'Maelfang:void',
       'Bluestrike:mythic',
@@ -312,7 +313,7 @@ describe('save format 30 (DESIGN.md §5 Saves keep their Heirlooms)', () => {
     const state = freshState();
     state.cards.owned['seraph_lancer'] = { ...newOwnedCard(), tier: 'mythic', stars: 1, level: 1 };
     const other = content.cards.find(
-      (c) => c.item.kind === 'lance' && c.rarity === 'mythic' && c.heirloomArt,
+      (c) => c.item.kind === 'lance' && cardStyle(c) === 'mythic' && c.heirloomArt,
     )!;
     state.cards.owned[other.id] = { ...newOwnedCard(), tier: 'mythic', stars: 1, level: 1 };
     const envelope = JSON.parse(createSaveText(state, 1000)) as {
