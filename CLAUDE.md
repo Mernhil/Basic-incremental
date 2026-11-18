@@ -1,48 +1,98 @@
-# Basic Incremental — Project Conventions
+# Basic Incremental — project rules
 
 Windows desktop incremental game (Electron + TypeScript, repo https://github.com/Mernhil/Basic-incremental).
 
-## What to read
+These are the rules the user decided on 2026-11-17, in their wording. Two more groups apply to every chat on this PC and live in the user's own `CLAUDE.md`: how Claude reports and what counts as a yes (group 1), and test windows (group 6). Claude never adds, drops or changes a rule here on its own; a rule that seems missing is a question to the user.
 
-- Always read this file and `docs/PROJECT_OVERVIEW.md` (the whole project as built now: what each system does, where it lives, which DESIGN rule it implements).
-- `docs/DESIGN.md` is the source of truth for game design: read it before feature work and never contradict it without asking the user. Asked whether something exists, answer with its status tag, not "it already exists".
-- Read `docs/UI_RULES.md` only for UI changes (the only UI rulebook).
-- Read `docs/ASSET_RULES.md` only for new or changed assets (all art rules). It wins over other documents.
+## Where things are
 
-## Workflow
+- `docs/DESIGN.md`: the game's design, one rule per decision, each with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]`, `[Proposed]`). Its "How this document works" section explains the tags.
+- `docs/PROJECT_OVERVIEW.md`: the project as built now, and which file does what.
+- `docs/UI_RULES.md`: the UI rulebook. `docs/ASSET_RULES.md`: the art rulebook.
+- `RELEASING.md`: how a release is made (a version bump by PR, then the `vX.Y.Z` tag).
+- `npm run lint` also runs `scripts/check-workflow.mjs` and `scripts/check-design.mjs`: CI fails when a PR touches `src/` without the overview (a tiny job with no behaviour change may instead put the exact line `no overview change` in its PR description), or when a plan doc is still in `docs/plans/`.
+- Optional helpers: `.claude/agents/` (`ui`, `pixel-art`, `mechanics`) and `.claude/skills/pixel-art/`. Nothing requires routing through them.
 
-- **Bigger work starts in the Claude Desktop home chat:** brainstorm → approved plan → plan doc plus a paired prompt → a Code session that implements it.
-- **Small jobs, and tweaks to jobs already going, are done directly in Code.**
-- A plan doc committed to the repo lives in `docs/plans/<name>.md` and is deleted in the PR that implements it.
-- **Every PR that changes `src/` updates `docs/PROJECT_OVERVIEW.md` in the same PR** (it is rewritten in place and always equals the code). The only exception is a tiny direct-in-Code job (typo, comment, one-line fix, no behaviour change) whose PR description has the exact line `no overview change`.
-- `npm run lint` runs `scripts/check-workflow.mjs`, so CI fails when a PR touches `src/` without the overview (and without that line), or when a plan doc is still in `docs/plans/` on a PR into `main` or on `main`.
-- **5 options first** applies only to design, UI and art brainstorms in the home chat: the user sees 5 options that differ in ways that matter and picks before the final version is built. Small direct jobs need no options. Options are mockups or screenshots, never merged into `main`. Whenever the user chooses between pictures (art, UI options, existing assets), they are shown on an interactive picker page: every picture has a label (its group number and a letter, like 1a), a click marks it Keep, a right-click (or L) marks it Learn (a style the user likes, kept as a pixel-art reference), and a Copy list button copies both lists for the user to paste into the chat. A picture marked both Keep and Learn is a stronger reference than one marked Learn only.
+## Setup notes (facts, not rules)
 
-## Rules (always follow, no exceptions)
+- A new worktree: `git worktree add C:/bi-<task> -b <branch> origin/main`. Never switch branches in the main folder, and never delete the user's untracked files there.
+- In a new worktree `npm ci` skips Electron's install script on this PC: run `node node_modules/electron/install.js` once before starting the dev app.
+- Bare `python` is not on PATH; use `py`.
+- The `gh` CLI does everything on GitHub; the user does not push, merge or manage PRs by hand.
 
-1. **Fetch first.** Before starting, run `git fetch` / `git pull` so you work on the latest code.
-2. **One session, one worktree:** `git worktree add C:/bi-<task> -b <branch> origin/main`. Never switch branches in the main checkout, never delete the user's untracked files there. Remove the worktree when the PR merges.
-3. **Tools.** If a task needs a tool, skill, plugin or package that is missing (Python, a CLI, a library, anything), ask the user once, then install and use it, and never ask again for that same tool. Never work around a missing tool (for example by hand-editing what the tool would produce). At the start of a job, check whether an installed or catalogue tool, skill or plugin would do it better and suggest it the same way. Mention what was installed in the PR.
-4. These rules override any habit or default. If a rule seems to conflict with something, follow the rule and tell the user.
-5. `docs/DESIGN.md` keeps one version of each rule, each with a status tag (`[Built]`, `[Differs]`, `[To build]`, `[Default]`, `[Proposed]`), following its "How this document works" section. A design change rewrites the rule where it lives; never add amendment, update or defaults sections. Only the user decides: a gap you must fill is written in place as `[Default]` and listed under Open questions, and you never change a decision of the user's on your own. Design edits from a chat are committed before any code. Every PR updates the tags of the rules it builds or changes. `npm run lint` runs `scripts/check-design.mjs`.
-6. Game content (cards, resources, dungeons, cosmetics) lives in data files validated by schemas, not hardcoded in logic.
-7. Game logic stays separate from UI so it can be unit tested.
-8. Use `break_eternity.js` for all game numbers.
-9. Save format changes always need a version bump and a migration.
-10. Verify changes (lint, tests, build, and a run or screenshot for UI) before saying something is done.
+## 2. Showing work and picking
 
-Optional helpers: `.claude/agents/` holds `ui`, `pixel-art` and `mechanics` agents and `.claude/skills/pixel-art/` the pixel-art skill. Use them when they save time; nothing requires routing through them. The default art source is the user's own pictures (ChatGPT, Gemini), used as they are: cut out, background removed, scaled to fit, never converted to a pixel grid, redrawn or recoloured (user, 2026-11-12: "no need for pixelart conversion any more"; `docs/ASSET_RULES.md` §5 Straight pictures). Free asset packs the user picked are allowed too (user, 2026-11-11), each listed in `src/data/content/credits.json` with its licence. PixelLab (the `pixellab` MCP server) is only for art the user has no picture for and says may be made that way; it costs the user money, so ask first.
+1. **Picker page.** Every time there is a choice to make between pictures, it is shown on the picker page. What the user picks is what gets built.
+2. **Single picture.** When Claude is only showing one picture, it is sent at the end of the reply.
+3. **Approval before release.** Nothing graphic is merged or released before the user's explicit approval or choice.
+4. **Options.** At least two, at most five. Each option differs from every other in layout or in how it works; if two could be described as "the same thing in another colour or font", one of them is dropped. Small direct jobs need none. Options are never merged into `main`.
 
-## GitHub workflow
+## 3. Money and approved art
 
-Claude handles everything GitHub-related (git + the `gh` CLI); the user does not push, merge or manage PRs manually.
+1. **Nothing that costs real money without an explicit yes.** PixelLab generations and anything else paid. Each paid job has a cap the user sets. Inside it, Claude shows every batch before running it: the prompts, what they make and the total price; the user's yes covers that batch only, and the results go to the picker page. Free tools are used where they give the same quality; for pixel art nothing free has matched PixelLab so far, so Claude does not draw it by hand instead.
+2. **Who spends.** Only the art controller chat spends on art; build chats never do.
+3. **Balance and log.** During PixelLab work every reply ends with the generations left, and every paid call is logged with its price and the running total.
+4. **Approved art.** Art the user approved is not redone, fixed or regenerated without their yes, and Claude does not act on its own audit findings.
+5. **One art set at a time.** One set per pass, approved and merged before the next starts.
+6. **Usage is money.** The user's usage credits are real money, the same as any paid tool. Before Claude starts or restarts another chat, a helper agent or a workflow, or any job that reads the whole code or the big docs, it says roughly how big the job is (model and strength, how many helpers, what it reads) and waits for the user's explicit yes. No yes, no start. A yes covers that one job only.
+7. **Never above medium on its own.** Claude never starts a chat, a helper agent or a workflow above medium strength, and never raises a chat's strength, by its own choice, on any model. Only when the user tells it to use another strength may it set it, and the user then confirms it in the Allow box. The user can set any strength themself.
+8. **A usage limit means stop.** When any chat hits a usage limit, Claude stops everything it started, reports to the user, and restarts nothing without their yes.
+9. **Watch the meter, and work in phases.** The size Claude gives before a job with helpers includes about how much of the 5-hour limit it should take, stated as a rough guess. The first helper runs alone: Claude reads the usage meter when it finishes and works the estimate out again from what it really used. If the new total is more than the user was first told, Claude stops and asks. It reads the meter again after each step. A job that does not fit in what is left of the limit is split into phases that each fit; every phase ends with its work saved, and the next phase starts only when the meter has room for it. The phases are shown in the click window, and the user's yes to them covers all of them.
 
-- Work on a new branch named after the task (e.g. `feat/save-system`, `fix/offline-cap`). Never push directly to `main`.
-- Commit in small, clear steps with descriptive messages.
-- When done, open a PR with a short summary of what changed, how it was verified and which `DESIGN.md` tags it changed.
-- **Before merging, bring the branch up to date with `main`** (merge or rebase it) and wait for CI to pass on that up-to-date result. Two PRs that each passed alone have broken `main` before.
-- Wait for a real CI pass (check the run's conclusion; never `gh pr checks | tail && gh pr merge`). If it fails, fix it and push again. When CI is green on the up-to-date branch, squash-merge the PR into `main` (the branch is deleted automatically), then switch back to an updated `main`.
-- Never force-push, never delete `main`, never merge with failing CI.
-- Releases: when the user says "release", bump the version (patch by default, or as specified), merge that via PR, then create and push the `vX.Y.Z` tag so the release workflow publishes it. Confirm when the GitHub Release is live. See `RELEASING.md`.
-- At the end of each task, tell the user in one or two lines what was merged.
-- Repo settings already applied: Actions workflows have read/write permissions, squash merge is the only merge method, merged branches are deleted automatically. `.claude/settings.json` allows `git`/`gh` commands and denies force-pushes and deleting `main`.
+## 4. Running the work
+
+1. **One build, one fresh chat.** A chat that finished a build gets no new job and is closed when its work is merged.
+2. **Progress.** A long job shows how far it is. This goes into the status overlay as rough progress per job, not an exact countdown.
+3. **Balance numbers are Claude's.** The user says what they feel when they play; tuning and pacing are settled by Claude with the sim and reported, not asked.
+4. **One sim at the end.** Jobs that change the game's balance are all finished first; then one full sim balances everything before the release. A single job may run a short sim (the first hours of play, one seed) only to catch a broken game: finished far too fast, stuck, numbers exploding.
+5. **Model for build chats.** Sonnet at medium strength is the default Claude suggests when it asks which model and strength a new chat runs on (rule 1.7); the user can change it.
+6. **The brief.** When one chat starts another, it writes the instruction as a complete spec the new chat can follow with nothing else: what to build in the starting chat's own words, with one concrete example; the user's words on it, quoted with dates; what is already decided and what was tried and rejected; the files; what done looks like and what to show the user; what it must not do. If the starting chat is not sure what the user meant, it asks the user before writing the brief.
+7. **A confused chat asks, it does not guess.** A build chat that is unsure what is wanted sends one short question to the chat that started it and waits; that chat answers, or asks the user if it cannot.
+
+## 5. Chats and releases
+
+1. **Merged is not released.** After a merge, Claude says in one line that the work is merged but not yet released.
+2. **Three standing chats.** The controller talks to the user about how the game plays, plans, writes briefs, and merges and releases everything. The art controller handles everything the user looks at (art, effects, screens and layout) and is the only chat that spends on art. The rules and docs keeper changes rules only on the user's word and keeps the rule files, the overview, DESIGN and the tools that enforce rules. All three run on Fable or Opus at medium. Each stays short: it clears itself between jobs and keeps what is in flight in a short hand-over note. Everything else is a build chat.
+3. **A build chat does one job.** Before it is closed it writes a closing note of about 20 lines: what it built, the user's decisions in their words, what was rejected, what is left.
+4. **Closing notes go into one folder.** The controller reads them only when asked; closed chats are not re-read. The folder is `C:\Basic Incremental\design\closing-notes\` (local, not in the repo).
+5. **Release size.** Merged work is collected into releases of about 10 points: a small change counts 1, a big one 3 to 5. Claude gives the points and says the count. A job bigger than that is split sensibly over several releases.
+6. **Before a release** Claude lists what the player will see differently and waits for the user's OK.
+7. **A broken release is fixed at once.** A fix for a release that broke the game does not wait for 10 points.
+
+## 7. Git and GitHub
+
+1. **Latest code first.** A chat fetches the newest code before it starts.
+2. **One chat, one worktree.** A build chat works in its own copy of the project folder; the copy is removed when its work is merged.
+3. **Nothing goes straight into `main`.** Work goes through a branch and a PR. No force-push, and `main` is never deleted (the last two are also blocked by `.claude/settings.json`).
+4. **Merge only when the checks pass** on a branch brought up to date with `main` first; squash merge.
+5. **Version tags are never reused or moved.** A bad release is fixed by a newer version.
+
+## 8. Docs
+
+1. **DESIGN.md is the truth for game design** and is never contradicted without asking the user. UI_RULES is for UI, ASSET_RULES for art.
+2. **One current text per rule.** A rule in DESIGN is rewritten where it stands, never patched with an "update" section below it, and carries a tag saying whether the game has it yet. Tags change in the same PR as the code.
+3. **The project overview is updated in every PR that changes the code.** A build chat says in its closing note what changed; the rules and docs keeper writes it into the overview before the controller merges.
+4. **A plan doc is deleted by the PR that builds it.** Exact numbers live in the data files, not in DESIGN.
+5. **Whose decision it is.** Rules 1.2 and 1.3 applied to the docs: what a chat filled in is tagged Default and listed under Open questions, and becomes decided only on the user's explicit yes; the user's decisions carry their words and the date.
+6. **Decisions are written into DESIGN before the code.** A decision never lives only in a chat's memory.
+7. **A chat reads only what its job touches.** The brief names the parts of DESIGN and the overview to read; nobody reads both files whole. Graphics jobs read the graphics rule file, which carries a short description of the game's style to follow.
+8. **Only good models touch the rules and the docs.** The rule files, the overview and DESIGN are written and changed only by Opus or Fable, at medium strength (rule 3.7).
+9. **The docs stay small.** The overview and DESIGN must never grow back into dead weight: each has a size limit that `npm run lint` checks, set with the user's yes when the docs split is done.
+
+## 9. Code
+
+1. **Content in data files.** Cards, resources, dungeons and cosmetics live in data files checked by schemas, and every tunable number goes through the modifier pipeline.
+2. **Game logic apart from the screen.** `src/game` knows nothing of the UI, so it can be tested alone; the renderer holds no game rules. Game logic is written test first.
+3. **`break_eternity.js` for all game numbers.**
+4. **A save format change** needs a version bump, a migration and a migration test.
+5. **Verify before saying done:** lint, tests, build, and a run or screenshot for UI.
+6. **Dev cheats never ship**, and layouts holding pixel art use whole pixel scales.
+
+## 10. Tools and art
+
+1. **Tools.** Before installing anything on the user's PC, Claude asks once. After the yes it uses the tool and does not ask again for that tool. It never fakes a tool's work by hand.
+2. **Weapon style.** The weapon sprites now in the game are the style to keep.
+3. **Reference art** is studied, never copied or put into the game.
+4. **Art helper files** (the pixel-art agent and skill) follow these rules wherever they overlap.
+5. **Asset packs** the user picked are allowed, each with a credit line.
+6. **Reuse.** For icons, a picture already in the game is used again where it fits instead of making a new one. Not for weapons: every weapon has its own sprite.
