@@ -35,6 +35,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 4. **Approved art.** Art the user approved is not redone, fixed or regenerated without their yes, and Claude does not act on its own audit findings.
 5. **One art set at a time.** One set per pass, approved and merged before the next starts.
 6. **Usage is money.** The user's usage credits are real money, the same as any paid tool. Before Claude starts or restarts another chat, a helper agent or a workflow, or any job that reads the whole code or the big docs, it says roughly how big the job is (model and strength, how many helpers, what it reads) and waits for the user's explicit yes. No yes, no start. A yes covers that one job only.
+7. **Medium strength only.** No chat, helper agent or workflow is ever started on any model at a strength other than medium. No exceptions, Fable included.
 
 ## 4. Running the work
 
@@ -73,7 +74,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 5. **Whose decision it is.** Rules 1.2 and 1.3 applied to the docs: what a chat filled in is tagged Default and listed under Open questions, and becomes decided only on the user's explicit yes; the user's decisions carry their words and the date.
 6. **Decisions are written into DESIGN before the code.** A decision never lives only in a chat's memory.
 7. **A chat reads only what its job touches.** The brief names the parts of DESIGN and the overview to read; nobody reads both files whole. Graphics jobs read the graphics rule file, which carries a short description of the game's style to follow.
-8. **Only good models touch the rules and the docs.** The rule files, the overview and DESIGN are written and changed only by Opus or Fable, at medium to high strength.
+8. **Only good models touch the rules and the docs.** The rule files, the overview and DESIGN are written and changed only by Opus or Fable, at medium strength (rule 3.7).
 
 ## 9. Code
 
