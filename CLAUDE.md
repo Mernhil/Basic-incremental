@@ -72,6 +72,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 5. **Whose decision it is.** Rules 1.2 and 1.3 applied to the docs: what a chat filled in is tagged Default and listed under Open questions, and becomes decided only on the user's explicit yes; the user's decisions carry their words and the date.
 6. **Decisions are written into DESIGN before the code.** A decision never lives only in a chat's memory.
 7. **A chat reads only what its job touches.** The brief names the parts of DESIGN and the overview to read; nobody reads both files whole. Graphics jobs read the graphics rule file, which carries a short description of the game's style to follow.
+8. **Only good models touch the rules and the docs.** The rule files, the overview and DESIGN are written and changed only by Opus or Fable, at medium to high strength.
 
 ## 9. Code
 
