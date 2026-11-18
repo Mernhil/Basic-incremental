@@ -2,6 +2,9 @@
 //  (a) A PR that changes `src/` must also change docs/PROJECT_OVERVIEW.md, unless its description has
 //      the line `no overview change`.
 //  (b) Nothing but a README may remain under docs/plans/ on main or when a PR merges into main.
+//  (c) Every file or folder the overview names in backticks exists.
+//  (d) The overview names every file of src/game, src/data/content, src/main and src/preload and
+//      every folder of src/renderer/src, so new code cannot land without a place in it.
 // In GitHub Actions the PR description is read from the event payload. Locally the description is
 // unknown, so (a) only warns and (b) only warns (a plan is allowed to exist while you work).
 import { execFileSync } from 'node:child_process';
@@ -44,6 +47,51 @@ export function checkPlans(files) {
   );
 }
 
+/** Paths the overview names in backticks: `src/...`, `scripts/...`, `tests/...`, `docs/...`, `.github/...`. */
+export function namedPaths(overviewText) {
+  const found = new Set();
+  for (const m of overviewText.matchAll(/`((?:src|scripts|tests|docs|\.github)\/[^`\s]*)`/g)) {
+    const p = m[1].replace(/[.,;:]+$/, '');
+    // Patterns and placeholders name no single file.
+    if (/[*<>{}|]|\.\.\./.test(p)) continue;
+    found.add(p.replace(/\/$/, ''));
+  }
+  return [...found];
+}
+
+/** Errors for rule (c): every path the overview names exists. `exists` is injected for tests. */
+export function checkNamedPaths(overviewText, exists) {
+  return namedPaths(overviewText)
+    .filter((p) => !exists(p))
+    .map((p) => `${OVERVIEW} names \`${p}\`, which does not exist. Fix the section that names it.`);
+}
+
+/** Errors for rule (d): every code file or folder in `required` is named somewhere in the overview. */
+export function checkCoverage(overviewText, required) {
+  return required
+    .filter((name) => !overviewText.includes(name))
+    .map(
+      (name) =>
+        `${OVERVIEW} does not name \`${name}\`. Add it to the section of the system it belongs to.`,
+    );
+}
+
+/** What the overview must name: each game logic file, each content file, each renderer folder. */
+function requiredNames() {
+  const names = [];
+  const files = (dir, ext) =>
+    existsSync(dir) ? readdirSync(dir).filter((f) => f.endsWith(ext)) : [];
+  names.push(...files('src/game', '.ts'));
+  names.push(...files('src/data/content', '.json'));
+  names.push(...files('src/main', '.ts'), ...files('src/preload', '.ts'));
+  if (existsSync('src/renderer/src')) {
+    for (const e of readdirSync('src/renderer/src', { withFileTypes: true })) {
+      if (e.isDirectory()) names.push(`${e.name}/`);
+    }
+  }
+  return names;
+}
+
 function git(args) {
   return execFileSync('git', args, { encoding: 'utf8' }).split(/\r?\n/).filter(Boolean);
 }
@@ -82,6 +130,13 @@ function main() {
     } catch {
       warnings.push('Could not compare against origin/main; skipped the PROJECT_OVERVIEW check.');
     }
+  }
+
+  // (c) and (d): the overview names only files that exist, and names every code file and folder
+  if (existsSync(OVERVIEW)) {
+    const overview = readFileSync(OVERVIEW, 'utf8');
+    errors.push(...checkNamedPaths(overview, existsSync));
+    errors.push(...checkCoverage(overview, requiredNames()));
   }
 
   // (b) plans: enforced for PRs into main and for main itself
