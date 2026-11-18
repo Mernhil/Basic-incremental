@@ -51,6 +51,8 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 - [To build] **Heirloom backdrop motion** (user, 2026-11-15: "keep the static backgrounds and vault the animations for now"). The moving Heirloom backdrops (the villain's flowing lava, the sea's fish and bubbles) are wanted later. Today: the backdrops are still pictures; the motion code is in the game behind one switch that is off.
 - [To build] **Card backgrounds and banners** (user, 2026-11-12: "i want to add customized backgrounds for each uniques like the bo3 banners that moved if it makes sense, in order to add uniquity to heirlooms and also we can make custom banners to put on everything not mythic to add to the cosmetics"). Each Heirloom gets its own background behind the weapon, which may move, and every card that is not Mythic can wear a custom banner as a cosmetic. The slot, how it is owned and worn, and how the motion plays are not designed yet. Today: Heirlooms show their batch's still backdrop; no banner cosmetic exists.
 
+- [Differs] **No Mythic or Void Heirlooms** (user, 2026-11-14: "void heirlooms and mythic heirlooms arent a thing"; user, 2026-11-18: "again they arent a thing void and mythic ar for t6"). Mythic and Void belong to T6 only; an Heirloom is not Mythic or Void and is never labelled so. Today: every Heirloom carries a mythic or void side in its data, used for its grade, colour and art, and its detail line and Heirloom Gate pull say "Mythic" or "Void".
+
 ### Cosmetics
 
 - [To build] **Frames made by the user** (user, 2026-11-12: "sure we'll customize frames as well since you mentioned it but chat does that not you"). The user has ChatGPT design more card frames; Claude does not design them. Today: no frame cosmetics made by the user beyond the existing borders and card kits.
@@ -62,39 +64,15 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 
 ## 3. Open questions
 
-### Direction the old doc gave without your words
-
-- Is this still your direction? The game is made mainly for you, maybe for others, and customization is its main feature. The old doc gave no quote or date.
-- Is this still your direction? Brave Frontier is the main reference for style, screen order, upgrades, the evolution feel and the gacha, adapted to a desktop app: no characters as cards, no turn-based combat, no energy or stamina timers. The old doc gave no quote or date.
-- Is this still your direction? It is a gacha game: strength comes from the cards a player owns and how far they have taken them. The old doc dated it 2026-11-08 but gave no quote.
-- Is this still your direction? Portals cost in-game currency only, never real money. The old doc gave no author, quote or date.
-- Is this still your direction? Card management (stars, pulls) is never automated. The old doc gave no author or quote; today no autobuyer touches cards.
-- Is this still your direction? The web build is only for trying the game on a phone from the PC on the local network, and is not published online. The old doc credited it to the planning chat and you on 2026-11-17 without your words.
-- Is this still your direction? Tree, mine, tool and Training levels are cheap and frequent, and is a further price cut wanted? The old doc said you said so, with no quote or date; prices are unchanged meanwhile.
-- Is this still your direction? Skill web levels are bought often ("upgrade more often", 2026-11-16). The old doc credited the words to "user and controller", so it is not clear they are yours.
-- Is this still your direction? Tree and mine level costs grow only a little per level, with larger milestone multipliers keeping income close to prices. The old doc credited this to you on 2026-11-10 without a quote; the game's milestone multipliers are now much smaller than the old doc's figure, after a chat's readable-numbers rescale.
-
 ### Pacing
 
-- Is this still your direction? The first Ascension stays at 8 hours, and the hours before it are paced so every tier step feels earned. The old doc dated it 2026-11-10 but gave no quote; the sim stores the 8 hours.
-- Is this still your direction? The pacing targets for active play (first summon, first dungeon, first Silver, Gold and Prismatic card, Dungeons 2 and 3, the Glimmer Trial, the first maxed cosmetic, content mostly exhausted) were proposed by Claude and, per the old doc, confirmed by you on 2026-11-10, with first Silver and Dungeon 2 moved later by you that day and first ★6 from copies moved by you on 2026-11-11. The old doc gave no quote; the sim stores the targets.
-- Is this still your direction? "Mostly exhausted" does not ask for every card. The old doc dated it 2026-11-11 but gave no quote.
-- Is this still your direction? A fully maxed weapon, an Heirloom at ★6, takes 200 hours at most for now, and may go higher when later systems arrive. The old doc dated it 2026-11-11 but gave no quote; the sim reports the hours but does not check them.
-- Is this still your direction? A balance PR runs the sim on 20 seeds, and a milestone passes when its median is within 25% of its target and its worst seed within 2 times. The old doc dated it 2026-11-10 but gave no quote; the check is built, the rule that a balance PR must run it is not.
-- Is this still your direction? A loadout that matches the dungeon kills its boss in about 15 to 30 seconds and one that is too weak falls in about 10 to 20 seconds; bosses are not health walls that cannot hurt you. The old doc dated it 2026-11-10 but gave no quote; the sim does not hit the band everywhere.
-- Is this still your direction? On floors a normal wave dies in a few seconds and a mini-boss in about 15 to 30 seconds. The old doc dated it 2026-11-10 but gave no quote.
-- Is this still your direction? Each Ascension run is faster overall than the one before. The old doc dated it 2026-11-11 but gave no quote; the sim checks it.
-- Is this still your direction? Better tiers must feel special: scrolls come in lumps, aiming near 12 to 15 pulls an hour and about one Gold card every 2 hours. The old doc dated it 2026-11-10 but gave no quote.
 - The first summon comes at minute 0, because a new game starts with a Summon Scroll, against the 5 to 10 minute target. The old doc says you accepted this until the retune, without your words, and one line calls the starter scroll your decision while another lists it as Claude's default. Is the starter scroll yours, and does the opening stay?
-- A chat's readable-numbers rescale (2026-11-12) replaced numbers you had confirmed: the tier step, the Hard and Nightmare factors, the old rarity ratios, star impact, the Training rates and the starting Money. The old doc says each needs your yes. Does the standing rule that balance numbers are Claude's cover these too? The game uses the rescaled numbers meanwhile.
 
 ### Cards and Heirlooms
 
-- Loadout cost cap: you said "it needs to be 80 tho cause you want to eventually end up using at least 3t6 and 1 heirloom but i think you should be able to get 2 heirlooms and 2 t6 at max" (2026-11-15). The game stops the cap at 64 (two Heirlooms and two T6 at today's card costs) and a loadout holds at most two Heirlooms, both a chat's reading. Which top do you want, and is the two-Heirloom limit yours? Where the cap's steps land by account level is left meanwhile to the account level rework.
-- Heirloom side: you said "void heirlooms and mythic heirlooms arent a thing" (2026-11-14), and that each Heirloom may lean hero or villain. In the game every Heirloom still carries a mythic or void side in its data, used for its grade, colour and art, and its detail line and Heirloom Gate pull are labelled "Mythic" or "Void"; the side has no gameplay effect. Is that label acceptable, or should Heirlooms show no Mythic or Void word?
-- Card strength and tiers: you said "no upgrading throught tiers each weapon its from the summon and stays the tier its in we already establoished thois" (2026-11-16). No code raises a card's tier, but a pulled card starts on the Wood power step and gains each higher tier's power step as it passes the old level caps (a chat's ruling, 2026-11-16). Is that acceptable, or should a card have its own tier's strength from level 1?
-- Stars and the tier word on the card: one statement (2026-11-10, "confirmed as built") puts the name and stars side by side on the top plate and the level and tier word on the bottom plate; later statements (2026-11-14 and 2026-11-16) put the name alone on the top plate and the stars in the bottom banner, with no tier word on the banner. The game follows the later one. Which is yours?
-- Health bar on the cards: your pick "Screen edge pulse" (2026-11-08) describes a health bar that closes on each hit and red numbers on the cards; a later statement (2026-11-12) says "the cards carry neither a health bar nor a damage tag". Which stands? Whether the game shows either on the cards was not checked here.
+- Card strength and tiers: a card's tier is its identity and it never moves between tiers (user, 2026-11-18: "tiers are identifiers for that card so it cant jump between them"); the game has that. Open: a pulled card starts on the Wood power step and gains each higher tier's power step as it passes the old level caps (a chat's ruling, 2026-11-16). You said "i dont know about the second part" (2026-11-18). Keep that, or should a card have its own tier's strength from level 1?
+- Stars and the tier word on the card: one statement (2026-11-10, "confirmed as built") puts the name and stars side by side on the top plate and the level and tier word on the bottom plate; later statements (2026-11-14 and 2026-11-16) put the name alone on the top plate and the stars in the bottom banner, with no tier word on the banner. The game follows the later one. Which is yours? You said on 2026-11-18: "this will probably have to be revised".
+- Health bar on the cards: your pick "Screen edge pulse" (2026-11-08) describes a health bar that closes on each hit and red numbers on the cards; a later statement (2026-11-12) says "the cards carry neither a health bar nor a damage tag". Which stands? Whether the game shows either on the cards was not checked here. You said on 2026-11-18: "revised".
 - Cores and Frost Sigils have no use since tier-ups left, and stars come from copies alone (2026-11-08). What are they spent on? Meanwhile they keep dropping with nothing to spend them on (Claude's ruling, 2026-11-16).
 - The 45 extra T6 cards still use the old recoloured pictures, not the Dragon batch style. Are they redone in the batch style, or kept? Meanwhile they keep the old pictures (Claude's default).
 
@@ -104,7 +82,6 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 
 ### Dungeons and summons
 
-- Each dungeon has its own arena background, with the art coming later. The old doc credited this to you on 2026-11-10 without a quote. Is it still wanted? Today the first three dungeons draw a shared brick room and Dungeons 4 to 6 recoloured versions of it, with no pictures.
 - The Shadow Slime's front-facing redraw is in the game and you have not seen it yet. Keep it or redo it?
 - The small enemy packs (Bloodroot, Obsidian Crab and the small Elie sprites) look small next to the other bodies. Double them? Whether their drawn size changed since was not checked.
 - The reveal show uses Claude's mockup r3 "Fan Deck". Keep it, or pick another of the five reveal mockups?
@@ -112,7 +89,6 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 ### Cosmetics
 
 - Castle Stone was withdrawn on 2026-11-14. Is it redone, and how? Its files are still in the repo and loaded, unused, and no player can own it meanwhile.
-- Tavern Wood, a new unlockable table from PixelLab mockup 1a, was credited to you on 2026-11-13 without your words. Is it still wanted now that Carved Oak covers much of what it was meant to be, and does it wait for the Castle Stone decision? It is not in the game.
 - "Carved Oak" is a working name given by a chat; you picked the look ("Replace starter", 2026-11-16) but not the name. Keep the name? The game shows "Carved Oak".
 - A worn Skill nodes style other than the starter replaces the glyph inside the skill web's plates (a chat's choice, in the game). Keep it, or should the plates keep their glyphs with the style only tinting the border, or the style stay on the card enhancement chart only?
 
@@ -155,7 +131,6 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 - [Default · in game] **Which cards have which role**: a card's role follows its ability and duel skill, with the type-to-role table and three off-role cards, Bronze Mystic, Silver Mage and Seraph Lancer (Claude, 2026-11-15). Overview: Cards.
 - [Default · in game] **Ability and Team bonus**: the two texts are named "Ability" and "Team bonus", an ability acts on the card's own hits, a team bonus counts for the whole team, the giver included (Claude, 2026-11-15). Overview: Cards.
 - [Default · in game] **Card colours follow the tier**: each card keeps the body colour its old rarity gave it, read through its tier (Claude, 2026-11-16). Overview: Cards.
-- [Default · in game] **Loadout cost top and Heirloom limit**: the loadout cost cap stops at 64 and a loadout holds at most two Heirlooms, refusing a third with a message, the planning chat's reading of the user's words (Claude, 2026-11-15). Overview: Cards.
 - [Default · in game] **The roster in the data**: which old rarity card became which tier's card, one ability per weapon type at every tier, team bonus growing with tier, the extra cards' names and kits (Claude, 2026-11-10 and 2026-11-16). Overview: Cards.
 - [Default · in game] **One copy a star**: with fixed tiers a star costs one copy of that card at every tier (Claude, 2026-11-16). Overview: Cards.
 - [Default · in game] **The extra T6 cards' details**: names, own weapon names, elements, the same power as their T6 peers, and a different second bonus on some fighting cards (Claude, 2026-11-12). Overview: Cards.
