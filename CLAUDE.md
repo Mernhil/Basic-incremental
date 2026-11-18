@@ -36,6 +36,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 5. **One art set at a time.** One set per pass, approved and merged before the next starts.
 6. **Usage is money.** The user's usage credits are real money, the same as any paid tool. Before Claude starts or restarts another chat, a helper agent or a workflow, or any job that reads the whole code or the big docs, it says roughly how big the job is (model and strength, how many helpers, what it reads) and waits for the user's explicit yes. No yes, no start. A yes covers that one job only.
 7. **Medium strength only.** No chat, helper agent or workflow is ever started on any model at a strength other than medium. No exceptions, Fable included.
+8. **A usage limit means stop.** When any chat hits a usage limit, Claude stops everything it started, reports to the user, and restarts nothing without their yes.
 
 ## 4. Running the work
 
