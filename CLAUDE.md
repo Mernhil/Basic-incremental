@@ -37,6 +37,7 @@ These are the rules the user decided on 2026-11-17, in their wording. Two more g
 6. **Usage is money.** The user's usage credits are real money, the same as any paid tool. Before Claude starts or restarts another chat, a helper agent or a workflow, or any job that reads the whole code or the big docs, it says roughly how big the job is (model and strength, how many helpers, what it reads) and waits for the user's explicit yes. No yes, no start. A yes covers that one job only.
 7. **Never above medium on its own.** Claude never starts a chat, a helper agent or a workflow above medium strength, and never raises a chat's strength, by its own choice, on any model. Only when the user tells it to use another strength may it set it, and the user then confirms it in the Allow box. The user can set any strength themself.
 8. **A usage limit means stop.** When any chat hits a usage limit, Claude stops everything it started, reports to the user, and restarts nothing without their yes.
+9. **Watch the meter.** The size Claude gives before a job with helpers includes about how much of the 5-hour limit it should take. The first helper runs alone; Claude reads the usage meter when it finishes, and again after each step. A jump is: the first helper used more than its share of that estimate, or the total has passed the estimate. On a jump, Claude stops everything and reports, and starts nothing more without the user's yes.
 
 ## 4. Running the work
 
