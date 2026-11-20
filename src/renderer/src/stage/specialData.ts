@@ -70,9 +70,9 @@ export interface WeaponMotion {
   /** Seconds the weapon stays planted at the hit before it swipes on (the white and the dark frame
    *  are its first two frames). */
   hold: number;
-  /** The drawn slash sheets fit this weapon's cut: they are drawn rising 16 degrees to the right,
-   *  bowed upward, and are never turned. */
-  sheetCut?: boolean;
+  /** The drawn sheet this weapon's hit plays in place of the code-drawn one, in the material tiers
+   *  (wood to prismatic). It is drawn for this weapon's own cut and is never turned. */
+  sheet?: keyof typeof HIT_SHEETS;
   /** A heavy weapon: it hangs still at the top of its wind-up and trembles only on the last three
    *  frames, and the stage shakes harder when it lands. */
   heavy?: boolean;
@@ -115,7 +115,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     ],
     knock: 1,
     hold: 0.12,
-    sheetCut: true,
+    sheet: 'sword',
     times: T(0.76, 0.84, 1.08, 0.28),
   },
   // slow and heavy: raised high, a big cleave down to the right
@@ -145,6 +145,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 1.5,
     hold: 0.2,
     heavy: true,
+    sheet: 'greatsword',
     times: T(0.76, 0.92, 1.4, 0.36, 0.2),
   },
   // fast and short: two quick cuts that cross
@@ -263,6 +264,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 2,
     hold: 0.2,
     heavy: true,
+    sheet: 'lance',
     times: T(0.76, 0.92, 1.36, 0.4, 0.18),
   },
   // slow and heavy: an overhead smash that lands on the enemy and stays there, in a burst with
@@ -295,6 +297,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 1.9,
     hold: 0.24,
     heavy: true,
+    sheet: 'hammer',
     times: T(0.76, 0.96, 1.48, 0.4, 0.22),
   },
   // a wide reaping arc, right to left: the scythe's blade points left, so it leads
@@ -323,6 +326,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     ],
     knock: 1,
     hold: 0.12,
+    sheet: 'scythe',
     times: T(0.76, 0.9, 1.16, 0.32, 0.16),
   },
   // drawn and loosed: the bow turns to the enemy, kicks back, and its thin shot stops in the enemy
@@ -386,47 +390,99 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     ],
     knock: 1,
     hold: 0.12,
+    sheet: 'staff',
     times: T(0.76, 0.92, 1.18, 0.36, 0.16),
   },
 };
 
 /**
- * A drawn slash (PixelLab, 2026-11-21): one strip of equal frames at one fixed angle, played in
- * place of the code-drawn crescent. The pictures are `art/fx/slash-<name>.png`.
+ * A drawn hit (PixelLab, 2026-11-21): one strip of equal frames, played in place of the code-drawn
+ * mark. Each is drawn for one weapon's own stroke and is never turned. The pictures are
+ * `art/fx/hit-<name>.png`; all are grey and take a material's five tones by brightness.
  */
-export interface SlashSheet {
+export interface HitSheet {
   frame: { w: number; h: number };
-  /** The point of a frame that sits on the middle of the cut's chord. */
+  /** The point of a frame that is placed: the middle of the chord for a cut or a thrust, the hit
+   *  point for a smash, the foot for a pillar. */
   centre: { x: number; y: number };
-  /** The whole crescent (the two snap-on frames are cut from it), the frames that flicker while the
-   *  hit holds, and the frames it breaks up in, 40 ms each. */
+  /** Whole logical pixels per sheet pixel. */
+  scale: number;
+  /** A cut or a thrust: half the drawn chord's length and how far its middle bows off the chord, in
+   *  sheet pixels. The stroke takes them, so the weapon rides the drawn line. Without them the
+   *  stroke keeps its own. */
+  half?: number;
+  bulge?: number;
+  /** The whole mark: the two snap-on frames are cut from it. */
   still: number;
-  hold: number[];
-  out: number[];
-  /** A grey sheet takes each effect's own five tones by brightness; a coloured one is shown as drawn. */
-  recolour: boolean;
+  /** The frames while the hit holds (looping, or run once and kept on the last) and the frames it
+   *  breaks up in after the release, with the seconds each one stays. */
+  hold: { frames: number[]; step: number; loop: boolean };
+  out: { frames: number[]; step: number };
 }
 
-export const SLASH_SHEETS = {
-  // a clean cut that shatters into shards from its middle
-  clean: {
+export const HIT_SHEETS = {
+  // a clean cut that shatters into shards from its middle (the user's pick B, 2026-11-21)
+  sword: {
     frame: { w: 256, h: 96 },
     centre: { x: 128, y: 56 },
+    scale: 3,
     still: 0,
-    hold: [0, 1],
-    out: [2, 3, 4, 5, 6, 7, 8, 9],
-    recolour: true,
+    hold: { frames: [0, 1], step: 0.04, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
   },
-  // a fire cut whose tongues flicker, burning away into flame pieces
-  fire: {
+  // a thick crescent descending to the right that bursts and scatters; six drawn frames, so it
+  // steps slower, and it is shown at 4x to keep the greatsword's long cut
+  greatsword: {
+    frame: { w: 208, h: 144 },
+    centre: { x: 104, y: 80 },
+    scale: 4,
+    half: 96,
+    bulge: 17,
+    still: 0,
+    hold: { frames: [0, 1], step: 0.08, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7], step: 0.06 },
+  },
+  // an eight-point star in a ring, then rock chunks thrown out in a ring; it stops after frame 8
+  hammer: {
+    frame: { w: 160, h: 152 },
+    centre: { x: 80, y: 76 },
+    scale: 3,
+    still: 0,
+    hold: { frames: [0, 1, 2, 3, 4], step: 0.08, loop: false },
+    out: { frames: [5, 6, 7, 8], step: 0.08 },
+  },
+  // a long arc descending to the right that thins from its right end, where the scythe starts
+  scythe: {
     frame: { w: 256, h: 96 },
-    centre: { x: 128, y: 60 },
+    centre: { x: 128, y: 62 },
+    scale: 3,
+    half: 120,
+    bulge: 24,
     still: 0,
-    hold: [1, 2, 3, 4, 5],
-    out: [6, 7, 8, 9],
-    recolour: false,
+    hold: { frames: [0, 1], step: 0.08, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
   },
-} satisfies Record<string, SlashSheet>;
+  // a pillar with a ring at its foot, which wavers and falls apart upward
+  staff: {
+    frame: { w: 96, h: 256 },
+    centre: { x: 48, y: 236 },
+    scale: 4,
+    still: 0,
+    hold: { frames: [0, 1, 2], step: 0.08, loop: true },
+    out: { frames: [3, 4, 5, 6, 7, 8, 9], step: 0.05 },
+  },
+  // a drive line rising to the right with three rings, swelling on the hit; six drawn frames
+  lance: {
+    frame: { w: 256, h: 128 },
+    centre: { x: 128, y: 64 },
+    scale: 3,
+    half: 118,
+    bulge: 0,
+    still: 0,
+    hold: { frames: [0, 1, 2, 3], step: 0.1, loop: false },
+    out: { frames: [4, 5, 6, 7], step: 0.08 },
+  },
+} satisfies Record<string, HitSheet>;
 
 /** What rises from the cut when it releases, and what the enemy card keeps shedding after. */
 export type RiseKind = 'flame' | 'bolt' | 'beam' | 'vine' | 'spike' | 'crystal' | 'wisp';
@@ -445,9 +501,6 @@ export interface ElementEffect {
    *  itself), forked bolts, plus-shaped sparkles, leaves, rock teeth, crystal shards, or a bright rim
    *  around a dark core. Without it the edge is plain. */
   edge?: 'tongue' | 'bolt' | 'sparkle' | 'leaf' | 'teeth' | 'shard' | 'rim';
-  /** The drawn slash it plays in place of the code-drawn crescent, on a weapon whose cut fits the
-   *  sheets (`sheetCut`). */
-  sheet?: keyof typeof SLASH_SHEETS;
   /** A sober hit: nothing rises or burns on the enemy, and only a few sparks fly. */
   plain?: boolean;
 }
@@ -539,11 +592,7 @@ const sober = (
  * element's effect.
  */
 export const MATERIAL_EFFECTS: Record<string, ElementEffect> = {
-  // the drawn slash sheet (the user's pick B, 2026-11-21): on wood only until more sheets are decided
-  wood: {
-    ...sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
-    sheet: 'clean',
-  },
+  wood: sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
   bronze: sober(['#fff1de', '#f6c896', '#d98c40', '#9e5a20', '#603412', '#2e1a0a'], '#120a04'),
   silver: sober(['#ffffff', '#eef2f7', '#c9d1dd', '#939db0', '#5d6577', '#343a48'], '#0c0e14'),
   gold: sober(['#fffde8', '#fff0a0', '#ffd23e', '#d49a12', '#8a6008', '#3e2a04'], '#141004'),
