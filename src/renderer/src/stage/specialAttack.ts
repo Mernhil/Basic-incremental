@@ -397,14 +397,17 @@ interface Geo {
   T: number;
   bow: number;
   dir: 1 | -1;
+  /** Nothing of the cut is drawn past this point of its travel (1 = all of it). */
+  cap: number;
 }
 
-function geoOf(s: Scene, k: Stroke, aimDeg: number): Geo {
+/** `reach` is how far the weapon's end is from the enemy: a stroke along the aim is that long. */
+function geoOf(s: Scene, k: Stroke, aimDeg: number, reach: number): Geo {
   const { e, f, fc } = s;
   const a = (k.rot === 'aim' ? aimDeg : k.rot) * RAD;
   const cs = Math.cos(a);
   const sn = Math.sin(a);
-  const RR = e.slash.halfWidth * f * k.len;
+  const RR = (k.rot === 'aim' ? reach : e.slash.halfWidth * f) * k.len;
   const bow = e.slash.bow * f * k.bow;
   let cx = fc.x;
   let cy = fc.y + 2 * f;
@@ -414,7 +417,17 @@ function geoOf(s: Scene, k: Stroke, aimDeg: number): Geo {
     cx = fc.x - (u * cs - v * sn);
     cy = fc.y - (u * sn + v * cs);
   }
-  return { cx, cy, cs, sn, RR, T: e.slash.thick * f * k.thick, bow, dir: k.dir };
+  return {
+    cx,
+    cy,
+    cs,
+    sn,
+    RR,
+    T: e.slash.thick * f * k.thick,
+    bow,
+    dir: k.dir,
+    cap: k.stop ? (k.hitAt ?? 0) : 1,
+  };
 }
 
 /**
@@ -457,7 +470,7 @@ function slash(
   const up = T * 2.6 + Math.abs(bow);
   const hx = Math.abs(cs) * RR + Math.abs(sn) * up + 4;
   const hy = Math.abs(sn) * RR + Math.abs(cs) * up + 4;
-  const shown = -RR + 2 * RR * reveal;
+  const shown = -RR + 2 * RR * Math.min(reveal, (G.cap + 1) / 2);
   for (let y = even(cy - hy); y < cy + hy; y += 2) {
     for (let x = even(cx - hx); x < cx + hx; x += 2) {
       const dx = x - cx;
@@ -484,6 +497,13 @@ function slash(
       g.fillRect(x, y, 2, 2);
     }
   }
+}
+
+/** Where along a cut (from its centre, in pixels) a particle starts: anywhere on a whole cut, close
+ *  to where it hit on one that stops. */
+function spread(G: Geo, r: number, width: number): number {
+  if (G.cap >= 1) return (r - 0.5) * width * G.RR;
+  return G.dir * (G.cap - r * 0.35) * G.RR;
 }
 
 type Placed = Pt & { rot: number };
@@ -601,7 +621,6 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   const fHit = F(T.hit);
   const fRel = F(T.release);
   const move = !calm;
-  const sc2 = 2 * s.s1;
   const draw = (img: CanvasImageSource, p: Placed): void => weapon(s, img, p.x, p.y, p.rot, sc2);
   const mix = (a: Placed, b: Placed, p: number): Placed => ({
     x: lerp(a.x, b.x, p),
@@ -614,14 +633,19 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   const last = strokes.length - 1;
   const flies = m.style === 'swing' || m.style === 'thrust';
   /** Where a bow or a staff is held while it fires, and the angle from there to the enemy. */
-  const stand = { x: rest.x + m.wind.x * f, y: rest.y + m.wind.y * f };
+  const stand = {
+    x: rest.x + m.wind.x * f,
+    y: rest.y + m.wind.y * f - (m.style === 'cast' ? m.cock : 0),
+  };
   const aim = Math.atan2(fc.y - stand.y, fc.x - stand.x) / RAD;
   const ax = Math.cos(aim * RAD);
   const ay = Math.sin(aim * RAD);
   const fwd =
     m.style === 'shot' ? (m.fwd ?? 0) : Math.atan2(m.tip.y - m.grip.y, m.tip.x - m.grip.x) / RAD;
   const aimRot = near(aim - fwd, -15);
-  const geos = strokes.map((k) => geoOf(s, k, aim));
+  const sc2 = 2 * s.s1;
+  const head = tipAt(s, stand.x, stand.y, aimRot, sc2);
+  const geos = strokes.map((k) => geoOf(s, k, aim, Math.hypot(fc.x - head.x, fc.y - head.y)));
   const G0 = geos[0]!;
   const K0 = strokes[0]!;
 
@@ -663,17 +687,13 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       return { x: at.x - c0.tx * m.cock * p, y: at.y - c0.ty * m.cock * p, rot: contact.rot };
     if (m.style === 'shot')
       return { x: at.x - ax * m.cock * p, y: at.y - ay * m.cock * p, rot: aimRot };
-    return { x: at.x, y: at.y - m.cock * p, rot: aimRot };
+    return { x: stand.x, y: stand.y + m.cock * (1 - p), rot: aimRot };
   };
   /** A bow kicks back from its shot and a staff pushes toward the enemy, then both settle. */
   const standPose = (tt: number): Placed => {
     const k = 1 - out3(seg(tt, T.hit, T.release));
     const d = m.style === 'shot' ? -10 * k : 10 * k;
-    return {
-      x: stand.x + ax * d,
-      y: stand.y + ay * d - (m.style === 'cast' ? m.cock : 0),
-      rot: aimRot,
-    };
+    return { x: stand.x + ax * d, y: stand.y + ay * d, rot: aimRot };
   };
   const wound = windPose(1);
   const tipOf = (p: Placed): Pt => tipAt(s, p.x, p.y, p.rot, sc2);
@@ -792,9 +812,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     } else {
       const pose = standPose(second ? T.hit : T.hit + 9);
       const from = tipOf(pose);
-      // the shot flies to the enemy; the orb's bolt climbs to where the pillar will fall from
-      const to = m.style === 'shot' ? fc : onCut(G0, -1);
-      streak(s, from, to, second ? 1 : 0.55, m.style === 'cast' ? 22 : 10);
+      // the shot, or the orb's bolt, flies to the enemy and stops there
+      streak(s, from, fc, second ? 1 : 0.55, m.style === 'cast' ? 22 : 10);
       disc(g, from.x, from.y, m.style === 'cast' ? 34 : 18, e.c[3]);
       disc(g, from.x, from.y, m.style === 'cast' ? 20 : 10, e.c[0]);
       draw(s.white, pose);
@@ -822,14 +841,18 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const c = onCut(G, w);
     glint(g, c.x, c.y, fr % 2 ? 10 : 14, e.c[0]);
   };
-  /** A bow's shot piercing along its cut, or the orb at a staff's head. */
+  /** What a bow or a staff sent, stopped in the enemy: a bright core in the trail and a burst where
+   *  it hit, and the orb still at a staff's head. */
   const drawSent = (): void => {
-    if (m.style === 'shot') {
-      const w = wAt(0, t);
-      const head = onCut(G0, w);
-      streak(s, onCut(G0, w - 0.45), head, 1, 12);
-      disc(g, head.x, head.y, 10, e.c[0]);
-    } else {
+    const w = wAt(0, t);
+    const hit = onCut(G0, w);
+    const big = m.style === 'cast' ? 1.7 : 1;
+    const k = (1 - 0.45 * seg(t, T.hit, T.release)) * big * f;
+    streak(s, onCut(G0, w - 0.5), hit, 1, 12 * big);
+    disc(g, hit.x, hit.y, (fr % 2 ? 40 : 34) * k, e.c[3]);
+    disc(g, hit.x, hit.y, (fr % 2 ? 26 : 22) * k, e.c[1]);
+    disc(g, hit.x, hit.y, (fr % 2 ? 12 : 14) * k, e.c[0]);
+    if (m.style === 'cast') {
       const tip = tipOf(standPose(t));
       disc(g, tip.x, tip.y, fr % 2 ? 22 : 18, e.c[3]);
       disc(g, tip.x, tip.y, fr % 2 ? 12 : 10, e.c[0]);
@@ -864,7 +887,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const count = Math.max(4, Math.round((e.rise === 'bolt' ? 9 : 15) / n));
         geos.forEach((G, gi) => {
           for (let i = 0; i < count; i++) {
-            const c = onCut(G, -0.85 + (i / (count - 1)) * 1.7 + (rnd(i + 400 + gi) - 0.5) * 0.05);
+            const along = (i / (count - 1)) * 1.7 + (rnd(i + 400 + gi) - 0.5) * 0.05;
+            const c = onCut(G, G.cap < 1 ? G.cap - along * 0.25 : -0.85 + along);
             const hh =
               (70 + rnd(i + 410 + gi * 7) * 110) * f * rise * (0.75 + 0.25 * rnd(i * 5 + fr * 3));
             riseOne(
@@ -886,7 +910,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const life = 0.35 + rnd(i + 3) * 0.6;
         if (tau > life) continue;
         const G = geos[i % n]!;
-        const u = (rnd(i) - 0.5) * 1.8 * G.RR;
+        const u = spread(G, rnd(i), 1.8);
         const a = -Math.PI * (0.1 + rnd(i + 1) * 0.8);
         const v0 = (220 + rnd(i + 2) * 760) * f;
         const drag = (1 - Math.exp(-4 * tau)) / 4;
@@ -903,7 +927,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const life = 0.6 + rnd(i + 210) * 0.5;
         if (ee < 0 || ee > life) continue;
         const G = geos[i % n]!;
-        const u = (rnd(i + 220) - 0.5) * 1.9 * G.RR;
+        const u = spread(G, rnd(i + 220), 1.9);
         const x = G.cx + u * G.cs + Math.sin(ee * 7 + i) * 8;
         const y =
           G.cy +

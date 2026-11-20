@@ -16,7 +16,8 @@ export interface Stroke {
   /** The cut's angle in degrees: 0 runs left to right, positive descends to the right, 90 runs top
    *  to bottom. `aim` lies along the shot, from the weapon to the enemy. */
   rot: number | 'aim';
-  /** Length, thickness and bow against the element's own slash. */
+  /** Length, thickness and bow against the element's own slash. An `aim` cut's length is instead
+   *  against the distance from the weapon's end to the enemy (1 = it starts at the weapon). */
   len: number;
   thick: number;
   bow: number;
@@ -29,6 +30,8 @@ export interface Stroke {
   follow: number;
   /** The point of the cut that sits on the enemy card's centre; without it the cut's chord does. */
   hitAt?: number;
+  /** The cut ends where it hits (`hitAt`, or its middle): a shot or a bolt that stops in the enemy. */
+  stop?: boolean;
   /** Seconds after the first hit that this stroke starts (0 for the first). */
   at: number;
 }
@@ -315,7 +318,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 1,
     times: T(0.76, 0.9, 1.16, 0.28, 0.16),
   },
-  // drawn and loosed: the bow turns to the enemy, kicks back, and its shot pierces through
+  // drawn and loosed: the bow turns to the enemy, kicks back, and its shot stops in the enemy
   bow: {
     style: 'shot',
     sprite: SPRITE,
@@ -330,21 +333,22 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     strokes: [
       {
         rot: 'aim',
-        len: 0.62,
+        len: 1,
         thick: 0.5,
         bow: 0,
         dir: 1,
-        from: -0.7,
-        to: 0.9,
-        follow: 0.1,
-        hitAt: -0.35,
+        from: 0,
+        to: 0,
+        follow: 0,
+        hitAt: 0,
+        stop: true,
         at: 0,
       },
     ],
     knock: 0.8,
     times: T(0.76, 0.86, 1.1, 0.2, 0.14),
   },
-  // raised to the enemy: an orb charges at its head and calls the element down in a pillar
+  // raised to the enemy: an orb charges at its head and its bolt bursts on the enemy
   staff: {
     style: 'cast',
     sprite: SPRITE,
@@ -352,20 +356,21 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     tip: { x: 82, y: 14 },
     on: 1,
     lean: 90,
-    wind: { x: -96, y: -76 },
+    wind: { x: -50, y: 20 },
     cock: 16,
     runUp: 0,
     strokes: [
       {
-        rot: 90,
-        len: 0.7,
-        thick: 1.5,
+        rot: 'aim',
+        len: 1,
+        thick: 1.1,
         bow: 0,
         dir: 1,
-        from: -1,
-        to: 0.6,
+        from: 0,
+        to: 0,
         follow: 0,
-        hitAt: 0.45,
+        hitAt: 0,
+        stop: true,
         at: 0,
       },
     ],
