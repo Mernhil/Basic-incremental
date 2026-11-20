@@ -1137,22 +1137,27 @@ export function createArena(ctx: ArenaContext): Arena {
   ctx.director.on('duel', (e) => {
     const key = duelFightKey(e.after, content);
     log = recordDuel(log, e.report, e.seconds, key);
-    if (e.report.skills.length > 0) {
-      const q = queuePlates(plateQueue, [...e.report.skills], performance.now(), plateId);
-      plateQueue = q.queue.slice(-6);
-      plateId = q.nextId;
-    }
-    if (!live()) return;
     const hitters = new Set<string>();
     for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
     // a lone signature attack plays its special attack; one at a time, the rest keep the hop
     let specialCard = '';
-    for (const hit of e.report.playerHits) {
-      if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
-      const slot = slots.find((x) => x.cardId === hit.cardId);
-      const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
-      if (slot && playSpecial(slot, skillId, popText(hit.damage))) specialCard = hit.cardId;
+    if (live())
+      for (const hit of e.report.playerHits) {
+        if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
+        const slot = slots.find((x) => x.cardId === hit.cardId);
+        const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
+        if (slot && playSpecial(slot, skillId, popText(hit.damage))) specialCard = hit.cardId;
+      }
+    // the special attack's cut-in takes the place of that signature's skill banner
+    const plated = e.report.skills.filter(
+      (k) => !(k.cardId === specialCard && k.kind === 'strike'),
+    );
+    if (plated.length > 0) {
+      const q = queuePlates(plateQueue, [...plated], performance.now(), plateId);
+      plateQueue = q.queue.slice(-6);
+      plateId = q.nextId;
     }
+    if (!live()) return;
     let critRolled = false;
     for (const id of hitters) {
       const slot = slots.find((x) => x.cardId === id);
