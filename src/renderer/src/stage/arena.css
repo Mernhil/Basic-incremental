@@ -1353,3 +1353,30 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
     animation: none;
   }
 }
+
+/* ---- the special attack (stage/specialAttack.ts): the stage dims, the enemy and the source card stay lit ---- */
+.sa-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+.ar__scene,
+.du-top,
+.du-left,
+.du-sheet,
+.du-plates,
+.du-deck,
+.du-card {
+  transition: filter 0.1s linear;
+}
+.ar.is-special :is(.ar__scene, .du-top, .du-left, .du-sheet, .du-plates, .du-deck),
+.ar.is-special .du-card:not(.is-special-src) {
+  filter: brightness(0.4);
+}
+.ar.ar--calm.is-special :is(.ar__scene, .du-top, .du-left, .du-sheet, .du-plates, .du-deck),
+.ar.ar--calm.is-special .du-card:not(.is-special-src) {
+  transition: none;
+}

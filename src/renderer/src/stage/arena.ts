@@ -72,6 +72,8 @@ import { flyCoins } from './fly';
 import { onFrame, replay, shake } from './motion';
 import { popText } from './math';
 import { popNumber } from './numbers';
+import { createSpecialAttack, hasSpecial, type Box } from './specialAttack';
+import { sprite } from '../art/pixel/sprites';
 import { toast } from './toast';
 import { lightStagePips, stagePips } from '../ui/stars';
 import './arena.css';
@@ -1020,6 +1022,98 @@ export function createArena(ctx: ArenaContext): Arena {
     }
   }
 
+  // ---- the special attack (stage/specialAttack.ts): a signature attack on a full gauge ----
+  const special = createSpecialAttack(el);
+  const weaponPics = new Map<string, HTMLImageElement | null>();
+  /** Loads a weapon picture once; null until it is ready (the first signature may miss the show). */
+  const weaponPic = (name: string): HTMLImageElement | null => {
+    if (!name) return null;
+    if (weaponPics.has(name)) return weaponPics.get(name) ?? null;
+    const info = sprite(name);
+    if (!info) return null;
+    weaponPics.set(name, null);
+    const img = new Image();
+    img.onload = () => weaponPics.set(name, img);
+    img.src = info.url;
+    return img.complete && img.naturalWidth > 0 ? (weaponPics.set(name, img), img) : null;
+  };
+  const rel = (r: DOMRect, host: DOMRect): Box => ({
+    x: r.left - host.left,
+    y: r.top - host.top,
+    w: r.width,
+    h: r.height,
+  });
+  /** Plays a card's special attack; false when it cannot (the normal hop shows instead). */
+  function playSpecial(slot: HandSlot, skillId: string, damage: string): boolean {
+    const card = content.cardById.get(slot.cardId);
+    const kind = card?.item?.kind;
+    if (!card || slot.out || !hasSpecial(kind, card.element) || document.hidden) return false;
+    const item = slot.body.querySelector<HTMLElement>('.bi-card__item [data-sprite]');
+    const pic = weaponPic(item?.dataset['sprite'] ?? '');
+    if (!item || !pic) return false;
+    const host = el.getBoundingClientRect();
+    const foeBox = foeArt.getBoundingClientRect();
+    const cardBox = foe.getBoundingClientRect();
+    if (host.width === 0 || cardBox.width === 0) return false;
+    const u = Number(hand.style.getPropertyValue('--card-n')) || 1;
+    const dpr = screenDpr();
+    const unit = u / dpr;
+    const skill = content.skillById.get(skillId);
+    const glowOf = (c: string | null, px: number): string =>
+      c
+        ? [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ]
+            .map(([x, y]) => `drop-shadow(${x! * px * unit}px ${y! * px * unit}px 0 ${c})`)
+            .join(' ')
+        : '';
+    const itemEl = slot.body.querySelector<HTMLElement>('.bi-card__item');
+    return special.play({
+      kind: kind!,
+      element: card.element,
+      weapon: pic,
+      card: cardNameById(content, slot.cardId) ?? slot.cardId,
+      skill: skill?.name ?? '',
+      line: skill?.description ?? '',
+      foe: rel(cardBox, host),
+      rest: rel(item.getBoundingClientRect(), host),
+      u,
+      dpr,
+      calm: calm(),
+      hooks: {
+        dim: (on) => {
+          el.classList.toggle('is-special', on);
+          slot.el.classList.toggle('is-special-src', on);
+        },
+        card: (o) => {
+          slot.body.style.translate = o.dy ? `0 ${o.dy * unit}px` : '';
+          const glow = glowOf(o.glow, o.glowPx);
+          slot.body.style.filter = o.flash ? 'brightness(6)' : glow;
+          if (itemEl) itemEl.style.visibility = o.weapon ? '' : 'hidden';
+        },
+        foe: (o) => {
+          foe.style.translate = o.dx || o.dy ? `${o.dx * unit}px ${o.dy * unit}px` : '';
+          foe.style.filter = o.flash ? 'brightness(8) saturate(0)' : '';
+        },
+        release: () => {
+          shake(el, true);
+          popNumber(el, {
+            kind: 'signature',
+            text: damage,
+            x: (foeBox.left + foeBox.width / 2 - host.left) / host.width,
+            y: (foeBox.top - host.top + foeBox.height * 0.3) / host.height,
+            scale: 2.6,
+          });
+          play('hit');
+        },
+        done: () => undefined,
+      },
+    });
+  }
+
   // ---- the director's reports ----
   const hop = (slot: HandSlot): void => {
     if (calm() || slot.out) return;
@@ -1051,11 +1145,19 @@ export function createArena(ctx: ArenaContext): Arena {
     if (!live()) return;
     const hitters = new Set<string>();
     for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
+    // a lone signature attack plays its special attack; one at a time, the rest keep the hop
+    let specialCard = '';
+    for (const hit of e.report.playerHits) {
+      if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
+      const slot = slots.find((x) => x.cardId === hit.cardId);
+      const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
+      if (slot && playSpecial(slot, skillId, popText(hit.damage))) specialCard = hit.cardId;
+    }
     let critRolled = false;
     for (const id of hitters) {
       const slot = slots.find((x) => x.cardId === id);
       if (!slot) continue;
-      hop(slot);
+      if (id !== specialCard) hop(slot);
       const n = e.report.playerHits.find((h) => h.cardId === id)?.hits ?? 1;
       if (!critRolled && Math.random() < 1 - (1 - slot.crit) ** n) {
         critRolled = true;
