@@ -32,6 +32,6 @@ Run `scripts/pixel_check.py` first, then go through this by eye at 1× and at ga
 
 ## Process
 
-- [ ] Five options that differ in ways that matter, each labelled in one line.
+- [ ] Two to five options that differ in kind, on the picker page, each labelled in one line.
 - [ ] Drafts in `design/pixel/<asset>/`, not merged as final art.
 - [ ] No reference image copied, traced or committed.
