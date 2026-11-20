@@ -584,11 +584,22 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   const strike = poses[1];
   /** During the hit-stop a slashing weapon swipes along the cut and the slash is drawn behind it. */
   const swipe = ((): { pose: Placed; reveal: number } => {
-    if (!sw || !move) return { pose: strike, reveal: sw ? (sw.u + 1) / 2 + 0.1 : 1 };
+    const start = sw ? cl((sw.u + 1) / 2 + 0.1) : 1;
+    const mode = sw?.reveal ?? 'snap';
+    if (!sw) return { pose: strike, reveal: 1 };
+    // the slash itself: whole at once, snapped on in two frames, or drawn behind the blade
+    const whole = mode === 'whole';
+    if (!move) return { pose: strike, reveal: whole ? 1 : start };
     const p = cl(seg(t, T.hit + 0.04, T.release));
     const eased = p * p * (3 - 2 * p);
     const uf = lerp(sw.u, sw.to, eased);
-    return { pose: swingAt(uf, (sw.turn ?? 0) * eased), reveal: cl((uf + 1) / 2 + 0.1) };
+    const reveal =
+      mode === 'whole'
+        ? 1
+        : mode === 'snap'
+          ? start + (1 - start) * seg(t, T.hit, T.hit + 0.08)
+          : cl((uf + 1) / 2 + 0.1);
+    return { pose: swingAt(uf, (sw.turn ?? 0) * eased), reveal };
   })();
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);

@@ -39,6 +39,9 @@ export interface WeaponMotion {
     /** Where the contact is (-1 to 1 along the cut) and where the swipe ends. */
     u: number;
     to: number;
+    /** How the slash appears: `draw` grows behind the blade, `snap` appears in two frames, `whole`
+     *  is there at once. */
+    reveal?: 'draw' | 'snap' | 'whole';
     /** Degrees the blade turns further during the swipe. */
     turn?: number;
     tilt?: number;
