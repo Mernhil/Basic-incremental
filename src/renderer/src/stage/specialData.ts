@@ -35,8 +35,9 @@ export interface Stroke {
   /** Seconds after the first hit that this stroke starts (0 for the first). */
   at: number;
   /** What the stroke leaves on the enemy: a cut (the default), a thrust's straight needle with rings
-   *  around its shaft, or a hammer's burst with cracks and a shockwave. */
-  shape?: 'slash' | 'pierce' | 'smash';
+   *  around its shaft, a hammer's burst with cracks, a ring and chunks, a bow's thin trail with a star
+   *  and a ring, or a staff's pillar from the top of the stage down onto the enemy card. */
+  shape?: 'slash' | 'pierce' | 'smash' | 'shot' | 'pillar';
   /** `pierce`: how many rings the thrust throws off (1 without it). */
   rings?: number;
   /** Where on the enemy card the stroke is centred, from the card's centre in the mock-up's units. */
@@ -66,6 +67,12 @@ export interface WeaponMotion {
   strokes: Stroke[];
   /** How far the enemy card is thrown back (1 = a sword's). */
   knock: number;
+  /** Seconds the weapon stays planted at the hit before it swipes on (the white and the dark frame
+   *  are its first two frames). */
+  hold: number;
+  /** A heavy weapon: it hangs still at the top of its wind-up and trembles only on the last three
+   *  frames, and the stage shakes harder when it lands. */
+  heavy?: boolean;
   /** Seconds: leaves the card, wind-up starts, lunge starts, the hit lands, the slash releases, the
    *  weapon returns. The hit lands 0.08 s after the lunge (two frames). */
   times: { leave: number; wind: number; lunge: number; hit: number; release: number; back: number };
@@ -104,7 +111,8 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { rot: -16, len: 1, thick: 1, bow: 1, dir: 1, from: -0.6, to: 0.4, follow: 0.3, at: 0 },
     ],
     knock: 1,
-    times: T(0.76, 0.84, 1.08, 0.24),
+    hold: 0.12,
+    times: T(0.76, 0.84, 1.08, 0.28),
   },
   // slow and heavy: raised high, a big cleave down to the right
   greatsword: {
@@ -131,7 +139,9 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       },
     ],
     knock: 1.5,
-    times: T(0.76, 0.92, 1.24, 0.32, 0.2),
+    hold: 0.2,
+    heavy: true,
+    times: T(0.76, 0.92, 1.4, 0.36, 0.2),
   },
   // fast and short: two quick cuts that cross
   dagger: {
@@ -159,6 +169,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       },
     ],
     knock: 0.7,
+    hold: 0.08,
     times: T(0.76, 0.8, 0.96, 0.36, 0.1),
   },
   // a flurry: three quick jabs, point first, the last one the deepest
@@ -195,7 +206,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         from: -0.25,
         to: 0.2,
         follow: 0,
-        at: 0.12,
+        at: 0.16,
         shape: 'pierce',
         off: { x: 28, y: 4 },
       },
@@ -208,14 +219,15 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         from: -0.2,
         to: 0.3,
         follow: 0.12,
-        at: 0.24,
+        at: 0.32,
         shape: 'pierce',
         rings: 2,
         off: { x: 0, y: -30 },
       },
     ],
     knock: 1,
-    times: T(0.76, 0.84, 1.06, 0.44),
+    hold: 0.12,
+    times: T(0.76, 0.84, 1.06, 0.52),
   },
   // a heavy charge: one thick drive straight through, rings bursting off the shaft, and it throws
   // the enemy back
@@ -237,15 +249,17 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         bow: 0,
         dir: 1,
         from: -0.25,
-        to: 0.5,
+        to: 0.8,
         follow: 0.1,
         at: 0,
         shape: 'pierce',
         rings: 3,
       },
     ],
-    knock: 1.6,
-    times: T(0.76, 0.92, 1.2, 0.28, 0.18),
+    knock: 2,
+    hold: 0.2,
+    heavy: true,
+    times: T(0.76, 0.92, 1.36, 0.4, 0.18),
   },
   // slow and heavy: an overhead smash that lands on the enemy and stays there, in a burst with
   // cracks and a shockwave instead of a cut
@@ -275,7 +289,9 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       },
     ],
     knock: 1.9,
-    times: T(0.76, 0.96, 1.32, 0.32, 0.22),
+    hold: 0.24,
+    heavy: true,
+    times: T(0.76, 0.96, 1.48, 0.4, 0.22),
   },
   // a wide reaping arc, right to left: the scythe's blade points left, so it leads
   scythe: {
@@ -302,9 +318,11 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       },
     ],
     knock: 1,
-    times: T(0.76, 0.9, 1.16, 0.28, 0.16),
+    hold: 0.12,
+    times: T(0.76, 0.9, 1.16, 0.32, 0.16),
   },
-  // drawn and loosed: the bow turns to the enemy, kicks back, and its shot stops in the enemy
+  // drawn and loosed: the bow turns to the enemy, kicks back, and its thin shot stops in the enemy
+  // with a star and a ring
   bow: {
     style: 'shot',
     sprite: SPRITE,
@@ -320,7 +338,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       {
         rot: 'aim',
         len: 1,
-        thick: 0.5,
+        thick: 0.3,
         bow: 0,
         dir: 1,
         from: 0,
@@ -329,12 +347,15 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         hitAt: 0,
         stop: true,
         at: 0,
+        shape: 'shot',
       },
     ],
     knock: 0.8,
-    times: T(0.76, 0.86, 1.1, 0.2, 0.14),
+    hold: 0.12,
+    times: T(0.76, 0.86, 1.1, 0.32, 0.14),
   },
-  // raised to the enemy: an orb charges at its head and its bolt bursts on the enemy
+  // held over its card and raised to the enemy: the orb at its head grows, and a pillar comes down
+  // from the top of the stage onto the enemy card
   staff: {
     style: 'cast',
     sprite: SPRITE,
@@ -347,21 +368,21 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     runUp: 0,
     strokes: [
       {
-        rot: 'aim',
-        len: 1,
-        thick: 1.1,
+        rot: 90,
+        len: 0.5,
+        thick: 1,
         bow: 0,
         dir: 1,
-        from: 0,
-        to: 0,
+        from: -1,
+        to: 1,
         follow: 0,
-        hitAt: 0,
-        stop: true,
         at: 0,
+        shape: 'pillar',
       },
     ],
     knock: 1,
-    times: T(0.76, 0.92, 1.18, 0.26, 0.16),
+    hold: 0.12,
+    times: T(0.76, 0.92, 1.18, 0.36, 0.16),
   },
 };
 
@@ -377,7 +398,11 @@ export interface ElementEffect {
   /** The slash: its half-length, thickness, bow and how ragged its outer edge is. */
   slash: { halfWidth: number; thick: number; bow: number; rag: number };
   /** The burst's grain size (x) and how hard it falls (negative floats up). */
-  burst: { size: number; grav: number };
+  burst: { size: number; grav: number; chunk?: boolean };
+  /** What sits on the outer edge of the slash while it is held: fire's tongues (the ragged fringe
+   *  itself), forked bolts, plus-shaped sparkles, leaves, rock teeth, crystal shards, or a bright rim
+   *  around a dark core. Without it the edge is plain. */
+  edge?: 'tongue' | 'bolt' | 'sparkle' | 'leaf' | 'teeth' | 'shard' | 'rim';
   /** A sober hit: nothing rises or burns on the enemy, and only a few sparks fly. */
   plain?: boolean;
 }
@@ -389,76 +414,95 @@ export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
     rise: 'flame',
     slash: { halfWidth: 340, thick: 44, bow: 56, rag: 1 },
     burst: { size: 1, grav: 1 },
+    edge: 'tongue',
   },
   // yellow bolts on a blue glow: thin, jagged, forked
   storm: {
     c: ['#ffffff', '#fff3a0', '#ffe040', '#6aa8ff', '#3a4ad8', '#1a1460'],
     ink: '#080a30',
     rise: 'bolt',
-    slash: { halfWidth: 350, thick: 26, bow: 30, rag: 2.6 },
+    slash: { halfWidth: 350, thick: 26, bow: 30, rag: 0.3 },
     burst: { size: 0.7, grav: 0.4 },
+    edge: 'bolt',
   },
-  // clean white and gold: a thin bright blade of light with a wide glow
+  // white-gold and pale yellow, no orange: a thin clean blade of light with sparkles on its edge
   light: {
-    c: ['#ffffff', '#fff6c8', '#ffe27a', '#ffc94a', '#c98a1c', '#6a4208'],
-    ink: '#2a1a04',
+    c: ['#ffffff', '#fffdec', '#fff6c0', '#ffec94', '#dcc86a', '#8c7c34'],
+    ink: '#1c1a08',
     rise: 'beam',
-    slash: { halfWidth: 350, thick: 30, bow: 36, rag: 0.25 },
+    slash: { halfWidth: 350, thick: 30, bow: 36, rag: 0 },
     burst: { size: 0.8, grav: -0.5 },
+    edge: 'sparkle',
   },
   // a deep curved cut that bursts into vines and leaves
   nature: {
     c: ['#eaffc8', '#b6f27a', '#5fd35a', '#2a9a3a', '#1a5a2a', '#0a2a14'],
     ink: '#06180a',
     rise: 'vine',
-    slash: { halfWidth: 330, thick: 38, bow: 92, rag: 0.7 },
+    slash: { halfWidth: 330, thick: 38, bow: 92, rag: 0.2 },
     burst: { size: 1.1, grav: 0.7 },
+    edge: 'leaf',
   },
   // heavy and flat: thick, with rock spikes thrown up
   earth: {
     c: ['#ffe7b0', '#e8b866', '#c4803a', '#8a5224', '#5a3216', '#2a160a'],
     ink: '#1a0c05',
     rise: 'spike',
-    slash: { halfWidth: 330, thick: 58, bow: 18, rag: 0.5 },
-    burst: { size: 1.6, grav: 2.2 },
+    slash: { halfWidth: 330, thick: 58, bow: 18, rag: 0.1 },
+    burst: { size: 1.6, grav: 2.2, chunk: true },
+    edge: 'teeth',
   },
   // crisp and angular: a clean cut with crystal prisms growing from it
   crystal: {
     c: ['#f2ffff', '#b8fff4', '#5fe8d8', '#3ab8c8', '#2a7aa8', '#143a60'],
     ink: '#08203a',
     rise: 'crystal',
-    slash: { halfWidth: 345, thick: 34, bow: 24, rag: 0.15 },
+    slash: { halfWidth: 345, thick: 34, bow: 24, rag: 0 },
     burst: { size: 1.1, grav: 0.8 },
+    edge: 'shard',
   },
   // a dark swirling cut with purple wisps
   void: {
     c: ['#f0d8ff', '#c48cff', '#9a4ce8', '#5f2aa8', '#33145f', '#14062a'],
     ink: '#0a0314',
     rise: 'wisp',
-    slash: { halfWidth: 340, thick: 48, bow: 78, rag: 1.4 },
+    slash: { halfWidth: 340, thick: 48, bow: 78, rag: 0.9 },
     burst: { size: 1.2, grav: -0.2 },
+    edge: 'rim',
   },
 };
 
 /** A sober hit in a material's colours: one clean cut, a few sparks. */
-const sober = (c: ElementEffect['c'], ink: string): ElementEffect => ({
+const sober = (
+  c: ElementEffect['c'],
+  ink: string,
+  edge?: ElementEffect['edge'],
+): ElementEffect => ({
   c,
   ink,
   rise: 'flame',
   slash: { halfWidth: 330, thick: 30, bow: 56, rag: 0 },
   burst: { size: 0.6, grav: 1 },
   plain: true,
+  ...(edge ? { edge } : {}),
 });
 
 /**
  * The hit of a weapon below the element tiers, by its card's tier: it takes its colours from what
- * the weapon is made of instead of its element. A tier without an entry plays the element's effect.
+ * the weapon is made of instead of its element. Prismatic is the crystal of the five: pale blue and
+ * violet, with shards on the edge of its cut. A tier without an entry (mythic, heirloom) plays the
+ * element's effect.
  */
 export const MATERIAL_EFFECTS: Record<string, ElementEffect> = {
   wood: sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
   bronze: sober(['#fff1de', '#f6c896', '#d98c40', '#9e5a20', '#603412', '#2e1a0a'], '#120a04'),
   silver: sober(['#ffffff', '#eef2f7', '#c9d1dd', '#939db0', '#5d6577', '#343a48'], '#0c0e14'),
   gold: sober(['#fffde8', '#fff0a0', '#ffd23e', '#d49a12', '#8a6008', '#3e2a04'], '#141004'),
+  prismatic: sober(
+    ['#ffffff', '#e4fbff', '#aee8ff', '#86bdf6', '#9a86e6', '#46388a'],
+    '#0c1024',
+    'shard',
+  ),
 };
 
 /** The effect a card's special attack plays: its material's below the element tiers, else its element's. */

@@ -1099,8 +1099,8 @@ export function createArena(ctx: ArenaContext): Arena {
           foe.style.translate = o.dx || o.dy ? `${o.dx * unit}px ${o.dy * unit}px` : '';
           foe.style.filter = o.flash ? 'brightness(8) saturate(0)' : '';
         },
-        release: () => {
-          shake(el, true);
+        release: (weight) => {
+          shake(el, weight > 1 ? 'heavy' : true);
           popNumber(el, {
             kind: 'signature',
             text: damage,

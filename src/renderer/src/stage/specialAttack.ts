@@ -36,7 +36,7 @@ export interface Box {
 export interface SpecialRequest {
   kind: string;
   element: string;
-  /** The card's tier: wood to gold play their material's sober hit instead of the element's. */
+  /** The card's tier: wood to prismatic play their material's sober hit instead of the element's. */
   tier?: string;
   /** The weapon sprite (the card's own picture, loaded). */
   weapon: HTMLImageElement;
@@ -69,7 +69,7 @@ export interface SpecialHooks {
   /** The enemy card: knock it back by logical pixels, flash it white. */
   foe(o: { dx: number; dy: number; flash: boolean }): void;
   /** The hit lands (shake, the damage number). */
-  release(): void;
+  release(weight: number): void;
   /** The whole thing is over (or was cancelled). */
   done(): void;
 }
@@ -263,22 +263,31 @@ function riseOne(
       }
       break;
     case 'bolt': {
-      // a jagged forked bolt: halo, body, white core
+      // one clear forked bolt: a halo, a body and a white core, re-rolled every other frame
+      const seed = Math.floor(x) * 3 + (fr >> 1) * 31;
       let bx = x;
-      for (let yy = 0; yy < h; yy += 6) {
-        bx += even((rnd(Math.floor(x) + yy * 7 + fr * 31) - 0.5) * 18);
+      let forked = false;
+      for (let yy = 0; yy < h; yy += 8) {
+        const to = bx + even((rnd(seed + yy * 7) - 0.5) * 30);
         const y = even(base) - yy;
-        g.fillStyle = c[3];
-        g.fillRect(even(bx) - 6, y - 2, 12, 8);
-        g.fillStyle = c[2];
-        g.fillRect(even(bx) - 4, y - 2, 8, 8);
-        g.fillStyle = c[0];
-        g.fillRect(even(bx) - 2, y - 2, 4, 8);
-        if (yy > h * 0.4 && rnd(yy + Math.floor(x) + fr) > 0.8) {
+        for (let q = 0; q < 4; q++) {
+          const sx = even(bx + ((to - bx) * q) / 4);
+          g.fillStyle = c[3];
+          g.fillRect(sx - 6, y - q * 2 - 2, 12, 2);
           g.fillStyle = c[1];
-          g.fillRect(even(bx) + 6, y - 2, 12, 4);
-          g.fillRect(even(bx) + 14, y + 2, 4, 8);
+          g.fillRect(sx - 4, y - q * 2 - 2, 8, 2);
+          g.fillStyle = c[0];
+          g.fillRect(sx - 2, y - q * 2 - 2, 4, 2);
         }
+        if (!forked && yy > h * 0.4) {
+          forked = true;
+          const side = rnd(seed + 5) > 0.5 ? 1 : -1;
+          for (let q = 0; q < 12; q++) {
+            g.fillStyle = q < 8 ? c[1] : c[2];
+            g.fillRect(even(bx + side * (6 + q * 3)), y - q * 2 - (q > 6 ? (q - 6) * 2 : 0), 4, 2);
+          }
+        }
+        bx = to;
       }
       break;
     }
@@ -402,7 +411,9 @@ interface Geo {
   /** Nothing of the cut is drawn past this point of its travel (1 = all of it). */
   cap: number;
   /** What the stroke leaves on the enemy, where along it the hit lands, and a thrust's rings. */
-  shape: 'slash' | 'pierce' | 'smash';
+  shape: 'slash' | 'pierce' | 'smash' | 'shot' | 'pillar';
+  /** The stroke's own thickness setting (a pillar's width against the enemy card). */
+  widthRel: number;
   hitW: number;
   rings: number;
 }
@@ -436,6 +447,7 @@ function geoOf(s: Scene, k: Stroke, aimDeg: number, reach: number): Geo {
     dir: k.dir,
     cap: k.stop ? (k.hitAt ?? 0) : 1,
     shape: k.shape ?? 'slash',
+    widthRel: k.thick,
     hitW: k.from,
     rings: k.rings ?? 1,
   };
@@ -504,9 +516,162 @@ function slash(
       const a = d < 0 ? -d / th : d / dn;
       if (d < -th) ci = (-d - th) / (top - th) > 0.55 ? 4 : 3;
       else ci = a < 0.3 ? 0 : a < 0.55 ? 1 : a < 0.8 ? 2 : 3;
+      // void: a dark core inside a bright rim
+      if (e.edge === 'rim') ci = d < -th ? 2 : a < 0.5 ? 5 : a < 0.78 ? 4 : 0;
       g.fillStyle = mono ?? e.c[ci]!;
       g.fillRect(x, y, 2, 2);
     }
+  }
+  if (!mono && thick > 0.45) edgeOf(s, frame, G, thick, shown);
+}
+
+/** A small pointed shape growing from (x, y) along (nx, ny): a rock tooth, a crystal shard or a leaf,
+ *  lit on its left half. */
+function spike(
+  g: Ctx,
+  x: number,
+  y: number,
+  nx: number,
+  ny: number,
+  len: number,
+  half: number,
+  shape: 'tooth' | 'shard' | 'leaf',
+  lit: string,
+  shade: string,
+  core?: string,
+): void {
+  for (let d = 0; d < len; d += 1.4) {
+    const k = d / len;
+    const prof =
+      shape === 'tooth'
+        ? 1 - k
+        : shape === 'leaf'
+          ? Math.sin(Math.PI * k)
+          : k < 0.3
+            ? 0.5 + (k / 0.3) * 0.5
+            : (1 - k) / 0.7;
+    const hw = Math.max(1, half * prof);
+    for (let t = -hw; t <= hw; t += 1.4) {
+      g.fillStyle = core && Math.abs(t) < 1 ? core : t < 0 ? lit : shade;
+      g.fillRect(even(x + nx * d - ny * t), even(y + ny * d + nx * t), 2, 2);
+    }
+  }
+}
+
+/** An element's own edge on its slash: what sits on the outer side of the cut while it is held. */
+function edgeOf(s: Scene, frame: number, G: Geo, thick: number, shown: number): void {
+  const { g, e, f } = s;
+  const kind = e.edge;
+  if (!kind || kind === 'tongue' || kind === 'rim') return;
+  const n = Math.max(4, Math.floor((2 * G.RR) / (30 * f)));
+  for (let k = 0; k <= n; k++) {
+    const w = -0.9 + (k / n) * 1.8;
+    if (w * G.RR > shown) break;
+    const q = 1 - w * w;
+    const c = onCut(G, w);
+    const th = G.T * Math.pow(q, 0.8) * thick;
+    const px = c.x + c.nx * th;
+    const py = c.y + c.ny * th;
+    const r1 = rnd(k * 7 + 3);
+    const r2 = rnd(k * 11 + (frame >> 1) * 5);
+    const out = Math.atan2(c.ny, c.nx);
+    if (kind === 'bolt') {
+      // thin forked bolts off the edge, re-rolled every other frame
+      if (r2 < 0.45) continue;
+      let x = px;
+      let y = py;
+      let a = out;
+      const len = (26 + r1 * 44) * f * Math.sqrt(q);
+      for (let d = 0, j = 0; d < len; d += 2, j++) {
+        if (j % 5 === 0) a = out + (rnd(k * 13 + j + (frame >> 1) * 3) - 0.5) * 1.8;
+        x += Math.cos(a) * 2;
+        y += Math.sin(a) * 2;
+        g.fillStyle = d < len * 0.5 ? e.c[0] : e.c[1];
+        g.fillRect(even(x), even(y), 2, 2);
+        if (j === 8)
+          for (let b = 1; b < 8; b++)
+            g.fillRect(
+              even(x + Math.cos(a + 0.9) * 2 * b),
+              even(y + Math.sin(a + 0.9) * 2 * b),
+              2,
+              2,
+            );
+      }
+    } else if (kind === 'sparkle') {
+      // a clean edge with plus-shaped sparkles that blink
+      if (r2 < 0.5) continue;
+      const off = (6 + r1 * 22) * f;
+      glint(g, px + c.nx * off, py + c.ny * off, [4, 8, 12][(k + frame) % 3]!, e.c[0]);
+    } else if (kind === 'leaf') {
+      const a = out + (r1 - 0.5) * 1.4;
+      const off = (2 + ((frame + k) % 4) * 2) * f;
+      const x = px + c.nx * off;
+      const y = py + c.ny * off;
+      spike(g, x, y, Math.cos(a), Math.sin(a), (14 + r1 * 10) * f, 5 * f, 'leaf', e.c[1], e.c[3]);
+    } else if (kind === 'teeth') {
+      const len = (14 + r1 * 18) * f * Math.sqrt(q);
+      spike(g, px, py, c.nx, c.ny, len, 9 * f, 'tooth', e.c[1], e.c[4]);
+    } else {
+      const a = out + (r1 - 0.5) * 0.7;
+      const len = (20 + r1 * 28) * f * Math.sqrt(q);
+      spike(g, px, py, Math.cos(a), Math.sin(a), len, 5 * f, 'shard', e.c[1], e.c[3], e.c[0]);
+    }
+  }
+}
+
+/** A star of `points` rays (4 or 8; every other ray of 8 is shorter), in one colour. */
+function starFlash(g: Ctx, x: number, y: number, R: number, points: number, col: string): void {
+  g.fillStyle = col;
+  for (let dy = even(-R); dy <= R; dy += 2) {
+    for (let dx = even(-R); dx <= R; dx += 2) {
+      const r = Math.hypot(dx, dy);
+      if (r > R) continue;
+      const ph = (Math.atan2(dy, dx) / (Math.PI * 2)) * points + points + 0.5;
+      const k = Math.floor(ph);
+      const tri = 1 - Math.abs(2 * (ph - k) - 1);
+      const long = points === 8 && k % 2 === 1 ? 0.55 : 1;
+      if (r <= R * (0.14 + (long - 0.14) * Math.pow(tri, 4)))
+        g.fillRect(even(x) + dx, even(y) + dy, 2, 2);
+    }
+  }
+}
+
+/**
+ * A hard ring that grows to `R` in three steps of two frames, then breaks into segments and goes.
+ * `age` is seconds since it started; `flat` squashes it into a ring lying on the ground.
+ */
+function shockRing(
+  s: Scene,
+  x: number,
+  y: number,
+  R: number,
+  age: number,
+  px: number,
+  flat = 1,
+): void {
+  const { g, e } = s;
+  const step = Math.floor(age / 0.08 + 1e-6);
+  if (age < 0 || step > 4) return;
+  const r = R * [0.4, 0.72, 1, 1.05, 1.1][step]!;
+  const wide = even(step < 2 ? px : step < 3 ? px * 0.75 : px * 0.5) || 2;
+  const n = Math.max(16, Math.round((r * 6.3) / Math.max(2, wide - 2)));
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const gone = step === 3 ? 0.4 : 0.7;
+    if (step >= 3 && rnd(Math.floor((i / n) * 18) * 5 + step * 3) < gone) continue;
+    const cx = x + Math.cos(a) * r;
+    const cy = y + Math.sin(a) * r * flat;
+    if (step < 3) {
+      g.fillStyle = e.c[3];
+      g.fillRect(
+        even(cx - Math.cos(a) * wide - wide / 2),
+        even(cy - Math.sin(a) * wide * flat - wide / 2),
+        wide,
+        wide,
+      );
+    }
+    g.fillStyle = step < 2 ? e.c[0] : e.c[1];
+    g.fillRect(even(cx - wide / 2), even(cy - wide / 2), wide, wide);
   }
 }
 
@@ -582,49 +747,63 @@ function pierce(
 }
 
 /**
- * A hammer's mark: no cut at all. A spiked burst where the head lands, cracks running out from it
- * and a flat shockwave ring spreading under it.
+ * A hammer's mark: no cut at all. One frame of a white eight-point star where the head lands, then a
+ * spiked burst, cracks running out, a ring growing to two and a half card widths and breaking up,
+ * and chunks thrown up that fall back.
  */
 function smash(s: Scene, frame: number, G: Geo, thick: number, age: number, mono?: string): void {
-  const { g, e, f } = s;
+  const { g, e, f, foe } = s;
   const c = onCut(G, G.hitW);
-  const Rb = G.T * 2.1 * (0.6 + 0.4 * seg(age, 0, 0.08)) * thick;
-  if (Rb < 4) return;
-  if (!mono) {
-    // the shockwave: a flat ring spreading under the hit
-    const p = seg(age, 0, 0.34);
-    if (p < 1) {
-      const rx = G.T * (1.5 + 2.8 * out3(p));
-      const px = even((p < 0.5 ? 8 : 4) * f) || 2;
-      ring(g, c.x, c.y + G.T * 0.5, rx, rx * 0.3, 0, 1, px, p < 0.5 ? e.c[1] : e.c[3]);
-      ring(g, c.x, c.y + G.T * 0.5, rx * 0.72, rx * 0.21, 0, 1, px, e.c[3]);
-    }
-    // the cracks: jagged lines running out from the hit
-    if (thick > 0.35) {
-      const reach = G.T * 2.9 * out3(seg(age, 0, 0.12));
-      for (let i = 0; i < 6; i++) {
-        const base = (i / 6) * Math.PI * 2 + 0.4 + rnd(i + 60) * 0.5;
-        let a = base;
-        let x = c.x;
-        let y = c.y;
-        const len = reach * (0.65 + 0.35 * rnd(i + 70));
-        for (let d = 0, k = 0; d < len; d += 4, k++) {
-          // a zigzag about its own line: straight runs with sharp turns
-          if (k % 7 === 0) a = base + ((k / 7) % 2 ? 0.7 : -0.7) * (0.5 + rnd(i * 9 + k));
-          x += Math.cos(a) * 4;
-          y += Math.sin(a) * 4;
-          const wide = d < len * 0.35 ? 10 : d < len * 0.7 ? 6 : 4;
-          g.fillStyle = e.c[3];
-          g.fillRect(even(x - wide / 2), even(y - wide / 2), wide, wide);
-          if (wide > 4) {
-            g.fillStyle = e.c[0];
-            g.fillRect(even(x) - wide / 2 + 2, even(y) - wide / 2 + 2, wide - 4, wide - 4);
-          }
+  const R = foe.w * 1.25;
+  if (mono) {
+    starFlash(g, c.x, c.y, R * 0.8, 8, mono);
+    return;
+  }
+  // the cracks: zigzag lines running out from the hit
+  if (thick > 0.35) {
+    const reach = R * out3(seg(age, 0.04, 0.16));
+    for (let i = 0; i < 6; i++) {
+      const base = (i / 6) * Math.PI * 2 + 0.4 + rnd(i + 60) * 0.5;
+      let a = base;
+      let x = c.x;
+      let y = c.y;
+      const len = reach * (0.65 + 0.35 * rnd(i + 70));
+      for (let d = 0, k = 0; d < len; d += 4, k++) {
+        if (k % 7 === 0) a = base + ((k / 7) % 2 ? 0.7 : -0.7) * (0.5 + rnd(i * 9 + k));
+        x += Math.cos(a) * 4;
+        y += Math.sin(a) * 4;
+        const wide = d < len * 0.35 ? 10 : d < len * 0.7 ? 6 : 4;
+        g.fillStyle = e.c[3];
+        g.fillRect(even(x - wide / 2), even(y - wide / 2), wide, wide);
+        if (wide > 4) {
+          g.fillStyle = e.c[0];
+          g.fillRect(even(x) - wide / 2 + 2, even(y) - wide / 2 + 2, wide - 4, wide - 4);
         }
       }
     }
   }
-  // the burst: a star of uneven spikes, flickering
+  shockRing(s, c.x, c.y, R, age - 0.08, even(8 * f) || 2);
+  // chunks thrown up that fall back
+  const up = age - 0.08;
+  if (up >= 0 && up < 0.62) {
+    for (let i = 0; i < 9; i++) {
+      const x = c.x + (rnd(i + 80) - 0.5) * 560 * f * up;
+      const y = c.y - (620 + rnd(i + 90) * 420) * f * up + 1500 * f * up * up;
+      const sz = even((8 + rnd(i + 100) * 6) * f * (up > 0.45 ? 0.6 : 1)) || 2;
+      const under = Math.max(2, even(sz / 3));
+      g.fillStyle = e.c[2];
+      g.fillRect(even(x), even(y), sz, sz);
+      g.fillStyle = e.c[4];
+      g.fillRect(even(x), even(y) + sz - under, sz, under);
+    }
+  }
+  // the white star for one frame, then the burst: a star of uneven spikes, flickering and shrinking
+  if (age < 0.075) {
+    starFlash(g, c.x, c.y, R * 0.8, 8, '#ffffff');
+    return;
+  }
+  const Rb = G.T * 1.6 * (1 - 0.3 * seg(age, 0.08, 0.3)) * thick;
+  if (Rb < 4) return;
   const N = 11;
   for (let y = even(-Rb); y <= Rb; y += 2) {
     for (let x = even(-Rb); x <= Rb; x += 2) {
@@ -637,13 +816,72 @@ function smash(s: Scene, frame: number, G: Geo, thick: number, age: number, mono
       const edge = Rb * (0.34 + (long - 0.34) * Math.pow(tri, 1.3));
       if (r > edge) continue;
       const q = r / edge;
-      g.fillStyle = mono ?? e.c[q < 0.3 ? 0 : q < 0.55 ? 1 : q < 0.8 ? 2 : 3]!;
+      g.fillStyle = e.c[q < 0.3 ? 0 : q < 0.55 ? 1 : q < 0.8 ? 2 : 3]!;
       g.fillRect(even(c.x) + x, even(c.y) + y, 2, 2);
     }
   }
 }
 
-/** What a stroke leaves on the enemy: a cut, a thrust's needle or a hammer's burst. */
+/** A bow's mark: the thin trail of its shot ending in the enemy, a white star for one frame and a
+ *  thin ring growing to two and a half card widths. */
+function shot(
+  s: Scene,
+  frame: number,
+  G: Geo,
+  thick: number,
+  reveal: number,
+  age: number,
+  mono?: string,
+): void {
+  slash(s, frame, G, thick, reveal, mono);
+  const c = onCut(G, G.cap);
+  const R = s.foe.w * 1.25;
+  if (mono) {
+    starFlash(s.g, c.x, c.y, R * 0.45, 4, mono);
+    return;
+  }
+  if (age < 0.075) starFlash(s.g, c.x, c.y, R * 0.45, 4, '#ffffff');
+  shockRing(s, c.x, c.y, R, age - 0.08, even(6 * s.f) || 2);
+}
+
+/**
+ * A staff's mark: a pillar nearly as wide as the enemy card, from the top of the stage down onto
+ * the card. It comes down with `reveal`, and as `thick` falls it narrows and breaks into pieces. A
+ * flat ring spreads from its foot.
+ */
+function pillar(
+  s: Scene,
+  frame: number,
+  G: Geo,
+  thick: number,
+  reveal: number,
+  age: number,
+  mono?: string,
+): void {
+  const { g, e, f, foe, fc } = s;
+  const foot = foe.y + foe.h;
+  const half = foe.w * 0.45 * thick * G.widthRel;
+  const end = foot * reveal;
+  for (let y = 0; y < end; y += 2) {
+    // burning away: rows drop out in runs, so it breaks into pieces instead of fading
+    if (thick < 0.7 && rnd(Math.floor(y / (10 * f)) * 3 + frame * 7) < (0.7 - thick) * 1.5)
+      continue;
+    const n = rnd(Math.floor(y / (6 * f)) * 5 + frame * 11);
+    const w = half * (1 + 0.12 * e.slash.rag * n) * (y > foot - 16 * f ? 1.15 : 1);
+    const bands = mono ? [1] : [1, 0.86, 0.68, 0.48, 0.24];
+    for (let b = 0; b < bands.length; b++) {
+      const bw = Math.max(2, even(w * bands[b]!));
+      g.fillStyle = mono ?? e.c[4 - b]!;
+      g.fillRect(even(fc.x) - bw, y, bw * 2, 2);
+    }
+  }
+  if (!mono && reveal >= 1) {
+    shockRing(s, fc.x, foot - 8 * f, foe.w * 1.25, age - 0.08, even(8 * f) || 2, 0.24);
+  }
+}
+
+/** What a stroke leaves on the enemy: a cut, a thrust's needle, a hammer's burst, a bow's shot or a
+ *  staff's pillar. */
 function mark(
   s: Scene,
   frame: number,
@@ -655,17 +893,22 @@ function mark(
 ): void {
   if (G.shape === 'pierce') pierce(s, frame, G, thick, reveal, age, mono);
   else if (G.shape === 'smash') smash(s, frame, G, thick, age, mono);
+  else if (G.shape === 'shot') shot(s, frame, G, thick, reveal, age, mono);
+  else if (G.shape === 'pillar') pillar(s, frame, G, thick, reveal, age, mono);
   else slash(s, frame, G, thick, reveal, mono);
 }
 
 /**
  * Where a particle of a stroke starts (`r` is 0 to 1): anywhere along a whole cut, close to where
- * it hit on a stroke that stops there, around the way in for a thrust, under the head for a smash.
+ * it hit on a stroke that stops there, around the way in for a thrust, under the head for a smash,
+ * along the foot of a pillar.
  */
 function origin(s: Scene, G: Geo, r: number, width: number): Pt {
+  if (G.shape === 'pillar')
+    return { x: s.fc.x + (r - 0.5) * s.foe.w, y: s.foe.y + s.foe.h - 16 * s.f };
   if (G.shape === 'smash') {
     const c = onCut(G, G.hitW);
-    // along the near half of the shockwave's ring
+    // along the near half of a ring around the hit
     const a = Math.PI * r;
     return { x: c.x + Math.cos(a) * G.T * 1.7, y: c.y + G.T * (0.3 + 0.55 * Math.sin(a)) };
   }
@@ -823,7 +1066,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   const endOf = (i: number): number => (i < last ? startOf(i + 1) : T.release);
   /** The frames a stroke's hit holds before the weapon swipes: the white and dark frames of the
    *  first, one flash frame for a later one. */
-  const flashOf = (i: number): number => (i === 0 ? 0.08 : 0.04);
+  const flashOf = (i: number): number => (i === 0 ? m.hold : 0.04);
   /** How far along stroke `i` the weapon is at `tt`: it holds at the hit, swipes fast and settles,
    *  and the last stroke carries on a little while the slash burns away. */
   const wAt = (i: number, tt: number): number => {
@@ -847,7 +1090,24 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   };
 
   // ---- the weapon's held poses ----
-  const contact = flies ? poseOn(s, G0, K0.from) : { ...stand, rot: aimRot };
+  /**
+   * The weapon riding a cut at `w`, turned in 15 degree steps: a sweep holds each angle for a frame
+   * or two instead of creeping a few degrees a frame, which makes the sprite's pixels crawl. The
+   * riding point stays on the cut.
+   */
+  const ride = (G: Geo, w: number): Placed => {
+    const rot = Math.round(poseOn(s, G, w).rot / 15) * 15;
+    const c = onCut(G, w);
+    const a = rot * RAD;
+    const vx = (m.tip.x - m.grip.x) * sc2 * m.on;
+    const vy = (m.tip.y - m.grip.y) * sc2 * m.on;
+    return {
+      x: c.x - (vx * Math.cos(a) - vy * Math.sin(a)),
+      y: c.y - (vx * Math.sin(a) + vy * Math.cos(a)),
+      rot,
+    };
+  };
+  const contact = flies ? ride(G0, K0.from) : { ...stand, rot: aimRot };
   const c0 = onCut(G0, K0.from);
   /** The wind-up: a swing is cocked back against its travel, a thrust or a bow pulls back along its
    *  line, a staff is raised. `p` runs 0 to 1 over the wind-up. */
@@ -863,7 +1123,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   /** A bow kicks back from its shot and a staff pushes toward the enemy, then both settle. */
   const standPose = (tt: number): Placed => {
     const k = 1 - out3(seg(tt, T.hit, T.release));
-    const d = m.style === 'shot' ? -10 * k : 10 * k;
+    const d = m.style === 'shot' ? -8 * k : 10 * k;
     return { x: stand.x + ax * d, y: stand.y + ay * d, rot: aimRot };
   };
   const wound = windPose(1);
@@ -934,7 +1194,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   if (move && t >= T.leave && t < T.lunge) {
     const p = seg(t, T.wind, T.lunge);
     const pulled = fr >= fWind + 2;
-    const j = fr >= fWind + 4 ? (fr % 2 ? 2 : -2) : 0;
+    // a heavy weapon hangs still at the top and only trembles on its last three frames
+    const j = (m.heavy ? fr >= fLunge - 3 : fr >= fWind + 4) ? (fr % 2 ? 2 : -2) : 0;
     const base: Placed = pulled
       ? windPose(p)
       : { x: rest.x - 14 * f, y: rest.y - 69 * f, rot: -15 };
@@ -962,7 +1223,11 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         );
       }
       // a staff's orb: a bright core at its head
-      if (m.style === 'cast') disc(g, glow.x, glow.y, 8 + 10 * p, e.c[0]);
+      if (m.style === 'cast') {
+        const r = [10, 16, 24][Math.min(2, Math.floor(p * 3))]!;
+        disc(g, glow.x, glow.y, r + 6, e.c[2]);
+        disc(g, glow.x, glow.y, r, e.c[0]);
+      }
     }
   }
 
@@ -983,10 +1248,17 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     } else {
       const pose = standPose(second ? T.hit : T.hit + 9);
       const from = tipOf(pose);
-      // the shot, or the orb's bolt, flies to the enemy and stops there
-      streak(s, from, fc, second ? 1 : 0.55, m.style === 'cast' ? 22 : 10);
-      disc(g, from.x, from.y, m.style === 'cast' ? 34 : 18, e.c[3]);
-      disc(g, from.x, from.y, m.style === 'cast' ? 20 : 10, e.c[0]);
+      if (m.style === 'shot') {
+        // the shot flies to the enemy as one thin streak and stops there
+        streak(s, from, fc, second ? 1 : 0.55, 6);
+        disc(g, from.x, from.y, 14, e.c[3]);
+        disc(g, from.x, from.y, 8, e.c[0]);
+      } else {
+        // the orb flares, and a thin leader drops from the top of the stage onto the enemy
+        disc(g, from.x, from.y, second ? 30 : 38, e.c[3]);
+        disc(g, from.x, from.y, second ? 18 : 24, e.c[0]);
+        if (second) streak(s, { x: fc.x, y: 0 }, { x: fc.x, y: foe.y + foe.h }, 1, 6);
+      }
       draw(s.white, pose);
     }
   }
@@ -996,34 +1268,29 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const i = active(t);
     const G = geos[i]!;
     const w = wAt(i, t);
-    const pose = poseOn(s, G, w);
+    const pose = ride(G, w);
     if (i > 0 && t < startOf(i) + flashOf(i)) {
       // the jump to the next stroke: afterimages from where the last one ended
-      const prev = poseOn(s, geos[i - 1]!, strokes[i - 1]!.to);
+      const prev = ride(geos[i - 1]!, strokes[i - 1]!.to);
       for (let n = 0; n < 4; n++) draw(s.trail[3 - n]!, mix(prev, pose, (n + 1) / 5));
       draw(s.white, pose);
       return;
     }
     [0.03, 0.02, 0.01].forEach((d, n) => {
       const wb = wAt(i, t - d);
-      if (Math.abs(w - wb) * G.RR > 10) draw(s.trail[3 - n]!, poseOn(s, G, wb));
+      if (Math.abs(w - wb) * G.RR > 10) draw(s.trail[3 - n]!, ride(G, wb));
     });
     draw(white ? s.white : s.wp, pose);
     const c = onCut(G, w);
     glint(g, c.x, c.y, fr % 2 ? 10 : 14, e.c[0]);
   };
-  /** What a bow or a staff sent, stopped in the enemy: a bright core in the trail and a burst where
-   *  it hit, and the orb still at a staff's head. */
+  /** What stays lit while the hit holds: the head of a bow's shot in the enemy, the orb at a
+   *  staff's head. */
   const drawSent = (): void => {
-    const w = wAt(0, t);
-    const hit = onCut(G0, w);
-    const big = m.style === 'cast' ? 1.7 : 1;
-    const k = (1 - 0.45 * seg(t, T.hit, T.release)) * big * f;
-    streak(s, onCut(G0, w - 0.5), hit, 1, 12 * big);
-    disc(g, hit.x, hit.y, (fr % 2 ? 40 : 34) * k, e.c[3]);
-    disc(g, hit.x, hit.y, (fr % 2 ? 26 : 22) * k, e.c[1]);
-    disc(g, hit.x, hit.y, (fr % 2 ? 12 : 14) * k, e.c[0]);
-    if (m.style === 'cast') {
+    if (m.style === 'shot') {
+      const hit = onCut(G0, G0.cap);
+      disc(g, hit.x, hit.y, fr % 2 ? 10 : 8, e.c[0]);
+    } else {
       const tip = tipOf(standPose(t));
       disc(g, tip.x, tip.y, fr % 2 ? 22 : 18, e.c[3]);
       disc(g, tip.x, tip.y, fr % 2 ? 12 : 10, e.c[0]);
@@ -1060,7 +1327,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       const n = geos.length;
       const rise = 1 - seg(tau, 0.08, 0.5);
       if (rise > 0 && !e.plain) {
-        const count = Math.max(4, Math.round((e.rise === 'bolt' ? 9 : 15) / n));
+        const count = e.rise === 'bolt' ? 3 : Math.max(4, Math.round(15 / n));
         geos.forEach((G, gi) => {
           for (let i = 0; i < count; i++) {
             const along = (i / (count - 1)) * 1.7 + (rnd(i + 400 + gi) - 0.5) * 0.05;
@@ -1069,7 +1336,10 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
                 ? onCut(G, -0.85 + along)
                 : origin(s, G, along / 1.7, 0);
             const hh =
-              (70 + rnd(i + 410 + gi * 7) * 110) * f * rise * (0.75 + 0.25 * rnd(i * 5 + fr * 3));
+              (e.rise === 'bolt' ? 190 : 70 + rnd(i + 410 + gi * 7) * 110) *
+              f *
+              rise *
+              (0.75 + 0.25 * rnd(i * 5 + fr * 3));
             riseOne(
               g,
               e,
@@ -1097,8 +1367,17 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const y = o.y - 30 * f + Math.sin(a) * v0 * drag + 160 * grav * tau * tau;
         const k = tau / life;
         const sz = even(Math.max(2, (16 - 16 * k) * grain));
-        g.fillStyle = e.c[Math.min(5, Math.floor(k * 6))]!;
+        const tone = Math.min(5, Math.floor(k * 6));
+        g.fillStyle = e.c[tone]!;
         g.fillRect(even(x), even(y), sz, sz);
+        if (e.burst.chunk && sz >= 6) {
+          // a rock chunk: a darker underside and a lit corner
+          const under = Math.max(2, even(sz / 3));
+          g.fillStyle = e.c[Math.min(5, tone + 2)]!;
+          g.fillRect(even(x), even(y) + sz - under, sz, under);
+          g.fillStyle = e.c[0];
+          g.fillRect(even(x), even(y), 2, 2);
+        }
       }
       for (let i = 0; i < (e.plain ? 0 : 70); i++) {
         const t0 = rnd(i + 200) * 0.35;
@@ -1118,13 +1397,15 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       const burn = 1 - seg(tau, 0.3, 0.8);
       for (let i = 0; i < (e.plain ? 0 : 16); i++) {
         if (rnd(i + 300) > burn) continue;
+        // storm: three clear bolts at the card's foot, not a row of scribbles
+        if (e.rise === 'bolt' && i % 6 !== 2) continue;
         riseOne(
           g,
           e,
           e.rise,
           foe.x + foeLook.dx + (10 + i * 12.5) * f,
           foe.y + foeLook.dy + foe.h,
-          (18 + rnd(i * 3 + fr * 7) * 44) * f,
+          (e.rise === 'bolt' ? 80 : 18 + rnd(i * 3 + fr * 7) * 44) * f,
           14 * f,
           i + fr,
           fr,
@@ -1242,7 +1523,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
         }
         if (!released && t >= m.times.release) {
           released = true;
-          req.hooks.release();
+          req.hooks.release(m.heavy ? 1.5 : 1);
         }
       });
       running = { cv, stop, hooks: req.hooks };

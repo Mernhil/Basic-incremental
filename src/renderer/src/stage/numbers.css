@@ -211,6 +211,11 @@
   animation: st-shake 0.42s linear;
   --amp: 7px;
 }
+/* a heavy weapon's special attack landing: half as hard again */
+.st-shake--heavy {
+  animation: st-shake 0.48s linear;
+  --amp: 11px;
+}
 @keyframes st-shake {
   0%,
   100% {
@@ -237,7 +242,8 @@
     animation-name: st-fade !important;
   }
   .st-shake,
-  .st-shake--strong {
+  .st-shake--strong,
+  .st-shake--heavy {
     animation: none;
   }
 }
