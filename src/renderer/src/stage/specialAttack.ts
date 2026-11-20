@@ -1,6 +1,6 @@
 import { onFrame } from './motion';
 import {
-  ELEMENT_EFFECTS,
+  effectOf,
   WEAPON_MOTIONS,
   type ElementEffect,
   type RiseKind,
@@ -36,6 +36,8 @@ export interface Box {
 export interface SpecialRequest {
   kind: string;
   element: string;
+  /** The card's tier: wood to gold play their material's sober hit instead of the element's. */
+  tier?: string;
   /** The weapon sprite (the card's own picture, loaded). */
   weapon: HTMLImageElement;
   /** The card's name and its skill's name and one-line description. */
@@ -939,13 +941,13 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const pose = { ...base, x: base.x + (pulled ? j : 0) };
     const glow = tipOf(pose);
     if (pulled) {
-      disc(g, glow.x, glow.y, 44 + 46 * p, e.c[5]);
-      disc(g, glow.x, glow.y, 30 + 34 * p, e.c[4]);
+      if (!e.plain) disc(g, glow.x, glow.y, 44 + 46 * p, e.c[5]);
+      if (!e.plain) disc(g, glow.x, glow.y, 30 + 34 * p, e.c[4]);
       disc(g, glow.x, glow.y, 14 + 22 * p, e.c[3]);
     }
     draw(fr === fLeave ? s.white : s.wp, pose);
     if (pulled) {
-      for (let i = 0; i < 34; i++) {
+      for (let i = 0; i < (e.plain ? 10 : 34); i++) {
         const a = rnd(i) * 6.283;
         const r0 = (70 + rnd(i + 20) * 150) * f;
         const q = cl(p * 1.5 - rnd(i + 50) * 0.5);
@@ -1057,7 +1059,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     if (move) {
       const n = geos.length;
       const rise = 1 - seg(tau, 0.08, 0.5);
-      if (rise > 0) {
+      if (rise > 0 && !e.plain) {
         const count = Math.max(4, Math.round((e.rise === 'bolt' ? 9 : 15) / n));
         geos.forEach((G, gi) => {
           for (let i = 0; i < count; i++) {
@@ -1083,7 +1085,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         });
       }
       const { size: grain, grav } = e.burst;
-      for (let i = 0; i < 170; i++) {
+      for (let i = 0; i < (e.plain ? 46 : 170); i++) {
         const life = 0.35 + rnd(i + 3) * 0.6;
         if (tau > life) continue;
         const G = geos[i % n]!;
@@ -1098,7 +1100,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         g.fillStyle = e.c[Math.min(5, Math.floor(k * 6))]!;
         g.fillRect(even(x), even(y), sz, sz);
       }
-      for (let i = 0; i < 70; i++) {
+      for (let i = 0; i < (e.plain ? 0 : 70); i++) {
         const t0 = rnd(i + 200) * 0.35;
         const ee = tau - t0;
         const life = 0.6 + rnd(i + 210) * 0.5;
@@ -1114,7 +1116,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       }
       // the enemy card keeps shedding it for a moment
       const burn = 1 - seg(tau, 0.3, 0.8);
-      for (let i = 0; i < 16; i++) {
+      for (let i = 0; i < (e.plain ? 0 : 16); i++) {
         if (rnd(i + 300) > burn) continue;
         riseOne(
           g,
@@ -1181,7 +1183,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
     play(req) {
       if (running || performance.now() < freeAt || document.hidden) return false;
       const m = WEAPON_MOTIONS[req.kind];
-      const e = ELEMENT_EFFECTS[req.element];
+      const e = effectOf(req.tier, req.element);
       if (!m || !e) return false;
       // only the game's own weapon pictures (100 x 120): any other picture keeps today's hop
       if (req.weapon.naturalWidth !== m.sprite.w || req.weapon.naturalHeight !== m.sprite.h)

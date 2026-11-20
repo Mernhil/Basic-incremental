@@ -1074,6 +1074,7 @@ export function createArena(ctx: ArenaContext): Arena {
     return special.play({
       kind: kind!,
       element: card.element,
+      tier: card.tier,
       weapon: pic,
       card: cardNameById(content, slot.cardId) ?? slot.cardId,
       skill: skill?.name ?? '',

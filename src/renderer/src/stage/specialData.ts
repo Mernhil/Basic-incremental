@@ -378,6 +378,8 @@ export interface ElementEffect {
   slash: { halfWidth: number; thick: number; bow: number; rag: number };
   /** The burst's grain size (x) and how hard it falls (negative floats up). */
   burst: { size: number; grav: number };
+  /** A sober hit: nothing rises or burns on the enemy, and only a few sparks fly. */
+  plain?: boolean;
 }
 
 export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
@@ -437,6 +439,32 @@ export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
     burst: { size: 1.2, grav: -0.2 },
   },
 };
+
+/** A sober hit in a material's colours: one clean cut, a few sparks. */
+const sober = (c: ElementEffect['c'], ink: string): ElementEffect => ({
+  c,
+  ink,
+  rise: 'flame',
+  slash: { halfWidth: 330, thick: 30, bow: 56, rag: 0 },
+  burst: { size: 0.6, grav: 1 },
+  plain: true,
+});
+
+/**
+ * The hit of a weapon below the element tiers, by its card's tier: it takes its colours from what
+ * the weapon is made of instead of its element. A tier without an entry plays the element's effect.
+ */
+export const MATERIAL_EFFECTS: Record<string, ElementEffect> = {
+  wood: sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
+  bronze: sober(['#fff1de', '#f6c896', '#d98c40', '#9e5a20', '#603412', '#2e1a0a'], '#120a04'),
+  silver: sober(['#ffffff', '#eef2f7', '#c9d1dd', '#939db0', '#5d6577', '#343a48'], '#0c0e14'),
+  gold: sober(['#fffde8', '#fff0a0', '#ffd23e', '#d49a12', '#8a6008', '#3e2a04'], '#141004'),
+};
+
+/** The effect a card's special attack plays: its material's below the element tiers, else its element's. */
+export function effectOf(tier: string | undefined, element: string): ElementEffect | undefined {
+  return (tier ? MATERIAL_EFFECTS[tier] : undefined) ?? ELEMENT_EFFECTS[element];
+}
 
 /** True when a weapon type and an element both have their entry. */
 export function hasSpecial(kind: string | undefined, element: string | undefined): boolean {
