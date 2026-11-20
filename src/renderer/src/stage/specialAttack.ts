@@ -1,13 +1,24 @@
 /// <reference types="vite/client" />
+import bowSheet from '../art/fx/hit-bow.png';
+import daggerSheet from '../art/fx/hit-dagger.png';
 import greatswordSheet from '../art/fx/hit-greatsword.png';
 import hammerSheet from '../art/fx/hit-hammer.png';
 import lanceSheet from '../art/fx/hit-lance.png';
 import scytheSheet from '../art/fx/hit-scythe.png';
+import spearSheet from '../art/fx/hit-spear.png';
 import staffSheet from '../art/fx/hit-staff.png';
 import swordSheet from '../art/fx/hit-sword.png';
+import crystalSlash from '../art/fx/slash-crystal.png';
+import earthSlash from '../art/fx/slash-earth.png';
+import fireSlash from '../art/fx/slash-fire.png';
+import lightSlash from '../art/fx/slash-light.png';
+import natureSlash from '../art/fx/slash-nature.png';
+import stormSlash from '../art/fx/slash-storm.png';
+import voidSlash from '../art/fx/slash-void.png';
 import { onFrame } from './motion';
 import {
   effectOf,
+  ELEMENT_SHEETS,
   HIT_SHEETS,
   type HitSheet,
   WEAPON_MOTIONS,
@@ -172,33 +183,64 @@ interface Scene {
   trail: HTMLCanvasElement[];
   dark: HTMLCanvasElement;
   /** The drawn hit this attack plays in place of the code-drawn one: its frames in the effect's
-   *  colours, the same in black for the white impact frame, and its whole scale. */
-  sheet?: { def: HitSheet; img: CanvasImageSource; black: HTMLCanvasElement; scale: number };
+   *  colours, the same in black for the white impact frame, its whole scale, whether it is mirrored,
+   *  whether it is an element's slash, and the angle, length and bow the cut takes from it. */
+  sheet?: {
+    def: HitSheet;
+    img: CanvasImageSource;
+    black: HTMLCanvasElement;
+    scale: number;
+    flip: boolean;
+    element: boolean;
+    rot?: number;
+    half?: number;
+    bulge?: number;
+  };
 }
 
 const SHEET_URLS: Record<keyof typeof HIT_SHEETS, string> = {
   sword: swordSheet,
   greatsword: greatswordSheet,
+  dagger: daggerSheet,
+  spear: spearSheet,
+  lance: lanceSheet,
   hammer: hammerSheet,
   scythe: scytheSheet,
+  bow: bowSheet,
   staff: staffSheet,
-  lance: lanceSheet,
+};
+const ELEMENT_URLS: Record<string, string> = {
+  fire: fireSlash,
+  storm: stormSlash,
+  light: lightSlash,
+  nature: natureSlash,
+  earth: earthSlash,
+  crystal: crystalSlash,
+  void: voidSlash,
 };
 const sheetImages = new Map<string, HTMLImageElement>();
-/** A hit sheet's picture once it has loaded (the first call starts the load). */
-function sheetImage(name: keyof typeof HIT_SHEETS): HTMLImageElement | undefined {
-  let img = sheetImages.get(name);
+/** A sheet's picture once it has loaded (the first call starts the load). */
+function sheetImage(url: string): HTMLImageElement | undefined {
+  let img = sheetImages.get(url);
   if (!img) {
     img = new Image();
-    img.src = SHEET_URLS[name];
-    sheetImages.set(name, img);
+    img.src = url;
+    sheetImages.set(url, img);
   }
   return img.complete && img.naturalWidth > 0 ? img : undefined;
 }
 
-/** A grey sheet in an effect's own colours: its brightness sorted into the five tones `c[0..4]`,
- *  every pixel fully opaque or fully clear. */
-function recoloured(img: HTMLImageElement, c: readonly string[]): HTMLCanvasElement {
+/**
+ * A grey sheet in an effect's own colours: its brightness sorted into the five tones `c[0..4]`,
+ * every pixel fully opaque or fully clear. The darkest and lightest are taken over the whole sheet,
+ * or frame by frame with `lift` (for a sheet whose late frames are very dark).
+ */
+function recoloured(
+  img: HTMLImageElement,
+  c: readonly string[],
+  frameW: number,
+  lift: boolean,
+): HTMLCanvasElement {
   const k = document.createElement('canvas');
   k.width = img.naturalWidth;
   k.height = img.naturalHeight;
@@ -208,33 +250,40 @@ function recoloured(img: HTMLImageElement, c: readonly string[]): HTMLCanvasElem
   const px = d.data;
   const tones = c.slice(0, 5).map((h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)));
   const light = (i: number): number => px[i]! * 0.299 + px[i + 1]! * 0.587 + px[i + 2]! * 0.114;
-  let lo = 255;
-  let hi = 0;
-  for (let i = 0; i < px.length; i += 4) {
-    if (px[i + 3]! < 128) continue;
-    lo = Math.min(lo, light(i));
-    hi = Math.max(hi, light(i));
-  }
-  for (let i = 0; i < px.length; i += 4) {
-    if (px[i + 3]! < 128) {
-      px[i + 3] = 0;
-      continue;
-    }
-    const tone = tones[Math.min(4, Math.floor((1 - (light(i) - lo) / (hi - lo || 1)) * 5))]!;
-    px[i] = tone[0]!;
-    px[i + 1] = tone[1]!;
-    px[i + 2] = tone[2]!;
-    px[i + 3] = 255;
+  const span = lift ? frameW : k.width;
+  for (let x0 = 0; x0 < k.width; x0 += span) {
+    let lo = 255;
+    let hi = 0;
+    const each = (fn: (i: number) => void): void => {
+      for (let y = 0; y < k.height; y++)
+        for (let xx = x0; xx < Math.min(k.width, x0 + span); xx++) fn((y * k.width + xx) * 4);
+    };
+    each((i) => {
+      if (px[i + 3]! < 128) return;
+      lo = Math.min(lo, light(i));
+      hi = Math.max(hi, light(i));
+    });
+    each((i) => {
+      if (px[i + 3]! < 128) {
+        px[i + 3] = 0;
+        return;
+      }
+      const tone = tones[Math.min(4, Math.floor((1 - (light(i) - lo) / (hi - lo || 1)) * 5))]!;
+      px[i] = tone[0]!;
+      px[i + 1] = tone[1]!;
+      px[i + 2] = tone[2]!;
+      px[i + 3] = 255;
+    });
   }
   x.putImageData(d, 0, 0);
   return k;
 }
 
 /**
- * One frame of the drawn hit on a stroke, at its whole scale and never turned. A cut or a thrust is
- * placed by the middle of its chord and shown up to `reveal` from the end its travel starts at; a
- * smash sits on the hit point; a pillar stands with its foot on the enemy card's foot and comes
- * down from the top with `reveal`.
+ * One frame of the drawn hit on a stroke, at its whole scale and never turned (it may be mirrored).
+ * A cut or a thrust is placed by the middle of its chord and shown up to `reveal` from the end its
+ * travel starts at; a smash and a bow's hit sit on the hit point; a pillar stands with its foot on
+ * the enemy card's foot and comes down from the top with `reveal`.
  */
 function sheetFrame(s: Scene, G: Geo, index: number, reveal: number, black = false): void {
   const sh = s.sheet;
@@ -242,42 +291,44 @@ function sheetFrame(s: Scene, G: Geo, index: number, reveal: number, black = fal
   const { g, foe, fc, f } = s;
   const { frame, centre } = sh.def;
   const k = sh.scale;
-  const img = black ? sh.black : sh.img;
-  const sx = index * frame.w;
+  const w = frame.w * k;
+  const h = frame.h * k;
   const shown = Math.min(1, reveal);
+  const flip = sh.flip !== G.flip;
+  let x: number;
+  let y: number;
+  let clip: [number, number, number, number] | undefined;
   if (G.shape === 'pillar') {
-    const x = even(fc.x) - centre.x * k;
-    const y = even(foe.y + foe.h - 8 * f) - centre.y * k;
-    g.save();
+    x = even(fc.x) - centre.x * k;
+    y = even(foe.y + foe.h - 8 * f) - centre.y * k;
+    clip = [0, 0, s.W, Math.max(0, y + h) * shown];
+  } else if (G.shape === 'smash' || G.shape === 'shot') {
+    const c = onCut(G, G.shape === 'shot' ? G.cap : G.hitW);
+    x = even(c.x) - centre.x * k;
+    y = even(c.y) - centre.y * k;
+  } else {
+    x = even(G.cx) - (flip ? frame.w - centre.x : centre.x) * k;
+    y = even(G.cy) - centre.y * k;
+    if (shown < 1) {
+      const sw = Math.round(w * shown);
+      // travelling to the right it appears from its left end, to the left from its right end
+      clip = G.dir * G.cs >= 0 ? [x, y, sw, h] : [x + w - sw, y, sw, h];
+    }
+  }
+  g.save();
+  if (clip) {
     g.beginPath();
-    g.rect(0, 0, s.W, Math.max(0, y + frame.h * k) * shown);
+    g.rect(...clip);
     g.clip();
-    g.drawImage(img, sx, 0, frame.w, frame.h, x, y, frame.w * k, frame.h * k);
-    g.restore();
-    return;
   }
-  if (G.shape === 'smash') {
-    const c = onCut(G, G.hitW);
-    const x = even(c.x) - centre.x * k;
-    const y = even(c.y) - centre.y * k;
-    g.drawImage(img, sx, 0, frame.w, frame.h, x, y, frame.w * k, frame.h * k);
-    return;
+  if (flip) {
+    g.translate(x + w, y);
+    g.scale(-1, 1);
+    x = 0;
+    y = 0;
   }
-  const sw = Math.round(frame.w * shown);
-  if (sw <= 0) return;
-  // travelling to the right it appears from its left end, to the left from its right end
-  const off = G.dir * G.cs >= 0 ? 0 : frame.w - sw;
-  g.drawImage(
-    img,
-    sx + off,
-    0,
-    sw,
-    frame.h,
-    even(G.cx) - (centre.x - off) * k,
-    even(G.cy) - centre.y * k,
-    sw * k,
-    frame.h * k,
-  );
+  g.drawImage(black ? sh.black : sh.img, index * frame.w, 0, frame.w, frame.h, x, y, w, h);
+  g.restore();
 }
 
 /** The frame of a sheet's sequence `age` seconds in. */
@@ -541,6 +592,8 @@ interface Geo {
   cap: number;
   /** What the stroke leaves on the enemy, where along it the hit lands, and a thrust's rings. */
   shape: 'slash' | 'pierce' | 'smash' | 'shot' | 'pillar';
+  /** The stroke's drawn sheet is mirrored. */
+  flip: boolean;
   /** The stroke's own thickness setting (a pillar's width against the enemy card). */
   widthRel: number;
   hitW: number;
@@ -550,16 +603,18 @@ interface Geo {
 /** `reach` is how far the weapon's end is from the enemy: a stroke along the aim is that long. */
 function geoOf(s: Scene, k: Stroke, aimDeg: number, reach: number): Geo {
   const { e, f, fc } = s;
-  const a = (k.rot === 'aim' ? aimDeg : k.rot) * RAD;
+  // a drawn sheet's own angle, length and bow win, so the weapon rides the drawn line
+  const sh = s.sheet;
+  const half = sh?.half ?? sh?.def.half;
+  const bulge = sh?.bulge ?? sh?.def.bulge;
+  const a = (sh?.rot ?? (k.rot === 'aim' ? aimDeg : k.rot)) * RAD;
   const cs = Math.cos(a);
   const sn = Math.sin(a);
-  // a drawn sheet's own length and bow win, so the weapon rides the drawn line
-  const sh = s.sheet;
   const RR =
-    sh?.def.half !== undefined
-      ? sh.def.half * sh.scale
+    sh && half !== undefined
+      ? half * sh.scale
       : (k.rot === 'aim' ? reach : e.slash.halfWidth * f) * k.len;
-  const bow = sh?.def.bulge !== undefined ? sh.def.bulge * sh.scale : e.slash.bow * f * k.bow;
+  const bow = sh && bulge !== undefined ? bulge * sh.scale : e.slash.bow * f * k.bow;
   const ox = fc.x + (k.off?.x ?? 0) * f;
   const oy = fc.y + (k.off?.y ?? 0) * f;
   let cx = ox;
@@ -581,6 +636,7 @@ function geoOf(s: Scene, k: Stroke, aimDeg: number, reach: number): Geo {
     dir: k.dir,
     cap: k.stop ? (k.hitAt ?? 0) : 1,
     shape: k.shape ?? 'slash',
+    flip: k.flip === true,
     widthRel: k.thick,
     hitW: k.from,
     rings: k.rings ?? 1,
@@ -1269,6 +1325,38 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   const hostCard = { dy: 0, glow: null as string | null, glowPx: 0, weapon: !out, flash: false };
   const foeLook = { dx: 0, dy: 0, flash: false };
 
+  /**
+   * Stroke `i`'s mark right now: its drawn sheet when this attack has one, else the code-drawn
+   * mark. `impact` is the white and the dark frame, `hit` the hold, `out` after the release.
+   */
+  const drawMark = (i: number, phase: 'impact' | 'hit' | 'out'): void => {
+    const G = geos[i]!;
+    const sh = s.sheet;
+    const mono = phase === 'impact' && fr === fHit ? '#000000' : undefined;
+    const reveal = phase === 'out' ? 1 : revealOf(i, t);
+    // a code mark burns away after the release; a thrust already pulled out thins
+    const thick =
+      phase === 'out'
+        ? 1 - seg(t - T.release, 0, 0.32)
+        : G.shape === 'pierce' && i < active(t)
+          ? 0.55
+          : 1;
+    if (!sh) {
+      if (thick > 0) mark(s, fr, G, thick, reveal, ageOf(i), mono);
+      return;
+    }
+    // a bow's sheet is only the hit: the trail of its shot stays code-drawn under it
+    if (G.shape === 'shot' && thick > 0) slash(s, fr, G, thick, reveal, mono);
+    const d = sh.def;
+    let frame: number | undefined;
+    if (!move) frame = thick > 0 ? d.still : undefined;
+    else if (phase === 'impact' || reveal < 1) frame = d.still;
+    else if (d.run) frame = frameIn(d.run, ageOf(i));
+    else if (phase === 'hit') frame = d.hold ? frameIn(d.hold, ageOf(i)) : d.still;
+    else frame = d.out ? frameIn(d.out, t - T.release) : undefined;
+    if (frame !== undefined) sheetFrame(s, G, frame, reveal, mono !== undefined);
+  };
+
   // the white impact frame and the dark one after it
   if (move && (fr === fHit || fr === fHit + 1) && t < T.release) {
     g.fillStyle = fr === fHit ? '#ffffff' : e.ink;
@@ -1276,8 +1364,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     if (fr === fHit + 1) rays(s, fr, e.c[3], e.c[4]);
     g.fillStyle = fr === fHit ? '#000000' : e.c[1];
     g.fillRect(foe.x, foe.y, foe.w, foe.h);
-    if (s.sheet) sheetFrame(s, G0, s.sheet.def.still, revealOf(0, t), fr === fHit);
-    else mark(s, fr, G0, 1, revealOf(0, t), ageOf(0), fr === fHit ? '#000000' : undefined);
+    drawMark(0, 'impact');
     draw(fr === fHit ? s.black : s.white, flies ? contact : standPose(t));
     s.req.hooks.card({ ...hostCard, weapon: false });
     return;
@@ -1435,17 +1522,9 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   // the hit: the slash snaps on, and the weapon swipes along it
   if (t >= T.hit && t < T.release) {
     if (move) rays(s, fr, e.c[3], e.c[4]);
-    const now = active(t);
     for (let i = 0; i <= last; i++) {
       // a thrust already pulled out thins while the next goes in
-      const thin = geos[i]!.shape === 'pierce' && i < now ? 0.55 : 1;
-      if (t < startOf(i)) continue;
-      if (s.sheet) {
-        // the drawn hit: cut from its still while it snaps on, then its held frames play
-        const shown = revealOf(i, t);
-        const held = frameIn(s.sheet.def.hold, ageOf(i)) ?? s.sheet.def.still;
-        sheetFrame(s, geos[i]!, shown < 1 ? s.sheet.def.still : held, shown);
-      } else mark(s, fr, geos[i]!, thin, revealOf(i, t), ageOf(i));
+      if (t >= startOf(i)) drawMark(i, 'hit');
     }
     if (move) {
       if (flies) drawSwipe(false);
@@ -1458,12 +1537,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   // release: the slash burns away, the element rises from the cut, particles fall
   if (t >= T.release) {
     const tau = t - T.release;
-    const thick = 1 - seg(tau, 0, 0.32);
-    if (s.sheet) {
-      // the drawn hit breaks up in its own frames
-      const out = frameIn(s.sheet.def.out, t - T.release);
-      if (out !== undefined) for (const G of geos) sheetFrame(s, G, out, 1);
-    } else if (thick > 0) geos.forEach((G, i) => mark(s, fr, G, thick, 1, ageOf(i)));
+    for (let i = 0; i <= last; i++) drawMark(i, 'out');
     if (move && fr < fRel + 4) {
       if (flies) drawSwipe(fr === fRel + 3);
       else draw(fr === fRel + 3 ? s.white : s.wp, standPose(t));
@@ -1500,7 +1574,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         });
       }
       const { size: grain, grav } = e.burst;
-      for (let i = 0; i < (e.plain ? 46 : 170); i++) {
+      for (let i = 0; i < (e.plain ? 46 : s.sheet ? 60 : 170); i++) {
         const life = 0.35 + rnd(i + 3) * 0.6;
         if (tau > life) continue;
         const G = geos[i % n]!;
@@ -1524,7 +1598,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
           g.fillRect(even(x), even(y), 2, 2);
         }
       }
-      for (let i = 0; i < (e.plain ? 0 : 70); i++) {
+      for (let i = 0; i < (e.plain ? 0 : s.sheet ? 24 : 70); i++) {
         const t0 = rnd(i + 200) * 0.35;
         const ee = tau - t0;
         const life = 0.6 + rnd(i + 210) * 0.5;
@@ -1583,7 +1657,7 @@ const COOLDOWN_MS = 700;
 
 export function createSpecialAttack(host: HTMLElement): SpecialAttack {
   // start loading the drawn slash sheets, so the first attack already has them
-  for (const name of Object.keys(HIT_SHEETS)) sheetImage(name as keyof typeof HIT_SHEETS);
+  for (const url of [...Object.values(SHEET_URLS), ...Object.values(ELEMENT_URLS)]) sheetImage(url);
   let running: { cv: HTMLCanvasElement; stop: () => void; hooks: SpecialHooks } | null = null;
   let freeAt = 0;
 
@@ -1651,15 +1725,24 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
         dark: tinted(wp, e.ink),
         trail: [e.c[1], e.c[2], e.c[3], e.c[4]].map((c) => tinted(wp, c)),
       };
-      // a drawn hit: a material tier (wood to prismatic) on a weapon that has its sheet, once loaded
-      const raw = m.sheet && e.plain ? sheetImage(m.sheet) : undefined;
-      if (m.sheet && raw) {
-        const def: HitSheet = HIT_SHEETS[m.sheet];
+      // a drawn hit: the weapon's own grey sheet in a material tier (wood to prismatic), or the
+      // element's slash on a weapon whose cut it fits (mythic, heirloom), once the picture is loaded
+      const fit = e.plain ? undefined : m.elementSheet;
+      const def: HitSheet | undefined =
+        e.plain && m.sheet ? HIT_SHEETS[m.sheet] : fit ? ELEMENT_SHEETS[req.element] : undefined;
+      const url = e.plain && m.sheet ? SHEET_URLS[m.sheet] : ELEMENT_URLS[req.element];
+      const raw = def && url ? sheetImage(url) : undefined;
+      if (def && raw) {
         sc.sheet = {
           def,
-          img: recoloured(raw, e.c),
+          img: e.plain ? recoloured(raw, e.c, def.frame.w, def.lift === true) : raw,
           black: tinted(raw, '#000000'),
           scale: Math.max(2, Math.round(def.scale * sc.f - 0.34)),
+          flip: fit?.flip === true,
+          element: !e.plain,
+          ...(fit?.rot !== undefined ? { rot: fit.rot } : {}),
+          ...(fit?.half !== undefined ? { half: fit.half } : {}),
+          ...(fit?.bulge !== undefined ? { bulge: fit.bulge } : {}),
         };
       }
       const len = m.times.release + 0.7;

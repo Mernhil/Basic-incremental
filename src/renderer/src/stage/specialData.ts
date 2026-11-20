@@ -42,6 +42,8 @@ export interface Stroke {
   rings?: number;
   /** Where on the enemy card the stroke is centred, from the card's centre in the mock-up's units. */
   off?: { x: number; y: number };
+  /** The stroke's drawn sheet is mirrored left to right (a second cut coming back the other way). */
+  flip?: boolean;
 }
 
 export interface WeaponMotion {
@@ -73,6 +75,9 @@ export interface WeaponMotion {
   /** The drawn sheet this weapon's hit plays in place of the code-drawn one, in the material tiers
    *  (wood to prismatic). It is drawn for this weapon's own cut and is never turned. */
   sheet?: keyof typeof HIT_SHEETS;
+  /** This weapon's cut fits the elements' drawn slashes (mythic and heirloom): mirrored for a cut
+   *  that descends, and the cut then takes the sheet's own angle, length and bow. */
+  elementSheet?: { flip?: boolean; rot?: number; half?: number; bulge?: number };
   /** A heavy weapon: it hangs still at the top of its wind-up and trembles only on the last three
    *  frames, and the stage shakes harder when it lands. */
   heavy?: boolean;
@@ -116,6 +121,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 1,
     hold: 0.12,
     sheet: 'sword',
+    elementSheet: {},
     times: T(0.76, 0.84, 1.08, 0.28),
   },
   // slow and heavy: raised high, a big cleave down to the right
@@ -171,13 +177,16 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         to: 0.55,
         follow: 0.3,
         at: 0.2,
+        flip: true,
       },
     ],
     knock: 0.7,
     hold: 0.08,
+    sheet: 'dagger',
     times: T(0.76, 0.8, 0.96, 0.36, 0.1),
   },
-  // a flurry: three quick jabs, point first, the last one the deepest
+  // a flurry: three quick jabs side by side at one angle (the drawn streak is never turned), point
+  // first, the last one the deepest
   spear: {
     style: 'thrust',
     sprite: SPRITE,
@@ -203,7 +212,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         off: { x: -26, y: 34 },
       },
       {
-        rot: -48,
+        rot: -64,
         len: 0.6,
         thick: 0.5,
         bow: 0,
@@ -216,7 +225,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         off: { x: 28, y: 4 },
       },
       {
-        rot: -74,
+        rot: -64,
         len: 0.72,
         thick: 0.7,
         bow: 0,
@@ -232,6 +241,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     ],
     knock: 1,
     hold: 0.12,
+    sheet: 'spear',
     times: T(0.76, 0.84, 1.06, 0.52),
   },
   // a heavy charge: one thick drive straight through, rings bursting off the shaft, and it throws
@@ -327,6 +337,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 1,
     hold: 0.12,
     sheet: 'scythe',
+    elementSheet: { flip: true, rot: 16, half: 122, bulge: 19 },
     times: T(0.76, 0.9, 1.16, 0.32, 0.16),
   },
   // drawn and loosed: the bow turns to the enemy, kicks back, and its thin shot stops in the enemy
@@ -360,6 +371,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     ],
     knock: 0.8,
     hold: 0.12,
+    sheet: 'bow',
     times: T(0.76, 0.86, 1.1, 0.32, 0.14),
   },
   // held over its card and raised to the enemy: the orb at its head grows, and a pillar comes down
@@ -416,8 +428,12 @@ export interface HitSheet {
   still: number;
   /** The frames while the hit holds (looping, or run once and kept on the last) and the frames it
    *  breaks up in after the release, with the seconds each one stays. */
-  hold: { frames: number[]; step: number; loop: boolean };
-  out: { frames: number[]; step: number };
+  hold?: { frames: number[]; step: number; loop: boolean };
+  out?: { frames: number[]; step: number };
+  /** In place of `hold` and `out`: the frames run once from the hit on, whatever the release does. */
+  run?: { frames: number[]; step: number };
+  /** Its late frames are very dark: each frame's own darkest and lightest take the whole ramp. */
+  lift?: boolean;
 }
 
 export const HIT_SHEETS = {
@@ -482,7 +498,89 @@ export const HIT_SHEETS = {
     hold: { frames: [0, 1, 2, 3], step: 0.1, loop: false },
     out: { frames: [4, 5, 6, 7], step: 0.08 },
   },
+  // a short cut descending to the right that breaks into thin slivers; mirrored for the second cut
+  dagger: {
+    frame: { w: 144, h: 104 },
+    centre: { x: 72, y: 56 },
+    scale: 3,
+    half: 62,
+    bulge: 9,
+    still: 0,
+    hold: { frames: [0, 1], step: 0.04, loop: true },
+    out: { frames: [2, 3, 4, 5, 6], step: 0.04 },
+    lift: true,
+  },
+  // a streak rising steeply to the right whose tip splits, shrinking away; one per jab
+  spear: {
+    frame: { w: 96, h: 144 },
+    centre: { x: 48, y: 74 },
+    scale: 3,
+    half: 60,
+    bulge: 0,
+    still: 0,
+    run: { frames: [0, 1, 2, 3, 4, 5, 6, 7], step: 0.05 },
+  },
+  // only the hit: a star flash, then a ring that grows and breaks into arcs. The shot's trail stays
+  // code-drawn, because its angle follows the aim.
+  bow: {
+    frame: { w: 128, h: 128 },
+    centre: { x: 64, y: 64 },
+    scale: 4,
+    still: 0,
+    run: { frames: [0, 1, 2, 3, 4, 5, 6, 7, 8], step: 0.06 },
+  },
 } satisfies Record<string, HitSheet>;
+
+/**
+ * The drawn slash of each element (PixelLab, 2026-11-21), coloured and shown as drawn: a crescent
+ * rising 16 degrees to the right, bowed upward. It plays on mythic and heirloom cards for a weapon
+ * whose cut it fits (`elementSheet`). The pictures are `art/fx/slash-<element>.png`.
+ */
+const ELEMENT_SLASH = { frame: { w: 256, h: 96 }, centre: { x: 128, y: 60 }, scale: 3, still: 0 };
+export const ELEMENT_SHEETS: Record<string, HitSheet> = {
+  // tongues that flicker, burning away into flame pieces
+  fire: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [1, 2, 3, 4], step: 0.04, loop: true },
+    out: { frames: [5, 6, 7, 8, 9], step: 0.06 },
+  },
+  // breaks into forked bolt shapes
+  storm: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [0, 1], step: 0.04, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
+  },
+  // dissolves into dots
+  light: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [0, 1], step: 0.08, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
+  },
+  // breaks into leaves
+  nature: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [0, 1], step: 0.08, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
+  },
+  // crumbles into rock chunks
+  earth: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [0, 1], step: 0.08, loop: true },
+    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
+  },
+  // grows spikes while it holds, then shatters into shards
+  crystal: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [0, 1, 2, 3], step: 0.06, loop: false },
+    out: { frames: [4, 5, 6, 7, 8, 9], step: 0.05 },
+  },
+  // a dark core in a bright rim that tears into dark wisps
+  void: {
+    ...ELEMENT_SLASH,
+    hold: { frames: [1, 2], step: 0.08, loop: true },
+    out: { frames: [3, 4, 5], step: 0.08 },
+  },
+};
 
 /** What rises from the cut when it releases, and what the enemy card keeps shedding after. */
 export type RiseKind = 'flame' | 'bolt' | 'beam' | 'vine' | 'spike' | 'crystal' | 'wisp';
