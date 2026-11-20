@@ -34,13 +34,20 @@ export interface Stroke {
   stop?: boolean;
   /** Seconds after the first hit that this stroke starts (0 for the first). */
   at: number;
+  /** What the stroke leaves on the enemy: a cut (the default), a thrust's straight needle with rings
+   *  around its shaft, or a hammer's burst with cracks and a shockwave. */
+  shape?: 'slash' | 'pierce' | 'smash';
+  /** `pierce`: how many rings the thrust throws off (1 without it). */
+  rings?: number;
+  /** Where on the enemy card the stroke is centred, from the card's centre in the mock-up's units. */
+  off?: { x: number; y: number };
 }
 
 export interface WeaponMotion {
   /** `swing` and `thrust` fly to the enemy; `shot` (a bow) and `cast` (a staff) stay over their card. */
   style: 'swing' | 'thrust' | 'shot' | 'cast';
   /** The weapon sprite's size in art pixels, the point the hand holds, and its business end: the
-   *  blade's tip, or the head of a hammer, axe, pickaxe or scythe. */
+   *  blade's tip, or the head of a hammer or a scythe. */
   sprite: { w: number; h: number };
   grip: { x: number; y: number };
   tip: { x: number; y: number };
@@ -154,7 +161,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     knock: 0.7,
     times: T(0.76, 0.8, 0.96, 0.36, 0.1),
   },
-  // a quick thrust: point first along a long thin line
+  // a flurry: three quick jabs, point first, the last one the deepest
   spear: {
     style: 'thrust',
     sprite: SPRITE,
@@ -167,21 +174,51 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     runUp: 0.45,
     strokes: [
       {
-        rot: -58,
-        len: 1.15,
-        thick: 0.42,
-        bow: 0.1,
+        rot: -64,
+        len: 0.6,
+        thick: 0.5,
+        bow: 0,
         dir: 1,
-        from: -0.3,
-        to: 0.7,
-        follow: 0.12,
+        from: -0.25,
+        to: 0.2,
+        follow: 0,
         at: 0,
+        shape: 'pierce',
+        off: { x: -26, y: 34 },
+      },
+      {
+        rot: -48,
+        len: 0.6,
+        thick: 0.5,
+        bow: 0,
+        dir: 1,
+        from: -0.25,
+        to: 0.2,
+        follow: 0,
+        at: 0.12,
+        shape: 'pierce',
+        off: { x: 28, y: 4 },
+      },
+      {
+        rot: -74,
+        len: 0.72,
+        thick: 0.7,
+        bow: 0,
+        dir: 1,
+        from: -0.2,
+        to: 0.3,
+        follow: 0.12,
+        at: 0.24,
+        shape: 'pierce',
+        rings: 2,
+        off: { x: 0, y: -30 },
       },
     ],
     knock: 1,
-    times: T(0.76, 0.84, 1.06, 0.2),
+    times: T(0.76, 0.84, 1.06, 0.44),
   },
-  // a heavy charge: slower, thicker, and it throws the enemy back
+  // a heavy charge: one thick drive straight through, rings bursting off the shaft, and it throws
+  // the enemy back
   lance: {
     style: 'thrust',
     sprite: SPRITE,
@@ -196,19 +233,22 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       {
         rot: -22,
         len: 1.3,
-        thick: 0.8,
-        bow: 0.08,
+        thick: 1,
+        bow: 0,
         dir: 1,
         from: -0.25,
-        to: 0.55,
+        to: 0.5,
         follow: 0.1,
         at: 0,
+        shape: 'pierce',
+        rings: 3,
       },
     ],
     knock: 1.6,
     times: T(0.76, 0.92, 1.2, 0.28, 0.18),
   },
-  // slow and heavy: an overhead smash that lands on the enemy and stays there
+  // slow and heavy: an overhead smash that lands on the enemy and stays there, in a burst with
+  // cracks and a shockwave instead of a cut
   hammer: {
     style: 'swing',
     sprite: SPRITE,
@@ -231,65 +271,11 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
         follow: 0.04,
         hitAt: 0.5,
         at: 0,
+        shape: 'smash',
       },
     ],
     knock: 1.9,
     times: T(0.76, 0.96, 1.32, 0.32, 0.22),
-  },
-  // a chop: the axe's edge faces left, so it comes down from the right, edge first
-  logging_axe: {
-    style: 'swing',
-    sprite: SPRITE,
-    grip: { x: 36, y: 84 },
-    tip: { x: 62, y: 32 },
-    on: 1,
-    lean: 14,
-    wind: { x: -36, y: -56 },
-    cock: 80,
-    runUp: 0.35,
-    strokes: [
-      {
-        rot: -48,
-        len: 0.9,
-        thick: 1.25,
-        bow: 1,
-        dir: -1,
-        from: -0.55,
-        to: 0.3,
-        follow: 0.2,
-        at: 0,
-      },
-    ],
-    knock: 1.2,
-    times: T(0.76, 0.88, 1.14, 0.26, 0.16),
-  },
-  // a pick: short and sharp, the point lands and bites
-  pickaxe: {
-    style: 'swing',
-    sprite: SPRITE,
-    grip: { x: 28, y: 90 },
-    tip: { x: 72, y: 24 },
-    on: 1,
-    lean: 10,
-    wind: { x: -36, y: -50 },
-    cock: 85,
-    runUp: 1,
-    strokes: [
-      {
-        rot: 56,
-        len: 0.72,
-        thick: 0.8,
-        bow: 0.9,
-        dir: 1,
-        from: 0.2,
-        to: 0.45,
-        follow: 0.12,
-        hitAt: 0.3,
-        at: 0,
-      },
-    ],
-    knock: 1,
-    times: T(0.76, 0.86, 1.1, 0.22, 0.14),
   },
   // a wide reaping arc, right to left: the scythe's blade points left, so it leads
   scythe: {

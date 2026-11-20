@@ -399,6 +399,10 @@ interface Geo {
   dir: 1 | -1;
   /** Nothing of the cut is drawn past this point of its travel (1 = all of it). */
   cap: number;
+  /** What the stroke leaves on the enemy, where along it the hit lands, and a thrust's rings. */
+  shape: 'slash' | 'pierce' | 'smash';
+  hitW: number;
+  rings: number;
 }
 
 /** `reach` is how far the weapon's end is from the enemy: a stroke along the aim is that long. */
@@ -409,13 +413,15 @@ function geoOf(s: Scene, k: Stroke, aimDeg: number, reach: number): Geo {
   const sn = Math.sin(a);
   const RR = (k.rot === 'aim' ? reach : e.slash.halfWidth * f) * k.len;
   const bow = e.slash.bow * f * k.bow;
-  let cx = fc.x;
-  let cy = fc.y + 2 * f;
+  const ox = fc.x + (k.off?.x ?? 0) * f;
+  const oy = fc.y + (k.off?.y ?? 0) * f;
+  let cx = ox;
+  let cy = oy + 2 * f;
   if (k.hitAt !== undefined) {
     const u = k.dir * k.hitAt * RR;
     const v = -bow * (1 - k.hitAt * k.hitAt);
-    cx = fc.x - (u * cs - v * sn);
-    cy = fc.y - (u * sn + v * cs);
+    cx = ox - (u * cs - v * sn);
+    cy = oy - (u * sn + v * cs);
   }
   return {
     cx,
@@ -427,6 +433,9 @@ function geoOf(s: Scene, k: Stroke, aimDeg: number, reach: number): Geo {
     bow,
     dir: k.dir,
     cap: k.stop ? (k.hitAt ?? 0) : 1,
+    shape: k.shape ?? 'slash',
+    hitW: k.from,
+    rings: k.rings ?? 1,
   };
 }
 
@@ -499,11 +508,169 @@ function slash(
   }
 }
 
-/** Where along a cut (from its centre, in pixels) a particle starts: anywhere on a whole cut, close
- *  to where it hit on one that stops. */
-function spread(G: Geo, r: number, width: number): number {
-  if (G.cap >= 1) return (r - 0.5) * width * G.RR;
-  return G.dir * (G.cap - r * 0.35) * G.RR;
+/** An ellipse's outline in small squares: `rx` across the line (ax, ay), `ry` along it. */
+function ring(
+  g: Ctx,
+  x: number,
+  y: number,
+  rx: number,
+  ry: number,
+  ax: number,
+  ay: number,
+  px: number,
+  col: string,
+): void {
+  g.fillStyle = col;
+  const n = Math.max(12, Math.round((rx + ry) * 1.2));
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const p = Math.cos(a) * rx;
+    const q = Math.sin(a) * ry;
+    g.fillRect(even(x - ay * p + ax * q - px / 2), even(y + ax * p + ay * q - px / 2), px, px);
+  }
+}
+
+/**
+ * A thrust's mark: a straight needle of the element, widest near its head and sharp at its point,
+ * with rings thrown off around the shaft where it went in. `age` is seconds since the hit.
+ */
+function pierce(
+  s: Scene,
+  frame: number,
+  G: Geo,
+  thick: number,
+  reveal: number,
+  age: number,
+  mono?: string,
+): void {
+  const { g, e, f } = s;
+  const { cx, cy, cs, sn, RR, T } = G;
+  const HEAD = 0.5;
+  const hx = Math.abs(cs) * RR + Math.abs(sn) * T * 1.5 + 4;
+  const hy = Math.abs(sn) * RR + Math.abs(cs) * T * 1.5 + 4;
+  const shown = -RR + 2 * RR * Math.min(reveal, (G.cap + 1) / 2);
+  for (let y = even(cy - hy); y < cy + hy; y += 2) {
+    for (let x = even(cx - hx); x < cx + hx; x += 2) {
+      const dx = x - cx;
+      const dy = y - cy;
+      const a = G.dir * (dx * cs + dy * sn);
+      if (a <= -RR || a >= RR || a > shown) continue;
+      const w = a / RR;
+      const prof =
+        w < HEAD ? Math.pow((w + 1) / (HEAD + 1), 1.4) : Math.pow((1 - w) / (1 - HEAD), 0.8);
+      const th = T * prof * thick;
+      const jag =
+        1 + 0.4 * e.slash.rag * Math.max(0, rnd(Math.floor(a / (8 * f)) * 5 + frame * 11));
+      const d = Math.abs(-dx * sn + dy * cs);
+      if (d > th * jag) continue;
+      const q = d / th;
+      g.fillStyle = mono ?? e.c[q < 0.28 ? 0 : q < 0.55 ? 1 : q < 0.8 ? 2 : q < 1 ? 3 : 4]!;
+      g.fillRect(x, y, 2, 2);
+    }
+  }
+  if (mono) return;
+  for (let i = 0; i < G.rings; i++) {
+    const p = seg(age - i * 0.03, 0, 0.22);
+    if (p <= 0 || p >= 1) continue;
+    const c = onCut(G, G.hitW - i * 0.2);
+    const r = T * (1.1 + 3 * out3(p)) * (1 - i * 0.2);
+    const px = even((p < 0.5 ? 6 : 4) * f) || 2;
+    ring(g, c.x, c.y, r, r * 0.34, c.tx, c.ty, px, p < 0.5 ? e.c[0] : e.c[2]);
+  }
+}
+
+/**
+ * A hammer's mark: no cut at all. A spiked burst where the head lands, cracks running out from it
+ * and a flat shockwave ring spreading under it.
+ */
+function smash(s: Scene, frame: number, G: Geo, thick: number, age: number, mono?: string): void {
+  const { g, e, f } = s;
+  const c = onCut(G, G.hitW);
+  const Rb = G.T * 2.1 * (0.6 + 0.4 * seg(age, 0, 0.08)) * thick;
+  if (Rb < 4) return;
+  if (!mono) {
+    // the shockwave: a flat ring spreading under the hit
+    const p = seg(age, 0, 0.34);
+    if (p < 1) {
+      const rx = G.T * (1.5 + 2.8 * out3(p));
+      const px = even((p < 0.5 ? 8 : 4) * f) || 2;
+      ring(g, c.x, c.y + G.T * 0.5, rx, rx * 0.3, 0, 1, px, p < 0.5 ? e.c[1] : e.c[3]);
+      ring(g, c.x, c.y + G.T * 0.5, rx * 0.72, rx * 0.21, 0, 1, px, e.c[3]);
+    }
+    // the cracks: jagged lines running out from the hit
+    if (thick > 0.35) {
+      const reach = G.T * 2.9 * out3(seg(age, 0, 0.12));
+      for (let i = 0; i < 6; i++) {
+        const base = (i / 6) * Math.PI * 2 + 0.4 + rnd(i + 60) * 0.5;
+        let a = base;
+        let x = c.x;
+        let y = c.y;
+        const len = reach * (0.65 + 0.35 * rnd(i + 70));
+        for (let d = 0, k = 0; d < len; d += 4, k++) {
+          // a zigzag about its own line: straight runs with sharp turns
+          if (k % 7 === 0) a = base + ((k / 7) % 2 ? 0.7 : -0.7) * (0.5 + rnd(i * 9 + k));
+          x += Math.cos(a) * 4;
+          y += Math.sin(a) * 4;
+          const wide = d < len * 0.35 ? 10 : d < len * 0.7 ? 6 : 4;
+          g.fillStyle = e.c[3];
+          g.fillRect(even(x - wide / 2), even(y - wide / 2), wide, wide);
+          if (wide > 4) {
+            g.fillStyle = e.c[0];
+            g.fillRect(even(x) - wide / 2 + 2, even(y) - wide / 2 + 2, wide - 4, wide - 4);
+          }
+        }
+      }
+    }
+  }
+  // the burst: a star of uneven spikes, flickering
+  const N = 11;
+  for (let y = even(-Rb); y <= Rb; y += 2) {
+    for (let x = even(-Rb); x <= Rb; x += 2) {
+      const r = Math.hypot(x, y);
+      if (r > Rb) continue;
+      const ph = (Math.atan2(y, x) / (Math.PI * 2) + 0.5) * N + 0.3;
+      const k = Math.floor(ph);
+      const tri = 1 - Math.abs(2 * (ph - k) - 1);
+      const long = 0.55 + 0.45 * rnd((k % N) * 7 + (frame >> 1) * 13);
+      const edge = Rb * (0.34 + (long - 0.34) * Math.pow(tri, 1.3));
+      if (r > edge) continue;
+      const q = r / edge;
+      g.fillStyle = mono ?? e.c[q < 0.3 ? 0 : q < 0.55 ? 1 : q < 0.8 ? 2 : 3]!;
+      g.fillRect(even(c.x) + x, even(c.y) + y, 2, 2);
+    }
+  }
+}
+
+/** What a stroke leaves on the enemy: a cut, a thrust's needle or a hammer's burst. */
+function mark(
+  s: Scene,
+  frame: number,
+  G: Geo,
+  thick: number,
+  reveal: number,
+  age: number,
+  mono?: string,
+): void {
+  if (G.shape === 'pierce') pierce(s, frame, G, thick, reveal, age, mono);
+  else if (G.shape === 'smash') smash(s, frame, G, thick, age, mono);
+  else slash(s, frame, G, thick, reveal, mono);
+}
+
+/**
+ * Where a particle of a stroke starts (`r` is 0 to 1): anywhere along a whole cut, close to where
+ * it hit on a stroke that stops there, around the way in for a thrust, under the head for a smash.
+ */
+function origin(s: Scene, G: Geo, r: number, width: number): Pt {
+  if (G.shape === 'smash') {
+    const c = onCut(G, G.hitW);
+    // along the near half of the shockwave's ring
+    const a = Math.PI * r;
+    return { x: c.x + Math.cos(a) * G.T * 1.7, y: c.y + G.T * (0.3 + 0.55 * Math.sin(a)) };
+  }
+  if (G.shape === 'pierce') return onCut(G, G.hitW - 0.15 + r * 0.6);
+  if (G.cap < 1) return onCut(G, G.cap - r * 0.35);
+  const u = (r - 0.5) * width * G.RR;
+  return { x: G.cx + u * G.cs, y: G.cy + u * G.sn };
 }
 
 type Placed = Pt & { rot: number };
@@ -668,6 +835,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     while (i < last && tt >= startOf(i + 1)) i++;
     return i;
   };
+  /** Seconds since stroke `i` hit (long ago when nothing moves, so its mark is drawn whole). */
+  const ageOf = (i: number): number => (move ? t - startOf(i) : 9);
   /** A slash snaps on in two frames, from where the hit lands to its end. */
   const revealOf = (i: number, tt: number): number => {
     if (!move) return 1;
@@ -711,7 +880,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     if (fr === fHit + 1) rays(s, fr, e.c[3], e.c[4]);
     g.fillStyle = fr === fHit ? '#000000' : e.c[1];
     g.fillRect(foe.x, foe.y, foe.w, foe.h);
-    slash(s, fr, G0, 1, revealOf(0, t), fr === fHit ? '#000000' : undefined);
+    mark(s, fr, G0, 1, revealOf(0, t), ageOf(0), fr === fHit ? '#000000' : undefined);
     draw(fr === fHit ? s.black : s.white, flies ? contact : standPose(t));
     s.req.hooks.card({ ...hostCard, weapon: false });
     return;
@@ -862,7 +1031,12 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   // the hit: the slash snaps on, and the weapon swipes along it
   if (t >= T.hit && t < T.release) {
     if (move) rays(s, fr, e.c[3], e.c[4]);
-    for (let i = 0; i <= last; i++) if (t >= startOf(i)) slash(s, fr, geos[i]!, 1, revealOf(i, t));
+    const now = active(t);
+    for (let i = 0; i <= last; i++) {
+      // a thrust already pulled out thins while the next goes in
+      const thin = geos[i]!.shape === 'pierce' && i < now ? 0.55 : 1;
+      if (t >= startOf(i)) mark(s, fr, geos[i]!, thin, revealOf(i, t), ageOf(i));
+    }
     if (move) {
       if (flies) drawSwipe(false);
       else {
@@ -875,7 +1049,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   if (t >= T.release) {
     const tau = t - T.release;
     const thick = 1 - seg(tau, 0, 0.32);
-    if (thick > 0) for (const G of geos) slash(s, fr, G, thick, 1);
+    if (thick > 0) geos.forEach((G, i) => mark(s, fr, G, thick, 1, ageOf(i)));
     if (move && fr < fRel + 4) {
       if (flies) drawSwipe(fr === fRel + 3);
       else draw(fr === fRel + 3 ? s.white : s.wp, standPose(t));
@@ -888,7 +1062,10 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         geos.forEach((G, gi) => {
           for (let i = 0; i < count; i++) {
             const along = (i / (count - 1)) * 1.7 + (rnd(i + 400 + gi) - 0.5) * 0.05;
-            const c = onCut(G, G.cap < 1 ? G.cap - along * 0.25 : -0.85 + along);
+            const c =
+              G.shape === 'slash' && G.cap >= 1
+                ? onCut(G, -0.85 + along)
+                : origin(s, G, along / 1.7, 0);
             const hh =
               (70 + rnd(i + 410 + gi * 7) * 110) * f * rise * (0.75 + 0.25 * rnd(i * 5 + fr * 3));
             riseOne(
@@ -910,12 +1087,12 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const life = 0.35 + rnd(i + 3) * 0.6;
         if (tau > life) continue;
         const G = geos[i % n]!;
-        const u = spread(G, rnd(i), 1.8);
+        const o = origin(s, G, rnd(i), 1.8);
         const a = -Math.PI * (0.1 + rnd(i + 1) * 0.8);
         const v0 = (220 + rnd(i + 2) * 760) * f;
         const drag = (1 - Math.exp(-4 * tau)) / 4;
-        const x = G.cx + u * G.cs + Math.cos(a) * v0 * drag;
-        const y = G.cy + u * G.sn - 30 * f + Math.sin(a) * v0 * drag + 160 * grav * tau * tau;
+        const x = o.x + Math.cos(a) * v0 * drag;
+        const y = o.y - 30 * f + Math.sin(a) * v0 * drag + 160 * grav * tau * tau;
         const k = tau / life;
         const sz = even(Math.max(2, (16 - 16 * k) * grain));
         g.fillStyle = e.c[Math.min(5, Math.floor(k * 6))]!;
@@ -927,13 +1104,10 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const life = 0.6 + rnd(i + 210) * 0.5;
         if (ee < 0 || ee > life) continue;
         const G = geos[i % n]!;
-        const u = spread(G, rnd(i + 220), 1.9);
-        const x = G.cx + u * G.cs + Math.sin(ee * 7 + i) * 8;
+        const o = origin(s, G, rnd(i + 220), 1.9);
+        const x = o.x + Math.sin(ee * 7 + i) * 8;
         const y =
-          G.cy +
-          u * G.sn +
-          (50 + rnd(i + 230) * 110) * ee * Math.sign(grav || 1) +
-          240 * grav * ee * ee;
+          o.y + (50 + rnd(i + 230) * 110) * ee * Math.sign(grav || 1) + 240 * grav * ee * ee;
         const sz = even((ee / life > 0.6 ? 2 : 4) * Math.max(1, grain * 0.8));
         g.fillStyle = e.c[1 + ((i + fr) % 3) + (ee / life > 0.7 ? 1 : 0)]!;
         g.fillRect(even(x), even(y), sz, sz);
