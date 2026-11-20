@@ -3,8 +3,8 @@ import {
   ELEMENT_EFFECTS,
   WEAPON_MOTIONS,
   type ElementEffect,
-  type Pose,
   type RiseKind,
+  type Stroke,
   type WeaponMotion,
 } from './specialData';
 
@@ -14,8 +14,8 @@ export { hasSpecial } from './specialData';
  * The special attack (DESIGN.md §2 Attack animations: the special attack): what a card's signature
  * attack shows when its gauge is full. The stage dims, a slanted cut-in slides in with the weapon
  * at 3x and the skill's name, the weapon leaves its card at 2x and winds up, lunges in two frames
- * with afterimages, a white impact frame, a hit-stop under a wide element slash, a shake, element
- * particles and the damage number, then it settles. Show only: it reads nothing but what the duel
+ * with afterimages, a white impact frame, the element's slash snapping on while the weapon swipes
+ * along it, a shake, element particles and the damage number, then it settles. Show only: it reads nothing but what the duel
  * passes in and never touches the game.
  *
  * The card's approved weapon sprite is never redrawn: it is the same picture, moved, scaled by whole
@@ -165,7 +165,7 @@ interface Scene {
 type Pt = { x: number; y: number };
 
 /** The weapon sprite drawn about its grip, whole scale, held rotation. */
-function sword(
+function weapon(
   s: Scene,
   img: CanvasImageSource,
   px: number,
@@ -380,47 +380,84 @@ function riseOne(
   }
 }
 
-interface Cut {
-  rot: number;
-  len: number;
-  thick: number;
+// ---- the cut: a bowed arc across the enemy card ----
+
+const RAD = Math.PI / 180;
+/** `deg` moved by whole turns to within half a turn of `ref`, so poses blend the short way. */
+const near = (deg: number, ref: number): number => deg - 360 * Math.round((deg - ref) / 360);
+
+/** A stroke placed on the stage, in logical pixels. */
+interface Geo {
+  cx: number;
+  cy: number;
+  cs: number;
+  sn: number;
+  /** Half-length, thickness and bow. */
+  RR: number;
+  T: number;
   bow: number;
+  dir: 1 | -1;
 }
 
-/** The slash this weapon and element make: the weapon's angle, length and thickness on the element's. */
-function cutOf(s: Scene, cross = false): Cut {
-  const { e, m } = s;
-  const c = m.cut;
-  const base = c.rot ?? e.slash.rotDeg;
-  return {
-    rot: cross ? -base : base,
-    len: c.len,
-    thick: c.thick,
-    bow: (c.bow ?? 1) * (cross ? 0.5 : 1),
-  };
+function geoOf(s: Scene, k: Stroke, aimDeg: number): Geo {
+  const { e, f, fc } = s;
+  const a = (k.rot === 'aim' ? aimDeg : k.rot) * RAD;
+  const cs = Math.cos(a);
+  const sn = Math.sin(a);
+  const RR = e.slash.halfWidth * f * k.len;
+  const bow = e.slash.bow * f * k.bow;
+  let cx = fc.x;
+  let cy = fc.y + 2 * f;
+  if (k.hitAt !== undefined) {
+    const u = k.dir * k.hitAt * RR;
+    const v = -bow * (1 - k.hitAt * k.hitAt);
+    cx = fc.x - (u * cs - v * sn);
+    cy = fc.y - (u * sn + v * cs);
+  }
+  return { cx, cy, cs, sn, RR, T: e.slash.thick * f * k.thick, bow, dir: k.dir };
 }
 
-/** The wide slash across the enemy card. `reveal` draws it from the left; `mono` fills one colour. */
+/**
+ * The point of a cut at `w` (-1 to 1 along the weapon's travel; past them the arc carries on), with
+ * the unit direction of travel there and the unit normal to the side the cut bows to.
+ */
+function onCut(
+  G: Geo,
+  w: number,
+): { x: number; y: number; tx: number; ty: number; nx: number; ny: number } {
+  const u = G.dir * w * G.RR;
+  const v = -G.bow * (1 - w * w);
+  const du = G.dir * G.RR;
+  const dv = 2 * G.bow * w;
+  let tx = du * G.cs - dv * G.sn;
+  let ty = du * G.sn + dv * G.cs;
+  const tl = Math.hypot(tx, ty) || 1;
+  tx /= tl;
+  ty /= tl;
+  let nx = ty;
+  let ny = -tx;
+  if (nx * G.sn - ny * G.cs < 0) {
+    nx = -nx;
+    ny = -ny;
+  }
+  return { x: G.cx + u * G.cs - v * G.sn, y: G.cy + u * G.sn + v * G.cs, tx, ty, nx, ny };
+}
+
+/** The slash of a cut. `reveal` shows it from where the travel starts; `mono` fills one colour. */
 function slash(
   s: Scene,
   frame: number,
-  cut: Cut,
+  G: Geo,
   thick: number,
   reveal: number,
   mono?: string,
 ): void {
-  const { g, e, f, fc } = s;
-  const cx = fc.x;
-  const cy = fc.y + 2 * f;
-  const rot = (cut.rot * Math.PI) / 180;
-  const cs = Math.cos(rot);
-  const sn = Math.sin(rot);
-  const RR = e.slash.halfWidth * f * cut.len;
-  const T = e.slash.thick * f * cut.thick;
-  const bow = e.slash.bow * f * cut.bow;
+  const { g, e, f } = s;
+  const { cx, cy, cs, sn, RR, T, bow } = G;
   const up = T * 2.6 + Math.abs(bow);
   const hx = Math.abs(cs) * RR + Math.abs(sn) * up + 4;
   const hy = Math.abs(sn) * RR + Math.abs(cs) * up + 4;
+  const shown = -RR + 2 * RR * reveal;
   for (let y = even(cy - hy); y < cy + hy; y += 2) {
     for (let x = even(cx - hx); x < cx + hx; x += 2) {
       const dx = x - cx;
@@ -429,7 +466,7 @@ function slash(
       const v = -dx * sn + dy * cs;
       const q = 1 - (u / RR) * (u / RR);
       if (q <= 0) continue;
-      if (u > -RR + 2 * RR * reveal) continue;
+      if (G.dir * u > shown) continue;
       const th = T * Math.pow(q, 0.8) * thick;
       const d = v + bow * q;
       const uc = u / (14 * f) + frame * 0.37;
@@ -449,10 +486,33 @@ function slash(
   }
 }
 
-/** The weapon's cut: one slash, or two crossing. */
-function slashes(s: Scene, frame: number, thick: number, reveal: number, mono?: string): void {
-  slash(s, frame, cutOf(s), thick, reveal, mono);
-  if (s.m.cut.cross) slash(s, frame + 3, cutOf(s, true), thick, reveal, mono);
+type Placed = Pt & { rot: number };
+
+/**
+ * The weapon's pose with its riding point at `w` of a cut: the business end points to the side the
+ * cut bows to, leaning `lean` degrees into the travel (90 = along the cut, point first).
+ */
+function poseOn(s: Scene, G: Geo, w: number): Placed {
+  const { m } = s;
+  const c = onCut(G, w);
+  const l = m.lean * RAD;
+  const bx = Math.cos(l) * c.nx + Math.sin(l) * c.tx;
+  const by = Math.cos(l) * c.ny + Math.sin(l) * c.ty;
+  const dx = m.tip.x - m.grip.x;
+  const dy = m.tip.y - m.grip.y;
+  const reach = Math.hypot(dx, dy) * 2 * s.s1 * m.on;
+  return {
+    x: c.x - bx * reach,
+    y: c.y - by * reach,
+    rot: (Math.atan2(by, bx) - Math.atan2(dy, dx)) / RAD,
+  };
+}
+
+/** A small four-point glint where the weapon bites the cut. */
+function glint(g: Ctx, x: number, y: number, r: number, col: string): void {
+  g.fillStyle = col;
+  g.fillRect(even(x) - r, even(y) - 2, r * 2, 4);
+  g.fillRect(even(x) - 2, even(y) - r, 4, r * 2);
 }
 
 function rays(s: Scene, frame: number, col1: string, col2: string): void {
@@ -542,65 +602,82 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   const fRel = F(T.release);
   const move = !calm;
   const sc2 = 2 * s.s1;
-  /** A pose's grip position: from the enemy card's centre (melee) or from where the weapon rests. */
-  const at = (p: Pose, from: 'foe' | 'rest'): Pt =>
-    from === 'foe'
-      ? { x: fc.x + p.x * f, y: fc.y + p.y * f }
-      : { x: rest.x + p.x * f, y: rest.y + p.y * f };
-  const anchor = m.style === 'melee' ? 'foe' : 'rest';
-  type Placed = Pt & { rot: number };
-  const sw = m.style === 'melee' ? m.swing : undefined;
-  /** A slashing weapon's pose at `uf` (-1 to 1) along the cut: its blade across the cut at a right
-   *  angle, its middle on the cut (`turn` degrees further round). The swipe moves it along the cut
-   *  while the slash is drawn behind it. */
-  const swingAt = (uf: number, turn = 0): Placed => {
-    const cut = cutOf(s);
-    const a = (cut.rot * Math.PI) / 180;
-    const cs = Math.cos(a);
-    const sn = Math.sin(a);
-    const RR = e.slash.halfWidth * f * cut.len;
-    const k = cl(uf, -1, 1);
-    const v = -e.slash.bow * f * cut.bow * (1 - k * k);
-    const mid = {
-      x: fc.x + k * RR * cs - v * sn,
-      y: fc.y + 2 * f + k * RR * sn + v * cs + (sw?.drop ?? 0) * f,
-    };
-    const dx = (m.tip.x - m.grip.x) * sc2;
-    const dy = (m.tip.y - m.grip.y) * sc2;
-    const baseTip = (Math.atan2(m.tip.x - m.grip.x, -(m.tip.y - m.grip.y)) * 180) / Math.PI;
-    const deg = (sw?.side === 'down' ? cut.rot + 180 : cut.rot) - baseTip + (sw?.tilt ?? 0) + turn;
-    const b = (deg * Math.PI) / 180;
-    const vx = dx * Math.cos(b) - dy * Math.sin(b);
-    const vy = dx * Math.sin(b) + dy * Math.cos(b);
-    return { x: mid.x - vx * 0.5, y: mid.y - vy * 0.5, rot: deg };
+  const draw = (img: CanvasImageSource, p: Placed): void => weapon(s, img, p.x, p.y, p.rot, sc2);
+  const mix = (a: Placed, b: Placed, p: number): Placed => ({
+    x: lerp(a.x, b.x, p),
+    y: lerp(a.y, b.y, p),
+    rot: lerp(a.rot, near(b.rot, a.rot), p),
+  });
+
+  // ---- where everything is ----
+  const strokes = m.strokes;
+  const last = strokes.length - 1;
+  const flies = m.style === 'swing' || m.style === 'thrust';
+  /** Where a bow or a staff is held while it fires, and the angle from there to the enemy. */
+  const stand = { x: rest.x + m.wind.x * f, y: rest.y + m.wind.y * f };
+  const aim = Math.atan2(fc.y - stand.y, fc.x - stand.x) / RAD;
+  const ax = Math.cos(aim * RAD);
+  const ay = Math.sin(aim * RAD);
+  const fwd =
+    m.style === 'shot' ? (m.fwd ?? 0) : Math.atan2(m.tip.y - m.grip.y, m.tip.x - m.grip.x) / RAD;
+  const aimRot = near(aim - fwd, -15);
+  const geos = strokes.map((k) => geoOf(s, k, aim));
+  const G0 = geos[0]!;
+  const K0 = strokes[0]!;
+
+  // ---- when everything happens ----
+  const startOf = (i: number): number => T.hit + strokes[i]!.at;
+  const endOf = (i: number): number => (i < last ? startOf(i + 1) : T.release);
+  /** The frames a stroke's hit holds before the weapon swipes: the white and dark frames of the
+   *  first, one flash frame for a later one. */
+  const flashOf = (i: number): number => (i === 0 ? 0.08 : 0.04);
+  /** How far along stroke `i` the weapon is at `tt`: it holds at the hit, swipes fast and settles,
+   *  and the last stroke carries on a little while the slash burns away. */
+  const wAt = (i: number, tt: number): number => {
+    const k = strokes[i]!;
+    let w = lerp(k.from, k.to, out3(seg(tt, startOf(i) + flashOf(i), endOf(i))));
+    if (i === last && tt > T.release) w += k.follow * out3(seg(tt - T.release, 0, 0.14));
+    return w;
   };
-  /** The two lunge poses: a slashing weapon swings in along the cut, other weapons use their data. */
-  const poses: [Placed, Placed] = sw
-    ? [swingAt(sw.u - 0.5, -18), swingAt(sw.u)]
-    : [
-        { ...at(m.lunge[0], anchor), rot: m.lunge[0].rot },
-        { ...at(m.lunge[1], anchor), rot: m.lunge[1].rot },
-      ];
-  const strike = poses[1];
-  /** During the hit-stop a slashing weapon swipes along the cut and the slash is drawn behind it. */
-  const swipe = ((): { pose: Placed; reveal: number } => {
-    const start = sw ? cl((sw.u + 1) / 2 + 0.1) : 1;
-    const mode = sw?.reveal ?? 'snap';
-    if (!sw) return { pose: strike, reveal: 1 };
-    // the slash itself: whole at once, snapped on in two frames, or drawn behind the blade
-    const whole = mode === 'whole';
-    if (!move) return { pose: strike, reveal: whole ? 1 : start };
-    const p = cl(seg(t, T.hit + 0.04, T.release));
-    const eased = p * p * (3 - 2 * p);
-    const uf = lerp(sw.u, sw.to, eased);
-    const reveal =
-      mode === 'whole'
-        ? 1
-        : mode === 'snap'
-          ? start + (1 - start) * seg(t, T.hit, T.hit + 0.08)
-          : cl((uf + 1) / 2 + 0.1);
-    return { pose: swingAt(uf, (sw.turn ?? 0) * eased), reveal };
-  })();
+  const active = (tt: number): number => {
+    let i = 0;
+    while (i < last && tt >= startOf(i + 1)) i++;
+    return i;
+  };
+  /** A slash snaps on in two frames, from where the hit lands to its end. */
+  const revealOf = (i: number, tt: number): number => {
+    if (!move) return 1;
+    const start = cl((strokes[i]!.from + 1) / 2 + 0.1);
+    return start + (1 - start) * seg(tt, startOf(i), startOf(i) + 0.08);
+  };
+
+  // ---- the weapon's held poses ----
+  const contact = flies ? poseOn(s, G0, K0.from) : { ...stand, rot: aimRot };
+  const c0 = onCut(G0, K0.from);
+  /** The wind-up: a swing is cocked back against its travel, a thrust or a bow pulls back along its
+   *  line, a staff is raised. `p` runs 0 to 1 over the wind-up. */
+  const windPose = (p: number): Placed => {
+    const at = { x: rest.x + m.wind.x * f, y: rest.y + m.wind.y * f };
+    if (m.style === 'swing') return { ...at, rot: contact.rot - K0.dir * m.cock };
+    if (m.style === 'thrust')
+      return { x: at.x - c0.tx * m.cock * p, y: at.y - c0.ty * m.cock * p, rot: contact.rot };
+    if (m.style === 'shot')
+      return { x: at.x - ax * m.cock * p, y: at.y - ay * m.cock * p, rot: aimRot };
+    return { x: at.x, y: at.y - m.cock * p, rot: aimRot };
+  };
+  /** A bow kicks back from its shot and a staff pushes toward the enemy, then both settle. */
+  const standPose = (tt: number): Placed => {
+    const k = 1 - out3(seg(tt, T.hit, T.release));
+    const d = m.style === 'shot' ? -10 * k : 10 * k;
+    return {
+      x: stand.x + ax * d,
+      y: stand.y + ay * d - (m.style === 'cast' ? m.cock : 0),
+      rot: aimRot,
+    };
+  };
+  const wound = windPose(1);
+  const tipOf = (p: Placed): Pt => tipAt(s, p.x, p.y, p.rot, sc2);
+
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
   const out = move && t >= T.leave && t < T.back;
@@ -614,8 +691,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     if (fr === fHit + 1) rays(s, fr, e.c[3], e.c[4]);
     g.fillStyle = fr === fHit ? '#000000' : e.c[1];
     g.fillRect(foe.x, foe.y, foe.w, foe.h);
-    slashes(s, fr, 1, swipe.reveal, fr === fHit ? '#000000' : undefined);
-    sword(s, fr === fHit ? s.black : s.white, strike.x, strike.y, strike.rot, sc2);
+    slash(s, fr, G0, 1, revealOf(0, t), fr === fHit ? '#000000' : undefined);
+    draw(fr === fHit ? s.black : s.white, flies ? contact : standPose(t));
     s.req.hooks.card({ ...hostCard, weapon: false });
     return;
   }
@@ -643,35 +720,42 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     hostCard.glowPx = move ? (fr % 2 ? 4 : 6) : 4;
   }
   hostCard.flash = move && fr === fRel + 4;
-  // the enemy: white on the hit, thrown back on the release
-  if (t >= T.hit && t < T.release) foeLook.flash = move && fr === fHit + 2;
+  // the enemy: white on each hit, thrown back along the last stroke on the release
+  if (move && t >= T.hit && t < T.release) {
+    foeLook.flash = fr === fHit + 2;
+    for (let i = 1; i <= last; i++) if (fr === F(startOf(i))) foeLook.flash = true;
+  }
   if (t >= T.release && move) {
     const k = [1, 0.8, 0.5, 0.3, 0.15, 0.05][fr - fRel] ?? 0;
-    foeLook.dx = R(18 * k * m.knock);
-    foeLook.dy = R(-12 * k * m.knock);
+    const c = onCut(geos[last]!, strokes[last]!.to);
+    const lift = strokes[last]!.bow > 0.3 ? 0.5 : 0;
+    const kx = c.tx * 0.85 + c.nx * lift;
+    const ky = c.ty * 0.85 + c.ny * lift;
+    const kl = Math.hypot(kx, ky) || 1;
+    foeLook.dx = R((21 * k * m.knock * kx) / kl);
+    foeLook.dy = R((21 * k * m.knock * ky) / kl);
     foeLook.flash = fr === fRel;
   }
   s.req.hooks.card(hostCard);
   s.req.hooks.foe(foeLook);
 
-  // wind-up: the weapon leaves the card at 2x, pulls back, embers gather
+  // wind-up: the weapon leaves the card at 2x, is pulled back, and the element gathers on it
   if (move && t >= T.leave && t < T.lunge) {
     const p = seg(t, T.wind, T.lunge);
-    const wound = fr >= fWind + 2;
+    const pulled = fr >= fWind + 2;
     const j = fr >= fWind + 4 ? (fr % 2 ? 2 : -2) : 0;
-    const pose = wound ? m.wind : m.leave;
-    const gx = rest.x + pose.x * f + (wound ? j : 0);
-    const gy = rest.y + pose.y * f;
-    // the glow gathers behind the grip, or at the tip of a staff or bow
-    const glow =
-      m.style === 'melee' ? { x: gx - 6, y: gy - 150 * f } : tipAt(s, gx, gy, pose.rot, sc2);
-    if (wound) {
+    const base: Placed = pulled
+      ? windPose(p)
+      : { x: rest.x - 14 * f, y: rest.y - 69 * f, rot: -15 };
+    const pose = { ...base, x: base.x + (pulled ? j : 0) };
+    const glow = tipOf(pose);
+    if (pulled) {
       disc(g, glow.x, glow.y, 44 + 46 * p, e.c[5]);
       disc(g, glow.x, glow.y, 30 + 34 * p, e.c[4]);
       disc(g, glow.x, glow.y, 14 + 22 * p, e.c[3]);
     }
-    sword(s, fr === fLeave ? s.white : s.wp, gx, gy, pose.rot, sc2);
-    if (wound)
+    draw(fr === fLeave ? s.white : s.wp, pose);
+    if (pulled) {
       for (let i = 0; i < 34; i++) {
         const a = rnd(i) * 6.283;
         const r0 = (70 + rnd(i + 20) * 150) * f;
@@ -686,101 +770,128 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
           sz,
         );
       }
-  }
-  // lunge: two frames. A melee weapon flies in with its own afterimages; a bow or a staff stays and
-  // sends a streak or a beam from its tip to the enemy card.
-  if (move && (fr === fLunge || fr === fLunge + 1)) {
-    const second = fr === fLunge + 1;
-    const to = poses[second ? 1 : 0];
-    const toRot = to.rot;
-    if (m.style === 'melee') {
-      const from = at(m.wind, 'rest');
-      for (let i = 0; i < 4; i++) {
-        const p = (i + 1) / 5;
-        sword(
-          s,
-          s.trail[3 - i]!,
-          lerp(from.x, to.x, p),
-          lerp(from.y, to.y, p),
-          lerp(m.wind.rot, toRot, p),
-          sc2,
-        );
-      }
-      sword(s, s.white, to.x, to.y, toRot, sc2);
-    } else {
-      const tip = tipAt(s, to.x, to.y, toRot, sc2);
-      streak(s, tip, fc, second ? 1 : 0.55, m.style === 'cast' ? 26 : 10);
-      disc(g, tip.x, tip.y, m.style === 'cast' ? 40 : 18, e.c[3]);
-      disc(g, tip.x, tip.y, m.style === 'cast' ? 24 : 10, e.c[0]);
-      sword(s, s.white, to.x, to.y, toRot, sc2);
+      // a staff's orb: a bright core at its head
+      if (m.style === 'cast') disc(g, glow.x, glow.y, 8 + 10 * p, e.c[0]);
     }
   }
-  // hit-stop: everything holds; the slash owns the stage
+
+  // lunge: two frames. A weapon that flies swings in along its cut's arc with its own afterimages;
+  // a bow looses its shot and a staff sends its orb up, and both stay over their card.
+  if (move && (fr === fLunge || fr === fLunge + 1)) {
+    const second = fr === fLunge + 1;
+    if (flies) {
+      const far = K0.from - m.runUp;
+      const entry = poseOn(s, G0, far);
+      entry.rot = near(entry.rot, contact.rot);
+      for (let i = 0; i < 4; i++) {
+        const p = (i + 1) / 5;
+        const ghost = second ? poseOn(s, G0, lerp(far, K0.from, p)) : mix(wound, entry, p);
+        draw(s.trail[3 - i]!, ghost);
+      }
+      draw(s.white, second ? contact : entry);
+    } else {
+      const pose = standPose(second ? T.hit : T.hit + 9);
+      const from = tipOf(pose);
+      // the shot flies to the enemy; the orb's bolt climbs to where the pillar will fall from
+      const to = m.style === 'shot' ? fc : onCut(G0, -1);
+      streak(s, from, to, second ? 1 : 0.55, m.style === 'cast' ? 22 : 10);
+      disc(g, from.x, from.y, m.style === 'cast' ? 34 : 18, e.c[3]);
+      disc(g, from.x, from.y, m.style === 'cast' ? 20 : 10, e.c[0]);
+      draw(s.white, pose);
+    }
+  }
+
+  /** The weapon over the enemy at `t`: swiping along its stroke, with afterimages while it is fast. */
+  const drawSwipe = (white: boolean): void => {
+    const i = active(t);
+    const G = geos[i]!;
+    const w = wAt(i, t);
+    const pose = poseOn(s, G, w);
+    if (i > 0 && t < startOf(i) + flashOf(i)) {
+      // the jump to the next stroke: afterimages from where the last one ended
+      const prev = poseOn(s, geos[i - 1]!, strokes[i - 1]!.to);
+      for (let n = 0; n < 4; n++) draw(s.trail[3 - n]!, mix(prev, pose, (n + 1) / 5));
+      draw(s.white, pose);
+      return;
+    }
+    [0.03, 0.02, 0.01].forEach((d, n) => {
+      const wb = wAt(i, t - d);
+      if (Math.abs(w - wb) * G.RR > 10) draw(s.trail[3 - n]!, poseOn(s, G, wb));
+    });
+    draw(white ? s.white : s.wp, pose);
+    const c = onCut(G, w);
+    glint(g, c.x, c.y, fr % 2 ? 10 : 14, e.c[0]);
+  };
+  /** A bow's shot piercing along its cut, or the orb at a staff's head. */
+  const drawSent = (): void => {
+    if (m.style === 'shot') {
+      const w = wAt(0, t);
+      const head = onCut(G0, w);
+      streak(s, onCut(G0, w - 0.45), head, 1, 12);
+      disc(g, head.x, head.y, 10, e.c[0]);
+    } else {
+      const tip = tipOf(standPose(t));
+      disc(g, tip.x, tip.y, fr % 2 ? 22 : 18, e.c[3]);
+      disc(g, tip.x, tip.y, fr % 2 ? 12 : 10, e.c[0]);
+    }
+  };
+
+  // the hit: the slash snaps on, and the weapon swipes along it
   if (t >= T.hit && t < T.release) {
     if (move) rays(s, fr, e.c[3], e.c[4]);
-    slashes(s, sw ? fr : fHit + 2, 1, swipe.reveal);
-    if (move) sword(s, s.wp, swipe.pose.x, swipe.pose.y, swipe.pose.rot, sc2);
+    for (let i = 0; i <= last; i++) if (t >= startOf(i)) slash(s, fr, geos[i]!, 1, revealOf(i, t));
+    if (move) {
+      if (flies) drawSwipe(false);
+      else {
+        draw(s.wp, standPose(t));
+        drawSent();
+      }
+    }
   }
   // release: the slash burns away, the element rises from the cut, particles fall
   if (t >= T.release) {
     const tau = t - T.release;
     const thick = 1 - seg(tau, 0, 0.32);
-    if (thick > 0) slashes(s, fr, thick, 1);
+    if (thick > 0) for (const G of geos) slash(s, fr, G, thick, 1);
     if (move && fr < fRel + 4) {
-      // the swing finishes: the weapon carries on along the cut while the slash burns away
-      const base = sw ? swingAt(sw.to, sw.turn ?? 0) : strike;
-      let end = base;
-      const fol = m.swing?.follow;
-      if (fol) {
-        const cut = cutOf(s);
-        const a = (cut.rot * Math.PI) / 180;
-        const run = fol.dist * e.slash.halfWidth * f * cut.len * out3(seg(tau, 0, 0.14));
-        end = {
-          x: base.x + Math.cos(a) * run,
-          y: base.y + Math.sin(a) * run,
-          rot: base.rot + fol.rot * out3(seg(tau, 0, 0.14)),
-        };
-      }
-      sword(s, fr === fRel + 3 ? s.white : s.wp, end.x, end.y, end.rot, sc2);
+      if (flies) drawSwipe(fr === fRel + 3);
+      else draw(fr === fRel + 3 ? s.white : s.wp, standPose(t));
     }
     if (move) {
-      const cut = cutOf(s);
-      const rot = (cut.rot * Math.PI) / 180;
-      const cs = Math.cos(rot);
-      const sn = Math.sin(rot);
-      const SL = { cx: fc.x, cy: fc.y + 2 * f };
-      const HW = e.slash.halfWidth * f * cut.len;
-      const bow = e.slash.bow * f * cut.bow;
-      const reach = Math.min(290, 290 * cut.len) * f;
+      const n = geos.length;
       const rise = 1 - seg(tau, 0.08, 0.5);
       if (rise > 0) {
-        const count = e.rise === 'bolt' ? 9 : 15;
-        for (let i = 0; i < count; i++) {
-          const u = -reach + (i / (count - 1)) * 2 * reach + (rnd(i + 400) - 0.5) * 16 * f;
-          const hh = (70 + rnd(i + 410) * 110) * f * rise * (0.75 + 0.25 * rnd(i * 5 + fr * 3));
-          riseOne(
-            g,
-            e,
-            e.rise,
-            SL.cx + u * cs,
-            SL.cy + u * sn - bow * (1 - (u / HW) ** 2) + 10 * f,
-            hh,
-            (30 + rnd(i + 420) * 22) * f,
-            i + fr * 0.9,
-            fr,
-          );
-        }
+        const count = Math.max(4, Math.round((e.rise === 'bolt' ? 9 : 15) / n));
+        geos.forEach((G, gi) => {
+          for (let i = 0; i < count; i++) {
+            const c = onCut(G, -0.85 + (i / (count - 1)) * 1.7 + (rnd(i + 400 + gi) - 0.5) * 0.05);
+            const hh =
+              (70 + rnd(i + 410 + gi * 7) * 110) * f * rise * (0.75 + 0.25 * rnd(i * 5 + fr * 3));
+            riseOne(
+              g,
+              e,
+              e.rise,
+              c.x,
+              c.y + 10 * f,
+              hh,
+              (30 + rnd(i + 420) * 22) * f,
+              i + fr * 0.9,
+              fr,
+            );
+          }
+        });
       }
       const { size: grain, grav } = e.burst;
       for (let i = 0; i < 170; i++) {
         const life = 0.35 + rnd(i + 3) * 0.6;
         if (tau > life) continue;
-        const u = (rnd(i) - 0.5) * 620 * f * Math.min(1, cut.len);
+        const G = geos[i % n]!;
+        const u = (rnd(i) - 0.5) * 1.8 * G.RR;
         const a = -Math.PI * (0.1 + rnd(i + 1) * 0.8);
         const v0 = (220 + rnd(i + 2) * 760) * f;
         const drag = (1 - Math.exp(-4 * tau)) / 4;
-        const x = SL.cx + u * cs + Math.cos(a) * v0 * drag;
-        const y = SL.cy + u * sn - 30 * f + Math.sin(a) * v0 * drag + 160 * grav * tau * tau;
+        const x = G.cx + u * G.cs + Math.cos(a) * v0 * drag;
+        const y = G.cy + u * G.sn - 30 * f + Math.sin(a) * v0 * drag + 160 * grav * tau * tau;
         const k = tau / life;
         const sz = even(Math.max(2, (16 - 16 * k) * grain));
         g.fillStyle = e.c[Math.min(5, Math.floor(k * 6))]!;
@@ -791,11 +902,12 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         const ee = tau - t0;
         const life = 0.6 + rnd(i + 210) * 0.5;
         if (ee < 0 || ee > life) continue;
-        const u = (rnd(i + 220) - 0.5) * 640 * f * Math.min(1, cut.len);
-        const x = SL.cx + u * cs + Math.sin(ee * 7 + i) * 8;
+        const G = geos[i % n]!;
+        const u = (rnd(i + 220) - 0.5) * 1.9 * G.RR;
+        const x = G.cx + u * G.cs + Math.sin(ee * 7 + i) * 8;
         const y =
-          SL.cy +
-          u * sn +
+          G.cy +
+          u * G.sn +
           (50 + rnd(i + 230) * 110) * ee * Math.sign(grav || 1) +
           240 * grav * ee * ee;
         const sz = even((ee / life > 0.6 ? 2 : 4) * Math.max(1, grain * 0.8));
