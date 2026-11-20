@@ -539,7 +539,7 @@ const sober = (
  * element's effect.
  */
 export const MATERIAL_EFFECTS: Record<string, ElementEffect> = {
-  // the drawn slash sheet is on trial on wood only (2026-11-21)
+  // the drawn slash sheet (the user's pick B, 2026-11-21): on wood only until more sheets are decided
   wood: {
     ...sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
     sheet: 'clean',
