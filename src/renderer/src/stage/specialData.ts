@@ -31,6 +31,10 @@ export interface WeaponMotion {
   /** The slash this weapon cuts: its angle in degrees (else the element's), length and thickness
    *  against the element's, how much it bows, and whether a second one crosses it. */
   cut: { rot?: number; len: number; thick: number; bow?: number; cross?: boolean };
+  /** A slashing weapon ends with its blade across the cut at a right angle (`side`: the tip points
+   *  to the cut's upper or lower side), its middle `u` of the way along the cut (-1 to 1); it then
+   *  ignores `lunge` poses. */
+  swing?: { side: 'up' | 'down'; u: number };
   /** How far the enemy card is thrown back (1 = a sword's). */
   knock: number;
   /** Seconds: leaves the card, wind-up starts, lunge starts, the hit lands, the slash releases, the
@@ -67,6 +71,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -130, y: 0, rot: 42 },
     ],
     cut: { rot: -16, len: 1, thick: 1 },
+    swing: { side: 'up', u: 0.15 },
     knock: 1,
     times: T(0.76, 0.84, 1.08, 0.24),
   },
@@ -83,6 +88,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -140, y: -50, rot: 78 },
     ],
     cut: { rot: 24, len: 1.12, thick: 1.35 },
+    swing: { side: 'down', u: 0.15 },
     knock: 1.4,
     times: T(0.76, 0.92, 1.2, 0.3, 0.2),
   },
@@ -99,6 +105,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -50, y: -8, rot: 95 },
     ],
     cut: { rot: 28, len: 0.72, thick: 0.62, cross: true },
+    swing: { side: 'up', u: 0.1 },
     knock: 0.7,
     times: T(0.76, 0.8, 0.94, 0.16, 0.1),
   },
@@ -163,6 +170,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -90, y: -55, rot: 104 },
     ],
     cut: { rot: 52, len: 0.86, thick: 1.25 },
+    swing: { side: 'down', u: 0.15 },
     knock: 1.2,
     times: T(0.76, 0.88, 1.12, 0.26, 0.16),
   },
@@ -179,6 +187,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -80, y: -50, rot: 94 },
     ],
     cut: { rot: 38, len: 0.74, thick: 0.85, bow: 0.5 },
+    swing: { side: 'down', u: 0.15 },
     knock: 1,
     times: T(0.76, 0.86, 1.08, 0.22, 0.14),
   },
@@ -195,6 +204,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -140, y: -6, rot: 46 },
     ],
     cut: { rot: -12, len: 1.32, thick: 0.9, bow: 1.5 },
+    swing: { side: 'up', u: 0.2 },
     knock: 1,
     times: T(0.76, 0.9, 1.14, 0.26, 0.16),
   },

@@ -548,7 +548,37 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       ? { x: fc.x + p.x * f, y: fc.y + p.y * f }
       : { x: rest.x + p.x * f, y: rest.y + p.y * f };
   const anchor = m.style === 'melee' ? 'foe' : 'rest';
-  const strike = at(m.lunge[1], anchor);
+  type Placed = Pt & { rot: number };
+  /** The two lunge poses. A slashing weapon ends with its blade across the cut at a right angle,
+   *  near its middle, and swings in along the cut; other weapons use their data poses. */
+  const poses = ((): [Placed, Placed] => {
+    const sw = m.swing;
+    if (m.style !== 'melee' || !sw)
+      return [
+        { ...at(m.lunge[0], anchor), rot: m.lunge[0].rot },
+        { ...at(m.lunge[1], anchor), rot: m.lunge[1].rot },
+      ];
+    const cut = cutOf(s);
+    const a = (cut.rot * Math.PI) / 180;
+    const cs = Math.cos(a);
+    const sn = Math.sin(a);
+    const RR = e.slash.halfWidth * f * cut.len;
+    const u = sw.u * RR;
+    const v = -e.slash.bow * f * cut.bow * (1 - sw.u * sw.u);
+    const mid = { x: fc.x + u * cs - v * sn, y: fc.y + 2 * f + u * sn + v * cs };
+    const dx = (m.tip.x - m.grip.x) * sc2;
+    const dy = (m.tip.y - m.grip.y) * sc2;
+    const baseTip = (Math.atan2(m.tip.x - m.grip.x, -(m.tip.y - m.grip.y)) * 180) / Math.PI;
+    const rot = (sw.side === 'up' ? cut.rot : cut.rot + 180) - baseTip;
+    const grip = (deg: number, back: number): Placed => {
+      const b = (deg * Math.PI) / 180;
+      const vx = dx * Math.cos(b) - dy * Math.sin(b);
+      const vy = dx * Math.sin(b) + dy * Math.cos(b);
+      return { x: mid.x - vx * 0.5 - back * cs, y: mid.y - vy * 0.5 - back * sn, rot: deg };
+    };
+    return [grip(rot - 18, 0.55 * RR), grip(rot, 0)];
+  })();
+  const strike = poses[1];
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
   const out = move && t >= T.leave && t < T.back;
@@ -563,7 +593,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     g.fillStyle = fr === fHit ? '#000000' : e.c[1];
     g.fillRect(foe.x, foe.y, foe.w, foe.h);
     slashes(s, fr, 1, 1, fr === fHit ? '#000000' : undefined);
-    sword(s, fr === fHit ? s.black : s.white, strike.x, strike.y, m.lunge[1].rot, sc2);
+    sword(s, fr === fHit ? s.black : s.white, strike.x, strike.y, strike.rot, sc2);
     s.req.hooks.card({ ...hostCard, weapon: false });
     return;
   }
@@ -639,8 +669,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   // sends a streak or a beam from its tip to the enemy card.
   if (move && (fr === fLunge || fr === fLunge + 1)) {
     const second = fr === fLunge + 1;
-    const to = at(m.lunge[second ? 1 : 0], anchor);
-    const toRot = m.lunge[second ? 1 : 0].rot;
+    const to = poses[second ? 1 : 0];
+    const toRot = to.rot;
     if (m.style === 'melee') {
       const from = at(m.wind, 'rest');
       for (let i = 0; i < 4; i++) {
@@ -667,7 +697,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   if (t >= T.hit && t < T.release) {
     if (move) rays(s, fr, e.c[3], e.c[4]);
     slashes(s, fHit + 2, 1, 1);
-    if (move) sword(s, s.wp, strike.x, strike.y, m.lunge[1].rot, sc2);
+    if (move) sword(s, s.wp, strike.x, strike.y, strike.rot, sc2);
   }
   // release: the slash burns away, the element rises from the cut, particles fall
   if (t >= T.release) {
@@ -675,7 +705,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const thick = 1 - seg(tau, 0, 0.32);
     if (thick > 0) slashes(s, fr, thick, 1);
     if (move && fr < fRel + 4)
-      sword(s, fr === fRel + 3 ? s.white : s.wp, strike.x, strike.y, m.lunge[1].rot, sc2);
+      sword(s, fr === fRel + 3 ? s.white : s.wp, strike.x, strike.y, strike.rot, sc2);
     if (move) {
       const cut = cutOf(s);
       const rot = (cut.rot * Math.PI) / 180;
