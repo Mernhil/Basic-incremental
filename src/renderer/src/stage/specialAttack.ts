@@ -707,8 +707,22 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const tau = t - T.release;
     const thick = 1 - seg(tau, 0, 0.32);
     if (thick > 0) slashes(s, fr, thick, 1);
-    if (move && fr < fRel + 4)
-      sword(s, fr === fRel + 3 ? s.white : s.wp, strike.x, strike.y, strike.rot, sc2);
+    if (move && fr < fRel + 4) {
+      // the swing finishes: the weapon carries on along the cut while the slash burns away
+      let end = strike;
+      const fol = m.swing?.follow;
+      if (fol) {
+        const cut = cutOf(s);
+        const a = (cut.rot * Math.PI) / 180;
+        const run = fol.dist * e.slash.halfWidth * f * cut.len * out3(seg(tau, 0, 0.14));
+        end = {
+          x: strike.x + Math.cos(a) * run,
+          y: strike.y + Math.sin(a) * run,
+          rot: strike.rot + fol.rot * out3(seg(tau, 0, 0.14)),
+        };
+      }
+      sword(s, fr === fRel + 3 ? s.white : s.wp, end.x, end.y, end.rot, sc2);
+    }
     if (move) {
       const cut = cutOf(s);
       const rot = (cut.rot * Math.PI) / 180;
