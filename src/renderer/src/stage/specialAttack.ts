@@ -565,7 +565,10 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const RR = e.slash.halfWidth * f * cut.len;
     const u = sw.u * RR;
     const v = -e.slash.bow * f * cut.bow * (1 - sw.u * sw.u);
-    const mid = { x: fc.x + u * cs - v * sn, y: fc.y + 2 * f + u * sn + v * cs };
+    const mid = {
+      x: fc.x + u * cs - v * sn,
+      y: fc.y + 2 * f + u * sn + v * cs + (sw.drop ?? 0) * f,
+    };
     const dx = (m.tip.x - m.grip.x) * sc2;
     const dy = (m.tip.y - m.grip.y) * sc2;
     const baseTip = (Math.atan2(m.tip.x - m.grip.x, -(m.tip.y - m.grip.y)) * 180) / Math.PI;
