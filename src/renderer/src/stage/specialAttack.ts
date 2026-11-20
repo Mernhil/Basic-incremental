@@ -549,39 +549,47 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       : { x: rest.x + p.x * f, y: rest.y + p.y * f };
   const anchor = m.style === 'melee' ? 'foe' : 'rest';
   type Placed = Pt & { rot: number };
-  /** The two lunge poses. A slashing weapon ends with its blade across the cut at a right angle,
-   *  near its middle, and swings in along the cut; other weapons use their data poses. */
-  const poses = ((): [Placed, Placed] => {
-    const sw = m.swing;
-    if (m.style !== 'melee' || !sw)
-      return [
-        { ...at(m.lunge[0], anchor), rot: m.lunge[0].rot },
-        { ...at(m.lunge[1], anchor), rot: m.lunge[1].rot },
-      ];
+  const sw = m.style === 'melee' ? m.swing : undefined;
+  /** A slashing weapon's pose at `uf` (-1 to 1) along the cut: its blade across the cut at a right
+   *  angle, its middle on the cut (`turn` degrees further round). The swipe moves it along the cut
+   *  while the slash is drawn behind it. */
+  const swingAt = (uf: number, turn = 0): Placed => {
     const cut = cutOf(s);
     const a = (cut.rot * Math.PI) / 180;
     const cs = Math.cos(a);
     const sn = Math.sin(a);
     const RR = e.slash.halfWidth * f * cut.len;
-    const u = sw.u * RR;
-    const v = -e.slash.bow * f * cut.bow * (1 - sw.u * sw.u);
+    const k = cl(uf, -1, 1);
+    const v = -e.slash.bow * f * cut.bow * (1 - k * k);
     const mid = {
-      x: fc.x + u * cs - v * sn,
-      y: fc.y + 2 * f + u * sn + v * cs + (sw.drop ?? 0) * f,
+      x: fc.x + k * RR * cs - v * sn,
+      y: fc.y + 2 * f + k * RR * sn + v * cs + (sw?.drop ?? 0) * f,
     };
     const dx = (m.tip.x - m.grip.x) * sc2;
     const dy = (m.tip.y - m.grip.y) * sc2;
     const baseTip = (Math.atan2(m.tip.x - m.grip.x, -(m.tip.y - m.grip.y)) * 180) / Math.PI;
-    const rot = (sw.side === 'up' ? cut.rot : cut.rot + 180) - baseTip + (sw.tilt ?? 0);
-    const grip = (deg: number, back: number): Placed => {
-      const b = (deg * Math.PI) / 180;
-      const vx = dx * Math.cos(b) - dy * Math.sin(b);
-      const vy = dx * Math.sin(b) + dy * Math.cos(b);
-      return { x: mid.x - vx * 0.5 - back * cs, y: mid.y - vy * 0.5 - back * sn, rot: deg };
-    };
-    return [grip(rot - 18, 0.55 * RR), grip(rot, 0)];
-  })();
+    const deg = (sw?.side === 'down' ? cut.rot + 180 : cut.rot) - baseTip + (sw?.tilt ?? 0) + turn;
+    const b = (deg * Math.PI) / 180;
+    const vx = dx * Math.cos(b) - dy * Math.sin(b);
+    const vy = dx * Math.sin(b) + dy * Math.cos(b);
+    return { x: mid.x - vx * 0.5, y: mid.y - vy * 0.5, rot: deg };
+  };
+  /** The two lunge poses: a slashing weapon swings in along the cut, other weapons use their data. */
+  const poses: [Placed, Placed] = sw
+    ? [swingAt(sw.u - 0.5, -18), swingAt(sw.u)]
+    : [
+        { ...at(m.lunge[0], anchor), rot: m.lunge[0].rot },
+        { ...at(m.lunge[1], anchor), rot: m.lunge[1].rot },
+      ];
   const strike = poses[1];
+  /** During the hit-stop a slashing weapon swipes along the cut and the slash is drawn behind it. */
+  const swipe = ((): { pose: Placed; reveal: number } => {
+    if (!sw || !move) return { pose: strike, reveal: sw ? (sw.u + 1) / 2 + 0.1 : 1 };
+    const p = cl(seg(t, T.hit + 0.04, T.release));
+    const eased = p * p * (3 - 2 * p);
+    const uf = lerp(sw.u, sw.to, eased);
+    return { pose: swingAt(uf, (sw.turn ?? 0) * eased), reveal: cl((uf + 1) / 2 + 0.1) };
+  })();
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, W, H);
   const out = move && t >= T.leave && t < T.back;
@@ -595,7 +603,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     if (fr === fHit + 1) rays(s, fr, e.c[3], e.c[4]);
     g.fillStyle = fr === fHit ? '#000000' : e.c[1];
     g.fillRect(foe.x, foe.y, foe.w, foe.h);
-    slashes(s, fr, 1, 1, fr === fHit ? '#000000' : undefined);
+    slashes(s, fr, 1, swipe.reveal, fr === fHit ? '#000000' : undefined);
     sword(s, fr === fHit ? s.black : s.white, strike.x, strike.y, strike.rot, sc2);
     s.req.hooks.card({ ...hostCard, weapon: false });
     return;
@@ -699,8 +707,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   // hit-stop: everything holds; the slash owns the stage
   if (t >= T.hit && t < T.release) {
     if (move) rays(s, fr, e.c[3], e.c[4]);
-    slashes(s, fHit + 2, 1, 1);
-    if (move) sword(s, s.wp, strike.x, strike.y, strike.rot, sc2);
+    slashes(s, sw ? fr : fHit + 2, 1, swipe.reveal);
+    if (move) sword(s, s.wp, swipe.pose.x, swipe.pose.y, swipe.pose.rot, sc2);
   }
   // release: the slash burns away, the element rises from the cut, particles fall
   if (t >= T.release) {
@@ -709,16 +717,17 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     if (thick > 0) slashes(s, fr, thick, 1);
     if (move && fr < fRel + 4) {
       // the swing finishes: the weapon carries on along the cut while the slash burns away
-      let end = strike;
+      const base = sw ? swingAt(sw.to, sw.turn ?? 0) : strike;
+      let end = base;
       const fol = m.swing?.follow;
       if (fol) {
         const cut = cutOf(s);
         const a = (cut.rot * Math.PI) / 180;
         const run = fol.dist * e.slash.halfWidth * f * cut.len * out3(seg(tau, 0, 0.14));
         end = {
-          x: strike.x + Math.cos(a) * run,
-          y: strike.y + Math.sin(a) * run,
-          rot: strike.rot + fol.rot * out3(seg(tau, 0, 0.14)),
+          x: base.x + Math.cos(a) * run,
+          y: base.y + Math.sin(a) * run,
+          rot: base.rot + fol.rot * out3(seg(tau, 0, 0.14)),
         };
       }
       sword(s, fr === fRel + 3 ? s.white : s.wp, end.x, end.y, end.rot, sc2);

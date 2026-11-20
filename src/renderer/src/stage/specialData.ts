@@ -36,7 +36,11 @@ export interface WeaponMotion {
    *  ignores `lunge` poses. */
   swing?: {
     side: 'up' | 'down';
+    /** Where the contact is (-1 to 1 along the cut) and where the swipe ends. */
     u: number;
+    to: number;
+    /** Degrees the blade turns further during the swipe. */
+    turn?: number;
     tilt?: number;
     drop?: number;
     /** The swing finishes while the slash burns away: how far along the cut (of its half-length) and
@@ -79,7 +83,15 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -130, y: 0, rot: 42 },
     ],
     cut: { rot: -16, len: 1, thick: 1 },
-    swing: { side: 'up', u: -0.2, tilt: 32, drop: 70, follow: { dist: 0.55, rot: 26 } },
+    swing: {
+      side: 'up',
+      u: -0.6,
+      to: 0.4,
+      turn: 20,
+      tilt: 32,
+      drop: 70,
+      follow: { dist: 0.3, rot: 14 },
+    },
     knock: 1,
     times: T(0.76, 0.84, 1.08, 0.24),
   },
@@ -96,7 +108,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -140, y: -50, rot: 78 },
     ],
     cut: { rot: 24, len: 1.12, thick: 1.35 },
-    swing: { side: 'down', u: 0.15 },
+    swing: { side: 'down', u: -0.6, to: 0.4, turn: 14, follow: { dist: 0.3, rot: 12 } },
     knock: 1.4,
     times: T(0.76, 0.92, 1.2, 0.3, 0.2),
   },
@@ -113,7 +125,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -50, y: -8, rot: 95 },
     ],
     cut: { rot: 28, len: 0.72, thick: 0.62, cross: true },
-    swing: { side: 'up', u: 0.1 },
+    swing: { side: 'up', u: -0.6, to: 0.4, turn: 20, follow: { dist: 0.3, rot: 12 } },
     knock: 0.7,
     times: T(0.76, 0.8, 0.94, 0.16, 0.1),
   },
@@ -178,7 +190,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -90, y: -55, rot: 104 },
     ],
     cut: { rot: 52, len: 0.86, thick: 1.25 },
-    swing: { side: 'down', u: 0.15 },
+    swing: { side: 'down', u: -0.6, to: 0.4, turn: 14, follow: { dist: 0.3, rot: 12 } },
     knock: 1.2,
     times: T(0.76, 0.88, 1.12, 0.26, 0.16),
   },
@@ -195,7 +207,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -80, y: -50, rot: 94 },
     ],
     cut: { rot: 38, len: 0.74, thick: 0.85, bow: 0.5 },
-    swing: { side: 'down', u: 0.15 },
+    swing: { side: 'down', u: -0.6, to: 0.4, turn: 14, follow: { dist: 0.3, rot: 12 } },
     knock: 1,
     times: T(0.76, 0.86, 1.08, 0.22, 0.14),
   },
@@ -212,7 +224,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -140, y: -6, rot: 46 },
     ],
     cut: { rot: -12, len: 1.32, thick: 0.9, bow: 1.5 },
-    swing: { side: 'up', u: 0.2 },
+    swing: { side: 'up', u: -0.6, to: 0.4, turn: 20, follow: { dist: 0.3, rot: 12 } },
     knock: 1,
     times: T(0.76, 0.9, 1.14, 0.26, 0.16),
   },
