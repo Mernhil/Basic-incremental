@@ -58,14 +58,14 @@ Older files and code comments still point at "DESIGN §N" of the previous layout
 
 ### Fights
 
-- [To build] **Speed button on the duel** (user, 2026-11-20: "also i was thinking about adding the x2 x4 speed up optiosn likei n afk arena what do you think?"; asked what for: "prob<ably just dungeons like afk arena"). The duel has one x1 / x2 / x4 button. A Challenge (the fight for the next floor) plays at that speed, and the attack animations and cut-ins play shorter with it. Farming pays exactly as now: the button does not speed up the game clock. For example, at x4 a 30-second Challenge is over in about 8 seconds and a 2-second cut-in takes half a second. It is built after the special attack is merged. Today: the duel has no speed button.
+- [To build] **Speed button on the duel** (user, 2026-11-20: "also i was thinking about adding the x2 x4 speed up optiosn likei n afk arena what do you think?"; asked what for: "prob<ably just dungeons like afk arena"; asked whether that means Challenges and their animations only, not faster farming: "yeah"; asked whether x2 opens with the first dungeon clear and x4 with the first Ascension, with the setting remembered: "yes"). The duel has one x1 / x2 / x4 button. A Challenge (the fight for the next floor) plays at that speed, and the attack animations and cut-ins play shorter with it. Farming pays exactly as now: the button does not speed up the game clock, because kills pay Money, materials and XP, so faster farming would multiply all income and every pacing target with it. For example, at x4 a 30-second Challenge is over in about 8 seconds and a 2-second cut-in takes half a second. x2 opens with the first dungeon clear and x4 with the first Ascension, and the setting is remembered. It is built after the special attack is merged. Today: the duel has no speed button.
 
 ### Summoning
 
 _Why (user, 2026-11-20): "another thing we need to work on ... is tghe summoning both animation wise and canche wise"; "too much junk and t6 almostr never comes counting that we need other copies to upgrade them i dont see when you would be using them"._
 
 - [To build] **Portal level** (user, 2026-11-20, asked "if i get this right at a certain point youd find almost no wooden silver bronze etc?" and told yes, with the guard: "seems perfect"; asked yes or no on the guard: "yes like a completionist check box"). The Card Portal levels up as the player pulls. Each level moves the chances up: the low tiers shrink and the high tiers grow, until a pull is mostly Gold and Prismatic with T6 at a few percent. The guard: a tier keeps a small share, with the wishlist still steering its pulls, and leaves the pool only once all its cards are at six stars. The levels and shares are Claude's to tune with the sim. Today: the Card Portal has no level and each tier's chance never changes.
-- [To build] **Tier completion reward** (user, 2026-11-20: "also maybe give rewards for completing a tier?"). Completing a tier gives a reward. What the reward is, is not decided (section 3). Today: completing a tier gives nothing.
+- [To build] **Tier completion reward** (user, 2026-11-20: "also maybe give rewards for completing a tier?"; on scrolls and a small permanent bonus, shown as a check box per tier: "fair"). Completing a tier gives scrolls and a small permanent bonus, and the collection shows a check box per tier. The amounts are Claude's to tune with the sim. Today: completing a tier gives nothing.
 - [To build] **T6 pity** (user, 2026-11-20, asked about a counter that guarantees a T6, with the chance rising as it gets close: "yes"). A counter guarantees a T6, and the T6 chance rises as the counter gets close. Its size is Claude's to tune with the sim. Today: the Card Portal's pity guarantees a Prismatic or better, with no rising chance.
 - [To build] **First 10-pull gives a Gold** (user, 2026-11-20: "sure"). The first 10-pull of a new game guarantees a Gold. Today: every 10-pull guarantees a Silver or better.
 - [To build] **The reveal is redone** (user, 2026-11-20: "what we have now feels like a placceholder so i'd say everything"). The summon reveal is made again from the start, not patched: the build-up shows the best tier before the flip, ordinary cards go fast, and a T6 gets the cut-in entrance of the special attack. The look is not decided: the user picks it from two to five mock-ups on the picker page. Today: the "Fan Deck" reveal (section 4).
@@ -107,9 +107,6 @@ _Why (user, 2026-11-20): "another thing we need to work on ... is tghe summoning
 - The Shadow Slime's front-facing redraw is in the game and you have not seen it yet. Keep it or redo it?
 - The small enemy packs (Bloodroot, Obsidian Crab and the small Elie sprites) look small next to the other bodies. Double them? Whether their drawn size changed since was not checked.
 - The reveal show uses Claude's mockup r3 "Fan Deck", which you never picked. It is to be replaced by the redone reveal (section 2), and you pick the new look from mock-ups on the picker page. The game keeps the Fan Deck until then.
-- Speed button, what it speeds: you said "prob<ably just dungeons like afk arena" (2026-11-20). A chat read that as Challenges and their animations only, not faster farming, and told you so; you have not answered. Is that right? Not in the game.
-- Speed button, when it opens: a chat filled in that x2 opens with the first dungeon clear and x4 with the first Ascension, and that the setting is remembered. Keep that? Not in the game.
-- Tier completion reward: what is the reward? A chat's intent is scrolls and a small permanent bonus, shown as a check box per tier in the collection. Not in the game.
 
 ### Cosmetics
 
@@ -193,12 +190,9 @@ _Why (user, 2026-11-20): "another thing we need to work on ... is tghe summoning
 - [Default · in game] **Wardrobe Gate pool**: the pool holds Common, Legendary and Mythic items only, while its 10-pull guarantee still names Rare (Claude, no date). Overview: Summon and pulls.
 - [Default · in game] **Legacy Gate details**: a pull costs the same as a Wardrobe Gate pull, a skin's rarity comes from its source art, an owned skin pays back part of a pull in Glamour Scrolls, weights fall with rarity (Claude, 2026-11-08). Overview: Summon and pulls.
 - [Default · in game] **Reveal look**: mockup r3 "Fan Deck", a summoning circle with cards dealt face down into two rows and the best card last after a film-style entrance; to be replaced by the redone reveal, section 2 (Claude, 2026-11-11). Overview: Summon and pulls.
-- [Default] **Tier completion reward, what it is**: scrolls and a small permanent bonus, shown as a check box per tier in the collection (Claude, 2026-11-20). Asked under Open questions.
 
 ### Dungeons and fights
 
-- [Default] **Speed button, what it speeds**: "just dungeons" is read as Challenges and their animations, not faster farming (Claude, 2026-11-20). Asked under Open questions.
-- [Default] **Speed button, when it opens**: x2 opens with the first dungeon clear, x4 with the first Ascension, and the setting is remembered (Claude, 2026-11-20). Asked under Open questions.
 - [Default · in game] **Challenge floor first win**: a floor's first-win scrolls pay when the best floor of a difficulty rises (Claude, no date). Overview: Dungeons, floors and stages.
 - [Default · in game] **No scrolls from normal enemies**: normal enemies drop no scrolls, so pulls never grow with kill speed (Claude, 2026-11-10). Overview: Dungeons, floors and stages.
 - [Default · in game] **Floor structure**: a floor is a growing share of its boss's health and attack, the same floor always holds the same wave, and the rare item and its pity belong to the last-floor boss (Claude, no date). Overview: Dungeons, floors and stages.
