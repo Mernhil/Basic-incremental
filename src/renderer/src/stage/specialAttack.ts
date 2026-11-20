@@ -569,7 +569,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
     const dx = (m.tip.x - m.grip.x) * sc2;
     const dy = (m.tip.y - m.grip.y) * sc2;
     const baseTip = (Math.atan2(m.tip.x - m.grip.x, -(m.tip.y - m.grip.y)) * 180) / Math.PI;
-    const rot = (sw.side === 'up' ? cut.rot : cut.rot + 180) - baseTip;
+    const rot = (sw.side === 'up' ? cut.rot : cut.rot + 180) - baseTip + (sw.tilt ?? 0);
     const grip = (deg: number, back: number): Placed => {
       const b = (deg * Math.PI) / 180;
       const vx = dx * Math.cos(b) - dy * Math.sin(b);

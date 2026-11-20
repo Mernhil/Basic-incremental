@@ -34,7 +34,7 @@ export interface WeaponMotion {
   /** A slashing weapon ends with its blade across the cut at a right angle (`side`: the tip points
    *  to the cut's upper or lower side), its middle `u` of the way along the cut (-1 to 1); it then
    *  ignores `lunge` poses. */
-  swing?: { side: 'up' | 'down'; u: number };
+  swing?: { side: 'up' | 'down'; u: number; tilt?: number };
   /** How far the enemy card is thrown back (1 = a sword's). */
   knock: number;
   /** Seconds: leaves the card, wind-up starts, lunge starts, the hit lands, the slash releases, the
@@ -71,7 +71,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
       { x: -130, y: 0, rot: 42 },
     ],
     cut: { rot: -16, len: 1, thick: 1 },
-    swing: { side: 'up', u: 0.15 },
+    swing: { side: 'up', u: 0.15, tilt: 32 },
     knock: 1,
     times: T(0.76, 0.84, 1.08, 0.24),
   },
