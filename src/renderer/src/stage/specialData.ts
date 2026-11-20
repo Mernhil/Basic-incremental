@@ -70,6 +70,9 @@ export interface WeaponMotion {
   /** Seconds the weapon stays planted at the hit before it swipes on (the white and the dark frame
    *  are its first two frames). */
   hold: number;
+  /** The drawn slash sheets fit this weapon's cut: they are drawn rising 16 degrees to the right,
+   *  bowed upward, and are never turned. */
+  sheetCut?: boolean;
   /** A heavy weapon: it hangs still at the top of its wind-up and trembles only on the last three
    *  frames, and the stage shakes harder when it lands. */
   heavy?: boolean;
@@ -112,6 +115,7 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
     ],
     knock: 1,
     hold: 0.12,
+    sheetCut: true,
     times: T(0.76, 0.84, 1.08, 0.28),
   },
   // slow and heavy: raised high, a big cleave down to the right
@@ -386,6 +390,44 @@ export const WEAPON_MOTIONS: Record<string, WeaponMotion> = {
   },
 };
 
+/**
+ * A drawn slash (PixelLab, 2026-11-21): one strip of equal frames at one fixed angle, played in
+ * place of the code-drawn crescent. The pictures are `art/fx/slash-<name>.png`.
+ */
+export interface SlashSheet {
+  frame: { w: number; h: number };
+  /** The point of a frame that sits on the middle of the cut's chord. */
+  centre: { x: number; y: number };
+  /** The whole crescent (the two snap-on frames are cut from it), the frames that flicker while the
+   *  hit holds, and the frames it breaks up in, 40 ms each. */
+  still: number;
+  hold: number[];
+  out: number[];
+  /** A grey sheet takes each effect's own five tones by brightness; a coloured one is shown as drawn. */
+  recolour: boolean;
+}
+
+export const SLASH_SHEETS = {
+  // a clean cut that shatters into shards from its middle
+  clean: {
+    frame: { w: 256, h: 96 },
+    centre: { x: 128, y: 56 },
+    still: 0,
+    hold: [0, 1],
+    out: [2, 3, 4, 5, 6, 7, 8, 9],
+    recolour: true,
+  },
+  // a fire cut whose tongues flicker, burning away into flame pieces
+  fire: {
+    frame: { w: 256, h: 96 },
+    centre: { x: 128, y: 60 },
+    still: 0,
+    hold: [1, 2, 3, 4, 5],
+    out: [6, 7, 8, 9],
+    recolour: false,
+  },
+} satisfies Record<string, SlashSheet>;
+
 /** What rises from the cut when it releases, and what the enemy card keeps shedding after. */
 export type RiseKind = 'flame' | 'bolt' | 'beam' | 'vine' | 'spike' | 'crystal' | 'wisp';
 
@@ -403,6 +445,9 @@ export interface ElementEffect {
    *  itself), forked bolts, plus-shaped sparkles, leaves, rock teeth, crystal shards, or a bright rim
    *  around a dark core. Without it the edge is plain. */
   edge?: 'tongue' | 'bolt' | 'sparkle' | 'leaf' | 'teeth' | 'shard' | 'rim';
+  /** The drawn slash it plays in place of the code-drawn crescent, on a weapon whose cut fits the
+   *  sheets (`sheetCut`). */
+  sheet?: keyof typeof SLASH_SHEETS;
   /** A sober hit: nothing rises or burns on the enemy, and only a few sparks fly. */
   plain?: boolean;
 }
@@ -494,7 +539,11 @@ const sober = (
  * element's effect.
  */
 export const MATERIAL_EFFECTS: Record<string, ElementEffect> = {
-  wood: sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
+  // the drawn slash sheet is on trial on wood only (2026-11-21)
+  wood: {
+    ...sober(['#fff6e0', '#ecd09c', '#c79a5c', '#94642f', '#5e3d1c', '#2e1c10'], '#120c06'),
+    sheet: 'clean',
+  },
   bronze: sober(['#fff1de', '#f6c896', '#d98c40', '#9e5a20', '#603412', '#2e1a0a'], '#120a04'),
   silver: sober(['#ffffff', '#eef2f7', '#c9d1dd', '#939db0', '#5d6577', '#343a48'], '#0c0e14'),
   gold: sober(['#fffde8', '#fff0a0', '#ffd23e', '#d49a12', '#8a6008', '#3e2a04'], '#141004'),
