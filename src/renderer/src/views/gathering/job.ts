@@ -35,8 +35,11 @@ import {
 } from '../../pages/productionStageModel';
 import { createPresetsPanel, type Panel } from '../../pages/tablePanels';
 import { amountText } from '../../settings/coins';
+import { costText } from '../../settings/cost';
+import { costMarkup } from '../../ui/costMarkup';
 import { fmt } from '../../settings/numberFormat';
 import { h } from '../../shell/shell';
+import { workerPickList, workerPickTile } from './workerPick';
 import { hide as hideTip } from '../../shell/tooltip';
 import { centreOf, flyCoins } from '../../stage/fly';
 import { createWorkerCell, type WorkerCell } from '../../stage/harvestParty';
@@ -332,29 +335,22 @@ export function createJobView(
       h('h2', 'gv-panel__title px-display', COPY.production.pickTitle(ref?.row.name ?? placeId)),
       actions,
     );
-    const ul = h('ul', 'pp-pick__list');
+    const ul = workerPickList();
+    const state = ctx.state();
     for (const o of options) {
-      const li = h('li');
-      const b = h('button', 'pp-pick__opt');
-      b.type = 'button';
-      b.dataset['key'] = `pick-${placeId}-${o.id}`;
-      if (o.current) b.setAttribute('aria-current', 'true');
-      if (o.disabled) b.setAttribute('aria-disabled', 'true');
-      const sw = h('i');
-      sw.dataset['rarity'] = o.rarity;
-      sw.setAttribute('aria-hidden', 'true');
-      b.append(
-        sw,
-        h('b', '', o.name),
-        h('span', 'pp-pick__power bi-num', o.power),
-        h('span', 'pp-pick__note', o.note),
+      ul.append(
+        workerPickTile(content, state, {
+          cardId: o.id,
+          key: `pick-${placeId}-${o.id}`,
+          name: o.name,
+          power: o.power,
+          note: o.note,
+          where: o.where,
+          current: o.current,
+          disabled: o.disabled,
+          onPick: () => place(placeId, o.id),
+        }),
       );
-      b.addEventListener('click', () => {
-        if (o.disabled || o.current) return;
-        place(placeId, o.id);
-      });
-      li.append(b);
-      ul.append(li);
     }
     pickEl.hidden = false;
     pickEl.replaceChildren(
@@ -457,7 +453,8 @@ export function createJobView(
           ref.buy.update({
             ...v,
             label: T.levelUp(v.offer.count, count === 'max'),
-            price: amountText(content, v.offer.price.resource, v.offer.price.amount),
+            price: costText(content, v.offer.price.resource, v.offer.price.amount),
+            priceLabel: amountText(content, v.offer.price.resource, v.offer.price.amount),
             preview: row.previewText || v.preview,
             art: resourceArt(content, s, v.offer.price.resource, v.offer.price.amount),
             short: ur?.buy.short ?? null,
@@ -466,13 +463,18 @@ export function createJobView(
       } else if (ref.unlock) {
         const u = ref.unlock;
         if (row.kind === 'locked-tree' && row.unlock) {
-          set(u.price, row.unlock.amount);
-          set(u.have, row.unlock.resources);
-          u.btn.title = row.unlock.have;
+          const markup = costMarkup(content, s, row.unlock.costs);
+          if (u.price.dataset['k'] !== markup) {
+            u.price.dataset['k'] = markup;
+            u.price.innerHTML = markup;
+          }
+          set(u.have, row.unlock.have);
+          u.btn.title = row.unlock.resources;
           u.btn.setAttribute('aria-disabled', String(!row.unlock.affordable));
           u.btn.classList.toggle('is-affordable', row.unlock.affordable);
         } else {
-          set(u.price, '');
+          u.price.textContent = '';
+          delete u.price.dataset['k'];
           set(u.have, '');
           u.btn.setAttribute('aria-disabled', 'true');
         }

@@ -247,3 +247,11 @@
     display: none;
   }
 }
+
+/* The cost is the material's sprite and its number, side by side at the button's right end. */
+.ur__buy .ur__art {
+  margin-left: auto;
+}
+.ur__buy .ur__art:not(:empty) + .ur__price {
+  margin-left: 0;
+}

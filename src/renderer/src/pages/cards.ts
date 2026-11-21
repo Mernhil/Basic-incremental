@@ -21,7 +21,7 @@ import { createCard, type CardProps } from '../ui/card';
 import { ITEM_VIEWBOX } from '../art/items';
 import { skinTileMarkup } from './loadoutCards';
 import type { SkinPickerView } from './cardSkinsModel';
-import { fitCard } from '../ui/pixelFit';
+import { watchFit } from '../ui/pixelFit';
 import { createWeaponPanel } from '../ui/weaponPanel';
 import { chartSky, chartStar, nodeStyle } from '../ui/skillArt';
 import {
@@ -72,26 +72,6 @@ const DETAIL_SIDE_MIN = 118;
 const DETAIL_GAP = 22;
 /** The kit picture is this many times as wide as the card it frames (212 / 132 art pixels). */
 const KIT_PER_CARD = 212 / 132;
-type Fit = Parameters<typeof fitCard>[1];
-
-/**
- * Gives `host` its whole card scale (ui/pixelFit.ts) and keeps it right as the host's width
- * changes: its width is 0 while the page is hidden, and the scale it picks depends on it.
- * `data-n` carries the scale to the CSS (the compact card drops its job label at 1x).
- */
-function watchFit(host: HTMLElement, fit: Fit): void {
-  const apply = (): void => {
-    host.dataset['n'] = String(fitCard(host, fit));
-  };
-  apply();
-  let width = host.clientWidth;
-  new ResizeObserver(() => {
-    if (host.clientWidth === width) return;
-    width = host.clientWidth;
-    apply();
-  }).observe(host);
-}
-
 /** The width of a host's content box, for `fitCard`'s `max`. */
 function innerWidth(host: HTMLElement): number {
   const style = getComputedStyle(host);

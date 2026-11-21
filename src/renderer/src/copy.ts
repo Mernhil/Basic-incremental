@@ -251,7 +251,7 @@ export const COPY = {
     waitSeconds: (s: number) => `${s} s`,
     waitNever: '—',
     previewRate: (from: string, to: string) => `${from} → ${to} /s`,
-    unlockFor: (price: string) => `Unlock for ${price}`,
+    unlockFor: () => 'Locked. Pay the cost on the button to open it.',
     burstCount: (n: number, size: number) => `Burst ${n} / ${size}`,
     bandLabel: (job: string) => `${job} producers`,
     /** Worker cells and the worker picker (DESIGN.md §4 Workers). */
@@ -1463,6 +1463,7 @@ export const COPY = {
     respecNote: 'Refunds every skill point so you can spend them again.',
     respecFree: 'Respec for free',
     respecPaid: (price: string) => `Respec for ${price}`,
+    respecPaidLead: 'Respec for',
     respecNothing: 'No points spent yet.',
     respecFreeNote: 'Your first respec each ascension is free.',
     respecPaidNote: 'You used the free respec this ascension.',

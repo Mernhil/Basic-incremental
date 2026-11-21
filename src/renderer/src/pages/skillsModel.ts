@@ -386,6 +386,8 @@ export interface RespecView {
   refund: number;
   free: boolean;
   priceText: string;
+  /** The paid respec's cost, for the button's sprite and number; null while free. */
+  cost: { resource: string; amount: Decimal } | null;
   affordable: boolean;
   enabled: boolean;
   button: string;
@@ -405,6 +407,10 @@ export function respecView(content: Content, state: GameState, info: RespecInfo)
     refund: info.refund,
     free: info.free,
     priceText,
+    cost:
+      info.free || !info.price
+        ? null
+        : { resource: info.price.resource, amount: info.price.amount },
     affordable,
     enabled,
     button: info.free ? COPY.skills.respecFree : COPY.skills.respecPaid(priceText),

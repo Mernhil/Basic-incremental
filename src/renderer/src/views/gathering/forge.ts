@@ -16,6 +16,7 @@ import { cardItemArt } from '../../pages/loadoutCards';
 import { forgeView } from '../../pages/forgeModel';
 import { COPY } from '../../copy';
 import { fmt } from '../../settings/numberFormat';
+import { workerPickList, workerPickTile } from './workerPick';
 import { h } from '../../shell/shell';
 import type { TableContext, ViewApi, ViewHandle } from '../../table/contract';
 import { createBuyToggle } from '../../ui/buy';
@@ -92,7 +93,8 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
   changeBtn.setAttribute('aria-expanded', 'false');
   workerText.append(workerName, workerPowerEl, workerRule, changeBtn);
   workerBox.append(workerArt, workerText);
-  const pickList = h('ul', 'fv-pick');
+  const pickList = workerPickList();
+  pickList.classList.add('fv-pick');
   pickList.hidden = true;
   const slotNote = h('p', 'fv-hint', T.forgeSlotNote);
   const stock = h('p', 'fv-stock');
@@ -161,16 +163,21 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     if (workers.length === 0) {
       items.push(h('li', 'fv-hint', T.noWorkerCards));
     }
+    const state = ctx.state();
     for (const w of workers) {
-      const li = h('li');
-      const b = h('button', 'pp-pick__opt');
-      b.type = 'button';
-      b.dataset['key'] = `forge-worker-${w.cardId}`;
-      if (w.cardId === current) b.setAttribute('aria-current', 'true');
-      b.append(h('b', '', w.label));
-      b.addEventListener('click', () => choose(w.cardId));
-      li.append(b);
-      items.push(li);
+      items.push(
+        workerPickTile(content, state, {
+          cardId: w.cardId,
+          key: `forge-worker-${w.cardId}`,
+          name: w.label,
+          power: '',
+          note: '',
+          where: w.cardId === current ? COPY.production.pickHere : '',
+          current: w.cardId === current,
+          disabled: false,
+          onPick: () => choose(w.cardId),
+        }),
+      );
     }
     pickList.replaceChildren(...items);
   }

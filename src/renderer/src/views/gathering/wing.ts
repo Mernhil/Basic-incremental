@@ -8,6 +8,7 @@ import {
 import { mineTile, svg, treeTile } from '../../art/gems';
 import { COPY } from '../../copy';
 import { jobRateValue, productionRows, type ProductionRow } from '../../pages/productionModel';
+import { costMarkup } from '../../ui/costMarkup';
 import { h } from '../../shell/shell';
 import type { TableContext } from '../../table/contract';
 import { buyCount } from '../../ui/buy';
@@ -109,7 +110,12 @@ export function createWing(
         set(ref.rate, locked ? '–' : T.rate(row.outputValue));
         set(ref.level, locked ? T.locked : T.level(row.buy?.level ?? 0));
         const price = locked ? (row.unlock?.amount ?? '') : (row.buy?.price ?? '');
-        set(ref.price, price);
+        const costs = locked ? (row.unlock?.costs ?? []) : row.buy ? [row.buy.offer.price] : [];
+        const markup = costMarkup(content, s, costs);
+        if (ref.price.dataset['k'] !== markup) {
+          ref.price.dataset['k'] = markup;
+          ref.price.innerHTML = markup;
+        }
         const affordable = locked
           ? Boolean(row.unlock?.affordable)
           : Boolean(row.buy?.offer.affordable);
