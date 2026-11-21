@@ -129,15 +129,17 @@ describe('Wishlist pulls', () => {
   });
 
   it('hard pity and the 10-pull guarantee land on a marked card of their rarity too', () => {
-    const wanted = ofRarity('legendary')[3]!;
+    const wanted = ofRarity('mythic')[3]!;
     const pity = mark(rich(), wanted);
-    pity.portals[PORTAL] = { pity: 89, pulls: 89, pityHits: 0 };
+    pity.portals[PORTAL] = { pity: 59, pulls: 59, pityHits: 0 };
     const hit = pull(pity, content, PORTAL, 1, constantRng(0));
     if (!hit.ok) throw new Error(hit.reason);
-    expect(hit.results[0]).toMatchObject({ pity: true, rarity: 'legendary', itemId: wanted });
+    expect(hit.results[0]).toMatchObject({ pity: true, rarity: 'mythic', itemId: wanted });
 
     const rare = ofRarity('rare')[4]!;
-    const ten = pull(mark(rich(), rare), content, PORTAL, 10, constantRng(0));
+    const seasoned = mark(rich(), rare);
+    seasoned.summon.firstTenPullDone = true;
+    const ten = pull(seasoned, content, PORTAL, 10, constantRng(0));
     if (!ten.ok) throw new Error(ten.reason);
     expect(ten.results[9]).toMatchObject({ guaranteed: true, rarity: 'rare', itemId: rare });
   });

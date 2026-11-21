@@ -16,6 +16,7 @@ import {
   lastHandView,
   oddsTable,
   portalView,
+  tierBoxes,
   revealSound,
   revealViews,
   wishlistPanelView,
@@ -34,13 +35,36 @@ describe('summon shelf', () => {
     expect(v.ten.label).toBe('Pull 10');
     expect(v.ten.amount).toBe(portal.cost.ten.toNumber().toLocaleString('en-US'));
     expect(v.resourceId).toBe(portal.cost.resource);
-    expect(v.line).toMatch(/or better within \d+ pulls$/);
+    // the Card Portal's pity is a T6 with a rising chance, its level and first 10-pull show
+    expect(v.line).toMatch(/^A T6 card within \d+ pulls/);
     expect(v.pityText).toMatch(/^0 \/ \d+$/);
-    expect(v.pity).toMatch(/or better within \d+ pulls$/);
+    expect(v.pity).toMatch(/^A T6 card within \d+ pulls$/);
+    expect(v.level).toMatchObject({ label: 'Portal level 1', progress: 0 });
+    expect(v.firstTen).toBe('Your first ×10 holds a Gold or better');
+    expect(v.levelNote).toMatch(/^Portal level 1 of \d+/);
     expect(v.pityProgress).toBe(0);
     expect(v.guarantee).toMatch(/^Every ×10 holds a /);
     // the Card Portal goes by tier (DESIGN.md §7)
     expect(v.rates[0]).toMatch(/^Wood: \d/);
+  });
+
+  it('lists a check box per tier, ticked once its reward is paid', () => {
+    const state = freshState();
+    const boxes = tierBoxes(state, content);
+    expect(boxes.map((b) => b.name)).toEqual([
+      'Wood',
+      'Bronze',
+      'Silver',
+      'Gold',
+      'Prismatic',
+      'Mythic',
+      'Void',
+    ]);
+    expect(boxes.every((b) => !b.checked)).toBe(true);
+    expect(boxes[0]!.count).toBe('0 / 11');
+    state.summon.tierRewardsClaimed.push('wood');
+    expect(tierBoxes(state, content)[0]).toMatchObject({ checked: true });
+    expect(tierBoxes(state, content)[0]!.reward).toMatch(/^\+5 scrolls · \+1% damage$/);
   });
 
   it('cannot pull without the portal resource', () => {

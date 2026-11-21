@@ -290,6 +290,9 @@ describe('v26 -> v27 (the table update)', () => {
     )) {
       delete card['tier'];
     }
+    // format 40: the Card Portal's pity counts toward a T6 and starts again; 10 pulls made means the
+    // first 10-pull is behind it; no tier reward is claimed
+    (scaled['portals'] as Record<string, Record<string, unknown>>)['card_portal']!['pity'] = 0;
     expect(again).toEqual({ ...scaled, bossHp: null, activeDungeonId: 'mossy_cellar' });
 
     // Saved again it is the current format and loads to the same state.
@@ -332,7 +335,12 @@ describe('format 27 state', () => {
     };
     state.combat.challengeWaitSeconds = 30;
     state.combat.cardDamage = { ember_squire: new Decimal('1e5') };
-    state.summon = { focusKind: 'hammer', dailyClaimedDay: '2026-11-11' };
+    state.summon = {
+      focusKind: 'hammer',
+      dailyClaimedDay: '2026-11-11',
+      firstTenPullDone: true,
+      tierRewardsClaimed: [],
+    };
     state.presets.dungeons['mossy_cellar'] = { slots: ['ember_squire', null, null, null] };
     state.presets.production.logging[1] = {
       name: 'Oaks',

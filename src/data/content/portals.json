@@ -731,11 +731,136 @@
       }
     ],
     "pity": {
-      "tier": "prismatic",
-      "threshold": 90
+      "tier": "mythic",
+      "threshold": 60,
+      "softFrom": 30
     },
     "wishlistPerTier": 2,
     "tenPullGuarantee": "silver",
+    "firstTenPullGuarantee": "gold",
+    "minShare": 0.01,
+    "levels": [
+      {
+        "pulls": 0,
+        "chances": {
+          "wood": 0.532,
+          "bronze": 0.28,
+          "silver": 0.13,
+          "gold": 0.04,
+          "prismatic": 0.015,
+          "mythic": 0.002,
+          "void": 0.001
+        }
+      },
+      {
+        "pulls": 20,
+        "chances": {
+          "wood": 0.44,
+          "bronze": 0.29,
+          "silver": 0.16,
+          "gold": 0.08,
+          "prismatic": 0.024,
+          "mythic": 0.004,
+          "void": 0.002
+        }
+      },
+      {
+        "pulls": 50,
+        "chances": {
+          "wood": 0.35,
+          "bronze": 0.28,
+          "silver": 0.19,
+          "gold": 0.13,
+          "prismatic": 0.04,
+          "mythic": 0.0067,
+          "void": 0.0033
+        }
+      },
+      {
+        "pulls": 90,
+        "chances": {
+          "wood": 0.26,
+          "bronze": 0.26,
+          "silver": 0.21,
+          "gold": 0.19,
+          "prismatic": 0.066,
+          "mythic": 0.0093,
+          "void": 0.0047
+        }
+      },
+      {
+        "pulls": 140,
+        "chances": {
+          "wood": 0.18,
+          "bronze": 0.22,
+          "silver": 0.22,
+          "gold": 0.26,
+          "prismatic": 0.101,
+          "mythic": 0.0127,
+          "void": 0.0063
+        }
+      },
+      {
+        "pulls": 200,
+        "chances": {
+          "wood": 0.11,
+          "bronze": 0.16,
+          "silver": 0.2,
+          "gold": 0.32,
+          "prismatic": 0.186,
+          "mythic": 0.016,
+          "void": 0.008
+        }
+      },
+      {
+        "pulls": 280,
+        "chances": {
+          "wood": 0.06,
+          "bronze": 0.1,
+          "silver": 0.15,
+          "gold": 0.36,
+          "prismatic": 0.304,
+          "mythic": 0.0173,
+          "void": 0.0087
+        }
+      },
+      {
+        "pulls": 380,
+        "chances": {
+          "wood": 0.03,
+          "bronze": 0.05,
+          "silver": 0.1,
+          "gold": 0.38,
+          "prismatic": 0.412,
+          "mythic": 0.0187,
+          "void": 0.0093
+        }
+      },
+      {
+        "pulls": 500,
+        "chances": {
+          "wood": 0.015,
+          "bronze": 0.03,
+          "silver": 0.07,
+          "gold": 0.38,
+          "prismatic": 0.473,
+          "mythic": 0.0213,
+          "void": 0.0107
+        }
+      },
+      {
+        "pulls": 650,
+        "chances": {
+          "wood": 0.005,
+          "bronze": 0.015,
+          "silver": 0.05,
+          "gold": 0.38,
+          "prismatic": 0.51,
+          "mythic": 0.0267,
+          "void": 0.0133
+        }
+      }
+    ],
     "reveal": {
       "upgradeFlashChance": 0.25
     }
