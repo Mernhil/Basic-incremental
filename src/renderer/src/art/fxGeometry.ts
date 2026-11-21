@@ -74,7 +74,20 @@ export function zigzag(a: Pt, b: Pt, n: number, amp: number, rnd: () => number):
   return out;
 }
 
-/** How strong an element effect is for a rank tier: none below Gold (DESIGN.md §12). */
-export function effectStrength(tier: string): 0 | 1 | 2 {
+/**
+ * THE OFF SWITCH for every element effect on cards (fire, storm, light, nature, earth, crystal,
+ * void). Switched off 2026-11-21 (user: "anmations are back on weapons tho iu didnt ask for it",
+ * "on the weapons everywhere"): false draws the still weapon only, with no glow canvas and no
+ * animation loop. Set it to true to bring the effects back once they are redone; the effect code
+ * stays. Does not touch the duel's special attack.
+ */
+export const ELEMENT_FX = false;
+
+/**
+ * How strong an element effect is for a rank tier: none below Gold (DESIGN.md §12), and none at
+ * any tier while the switch is off (default: the switch above).
+ */
+export function effectStrength(tier: string, on: boolean = ELEMENT_FX): 0 | 1 | 2 {
+  if (!on) return 0;
   return tier === 'prismatic' ? 2 : tier === 'gold' ? 1 : 0;
 }
