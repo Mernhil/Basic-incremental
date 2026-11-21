@@ -40,3 +40,8 @@
 .wk-pick__item.is-off .cp-pick__card {
   cursor: default;
 }
+
+/* a full-width row above the cards (the forge's "Send away") */
+.wk-pick__bar {
+  flex: 0 0 100%;
+}

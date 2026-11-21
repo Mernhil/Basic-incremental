@@ -158,7 +158,7 @@ export function createForgeView(host: HTMLElement, ctx: TableContext, api: ViewA
     none.dataset['key'] = 'forge-worker-none';
     none.append(h('b', '', T.sendAway));
     none.addEventListener('click', () => choose(null));
-    items.push(h('li', '', ''));
+    items.push(h('li', 'wk-pick__bar', ''));
     items[0]!.append(none);
     if (workers.length === 0) {
       items.push(h('li', 'fv-hint', T.noWorkerCards));
