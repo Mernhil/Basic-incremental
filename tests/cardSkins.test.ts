@@ -26,7 +26,7 @@ describe('card skins: what a card may wear', () => {
   it('lists the own weapons of the same type, locked until the card is owned', () => {
     const state = own(freshState(), PLAIN);
     const jade = cardSkinChoices(state, content, PLAIN).find((c) => c.id === `card:${JADE}`)!;
-    expect(jade).toMatchObject({ kind: 'card', name: 'Frostjade', available: false });
+    expect(jade).toMatchObject({ kind: 'card', name: 'Duneblade', available: false });
     own(state, JADE);
     expect(
       cardSkinChoices(state, content, PLAIN).find((c) => c.id === `card:${JADE}`)!.available,

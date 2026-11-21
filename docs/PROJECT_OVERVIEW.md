@@ -1030,7 +1030,7 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
 
 - `art/pixel/sprites/` holds every sprite (1,501 PNGs). `art/pixel/hand/` holds the 808 sprites the bake copies into `sprites/` unchanged (pictures made outside the game and the output of the scripts listed under Scripts and data), plus `outlines.json` (outlines of card items). The rest is 40 sprites baked from vector code and 653 cosmetic sprites (`cos-*`, see Cosmetics and themes).
 - The file name is the key. Counts by prefix in `sprites/`:
-  - `item-` 174: weapons, 100 x 120. `item-<type>-t1` to `-t5` (11 types x 5 tiers = 55), `-t6m` and `-t6v` (22), `-heirloom` (11), `item-<type>-leviathan-t6m|t6v|heirloom` (33), `item-<type>-hm-<letter>` and `-hv-<letter>` (45 recoloured Heirlooms), 6 other bow and maul pictures, 2 motion strips.
+  - `item-` 174: weapons, 100 x 120. `item-<type>-t1` to `-t5` (11 types x 5 tiers = 55), `-t6m` and `-t6v` (22), `-heirloom` (11), `item-<type>-leviathan-t6m|t6v|heirloom` (33), `item-<type>-hm-<letter>` and `-hv-<letter>` (45 recoloured Heirlooms, 13 of them recoloured again with PixelLab on 2026-11-22, see `docs/ASSET_RULES.md` section 5), 6 other bow and maul pictures, 2 motion strips.
   - `skin-` 37 (weapon skins, 19 stills and 18 strips), `evo-` 9.
   - `kit-` 9: card kits, 212 x 256. `frame-` 4.
   - `foe-` 54 (27 foes, a still and an idle strip each, 160 x 172), `boss-` 6.

@@ -26,7 +26,7 @@ describe('card skin picker model', () => {
     expect(v.tiles[0]).toMatchObject({ id: null, kind: 'original', worn: true });
     expect(v.tiles[1]).toMatchObject({
       id: 'card:jade_vanguard',
-      name: 'Frostjade',
+      name: 'Duneblade',
       locked: false,
     });
     const locked = v.tiles.filter((t) => t.locked);
@@ -40,7 +40,7 @@ describe('card skin picker model', () => {
     const r = setCardSkin(state, content, 'ember_squire', 'card:jade_vanguard');
     if (!r.ok) throw new Error(r.reason);
     const v = skinPickerView(r.state, content, 'ember_squire')!;
-    expect(v.wornName).toBe('Frostjade');
+    expect(v.wornName).toBe('Duneblade');
     expect(skinCards(r.state, content).map((c) => c.id)).toContain('ember_squire');
     expect(skinCards(own('ember_squire'), content)).toEqual([]);
     expect(cardSkinsSignature(r.state)).not.toBe(cardSkinsSignature(state));

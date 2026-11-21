@@ -32,7 +32,7 @@ export interface CardSkinChoice {
   /** The id stored in `state.cardSkins`: a legacy skin's id, or `card:<cardId>`. */
   id: string;
   kind: 'legacy' | 'card';
-  /** Legacy skin: its short name. Card skin: the skin's own weapon name (Frostjade). */
+  /** Legacy skin: its short name. Card skin: the skin's own weapon name (Duneblade). */
   name: string;
   /** A legacy skin's art id; null for a card skin (its picture is the source card's own). */
   art: string | null;
