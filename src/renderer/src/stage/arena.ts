@@ -72,6 +72,8 @@ import { flyCoins } from './fly';
 import { onFrame, replay, shake } from './motion';
 import { popText } from './math';
 import { popNumber } from './numbers';
+import { createSpecialAttack, hasSpecial, type Box } from './specialAttack';
+import { sprite } from '../art/pixel/sprites';
 import { toast } from './toast';
 import { lightStagePips, stagePips } from '../ui/stars';
 import './arena.css';
@@ -682,18 +684,8 @@ export function createArena(ctx: ArenaContext): Arena {
         replay(hp.el.querySelector('.bi-hpstack__count'), 'is-ticking', 500);
       if (barMoment(lastLook, look, false) === 'shatter') popWord(DUEL_COPY.breakWord, 'break');
       lastLook = look;
-      const dealt = enemyDamage(view.hp, view.maxHp);
-      // the table's window is smaller: its tag a size down
-      const tagPx = el.closest('.dv-window') ? 2 : 3;
-      if (dealt.gt(0)) {
-        foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
-        pxNum(foeTagPx, fmt(dealt), tagPx);
-      } else {
-        // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
-        foeTagText.textContent = '';
-        pxNum(foeTagPx, '0', tagPx);
-      }
-      foeTag.classList.toggle('is-empty', !dealt.gt(0));
+      // while a special attack plays the tag keeps the total from before it (see playSpecial)
+      if (!tagHeld) showTag(enemyDamage(view.hp, view.maxHp));
       // the deck: one back per enemy to come (the boss last)
       const backs = deckBacks(view.waiting.length);
       if (deckStack.childElementCount !== backs) {
@@ -744,6 +736,26 @@ export function createArena(ctx: ArenaContext): Arena {
       pips.replaceChildren();
       delete pips.dataset['sig'];
     }
+  }
+
+  // ---- the enemy's damage tag: the total dealt to it so far ----
+  type Total = ReturnType<typeof enemyDamage>;
+  /** The total the tag shows, and whether a special attack is holding it until its hit lands. */
+  let tagShown: Total | null = null;
+  let tagHeld = false;
+  function showTag(dealt: Total): void {
+    // the table's window is smaller: its tag a size down
+    const tagPx = el.closest('.dv-window') ? 2 : 3;
+    if (dealt.gt(0)) {
+      foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
+      pxNum(foeTagPx, fmt(dealt), tagPx);
+    } else {
+      // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
+      foeTagText.textContent = '';
+      pxNum(foeTagPx, '0', tagPx);
+    }
+    foeTag.classList.toggle('is-empty', !dealt.gt(0));
+    tagShown = dealt;
   }
 
   // ---- the feed, the sheet, the plates ----
@@ -1020,6 +1032,105 @@ export function createArena(ctx: ArenaContext): Arena {
     }
   }
 
+  // ---- the special attack (stage/specialAttack.ts): a signature attack on a full gauge ----
+  const special = createSpecialAttack(el);
+  const weaponPics = new Map<string, HTMLImageElement | null>();
+  /** Loads a weapon picture once; null until it is ready (the first signature may miss the show). */
+  const weaponPic = (name: string): HTMLImageElement | null => {
+    if (!name) return null;
+    if (weaponPics.has(name)) return weaponPics.get(name) ?? null;
+    const info = sprite(name);
+    if (!info) return null;
+    weaponPics.set(name, null);
+    const img = new Image();
+    img.onload = () => weaponPics.set(name, img);
+    img.src = info.url;
+    return img.complete && img.naturalWidth > 0 ? (weaponPics.set(name, img), img) : null;
+  };
+  const rel = (r: DOMRect, host: DOMRect): Box => ({
+    x: r.left - host.left,
+    y: r.top - host.top,
+    w: r.width,
+    h: r.height,
+  });
+  /** Plays a card's special attack; false when it cannot (the normal hop shows instead). */
+  function playSpecial(slot: HandSlot, skillId: string, damage: Total): boolean {
+    const card = content.cardById.get(slot.cardId);
+    const kind = card?.item?.kind;
+    if (!card || slot.out || !hasSpecial(kind, card.element) || document.hidden) return false;
+    const item = slot.body.querySelector<HTMLElement>('.bi-card__item [data-sprite]');
+    const pic = weaponPic(item?.dataset['sprite'] ?? '');
+    if (!item || !pic) return false;
+    const host = el.getBoundingClientRect();
+    const cardBox = foe.getBoundingClientRect();
+    if (host.width === 0 || cardBox.width === 0) return false;
+    const u = Number(hand.style.getPropertyValue('--card-n')) || 1;
+    const dpr = screenDpr();
+    const unit = u / dpr;
+    const skill = content.skillById.get(skillId);
+    const glowOf = (c: string | null, px: number): string =>
+      c
+        ? [
+            [1, 0],
+            [-1, 0],
+            [0, 1],
+            [0, -1],
+          ]
+            .map(([x, y]) => `drop-shadow(${x! * px * unit}px ${y! * px * unit}px 0 ${c})`)
+            .join(' ')
+        : '';
+    const itemEl = slot.body.querySelector<HTMLElement>('.bi-card__item');
+    // the tag holds the total from before the attack and takes this hit's damage as it lands
+    const before = tagShown;
+    const played = special.play({
+      kind: kind!,
+      element: card.element,
+      tier: card.tier,
+      weapon: pic,
+      card: cardNameById(content, slot.cardId) ?? slot.cardId,
+      skill: skill?.name ?? '',
+      line: skill?.description ?? '',
+      foe: rel(cardBox, host),
+      rest: rel(item.getBoundingClientRect(), host),
+      u,
+      dpr,
+      calm: calm(),
+      hooks: {
+        dim: (on) => {
+          el.classList.toggle('is-special', on);
+          slot.el.classList.toggle('is-special-src', on);
+        },
+        card: (o) => {
+          slot.body.style.translate = o.dy ? `0 ${o.dy * unit}px` : '';
+          const glow = glowOf(o.glow, o.glowPx);
+          slot.body.style.filter = o.flash ? 'brightness(6)' : glow;
+          if (itemEl) itemEl.style.visibility = o.weapon ? '' : 'hidden';
+        },
+        foe: (o) => {
+          foe.style.translate = o.dx || o.dy ? `${o.dx * unit}px ${o.dy * unit}px` : '';
+          foe.style.filter = o.flash ? 'brightness(8) saturate(0)' : '';
+        },
+        release: (weight) => {
+          shake(el, weight > 1 ? 'heavy' : true);
+          // no number pops on the enemy (the user, 2026-11-21): the damage is shown beside the enemy
+          // card, so as the hit lands the big tag with the total pops, and under it the signature's
+          // own line in the hit feed
+          if (before) showTag(before.add(damage));
+          if (!calm()) {
+            replay(foeTag, 'is-landed', 460);
+            replay(feed.querySelector('.du-feed__line.is-signature'), 'is-landed', 460);
+          }
+          play('hit');
+        },
+        done: () => {
+          tagHeld = false;
+        },
+      },
+    });
+    if (played) tagHeld = true;
+    return played;
+  }
+
   // ---- the director's reports ----
   const hop = (slot: HandSlot): void => {
     if (calm() || slot.out) return;
@@ -1043,25 +1154,42 @@ export function createArena(ctx: ArenaContext): Arena {
   ctx.director.on('duel', (e) => {
     const key = duelFightKey(e.after, content);
     log = recordDuel(log, e.report, e.seconds, key);
-    if (e.report.skills.length > 0) {
-      const q = queuePlates(plateQueue, [...e.report.skills], performance.now(), plateId);
+    const hitters = new Set<string>();
+    for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
+    // a lone signature attack plays its special attack; one at a time, the rest keep the hop
+    let specialCard = '';
+    if (live())
+      for (const hit of e.report.playerHits) {
+        if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
+        const slot = slots.find((x) => x.cardId === hit.cardId);
+        const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
+        if (slot && playSpecial(slot, skillId, hit.damage)) specialCard = hit.cardId;
+      }
+    // the special attack's cut-in takes the place of that signature's skill banner
+    const plated = e.report.skills.filter(
+      (k) => !(k.cardId === specialCard && k.kind === 'strike'),
+    );
+    if (plated.length > 0) {
+      const q = queuePlates(plateQueue, [...plated], performance.now(), plateId);
       plateQueue = q.queue.slice(-6);
       plateId = q.nextId;
     }
     if (!live()) return;
-    const hitters = new Set<string>();
-    for (const hit of e.report.playerHits) if (hit.hits > 0 && hit.cardId) hitters.add(hit.cardId);
     let critRolled = false;
     for (const id of hitters) {
       const slot = slots.find((x) => x.cardId === id);
       if (!slot) continue;
-      hop(slot);
+      if (id !== specialCard) hop(slot);
       const n = e.report.playerHits.find((h) => h.cardId === id)?.hits ?? 1;
       if (!critRolled && Math.random() < 1 - (1 - slot.crit) ** n) {
         critRolled = true;
         popWord(DUEL_COPY.critWord, 'crit');
       }
     }
+    // a burst without a special attack (several at once, or one while another still plays): the
+    // enemy's total pops all the same (the user, 2026-11-21: it pops when bursts happen)
+    const plain = e.report.playerHits.some((h) => h.signature && h.cardId !== specialCard);
+    if (plain && !tagHeld && !calm()) replay(foeTag, 'is-landed', 460);
     if (hitters.size > 0) play('hit');
   });
 

@@ -67,9 +67,10 @@ export function replay(el: Element | null | undefined, cls: string, ms = 600): v
 }
 
 /** A small shake of the whole stage (skipped under reduced motion). */
-export function shake(el: Element | null | undefined, strong = false): void {
+export function shake(el: Element | null | undefined, strong: boolean | 'heavy' = false): void {
   if (reducedMotion()) return;
-  replay(el, strong ? 'st-shake--strong' : 'st-shake', strong ? 420 : 300);
+  if (strong === 'heavy') replay(el, 'st-shake--heavy', 480);
+  else replay(el, strong ? 'st-shake--strong' : 'st-shake', strong ? 420 : 300);
 }
 
 /** A white flash over an element (skipped under reduced motion). */
