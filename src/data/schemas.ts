@@ -662,6 +662,18 @@ export const cardRulesSchema = z.strictObject({
   cost: perLadderTier(count),
   /** Loadout cost of an Heirloom card (DESIGN.md §5 An Heirloom card), in place of a tier's. */
   heirloomCost: count,
+  /** Completing a tier, every card of it at six stars, pays once (DESIGN.md §2 Summoning, Tier
+   *  completion reward): Summon Scrolls by tier, and a small permanent damage bonus for each tier
+   *  completed (`damagePercent` percent, through the modifier pipeline). */
+  tierReward: z.strictObject({
+    scrolls: z.strictObject(
+      Object.fromEntries(CARD_GRADES.map((g) => [g, positiveDecimal])) as Record<
+        CardGrade,
+        typeof positiveDecimal
+      >,
+    ),
+    damagePercent: positiveDecimal,
+  }),
   /** Each job's cost cap before `loadout.costCap` modifiers: base + perLevel × (account level − 1). */
   costCap: z.strictObject({ base: count, perLevel: count }),
   /** Level cap of each tier (Heirloom 140); stars do not change it (DESIGN.md §5). */
@@ -1479,9 +1491,34 @@ const portalFileSchema = z.strictObject({
     rarity: z.enum(RARITIES).optional(),
     tier: z.enum(CARD_GRADES).optional(),
     threshold: z.number().int().min(1),
+    /** Card portals: from this many pulls without the pity step its chance rises, in a straight
+     *  line, up to 1 at the threshold (DESIGN.md §2 Summoning, T6 pity). Absent = no rise. */
+    softFrom: z.number().int().min(1).optional(),
   }),
   /** Every 10-pull holds at least one item of this rarity or better. */
   tenPullGuarantee: z.enum([...RARITIES, ...CARD_GRADES]),
+  /** Card portals: the first 10-pull of a new game holds at least one card of this tier or better
+   *  (DESIGN.md §2 Summoning, First 10-pull gives a Gold). Later 10-pulls use `tenPullGuarantee`. */
+  firstTenPullGuarantee: z.enum(CARD_GRADES).optional(),
+  /** Card portals: the portal's levels, lowest first (DESIGN.md §2 Summoning, Portal level). Level
+   *  n is reached after `pulls` pulls (the first is 0); `chances` is the chance of each tier per
+   *  pull, a whole of 1. Absent = the pool's own weights, always. */
+  levels: z
+    .array(
+      z.strictObject({
+        pulls: z.number().int().min(0),
+        chances: z.strictObject(
+          Object.fromEntries(CARD_GRADES.map((g) => [g, z.number().min(0).max(1)])) as Record<
+            CardGrade,
+            z.ZodNumber
+          >,
+        ),
+      }),
+    )
+    .default([]),
+  /** Card portals with levels: the least chance a tier keeps while any of its cards is below six
+   *  stars (it leaves the pool only when all are at six). */
+  minShare: z.number().min(0).max(0.2).default(0),
   /** Reveal: chance that a result above the lowest rarity shows an orb one rarity lower first,
    *  then flashes up to its own colour. */
   reveal: z.strictObject({ upgradeFlashChance: z.number().min(0).max(1) }),
@@ -1531,6 +1568,28 @@ export const portalSchema = portalFileSchema.transform((p, ctx) => {
       message: 'tenPullGuarantee: a card portal names a tier, any other portal a rarity',
     });
   }
+  if (!cards && (p.levels.length > 0 || p.firstTenPullGuarantee || p.pity.softFrom)) {
+    ctx.addIssue({
+      code: 'custom',
+      message: 'levels, firstTenPullGuarantee and pity.softFrom belong to card portals',
+    });
+  }
+  p.levels.forEach((level, i) => {
+    const sum = Object.values(level.chances).reduce((a, b) => a + b, 0);
+    if (Math.abs(sum - 1) > 1e-6) {
+      ctx.addIssue({ code: 'custom', message: `levels › [${i}]: chances sum to ${sum}, not 1` });
+    }
+    const before = p.levels[i - 1];
+    if (i === 0 ? level.pulls !== 0 : level.pulls <= before!.pulls) {
+      ctx.addIssue({
+        code: 'custom',
+        message: `levels › [${i}]: pulls must start at 0 and rise from level to level`,
+      });
+    }
+  });
+  if (p.pity.softFrom !== undefined && p.pity.softFrom >= p.pity.threshold) {
+    ctx.addIssue({ code: 'custom', message: 'pity.softFrom must be below the threshold' });
+  }
   return {
     ...p,
     pool: p.pool.map((e, i) => ({
@@ -1538,8 +1597,20 @@ export const portalSchema = portalFileSchema.transform((p, ctx) => {
       weight: e.weight,
       rarity: step(`pool › [${i}]`, e),
     })),
-    pity: { rarity: step('pity', p.pity), threshold: p.pity.threshold },
+    pity: {
+      rarity: step('pity', p.pity),
+      threshold: p.pity.threshold,
+      softFrom: p.pity.softFrom ?? null,
+    },
     tenPullGuarantee: cards ? gradeStyle(guarantee as CardGrade) : (guarantee as Rarity),
+    firstTenPullGuarantee: p.firstTenPullGuarantee ? gradeStyle(p.firstTenPullGuarantee) : null,
+    levels: p.levels.map((l) => ({
+      pulls: l.pulls,
+      chances: Object.fromEntries(CARD_GRADES.map((g) => [gradeStyle(g), l.chances[g]])) as Record<
+        Rarity,
+        number
+      >,
+    })),
   };
 });
 

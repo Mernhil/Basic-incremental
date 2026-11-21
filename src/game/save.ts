@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { depthDef } from './depth';
 import type { Content } from '../data';
-import { MAX_STARS, type Job } from '../data/schemas';
+import { CARD_GRADES, MAX_STARS, type CardGrade, type Job } from '../data/schemas';
 import { MIGRATIONS, migrateState, type MigrationTable } from './migrations';
 import { Decimal, decimalToString, isDecimalString } from './num';
 import { SaveError } from './saveError';
@@ -29,6 +29,7 @@ import {
 import { cosmeticMaxLevel, sanitizeLoadout, type CosmeticLoadout } from './theme';
 import { arrangeSavedFormations, levelCap } from './cards';
 import { addHeirloomShards, buyHeirloomNode } from './heirlooms';
+import { settleTierRewards } from './tierRewards';
 import { pruneCardSkins } from './cardSkins';
 import { fitSkillsToPoints, fitWebToPoints } from './account';
 import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
@@ -36,7 +37,7 @@ import { isProductionGem, MAX_MASTERY_TIER, settleMastery } from './mastery';
 export { SaveError } from './saveError';
 
 /** Bump this (and add a migration) whenever the saved format changes. */
-export const CURRENT_SAVE_VERSION = 39;
+export const CURRENT_SAVE_VERSION = 40;
 
 const decimalText = z.string().refine(isDecimalString, { message: 'not a valid number' });
 const counts = z.record(z.string(), z.number().int().min(0));
@@ -196,6 +197,9 @@ export const serializedStateSchema = z.object({
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/)
       .nullable(),
+    /** v40: the first 10-pull's Gold is given, and the tier completion rewards paid. */
+    firstTenPullDone: z.boolean(),
+    tierRewardsClaimed: z.array(z.string()),
   }),
   presets: z.object({
     dungeons: z.record(z.string(), cardLoadoutSchema),
@@ -578,6 +582,8 @@ export function readSave(
   const state = deserializeState(parsed.data, content);
   // a save from before the formation had no positions: the strongest cards go to the front
   if (parsed.data.arrangeFormation) arrangeSavedFormations(state, content);
+  // a save that had completed a tier before the reward existed is paid now
+  settleTierRewards(state, content);
   return { state, savedAt: envelope.data.savedAt };
 }
 
@@ -803,6 +809,12 @@ function deserializeTableUpdate(state: GameState, saved: SerializedState, conten
   state.summon = {
     focusKind: focusKind !== null && content.itemTypeByKind.has(focusKind) ? focusKind : null,
     dailyClaimedDay: saved.summon.dailyClaimedDay,
+    firstTenPullDone: saved.summon.firstTenPullDone,
+    tierRewardsClaimed: [
+      ...new Set(
+        saved.summon.tierRewardsClaimed.filter((g) => CARD_GRADES.includes(g as CardGrade)),
+      ),
+    ],
   };
   // A remembered loadout keeps only owned fighting cards, each once, in the loadout's shape.
   const dungeons: GameState['presets']['dungeons'] = {};

@@ -4,6 +4,7 @@ import { advanceCombat } from './combat';
 import { accountLevelDue, grantAccountXp, harvestXp, settleAccount } from './account';
 import { achievementsDue, settleAchievements } from './achievements';
 import { settleQuests } from './quests';
+import { settleTierRewards } from './tierRewards';
 import { bondsDue, settleBonds } from './bonds';
 import { advanceTrips } from './expeditions';
 import { settleChallenges } from './challenges';
@@ -80,6 +81,7 @@ export function advance(
     settleBonds(current, content);
     settleAchievements(current, content, report);
     settleQuests(current, content);
+    settleTierRewards(current, content);
     remaining -= until;
   }
   return { state: current, report };

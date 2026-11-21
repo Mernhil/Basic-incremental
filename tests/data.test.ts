@@ -383,11 +383,11 @@ describe('card ranks and portals', () => {
     expect(issues.some((i) => i.startsWith('portals.json › [0] › pity › threshold'))).toBe(true);
   });
 
-  it('has the beta Card Portal: a 10-pull at ten singles, Legendary+ at 90, Rare+ per 10-pull', () => {
+  it('has the beta Card Portal: a 10-pull at ten singles, a T6 at 60, Silver+ per 10-pull', () => {
     const portal = loadContent().portals.find((p) => p.id === 'card_portal')!;
     expect(portal.cost.resource).toBe('summon_scroll');
     expect(portal.cost.ten.eq(portal.cost.single.mul(10))).toBe(true);
-    expect(portal.pity).toEqual({ rarity: 'legendary', threshold: 90 });
+    expect(portal.pity).toEqual({ rarity: 'mythic', threshold: 60, softFrom: 30 });
     expect(portal.tenPullGuarantee).toBe('rare');
   });
 
@@ -492,7 +492,7 @@ describe('card ranks and portals', () => {
     );
     const issues = issuesFor(bad);
     expect(issues).toContain(
-      'portals.json › [0] › pity › rarity: no pool item is legendary or better',
+      'portals.json › [0] › pity › rarity: no pool item is mythic or better',
     );
     expect(issues).toContain(
       'portals.json › [0] › tenPullGuarantee: no pool item is rare or better',
