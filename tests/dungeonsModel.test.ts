@@ -3,6 +3,7 @@ import {
   challengeButton,
   challengeVerdict,
   barsGone,
+  bossElements,
   healthPercent,
   overflowSwitch,
   stageCell,
@@ -84,5 +85,20 @@ describe('the Challenge controls (DESIGN.md §6 Farming and Challenge)', () => {
     expect(challengeVerdict({ won: false, reason: 'health', hpLeftPositive: true }).reason).toBe(
       'health',
     );
+  });
+});
+
+describe('boss elements', () => {
+  const sizes = { weakness: 50, resistance: -25 };
+  it('lists the weakness and, when there is one, the resistance, with their percents', () => {
+    expect(bossElements({ weakness: 'fire', resistance: 'earth' }, sizes)).toEqual({
+      weak: { element: 'fire', percent: 50 },
+      resist: { element: 'earth', percent: -25 },
+    });
+  });
+  it('has no resistance line for a boss without one (nothing resists light or dark)', () => {
+    expect(bossElements({ weakness: 'dark' }, sizes)).toEqual({
+      weak: { element: 'dark', percent: 50 },
+    });
   });
 });

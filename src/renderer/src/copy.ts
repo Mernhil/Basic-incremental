@@ -435,6 +435,10 @@ export const COPY = {
     fight: 'Fight',
     fightLabel: (name: string) => `Fight in ${name}`,
     clearToUnlock: (name: string) => `Clear ${name} to unlock`,
+    /** A boss's elements (DESIGN.md §2 Fights): "Weak to Fire (+50% damage)", "Resists Earth (-25% damage)". */
+    bossWeak: (element: string, percent: number) => `Weak to ${element} (+${percent}% damage)`,
+    bossResists: (element: string, percent: number) => `Resists ${element} (${percent}% damage)`,
+    bossNoneElement: 'Wood to Prismatic cards have no element and always do base damage.',
     boss: (name: string, hp: string, bars: number) => `${name} · ${hp} HP in ${bars} bars`,
     /** Stage stars and overflow (DESIGN.md §6): plain working UI until the floors UI is designed. */
     stars: (levels: number, max: number) => `★ ${levels} / ${max}`,
