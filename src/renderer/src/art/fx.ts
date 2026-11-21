@@ -10,7 +10,7 @@
 import type { ELEMENTS } from '../../../data';
 import { INK } from './kit';
 import { harden } from './pixel/live';
-import { centroid, outward, resample, zigzag, type Pt } from './fxGeometry';
+import { ELEMENT_FX, centroid, outward, resample, zigzag, type Pt } from './fxGeometry';
 
 export type CardElement = (typeof ELEMENTS)[number];
 
@@ -526,7 +526,7 @@ export function attachElementFx(
   itemChanged = false,
 ): void {
   const current = live.get(art);
-  if (!element || strength === 0) {
+  if (!ELEMENT_FX || !element || strength === 0) {
     if (current) {
       current.destroy();
       live.delete(art);

@@ -132,8 +132,6 @@ export function createCardsPage(
   let enhanceOpen = false;
   /** The card whose weapon skin picker is open (view state only). */
   let skinsOpenFor: string | null = null;
-  /** The Next tier preview: which card and how many presses in (view state only, never saved). */
-  let previewOf: { id: string; step: number } | null = null;
   /** The loadout slot being filled (0 = main, 1..3 supports): its job's cards show to pick from. */
   let pick: { job: Job; slot: number } | null = null;
   let last = '';
@@ -193,7 +191,6 @@ export function createCardsPage(
       return;
     }
     message = '';
-    previewOf = null; // a tier-up changes where the preview starts
     ctx.apply(result.state);
     build(focusKey);
     if (result.tierUps?.length) ctx.onTierUps?.(result.tierUps);
@@ -422,7 +419,6 @@ export function createCardsPage(
       b.addEventListener('click', () => {
         if (selected !== e.id) {
           enhanceOpen = false;
-          previewOf = null;
         }
         selected = e.id;
         message = '';
@@ -725,41 +721,9 @@ export function createCardsPage(
         return (stacked ? room : beside) / KIT_PER_CARD;
       },
     });
-    // Next tier preview: the picture and name of a higher tier on the card, view state only
-    const step = previewOf?.id === e.id ? previewOf.step : 0;
-    const pv = model.preview(state, e.id, step);
-    const face = cardEl(pv && !pv.own ? { ...e, item: pv.item, name: pv.itemName } : e, state);
-    const previewing = Boolean(pv && !pv.own);
-    face.classList.toggle('is-previewing', previewing);
+    const face = cardEl(e, state);
     const cardCol = h('div', 'cp-detail__card');
     cardCol.append(face);
-    if (pv) {
-      if (previewing) {
-        const badge = h('span', 'cp-preview-badge', COPY.cards.preview.label(pv.tierName));
-        badge.setAttribute('aria-hidden', 'true');
-        face.append(badge);
-      }
-      const bar = h('div', 'cp-preview');
-      const btn = h(
-        'button',
-        'button cp-preview__btn',
-        pv.index === pv.count - 1
-          ? COPY.cards.preview.back(pv.ownTierName)
-          : COPY.cards.preview.next,
-      );
-      btn.type = 'button';
-      btn.dataset.key = 'preview-next';
-      btn.setAttribute('aria-describedby', 'cp-preview-name');
-      btn.addEventListener('click', () => {
-        previewOf = { id: e.id, step: step + 1 };
-        build('preview-next');
-      });
-      const name = h('p', 'cp-preview__name', previewing ? pv.itemName : COPY.cards.preview.hint);
-      name.id = 'cp-preview-name';
-      name.setAttribute('aria-live', 'polite');
-      bar.append(btn, name);
-      cardCol.append(bar);
-    }
     const side = h('div', 'cp-detail__side');
     if (!e.owned) {
       side.append(h('p', 'frame__muted px-tile cp-locked', COPY.cards.lockedDetail));
