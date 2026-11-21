@@ -100,6 +100,9 @@ export const MIGRATIONS: MigrationTable = {
   /** v38 -> v39: the roster by tier (DESIGN.md §5 No tier-ups): a card's tier is its own and leaves the
    *  save; stars, level, XP and enhancements are kept. */
   38: v38ToV39,
+  /** v39 -> v40: summoning chances (DESIGN.md §2 Summoning): the Card Portal's pity counts toward a
+   *  T6 now; a save that made 10 or more pulls has had its first 10-pull; no tier reward is paid yet. */
+  39: v39ToV40,
 };
 
 /**
@@ -195,6 +198,27 @@ const V39_QUESTS: readonly { gone: string; into: string; scrolls: number }[] = [
   { gone: 'card_tier_prismatic', into: 'first_legendary', scrolls: 2 },
   { gone: 'card_tier_mythic', into: 'first_mythic', scrolls: 3 },
 ];
+
+/**
+ * v39 -> v40: summoning chances (DESIGN.md §2 Summoning). The Card Portal level is read from the
+ * pulls the save already counts, so it needs no new field. The Card Portal's pity counter counted
+ * pulls since a Prismatic or better; it now counts pulls since a T6, so it starts again from 0.
+ * `summon.firstTenPullDone` is true when the save made at least 10 pulls from the Card Portal (a
+ * save with fewer has not had its first 10-pull yet and gets the Gold). `tierRewardsClaimed`
+ * starts empty: the tiers the save already completed are paid when it loads (`settleTierRewards`).
+ */
+function v39ToV40(state: Record<string, unknown>): Record<string, unknown> {
+  const portals = isRecord(state['portals']) ? { ...state['portals'] } : {};
+  const card = isRecord(portals['card_portal']) ? portals['card_portal'] : null;
+  const pulls = card && typeof card['pulls'] === 'number' ? card['pulls'] : 0;
+  if (card) portals['card_portal'] = { ...card, pity: 0 };
+  const summon = isRecord(state['summon']) ? state['summon'] : {};
+  return {
+    ...state,
+    portals,
+    summon: { ...summon, firstTenPullDone: pulls >= 10, tierRewardsClaimed: [] },
+  };
+}
 
 /**
  * v38 -> v39: the roster by tier (DESIGN.md §5 No tier-ups, Saves keep their cards). A card's tier is

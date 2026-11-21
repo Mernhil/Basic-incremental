@@ -109,10 +109,21 @@ export interface SummonState {
   focusKind: string | null;
   /** The local calendar day ("YYYY-MM-DD") the daily scroll reward was last claimed; null = never. */
   dailyClaimedDay: string | null;
+  /** The first 10-pull of the Card Portal or the Focus Portal has been made (its guaranteed Gold
+   *  is given once; DESIGN.md §2 Summoning). Save format 40. */
+  firstTenPullDone: boolean;
+  /** Card tiers (card grades, e.g. "wood", "mythic", "void") whose completion reward was paid, in
+   *  the order paid (DESIGN.md §2 Summoning, Tier completion reward). Save format 40. */
+  tierRewardsClaimed: string[];
 }
 
 export function initialSummon(): SummonState {
-  return { focusKind: null, dailyClaimedDay: null };
+  return {
+    focusKind: null,
+    dailyClaimedDay: null,
+    firstTenPullDone: false,
+    tierRewardsClaimed: [],
+  };
 }
 
 /** The production jobs that have named presets (DESIGN.md §15 Loadout presets). */
@@ -543,7 +554,7 @@ export function cloneState(state: GameState): GameState {
     shardShop: { ...state.shardShop },
     upgrades: { picks: { ...state.upgrades.picks }, moneyEarned: state.upgrades.moneyEarned },
     automation: { ...state.automation },
-    summon: { ...state.summon },
+    summon: { ...state.summon, tierRewardsClaimed: [...state.summon.tierRewardsClaimed] },
     presets: clonePresets(state.presets),
     discoveredBonds: [...state.discoveredBonds],
     expeditions: {
