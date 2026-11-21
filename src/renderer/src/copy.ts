@@ -797,8 +797,8 @@ export const COPY = {
         : full
           ? `${name}, not marked. This tier is full: unmark a card first`
           : `${name}, not marked. Click to mark`,
-    wishlistDetail: (name: string, type: string, element: string, job: string) =>
-      `${name} · ${type} · ${element} · ${job}`,
+    wishlistDetail: (name: string, type: string, element: string | undefined, job: string) =>
+      element ? `${name} · ${type} · ${element} · ${job}` : `${name} · ${type} · ${job}`,
     wishlistHover: 'Hover or focus a card to read its name.',
     wishlistHunting: (names: string) => `Hunting: ${names}`,
     wishlistNone: 'No card marked',

@@ -1084,7 +1084,7 @@ export function createArena(ctx: ArenaContext): Arena {
     const before = tagShown;
     const played = special.play({
       kind: kind!,
-      element: card.element,
+      element: card.element ?? '',
       tier: card.tier,
       weapon: pic,
       card: cardNameById(content, slot.cardId) ?? slot.cardId,
