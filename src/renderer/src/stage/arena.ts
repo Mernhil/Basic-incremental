@@ -684,18 +684,8 @@ export function createArena(ctx: ArenaContext): Arena {
         replay(hp.el.querySelector('.bi-hpstack__count'), 'is-ticking', 500);
       if (barMoment(lastLook, look, false) === 'shatter') popWord(DUEL_COPY.breakWord, 'break');
       lastLook = look;
-      const dealt = enemyDamage(view.hp, view.maxHp);
-      // the table's window is smaller: its tag a size down
-      const tagPx = el.closest('.dv-window') ? 2 : 3;
-      if (dealt.gt(0)) {
-        foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
-        pxNum(foeTagPx, fmt(dealt), tagPx);
-      } else {
-        // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
-        foeTagText.textContent = '';
-        pxNum(foeTagPx, '0', tagPx);
-      }
-      foeTag.classList.toggle('is-empty', !dealt.gt(0));
+      // while a special attack plays the tag keeps the total from before it (see playSpecial)
+      if (!tagHeld) showTag(enemyDamage(view.hp, view.maxHp));
       // the deck: one back per enemy to come (the boss last)
       const backs = deckBacks(view.waiting.length);
       if (deckStack.childElementCount !== backs) {
@@ -746,6 +736,26 @@ export function createArena(ctx: ArenaContext): Arena {
       pips.replaceChildren();
       delete pips.dataset['sig'];
     }
+  }
+
+  // ---- the enemy's damage tag: the total dealt to it so far ----
+  type Total = ReturnType<typeof enemyDamage>;
+  /** The total the tag shows, and whether a special attack is holding it until its hit lands. */
+  let tagShown: Total | null = null;
+  let tagHeld = false;
+  function showTag(dealt: Total): void {
+    // the table's window is smaller: its tag a size down
+    const tagPx = el.closest('.dv-window') ? 2 : 3;
+    if (dealt.gt(0)) {
+      foeTagText.textContent = DUEL_COPY.damageTag(fmt(dealt));
+      pxNum(foeTagPx, fmt(dealt), tagPx);
+    } else {
+      // no damage yet: the tag keeps its place, unseen, so the hit feed under it never moves
+      foeTagText.textContent = '';
+      pxNum(foeTagPx, '0', tagPx);
+    }
+    foeTag.classList.toggle('is-empty', !dealt.gt(0));
+    tagShown = dealt;
   }
 
   // ---- the feed, the sheet, the plates ----
@@ -1044,7 +1054,7 @@ export function createArena(ctx: ArenaContext): Arena {
     h: r.height,
   });
   /** Plays a card's special attack; false when it cannot (the normal hop shows instead). */
-  function playSpecial(slot: HandSlot, skillId: string): boolean {
+  function playSpecial(slot: HandSlot, skillId: string, damage: Total): boolean {
     const card = content.cardById.get(slot.cardId);
     const kind = card?.item?.kind;
     if (!card || slot.out || !hasSpecial(kind, card.element) || document.hidden) return false;
@@ -1070,7 +1080,9 @@ export function createArena(ctx: ArenaContext): Arena {
             .join(' ')
         : '';
     const itemEl = slot.body.querySelector<HTMLElement>('.bi-card__item');
-    return special.play({
+    // the tag holds the total from before the attack and takes this hit's damage as it lands
+    const before = tagShown;
+    const played = special.play({
       kind: kind!,
       element: card.element,
       tier: card.tier,
@@ -1100,14 +1112,23 @@ export function createArena(ctx: ArenaContext): Arena {
         },
         release: (weight) => {
           shake(el, weight > 1 ? 'heavy' : true);
-          // no number pops on the enemy (the user, 2026-11-21): the hit's damage is the signature's
-          // own line in the hit feed beside the enemy card, which pulses as the hit lands
-          if (!calm()) replay(feed.querySelector('.du-feed__line.is-signature'), 'is-landed', 460);
+          // no number pops on the enemy (the user, 2026-11-21): the damage is shown beside the enemy
+          // card, so as the hit lands the big tag with the total pops, and under it the signature's
+          // own line in the hit feed
+          if (before) showTag(before.add(damage));
+          if (!calm()) {
+            replay(foeTag, 'is-landed', 460);
+            replay(feed.querySelector('.du-feed__line.is-signature'), 'is-landed', 460);
+          }
           play('hit');
         },
-        done: () => undefined,
+        done: () => {
+          tagHeld = false;
+        },
       },
     });
+    if (played) tagHeld = true;
+    return played;
   }
 
   // ---- the director's reports ----
@@ -1142,7 +1163,7 @@ export function createArena(ctx: ArenaContext): Arena {
         if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
         const slot = slots.find((x) => x.cardId === hit.cardId);
         const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
-        if (slot && playSpecial(slot, skillId)) specialCard = hit.cardId;
+        if (slot && playSpecial(slot, skillId, hit.damage)) specialCard = hit.cardId;
       }
     // the special attack's cut-in takes the place of that signature's skill banner
     const plated = e.report.skills.filter(

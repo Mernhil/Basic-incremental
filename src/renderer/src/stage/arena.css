@@ -755,14 +755,20 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-feed__line:nth-child(n + 3) {
   opacity: 0.7;
 }
-/* the special attack's hit landing: the signature's own line pulses, in hard steps (arena.ts) */
+/* the special attack's hit landing (arena.ts): the big tag with the total pops, and under it the
+   signature's own line in the feed, both in hard steps and both growing away from the enemy card */
+.du-tag--foe.is-landed {
+  z-index: 2;
+  transform-origin: right bottom;
+  animation: du-tag-land 0.46s steps(1, end) both;
+}
 .du-feed__line.is-landed {
   position: relative;
   z-index: 1;
-  transform-origin: right center;
+  transform-origin: right top;
   animation: du-feed-land 0.46s steps(1, end) both;
 }
-@keyframes du-feed-land {
+@keyframes du-tag-land {
   0% {
     scale: 2;
     filter: brightness(3);
@@ -781,6 +787,23 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
     scale: 1;
   }
 }
+@keyframes du-feed-land {
+  0% {
+    scale: 1.5;
+    filter: brightness(3);
+  }
+  18% {
+    scale: 1.5;
+    filter: none;
+  }
+  50% {
+    scale: 1.25;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.ar--calm .du-tag--foe.is-landed,
 .ar--calm .du-feed__line.is-landed {
   animation: none;
 }
