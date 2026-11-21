@@ -1,11 +1,4 @@
 /// <reference types="vite/client" />
-import crystalCard from '../art/fx/card-crystal.png';
-import earthCard from '../art/fx/card-earth.png';
-import fireCard from '../art/fx/card-fire.png';
-import lightCard from '../art/fx/card-light.png';
-import natureCard from '../art/fx/card-nature.png';
-import stormCard from '../art/fx/card-storm.png';
-import voidCard from '../art/fx/card-void.png';
 import bowSheet from '../art/fx/hit-bow.png';
 import daggerSheet from '../art/fx/hit-dagger.png';
 import greatswordSheet from '../art/fx/hit-greatsword.png';
@@ -24,8 +17,6 @@ import stormSlash from '../art/fx/slash-storm.png';
 import voidSlash from '../art/fx/slash-void.png';
 import { onFrame } from './motion';
 import {
-  CARD_SHEETS,
-  type CardSheet,
   effectOf,
   ELEMENT_SHEETS,
   HIT_SHEETS,
@@ -205,8 +196,6 @@ interface Scene {
     half?: number;
     bulge?: number;
   };
-  /** The element's drawn strip that takes hold of the enemy card on the release, and its scale. */
-  cardFx?: { def: CardSheet; img: HTMLImageElement; scale: number };
 }
 
 const SHEET_URLS: Record<keyof typeof HIT_SHEETS, string> = {
@@ -228,15 +217,6 @@ const ELEMENT_URLS: Record<string, string> = {
   earth: earthSlash,
   crystal: crystalSlash,
   void: voidSlash,
-};
-const CARD_URLS: Record<string, string> = {
-  fire: fireCard,
-  storm: stormCard,
-  light: lightCard,
-  nature: natureCard,
-  earth: earthCard,
-  crystal: crystalCard,
-  void: voidCard,
 };
 const sheetImages = new Map<string, HTMLImageElement>();
 /** A sheet's picture once it has loaded (the first call starts the load). */
@@ -1557,24 +1537,6 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
   // release: the slash burns away, the element rises from the cut, particles fall
   if (t >= T.release) {
     const tau = t - T.release;
-    // the element takes hold of the enemy card: its drawn strip stands on the card's bottom edge,
-    // under the hit's own break-up, and rides the card while it is knocked back
-    const cf = s.cardFx;
-    const cfFrame = cf && move ? Math.floor(tau / cf.def.step + 1e-6) : -1;
-    if (cf && cfFrame >= 0 && cfFrame < cf.def.frames) {
-      const { frame, foot } = cf.def;
-      g.drawImage(
-        cf.img,
-        cfFrame * frame.w,
-        0,
-        frame.w,
-        frame.h,
-        even(fc.x) + foeLook.dx - foot.x * cf.scale,
-        R(foe.y + foe.h) + foeLook.dy - (foot.y + 1) * cf.scale,
-        frame.w * cf.scale,
-        frame.h * cf.scale,
-      );
-    }
     for (let i = 0; i <= last; i++) drawMark(i, 'out');
     if (move && fr < fRel + 4) {
       if (flies) drawSwipe(fr === fRel + 3);
@@ -1651,8 +1613,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         g.fillStyle = e.c[1 + ((i + fr) % 3) + (ee / life > 0.7 ? 1 : 0)]!;
         g.fillRect(even(x), even(y), sz, sz);
       }
-      // nothing code-drawn lingers on the enemy card: the element's drawn strip (`cardFx`, above)
-      // replaced the row of small shapes that burned along its bottom edge (the user, 2026-11-21)
+      // nothing code-drawn lingers on the enemy card: a drawn sheet per element is to replace the
+      // row of small shapes that burned along its bottom edge (the user, 2026-11-21)
     }
   }
   g.setTransform(1, 0, 0, 1, 0, 0);
@@ -1680,12 +1642,7 @@ const COOLDOWN_MS = 700;
 
 export function createSpecialAttack(host: HTMLElement): SpecialAttack {
   // start loading the drawn slash sheets, so the first attack already has them
-  for (const url of [
-    ...Object.values(SHEET_URLS),
-    ...Object.values(ELEMENT_URLS),
-    ...Object.values(CARD_URLS),
-  ])
-    sheetImage(url);
+  for (const url of [...Object.values(SHEET_URLS), ...Object.values(ELEMENT_URLS)]) sheetImage(url);
   let running: { cv: HTMLCanvasElement; stop: () => void; hooks: SpecialHooks } | null = null;
   let freeAt = 0;
 
@@ -1773,19 +1730,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
           ...(fit?.bulge !== undefined ? { bulge: fit.bulge } : {}),
         };
       }
-      // the element's strip for the enemy card, on the tiers that play the element
-      const cardDef = e.plain ? undefined : CARD_SHEETS[req.element];
-      const cardUrl = CARD_URLS[req.element];
-      const cardImg = cardDef && cardUrl ? sheetImage(cardUrl) : undefined;
-      if (cardDef && cardImg)
-        sc.cardFx = {
-          def: cardDef,
-          img: cardImg,
-          scale: Math.max(2, Math.round(cardDef.scale * sc.f - 0.34)),
-        };
-      // it ends when the card's strip has played out, if that is later than the hit's own end
-      const len =
-        m.times.release + Math.max(0.7, sc.cardFx ? cardDef!.frames * cardDef!.step + 0.04 : 0);
+      const len = m.times.release + 0.7;
       host.append(cv);
       req.hooks.dim(true);
       let t = 0;

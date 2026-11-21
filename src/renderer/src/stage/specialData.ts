@@ -583,40 +583,6 @@ export const ELEMENT_SHEETS: Record<string, HitSheet> = {
   },
 };
 
-/**
- * The element taking hold of the enemy card (PixelLab, 2026-11-21; the user's "Yes, wire them"): one
- * strip per element, shown as drawn, never turned or recoloured. It starts on the release, for every
- * weapon of a card that plays its element (mythic, heirloom), and rides the card as it is knocked
- * back. `foot` is the point of a frame put on the middle of the card's bottom edge; `frames` is how
- * many are played, each for `step` seconds (the first is the full-strength still, the rest the
- * break-up). The pictures are `art/fx/card-<element>.png`.
- */
-export interface CardSheet {
-  frame: { w: number; h: number };
-  foot: { x: number; y: number };
-  /** Whole logical pixels per sheet pixel. */
-  scale: number;
-  frames: number;
-  step: number;
-}
-const CARD_FX = { frame: { w: 96, h: 80 }, foot: { x: 48, y: 79 }, scale: 3, step: 0.08 };
-export const CARD_SHEETS: Record<string, CardSheet> = {
-  // flames along the foot that flare, then sink (its two last frames are empty)
-  fire: { ...CARD_FX, frames: 8 },
-  // bolts over the card that break into arcs
-  storm: { ...CARD_FX, frames: 9 },
-  // rays with glints that thin out to dots
-  light: { ...CARD_FX, frames: 9 },
-  // vines that climb, then drop their leaves
-  nature: { ...CARD_FX, frames: 9 },
-  // rock spikes that crumble into chunks
-  earth: { ...CARD_FX, frames: 9 },
-  // crystals that flash and shatter
-  crystal: { ...CARD_FX, frames: 9 },
-  // dark tendrils that tear into wisps
-  void: { ...CARD_FX, frames: 9 },
-};
-
 /** What rises from the cut when it releases (weapons without a drawn element slash). */
 export type RiseKind = 'flame' | 'bolt' | 'beam' | 'vine' | 'spike' | 'crystal' | 'wisp';
 
