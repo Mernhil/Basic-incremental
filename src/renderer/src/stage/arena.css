@@ -755,6 +755,35 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-feed__line:nth-child(n + 3) {
   opacity: 0.7;
 }
+/* the special attack's hit landing: the signature's own line pulses, in hard steps (arena.ts) */
+.du-feed__line.is-landed {
+  position: relative;
+  z-index: 1;
+  transform-origin: right center;
+  animation: du-feed-land 0.46s steps(1, end) both;
+}
+@keyframes du-feed-land {
+  0% {
+    scale: 2;
+    filter: brightness(3);
+  }
+  18% {
+    scale: 2;
+    filter: none;
+  }
+  50% {
+    scale: 1.5;
+  }
+  75% {
+    scale: 1.25;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.ar--calm .du-feed__line.is-landed {
+  animation: none;
+}
 .du-feed__times {
   font-size: 10px;
   line-height: 1;

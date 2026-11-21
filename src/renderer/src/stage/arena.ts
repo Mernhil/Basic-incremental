@@ -1044,7 +1044,7 @@ export function createArena(ctx: ArenaContext): Arena {
     h: r.height,
   });
   /** Plays a card's special attack; false when it cannot (the normal hop shows instead). */
-  function playSpecial(slot: HandSlot, skillId: string, damage: string): boolean {
+  function playSpecial(slot: HandSlot, skillId: string): boolean {
     const card = content.cardById.get(slot.cardId);
     const kind = card?.item?.kind;
     if (!card || slot.out || !hasSpecial(kind, card.element) || document.hidden) return false;
@@ -1098,25 +1098,11 @@ export function createArena(ctx: ArenaContext): Arena {
           foe.style.translate = o.dx || o.dy ? `${o.dx * unit}px ${o.dy * unit}px` : '';
           foe.style.filter = o.flash ? 'brightness(8) saturate(0)' : '';
         },
-        release: (weight, aside) => {
+        release: (weight) => {
           shake(el, weight > 1 ? 'heavy' : true);
-          // the big number sits below the enemy card, clear of the drawn hit, and steps half a card
-          // aside when the weapon hangs there
-          const step = aside * Math.round(cardBox.width * 0.55);
-          const num = popNumber(el, {
-            kind: 'signature',
-            text: damage,
-            x: (cardBox.left + cardBox.width / 2 + step - host.left) / host.width,
-            y: (cardBox.bottom - host.top) / host.height,
-            scale: 2.6,
-          });
-          if (num) {
-            // in the middle of the gap between the two cards, never closer than 4 px to the enemy's
-            const half = num.offsetHeight / 2;
-            const gap = (cardBox.bottom + slot.body.getBoundingClientRect().top) / 2;
-            const below = Math.max(cardBox.bottom + half + 4 * unit, gap) - host.top;
-            num.style.setProperty('--y', `${Math.round(below)}px`);
-          }
+          // no number pops on the enemy (the user, 2026-11-21): the hit's damage is the signature's
+          // own line in the hit feed beside the enemy card, which pulses as the hit lands
+          if (!calm()) replay(feed.querySelector('.du-feed__line.is-signature'), 'is-landed', 460);
           play('hit');
         },
         done: () => undefined,
@@ -1156,7 +1142,7 @@ export function createArena(ctx: ArenaContext): Arena {
         if (!hit.signature || hit.hits !== 1 || !hit.cardId || special.busy()) continue;
         const slot = slots.find((x) => x.cardId === hit.cardId);
         const skillId = e.report.skills.find((k) => k.cardId === hit.cardId)?.skillId ?? '';
-        if (slot && playSpecial(slot, skillId, popText(hit.damage))) specialCard = hit.cardId;
+        if (slot && playSpecial(slot, skillId)) specialCard = hit.cardId;
       }
     // the special attack's cut-in takes the place of that signature's skill banner
     const plated = e.report.skills.filter(
