@@ -811,6 +811,7 @@ The game is one screen: a header and, under it, "the table": the fight in the mi
 
 - `prefs.ts`: reduced motion and the autosave interval, in `localStorage` key `bi.ui`, not in the save. Set in the Settings view (`pages/settings.ts`).
 - `motion.ts` applies it: `data-motion` on `<html>`, a wrapped `window.matchMedia`, and every `prefers-reduced-motion` CSS rule switched on or off (`motionRules.ts`).
+- `cost.ts` (pure): `costText`, `hasCostArt`, `costLabel`. A price is shown once: a resource with a picture (Money coins, gems, scrolls, Starlight) as its picture and the number, its name only in the tooltip and accessible label; one with no picture yet (Cores, Sigils, Dust, Shards) as the number and its name in words.
 - `numberFormat.ts` `fmt` is the one number format. `coins.ts` shows Money as a count of the biggest coin it fills, coins from `coins.json`.
 - `logBuffer.ts`, `logRing.ts`: recent console lines and uncaught errors. `issueReport.ts` builds the pre-filled GitHub issue link the Settings view opens.
 
@@ -838,8 +839,9 @@ A view is one full screen the player opens from the table (see Shell and table).
 
 - `index.ts`: the Logging (left) and Mining (right) wings, the `logging`, `mining` and `forge` views (Forge is a dock pile).
 - `wing.ts`: read-only table piece: the job's output per second, a plate per tree kind or mine type (rate, level, price, its worker and its layer) and how many tool lines are affordable.
-- `job.ts` (`createJobView`, both jobs): a plate per tree or mine with a buy button (`ui/buy.ts`), an unlock button on a locked tree, and a worker block that opens a picker to place or remove a worker (`assignWorker`). Side column: the job's waiting milestone pick (`ui/perkPick.ts`), its tool lines (`ui/toolLines.ts`), worker presets (`pages/tablePanels.ts`) and buttons that open Forge and Shop. The ×1/×10/×100/Max toggle sits in the title bar. See Production.
-- `forge.ts`: recipe buttons (a click starts or stops a recipe, `setForgeRecipe`), the recipe being forged with progress and its worker (`assignForgeWorker`), and the tool lines of both jobs.
+- `job.ts` (`createJobView`, both jobs): a plate per tree or mine with a buy button (`ui/buy.ts`), an unlock button on a locked tree, and a worker block that opens the worker picker (`workerPick.ts`) to place or remove a worker (`assignWorker`). The level-up and unlock buttons show their price once (`ui/costMarkup.ts`); a locked tree's note says to pay the cost on the button. Side column: the job's waiting milestone pick (`ui/perkPick.ts`), its tool lines (`ui/toolLines.ts`), worker presets (`pages/tablePanels.ts`) and buttons that open Forge and Shop. The ×1/×10/×100/Max toggle sits in the title bar. See Production.
+- `forge.ts`: recipe buttons (a click starts or stops a recipe, `setForgeRecipe`), the recipe being forged with progress and its worker (`assignForgeWorker`, picked with `workerPick.ts`), and the tool lines of both jobs.
+- `workerPick.ts`: the worker picker of Logging, Mining and the Forge. Each tool is drawn as the Cards collection's card face (`cardFaceProps`, `createCard`) at a whole scale (`watchFit`), in the same list as the Cards slot picker; under each card its multiplier, effect and place ("Works here", "Works at <place> (moves here)", or greyed "No free slot"). The current tool has the gold outline; the list scrolls.
 - `jobModel.ts`: display helpers (wording and small derived numbers such as `forgeFlow`, `toolsReady`, `strikeSeconds`) for both.
 
 ### `views/collection`
@@ -885,10 +887,11 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 - `perkPick.ts`: a waiting milestone pick as two cards. Used by `training.ts`, `job.ts`, `upgradesView.ts`.
 - `hpStack.ts`: stacked enemy HP bars with "×N" left. Used by `stage/arena.ts`.
 - `stars.ts`: stage-star pips and text with "★" drawn as sprites. Used by Cards, `pages/dungeons.ts`, arena, `weaponPanel.ts`.
-- `pixelScale.ts` (maths), `pixelFit.ts` (DOM): keep pixel art at whole device pixels; `fitCard` sizes card hosts. Used wherever cards show.
-- `pixelNumbers.ts`: draws `.bi-num` numbers in the equipped Number cosmetic's pixel font. Installed by `app.ts`.
+- `pixelScale.ts` (maths), `pixelFit.ts` (DOM): keep pixel art at whole device pixels; `fitCard` sizes card hosts; `watchFit` keeps a list of cards at a whole scale as it resizes (Cards page, worker picker). Used wherever cards show.
+- `pixelNumbers.ts`: draws `.bi-num` numbers in the equipped Number cosmetic's pixel font (`art/pixelFont.ts`). Installed by `app.ts`.
 - `resourceIcons.ts`: a resource's icon. Used by `app.ts`, Details, Summon, arena, `resourceArt.ts`, `forge.ts`.
 - `resourceArt.ts`: a resource's picture for prices. Used by `upgradeRows.ts`, `job.ts`.
+- `costMarkup.ts`: one or more prices drawn side by side by the rule in `settings/cost.ts`. Used by the upgrade rows (Training, tool lines), the Logging and Mining level-up and unlock buttons (`buy.ts`, `pages/buyModel.ts`), the wing plates' prices (`wing.ts`) and the paid respec button (`pages/skills.ts`). The header, "You hold" strips, Summon pull buttons and shop price chips already drew picture and number.
 - `skillArt.ts`: skill node gems and the star chart in the equipped nodes style. Used by `pages/skills.ts`, `pages/cards.ts`.
 - `webGlyphs.ts`: placeholder icons for skill web nodes. Used by `pages/skills.ts`, `pages/heirloomsMap.ts`.
 - `skins.ts`: the worn UI-skin style; Starlight coin and shard icons. Used by `app.ts`, Achievements, Shop, Wardrobe.
@@ -1049,6 +1052,7 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
 - Foes, `art/foes.ts`: `foeHtml(id, scale)` plays the idle strip; the three bosses in `FX` also get an aura and drifting specks. `art/foeZoom.json` holds a whole-number zoom for small foes. `art/bosses.ts` `bossArt(art, level)` draws the four baked bosses with aura and specks; `bossInItemBox` has no caller. See Fights.
 - `art/evolutions.ts` `evolutionArt(id)`: a weapon with its own motion; the game calls it only for the Flameblade skin (`pages/loadoutCards.ts`).
 - `art/cosmetics.ts`: see Cosmetics and themes.
+- `art/pixelFont.ts`: the glyphs of the pixel numerals: digits, signs and every suffix of the short number format (k, M, B, T, U, g and the rest, and ∞). `tests/pixelFont.test.ts` walks the format's `SUFFIXES` and real `formatShort` outputs and fails if a character has no glyph.
 - `art/defs.ts` `installArtDefs` adds shared SVG filters at start; `art/art.css` holds the strip animation; `art/kit.ts` holds SVG helpers.
 
 ### The pixel pipeline
