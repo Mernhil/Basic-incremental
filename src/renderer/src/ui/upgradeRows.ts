@@ -191,6 +191,7 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       ref.button.classList.toggle('is-affordable', ok);
       set(ref.btnLabel, ok ? row.buy.label : '');
       set(ref.btnPrice, ok ? row.buy.price : (row.buy.short ?? row.buy.price));
+      ref.btnPrice.title = row.buy.priceLabel;
       const artKey = `${row.buy.resource}:${row.buy.amount.toString()}`;
       if (ref.artKey !== artKey) {
         ref.artKey = artKey;
@@ -200,7 +201,7 @@ export function createUpgradeRows(opts: UpgradeRowsOptions): UpgradeRowsPanel {
       ref.button.setAttribute(
         'aria-label',
         ok
-          ? `${row.name}: ${row.buy.label}, ${row.buy.price}`
+          ? `${row.name}: ${row.buy.label}, ${row.buy.priceLabel}`
           : `${row.name}: ${row.buy.short ?? ''}`,
       );
       if (ref.pips.length !== row.segments.total) {

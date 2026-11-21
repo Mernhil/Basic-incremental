@@ -9,6 +9,7 @@ import {
   weaponCircles,
 } from '../../../game';
 import { COPY } from '../copy';
+import { costMarkup } from '../ui/costMarkup';
 import { frame, h } from '../shell/shell';
 import { attachTooltip, hide as hideTip } from '../shell/tooltip';
 import type { SoundId } from '../sound/registry';
@@ -593,6 +594,12 @@ export function createSkillsPage(page: HTMLElement, ctx: SkillsContext): { rende
     if (!confirming) {
       box.append(h('p', 'frame__muted', `${t.respecNote} ${r.note}`));
       const b = h('button', 'button button--ghost sk-respec__btn', r.button);
+      if (r.cost) {
+        // the price is the material's sprite and number, once
+        b.textContent = `${t.respecPaidLead} `;
+        b.insertAdjacentHTML('beforeend', costMarkup(content, ctx.state(), [r.cost]));
+        b.title = r.button;
+      }
       b.type = 'button';
       b.dataset.key = 'respec';
       b.disabled = !r.enabled;

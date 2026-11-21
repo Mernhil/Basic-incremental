@@ -218,8 +218,10 @@ export interface PickOption {
   name: string;
   rarity: string;
   power: string;
-  /** "+20% card XP here · Works at Oak (moves here)". */
+  /** What the tool does here ("+20% card XP here"). */
   note: string;
+  /** Where it stands now: "Works here", "Works at Oak (moves here)", "No free slot", "Not working". */
+  where: string;
   /** It works this place already. */
   current: boolean;
   /** It cannot be placed: no free slot for a card that works nowhere. */
@@ -241,7 +243,8 @@ export function pickOptions(choices: readonly WorkerChoice[]): PickOption[] {
       name: c.name,
       rarity: c.rarity,
       power: COPY.production.pickPower(powerText(c.power)),
-      note: `${c.abilityText} · ${where}`,
+      note: c.abilityText,
+      where,
       current: c.here,
       disabled: c.needsSlot,
     };

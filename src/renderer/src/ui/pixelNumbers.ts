@@ -13,7 +13,7 @@ import './pixelNumbers.css';
  */
 
 // digits and the glyphs of the pixel font (art/cosmetics.ts FONT) that read as part of a number
-const SPELLABLE = /^[0-9.,+%\-xKMBTQSONDIVaceiop ]*[0-9][0-9.,+%\-xKMBTQSONDIVaceiop ]*$/;
+const SPELLABLE = /^[0-9.,+%\-xKMBTQSONDIVUaceiopkg∞ ]*[0-9][0-9.,+%\-xKMBTQSONDIVUaceiopkg∞ ]*$/;
 
 let style = '';
 let observer: MutationObserver | undefined;

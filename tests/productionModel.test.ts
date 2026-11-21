@@ -52,7 +52,9 @@ describe('productionRows', () => {
       expect(r.unlock?.amount).toBeTruthy();
       expect(r.unlock?.resources).toBeTruthy();
       expect(r.nextBuy).toBeNull();
-      expect(r.note).toBe(`Unlock for ${r.unlock!.price}`);
+      // the price is on the button only (sprite and number), never repeated in the note
+      expect(r.note).not.toContain(r.unlock!.price);
+      expect(r.unlock?.costs.length).toBeGreaterThan(0);
     }
   });
 

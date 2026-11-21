@@ -193,3 +193,33 @@
   height: 100%;
   overflow: visible;
 }
+
+/* Several costs side by side, each a sprite and a number (settings/cost.ts costMarkup). */
+.cost {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+}
+.cost__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.cost__art {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.cost__art svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+/* the part the player cannot pay yet */
+.cost__item.is-short .cost__amt {
+  text-decoration: underline dotted;
+  opacity: 0.8;
+}
