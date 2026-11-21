@@ -9,7 +9,7 @@ import { cardBoxScale, cleanDpr, pickCardScale, pickRowScale } from './pixelScal
 /** The screen's pixel ratio right now (browser zoom counts, so does a 125 % Windows scale). */
 export const screenDpr = (): number => cleanDpr(window.devicePixelRatio);
 
-interface Fit {
+export interface Fit {
   /** CSS px wide the card should be (a function when it depends on the window). */
   want: number | (() => number);
   /** Most CSS px the card may take; the scale drops to the largest whole one that fits. */
@@ -100,4 +100,22 @@ export function pixelUnit(stage: HTMLElement, wantCssPx: number): number {
   const unitsToDevice = (rendered > 0 ? rendered : 1) * d;
   const device = Math.max(1, Math.round(wantCssPx * d));
   return device / unitsToDevice;
+}
+
+/**
+ * Gives `host` its whole card scale and keeps it right as the host's width changes: its width is
+ * 0 while the page is hidden, and the scale it picks depends on it. `data-n` carries the scale to
+ * the CSS (the compact card drops its job label at 1x).
+ */
+export function watchFit(host: HTMLElement, fit: Fit): void {
+  const apply = (): void => {
+    host.dataset['n'] = String(fitCard(host, fit));
+  };
+  apply();
+  let width = host.clientWidth;
+  new ResizeObserver(() => {
+    if (host.clientWidth === width) return;
+    width = host.clientWidth;
+    apply();
+  }).observe(host);
 }

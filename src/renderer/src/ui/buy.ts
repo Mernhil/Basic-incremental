@@ -139,6 +139,7 @@ export function createBuyButton(onBuy: () => void, compact = false): BuyButton {
       const ok = v.available && v.offer.affordable;
       set(label, v.label);
       set(price, !ok && v.short ? v.short : v.price);
+      price.title = v.priceLabel ?? '';
       set(preview, v.preview);
       if ((v.art ?? '') !== artMarkup) {
         artMarkup = v.art ?? '';

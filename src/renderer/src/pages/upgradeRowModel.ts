@@ -18,6 +18,7 @@ import {
 import { COPY } from '../copy';
 import { fmt } from '../settings/numberFormat';
 import { amountText, isMoney, moneyText } from '../settings/coins';
+import { costText } from '../settings/cost';
 import { buyLabel } from './buyModel';
 
 /**
@@ -54,6 +55,8 @@ export interface UpgradeRowView {
     resource: string;
     /** "13.2k Copper Gem" or "1.03 Silver". */
     price: string;
+    /** The price in words ("5.12 Silver"), for the tooltip and the accessible label. */
+    priceLabel: string;
     affordable: boolean;
     /** "need 239 more" when short. */
     short: string | null;
@@ -234,7 +237,8 @@ export function upgradeRow(
     buy: {
       label: buyLabel(offer, count),
       resource,
-      price: amountText(content, resource, offer.price.amount),
+      price: costText(content, resource, offer.price.amount),
+      priceLabel: amountText(content, resource, offer.price.amount),
       affordable: offer.affordable,
       short: short ? shortText(content, resource, short) : null,
       progress: offer.progress,

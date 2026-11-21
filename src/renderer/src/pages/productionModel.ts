@@ -16,12 +16,11 @@ import {
   type GameState,
   type MinePreview,
   type Modifier,
-  type Price,
   type Producer,
   type ProductionJob,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
-import { amountText } from '../settings/coins';
+import { costText } from '../settings/cost';
 import { COPY } from '../copy';
 import { mineLevelViews, treeLevelViews, type BuyLineView } from './buyModel';
 
@@ -89,6 +88,8 @@ export interface ProductionRow {
     price: string;
     amount: string;
     resources: string;
+    /** The unlock's costs as materials and amounts, for the sprite display. */
+    costs: { resource: string; amount: Decimal }[];
     have: string;
     affordable: boolean;
   } | null;
@@ -97,8 +98,6 @@ export interface ProductionRow {
 }
 
 const resName = (content: Content, id: string): string => content.resourceById.get(id)?.name ?? id;
-
-const priceText = (content: Content, p: Price): string => amountText(content, p.resource, p.amount);
 
 /**
  * A wait in seconds as the Next buy column shows it (DESIGN.md §4): days and hours, hours and
@@ -222,12 +221,13 @@ export function productionRows(
         outputUnit: '',
         milestone: null,
         nextBuy: null,
-        note: COPY.production.unlockFor(prices.map((x) => priceText(content, x)).join(', ')),
+        note: COPY.production.unlockFor(),
         buy: null,
         previewText: '',
         unlock: {
-          price: prices.map((x) => priceText(content, x)).join(', '),
-          amount: prices.map((x) => fmt(x.amount)).join(' + '),
+          price: prices.map((x) => costText(content, x.resource, x.amount)).join(', '),
+          costs: prices.map((x) => ({ resource: x.resource, amount: x.amount })),
+          amount: prices.map((x) => costText(content, x.resource, x.amount)).join(' + '),
           resources: prices.map((x) => resName(content, x.resource)).join(' + '),
           have: COPY.production.youHave(fmt(owned)),
           affordable: prices.every((x) =>

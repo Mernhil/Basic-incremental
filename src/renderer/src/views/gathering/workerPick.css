@@ -1,0 +1,47 @@
+/* The worker pickers' tool cards (views/gathering/workerPick.ts): the collection's card face,
+   with the multiplier, the effect and the place under it. The list, tile and fit rules are the
+   Cards page's (cp-pick__list, cp-tile, cp-fit); only what sits under the card is here. */
+.wk-pick__list {
+  /* a long list scrolls instead of growing the panel */
+  max-height: 60vh;
+  justify-content: center;
+}
+.wk-pick__item {
+  /* as wide as the card, so a long effect wraps under it instead of widening the cell */
+  width: calc(var(--card-k, 1) * 176px);
+  align-content: start;
+  text-align: center;
+}
+.wk-pick__power {
+  /* below the kit's banner tails, as the slot picker's cost does */
+  margin-top: var(--kit-bottom);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--bi-frame-ink);
+}
+.wk-pick__note {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.wk-pick__where {
+  font-size: 11.5px;
+  color: var(--bi-frame-ink-muted);
+}
+.wk-pick__where.is-here {
+  color: var(--bi-frame-accent, var(--px-gold));
+  font-weight: 700;
+}
+.wk-pick__where.is-off {
+  color: var(--bi-danger, #e0637a);
+}
+.wk-pick__item.is-off .cp-fit {
+  filter: grayscale(0.8) brightness(0.6);
+}
+.wk-pick__item.is-off .cp-pick__card {
+  cursor: default;
+}
+
+/* a full-width row above the cards (the forge's "Send away") */
+.wk-pick__bar {
+  flex: 0 0 100%;
+}

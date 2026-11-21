@@ -177,7 +177,12 @@ describe('worker cells and the picker', () => {
       ['c', false, true],
     ]);
     expect(options[0]!.power).toBe('×2');
-    expect(options[1]!.note).toBe('+10% output here · Works at Ironbark (moves here)');
-    expect(options[2]!.note).toBe('+10% output here · No free slot');
+    // the effect and where the tool stands are two fields: the card shows each on its own line
+    expect(options.map((o) => o.note)).toEqual(Array(3).fill('+10% output here'));
+    expect(options.map((o) => o.where)).toEqual([
+      'Works here',
+      'Works at Ironbark (moves here)',
+      'No free slot',
+    ]);
   });
 });

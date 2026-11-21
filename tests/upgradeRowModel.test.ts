@@ -20,7 +20,10 @@ describe('the upgrade row (DESIGN.md §4 The upgrade row)', () => {
     expect(row.after).toMatch(/\/s$/);
     expect(row.mult).toMatch(/^×[\d.]+ → ×[\d.]+$/);
     expect(row.buy.affordable).toBe(true);
-    expect(row.buy.price).toMatch(/Copper Gem$/);
+    // a gem has its coin sprite: the price is the number, the name only in the label
+    expect(row.buy.price).toMatch(/^[0-9.,]+[a-zA-Z]?$/);
+    expect(row.buy.price).not.toMatch(/Copper/);
+    expect(row.buy.priceLabel).toMatch(/Copper Gem$/);
     expect(row.buy.short).toBeNull();
     expect(row.next).toBe('Lv 15: pick Finishing Blow or Brutal Edge');
     expect(row.toGo).toBe('7 levels');

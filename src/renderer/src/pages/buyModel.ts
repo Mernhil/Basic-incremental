@@ -16,7 +16,7 @@ import {
   type Modifier,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
-import { amountText } from '../settings/coins';
+import { costText } from '../settings/cost';
 import { COPY } from '../copy';
 
 /**
@@ -37,6 +37,8 @@ export interface BuyLineView {
   /** Button text: "Buy ×10" and the price. */
   label: string;
   price: string;
+  /** The price in words ("5.12 Silver") for the tooltip; the button itself shows sprite and number. */
+  priceLabel?: string;
   /** What the purchase changes. */
   preview: string;
   /** Next milestone tag ("Lv 25: ×2"), empty when the line has none. */
@@ -82,7 +84,7 @@ export function mineLevelViews(
         available: true,
         offer,
         label: buyLabel(offer, count),
-        price: amountText(content, offer.price.resource, offer.price.amount),
+        price: costText(content, offer.price.resource, offer.price.amount),
         preview: COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
@@ -116,7 +118,7 @@ export function treeLevelViews(
         available: true,
         offer,
         label: buyLabel(offer, count),
-        price: amountText(content, offer.price.resource, offer.price.amount),
+        price: costText(content, offer.price.resource, offer.price.amount),
         preview: COPY.buy.rate(res, fmt(p.rateBefore), fmt(p.rateAfter)),
         milestone: milestoneTag(m),
         milestoneInfo: m,
