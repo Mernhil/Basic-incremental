@@ -433,7 +433,7 @@ The active dungeon is fought automatically: the fighting loadout's cards hit the
 - Crits are dealt as their average, `1 + chance x (damage - 1)`, from `combat.json` `crit` and the `combat.critChance` / `combat.critDamage` modifiers (`critStats`, `critFactor`). On-screen crits are rolled for show only (`rollHitForShow`).
 - Elements: a card whose element is the dungeon boss's `weakness` or `resistance` (`dungeons.json` `boss`) has its own damage changed in that whole dungeon by `combat.json` `elements.weakness` or `elements.resistance` percent (`src/game/elements.ts`).
 - Card hit number k lands at k x interval seconds of play time (`hitsBy`), worth damage per second x interval; enemy attacks use the same clock. Interval, gauge size, fill and signature power: `combat.json` `bursts.fighting` through the `burst.*` modifiers (`burstStats`).
-- Every hit fills the card's signature gauge; a full gauge fires the signature on that hit: extra damage of `power` hits, or for a healing skill a heal of every standing card by `share` of its max health (`healTeam`) instead. A heal only restores standing cards; a knocked-out card stays out until the floor is cleared (`healTeam` in `src/game/duel.ts`).
+- Every hit fills the card's signature gauge; a full gauge fires the signature on that hit: extra damage of `power` hits, or for a healing skill a heal of every standing card by `share` of its max health (`healTeam`) instead. A heal only restores standing cards; a knocked-out card stays out until the floor is cleared (`healTeam` in `src/game/duel.ts`). On screen a signature hit plays the card's special attack (`stage/specialAttack.ts`, see Stage effects).
 - The stage's star level multiplies all damage on that floor (`stageDamageFactor`).
 
 ### Enemies and health bars
@@ -990,6 +990,9 @@ Mounted by the `shop` view (`views/meta/index.ts`). Three counters; its view dat
 
 - **`director.ts`**: `createDirector`, built in `app.ts`, which calls `afterStep` after every game step. It turns the step's `TickReport` into show events: `duel`, `bossAttack`, `knockout`, `challenge`, `kill` (heard by the arena) and `harvests` (heard by the job view). It also emits `signature` and `harvestBurst` from the step, and two timers (`start()`) emit `hit` (one per the lead card's interval) and `harvest` (once a second); nothing listens to these four. Except `duel`, nothing is sent while the window is hidden.
 - **`arena.ts`**: `createArena`, the card duel, created in `views/dungeon/index.ts`. It draws the hand, the enemy card, the hit feed, the stat sheet, the Challenge buttons and the Victory or Defeat banner. On director events cards hop, a slam flashes and shakes, damage numbers pop, loot coins fly to the header and a rare drop gets a toast. See Fights.
+  - On a `duel` event a lone signature hit (`signature` and one hit) plays the card's special attack (`playSpecial`), one at a time; a busy or failed one keeps the hop. Its `strike` skill plate is left out, the other plates stay. While it plays the enemy's damage tag holds its value (`tagHeld`, `showTag`); as the hit lands the tag shows the new total and pops, and the signature's feed line pops (`is-landed`, `arena.css`). A burst without a special pops the tag too. The arena dims (`is-special`) all but the source card and the enemy.
+- **`specialAttack.ts`**: `createSpecialAttack(host)` gives `play`, `busy`, `cancel`. One canvas over the duel at 25 frames a second in whole-pixel steps: stage dim, slanted cut-in with the weapon and the skill's name, wind-up, lunge, impact frame, the drawn hit sheet with the weapon swiping along it, shake (`shake(el, 'heavy')` for heavy weapons), settle. The weapon is the card's own sprite, only moved, scaled and rotated. The sheet player (`sheetFrame`, `recoloured`, `sheetImage`) plays a drawn sheet from `art/fx/`, recoloured to the material. 700 ms cooldown; a hidden window cancels it; under reduced motion (`calm`) no slide, lunge, shake, flash or particles.
+- **`specialData.ts`**: the data the special attack plays. `WEAPON_MOTIONS`: one motion per fighting weapon type (sword, greatsword, dagger, spear, lance, hammer, scythe, bow, staff; axe and pickaxe have none, they never fight): strokes, poses, weight, its `sheet` and `elementSheet`. `HIT_SHEETS` (one drawn hit per type), `ELEMENT_SHEETS` (one drawn slash per element), `MATERIAL_EFFECTS` (Wood to Prismatic) and `ELEMENT_EFFECTS` (the seven elements). `effectOf(tier, element)` picks the material's effect from Wood to Prismatic, else the element's (Mythic and Heirloom); `hasSpecial(kind, element)` says whether a card has one.
 - **`arenaBackground.ts`**: `backgroundFor` maps a dungeon's `background` id to a CSS class of `arena.css`; other ids get the brick room.
 - **`bossHitModel.ts`**: maths only: the screen-edge pulse before a boss slam (`edgeStrength`), each hit's place on the health bar (`bossHitShows`), the "You fall in" banner (`fallBanner`).
 - **`numbers.ts`**: `popNumber`, `popGain`: floating numbers of the duel and the job views, capped, quick gains on one spot merged. Their look follows the equipped number and tick cosmetics.
@@ -998,7 +1001,7 @@ Mounted by the `shop` view (`views/meta/index.ts`). Three counters; its view dat
 - **`reveal.ts`, `revealCircle.ts`**: `showReveal`, the modal that deals pulled cards face down and flips them one by one; `createCircle` draws its turning circle. Called by `pages/summon.ts`, and by `pages/shop.ts` for a shard purchase. See Summon and pulls.
 - **`toast.ts`**: `toast`, short messages in one live region, three at most.
 - **`welcome.ts`**: `showWelcomeBack`, called by `app.ts` at start when offline progress was applied: a fan of cards and a Collect button that flies coins to the header.
-- **`motion.ts`**: shared frame loop (`onFrame`), `reducedMotion`, `replay`, `shake`, `flash`, `slowDown`. **`math.ts`**: pure helpers (popup size, rolling counters, merging, throttling).
+- **`motion.ts`**: shared frame loop (`onFrame`), `reducedMotion`, `replay`, `shake` (normal, strong, or `'heavy'`: `st-shake--heavy` in `numbers.css`), `flash`, `slowDown`. **`math.ts`**: pure helpers (popup size, rolling counters, merging, throttling).
 
 ### `tierUp.ts`
 
@@ -1026,6 +1029,7 @@ The game's pictures are PNGs under `src/renderer/src/art/`; the code here turns 
   - `bg-` 5, `bgfish-` 64, `bgbig-` 16: Heirloom backdrops and their fish.
   - `coin-` 36, `tile-` 30, `medal-` 5, `plaque-` 10, `edge-` 15, `money-` 16, `res-` 5, `star-` 11, `shop-` 10, `badge-` 332.
 - `art/shell/stone/` (34 PNGs) and `art/shell/oak/` (15 PNGs and `pieces.json`) hold the table's pieces; see Shell and table.
+- `art/fx/` holds the 16 drawn sheets of the special attack (see Stage effects): `hit-<weapon>.png` for sword, greatsword, hammer, scythe, staff, lance, dagger, spear and bow, recoloured per material from Wood to Prismatic; `slash-<element>.png` for fire, storm, light, nature, earth, crystal and void, played on Mythic and Heirloom by the sword and the scythe.
 
 ### Asking for a picture
 
