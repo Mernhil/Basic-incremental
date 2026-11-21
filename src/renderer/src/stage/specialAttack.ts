@@ -1574,7 +1574,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         });
       }
       const { size: grain, grav } = e.burst;
-      for (let i = 0; i < (e.plain ? 46 : s.sheet ? 60 : 170); i++) {
+      // no code particles over an element's drawn slash: it breaks up in its own frames
+      for (let i = 0; i < (e.plain ? 46 : s.sheet ? 0 : 170); i++) {
         const life = 0.35 + rnd(i + 3) * 0.6;
         if (tau > life) continue;
         const G = geos[i % n]!;
@@ -1598,7 +1599,7 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
           g.fillRect(even(x), even(y), 2, 2);
         }
       }
-      for (let i = 0; i < (e.plain ? 0 : s.sheet ? 24 : 70); i++) {
+      for (let i = 0; i < (e.plain || s.sheet ? 0 : 70); i++) {
         const t0 = rnd(i + 200) * 0.35;
         const ee = tau - t0;
         const life = 0.6 + rnd(i + 210) * 0.5;
@@ -1612,24 +1613,8 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
         g.fillStyle = e.c[1 + ((i + fr) % 3) + (ee / life > 0.7 ? 1 : 0)]!;
         g.fillRect(even(x), even(y), sz, sz);
       }
-      // the enemy card keeps shedding it for a moment
-      const burn = 1 - seg(tau, 0.3, 0.8);
-      for (let i = 0; i < (e.plain ? 0 : 16); i++) {
-        if (rnd(i + 300) > burn) continue;
-        // storm: three clear bolts at the card's foot, not a row of scribbles
-        if (e.rise === 'bolt' && i % 6 !== 2) continue;
-        riseOne(
-          g,
-          e,
-          e.rise,
-          foe.x + foeLook.dx + (10 + i * 12.5) * f,
-          foe.y + foeLook.dy + foe.h,
-          (e.rise === 'bolt' ? 80 : 18 + rnd(i * 3 + fr * 7) * 44) * f,
-          14 * f,
-          i + fr,
-          fr,
-        );
-      }
+      // nothing code-drawn lingers on the enemy card: a drawn sheet per element is to replace the
+      // row of small shapes that burned along its bottom edge (the user, 2026-11-21)
     }
   }
   g.setTransform(1, 0, 0, 1, 0, 0);

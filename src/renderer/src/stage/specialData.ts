@@ -583,7 +583,7 @@ export const ELEMENT_SHEETS: Record<string, HitSheet> = {
   },
 };
 
-/** What rises from the cut when it releases, and what the enemy card keeps shedding after. */
+/** What rises from the cut when it releases (weapons without a drawn element slash). */
 export type RiseKind = 'flame' | 'bolt' | 'beam' | 'vine' | 'spike' | 'crystal' | 'wisp';
 
 /** Colours and shape of an element's slash. `c` runs bright to dark (6 steps); `ink` is the near-black
