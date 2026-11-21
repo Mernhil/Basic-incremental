@@ -765,6 +765,22 @@ export const COPY = {
     pityOf: (n: number, max: number) => `${n} / ${max}`,
     pityMeter: (portal: string) => `${portal} pity`,
     lineCards: (rarity: string, n: number) => `${rarity} or better within ${n} pulls`,
+    lineT6: (n: number) => `A T6 card within ${n} pulls, rising from the middle`,
+    pityT6: (n: number) => (n === 1 ? 'A T6 card on the next pull' : `A T6 card within ${n} pulls`),
+    levelLabel: (n: number) => `Portal level ${n}`,
+    levelValue: (pulls: number, next: number | null) =>
+      next === null ? `${pulls} pulls · top level` : `${pulls} / ${next} pulls`,
+    levelMeter: (portal: string) => `${portal} level progress`,
+    levelNote: (n: number, of: number) =>
+      `Portal level ${n} of ${of}: every level moves the odds up. A tier leaves the pool only when all its cards are at six stars.`,
+    firstTen: (tier: string) => `Your first ×10 holds a ${tier} or better`,
+    tiersTitle: 'Tier collection',
+    tiersAbout:
+      'Bring every card of a tier to six stars: the tier pays scrolls and a small permanent damage bonus, once.',
+    tierCount: (done: number, total: number) => `${done} / ${total}`,
+    tierReward: (scrolls: string, percent: string) => `+${scrolls} scrolls · +${percent}% damage`,
+    tierBox: (name: string, done: number, total: number, claimed: boolean) =>
+      `${name}: ${done} of ${total} cards at six stars${claimed ? ', complete, reward paid' : ''}`,
     lineCosmetics: 'Cosmetics · duplicates feed upgrades',
     lineOther: (rarity: string, n: number) => `${rarity} or better within ${n} pulls`,
     oddsColumn: { cards: 'Cards', cosmetics: 'Wardrobe', skins: 'Skins' } as Record<string, string>,

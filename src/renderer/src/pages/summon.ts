@@ -44,6 +44,7 @@ import {
   lastHandView,
   oddsTable,
   portalView,
+  tierBoxes,
   revealViews,
   wishlistPanelView,
   wishKindIndex,
@@ -83,6 +84,15 @@ type DeckUi = {
   pityBar: HTMLElement;
   pityFill: HTMLElement;
   line: HTMLElement;
+  /** The portal's level bar and the first 10-pull line (card portals only). */
+  level: {
+    box: HTMLElement;
+    label: HTMLElement;
+    value: HTMLElement;
+    bar: HTMLElement;
+    fill: HTMLElement;
+  } | null;
+  first: HTMLElement | null;
   /** "Hunting: ..." under the deck (card portal with a wishlist only). */
   hunt: HTMLElement | null;
   /** The Focus Portal's item type buttons and the line saying what it pulls. */
@@ -171,6 +181,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     }
     oddsBody.replaceChildren(thead, tbody);
     const notes = [...new Set(list.map((v) => v.guarantee))];
+    for (const v of list) if (v.levelNote) notes.push(v.levelNote);
     if (openGate === FOCUS_PORTAL_ID) notes.push(COPY.summon.oddsFocus);
     if (wishActive && list[0]?.kind === 'cards') notes.push(COPY.summon.oddsWishlist);
     oddsNote.replaceChildren(...notes.map((n) => h('span', '', n)));
@@ -252,6 +263,44 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       ...rows,
     );
     if (focused) wish.querySelector<HTMLElement>(`[data-wish="${focused}"]`)?.focus();
+  }
+
+  // ---- the tier collection: a check box per tier ----
+  const tiers = h('section', 'sm-tiers px-panel');
+  tiers.setAttribute('aria-label', COPY.summon.tiersTitle);
+  let tiersKey = '';
+
+  function renderTiers(): void {
+    const isCards = ['card_portal', FOCUS_PORTAL_ID].includes(openGate);
+    tiers.hidden = !isCards;
+    if (!isCards) return;
+    const boxes = tierBoxes(ctx.state(), content);
+    const key = JSON.stringify(boxes);
+    if (key === tiersKey) return;
+    tiersKey = key;
+    const list = h('ul', 'sm-tiers__list');
+    for (const b of boxes) {
+      const li = h('li', 'sm-tiers__row');
+      li.dataset['rarity'] = b.rarity;
+      li.setAttribute('role', 'checkbox');
+      li.setAttribute('aria-checked', String(b.checked));
+      li.setAttribute('aria-label', b.label);
+      const box = h('i', `sm-tiers__box${b.checked ? ' is-checked' : ''}`);
+      const name = h('span', 'sm-tiers__name');
+      name.append(h('i', 'sm-odds__swatch'), h('span', '', b.name));
+      li.append(
+        box,
+        name,
+        h('b', 'sm-tiers__count bi-num', b.count),
+        h('span', 'sm-tiers__reward', b.reward),
+      );
+      list.append(li);
+    }
+    tiers.replaceChildren(
+      h('h2', 'sm-tiers__title px-display', COPY.summon.tiersTitle),
+      h('p', 'sm-tiers__about', COPY.summon.tiersAbout),
+      list,
+    );
   }
 
   // ---- the last hand ----
@@ -437,11 +486,34 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     pityBar.append(pityFill);
     const pity = h('div', 'sm-pity');
     pity.append(pityTop, pityBar);
+    // a card portal has levels: its own bar, above the pity bar
+    let level: DeckUi['level'] = null;
+    let first: HTMLElement | null = null;
+    if (portal.kind === 'cards') {
+      const label = h('span', '');
+      const value = h('b', 'bi-num');
+      const top = h('div', 'sm-pity__top');
+      top.append(label, value);
+      const fill = h('i');
+      const bar = h('div', 'sm-pity__track px-well');
+      bar.setAttribute('role', 'meter');
+      bar.setAttribute('aria-valuemin', '0');
+      bar.setAttribute('aria-label', COPY.summon.levelMeter(portal.name));
+      bar.append(fill);
+      const box = h('div', 'sm-pity sm-level');
+      box.append(top, bar);
+      level = { box, label, value, bar, fill };
+      first = h('p', 'sm-deck__first');
+    }
     const buttons = h('div', 'sm-deck__buttons');
     const single = pullButton(COPY.summon.pullOne, false, () => doPull(portalId, 1));
     const ten = pullButton(COPY.summon.pullTen, true, () => doPull(portalId, 10));
     buttons.append(single.el, ten.el);
-    root.append(h('h2', 'sm-deck__name px-display', portal.name), line, stack, pity, buttons);
+    root.append(h('h2', 'sm-deck__name px-display', portal.name), line, stack);
+    if (level) root.append(level.box);
+    root.append(pity);
+    if (first) root.append(first);
+    root.append(buttons);
     const hunt =
       portalId !== FOCUS_PORTAL_ID && portal.kind === 'cards' && portal.wishlistPerTier > 0
         ? h('p', 'sm-deck__hunt')
@@ -476,6 +548,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       pityBar,
       pityFill,
       line,
+      level,
+      first,
       hunt,
       focus,
       single,
@@ -538,6 +612,8 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
       pityBar,
       pityFill,
       line,
+      level: null,
+      first: null,
       hunt: null,
       focus: null,
       single,
@@ -715,7 +791,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
 
   // the open gate's content, then the last hand
   const gateBody = h('div', 'sm-gatebody');
-  gateBody.append(wish, odds);
+  gateBody.append(wish, odds, tiers);
   colMain.append(gateBody, board);
 
   // ---- the daily scrolls ----
@@ -752,6 +828,17 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
         COPY.summon.deckLabel(v.name, v.pityCount, v.pityThreshold, v.pityRarityName),
       );
       set(ui.line, v.line);
+      if (ui.level && v.level) {
+        set(ui.level.label, v.level.label);
+        set(ui.level.value, v.level.value);
+        ui.level.fill.style.width = `${Math.round(v.level.progress * 100)}%`;
+        ui.level.bar.setAttribute('aria-valuemax', String(v.level.max));
+        ui.level.bar.setAttribute('aria-valuenow', String(v.level.now));
+      }
+      if (ui.first) {
+        set(ui.first, v.firstTen ?? '');
+        ui.first.hidden = v.firstTen === null;
+      }
       set(ui.pityValue, v.pityText);
       ui.pityFill.style.width = `${Math.round(v.pityProgress * 100)}%`;
       ui.pityBar.setAttribute('aria-valuemax', String(v.pityThreshold));
@@ -778,6 +865,7 @@ export function createSummonPage(page: HTMLElement, ctx: SummonContext): { rende
     renderGates();
     renderWishlist();
     renderOdds();
+    renderTiers();
   }
 
   function renderHeirloom(s: GameState): void {
