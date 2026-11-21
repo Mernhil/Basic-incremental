@@ -1186,6 +1186,10 @@ export function createArena(ctx: ArenaContext): Arena {
         popWord(DUEL_COPY.critWord, 'crit');
       }
     }
+    // a burst without a special attack (several at once, or one while another still plays): the
+    // enemy's total pops all the same (the user, 2026-11-21: it pops when bursts happen)
+    const plain = e.report.playerHits.some((h) => h.signature && h.cardId !== specialCard);
+    if (plain && !tagHeld && !calm()) replay(foeTag, 'is-landed', 460);
     if (hitters.size > 0) play('hit');
   });
 
