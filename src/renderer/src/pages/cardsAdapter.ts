@@ -1,12 +1,10 @@
 import { cardStyle } from '../../../data';
-import { RANK_TIERS, type Card, type Content, type Rank, type RankTier } from '../../../data';
+import { type Content, type Rank } from '../../../data';
 import {
   LOADOUT_SLOTS,
   cardCollection,
   cardEnhancements,
   cardInfo,
-  itemName,
-  tierLabel,
   chooseEnhancement,
   resetEnhancements,
   setCardSkin,
@@ -49,28 +47,6 @@ const TIER_NAMES: Record<Rank['tier'], string> = TIER_LABELS;
 const BASE_RANK: Rank = { tier: 'wood', stars: 1 };
 /** Placeholder emblems until the graphics overhaul brings per-card art (see ui/card.ts). */
 const JOB_EMBLEM: Record<Job, string> = { fighting: 'blade', logging: 'axe', mining: 'pick' };
-
-/**
- * The tiers the Next tier preview steps through (DESIGN §5 Next tier preview): a card from Wood to
- * Prismatic shows its own tier, then the same weapon type's weapons of each higher tier up to T6.
- * A card never changes tier: the higher ones are other cards to pull. A T6 or an Heirloom card has
- * just its own.
- */
-export function previewTiers(content: Content, cardId: string): RankTier[] {
-  const card = content.cardById.get(cardId);
-  if (!card) return [];
-  const at = RANK_TIERS.indexOf(card.tier);
-  const t6 = RANK_TIERS.indexOf('mythic');
-  return at >= t6 ? [card.tier] : RANK_TIERS.slice(at, t6 + 1);
-}
-
-/**
- * The picture of a card's item at a tier (T6 by the card's side). The one place the preview gets
- * its art, so a card with its own weapon picture can be given it here.
- */
-export function previewArt(card: Card, tier: RankTier): string {
-  return cardTierArt(card, tier);
-}
 
 /**
  * `art` draws a card's item (the renderer passes one that shows unique ★6 evolutions); without
@@ -183,26 +159,6 @@ export function createCardsModel(
   const all = (state: GameState): CardInfo[] => cardCollection(state, content, undefined);
 
   return {
-    preview(state, id, step) {
-      const card = content.cardById.get(id);
-      if (!card) return null;
-      const tiers = previewTiers(content, id);
-      if (tiers.length < 2) return null;
-      const index = ((Math.trunc(step) % tiers.length) + tiers.length) % tiers.length;
-      const tier = tiers[index]!;
-      return {
-        count: tiers.length,
-        index,
-        own: index === 0,
-        tierName: tierLabel(tier, card.side),
-        itemName: itemName(content, card.item.kind, tier, card.side, card),
-        item:
-          index === 0
-            ? (art?.(id, state.cards.owned[id] ?? null) ?? previewArt(card, tier))
-            : previewArt(card, tier),
-        ownTierName: tierLabel(tiers[0]!, card.side),
-      };
-    },
     entries: (state) => all(state).map((i) => entry(i, state)),
     entry(state, id) {
       const info = cardInfo(state, content, id);

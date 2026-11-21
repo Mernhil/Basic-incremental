@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   centroid,
+  ELEMENT_FX,
   effectStrength,
   outward,
   resample,
@@ -16,7 +17,15 @@ const square = [
 
 describe('element effect geometry (DESIGN.md §12)', () => {
   it('plays effects only from Gold, stronger at Prismatic', () => {
-    expect(['bronze', 'silver', 'gold', 'prismatic'].map(effectStrength)).toEqual([0, 0, 1, 2]);
+    expect(['bronze', 'silver', 'gold', 'prismatic'].map((t) => effectStrength(t, true))).toEqual([
+      0, 0, 1, 2,
+    ]);
+  });
+
+  it('is switched off: no effect at any tier, for any card', () => {
+    expect(ELEMENT_FX).toBe(false);
+    const tiers = ['wood', 'bronze', 'silver', 'gold', 'prismatic', 'mythic', 'heirloom'];
+    expect(tiers.map((t) => effectStrength(t))).toEqual(tiers.map(() => 0));
   });
 
   it('spaces points evenly along the item outline', () => {
