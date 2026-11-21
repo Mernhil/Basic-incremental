@@ -89,7 +89,7 @@ export interface SpecialHooks {
   /** The enemy card: knock it back by logical pixels, flash it white. */
   foe(o: { dx: number; dy: number; flash: boolean }): void;
   /** The hit lands (shake, the damage number). */
-  release(weight: number): void;
+  release(weight: number, aside: -1 | 0 | 1): void;
   /** The whole thing is over (or was cancelled). */
   done(): void;
 }
@@ -182,6 +182,9 @@ interface Scene {
   black: HTMLCanvasElement;
   trail: HTMLCanvasElement[];
   dark: HTMLCanvasElement;
+  /** Which way the big damage number steps aside from its place below the enemy card (-1 left,
+   *  1 right), because the weapon or its shot hangs there; 0 when the place is clear. */
+  aside: -1 | 0 | 1;
   /** The drawn hit this attack plays in place of the code-drawn one: its frames in the effect's
    *  colours, the same in black for the white impact frame, its whole scale, whether it is mirrored,
    *  whether it is an element's slash, and the angle, length and bow the cut takes from it. */
@@ -1632,6 +1635,24 @@ function frameAt(s: Scene, t: number, calm: boolean): void {
       }
     }
   }
+  // the big damage number's place is below the enemy card: is the weapon there at the release or
+  // once it has carried on, or does a bow's shot pass through it?
+  {
+    const top = foe.y + foe.h;
+    let there = m.style === 'shot';
+    let side = 0;
+    for (const at of [T.release, T.release + 0.14]) {
+      const pose = flies ? ride(geos[last]!, wAt(last, at)) : standPose(at);
+      const tip = tipOf(pose);
+      side = pose.x + tip.x >= 2 * fc.x ? -1 : 1;
+      for (let i = -2; i <= 8 && !there; i++) {
+        const x = lerp(pose.x, tip.x, i / 8);
+        const y = lerp(pose.y, tip.y, i / 8);
+        there = Math.abs(x - fc.x) < foe.w * 0.5 && y > top + 4 * f && y < top + 90 * f;
+      }
+    }
+    s.aside = there ? (side < 0 ? -1 : 1) : 0;
+  }
   g.setTransform(1, 0, 0, 1, 0, 0);
   cutin(s, t, calm);
   if (move && fr === 3) {
@@ -1723,6 +1744,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
         white: tinted(wp, '#ffffff'),
         black: tinted(wp, '#000000'),
         dark: tinted(wp, e.ink),
+        aside: 0,
         trail: [e.c[1], e.c[2], e.c[3], e.c[4]].map((c) => tinted(wp, c)),
       };
       // a drawn hit: the weapon's own grey sheet in a material tier (wood to prismatic), or the
@@ -1764,7 +1786,7 @@ export function createSpecialAttack(host: HTMLElement): SpecialAttack {
         }
         if (!released && t >= m.times.release) {
           released = true;
-          req.hooks.release(m.heavy ? 1.5 : 1);
+          req.hooks.release(m.heavy ? 1.5 : 1, sc.aside);
         }
       });
       running = { cv, stop, hooks: req.hooks };

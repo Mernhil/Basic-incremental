@@ -1052,7 +1052,6 @@ export function createArena(ctx: ArenaContext): Arena {
     const pic = weaponPic(item?.dataset['sprite'] ?? '');
     if (!item || !pic) return false;
     const host = el.getBoundingClientRect();
-    const foeBox = foeArt.getBoundingClientRect();
     const cardBox = foe.getBoundingClientRect();
     if (host.width === 0 || cardBox.width === 0) return false;
     const u = Number(hand.style.getPropertyValue('--card-n')) || 1;
@@ -1099,15 +1098,25 @@ export function createArena(ctx: ArenaContext): Arena {
           foe.style.translate = o.dx || o.dy ? `${o.dx * unit}px ${o.dy * unit}px` : '';
           foe.style.filter = o.flash ? 'brightness(8) saturate(0)' : '';
         },
-        release: (weight) => {
+        release: (weight, aside) => {
           shake(el, weight > 1 ? 'heavy' : true);
-          popNumber(el, {
+          // the big number sits below the enemy card, clear of the drawn hit, and steps half a card
+          // aside when the weapon hangs there
+          const step = aside * Math.round(cardBox.width * 0.55);
+          const num = popNumber(el, {
             kind: 'signature',
             text: damage,
-            x: (foeBox.left + foeBox.width / 2 - host.left) / host.width,
-            y: (foeBox.top - host.top + foeBox.height * 0.3) / host.height,
+            x: (cardBox.left + cardBox.width / 2 + step - host.left) / host.width,
+            y: (cardBox.bottom - host.top) / host.height,
             scale: 2.6,
           });
+          if (num) {
+            // in the middle of the gap between the two cards, never closer than 4 px to the enemy's
+            const half = num.offsetHeight / 2;
+            const gap = (cardBox.bottom + slot.body.getBoundingClientRect().top) / 2;
+            const below = Math.max(cardBox.bottom + half + 4 * unit, gap) - host.top;
+            num.style.setProperty('--y', `${Math.round(below)}px`);
+          }
           play('hit');
         },
         done: () => undefined,
