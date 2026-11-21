@@ -71,13 +71,13 @@ await page.screenshot({ path: `${out}/grid.png` });
 for (const [file, name] of [
   ['detail-wood', 'Dawnblade'],
   ['detail-silver', 'Storm Duelist'],
-  ['detail-t6', 'Jade Vanguard'],
+  ['detail-t6', 'Dune Vanguard'],
   ['detail-heirloom', 'Solaris'],
 ]) {
   await pick(name);
   await page.screenshot({ path: `${out}/${file}.png` });
 }
-await pick('Jade Vanguard');
+await pick('Dune Vanguard');
 await page.evaluate(() => {
   const d = document.querySelector('.cp-detail .frame__body, .cp-detail');
   const sc = [...document.querySelectorAll('.cp-detail, .cp-detail *')].find(
