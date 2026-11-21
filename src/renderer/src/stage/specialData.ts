@@ -550,11 +550,12 @@ export const ELEMENT_SHEETS: Record<string, HitSheet> = {
     hold: { frames: [0, 1], step: 0.04, loop: true },
     out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
   },
-  // dissolves into dots
+  // dissolves into dots. Its frames 2 and 3 (an outlined blob) are skipped: frame 1 and frame 4
+  // each stay 40 ms longer instead, so it takes as long as before
   light: {
     ...ELEMENT_SLASH,
     hold: { frames: [0, 1], step: 0.08, loop: true },
-    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
+    out: { frames: [1, 4, 4, 5, 6, 7, 8, 9], step: 0.04 },
   },
   // breaks into leaves
   nature: {
