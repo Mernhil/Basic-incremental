@@ -755,6 +755,58 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
 .du-feed__line:nth-child(n + 3) {
   opacity: 0.7;
 }
+/* the special attack's hit landing (arena.ts): the big tag with the total pops, and under it the
+   signature's own line in the feed, both in hard steps and both growing away from the enemy card */
+.du-tag--foe.is-landed {
+  z-index: 2;
+  transform-origin: right bottom;
+  animation: du-tag-land 0.46s steps(1, end) both;
+}
+.du-feed__line.is-landed {
+  position: relative;
+  z-index: 1;
+  transform-origin: right top;
+  animation: du-feed-land 0.46s steps(1, end) both;
+}
+@keyframes du-tag-land {
+  0% {
+    scale: 2;
+    filter: brightness(3);
+  }
+  18% {
+    scale: 2;
+    filter: none;
+  }
+  50% {
+    scale: 1.5;
+  }
+  75% {
+    scale: 1.25;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes du-feed-land {
+  0% {
+    scale: 1.5;
+    filter: brightness(3);
+  }
+  18% {
+    scale: 1.5;
+    filter: none;
+  }
+  50% {
+    scale: 1.25;
+  }
+  100% {
+    scale: 1;
+  }
+}
+.ar--calm .du-tag--foe.is-landed,
+.ar--calm .du-feed__line.is-landed {
+  animation: none;
+}
 .du-feed__times {
   font-size: 10px;
   line-height: 1;
@@ -1352,4 +1404,31 @@ html .du-verdict[data-kind='defeat']:not(#_px) {
   .ar-bg--void::after {
     animation: none;
   }
+}
+
+/* ---- the special attack (stage/specialAttack.ts): the stage dims, the enemy and the source card stay lit ---- */
+.sa-canvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 5;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+.ar__scene,
+.du-top,
+.du-left,
+.du-sheet,
+.du-plates,
+.du-deck,
+.du-card {
+  transition: filter 0.1s linear;
+}
+.ar.is-special :is(.ar__scene, .du-top, .du-left, .du-sheet, .du-plates, .du-deck),
+.ar.is-special .du-card:not(.is-special-src) {
+  filter: brightness(0.4);
+}
+.ar.ar--calm.is-special :is(.ar__scene, .du-top, .du-left, .du-sheet, .du-plates, .du-deck),
+.ar.ar--calm.is-special .du-card:not(.is-special-src) {
+  transition: none;
 }
