@@ -3295,7 +3295,7 @@
   },
   {
     "id": "jade_vanguard",
-    "name": "Dune Vanguard",
+    "name": "Jade Vanguard",
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
@@ -3337,7 +3337,7 @@
   },
   {
     "id": "violet_herald",
-    "name": "Dusk Herald",
+    "name": "Violet Herald",
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
@@ -4076,7 +4076,7 @@
   },
   {
     "id": "rose_phantom",
-    "name": "Ember Phantom",
+    "name": "Rose Phantom",
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
@@ -4126,7 +4126,7 @@
   },
   {
     "id": "sky_gleamer",
-    "name": "Stone Gleamer",
+    "name": "Sky Gleamer",
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
@@ -4376,7 +4376,7 @@
   },
   {
     "id": "stormforger",
-    "name": "Sunforger",
+    "name": "Stormforger",
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
@@ -4526,7 +4526,7 @@
   },
   {
     "id": "iron_butcher",
-    "name": "Boulder Butcher",
+    "name": "Iron Butcher",
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
@@ -4916,7 +4916,7 @@
   },
   {
     "id": "azure_gleaner",
-    "name": "Dawn Gleaner",
+    "name": "Azure Gleaner",
     "job": "fighting",
     "tier": "mythic",
     "side": "mythic",
@@ -5096,7 +5096,7 @@
   },
   {
     "id": "frost_reaper",
-    "name": "Granite Reaper",
+    "name": "Frost Reaper",
     "job": "fighting",
     "tier": "mythic",
     "side": "void",
