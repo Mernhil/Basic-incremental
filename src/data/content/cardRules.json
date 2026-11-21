@@ -8,6 +8,18 @@
     "prismatic": 9,
     "mythic": 14
   },
+  "tierReward": {
+    "scrolls": {
+      "wood": "5",
+      "bronze": "10",
+      "silver": "20",
+      "gold": "40",
+      "prismatic": "80",
+      "mythic": "150",
+      "void": "150"
+    },
+    "damagePercent": "1"
+  },
   "costCap": {
     "base": 6,
     "perLevel": 2

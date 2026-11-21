@@ -8,6 +8,7 @@ import { prestigeModifiers } from './prestige';
 import { accountModifiers } from './account';
 import { perkModifiers } from './upgrades';
 import { trainingModifiers } from './training';
+import { tierRewardModifiers } from './tierRewards';
 import { toolModifiers } from './toolLines';
 import { elementModifiers } from './elements';
 import { bondModifiers } from './bonds';
@@ -229,6 +230,9 @@ export function collectModifiers(state: GameState, content: Content): Modifier[]
   // The trees of the Heirlooms at work (DESIGN.md §10 Heirloom trees); after the cards, so a tree's
   // signature power can stand on its Heirloom's own.
   out.push(...heirloomTreeModifiers(view, content));
+
+  // Completed card tiers (DESIGN.md §2 Summoning, Tier completion reward).
+  out.push(...tierRewardModifiers(state, content));
 
   // Milestone picks (DESIGN.md §4).
   out.push(...perkModifiers(state, content));

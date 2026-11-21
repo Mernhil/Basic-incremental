@@ -52,7 +52,7 @@ describe('v38 -> v39 on the 0.7.25 save', () => {
 
   it('is a format 38 save with cards below, at and never above their own tier', () => {
     expect(before.version).toBe(38);
-    expect(CURRENT_SAVE_VERSION).toBe(39);
+    expect(CURRENT_SAVE_VERSION).toBeGreaterThanOrEqual(39);
     const cards = Object.entries(before.state.cards.owned);
     expect(cards.length).toBeGreaterThan(20);
     const raised = cards.filter(
@@ -152,7 +152,7 @@ describe('v38 -> v39 on the 0.7.25 save', () => {
       version: number;
       state: { cards: { owned: Record<string, object> } };
     };
-    expect(envelope.version).toBe(39);
+    expect(envelope.version).toBe(CURRENT_SAVE_VERSION);
     for (const card of Object.values(envelope.state.cards.owned))
       expect(card).not.toHaveProperty('tier');
     const again = readSave(resaved, content).state;

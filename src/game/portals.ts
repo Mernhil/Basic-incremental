@@ -8,6 +8,7 @@ import type { Rng } from './rng';
 import { cloneState, type GameState, type PortalCounters } from './state';
 import { grantCosmetic } from './wardrobe';
 import { grantAccountXp } from './account';
+import { settleTierRewards, tierComplete } from './tierRewards';
 
 /** The Focus Portal (DESIGN.md §7): the Card Portal aimed at one item type. */
 export const FOCUS_PORTAL_ID = 'focus_portal';
@@ -132,42 +133,121 @@ export function pityThreshold(portal: Portal, modifiers: readonly Modifier[] = [
 type PoolEntry = Portal['pool'][number];
 
 /**
- * Picks by weight among the entries at or above `min` (the whole pool when null). With a
- * `wishlist`, a pick that lands on a rarity with marked cards is redirected to one of them,
- * chosen with the pool's weights among the marked cards of that rarity (DESIGN.md §7 Wishlist).
- * The redirect reuses what is left of the same roll (where it fell inside the entry it hit, which
- * is uniform and independent of the rarity), so it draws nothing extra: the chance of each rarity
- * and the whole random stream are the same with and without a wishlist.
+ * The chance of each tier on one pull (lowest first, only tiers in the pool; they sum to 1)
+ * (DESIGN.md §2 Summoning, Portal level, T6 pity). A portal with no levels uses its pool's own
+ * weights. A card portal with levels reads the row of its level (from the pulls made, `pulls`):
+ * a tier whose cards are not all at six stars keeps at least `minShare`, a tier whose cards all
+ * are leaves the pool (its chance is 0, the rest grow to fill the gap). Once the pulls since the
+ * last pity step reach `pity.softFrom`, the pity step's chance rises in a straight line to 1 at
+ * the threshold: `pityPull` is the number of this pull in that run (1 = the first since a hit),
+ * `threshold` the portal's threshold with modifiers.
+ */
+export function tierChances(
+  state: GameState,
+  content: Content,
+  resolved: ResolvedPortal,
+  pulls: number,
+  pityPull = 0,
+  threshold = resolved.base.pity.threshold,
+): { rarity: Rarity; chance: number }[] {
+  const { portal, base } = resolved;
+  const weight = new Map<Rarity, number>();
+  for (const e of portal.pool) weight.set(e.rarity, (weight.get(e.rarity) ?? 0) + e.weight);
+  const present = RARITIES.filter((r) => weight.has(r));
+  const row = base.levels.length > 0 ? base.levels[portalLevel(base, pulls) - 1]!.chances : null;
+  let chance = new Map<Rarity, number>();
+  if (!row) {
+    const total = [...weight.values()].reduce((a, b) => a + b, 0) || 1;
+    for (const r of present) chance.set(r, weight.get(r)! / total);
+  } else {
+    // a complete tier leaves the pool; an unfinished one keeps at least `minShare` (never more
+    // than it had at level 1, so a rare tier is not lifted by the floor)
+    const first = base.levels[0]!.chances;
+    const kept = (r: Rarity): number =>
+      tierComplete(state, content, r) ? 0 : Math.max(row[r], Math.min(base.minShare, first[r]));
+    let share = kept;
+    let total = present.reduce((a, r) => a + share(r), 0);
+    if (total <= 0) {
+      // every tier of the pool is complete: the level's own row, the pulls only pay shards
+      share = (r: Rarity): number => row[r];
+      total = present.reduce((a, r) => a + share(r), 0) || 1;
+    }
+    for (const r of present) chance.set(r, share(r) / total);
+  }
+  const soft = base.pity.softFrom;
+  if (soft !== null && pityPull > soft) {
+    const top = present.filter((r) => atLeast(r, base.pity.rarity));
+    const p = top.reduce((a, r) => a + chance.get(r)!, 0);
+    if (top.length > 0 && p > 0 && p < 1) {
+      const from = Math.min(soft, threshold - 1);
+      const t = Math.min(1, (pityPull - from) / Math.max(1, threshold - from));
+      const raised = p + (1 - p) * t;
+      const next = new Map<Rarity, number>();
+      for (const r of present) {
+        const scale = atLeast(r, base.pity.rarity) ? raised / p : (1 - raised) / (1 - p);
+        next.set(r, chance.get(r)! * scale);
+      }
+      chance = next;
+    }
+  }
+  return present.map((rarity) => ({ rarity, chance: chance.get(rarity)! }));
+}
+
+/** The level a portal is at after `pulls` pulls: 1 .. its number of levels (1 with no levels). */
+export function portalLevel(portal: Portal, pulls: number): number {
+  let level = 1;
+  portal.levels.forEach((l, i) => {
+    if (pulls >= l.pulls) level = i + 1;
+  });
+  return level;
+}
+
+/**
+ * Picks a tier by `chances` among the tiers at or above `min` (all when null; their chances
+ * renormalised, the pool's own weights when they are all 0), then a card of it by the pool's
+ * weights. With a `wishlist`, a pick that lands on a tier with marked cards is redirected to one
+ * of them, chosen with the pool's weights among the marked cards of that tier (DESIGN.md §7
+ * Wishlist). One roll does both: where it fell inside the tier is uniform and independent of the
+ * tier, so the card is chosen from it, and a wishlist redirect reuses it again; nothing extra is
+ * drawn, so the chance of each tier and the random stream are the same with and without a wishlist.
  */
 function pick(
   portal: Portal,
+  chances: readonly { rarity: Rarity; chance: number }[],
   min: Rarity | null,
   rng: Rng,
   wishlist: ReadonlySet<string> | null = null,
 ): PoolEntry {
-  const entries = min ? portal.pool.filter((e) => atLeast(e.rarity, min)) : portal.pool;
-  const list = entries.length > 0 ? entries : portal.pool;
-  const total = list.reduce((a, e) => a + e.weight, 0);
+  let tiers = chances.filter((t) => (min ? atLeast(t.rarity, min) : true));
+  if (tiers.length === 0) tiers = [...chances];
+  let total = tiers.reduce((a, t) => a + t.chance, 0);
+  if (total <= 0) {
+    tiers = tiers.map((t) => ({
+      rarity: t.rarity,
+      chance: portal.pool.filter((e) => e.rarity === t.rarity).reduce((a, e) => a + e.weight, 0),
+    }));
+    total = tiers.reduce((a, t) => a + t.chance, 0) || 1;
+  }
   let roll = rng() * total;
-  let hit = list[list.length - 1]!;
+  let tier = tiers[tiers.length - 1]!;
   let inside = 0.999999;
-  for (const entry of list) {
-    if (roll < entry.weight) {
-      hit = entry;
-      inside = roll / entry.weight;
+  for (const t of tiers) {
+    if (roll < t.chance) {
+      tier = t;
+      inside = roll / t.chance;
       break;
     }
-    roll -= entry.weight;
+    roll -= t.chance;
   }
-  if (!wishlist) return hit;
-  const marked = portal.pool.filter((e) => e.rarity === hit.rarity && wishlist.has(e.itemId));
-  if (marked.length === 0) return hit;
-  let target = inside * marked.reduce((a, e) => a + e.weight, 0);
-  for (const entry of marked) {
+  const ofTier = portal.pool.filter((e) => e.rarity === tier.rarity);
+  const marked = wishlist ? ofTier.filter((e) => wishlist.has(e.itemId)) : [];
+  const list = marked.length > 0 ? marked : ofTier;
+  let target = inside * list.reduce((a, e) => a + e.weight, 0);
+  for (const entry of list) {
     if (target < entry.weight) return entry;
     target -= entry.weight;
   }
-  return marked[marked.length - 1]!;
+  return list[list.length - 1]!;
 }
 
 /** The marked cards of a portal's pool, or null when the portal has no wishlist or none is marked. */
@@ -229,16 +309,21 @@ export function pull(
   );
   let { pity, pulls, pityHits } = counters(state, base.id);
   const wishlist = wishlistOf(state, portal);
+  // the first 10-pull of the Card Portal or the Focus Portal holds a Gold (DESIGN.md §2 Summoning)
+  const first =
+    count === 10 && base.firstTenPullGuarantee !== null && !state.summon.firstTenPullDone;
+  const required = first ? base.firstTenPullGuarantee! : base.tenPullGuarantee;
   let guaranteeMet = false;
   const results: PullResult[] = [];
   for (let i = 0; i < count; i++) {
-    const byPity = pity + 1 >= threshold;
+    const byPity = pity + 1 >= threshold && pityOpen(next, content, base);
     const needsGuarantee = count === 10 && i === count - 1 && !guaranteeMet && !byPity;
+    const chances = tierChances(next, content, resolved, pulls, pity + 1, threshold);
     const entry = byPity
-      ? pick(portal, portal.pity.rarity, rng, wishlist)
+      ? pick(portal, chances, portal.pity.rarity, rng, wishlist)
       : needsGuarantee
-        ? pick(portal, portal.tenPullGuarantee, rng, wishlist)
-        : pick(portal, null, rng, wishlist);
+        ? pick(portal, chances, required, rng, wishlist)
+        : pick(portal, chances, null, rng, wishlist);
     const flash = rng() < portal.reveal.upgradeFlashChance && entry.rarity !== lowest;
     const orb = flash ? RARITIES[rarityRank(entry.rarity) - 1]! : entry.rarity;
     results.push({
@@ -249,14 +334,28 @@ export function pull(
       guaranteed: needsGuarantee,
       gain: grantItem(next, content, portal, entry.itemId),
     });
-    if (atLeast(entry.rarity, portal.tenPullGuarantee)) guaranteeMet = true;
+    if (atLeast(entry.rarity, required)) guaranteeMet = true;
     pity = atLeast(entry.rarity, portal.pity.rarity) ? 0 : pity + 1;
     pulls += 1;
     if (byPity) pityHits += 1;
   }
   next.portals[base.id] = { pity, pulls, pityHits };
+  if (first) next.summon.firstTenPullDone = true;
+  if (base.kind === 'cards') settleTierRewards(next, content);
   grantAccountXp(next, content, content.account.xp.perPull.mul(count), modifiers);
   return { ok: true, state: next, results };
+}
+
+/**
+ * Hard pity can give something: a card portal with levels has at least one tier of the pity step
+ * or better with a card still below six stars (else its pity pull would only pay shards). Every
+ * other portal always can.
+ */
+function pityOpen(state: GameState, content: Content, base: Portal): boolean {
+  if (base.levels.length === 0) return true;
+  return base.pool.some(
+    (e) => atLeast(e.rarity, base.pity.rarity) && !tierComplete(state, content, e.rarity),
+  );
 }
 
 export type WishlistFailure = 'unknown' | 'full';
@@ -331,17 +430,44 @@ export interface PortalInfo {
   /** Single pull and 10-pull: price and whether it is affordable now. */
   single: { price: Price; affordable: boolean };
   ten: { price: Price; affordable: boolean };
-  /** Hard pity: the rarity it gives, pulls since the last one, the threshold and a bar 0..1. */
-  pity: { rarity: Rarity; count: number; threshold: number; progress: number };
+  /** Hard pity: the rarity it gives, pulls since the last one, the threshold and a bar 0..1.
+   *  `softFrom` is where its chance starts to rise (null = it does not); `open` is false when
+   *  every tier of it is complete, so it gives nothing more. */
+  pity: {
+    rarity: Rarity;
+    count: number;
+    threshold: number;
+    progress: number;
+    softFrom: number | null;
+    open: boolean;
+  };
   /** Every 10-pull holds at least one of this rarity or better. */
   tenPullGuarantee: Rarity;
-  /** Chance per normal pull: by rarity (lowest first, only rarities in the pool) and by item. */
+  /** The first 10-pull of a new game holds this rarity or better; null once made (or never). */
+  firstTenPull: Rarity | null;
+  /** The portal's level (DESIGN.md §2 Summoning, Portal level); null for a portal with none. */
+  level: PortalLevelInfo | null;
+  /** Chance per next pull, with the level and the rise of the pity counted: by rarity (lowest
+   *  first, only rarities in the pool) and by item. */
   rates: {
     byRarity: { rarity: Rarity; chance: number }[];
     byItem: { itemId: string; rarity: Rarity; chance: number }[];
   };
   /** Pulls made from this portal, ever. */
   pulls: number;
+}
+
+/** A portal's level: where it stands and how far the next one is. */
+export interface PortalLevelInfo {
+  /** 1-based, and the number of levels. */
+  level: number;
+  levels: number;
+  pulls: number;
+  /** Pulls at which this level started, and the next level starts (null at the top). */
+  from: number;
+  next: number | null;
+  /** Progress inside the level, 0..1 (1 at the top). */
+  progress: number;
 }
 
 /** Everything a portal card on the Summon shelf shows. Null for unknown ids. */
@@ -361,12 +487,26 @@ export function portalInfo(
   };
   const c = counters(state, base.id);
   const threshold = pityThreshold(base, modifiers);
-  const total = portal.pool.reduce((a, e) => a + e.weight, 0) || 1;
-  const byRarity = RARITIES.map((rarity) => ({
-    rarity,
-    chance:
-      portal.pool.filter((e) => e.rarity === rarity).reduce((a, e) => a + e.weight, 0) / total,
-  })).filter((r) => r.chance > 0);
+  const byRarity = tierChances(state, content, resolved, c.pulls, c.pity + 1, threshold).filter(
+    (r) => r.chance > 0,
+  );
+  const tierWeight = (r: Rarity): number =>
+    portal.pool.filter((e) => e.rarity === r).reduce((a, e) => a + e.weight, 0) || 1;
+  const chanceOf = new Map(byRarity.map((r) => [r.rarity, r.chance]));
+  let level: PortalLevelInfo | null = null;
+  if (base.levels.length > 0) {
+    const n = portalLevel(base, c.pulls);
+    const from = base.levels[n - 1]!.pulls;
+    const next = base.levels[n]?.pulls ?? null;
+    level = {
+      level: n,
+      levels: base.levels.length,
+      pulls: c.pulls,
+      from,
+      next,
+      progress: next === null ? 1 : (c.pulls - from) / (next - from),
+    };
+  }
   return {
     portal,
     single: offer(1),
@@ -376,14 +516,18 @@ export function portalInfo(
       count: c.pity,
       threshold,
       progress: Math.min(1, c.pity / threshold),
+      softFrom: portal.pity.softFrom,
+      open: pityOpen(state, content, base),
     },
     tenPullGuarantee: portal.tenPullGuarantee,
+    firstTenPull: state.summon.firstTenPullDone ? null : base.firstTenPullGuarantee,
+    level,
     rates: {
       byRarity,
       byItem: portal.pool.map((e) => ({
         itemId: e.itemId,
         rarity: e.rarity,
-        chance: e.weight / total,
+        chance: (chanceOf.get(e.rarity) ?? 0) * (e.weight / tierWeight(e.rarity)),
       })),
     },
     pulls: c.pulls,
