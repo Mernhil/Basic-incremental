@@ -544,12 +544,6 @@ export const ELEMENT_SHEETS: Record<string, HitSheet> = {
     hold: { frames: [1, 2, 3, 4], step: 0.04, loop: true },
     out: { frames: [5, 6, 7, 8, 9], step: 0.06 },
   },
-  // breaks into forked bolt shapes
-  storm: {
-    ...ELEMENT_SLASH,
-    hold: { frames: [0, 1], step: 0.04, loop: true },
-    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
-  },
   // dissolves into dots. Its frames 2 and 3 (an outlined blob) are skipped: frame 1 and frame 4
   // each stay 40 ms longer instead, so it takes as long as before
   light: {
@@ -557,26 +551,15 @@ export const ELEMENT_SHEETS: Record<string, HitSheet> = {
     hold: { frames: [0, 1], step: 0.08, loop: true },
     out: { frames: [1, 4, 4, 5, 6, 7, 8, 9], step: 0.04 },
   },
-  // breaks into leaves
-  nature: {
-    ...ELEMENT_SLASH,
-    hold: { frames: [0, 1], step: 0.08, loop: true },
-    out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
-  },
   // crumbles into rock chunks
   earth: {
     ...ELEMENT_SLASH,
     hold: { frames: [0, 1], step: 0.08, loop: true },
     out: { frames: [2, 3, 4, 5, 6, 7, 8, 9], step: 0.04 },
   },
-  // grows spikes while it holds, then shatters into shards
-  crystal: {
-    ...ELEMENT_SLASH,
-    hold: { frames: [0, 1, 2, 3], step: 0.06, loop: false },
-    out: { frames: [4, 5, 6, 7, 8, 9], step: 0.05 },
-  },
-  // a dark core in a bright rim that tears into dark wisps
-  void: {
+  // a dark core in a bright rim that tears into dark wisps (the void slash). Water has no drawn slash yet:
+  // it plays the code-drawn hit below.
+  dark: {
     ...ELEMENT_SLASH,
     hold: { frames: [1, 2], step: 0.08, loop: true },
     out: { frames: [3, 4, 5], step: 0.08 },
@@ -613,15 +596,6 @@ export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
     burst: { size: 1, grav: 1 },
     edge: 'tongue',
   },
-  // yellow bolts on a blue glow: thin, jagged, forked
-  storm: {
-    c: ['#ffffff', '#fff3a0', '#ffe040', '#6aa8ff', '#3a4ad8', '#1a1460'],
-    ink: '#080a30',
-    rise: 'bolt',
-    slash: { halfWidth: 350, thick: 26, bow: 30, rag: 0.3 },
-    burst: { size: 0.7, grav: 0.4 },
-    edge: 'bolt',
-  },
   // white-gold and pale yellow, no orange: a thin clean blade of light with sparkles on its edge
   light: {
     c: ['#ffffff', '#fffdec', '#fff6c0', '#ffec94', '#dcc86a', '#8c7c34'],
@@ -630,15 +604,6 @@ export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
     slash: { halfWidth: 350, thick: 30, bow: 36, rag: 0 },
     burst: { size: 0.8, grav: -0.5 },
     edge: 'sparkle',
-  },
-  // a deep curved cut that bursts into vines and leaves
-  nature: {
-    c: ['#eaffc8', '#b6f27a', '#5fd35a', '#2a9a3a', '#1a5a2a', '#0a2a14'],
-    ink: '#06180a',
-    rise: 'vine',
-    slash: { halfWidth: 330, thick: 38, bow: 92, rag: 0.2 },
-    burst: { size: 1.1, grav: 0.7 },
-    edge: 'leaf',
   },
   // heavy and flat: thick, with rock spikes thrown up
   earth: {
@@ -649,8 +614,8 @@ export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
     burst: { size: 1.6, grav: 2.2, chunk: true },
     edge: 'teeth',
   },
-  // crisp and angular: a clean cut with crystal prisms growing from it
-  crystal: {
+  // water, until it has its own art: the old crystal hit (aqua, clean cut, prisms growing from it)
+  water: {
     c: ['#f2ffff', '#b8fff4', '#5fe8d8', '#3ab8c8', '#2a7aa8', '#143a60'],
     ink: '#08203a',
     rise: 'crystal',
@@ -659,7 +624,7 @@ export const ELEMENT_EFFECTS: Record<string, ElementEffect> = {
     edge: 'shard',
   },
   // a dark swirling cut with purple wisps
-  void: {
+  dark: {
     c: ['#f0d8ff', '#c48cff', '#9a4ce8', '#5f2aa8', '#33145f', '#14062a'],
     ink: '#0a0314',
     rise: 'wisp',
@@ -707,7 +672,13 @@ export function effectOf(tier: string | undefined, element: string): ElementEffe
   return (tier ? MATERIAL_EFFECTS[tier] : undefined) ?? ELEMENT_EFFECTS[element];
 }
 
-/** True when a weapon type and an element both have their entry. */
-export function hasSpecial(kind: string | undefined, element: string | undefined): boolean {
-  return Boolean(kind && element && WEAPON_MOTIONS[kind] && ELEMENT_EFFECTS[element]);
+/** True when a weapon type has its motion and the card has an effect: its material's (Wood to Prismatic, no element) or its element's. */
+export function hasSpecial(
+  kind: string | undefined,
+  element: string | undefined,
+  tier?: string,
+): boolean {
+  const effect =
+    (tier ? MATERIAL_EFFECTS[tier] : undefined) ?? (element ? ELEMENT_EFFECTS[element] : undefined);
+  return Boolean(kind && WEAPON_MOTIONS[kind] && effect);
 }
