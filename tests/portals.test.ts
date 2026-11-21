@@ -41,12 +41,20 @@ describe('Card Portal (DESIGN.md §7, beta portals)', () => {
     expect(info.rates.byRarity.map((r) => r.rarity)).toContain('legendary');
   });
 
-  it('shows pity progress: Legendary or better at 90, and the 10-pull Rare guarantee', () => {
+  it('shows pity progress: a T6 within 60, the 10-pull Silver guarantee and the first 10-pull Gold', () => {
     const state = freshState();
     state.portals[PORTAL] = { pity: 45, pulls: 45, pityHits: 0 };
     const info = portalInfo(state, content, PORTAL)!;
-    expect(info.pity).toEqual({ rarity: 'legendary', count: 45, threshold: 90, progress: 0.5 });
+    expect(info.pity).toEqual({
+      rarity: 'mythic',
+      count: 45,
+      threshold: 60,
+      progress: 0.75,
+      softFrom: 30,
+      open: true,
+    });
     expect(info.tenPullGuarantee).toBe('rare');
+    expect(info.firstTenPull).toBe('epic');
   });
 
   it('refuses a pull it cannot afford, and an unknown portal', () => {
@@ -128,7 +136,9 @@ describe('Card Portal (DESIGN.md §7, beta portals)', () => {
 
   it('gives the reveal orb colour: the rarity, or one lower for an upgrade flash', () => {
     // rng 0: every flash roll succeeds; commons cannot go lower.
-    const ten = pull(withSigils(100), content, PORTAL, 10, constantRng(0));
+    const seasoned = withSigils(100);
+    seasoned.summon.firstTenPullDone = true;
+    const ten = pull(seasoned, content, PORTAL, 10, constantRng(0));
     if (!ten.ok) throw new Error(ten.reason);
     // The ladder has an Uncommon step now, so a Rare is revealed from an Uncommon orb.
     expect(ten.results[0]!.orb).toBe('common');

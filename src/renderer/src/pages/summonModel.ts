@@ -10,6 +10,7 @@ import {
   type PortalInfo,
   type PullResult,
   type WishlistInfo,
+  tierProgress,
 } from '../../../game';
 import { fmt } from '../settings/numberFormat';
 import { COPY } from '../copy';
@@ -48,6 +49,12 @@ export interface PortalView {
   pityRarityName: string;
   /** Visible card layers of the deck (more edge = closer to the hard pity). */
   deckLayers: number;
+  /** The portal's level bar (card portals); null for a portal with no levels. */
+  level: { label: string; value: string; progress: number; now: number; max: number } | null;
+  /** "Your first ×10 holds a Gold or better" until it is made; null otherwise. */
+  firstTen: string | null;
+  /** The note under the odds about the level and the tiers that leave the pool. */
+  levelNote: string | null;
 }
 
 /**
@@ -67,15 +74,20 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
   const t = COPY.summon;
   const cards = info.portal.kind === 'cards';
   const left = Math.max(1, info.pity.threshold - info.pity.count);
+  // a card portal's pity step is T6 (Mythic or Void): nothing is better, so no "or better"
+  const t6 = cards && info.pity.rarity === 'mythic';
+  const lv = info.level;
   return {
     id: info.portal.id,
     name: info.portal.name,
     kind: info.portal.kind,
-    line: deckLine(
-      info.portal.kind,
-      rarityName(content, info.pity.rarity, cards),
-      info.pity.threshold,
-    ),
+    line: t6
+      ? t.lineT6(info.pity.threshold)
+      : deckLine(
+          info.portal.kind,
+          rarityName(content, info.pity.rarity, cards),
+          info.pity.threshold,
+        ),
     resourceId: info.single.price.resource,
     pityText: t.pityOf(info.pity.count, info.pity.threshold),
     single: {
@@ -90,7 +102,7 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
       amount: fmt(info.ten.price.amount),
       affordable: info.ten.affordable,
     },
-    pity: t.pity(rarityName(content, info.pity.rarity, cards), left),
+    pity: t6 ? t.pityT6(left) : t.pity(rarityName(content, info.pity.rarity, cards), left),
     pityProgress: Math.min(1, Math.max(0, info.pity.progress)),
     guarantee: t.guarantee(rarityName(content, info.tenPullGuarantee, cards)),
     rates: info.rates.byRarity.map((r) =>
@@ -105,7 +117,43 @@ export function portalView(info: PortalInfo, content: Content): PortalView {
     pityThreshold: info.pity.threshold,
     pityRarityName: rarityName(content, info.pity.rarity, cards),
     deckLayers: deckLayers(info.pity.progress),
+    level: lv
+      ? {
+          label: t.levelLabel(lv.level),
+          value: t.levelValue(lv.pulls, lv.next),
+          progress: Math.min(1, Math.max(0, lv.progress)),
+          now: lv.pulls - lv.from,
+          max: lv.next === null ? 1 : lv.next - lv.from,
+        }
+      : null,
+    firstTen: info.firstTenPull ? t.firstTen(rarityName(content, info.firstTenPull, cards)) : null,
+    levelNote: lv ? t.levelNote(lv.level, lv.levels) : null,
   };
+}
+
+/** One check box of the tier collection. */
+export interface TierBoxView {
+  grade: string;
+  rarity: Rarity;
+  name: string;
+  count: string;
+  reward: string;
+  checked: boolean;
+  label: string;
+}
+
+/** The tier collection: a check box per tier, ticked when the tier's reward was paid. */
+export function tierBoxes(state: GameState, content: Content): TierBoxView[] {
+  const t = COPY.summon;
+  return tierProgress(state, content).map((p) => ({
+    grade: p.grade,
+    rarity: p.rarity,
+    name: rarityName(content, p.rarity, true),
+    count: t.tierCount(p.done, p.total),
+    reward: t.tierReward(fmt(p.scrolls), fmt(content.cardRules.tierReward.damagePercent)),
+    checked: p.claimed,
+    label: t.tierBox(rarityName(content, p.rarity, true), p.done, p.total, p.claimed),
+  }));
 }
 
 /** The line under a deck's title: the pity promise for cards, what the pool holds for the rest. */

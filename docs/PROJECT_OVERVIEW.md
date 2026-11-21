@@ -344,25 +344,31 @@ The player spends scrolls at portals to pull cards, cosmetics and legacy weapon 
 ### Portals
 
 - `src/data/content/portals.json` lists three portals, each with a `kind`:
-  - **Card Portal** (`card_portal`, `cards`): every card except the Heirloom cards. Paid in `summon_scroll`.
+  - **Card Portal** (`card_portal`, `cards`): every card except the Heirloom cards. Paid in `summon_scroll`. It has a level (`levels`, `minShare`), a T6 pity with a rising chance (`pity.softFrom`) and a first 10-pull guarantee (`firstTenPullGuarantee`); the other portals have none of these.
   - **Wardrobe Gate** (`wardrobe_gate`, `cosmetics`): cosmetics. Paid in `glamour_scroll`.
   - **Legacy Gate** (`legacy_gate`, `skins`): legacy weapon skins. Paid in `glamour_scroll`.
-- **Focus Portal** (`focus_portal`) is not in the file. `resolvePortal` in `src/game/portals.ts` builds it from the Card Portal: the pool is cut to the cards of the item type the player chose (`state.summon.focusKind`, `setFocusKind` in `src/game/summon.ts`). Each tier keeps its Card Portal chance, split equally over the cards left. Price, pity and counters are the Card Portal's. With no type chosen a pull fails (`no-focus`).
+- **Focus Portal** (`focus_portal`) is not in the file. `resolvePortal` in `src/game/portals.ts` builds it from the Card Portal: the pool is cut to the cards of the item type the player chose (`state.summon.focusKind`, `setFocusKind` in `src/game/summon.ts`). Each tier keeps its Card Portal chance, split equally over the cards left. Price, pity, level and counters are the Card Portal's, and so are its tier chances. With no type chosen a pull fails (`no-focus`).
 - **Unlocking**: no portal has an unlock condition. `enabled: false` in `portals.json` leaves a portal out of `content.portals` (`src/data/index.ts`); all three are enabled.
 
 ### How a pull is rolled (`pull` in `src/game/portals.ts`)
 
 1. The price (`cost.single` or `cost.ten` in `cost.resource`, through the `cost.multiplier` stat, `pullPrice`) is paid once.
-2. Each pull is one weighted pick over the whole pool (`pick`): one random number chooses one entry by its `weight`. The code does not roll a tier first and a card second; a tier's chance is the sum of its entries' weights.
-3. Hard pity: when the pulls since the last result of the pity grade or better, plus one, reach the threshold (`pity.threshold` through the `summon.pityThreshold` stat), the pick is made only among entries of that grade or better.
-4. 10-pull guarantee: on the last pull of a 10-pull, if no earlier pull reached `tenPullGuarantee` and it is not a pity pull, the pick is made only among entries of that grade or better.
-5. Wishlist (card portals): if the picked entry's tier has marked cards in the pool, the result moves to one of them, by weight, using the remainder of the same random number. Tier chances do not change.
-6. A second random number decides the reveal's upgrade flash (`reveal.upgradeFlashChance`).
-7. The item is granted (`grantItem`); the pity counter resets on a result of the pity grade or better, else rises by one.
+2. Tier chances (`tierChances`). A portal with `levels` takes the row of its level: `portalLevel` is the last level whose `pulls` the portal's pull count has reached (no save field of its own). Each tier keeps at least `minShare`, never more than its level-1 chance, until it is complete (`tierComplete` in `src/game/tierRewards.ts`: every card of it the Card Portal can pull is at six stars); a complete tier leaves the pool, and the shares are scaled back to a whole. A portal without levels weighs its tiers by their entries' weights.
+3. Rising pity: past `pity.softFrom` the chance of the pity grade or better rises in a straight line, from that pull to a sure result at the threshold.
+4. The pick (`pick`): one random number picks a tier by those chances, and the rest of it picks the entry in that tier by weight. Wishlist (card portals): when the tier has marked cards in the pool, the pick is made among them only.
+5. Hard pity: when the pulls since the last result of the pity grade or better, plus one, reach the threshold (`pity.threshold` through the `summon.pityThreshold` stat), the pick is made only among tiers of that grade or better. It is off once every card of that grade or better is complete (`pityOpen`). The Card Portal's pity grade is T6 (`mythic`, both sides).
+6. 10-pull guarantee: on the last pull of a 10-pull, if no earlier pull reached the guarantee and it is not a pity pull, the pick is made only among tiers of that grade or better. The first 10-pull of a new game on the Card or Focus Portal uses `firstTenPullGuarantee` (Gold) and sets `state.summon.firstTenPullDone`; later ones use `tenPullGuarantee`. A second random number decides the reveal's upgrade flash (`reveal.upgradeFlashChance`).
+7. The item is granted (`grantItem`); the pity counter resets on a result of the pity grade or better, else rises by one. After a card portal pull, `settleTierRewards` pays any tier just completed (see Tier completion).
 
 - All pulls together give account XP (`account.json` `xp.perPull`), see Account level and reward track.
 - A card portal's file entries name a `tier` (T6 split into `mythic` and `void`). `portalSchema` in `src/data/schemas.ts` maps them onto the seven-step key `rarity` (`gradeStyle`) the engine uses for every portal.
-- Counters (`pity`, `pulls`, `pityHits`) are per portal in `state.portals`. `portalInfo` gives the Summon page prices, pity and odds.
+- Counters (`pity`, `pulls`, `pityHits`) are per portal in `state.portals`. `portalInfo` gives the Summon page prices, pity (with `softFrom` and whether it is open), the level (`PortalLevelInfo`), the first 10-pull guarantee while it is due, and the odds of the next pull with the level and the rising pity counted.
+
+### Tier completion (`src/game/tierRewards.ts`)
+
+- A tier is complete when every card of it the Card Portal can pull is at six stars; at T6 the Mythic and Void sides are two tiers (`tierComplete`, `tierProgress` for the Summon page).
+- `settleTierRewards` pays each complete tier once: its Summon Scrolls (`cardRules.json` `tierReward.scrolls`) and the grade added to `state.summon.tierRewardsClaimed`. It runs as time passes (`tick.ts`), after a card portal pull and when a save loads.
+- `tierRewardModifiers` (in `collectModifiers`) gives `tierReward.damagePercent` percent `combat.damage` per paid tier, for as long as the save lives.
 
 ### What a pulled item becomes
 
@@ -698,7 +704,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 ### What a save is
 
 - Plain JSON text with three fields: `version` (the save format number), `savedAt` (epoch milliseconds, used for offline progress, see Game core) and `state` (`src/game/save.ts` `createSaveText`). No compression, encryption or checksum.
-- The current save format is **39** (`src/game/save.ts` `CURRENT_SAVE_VERSION`).
+- The current save format is **40** (`src/game/save.ts` `CURRENT_SAVE_VERSION`).
 - `state` is the whole game state with big numbers as strings (`serializeState`; shape in `serializedStateSchema`). A card's tier is not saved; it is read from the card's data on load.
 
 ### Where and when it is written
@@ -734,7 +740,7 @@ The game keeps one save, writes it by itself and reads it back at start, upgradi
 
 ### Tests
 
-- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts` (one step each).
+- `tests/migrations.test.ts` (runner, steps, a step for every format); `tests/save.test.ts` (round trip, bad saves, backup fallback, export/import, some older formats); `tests/saveV*.test.ts` and `tests/migrateV39.test.ts` (one step each); `tests/summonChances.test.ts` covers the step to format 40: the Card Portal's pity counter is reset to 0 (it now counts toward a T6), `summon.firstTenPullDone` is true for a save with 10 or more Card Portal pulls, `summon.tierRewardsClaimed` starts empty, and tiers the save had already completed are paid when it loads.
 - `tests/saveStore.test.ts` (desktop store), `tests/saveBackup.test.ts` (dev reset backup), `tests/webSaveStore.test.ts` (web store, browser API), `tests/devPaths.test.ts` (folders of a build run from source). Old-format saves: `tests/fixtures/saves/` and its `README.md`.
 
 ### Changing the save format
@@ -909,11 +915,13 @@ There is no tier-up. A note says the weapon's tier is fixed (for an Heirloom: th
 Mounted by the `summon` view (`views/collection/index.ts`).
 
 - Left column: Daily scrolls with Claim (`dailyAvailable`, `claimDaily`; amounts in `scrolls.json` `daily`), then the gates in a fixed order: the `cards` portals of `portals.json` (Focus Portal after `card_portal`), the `cosmetics` portals (a locked "Wardrobe Gate" if none), the `skins` portals, the Heirloom Gate (`heirlooms.json` `gate`). One gate is open at a time.
-- The open gate shows a deck of card backs, a Pity bar "count / threshold", and Pull 1 and Pull 10 with the price (one resource per gate; `portals.json`, `heirlooms.json` `gate.cost`), disabled when it cannot be paid (`portalInfo`, `pull`; `heirloomGateInfo`, `pullHeirloomGate`). The Focus Portal adds a button per item type (`focusKinds`, `setFocusKind`). See Summon and pulls.
+- The open gate shows a deck of card backs, on a card portal a level bar "Portal level n" with "pulls / next" ("top level" at the last), a Pity bar "count / threshold", and Pull 1 and Pull 10 with the price (one resource per gate; `portals.json`, `heirlooms.json` `gate.cost`), disabled when it cannot be paid (`portalInfo`, `pull`; `heirloomGateInfo`, `pullHeirloomGate`). The Focus Portal adds a button per item type (`focusKinds`, `setFocusKind`). See Summon and pulls.
 - A pull opens the reveal (`stage/reveal.ts`, see Stage effects) and fills "Your last hand": up to ten results.
 - **Odds.** "Odds per pull" lists the open gate only: a row per step with its chance, then notes: "Every ×10 holds a <step> or better". Card portals name the steps with tier words; the cosmetic and skin gates use the rarity names of `rarities.json`.
 - **Wishlist.** The panel belongs to the card portal that has `wishlistPerTier` above zero (`wishlistView`, `wishlistPanelView`) and shows whenever a card gate (Card Portal or Focus Portal) is open: a row per tier with "marked / limit" and a tile per card in weapon type columns. A click marks or unmarks (`setWishlisted`).
-- **Pity.** A card deck's line reads "<tier> or better within n pulls" (n is the threshold); the Legacy (skins) gate reads "<rarity> or better within n pulls"; the Wardrobe Gate's line reads "Cosmetics · duplicates feed upgrades". The Heirloom Gate reads "A whole Heirloom within n pulls" with the chance of a whole one against shards, and a board of stars and shard bars per art batch and weapon type (`heirloomBoardView`).
+- **First 10-pull.** On a card portal, "Your first ×10 holds a Gold or better" under the pity bar until that 10-pull is made.
+- **Tier collection.** On a card portal, a panel with a check box per tier, lowest first (`tierBoxes`, from `tierProgress`): the tier, "done / total" cards at six stars and the reward "+scrolls · +n% damage"; the box is ticked once the reward is paid. Under the odds a note gives the portal level and says a tier leaves the pool only when all its cards are at six stars.
+- **Pity.** The Card Portal's line reads "A T6 card within n pulls, rising from the middle" and its bar "A T6 card within n pulls"; other card decks read "<tier> or better within n pulls" (n is the threshold); the Legacy (skins) gate reads "<rarity> or better within n pulls"; the Wardrobe Gate's line reads "Cosmetics · duplicates feed upgrades". The Heirloom Gate reads "A whole Heirloom within n pulls" with the chance of a whole one against shards, and a board of stars and shard bars per art batch and weapon type (`heirloomBoardView`).
 - Cards are named with `cardDisplayName`; a card pulled from a card portal is labelled with its tier word; an Heirloom Gate pull is labelled "Mythic" or "Void" (its side), never "Heirloom"; a cosmetic or skin with its rarity name.
 
 ### Heirlooms map (`heirloomsMap.ts`, model `heirloomMapModel.ts`)

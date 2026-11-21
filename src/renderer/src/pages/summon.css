@@ -561,25 +561,32 @@
   padding-left: 8px;
   text-align: right;
 }
-.sm-odds__row[data-rarity='common'] {
+.sm-odds__row[data-rarity='common'],
+.sm-tiers__row[data-rarity='common'] {
   --rc: var(--sm-common);
 }
-.sm-odds__row[data-rarity='uncommon'] {
+.sm-odds__row[data-rarity='uncommon'],
+.sm-tiers__row[data-rarity='uncommon'] {
   --rc: var(--sm-uncommon);
 }
-.sm-odds__row[data-rarity='rare'] {
+.sm-odds__row[data-rarity='rare'],
+.sm-tiers__row[data-rarity='rare'] {
   --rc: var(--sm-rare);
 }
-.sm-odds__row[data-rarity='epic'] {
+.sm-odds__row[data-rarity='epic'],
+.sm-tiers__row[data-rarity='epic'] {
   --rc: var(--sm-epic);
 }
-.sm-odds__row[data-rarity='legendary'] {
+.sm-odds__row[data-rarity='legendary'],
+.sm-tiers__row[data-rarity='legendary'] {
   --rc: var(--sm-legendary);
 }
-.sm-odds__row[data-rarity='mythic'] {
+.sm-odds__row[data-rarity='mythic'],
+.sm-tiers__row[data-rarity='mythic'] {
   --rc: var(--sm-mythic);
 }
-.sm-odds__row[data-rarity='void'] {
+.sm-odds__row[data-rarity='void'],
+.sm-tiers__row[data-rarity='void'] {
   --rc: var(--sm-void);
 }
 .sm-odds__swatch {
@@ -921,4 +928,86 @@ html .sm-hand__tag.sm-hand__tag--new:not(#_px) {
 .sm-skin svg {
   width: 100%;
   height: 100%;
+}
+
+/* ---- portal level and the tier collection ---- */
+.sm-level .sm-pity__track > i {
+  background: #ffd968;
+  box-shadow: inset 0 var(--fs-sm) 0 0 color-mix(in srgb, #ffd968 55%, #fff);
+}
+.sm-deck__first {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.25;
+  color: var(--px-muted);
+  text-align: center;
+}
+.sm-deck__first[hidden] {
+  display: none;
+}
+.sm-tiers {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+.sm-tiers[hidden] {
+  display: none;
+}
+.sm-tiers__title {
+  margin: 0;
+  font-size: 18px;
+}
+.sm-tiers__about {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3;
+  color: var(--px-muted);
+}
+.sm-tiers__list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.sm-tiers__row {
+  display: grid;
+  grid-template-columns: 20px minmax(90px, 1fr) auto minmax(0, 2fr);
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+.sm-tiers__box {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  background: #000;
+  box-shadow: 0 0 0 2px var(--px-muted);
+}
+.sm-tiers__box.is-checked {
+  background: #ffd968;
+  box-shadow: 0 0 0 1px #000;
+}
+.sm-tiers__box.is-checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid #000;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.sm-tiers__name {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sm-tiers__count {
+  color: var(--px-ink);
+}
+.sm-tiers__reward {
+  color: var(--px-muted);
 }
